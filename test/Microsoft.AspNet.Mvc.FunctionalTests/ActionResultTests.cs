@@ -201,7 +201,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async Task ContentResult_WritesContent_SetsContentTypeWithDefaultEncoding()
+        public async Task ContentResult_WritesContent_SetsContentType_UsesDefaultEncoding_AndNoCharset()
         {
             // Arrange
             var request = new HttpRequestMessage(
@@ -214,7 +214,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal("application/json", response.Content.Headers.ContentType.MediaType);
-            Assert.Equal("utf-8", response.Content.Headers.ContentType.CharSet);
             Assert.Equal("content", await response.Content.ReadAsStringAsync());
         }
 

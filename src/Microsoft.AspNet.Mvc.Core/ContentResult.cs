@@ -47,32 +47,31 @@ namespace Microsoft.AspNet.Mvc
             var logger = loggerFactory.CreateLogger<ContentResult>();
 
             var response = context.HttpContext.Response;
-            var contentTypeHeader = ContentType;
 
-            if (contentTypeHeader != null && contentTypeHeader.Encoding == null)
-            {
-                // Do not modify the user supplied content type, so copy it instead
-                contentTypeHeader = contentTypeHeader.Copy();
-                contentTypeHeader.Encoding = Encoding.UTF8;
-            }
+            string resolvedContentType;
+            Encoding resolvedContentTypeEncoding;
+            ResponseContentTypeHelper.ResolveContentTypeAndEncoding(
+                ContentType,
+                response.ContentType,
+                DefaultContentType,
+                out resolvedContentType,
+                out resolvedContentTypeEncoding);
 
-            response.ContentType = contentTypeHeader?.ToString()
-                ?? response.ContentType
-                ?? DefaultContentType.ToString();
+            response.ContentType = resolvedContentType;
 
             if (StatusCode != null)
             {
                 response.StatusCode = StatusCode.Value;
             }
 
-            logger.ContentResultExecuting(contentTypeHeader);
+            logger.ContentResultExecuting(resolvedContentType);
 
             if (Content != null)
             {
                 var bufferingFeature = response.HttpContext.Features.Get<IHttpBufferingFeature>();
                 bufferingFeature?.DisableResponseBuffering();
 
-                return response.WriteAsync(Content, contentTypeHeader?.Encoding ?? DefaultContentType.Encoding);
+                return response.WriteAsync(Content, resolvedContentTypeEncoding);
             }
 
             return TaskCache.CompletedTask;

@@ -70,7 +70,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             // Assert
             Assert.Equal(viewName, viewEngineResult.ViewName);
         }
-        
+
         [Fact]
         public void FindView_WritesDiagnostic_ViewFound()
         {
@@ -163,7 +163,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             await executor.ExecuteAsync(context, Mock.Of<IView>(), viewResult);
 
             // Assert
-            Assert.Equal("application/x-my-content-type; charset=utf-8", context.HttpContext.Response.ContentType);
+            Assert.Equal("application/x-my-content-type", context.HttpContext.Response.ContentType);
 
             // Check if the original instance provided by the user has not changed.
             // Since we do not have access to the new instance created within the view executor,
@@ -199,7 +199,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         {
             return new ActionContext(new DefaultHttpContext(), new RouteData(), new ActionDescriptor());
         }
-        
+
         private PartialViewResultExecutor GetViewExecutor(DiagnosticSource diagnosticSource = null)
         {
             if (diagnosticSource == null)

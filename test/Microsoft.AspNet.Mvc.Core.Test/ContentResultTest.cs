@@ -23,47 +23,6 @@ namespace Microsoft.AspNet.Mvc
     public class ContentResultTest
     {
         [Fact]
-        public async Task ContentResult_Response_NullEncoding_SetsContentTypeAndDefaultEncoding()
-        {
-            // Arrange
-            var contentResult = new ContentResult
-            {
-                Content = "Test Content",
-                ContentType = new MediaTypeHeaderValue("application/json")
-            };
-            var httpContext = GetHttpContext();
-            var actionContext = GetActionContext(httpContext);
-
-            // Act
-            await contentResult.ExecuteResultAsync(actionContext);
-
-            // Assert
-            Assert.Equal("application/json; charset=utf-8", httpContext.Response.ContentType);
-        }
-
-        [Fact]
-        public async Task ContentResult_Response_SetsContentTypeAndEncoding()
-        {
-            // Arrange
-            var contentResult = new ContentResult
-            {
-                Content = "Test Content",
-                ContentType = new MediaTypeHeaderValue("text/plain")
-                {
-                    Encoding = Encoding.ASCII
-                }
-            };
-            var httpContext = GetHttpContext();
-            var actionContext = GetActionContext(httpContext);
-
-            // Act
-            await contentResult.ExecuteResultAsync(actionContext);
-
-            // Assert
-            Assert.Equal("text/plain; charset=us-ascii", httpContext.Response.ContentType);
-        }
-
-        [Fact]
         public async Task ContentResult_Response_NullContent_SetsContentTypeAndEncoding()
         {
             // Arrange
@@ -118,6 +77,7 @@ namespace Microsoft.AspNet.Mvc
         {
             get
             {
+                // contentType, content, responseContentType, expectedContentType, expectedData
                 return new TheoryData<MediaTypeHeaderValue, string, string, string, byte[]>
                 {
                     {
@@ -131,14 +91,14 @@ namespace Microsoft.AspNet.Mvc
                         new MediaTypeHeaderValue("text/foo"),
                         "κόσμε",
                         null,
-                        "text/foo; charset=utf-8",
+                        "text/foo",
                         new byte[] { 206, 186, 225, 189, 185, 207, 131, 206, 188, 206, 181 } //utf-8 without BOM
                     },
                     {
                         MediaTypeHeaderValue.Parse("text/foo;p1=p1-value"),
                         "κόσμε",
                         null,
-                        "text/foo; p1=p1-value; charset=utf-8",
+                        "text/foo; p1=p1-value",
                         new byte[] { 206, 186, 225, 189, 185, 207, 131, 206, 188, 206, 181 } //utf-8 without BOM
                     },
                     {

@@ -38,17 +38,22 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                     {
                         new MediaTypeHeaderValue("text/foo"),
                         null,
-                        "text/foo; charset=utf-8"
+                        "text/foo"
+                    },
+                    {
+                        MediaTypeHeaderValue.Parse("text/foo; charset=us-ascii"),
+                        null,
+                        "text/foo; charset=us-ascii"
                     },
                     {
                         MediaTypeHeaderValue.Parse("text/foo; p1=p1-value"),
                         null,
-                        "text/foo; p1=p1-value; charset=utf-8"
+                        "text/foo; p1=p1-value"
                     },
                     {
-                        new MediaTypeHeaderValue("text/foo") { Charset = "us-ascii" },
+                        MediaTypeHeaderValue.Parse("text/foo; p1=p1-value; charset=us-ascii"),
                         null,
-                        "text/foo; charset=us-ascii"
+                        "text/foo; p1=p1-value; charset=us-ascii"
                     },
                     {
                         null,
@@ -57,19 +62,24 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                     },
                     {
                         null,
-                        "application/xml; charset=us-ascii",
-                        "application/xml; charset=us-ascii"
+                        "text/bar; p1=p1-value",
+                        "text/bar; p1=p1-value"
                     },
-                    {
+                                        {
                         null,
-                        "Invalid content type",
-                        "Invalid content type"
+                        "text/bar; p1=p1-value; charset=us-ascii",
+                        "text/bar; p1=p1-value; charset=us-ascii"
                     },
                     {
-                        new MediaTypeHeaderValue("text/foo") { Charset = "us-ascii" },
+                        MediaTypeHeaderValue.Parse("text/foo; charset=us-ascii"),
                         "text/bar",
                         "text/foo; charset=us-ascii"
                     },
+                    {
+                        MediaTypeHeaderValue.Parse("text/foo; charset=us-ascii"),
+                        "text/bar; charset=utf-8",
+                        "text/foo; charset=us-ascii"
+                    }
                 };
             }
         }
@@ -150,7 +160,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                 context,
                 new RouteData(),
                 new ActionDescriptor());
-            
+
             context.RequestServices = GetServiceProvider();
             var viewExecutor = CreateViewExecutor();
 

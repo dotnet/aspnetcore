@@ -45,7 +45,7 @@ namespace Microsoft.AspNet.Mvc
         }
 
         [Fact]
-        public async Task ExecuteResultAsync_NullEncoding_SetsContentTypeAndDefaultEncoding()
+        public async Task ExecuteResultAsync_NullEncoding_DoesNotSetCharsetOnContentType()
         {
             // Arrange
             var expected = _abcdUTF8Bytes;
@@ -62,7 +62,7 @@ namespace Microsoft.AspNet.Mvc
 
             // Assert
             Assert.Equal(expected, written);
-            Assert.Equal("text/json; charset=utf-8", context.Response.ContentType);
+            Assert.Equal("text/json", context.Response.ContentType);
         }
 
         [Fact]
@@ -87,6 +87,52 @@ namespace Microsoft.AspNet.Mvc
             // Assert
             Assert.Equal(expected, written);
             Assert.Equal("text/json; charset=us-ascii", context.Response.ContentType);
+        }
+
+        [Fact]
+        public async Task NoResultContentTypeSet_UsesResponseContentType_AndSuppliedEncoding()
+        {
+            // Arrange
+            var expectedData = Encoding.ASCII.GetBytes("{\"foo\":\"abcd\"}");
+            var expectedContentType = "text/foo; p1=p1-value; charset=us-ascii";
+            var context = GetHttpContext();
+            context.Response.ContentType = expectedContentType;
+            var actionContext = new ActionContext(context, new RouteData(), new ActionDescriptor());
+
+            var result = new JsonResult(new { foo = "abcd" });
+
+            // Act
+            await result.ExecuteResultAsync(actionContext);
+            var written = GetWrittenBytes(context);
+
+            // Assert
+            Assert.Equal(expectedData, written);
+            Assert.Equal(expectedContentType, context.Response.ContentType);
+        }
+
+        [Theory]
+        [InlineData("text/foo", "text/foo")]
+        [InlineData("text/foo; p1=p1-value", "text/foo; p1=p1-value")]
+        public async Task NoResultContentTypeSet_UsesResponseContentTypeAndDefaultEncoding_DoesNotSetCharset(
+            string responseContentType,
+            string expectedContentType)
+        {
+            // Arrange
+            var expected = _abcdUTF8Bytes;
+
+            var context = GetHttpContext();
+            context.Response.ContentType = responseContentType;
+            var actionContext = new ActionContext(context, new RouteData(), new ActionDescriptor());
+
+            var result = new JsonResult(new { foo = "abcd" });
+
+            // Act
+            await result.ExecuteResultAsync(actionContext);
+            var written = GetWrittenBytes(context);
+
+            // Assert
+            Assert.Equal(expected, written);
+            Assert.Equal(expectedContentType, context.Response.ContentType);
         }
 
         private static List<byte> AbcdIndentedUTF8Bytes

@@ -4,6 +4,7 @@
 using System;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.OptionsModel;
@@ -79,22 +80,16 @@ namespace Microsoft.AspNet.Mvc
 
             var response = context.HttpContext.Response;
 
-            var contentTypeHeader = ContentType;
-            if (contentTypeHeader == null)
-            {
-                contentTypeHeader = DefaultContentType;
-            }
-            else
-            {
-                if (contentTypeHeader.Encoding == null)
-                {
-                    // Do not modify the user supplied content type, so copy it instead
-                    contentTypeHeader = contentTypeHeader.Copy();
-                    contentTypeHeader.Encoding = Encoding.UTF8;
-                }
-            }
+            string resolvedContentType = null;
+            Encoding resolvedContentTypeEncoding = null;
+            ResponseContentTypeHelper.ResolveContentTypeAndEncoding(
+                ContentType,
+                response.ContentType,
+                DefaultContentType,
+                out resolvedContentType,
+                out resolvedContentTypeEncoding);
 
-            response.ContentType = contentTypeHeader.ToString();
+            response.ContentType = resolvedContentType;
 
             if (StatusCode != null)
             {
@@ -113,8 +108,7 @@ namespace Microsoft.AspNet.Mvc
             }
 
             logger.JsonResultExecuting(Value);
-
-            using (var writer = new HttpResponseStreamWriter(response.Body, contentTypeHeader.Encoding))
+            using (var writer = new HttpResponseStreamWriter(response.Body, resolvedContentTypeEncoding))
             {
                 using (var jsonWriter = new JsonTextWriter(writer))
                 {

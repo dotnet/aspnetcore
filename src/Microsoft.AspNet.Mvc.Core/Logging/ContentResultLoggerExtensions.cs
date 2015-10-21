@@ -19,9 +19,9 @@ namespace Microsoft.AspNet.Mvc.Logging
                 "Executing ContentResult with HTTP Response ContentType of {ContentType}");
         }
 
-        public static void ContentResultExecuting(this ILogger logger, MediaTypeHeaderValue contentType)
+        public static void ContentResultExecuting(this ILogger logger, string contentType)
         {
-            _contentResultExecuting(logger, contentType?.MediaType, null);
+            _contentResultExecuting(logger, contentType, null);
         }
     }
 }
