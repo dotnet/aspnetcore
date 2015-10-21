@@ -8,9 +8,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNet.Mvc.Logging
 {
-    public static class ChallengeResultLoggerExtenstions
+    internal static class ChallengeResultLoggerExtenstions
     {
-        private static Action<ILogger, string[], Exception> _challengeResultExecuting;
+        private static readonly Action<ILogger, string[], Exception> _challengeResultExecuting;
 
         static ChallengeResultLoggerExtenstions()
         {

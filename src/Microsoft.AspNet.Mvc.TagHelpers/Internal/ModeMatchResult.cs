@@ -4,7 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
+using Microsoft.AspNet.Mvc.Logging;
+using Microsoft.AspNet.Mvc.TagHelpers.Logging;
 using Microsoft.AspNet.Razor.TagHelpers;
 using Microsoft.Extensions.Logging;
 
@@ -63,15 +64,13 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
                     match => match.PresentAttributes.Any(
                         attribute => PartiallyMatchedAttributes.Contains(
                             attribute, StringComparer.OrdinalIgnoreCase)));
-
-                logger.LogWarning(new PartialModeMatchLogValues<TMode>(uniqueId, viewPath, partialOnlyMatches));
+                logger.TagHelperPartialMatches<TMode>(uniqueId, viewPath, partialOnlyMatches);
             }
 
             if (logger.IsEnabled(LogLevel.Verbose) && !FullMatches.Any())
             {
-                logger.LogVerbose(
-                    "Skipping processing for tag helper '{TagHelper}' with id '{TagHelperId}'.",
-                    tagHelper.GetType().GetTypeInfo().FullName,
+                logger.TagHelperSkippingProcessing(
+                    tagHelper,
                     uniqueId);
             }
         }

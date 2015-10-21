@@ -6,9 +6,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNet.Mvc.Logging
 {
-    public static class RedirectResultLoggerExtensions
+    internal static class RedirectResultLoggerExtensions
     {
-        private static Action<ILogger, string, Exception> _redirectResultExecuting;
+        private static readonly Action<ILogger, string, Exception> _redirectResultExecuting;
 
         static RedirectResultLoggerExtensions()
         {

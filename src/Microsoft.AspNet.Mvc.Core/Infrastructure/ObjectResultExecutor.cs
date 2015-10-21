@@ -128,18 +128,13 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
             if (selectedFormatter == null)
             {
                 // No formatter supports this.
-                Logger.LogWarning("No output formatter was found to write the response.");
+                Logger.NoFormatter(formatterContext);
 
                 context.HttpContext.Response.StatusCode = StatusCodes.Status406NotAcceptable;
                 return TaskCache.CompletedTask;
             }
 
-            Logger.LogVerbose(
-                "Selected output formatter '{OutputFormatter}' and content type " +
-                "'{ContentType}' to write the response.",
-                selectedFormatter.GetType().FullName,
-                formatterContext.ContentType);
-            
+            Logger.FormatterSelected(selectedFormatter, formatterContext);
             Logger.ObjectResultExecuting(context);
             
             result.OnFormatting(context);
@@ -183,9 +178,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
             // or URL path extension mapping). If yes, then ignore content-negotiation and use this content-type.
             if (contentTypes.Count == 1)
             {
-                Logger.LogVerbose(
-                    "Skipped content negotiation as content type '{ContentType}' is explicitly set for the response.",
-                    contentTypes[0]);
+                Logger.SkippedContentNegotiation(contentTypes[0]);
 
                 return SelectFormatterUsingAnyAcceptableContentType(formatterContext, formatters, contentTypes);
             }
@@ -200,7 +193,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
                 // which can write the type. Let the formatter choose the Content-Type.
                 if (acceptValues == null || acceptValues.Count == 0)
                 {
-                    Logger.LogVerbose("No information found on request to perform content negotiation.");
+                    Logger.NoAcceptForNegotiation();
 
                     return SelectFormatterNotUsingAcceptHeaders(formatterContext, formatters);
                 }
@@ -219,7 +212,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
                 // the type. Let the formatter choose the Content-Type.
                 if (selectedFormatter == null)
                 {
-                    Logger.LogVerbose("Could not find an output formatter based on content negotiation.");
+                    Logger.NoFormatterFromNegotiation(acceptValues);
 
                     // Set this flag to indicate that content-negotiation has failed to let formatters decide
                     // if they want to write the response or not.

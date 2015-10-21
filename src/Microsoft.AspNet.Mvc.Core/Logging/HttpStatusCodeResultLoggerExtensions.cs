@@ -6,9 +6,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNet.Mvc.Logging
 {
-    public static class HttpStatusCodeLoggerExtensions
+    internal static class HttpStatusCodeLoggerExtensions
     {
-        private static Action<ILogger, int, Exception> _httpStatusCodeResultExecuting;
+        private static readonly Action<ILogger, int, Exception> _httpStatusCodeResultExecuting;
 
         static HttpStatusCodeLoggerExtensions()
         {

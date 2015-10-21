@@ -7,9 +7,9 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Mvc.Logging
 {
-    public static class ContentResultLoggerExtensions
+    internal static class ContentResultLoggerExtensions
     {
-        private static Action<ILogger, string, Exception> _contentResultExecuting;
+        private static readonly Action<ILogger, string, Exception> _contentResultExecuting;
 
         static ContentResultLoggerExtensions()
         {

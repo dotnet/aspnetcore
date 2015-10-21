@@ -10,8 +10,8 @@ namespace Microsoft.AspNet.Mvc.Logging
 {
     internal static class MvcRouteHandlerLoggerExtensions
     {
-        private static Action<ILogger, string, Exception> _actionExecuting;
-        private static Action<ILogger, string, double, Exception> _actionExecuted;
+        private static readonly Action<ILogger, string, Exception> _actionExecuting;
+        private static readonly Action<ILogger, string, double, Exception> _actionExecuted;
 
         static MvcRouteHandlerLoggerExtensions()
         {

@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.Internal.Routing;
+using Microsoft.AspNet.Mvc.Logging;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Routing.Template;
 using Microsoft.Extensions.Logging;
@@ -156,8 +157,7 @@ namespace Microsoft.AspNet.Mvc.Routing
                     continue;
                 }
 
-                _logger.LogVerbose(
-                    "Request successfully matched the route with name '{RouteName}' and template '{RouteTemplate}'.",
+                _logger.MatchedRouteName(
                     matchingEntry.RouteName,
                     matchingEntry.RouteTemplate);
 

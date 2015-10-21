@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Infrastructure;
 using Microsoft.AspNet.Mvc.Logging;
 using Microsoft.AspNet.Mvc.ViewEngines;
+using Microsoft.AspNet.Mvc.ViewFeatures.Logging;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.OptionsModel;
 
@@ -84,7 +85,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                         });
                 }
 
-                Logger.LogVerbose("The view '{ViewName}' was found.", viewName);
+                Logger.PartialViewFound(viewName);
             }
             else
             {
@@ -101,11 +102,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                             searchedLocations = result.SearchedLocations
                         });
                 }
-
-                Logger.LogError(
-                    "The view '{ViewName}' was not found. Searched locations: {SearchedViewLocations}",
-                    viewName,
-                    result.SearchedLocations);
+                Logger.PartialViewNotFound(viewName, result.SearchedLocations);
             }
 
             return result;
@@ -134,7 +131,6 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             {
                 throw new ArgumentNullException(nameof(viewResult));
             }
-
 
             Logger.ViewResultExecuting(view);
 

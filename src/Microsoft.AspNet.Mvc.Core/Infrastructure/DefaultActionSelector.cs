@@ -9,6 +9,7 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Abstractions;
 using Microsoft.AspNet.Mvc.ActionConstraints;
 using Microsoft.AspNet.Mvc.Core;
+using Microsoft.AspNet.Mvc.Logging;
 using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.AspNet.Routing;
 using Microsoft.Extensions.Logging;
@@ -87,8 +88,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
                     Environment.NewLine,
                     finalMatches.Select(a => a.DisplayName));
 
-                _logger.LogError("Request matched multiple actions resulting in ambiguity. " +
-                    "Matching actions: {AmbiguousActions}", actionNames);
+                _logger.AmbiguousActions(actionNames);
 
                 var message = Resources.FormatDefaultActionSelector_AmbiguousActions(
                     Environment.NewLine,
@@ -170,14 +170,10 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
                             if (!constraint.Accept(constraintContext))
                             {
                                 isMatch = false;
-
-                                _logger.LogVerbose(
-                                    "Action '{ActionDisplayName}' with id '{ActionId}' did not match the " +
-                                    "constraint '{ActionConstraint}'",
+                                _logger.ConstraintMismatch(
                                     candidate.Action.DisplayName,
                                     candidate.Action.Id,
                                     constraint);
-
                                 break;
                             }
                         }

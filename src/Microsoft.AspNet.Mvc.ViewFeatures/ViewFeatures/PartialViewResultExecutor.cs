@@ -8,6 +8,7 @@ using Microsoft.AspNet.Mvc.Diagnostics;
 using Microsoft.AspNet.Mvc.Infrastructure;
 using Microsoft.AspNet.Mvc.Logging;
 using Microsoft.AspNet.Mvc.ViewEngines;
+using Microsoft.AspNet.Mvc.ViewFeatures.Logging;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.OptionsModel;
 
@@ -73,16 +74,13 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             {
                 DiagnosticSource.ViewFound(actionContext, true, viewResult, viewName, result.View);
 
-                Logger.LogVerbose("The partial view '{PartialViewName}' was found.", viewName);
+                Logger.PartialViewFound(viewName);
             }
             else
             {
                 DiagnosticSource.ViewNotFound(actionContext, true, viewResult, viewName, result.SearchedLocations);
 
-                Logger.LogError(
-                    "The partial view '{PartialViewName}' was not found. Searched locations: {SearchedViewLocations}",
-                    viewName,
-                    result.SearchedLocations);
+                Logger.PartialViewNotFound(viewName, result.SearchedLocations);
             }
 
             return result;

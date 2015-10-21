@@ -6,9 +6,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNet.Mvc.Logging
 {
-    public static class JsonResultLoggerExtensions
+    internal static class JsonResultLoggerExtensions
     {
-        private static Action<ILogger, string, Exception> _jsonResultExecuting;
+        private static readonly Action<ILogger, string, Exception> _jsonResultExecuting;
 
         static JsonResultLoggerExtensions()
         {

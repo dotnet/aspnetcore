@@ -330,8 +330,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             // Arrange
             var source = new RazorTextWriter(TextWriter.Null, Encoding.UTF8, new CommonTestEncoder());
             var target = new StringWriter();
-            var expected = @"Hello world
-abc";
+            var expected = "Hello world" + Environment.NewLine + "abc";
 
             // Act
             source.WriteLine("Hello world");
@@ -390,8 +389,7 @@ abc";
             // Arrange
             var source = new RazorTextWriter(TextWriter.Null, Encoding.UTF8, new CommonTestEncoder());
             var target = new StringWriter();
-            var expected = @"Hello world
-";
+            var expected = "Hello world" + Environment.NewLine;
 
             // Act
             source.Write("Hello ");

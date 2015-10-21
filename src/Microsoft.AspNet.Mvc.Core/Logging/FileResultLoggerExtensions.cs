@@ -6,9 +6,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNet.Mvc.Logging
 {
-    public static class FileResultLoggerExtensions
+    internal static class FileResultLoggerExtensions
     {
-        private static Action<ILogger, string, Exception> _fileResultExecuting;
+        private static readonly Action<ILogger, string, Exception> _fileResultExecuting;
 
         static FileResultLoggerExtensions()
         {

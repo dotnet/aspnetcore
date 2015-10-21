@@ -8,10 +8,10 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNet.Mvc.Logging
 {
-    public static class ControllerActionInvokerLoggerExtensions
+    internal static class ControllerActionInvokerLoggerExtensions
     {
-        private static Action<ILogger, string, string[], ModelValidationState, Exception> _actionMethodExecuting;
-        private static Action<ILogger, string, string, Exception> _actionMethodExecuted;
+        private static readonly Action<ILogger, string, string[], ModelValidationState, Exception> _actionMethodExecuting;
+        private static readonly Action<ILogger, string, string, Exception> _actionMethodExecuted;
 
         static ControllerActionInvokerLoggerExtensions()
         {
