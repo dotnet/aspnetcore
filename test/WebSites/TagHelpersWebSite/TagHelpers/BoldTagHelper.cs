@@ -19,8 +19,8 @@ namespace TagHelpersWebSite.TagHelpers
         public override void Process(TagHelperContext context, TagHelperOutput output)
         {
             output.Attributes.RemoveAll("bold");
-            output.PreContent.AppendEncoded("<b>");
-            output.PostContent.AppendEncoded("</b>");
+            output.PreContent.AppendHtml("<b>");
+            output.PostContent.AppendHtml("</b>");
         }
     }
 }

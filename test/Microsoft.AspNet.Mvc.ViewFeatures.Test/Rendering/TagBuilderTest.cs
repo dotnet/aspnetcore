@@ -110,7 +110,7 @@ namespace Microsoft.AspNet.Mvc.Core.Rendering
         {
             // Arrange
             var tagBuilder = new TagBuilder("p");
-            tagBuilder.InnerHtml.AppendEncoded("<span>Hello</span>");
+            tagBuilder.InnerHtml.AppendHtml("<span>Hello</span>");
             tagBuilder.InnerHtml.Append(", World!");
 
             // Act

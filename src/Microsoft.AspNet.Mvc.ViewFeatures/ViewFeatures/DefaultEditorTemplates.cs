@@ -282,7 +282,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                     valueDivTag.AddCssClass("editor-field");
 
                     valueDivTag.InnerHtml.Append(templateBuilderResult);
-                    valueDivTag.InnerHtml.AppendEncoded(" ");
+                    valueDivTag.InnerHtml.AppendHtml(" ");
                     valueDivTag.InnerHtml.Append(htmlHelper.ValidationMessage(
                         propertyMetadata.PropertyName,
                         message: null,

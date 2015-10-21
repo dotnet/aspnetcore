@@ -818,7 +818,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
 
             if (!isHtmlSummaryModified)
             {
-                htmlSummary.InnerHtml.AppendEncoded(HiddenListItem);
+                htmlSummary.InnerHtml.AppendHtml(HiddenListItem);
                 htmlSummary.InnerHtml.AppendLine();
             }
 

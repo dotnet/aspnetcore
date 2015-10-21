@@ -204,17 +204,17 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 getChildContentAsync: useCachedResult =>
                 {
                     var tagHelperContent = new DefaultTagHelperContent();
-                    tagHelperContent.AppendEncoded(tagHelperOutputContent.OriginalChildContent);
+                    tagHelperContent.AppendHtml(tagHelperOutputContent.OriginalChildContent);
                     return Task.FromResult<TagHelperContent>(tagHelperContent);
                 });
-            output.PreContent.AppendEncoded(expectedPreContent);
-            output.PostContent.AppendEncoded(expectedPostContent);
+            output.PreContent.AppendHtml(expectedPreContent);
+            output.PostContent.AppendHtml(expectedPostContent);
 
             // LabelTagHelper checks IsContentModified so we don't want to forcibly set it if
             // tagHelperOutputContent.OriginalContent is going to be null or empty.
             if (!string.IsNullOrEmpty(tagHelperOutputContent.OriginalContent))
             {
-                output.Content.AppendEncoded(tagHelperOutputContent.OriginalContent);
+                output.Content.AppendHtml(tagHelperOutputContent.OriginalContent);
             }
 
             var viewContext = TestableHtmlGenerator.GetViewContext(model, htmlGenerator, metadataProvider);

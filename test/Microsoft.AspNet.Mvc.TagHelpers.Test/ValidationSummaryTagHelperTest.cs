@@ -140,7 +140,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         {
             // Arrange
             var tagBuilder = new TagBuilder("span2");
-            tagBuilder.InnerHtml.SetContentEncoded("New HTML");
+            tagBuilder.InnerHtml.SetHtmlContent("New HTML");
             tagBuilder.Attributes.Add("data-foo", "bar");
             tagBuilder.Attributes.Add("data-hello", "world");
             tagBuilder.Attributes.Add("anything", "something");
@@ -245,7 +245,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         {
             // Arrange
             var tagBuilder = new TagBuilder("span2");
-            tagBuilder.InnerHtml.SetContentEncoded("New HTML");
+            tagBuilder.InnerHtml.SetHtmlContent("New HTML");
 
             var generator = new Mock<IHtmlGenerator>();
             generator

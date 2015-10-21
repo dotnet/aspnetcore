@@ -10,7 +10,7 @@ namespace TagHelpersWebSite.TagHelpers
     {
         public override void Process(TagHelperContext context, TagHelperOutput output)
         {
-            output.Content.AppendEncoded("root-content");
+            output.Content.AppendHtml("root-content");
         }
     }
 }

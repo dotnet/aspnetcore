@@ -299,15 +299,15 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 getChildContentAsync: useCachedResult =>
                 {
                     var tagHelperContent = new DefaultTagHelperContent();
-                    tagHelperContent.AppendEncoded("Something");
+                    tagHelperContent.AppendHtml("Something");
                     return Task.FromResult<TagHelperContent>(tagHelperContent);
                 })
             {
                 TagMode = TagMode.SelfClosing,
             };
-            output.PreContent.AppendEncoded(expectedPreContent);
-            output.Content.AppendEncoded(expectedContent);
-            output.PostContent.AppendEncoded(originalPostContent);
+            output.PreContent.AppendHtml(expectedPreContent);
+            output.Content.AppendHtml(expectedContent);
+            output.PostContent.AppendHtml(originalPostContent);
 
             var htmlGenerator = new TestableHtmlGenerator(metadataProvider)
             {
@@ -403,15 +403,15 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 getChildContentAsync: useCachedResult =>
                 {
                     var tagHelperContent = new DefaultTagHelperContent();
-                    tagHelperContent.AppendEncoded("Something");
+                    tagHelperContent.AppendHtml("Something");
                     return Task.FromResult<TagHelperContent>(tagHelperContent);
                 })
             {
                 TagMode = TagMode.SelfClosing,
             };
-            output.PreContent.AppendEncoded(expectedPreContent);
-            output.Content.AppendEncoded(expectedContent);
-            output.PostContent.AppendEncoded(originalPostContent);
+            output.PreContent.AppendHtml(expectedPreContent);
+            output.Content.AppendHtml(expectedContent);
+            output.PostContent.AppendHtml(originalPostContent);
 
             var htmlGenerator = new TestableHtmlGenerator(metadataProvider)
             {

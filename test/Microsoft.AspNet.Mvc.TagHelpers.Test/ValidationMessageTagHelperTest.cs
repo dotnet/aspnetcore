@@ -146,7 +146,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         {
             // Arrange
             var tagBuilder = new TagBuilder("span2");
-            tagBuilder.InnerHtml.SetContentEncoded("New HTML");
+            tagBuilder.InnerHtml.SetHtmlContent("New HTML");
             tagBuilder.Attributes.Add("data-foo", "bar");
             tagBuilder.Attributes.Add("data-hello", "world");
 
@@ -170,10 +170,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 getChildContentAsync: useCachedResult =>
                 {
                     var tagHelperContent = new DefaultTagHelperContent();
-                    tagHelperContent.AppendEncoded(childContent);
+                    tagHelperContent.AppendHtml(childContent);
                     return Task.FromResult<TagHelperContent>(tagHelperContent);
                 });
-            output.Content.AppendEncoded(outputContent);
+            output.Content.AppendHtml(outputContent);
 
             var context = new TagHelperContext(
                 allAttributes: new ReadOnlyTagHelperAttributeList<IReadOnlyTagHelperAttribute>(
@@ -205,7 +205,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         {
             // Arrange
             var tagBuilder = new TagBuilder("span2");
-            tagBuilder.InnerHtml.SetContentEncoded("New HTML");
+            tagBuilder.InnerHtml.SetHtmlContent("New HTML");
             tagBuilder.Attributes.Add("data-foo", "bar");
             tagBuilder.Attributes.Add("data-hello", "world");
 

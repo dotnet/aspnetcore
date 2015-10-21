@@ -56,7 +56,7 @@ namespace MvcSample.Web.Components
                 writer));
 
             output.TagName = null;
-            output.Content.AppendEncoded(writer.ToString());
+            output.Content.AppendHtml(writer.ToString());
         }
 
         public async Task<IViewComponentResult> InvokeAsync(int count)

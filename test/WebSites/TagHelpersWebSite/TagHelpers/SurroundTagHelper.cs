@@ -23,8 +23,8 @@ namespace TagHelpersWebSite.TagHelpers
         {
             var surroundingTagName = Surround.ToLowerInvariant();
 
-            output.PreElement.AppendEncoded($"<{surroundingTagName}>");
-            output.PostElement.AppendEncoded($"</{surroundingTagName}>");
+            output.PreElement.AppendHtml($"<{surroundingTagName}>");
+            output.PostElement.AppendHtml($"</{surroundingTagName}>");
         }
     }
 }

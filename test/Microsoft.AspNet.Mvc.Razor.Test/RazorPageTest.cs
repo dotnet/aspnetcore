@@ -1658,7 +1658,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 uniqueId: string.Empty,
                 executeChildContentAsync: () =>
                 {
-                    defaultTagHelperContent.AppendEncoded(input);
+                    defaultTagHelperContent.AppendHtml(input);
                     return Task.FromResult(result: true);
                 },
                 startTagHelperWritingScope: () => { },
@@ -1702,7 +1702,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 tagName: "p",
                 attributes: new TagHelperAttributeList(),
                 getChildContentAsync: (_) => Task.FromResult<TagHelperContent>(new DefaultTagHelperContent()));
-            tagHelperExecutionContext.Output.Content.AppendEncoded("Hello World!");
+            tagHelperExecutionContext.Output.Content.AppendHtml("Hello World!");
 
             // Act
             var page = CreatePage(p =>
@@ -1763,11 +1763,11 @@ namespace Microsoft.AspNet.Mvc.Razor
                 TagMode = tagMode
             };
 
-            output.PreElement.AppendEncoded(preElement);
-            output.PreContent.AppendEncoded(preContent);
-            output.Content.AppendEncoded(content);
-            output.PostContent.AppendEncoded(postContent);
-            output.PostElement.AppendEncoded(postElement);
+            output.PreElement.AppendHtml(preElement);
+            output.PreContent.AppendHtml(preContent);
+            output.Content.AppendHtml(content);
+            output.PostContent.AppendHtml(postContent);
+            output.PostElement.AppendHtml(postElement);
 
             return output;
         }

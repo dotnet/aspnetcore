@@ -54,13 +54,13 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <inheritdoc />
         public override void Write(string value)
         {
-            Content.AppendEncoded(value);
+            Content.AppendHtml(value);
         }
 
         /// <inheritdoc />
         public override void Write(char value)
         {
-            Content.AppendEncoded(value.ToString());
+            Content.AppendHtml(value.ToString());
         }
 
         /// <inheritdoc />

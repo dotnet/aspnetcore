@@ -293,10 +293,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             if (fallbackSrcs.Any())
             {
                 // Build the <script> tag that checks the test method and if it fails, renders the extra script.
-                builder.AppendEncoded(Environment.NewLine)
-                       .AppendEncoded("<script>(")
-                       .AppendEncoded(FallbackTestExpression)
-                       .AppendEncoded("||document.write(\"");
+                builder.AppendHtml(Environment.NewLine)
+                       .AppendHtml("<script>(")
+                       .AppendHtml(FallbackTestExpression)
+                       .AppendHtml("||document.write(\"");
 
                 // May have no "src" attribute in the dictionary e.g. if Src and SrcInclude were not bound.
                 if (!attributes.ContainsName(SrcAttributeName))
@@ -310,7 +310,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     // Fallback "src" values come from bound attributes and globbing. Must always be non-null.
                     Debug.Assert(src != null);
 
-                    builder.AppendEncoded("<script");
+                    builder.AppendHtml("<script");
 
                     foreach (var attribute in attributes)
                     {
@@ -338,10 +338,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                         }
                     }
 
-                    builder.AppendEncoded("><\\/script>");
+                    builder.AppendHtml("><\\/script>");
                 }
 
-                builder.AppendEncoded("\"));</script>");
+                builder.AppendHtml("\"));</script>");
             }
         }
 
@@ -371,7 +371,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             TagHelperAttributeList attributes,
             TagHelperContent builder)
         {
-            builder.AppendEncoded("<script");
+            builder.AppendHtml("<script");
 
             foreach (var attribute in attributes)
             {
@@ -392,29 +392,29 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 AppendAttribute(builder, attribute.Name, attributeValue, escapeQuotes: false);
             }
 
-            builder.AppendEncoded("></script>");
+            builder.AppendHtml("></script>");
         }
 
         private void AppendAttribute(TagHelperContent content, string key, object value, bool escapeQuotes)
         {
             content
-                .AppendEncoded(" ")
-                .AppendEncoded(key);
+                .AppendHtml(" ")
+                .AppendHtml(key);
             if (escapeQuotes)
             {
                 // Passed only JavaScript-encoded strings in this case. Do not perform HTML-encoding as well.
                 content
-                    .AppendEncoded("=\\\"")
-                    .AppendEncoded((string)value)
-                    .AppendEncoded("\\\"");
+                    .AppendHtml("=\\\"")
+                    .AppendHtml((string)value)
+                    .AppendHtml("\\\"");
             }
             else
             {
                 // HTML-encoded the given value if necessary.
                 content
-                    .AppendEncoded("=\"")
+                    .AppendHtml("=\"")
                     .Append(HtmlEncoder, ViewContext.Writer.Encoding, value)
-                    .AppendEncoded("\"");
+                    .AppendHtml("\"");
             }
         }
 

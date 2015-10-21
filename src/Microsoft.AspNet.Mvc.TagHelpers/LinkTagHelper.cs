@@ -338,23 +338,23 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
                 // Build the <meta /> tag that's used to test for the presence of the stylesheet
                 builder
-                    .AppendEncoded("<meta name=\"x-stylesheet-fallback-test\" class=\"")
+                    .AppendHtml("<meta name=\"x-stylesheet-fallback-test\" class=\"")
                     .Append(FallbackTestClass)
-                    .AppendEncoded("\" />");
+                    .AppendHtml("\" />");
 
                 // Build the <script /> tag that checks the effective style of <meta /> tag above and renders the extra
                 // <link /> tag to load the fallback stylesheet if the test CSS property value is found to be false,
                 // indicating that the primary stylesheet failed to load.
                 builder
-                    .AppendEncoded("<script>")
-                    .AppendEncoded(
+                    .AppendHtml("<script>")
+                    .AppendHtml(
                         string.Format(
                             CultureInfo.InvariantCulture,
                             JavaScriptResources.GetEmbeddedJavaScript(FallbackJavaScriptResourceName),
                             JavaScriptEncoder.JavaScriptStringEncode(FallbackTestProperty),
                             JavaScriptEncoder.JavaScriptStringEncode(FallbackTestValue),
                             JavaScriptStringArrayEncoder.Encode(JavaScriptEncoder, fallbackHrefs)))
-                    .AppendEncoded("</script>");
+                    .AppendHtml("</script>");
             }
         }
 
@@ -382,7 +382,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
         private void BuildLinkTag(TagHelperAttributeList attributes, TagHelperContent builder)
         {
-            builder.AppendEncoded("<link ");
+            builder.AppendHtml("<link ");
 
             foreach (var attribute in attributes)
             {
@@ -401,13 +401,13 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 }
 
                 builder
-                    .AppendEncoded(attribute.Name)
-                    .AppendEncoded("=\"")
+                    .AppendHtml(attribute.Name)
+                    .AppendHtml("=\"")
                     .Append(HtmlEncoder, ViewContext.Writer.Encoding, attributeValue)
-                    .AppendEncoded("\" ");
+                    .AppendHtml("\" ");
             }
 
-            builder.AppendEncoded("/>");
+            builder.AppendHtml("/>");
         }
 
         private enum Mode
