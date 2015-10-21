@@ -6,10 +6,6 @@
   },
   "frameworks": {
     "net45": { },
-    "dotnet": {
-      "dependencies": {
-        "System.Runtime": "4.0.21-beta-*"
-      }
-    }
+    "dotnet": { }
   }
 }
