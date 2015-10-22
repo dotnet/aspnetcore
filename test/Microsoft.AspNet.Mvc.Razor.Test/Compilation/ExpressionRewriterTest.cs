@@ -473,9 +473,8 @@ public class Person
 
         private IEnumerable<MetadataReference> GetReferences()
         {
-            var services = CallContextServiceLocator.Locator.ServiceProvider;
-            var libraryExporter = services.GetRequiredService<ILibraryExporter>();
-            var environment = services.GetRequiredService<IApplicationEnvironment>();
+            var libraryExporter = CompilationServices.Default.LibraryExporter;
+            var environment = PlatformServices.Default.Application;
 
             var references = new List<MetadataReference>();
 
