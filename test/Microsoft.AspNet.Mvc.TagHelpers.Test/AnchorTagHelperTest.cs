@@ -9,7 +9,6 @@ using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.AspNet.Mvc.ViewFeatures;
-using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.AspNet.Razor.TagHelpers;
 using Moq;
 using Xunit;

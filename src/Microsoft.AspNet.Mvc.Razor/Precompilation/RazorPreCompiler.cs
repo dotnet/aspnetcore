@@ -14,7 +14,6 @@ using Microsoft.AspNet.Mvc.Razor.Directives;
 using Microsoft.AspNet.Mvc.Razor.Internal;
 using Microsoft.AspNet.Razor.Runtime.Precompilation;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
-using Microsoft.AspNet.Razor.TagHelpers;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Dnx.Compilation;
