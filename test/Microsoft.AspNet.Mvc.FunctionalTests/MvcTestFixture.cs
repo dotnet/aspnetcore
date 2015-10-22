@@ -112,7 +112,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                     new TestApplicationEnvironment(applicationEnvironment, applicationName, applicationRoot));
 
                 var hostingEnvironment = new HostingEnvironment();
-                hostingEnvironment.Initialize(applicationRoot, "Production");
+                hostingEnvironment.Initialize(applicationRoot, config: null);
                 services.AddInstance<IHostingEnvironment>(hostingEnvironment);
 
                 // Inject a custom assembly provider. Overrides AddMvc() because that uses TryAdd().
