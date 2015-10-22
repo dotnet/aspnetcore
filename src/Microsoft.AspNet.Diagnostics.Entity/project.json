@@ -1,29 +1,31 @@
 {
-    "version": "7.0.0-*",
-    "description":  "ASP.NET 5 Middleware for Entity Framework error pages.",
-    "repository": {
-        "type": "git",
-        "url": "git://github.com/aspnet/diagnostics"
+  "version": "7.0.0-*",
+  "description": "ASP.NET 5 Middleware for Entity Framework error pages.",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/aspnet/diagnostics"
+  },
+  "compilationOptions": {
+    "warningsAsErrors": true
+  },
+  "dependencies": {
+    "Microsoft.AspNet.Diagnostics": "1.0.0-*",
+    "EntityFramework.Relational": "7.0.0-*"
+  },
+  "compile": [
+    "..\\Shared\\*.cs"
+  ],
+  "frameworks": {
+    "net451": {
+      "frameworkAssemblies": {
+        "System.Configuration": "",
+        "System.Threading.Tasks": ""
+      }
     },
-    "compilationOptions": {
-        "warningsAsErrors": true
-    },
-    "dependencies": {
-        "Microsoft.AspNet.Diagnostics": "1.0.0-*",
-        "EntityFramework.Relational": "7.0.0-*"
-    },
-    "compile": [ "..\\Shared\\*.cs" ],
-    "frameworks": {
-        "dnx451": {
-            "frameworkAssemblies": {
-                "System.Configuration": "",
-                "System.Threading.Tasks": ""
-            }
-        },
-        "dnxcore50": {
-            "dependencies": {
-                "System.Threading": "4.0.11-beta-*"
-            }
-        }
+    "dotnet5.4": {
+      "dependencies": {
+        "System.Threading": "4.0.11-beta-*"
+      }
     }
+  }
 }

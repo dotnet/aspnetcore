@@ -66,7 +66,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity
 
             try
             {
-#if !DNXCORE50
+#if !DOTNET5_4
                 // TODO This probably isn't the correct place for this workaround, it
                 //      needs to be called before anything is written to CallContext
                 // http://msdn.microsoft.com/en-us/library/dn458353(v=vs.110).aspx
