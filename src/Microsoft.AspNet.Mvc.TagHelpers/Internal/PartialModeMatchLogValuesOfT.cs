@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
 {
     /// <summary>
-    /// Log values for <see cref="AspNet.Razor.Runtime.TagHelpers.ITagHelper"/> instances that opt out of
+    /// Log values for <see cref="AspNet.Razor.TagHelpers.ITagHelper"/> instances that opt out of
     /// processing due to missing attributes for one of several possible modes.
     /// </summary>
     public class PartialModeMatchLogValues<TMode> : ILogValues
