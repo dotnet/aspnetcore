@@ -1,19 +1,19 @@
 {
-    "version": "1.0.0-*",
-    "description": "ASP.NET 5 static files middleware.",
-    "repository": {
-        "type": "git",
-        "url": "git://github.com/aspnet/staticfiles"
-    },
-    "dependencies": {
-        "Microsoft.AspNet.Http.Extensions": "1.0.0-*",
-        "Microsoft.AspNet.FileProviders.Abstractions": "1.0.0-*",
-        "Microsoft.AspNet.Hosting.Abstractions": "1.0.0-*",
-        "Microsoft.Extensions.Logging.Abstractions": "1.0.0-*",
-        "Microsoft.Extensions.WebEncoders": "1.0.0-*"
-    },
-    "frameworks": {
-        "dnx451": { },
-        "dnxcore50": { }
-    }
+  "version": "1.0.0-*",
+  "description": "ASP.NET 5 static files middleware.",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/aspnet/staticfiles"
+  },
+  "dependencies": {
+    "Microsoft.AspNet.Http.Extensions": "1.0.0-*",
+    "Microsoft.AspNet.FileProviders.Abstractions": "1.0.0-*",
+    "Microsoft.AspNet.Hosting.Abstractions": "1.0.0-*",
+    "Microsoft.Extensions.Logging.Abstractions": "1.0.0-*",
+    "Microsoft.Extensions.WebEncoders": "1.0.0-*"
+  },
+  "frameworks": {
+    "net451": {},
+    "dotnet5.4": {}
+  }
 }
