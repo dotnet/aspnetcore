@@ -1,16 +1,16 @@
 {
-    "version": "1.0.0-*",
-    "description": "ASP.NET 5 Hosting abstractions.",
-    "repository": {
-        "type": "git",
-        "url": "git://github.com/aspnet/hosting"
-    },
-    "dependencies": {
-        "Microsoft.AspNet.Http.Abstractions": "1.0.0-*",
-        "Microsoft.AspNet.FileProviders.Abstractions": "1.0.0-*"
-    },
-    "frameworks": {
-        "dnx451": {},
-        "dnxcore50": {}
-    }
+  "version": "1.0.0-*",
+  "description": "ASP.NET 5 Hosting abstractions.",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/aspnet/hosting"
+  },
+  "dependencies": {
+    "Microsoft.AspNet.Http.Abstractions": "1.0.0-*",
+    "Microsoft.AspNet.FileProviders.Abstractions": "1.0.0-*"
+  },
+  "frameworks": {
+    "net451": {},
+    "dotnet5.4": {}
+  }
 }

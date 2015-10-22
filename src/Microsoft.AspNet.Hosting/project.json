@@ -1,42 +1,43 @@
 {
-    "version": "1.0.0-*",
-    "description": "ASP.NET 5 core hosting infrastructure and startup logic for web applications.",
-    "repository": {
-        "type": "git",
-        "url": "git://github.com/aspnet/hosting"
+  "version": "1.0.0-*",
+  "description": "ASP.NET 5 core hosting infrastructure and startup logic for web applications.",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/aspnet/hosting"
+  },
+  "compilationOptions": {
+    "warningsAsErrors": true,
+    "allowUnsafe": true
+  },
+  "dependencies": {
+    "Microsoft.AspNet.FileProviders.Physical": "1.0.0-*",
+    "Microsoft.AspNet.Hosting.Abstractions": "1.0.0-*",
+    "Microsoft.AspNet.Hosting.Server.Abstractions": "1.0.0-*",
+    "Microsoft.AspNet.Http": "1.0.0-*",
+    "Microsoft.AspNet.Http.Extensions": "1.0.0-*",
+    "Microsoft.Extensions.Configuration": "1.0.0-*",
+    "Microsoft.Extensions.Configuration.CommandLine": "1.0.0-*",
+    "Microsoft.Extensions.Configuration.EnvironmentVariables": "1.0.0-*",
+    "Microsoft.Extensions.Configuration.Json": "1.0.0-*",
+    "Microsoft.Extensions.DependencyInjection": "1.0.0-*",
+    "Microsoft.Extensions.Logging": "1.0.0-*",
+    "Microsoft.Dnx.Compilation.Abstractions": "1.0.0-*",
+    "Microsoft.Dnx.Runtime.Abstractions": "1.0.0-*",
+    "Newtonsoft.Json": "6.0.6",
+    "System.Diagnostics.DiagnosticSource": "4.0.0-beta-*"
+  },
+  "frameworks": {
+    "dnx451": {
+      "frameworkAssemblies": {
+        "System.Runtime": ""
+      }
     },
-    "compilationOptions": {
-        "warningsAsErrors": true,
-        "allowUnsafe": true
-    },
-    "dependencies": {
-        "Microsoft.AspNet.FileProviders.Physical": "1.0.0-*",
-        "Microsoft.AspNet.Hosting.Abstractions": "1.0.0-*",
-        "Microsoft.AspNet.Hosting.Server.Abstractions": "1.0.0-*",
-        "Microsoft.AspNet.Http": "1.0.0-*",
-        "Microsoft.AspNet.Http.Extensions": "1.0.0-*",
-        "Microsoft.Extensions.Configuration": "1.0.0-*",
-        "Microsoft.Extensions.Configuration.CommandLine": "1.0.0-*",
-        "Microsoft.Extensions.Configuration.EnvironmentVariables": "1.0.0-*",
-        "Microsoft.Extensions.Configuration.Json": "1.0.0-*",
-        "Microsoft.Extensions.DependencyInjection": "1.0.0-*",
-        "Microsoft.Extensions.Logging": "1.0.0-*",
-        "Microsoft.Dnx.Compilation.Abstractions": "1.0.0-*",
-        "Microsoft.Dnx.Runtime.Abstractions": "1.0.0-*",
-        "Newtonsoft.Json": "6.0.6",
-        "System.Diagnostics.DiagnosticSource": "4.0.0-beta-*"
-    },
-    "frameworks": {
-        "dnx451": {
-            "frameworkAssemblies": {
-                "System.Runtime": ""
-            }
-        },
-        "dnxcore50": {
-            "dependencies": {
-                "System.Console": "4.0.0-beta-*",
-                "System.Diagnostics.StackTrace": "4.0.1-beta-*"
-            }
-        }
+    "dnxcore50": {
+      "dependencies": {
+        "System.Console": "4.0.0-beta-*",
+        "System.Diagnostics.StackTrace": "4.0.1-beta-*",
+        "System.Reflection.Extensions": "4.0.1-beta-*"
+      }
     }
+  }
 }
