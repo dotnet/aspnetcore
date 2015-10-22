@@ -25,13 +25,16 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
             // Arrange
             var sink = new TestSink();
             var loggerFactory = new TestLoggerFactory(sink, enabled: true);
+
             var displayName = "A.B.C";
             var actionDescriptor = new Mock<ActionDescriptor>();
-            actionDescriptor.SetupGet(ad => ad.DisplayName)
-                            .Returns(displayName);
+            actionDescriptor
+                .SetupGet(ad => ad.DisplayName)
+                .Returns(displayName);
+
             var context = CreateRouteContext(actionDescriptor: actionDescriptor.Object, loggerFactory: loggerFactory);
+
             var handler = new MvcRouteHandler();
-            var expectedMessage = $"Executing action {displayName}";
 
             // Act
             await handler.RouteAsync(context);
@@ -39,8 +42,11 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
             // Assert
             Assert.Single(sink.Scopes);
             Assert.Equal(displayName, sink.Scopes[0].Scope?.ToString());
-            Assert.Single(sink.Writes);
-            Assert.Equal(expectedMessage, sink.Writes[0].State?.ToString());
+
+            Assert.Equal(2, sink.Writes.Count);
+            Assert.Equal($"Executing action {displayName}", sink.Writes[0].State?.ToString());
+            // This message has the execution time embedded, which we don't want to verify.
+            Assert.StartsWith($"Executed action {displayName} ", sink.Writes[1].State?.ToString());
         }
 
         [Fact]
@@ -59,7 +65,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
                 loggerFactory: loggerFactory);
 
             var handler = new MvcRouteHandler();
-            var expectedMessage = "No actions matched the current request.";
+            var expectedMessage = "No actions matched the current request";
 
             // Act
             await handler.RouteAsync(context);
