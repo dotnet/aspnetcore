@@ -88,7 +88,7 @@ namespace Microsoft.AspNet.Razor.Parser
                 case HtmlSymbolType.CloseAngle:
                     return HtmlSymbolType.OpenAngle;
                 default:
-#if NET45
+#if NET451
                     // No Debug.Fail in CoreCLR
 
                     Debug.Fail("FlipBracket must be called with a bracket character");

@@ -310,7 +310,7 @@ namespace Microsoft.AspNet.Razor.Editor
                     RazorEditorTrace.TraceLine(RazorResources.FormatTrace_BackgroundThreadStart(fileNameOnly));
                     EnsureOnThread();
 
-#if DNXCORE50
+#if DOTNET5_4
                     var spinWait = new SpinWait();
 #endif
 
@@ -428,7 +428,7 @@ namespace Microsoft.AspNet.Razor.Editor
                         else
                         {
                             RazorEditorTrace.TraceLine(RazorResources.FormatTrace_NoChangesArrived(fileNameOnly));
-#if DNXCORE50
+#if DOTNET5_4
                             // This does the equivalent of thread.yield under the covers.
                             spinWait.SpinOnce();
 #else

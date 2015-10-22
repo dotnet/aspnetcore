@@ -143,7 +143,7 @@ namespace Microsoft.AspNet.Razor.Parser
                 case CSharpSymbolType.GreaterThan:
                     return CSharpSymbolType.LessThan;
                 default:
-#if NET45
+#if NET451
                     // No Debug.Fail
                     Debug.Fail("FlipBracket must be called with a bracket character");
 #else

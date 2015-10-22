@@ -25,3 +25,4 @@ nuget.exe
 *.*sdf
 *.ipch
 project.lock.json
+.vs

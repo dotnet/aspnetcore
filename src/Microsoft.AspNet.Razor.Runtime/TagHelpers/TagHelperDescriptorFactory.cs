@@ -108,7 +108,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         {
             TagHelperDesignTimeDescriptor typeDesignTimeDescriptor = null;
 
-#if !DNXCORE50
+#if !DOTNET5_4
             if (designTime)
             {
                 var runtimeTypeInfo = typeInfo as RuntimeTypeInfo;
@@ -702,7 +702,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         {
             TagHelperAttributeDesignTimeDescriptor propertyDesignTimeDescriptor = null;
 
-#if !DNXCORE50
+#if !DOTNET5_4
             if (designTime)
             {
                 var runtimeProperty = property as RuntimePropertyInfo;

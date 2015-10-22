@@ -204,7 +204,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
             public bool IsWhiteSpace { get; private set; } = true;
 
-#if DNXCORE50
+#if DOTNET5_4
             // This is an abstract method in DNXCore
             public override void Write(char value)
             {

@@ -5,7 +5,11 @@
     "xunit.assert": "2.1.0-*"
   },
   "frameworks": {
-    "net45": { },
-    "dotnet": { }
+    "net451": { },
+    "dotnet5.4": {
+      "dependencies": {
+        "System.Runtime": "4.0.21-beta-*"
+      }
+    }
   }
 }

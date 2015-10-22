@@ -4,7 +4,7 @@
 using Microsoft.AspNet.Razor.Chunks.Generators;
 using Microsoft.AspNet.Razor.CodeGenerators;
 using Microsoft.AspNet.Razor.Parser;
-#if NET45
+#if NET451
 
 #endif
 

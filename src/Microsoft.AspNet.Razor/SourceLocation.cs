@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.Razor
     /// <summary>
     /// A location in a Razor file.
     /// </summary>
-#if NET45
+#if NET451
     // No Serializable attribute in CoreCLR (no need for it anymore?)
     [Serializable]
 #endif

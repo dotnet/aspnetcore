@@ -3,7 +3,7 @@
 
 using System;
 using System.Diagnostics;
-#if NET45
+#if NET451
 using System.Globalization;
 #endif
 
@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.Razor.Editor
                 bool enabled;
                 if (Boolean.TryParse(Environment.GetEnvironmentVariable("RAZOR_EDITOR_TRACE"), out enabled))
                 {
-#if NET45
+#if NET451
                     // No Trace in CoreCLR
 
                     Trace.WriteLine(RazorResources.FormatTrace_Startup(
@@ -41,7 +41,7 @@ namespace Microsoft.AspNet.Razor.Editor
         {
             if (IsEnabled())
             {
-#if NET45
+#if NET451
                 // No Trace in CoreCLR
 
                 Trace.WriteLine(RazorResources.FormatTrace_Format(
