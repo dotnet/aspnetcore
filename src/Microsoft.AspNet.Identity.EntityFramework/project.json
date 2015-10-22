@@ -10,12 +10,12 @@
     "EntityFramework.Relational": "7.0.0-*"
   },
   "frameworks": {
-    "dnx451": {
+    "net451": {
       "frameworkAssemblies": {
         "System.Threading.Tasks": ""
       }
     },
-    "dnxcore50": {
+    "dotnet5.4": {
       "dependencies": {
         "System.Collections": "4.0.11-beta-*",
         "System.ComponentModel": "4.0.1-beta-*",

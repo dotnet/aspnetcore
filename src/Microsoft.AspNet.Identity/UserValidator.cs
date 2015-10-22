@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-#if DNX451
+#if NET451
 using System.Net.Mail;
 #endif
 using System.Text.RegularExpressions;
@@ -91,7 +91,7 @@ namespace Microsoft.AspNet.Identity
                 errors.Add(Describer.InvalidEmail(email));
                 return;
             }
-#if DNX451
+#if NET451
             try
             {
                 var m = new MailAddress(email);
