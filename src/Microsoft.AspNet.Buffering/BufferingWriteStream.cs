@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -159,7 +159,7 @@ namespace Microsoft.AspNet.Buffering
                 return _innerStream.WriteAsync(buffer, offset, count, cancellationToken);
             }
         }
-#if !DNXCORE50
+#if !DOTNET5_4
         public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
         {
             if (_isBuffering)
