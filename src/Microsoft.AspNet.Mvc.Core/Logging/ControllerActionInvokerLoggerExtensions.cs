@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.Mvc.Logging
                 "Executing action method {ActionName} with arguments ({Arguments}) - ModelState is {ValidationState}'");
 
             _actionMethodExecuted = LoggerMessage.Define<string, string>(
-                LogLevel.Information,
+                LogLevel.Verbose,
                 2,
                 "Executed action method {ActionName}, returned result {ActionResult}.'");
         }
