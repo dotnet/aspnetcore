@@ -10,7 +10,7 @@
       "type": "build",
       "version": ""
     },
-    "Microsoft.Dnx.Runtime.Abstractions": "1.0.0-*"
+    "Microsoft.Extensions.PlatformAbstractions": "1.0.0-*"
   },
   "frameworks": {
     "net451": {},

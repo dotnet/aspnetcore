@@ -7,7 +7,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using Microsoft.AspNet.DataProtection.Infrastructure;
 using Microsoft.AspNet.DataProtection.Abstractions;
-using Microsoft.Dnx.Runtime;
+using Microsoft.Extensions.PlatformAbstractions;
 
 namespace Microsoft.AspNet.DataProtection
 {
