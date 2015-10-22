@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if DNX451
+#if NET451
 using System;
 #endif
 using System.IO;
@@ -97,7 +97,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             }
         }
 
-#if DNX451
+#if NET451
         public override void Close()
         {
             _requestStream.Close();
@@ -124,7 +124,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             return _responseStream.FlushAsync(cancellationToken);
         }
 
-#if DNX451
+#if NET451
         public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
         {
             return _requestStream.BeginRead(buffer, offset, count, callback, state);
@@ -146,7 +146,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             return _requestStream.CopyToAsync(destination, bufferSize, cancellationToken);
         }
 
-#if DNX451
+#if NET451
         public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
         {
             return _responseStream.BeginWrite(buffer, offset, count, callback, state);

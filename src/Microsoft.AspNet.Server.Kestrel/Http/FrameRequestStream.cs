@@ -53,7 +53,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             return ReadAsync(buffer, offset, count).Result;
         }
 
-#if DNX451
+#if NET451
         public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
         {
             var task = ReadAsync(buffer, offset, count, CancellationToken.None, state);

@@ -67,7 +67,7 @@ namespace Microsoft.AspNet.Server.Kestrel
                     Post(OnStopImmediate, null);
                     if (!_thread.Join((int)timeout.TotalMilliseconds))
                     {
-#if DNX451
+#if NET451
                         _thread.Abort();
 #endif
                     }

@@ -16,7 +16,7 @@
     },
     "Microsoft.AspNet.Internal.libuv-Darwin": {
       "version": "1.0.0-*",
-        "type":"build"
+      "type": "build"
     },
     "Microsoft.AspNet.Internal.libuv-Windows": {
       "version": "1.0.0-*",
@@ -25,7 +25,28 @@
   },
   "frameworks": {
     "dnx451": { },
+    "net451": { },
     "dnxcore50": {
+      "dependencies": {
+        "System.Collections": "4.0.11-beta-*",
+        "System.Diagnostics.Debug": "4.0.11-beta-*",
+        "System.Diagnostics.TraceSource": "4.0.0-beta-*",
+        "System.Diagnostics.Tracing": "4.0.21-beta-*",
+        "System.Globalization": "4.0.11-beta-*",
+        "System.IO": "4.0.11-beta-*",
+        "System.Linq": "4.0.1-beta-*",
+        "System.Net.Primitives": "4.0.11-beta-*",
+        "System.Runtime.Extensions": "4.0.11-beta-*",
+        "System.Runtime.InteropServices": "4.0.21-beta-*",
+        "System.Text.Encoding": "4.0.11-beta-*",
+        "System.Threading": "4.0.11-beta-*",
+        "System.Threading.Tasks": "4.0.11-beta-*",
+        "System.Threading.Thread": "4.0.0-beta-*",
+        "System.Threading.ThreadPool": "4.0.10-beta-*",
+        "System.Threading.Timer": "4.0.1-beta-*"
+      }
+    },
+    "dotnet5.4": {
       "dependencies": {
         "System.Collections": "4.0.11-beta-*",
         "System.Diagnostics.Debug": "4.0.11-beta-*",
@@ -64,6 +85,6 @@
     "runtimes/win7-x64/native/": "runtimes/win7-x64/native/*",
     "runtimes/win7-x86/native/": "runtimes/win7-x86/native/*",
     "runtimes/win10-arm/native/": "runtimes/win10-arm/native/*",
-    "runtimes/osx/native/":  "runtimes/osx/native/*"
+    "runtimes/osx/native/": "runtimes/osx/native/*"
   }
 }

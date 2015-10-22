@@ -1,28 +1,40 @@
 ﻿{
-    "version": "1.0.0-*",
+  "version": "1.0.0-*",
 
-    "description": "Microsoft.StandardsPolice Class Library",
+  "description": "Microsoft.StandardsPolice Class Library",
 
-    "dependencies": {
-        "Microsoft.Dnx.Compilation.CSharp.Abstractions": "1.0.0-*"
+  "dependencies": {
+    "Microsoft.Dnx.Compilation.CSharp.Abstractions": "1.0.0-*"
+  },
+
+  "commands": {
+    "Microsoft.StandardsPolice": "Microsoft.StandardsPolice"
+  },
+
+  "frameworks": {
+    "net451": {
+      "frameworkAssemblies": {
+        "System.Runtime": "",
+        "System.Text.Encoding": "",
+        "System.Threading.Tasks": ""
+      }
     },
-
-    "commands": {
-        "Microsoft.StandardsPolice": "Microsoft.StandardsPolice"
+    "dnx451": {
+      "frameworkAssemblies": {
+        "System.Runtime": "",
+        "System.Text.Encoding": "",
+        "System.Threading.Tasks": ""
+      }
     },
-
-    "frameworks": {
-        "dnx451": {
-            "frameworkAssemblies": {
-                "System.Runtime": "",
-                "System.Text.Encoding": "",
-                "System.Threading.Tasks": ""
-            }
-        },
-        "dnxcore50": {
-            "dependencies": {
-                "System.Console": "4.0.0-beta-*"
-            }
-        }
+    "dotnet5.4": {
+      "dependencies": {
+        "System.Console": "4.0.0-beta-*"
+      }
+    },
+    "dnxcore50": {
+      "dependencies": {
+        "System.Console": "4.0.0-beta-*"
+      }
     }
+  }
 }
