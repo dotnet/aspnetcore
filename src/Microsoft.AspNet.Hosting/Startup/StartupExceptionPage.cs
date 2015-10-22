@@ -379,7 +379,7 @@ namespace Microsoft.AspNet.Hosting.Startup
         private static string GenerateFooterEncoded(IRuntimeEnvironment environment)
         {
             var runtimeType = HtmlEncodeAndReplaceLineBreaks(environment.RuntimeType);
-#if DNXCORE50
+#if DNXCORE50 || DOTNET5_4
             var systemRuntimeAssembly = typeof(System.ComponentModel.DefaultValueAttribute).GetTypeInfo().Assembly;
             var assemblyVersion = new AssemblyName(systemRuntimeAssembly.FullName).Version.ToString();
             var clrVersion = HtmlEncodeAndReplaceLineBreaks(assemblyVersion);

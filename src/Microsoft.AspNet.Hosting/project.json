@@ -31,7 +31,19 @@
         "System.Runtime": ""
       }
     },
+    "net451": {
+      "frameworkAssemblies": {
+        "System.Runtime": ""
+      }
+    },
     "dnxcore50": {
+      "dependencies": {
+        "System.Console": "4.0.0-beta-*",
+        "System.Diagnostics.StackTrace": "4.0.1-beta-*",
+        "System.Reflection.Extensions": "4.0.1-beta-*"
+      }
+    },
+    "dotnet5.4": {
       "dependencies": {
         "System.Console": "4.0.0-beta-*",
         "System.Diagnostics.StackTrace": "4.0.1-beta-*",

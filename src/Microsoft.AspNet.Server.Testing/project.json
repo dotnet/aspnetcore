@@ -1,36 +1,36 @@
 {
-    "version": "1.0.0-*",
-    "description": "ASP.NET 5 helpers to deploy applications to IIS Express, IIS, WebListener and Kestrel for testing.",
-    "repository": {
-        "type": "git",
-        "url": "git://github.com/aspnet/hosting"
+  "version": "1.0.0-*",
+  "description": "ASP.NET 5 helpers to deploy applications to IIS Express, IIS, WebListener and Kestrel for testing.",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/aspnet/hosting"
+  },
+  "dependencies": {
+    "Microsoft.AspNet.Testing": "1.0.0-*",
+    "Microsoft.Extensions.Logging.Abstractions": "1.0.0-*",
+    "Microsoft.Dnx.Runtime.Abstractions": "1.0.0-*"
+  },
+  "frameworks": {
+    "net451": {
+      "dependencies": {
+        "Microsoft.Web.Administration": "7.0.0"
+      },
+      "frameworkAssemblies": {
+        "System.Net.Http": "",
+        "System.Xml": ""
+      }
     },
-    "dependencies": {
-        "Microsoft.AspNet.Testing": "1.0.0-*",
-        "Microsoft.Extensions.Logging.Abstractions": "1.0.0-*",
-        "Microsoft.Dnx.Runtime.Abstractions": "1.0.0-*"
-    },
-    "frameworks": {
-        "dnx451": {
-            "dependencies": {
-                "Microsoft.Web.Administration": "7.0.0"
-            },
-            "frameworkAssemblies": {
-                "System.Net.Http": "",
-                "System.Xml": ""
-            }
-        },
-        "dnxcore50": {
-            "dependencies": {
-                "System.Diagnostics.Process": "4.0.0-beta-*",
-                "System.IO.FileSystem": "4.0.1-beta-*",
-                "System.Net.Http": "4.0.1-beta-*",
-                "System.Net.Primitives": "4.0.11-beta-*",
-                "System.Runtime.Extensions": "4.0.11-beta-*",
-                "System.Text.RegularExpressions": "4.0.11-beta-*",
-                "System.Threading": "4.0.11-beta-*",
-                "System.Threading.Thread": "4.0.0-*"
-            }
-        }
+    "dotnet5.4": {
+      "dependencies": {
+        "System.Diagnostics.Process": "4.0.0-beta-*",
+        "System.IO.FileSystem": "4.0.1-beta-*",
+        "System.Net.Http": "4.0.1-beta-*",
+        "System.Net.Primitives": "4.0.11-beta-*",
+        "System.Runtime.Extensions": "4.0.11-beta-*",
+        "System.Text.RegularExpressions": "4.0.11-beta-*",
+        "System.Threading": "4.0.11-beta-*",
+        "System.Threading.Thread": "4.0.0-*"
+      }
     }
+  }
 }

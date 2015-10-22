@@ -92,10 +92,10 @@ namespace Microsoft.AspNet.Server.Testing
             AddEnvironmentVariablesToProcess(startInfo);
 
             // IIS express figures out the DNX from %PATH%.
-#if DNX451
+#if NET451
             SetEnvironmentVariable(startInfo.EnvironmentVariables, "PATH", ChosenRuntimePath + ";" + startInfo.EnvironmentVariables["PATH"]);
             SetEnvironmentVariable(startInfo.EnvironmentVariables, "DNX_APPBASE", DeploymentParameters.ApplicationPath);
-#elif DNXCORE50
+#elif DOTNET5_4
             SetEnvironmentVariable(startInfo.Environment, "PATH", ChosenRuntimePath + ";" + startInfo.Environment["PATH"]);
             SetEnvironmentVariable(startInfo.Environment, "DNX_APPBASE", DeploymentParameters.ApplicationPath);
 #endif

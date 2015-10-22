@@ -38,7 +38,7 @@ namespace Microsoft.AspNet.Server.Testing
             {
                 case ServerType.IISExpress:
                     return new IISExpressDeployer(deploymentParameters, logger);
-#if DNX451
+#if NET451
                 case ServerType.IIS:
                     return new IISDeployer(deploymentParameters, logger);
 #endif
