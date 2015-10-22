@@ -95,6 +95,11 @@ namespace Microsoft.AspNet.StaticFiles
             get { return _subPath.Value; }
         }
 
+        public string PhysicalPath
+        {
+            get { return _fileInfo?.PhysicalPath; }
+        }
+
         public bool ValidateMethod()
         {
             _method = _request.Method;
@@ -226,7 +231,7 @@ namespace Microsoft.AspNet.StaticFiles
                 // The spec allows for multiple ranges but we choose not to support them because the client may request
                 // very strange ranges (e.g. each byte separately, overlapping ranges, etc.) that could negatively
                 // impact the server. Ignore the header and serve the response normally.
-                _logger.LogWarning("Multiple ranges are not allowed: '{0}'", rangeHeader.ToString());
+                _logger.LogMultipleFileRanges(rangeHeader.ToString());
                 return;
             }
 
@@ -312,10 +317,7 @@ namespace Microsoft.AspNet.StaticFiles
         {
             ApplyResponseHeaders(statusCode);
 
-            if (_logger.IsEnabled(LogLevel.Verbose))
-            {
-                _logger.LogVerbose(string.Format("Handled. Status code: {0} File: {1}", statusCode, SubPath));
-            }
+            _logger.LogHandled(statusCode, SubPath);
             return Constants.CompletedTask;
         }
 
@@ -358,7 +360,8 @@ namespace Microsoft.AspNet.StaticFiles
                 // the current length of the selected resource.  e.g. */length
                 _responseHeaders.ContentRange = new ContentRangeHeaderValue(_length);
                 ApplyResponseHeaders(Constants.Status416RangeNotSatisfiable);
-                _logger.LogWarning("Range not satisfiable for {0}", SubPath);
+
+                _logger.LogRangeNotSatisfiable(SubPath);
                 return;
             }
 
@@ -374,10 +377,7 @@ namespace Microsoft.AspNet.StaticFiles
             var sendFile = _context.Features.Get<IHttpSendFileFeature>();
             if (sendFile != null && !string.IsNullOrEmpty(physicalPath))
             {
-                if (_logger.IsEnabled(LogLevel.Verbose))
-                {
-                    _logger.LogVerbose(string.Format("Sending {0} of file {1}", _response.Headers[HeaderNames.ContentRange], physicalPath));
-                }
+                _logger.LogSendingFileRange(_response.Headers[HeaderNames.ContentRange], physicalPath);
                 await sendFile.SendFileAsync(physicalPath, start, length, _context.RequestAborted);
                 return;
             }
@@ -386,10 +386,7 @@ namespace Microsoft.AspNet.StaticFiles
             try
             {
                 readStream.Seek(start, SeekOrigin.Begin); // TODO: What if !CanSeek?
-                if (_logger.IsEnabled(LogLevel.Verbose))
-                {
-                    _logger.LogVerbose(string.Format("Copying {0} of file {1} to the response body", _response.Headers[HeaderNames.ContentRange], SubPath));
-                }
+                _logger.LogCopyingFileRange(_response.Headers[HeaderNames.ContentRange], SubPath);
                 await StreamCopyOperation.CopyToAsync(readStream, _response.Body, length, _context.RequestAborted);
             }
             finally

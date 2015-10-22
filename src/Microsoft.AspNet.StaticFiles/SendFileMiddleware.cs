@@ -103,10 +103,11 @@ namespace Microsoft.AspNet.StaticFiles
                 try
                 {
                     fileStream.Seek(offset, SeekOrigin.Begin);
-                    if (_logger.IsEnabled(LogLevel.Verbose))
-                    {
-                        _logger.LogVerbose(string.Format("Copying bytes {0}-{1} of file {2} to response body", offset, length != null ? (offset + length).ToString() : "*", fileName));
-                    }
+
+                    _logger.LogCopyingBytesToResponse(
+                        start: offset,
+                        end: length != null ? (offset + length) : null,
+                        path: fileName);
                     await StreamCopyOperation.CopyToAsync(fileStream, _output, length, cancel);
                 }
                 finally

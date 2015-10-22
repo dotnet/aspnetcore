@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting;
@@ -68,11 +69,26 @@ namespace Microsoft.AspNet.StaticFiles
         public Task Invoke(HttpContext context)
         {
             var fileContext = new StaticFileContext(context, _options, _matchUrl, _logger);
-            if (fileContext.ValidateMethod()
-                && fileContext.ValidatePath()
-                && fileContext.LookupContentType()
-                && fileContext.LookupFileInfo())
+          
+            if (!fileContext.ValidateMethod())
             {
+                _logger.LogRequestMethodNotSupported(context.Request.Method);
+            }
+            else if (!fileContext.ValidatePath())
+            {
+                _logger.LogPathMismatch(fileContext.SubPath);
+            }
+            else if (!fileContext.LookupContentType())
+            {
+                _logger.LogFileTypeNotSupported(fileContext.SubPath);
+            }
+            else if (!fileContext.LookupFileInfo())
+            {
+                _logger.LogFileNotFound(fileContext.SubPath);
+            }
+            else
+            { 
+                // If we get here, we can try to serve the file
                 fileContext.ComprehendRequestHeaders();
 
                 switch (fileContext.GetPreconditionState())
@@ -87,25 +103,21 @@ namespace Microsoft.AspNet.StaticFiles
                         {
                             return fileContext.SendRangeAsync();
                         }
-                        if (_logger.IsEnabled(LogLevel.Verbose))
-                        {
-                            _logger.LogVerbose(string.Format("Copying file {0} to the response body", fileContext.SubPath));
-                        }
+                        
+                        _logger.LogFileServed(fileContext.SubPath, fileContext.PhysicalPath);
                         return fileContext.SendAsync();
 
                     case StaticFileContext.PreconditionState.NotModified:
-                        if (_logger.IsEnabled(LogLevel.Verbose))
-                        {
-                            _logger.LogVerbose(string.Format("{0} not modified", fileContext.SubPath));
-                        }
+                        _logger.LogPathNotModified(fileContext.SubPath);
                         return fileContext.SendStatusAsync(Constants.Status304NotModified);
 
                     case StaticFileContext.PreconditionState.PreconditionFailed:
+                        _logger.LogPreconditionFailed(fileContext.SubPath);
                         return fileContext.SendStatusAsync(Constants.Status412PreconditionFailed);
 
                     default:
                         var exception = new NotImplementedException(fileContext.GetPreconditionState().ToString());
-                        _logger.LogError("No precondition state specified", exception);
+                        Debug.Fail(exception.ToString());
                         throw exception;
                 }
             }
