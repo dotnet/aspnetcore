@@ -192,7 +192,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
             {
                 ClientId = Options.ClientId,
                 IssuerAddress = _configuration?.AuthorizationEndpoint ?? string.Empty,
-                RedirectUri = Options.RedirectUri,
+                RedirectUri = BuildRedirectUri(Options.CallbackPath),
                 Resource = Options.Resource,
                 ResponseType = Options.ResponseType,
                 Scope = string.Join(" ", Options.Scope)
@@ -239,18 +239,8 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
                 properties.Items[OpenIdConnectDefaults.UserstatePropertiesKey] = message.State;
             }
 
-            var redirectUriForCode = message.RedirectUri;
-            if (string.IsNullOrEmpty(redirectUriForCode))
-            {
-                Logger.LogDebug(8, "Using Options.RedirectUri for 'redirect_uri': '{0}'.", Options.RedirectUri);
-                redirectUriForCode = Options.RedirectUri;
-            }
-
-            if (!string.IsNullOrEmpty(redirectUriForCode))
-            {
-                // When redeeming a 'code' for an AccessToken, this value is needed
-                properties.Items.Add(OpenIdConnectDefaults.RedirectUriForCodePropertiesKey, redirectUriForCode);
-            }
+            // When redeeming a 'code' for an AccessToken, this value is needed
+            properties.Items.Add(OpenIdConnectDefaults.RedirectUriForCodePropertiesKey, message.RedirectUri);
 
             message.State = Options.StateDataFormat.Protect(properties);
 
@@ -957,8 +947,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
 
         private async Task<AuthorizationCodeReceivedContext> RunAuthorizationCodeReceivedEventAsync(OpenIdConnectMessage message, AuthenticationProperties properties, AuthenticationTicket ticket, JwtSecurityToken jwt)
         {
-            var redirectUri = properties.Items.ContainsKey(OpenIdConnectDefaults.RedirectUriForCodePropertiesKey) ?
-                properties.Items[OpenIdConnectDefaults.RedirectUriForCodePropertiesKey] : Options.RedirectUri;
+            var redirectUri = properties.Items[OpenIdConnectDefaults.RedirectUriForCodePropertiesKey];
 
             Logger.LogDebug(32, "AuthorizationCode received: '{0}'", message.Code);
 

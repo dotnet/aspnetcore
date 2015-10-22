@@ -215,6 +215,7 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
                     OnRedirectToAuthenticationEndpoint = context =>
                     {
                         context.ProtocolMessage.State = userState;
+                        context.ProtocolMessage.RedirectUri = queryValues.RedirectUri;
                         return Task.FromResult<object>(null);
                     }
 
@@ -285,8 +286,6 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
             {
                 if (param.Equals(OpenIdConnectParameterNames.ClientId))
                     options.ClientId = queryValues.ClientId;
-                else if (param.Equals(OpenIdConnectParameterNames.RedirectUri))
-                    options.RedirectUri = queryValues.RedirectUri;
                 else if (param.Equals(OpenIdConnectParameterNames.Resource))
                     options.Resource = queryValues.Resource;
                 else if (param.Equals(OpenIdConnectParameterNames.Scope)) {
@@ -309,7 +308,6 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
                 new List<string>
                 {
                     OpenIdConnectParameterNames.ClientId,
-                    OpenIdConnectParameterNames.RedirectUri,
                     OpenIdConnectParameterNames.Resource,
                     OpenIdConnectParameterNames.ResponseMode,
                     OpenIdConnectParameterNames.Scope,

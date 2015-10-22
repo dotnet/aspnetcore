@@ -126,12 +126,6 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         public string PostLogoutRedirectUri { get; set; }
 
         /// <summary>
-        /// Gets or sets the 'redirect_uri'.
-        /// </summary>
-        [SuppressMessage("Microsoft.Design", "CA1056:UriPropertiesShouldNotBeStrings", Justification = "By Design")]
-        public string RedirectUri { get; set; }
-
-        /// <summary>
         /// Gets or sets if a metadata refresh should be attempted after a SecurityTokenSignatureKeyNotFoundException. This allows for automatic
         /// recovery in the event of a signature key rollover. This is enabled by default.
         /// </summary>

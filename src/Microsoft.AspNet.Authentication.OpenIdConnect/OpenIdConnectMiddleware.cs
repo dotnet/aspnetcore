@@ -121,16 +121,6 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
                 Options.StringDataFormat = new SecureDataFormat<string>(new StringSerializer(), dataProtector);
             }
 
-            // if the user has not set the AuthorizeCallback, set it from the redirect_uri
-            if (!Options.CallbackPath.HasValue)
-            {
-                Uri redirectUri;
-                if (!string.IsNullOrEmpty(Options.RedirectUri) && Uri.TryCreate(Options.RedirectUri, UriKind.Absolute, out redirectUri))
-                {
-                    // Redirect_Uri must be a very specific, case sensitive value, so we can't generate it. Instead we generate AuthorizeCallback from it.
-                    Options.CallbackPath = PathString.FromUriComponent(redirectUri);
-                }
-            }
 
             if (Options.Events == null)
             {
