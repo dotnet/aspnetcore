@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.Hosting
 
         public const string OldServerKey = "server";
         public const string ServerKey = "Hosting:Server";
-        
+
         private readonly IHostingEnvironment _hostingEnvironment;
         private readonly ILoggerFactory _loggerFactory;
         private readonly IConfiguration _config;
@@ -79,7 +79,7 @@ namespace Microsoft.AspNet.Hosting
             services.AddTransient<IHttpContextFactory, HttpContextFactory>();
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddLogging();
-            
+
             var diagnosticSource = new DiagnosticListener("Microsoft.AspNet");
             services.AddInstance<DiagnosticSource>(diagnosticSource);
             services.AddInstance<DiagnosticListener>(diagnosticSource);
@@ -99,13 +99,6 @@ namespace Microsoft.AspNet.Hosting
                 services.TryAdd(ServiceDescriptor.Instance(PlatformServices.Default.AssemblyLoadContextAccessor));
                 services.TryAdd(ServiceDescriptor.Instance(PlatformServices.Default.AssemblyLoaderContainer));
                 services.TryAdd(ServiceDescriptor.Instance(PlatformServices.Default.LibraryManager));
-            }
-
-            // TODO: Remove this
-            if (CompilationServices.Default != null)
-            {
-                services.TryAdd(ServiceDescriptor.Instance(CompilationServices.Default.LibraryExporter));
-                services.TryAdd(ServiceDescriptor.Instance(CompilationServices.Default.CompilerOptionsProvider));
             }
 
             return services;
