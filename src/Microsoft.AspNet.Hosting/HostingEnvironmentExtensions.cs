@@ -16,8 +16,27 @@ namespace Microsoft.AspNet.Hosting
 
         public static void Initialize(this IHostingEnvironment hostingEnvironment, string applicationBasePath, IConfiguration config)
         {
-            var webRoot = config?[WebRootKey] ?? string.Empty;
-            hostingEnvironment.WebRootPath = Path.Combine(applicationBasePath, webRoot);
+            var webRoot = config?[WebRootKey];
+            if (webRoot == null)
+            {
+                // Default to /wwwroot if it exists.
+                var wwwroot = Path.Combine(applicationBasePath, "wwwroot");
+                if (Directory.Exists(wwwroot))
+                {
+                    hostingEnvironment.WebRootPath = wwwroot;
+                }
+                else
+                {
+                    hostingEnvironment.WebRootPath = applicationBasePath;
+                }
+            }
+            else
+            {
+                hostingEnvironment.WebRootPath = Path.Combine(applicationBasePath, webRoot);
+            }
+
+            hostingEnvironment.WebRootPath = Path.GetFullPath(hostingEnvironment.WebRootPath);
+
             if (!Directory.Exists(hostingEnvironment.WebRootPath))
             {
                 Directory.CreateDirectory(hostingEnvironment.WebRootPath);
