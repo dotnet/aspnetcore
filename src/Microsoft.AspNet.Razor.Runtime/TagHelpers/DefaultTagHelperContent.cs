@@ -10,7 +10,7 @@ using Microsoft.AspNet.Razor.TagHelpers;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.WebEncoders;
 
-namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
+namespace Microsoft.AspNet.Razor.TagHelpers
 {
     /// <summary>
     /// Default concrete <see cref="TagHelperContent"/>.
