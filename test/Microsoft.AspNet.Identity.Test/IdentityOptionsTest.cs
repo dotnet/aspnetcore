@@ -60,7 +60,8 @@ namespace Microsoft.AspNet.Identity.Test
                 {"identity:lockout:AllowedForNewUsers", "FALSe"},
                 {"identity:lockout:MaxFailedAccessAttempts", "1000"}
             };
-            var builder = new ConfigurationBuilder(new MemoryConfigurationProvider(dic));
+            var builder = new ConfigurationBuilder();
+            builder.AddInMemoryCollection(dic);
             var config = builder.Build();
             Assert.Equal(roleClaimType, config["identity:claimsidentity:roleclaimtype"]);
 
@@ -93,7 +94,8 @@ namespace Microsoft.AspNet.Identity.Test
                 {"identity:user:requireUniqueEmail", "true"},
                 {"identity:lockout:MaxFailedAccessAttempts", "1000"}
             };
-            var builder = new ConfigurationBuilder(new MemoryConfigurationProvider(dic));
+            var builder = new ConfigurationBuilder();
+            builder.AddInMemoryCollection(dic);
             var config = builder.Build();
             var services = new ServiceCollection();
             services.Configure<IdentityOptions>(config.GetSection("identity"));
