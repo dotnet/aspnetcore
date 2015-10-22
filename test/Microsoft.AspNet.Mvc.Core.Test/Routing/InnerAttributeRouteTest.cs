@@ -361,6 +361,167 @@ namespace Microsoft.AspNet.Mvc.Routing
         }
 
         [Theory]
+        [InlineData("template", "{*url:alpha}", "/template?url=dingo&id=5")]
+        [InlineData("{*url:alpha}", "{*url}", "/dingo?id=5")]
+        [InlineData("{id}", "{*url}", "/5?url=dingo")]
+        [InlineData("{id}", "{*url:alpha}", "/5?url=dingo")]
+        [InlineData("{id:int}", "{id}", "/5?url=dingo")]
+        [InlineData("template/api/{*url}", "template/api", "/template/api/dingo?id=5")]
+        [InlineData("template/api", "template/{*url}", "/template/api?url=dingo&id=5")]
+        [InlineData("template/api", "template/api{id}location", "/template/api?url=dingo&id=5")]
+        [InlineData("template/api{id}location", "template/{id:int}", "/template/api5location?url=dingo")]
+        public void AttributeRoute_GenerateLink(string firstTemplate, string secondTemplate, string expectedPath)
+        {
+            // Arrange
+            var expectedGroup = CreateRouteGroup(0, firstTemplate);
+
+            string selectedGroup = null;
+            Action<VirtualPathContext> callback = ctx =>
+            {
+                selectedGroup = (string)ctx.ProvidedValues[AttributeRouting.RouteGroupKey];
+                ctx.IsBound = true;
+            };
+
+            var values = new Dictionary<string, object>
+            {
+                {"url", "dingo" },
+                {"id", 5 }
+            };
+
+            var route = CreateAttributeRoute(callback, firstTemplate, secondTemplate);
+            var context = CreateVirtualPathContext(
+                values: values,
+                ambientValues: null);
+
+            // Act
+            var result = route.GetVirtualPath(context);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(new PathString(expectedPath), result.VirtualPath);
+            Assert.Same(route, result.Router);
+            Assert.Empty(result.DataTokens);
+            Assert.Equal(expectedGroup, selectedGroup);
+        }
+
+        [Fact]
+        public void AttributeRoute_GenerateLink_LongerTemplateWithDefaultIsMoreSpecific()
+        {
+            // Arrange
+            var firstTemplate = "template";
+            var secondTemplate = "template/{parameter:int=1003}";
+
+            var expectedGroup = CreateRouteGroup(0, secondTemplate);
+
+            string selectedGroup = null;
+            Action<VirtualPathContext> callback = ctx =>
+            {
+                selectedGroup = (string)ctx.ProvidedValues[AttributeRouting.RouteGroupKey];
+                ctx.IsBound = true;
+            };
+
+            var route = CreateAttributeRoute(callback, firstTemplate, secondTemplate);
+            var context = CreateVirtualPathContext(
+                values: null,
+                ambientValues: null);
+
+            // Act
+            var result = route.GetVirtualPath(context);
+
+            // Assert
+            Assert.NotNull(result);
+            // The Binder binds to /template
+            Assert.Equal(new PathString($"/template"), result.VirtualPath);
+            Assert.Same(route, result.Router);
+            Assert.Empty(result.DataTokens);
+            // Even though the path was /template, the group generated from was /template/{paramter:int=1003}
+            Assert.Equal(expectedGroup, selectedGroup);
+        }
+        
+        [Theory]
+        [InlineData("template/{parameter:int=5}", "template", "/template/5")]
+        [InlineData("template/{parameter}", "template", "/template/5")]
+        [InlineData("template/{parameter}/{id}", "template/{parameter}", "/template/5/1234")]
+        public void AttributeRoute_GenerateLink_OrderingAgnostic(
+            string firstTemplate,
+            string secondTemplate,
+            string expectedPath)
+        {
+            var expectedGroup = CreateRouteGroup(0, firstTemplate);
+
+            string selectedGroup = null;
+            Action<VirtualPathContext> callback = ctx =>
+            {
+                selectedGroup = (string)ctx.ProvidedValues[AttributeRouting.RouteGroupKey];
+                ctx.IsBound = true;
+            };
+
+            var route = CreateAttributeRoute(callback, firstTemplate, secondTemplate);
+            var parameter = 5;
+            var id = 1234;
+            var values = new Dictionary<string, object>
+            {
+                { nameof(parameter) , parameter},
+                { nameof(id), id }
+            };
+            var context = CreateVirtualPathContext(
+                values: null,
+                ambientValues: values);
+
+            // Act
+            var result = route.GetVirtualPath(context);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(new PathString(expectedPath), result.VirtualPath);
+            Assert.Same(route, result.Router);
+            Assert.Empty(result.DataTokens);
+            Assert.Equal(expectedGroup, selectedGroup);
+        }
+
+        [Theory]
+        [InlineData("template", "template/{parameter}", "/template/5")]
+        [InlineData("template/{parameter}", "template/{parameter}/{id}", "/template/5/1234")]
+        [InlineData("template", "template/{parameter:int=5}", "/template/5")]
+        public void AttributeRoute_GenerateLink_UseAvailableVariables(
+            string firstTemplate,
+            string secondTemplate,
+            string expectedPath)
+        {
+            // Arrange
+            var expectedGroup = CreateRouteGroup(0, secondTemplate);
+
+            string selectedGroup = null;
+            Action<VirtualPathContext> callback = ctx =>
+            {
+                selectedGroup = (string)ctx.ProvidedValues[AttributeRouting.RouteGroupKey];
+                ctx.IsBound = true;
+            };
+
+            var route = CreateAttributeRoute(callback, firstTemplate, secondTemplate);
+            var parameter = 5;
+            var id = 1234;
+            var values = new Dictionary<string, object>
+            {
+                { nameof(parameter) , parameter},
+                { nameof(id), id }
+            };
+            var context = CreateVirtualPathContext(
+                values: null, 
+                ambientValues: values);
+
+            // Act
+            var result = route.GetVirtualPath(context);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(new PathString(expectedPath), result.VirtualPath);
+            Assert.Same(route, result.Router);
+            Assert.Empty(result.DataTokens);
+            Assert.Equal(expectedGroup, selectedGroup);
+        }
+
+        [Theory]
         [InlineData("template/5", "template/{parameter:int}")]
         [InlineData("template/5", "template/{parameter}")]
         [InlineData("template/5", "template/{*parameter:int}")]
@@ -1228,10 +1389,10 @@ namespace Microsoft.AspNet.Mvc.Routing
         {
             // Arrange
             var entry1 = CreateGenerationEntry("Help/Store", new { area = "Help", action = "Edit", controller = "Store" });
-            entry1.Precedence = 1;
+            entry1.GenerationPrecedence = 2;
 
             var entry2 = CreateGenerationEntry("Store", new { area = (string)null, action = "Edit", controller = "Store" });
-            entry2.Precedence = 2;
+            entry2.GenerationPrecedence = 1;
 
             var next = new StubRouter();
 
@@ -1254,10 +1415,10 @@ namespace Microsoft.AspNet.Mvc.Routing
         {
             // Arrange
             var entry1 = CreateGenerationEntry("Help/Store", new { area = "Help", action = "Edit", controller = "Store" });
-            entry1.Precedence = 2;
+            entry1.GenerationPrecedence = 1;
 
             var entry2 = CreateGenerationEntry("Store", new { area = (string)null, action = "Edit", controller = "Store" });
-            entry2.Precedence = 1;
+            entry2.GenerationPrecedence = 2;
 
             var next = new StubRouter();
 
@@ -1280,10 +1441,10 @@ namespace Microsoft.AspNet.Mvc.Routing
         {
             // Arrange
             var entry1 = CreateGenerationEntry("Help/Store", new { area = "Help", action = "Edit", controller = "Store" });
-            entry1.Precedence = 1;
+            entry1.GenerationPrecedence = 2;
 
             var entry2 = CreateGenerationEntry("Store", new { area = (string)null, action = "Edit", controller = "Store" });
-            entry2.Precedence = 2;
+            entry2.GenerationPrecedence = 1;
 
             var next = new StubRouter();
 
@@ -1308,10 +1469,10 @@ namespace Microsoft.AspNet.Mvc.Routing
         {
             // Arrange
             var entry1 = CreateGenerationEntry("Help/Store", new { area = "Help", action = "Edit", controller = "Store" });
-            entry1.Precedence = 1;
+            entry1.GenerationPrecedence = 2;
 
             var entry2 = CreateGenerationEntry("Store", new { area = (string)null, action = "Edit", controller = "Store" });
-            entry2.Precedence = 2;
+            entry2.GenerationPrecedence = 1;
 
             var next = new StubRouter();
 
@@ -1645,7 +1806,7 @@ namespace Microsoft.AspNet.Mvc.Routing
             entry.TemplateMatcher = new TemplateMatcher(
                 parsedRouteTemplate,
                 new RouteValueDictionary(new { test_route_group = routeGroup }));
-            entry.Precedence = AttributeRoutePrecedence.Compute(parsedRouteTemplate);
+            entry.Precedence = AttributeRoutePrecedence.ComputeMatched(parsedRouteTemplate);
             entry.Order = order;
             entry.Constraints = GetRouteConstriants(CreateConstraintResolver(), template, parsedRouteTemplate);
             return entry;
@@ -1690,7 +1851,7 @@ namespace Microsoft.AspNet.Mvc.Routing
             entry.Defaults = defaults;
             entry.Binder = new TemplateBinder(entry.Template, defaults);
             entry.Order = order;
-            entry.Precedence = AttributeRoutePrecedence.Compute(entry.Template);
+            entry.GenerationPrecedence = AttributeRoutePrecedence.ComputeGenerated(entry.Template);
             entry.RequiredLinkValues = new RouteValueDictionary(requiredValues);
             entry.RouteGroup = CreateRouteGroup(order, template);
             entry.Name = name;
@@ -1777,6 +1938,25 @@ namespace Microsoft.AspNet.Mvc.Routing
                 NullLogger.Instance,
                 NullLogger.Instance,
                 version: 1);
+        }
+
+        private static InnerAttributeRoute CreateAttributeRoute(
+            Action<VirtualPathContext> virtualPathCallback,
+            string firstTemplate,
+            string secondTemplate)
+        {
+            var next = new Mock<IRouter>();
+            next.Setup(n => n.GetVirtualPath(It.IsAny<VirtualPathContext>())).Callback<VirtualPathContext>(virtualPathCallback)
+            .Returns((VirtualPathData)null);
+
+            var matchingRoutes = Enumerable.Empty<AttributeRouteMatchingEntry>();
+            var firstEntry = CreateGenerationEntry(firstTemplate, requiredValues: null);
+            var secondEntry = CreateGenerationEntry(secondTemplate, requiredValues: null);
+
+            return CreateAttributeRoute(
+                next.Object,
+                matchingRoutes,
+                new[] { secondEntry, firstEntry });
         }
 
         private static InnerAttributeRoute CreateRoutingAttributeRoute(

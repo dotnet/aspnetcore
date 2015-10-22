@@ -131,22 +131,22 @@ namespace Microsoft.AspNet.Mvc.Internal.Routing
 
             public int Compare(LinkGenerationMatch x, LinkGenerationMatch y)
             {
-                // For these comparisons lower is better.
-
+                // For this comparison lower is better.
                 if (x.Entry.Order != y.Entry.Order)
                 {
                     return x.Entry.Order.CompareTo(y.Entry.Order);
+                }
+
+                if (x.Entry.GenerationPrecedence != y.Entry.GenerationPrecedence)
+                {
+                    // Reversed because higher is better
+                    return y.Entry.GenerationPrecedence.CompareTo(x.Entry.GenerationPrecedence);
                 }
 
                 if (x.IsFallbackMatch != y.IsFallbackMatch)
                 {
                     // A fallback match is worse than a non-fallback
                     return x.IsFallbackMatch.CompareTo(y.IsFallbackMatch);
-                }
-
-                if (x.Entry.Precedence != y.Entry.Precedence)
-                {
-                    return x.Entry.Precedence.CompareTo(y.Entry.Precedence);
                 }
 
                 return StringComparer.Ordinal.Compare(x.Entry.TemplateText, y.Entry.TemplateText);

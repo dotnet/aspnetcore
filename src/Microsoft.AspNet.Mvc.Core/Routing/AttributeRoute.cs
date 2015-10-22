@@ -103,7 +103,7 @@ namespace Microsoft.AspNet.Mvc.Routing
                     Defaults = routeInfo.Defaults,
                     Constraints = routeInfo.Constraints,
                     Order = routeInfo.Order,
-                    Precedence = routeInfo.Precedence,
+                    GenerationPrecedence = routeInfo.GenerationPrecedence,
                     RequiredLinkValues = routeInfo.ActionDescriptor.RouteValueDefaults,
                     RouteGroup = routeInfo.RouteGroup,
                     Template = routeInfo.ParsedTemplate,
@@ -122,7 +122,7 @@ namespace Microsoft.AspNet.Mvc.Routing
                 matchingEntries.Add(new AttributeRouteMatchingEntry()
                 {
                     Order = routeInfo.Order,
-                    Precedence = routeInfo.Precedence,
+                    Precedence = routeInfo.MatchPrecedence,
                     Target = _target,
                     RouteName = routeInfo.Name,
                     RouteTemplate = routeInfo.RouteTemplate,
@@ -269,7 +269,8 @@ namespace Microsoft.AspNet.Mvc.Routing
 
             routeInfo.Order = action.AttributeRouteInfo.Order;
 
-            routeInfo.Precedence = AttributeRoutePrecedence.Compute(routeInfo.ParsedTemplate);
+            routeInfo.MatchPrecedence = AttributeRoutePrecedence.ComputeMatched(routeInfo.ParsedTemplate);
+            routeInfo.GenerationPrecedence = AttributeRoutePrecedence.ComputeGenerated(routeInfo.ParsedTemplate);
 
             routeInfo.Name = action.AttributeRouteInfo.Name;
 
@@ -314,7 +315,9 @@ namespace Microsoft.AspNet.Mvc.Routing
 
             public int Order { get; set; }
 
-            public decimal Precedence { get; set; }
+            public decimal MatchPrecedence { get; set; }
+
+            public decimal GenerationPrecedence { get; set; }
 
             public string RouteGroup { get; set; }
 

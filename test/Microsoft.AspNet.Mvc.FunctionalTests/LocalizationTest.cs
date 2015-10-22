@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Reflection;
@@ -79,16 +80,16 @@ mypartial
             get
             {
                 var expected1 =
-@"Hello there!!
-Learn More
-Hi John      ! You are in 2015 year and today is Thursday";
+                    "Hello there!!" + Environment.NewLine +
+                    "Learn More" + Environment.NewLine +
+                    "Hi John      ! You are in 2015 year and today is Thursday";
 
                 yield return new[] {"en-GB", expected1 };
 
                 var expected2 =
-@"Bonjour!
-apprendre Encore Plus
-Salut John      ! Vous êtes en 2015 an aujourd'hui est Thursday";
+                    "Bonjour!" + Environment.NewLine + 
+                    "apprendre Encore Plus" + Environment.NewLine +
+                    "Salut John      ! Vous êtes en 2015 an aujourd'hui est Thursday";
                 yield return new[] { "fr", expected2 };
             }
         }

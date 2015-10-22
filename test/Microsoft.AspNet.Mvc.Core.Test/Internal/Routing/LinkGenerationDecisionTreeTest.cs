@@ -247,12 +247,12 @@ namespace Microsoft.AspNet.Mvc.Internal.Routing
             var entries = new List<AttributeRouteLinkGenerationEntry>();
 
             var entry1 = CreateEntry(new { controller = "Store", action = "Buy" });
-            entry1.Precedence = 1;
+            entry1.GenerationPrecedence = 0;
             entries.Add(entry1);
 
             var entry2 = CreateEntry(new { controller = "Store", action = "Buy" });
             entry2.Order = 1;
-            entry2.Precedence = 0;
+            entry2.GenerationPrecedence = 1;
             entries.Add(entry2);
 
             var tree = new LinkGenerationDecisionTree(entries);
@@ -274,11 +274,11 @@ namespace Microsoft.AspNet.Mvc.Internal.Routing
             var entries = new List<AttributeRouteLinkGenerationEntry>();
 
             var entry1 = CreateEntry(new { controller = "Store", action = "Buy" });
-            entry1.Precedence = 0;
+            entry1.GenerationPrecedence = 1;
             entries.Add(entry1);
 
             var entry2 = CreateEntry(new { controller = "Store", action = "Buy" });
-            entry2.Precedence = 1;
+            entry2.GenerationPrecedence = 0;
             entries.Add(entry2);
 
             var tree = new LinkGenerationDecisionTree(entries);

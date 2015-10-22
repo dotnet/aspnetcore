@@ -34,9 +34,9 @@ namespace Microsoft.AspNet.Mvc.Routing
         public int Order { get; set; }
 
         /// <summary>
-        /// The precedence of the template.
+        /// The precedence of the template for link generation. Greater number means higher precedence.
         /// </summary>
-        public decimal Precedence { get; set; }
+        public decimal GenerationPrecedence { get; set; }
 
         /// <summary>
         /// The name of the route.

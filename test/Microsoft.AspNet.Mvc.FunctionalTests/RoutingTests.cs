@@ -500,7 +500,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task AttributeRoutedAction_AcceptVerbsAndRouteTemplate_IsReachable(string verb, string path)
         {
             // Arrange
-            var expectedUrl = "/Bank";
+            var expectedUrl = "/Bank/Update";
             var message = new HttpRequestMessage(new HttpMethod(verb), "http://localhost/" + path);
 
             // Act
