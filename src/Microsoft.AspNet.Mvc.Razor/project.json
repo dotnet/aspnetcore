@@ -11,16 +11,25 @@
   "dependencies": {
     "Microsoft.AspNet.Mvc.Razor.Host": "6.0.0-*",
     "Microsoft.AspNet.Mvc.ViewFeatures": "6.0.0-*",
-    "Microsoft.AspNet.Razor.Runtime.Precompilation":  "4.0.0-*",
+    "Microsoft.AspNet.Razor.Runtime.Precompilation": "4.0.0-*",
     "Microsoft.AspNet.PageExecutionInstrumentation.Interfaces": "1.0.0-*",
-    "Microsoft.Extensions.HashCodeCombiner.Sources": { "version": "1.0.0-*", "type": "build" },
-    "Microsoft.Extensions.PropertyActivator.Sources": { "version": "1.0.0-*", "type": "build" },
-    "Microsoft.Extensions.PropertyHelper.Sources": { "version": "1.0.0-*", "type": "build" },
+    "Microsoft.Extensions.HashCodeCombiner.Sources": {
+      "version": "1.0.0-*",
+      "type": "build"
+    },
+    "Microsoft.Extensions.PropertyActivator.Sources": {
+      "version": "1.0.0-*",
+      "type": "build"
+    },
+    "Microsoft.Extensions.PropertyHelper.Sources": {
+      "version": "1.0.0-*",
+      "type": "build"
+    },
     "Microsoft.Dnx.Compilation.CSharp.Common": "1.0.0-*",
     "Microsoft.Dnx.Compilation.CSharp.Abstractions": "1.0.0-*"
   },
   "frameworks": {
-    "dnx451": {
+    "net451": {
       "frameworkAssemblies": {
         "System.Collections": "",
         "System.IO": "",
@@ -29,7 +38,7 @@
         "System.Threading.Tasks": ""
       }
     },
-    "dnxcore50": {
+    "dotnet5.4": {
       "dependencies": {
         "System.Text.Encoding": "4.0.11-*",
         "System.Threading.Tasks.Parallel": "4.0.1-beta-*"

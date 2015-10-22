@@ -1,30 +1,35 @@
 {
-    "description": "Metadata and Validation using System.ComponentModel.DataAnnotations for the MVC runtime",
-    "version": "6.0.0-*",
-    "repository": {
-        "type": "git",
-        "url": "git://github.com/aspnet/mvc"
+  "description": "Metadata and Validation using System.ComponentModel.DataAnnotations for the MVC runtime",
+  "version": "6.0.0-*",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/aspnet/mvc"
+  },
+  "compilationOptions": {
+    "warningsAsErrors": true
+  },
+  "dependencies": {
+    "Microsoft.AspNet.Mvc.Core": "6.0.0-*",
+    "Microsoft.Extensions.ClosedGenericMatcher.Sources": {
+      "version": "1.0.0-*",
+      "type": "build"
     },
-    "compilationOptions": {
-        "warningsAsErrors": true
+    "Microsoft.Extensions.CopyOnWriteDictionary.Sources": {
+      "version": "1.0.0-*",
+      "type": "build"
     },
-    "dependencies": {
-        "Microsoft.AspNet.Mvc.Core": "6.0.0-*",
-        "Microsoft.Extensions.ClosedGenericMatcher.Sources": { "version": "1.0.0-*", "type": "build" },
-        "Microsoft.Extensions.CopyOnWriteDictionary.Sources": { "version": "1.0.0-*", "type": "build" },
-        "Microsoft.Extensions.Localization":  "1.0.0-*"
+    "Microsoft.Extensions.Localization": "1.0.0-*"
+  },
+  "frameworks": {
+    "net451": {
+      "frameworkAssemblies": {
+        "System.ComponentModel.DataAnnotations": ""
+      }
     },
-
-    "frameworks": {
-        "dnx451": {
-            "frameworkAssemblies": {
-                "System.ComponentModel.DataAnnotations": ""
-            }
-        },
-        "dnxcore50": {
-            "dependencies": {
-                "System.ComponentModel.Annotations": "4.0.11-beta-*"
-            }
-        }
+    "dotnet5.4": {
+      "dependencies": {
+        "System.ComponentModel.Annotations": "4.0.11-beta-*"
+      }
     }
+  }
 }

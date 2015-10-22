@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
-#if DNXCORE50
+#if DOTNET5_4
 using System.Reflection;
 #endif
 using System.Threading.Tasks;

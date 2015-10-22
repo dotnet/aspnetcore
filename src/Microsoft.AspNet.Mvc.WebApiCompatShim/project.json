@@ -18,20 +18,20 @@
       "type": "build"
     }
   },
-    "frameworks": {
-        "dnx451": {
-            "frameworkAssemblies": {
-                "System.Net.Http": "",
-                "System.Xml": "",
-                "System.Runtime.Serialization": ""
-            }
-        },
-        "dnxcore50": {
-            "dependencies": {
-                "System.Net.Http": "4.0.1-beta-*",
-                "System.Xml.XmlSerializer": "4.0.11-beta-*",
-                "System.Runtime.Serialization.Xml": "4.0.11-beta-*"
-            }
-        }
+  "frameworks": {
+    "net451": {
+      "frameworkAssemblies": {
+        "System.Net.Http": "",
+        "System.Xml": "",
+        "System.Runtime.Serialization": ""
+      }
+    },
+    "dotnet5.4": {
+      "dependencies": {
+        "System.Net.Http": "4.0.1-beta-*",
+        "System.Xml.XmlSerializer": "4.0.11-beta-*",
+        "System.Runtime.Serialization.Xml": "4.0.11-beta-*"
+      }
     }
+  }
 }

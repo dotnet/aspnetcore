@@ -1,20 +1,26 @@
 {
-    "description": "Contains API explorer functionality for ASP.NET MVC for discovering metadata such as the list of controllers and actions, and their URLs and allowed HTTP methods.",
-    "version": "6.0.0-*",
-    "repository": {
-        "type": "git",
-        "url": "git://github.com/aspnet/mvc"
+  "description": "Contains API explorer functionality for ASP.NET MVC for discovering metadata such as the list of controllers and actions, and their URLs and allowed HTTP methods.",
+  "version": "6.0.0-*",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/aspnet/mvc"
+  },
+  "compilationOptions": {
+    "warningsAsErrors": true
+  },
+  "dependencies": {
+    "Microsoft.AspNet.Mvc.Core": "6.0.0-*",
+    "Microsoft.Extensions.PropertyHelper.Sources": {
+      "version": "1.0.0-*",
+      "type": "build"
     },
-    "compilationOptions": {
-        "warningsAsErrors": true
-    },
-    "dependencies": {
-        "Microsoft.AspNet.Mvc.Core": "6.0.0-*",
-        "Microsoft.Extensions.PropertyHelper.Sources": { "version": "1.0.0-*", "type": "build" },
-        "Microsoft.Extensions.ClosedGenericMatcher.Sources": { "version": "1.0.0-*", "type": "build" }
-    },
-    "frameworks": {
-        "dnx451": { },
-        "dnxcore50": { }
+    "Microsoft.Extensions.ClosedGenericMatcher.Sources": {
+      "version": "1.0.0-*",
+      "type": "build"
     }
+  },
+  "frameworks": {
+    "net451": {},
+    "dotnet5.4": {}
+  }
 }

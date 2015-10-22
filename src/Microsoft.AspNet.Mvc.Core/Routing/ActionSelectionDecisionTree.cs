@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-#if DNX451
+#if NET451
 using System.ComponentModel;
 #endif
 using System.Diagnostics;
@@ -174,7 +174,7 @@ namespace Microsoft.AspNet.Mvc.Routing
                         {
                             // We'd already have failed before getting here. The RouteDataActionConstraint constructor
                             // would throw.
-#if DNX451
+#if NET451
                             throw new InvalidEnumArgumentException(
                                 nameof(item),
                                 (int)constraint.KeyHandling,

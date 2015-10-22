@@ -80,7 +80,7 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
                 }
             }
 
-#if DNX451
+#if NET451
             return componentType.AsType().GetMethod(
                 methodName,
                 BindingFlags.Public | BindingFlags.Instance,

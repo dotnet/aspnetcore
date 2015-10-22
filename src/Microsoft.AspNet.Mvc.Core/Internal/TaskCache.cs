@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
@@ -7,7 +7,7 @@ namespace Microsoft.AspNet.Mvc.Internal
 {
     public static class TaskCache
     {
-#if DNX451
+#if NET451
         static readonly Task _completedTask = Task.FromResult(0);
 #endif
 
@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Mvc.Internal
         {
             get
             {
-#if DNX451
+#if NET451
                 return _completedTask;
 #else
                 return Task.CompletedTask;

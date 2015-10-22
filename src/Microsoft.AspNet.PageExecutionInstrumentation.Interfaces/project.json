@@ -1,20 +1,20 @@
 {
-    "description": "Abstractions for page instrumentation.",
-    "version": "1.0.0-*",
-    "repository": {
-        "type": "git",
-        "url": "git://github.com/aspnet/mvc"
-    },
-    "compilationOptions": {
-        "warningsAsErrors": true
-    },
-    "frameworks": {
-        "dnx451": { },
-        "dnxcore50": {
-            "dependencies": {
-                "System.IO": "4.0.11-beta-*",
-                "System.Resources.ResourceManager": "4.0.1-beta-*"
-            }
-        }
+  "description": "Abstractions for page instrumentation.",
+  "version": "1.0.0-*",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/aspnet/mvc"
+  },
+  "compilationOptions": {
+    "warningsAsErrors": true
+  },
+  "frameworks": {
+    "net451": {},
+    "dotnet5.4": {
+      "dependencies": {
+        "System.IO": "4.0.11-beta-*",
+        "System.Resources.ResourceManager": "4.0.1-beta-*"
+      }
     }
+  }
 }

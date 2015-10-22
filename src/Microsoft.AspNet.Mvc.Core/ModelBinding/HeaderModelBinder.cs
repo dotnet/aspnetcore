@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-#if DNXCORE50
+#if DOTNET5_4
 using System.Reflection;
 #endif
 using System.Threading.Tasks;

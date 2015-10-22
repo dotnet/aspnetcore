@@ -51,7 +51,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             }
 
             // Using CurrentUICulture so it loads the locale specific resources for the views.
-#if DNX451
+#if NET451
             context.Values[ValueKey] = Thread.CurrentThread.CurrentUICulture.Name;
 #else
             context.Values[ValueKey] = CultureInfo.CurrentUICulture.Name;

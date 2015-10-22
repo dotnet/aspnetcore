@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-#if DNXCORE50
+#if DOTNET5_4
 using System.Reflection;
 #endif
 using System.Threading.Tasks;

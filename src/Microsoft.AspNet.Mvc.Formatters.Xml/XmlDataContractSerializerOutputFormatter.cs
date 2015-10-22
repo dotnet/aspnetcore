@@ -132,7 +132,7 @@ namespace Microsoft.AspNet.Mvc.Formatters
 
             try
             {
-#if DNX451
+#if NET451
                 // Verify that type is a valid data contract by forcing the serializer to try to create a data contract
                 FormattingUtilities.XsdDataContractExporter.GetRootElementName(type);
 #endif

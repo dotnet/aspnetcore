@@ -5,7 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
-#if DNXCORE50
+#if DOTNET5_4
 using System.Reflection;
 #endif
 using Microsoft.AspNet.Mvc.ModelBinding;

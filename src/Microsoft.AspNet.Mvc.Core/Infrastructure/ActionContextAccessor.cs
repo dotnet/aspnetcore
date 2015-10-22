@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if DNX451
+#if NET451
 using System.Runtime.Remoting;
 using System.Runtime.Remoting.Messaging;
 #else
@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
 {
     public class ActionContextAccessor : IActionContextAccessor
     {
-#if DNX451
+#if NET451
         private static string Key = typeof(ActionContext).FullName;
 
         public ActionContext ActionContext
