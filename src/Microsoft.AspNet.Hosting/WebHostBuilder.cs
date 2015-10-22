@@ -92,13 +92,21 @@ namespace Microsoft.AspNet.Hosting
                 _configureServices(services);
             }
 
-            services.TryAdd(ServiceDescriptor.Instance(PlatformServices.Default.Application));
-            services.TryAdd(ServiceDescriptor.Instance(PlatformServices.Default.Runtime));
-            services.TryAdd(ServiceDescriptor.Instance(PlatformServices.Default.AssemblyLoadContextAccessor));
-            services.TryAdd(ServiceDescriptor.Instance(PlatformServices.Default.AssemblyLoaderContainer));
-            services.TryAdd(ServiceDescriptor.Instance(PlatformServices.Default.LibraryManager));
-            services.TryAdd(ServiceDescriptor.Instance(CompilationServices.Default.LibraryExporter));
-            services.TryAdd(ServiceDescriptor.Instance(CompilationServices.Default.CompilerOptionsProvider));
+            if (PlatformServices.Default != null)
+            {
+                services.TryAdd(ServiceDescriptor.Instance(PlatformServices.Default.Application));
+                services.TryAdd(ServiceDescriptor.Instance(PlatformServices.Default.Runtime));
+                services.TryAdd(ServiceDescriptor.Instance(PlatformServices.Default.AssemblyLoadContextAccessor));
+                services.TryAdd(ServiceDescriptor.Instance(PlatformServices.Default.AssemblyLoaderContainer));
+                services.TryAdd(ServiceDescriptor.Instance(PlatformServices.Default.LibraryManager));
+            }
+
+            // TODO: Remove this
+            if (CompilationServices.Default != null)
+            {
+                services.TryAdd(ServiceDescriptor.Instance(CompilationServices.Default.LibraryExporter));
+                services.TryAdd(ServiceDescriptor.Instance(CompilationServices.Default.CompilerOptionsProvider));
+            }
 
             return services;
         }
