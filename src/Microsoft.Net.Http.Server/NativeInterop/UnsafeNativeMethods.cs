@@ -33,7 +33,7 @@ namespace Microsoft.Net.Http.Server
     {
         private const string HTTPAPI = "httpapi.dll";
 
-#if DNXCORE50
+#if DOTNET5_4
         private const string sspicli_LIB = "sspicli.dll";
         private const string api_ms_win_core_processthreads_LIB = "api-ms-win-core-processthreads-l1-1-1.dll";
         private const string api_ms_win_core_io_LIB = "api-ms-win-core-io-l1-1-1.dll";
@@ -63,21 +63,21 @@ namespace Microsoft.Net.Http.Server
             internal const uint ERROR_CONNECTION_INVALID = 1229;
         }
 
-#if DNXCORE50
+#if DOTNET5_4
         [DllImport(api_ms_win_core_processthreads_LIB, ExactSpelling = true, CallingConvention = CallingConvention.StdCall, SetLastError = true)]
 #else
         [DllImport(KERNEL32, ExactSpelling = true, CallingConvention = CallingConvention.StdCall, SetLastError = true)]
 #endif
         internal static extern uint GetCurrentThreadId();
 
-#if DNXCORE50
+#if DOTNET5_4
         [DllImport(api_ms_win_core_io_LIB, ExactSpelling = true, CallingConvention = CallingConvention.StdCall, SetLastError = true)]
 #else
         [DllImport(KERNEL32, ExactSpelling = true, CallingConvention = CallingConvention.StdCall, SetLastError = true)]
 #endif
         internal static unsafe extern uint CancelIoEx(SafeHandle handle, SafeNativeOverlapped overlapped);
 
-#if DNXCORE50
+#if DOTNET5_4
         [DllImport(api_ms_win_core_kernel32_legacy_LIB, ExactSpelling = true, CallingConvention = CallingConvention.StdCall, SetLastError = true)]
 #else
         [DllImport(KERNEL32, ExactSpelling = true, CallingConvention = CallingConvention.StdCall, SetLastError = true)]
@@ -102,7 +102,7 @@ namespace Microsoft.Net.Http.Server
             [Out] out HeapAllocHandle resultList);
 
         // http://msdn.microsoft.com/en-us/library/windows/desktop/aa366569(v=vs.85).aspx
-#if DNXCORE50
+#if DOTNET5_4
         [DllImport(api_ms_win_core_heap_LIB, CallingConvention = CallingConvention.Winapi, SetLastError = true)]
 #else
         [DllImport(KERNEL32, CallingConvention = CallingConvention.Winapi, SetLastError = true)]
@@ -110,7 +110,7 @@ namespace Microsoft.Net.Http.Server
         internal static extern IntPtr GetProcessHeap();
 
         // http://msdn.microsoft.com/en-us/library/windows/desktop/aa366701(v=vs.85).aspx
-#if DNXCORE50
+#if DOTNET5_4
         [DllImport(api_ms_win_core_heap_LIB, CallingConvention = CallingConvention.Winapi, SetLastError = true)]
 #else
         [DllImport(KERNEL32, CallingConvention = CallingConvention.Winapi, SetLastError = true)]
@@ -122,7 +122,7 @@ namespace Microsoft.Net.Http.Server
 
         internal static class SafeNetHandles
         {
-#if DNXCORE50
+#if DOTNET5_4
             [DllImport(sspicli_LIB, ExactSpelling = true, SetLastError = true)]
 #else
             [DllImport(SECUR32, ExactSpelling = true, SetLastError = true)]
@@ -130,7 +130,7 @@ namespace Microsoft.Net.Http.Server
             internal static extern int FreeContextBuffer(
                 [In] IntPtr contextBuffer);
 
-#if DNXCORE50
+#if DOTNET5_4
             [DllImport(sspicli_LIB, ExactSpelling = true, SetLastError = true)]
 #else
             [DllImport(SECUR32, ExactSpelling = true, SetLastError = true)]
@@ -147,21 +147,21 @@ namespace Microsoft.Net.Http.Server
             [DllImport(HTTPAPI, ExactSpelling = true, CallingConvention = CallingConvention.StdCall, SetLastError = true)]
             internal static extern unsafe uint HttpCloseRequestQueue(IntPtr pReqQueueHandle);
 
-#if DNXCORE50
+#if DOTNET5_4
             [DllImport(api_ms_win_core_handle_LIB, ExactSpelling = true, SetLastError = true)]
 #else
             [DllImport(KERNEL32, ExactSpelling = true, SetLastError = true)]
 #endif
             internal static extern bool CloseHandle(IntPtr handle);
 
-#if DNXCORE50
+#if DOTNET5_4
             [DllImport(api_ms_win_core_heap_obsolete_LIB, ExactSpelling = true, SetLastError = true)]
 #else
             [DllImport(KERNEL32, ExactSpelling = true, SetLastError = true)]
 #endif
             internal static extern SafeLocalFree LocalAlloc(int uFlags, UIntPtr sizetdwBytes);
 
-#if DNXCORE50
+#if DOTNET5_4
             [DllImport(api_ms_win_core_heap_obsolete_LIB, EntryPoint = "LocalAlloc", SetLastError = true)]
 #else
             [DllImport(KERNEL32, EntryPoint = "LocalAlloc", SetLastError = true)]
@@ -169,21 +169,21 @@ namespace Microsoft.Net.Http.Server
 
             internal static extern SafeLocalFreeChannelBinding LocalAllocChannelBinding(int uFlags, UIntPtr sizetdwBytes);
 
-#if DNXCORE50
+#if DOTNET5_4
             [DllImport(api_ms_win_core_heap_obsolete_LIB, ExactSpelling = true, SetLastError = true)]
 #else
             [DllImport(KERNEL32, ExactSpelling = true, SetLastError = true)]
 #endif
             internal static extern IntPtr LocalFree(IntPtr handle);
 
-#if DNXCORE50
+#if DOTNET5_4
             [DllImport(api_ms_win_core_libraryloader_LIB, ExactSpelling = true, CharSet = CharSet.Unicode, SetLastError = true)]
 #else
             [DllImport(KERNEL32, ExactSpelling = true, CharSet = CharSet.Unicode, SetLastError = true)]
 #endif            
             internal static extern unsafe SafeLoadLibrary LoadLibraryExW([In] string lpwLibFileName, [In] void* hFile, [In] uint dwFlags);
 
-#if DNXCORE50
+#if DOTNET5_4
             [DllImport(api_ms_win_core_libraryloader_LIB, ExactSpelling = true, SetLastError = true)]
 #else
             [DllImport(KERNEL32, ExactSpelling = true, SetLastError = true)]

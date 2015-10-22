@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc.
+// Copyright (c) Microsoft Open Technologies, Inc.
 // All Rights Reserved
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,7 +21,7 @@
 // 
 // ==--==
 
-#if DNXCORE50
+#if DOTNET5_4
 
 namespace Microsoft.Win32.SafeHandles
 {

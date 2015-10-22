@@ -1,4 +1,4 @@
-﻿#if !DNXCORE50 // TODO: Temp copy. Remove once we target net46.
+#if !DOTNET5_4 // TODO: Temp copy. Remove once we target net46.
 using System;
 using System.Runtime.InteropServices;
 namespace System.Threading

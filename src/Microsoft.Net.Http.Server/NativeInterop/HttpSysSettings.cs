@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc.
+// Copyright (c) Microsoft Open Technologies, Inc.
 // All Rights Reserved
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,7 +26,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Security;
-#if !DNXCORE50
+#if !DOTNET5_4
 using Microsoft.Win32;
 #endif
 
@@ -34,7 +34,7 @@ namespace Microsoft.Net.Http.Server
 {
     internal static class HttpSysSettings
     {
-#if !DNXCORE50
+#if !DOTNET5_4
         private const string HttpSysParametersKey = @"System\CurrentControlSet\Services\HTTP\Parameters";
 #endif
         private const bool EnableNonUtf8Default = true;
@@ -61,7 +61,7 @@ namespace Microsoft.Net.Http.Server
         }
 
         private static void ReadHttpSysRegistrySettings()
-#if DNXCORE50
+#if DOTNET5_4
         {
         }
 #else

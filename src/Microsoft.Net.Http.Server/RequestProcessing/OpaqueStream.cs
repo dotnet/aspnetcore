@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc.
+// Copyright (c) Microsoft Open Technologies, Inc.
 // All Rights Reserved
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -109,7 +109,7 @@ namespace Microsoft.Net.Http.Server
         {
             return _requestStream.ReadByte();
         }
-#if !DNXCORE50
+#if !DOTNET5_4
         public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
         {
             return _requestStream.BeginRead(buffer, offset, count, callback, state);
@@ -143,7 +143,7 @@ namespace Microsoft.Net.Http.Server
         {
             _responseStream.WriteByte(value);
         }
-#if !DNXCORE50
+#if !DOTNET5_4
         public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
         {
             return _responseStream.BeginWrite(buffer, offset, count, callback, state);

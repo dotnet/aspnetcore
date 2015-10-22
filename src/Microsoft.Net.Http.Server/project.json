@@ -1,27 +1,26 @@
 {
-    "version": "1.0.0-*",
-    "description": "Implementation of WebListener, a successor to HttpListener. It is used in the WebListener server package.",
-    "dependencies": {
-        "Microsoft.Extensions.Logging.Abstractions": "1.0.0-*",
-        "Microsoft.Extensions.Primitives": "1.0.0-*",
-        "Microsoft.Net.WebSockets": "1.0.0-*"
-    },
-    "compilationOptions": {
-        "allowUnsafe": true
-    },
-    "frameworks": {
-        "net451": { },
-        "dnx451": { },
-        "dnxcore50": {
-            "dependencies": {
-                "Microsoft.Win32.Primitives": "4.0.1-beta-*",
-                "System.Diagnostics.Debug": "4.0.11-beta-*",
-                "System.IO.FileSystem": "4.0.1-beta-*",
-                "System.Security.Claims": "4.0.1-beta-*",
-                "System.Security.Cryptography.X509Certificates": "4.0.0-beta-*",
-                "System.Security.Principal.Windows": "4.0.0-beta-*",
-                "System.Threading.Overlapped": "4.0.0"
-            }
-        }
+  "version": "1.0.0-*",
+  "description": "Implementation of WebListener, a successor to HttpListener. It is used in the WebListener server package.",
+  "dependencies": {
+    "Microsoft.Extensions.Logging.Abstractions": "1.0.0-*",
+    "Microsoft.Extensions.Primitives": "1.0.0-*",
+    "Microsoft.Net.WebSockets": "1.0.0-*"
+  },
+  "compilationOptions": {
+    "allowUnsafe": true
+  },
+  "frameworks": {
+    "net451": {},
+    "dotnet5.4": {
+      "dependencies": {
+        "Microsoft.Win32.Primitives": "4.0.1-beta-*",
+        "System.Diagnostics.Debug": "4.0.11-beta-*",
+        "System.IO.FileSystem": "4.0.1-beta-*",
+        "System.Security.Claims": "4.0.1-beta-*",
+        "System.Security.Cryptography.X509Certificates": "4.0.0-beta-*",
+        "System.Security.Principal.Windows": "4.0.0-beta-*",
+        "System.Threading.Overlapped": "4.0.0-beta-*"
+      }
     }
+  }
 }

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc.
+// Copyright (c) Microsoft Open Technologies, Inc.
 // All Rights Reserved
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -203,7 +203,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-#if DNXCORE50
+#if DOTNET5_4
         public unsafe IAsyncResult BeginRead(byte[] buffer, int offset, int size, AsyncCallback callback, object state)
 #else
         public override unsafe IAsyncResult BeginRead(byte[] buffer, int offset, int size, AsyncCallback callback, object state)
@@ -293,7 +293,7 @@ namespace Microsoft.Net.Http.Server
             return asyncResult;
         }
 
-#if DNXCORE50
+#if DOTNET5_4
         public int EndRead(IAsyncResult asyncResult)
 #else
         public override int EndRead(IAsyncResult asyncResult)
@@ -428,7 +428,7 @@ namespace Microsoft.Net.Http.Server
             throw new InvalidOperationException(Resources.Exception_ReadOnlyStream);
         }
 
-#if DNXCORE50
+#if DOTNET5_4
         public IAsyncResult BeginWrite(byte[] buffer, int offset, int size, AsyncCallback callback, object state)
 #else
         public override IAsyncResult BeginWrite(byte[] buffer, int offset, int size, AsyncCallback callback, object state)
@@ -437,7 +437,7 @@ namespace Microsoft.Net.Http.Server
             throw new InvalidOperationException(Resources.Exception_ReadOnlyStream);
         }
 
-#if DNXCORE50
+#if DOTNET5_4
         public void EndWrite(IAsyncResult asyncResult)
 #else
         public override void EndWrite(IAsyncResult asyncResult)

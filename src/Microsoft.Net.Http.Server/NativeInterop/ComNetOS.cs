@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc.
+// Copyright (c) Microsoft Open Technologies, Inc.
 // All Rights Reserved
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -32,7 +32,7 @@ namespace Microsoft.Net.Http.Server
 
         static ComNetOS()
         {
-#if DNXCORE50
+#if DOTNET5_4
             // TODO: SkipIOCPCallbackOnSuccess doesn't work on Win7. Need a way to detect Win7 vs 8+.
             IsWin8orLater = false;
 #else

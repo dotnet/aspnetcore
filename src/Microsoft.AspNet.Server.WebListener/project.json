@@ -10,8 +10,14 @@
     "allowUnsafe": true
   },
   "frameworks": {
-    "dnx451": { },
+    "dnx451": {},
+    "net451": { },
     "dnxcore50": {
+      "dependencies": {
+        "System.Security.Claims": "4.0.1-beta-*"
+      }
+    },
+    "dotnet5.4": {
       "dependencies": {
         "System.Security.Claims": "4.0.1-beta-*"
       }

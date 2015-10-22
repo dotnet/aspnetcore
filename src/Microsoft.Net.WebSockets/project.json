@@ -1,30 +1,30 @@
 {
-    "version": "1.0.0-*",
-    "description": "Implementation of WebSocket abstract base class. Used by WebListener.",
-    "dependencies": {
-    },
-    "compilationOptions": { "allowUnsafe": true },
-    "frameworks": {
-        "net451": { },
-        "dnx451": { },
-        "dnxcore50": {
-            "dependencies": {
-                "System.Collections": "4.0.11-beta-*",
-                "System.Diagnostics.Contracts": "4.0.1-beta-*",
-                "System.Diagnostics.Tools": "4.0.1-beta-*",
-                "System.IO": "4.0.11-beta-*",
-                "System.Linq": "4.0.1-beta-*",
-                "System.Net.Primitives": "4.0.11-beta-*",
-                "System.Net.WebSockets": "4.0.0-beta-*",
-                "System.Resources.ResourceManager": "4.0.1-beta-*",
-                "System.Runtime.Extensions": "4.0.11-beta-*",
-                "System.Security.Cryptography.Algorithms": "4.0.0-beta-*",
-                "System.Text.Encoding.Extensions": "4.0.11-beta-*",
-                "System.Threading": "4.0.11-beta-*",
-                "System.Threading.Tasks": "4.0.11-beta-*",
-                "System.Threading.Timer": "4.0.1-beta-*",
-                "System.Threading.ThreadPool": "4.0.10-beta-*"
-            }
-        }
+  "version": "1.0.0-*",
+  "description": "Implementation of WebSocket abstract base class. Used by WebListener.",
+  "dependencies": {},
+  "compilationOptions": {
+    "allowUnsafe": true
+  },
+  "frameworks": {
+    "net451": {},
+    "dotnet5.4": {
+      "dependencies": {
+        "System.Collections": "4.0.11-beta-*",
+        "System.Diagnostics.Contracts": "4.0.1-beta-*",
+        "System.Diagnostics.Tools": "4.0.1-beta-*",
+        "System.IO": "4.0.11-beta-*",
+        "System.Linq": "4.0.1-beta-*",
+        "System.Net.Primitives": "4.0.11-beta-*",
+        "System.Net.WebSockets": "4.0.0-beta-*",
+        "System.Resources.ResourceManager": "4.0.1-beta-*",
+        "System.Runtime.Extensions": "4.0.11-beta-*",
+        "System.Security.Cryptography.Algorithms": "4.0.0-beta-*",
+        "System.Text.Encoding.Extensions": "4.0.11-beta-*",
+        "System.Threading": "4.0.11-beta-*",
+        "System.Threading.Tasks": "4.0.11-beta-*",
+        "System.Threading.Timer": "4.0.1-beta-*",
+        "System.Threading.ThreadPool": "4.0.10-beta-*"
+      }
     }
+  }
 }

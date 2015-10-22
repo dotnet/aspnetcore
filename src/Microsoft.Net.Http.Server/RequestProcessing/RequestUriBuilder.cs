@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc.
+// Copyright (c) Microsoft Open Technologies, Inc.
 // All Rights Reserved
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -70,7 +70,7 @@ namespace Microsoft.Net.Http.Server
             // TODO: False triggers more detailed/correct parsing, but it's rather slow.
             UseCookedRequestUrl = true; // SettingsSectionInternal.Section.HttpListenerUnescapeRequestUrl;
             Utf8Encoding = new UTF8Encoding(false, true);
-#if DNXCORE50
+#if DOTNET5_4
             AnsiEncoding = Utf8Encoding;
 #else
             AnsiEncoding = Encoding.GetEncoding(0, new EncoderExceptionFallback(), new DecoderExceptionFallback());

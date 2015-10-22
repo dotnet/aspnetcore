@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc.
+// Copyright (c) Microsoft Open Technologies, Inc.
 // All Rights Reserved
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -31,7 +31,7 @@ namespace Microsoft.Net.WebSockets
 {
     internal static class UnsafeNativeMethods
     {
-#if DNXCORE50
+#if DOTNET5_4
         private const string api_ms_win_core_libraryloader_LIB = "api-ms-win-core-libraryloader-l1-1-0.dll";
 #else    
         private const string KERNEL32 = "kernel32.dll";
@@ -40,14 +40,14 @@ namespace Microsoft.Net.WebSockets
 
         internal static class SafeNetHandles
         {
-#if DNXCORE50
+#if DOTNET5_4
             [DllImport(api_ms_win_core_libraryloader_LIB, ExactSpelling = true, CharSet = CharSet.Unicode, SetLastError = true)]
 #else
             [DllImport(KERNEL32, ExactSpelling = true, CharSet=CharSet.Unicode, SetLastError = true)]
 #endif
             internal static extern unsafe SafeLoadLibrary LoadLibraryExW([In] string lpwLibFileName, [In] void* hFile, [In] uint dwFlags);
 
-#if DNXCORE50
+#if DOTNET5_4
             [DllImport(api_ms_win_core_libraryloader_LIB, ExactSpelling = true, SetLastError = true)]
 #else
             [DllImport(KERNEL32, ExactSpelling = true, SetLastError = true)]
@@ -173,7 +173,7 @@ namespace Microsoft.Net.WebSockets
 
             static WebSocketProtocolComponent()
             {
-#if DNXCORE50
+#if DOTNET5_4
                 DllFileName = Path.Combine(Environment.GetEnvironmentVariable("SYSTEMROOT"), "System32", WEBSOCKET);
 #else
                 DllFileName = Path.Combine(Environment.SystemDirectory, WEBSOCKET);

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc.
+// Copyright (c) Microsoft Open Technologies, Inc.
 // All Rights Reserved
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -120,7 +120,7 @@ namespace Microsoft.Net.Http.Server
             var boundHandle = responseStream.RequestContext.Server.BoundHandle;
 
             int bufferSize = 1024 * 64; // TODO: Validate buffer size choice.
-#if DNXCORE50
+#if DOTNET5_4
             _fileStream = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, bufferSize /*, useAsync: true*/); // Extremely expensive.
 #else
             // It's too expensive to validate anything before opening the file. Open the file and then check the lengths.

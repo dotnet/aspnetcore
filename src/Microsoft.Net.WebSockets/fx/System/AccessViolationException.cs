@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc.
+// Copyright (c) Microsoft Open Technologies, Inc.
 // All Rights Reserved
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,7 +15,7 @@
 // See the Apache 2 License for the specific language governing
 // permissions and limitations under the License.
 
-#if DNXCORE50
+#if DOTNET5_4
 
 using System;
 using System.Collections.Generic;
