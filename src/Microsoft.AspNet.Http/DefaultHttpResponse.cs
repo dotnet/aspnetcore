@@ -87,7 +87,7 @@ namespace Microsoft.AspNet.Http.Internal
         {
             get
             {
-                return Headers[HeaderNames.ContentType];
+                return Headers[HeaderNames.ContentType].ToString();
             }
             set
             {

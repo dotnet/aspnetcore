@@ -70,18 +70,18 @@ namespace Microsoft.AspNet.Http
                 && _value.IndexOf(':', index + 1) >= 0)
             {
                 // IPv6 without brackets ::1 is the only type of host with 2 or more colons
-                return "[" + _value + "]";
+                return $"[{_value}]";
             }
             else if (index >= 0)
             {
                 // Has a port
                 string port = _value.Substring(index);
-                IdnMapping mapping = new IdnMapping();
+                var mapping = new IdnMapping();
                 return mapping.GetAscii(_value, 0, index) + port;
             }
             else
             {
-                IdnMapping mapping = new IdnMapping();
+                var mapping = new IdnMapping();
                 return mapping.GetAscii(_value);
             }
         }
@@ -115,12 +115,12 @@ namespace Microsoft.AspNet.Http
                     {
                         // Has a port
                         string port = uriComponent.Substring(index);
-                        IdnMapping mapping = new IdnMapping();
+                        var mapping = new IdnMapping();
                         uriComponent = mapping.GetUnicode(uriComponent, 0, index) + port;
                     }
                     else
                     {
-                        IdnMapping mapping = new IdnMapping();
+                        var mapping = new IdnMapping();
                         uriComponent = mapping.GetUnicode(uriComponent);
                     }
                 }

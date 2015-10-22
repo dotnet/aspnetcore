@@ -2,14 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.WebUtilities;
-using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Http.Features.Internal
@@ -17,6 +15,8 @@ namespace Microsoft.AspNet.Http.Features.Internal
     public class FormFeature : IFormFeature
     {
         private readonly HttpRequest _request;
+        private Task<IFormCollection> _parsedFormTask;
+        private IFormCollection _form;
 
         public FormFeature(IFormCollection form)
         {
@@ -63,7 +63,15 @@ namespace Microsoft.AspNet.Http.Features.Internal
             }
         }
 
-        public IFormCollection Form { get; set; }
+        public IFormCollection Form
+        {
+            get { return _form; }
+            set
+            {
+                _parsedFormTask = null;
+                _form = value;
+            }
+        }
 
         public IFormCollection ReadForm()
         {
@@ -77,17 +85,32 @@ namespace Microsoft.AspNet.Http.Features.Internal
                 throw new InvalidOperationException("Incorrect Content-Type: " + _request.ContentType);
             }
 
+            // TODO: Issue #456 Avoid Sync-over-Async http://blogs.msdn.com/b/pfxteam/archive/2012/04/13/10293638.aspx
             // TODO: How do we prevent thread exhaustion?
-            return ReadFormAsync(CancellationToken.None).GetAwaiter().GetResult();
+            return ReadFormAsync().GetAwaiter().GetResult();
         }
 
-        public async Task<IFormCollection> ReadFormAsync(CancellationToken cancellationToken)
-        {
-            if (Form != null)
-            {
-                return Form;
-            }
+        public Task<IFormCollection> ReadFormAsync() => ReadFormAsync(CancellationToken.None);
 
+        public Task<IFormCollection> ReadFormAsync(CancellationToken cancellationToken)
+        {
+            // Avoid state machine and task allocation for repeated reads
+            if (_parsedFormTask == null)
+            {
+                if (Form != null)
+                {
+                    _parsedFormTask = Task.FromResult(Form);
+                }
+                else
+                {
+                    _parsedFormTask = InnerReadFormAsync(cancellationToken);
+                }
+            }
+            return _parsedFormTask;
+        }
+
+        private async Task<IFormCollection> InnerReadFormAsync(CancellationToken cancellationToken)
+        {
             if (!HasFormContentType)
             {
                 throw new InvalidOperationException("Incorrect Content-Type: " + _request.ContentType);
@@ -97,18 +120,18 @@ namespace Microsoft.AspNet.Http.Features.Internal
 
             _request.EnableRewind();
 
-            IDictionary<string, StringValues> formFields = null;
-            var files = new FormFileCollection();
+            FormCollection formFields = null;
+            FormFileCollection files = null;
 
             // Some of these code paths use StreamReader which does not support cancellation tokens.
-            using (cancellationToken.Register(_request.HttpContext.Abort))
+            using (cancellationToken.Register((state) => ((HttpContext)state).Abort(), _request.HttpContext))
             {
                 var contentType = ContentType;
                 // Check the content-type
                 if (HasApplicationFormContentType(contentType))
                 {
                     var encoding = FilterEncoding(contentType.Encoding);
-                    formFields = await FormReader.ReadFormAsync(_request.Body, encoding, cancellationToken);
+                    formFields = new FormCollection(await FormReader.ReadFormAsync(_request.Body, encoding, cancellationToken));
                 }
                 else if (HasMultipartFormContentType(contentType))
                 {
@@ -119,9 +142,8 @@ namespace Microsoft.AspNet.Http.Features.Internal
                     var section = await multipartReader.ReadNextSectionAsync(cancellationToken);
                     while (section != null)
                     {
-                        var headers = new HeaderDictionary(section.Headers);
                         ContentDispositionHeaderValue contentDisposition;
-                        ContentDispositionHeaderValue.TryParse(headers[HeaderNames.ContentDisposition], out contentDisposition);
+                        ContentDispositionHeaderValue.TryParse(section.ContentDisposition, out contentDisposition);
                         if (HasFileContentDisposition(contentDisposition))
                         {
                             // Find the end
@@ -129,8 +151,12 @@ namespace Microsoft.AspNet.Http.Features.Internal
 
                             var file = new FormFile(_request.Body, section.BaseStreamOffset.Value, section.Body.Length)
                             {
-                                Headers = headers,
+                                Headers = new HeaderDictionary(section.Headers),
                             };
+                            if (files == null)
+                            {
+                                files = new FormFileCollection();
+                            }
                             files.Add(file);
                         }
                         else if (HasFormDataContentDisposition(contentDisposition))
@@ -141,7 +167,7 @@ namespace Microsoft.AspNet.Http.Features.Internal
 
                             var key = HeaderUtilities.RemoveQuotes(contentDisposition.Name);
                             MediaTypeHeaderValue mediaType;
-                            MediaTypeHeaderValue.TryParse(headers[HeaderNames.ContentType], out mediaType);
+                            MediaTypeHeaderValue.TryParse(section.ContentType, out mediaType);
                             var encoding = FilterEncoding(mediaType?.Encoding);
                             using (var reader = new StreamReader(section.Body, encoding, detectEncodingFromByteOrderMarks: true, bufferSize: 1024, leaveOpen: true))
                             {
@@ -151,20 +177,35 @@ namespace Microsoft.AspNet.Http.Features.Internal
                         }
                         else
                         {
-                            System.Diagnostics.Debug.Assert(false, "Unrecognized content-disposition for this section: " + headers[HeaderNames.ContentDisposition]);
+                            System.Diagnostics.Debug.Assert(false, "Unrecognized content-disposition for this section: " + section.ContentDisposition);
                         }
 
                         section = await multipartReader.ReadNextSectionAsync(cancellationToken);
                     }
 
-                    formFields = formAccumulator.GetResults();
+                    if (formAccumulator.HasValues)
+                    {
+                        formFields = new FormCollection(formAccumulator.GetResults(), files);
+                    }
                 }
             }
 
             // Rewind so later readers don't have to.
             _request.Body.Seek(0, SeekOrigin.Begin);
 
-            Form = new FormCollection(formFields, files);
+            if (formFields != null)
+            {
+                Form = formFields;
+            }
+            else if (files != null)
+            {
+                Form = new FormCollection(null, files);
+            }
+            else
+            {
+                Form = FormCollection.Empty;
+            }
+
             return Form;
         }
 

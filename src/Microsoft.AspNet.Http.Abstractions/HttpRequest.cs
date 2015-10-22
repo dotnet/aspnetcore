@@ -24,13 +24,13 @@ namespace Microsoft.AspNet.Http
         public abstract string Method { get; set; }
 
         /// <summary>
-        /// Gets or set the HTTP request scheme from owin.RequestScheme.
+        /// Gets or set the HTTP request scheme.
         /// </summary>
-        /// <returns>The HTTP request scheme from owin.RequestScheme.</returns>
+        /// <returns>The HTTP request scheme.</returns>
         public abstract string Scheme { get; set; }
 
         /// <summary>
-        /// Returns true if the owin.RequestScheme is https.
+        /// Returns true if the RequestScheme is https.
         /// </summary>
         /// <returns>true if this request is using https; otherwise, false.</returns>
         public abstract bool IsHttps { get; set; }
@@ -42,33 +42,33 @@ namespace Microsoft.AspNet.Http
         public abstract HostString Host { get; set; }
 
         /// <summary>
-        /// Gets or set the owin.RequestPathBase.
+        /// Gets or set the RequestPathBase.
         /// </summary>
-        /// <returns>The owin.RequestPathBase.</returns>
+        /// <returns>The RequestPathBase.</returns>
         public abstract PathString PathBase { get; set; }
 
         /// <summary>
-        /// Gets or set the request path from owin.RequestPath.
+        /// Gets or set the request path from RequestPath.
         /// </summary>
-        /// <returns>The request path from owin.RequestPath.</returns>
+        /// <returns>The request path from RequestPath.</returns>
         public abstract PathString Path { get; set; }
 
         /// <summary>
-        /// Gets or set the query string from owin.RequestQueryString.
+        /// Gets or set the query string.
         /// </summary>
-        /// <returns>The query string from owin.RequestQueryString.</returns>
+        /// <returns>The query string.</returns>
         public abstract QueryString QueryString { get; set; }
 
         /// <summary>
-        /// Gets the query value collection parsed from owin.RequestQueryString.
+        /// Gets the query value collection parsed from RequestQueryString.
         /// </summary>
-        /// <returns>The query value collection parsed from owin.RequestQueryString.</returns>
-        public abstract IReadableStringCollection Query { get; set; }
+        /// <returns>The query value collection parsed from RequestQueryString.</returns>
+        public abstract IQueryCollection Query { get; set; }
 
         /// <summary>
-        /// Gets or set the owin.RequestProtocol.
+        /// Gets or set the RequestProtocol.
         /// </summary>
-        /// <returns>The owin.RequestProtocol.</returns>
+        /// <returns>The RequestProtocol.</returns>
         public abstract string Protocol { get; set; }
 
         /// <summary>
@@ -81,7 +81,7 @@ namespace Microsoft.AspNet.Http
         /// Gets the collection of Cookies for this request.
         /// </summary>
         /// <returns>The collection of Cookies for this request.</returns>
-        public abstract IReadableStringCollection Cookies { get; set; }
+        public abstract IRequestCookieCollection Cookies { get; set; }
 
         /// <summary>
         /// Gets or sets the Content-Length header
@@ -95,9 +95,9 @@ namespace Microsoft.AspNet.Http
         public abstract string ContentType { get; set; }
 
         /// <summary>
-        /// Gets or set the owin.RequestBody Stream.
+        /// Gets or set the RequestBody Stream.
         /// </summary>
-        /// <returns>The owin.RequestBody Stream.</returns>
+        /// <returns>The RequestBody Stream.</returns>
         public abstract Stream Body { get; set; }
 
         /// <summary>

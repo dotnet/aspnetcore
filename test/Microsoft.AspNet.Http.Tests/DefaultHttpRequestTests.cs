@@ -150,7 +150,7 @@ namespace Microsoft.AspNet.Http.Internal
             Assert.Equal("value0", query1["name0"]);
             Assert.Equal("value1", query1["name1"]);
 
-            var query2 = new ReadableStringCollection(new Dictionary<string, StringValues>()
+            var query2 = new QueryCollection( new Dictionary<string, StringValues>()
             {
                 { "name2", "value2" }
             });
@@ -170,19 +170,23 @@ namespace Microsoft.AspNet.Http.Internal
             var cookies0 = request.Cookies;
             Assert.Equal(0, cookies0.Count);
 
-            request.Headers["Cookie"] = new[] { "name0=value0", "name1=value1" };
+            var newCookies = new[] { "name0=value0", "name1=value1" };
+            request.Headers["Cookie"] = newCookies;
+
+            cookies0 = RequestCookieCollection.Parse(newCookies);
             var cookies1 = request.Cookies;
-            Assert.Same(cookies0, cookies1);
+            Assert.Equal(cookies0, cookies1);
             Assert.Equal(2, cookies1.Count);
             Assert.Equal("value0", cookies1["name0"]);
             Assert.Equal("value1", cookies1["name1"]);
+            Assert.Equal(newCookies, request.Headers["Cookie"]);
 
-            var cookies2 = new ReadableStringCollection(new Dictionary<string, StringValues>()
+            var cookies2 = new RequestCookieCollection(new Dictionary<string,string>()
             {
                 { "name2", "value2" }
             });
             request.Cookies = cookies2;
-            Assert.Same(cookies2, request.Cookies);
+            Assert.Equal(cookies2, request.Cookies);
             Assert.Equal("value2", request.Cookies["name2"]);
             cookieHeaders = request.Headers["Cookie"];
             Assert.Equal(new[] { "name2=value2" }, cookieHeaders);

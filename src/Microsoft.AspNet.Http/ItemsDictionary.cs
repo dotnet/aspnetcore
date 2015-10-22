@@ -97,7 +97,12 @@ namespace Microsoft.AspNet.Http.Internal
 
         bool ICollection<KeyValuePair<object, object>>.Remove(KeyValuePair<object, object> item)
         {
-            return Items.Remove(item);
+            object value;
+            if (Items.TryGetValue(item.Key, out value) && Equals(item.Value, value))
+            {
+                return Items.Remove(item.Key);
+            }
+            return false;
         }
 
         IEnumerator<KeyValuePair<object, object>> IEnumerable<KeyValuePair<object, object>>.GetEnumerator()

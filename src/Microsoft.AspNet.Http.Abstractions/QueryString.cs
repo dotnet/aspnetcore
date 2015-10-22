@@ -128,7 +128,7 @@ namespace Microsoft.AspNet.Http
                 throw new ArgumentNullException(nameof(value));
             }
 
-            return new QueryString("?" + UrlEncoder.Default.Encode(name) + '=' + UrlEncoder.Default.Encode(value));
+            return new QueryString($"?{UrlEncoder.Default.Encode(name)}={UrlEncoder.Default.Encode(value)}");
         }
 
         /// <summary>

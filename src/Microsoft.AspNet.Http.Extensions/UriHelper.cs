@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.Http.Extensions
             FragmentString fragment = new FragmentString())
         {
             string combinePath = (pathBase.HasValue || path.HasValue) ? (pathBase + path).ToString() : "/";
-            return combinePath + query + fragment;
+            return $"{combinePath}{query.ToString()}{fragment.ToString()}";
         }
 
         /// <summary>
@@ -48,7 +48,7 @@ namespace Microsoft.AspNet.Http.Extensions
             FragmentString fragment = new FragmentString())
         {
             string combinePath = (pathBase.HasValue || path.HasValue) ? (pathBase + path).ToString() : "/";
-            return scheme + "://" + host + combinePath + query + fragment;
+            return $"{scheme}://{host.ToString()}{combinePath}{query.ToString()}{fragment.ToString()}";
         }
 
         /// <summary>

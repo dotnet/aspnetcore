@@ -107,13 +107,39 @@ namespace Microsoft.AspNet.WebUtilities
         /// </summary>
         /// <param name="text">The raw query string value, with or without the leading '?'.</param>
         /// <returns>A collection of parsed keys and values.</returns>
-        public static IDictionary<string, StringValues> ParseQuery(string queryString)
+        public static Dictionary<string, StringValues> ParseQuery(string queryString)
         {
+            var result = ParseNullableQuery(queryString);
+
+            if (result == null)
+            {
+                return new Dictionary<string, StringValues>();
+            }
+
+            return result;
+        }
+
+
+        /// <summary>
+        /// Parse a query string into its component key and value parts.
+        /// </summary>
+        /// <param name="text">The raw query string value, with or without the leading '?'.</param>
+        /// <returns>A collection of parsed keys and values, null if there are no entries.</returns>
+        public static Dictionary<string, StringValues> ParseNullableQuery(string queryString)
+        {
+            var accumulator = new KeyValueAccumulator();
+
+            if (string.IsNullOrEmpty(queryString) || queryString == "?")
+            {
+                return null;
+            }
+
+            int scanIndex = 0;
             if (!string.IsNullOrEmpty(queryString) && queryString[0] == '?')
             {
-                queryString = queryString.Substring(1);
+                scanIndex = 1;
             }
-            var accumulator = new KeyValueAccumulator();
+
 
             int textLength = queryString.Length;
             int equalIndex = queryString.IndexOf('=');
@@ -121,7 +147,6 @@ namespace Microsoft.AspNet.WebUtilities
             {
                 equalIndex = textLength;
             }
-            int scanIndex = 0;
             while (scanIndex < textLength)
             {
                 int delimiterIndex = queryString.IndexOf('&', scanIndex);
@@ -147,6 +172,11 @@ namespace Microsoft.AspNet.WebUtilities
                     }
                 }
                 scanIndex = delimiterIndex + 1;
+            }
+
+            if (!accumulator.HasValues)
+            {
+                return null;
             }
 
             return accumulator.GetResults();

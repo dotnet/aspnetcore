@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.WebUtilities
                 StringValues values;
                 if (Headers.TryGetValue("Content-Type", out values))
                 {
-                    return values;
+                    return values.ToString();
                 }
                 return null;
             }
@@ -29,13 +29,13 @@ namespace Microsoft.AspNet.WebUtilities
                 StringValues values;
                 if (Headers.TryGetValue("Content-Disposition", out values))
                 {
-                    return values;
+                    return values.ToString();
                 }
                 return null;
             }
         }
 
-        public IDictionary<string, StringValues> Headers { get; set; }
+        public Dictionary<string, StringValues> Headers { get; set; }
 
         public Stream Body { get; set; }
 

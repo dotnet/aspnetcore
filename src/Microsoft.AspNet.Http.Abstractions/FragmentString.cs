@@ -100,7 +100,7 @@ namespace Microsoft.AspNet.Http
             string fragmentValue = uri.GetComponents(UriComponents.Fragment, UriFormat.UriEscaped);
             if (!string.IsNullOrEmpty(fragmentValue))
             {
-                fragmentValue = "#" + fragmentValue;
+                fragmentValue = $"#{fragmentValue}";
             }
             return new FragmentString(fragmentValue);
         }

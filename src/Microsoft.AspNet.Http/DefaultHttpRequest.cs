@@ -140,11 +140,11 @@ namespace Microsoft.AspNet.Http.Internal
 
         public override HostString Host
         {
-            get { return HostString.FromUriComponent(Headers["Host"]); }
+            get { return HostString.FromUriComponent(Headers["Host"].ToString()); }
             set { Headers["Host"] = value.ToUriComponent(); }
         }
 
-        public override IReadableStringCollection Query
+        public override IQueryCollection Query
         {
             get { return QueryFeature.Query; }
             set { QueryFeature.Query = value; }
@@ -161,7 +161,7 @@ namespace Microsoft.AspNet.Http.Internal
             get { return HttpRequestFeature.Headers; }
         }
 
-        public override IReadableStringCollection Cookies
+        public override IRequestCookieCollection Cookies
         {
             get { return RequestCookiesFeature.Cookies; }
             set { RequestCookiesFeature.Cookies = value; }

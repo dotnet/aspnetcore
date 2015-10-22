@@ -87,7 +87,7 @@ namespace Microsoft.AspNet.Http.Internal
 
         public bool Equals(HeaderSegmentCollection other)
         {
-            return Equals(_headers, other._headers);
+            return StringValues.Equals(_headers, other._headers);
         }
 
         public override bool Equals(object obj)
@@ -363,13 +363,7 @@ namespace Microsoft.AspNet.Http.Internal
 
     internal static class ParsingHelpers
     {
-        public static StringValues GetHeader(IDictionary<string, StringValues> headers, string key)
-        {
-            StringValues value;
-            return headers.TryGetValue(key, out value) ? value : StringValues.Empty;
-        }
-
-        public static StringValues GetHeaderSplit(IDictionary<string, StringValues> headers, string key)
+        public static StringValues GetHeaderSplit(IHeaderDictionary headers, string key)
         {
             var values = GetHeaderUnmodified(headers, key);
             return new StringValues(GetHeaderSplitImplementation(values).ToArray());
@@ -386,7 +380,7 @@ namespace Microsoft.AspNet.Http.Internal
             }
         }
 
-        public static StringValues GetHeaderUnmodified(IDictionary<string, StringValues> headers, string key)
+        public static StringValues GetHeaderUnmodified(IHeaderDictionary headers, string key)
         {
             if (headers == null)
             {
@@ -395,32 +389,6 @@ namespace Microsoft.AspNet.Http.Internal
 
             StringValues values;
             return headers.TryGetValue(key, out values) ? values : StringValues.Empty;
-        }
-
-        public static void SetHeader(IDictionary<string, StringValues> headers, string key, StringValues value)
-        {
-            if (headers == null)
-            {
-                throw new ArgumentNullException(nameof(headers));
-            }
-
-            if (key == null)
-            {
-                throw new ArgumentNullException(nameof(key));
-            }
-
-            if (string.IsNullOrWhiteSpace(key))
-            {
-                throw new ArgumentNullException(nameof(key));
-            }
-            if (StringValues.IsNullOrEmpty(value))
-            {
-                headers.Remove(key);
-            }
-            else
-            {
-                headers[key] = value;
-            }
         }
 
         private static string DeQuote(string value)

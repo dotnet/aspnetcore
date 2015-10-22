@@ -1,84 +1,94 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections;
 using System.Collections.Generic;
-using Microsoft.Extensions.Primitives;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Http.Internal
 {
-    /// <summary>
-    /// Contains the parsed form values.
-    /// </summary>
-    public class FormCollection : IFormCollection
+    public class RequestCookieCollection : IRequestCookieCollection
     {
-        public static readonly FormCollection Empty = new FormCollection();
+        public static readonly RequestCookieCollection Empty = new RequestCookieCollection();
 #if DNXCORE50
         private static readonly string[] EmptyKeys = Array.Empty<string>();
-        private static readonly StringValues[] EmptyValues = Array.Empty<StringValues>();
 #else
         private static readonly string[] EmptyKeys = new string[0];
-        private static readonly StringValues[] EmptyValues = new StringValues[0];
 #endif 
         private static readonly Enumerator EmptyEnumerator = new Enumerator();
         // Pre-box
-        private static readonly IEnumerator<KeyValuePair<string, StringValues>> EmptyIEnumeratorType = EmptyEnumerator;
+        private static readonly IEnumerator<KeyValuePair<string, string>> EmptyIEnumeratorType = EmptyEnumerator;
         private static readonly IEnumerator EmptyIEnumerator = EmptyEnumerator;
 
-        private static IFormFileCollection EmptyFiles = new FormFileCollection();
+        private Dictionary<string, string> Store { get; set; }
 
-        private IFormFileCollection _files;
-
-        private FormCollection()
+        public RequestCookieCollection()
         {
-            // For static Empty
         }
 
-        public FormCollection(Dictionary<string, StringValues> fields, IFormFileCollection files = null)
+        public RequestCookieCollection(Dictionary<string, string> store)
         {
-            // can be null
-            Store = fields;
-            _files = files;
+            Store = store;
         }
 
-        public IFormFileCollection Files
+        public RequestCookieCollection(int capacity)
+        {
+            Store = new Dictionary<string, string>(capacity, StringComparer.OrdinalIgnoreCase);
+        }
+
+        public string this[string key]
         {
             get
             {
-                return _files ?? EmptyFiles;
-            }
-            private set { _files = value; }
-        }
-
-        private Dictionary<string, StringValues> Store { get; set; }
-
-        /// <summary>
-        /// Get or sets the associated value from the collection as a single string.
-        /// </summary>
-        /// <param name="key">The header name.</param>
-        /// <returns>the associated value from the collection as a StringValues or StringValues.Empty if the key is not present.</returns>
-        public StringValues this[string key]
-        {
-            get
-            {
-                if (Store == null)
+                if (key == null)
                 {
-                    return StringValues.Empty;
+                    throw new ArgumentNullException(nameof(key));
                 }
 
-                StringValues value;
+                if (Store == null)
+                {
+                    return string.Empty;
+                }
+
+                string value;
                 if (TryGetValue(key, out value))
                 {
                     return value;
                 }
-                return StringValues.Empty;
+                return string.Empty;
             }
         }
+        
+        public static RequestCookieCollection Parse(IList<string> values)
+        {
+            if (values.Count == 0)
+            {
+                return Empty;
+            }
 
-        /// <summary>
-        /// Gets the number of elements contained in the <see cref="T:Microsoft.AspNet.Http.Internal.HeaderDictionary" />;.
-        /// </summary>
-        /// <returns>The number of elements contained in the <see cref="T:Microsoft.AspNet.Http.Internal.HeaderDictionary" />.</returns>
+            IList<CookieHeaderValue> cookies;
+            if (CookieHeaderValue.TryParseList(values, out cookies))
+            {
+                if (cookies.Count == 0)
+                {
+                    return Empty;
+                }
+
+                var store = new Dictionary<string, string>(cookies.Count);
+                for (var i = 0; i < cookies.Count; i++)
+                {
+                    var cookie = cookies[i];
+                    var name = Uri.UnescapeDataString(cookie.Name.Replace('+', ' '));
+                    var value = Uri.UnescapeDataString(cookie.Value.Replace('+', ' '));
+                    store[name] = value;
+                }
+
+                return new RequestCookieCollection(store);
+            }
+            return Empty;
+        }
+
         public int Count
         {
             get
@@ -103,11 +113,6 @@ namespace Microsoft.AspNet.Http.Internal
             }
         }
 
-        /// <summary>
-        /// Determines whether the <see cref="T:Microsoft.AspNet.Http.Internal.HeaderDictionary" /> contains a specific key.
-        /// </summary>
-        /// <param name="key">The key.</param>
-        /// <returns>true if the <see cref="T:Microsoft.AspNet.Http.Internal.HeaderDictionary" /> contains a specific key; otherwise, false.</returns>
         public bool ContainsKey(string key)
         {
             if (Store == null)
@@ -117,26 +122,20 @@ namespace Microsoft.AspNet.Http.Internal
             return Store.ContainsKey(key);
         }
 
-        /// <summary>
-        /// Retrieves a value from the dictionary.
-        /// </summary>
-        /// <param name="key">The header name.</param>
-        /// <param name="value">The value.</param>
-        /// <returns>true if the <see cref="T:Microsoft.AspNet.Http.Internal.HeaderDictionary" /> contains the key; otherwise, false.</returns>
-        public bool TryGetValue(string key, out StringValues value)
+        public bool TryGetValue(string key, out string value)
         {
             if (Store == null)
             {
-                value = default(StringValues);
+                value = string.Empty;
                 return false;
             }
             return Store.TryGetValue(key, out value);
         }
 
         /// <summary>
-        /// Returns an struct enumerator that iterates through a collection without boxing and is also used via the <see cref="T:Microsoft.AspNet.Http.IFormCollection" /> interface.
+        /// Returns an struct enumerator that iterates through a collection without boxing.
         /// </summary>
-        /// <returns>An <see cref="T:Microsoft.AspNet.Http.StructEnumerator" /> object that can be used to iterate through the collection.</returns>
+        /// <returns>An <see cref="T:Microsoft.AspNet.Http.Internal.RequestCookies.Enumerator" /> object that can be used to iterate through the collection.</returns>
         public Enumerator GetEnumerator()
         {
             if (Store == null || Store.Count == 0)
@@ -152,7 +151,7 @@ namespace Microsoft.AspNet.Http.Internal
         /// Returns an enumerator that iterates through a collection, boxes in non-empty path.
         /// </summary>
         /// <returns>An <see cref="T:System.Collections.IEnumerator" /> object that can be used to iterate through the collection.</returns>
-        IEnumerator<KeyValuePair<string, StringValues>> IEnumerable<KeyValuePair<string, StringValues>>.GetEnumerator()
+        IEnumerator<KeyValuePair<string, string>> IEnumerable<KeyValuePair<string, string>>.GetEnumerator()
         {
             if (Store == null || Store.Count == 0)
             {
@@ -160,7 +159,7 @@ namespace Microsoft.AspNet.Http.Internal
                 return EmptyIEnumeratorType;
             }
             // Boxed Enumerator
-            return Store.GetEnumerator();
+            return GetEnumerator(); 
         }
 
         /// <summary>
@@ -175,16 +174,16 @@ namespace Microsoft.AspNet.Http.Internal
                 return EmptyIEnumerator;
             }
             // Boxed Enumerator
-            return Store.GetEnumerator();
+            return GetEnumerator();
         }
-
-        public struct Enumerator : IEnumerator<KeyValuePair<string, StringValues>>
+        
+        public struct Enumerator : IEnumerator<KeyValuePair<string, string>>
         {
             // Do NOT make this readonly, or MoveNext will not work
-            private Dictionary<string, StringValues>.Enumerator _dictionaryEnumerator;
+            private Dictionary<string, string>.Enumerator _dictionaryEnumerator;
             private bool _notEmpty;
 
-            internal Enumerator(Dictionary<string, StringValues>.Enumerator dictionaryEnumerator)
+            internal Enumerator(Dictionary<string, string>.Enumerator dictionaryEnumerator)
             {
                 _dictionaryEnumerator = dictionaryEnumerator;
                 _notEmpty = true;
@@ -199,20 +198,17 @@ namespace Microsoft.AspNet.Http.Internal
                 return false;
             }
 
-            public KeyValuePair<string, StringValues> Current
+            public KeyValuePair<string, string> Current
             {
                 get
                 {
                     if (_notEmpty)
                     {
-                        return _dictionaryEnumerator.Current;
+                        var current = _dictionaryEnumerator.Current;
+                        return new KeyValuePair<string, string>(current.Key, current.Value);
                     }
-                    return default(KeyValuePair<string, StringValues>);
+                    return default(KeyValuePair<string, string>);
                 }
-            }
-
-            public void Dispose()
-            {
             }
 
             object IEnumerator.Current
@@ -223,7 +219,11 @@ namespace Microsoft.AspNet.Http.Internal
                 }
             }
 
-            void IEnumerator.Reset()
+            public void Dispose()
+            {
+            }
+
+            public void Reset()
             {
                 if (_notEmpty)
                 {

@@ -74,7 +74,7 @@ namespace Microsoft.AspNet.WebUtilities
             return new MultipartSection() { Headers = headers, Body = _currentStream, BaseStreamOffset = baseStreamOffset };
         }
 
-        private async Task<IDictionary<string, StringValues>> ReadHeadersAsync(CancellationToken cancellationToken)
+        private async Task<Dictionary<string, StringValues>> ReadHeadersAsync(CancellationToken cancellationToken)
         {
             int totalSize = 0;
             var accumulator = new KeyValueAccumulator();
@@ -84,10 +84,10 @@ namespace Microsoft.AspNet.WebUtilities
                 totalSize += line.Length;
                 if (totalSize > TotalHeaderSizeLimit)
                 {
-                    throw new InvalidOperationException("Total header size limit exceeded: " + TotalHeaderSizeLimit);
+                    throw new InvalidOperationException("Total header size limit exceeded: " + TotalHeaderSizeLimit.ToString());
                 }
                 int splitIndex = line.IndexOf(':');
-                Debug.Assert(splitIndex > 0, "Invalid header line: " + line);
+                Debug.Assert(splitIndex > 0, $"Invalid header line: {line.ToString()}");
                 if (splitIndex >= 0)
                 {
                     var name = line.Substring(0, splitIndex);

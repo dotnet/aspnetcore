@@ -78,9 +78,49 @@ namespace Microsoft.AspNet.Http
             {
                 headers.Remove(name);
             }
+            else if (values.Count == 1)
+            {
+                headers[name] = new StringValues(values[0].ToString());
+            }
             else
             {
-                headers[name] = values.Select(value => value.ToString()).ToArray();
+                var newValues = new string[values.Count];
+                for (var i = 0; i < values.Count; i++)
+                {
+                    newValues[i] = values[i].ToString();
+                }
+                headers[name] = new StringValues(newValues);
+            }
+        }
+
+        public static void AppendList<T>(this IHeaderDictionary Headers, string name, IList<T> values)
+        {
+            if (name == null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
+            if (values == null)
+            {
+                throw new ArgumentNullException(nameof(values));
+            }
+
+            switch (values.Count)
+            {
+                case 0:
+                    Headers.Append(name, StringValues.Empty);
+                    break;
+                case 1:
+                    Headers.Append(name, new StringValues(values[0].ToString()));
+                    break;
+                default:
+                    var newValues = new string[values.Count];
+                    for (var i = 0; i < values.Count; i++)
+                    {
+                        newValues[i] = values[i].ToString();
+                    }
+                    Headers.Append(name, new StringValues(newValues));
+                    break;
             }
         }
 
@@ -139,7 +179,7 @@ namespace Microsoft.AspNet.Http
             if (KnownParsers.TryGetValue(typeof(T), out temp))
             {
                 var func = (Func<string, T>)temp;
-                return func(headers[name]);
+                return func(headers[name].ToString());
             }
 
             var value = headers[name];
@@ -148,7 +188,7 @@ namespace Microsoft.AspNet.Http
                 return default(T);
             }
 
-            return GetViaReflection<T>(value);
+            return GetViaReflection<T>(value.ToString());
         }
 
         internal static IList<T> GetList<T>(this IHeaderDictionary headers, string name)
@@ -162,7 +202,7 @@ namespace Microsoft.AspNet.Http
             if (KnownListParsers.TryGetValue(typeof(T), out temp))
             {
                 var func = (Func<IList<string>, IList<T>>)temp;
-                return func(headers[name]);
+                return func(headers[name].ToArray());
             }
 
             var values = headers[name];
@@ -179,7 +219,7 @@ namespace Microsoft.AspNet.Http
             // TODO: Cache the reflected type for later? Only if success?
             var type = typeof(T);
             var method = type.GetMethods(BindingFlags.Public | BindingFlags.Static)
-                .Where(methodInfo =>
+                .FirstOrDefault(methodInfo =>
                 {
                     if (string.Equals("TryParse", methodInfo.Name, StringComparison.Ordinal)
                         && methodInfo.ReturnParameter.ParameterType.Equals(typeof(bool)))
@@ -191,7 +231,7 @@ namespace Microsoft.AspNet.Http
                             && methodParams[1].ParameterType.Equals(type.MakeByRefType());
                     }
                     return false;
-                }).FirstOrDefault();
+                });
 
             if (method == null)
             {
@@ -213,7 +253,7 @@ namespace Microsoft.AspNet.Http
             // TODO: Cache the reflected type for later? Only if success?
             var type = typeof(T);
             var method = type.GetMethods(BindingFlags.Public | BindingFlags.Static)
-                .Where(methodInfo =>
+                .FirstOrDefault(methodInfo =>
                 {
                     if (string.Equals("TryParseList", methodInfo.Name, StringComparison.Ordinal)
                         && methodInfo.ReturnParameter.ParameterType.Equals(typeof(Boolean)))
@@ -225,7 +265,7 @@ namespace Microsoft.AspNet.Http
                             && methodParams[1].ParameterType.Equals(typeof(IList<T>).MakeByRefType());
                     }
                     return false;
-                }).FirstOrDefault();
+                });
 
             if (method == null)
             {

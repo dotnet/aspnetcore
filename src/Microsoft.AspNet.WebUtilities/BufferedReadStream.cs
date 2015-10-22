@@ -262,7 +262,7 @@ namespace Microsoft.AspNet.WebUtilities
         {
             if (minCount > _buffer.Length)
             {
-                throw new ArgumentOutOfRangeException(nameof(minCount), minCount, "The value must be smaller than the buffer size: " + _buffer.Length);
+                throw new ArgumentOutOfRangeException(nameof(minCount), minCount, "The value must be smaller than the buffer size: " + _buffer.Length.ToString());
             }
             while (_bufferCount < minCount)
             {
@@ -289,7 +289,7 @@ namespace Microsoft.AspNet.WebUtilities
         {
             if (minCount > _buffer.Length)
             {
-                throw new ArgumentOutOfRangeException(nameof(minCount), minCount, "The value must be smaller than the buffer size: " + _buffer.Length);
+                throw new ArgumentOutOfRangeException(nameof(minCount), minCount, "The value must be smaller than the buffer size: " + _buffer.Length.ToString());
             }
             while (_bufferCount < minCount)
             {
@@ -315,38 +315,42 @@ namespace Microsoft.AspNet.WebUtilities
         public string ReadLine(int lengthLimit)
         {
             CheckDisposed();
-            var builder = new MemoryStream(200);
-            bool foundCR = false, foundCRLF = false;
-
-            while (!foundCRLF && EnsureBuffered())
+            using (var builder = new MemoryStream(200))
             {
-                if (builder.Length > lengthLimit)
-                {
-                    throw new InvalidOperationException("Line length limit exceeded: " + lengthLimit);
-                }
-                ProcessLineChar(builder, ref foundCR, ref foundCRLF);
-            }
+                bool foundCR = false, foundCRLF = false;
 
-            return DecodeLine(builder, foundCRLF);
+                while (!foundCRLF && EnsureBuffered())
+                {
+                    if (builder.Length > lengthLimit)
+                    {
+                        throw new InvalidOperationException("Line length limit exceeded: " + lengthLimit.ToString());
+                    }
+                    ProcessLineChar(builder, ref foundCR, ref foundCRLF);
+                }
+
+                return DecodeLine(builder, foundCRLF);
+            }
         }
 
         public async Task<string> ReadLineAsync(int lengthLimit, CancellationToken cancellationToken)
         {
             CheckDisposed();
-            var builder = new MemoryStream(200);
-            bool foundCR = false, foundCRLF = false;
-
-            while (!foundCRLF && await EnsureBufferedAsync(cancellationToken))
+            using (var builder = new MemoryStream(200))
             {
-                if (builder.Length > lengthLimit)
+                bool foundCR = false, foundCRLF = false;
+
+                while (!foundCRLF && await EnsureBufferedAsync(cancellationToken))
                 {
-                    throw new InvalidOperationException("Line length limit exceeded: " + lengthLimit);
+                    if (builder.Length > lengthLimit)
+                    {
+                        throw new InvalidOperationException("Line length limit exceeded: " + lengthLimit.ToString());
+                    }
+
+                    ProcessLineChar(builder, ref foundCR, ref foundCRLF);
                 }
 
-                ProcessLineChar(builder, ref foundCR, ref foundCRLF);
+                return DecodeLine(builder, foundCRLF);
             }
-
-            return DecodeLine(builder, foundCRLF);
         }
 
         private void ProcessLineChar(MemoryStream builder, ref bool foundCR, ref bool foundCRLF)

@@ -10,13 +10,13 @@ namespace Microsoft.AspNet.Http.Internal
 {
     internal static class ParsingHelpers
     {
-        public static StringValues GetHeader(IDictionary<string, StringValues> headers, string key)
+        public static StringValues GetHeader(IHeaderDictionary headers, string key)
         {
             StringValues value;
             return headers.TryGetValue(key, out value) ? value : StringValues.Empty;
         }
 
-        public static StringValues GetHeaderSplit(IDictionary<string, StringValues> headers, string key)
+        public static StringValues GetHeaderSplit(IHeaderDictionary headers, string key)
         {
             var values = GetHeaderUnmodified(headers, key);
             return new StringValues(GetHeaderSplitImplementation(values).ToArray());
@@ -33,7 +33,7 @@ namespace Microsoft.AspNet.Http.Internal
             }
         }
 
-        public static StringValues GetHeaderUnmodified(IDictionary<string, StringValues> headers, string key)
+        public static StringValues GetHeaderUnmodified(IHeaderDictionary headers, string key)
         {
             if (headers == null)
             {
@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.Http.Internal
             return headers.TryGetValue(key, out values) ? values : StringValues.Empty;
         }
 
-        public static void SetHeaderJoined(IDictionary<string, StringValues> headers, string key, StringValues value)
+        public static void SetHeaderJoined(IHeaderDictionary headers, string key, StringValues value)
         {
             if (headers == null)
             {
@@ -61,35 +61,26 @@ namespace Microsoft.AspNet.Http.Internal
             }
             else
             {
-                headers[key] = string.Join(",", value.Select(QuoteIfNeeded));
+                headers[key] = string.Join(",", value.Select((s) => QuoteIfNeeded(s)));
             }
         }
 
         // Quote items that contain comas and are not already quoted.
         private static string QuoteIfNeeded(string value)
         {
-            if (string.IsNullOrWhiteSpace(value))
-            {
-                // Ignore
+            if (!string.IsNullOrWhiteSpace(value) && 
+                value.Contains(',') && 
+                (value[0] != '"' || value[value.Length - 1] != '"'))
+            { 
+                return $"\"{value}\"";
             }
-            else if (value.Contains(','))
-            {
-                if (value[0] != '"' || value[value.Length - 1] != '"')
-                {
-                    value = '"' + value + '"';
-                }
-            }
-
             return value;
         }
 
         private static string DeQuote(string value)
         {
-            if (string.IsNullOrWhiteSpace(value))
-            {
-                // Ignore
-            }
-            else if (value.Length > 1 && value[0] == '"' && value[value.Length - 1] == '"')
+            if (!string.IsNullOrWhiteSpace(value) && 
+                (value.Length > 1 && value[0] == '"' && value[value.Length - 1] == '"'))
             {
                 value = value.Substring(1, value.Length - 2);
             }
@@ -97,7 +88,7 @@ namespace Microsoft.AspNet.Http.Internal
             return value;
         }
 
-        public static void SetHeaderUnmodified(IDictionary<string, StringValues> headers, string key, StringValues? values)
+        public static void SetHeaderUnmodified(IHeaderDictionary headers, string key, StringValues? values)
         {
             if (headers == null)
             {
@@ -118,7 +109,7 @@ namespace Microsoft.AspNet.Http.Internal
             }
         }
 
-        public static void AppendHeaderJoined(IDictionary<string, StringValues> headers, string key, params string[] values)
+        public static void AppendHeaderJoined(IHeaderDictionary headers, string key, params string[] values)
         {
             if (headers == null)
             {
@@ -135,7 +126,7 @@ namespace Microsoft.AspNet.Http.Internal
                 return;
             }
 
-            string existing = GetHeader(headers, key);
+            string existing = GetHeader(headers, key).ToString();
             if (existing == null)
             {
                 SetHeaderJoined(headers, key, values);
@@ -146,7 +137,7 @@ namespace Microsoft.AspNet.Http.Internal
             }
         }
 
-        public static void AppendHeaderUnmodified(IDictionary<string, StringValues> headers, string key, StringValues values)
+        public static void AppendHeaderUnmodified(IHeaderDictionary headers, string key, StringValues values)
         {
             if (headers == null)
             {

@@ -12,6 +12,8 @@ namespace Microsoft.AspNet.Http
     /// </summary>
     public struct PathString : IEquatable<PathString>
     {
+        private static readonly char[] splitChar = { '/' };
+
         /// <summary>
         /// Represents the empty path. This field is read-only.
         /// </summary>
@@ -66,7 +68,24 @@ namespace Microsoft.AspNet.Http
         public string ToUriComponent()
         {
             // TODO: Measure the cost of this escaping and consider optimizing.
-            return HasValue ? string.Join("/", _value.Split('/').Select(UrlEncoder.Default.Encode)) : string.Empty;
+            if (!HasValue)
+            {
+                return string.Empty;
+            }
+            var values = _value.Split(splitChar);
+            var changed = false;
+            for (var i = 0; i < values.Length; i++)
+            {
+                var value = values[i];
+                values[i] = UrlEncoder.Default.Encode(value);
+
+                if (!changed && value != values[i])
+                {
+                    changed = true;
+                }
+            }
+
+            return changed ? string.Join("/", values) : _value;
         }
 
         /// <summary>

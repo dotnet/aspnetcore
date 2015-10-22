@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
@@ -18,14 +17,9 @@ namespace Microsoft.AspNet.Http.Features.Internal
         private IHttpRequestFeature _request;
 
         private StringValues _original;
-        private IReadableStringCollection _parsedValues;
-
-        public RequestCookiesFeature(IDictionary<string, StringValues> cookies)
-            : this(new ReadableStringCollection(cookies))
-        {
-        }
-
-        public RequestCookiesFeature(IReadableStringCollection cookies)
+        private IRequestCookieCollection _parsedValues;
+        
+        public RequestCookiesFeature(IRequestCookieCollection cookies)
         {
             if (cookies == null)
             {
@@ -59,32 +53,30 @@ namespace Microsoft.AspNet.Http.Features.Internal
             get { return FeatureHelpers.GetAndCache(this, _features, ref _request); }
         }
 
-        public IReadableStringCollection Cookies
+        public IRequestCookieCollection Cookies
         {
             get
             {
                 if (_features == null)
                 {
-                    return _parsedValues ?? ReadableStringCollection.Empty;
+                    if (_parsedValues == null)
+                    {
+                        _parsedValues = RequestCookieCollection.Empty;
+                    }
+                    return _parsedValues;
                 }
 
                 var headers = HttpRequestFeature.Headers;
                 StringValues current;
                 if (!headers.TryGetValue(HeaderNames.Cookie, out current))
                 {
-                    current = StringValues.Empty;
+                    current = string.Empty;
                 }
 
-                if (_parsedValues == null || !Enumerable.SequenceEqual(_original, current, StringComparer.Ordinal))
+                if (_parsedValues == null || _original != current)
                 {
                     _original = current;
-                    var collectionParser = _parsedValues as RequestCookiesCollection;
-                    if (collectionParser == null)
-                    {
-                        collectionParser = new RequestCookiesCollection();
-                        _parsedValues = collectionParser;
-                    }
-                    collectionParser.Reparse(current);
+                    _parsedValues = RequestCookieCollection.Parse(current.ToArray());
                 }
 
                 return _parsedValues;
@@ -104,10 +96,7 @@ namespace Microsoft.AspNet.Http.Features.Internal
                         var headers = new List<string>();
                         foreach (var pair in _parsedValues)
                         {
-                            foreach (var cookieValue in pair.Value)
-                            {
-                                headers.Add(new CookieHeaderValue(pair.Key, cookieValue).ToString());
-                            }
+                            headers.Add(new CookieHeaderValue(pair.Key, pair.Value).ToString());
                         }
                         _original = headers.ToArray();
                         HttpRequestFeature.Headers[HeaderNames.Cookie] = _original;

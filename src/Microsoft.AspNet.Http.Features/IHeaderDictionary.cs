@@ -7,7 +7,7 @@ using Microsoft.Extensions.Primitives;
 namespace Microsoft.AspNet.Http
 {
     /// <summary>
-    /// Represents request and response headers
+    /// Represents HttpRequest and HttpResponse headers
     /// </summary>
     public interface IHeaderDictionary : IDictionary<string, StringValues>
     {

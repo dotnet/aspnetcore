@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.Http
         /// <returns>the associated values from the collection separated into individual values, or StringValues.Empty if the key is not present.</returns>
         public static string[] GetCommaSeparatedValues(this IHeaderDictionary headers, string key)
         {
-            return ParsingHelpers.GetHeaderSplit(headers, key);
+            return ParsingHelpers.GetHeaderSplit(headers, key).ToArray();
         }
 
         /// <summary>

@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -16,7 +19,7 @@ namespace Microsoft.AspNet.Http.Internal
 
         public bool Equals(HeaderSegmentCollection other)
         {
-            return Equals(_headers, other._headers);
+            return StringValues.Equals(_headers, other._headers);
         }
 
         public override bool Equals(object obj)

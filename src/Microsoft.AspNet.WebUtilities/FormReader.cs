@@ -185,7 +185,7 @@ namespace Microsoft.AspNet.WebUtilities
         /// </summary>
         /// <param name="stream">The HTTP form body to parse.</param>
         /// <returns>The collection containing the parsed HTTP form body.</returns>
-        public static Task<IDictionary<string, StringValues>> ReadFormAsync(Stream stream, CancellationToken cancellationToken = new CancellationToken())
+        public static Task<Dictionary<string, StringValues>> ReadFormAsync(Stream stream, CancellationToken cancellationToken = new CancellationToken())
         {
             return ReadFormAsync(stream, Encoding.UTF8, cancellationToken);
         }
@@ -195,7 +195,7 @@ namespace Microsoft.AspNet.WebUtilities
         /// </summary>
         /// <param name="stream">The HTTP form body to parse.</param>
         /// <returns>The collection containing the parsed HTTP form body.</returns>
-        public static async Task<IDictionary<string, StringValues>> ReadFormAsync(Stream stream, Encoding encoding, CancellationToken cancellationToken = new CancellationToken())
+        public static async Task<Dictionary<string, StringValues>> ReadFormAsync(Stream stream, Encoding encoding, CancellationToken cancellationToken = new CancellationToken())
         {
             var reader = new FormReader(stream, encoding);
 

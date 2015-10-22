@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using Microsoft.AspNet.Http.Extensions;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Http.Headers
@@ -170,7 +170,7 @@ namespace Microsoft.AspNet.Http.Headers
         {
             get
             {
-                return HostString.FromUriComponent(Headers[HeaderNames.Host]);
+                return HostString.FromUriComponent(Headers[HeaderNames.Host].ToString());
             }
             set
             {
@@ -309,17 +309,7 @@ namespace Microsoft.AspNet.Http.Headers
 
         public void AppendList<T>(string name, IList<T> values)
         {
-            if (name == null)
-            {
-                throw new ArgumentNullException(nameof(name));
-            }
-
-            if (values == null)
-            {
-                throw new ArgumentNullException(nameof(values));
-            }
-
-            Headers.Append(name, values.Select(value => value.ToString()).ToArray());
+            Headers.AppendList<T>(name, values);
         }
     }
 }

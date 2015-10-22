@@ -5,6 +5,9 @@ using System.IO;
 
 namespace Microsoft.AspNet.Http
 {
+    /// <summary>
+    /// Represents a file sent with the HttpRequest.
+    /// </summary>
     public interface IFormFile
     {
         string ContentType { get; }

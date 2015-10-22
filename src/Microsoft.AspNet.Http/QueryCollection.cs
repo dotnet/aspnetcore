@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Microsoft.Extensions.Primitives;
@@ -8,11 +9,11 @@ using Microsoft.Extensions.Primitives;
 namespace Microsoft.AspNet.Http.Internal
 {
     /// <summary>
-    /// Contains the parsed form values.
+    /// The HttpRequest query string collection
     /// </summary>
-    public class FormCollection : IFormCollection
+    public class QueryCollection : IQueryCollection
     {
-        public static readonly FormCollection Empty = new FormCollection();
+        public static readonly QueryCollection Empty = new QueryCollection();
 #if DNXCORE50
         private static readonly string[] EmptyKeys = Array.Empty<string>();
         private static readonly StringValues[] EmptyValues = Array.Empty<StringValues>();
@@ -25,32 +26,26 @@ namespace Microsoft.AspNet.Http.Internal
         private static readonly IEnumerator<KeyValuePair<string, StringValues>> EmptyIEnumeratorType = EmptyEnumerator;
         private static readonly IEnumerator EmptyIEnumerator = EmptyEnumerator;
 
-        private static IFormFileCollection EmptyFiles = new FormFileCollection();
-
-        private IFormFileCollection _files;
-
-        private FormCollection()
-        {
-            // For static Empty
-        }
-
-        public FormCollection(Dictionary<string, StringValues> fields, IFormFileCollection files = null)
-        {
-            // can be null
-            Store = fields;
-            _files = files;
-        }
-
-        public IFormFileCollection Files
-        {
-            get
-            {
-                return _files ?? EmptyFiles;
-            }
-            private set { _files = value; }
-        }
-
         private Dictionary<string, StringValues> Store { get; set; }
+
+        public QueryCollection() 
+        {
+        }
+
+        public QueryCollection(Dictionary<string, StringValues> store)
+        {
+            Store = store;
+        }
+
+        public QueryCollection(QueryCollection store)
+        {
+            Store = store.Store;
+        }
+
+        public QueryCollection(int capacity)
+        {
+            Store = new Dictionary<string, StringValues>(capacity, StringComparer.OrdinalIgnoreCase);
+        }
 
         /// <summary>
         /// Get or sets the associated value from the collection as a single string.
@@ -134,9 +129,9 @@ namespace Microsoft.AspNet.Http.Internal
         }
 
         /// <summary>
-        /// Returns an struct enumerator that iterates through a collection without boxing and is also used via the <see cref="T:Microsoft.AspNet.Http.IFormCollection" /> interface.
+        /// Returns an enumerator that iterates through a collection.
         /// </summary>
-        /// <returns>An <see cref="T:Microsoft.AspNet.Http.StructEnumerator" /> object that can be used to iterate through the collection.</returns>
+        /// <returns>An <see cref="T:System.Collections.IEnumerator" /> object that can be used to iterate through the collection.</returns>
         public Enumerator GetEnumerator()
         {
             if (Store == null || Store.Count == 0)
@@ -144,12 +139,11 @@ namespace Microsoft.AspNet.Http.Internal
                 // Non-boxed Enumerator
                 return EmptyEnumerator;
             }
-            // Non-boxed Enumerator
             return new Enumerator(Store.GetEnumerator());
         }
 
         /// <summary>
-        /// Returns an enumerator that iterates through a collection, boxes in non-empty path.
+        /// Returns an enumerator that iterates through a collection.
         /// </summary>
         /// <returns>An <see cref="T:System.Collections.IEnumerator" /> object that can be used to iterate through the collection.</returns>
         IEnumerator<KeyValuePair<string, StringValues>> IEnumerable<KeyValuePair<string, StringValues>>.GetEnumerator()
@@ -159,12 +153,11 @@ namespace Microsoft.AspNet.Http.Internal
                 // Non-boxed Enumerator
                 return EmptyIEnumeratorType;
             }
-            // Boxed Enumerator
             return Store.GetEnumerator();
         }
 
         /// <summary>
-        /// Returns an enumerator that iterates through a collection, boxes in non-empty path.
+        /// Returns an enumerator that iterates through a collection.
         /// </summary>
         /// <returns>An <see cref="T:System.Collections.IEnumerator" /> object that can be used to iterate through the collection.</returns>
         IEnumerator IEnumerable.GetEnumerator()
@@ -174,7 +167,6 @@ namespace Microsoft.AspNet.Http.Internal
                 // Non-boxed Enumerator
                 return EmptyIEnumerator;
             }
-            // Boxed Enumerator
             return Store.GetEnumerator();
         }
 

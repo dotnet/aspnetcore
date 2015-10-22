@@ -2,10 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.WebUtilities;
-using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNet.Http.Features.Internal
 {
@@ -17,18 +15,9 @@ namespace Microsoft.AspNet.Http.Features.Internal
         private IHttpRequestFeature _request;
 
         private string _original;
-        private IReadableStringCollection _parsedValues;
+        private IQueryCollection _parsedValues;
 
-        public QueryFeature(IDictionary<string, StringValues> query)
-            : this(new ReadableStringCollection(query))
-        {
-            if (query == null)
-            {
-                throw new ArgumentNullException(nameof(query));
-            }
-        }
-
-        public QueryFeature(IReadableStringCollection query)
+        public QueryFeature(IQueryCollection query)
         {
             if (query == null)
             {
@@ -62,20 +51,34 @@ namespace Microsoft.AspNet.Http.Features.Internal
             get { return FeatureHelpers.GetAndCache(this, _features, ref _request); }
         }
 
-        public IReadableStringCollection Query
+        public IQueryCollection Query
         {
             get
             {
                 if (_features == null)
                 {
-                    return _parsedValues ?? ReadableStringCollection.Empty;
+                    if (_parsedValues == null)
+                    {
+                        _parsedValues = QueryCollection.Empty;
+                    }
+                    return _parsedValues;
                 }
 
                 var current = HttpRequestFeature.QueryString;
                 if (_parsedValues == null || !string.Equals(_original, current, StringComparison.Ordinal))
                 {
                     _original = current;
-                    _parsedValues = new ReadableStringCollection(QueryHelpers.ParseQuery(current));
+
+                    var result = QueryHelpers.ParseNullableQuery(current);
+
+                    if (result == null)
+                    {
+                        _parsedValues = QueryCollection.Empty;
+                    }
+                    else
+                    {
+                        _parsedValues = new QueryCollection(result);
+                    }
                 }
                 return _parsedValues;
             }

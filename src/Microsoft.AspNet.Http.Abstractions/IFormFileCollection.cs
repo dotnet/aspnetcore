@@ -5,6 +5,9 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNet.Http
 {
+    /// <summary>
+    /// Represents the collection of files sent with the HttpRequest.
+    /// </summary>
     public interface IFormFileCollection : IReadOnlyList<IFormFile>
     {
         IFormFile this[string name] { get; }

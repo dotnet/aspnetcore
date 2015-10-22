@@ -5,6 +5,6 @@ namespace Microsoft.AspNet.Http.Features.Internal
 {
     public interface IQueryFeature
     {
-        IReadableStringCollection Query { get; set; }
+        IQueryCollection Query { get; set; }
     }
 }

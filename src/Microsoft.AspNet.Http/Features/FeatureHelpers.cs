@@ -5,12 +5,13 @@ using System;
 
 namespace Microsoft.AspNet.Http.Features
 {
-    internal sealed class FeatureHelpers
+    internal static class FeatureHelpers
     {
         public static T GetAndCache<T>(
             IFeatureCache cache, 
             IFeatureCollection features, 
             ref T cachedObject)
+            where T : class
         {
             cache.CheckFeaturesRevision();
 
@@ -26,6 +27,7 @@ namespace Microsoft.AspNet.Http.Features
         public static T GetOrCreate<T>(
             IFeatureCollection features,
             Func<T> factory)
+            where T : class
         {
             T obj = features.Get<T>();
             if (obj == null)
@@ -43,6 +45,7 @@ namespace Microsoft.AspNet.Http.Features
             IFeatureCollection features,
             Func<T> factory,
             ref T cachedObject)
+            where T : class
         {
             cache.CheckFeaturesRevision();
 
@@ -65,6 +68,7 @@ namespace Microsoft.AspNet.Http.Features
             IFeatureCollection features, 
             Func<IFeatureCollection, T> factory,
             ref T cachedObject)
+            where T : class
         {
             cache.CheckFeaturesRevision();
 
@@ -88,6 +92,7 @@ namespace Microsoft.AspNet.Http.Features
             HttpRequest request,
             Func<HttpRequest, T> factory,
             ref T cachedObject)
+            where T : class
         {
             cache.CheckFeaturesRevision();
 
