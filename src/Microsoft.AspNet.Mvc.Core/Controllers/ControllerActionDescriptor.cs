@@ -8,7 +8,7 @@ using Microsoft.AspNet.Mvc.Abstractions;
 
 namespace Microsoft.AspNet.Mvc.Controllers
 {
-    [DebuggerDisplay("CA {DisplayName}(RC-{RouteConstraints.Count})")]
+    [DebuggerDisplay("{DisplayName}")]
     public class ControllerActionDescriptor : ActionDescriptor
     {
         public string ControllerName { get; set; }

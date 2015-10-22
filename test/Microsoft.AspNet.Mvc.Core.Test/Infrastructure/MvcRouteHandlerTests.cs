@@ -38,7 +38,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
 
             // Assert
             Assert.Single(sink.Scopes);
-            Assert.StartsWith("ActionId: ", sink.Scopes[0].Scope?.ToString());
+            Assert.Equal(displayName, sink.Scopes[0].Scope?.ToString());
             Assert.Single(sink.Writes);
             Assert.Equal(expectedMessage, sink.Writes[0].State?.ToString());
         }
