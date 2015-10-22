@@ -59,7 +59,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 httpContext,
                 modelBindingKey,
                 bindingContext.ModelState,
-                bindingContext.ModelType);
+                bindingContext.ModelMetadata);
             var formatters = bindingContext.OperationBindingContext.InputFormatters;
             var formatter = formatters.FirstOrDefault(f => f.CanRead(formatterContext));
 
@@ -95,7 +95,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
             catch (Exception ex)
             {
-                bindingContext.ModelState.AddModelError(modelBindingKey, ex);
+                bindingContext.ModelState.AddModelError(modelBindingKey, ex, bindingContext.ModelMetadata);
 
                 // This model binder is the only handler for the Body binding source and it cannot run twice. Always
                 // tell the model binding system to skip other model binders and never to fall back i.e. indicate a

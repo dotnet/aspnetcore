@@ -592,7 +592,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var validationState = modelState.GetFieldValidationState(modelStateKey);
             if (validationState == ModelValidationState.Unvalidated)
             {
-                modelState.AddModelError(modelStateKey, exception);
+                modelState.AddModelError(modelStateKey, exception, bindingContext.ModelMetadata);
             }
         }
 

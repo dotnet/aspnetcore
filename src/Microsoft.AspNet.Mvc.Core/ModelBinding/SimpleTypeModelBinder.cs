@@ -60,9 +60,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                     return ModelBindingResult.SuccessAsync(bindingContext.ModelName, model);
                 }
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                bindingContext.ModelState.TryAddModelError(bindingContext.ModelName, ex);
+                bindingContext.ModelState.TryAddModelError(
+                    bindingContext.ModelName,
+                    exception,
+                    bindingContext.ModelMetadata);
 
                 // Were able to find a converter for the type but conversion failed.
                 // Tell the model binding system to skip other model binders.

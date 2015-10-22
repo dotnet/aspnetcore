@@ -69,7 +69,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// <remarks>
         /// <para>
         /// <see cref="ModelStateDictionary"/> tracks the number of model errors added by calls to
-        /// <see cref="AddModelError(string, Exception)"/> or <see cref="TryAddModelError(string, Exception)"/>.
+        /// <see cref="AddModelError(string, Exception, ModelMetadata)"/> or
+        /// <see cref="TryAddModelError(string, Exception, ModelMetadata)"/>.
         /// Once the value of <code>MaxAllowedErrors - 1</code> is reached, if another attempt is made to add an error,
         /// the error message will be ignored and a <see cref="TooManyModelErrorsException"/> will be added.
         /// </para>
@@ -202,7 +203,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// </summary>
         /// <param name="key">The key of the <see cref="ModelStateEntry"/> to add errors to.</param>
         /// <param name="exception">The <see cref="Exception"/> to add.</param>
-        public void AddModelError(string key, Exception exception)
+        public void AddModelError(string key, Exception exception, ModelMetadata metadata)
         {
             if (key == null)
             {
@@ -214,7 +215,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 throw new ArgumentNullException(nameof(exception));
             }
 
-            TryAddModelError(key, exception);
+            if (metadata == null)
+            {
+                throw new ArgumentNullException(nameof(metadata));
+            }
+
+            TryAddModelError(key, exception, metadata);
         }
 
         /// <summary>
@@ -228,7 +234,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// <c>True</c> if the given error was added, <c>false</c> if the error was ignored.
         /// See <see cref="MaxAllowedErrors"/>.
         /// </returns>
-        public bool TryAddModelError(string key, Exception exception)
+        public bool TryAddModelError(string key, Exception exception, ModelMetadata metadata)
         {
             if (key == null)
             {
@@ -238,6 +244,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             if (exception == null)
             {
                 throw new ArgumentNullException(nameof(exception));
+            }
+
+            if (metadata == null)
+            {
+                throw new ArgumentNullException(nameof(metadata));
             }
 
             if (ErrorCount >= MaxAllowedErrors - 1)
@@ -252,16 +263,17 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 ModelStateEntry entry;
                 TryGetValue(key, out entry);
 
+                var name = metadata.GetDisplayName();
                 string errorMessage;
                 if (entry == null)
                 {
-                    errorMessage = Resources.FormatModelError_InvalidValue_GenericMessage(key);
+                    errorMessage = Resources.FormatModelError_InvalidValue_GenericMessage(name);
                 }
                 else
                 {
                     errorMessage = Resources.FormatModelError_InvalidValue_MessageWithModelValue(
                         entry.AttemptedValue,
-                        key);
+                        name);
                 }
 
                 return TryAddModelError(key, errorMessage);

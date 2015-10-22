@@ -244,7 +244,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
             var error = Assert.Single(entry.Errors);
             Assert.Null(error.Exception);
-            Assert.Equal("The value 'abcd' is not valid for Parameter1.", error.ErrorMessage);
+            Assert.Equal("The value 'abcd' is not valid for Int32.", error.ErrorMessage);
         }
 
         [Theory]

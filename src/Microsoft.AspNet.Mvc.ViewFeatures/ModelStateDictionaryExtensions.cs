@@ -26,6 +26,21 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             Expression<Func<TModel, object>> expression,
             string errorMessage)
         {
+            if (modelState == null)
+            {
+                throw new ArgumentNullException(nameof(modelState));
+            }
+
+            if (expression == null)
+            {
+                throw new ArgumentNullException(nameof(expression));
+            }
+
+            if (errorMessage == null)
+            {
+                throw new ArgumentNullException(nameof(errorMessage));
+            }
+
             modelState.AddModelError(GetExpressionText(expression), errorMessage);
         }
 
@@ -40,9 +55,25 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public static void AddModelError<TModel>(
             this ModelStateDictionary modelState,
             Expression<Func<TModel, object>> expression,
-            Exception exception)
+            Exception exception,
+            ModelMetadata metadata)
         {
-            modelState.AddModelError(GetExpressionText(expression), exception);
+            if (modelState == null)
+            {
+                throw new ArgumentNullException(nameof(modelState));
+            }
+
+            if (expression == null)
+            {
+                throw new ArgumentNullException(nameof(expression));
+            }
+
+            if (metadata == null)
+            {
+                throw new ArgumentNullException(nameof(metadata));
+            }
+
+            modelState.AddModelError(GetExpressionText(expression), exception, metadata);
         }
 
         /// <summary>
@@ -59,6 +90,16 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             this ModelStateDictionary modelState,
             Expression<Func<TModel, object>> expression)
         {
+            if (modelState == null)
+            {
+                throw new ArgumentNullException(nameof(modelState));
+            }
+
+            if (expression == null)
+            {
+                throw new ArgumentNullException(nameof(expression));
+            }
+
             return modelState.Remove(GetExpressionText(expression));
         }
 
@@ -73,6 +114,16 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             this ModelStateDictionary modelState,
             Expression<Func<TModel, object>> expression)
         {
+            if (modelState == null)
+            {
+                throw new ArgumentNullException(nameof(modelState));
+            }
+
+            if (expression == null)
+            {
+                throw new ArgumentNullException(nameof(expression));
+            }
+
             string modelKey = GetExpressionText(expression);
             if (string.IsNullOrEmpty(modelKey))
             {

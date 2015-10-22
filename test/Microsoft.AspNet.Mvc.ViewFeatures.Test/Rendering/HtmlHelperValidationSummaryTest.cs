@@ -343,23 +343,29 @@ namespace Microsoft.AspNet.Mvc.Rendering
             modelState.AddModelError("Property3.OrderedProperty3", "This is an error for Property3.OrderedProperty3.");
             modelState.AddModelError("Property3.OrderedProperty2", "This is an error for Property3.OrderedProperty2.");
 
+            var provider = new EmptyModelMetadataProvider();
+            var metadata = provider.GetMetadataForProperty(typeof(ValidationModel), nameof(ValidationModel.Property3));
             modelState.AddModelError("Property3", "This is an error for Property3.");
-            modelState.AddModelError("Property3", new InvalidCastException("Exception will be ignored."));
+            modelState.AddModelError("Property3", new InvalidCastException("Exception will be ignored."), metadata);
 
+            metadata = provider.GetMetadataForProperty(typeof(ValidationModel), nameof(ValidationModel.Property2));
             modelState.AddModelError("Property2", "This is an error for Property2.");
             modelState.AddModelError("Property2", "This is another error for Property2.");
-            modelState.AddModelError("Property2", new OverflowException("Produces invalid value message"));
+            modelState.AddModelError("Property2", new OverflowException("Produces invalid value message"), metadata);
 
+            metadata = provider.GetMetadataForType(typeof(ValidationModel));
             modelState.AddModelError(string.Empty, "This is an error for the model root.");
             modelState.AddModelError(string.Empty, "This is another error for the model root.");
-            modelState.AddModelError(string.Empty, new InvalidOperationException("Another ignored Exception."));
+            modelState.AddModelError(string.Empty, new InvalidOperationException("Another ignored Exception."), metadata);
         }
 
         // Adds one or more errors for all properties in OrderedModel. But adds errors out of order.
         private void AddOrderedErrors(ModelStateDictionary modelState)
         {
+            var provider = new EmptyModelMetadataProvider();
+            var metadata = provider.GetMetadataForProperty(typeof(OrderedModel), nameof(OrderedModel.Property3));
             modelState.AddModelError("Property3", "This is an error for Property3.");
-            modelState.AddModelError("Property3", new InvalidCastException("An ignored Exception."));
+            modelState.AddModelError("Property3", new InvalidCastException("An ignored Exception."), metadata);
 
             modelState.AddModelError("Property2", "This is an error for Property2.");
             modelState.AddModelError("Property2", "This is another error for Property2.");

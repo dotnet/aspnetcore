@@ -38,11 +38,13 @@ namespace Microsoft.AspNet.Mvc.Formatters
             var contentBytes = Encoding.UTF8.GetBytes("content");
 
             var httpContext = GetHttpContext(contentBytes, contentType: requestContentType);
+            var provider = new EmptyModelMetadataProvider();
+            var metadata = provider.GetMetadataForType(typeof(string));
             var formatterContext = new InputFormatterContext(
                 httpContext,
                 modelName: string.Empty,
                 modelState: new ModelStateDictionary(),
-                modelType: typeof(string));
+                metadata: metadata);
 
             // Act
             var result = formatter.CanRead(formatterContext);
@@ -84,11 +86,13 @@ namespace Microsoft.AspNet.Mvc.Formatters
             var contentBytes = Encoding.UTF8.GetBytes(content);
 
             var httpContext = GetHttpContext(contentBytes);
+            var provider = new EmptyModelMetadataProvider();
+            var metadata = provider.GetMetadataForType(type);
             var context = new InputFormatterContext(
                 httpContext,
                 modelName: string.Empty,
                 modelState: new ModelStateDictionary(),
-                modelType: type);
+                metadata: metadata);
 
             // Act
             var result = await formatter.ReadAsync(context);
@@ -107,11 +111,13 @@ namespace Microsoft.AspNet.Mvc.Formatters
             var contentBytes = Encoding.UTF8.GetBytes(content);
 
             var httpContext = GetHttpContext(contentBytes);
+            var provider = new EmptyModelMetadataProvider();
+            var metadata = provider.GetMetadataForType(typeof(User));
             var context = new InputFormatterContext(
                 httpContext,
                 modelName: string.Empty,
                 modelState: new ModelStateDictionary(),
-                modelType: typeof(User));
+                metadata: metadata);
 
             // Act
             var result = await formatter.ReadAsync(context);
@@ -133,11 +139,13 @@ namespace Microsoft.AspNet.Mvc.Formatters
 
             var modelState = new ModelStateDictionary();
             var httpContext = GetHttpContext(contentBytes);
+            var provider = new EmptyModelMetadataProvider();
+            var metadata = provider.GetMetadataForType(typeof(User));
             var context = new InputFormatterContext(
                 httpContext,
                 modelName: string.Empty,
                 modelState: modelState,
-                modelType: typeof(User));
+                metadata: metadata);
 
             // Act
             var result = await formatter.ReadAsync(context);
@@ -150,6 +158,61 @@ namespace Microsoft.AspNet.Mvc.Formatters
         }
 
         [Fact]
+        public async Task ReadAsync_InvalidArray_AddsOverflowErrorsToModelState()
+        {
+            // Arrange
+            var content = "[0, 23, 300]";
+            var formatter = new JsonInputFormatter();
+            var contentBytes = Encoding.UTF8.GetBytes(content);
+
+            var modelState = new ModelStateDictionary();
+            var httpContext = GetHttpContext(contentBytes);
+            var provider = new EmptyModelMetadataProvider();
+            var metadata = provider.GetMetadataForType(typeof(byte[]));
+            var context = new InputFormatterContext(
+                httpContext,
+                modelName: string.Empty,
+                modelState: modelState,
+                metadata: metadata);
+
+            // Act
+            var result = await formatter.ReadAsync(context);
+
+            // Assert
+            Assert.True(result.HasError);
+            Assert.Equal("The supplied value is invalid for Byte.", modelState["[2]"].Errors[0].ErrorMessage);
+            Assert.Null(modelState["[2]"].Errors[0].Exception);
+        }
+
+        [Fact]
+        public async Task ReadAsync_InvalidComplexArray_AddsOverflowErrorsToModelState()
+        {
+            // Arrange
+            var content = "[{name: 'Name One', Age: 30}, {name: 'Name Two', Small: 300}]";
+            var formatter = new JsonInputFormatter();
+            var contentBytes = Encoding.UTF8.GetBytes(content);
+
+            var modelState = new ModelStateDictionary();
+            var httpContext = GetHttpContext(contentBytes);
+            var provider = new EmptyModelMetadataProvider();
+            var metadata = provider.GetMetadataForType(typeof(User[]));
+            var context = new InputFormatterContext(
+                httpContext,
+                modelName: "names",
+                modelState: modelState,
+                metadata: metadata);
+
+            // Act
+            var result = await formatter.ReadAsync(context);
+
+            // Assert
+            Assert.True(result.HasError);
+            Assert.Equal(
+                "Error converting value 300 to type 'System.Byte'. Path '[1].Small', line 1, position 59.",
+                modelState["names[1].Small"].Errors[0].Exception.Message);
+        }
+
+        [Fact]
         public async Task ReadAsync_UsesTryAddModelValidationErrorsToModelState()
         {
             // Arrange
@@ -159,11 +222,13 @@ namespace Microsoft.AspNet.Mvc.Formatters
 
             var modelState = new ModelStateDictionary();
             var httpContext = GetHttpContext(contentBytes);
+            var provider = new EmptyModelMetadataProvider();
+            var metadata = provider.GetMetadataForType(typeof(User));
             var context = new InputFormatterContext(
                 httpContext,
                 modelName: string.Empty,
                 modelState: modelState,
-                modelType: typeof(User));
+                metadata: metadata);
 
             modelState.MaxAllowedErrors = 3;
             modelState.AddModelError("key1", "error1");
@@ -215,11 +280,13 @@ namespace Microsoft.AspNet.Mvc.Formatters
 
             var modelState = new ModelStateDictionary();
             var httpContext = GetHttpContext(contentBytes, "application/json;charset=utf-8");
+            var provider = new EmptyModelMetadataProvider();
+            var metadata = provider.GetMetadataForType(typeof(UserLogin));
             var inputFormatterContext = new InputFormatterContext(
                 httpContext,
                 modelName: string.Empty,
                 modelState: modelState,
-                modelType: typeof(UserLogin));
+                metadata: metadata);
 
             // Act
             var result = await jsonFormatter.ReadAsync(inputFormatterContext);
@@ -248,11 +315,13 @@ namespace Microsoft.AspNet.Mvc.Formatters
 
             var modelState = new ModelStateDictionary();
             var httpContext = GetHttpContext(contentBytes, "application/json;charset=utf-8");
+            var provider = new EmptyModelMetadataProvider();
+            var metadata = provider.GetMetadataForType(typeof(UserLogin));
             var inputFormatterContext = new InputFormatterContext(
                 httpContext,
                 modelName: string.Empty,
                 modelState: modelState,
-                modelType: typeof(UserLogin));
+                metadata: metadata);
 
             // Act
             var result = await jsonFormatter.ReadAsync(inputFormatterContext);
@@ -315,6 +384,8 @@ namespace Microsoft.AspNet.Mvc.Formatters
             public string Name { get; set; }
 
             public decimal Age { get; set; }
+
+            public byte Small { get; set; }
         }
 
         private sealed class UserLogin

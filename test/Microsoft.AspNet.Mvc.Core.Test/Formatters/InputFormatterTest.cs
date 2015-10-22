@@ -36,11 +36,14 @@ namespace Microsoft.AspNet.Mvc.Formatters
             var formatter = new CatchAllFormatter();
             var httpContext = new DefaultHttpContext();
             httpContext.Request.ContentType = requestContentType;
+
+            var provider = new EmptyModelMetadataProvider();
+            var metadata = provider.GetMetadataForType(typeof(void));
             var context = new InputFormatterContext(
                 httpContext,
                 modelName: string.Empty,
                 modelState: new ModelStateDictionary(),
-                modelType: typeof(void));
+                metadata: metadata);
 
             // Act
             var result = formatter.CanRead(context);
@@ -66,11 +69,14 @@ namespace Microsoft.AspNet.Mvc.Formatters
             var formatter = new MultipartFormatter();
             var httpContext = new DefaultHttpContext();
             httpContext.Request.ContentType = requestContentType;
+
+            var provider = new EmptyModelMetadataProvider();
+            var metadata = provider.GetMetadataForType(typeof(void));
             var context = new InputFormatterContext(
                 httpContext,
                 modelName: string.Empty,
                 modelState: new ModelStateDictionary(),
-                modelType: typeof(void));
+                metadata: metadata);
 
             // Act
             var result = formatter.CanRead(context);
@@ -93,11 +99,14 @@ namespace Microsoft.AspNet.Mvc.Formatters
             var formatter = new MultipartFormatter();
             var httpContext = new DefaultHttpContext();
             httpContext.Request.ContentType = requestContentType;
+
+            var provider = new EmptyModelMetadataProvider();
+            var metadata = provider.GetMetadataForType(typeof(void));
             var context = new InputFormatterContext(
                 httpContext,
                 modelName: string.Empty,
                 modelState: new ModelStateDictionary(),
-                modelType: typeof(void));
+                metadata: metadata);
 
             // Act
             var result = formatter.CanRead(context);
@@ -123,11 +132,14 @@ namespace Microsoft.AspNet.Mvc.Formatters
             var formatter = new MultipartMixedFormatter();
             var httpContext = new DefaultHttpContext();
             httpContext.Request.ContentType = requestContentType;
+
+            var provider = new EmptyModelMetadataProvider();
+            var metadata = provider.GetMetadataForType(typeof(void));
             var context = new InputFormatterContext(
                 httpContext,
                 modelName: string.Empty,
                 modelState: new ModelStateDictionary(),
-                modelType: typeof(void));
+                metadata: metadata);
 
             // Act
             var result = formatter.CanRead(context);
@@ -150,11 +162,14 @@ namespace Microsoft.AspNet.Mvc.Formatters
             var formatter = new MultipartMixedFormatter();
             var httpContext = new DefaultHttpContext();
             httpContext.Request.ContentType = requestContentType;
+
+            var provider = new EmptyModelMetadataProvider();
+            var metadata = provider.GetMetadataForType(typeof(void));
             var context = new InputFormatterContext(
                 httpContext,
                 modelName: string.Empty,
                 modelState: new ModelStateDictionary(),
-                modelType: typeof(void));
+                metadata: metadata);
 
             // Act
             var result = formatter.CanRead(context);
@@ -183,11 +198,14 @@ namespace Microsoft.AspNet.Mvc.Formatters
             var formatter = new MathMLFormatter();
             var httpContext = new DefaultHttpContext();
             httpContext.Request.ContentType = requestContentType;
+
+            var provider = new EmptyModelMetadataProvider();
+            var metadata = provider.GetMetadataForType(typeof(void));
             var context = new InputFormatterContext(
                 httpContext,
                 modelName: string.Empty,
                 modelState: new ModelStateDictionary(),
-                modelType: typeof(void));
+                metadata: metadata);
 
             // Act
             var result = formatter.CanRead(context);
@@ -209,11 +227,14 @@ namespace Microsoft.AspNet.Mvc.Formatters
             var formatter = new MathMLFormatter();
             var httpContext = new DefaultHttpContext();
             httpContext.Request.ContentType = requestContentType;
+
+            var provider = new EmptyModelMetadataProvider();
+            var metadata = provider.GetMetadataForType(typeof(void));
             var context = new InputFormatterContext(
                 httpContext,
                 modelName: string.Empty,
                 modelState: new ModelStateDictionary(),
-                modelType: typeof(void));
+                metadata: metadata);
 
             // Act
             var result = formatter.CanRead(context);
@@ -240,11 +261,14 @@ namespace Microsoft.AspNet.Mvc.Formatters
             var formatter = new XmlFormatter();
             var httpContext = new DefaultHttpContext();
             httpContext.Request.ContentType = requestContentType;
+
+            var provider = new EmptyModelMetadataProvider();
+            var metadata = provider.GetMetadataForType(typeof(void));
             var context = new InputFormatterContext(
                 httpContext,
                 modelName: string.Empty,
                 modelState: new ModelStateDictionary(),
-                modelType: typeof(void));
+                metadata: metadata);
 
             // Act
             var result = formatter.CanRead(context);
@@ -268,11 +292,14 @@ namespace Microsoft.AspNet.Mvc.Formatters
             var formatter = new XmlFormatter();
             var httpContext = new DefaultHttpContext();
             httpContext.Request.ContentType = requestContentType;
+
+            var provider = new EmptyModelMetadataProvider();
+            var metadata = provider.GetMetadataForType(typeof(void));
             var context = new InputFormatterContext(
                 httpContext,
                 modelName: string.Empty,
                 modelState: new ModelStateDictionary(),
-                modelType: typeof(void));
+                metadata: metadata);
 
             // Act
             var result = formatter.CanRead(context);

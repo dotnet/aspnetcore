@@ -50,9 +50,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 var model = Convert.FromBase64String(value);
                 return ModelBindingResult.SuccessAsync(bindingContext.ModelName, model);
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                bindingContext.ModelState.TryAddModelError(bindingContext.ModelName, ex);
+                bindingContext.ModelState.TryAddModelError(
+                    bindingContext.ModelName,
+                    exception,
+                    bindingContext.ModelMetadata);
             }
 
             // Matched the type (byte[]) only this binder supports. As in missing data cases, always tell the model

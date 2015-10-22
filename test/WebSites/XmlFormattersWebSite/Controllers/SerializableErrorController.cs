@@ -24,7 +24,7 @@ namespace XmlFormattersWebSite.Controllers
             }
 
             ModelState.AddModelError("key1", "key1-error");
-            ModelState.AddModelError("key2", exception);
+            ModelState.AddModelError("key2", exception, ViewData.ModelMetadata);
 
             return new ObjectResult(new SerializableError(ModelState));
         }

@@ -1443,7 +1443,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             var result = await response.Content.ReadAsStringAsync();
-            Assert.Equal("The value 'random string' is not valid for birthdate.", result);
+            Assert.Equal("The value 'random string' is not valid for DateTime.", result);
         }
 
         [Fact]

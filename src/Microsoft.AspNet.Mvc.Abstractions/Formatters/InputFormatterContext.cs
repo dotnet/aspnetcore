@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.Mvc.Formatters
             HttpContext httpContext,
             string modelName,
             ModelStateDictionary modelState,
-            Type modelType)
+            ModelMetadata metadata)
         {
             if (httpContext == null)
             {
@@ -46,15 +46,16 @@ namespace Microsoft.AspNet.Mvc.Formatters
                 throw new ArgumentNullException(nameof(modelState));
             }
 
-            if (modelType == null)
+            if (metadata == null)
             {
-                throw new ArgumentNullException(nameof(modelType));
+                throw new ArgumentNullException(nameof(metadata));
             }
 
             HttpContext = httpContext;
             ModelName = modelName;
             ModelState = modelState;
-            ModelType = modelType;
+            Metadata = metadata;
+            ModelType = metadata.ModelType;
         }
 
         /// <summary>
@@ -73,7 +74,12 @@ namespace Microsoft.AspNet.Mvc.Formatters
         public ModelStateDictionary ModelState { get; }
 
         /// <summary>
-        /// Gets the expected <see cref="Type"/> of the model represented by the request body.
+        /// Gets the requested <see cref="ModelMetadata"/> of the request body deserialization.
+        /// </summary>
+        public ModelMetadata Metadata { get; }
+
+        /// <summary>
+        /// Gets the requested <see cref="Type"/> of the request body deserialization.
         /// </summary>
         public Type ModelType { get; }
     }

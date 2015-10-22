@@ -59,11 +59,13 @@ namespace Microsoft.AspNet.Mvc.Formatters.Xml
             var modelState = new ModelStateDictionary();
             var httpContext = GetHttpContext(contentBytes, contentType: requestContentType);
 
+            var provider = new EmptyModelMetadataProvider();
+            var metadata = provider.GetMetadataForType(typeof(string));
             var formatterContext = new InputFormatterContext(
                 httpContext,
                 modelName: string.Empty,
                 modelState: modelState,
-                modelType: typeof(string));
+                metadata: metadata);
 
             // Act
             var result = formatter.CanRead(formatterContext);
@@ -342,11 +344,13 @@ namespace Microsoft.AspNet.Mvc.Formatters.Xml
             var modelState = new ModelStateDictionary();
             var httpContext = GetHttpContext(inputBytes, contentType: "application/xml; charset=utf-16");
 
+            var provider = new EmptyModelMetadataProvider();
+            var metadata = provider.GetMetadataForType(typeof(TestLevelOne));
             var context = new InputFormatterContext(
                 httpContext,
                 modelName: string.Empty,
                 modelState: modelState,
-                modelType: typeof(TestLevelOne));
+                metadata: metadata);
 
             // Act and Assert
             var ex = await Assert.ThrowsAsync(expectedException, () => formatter.ReadAsync(context));
@@ -403,11 +407,13 @@ namespace Microsoft.AspNet.Mvc.Formatters.Xml
 
             var modelState = new ModelStateDictionary();
             var httpContext = GetHttpContext(contentBytes, contentType: "application/xml; charset=utf-16");
+            var provider = new EmptyModelMetadataProvider();
+            var metadata = provider.GetMetadataForType(typeof(TestLevelOne));
             var context = new InputFormatterContext(
                 httpContext,
                 modelName: string.Empty,
                 modelState: modelState,
-                modelType: typeof(TestLevelOne));
+                metadata: metadata);
 
             // Act
             var result = await formatter.ReadAsync(context);
@@ -425,11 +431,13 @@ namespace Microsoft.AspNet.Mvc.Formatters.Xml
         private InputFormatterContext GetInputFormatterContext(byte[] contentBytes, Type modelType)
         {
             var httpContext = GetHttpContext(contentBytes);
+            var provider = new EmptyModelMetadataProvider();
+            var metadata = provider.GetMetadataForType(modelType);
             return new InputFormatterContext(
                 httpContext,
                 modelName: string.Empty,
                 modelState: new ModelStateDictionary(),
-                modelType: modelType);
+                metadata: metadata);
         }
 
         private static HttpContext GetHttpContext(

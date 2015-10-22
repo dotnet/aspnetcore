@@ -81,11 +81,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public void AddModelError_ForSingleExpression_AddsExpectedException()
         {
             // Arrange
-            var exception = new Exception();
             var dictionary = new ModelStateDictionary();
+            var exception = new Exception();
+            var provider = new TestModelMetadataProvider();
+            var metadata = provider.GetMetadataForProperty(typeof(TestModel), nameof(TestModel.Text));
 
             // Act
-            dictionary.AddModelError<TestModel>(model => model.Text, exception);
+            dictionary.AddModelError<TestModel>(model => model.Text, exception, metadata);
 
             // Assert
             var modelState = Assert.Single(dictionary);
@@ -99,11 +101,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public void AddModelError_ForRelationExpression_AddsExpectedException()
         {
             // Arrange
-            var exception = new Exception();
             var dictionary = new ModelStateDictionary();
+            var exception = new Exception();
+            var provider = new TestModelMetadataProvider();
+            var metadata = provider.GetMetadataForProperty(typeof(ChildModel), nameof(ChildModel.Text));
 
             // Act
-            dictionary.AddModelError<TestModel>(model => model.Child.Text, exception);
+            dictionary.AddModelError<TestModel>(model => model.Child.Text, exception, metadata);
 
             // Assert
             var modelState = Assert.Single(dictionary);
@@ -117,11 +121,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public void AddModelError_ForImplicitlyCastedToObjectExpression_AddsExpectedException()
         {
             // Arrange
-            var exception = new Exception();
             var dictionary = new ModelStateDictionary();
+            var exception = new Exception();
+            var provider = new TestModelMetadataProvider();
+            var metadata = provider.GetMetadataForProperty(typeof(ChildModel), nameof(ChildModel.Value));
 
             // Act
-            dictionary.AddModelError<TestModel>(model => model.Child.Value, exception);
+            dictionary.AddModelError<TestModel>(model => model.Child.Value, exception, metadata);
 
             // Assert
             var modelState = Assert.Single(dictionary);
@@ -135,12 +141,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public void AddModelError_ForNotModelsExpression_AddsExpectedException()
         {
             // Arrange
+            var dictionary = new ModelStateDictionary();
             var variable = "Test";
             var exception = new Exception();
-            var dictionary = new ModelStateDictionary();
+            var provider = new TestModelMetadataProvider();
+            var metadata = provider.GetMetadataForProperty(typeof(string), nameof(string.Length));
 
             // Act
-            dictionary.AddModelError<TestModel>(model => variable, exception);
+            dictionary.AddModelError<TestModel>(model => variable, exception, metadata);
 
             // Assert
             var modelState = Assert.Single(dictionary);

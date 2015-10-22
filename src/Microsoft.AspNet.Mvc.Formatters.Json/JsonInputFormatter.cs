@@ -6,7 +6,7 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Internal;
-using Microsoft.Net.Http.Headers;
+using Microsoft.AspNet.Mvc.ModelBinding;
 using Newtonsoft.Json;
 
 namespace Microsoft.AspNet.Mvc.Formatters
@@ -101,7 +101,8 @@ namespace Microsoft.AspNet.Mvc.Formatters
                         }
                     }
 
-                    context.ModelState.TryAddModelError(key, eventArgs.ErrorContext.Error);
+                    var metadata = GetPathMetadata(context.Metadata, eventArgs.ErrorContext.Path);
+                    context.ModelState.TryAddModelError(key, eventArgs.ErrorContext.Error, metadata);
 
                     // Error must always be marked as handled
                     // Failure to do so can cause the exception to be rethrown at every recursive level and
@@ -170,6 +171,52 @@ namespace Microsoft.AspNet.Mvc.Formatters
         protected virtual JsonSerializer CreateJsonSerializer()
         {
             return JsonSerializer.Create(SerializerSettings);
+        }
+
+        private ModelMetadata GetPathMetadata(ModelMetadata metadata, string path)
+        {
+            var index = 0;
+            while (index >= 0 && index < path.Length)
+            {
+                if (path[index] == '[')
+                {
+                    // At start of "[0]".
+                    if (metadata.ElementMetadata == null)
+                    {
+                        // Odd case but don't throw just because ErrorContext had an odd-looking path.
+                        break;
+                    }
+
+                    metadata = metadata.ElementMetadata;
+                    index = path.IndexOf(']', index);
+                }
+                else if (path[index] == '.' || path[index] == ']')
+                {
+                    // Skip '.' in "prefix.property" or "[0].property" or ']' in "[0]".
+                    index++;
+                }
+                else
+                {
+                    // At start of "property", "property." or "property[0]".
+                    var endIndex = path.IndexOfAny(new[] { '.', '[' }, index);
+                    if (endIndex == -1)
+                    {
+                        endIndex = path.Length;
+                    }
+
+                    var propertyName = path.Substring(index, endIndex - index);
+                    if (metadata.Properties[propertyName] == null)
+                    {
+                        // Odd case but don't throw just because ErrorContext had an odd-looking path.
+                        break;
+                    }
+
+                    metadata = metadata.Properties[propertyName];
+                    index = endIndex;
+                }
+            }
+
+            return metadata;
         }
     }
 }

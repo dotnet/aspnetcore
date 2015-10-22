@@ -179,10 +179,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             // Arrange
             var dictionary = new ModelStateDictionary();
             dictionary.AddModelError("some key", "some error");
-            var ex = new Exception();
+            var exception = new Exception();
+            var provider = new EmptyModelMetadataProvider();
+            var metadata = provider.GetMetadataForProperty(typeof(string), nameof(string.Length));
 
             // Act
-            dictionary.AddModelError("some key", ex);
+            dictionary.AddModelError("some key", exception, metadata);
 
             // Assert
             Assert.Equal(2, dictionary.ErrorCount);
@@ -191,7 +193,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             Assert.Equal(2, kvp.Value.Errors.Count);
             Assert.Equal("some error", kvp.Value.Errors[0].ErrorMessage);
-            Assert.Same(ex, kvp.Value.Errors[1].Exception);
+            Assert.Same(exception, kvp.Value.Errors[1].Exception);
         }
 
         [Fact]
@@ -546,9 +548,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             {
                 MaxAllowedErrors = 5
             };
+            var provider = new EmptyModelMetadataProvider();
+            var metadata = provider.GetMetadataForProperty(typeof(string), nameof(string.Length));
             dictionary.AddModelError("key1", "error1");
-            dictionary.AddModelError("key2", new Exception());
-            dictionary.AddModelError("key3", new Exception());
+            dictionary.AddModelError("key2", new Exception(), metadata);
+            dictionary.AddModelError("key3", new Exception(), metadata);
             dictionary.AddModelError("key4", "error4");
             dictionary.AddModelError("key5", "error5");
 
@@ -572,6 +576,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             {
                 MaxAllowedErrors = 3
             };
+            var provider = new EmptyModelMetadataProvider();
+            var metadata = provider.GetMetadataForProperty(typeof(string), nameof(string.Length));
 
             // Act and Assert
             Assert.False(dictionary.HasReachedMaxErrors);
@@ -579,7 +585,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             Assert.True(result);
 
             Assert.False(dictionary.HasReachedMaxErrors);
-            result = dictionary.TryAddModelError("key2", new Exception());
+            result = dictionary.TryAddModelError("key2", new Exception(), metadata);
             Assert.True(result);
 
             Assert.False(dictionary.HasReachedMaxErrors); // Still room for TooManyModelErrorsException.
@@ -614,10 +620,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             {
                 MaxAllowedErrors = 4
             };
-            dictionary.AddModelError("key1", new Exception());
+            var provider = new EmptyModelMetadataProvider();
+            var metadata = provider.GetMetadataForProperty(typeof(string), nameof(string.Length));
+            dictionary.AddModelError("key1", new Exception(), metadata);
             dictionary.AddModelError("key2", "error2");
             dictionary.AddModelError("key3", "error3");
-            dictionary.AddModelError("key3", new Exception());
+            dictionary.AddModelError("key3", new Exception(), metadata);
 
             // Act and Assert
             Assert.True(dictionary.HasReachedMaxErrors);
@@ -642,15 +650,17 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             {
                 MaxAllowedErrors = 3
             };
+            var provider = new EmptyModelMetadataProvider();
+            var metadata = provider.GetMetadataForProperty(typeof(string), nameof(string.Length));
 
             // Act and Assert
             var result = dictionary.TryAddModelError("key1", "error1");
             Assert.True(result);
 
-            result = dictionary.TryAddModelError("key2", new Exception());
+            result = dictionary.TryAddModelError("key2", new Exception(), metadata);
             Assert.True(result);
 
-            result = dictionary.TryAddModelError("key3", new Exception());
+            result = dictionary.TryAddModelError("key3", new Exception(), metadata);
             Assert.False(result);
 
             Assert.Equal(3, dictionary.Count);
@@ -668,10 +678,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             {
                 MaxAllowedErrors = 3
             };
+            var provider = new EmptyModelMetadataProvider();
+            var metadata = provider.GetMetadataForProperty(typeof(string), nameof(string.Length));
 
             // Act
             dictionary.AddModelError("key1", "error1");
-            dictionary.TryAddModelError("key3", new Exception());
+            dictionary.TryAddModelError("key3", new Exception(), metadata);
 
             var copy = new ModelStateDictionary(dictionary);
             copy.AddModelError("key2", "error2");
@@ -711,11 +723,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public void ModelStateDictionary_ReturnGenericErrorMessage_WhenModelStateNotSet()
         {
             // Arrange
-            var expected = "The supplied value is invalid for key.";
+            var expected = "The supplied value is invalid for Length.";
             var dictionary = new ModelStateDictionary();
+            var provider = new EmptyModelMetadataProvider();
+            var metadata = provider.GetMetadataForProperty(typeof(string), nameof(string.Length));
 
             // Act
-            dictionary.TryAddModelError("key", new FormatException());
+            dictionary.TryAddModelError("key", new FormatException(), metadata);
 
             // Assert
             var error = Assert.Single(dictionary["key"].Errors);
@@ -726,12 +740,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public void ModelStateDictionary_ReturnSpecificErrorMessage_WhenModelStateSet()
         {
             // Arrange
-            var expected = "The value 'some value' is not valid for key.";
+            var expected = "The value 'some value' is not valid for Length.";
             var dictionary = new ModelStateDictionary();
             dictionary.SetModelValue("key", new string[] { "some value" }, "some value");
+            var provider = new EmptyModelMetadataProvider();
+            var metadata = provider.GetMetadataForProperty(typeof(string), nameof(string.Length));
 
             // Act
-            dictionary.TryAddModelError("key", new FormatException());
+            dictionary.TryAddModelError("key", new FormatException(), metadata);
 
             // Assert
             var error = Assert.Single(dictionary["key"].Errors);
@@ -744,9 +760,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             // Arrange
             var dictionary = new ModelStateDictionary();
             dictionary.SetModelValue("key", new string[] { "some value" }, "some value");
+            var provider = new EmptyModelMetadataProvider();
+            var metadata = provider.GetMetadataForProperty(typeof(string), nameof(string.Length));
 
             // Act
-            dictionary.TryAddModelError("key", new InvalidOperationException());
+            dictionary.TryAddModelError("key", new InvalidOperationException(), metadata);
 
             // Assert
             var error = Assert.Single(dictionary["key"].Errors);

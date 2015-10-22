@@ -62,7 +62,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         public async Task BindModelAddsModelErrorsOnInvalidCharacters()
         {
             // Arrange
-            var expected = "The value '\"Fys1\"' is not valid for foo.";
+            var expected = "The value '\"Fys1\"' is not valid for Byte[].";
 
             var valueProvider = new SimpleValueProvider()
             {
