@@ -81,7 +81,7 @@ namespace Microsoft.AspNet.Localization
 
         private static void SetCurrentThreadCulture(RequestCulture requestCulture)
         {
-#if DNX451
+#if NET451
             Thread.CurrentThread.CurrentCulture = requestCulture.Culture;
             Thread.CurrentThread.CurrentUICulture = requestCulture.UICulture;
 #else
