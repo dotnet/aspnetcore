@@ -1,20 +1,20 @@
 {
-    "version": "1.0.0-*",
-    "description": "ASP.NET middleware that enables an application to use cookie based authentication, similar to ASP.NET's forms authentication.",
-    "repository": {
-        "type": "git",
-        "url": "git://github.com/aspnet/security"
-    },
-    "compilationOptions": {
-        "warningsAsErrors": true
-    },
-    "dependencies": {
-        "Microsoft.AspNet.Authentication": "1.0.0-*",
-        "Microsoft.Extensions.WebEncoders": "1.0.0-*",
-        "Newtonsoft.Json": "6.0.6"
-    },
-    "frameworks": {
-        "dnx451": { },
-        "dnxcore50": { }
-    }
+  "version": "1.0.0-*",
+  "description": "ASP.NET middleware that enables an application to use cookie based authentication, similar to ASP.NET's forms authentication.",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/aspnet/security"
+  },
+  "compilationOptions": {
+    "warningsAsErrors": true
+  },
+  "dependencies": {
+    "Microsoft.AspNet.Authentication": "1.0.0-*",
+    "Microsoft.Extensions.WebEncoders": "1.0.0-*",
+    "Newtonsoft.Json": "6.0.6"
+  },
+  "frameworks": {
+    "net451": {},
+    "dotnet5.4": {}
+  }
 }
