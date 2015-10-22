@@ -6,7 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using Microsoft.AspNet.Cryptography.SafeHandles;
 
-#if !DNXCORE50
+#if !DOTNET5_4
 using System.Runtime.ConstrainedExecution;
 #endif
 
@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.Cryptography
     internal unsafe static class UnsafeBufferUtil
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#if !DNXCORE50
+#if !DOTNET5_4
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
 #endif
         public static void BlockCopy(void* from, void* to, int byteCount)
@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.Cryptography
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#if !DNXCORE50
+#if !DOTNET5_4
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
 #endif
         public static void BlockCopy(void* from, void* to, uint byteCount)
@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.Cryptography
             }
         }
 
-#if !DNXCORE50
+#if !DOTNET5_4
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
 #endif
         public static void BlockCopy(LocalAllocHandle from, void* to, uint byteCount)
@@ -55,7 +55,7 @@ namespace Microsoft.AspNet.Cryptography
             }
         }
 
-#if !DNXCORE50
+#if !DOTNET5_4
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
 #endif
         public static void BlockCopy(void* from, LocalAllocHandle to, uint byteCount)
@@ -75,7 +75,7 @@ namespace Microsoft.AspNet.Cryptography
             }
         }
 
-#if !DNXCORE50
+#if !DOTNET5_4
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
 #endif
         public static void BlockCopy(LocalAllocHandle from, LocalAllocHandle to, IntPtr length)
@@ -116,7 +116,7 @@ namespace Microsoft.AspNet.Cryptography
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void BlockCopyCore(byte* from, byte* to, uint byteCount)
         {
-#if DNXCORE50
+#if DOTNET5_4
             Buffer.MemoryCopy(from, to, (ulong)byteCount, (ulong)byteCount);
 #else
             while (byteCount-- != 0)
@@ -129,7 +129,7 @@ namespace Microsoft.AspNet.Cryptography
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void BlockCopyCore(byte* from, byte* to, ulong byteCount)
         {
-#if DNXCORE50
+#if DOTNET5_4
             Buffer.MemoryCopy(from, to, byteCount, byteCount);
 #else
             while (byteCount-- != 0)
@@ -143,7 +143,7 @@ namespace Microsoft.AspNet.Cryptography
         /// Securely clears a memory buffer.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#if !DNXCORE50
+#if !DOTNET5_4
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
 #endif
         public static void SecureZeroMemory(byte* buffer, int byteCount)
@@ -155,7 +155,7 @@ namespace Microsoft.AspNet.Cryptography
         /// Securely clears a memory buffer.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#if !DNXCORE50
+#if !DOTNET5_4
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
 #endif
         public static void SecureZeroMemory(byte* buffer, uint byteCount)
@@ -176,7 +176,7 @@ namespace Microsoft.AspNet.Cryptography
         /// Securely clears a memory buffer.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#if !DNXCORE50
+#if !DOTNET5_4
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
 #endif
         public static void SecureZeroMemory(byte* buffer, ulong byteCount)
@@ -196,7 +196,7 @@ namespace Microsoft.AspNet.Cryptography
         /// <summary>
         /// Securely clears a memory buffer.
         /// </summary>
-#if !DNXCORE50
+#if !DOTNET5_4
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
 #endif
         public static void SecureZeroMemory(byte* buffer, IntPtr length)

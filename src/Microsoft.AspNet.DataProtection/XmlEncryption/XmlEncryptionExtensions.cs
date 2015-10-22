@@ -132,7 +132,7 @@ namespace Microsoft.AspNet.DataProtection.XmlEncryption
             var memoryStream = new MemoryStream(DEFAULT_BUFFER_SIZE);
             element.Save(memoryStream);
 
-#if !DNXCORE50
+#if !DOTNET5_4
             byte[] underlyingBuffer = memoryStream.GetBuffer();
             fixed (byte* __unused__ = underlyingBuffer) // try to limit this moving around in memory while we allocate
             {

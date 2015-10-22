@@ -7,10 +7,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using Microsoft.AspNet.DataProtection.Infrastructure;
 using Microsoft.AspNet.DataProtection.Abstractions;
-
-#if DNX451 || DNXCORE50 // [[ISSUE1400]] Replace with DNX_ANY when it becomes available
 using Microsoft.Dnx.Runtime;
-#endif
 
 namespace Microsoft.AspNet.DataProtection
 {
@@ -124,15 +121,10 @@ namespace Microsoft.AspNet.DataProtection
         public static string GetApplicationUniqueIdentifier(this IServiceProvider services)
         {
             string discriminator = (services?.GetService(typeof(IApplicationDiscriminator)) as IApplicationDiscriminator)?.Discriminator;
-#if DNX451 || DNXCORE50 // [[ISSUE1400]] Replace with DNX_ANY when it becomes available
             if (discriminator == null)
             {
                 discriminator = (services?.GetService(typeof(IApplicationEnvironment)) as IApplicationEnvironment)?.ApplicationBasePath;
             }
-#elif NET451 // do nothing
-#else
-#error A new target framework was added to project.json, but it's not accounted for in this #ifdef. Please change the #ifdef accordingly.
-#endif
 
             // Remove whitespace and homogenize empty -> null
             discriminator = discriminator?.Trim();

@@ -1,33 +1,31 @@
 {
-    "version": "1.0.0-*",
-    "description": "Contains the core IDataProtector and IDataProtectionProvider abstractions for ASP.NET 5 Data Protection.",
-    "repository": {
-        "type": "git",
-        "url": "git://github.com/aspnet/dataprotection"
+  "version": "1.0.0-*",
+  "description": "Contains the core IDataProtector and IDataProtectionProvider abstractions for ASP.NET 5 Data Protection.",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/aspnet/dataprotection"
+  },
+  "dependencies": {
+    "Microsoft.AspNet.DataProtection.Sources": {
+      "type": "build",
+      "version": ""
     },
-    "dependencies": {
-        "Microsoft.AspNet.DataProtection.Sources": { "type": "build", "version": "" }
-    },
-    "frameworks": {
-        "net451": { },
-        "dnx451": {
-            "dependencies": {
-                "Microsoft.Dnx.Runtime.Abstractions": "1.0.0-*"
-            }
-        },
-        "dnxcore50": {
-            "dependencies": {
-                "Microsoft.Dnx.Runtime.Abstractions": "1.0.0-*",
-                "System.ComponentModel": "4.0.1-beta-*",
-                "System.Diagnostics.Debug": "4.0.11-beta-*",
-                "System.Reflection": "4.0.11-beta-*",
-                "System.Runtime.Extensions": "4.0.11-beta-*",
-                "System.Security.Cryptography.Primitives": "4.0.0-beta-*",
-                "System.Text.Encoding.Extensions": "4.0.11-beta-*"
-            }
-        }
-    },
-    "compilationOptions": {
-        "warningsAsErrors": true
+    "Microsoft.Dnx.Runtime.Abstractions": "1.0.0-*"
+  },
+  "frameworks": {
+    "net451": {},
+    "dotnet5.4": {
+      "dependencies": {
+        "System.ComponentModel": "4.0.1-beta-*",
+        "System.Diagnostics.Debug": "4.0.11-beta-*",
+        "System.Reflection": "4.0.11-beta-*",
+        "System.Runtime.Extensions": "4.0.11-beta-*",
+        "System.Security.Cryptography.Primitives": "4.0.0-beta-*",
+        "System.Text.Encoding.Extensions": "4.0.11-beta-*"
+      }
     }
+  },
+  "compilationOptions": {
+    "warningsAsErrors": true
+  }
 }

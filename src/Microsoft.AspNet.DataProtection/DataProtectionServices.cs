@@ -121,7 +121,7 @@ namespace Microsoft.Extensions.DependencyInjection
             yield return DataProtectionServiceDescriptors.IDataProtectionProvider_Default();
 
             // Provide services required for XML encryption
-#if !DNXCORE50 // [[ISSUE60]] Remove this #ifdef when Core CLR gets support for EncryptedXml
+#if !DOTNET5_4 // [[ISSUE60]] Remove this #ifdef when Core CLR gets support for EncryptedXml
             yield return DataProtectionServiceDescriptors.ICertificateResolver_Default();
 #endif
 

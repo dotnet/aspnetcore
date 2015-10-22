@@ -343,7 +343,7 @@ namespace Microsoft.AspNet.DataProtection.Managed
 
                             using (var validationAlgorithm = CreateValidationAlgorithm(validationSubkey))
                             {
-#if !DNXCORE50
+#if !DOTNET5_4
                                 // As an optimization, avoid duplicating the underlying buffer if we're on desktop CLR.
                                 byte[] underlyingBuffer = outputStream.GetBuffer();
 #else

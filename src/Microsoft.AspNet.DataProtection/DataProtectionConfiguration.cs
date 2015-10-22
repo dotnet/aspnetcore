@@ -11,7 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Win32;
 
-#if !DNXCORE50 // [[ISSUE60]] Remove this #ifdef when Core CLR gets support for EncryptedXml
+#if !DOTNET5_4 // [[ISSUE60]] Remove this #ifdef when Core CLR gets support for EncryptedXml
 using System.Security.Cryptography.X509Certificates;
 #endif
 
@@ -183,7 +183,7 @@ namespace Microsoft.AspNet.DataProtection
             return this;
         }
 
-#if !DNXCORE50 // [[ISSUE60]] Remove this #ifdef when Core CLR gets support for EncryptedXml
+#if !DOTNET5_4 // [[ISSUE60]] Remove this #ifdef when Core CLR gets support for EncryptedXml
 
         /// <summary>
         /// Configures keys to be encrypted to a given certificate before being persisted to storage.

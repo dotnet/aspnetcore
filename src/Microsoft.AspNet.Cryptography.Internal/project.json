@@ -1,27 +1,25 @@
 {
-    "version": "1.0.0-*",
-    "description": "Infrastructure for ASP.NET 5 cryptographic packages. Developers should not reference this package.",
-    "repository": {
-        "type": "git",
-        "url": "git://github.com/aspnet/dataprotection"
-    },
-    "dependencies": {
-    },
-    "frameworks": {
-        "net451": { },
-        "dnx451": { },
-        "dnxcore50": {
-            "dependencies": {
-                "System.Diagnostics.Debug": "4.0.11-beta-*",
-                "System.Runtime.Handles": "4.0.1-beta-*",
-                "System.Runtime.InteropServices": "4.0.21-beta-*",
-                "System.Security.Cryptography.Primitives": "4.0.0-beta-*",
-                "System.Threading": "4.0.11-beta-*"
-            }
-        }
-    },
-    "compilationOptions": {
-        "allowUnsafe": true,
-        "warningsAsErrors": true
+  "version": "1.0.0-*",
+  "description": "Infrastructure for ASP.NET 5 cryptographic packages. Developers should not reference this package.",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/aspnet/dataprotection"
+  },
+  "dependencies": {},
+  "frameworks": {
+    "net451": {},
+    "dotnet5.4": {
+      "dependencies": {
+        "System.Diagnostics.Debug": "4.0.11-beta-*",
+        "System.Runtime.Handles": "4.0.1-beta-*",
+        "System.Runtime.InteropServices": "4.0.21-beta-*",
+        "System.Security.Cryptography.Primitives": "4.0.0-beta-*",
+        "System.Threading": "4.0.11-beta-*"
+      }
     }
+  },
+  "compilationOptions": {
+    "allowUnsafe": true,
+    "warningsAsErrors": true
+  }
 }
