@@ -115,7 +115,7 @@ namespace Microsoft.AspNet.Http.Internal
             _position += read;
             return read;
         }
-#if DNX451
+#if NET451
         public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
         {
             ThrowIfDisposed();
@@ -164,7 +164,7 @@ namespace Microsoft.AspNet.Http.Internal
         {
             throw new NotSupportedException();
         }
-#if DNX451
+#if NET451
         public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
         {
             throw new NotSupportedException();

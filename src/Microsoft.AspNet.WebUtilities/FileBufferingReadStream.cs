@@ -163,7 +163,7 @@ namespace Microsoft.AspNet.WebUtilities
 
             return read;
         }
-#if DNX451
+#if NET451
         public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
         {
             ThrowIfDisposed();
@@ -239,7 +239,7 @@ namespace Microsoft.AspNet.WebUtilities
         {
             throw new NotSupportedException();
         }
-#if DNX451
+#if NET451
         public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
         {
             throw new NotSupportedException();

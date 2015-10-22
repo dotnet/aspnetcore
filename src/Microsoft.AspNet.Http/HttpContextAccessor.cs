@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-#if DNX451
+#if NET451
 using System.Runtime.Remoting.Messaging;
 using System.Runtime.Remoting;
-#elif DNXCORE50
+#elif DOTNET5_4
 using System.Threading;
 #endif
 
@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.Http.Internal
 {
     public class HttpContextAccessor : IHttpContextAccessor
     {
-#if DNX451
+#if NET451
         private const string LogicalDataKey = "__HttpContext_Current__";
 
         public HttpContext HttpContext
@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.Http.Internal
             }
         }
 
-#elif DNXCORE50
+#elif DOTNET5_4
         private AsyncLocal<HttpContext> _httpContextCurrent = new AsyncLocal<HttpContext>();
         public HttpContext HttpContext
         {
