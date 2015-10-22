@@ -1,21 +1,20 @@
 {
-    "description": "An antiforgery system for ASP.NET designed to generate and validate tokens to prevent Cross-Site Request Forgery attacks.",
-    "version": "1.0.0-*",
-    "repository": {
-        "type": "git",
-        "url": "git://github.com/aspnet/antiforgery"
-    },
-    "dependencies": {
-        "Microsoft.AspNet.DataProtection": "1.0.0-*",
-        "Microsoft.AspNet.Http.Abstractions": "1.0.0-*",
-        "Microsoft.AspNet.WebUtilities": "1.0.0-*",
-        "Microsoft.Extensions.DependencyInjection.Abstractions": "1.0.0-*",
-        "Microsoft.Extensions.OptionsModel": "1.0.0-*",
-        "Microsoft.Extensions.WebEncoders": "1.0.0-*"
-    },
-
-  "frameworks" : {
-    "dnx451": { },
-    "dnxcore50" : { }
+  "description": "An antiforgery system for ASP.NET designed to generate and validate tokens to prevent Cross-Site Request Forgery attacks.",
+  "version": "1.0.0-*",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/aspnet/antiforgery"
+  },
+  "dependencies": {
+    "Microsoft.AspNet.DataProtection": "1.0.0-*",
+    "Microsoft.AspNet.Http.Abstractions": "1.0.0-*",
+    "Microsoft.AspNet.WebUtilities": "1.0.0-*",
+    "Microsoft.Extensions.DependencyInjection.Abstractions": "1.0.0-*",
+    "Microsoft.Extensions.OptionsModel": "1.0.0-*",
+    "Microsoft.Extensions.WebEncoders": "1.0.0-*"
+  },
+  "frameworks": {
+    "net451": {},
+    "dotnet5.4": {}
   }
 }
