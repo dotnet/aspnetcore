@@ -7,12 +7,18 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Diagnostics.Entity.Views;
 using Xunit;
 
 namespace Microsoft.Data.Entity
 {
     public abstract class ApiConsistencyTestBase
     {
+        private static readonly HashSet<Type> _typesToSkip = new HashSet<Type>
+        {
+            typeof(DatabaseErrorPage)
+        };
+
         protected const BindingFlags PublicInstance
             = BindingFlags.Instance | BindingFlags.Public;
 
@@ -29,6 +35,7 @@ namespace Microsoft.Data.Entity
                           && type.GetConstructors(AnyInstance).Any(c => c.IsPublic || c.IsFamily || c.IsFamilyOrAssembly)
                           && type.Namespace != null
                           && !type.Namespace.EndsWith(".Compiled")
+                          && !_typesToSkip.Contains(type)
                     from method in type.GetMethods(PublicInstance)
                     where method.DeclaringType == type
                           && !(method.IsVirtual && !method.IsFinal)
@@ -45,7 +52,7 @@ namespace Microsoft.Data.Entity
         {
             var parametersMissingAttribute
                 = (from type in GetAllTypes(TargetAssembly.GetTypes())
-                    where type.IsVisible && !typeof(Delegate).IsAssignableFrom(type)
+                    where type.IsVisible && !typeof(Delegate).IsAssignableFrom(type) && !_typesToSkip.Contains(type)
                     let interfaceMappings = type.GetInterfaces().Select(type.GetInterfaceMap)
                     let events = type.GetEvents()
                     from method in type.GetMethods(PublicInstance | BindingFlags.Static)
