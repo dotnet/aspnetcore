@@ -33,7 +33,7 @@
     },
     "net451": {
       "frameworkAssemblies": {
-        "System.Runtime": ""
+        "System.Runtime": { "type": "build" }
       }
     },
     "dnxcore50": {
