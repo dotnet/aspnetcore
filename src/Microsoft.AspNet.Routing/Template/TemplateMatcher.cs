@@ -25,11 +25,6 @@ namespace Microsoft.AspNet.Routing.Template
                 throw new ArgumentNullException(nameof(template));
             }
 
-            if (defaults == null)
-            {
-                throw new ArgumentNullException(nameof(defaults));
-            }
-
             Template = template;
             Defaults = defaults ?? RouteValueDictionary.Empty;
         }
