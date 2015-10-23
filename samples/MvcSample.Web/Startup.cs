@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.Localization;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.Razor;
 using Microsoft.Extensions.DependencyInjection;
@@ -38,7 +39,7 @@ namespace MvcSample.Web
             app.UseStatusCodePages();
             app.UseFileServer();
 
-            app.UseRequestLocalization();
+            app.UseRequestLocalization(new RequestCulture("en-US"));
 
             app.UseSession();
             app.UseMvc(routes =>
