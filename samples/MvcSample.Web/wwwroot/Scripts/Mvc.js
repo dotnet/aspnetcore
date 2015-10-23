@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 var MVC = (function () {
+    "use strict";
+    
     // Takes the data which needs to be converted to form-url encoded format understadable by MVC.
     // This does not depend on jQuery. Can be used independently.
     var _stringify = function (data) {
@@ -21,7 +23,7 @@ var MVC = (function () {
 
         // An '&' is appended at the end. Removing it.
         return result.substring(0, result.length - 1);
-    }
+    };
 
     function process(key, value, prefix) {
         // Ignore functions.
@@ -29,7 +31,7 @@ var MVC = (function () {
             return;
         }
 
-        if (Object.prototype.toString.call(value) === '[object Array]') {
+        if (Object.prototype.toString.call(value) === "[object Array]") {
             var result = "";
             for (var i = 0; i < value.length; i++) {
                 var tempPrefix = (prefix || key) + "[" + i + "]";
