@@ -35,9 +35,8 @@ namespace Microsoft.AspNet.Server.WebListener
         public async Task WebSocketTests_SupportKeys_Present()
         {
             string address;
-            using (Utilities.CreateHttpServer(out address, env =>
+            using (Utilities.CreateHttpServer(out address, httpContext =>
             {
-                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 try
                 {
                     var webSocketFeature = httpContext.Features.Get<IHttpWebSocketFeature>();
@@ -64,9 +63,8 @@ namespace Microsoft.AspNet.Server.WebListener
         {
             bool? upgradeThrew = null;
             string address;
-            using (Utilities.CreateHttpServer(out address, async env =>
+            using (Utilities.CreateHttpServer(out address, async httpContext =>
             {
-                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 await httpContext.Response.WriteAsync("Hello World");
                 try
                 {
@@ -94,9 +92,8 @@ namespace Microsoft.AspNet.Server.WebListener
             ManualResetEvent waitHandle = new ManualResetEvent(false);
             bool? upgraded = null;
             string address;
-            using (Utilities.CreateHttpServer(out address, async env =>
+            using (Utilities.CreateHttpServer(out address, async httpContext =>
             {
-                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 var webSocketFeature = httpContext.Features.Get<IHttpWebSocketFeature>();
                 Assert.NotNull(webSocketFeature);
                 Assert.True(webSocketFeature.IsWebSocketRequest);
@@ -120,9 +117,8 @@ namespace Microsoft.AspNet.Server.WebListener
         {
             byte[] clientBuffer = new byte[] { 0x00, 0x01, 0xFF, 0x00, 0x00 };
             string address;
-            using (Utilities.CreateHttpServer(out address, async env =>
+            using (Utilities.CreateHttpServer(out address, async httpContext =>
             {
-                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 var webSocketFeature = httpContext.Features.Get<IHttpWebSocketFeature>();
                 Assert.NotNull(webSocketFeature);
                 Assert.True(webSocketFeature.IsWebSocketRequest);

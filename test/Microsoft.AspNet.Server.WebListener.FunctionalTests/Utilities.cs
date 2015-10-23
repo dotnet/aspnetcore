@@ -16,43 +16,44 @@
 // permissions and limitations under the License.
 
 using System;
-using System.Threading.Tasks;
+using Microsoft.AspNet.Hosting.Server;
+using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
+using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Server.Features;
 using Microsoft.Net.Http.Server;
 
 namespace Microsoft.AspNet.Server.WebListener
 {
-    using AppFunc = Func<object, Task>;
-
     internal static class Utilities
     {
         private const int BasePort = 5001;
         private const int MaxPort = 8000;
         private static int NextPort = BasePort;
         private static object PortLock = new object();
+        private static IHttpContextFactory Factory = new HttpContextFactory(new HttpContextAccessor());
 
-        internal static IDisposable CreateHttpServer(out string baseAddress, AppFunc app)
+        internal static IServer CreateHttpServer(out string baseAddress, RequestDelegate app)
         {
             string root;
             return CreateDynamicHttpServer(string.Empty, AuthenticationSchemes.AllowAnonymous, out root, out baseAddress, app);
         }
 
-        internal static IDisposable CreateHttpServerReturnRoot(string path, out string root, AppFunc app)
+        internal static IServer CreateHttpServerReturnRoot(string path, out string root, RequestDelegate app)
         {
             string baseAddress;
             return CreateDynamicHttpServer(path, AuthenticationSchemes.AllowAnonymous, out root, out baseAddress, app);
         }
 
-        internal static IDisposable CreateHttpAuthServer(AuthenticationSchemes authType, out string baseAddress, AppFunc app)
+        internal static IServer CreateHttpAuthServer(AuthenticationSchemes authType, out string baseAddress, RequestDelegate app)
         {
             string root;
             return CreateDynamicHttpServer(string.Empty, authType, out root, out baseAddress, app);
         }
 
-        internal static IDisposable CreateDynamicHttpServer(string basePath, AuthenticationSchemes authType, out string root, out string baseAddress, AppFunc app)
+        internal static IServer CreateDynamicHttpServer(string basePath, AuthenticationSchemes authType, out string root, out string baseAddress, RequestDelegate app)
         {
-            var factory = new ServerFactory(loggerFactory: null);
+            var factory = new ServerFactory(loggerFactory: null, httpContextFactory: Factory);
             lock (PortLock)
             {
                 while (NextPort < MaxPort)
@@ -63,13 +64,14 @@ namespace Microsoft.AspNet.Server.WebListener
                     root = prefix.Scheme + "://" + prefix.Host + ":" + prefix.Port;
                     baseAddress = prefix.ToString();
 
-                    var serverFeatures = factory.Initialize(configuration: null);
-                    var listener = serverFeatures.Get<Microsoft.Net.Http.Server.WebListener>();
+                    var server = factory.CreateServer(configuration: null);
+                    var listener = server.Features.Get<Microsoft.Net.Http.Server.WebListener>();
                     listener.UrlPrefixes.Add(prefix);
                     listener.AuthenticationManager.AuthenticationSchemes = authType;
                     try
                     {
-                        return factory.Start(serverFeatures, app);
+                        server.Start(app);
+                        return server;
                     }
                     catch (WebListenerException)
                     {
@@ -80,17 +82,18 @@ namespace Microsoft.AspNet.Server.WebListener
             throw new Exception("Failed to locate a free port.");
         }
 
-        internal static IDisposable CreateHttpsServer(AppFunc app)
+        internal static IServer CreateHttpsServer(RequestDelegate app)
         {
             return CreateServer("https", "localhost", 9090, string.Empty, app);
         }
 
-        internal static IDisposable CreateServer(string scheme, string host, int port, string path, AppFunc app)
+        internal static IServer CreateServer(string scheme, string host, int port, string path, RequestDelegate app)
         {
-            var factory = new ServerFactory(loggerFactory: null);
-            var serverFeatures = factory.Initialize(configuration: null);
-            serverFeatures.Get<IServerAddressesFeature>().Addresses.Add(UrlPrefix.Create(scheme, host, port, path).ToString());
-            return factory.Start(serverFeatures, app);
+            var factory = new ServerFactory(loggerFactory: null, httpContextFactory: Factory);
+            var server = factory.CreateServer(configuration: null);
+            server.Features.Get<IServerAddressesFeature>().Addresses.Add(UrlPrefix.Create(scheme, host, port, path).ToString());
+            server.Start(app);
+            return server;
         }
     }
 }

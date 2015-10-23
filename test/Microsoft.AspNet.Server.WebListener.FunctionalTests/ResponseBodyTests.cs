@@ -35,9 +35,8 @@ namespace Microsoft.AspNet.Server.WebListener
         public async Task ResponseBody_WriteNoHeaders_BuffersAndSetsContentLength()
         {
             string address;
-            using (Utilities.CreateHttpServer(out address, env =>
+            using (Utilities.CreateHttpServer(out address, httpContext =>
             {
-                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 httpContext.Response.Body.Write(new byte[10], 0, 10);
                 return httpContext.Response.Body.WriteAsync(new byte[10], 0, 10);
             }))
@@ -56,9 +55,8 @@ namespace Microsoft.AspNet.Server.WebListener
         public async Task ResponseBody_WriteNoHeadersAndFlush_DefaultsToChunked()
         {
             string address;
-            using (Utilities.CreateHttpServer(out address, async env =>
+            using (Utilities.CreateHttpServer(out address, async httpContext =>
             {
-                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 httpContext.Response.Body.Write(new byte[10], 0, 10);
                 await httpContext.Response.Body.WriteAsync(new byte[10], 0, 10);
                 await httpContext.Response.Body.FlushAsync();
@@ -78,9 +76,8 @@ namespace Microsoft.AspNet.Server.WebListener
         public async Task ResponseBody_WriteChunked_ManuallyChunked()
         {
             string address;
-            using (Utilities.CreateHttpServer(out address, async env =>
+            using (Utilities.CreateHttpServer(out address, async httpContext =>
             {
-                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 httpContext.Response.Headers["transfeR-Encoding"] = " CHunked ";
                 Stream stream = httpContext.Response.Body;
                 var responseBytes = Encoding.ASCII.GetBytes("10\r\nManually Chunked\r\n0\r\n\r\n");
@@ -101,9 +98,8 @@ namespace Microsoft.AspNet.Server.WebListener
         public async Task ResponseBody_WriteContentLength_PassedThrough()
         {
             string address;
-            using (Utilities.CreateHttpServer(out address, env =>
+            using (Utilities.CreateHttpServer(out address, httpContext =>
             {
-                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 httpContext.Response.Headers["Content-lenGth"] = " 30 ";
                 Stream stream = httpContext.Response.Body;
                 stream.EndWrite(stream.BeginWrite(new byte[10], 0, 10, null, null));
@@ -126,9 +122,8 @@ namespace Microsoft.AspNet.Server.WebListener
         public async Task ResponseBody_WriteContentLengthNoneWritten_Throws()
         {
             string address;
-            using (Utilities.CreateHttpServer(out address, env =>
+            using (Utilities.CreateHttpServer(out address, httpContext =>
             {
-                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 httpContext.Response.Headers["Content-lenGth"] = " 20 ";
                 return Task.FromResult(0);
             }))
@@ -141,9 +136,8 @@ namespace Microsoft.AspNet.Server.WebListener
         public void ResponseBody_WriteContentLengthNotEnoughWritten_Throws()
         {
             string address;
-            using (Utilities.CreateHttpServer(out address, env =>
+            using (Utilities.CreateHttpServer(out address, httpContext =>
             {
-                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 httpContext.Response.Headers["Content-lenGth"] = " 20 ";
                 httpContext.Response.Body.Write(new byte[5], 0, 5);
                 return Task.FromResult(0);
@@ -157,9 +151,8 @@ namespace Microsoft.AspNet.Server.WebListener
         public async Task ResponseBody_WriteContentLengthTooMuchWritten_Throws()
         {
             string address;
-            using (Utilities.CreateHttpServer(out address, env =>
+            using (Utilities.CreateHttpServer(out address, httpContext =>
             {
-                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 httpContext.Response.Headers["Content-lenGth"] = " 10 ";
                 httpContext.Response.Body.Write(new byte[5], 0, 5);
                 httpContext.Response.Body.Write(new byte[6], 0, 6);
@@ -177,11 +170,10 @@ namespace Microsoft.AspNet.Server.WebListener
             ManualResetEvent waitHandle = new ManualResetEvent(false);
             bool? appThrew = null;
             string address;
-            using (Utilities.CreateHttpServer(out address, env =>
+            using (Utilities.CreateHttpServer(out address, httpContext =>
             {
                 try
                 {
-                    var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                     httpContext.Response.Headers["Content-lenGth"] = " 10 ";
                     httpContext.Response.Body.Write(new byte[10], 0, 10);
                     httpContext.Response.Body.Write(new byte[9], 0, 9);

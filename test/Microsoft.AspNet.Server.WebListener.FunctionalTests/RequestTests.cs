@@ -20,6 +20,9 @@ using System.IO;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Hosting.Builder;
+using Microsoft.AspNet.Hosting.Server;
+using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.Net.Http.Server;
@@ -27,17 +30,14 @@ using Xunit;
 
 namespace Microsoft.AspNet.Server.WebListener
 {
-    using AppFunc = Func<object, Task>;
-
     public class RequestTests
     {
         [Fact]
         public async Task Request_SimpleGet_Success()
         {
             string root;
-            using (Utilities.CreateHttpServerReturnRoot("/basepath", out root, env =>
+            using (Utilities.CreateHttpServerReturnRoot("/basepath", out root, httpContext =>
             {
-                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 try
                 {
                     var requestInfo = httpContext.Features.Get<IHttpRequestFeature>();
@@ -53,7 +53,7 @@ namespace Microsoft.AspNet.Server.WebListener
                     Assert.Equal("HTTP/1.1", requestInfo.Protocol);
 
                     // Server Keys
-                    // TODO: Assert.NotNull(env.Get<IDictionary<string, object>>("server.Capabilities"));
+                    // TODO: Assert.NotNull(httpContext.Get<IDictionary<string, object>>("server.Capabilities"));
 
                     var connectionInfo = httpContext.Features.Get<IHttpConnectionFeature>();
                     Assert.Equal("::1", connectionInfo.RemoteIpAddress.ToString());
@@ -92,9 +92,8 @@ namespace Microsoft.AspNet.Server.WebListener
         public async Task Request_PathSplitting(string pathBase, string requestPath, string expectedPathBase, string expectedPath)
         {
             string root;
-            using (Utilities.CreateHttpServerReturnRoot(pathBase, out root, env =>
+            using (Utilities.CreateHttpServerReturnRoot(pathBase, out root, httpContext =>
             {
-                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 try
                 {
                     var requestInfo = httpContext.Features.Get<IHttpRequestFeature>();
@@ -140,9 +139,8 @@ namespace Microsoft.AspNet.Server.WebListener
         public async Task Request_MultiplePrefixes(string requestPath, string expectedPathBase, string expectedPath)
         {
             string root;
-            using (CreateServer(out root, env =>
+            using (CreateServer(out root, httpContext =>
             {
-                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 var requestInfo = httpContext.Features.Get<IHttpRequestFeature>();
                 var requestIdentifierFeature = httpContext.Features.Get<IHttpRequestIdentifierFeature>();
                 try
@@ -167,22 +165,23 @@ namespace Microsoft.AspNet.Server.WebListener
             }
         }
 
-        private IDisposable CreateServer(out string root, AppFunc app)
+        private IServer CreateServer(out string root, RequestDelegate app)
         {
             // TODO: We're just doing this to get a dynamic port. This can be removed later when we add support for hot-adding prefixes.
-            var server = Utilities.CreateHttpServerReturnRoot("/", out root, app);
-            server.Dispose();
+            var dynamicServer = Utilities.CreateHttpServerReturnRoot("/", out root, app);
+            dynamicServer.Dispose();
             var rootUri = new Uri(root);
-            var factory = new ServerFactory(loggerFactory: null);
-            var serverFeatures = factory.Initialize(configuration: null);
-            var listener = serverFeatures.Get<Microsoft.Net.Http.Server.WebListener>();
+            var factory = new ServerFactory(loggerFactory: null, httpContextFactory: new HttpContextFactory(new HttpContextAccessor()));
+            var server = factory.CreateServer(configuration: null);
+            var listener = server.Features.Get<Microsoft.Net.Http.Server.WebListener>();
 
             foreach (string path in new[] { "/", "/11", "/2/3", "/2", "/11/2" })
             {
                 listener.UrlPrefixes.Add(UrlPrefix.Create(rootUri.Scheme, rootUri.Host, rootUri.Port, path));
             }
 
-            return factory.Start(serverFeatures, app);
+            server.Start(app);
+            return server;
         }
 
         private async Task<string> SendRequestAsync(string uri)

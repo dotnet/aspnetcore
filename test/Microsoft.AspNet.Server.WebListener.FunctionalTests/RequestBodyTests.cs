@@ -35,9 +35,8 @@ namespace Microsoft.AspNet.Server.WebListener
         public async Task RequestBody_ReadSync_Success()
         {
             string address;
-            using (Utilities.CreateHttpServer(out address, env =>
+            using (Utilities.CreateHttpServer(out address, httpContext =>
             {
-                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 byte[] input = new byte[100];
                 int read = httpContext.Request.Body.Read(input, 0, input.Length);
                 httpContext.Response.ContentLength = read;
@@ -54,9 +53,8 @@ namespace Microsoft.AspNet.Server.WebListener
         public async Task RequestBody_ReadAync_Success()
         {
             string address;
-            using (Utilities.CreateHttpServer(out address, async env =>
+            using (Utilities.CreateHttpServer(out address, async httpContext =>
             {
-                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 byte[] input = new byte[100];
                 int read = await httpContext.Request.Body.ReadAsync(input, 0, input.Length);
                 httpContext.Response.ContentLength = read;
@@ -72,9 +70,8 @@ namespace Microsoft.AspNet.Server.WebListener
         public async Task RequestBody_ReadBeginEnd_Success()
         {
             string address;
-            using (Utilities.CreateHttpServer(out address, env =>
+            using (Utilities.CreateHttpServer(out address, httpContext =>
             {
-                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 byte[] input = new byte[100];
                 int read = httpContext.Request.Body.EndRead(httpContext.Request.Body.BeginRead(input, 0, input.Length, null, null));
                 httpContext.Response.ContentLength = read;
@@ -92,9 +89,8 @@ namespace Microsoft.AspNet.Server.WebListener
         public async Task RequestBody_InvalidBuffer_ArgumentException()
         {
             string address;
-            using (Utilities.CreateHttpServer(out address, env =>
+            using (Utilities.CreateHttpServer(out address, httpContext =>
             {
-                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 byte[] input = new byte[100];
                 Assert.Throws<ArgumentNullException>("buffer", () => httpContext.Request.Body.Read(null, 0, 1));
                 Assert.Throws<ArgumentOutOfRangeException>("offset", () => httpContext.Request.Body.Read(input, -1, 1));
@@ -116,9 +112,8 @@ namespace Microsoft.AspNet.Server.WebListener
         {
             StaggardContent content = new StaggardContent();
             string address;
-            using (Utilities.CreateHttpServer(out address, env =>
+            using (Utilities.CreateHttpServer(out address, httpContext =>
             {
-                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 byte[] input = new byte[10];
                 int read = httpContext.Request.Body.Read(input, 0, input.Length);
                 Assert.Equal(5, read);
@@ -138,9 +133,8 @@ namespace Microsoft.AspNet.Server.WebListener
         {
             StaggardContent content = new StaggardContent();
             string address;
-            using (Utilities.CreateHttpServer(out address, async env =>
+            using (Utilities.CreateHttpServer(out address, async httpContext =>
             {
-                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 byte[] input = new byte[10];
                 int read = await httpContext.Request.Body.ReadAsync(input, 0, input.Length);
                 Assert.Equal(5, read);
@@ -158,9 +152,8 @@ namespace Microsoft.AspNet.Server.WebListener
         public async Task RequestBody_PostWithImidateBody_Success()
         {
             string address;
-            using (Utilities.CreateHttpServer(out address, async env =>
+            using (Utilities.CreateHttpServer(out address, async httpContext =>
             {
-                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 byte[] input = new byte[11];
                 int read = await httpContext.Request.Body.ReadAsync(input, 0, input.Length);
                 Assert.Equal(10, read);

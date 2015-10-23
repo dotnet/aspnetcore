@@ -24,6 +24,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Hosting.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Http.Internal;
@@ -38,7 +39,7 @@ namespace Microsoft.AspNet.Server.WebListener
         public async Task Server_200OK_Success()
         {
             string address;
-            using (Utilities.CreateHttpServer(out address, env =>
+            using (Utilities.CreateHttpServer(out address, httpContext =>
                 {
                     return Task.FromResult(0);
                 }))
@@ -52,9 +53,8 @@ namespace Microsoft.AspNet.Server.WebListener
         public async Task Server_SendHelloWorld_Success()
         {
             string address;
-            using (Utilities.CreateHttpServer(out address, env =>
+            using (Utilities.CreateHttpServer(out address, httpContext =>
                 {
-                    var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                     httpContext.Response.ContentLength = 11;
                     return httpContext.Response.WriteAsync("Hello World");
                 }))
@@ -68,9 +68,8 @@ namespace Microsoft.AspNet.Server.WebListener
         public async Task Server_EchoHelloWorld_Success()
         {
             string address;
-            using (Utilities.CreateHttpServer(out address, env =>
+            using (Utilities.CreateHttpServer(out address, httpContext =>
                 {
-                    var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                     string input = new StreamReader(httpContext.Request.Body).ReadToEnd();
                     Assert.Equal("Hello World", input);
                     httpContext.Response.ContentLength = 11;
@@ -88,10 +87,9 @@ namespace Microsoft.AspNet.Server.WebListener
             Task<string> responseTask;
             ManualResetEvent received = new ManualResetEvent(false);
             string address;
-            using (Utilities.CreateHttpServer(out address, env =>
+            using (Utilities.CreateHttpServer(out address, httpContext =>
                 {
                     received.Set();
-                    var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                     httpContext.Response.ContentLength = 11;
                     return httpContext.Response.WriteAsync("Hello World");
                 }))
@@ -107,7 +105,7 @@ namespace Microsoft.AspNet.Server.WebListener
         public void Server_AppException_ClientReset()
         {
             string address;
-            using (Utilities.CreateHttpServer(out address, env =>
+            using (Utilities.CreateHttpServer(out address, httpContext =>
             {
                 throw new InvalidOperationException();
             }))
@@ -129,7 +127,7 @@ namespace Microsoft.AspNet.Server.WebListener
             TaskCompletionSource<object> tcs = new TaskCompletionSource<object>();
 
             string address;
-            using (Utilities.CreateHttpServer(out address, env =>
+            using (Utilities.CreateHttpServer(out address, httpContext =>
             {
                 if (Interlocked.Increment(ref requestCount) == requestLimit)
                 {
@@ -162,7 +160,7 @@ namespace Microsoft.AspNet.Server.WebListener
             TaskCompletionSource<object> tcs = new TaskCompletionSource<object>();
 
             string address;
-            using (Utilities.CreateHttpServer(out address, async env =>
+            using (Utilities.CreateHttpServer(out address, async httpContext =>
             {
                 if (Interlocked.Increment(ref requestCount) == requestLimit)
                 {
@@ -193,9 +191,8 @@ namespace Microsoft.AspNet.Server.WebListener
             ManualResetEvent canceled = new ManualResetEvent(false);
 
             string address;
-            using (Utilities.CreateHttpServer(out address, env =>
+            using (Utilities.CreateHttpServer(out address, httpContext =>
             {
-                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 CancellationToken ct = httpContext.RequestAborted;
                 Assert.True(ct.CanBeCanceled, "CanBeCanceled");
                 Assert.False(ct.IsCancellationRequested, "IsCancellationRequested");
@@ -228,9 +225,8 @@ namespace Microsoft.AspNet.Server.WebListener
             ManualResetEvent canceled = new ManualResetEvent(false);
 
             string address;
-            using (Utilities.CreateHttpServer(out address, env =>
+            using (Utilities.CreateHttpServer(out address, httpContext =>
             {
-                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 CancellationToken ct = httpContext.RequestAborted;
                 Assert.True(ct.CanBeCanceled, "CanBeCanceled");
                 Assert.False(ct.IsCancellationRequested, "IsCancellationRequested");
@@ -255,16 +251,17 @@ namespace Microsoft.AspNet.Server.WebListener
         {
             // This is just to get a dynamic port
             string address;
-            using (Utilities.CreateHttpServer(out address, env => Task.FromResult(0))) { }
+            using (Utilities.CreateHttpServer(out address, httpContext => Task.FromResult(0))) { }
 
-                var factory = new ServerFactory(loggerFactory: null);
-            var serverFeatures = factory.Initialize(configuration: null);
-            var listener = serverFeatures.Get<Microsoft.Net.Http.Server.WebListener>();
+            var factory = new ServerFactory(loggerFactory: null, httpContextFactory: new HttpContextFactory(new HttpContextAccessor()));
+            var server = factory.CreateServer(configuration: null);
+            var listener = server.Features.Get<Microsoft.Net.Http.Server.WebListener>();
             listener.UrlPrefixes.Add(UrlPrefix.Create(address));
             listener.SetRequestQueueLimit(1001);
 
-            using (factory.Start(serverFeatures, env => Task.FromResult(0)))
+            using (server)
             {
+                server.Start(httpContext => Task.FromResult(0));
                 string response = await SendRequestAsync(address);
                 Assert.Equal(string.Empty, response);
             }

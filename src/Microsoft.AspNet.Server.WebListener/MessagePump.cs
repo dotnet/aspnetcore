@@ -16,25 +16,28 @@
 // permissions and limitations under the License.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Hosting.Server;
+using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
+using Microsoft.AspNet.Server.Features;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Server;
 
 namespace Microsoft.AspNet.Server.WebListener
 {
-    using AppFunc = Func<IFeatureCollection, Task>;
-
-    internal class MessagePump : IDisposable
+    internal class MessagePump : IServer
     {
         private static readonly int DefaultMaxAccepts = 5 * Environment.ProcessorCount;
 
         private readonly Microsoft.Net.Http.Server.WebListener _listener;
         private readonly ILogger _logger;
+        private readonly IHttpContextFactory _httpContextFactory;
 
-        private AppFunc _appFunc;
+        private RequestDelegate _appFunc;
 
         private int _maxAccepts;
         private int _acceptorCounts;
@@ -43,14 +46,19 @@ namespace Microsoft.AspNet.Server.WebListener
         private bool _stopping;
         private int _outstandingRequests;
         private ManualResetEvent _shutdownSignal;
-
-        // TODO: private IDictionary<string, object> _capabilities;
-
-        internal MessagePump(Microsoft.Net.Http.Server.WebListener listener, ILoggerFactory loggerFactory)
+        
+        internal MessagePump(Microsoft.Net.Http.Server.WebListener listener, ILoggerFactory loggerFactory, IFeatureCollection features, IHttpContextFactory httpContextFactory)
         {
+            if (features == null)
+            {
+                throw new ArgumentNullException(nameof(Features));
+            }
+
             Contract.Assert(listener != null);
             _listener = listener;
             _logger = LogHelper.CreateLogger(loggerFactory, typeof(MessagePump));
+            _httpContextFactory = httpContextFactory;
+            Features = features;
 
             _processRequest = new Action<object>(ProcessRequestAsync);
             _maxAccepts = DefaultMaxAccepts;
@@ -80,8 +88,23 @@ namespace Microsoft.AspNet.Server.WebListener
 
         internal bool EnableResponseCaching { get; set; } = true;
 
-        internal void Start(AppFunc app)
+        public IFeatureCollection Features { get; }
+
+        public void Start(RequestDelegate app)
         {
+            if (app == null)
+            {
+                throw new ArgumentNullException(nameof(app));
+            }
+
+            var addressesFeature = Features.Get<IServerAddressesFeature>();
+            if (addressesFeature == null)
+            {
+                throw new InvalidOperationException($"{nameof(IServerAddressesFeature)} is missing.");
+            }
+
+            ParseAddresses(addressesFeature.Addresses, Listener);
+
             // Can't call Start twice
             Contract.Assert(_appFunc == null);
 
@@ -159,11 +182,14 @@ namespace Microsoft.AspNet.Server.WebListener
                     SetFatalResponse(requestContext, 503);
                     return;
                 }
+
+                HttpContext httpContext = null;
                 try
                 {
                     Interlocked.Increment(ref _outstandingRequests);
                     FeatureContext featureContext = new FeatureContext(requestContext, EnableResponseCaching);
-                    await _appFunc(featureContext.Features).SupressContext();
+                    httpContext = _httpContextFactory.Create(featureContext.Features);
+                    await _appFunc(httpContext).SupressContext();
                     requestContext.Dispose();
                 }
                 catch (Exception ex)
@@ -182,6 +208,10 @@ namespace Microsoft.AspNet.Server.WebListener
                 }
                 finally
                 {
+                    if (httpContext != null)
+                    {
+                        _httpContextFactory.Dispose(httpContext);
+                    }
                     if (Interlocked.Decrement(ref _outstandingRequests) == 0 && _stopping)
                     {
                         _shutdownSignal.Set();
@@ -201,6 +231,15 @@ namespace Microsoft.AspNet.Server.WebListener
             context.Response.ContentLength = 0;
             context.Dispose();
         }
+
+        private void ParseAddresses(ICollection<string> addresses, Microsoft.Net.Http.Server.WebListener listener)
+        {
+            foreach (var value in addresses)
+            {
+                listener.UrlPrefixes.Add(UrlPrefix.Create(value));
+            }
+        }
+
 
         public void Dispose()
         {

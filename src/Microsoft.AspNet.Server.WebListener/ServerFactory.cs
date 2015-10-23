@@ -35,79 +35,44 @@
 // limitations under the License.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Threading.Tasks;
 using Microsoft.AspNet.Hosting.Server;
+using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Server.Features;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Microsoft.Net.Http.Server;
 
 namespace Microsoft.AspNet.Server.WebListener
 {
-    using AppFunc = Func<IFeatureCollection, Task>;
-
     /// <summary>
     /// Implements the setup process for this server.
     /// </summary>
     public class ServerFactory : IServerFactory
     {
         private ILoggerFactory _loggerFactory;
+        private IHttpContextFactory _httpContextFactory;
 
-        public ServerFactory(ILoggerFactory loggerFactory)
+        public ServerFactory(ILoggerFactory loggerFactory, IHttpContextFactory httpContextFactory)
         {
             _loggerFactory = loggerFactory;
+            _httpContextFactory = httpContextFactory;
         }
 
         /// <summary>
         /// Creates a configurable instance of the server.
         /// </summary>
-        /// <param name="properties"></param>
+        /// <param name="configuration"></param>
+        /// <returns>The server.  Invoke Dispose to shut down.</returns>
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Disposed by caller")]
-        public IFeatureCollection Initialize(IConfiguration configuration)
+        public IServer CreateServer(IConfiguration configuration)
         {
             Microsoft.Net.Http.Server.WebListener listener = new Microsoft.Net.Http.Server.WebListener(_loggerFactory);
             var serverFeatures = new FeatureCollection();
             serverFeatures.Set(listener);
-            serverFeatures.Set(new MessagePump(listener, _loggerFactory));
             serverFeatures.Set(SplitAddresses(configuration));
-            return serverFeatures;
-        }
 
-        /// <summary>
-        /// </summary>
-        /// <param name="app">The per-request application entry point.</param>
-        /// <param name="server">The value returned </param>
-        /// <returns>The server.  Invoke Dispose to shut down.</returns>
-        public IDisposable Start(IFeatureCollection serverFeatures, AppFunc app)
-        {
-            if (serverFeatures == null)
-            {
-                throw new ArgumentNullException("serverFeatures");
-            }
-            if (app == null)
-            {
-                throw new ArgumentNullException("app");
-            }
-
-            var messagePump = serverFeatures.Get<MessagePump>();
-            if (messagePump == null)
-            {
-                throw new InvalidOperationException("messagePump");
-            }
-
-            var addressesFeature = serverFeatures.Get<IServerAddressesFeature>();
-            if (addressesFeature == null)
-            {
-                throw new InvalidOperationException("IServerAddressesFeature");
-            }
-
-            ParseAddresses(addressesFeature.Addresses, messagePump.Listener);
-
-            messagePump.Start(app);
-            return messagePump;
+            return new MessagePump(listener, _loggerFactory, serverFeatures, _httpContextFactory);
         }
 
         private IServerAddressesFeature SplitAddresses(IConfiguration config)
@@ -122,14 +87,6 @@ namespace Microsoft.AspNet.Server.WebListener
                 }
             }
             return addressesFeature;
-        }
-
-        private void ParseAddresses(ICollection<string> addresses, Microsoft.Net.Http.Server.WebListener listener)
-        {
-            foreach (var value in addresses)
-            {
-                listener.UrlPrefixes.Add(UrlPrefix.Create(value));
-            }
         }
     }
 }

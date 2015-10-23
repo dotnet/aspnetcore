@@ -31,9 +31,8 @@ namespace Microsoft.AspNet.Server.WebListener
         public async Task Response_ServerSendsDefaultResponse_ServerProvidesStatusCodeAndReasonPhrase()
         {
             string address;
-            using (Utilities.CreateHttpServer(out address, env =>
+            using (Utilities.CreateHttpServer(out address, httpContext =>
             {
-                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 Assert.Equal(200, httpContext.Response.StatusCode);
                 Assert.False(httpContext.Response.HasStarted);
                 return Task.FromResult(0);
@@ -51,11 +50,10 @@ namespace Microsoft.AspNet.Server.WebListener
         public async Task Response_ServerSendsSpecificStatus_ServerProvidesReasonPhrase()
         {
             string address;
-            using (Utilities.CreateHttpServer(out address, env =>
+            using (Utilities.CreateHttpServer(out address, httpContext =>
             {
-                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 httpContext.Response.StatusCode = 201;
-                // TODO: env["owin.ResponseProtocol"] = "HTTP/1.0"; // Http.Sys ignores this value
+                // TODO: httpContext["owin.ResponseProtocol"] = "HTTP/1.0"; // Http.Sys ignores this value
                 return Task.FromResult(0);
             }))
             {
@@ -71,12 +69,11 @@ namespace Microsoft.AspNet.Server.WebListener
         public async Task Response_ServerSendsSpecificStatusAndReasonPhrase_PassedThrough()
         {
             string address;
-            using (Utilities.CreateHttpServer(out address, env =>
+            using (Utilities.CreateHttpServer(out address, httpContext =>
             {
-                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 httpContext.Response.StatusCode = 201;
                 httpContext.Features.Get<IHttpResponseFeature>().ReasonPhrase = "CustomReasonPhrase"; // TODO?
-                // TODO: env["owin.ResponseProtocol"] = "HTTP/1.0"; // Http.Sys ignores this value
+                // TODO: httpContext["owin.ResponseProtocol"] = "HTTP/1.0"; // Http.Sys ignores this value
                 return Task.FromResult(0);
             }))
             {
@@ -92,9 +89,8 @@ namespace Microsoft.AspNet.Server.WebListener
         public async Task Response_ServerSendsCustomStatus_NoReasonPhrase()
         {
             string address;
-            using (Utilities.CreateHttpServer(out address, env =>
+            using (Utilities.CreateHttpServer(out address, httpContext =>
             {
-                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 httpContext.Response.StatusCode = 901;
                 return Task.FromResult(0);
             }))
@@ -110,9 +106,8 @@ namespace Microsoft.AspNet.Server.WebListener
         public async Task Response_100_Throws()
         {
             string address;
-            using (Utilities.CreateHttpServer(out address, env =>
+            using (Utilities.CreateHttpServer(out address, httpContext =>
             {
-                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 httpContext.Response.StatusCode = 100;
                 return Task.FromResult(0);
             }))
@@ -126,9 +121,8 @@ namespace Microsoft.AspNet.Server.WebListener
         public async Task Response_0_Throws()
         {
             string address;
-            using (Utilities.CreateHttpServer(out address, env =>
+            using (Utilities.CreateHttpServer(out address, httpContext =>
             {
-                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 httpContext.Response.StatusCode = 0;
                 return Task.FromResult(0);
             }))

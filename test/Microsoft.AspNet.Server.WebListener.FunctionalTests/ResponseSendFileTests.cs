@@ -47,13 +47,12 @@ namespace Microsoft.AspNet.Server.WebListener
         public async Task ResponseSendFile_SupportKeys_Present()
         {
             string address;
-            using (Utilities.CreateHttpServer(out address, env =>
+            using (Utilities.CreateHttpServer(out address, httpContext =>
             {
-                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 try
                 {
                     /* TODO:
-                    IDictionary<string, object> capabilities = env.Get<IDictionary<string, object>>("server.Capabilities");
+                    IDictionary<string, object> capabilities = httpContext.Get<IDictionary<string, object>>("server.Capabilities");
                     Assert.NotNull(capabilities);
 
                     Assert.Equal("1.0", capabilities.Get<string>("sendfile.Version"));
@@ -91,9 +90,8 @@ namespace Microsoft.AspNet.Server.WebListener
             ManualResetEvent waitHandle = new ManualResetEvent(false);
             bool? appThrew = null;
             string address;
-            using (Utilities.CreateHttpServer(out address, env =>
+            using (Utilities.CreateHttpServer(out address, httpContext =>
             {
-                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 var sendFile = httpContext.Features.Get<IHttpSendFileFeature>();
                 try
                 {
@@ -124,9 +122,8 @@ namespace Microsoft.AspNet.Server.WebListener
         public async Task ResponseSendFile_NoHeaders_DefaultsToChunked()
         {
             string address;
-            using (Utilities.CreateHttpServer(out address, env =>
+            using (Utilities.CreateHttpServer(out address, httpContext =>
             {
-                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 var sendFile = httpContext.Features.Get<IHttpSendFileFeature>();
                 return sendFile.SendFileAsync(AbsoluteFilePath, 0, null, CancellationToken.None);
             }))
@@ -144,9 +141,8 @@ namespace Microsoft.AspNet.Server.WebListener
         public async Task ResponseSendFile_RelativeFile_Success()
         {
             string address;
-            using (Utilities.CreateHttpServer(out address, env =>
+            using (Utilities.CreateHttpServer(out address, httpContext =>
             {
-                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 var sendFile = httpContext.Features.Get<IHttpSendFileFeature>();
                 return sendFile.SendFileAsync(RelativeFilePath, 0, null, CancellationToken.None);
             }))
@@ -164,9 +160,8 @@ namespace Microsoft.AspNet.Server.WebListener
         public async Task ResponseSendFile_Unspecified_Chunked()
         {
             string address;
-            using (Utilities.CreateHttpServer(out address, env =>
+            using (Utilities.CreateHttpServer(out address, httpContext =>
             {
-                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 var sendFile = httpContext.Features.Get<IHttpSendFileFeature>();
                 return sendFile.SendFileAsync(AbsoluteFilePath, 0, null, CancellationToken.None);
             }))
@@ -184,9 +179,8 @@ namespace Microsoft.AspNet.Server.WebListener
         public async Task ResponseSendFile_MultipleWrites_Chunked()
         {
             string address;
-            using (Utilities.CreateHttpServer(out address, env =>
+            using (Utilities.CreateHttpServer(out address, httpContext =>
             {
-                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 var sendFile = httpContext.Features.Get<IHttpSendFileFeature>();
                 sendFile.SendFileAsync(AbsoluteFilePath, 0, null, CancellationToken.None).Wait();
                 return sendFile.SendFileAsync(AbsoluteFilePath, 0, null, CancellationToken.None);
@@ -205,9 +199,8 @@ namespace Microsoft.AspNet.Server.WebListener
         public async Task ResponseSendFile_HalfOfFile_Chunked()
         {
             string address;
-            using (Utilities.CreateHttpServer(out address, env =>
+            using (Utilities.CreateHttpServer(out address, httpContext =>
             {
-                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 var sendFile = httpContext.Features.Get<IHttpSendFileFeature>();
                 return sendFile.SendFileAsync(AbsoluteFilePath, 0, FileLength / 2, CancellationToken.None);
             }))
@@ -225,9 +218,8 @@ namespace Microsoft.AspNet.Server.WebListener
         public async Task ResponseSendFile_OffsetOutOfRange_Throws()
         {
             string address;
-            using (Utilities.CreateHttpServer(out address, env =>
+            using (Utilities.CreateHttpServer(out address, httpContext =>
             {
-                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 var sendFile = httpContext.Features.Get<IHttpSendFileFeature>();
                 return sendFile.SendFileAsync(AbsoluteFilePath, 1234567, null, CancellationToken.None);
             }))
@@ -241,9 +233,8 @@ namespace Microsoft.AspNet.Server.WebListener
         public async Task ResponseSendFile_CountOutOfRange_Throws()
         {
             string address;
-            using (Utilities.CreateHttpServer(out address, env =>
+            using (Utilities.CreateHttpServer(out address, httpContext =>
             {
-                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 var sendFile = httpContext.Features.Get<IHttpSendFileFeature>();
                 return sendFile.SendFileAsync(AbsoluteFilePath, 0, 1234567, CancellationToken.None);
             }))
@@ -257,9 +248,8 @@ namespace Microsoft.AspNet.Server.WebListener
         public async Task ResponseSendFile_Count0_Chunked()
         {
             string address;
-            using (Utilities.CreateHttpServer(out address, env =>
+            using (Utilities.CreateHttpServer(out address, httpContext =>
             {
-                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 var sendFile = httpContext.Features.Get<IHttpSendFileFeature>();
                 return sendFile.SendFileAsync(AbsoluteFilePath, 0, 0, CancellationToken.None);
             }))
@@ -277,9 +267,8 @@ namespace Microsoft.AspNet.Server.WebListener
         public async Task ResponseSendFile_ContentLength_PassedThrough()
         {
             string address;
-            using (Utilities.CreateHttpServer(out address, env =>
+            using (Utilities.CreateHttpServer(out address, httpContext =>
             {
-                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 var sendFile = httpContext.Features.Get<IHttpSendFileFeature>();
                 httpContext.Response.Headers["Content-lenGth"] = FileLength.ToString();
                 return sendFile.SendFileAsync(AbsoluteFilePath, 0, null, CancellationToken.None);
@@ -299,9 +288,8 @@ namespace Microsoft.AspNet.Server.WebListener
         public async Task ResponseSendFile_ContentLengthSpecific_PassedThrough()
         {
             string address;
-            using (Utilities.CreateHttpServer(out address, env =>
+            using (Utilities.CreateHttpServer(out address, httpContext =>
             {
-                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 var sendFile = httpContext.Features.Get<IHttpSendFileFeature>();
                 httpContext.Response.Headers["Content-lenGth"] = "10";
                 return sendFile.SendFileAsync(AbsoluteFilePath, 0, 10, CancellationToken.None);
@@ -321,9 +309,8 @@ namespace Microsoft.AspNet.Server.WebListener
         public async Task ResponseSendFile_ContentLength0_PassedThrough()
         {
             string address;
-            using (Utilities.CreateHttpServer(out address, env =>
+            using (Utilities.CreateHttpServer(out address, httpContext =>
             {
-                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 var sendFile = httpContext.Features.Get<IHttpSendFileFeature>();
                 httpContext.Response.Headers["Content-lenGth"] = "0";
                 return sendFile.SendFileAsync(AbsoluteFilePath, 0, 0, CancellationToken.None);

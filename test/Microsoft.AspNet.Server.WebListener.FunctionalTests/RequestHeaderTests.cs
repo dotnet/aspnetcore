@@ -33,9 +33,9 @@ namespace Microsoft.AspNet.Server.WebListener
         public async Task RequestHeaders_ClientSendsDefaultHeaders_Success()
         {
             string address;
-            using (Utilities.CreateHttpServer(out address, env =>
+            using (Utilities.CreateHttpServer(out address, httpContext =>
                 {
-                    var requestHeaders = new DefaultHttpContext((IFeatureCollection)env).Request.Headers;
+                    var requestHeaders = httpContext.Request.Headers;
                     // NOTE: The System.Net client only sends the Connection: keep-alive header on the first connection per service-point.
                     // Assert.Equal(2, requestHeaders.Count);
                     // Assert.Equal("Keep-Alive", requestHeaders.Get("Connection"));
@@ -53,9 +53,9 @@ namespace Microsoft.AspNet.Server.WebListener
         public async Task RequestHeaders_ClientSendsCustomHeaders_Success()
         {
             string address;
-            using (Utilities.CreateHttpServer(out address, env =>
+            using (Utilities.CreateHttpServer(out address, httpContext =>
                 {
-                    var requestHeaders = new DefaultHttpContext((IFeatureCollection)env).Request.Headers;
+                    var requestHeaders = httpContext.Request.Headers;
                     Assert.Equal(4, requestHeaders.Count);
                     Assert.False(StringValues.IsNullOrEmpty(requestHeaders["Host"]));
                     Assert.Equal("close", requestHeaders["Connection"]);

@@ -40,11 +40,11 @@ namespace Microsoft.AspNet.Server.WebListener
         public async Task AuthTypes_AllowAnonymous_NoChallenge(AuthenticationSchemes authType)
         {
             string address;
-            using (Utilities.CreateHttpAuthServer(authType | AuthenticationSchemes.AllowAnonymous, out address, env =>
+            using (Utilities.CreateHttpAuthServer(authType | AuthenticationSchemes.AllowAnonymous, out address, httpContext =>
             {
-                var context = new DefaultHttpContext((IFeatureCollection)env);
-                Assert.NotNull(context.User);
-                Assert.False(context.User.Identity.IsAuthenticated);
+                Assert.NotNull(httpContext.User);
+                Assert.NotNull(httpContext.User.Identity);
+                Assert.False(httpContext.User.Identity.IsAuthenticated);
                 return Task.FromResult(0);
             }))
             {
@@ -62,7 +62,7 @@ namespace Microsoft.AspNet.Server.WebListener
         public async Task AuthType_RequireAuth_ChallengesAdded(AuthenticationSchemes authType)
         {
             string address;
-            using (Utilities.CreateHttpAuthServer(authType, out address, env =>
+            using (Utilities.CreateHttpAuthServer(authType, out address, httpContext =>
             {
                 throw new NotImplementedException();
             }))
@@ -81,12 +81,12 @@ namespace Microsoft.AspNet.Server.WebListener
         public async Task AuthType_AllowAnonymousButSpecify401_ChallengesAdded(AuthenticationSchemes authType)
         {
             string address;
-            using (Utilities.CreateHttpAuthServer(authType | AuthenticationSchemes.AllowAnonymous, out address, env =>
+            using (Utilities.CreateHttpAuthServer(authType | AuthenticationSchemes.AllowAnonymous, out address, httpContext =>
             {
-                var context = new DefaultHttpContext((IFeatureCollection)env);
-                Assert.NotNull(context.User);
-                Assert.False(context.User.Identity.IsAuthenticated);
-                context.Response.StatusCode = 401;
+                Assert.NotNull(httpContext.User);
+                Assert.NotNull(httpContext.User.Identity);
+                Assert.False(httpContext.User.Identity.IsAuthenticated);
+                httpContext.Response.StatusCode = 401;
                 return Task.FromResult(0);
             }))
             {
@@ -107,12 +107,12 @@ namespace Microsoft.AspNet.Server.WebListener
                 | AuthenticationSchemes.Basic
                 | AuthenticationSchemes.AllowAnonymous,
                 out address,
-                env =>
+                httpContext =>
             {
-                var context = new DefaultHttpContext((IFeatureCollection)env);
-                Assert.NotNull(context.User);
-                Assert.False(context.User.Identity.IsAuthenticated);
-                context.Response.StatusCode = 401;
+                Assert.NotNull(httpContext.User);
+                Assert.NotNull(httpContext.User.Identity);
+                Assert.False(httpContext.User.Identity.IsAuthenticated);
+                httpContext.Response.StatusCode = 401;
                 return Task.FromResult(0);
             }))
             {
@@ -132,18 +132,18 @@ namespace Microsoft.AspNet.Server.WebListener
         {
             string address;
             int requestId = 0;
-            using (Utilities.CreateHttpAuthServer(authType | AuthenticationSchemes.AllowAnonymous, out address, env =>
+            using (Utilities.CreateHttpAuthServer(authType | AuthenticationSchemes.AllowAnonymous, out address, httpContext =>
             {
-                var context = new DefaultHttpContext((IFeatureCollection)env);
-                Assert.NotNull(context.User);
+                Assert.NotNull(httpContext.User);
+                Assert.NotNull(httpContext.User.Identity);
                 if (requestId == 0)
                 {
-                    Assert.False(context.User.Identity.IsAuthenticated);
-                    context.Response.StatusCode = 401;
+                    Assert.False(httpContext.User.Identity.IsAuthenticated);
+                    httpContext.Response.StatusCode = 401;
                 }
                 else if (requestId == 1)
                 {
-                    Assert.True(context.User.Identity.IsAuthenticated);
+                    Assert.True(httpContext.User.Identity.IsAuthenticated);
                 }
                 else
                 {
@@ -167,11 +167,11 @@ namespace Microsoft.AspNet.Server.WebListener
         public async Task AuthTypes_RequireAuth_Success(AuthenticationSchemes authType)
         {
             string address;
-            using (Utilities.CreateHttpAuthServer(authType, out address, env =>
+            using (Utilities.CreateHttpAuthServer(authType, out address, httpContext =>
             {
-                var context = new DefaultHttpContext((IFeatureCollection)env);
-                Assert.NotNull(context.User);
-                Assert.True(context.User.Identity.IsAuthenticated);
+                Assert.NotNull(httpContext.User);
+                Assert.NotNull(httpContext.User.Identity);
+                Assert.True(httpContext.User.Identity.IsAuthenticated);
                 return Task.FromResult(0);
             }))
             {
@@ -189,10 +189,9 @@ namespace Microsoft.AspNet.Server.WebListener
         public async Task AuthTypes_GetSingleDescriptions(AuthenticationSchemes authType)
         {
             string address;
-            using (Utilities.CreateHttpAuthServer(authType | AuthenticationSchemes.AllowAnonymous, out address, env =>
+            using (Utilities.CreateHttpAuthServer(authType | AuthenticationSchemes.AllowAnonymous, out address, httpContext =>
             {
-                var context = new DefaultHttpContext((IFeatureCollection)env);
-                var resultList = context.Authentication.GetAuthenticationSchemes();
+                var resultList = httpContext.Authentication.GetAuthenticationSchemes();
                 if (authType == AuthenticationSchemes.AllowAnonymous)
                 {
                     Assert.Equal(0, resultList.Count());
@@ -223,10 +222,9 @@ namespace Microsoft.AspNet.Server.WebListener
                 | AuthenticationSchemes.NTLM
                 | /*AuthenticationSchemes.Digest
                 |*/ AuthenticationSchemes.Basic;
-            using (Utilities.CreateHttpAuthServer(authType | AuthenticationSchemes.AllowAnonymous, out address, env =>
+            using (Utilities.CreateHttpAuthServer(authType | AuthenticationSchemes.AllowAnonymous, out address, httpContext =>
             {
-                var context = new DefaultHttpContext((IFeatureCollection)env);
-                var resultList = context.Authentication.GetAuthenticationSchemes();
+                var resultList = httpContext.Authentication.GetAuthenticationSchemes();
                 Assert.Equal(3, resultList.Count());
                 return Task.FromResult(0);
             }))
@@ -247,14 +245,14 @@ namespace Microsoft.AspNet.Server.WebListener
         {
             string address;
             var authTypeList = authType.ToString().Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries);
-            using (Utilities.CreateHttpAuthServer(authType | AuthenticationSchemes.AllowAnonymous, out address, async env =>
+            using (Utilities.CreateHttpAuthServer(authType | AuthenticationSchemes.AllowAnonymous, out address, async httpContext =>
             {
-                var context = new DefaultHttpContext((IFeatureCollection)env);
-                Assert.NotNull(context.User);
-                Assert.False(context.User.Identity.IsAuthenticated);
+                Assert.NotNull(httpContext.User);
+                Assert.NotNull(httpContext.User.Identity);
+                Assert.False(httpContext.User.Identity.IsAuthenticated);
                 foreach (var scheme in authTypeList)
                 {
-                    var authResults = await context.Authentication.AuthenticateAsync(scheme);
+                    var authResults = await httpContext.Authentication.AuthenticateAsync(scheme);
                     Assert.Null(authResults);
                 }
             }))
@@ -275,15 +273,15 @@ namespace Microsoft.AspNet.Server.WebListener
         {
             string address;
             var authTypeList = authType.ToString().Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries);
-            using (Utilities.CreateHttpAuthServer(authType, out address, async env =>
+            using (Utilities.CreateHttpAuthServer(authType, out address, async httpContext =>
             {
-                var context = new DefaultHttpContext((IFeatureCollection)env);
-                Assert.NotNull(context.User);
-                Assert.True(context.User.Identity.IsAuthenticated);
+                Assert.NotNull(httpContext.User);
+                Assert.NotNull(httpContext.User.Identity);
+                Assert.True(httpContext.User.Identity.IsAuthenticated);
                 var count = 0;
                 foreach (var scheme in authTypeList)
                 {
-                    var authResults = await context.Authentication.AuthenticateAsync(scheme);
+                    var authResults = await httpContext.Authentication.AuthenticateAsync(scheme);
                     if (authResults != null)
                     {
                         count++;
@@ -307,12 +305,12 @@ namespace Microsoft.AspNet.Server.WebListener
         {
             string address;
             var authTypeList = authType.ToString().Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries);
-            using (Utilities.CreateHttpAuthServer(authType | AuthenticationSchemes.AllowAnonymous, out address, env =>
+            using (Utilities.CreateHttpAuthServer(authType | AuthenticationSchemes.AllowAnonymous, out address, httpContext =>
             {
-                var context = new DefaultHttpContext((IFeatureCollection)env);
-                Assert.NotNull(context.User);
-                Assert.False(context.User.Identity.IsAuthenticated);
-                return context.Authentication.ChallengeAsync();
+                Assert.NotNull(httpContext.User);
+                Assert.NotNull(httpContext.User.Identity);
+                Assert.False(httpContext.User.Identity.IsAuthenticated);
+                return httpContext.Authentication.ChallengeAsync();
             }))
             {
                 var response = await SendRequestAsync(address);
@@ -331,14 +329,14 @@ namespace Microsoft.AspNet.Server.WebListener
         {
             string address;
             var authTypeList = authType.ToString().Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries);
-            using (Utilities.CreateHttpAuthServer(authType | AuthenticationSchemes.AllowAnonymous, out address, async env =>
+            using (Utilities.CreateHttpAuthServer(authType | AuthenticationSchemes.AllowAnonymous, out address, async httpContext =>
             {
-                var context = new DefaultHttpContext((IFeatureCollection)env);
-                Assert.NotNull(context.User);
-                Assert.False(context.User.Identity.IsAuthenticated);
+                Assert.NotNull(httpContext.User);
+                Assert.NotNull(httpContext.User.Identity);
+                Assert.False(httpContext.User.Identity.IsAuthenticated);
                 foreach (var scheme in authTypeList)
                 {
-                    await context.Authentication.ChallengeAsync(scheme);
+                    await httpContext.Authentication.ChallengeAsync(scheme);
                 }
             }))
             {
@@ -357,12 +355,12 @@ namespace Microsoft.AspNet.Server.WebListener
         {
             string address;
             var authTypes = AuthenticationSchemes.Negotiate | AuthenticationSchemes.NTLM | /*AuthenticationSchemes.Digest |*/ AuthenticationSchemes.Basic;
-            using (Utilities.CreateHttpAuthServer(authTypes | AuthenticationSchemes.AllowAnonymous, out address, env =>
+            using (Utilities.CreateHttpAuthServer(authTypes | AuthenticationSchemes.AllowAnonymous, out address, httpContext =>
             {
-                var context = new DefaultHttpContext((IFeatureCollection)env);
-                Assert.NotNull(context.User);
-                Assert.False(context.User.Identity.IsAuthenticated);
-                return context.Authentication.ChallengeAsync(authType.ToString());
+                Assert.NotNull(httpContext.User);
+                Assert.NotNull(httpContext.User.Identity);
+                Assert.False(httpContext.User.Identity.IsAuthenticated);
+                return httpContext.Authentication.ChallengeAsync(authType.ToString());
             }))
             {
                 var response = await SendRequestAsync(address);
@@ -383,12 +381,12 @@ namespace Microsoft.AspNet.Server.WebListener
             var authTypes = AuthenticationSchemes.Negotiate | AuthenticationSchemes.NTLM | /*AuthenticationSchemes.Digest |*/ AuthenticationSchemes.Basic;
             authTypes = authTypes & ~authType;
             var authTypeList = authType.ToString().Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries);
-            using (Utilities.CreateHttpAuthServer(authTypes | AuthenticationSchemes.AllowAnonymous, out address, env =>
+            using (Utilities.CreateHttpAuthServer(authTypes | AuthenticationSchemes.AllowAnonymous, out address, httpContext =>
             {
-                var context = new DefaultHttpContext((IFeatureCollection)env);
-                Assert.NotNull(context.User);
-                Assert.False(context.User.Identity.IsAuthenticated);
-                return Assert.ThrowsAsync<InvalidOperationException>(() => context.Authentication.ChallengeAsync(authType.ToString()));
+                Assert.NotNull(httpContext.User);
+                Assert.NotNull(httpContext.User.Identity);
+                Assert.False(httpContext.User.Identity.IsAuthenticated);
+                return Assert.ThrowsAsync<InvalidOperationException>(() => httpContext.Authentication.ChallengeAsync(authType.ToString()));
             }))
             {
                 var response = await SendRequestAsync(address);
@@ -406,12 +404,12 @@ namespace Microsoft.AspNet.Server.WebListener
         {
             string address;
             var authTypes = AuthenticationSchemes.AllowAnonymous | AuthenticationSchemes.Negotiate | AuthenticationSchemes.NTLM | /*AuthenticationSchemes.Digest |*/ AuthenticationSchemes.Basic;
-            using (Utilities.CreateHttpAuthServer(authTypes, out address, env =>
+            using (Utilities.CreateHttpAuthServer(authTypes, out address, httpContext =>
             {
-                var context = new DefaultHttpContext((IFeatureCollection)env);
-                Assert.NotNull(context.User);
-                Assert.False(context.User.Identity.IsAuthenticated);
-                return context.Authentication.ForbidAsync(authType.ToString());
+                Assert.NotNull(httpContext.User);
+                Assert.NotNull(httpContext.User.Identity);
+                Assert.False(httpContext.User.Identity.IsAuthenticated);
+                return httpContext.Authentication.ForbidAsync(authType.ToString());
             }))
             {
                 var response = await SendRequestAsync(address);
@@ -428,12 +426,12 @@ namespace Microsoft.AspNet.Server.WebListener
         public async Task AuthTypes_ChallengeAuthenticatedAuthType_Forbidden(AuthenticationSchemes authType)
         {
             string address;
-            using (Utilities.CreateHttpAuthServer(authType, out address, env =>
+            using (Utilities.CreateHttpAuthServer(authType, out address, httpContext =>
             {
-                var context = new DefaultHttpContext((IFeatureCollection)env);
-                Assert.NotNull(context.User);
-                Assert.True(context.User.Identity.IsAuthenticated);
-                return context.Authentication.ChallengeAsync(authType.ToString());
+                Assert.NotNull(httpContext.User);
+                Assert.NotNull(httpContext.User.Identity);
+                Assert.True(httpContext.User.Identity.IsAuthenticated);
+                return httpContext.Authentication.ChallengeAsync(authType.ToString());
             }))
             {
                 var response = await SendRequestAsync(address, useDefaultCredentials: true);
@@ -451,12 +449,12 @@ namespace Microsoft.AspNet.Server.WebListener
         public async Task AuthTypes_ChallengeAuthenticatedAuthTypeWithEmptyChallenge_Forbidden(AuthenticationSchemes authType)
         {
             string address;
-            using (Utilities.CreateHttpAuthServer(authType, out address, env =>
+            using (Utilities.CreateHttpAuthServer(authType, out address, httpContext =>
             {
-                var context = new DefaultHttpContext((IFeatureCollection)env);
-                Assert.NotNull(context.User);
-                Assert.True(context.User.Identity.IsAuthenticated);
-                return context.Authentication.ChallengeAsync();
+                Assert.NotNull(httpContext.User);
+                Assert.NotNull(httpContext.User.Identity);
+                Assert.True(httpContext.User.Identity.IsAuthenticated);
+                return httpContext.Authentication.ChallengeAsync();
             }))
             {
                 var response = await SendRequestAsync(address, useDefaultCredentials: true);
@@ -474,12 +472,12 @@ namespace Microsoft.AspNet.Server.WebListener
         public async Task AuthTypes_UnathorizedAuthenticatedAuthType_Unauthorized(AuthenticationSchemes authType)
         {
             string address;
-            using (Utilities.CreateHttpAuthServer(authType, out address, env =>
+            using (Utilities.CreateHttpAuthServer(authType, out address, httpContext =>
             {
-                var context = new DefaultHttpContext((IFeatureCollection)env);
-                Assert.NotNull(context.User);
-                Assert.True(context.User.Identity.IsAuthenticated);
-                return context.Authentication.ChallengeAsync(authType.ToString(), null, ChallengeBehavior.Unauthorized);
+                Assert.NotNull(httpContext.User);
+                Assert.NotNull(httpContext.User.Identity);
+                Assert.True(httpContext.User.Identity.IsAuthenticated);
+                return httpContext.Authentication.ChallengeAsync(authType.ToString(), null, ChallengeBehavior.Unauthorized);
             }))
             {
                 var response = await SendRequestAsync(address, useDefaultCredentials: true);

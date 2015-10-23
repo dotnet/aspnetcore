@@ -17,9 +17,8 @@ namespace Microsoft.AspNet.Server.WebListener.FunctionalTests
         {
             var requestCount = 1;
             string address;
-            using (Utilities.CreateHttpServer(out address, env =>
+            using (Utilities.CreateHttpServer(out address, httpContext =>
             {
-                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 httpContext.Response.ContentType = "some/thing"; // Http.Sys requires content-type for caching
                 httpContext.Response.Headers["x-request-count"] = (requestCount++).ToString();
                 return httpContext.Response.Body.WriteAsync(new byte[10], 0, 10);
@@ -35,9 +34,8 @@ namespace Microsoft.AspNet.Server.WebListener.FunctionalTests
         {
             var requestCount = 1;
             string address;
-            using (Utilities.CreateHttpServer(out address, env =>
+            using (Utilities.CreateHttpServer(out address, httpContext =>
             {
-                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 httpContext.Response.ContentType = "some/thing"; // Http.Sys requires content-type for caching
                 httpContext.Response.Headers["x-request-count"] = (requestCount++).ToString();
                 httpContext.Response.Headers["Cache-Control"] = "public";
@@ -54,9 +52,8 @@ namespace Microsoft.AspNet.Server.WebListener.FunctionalTests
         {
             var requestCount = 1;
             string address;
-            using (Utilities.CreateHttpServer(out address, env =>
+            using (Utilities.CreateHttpServer(out address, httpContext =>
             {
-                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 httpContext.Response.ContentType = "some/thing"; // Http.Sys requires content-type for caching
                 httpContext.Response.Headers["x-request-count"] = (requestCount++).ToString();
                 httpContext.Response.Headers["Cache-Control"] = "public, max-age=10";
@@ -73,9 +70,8 @@ namespace Microsoft.AspNet.Server.WebListener.FunctionalTests
         {
             var requestCount = 1;
             string address;
-            using (Utilities.CreateHttpServer(out address, env =>
+            using (Utilities.CreateHttpServer(out address, httpContext =>
             {
-                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 httpContext.Response.ContentType = "some/thing"; // Http.Sys requires content-type for caching
                 httpContext.Response.Headers["x-request-count"] = (requestCount++).ToString();
                 httpContext.Response.Headers["Cache-Control"] = "public, s-maxage=10";
@@ -92,9 +88,8 @@ namespace Microsoft.AspNet.Server.WebListener.FunctionalTests
         {
             var requestCount = 1;
             string address;
-            using (Utilities.CreateHttpServer(out address, env =>
+            using (Utilities.CreateHttpServer(out address, httpContext =>
             {
-                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 httpContext.Response.ContentType = "some/thing"; // Http.Sys requires content-type for caching
                 httpContext.Response.Headers["x-request-count"] = (requestCount++).ToString();
                 httpContext.Response.Headers["Cache-Control"] = "public, max-age=0, s-maxage=10";
@@ -111,9 +106,8 @@ namespace Microsoft.AspNet.Server.WebListener.FunctionalTests
         {
             var requestCount = 1;
             string address;
-            using (Utilities.CreateHttpServer(out address, env =>
+            using (Utilities.CreateHttpServer(out address, httpContext =>
             {
-                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 httpContext.Response.ContentType = "some/thing"; // Http.Sys requires content-type for caching
                 httpContext.Response.Headers["x-request-count"] = (requestCount++).ToString();
                 httpContext.Response.Headers["Cache-Control"] = "public";
@@ -134,9 +128,8 @@ namespace Microsoft.AspNet.Server.WebListener.FunctionalTests
         {
             var requestCount = 1;
             string address;
-            using (Utilities.CreateHttpServer(out address, env =>
+            using (Utilities.CreateHttpServer(out address, httpContext =>
             {
-                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 httpContext.Response.ContentType = "some/thing"; // Http.Sys requires content-type for caching
                 httpContext.Response.Headers["x-request-count"] = (requestCount++).ToString();
                 httpContext.Response.Headers["Cache-Control"] = "public, max-age=10";
@@ -156,9 +149,8 @@ namespace Microsoft.AspNet.Server.WebListener.FunctionalTests
         {
             var requestCount = 1;
             string address;
-            using (Utilities.CreateHttpServer(out address, env =>
+            using (Utilities.CreateHttpServer(out address, httpContext =>
             {
-                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 httpContext.Response.ContentType = "some/thing"; // Http.Sys requires content-type for caching
                 httpContext.Response.Headers["x-request-count"] = (requestCount++).ToString();
                 httpContext.Response.Headers["Cache-Control"] = "public";
@@ -176,9 +168,8 @@ namespace Microsoft.AspNet.Server.WebListener.FunctionalTests
         {
             var requestCount = 1;
             string address;
-            using (Utilities.CreateHttpServer(out address, env =>
+            using (Utilities.CreateHttpServer(out address, httpContext =>
             {
-                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 httpContext.Response.ContentType = "some/thing"; // Http.Sys requires content-type for caching
                 httpContext.Response.Headers["x-request-count"] = (requestCount++).ToString();
                 httpContext.Response.Headers["Expires"] = (DateTime.UtcNow + TimeSpan.FromSeconds(10)).ToString("r");
@@ -195,9 +186,8 @@ namespace Microsoft.AspNet.Server.WebListener.FunctionalTests
         {
             var requestCount = 1;
             string address;
-            using (Utilities.CreateHttpServer(out address, env =>
+            using (Utilities.CreateHttpServer(out address, httpContext =>
             {
-                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 httpContext.Response.ContentType = "some/thing"; // Http.Sys requires content-type for caching
                 httpContext.Response.Headers["x-request-count"] = (requestCount++).ToString();
                 httpContext.Response.Headers["Cache-Control"] = "public, max-age=10";

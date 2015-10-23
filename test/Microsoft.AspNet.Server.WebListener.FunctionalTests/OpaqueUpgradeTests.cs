@@ -37,9 +37,8 @@ namespace Microsoft.AspNet.Server.WebListener
         public async Task OpaqueUpgrade_SupportKeys_Present()
         {
             string address;
-            using (Utilities.CreateHttpServer(out address, env =>
+            using (Utilities.CreateHttpServer(out address, httpContext =>
             {
-                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 try
                 {
                     var opaqueFeature = httpContext.Features.Get<IHttpUpgradeFeature>();
@@ -66,9 +65,8 @@ namespace Microsoft.AspNet.Server.WebListener
         {
             bool? upgradeThrew = null;
             string address;
-            using (Utilities.CreateHttpServer(out address, async env =>
+            using (Utilities.CreateHttpServer(out address, async httpContext =>
             {
-                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 await httpContext.Response.WriteAsync("Hello World");
                 await httpContext.Response.Body.FlushAsync();
                 try
@@ -98,9 +96,8 @@ namespace Microsoft.AspNet.Server.WebListener
             ManualResetEvent waitHandle = new ManualResetEvent(false);
             bool? upgraded = null;
             string address;
-            using (Utilities.CreateHttpServer(out address, async env =>
+            using (Utilities.CreateHttpServer(out address, async httpContext =>
             {
-                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 httpContext.Response.Headers["Upgrade"] = "websocket"; // Win8.1 blocks anything but WebSockets
                 var opaqueFeature = httpContext.Features.Get<IHttpUpgradeFeature>();
                 Assert.NotNull(opaqueFeature);
@@ -146,9 +143,8 @@ namespace Microsoft.AspNet.Server.WebListener
         public async Task OpaqueUpgrade_VariousMethodsUpgradeSendAndReceive_Success(string method, string extraHeader)
         {
             string address;
-            using (Utilities.CreateHttpServer(out address, async env =>
+            using (Utilities.CreateHttpServer(out address, async httpContext =>
             {
-                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 try
                 {
                     httpContext.Response.Headers["Upgrade"] = "websocket"; // Win8.1 blocks anything but WebSockets
@@ -190,9 +186,8 @@ namespace Microsoft.AspNet.Server.WebListener
         public async Task OpaqueUpgrade_InvalidMethodUpgrade_Disconnected(string method, string extraHeader)
         {
             string address;
-            using (Utilities.CreateHttpServer(out address, async env =>
+            using (Utilities.CreateHttpServer(out address, async httpContext =>
             {
-                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 try
                 {
                     var opaqueFeature = httpContext.Features.Get<IHttpUpgradeFeature>();

@@ -34,7 +34,7 @@ namespace Microsoft.AspNet.Server.WebListener
         [Fact(Skip = "TODO: Add trait filtering support so these SSL tests don't get run on teamcity or the command line."), Trait("scheme", "https")]
         public async Task Https_200OK_Success()
         {
-            using (Utilities.CreateHttpsServer(env =>
+            using (Utilities.CreateHttpsServer(httpContext =>
             {
                 return Task.FromResult(0);
             }))
@@ -47,9 +47,8 @@ namespace Microsoft.AspNet.Server.WebListener
         [Fact(Skip = "TODO: Add trait filtering support so these SSL tests don't get run on teamcity or the command line."), Trait("scheme", "https")]
         public async Task Https_SendHelloWorld_Success()
         {
-            using (Utilities.CreateHttpsServer(env =>
+            using (Utilities.CreateHttpsServer(httpContext =>
             {
-                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 byte[] body = Encoding.UTF8.GetBytes("Hello World");
                 httpContext.Response.ContentLength = body.Length;
                 return httpContext.Response.Body.WriteAsync(body, 0, body.Length);
@@ -63,9 +62,8 @@ namespace Microsoft.AspNet.Server.WebListener
         [Fact(Skip = "TODO: Add trait filtering support so these SSL tests don't get run on teamcity or the command line."), Trait("scheme", "https")]
         public async Task Https_EchoHelloWorld_Success()
         {
-            using (Utilities.CreateHttpsServer(env =>
+            using (Utilities.CreateHttpsServer(httpContext =>
             {
-                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 string input = new StreamReader(httpContext.Request.Body).ReadToEnd();
                 Assert.Equal("Hello World", input);
                 byte[] body = Encoding.UTF8.GetBytes("Hello World");
@@ -82,9 +80,8 @@ namespace Microsoft.AspNet.Server.WebListener
         [Fact(Skip = "TODO: Add trait filtering support so these SSL tests don't get run on teamcity or the command line."), Trait("scheme", "https")]
         public async Task Https_ClientCertNotSent_ClientCertNotPresent()
         {
-            using (Utilities.CreateHttpsServer(async env =>
+            using (Utilities.CreateHttpsServer(async httpContext =>
             {
-                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 var tls = httpContext.Features.Get<ITlsConnectionFeature>();
                 Assert.NotNull(tls);
                 var cert = await tls.GetClientCertificateAsync(CancellationToken.None);
@@ -100,9 +97,8 @@ namespace Microsoft.AspNet.Server.WebListener
         [Fact(Skip = "TODO: Add trait filtering support so these SSL tests don't get run on teamcity or the command line."), Trait("scheme", "https")]
         public async Task Https_ClientCertRequested_ClientCertPresent()
         {
-            using (Utilities.CreateHttpsServer(async env =>
+            using (Utilities.CreateHttpsServer(async httpContext =>
             {
-                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 var tls = httpContext.Features.Get<ITlsConnectionFeature>();
                 Assert.NotNull(tls);
                 var cert = await tls.GetClientCertificateAsync(CancellationToken.None);

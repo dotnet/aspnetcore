@@ -34,7 +34,7 @@ namespace Microsoft.AspNet.Server.WebListener
         public async Task ResponseHeaders_ServerSendsDefaultHeaders_Success()
         {
             string address;
-            using (Utilities.CreateHttpServer(out address, env =>
+            using (Utilities.CreateHttpServer(out address, httpContext =>
             {
                 return Task.FromResult(0);
             }))
@@ -54,9 +54,8 @@ namespace Microsoft.AspNet.Server.WebListener
         public async Task ResponseHeaders_ServerSendsSingleValueKnownHeaders_Success()
         {
             string address;
-            using (Utilities.CreateHttpServer(out address, env =>
+            using (Utilities.CreateHttpServer(out address, httpContext =>
             {
-                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 var responseInfo = httpContext.Features.Get<IHttpResponseFeature>();
                 var responseHeaders = responseInfo.Headers;
                 responseHeaders["WWW-Authenticate"] = new string[] { "custom1" };
@@ -79,9 +78,8 @@ namespace Microsoft.AspNet.Server.WebListener
         public async Task ResponseHeaders_ServerSendsMultiValueKnownHeaders_Success()
         {
             string address;
-            using (Utilities.CreateHttpServer(out address, env =>
+            using (Utilities.CreateHttpServer(out address, httpContext =>
             {
-                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 var responseInfo = httpContext.Features.Get<IHttpResponseFeature>();
                 var responseHeaders = responseInfo.Headers;
                 responseHeaders["WWW-Authenticate"] = new string[] { "custom1, and custom2", "custom3" };
@@ -104,9 +102,8 @@ namespace Microsoft.AspNet.Server.WebListener
         public async Task ResponseHeaders_ServerSendsCustomHeaders_Success()
         {
             string address;
-            using (Utilities.CreateHttpServer(out address, env =>
+            using (Utilities.CreateHttpServer(out address, httpContext =>
             {
-                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 var responseInfo = httpContext.Features.Get<IHttpResponseFeature>();
                 var responseHeaders = responseInfo.Headers;
                 responseHeaders["Custom-Header1"] = new string[] { "custom1, and custom2", "custom3" };
@@ -129,9 +126,8 @@ namespace Microsoft.AspNet.Server.WebListener
         public async Task ResponseHeaders_ServerSendsConnectionClose_Closed()
         {
             string address;
-            using (Utilities.CreateHttpServer(out address, env =>
+            using (Utilities.CreateHttpServer(out address, httpContext =>
             {
-                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 var responseInfo = httpContext.Features.Get<IHttpResponseFeature>();
                 var responseHeaders = responseInfo.Headers;
                 responseHeaders["Connection"] = new string[] { "Close" };
@@ -154,7 +150,7 @@ namespace Microsoft.AspNet.Server.WebListener
         public async Task ResponseHeaders_HTTP10Request_Gets11Close()
         {
             string address;
-            using (Utilities.CreateHttpServer(out address, env =>
+            using (Utilities.CreateHttpServer(out address, httpContext =>
             {
                 return Task.FromResult(0);
             }))
@@ -177,9 +173,8 @@ namespace Microsoft.AspNet.Server.WebListener
         public async Task ResponseHeaders_HTTP10RequestWithChunkedHeader_ManualChunking()
         {
             string address;
-            using (Utilities.CreateHttpServer(out address, env =>
+            using (Utilities.CreateHttpServer(out address, httpContext =>
             {
-                var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                 var responseInfo = httpContext.Features.Get<IHttpResponseFeature>();
                 var responseHeaders = responseInfo.Headers;
                 responseHeaders["Transfer-Encoding"] = new string[] { "chunked" };
@@ -207,9 +202,8 @@ namespace Microsoft.AspNet.Server.WebListener
         public async Task Headers_FlushSendsHeaders_Success()
         {
             string address;
-            using (Utilities.CreateHttpServer(out address, env =>
+            using (Utilities.CreateHttpServer(out address, httpContext =>
                 {
-                    var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                     var responseInfo = httpContext.Features.Get<IHttpResponseFeature>();
                     var responseHeaders = responseInfo.Headers;
                     responseHeaders.Add("Custom1", new string[] { "value1a", "value1b" });
@@ -239,9 +233,8 @@ namespace Microsoft.AspNet.Server.WebListener
         public async Task Headers_FlushAsyncSendsHeaders_Success()
         {
             string address;
-            using (Utilities.CreateHttpServer(out address, async env =>
+            using (Utilities.CreateHttpServer(out address, async httpContext =>
                 {
-                    var httpContext = new DefaultHttpContext((IFeatureCollection)env);
                     var responseInfo = httpContext.Features.Get<IHttpResponseFeature>();
                     var responseHeaders = responseInfo.Headers;
                     responseHeaders.Add("Custom1", new string[] { "value1a", "value1b" });
