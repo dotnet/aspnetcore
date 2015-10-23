@@ -1,20 +1,13 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using Microsoft.Dnx.Runtime;
+using Microsoft.Extensions.PlatformAbstractions;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNet.Server.Kestrel.LibuvCopier
 {
     public class Program
     {
-        private readonly IRuntimeEnvironment _runtimeEnv;
-
-        public Program(IRuntimeEnvironment runtimeEnv)
-        {
-            _runtimeEnv = runtimeEnv;
-        }
-
         public void Main(string[] args)
         {
             try
@@ -74,7 +67,8 @@ namespace Microsoft.AspNet.Server.Kestrel.LibuvCopier
 #if DNX451
             return Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 #else
-            if (_runtimeEnv.OperatingSystem == "Windows")
+            var runtimeEnv = PlatformServices.Default.Runtime;
+            if (runtimeEnv.OperatingSystem == "Windows")
             {
                 return Environment.GetEnvironmentVariable("USERPROFILE") ??
                     Environment.GetEnvironmentVariable("HOMEDRIVE") + Environment.GetEnvironmentVariable("HOMEPATH");

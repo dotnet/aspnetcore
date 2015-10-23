@@ -5,8 +5,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Server.Kestrel;
 using Microsoft.AspNet.Server.Kestrel.Http;
-using Microsoft.Dnx.Runtime;
-using Microsoft.Dnx.Runtime.Infrastructure;
+using Microsoft.Extensions.PlatformAbstractions;
 using Microsoft.AspNet.Http.Features;
 
 namespace Microsoft.AspNet.Server.KestrelTests

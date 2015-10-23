@@ -9,9 +9,9 @@ using Microsoft.AspNet.Hosting.Server;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Server.Features;
 using Microsoft.AspNet.Server.Kestrel.Http;
-using Microsoft.Dnx.Runtime;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.PlatformAbstractions;
 
 namespace Microsoft.AspNet.Server.Kestrel
 {

@@ -7,7 +7,7 @@
   "licenseUrl": "",
 
   "dependencies": {
-    "Microsoft.Dnx.Runtime.Abstractions": "1.0.0-*",
+    "Microsoft.Extensions.PlatformAbstractions": "1.0.0-*",
     "Newtonsoft.Json": "7.0.1"
   },
 

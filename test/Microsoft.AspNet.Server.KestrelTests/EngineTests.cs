@@ -10,8 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Server.Kestrel;
 using Microsoft.AspNet.Server.Kestrel.Filter;
-using Microsoft.Dnx.Runtime;
-using Microsoft.Dnx.Runtime.Infrastructure;
+using Microsoft.Extensions.PlatformAbstractions;
 using Microsoft.Extensions.Logging;
 using Xunit;
 
