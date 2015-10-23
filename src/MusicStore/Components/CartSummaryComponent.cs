@@ -27,7 +27,7 @@ namespace MusicStore.Components
 
         private async Task<IOrderedEnumerable<string>> GetCartItems()
         {
-            var cart = ShoppingCart.GetCart(DbContext, Context);
+            var cart = ShoppingCart.GetCart(DbContext, HttpContext);
 
             return (await cart.GetCartItems())
                 .Select(a => a.Album.Title)

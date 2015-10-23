@@ -1,6 +1,6 @@
 ﻿using System;
 using Microsoft.AspNet.Mvc.Razor.Precompilation;
-using Microsoft.Dnx.Runtime;
+using Microsoft.Extensions.PlatformAbstractions;
 
 namespace MusicStore
 {
