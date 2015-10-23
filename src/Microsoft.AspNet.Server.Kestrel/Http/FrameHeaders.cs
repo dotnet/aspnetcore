@@ -123,7 +123,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             StringValues value;
             return
                 TryGetValueFast(item.Key, out value) &&
-                object.Equals(value, item.Value);
+                value.Equals(item.Value);
         }
 
         bool IDictionary<string, StringValues>.ContainsKey(string key)
@@ -152,7 +152,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             StringValues value;
             return
                 TryGetValueFast(item.Key, out value) &&
-                object.Equals(value, item.Value) &&
+                value.Equals(item.Value) &&
                 RemoveFast(item.Key);
         }
 

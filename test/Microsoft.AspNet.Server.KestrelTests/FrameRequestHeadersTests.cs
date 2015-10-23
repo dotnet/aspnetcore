@@ -121,8 +121,8 @@ namespace Microsoft.AspNet.Server.KestrelTests
             IDictionary<string, StringValues> headers = new FrameRequestHeaders();
             var kv1 = new KeyValuePair<string, StringValues>("host", new[] { "localhost" });
             var kv2 = new KeyValuePair<string, StringValues>("custom", new[] { "value" });
-            var kv1b = new KeyValuePair<string, StringValues>("host", new[] { "localhost" });
-            var kv2b = new KeyValuePair<string, StringValues>("custom", new[] { "value" });
+            var kv1b = new KeyValuePair<string, StringValues>("host", new[] { "not-localhost" });
+            var kv2b = new KeyValuePair<string, StringValues>("custom", new[] { "not-value" });
 
             Assert.False(headers.ContainsKey("host"));
             Assert.False(headers.ContainsKey("custom"));

@@ -78,7 +78,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         public static bool TryGet(IDictionary<string, StringValues> headers, string name, out string value)
         {
             StringValues values;
-            if (!headers.TryGetValue(name, out values) || values == null)
+            if (!headers.TryGetValue(name, out values) || values.Count == 0)
             {
                 value = null;
                 return false;
