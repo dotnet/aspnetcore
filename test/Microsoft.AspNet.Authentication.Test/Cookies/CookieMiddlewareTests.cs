@@ -33,6 +33,67 @@ namespace Microsoft.AspNet.Authentication.Cookies
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
 
+        [Fact]
+        public async Task AjaxLoginRedirectToReturnUrlTurnsInto200WithLocationHeader()
+        {
+            var server = CreateServer(options =>
+            {
+                options.AutomaticChallenge = true;
+                options.LoginPath = "/login";
+            });
+
+            var transaction = await SendAsync(server, "http://example.com/protected?X-Requested-With=XMLHttpRequest");
+            Assert.Equal(HttpStatusCode.Unauthorized, transaction.Response.StatusCode);
+            var responded = transaction.Response.Headers.GetValues("Location");
+            Assert.Equal(1, responded.Count());
+            Assert.True(responded.Single().StartsWith("http://example.com/login"));
+        }
+
+        [Fact]
+        public async Task AjaxForbidTurnsInto403WithLocationHeader()
+        {
+            var server = CreateServer(options =>
+            {
+                options.AccessDeniedPath = "/denied";
+            });
+
+            var transaction = await SendAsync(server, "http://example.com/forbid?X-Requested-With=XMLHttpRequest");
+            Assert.Equal(HttpStatusCode.Forbidden, transaction.Response.StatusCode);
+            var responded = transaction.Response.Headers.GetValues("Location");
+            Assert.Equal(1, responded.Count());
+            Assert.True(responded.Single().StartsWith("http://example.com/denied"));
+        }
+
+        [Fact]
+        public async Task AjaxLogoutRedirectToReturnUrlTurnsInto200WithLocationHeader()
+        {
+            var server = CreateServer(options =>
+            {
+                options.LogoutPath = "/signout";
+            });
+
+            var transaction = await SendAsync(server, "http://example.com/signout?X-Requested-With=XMLHttpRequest&ReturnUrl=/");
+            Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
+            var responded = transaction.Response.Headers.GetValues("Location");
+            Assert.Equal(1, responded.Count());
+            Assert.True(responded.Single().StartsWith("/"));
+        }
+
+        [Fact]
+        public async Task AjaxChallengeRedirectTurnsInto200WithLocationHeader()
+        {
+            var server = CreateServer(options =>
+            {
+            });
+
+            var transaction = await SendAsync(server, "http://example.com/challenge?X-Requested-With=XMLHttpRequest&ReturnUrl=/");
+            Assert.Equal(HttpStatusCode.Unauthorized, transaction.Response.StatusCode);
+            var responded = transaction.Response.Headers.GetValues("Location");
+            Assert.Equal(1, responded.Count());
+            Assert.True(responded.Single().StartsWith("http://example.com/Account/Login"));
+        }
+
+
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
@@ -225,9 +286,9 @@ namespace Microsoft.AspNet.Authentication.Cookies
             var server = CreateServer(options =>
             {
                 options.SystemClock = clock;
-            }, 
-            SignInAsAlice, 
-            baseAddress: null, 
+            },
+            SignInAsAlice,
+            baseAddress: null,
             claimsTransform: o => o.Transformer = new ClaimsTransformer
             {
                 OnTransform = p =>
@@ -401,7 +462,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
                     new ClaimsPrincipal(new ClaimsIdentity(new GenericIdentity("Alice", "Cookies")))));
 
             var transaction1 = await SendAsync(server, "http://example.com/testpath");
-            
+
             var transaction2 = await SendAsync(server, "http://example.com/me/Cookies", transaction1.CookieNameValue);
             Assert.NotNull(transaction2.SetCookie);
             Assert.Equal("Alice", FindClaimValue(transaction2, ClaimTypes.Name));
@@ -554,7 +615,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
             context =>
             {
                 Assert.Equal(new PathString("/base"), context.Request.PathBase);
-                return context.Authentication.SignInAsync("Cookies", 
+                return context.Authentication.SignInAsync("Cookies",
                     new ClaimsPrincipal(new ClaimsIdentity(new GenericIdentity("Alice", "Cookies"))));
             },
             new Uri("http://example.com/base"));
@@ -573,7 +634,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
             {
                 options.AutomaticAuthenticate = automatic;
                 options.SystemClock = clock;
-            }, 
+            },
             SignInAsAlice);
 
             var transaction1 = await SendAsync(server, "http://example.com/testpath");
@@ -708,7 +769,8 @@ namespace Microsoft.AspNet.Authentication.Cookies
             var server = TestServer.Create(app =>
             {
                 app.UseCookieAuthentication();
-                app.Run(async context => {
+                app.Run(async context =>
+                {
                     await Assert.ThrowsAsync<InvalidOperationException>(() => context.Authentication.ChallengeAsync());
                 });
             }, services => services.AddAuthentication());
@@ -739,7 +801,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
             var server = TestServer.Create(app =>
             {
                 app.UseCookieAuthentication(options => options.LoginPath = new PathString("/login"));
-                app.Map("/notlogin", signoutApp => signoutApp.Run(context => context.Authentication.SignInAsync("Cookies", 
+                app.Map("/notlogin", signoutApp => signoutApp.Run(context => context.Authentication.SignInAsync("Cookies",
                     new ClaimsPrincipal())));
             },
                 services => services.AddAuthentication());
@@ -969,6 +1031,10 @@ namespace Microsoft.AspNet.Authentication.Cookies
                     else if (req.Path == new PathString("/challenge"))
                     {
                         await context.Authentication.ChallengeAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                    }
+                    else if (req.Path == new PathString("/signout"))
+                    {
+                        await context.Authentication.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
                     }
                     else if (req.Path == new PathString("/unauthorized"))
                     {

@@ -106,8 +106,7 @@ namespace Microsoft.AspNet.CookiePolicy.Test
             var identity = new ClaimsIdentity("Cookies");
             identity.AddClaim(new Claim(ClaimTypes.Name, "Alice"));
 
-            var dataProtection = new DataProtection.DataProtectionProvider(new DirectoryInfo("."));
-
+            var dataProtection = new DataProtection.DataProtectionProvider(new DirectoryInfo("..\\..\\artifacts"));
             var interopServer = TestServer.Create(app =>
             {
                 app.Properties["host.AppName"] = "Microsoft.Owin.Security.Tests";
@@ -146,8 +145,7 @@ namespace Microsoft.AspNet.CookiePolicy.Test
             identity.AddClaim(new Claim(ClaimTypes.Name, "Alice"));
             user.AddIdentity(identity);
 
-            var dataProtection = new DataProtection.DataProtectionProvider(new DirectoryInfo("."));
-
+            var dataProtection = new DataProtection.DataProtectionProvider(new DirectoryInfo("..\\..\\artifacts"));
             var newServer = TestHost.TestServer.Create(app =>
             {
                 app.UseCookieAuthentication(options => options.DataProtectionProvider = dataProtection);
