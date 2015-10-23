@@ -5,7 +5,7 @@ using System;
 using System.IO;
 using System.Reflection;
 using System.Resources;
-using Microsoft.Dnx.Runtime;
+using Microsoft.Extensions.PlatformAbstractions;
 using Microsoft.Extensions.OptionsModel;
 
 namespace Microsoft.Extensions.Localization

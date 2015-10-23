@@ -9,7 +9,7 @@
     "warningsAsErrors": true
   },
   "dependencies": {
-    "Microsoft.Dnx.Runtime.Abstractions": "1.0.0-*",
+    "Microsoft.Extensions.PlatformAbstractions": "1.0.0-*",
     "Microsoft.Extensions.DependencyInjection.Abstractions": "1.0.0-*",
     "Microsoft.Extensions.Localization.Abstractions": "1.0.0-*",
     "Microsoft.Extensions.OptionsModel": "1.0.0-*"
