@@ -4,7 +4,7 @@
 using System;
 using Microsoft.AspNet.Diagnostics;
 using Microsoft.AspNet.Http;
-using Microsoft.Dnx.Runtime;
+using Microsoft.Extensions.PlatformAbstractions;
 
 namespace Microsoft.AspNet.Builder
 {

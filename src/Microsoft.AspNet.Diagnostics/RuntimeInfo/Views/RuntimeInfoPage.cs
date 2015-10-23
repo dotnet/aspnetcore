@@ -31,7 +31,7 @@ using Microsoft.AspNet.Diagnostics.Views
 #line hidden
     ;
 #line 6 "RuntimeInfoPage.cshtml"
-using Microsoft.Dnx.Runtime;
+using Microsoft.Extensions.PlatformAbstractions;
 
 #line default
 #line hidden
@@ -67,9 +67,9 @@ using Microsoft.Dnx.Runtime;
 #line hidden
 
             WriteLiteral("<!DOCTYPE html>\r\n<html");
-            BeginWriteAttribute("lang", " lang=\"", 429, "\"", 490, 1);
+            BeginWriteAttribute("lang", " lang=\"", 449, "\"", 510, 1);
 #line 21 "RuntimeInfoPage.cshtml"
-WriteAttributeValue("", 436, CultureInfo.CurrentUICulture.TwoLetterISOLanguageName, 436, 54, false);
+WriteAttributeValue("", 456, CultureInfo.CurrentUICulture.TwoLetterISOLanguageName, 456, 54, false);
 
 #line default
 #line hidden
@@ -212,9 +212,9 @@ WriteAttributeValue("", 436, CultureInfo.CurrentUICulture.TwoLetterISOLanguageNa
 #line hidden
 
             WriteLiteral("                <tr");
-            BeginWriteAttribute("class", " class=\"", 2209, "\"", 2237, 1);
+            BeginWriteAttribute("class", " class=\"", 2229, "\"", 2257, 1);
 #line 58 "RuntimeInfoPage.cshtml"
-WriteAttributeValue("", 2217, even?"even":"odd", 2217, 20, false);
+WriteAttributeValue("", 2237, even?"even":"odd", 2237, 20, false);
 
 #line default
 #line hidden
