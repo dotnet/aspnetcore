@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.Localization
 
             var cookie = httpContext.Request.Cookies[CookieName];
 
-            if (cookie == null)
+            if (cookie.Count == 0)
             {
                 return Task.FromResult((ProviderCultureResult)null);
             }
