@@ -116,7 +116,7 @@ namespace Microsoft.Net.Http.Server
 <# foreach(var prop in length) { #>
                     if (string.Equals(key, "<#=prop.Key#>", StringComparison.OrdinalIgnoreCase)) 
                     {
-                        return <#=prop.Name#> != null;
+                        return <#=prop.Name#>.Count > 0;
                     }
 <# } #>
                    break;
@@ -135,7 +135,7 @@ namespace Microsoft.Net.Http.Server
                     if (string.Equals(key, "<#=prop.Key#>", StringComparison.OrdinalIgnoreCase))
                     {
 					    value = <#=prop.Name#>;
-						return value != null;
+						return value.Count > 0;
                     }
 <# } #>
                    break;
@@ -172,7 +172,7 @@ namespace Microsoft.Net.Http.Server
 <# foreach(var length in lengths) { #>
                 case <#=length.Key#>:
 <# foreach(var prop in length) { #>
-                    if (_<#=prop.Name#> != null 
+                    if (_<#=prop.Name#>.Count > 0 
 					    && string.Equals(key, "<#=prop.Key#>", StringComparison.Ordinal)) 
                     {
 					    bool wasSet = <#=IsRead(prop.Index)#>;
@@ -189,7 +189,7 @@ namespace Microsoft.Net.Http.Server
         private IEnumerable<string> PropertiesKeys()
         {
 <# foreach(var prop in props) { #>
-            if (<#=prop.Name#> != null)
+            if (<#=prop.Name#>.Count > 0)
             {
                 yield return "<#=prop.Key#>";
             }
@@ -199,7 +199,7 @@ namespace Microsoft.Net.Http.Server
         private IEnumerable<StringValues> PropertiesValues()
         {
 <# foreach(var prop in props) { #>
-            if (<#=prop.Name#> != null)
+            if (<#=prop.Name#>.Count > 0)
             {
                 yield return <#=prop.Name#>;
             }
@@ -209,7 +209,7 @@ namespace Microsoft.Net.Http.Server
         private IEnumerable<KeyValuePair<string, StringValues>> PropertiesEnumerable()
         {
 <# foreach(var prop in props) { #>
-            if (<#=prop.Name#> != null)
+            if (<#=prop.Name#>.Count > 0)
             {
                 yield return new KeyValuePair<string, StringValues>("<#=prop.Key#>", <#=prop.Name#>);
             }
