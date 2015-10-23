@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
-using Microsoft.Dnx.Runtime.Infrastructure;
 using Microsoft.Extensions.Configuration;
 
 namespace Microsoft.AspNet.WebSockets.Client.Test
