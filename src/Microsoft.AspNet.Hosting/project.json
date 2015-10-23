@@ -22,7 +22,7 @@
     "Microsoft.Extensions.DependencyInjection": "1.0.0-*",
     "Microsoft.Extensions.Logging": "1.0.0-*",
     "Microsoft.Dnx.Compilation.Abstractions": "1.0.0-*",
-    "Microsoft.Dnx.Runtime.Abstractions": "1.0.0-*",
+    "Microsoft.Extensions.PlatformAbstractions": "1.0.0-*",
     "System.Diagnostics.DiagnosticSource": "4.0.0-beta-*"
   },
   "frameworks": {
