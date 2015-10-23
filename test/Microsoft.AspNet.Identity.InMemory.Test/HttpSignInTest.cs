@@ -11,7 +11,6 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Authentication;
 using Microsoft.AspNet.Identity.Test;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Dnx.Runtime.Infrastructure;
 using Moq;
 using Xunit;
 
@@ -24,9 +23,6 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
         [InlineData(false)]
         public async Task VerifyAccountControllerSignIn(bool isPersistent)
         {
-            var app = new ApplicationBuilder(CallContextServiceLocator.Locator.ServiceProvider);
-            app.UseCookieAuthentication();
-
             var context = new Mock<HttpContext>();
             var auth = new Mock<AuthenticationManager>();
             context.Setup(c => c.Authentication).Returns(auth.Object).Verifiable();
@@ -43,7 +39,9 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
             services.AddIdentity<TestUser, TestRole>();
             services.AddSingleton<IUserStore<TestUser>, InMemoryUserStore<TestUser>>();
             services.AddSingleton<IRoleStore<TestRole>, InMemoryRoleStore<TestRole>>();
-            app.ApplicationServices = services.BuildServiceProvider();
+            
+            var app = new ApplicationBuilder(services.BuildServiceProvider());
+            app.UseCookieAuthentication();
 
             // Act
             var user = new TestUser

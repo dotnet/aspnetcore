@@ -9,7 +9,6 @@ using Microsoft.AspNet.Builder.Internal;
 using Microsoft.AspNet.Identity.Test;
 using Microsoft.Data.Entity;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Dnx.Runtime.Infrastructure;
 using Xunit;
 using Microsoft.AspNet.Testing.xunit;
 
@@ -54,8 +53,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
 
         private ApplicationBuilder CreateBuilder()
         {
-            var builder = new ApplicationBuilder(CallContextServiceLocator.Locator.ServiceProvider);
-            builder.ApplicationServices = ConfigureServices();
+            var builder = new ApplicationBuilder(ConfigureServices());
             return builder;
         }
 
