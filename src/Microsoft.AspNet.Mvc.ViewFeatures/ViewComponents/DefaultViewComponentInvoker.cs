@@ -11,6 +11,8 @@ using Microsoft.AspNet.Mvc.Diagnostics;
 using Microsoft.AspNet.Mvc.Infrastructure;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.ViewFeatures;
+using Microsoft.AspNet.Mvc.ViewFeatures.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNet.Mvc.ViewComponents
 {
@@ -19,11 +21,13 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
         private readonly ITypeActivatorCache _typeActivatorCache;
         private readonly IViewComponentActivator _viewComponentActivator;
         private readonly DiagnosticSource _diagnosticSource;
+        private readonly ILogger _logger;
 
         public DefaultViewComponentInvoker(
             ITypeActivatorCache typeActivatorCache,
             IViewComponentActivator viewComponentActivator,
-            DiagnosticSource diagnosticSource)
+            DiagnosticSource diagnosticSource,
+            ILogger logger)
         {
             if (typeActivatorCache == null)
             {
@@ -40,9 +44,15 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
                 throw new ArgumentNullException(nameof(diagnosticSource));
             }
 
+            if (logger == null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
+
             _typeActivatorCache = typeActivatorCache;
             _viewComponentActivator = viewComponentActivator;
             _diagnosticSource = diagnosticSource;
+            _logger = logger;
         }
 
         public void Invoke(ViewComponentContext context)
@@ -135,15 +145,20 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
 
             var component = CreateComponent(context);
 
-            _diagnosticSource.BeforeViewComponent(context, component);
+            using (_logger.ViewComponentScope(context))
+            {
+                _diagnosticSource.BeforeViewComponent(context, component);
+                _logger.ViewComponentExecuting(context);
 
-            var result = await ControllerActionExecutor.ExecuteAsync(method, component, context.Arguments);
+                var startTime = Environment.TickCount;
+                var result = await ControllerActionExecutor.ExecuteAsync(method, component, context.Arguments);
 
-            var viewComponentResult = CoerceToViewComponentResult(result);
+                var viewComponentResult = CoerceToViewComponentResult(result);
+                _logger.ViewComponentExecuted(context, startTime, viewComponentResult);
+                _diagnosticSource.AfterViewComponent(context, viewComponentResult, component);
 
-            _diagnosticSource.AfterViewComponent(context, viewComponentResult, component);
-
-            return viewComponentResult;
+                return viewComponentResult;
+            }
         }
 
         public IViewComponentResult InvokeSyncCore(MethodInfo method, ViewComponentContext context)
@@ -162,24 +177,30 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
 
             object result = null;
 
-            _diagnosticSource.BeforeViewComponent(context, component);
-
-            try
+            using (_logger.ViewComponentScope(context))
             {
-                result = method.Invoke(component, context.Arguments);
+                _diagnosticSource.BeforeViewComponent(context, component);
+                _logger.ViewComponentExecuting(context);
+
+                try
+                {
+                    var startTime = Environment.TickCount;
+                    result = method.Invoke(component, context.Arguments);
+
+                    var viewComponentResult = CoerceToViewComponentResult(result);
+                    _logger.ViewComponentExecuted(context, startTime, viewComponentResult);
+                    _diagnosticSource.AfterViewComponent(context, viewComponentResult, component);
+
+                    return viewComponentResult;
+                }
+                catch (TargetInvocationException ex)
+                {
+                    // Preserve callstack of any user-thrown exceptions.
+                    var exceptionInfo = ExceptionDispatchInfo.Capture(ex.InnerException);
+                    exceptionInfo.Throw();
+                    return null; // Unreachable
+                }
             }
-            catch (TargetInvocationException ex)
-            {
-                // Preserve callstack of any user-thrown exceptions.
-                var exceptionInfo = ExceptionDispatchInfo.Capture(ex.InnerException);
-                exceptionInfo.Throw();
-            }
-
-            var viewComponentResult = CoerceToViewComponentResult(result);
-
-            _diagnosticSource.AfterViewComponent(context, viewComponentResult, component);
-
-            return viewComponentResult;
         }
 
         private static IViewComponentResult CoerceToViewComponentResult(object value)

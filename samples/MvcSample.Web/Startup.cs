@@ -7,6 +7,7 @@ using Microsoft.AspNet.Localization;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.Razor;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using MvcSample.Web.Filters;
 using MvcSample.Web.Services;
 
@@ -34,8 +35,18 @@ namespace MvcSample.Web
             return services.BuildServiceProvider();
         }
 
-        public void Configure(IApplicationBuilder app)
+        public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
         {
+            loggerFactory.AddConsole((category, level) =>
+            {
+                if (category.StartsWith("Microsoft."))
+                {
+                    return level >= LogLevel.Information;
+                }
+
+                return level >= LogLevel.Verbose;
+            });
+
             app.UseStatusCodePages();
             app.UseFileServer();
 

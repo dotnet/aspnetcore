@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics;
 using Microsoft.AspNet.Mvc.Infrastructure;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNet.Mvc.ViewComponents
 {
@@ -11,16 +12,20 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
     {
         private readonly ITypeActivatorCache _typeActivatorCache;
         private readonly IViewComponentActivator _viewComponentActivator;
+        private readonly ILogger _logger;
         private readonly DiagnosticSource _diagnosticSource;
 
         public DefaultViewComponentInvokerFactory(
             ITypeActivatorCache typeActivatorCache,
             IViewComponentActivator viewComponentActivator,
-            DiagnosticSource diagnosticSource)
+            DiagnosticSource diagnosticSource,
+            ILoggerFactory loggerFactory)
         {
             _typeActivatorCache = typeActivatorCache;
             _viewComponentActivator = viewComponentActivator;
             _diagnosticSource = diagnosticSource;
+
+            _logger = loggerFactory.CreateLogger<DefaultViewComponentInvoker>();
         }
 
         /// <inheritdoc />
@@ -37,7 +42,8 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
             return new DefaultViewComponentInvoker(
                 _typeActivatorCache,
                 _viewComponentActivator,
-                _diagnosticSource);
+                _diagnosticSource,
+                _logger);
         }
     }
 }

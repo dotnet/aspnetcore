@@ -2,14 +2,52 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 
 namespace Microsoft.AspNet.Mvc.ViewComponents
 {
     /// <summary>
     /// A descriptor for a View Component.
     /// </summary>
+    [DebuggerDisplay("{DisplayName}")]
     public class ViewComponentDescriptor
     {
+        private string _displayName;
+
+        /// <summary>
+        /// Creates a new <see cref="ViewComponentDescriptor"/>.
+        /// </summary>
+        public ViewComponentDescriptor()
+        {
+            Id = Guid.NewGuid().ToString();
+        }
+
+        /// <summary>
+        /// Gets or sets the display name of the View Component.
+        /// </summary>
+        public string DisplayName
+        {
+            get
+            {
+                if (_displayName == null)
+                {
+                    _displayName = Type?.FullName;
+                }
+
+                return _displayName;
+            }
+
+            set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
+
+                _displayName = value;
+            }
+        }
+
         /// <summary>
         /// Gets or sets the full name.
         /// </summary>
@@ -40,6 +78,11 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
         /// </example>
         /// </remarks>
         public string FullName { get; set; }
+
+        /// <summary>
+        /// Gets or set the generated unique identifier for this <see cref="ViewComponentDescriptor"/>.
+        /// </summary>
+        public string Id { get; set; }
 
         /// <summary>
         /// Gets or sets the short name.
