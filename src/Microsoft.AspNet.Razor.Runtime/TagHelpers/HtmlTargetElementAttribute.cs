@@ -15,47 +15,43 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         public const string ElementCatchAllTarget = TagHelperDescriptorProvider.ElementCatchAllTarget;
 
         /// <summary>
-        /// Instantiates a new instance of the <see cref="HtmlTargetElementAttribute"/> class with <see cref="Tag"/>
-        /// set to <c>*</c>.
+        /// Instantiates a new instance of the <see cref="HtmlTargetElementAttribute"/> class that targets all HTML
+        /// elements with the required <see cref="Attributes"/>.
         /// </summary>
-        /// <remarks>A <c>*</c> <see cref="Tag"/> value indicates an <see cref="ITagHelper"/>
-        /// that targets all HTML elements with the required <see cref="Attributes"/>.</remarks>
+        /// <remarks><see cref="Tag"/> is set to <c>*</c>.</remarks>
         public HtmlTargetElementAttribute()
             : this(ElementCatchAllTarget)
         {
         }
 
         /// <summary>
-        /// Instantiates a new instance of the <see cref="HtmlTargetElementAttribute"/> class.
+        /// Instantiates a new instance of the <see cref="HtmlTargetElementAttribute"/> class with the given
+        /// <paramref name="tag"/> as its <see cref="Tag"/> value.
         /// </summary>
         /// <param name="tag">
         /// The HTML tag the <see cref="ITagHelper"/> targets.
         /// </param>
-        /// <remarks>A <c>*</c> <paramref name="tag"/> value indicates an <see cref="ITagHelper"/>
-        /// that targets all HTML elements with the required <see cref="Attributes"/>.</remarks>
+        /// <remarks>A <c>*</c> <paramref name="tag"/> value indicates this <see cref="ITagHelper"/>
+        /// targets all HTML elements with the required <see cref="Attributes"/>.</remarks>
         public HtmlTargetElementAttribute(string tag)
         {
             Tag = tag;
         }
 
         /// <summary>
-        /// The HTML tag the <see cref="ITagHelper"/> targets.
+        /// The HTML tag the <see cref="ITagHelper"/> targets. A <c>*</c> value indicates this <see cref="ITagHelper"/>
+        /// targets all HTML elements with the required <see cref="Attributes"/>.
         /// </summary>
-        /// <remarks>A <c>*</c> <see cref="Tag"/> value indicates an <see cref="ITagHelper"/>
-        /// that targets all HTML elements with the required <see cref="Attributes"/>.</remarks>
         public string Tag { get; }
 
         /// <summary>
         /// A comma-separated <see cref="string"/> of attribute names the HTML element must contain for the
-        /// <see cref="ITagHelper"/> to run.
+        /// <see cref="ITagHelper"/> to run. <c>*</c> at the end of an attribute name acts as a prefix match.
         /// </summary>
-        /// <remarks>
-        /// <c>*</c> at the end of an attribute name acts as a prefix match.
-        /// </remarks>
         public string Attributes { get; set; }
 
         /// <summary>
-        /// The expected tag structure.
+        /// The expected tag structure. Defaults to <see cref="TagStructure.Unspecified"/>.
         /// </summary>
         /// <remarks>
         /// If <see cref="TagStructure.Unspecified"/> and no other tag helpers applying to the same element specify
@@ -81,9 +77,9 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         public TagStructure TagStructure { get; set; }
 
         /// <summary>
-        /// The required HTML element name of the direct parent.
+        /// The required HTML element name of the direct parent. A <c>null</c> value indicates any HTML element name is
+        /// allowed.
         /// </summary>
-        /// <remarks>A <c>null</c> value indicates any HTML element name is appropriate.</remarks>
         public string ParentTag { get; set; }
     }
 }
