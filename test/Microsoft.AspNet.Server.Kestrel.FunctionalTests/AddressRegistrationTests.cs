@@ -8,7 +8,6 @@ using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Extensions;
-using Microsoft.Dnx.Runtime.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Xunit;
 
