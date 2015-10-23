@@ -8,7 +8,7 @@ using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Mvc.Infrastructure;
 using Microsoft.AspNet.TestHost;
-using Microsoft.Dnx.Runtime;
+using Microsoft.Extensions.PlatformAbstractions;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests

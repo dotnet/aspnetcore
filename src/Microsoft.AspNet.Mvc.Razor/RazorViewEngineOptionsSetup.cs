@@ -4,7 +4,7 @@
 using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Mvc.Razor;
 using Microsoft.Extensions.OptionsModel;
-using Microsoft.Dnx.Runtime;
+using Microsoft.Extensions.PlatformAbstractions;
 
 namespace Microsoft.AspNet.Mvc
 {

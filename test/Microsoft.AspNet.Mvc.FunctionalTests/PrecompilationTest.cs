@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Mvc.Razor.Precompilation;
 using Microsoft.AspNet.Testing.xunit;
-using Microsoft.Dnx.Runtime;
+using Microsoft.Extensions.PlatformAbstractions;
 using Microsoft.Extensions.DependencyInjection;
 using PrecompilationWebSite;
 using Xunit;

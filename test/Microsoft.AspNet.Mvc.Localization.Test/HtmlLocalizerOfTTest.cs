@@ -4,7 +4,7 @@
 using System.Globalization;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.Extensions.Localization;
-using Microsoft.Dnx.Runtime;
+using Microsoft.Extensions.PlatformAbstractions;
 using Microsoft.Extensions.WebEncoders.Testing;
 using Moq;
 using Xunit;

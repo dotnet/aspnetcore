@@ -4,8 +4,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNet.Http;
-using Microsoft.Dnx.Runtime;
-using Microsoft.Dnx.Runtime.Infrastructure;
+using Microsoft.Extensions.PlatformAbstractions;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit;

@@ -5,7 +5,7 @@ using System;
 using System.Runtime.CompilerServices;
 using System.Text;
 using Microsoft.AspNet.Mvc.Razor.Precompilation;
-using Microsoft.Dnx.Runtime;
+using Microsoft.Extensions.PlatformAbstractions;
 
 namespace Microsoft.AspNet.Mvc.Razor.Internal
 {

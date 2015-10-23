@@ -4,7 +4,7 @@
 using System;
 using System.Reflection;
 using Microsoft.AspNet.Mvc.Razor.Precompilation;
-using Microsoft.Dnx.Runtime;
+using Microsoft.Extensions.PlatformAbstractions;
 using Moq;
 using Xunit;
 

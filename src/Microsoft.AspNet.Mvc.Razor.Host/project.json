@@ -20,12 +20,12 @@
   "frameworks": {
     "net451": {
       "dependencies": {
-        "Microsoft.Dnx.Runtime.Abstractions": "1.0.0-*"
+        "Microsoft.Extensions.PlatformAbstractions": "1.0.0-*"
       }
     },
     "dotnet5.4": {
       "dependencies": {
-        "Microsoft.Dnx.Runtime.Abstractions": "1.0.0-*",
+        "Microsoft.Extensions.PlatformAbstractions": "1.0.0-*",
         "System.Collections.Concurrent": "4.0.11-beta-*",
         "System.ComponentModel.TypeConverter": "4.0.1-beta-*",
         "System.Reflection.Extensions": "4.0.1-beta-*",

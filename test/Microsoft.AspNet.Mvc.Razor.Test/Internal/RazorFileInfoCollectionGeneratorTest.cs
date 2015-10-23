@@ -33,7 +33,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Internal
         private static System.Reflection.Assembly _loadedAssembly;
 
         public override System.Reflection.Assembly LoadAssembly(
-            Microsoft.Dnx.Runtime.IAssemblyLoadContext loadContext)
+            Microsoft.Extensions.PlatformAbstractions.IAssemblyLoadContext loadContext)
         {
              if (_loadedAssembly == null)
              {
@@ -71,7 +71,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Internal
         private static System.Reflection.Assembly _loadedAssembly;
 
         public override System.Reflection.Assembly LoadAssembly(
-            Microsoft.Dnx.Runtime.IAssemblyLoadContext loadContext)
+            Microsoft.Extensions.PlatformAbstractions.IAssemblyLoadContext loadContext)
         {
              if (_loadedAssembly == null)
              {

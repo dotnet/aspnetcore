@@ -4,7 +4,7 @@
 using System.IO;
 using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Mvc.Razor;
-using Microsoft.Dnx.Runtime;
+using Microsoft.Extensions.PlatformAbstractions;
 using Moq;
 using Xunit;
 

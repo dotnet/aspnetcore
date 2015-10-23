@@ -4,7 +4,7 @@
 using System.IO;
 using System.Text;
 using Microsoft.AspNet.Mvc;
-using Microsoft.Dnx.Runtime;
+using Microsoft.Extensions.PlatformAbstractions;
 
 namespace FilesWebSite
 {
