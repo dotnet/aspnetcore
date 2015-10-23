@@ -11,7 +11,7 @@
     "Microsoft.Extensions.PlatformAbstractions": "1.0.0-*"
   },
   "frameworks": {
-    "net451": {
+    "dnx451": {
       "dependencies": {
         "Microsoft.Web.Administration": "7.0.0"
       },
@@ -20,7 +20,7 @@
         "System.Xml": ""
       }
     },
-    "dotnet5.4": {
+    "dnxcore50": {
       "dependencies": {
         "System.Diagnostics.Process": "4.0.0-beta-*",
         "System.IO.FileSystem": "4.0.1-beta-*",
