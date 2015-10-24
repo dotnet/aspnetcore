@@ -33,7 +33,7 @@ namespace MusicStore.Mocks.Facebook
             }
             else if (request.RequestUri.AbsoluteUri.StartsWith("https://graph.facebook.com/v2.2/me"))
             {
-                Helpers.ThrowIfConditionFailed(() => queryParameters["appsecret_proof"] != null, "appsecret_proof is null");
+                Helpers.ThrowIfConditionFailed(() => queryParameters["appsecret_proof"].Count > 0, "appsecret_proof is empty");
                 if (queryParameters["access_token"] == "ValidAccessToken")
                 {
                     response.Content = new StringContent("{\"id\":\"Id\",\"name\":\"AspnetvnextTest AspnetvnextTest\",\"first_name\":\"AspnetvnextTest\",\"last_name\":\"AspnetvnextTest\",\"link\":\"https:\\/\\/www.facebook.com\\/myLink\",\"username\":\"AspnetvnextTest.AspnetvnextTest.7\",\"gender\":\"male\",\"email\":\"AspnetvnextTest\\u0040test.com\",\"timezone\":-7,\"locale\":\"en_US\",\"verified\":true,\"updated_time\":\"2013-08-06T20:38:48+0000\",\"CertValidatorInvoked\":\"ValidAccessToken\"}");

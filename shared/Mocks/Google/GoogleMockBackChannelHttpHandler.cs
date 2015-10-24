@@ -24,7 +24,7 @@ namespace MusicStore.Mocks.Google
                 {
                     if (formData["code"] == "ValidCode")
                     {
-                        if (formData["redirect_uri"] != null && ((string)formData["redirect_uri"]).EndsWith("signin-google") &&
+                        if (formData["redirect_uri"].Count > 0 && ((string)formData["redirect_uri"]).EndsWith("signin-google") &&
                            formData["client_id"] == "[ClientId]" && formData["client_secret"] == "[ClientSecret]")
                         {
                             response.Content = new StringContent("{\"access_token\":\"ValidAccessToken\",\"refresh_token\":\"ValidRefreshToken\",\"token_type\":\"Bearer\",\"expires_in\":\"1200\",\"id_token\":\"Token\"}", Encoding.UTF8, "application/json");

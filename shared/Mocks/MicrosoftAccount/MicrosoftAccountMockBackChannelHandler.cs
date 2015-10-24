@@ -24,7 +24,7 @@ namespace MusicStore.Mocks.MicrosoftAccount
                 {
                     if (formData["code"] == "ValidCode")
                     {
-                        if (formData["redirect_uri"] != null && ((string)formData["redirect_uri"]).EndsWith("signin-microsoft") &&
+                        if (formData["redirect_uri"].Count > 0 && ((string)formData["redirect_uri"]).EndsWith("signin-microsoft") &&
                            formData["client_id"] == "[ClientId]" && formData["client_secret"] == "[ClientSecret]")
                         {
                             response.Content = new StringContent("{\"token_type\":\"bearer\",\"expires_in\":3600,\"scope\":\"wl.basic\",\"access_token\":\"ValidAccessToken\",\"refresh_token\":\"ValidRefreshToken\",\"authentication_token\":\"ValidAuthenticationToken\"}");
