@@ -18,13 +18,13 @@ namespace Microsoft.Extensions.Globalization
 
         /// <summary>
         /// Gets a read-only cached <see cref="CultureInfo"/> for the specified name. Only names that exist in
-        /// <see cref="KnownCultureNames"/> will be used.
+        /// <paramref name="supportedCultures"/> will be used.
         /// </summary>
         /// <param name="name">The culture name.</param>
         /// <param name="supportedCultures">The cultures supported by the application.</param>
         /// <returns>
         /// A read-only cached <see cref="CultureInfo"/> or <c>null</c> a match wasn't found in
-        /// <see cref="KnownCultureNames"/>.
+        /// <paramref name="supportedCultures"/>.
         /// </returns>
         public static CultureInfo GetCultureInfo(string name, IList<CultureInfo> supportedCultures)
         {
