@@ -15,7 +15,6 @@
     "dependencies": {
         "Microsoft.AspNet.Server.Kestrel": "1.0.0-*",
         "Microsoft.AspNet.Mvc": "6.0.0-*",
-        "Microsoft.AspNet.Server.IIS": "1.0.0-*",
         "Microsoft.AspNet.Server.WebListener": "1.0.0-*",
         "Microsoft.AspNet.Mvc.TestConfiguration": "1.0.0",
         "Microsoft.AspNet.Diagnostics.Elm": "1.0.0-*"
