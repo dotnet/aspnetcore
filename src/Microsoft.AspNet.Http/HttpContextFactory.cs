@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.Http.Internal
             _httpContextAccessor = httpContextAccessor;
         }
 
-        public HttpContext CreateHttpContext(IFeatureCollection featureCollection)
+        public HttpContext Create(IFeatureCollection featureCollection)
         {
             var httpContext = new DefaultHttpContext(featureCollection);
             _httpContextAccessor.HttpContext = httpContext;

@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Http.Internal
             var contextFactory = new HttpContextFactory(accessor);
 
             // Act
-            var context = contextFactory.CreateHttpContext(new FeatureCollection());
+            var context = contextFactory.Create(new FeatureCollection());
 
             // Assert
             Assert.True(ReferenceEquals(context, accessor.HttpContext));

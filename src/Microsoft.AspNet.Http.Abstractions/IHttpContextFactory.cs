@@ -7,7 +7,7 @@ namespace Microsoft.AspNet.Http
 {
     public interface IHttpContextFactory
     {
-        HttpContext CreateHttpContext(IFeatureCollection featureCollection);
+        HttpContext Create(IFeatureCollection featureCollection);
         void Dispose(HttpContext httpContext);
     }
 }
