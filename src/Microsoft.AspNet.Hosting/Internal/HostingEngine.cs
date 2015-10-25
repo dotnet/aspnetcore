@@ -91,7 +91,7 @@ namespace Microsoft.AspNet.Hosting.Internal
             var server = ServerFactory.Start(_serverFeatures,
                 async features =>
                 {
-                    var httpContext = contextFactory.CreateHttpContext(features);
+                    var httpContext = contextFactory.Create(features);
                     httpContext.ApplicationServices = _applicationServices;
 
                     if (diagnosticSource.IsEnabled("Microsoft.AspNet.Hosting.BeginRequest"))
