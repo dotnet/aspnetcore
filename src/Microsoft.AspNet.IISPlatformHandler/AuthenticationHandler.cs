@@ -35,8 +35,8 @@ namespace Microsoft.AspNet.IISPlatformHandler
                 if (User != null)
                 {
                     context.Authenticated(User, properties: null,
-                        description: Options.AuthenticationDescriptions.Where(descrip =>
-                            string.Equals(User.Identity.AuthenticationType, descrip.AuthenticationScheme, StringComparison.Ordinal)).FirstOrDefault()?.Items);
+                        description: Options.AuthenticationDescriptions.FirstOrDefault(descrip =>
+                            string.Equals(User.Identity.AuthenticationType, descrip.AuthenticationScheme, StringComparison.Ordinal))?.Items);
                 }
                 else
                 {
@@ -48,6 +48,7 @@ namespace Microsoft.AspNet.IISPlatformHandler
             {
                 return PriorHandler.AuthenticateAsync(context);
             }
+            
             return Task.FromResult(0);
         }
 
@@ -84,6 +85,7 @@ namespace Microsoft.AspNet.IISPlatformHandler
             {
                 return PriorHandler.ChallengeAsync(context);
             }
+            
             return Task.FromResult(0);
         }
 
@@ -107,6 +109,7 @@ namespace Microsoft.AspNet.IISPlatformHandler
             {
                 return PriorHandler.SignInAsync(context);
             }
+            
             return Task.FromResult(0);
         }
 
@@ -117,6 +120,7 @@ namespace Microsoft.AspNet.IISPlatformHandler
             {
                 return PriorHandler.SignOutAsync(context);
             }
+            
             return Task.FromResult(0);
         }
 
@@ -126,14 +130,8 @@ namespace Microsoft.AspNet.IISPlatformHandler
             {
                 return true;
             }
-            foreach (var description in Options.AuthenticationDescriptions)
-            {
-                if (string.Equals(description.AuthenticationScheme, authenticationScheme, StringComparison.Ordinal))
-                {
-                    return true;
-                }
-            }
-            return false;
+            
+            return Options.AuthenticationDescriptions.Any(description => string.Equals(description.AuthenticationScheme, authenticationScheme, StringComparison.Ordinal));
         }
     }
 }
