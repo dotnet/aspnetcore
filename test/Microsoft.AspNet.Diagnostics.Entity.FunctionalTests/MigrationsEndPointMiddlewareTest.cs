@@ -91,7 +91,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
 
                 using (var db = BloggingContextWithMigrations.CreateWithoutExternalServiceProvider(optionsBuilder.Options))
                 {
-                    var databaseCreator = ((IAccessor<IServiceProvider>)db).GetService<IRelationalDatabaseCreator>();
+                    var databaseCreator = db.GetService<IRelationalDatabaseCreator>();
                     Assert.False(databaseCreator.Exists());
 
                     var formData = new FormUrlEncodedContent(new List<KeyValuePair<string, string>>
@@ -106,7 +106,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
 
                     Assert.True(databaseCreator.Exists());
 
-                    var historyRepository = ((IAccessor<IServiceProvider>)db).Service.GetRequiredService<IHistoryRepository>();
+                    var historyRepository = db.GetService<IHistoryRepository>();
                     var appliedMigrations = historyRepository.GetAppliedMigrations();
                     Assert.Equal(2, appliedMigrations.Count);
                     Assert.Equal("111111111111111_MigrationOne", appliedMigrations.ElementAt(0).MigrationId);
