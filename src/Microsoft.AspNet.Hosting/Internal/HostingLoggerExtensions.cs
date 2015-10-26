@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Hosting.Internal
             {
                 logger.Log(
                     logLevel: LogLevel.Information,
-                    eventId: 1,
+                    eventId: LoggerEventIds.RequestStarting,
                     state: new HostingRequestStarting(httpContext),
                     exception: null,
                     formatter: HostingRequestStarting.Callback);
@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.Hosting.Internal
                 var elapsed = new TimeSpan(Environment.TickCount - startTimeInTicks);
                 logger.Log(
                     logLevel: LogLevel.Information,
-                    eventId: 2,
+                    eventId: LoggerEventIds.RequestFinished,
                     state: new HostingRequestFinished(httpContext, elapsed),
                     exception: null,
                     formatter: HostingRequestFinished.Callback);
@@ -50,10 +50,48 @@ namespace Microsoft.AspNet.Hosting.Internal
                 var elapsed = new TimeSpan(Environment.TickCount - startTimeInTicks);
                 logger.Log(
                     logLevel: LogLevel.Information,
-                    eventId: 2,
+                    eventId: LoggerEventIds.RequestFailed,
                     state: new HostingRequestFailed(httpContext, elapsed),
                     exception: null,
                     formatter: HostingRequestFailed.Callback);
+            }
+        }
+
+        public static void ApplicationError(this ILogger logger, Exception exception)
+        {
+            logger.LogError(
+                eventId: LoggerEventIds.ApplicationStartupException,
+                message: "Application startup exception",
+                error: exception);
+        }
+
+        public static void Starting(this ILogger logger)
+        {
+            if (logger.IsEnabled(LogLevel.Verbose))
+            {
+                logger.LogVerbose(
+                   eventId: LoggerEventIds.Starting,
+                   data: "Hosting starting");
+            }
+        }
+
+        public static void Started(this ILogger logger)
+        {
+            if (logger.IsEnabled(LogLevel.Verbose))
+            {
+                logger.LogVerbose(
+                    eventId: LoggerEventIds.Started,
+                    data: "Hosting started");
+            }
+        }
+
+        public static void Shutdown(this ILogger logger)
+        {
+            if (logger.IsEnabled(LogLevel.Verbose))
+            {
+                logger.LogVerbose(
+                    eventId: LoggerEventIds.Shutdown,
+                    data: "Hosting shutdown");
             }
         }
 

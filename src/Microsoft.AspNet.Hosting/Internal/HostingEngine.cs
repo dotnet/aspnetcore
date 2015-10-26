@@ -89,6 +89,9 @@ namespace Microsoft.AspNet.Hosting.Internal
             var logger = _applicationServices.GetRequiredService<ILogger<HostingEngine>>();
             var contextFactory = _applicationServices.GetRequiredService<IHttpContextFactory>();
             var diagnosticSource = _applicationServices.GetRequiredService<DiagnosticSource>();
+
+            logger.Starting();
+
             var server = ServerFactory.Start(_serverFeatures,
                 async features =>
                 {
@@ -130,9 +133,11 @@ namespace Microsoft.AspNet.Hosting.Internal
                 });
 
             _applicationLifetime.NotifyStarted();
+            logger.Started();
 
             return new Application(ApplicationServices, _serverFeatures, new Disposable(() =>
             {
+                logger.Shutdown();
                 _applicationLifetime.StopApplication();
                 server.Dispose();
                 _applicationLifetime.NotifyStopped();
@@ -218,7 +223,7 @@ namespace Microsoft.AspNet.Hosting.Internal
                 // Write errors to standard out so they can be retrieved when not in development mode.
                 Console.Out.WriteLine("Application startup exception: " + ex.ToString());
                 var logger = _applicationServices.GetRequiredService<ILogger<HostingEngine>>();
-                logger.LogError("Application startup exception", ex);
+                logger.ApplicationError(ex);
 
                 // Generate an HTML error page.
                 var runtimeEnv = _applicationServices.GetRequiredService<IRuntimeEnvironment>();
