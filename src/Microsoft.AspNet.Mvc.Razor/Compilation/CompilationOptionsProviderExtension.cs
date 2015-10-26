@@ -41,7 +41,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
             return compilerOptionsProvider.GetCompilerOptions(applicationEnvironment.ApplicationName,
                                                               applicationEnvironment.RuntimeFramework,
                                                               applicationEnvironment.Configuration)
-                                          .ToCompilationSettings(applicationEnvironment.RuntimeFramework);
+                                          .ToCompilationSettings(applicationEnvironment.RuntimeFramework, applicationEnvironment.ApplicationBasePath);
         }
     }
 }
