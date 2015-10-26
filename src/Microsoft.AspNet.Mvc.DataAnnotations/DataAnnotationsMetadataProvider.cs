@@ -112,8 +112,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
                 displayMetadata.IsEnum = true;
 
                 // IsFlagsEnum
-                displayMetadata.IsFlagsEnum =
-                    underlyingTypeInfo.GetCustomAttribute<FlagsAttribute>(inherit: false) != null;
+                displayMetadata.IsFlagsEnum = underlyingTypeInfo.IsDefined(typeof(FlagsAttribute), inherit: false);
 
                 // EnumDisplayNamesAndValues and EnumNamesAndValues
                 //

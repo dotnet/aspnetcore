@@ -89,7 +89,7 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
 
             return
                 typeInfo.Name.EndsWith(ViewComponentSuffix, StringComparison.OrdinalIgnoreCase) ||
-                typeInfo.GetCustomAttribute<ViewComponentAttribute>() != null;
+                typeInfo.IsDefined(typeof(ViewComponentAttribute));
         }
     }
 }

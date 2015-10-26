@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
 
             // isDataContract == true iff the container type has at least one DataContractAttribute
             var containerType = context.Key.ContainerType.GetTypeInfo();
-            var isDataContract = containerType.GetCustomAttribute<DataContractAttribute>() != null;
+            var isDataContract = containerType.IsDefined(typeof(DataContractAttribute));
             if (isDataContract)
             {
                 // We don't need to add a validator, just to set IsRequired = true. The validation
