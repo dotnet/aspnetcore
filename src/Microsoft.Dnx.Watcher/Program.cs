@@ -6,7 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Dnx.Runtime;
+using Microsoft.Extensions.PlatformAbstractions;
 using Microsoft.Dnx.Runtime.Common.CommandLine;
 using Microsoft.Dnx.Watcher.Core;
 using Microsoft.Extensions.Logging;
@@ -19,15 +19,15 @@ namespace Microsoft.Dnx.Watcher
 
         private readonly ILoggerFactory _loggerFactory;
 
-        public Program(IRuntimeEnvironment runtimeEnvironment)
+        public Program()
         {
             _loggerFactory = new LoggerFactory();
 
-            var commandProvider = new CommandOutputProvider(runtimeEnvironment);
+            var commandProvider = new CommandOutputProvider(PlatformServices.Default.Runtime);
             _loggerFactory.AddProvider(commandProvider);
         }
 
-        public int Main(string[] args)
+        public static int Main(string[] args)
         {
             using (CancellationTokenSource ctrlCTokenSource = new CancellationTokenSource())
             {
@@ -40,7 +40,7 @@ namespace Microsoft.Dnx.Watcher
                 string[] watchArgs, dnxArgs;
                 SeparateWatchArguments(args, out watchArgs, out dnxArgs);
 
-                return MainInternal(watchArgs, dnxArgs, ctrlCTokenSource.Token);
+                return new Program().MainInternal(watchArgs, dnxArgs, ctrlCTokenSource.Token);
             }
         }
 

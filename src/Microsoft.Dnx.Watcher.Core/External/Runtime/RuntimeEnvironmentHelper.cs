@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.Extensions.PlatformAbstractions;
 
 namespace Microsoft.Dnx.Runtime
 {
@@ -18,8 +19,7 @@ namespace Microsoft.Dnx.Runtime
 
         private static IRuntimeEnvironment GetRuntimeEnvironment()
         {
-            var provider = Infrastructure.CallContextServiceLocator.Locator.ServiceProvider;
-            var environment = (IRuntimeEnvironment)provider?.GetService(typeof(IRuntimeEnvironment));
+            var environment = PlatformServices.Default.Runtime;
 
             if (environment == null)
             {

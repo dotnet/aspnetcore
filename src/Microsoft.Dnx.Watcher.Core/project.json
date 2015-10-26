@@ -4,7 +4,7 @@
   "dependencies": {
     "Microsoft.AspNet.FileProviders.Abstractions": "1.0.0-*",
     "Microsoft.AspNet.FileProviders.Physical": "1.0.0-*",
-    "Microsoft.Dnx.Runtime.Abstractions": "1.0.0-*",
+    "Microsoft.Extensions.PlatformAbstractions": "1.0.0-*",
     "Microsoft.Extensions.JsonParser.Sources": {
       "type": "build",
       "version": "1.0.0-*"

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.Extensions.JsonParser.Sources;
+using Microsoft.Extensions.PlatformAbstractions;
 using NuGet;
 
 namespace Microsoft.Dnx.Runtime
