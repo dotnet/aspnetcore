@@ -70,6 +70,7 @@ namespace Microsoft.AspNet.Hosting.Internal
             _startupLoader = startupLoader;
             _captureStartupErrors = captureStartupErrors;
             _applicationLifetime = new ApplicationLifetime();
+            _applicationServiceCollection.AddInstance<IApplicationLifetime>(_applicationLifetime);
         }
 
         public IServiceProvider ApplicationServices
@@ -144,7 +145,6 @@ namespace Microsoft.AspNet.Hosting.Internal
             if (_applicationServices == null)
             {
                 EnsureStartup();
-                _applicationServiceCollection.AddInstance<IApplicationLifetime>(_applicationLifetime);
                 _applicationServices = Startup.ConfigureServicesDelegate(_applicationServiceCollection);
             }
         }
