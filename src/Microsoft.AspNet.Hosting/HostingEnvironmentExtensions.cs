@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.Hosting
         private const string OldEnvironmentKey = "ASPNET_ENV";
         private const string EnvironmentKey = "Hosting:Environment";
 
-        private const string WebRootKey = "Hosting:WebRoot";
+        private const string WebRootKey = "webroot";
 
         public static void Initialize(this IHostingEnvironment hostingEnvironment, string applicationBasePath, IConfiguration config)
         {

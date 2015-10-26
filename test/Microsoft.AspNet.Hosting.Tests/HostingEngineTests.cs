@@ -260,7 +260,7 @@ namespace Microsoft.AspNet.Hosting
         {
             var vals = new Dictionary<string, string>
             {
-                { "Hosting:WebRoot", "testroot" }
+                { "webroot", "testroot" }
             };
 
             var builder = new ConfigurationBuilder()
