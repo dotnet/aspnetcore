@@ -67,7 +67,7 @@ function _WriteOut {
 
 ### Constants
 $ProductVersion="1.0.0"
-$BuildVersion="rc1-15523"
+$BuildVersion="rc1-15533"
 $Authors="Microsoft Open Technologies, Inc."
 
 # If the Version hasn't been replaced...
@@ -846,6 +846,14 @@ function Is-Elevated() {
     return $user.IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")
 }
 
+function Get-ScriptRoot() {
+    if ($PSVersionTable.PSVersion.Major -ge 3) {
+        return $PSScriptRoot
+    }
+
+    return Split-Path $script:MyInvocation.MyCommand.Path -Parent
+}
+
 ### Commands
 
 <#
@@ -863,9 +871,10 @@ function dnvm-update-self {
     $wc = New-Object System.Net.WebClient
     Apply-Proxy $wc -Proxy:$Proxy
 
-    $dnvmFile = Join-Path $PSScriptRoot "dnvm.ps1"
-    $tempDnvmFile = Join-Path $PSScriptRoot "temp"
-    $backupFilePath = Join-Path $PSSCriptRoot "dnvm.ps1.bak"
+    $CurrentScriptRoot = Get-ScriptRoot
+    $dnvmFile = Join-Path $CurrentScriptRoot "dnvm.ps1"
+    $tempDnvmFile = Join-Path $CurrentScriptRoot "temp"
+    $backupFilePath = Join-Path $CurrentScriptRoot "dnvm.ps1.bak"
 
     $wc.DownloadFile($DNVMUpgradeUrl, $tempDnvmFile)
 
@@ -1369,10 +1378,10 @@ function dnvm-install {
     if (!$IsNuPkg) {
         if ($VersionNuPkgOrAlias -eq "latest") {
             Write-Progress -Activity "Installing runtime" -Status "Determining latest runtime" -Id 1
-            $findPackageResult = Find-Latest -runtimeInfo:$runtimeInfo -Feed:$selectedFeed
+            $findPackageResult = Find-Latest -runtimeInfo:$runtimeInfo -Feed:$selectedFeed -Proxy:$Proxy
         }
         else {
-            $findPackageResult = Find-Package -runtimeInfo:$runtimeInfo -Feed:$selectedFeed
+            $findPackageResult = Find-Package -runtimeInfo:$runtimeInfo -Feed:$selectedFeed -Proxy:$Proxy
         }
         $Version = $findPackageResult.Version
     }
@@ -1848,10 +1857,17 @@ if(Test-Path env:\KRE_HOME) {
 
 $cmd = $args[0]
 
+$cmdargs = @()
 if($args.Length -gt 1) {
-    $cmdargs = @($args[1..($args.Length-1)])
-} else {
-    $cmdargs = @()
+    # Combine arguments, ensuring any containing whitespace or parenthesis are correctly quoted 
+    ForEach ($arg In $args[1..($args.Length-1)]) {
+        if ($arg -match "[\s\(\)]") {
+            $cmdargs += """$arg"""
+        } else {
+            $cmdargs += $arg
+        }
+        $cmdargs += " "
+    }
 }
 
 # Can't add this as script-level arguments because they mask '-a' arguments in subcommands!
