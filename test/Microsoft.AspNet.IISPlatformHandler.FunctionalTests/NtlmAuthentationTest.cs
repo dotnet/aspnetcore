@@ -42,13 +42,17 @@ namespace Microsoft.AspNet.IISPlatformHandler.FunctionalTests
                 {
                     var deploymentResult = deployer.Deploy();
                     var httpClientHandler = new HttpClientHandler();
-                    var httpClient = new HttpClient(httpClientHandler) { BaseAddress = new Uri(deploymentResult.ApplicationBaseUri) };
+                    var httpClient = new HttpClient(httpClientHandler)
+                    {
+                        BaseAddress = new Uri(deploymentResult.ApplicationBaseUri),
+                        Timeout = TimeSpan.FromSeconds(5),
+                    };
 
                     // Request to base address and check if various parts of the body are rendered & measure the cold startup time.
                     var response = await RetryHelper.RetryRequest(() =>
                     {
                         return httpClient.GetAsync(string.Empty);
-                    }, logger, deploymentResult.HostShutdownToken);
+                    }, logger, deploymentResult.HostShutdownToken, retryCount: 30);
 
                     var responseText = await response.Content.ReadAsStringAsync();
                     try
