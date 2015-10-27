@@ -10,6 +10,7 @@ using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.TestHost;
+using Microsoft.AspNet.Testing.xunit;
 using Xunit;
 
 namespace Microsoft.AspNet.StaticFiles
@@ -34,6 +35,21 @@ namespace Microsoft.AspNet.StaticFiles
         [InlineData("/subdir", @".", "/subdir/missing.dir")]
         [InlineData("/subdir", @".", "/subdir/missing.dir/")]
         [InlineData("", @"./", "/missing.dir")]
+        public async Task NoMatch_PassesThrough_All(string baseUrl, string baseDir, string requestUrl)
+        {
+            await NoMatch_PassesThrough(baseUrl, baseDir, requestUrl);
+        }
+
+        [ConditionalTheory]
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
+        [InlineData("", @".\", "/missing.dir")]
+        [InlineData("", @".\", "/Missing.dir")]
+        public async Task NoMatch_PassesThrough_Windows(string baseUrl, string baseDir, string requestUrl)
+        {
+            await NoMatch_PassesThrough(baseUrl, baseDir, requestUrl);
+        }
+
         public async Task NoMatch_PassesThrough(string baseUrl, string baseDir, string requestUrl)
         {
             TestServer server = TestServer.Create(app =>
@@ -55,6 +71,21 @@ namespace Microsoft.AspNet.StaticFiles
         [InlineData("", @".", "/SubFolder/")]
         [InlineData("", @"./", "/SubFolder/")]
         [InlineData("", @"./SubFolder", "/")]
+        public async Task FoundDirectoryWithDefaultFile_PathModified_All(string baseUrl, string baseDir, string requestUrl)
+        {
+            await FoundDirectoryWithDefaultFile_PathModified(baseUrl, baseDir, requestUrl);
+        }
+
+        [ConditionalTheory]
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
+        [InlineData("", @".\", "/SubFolder/")]
+        [InlineData("", @".\subFolder", "/")]
+        public async Task FoundDirectoryWithDefaultFile_PathModified_Windows(string baseUrl, string baseDir, string requestUrl)
+        {
+            await FoundDirectoryWithDefaultFile_PathModified(baseUrl, baseDir, requestUrl);
+        }
+
         public async Task FoundDirectoryWithDefaultFile_PathModified(string baseUrl, string baseDir, string requestUrl)
         {
             TestServer server = TestServer.Create(app =>
@@ -76,6 +107,21 @@ namespace Microsoft.AspNet.StaticFiles
         [InlineData("", @".", "/SubFolder", "")]
         [InlineData("", @"./", "/SubFolder", "")]
         [InlineData("", @"./", "/SubFolder", "?a=b")]
+        public async Task NearMatch_RedirectAddSlash_All(string baseUrl, string baseDir, string requestUrl, string queryString)
+        {
+            await NearMatch_RedirectAddSlash(baseUrl, baseDir, requestUrl, queryString);
+        }
+
+        [ConditionalTheory]
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
+        [InlineData("", @".\", "/SubFolder", "")]
+        [InlineData("", @".\", "/SubFolder", "?a=b")]
+        public async Task NearMatch_RedirectAddSlash_Windows(string baseUrl, string baseDir, string requestUrl, string queryString)
+        {
+            await NearMatch_RedirectAddSlash(baseUrl, baseDir, requestUrl, queryString);
+        }
+
         public async Task NearMatch_RedirectAddSlash(string baseUrl, string baseDir, string requestUrl, string queryString)
         {
             TestServer server = TestServer.Create(app => app.UseDefaultFiles(new DefaultFilesOptions()
@@ -95,6 +141,22 @@ namespace Microsoft.AspNet.StaticFiles
         [InlineData("/SubFolder", @".", "/somedir/")]
         [InlineData("", @"./SubFolder", "/")]
         [InlineData("", @"./SubFolder/", "/")]
+        public async Task PostDirectory_PassesThrough_All(string baseUrl, string baseDir, string requestUrl)
+        {
+            await PostDirectory_PassesThrough(baseUrl, baseDir, requestUrl);
+        }
+
+        [ConditionalTheory]
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
+        [InlineData("/SubFolder", @".\", "/SubFolder/")]
+        [InlineData("", @".\SubFolder", "/")]
+        [InlineData("", @".\SubFolder\", "/")]
+        public async Task PostDirectory_PassesThrough_Windows(string baseUrl, string baseDir, string requestUrl)
+        {
+            await PostDirectory_PassesThrough(baseUrl, baseDir, requestUrl);
+        }
+
         public async Task PostDirectory_PassesThrough(string baseUrl, string baseDir, string requestUrl)
         {
             TestServer server = TestServer.Create(app => app.UseDefaultFiles(new DefaultFilesOptions()

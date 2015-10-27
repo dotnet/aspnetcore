@@ -10,6 +10,7 @@ using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.TestHost;
+using Microsoft.AspNet.Testing.xunit;
 using Xunit;
 
 namespace Microsoft.AspNet.StaticFiles
@@ -52,6 +53,23 @@ namespace Microsoft.AspNet.StaticFiles
         [InlineData("/SomeDir", @".", "/soMediR/TestDocument.txt")]
         [InlineData("", @"SubFolder", "/ranges.txt")]
         [InlineData("/somedir", @"SubFolder", "/somedir/ranges.txt")]
+        public async Task FoundFile_Served_All(string baseUrl, string baseDir, string requestUrl)
+        {
+            await FoundFile_Served(baseUrl, baseDir, requestUrl);
+        }
+
+        [ConditionalTheory]
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
+        [InlineData("", @".", "/testDocument.Txt")]
+        [InlineData("/somedir", @".", "/somedir/Testdocument.TXT")]
+        [InlineData("/SomeDir", @".", "/soMediR/testdocument.txT")]
+        [InlineData("/somedir", @"SubFolder", "/somedir/Ranges.tXt")]
+        public async Task FoundFile_Served_Windows(string baseUrl, string baseDir, string requestUrl)
+        {
+            await FoundFile_Served(baseUrl, baseDir, requestUrl);
+        }
+
         public async Task FoundFile_Served(string baseUrl, string baseDir, string requestUrl)
         {
             TestServer server = TestServer.Create(app => app.UseStaticFiles(new StaticFileOptions()

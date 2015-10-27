@@ -11,6 +11,7 @@ using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.TestHost;
+using Microsoft.AspNet.Testing.xunit;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
@@ -45,6 +46,21 @@ namespace Microsoft.AspNet.StaticFiles
         [InlineData("/subdir", @".", "/subdir/missing.dir")]
         [InlineData("/subdir", @".", "/subdir/missing.dir/")]
         [InlineData("", @"./", "/missing.dir")]
+        public async Task NoMatch_PassesThrough_All(string baseUrl, string baseDir, string requestUrl)
+        {
+            await NoMatch_PassesThrough(baseUrl, baseDir, requestUrl);
+        }
+
+        [ConditionalTheory]
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
+        [InlineData("", @".\", "/missing.dir")]
+        [InlineData("", @".\", "/Missing.dir")]
+        public async Task NoMatch_PassesThrough_Windows(string baseUrl, string baseDir, string requestUrl)
+        {
+            await NoMatch_PassesThrough(baseUrl, baseDir, requestUrl);
+        }
+
         public async Task NoMatch_PassesThrough(string baseUrl, string baseDir, string requestUrl)
         {
             TestServer server = TestServer.Create(
@@ -64,6 +80,21 @@ namespace Microsoft.AspNet.StaticFiles
         [InlineData("/somedir", @".", "/somedir/")]
         [InlineData("/somedir", @"./", "/somedir/")]
         [InlineData("/somedir", @".", "/somedir/SubFolder/")]
+        public async Task FoundDirectory_Served_All(string baseUrl, string baseDir, string requestUrl)
+        {
+            await FoundDirectory_Served(baseUrl, baseDir, requestUrl);
+        }
+
+        [ConditionalTheory]
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
+        [InlineData("/somedir", @".\", "/somedir/")]
+        [InlineData("/somedir", @".", "/somedir/subFolder/")]
+        public async Task FoundDirectory_Served_Windows(string baseUrl, string baseDir, string requestUrl)
+        {
+            await FoundDirectory_Served(baseUrl, baseDir, requestUrl);
+        }
+
         public async Task FoundDirectory_Served(string baseUrl, string baseDir, string requestUrl)
         {
             TestServer server = TestServer.Create(
@@ -88,6 +119,21 @@ namespace Microsoft.AspNet.StaticFiles
         [InlineData("", @".", "/SubFolder", "?a=b")]
         [InlineData("/somedir", @".", "/somedir", "?a=b")]
         [InlineData("/somedir", @".", "/somedir/SubFolder", "?a=b")]
+        public async Task NearMatch_RedirectAddSlash_All(string baseUrl, string baseDir, string requestUrl, string queryString)
+        {
+            await NearMatch_RedirectAddSlash(baseUrl, baseDir, requestUrl, queryString);
+        }
+
+        [ConditionalTheory]
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
+        [InlineData("/somedir", @".", "/somedir/subFolder", "")]
+        [InlineData("/somedir", @".", "/somedir/subFolder", "?a=b")]
+        public async Task NearMatch_RedirectAddSlash_Windows(string baseUrl, string baseDir, string requestUrl, string queryString)
+        {
+            await NearMatch_RedirectAddSlash(baseUrl, baseDir, requestUrl, queryString);
+        }
+
         public async Task NearMatch_RedirectAddSlash(string baseUrl, string baseDir, string requestUrl, string queryString)
         {
             TestServer server = TestServer.Create(
@@ -110,6 +156,20 @@ namespace Microsoft.AspNet.StaticFiles
         [InlineData("", @".", "/SubFolder/")]
         [InlineData("/somedir", @".", "/somedir/")]
         [InlineData("/somedir", @".", "/somedir/SubFolder/")]
+        public async Task PostDirectory_PassesThrough_All(string baseUrl, string baseDir, string requestUrl)
+        {
+            await PostDirectory_PassesThrough(baseUrl, baseDir, requestUrl);
+        }
+
+        [ConditionalTheory]
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
+        [InlineData("/somedir", @".", "/somedir/subFolder/")]
+        public async Task PostDirectory_PassesThrough_Windows(string baseUrl, string baseDir, string requestUrl)
+        {
+            await PostDirectory_PassesThrough(baseUrl, baseDir, requestUrl);
+        }
+
         public async Task PostDirectory_PassesThrough(string baseUrl, string baseDir, string requestUrl)
         {
             TestServer server = TestServer.Create(
@@ -129,6 +189,20 @@ namespace Microsoft.AspNet.StaticFiles
         [InlineData("", @".", "/SubFolder/")]
         [InlineData("/somedir", @".", "/somedir/")]
         [InlineData("/somedir", @".", "/somedir/SubFolder/")]
+        public async Task HeadDirectory_HeadersButNotBodyServed_All(string baseUrl, string baseDir, string requestUrl)
+        {
+            await HeadDirectory_HeadersButNotBodyServed(baseUrl, baseDir, requestUrl);
+        }
+
+        [ConditionalTheory]
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
+        [InlineData("/somedir", @".", "/somedir/subFolder/")]
+        public async Task HeadDirectory_HeadersButNotBodyServed_Windows(string baseUrl, string baseDir, string requestUrl)
+        {
+            await HeadDirectory_HeadersButNotBodyServed(baseUrl, baseDir, requestUrl);
+        }
+
         public async Task HeadDirectory_HeadersButNotBodyServed(string baseUrl, string baseDir, string requestUrl)
         {
             TestServer server = TestServer.Create(
