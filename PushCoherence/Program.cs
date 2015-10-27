@@ -116,8 +116,18 @@ namespace PushCoherence
 
         private static string StripBuildVersion(string version)
         {
-            if (Regex.IsMatch(version, @"(alpha|beta)\d-\d+$"))
+            if (Regex.IsMatch(version, @"(alpha|beta|rc)\d-\d+$"))
             {
+                // E.g. change version 2.5.0-rc2-123123 to 2.5.0-rc2-final.
+                var index = version.LastIndexOf('-');
+                if (index != -1)
+                {
+                    return version.Substring(0, index) + "-final";
+                }
+            }
+            else if (Regex.IsMatch(version, @"rtm-\d+$"))
+            {
+                // E.g. change version 2.5.0-rtm-123123 to 2.5.0.
                 var index = version.LastIndexOf('-');
                 if (index != -1)
                 {
