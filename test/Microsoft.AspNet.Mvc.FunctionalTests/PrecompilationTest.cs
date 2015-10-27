@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -21,6 +22,27 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         }
 
         public HttpClient Client { get; }
+
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        public async Task PrecompiledView_RendersCorrectly()
+        {
+            // Arrange
+            // We will render a view that writes the fully qualified name of the Assembly containing the type of
+            // the view. If the view is precompiled, this assembly will be PrecompilationWebsite.
+            var assemblyNamePrefix = GetAssemblyNamePrefix();
+
+            // Act
+            var response = await Client.GetAsync("http://localhost/Home/Index");
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var parsedResponse1 = new ParsedResponse(responseContent);
+            Assert.StartsWith(assemblyNamePrefix, parsedResponse1.ViewStart);
+            Assert.StartsWith(assemblyNamePrefix, parsedResponse1.Layout);
+            Assert.StartsWith(assemblyNamePrefix, parsedResponse1.Index);
+        }
 
         [Fact]
         public async Task PrecompiledView_UsesCompilationOptionsFromApplication()
