@@ -9,11 +9,6 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Reflection;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Mvc.Internal;
-using Microsoft.AspNet.Mvc.TagHelpers;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
@@ -22,12 +17,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         IClassFixture<MvcTestFixture<HtmlGenerationWebSite.Startup>>,
         IClassFixture<MvcEncodedTestFixture<HtmlGenerationWebSite.Startup>>
     {
-        private const string SiteName = nameof(HtmlGenerationWebSite);
         private static readonly Assembly _resourcesAssembly = typeof(HtmlGenerationTest).GetTypeInfo().Assembly;
-
-        private readonly Action<IApplicationBuilder> _app = new HtmlGenerationWebSite.Startup().Configure;
-        private readonly Action<IServiceCollection> _configureServices =
-            new HtmlGenerationWebSite.Startup().ConfigureServices;
 
         public HtmlGenerationTest(
             MvcTestFixture<HtmlGenerationWebSite.Startup> fixture,
@@ -56,6 +46,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                     { "CreateWarehouse", null },
                     // Testing the HTML helpers with FormTagHelper
                     { "EditWarehouse", null },
+                    { "Form", "/HtmlGeneration_Home/Form" },
                     // Testing MVC tag helpers invoked in the editor templates from HTML helpers
                     { "EmployeeList", null },
                     // Testing the EnvironmentTagHelper
@@ -472,57 +463,6 @@ Products: Laptops (3)";
             Assert.Equal("Deal percentage is 20", response1.Trim());
             Assert.Equal("Deal percentage is 20", response2.Trim());
             Assert.Equal("Deal percentage is 30", response3.Trim());
-        }
-
-        [Theory]
-        [InlineData(null)]
-        [InlineData(true)]
-        [InlineData(false)]
-        public async Task FormTagHelper_GeneratesExpectedContent(bool? optionsAntiforgery)
-        {
-            // Arrange
-            var newServices = new ServiceCollection();
-            var builder = new MvcCoreBuilder(newServices);
-            builder.InitializeTagHelper<FormTagHelper>((helper, _) => helper.Antiforgery = optionsAntiforgery);
-            var server = TestHelper.CreateServer(_app, SiteName,
-                services =>
-                {
-                    services.Add(newServices);
-                    _configureServices(services);
-                });
-            var client = server.CreateClient();
-            var expectedMediaType = MediaTypeHeaderValue.Parse("text/html; charset=utf-8");
-
-            var outputFile = string.Format(
-                "compiler/resources/HtmlGenerationWebSite.HtmlGeneration_Home.Form.Options.Antiforgery.{0}.html",
-                optionsAntiforgery?.ToString() ?? "null");
-            var expectedContent =
-                await ResourceFile.ReadResourceAsync(_resourcesAssembly, outputFile, sourceFile: false);
-
-            // Act
-            // The host is not important as everything runs in memory and tests are isolated from each other.
-            var response = await client.GetAsync("http://localhost/HtmlGeneration_Home/Form");
-            var responseContent = await response.Content.ReadAsStringAsync();
-
-            // Assert
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            Assert.Equal(expectedMediaType, response.Content.Headers.ContentType);
-
-            responseContent = responseContent.Trim();
-            var forgeryTokens = AntiforgeryTestHelper.RetrieveAntiforgeryTokens(responseContent).ToArray();
-
-#if GENERATE_BASELINES
-            // Reverse usual substitutions and insert format items into the new file content.
-            for (var index = 0; index < forgeryTokens.Length; index++)
-            {
-                responseContent = responseContent.Replace(forgeryTokens[index], $"{{{ index }}}");
-            }
-
-            ResourceFile.UpdateFile(_resourcesAssembly, outputFile, expectedContent, responseContent);
-#else
-            expectedContent = string.Format(expectedContent, forgeryTokens);
-            Assert.Equal(expectedContent.Trim(), responseContent, ignoreLineEndingDifferences: true);
-#endif
         }
 
         [Fact]

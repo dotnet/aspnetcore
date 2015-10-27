@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.Mvc.TagHelpers;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace HtmlGenerationWebSite
@@ -11,8 +12,10 @@ namespace HtmlGenerationWebSite
         // Set up application services
         public void ConfigureServices(IServiceCollection services)
         {
-            // Add MVC services to the services container
-            services.AddMvc();
+            // Add MVC services to the services container. Change default FormTagHelper.AntiForgery to false. Usually
+            // null which is interpreted as true unless element includes an action attribute.
+            services.AddMvc().InitializeTagHelper<FormTagHelper>((helper, _) => helper.Antiforgery = false);
+
             services.AddSingleton<ProductsService>();
         }
 

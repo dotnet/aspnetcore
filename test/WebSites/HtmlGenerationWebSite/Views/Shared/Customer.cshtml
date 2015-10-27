@@ -8,7 +8,7 @@
 
 <html>
 <body>
-    <form asp-route-area="Customer" asp-controller="HtmlGeneration_Customer" asp-action="Index">
+    <form asp-route-area="Customer" asp-controller="HtmlGeneration_Customer" asp-action="Index" asp-antiforgery="true">
         <div>
             <label asp-for="Number" class="order"></label>
             <input asp-for="Number" type="number" class="form-control" />
