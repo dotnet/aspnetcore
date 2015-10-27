@@ -16,7 +16,7 @@
             "dependencies": {
                 "System.Diagnostics.TraceSource": "4.0.0-beta-*",
                 "System.IO": "4.0.11-beta-*",
-                "System.Net.Sockets": "4.0.10-beta-*",
+                "System.Net.Sockets": "4.1.0-beta-*",
                 "System.Runtime.Handles": "4.0.1-beta-*"
             }
         }
