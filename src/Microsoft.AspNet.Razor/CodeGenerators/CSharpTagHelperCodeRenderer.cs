@@ -413,9 +413,9 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
                     _writer.WriteStartAssignment(valueAccessor);
                     lineMapper.MarkLineMappingStart();
 
-                    // Write out bare expression for this attribute value. Property is not a string.
+                    // Write out code expression for this attribute value. Property is not a string.
                     // So quoting or buffering are not helpful.
-                    RenderRawAttributeValue(attributeValueChunk, attributeDescriptor, isPlainTextValue);
+                    RenderCodeAttributeValue(attributeValueChunk, attributeDescriptor, isPlainTextValue);
 
                     // End the assignment to the attribute.
                     lineMapper.MarkLineMappingEnd();
@@ -580,7 +580,7 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
                 complexValue: false);
         }
 
-        private void RenderRawAttributeValue(
+        private void RenderCodeAttributeValue(
             Chunk attributeValueChunk,
             TagHelperAttributeDescriptor attributeDescriptor,
             bool isPlainTextValue)
@@ -589,6 +589,12 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
                 attributeDescriptor,
                 valueRenderer: (writer) =>
                 {
+                    if (attributeDescriptor.IsEnum && isPlainTextValue)
+                    {
+                        writer.Write(attributeDescriptor.TypeName)
+                            .Write(".");
+                    }
+
                     var visitor =
                         new CSharpTagHelperAttributeValueVisitor(writer, _context, attributeDescriptor.TypeName);
                     visitor.Accept(attributeValueChunk);

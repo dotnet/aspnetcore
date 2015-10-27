@@ -34,6 +34,14 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             }
         }
 
+        public bool IsEnum
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+        }
+
         public bool ImplementsInterface(ITypeInfo other)
         {
             throw new NotImplementedException();

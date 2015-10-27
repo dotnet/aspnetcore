@@ -31,6 +31,7 @@ namespace Microsoft.AspNet.Razor.Test.Internal
             Assert.Equal(descriptorX.Name, descriptorY.Name, StringComparer.Ordinal);
             Assert.Equal(descriptorX.PropertyName, descriptorY.PropertyName, StringComparer.Ordinal);
             Assert.Equal(descriptorX.TypeName, descriptorY.TypeName, StringComparer.Ordinal);
+            Assert.Equal(descriptorX.IsEnum, descriptorY.IsEnum);
             Assert.Equal(descriptorX.IsStringProperty, descriptorY.IsStringProperty);
 
             return TagHelperAttributeDesignTimeDescriptorComparer.Default.Equals(
@@ -45,6 +46,7 @@ namespace Microsoft.AspNet.Razor.Test.Internal
             hashCodeCombiner.Add(descriptor.Name, StringComparer.Ordinal);
             hashCodeCombiner.Add(descriptor.PropertyName, StringComparer.Ordinal);
             hashCodeCombiner.Add(descriptor.TypeName, StringComparer.Ordinal);
+            hashCodeCombiner.Add(descriptor.IsEnum);
             hashCodeCombiner.Add(descriptor.IsStringProperty);
             hashCodeCombiner.Add(TagHelperAttributeDesignTimeDescriptorComparer.Default.GetHashCode(
                 descriptor.DesignTimeDescriptor));

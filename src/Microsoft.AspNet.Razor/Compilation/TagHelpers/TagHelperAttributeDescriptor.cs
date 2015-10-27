@@ -28,6 +28,7 @@ namespace Microsoft.AspNet.Razor.Compilation.TagHelpers
             Name = name;
             PropertyName = propertyInfo.Name;
             TypeName = propertyInfo.PropertyType.FullName;
+            IsEnum = propertyInfo.PropertyType.GetTypeInfo().IsEnum;
         }
 
         /// <summary>
@@ -44,6 +45,11 @@ namespace Microsoft.AspNet.Razor.Compilation.TagHelpers
         /// HTML attribute names are matched case-insensitively, regardless of <see cref="IsIndexer"/>.
         /// </remarks>
         public bool IsIndexer { get; set; }
+
+        /// <summary>
+        /// Gets or sets an indication whether this property is an <see cref="Enum"/>.
+        /// </summary>
+        public bool IsEnum { get; set; }
 
         /// <summary>
         /// Gets or sets an indication whether this property is of type <see cref="string"/> or, if

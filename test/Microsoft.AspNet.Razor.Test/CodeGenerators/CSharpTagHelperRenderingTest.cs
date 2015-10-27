@@ -21,6 +21,48 @@ namespace Microsoft.AspNet.Razor.Test.Generator
         private static IEnumerable<TagHelperDescriptor> PrefixedPAndInputTagHelperDescriptors { get; }
             = BuildPAndInputTagHelperDescriptors(prefix: "THS");
 
+        private static IEnumerable<TagHelperDescriptor> EnumTagHelperDescriptors
+        {
+            get
+            {
+                return new[]
+                {
+                    new TagHelperDescriptor
+                    {
+                        TagName = "*",
+                        TypeName = "CatchAllTagHelper",
+                        AssemblyName = "SomeAssembly",
+                        Attributes = new[]
+                        {
+                            new TagHelperAttributeDescriptor
+                            {
+                                Name = "catch-all",
+                                PropertyName = "CatchAll",
+                                IsEnum = true,
+                                TypeName = typeof(MyEnum).FullName
+                            },
+                        }
+                    },
+                    new TagHelperDescriptor
+                    {
+                        TagName = "input",
+                        TypeName = "InputTagHelper",
+                        AssemblyName = "SomeAssembly",
+                        Attributes = new[]
+                        {
+                            new TagHelperAttributeDescriptor
+                            {
+                                Name = "value",
+                                PropertyName = "Value",
+                                IsEnum = true,
+                                TypeName = typeof(MyEnum).FullName
+                            },
+                        }
+                    },
+                };
+            }
+        }
+
         private static IEnumerable<TagHelperDescriptor> SymbolBoundTagHelperDescriptors
         {
             get
@@ -1588,6 +1630,83 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                                 generatedCharacterOffsetIndex: 29,
                                 contentLength: 13),
                         }
+                    },
+                    {
+                        "EnumTagHelpers",
+                        "EnumTagHelpers.DesignTime",
+                        EnumTagHelperDescriptors,
+                        new[]
+                        {
+                            BuildLineMapping(
+                                documentAbsoluteIndex: 14,
+                                documentLineIndex: 0,
+                                generatedAbsoluteIndex: 419,
+                                generatedLineIndex: 14,
+                                characterOffsetIndex: 14,
+                                contentLength: 17),
+                            BuildLineMapping(
+                                documentAbsoluteIndex: 37,
+                                documentLineIndex: 2,
+                                generatedAbsoluteIndex: 892,
+                                generatedLineIndex: 33,
+                                characterOffsetIndex: 2,
+                                contentLength: 39),
+                            BuildLineMapping(
+                                documentAbsoluteIndex: 96,
+                                documentLineIndex: 6,
+                                documentCharacterOffsetIndex: 15,
+                                generatedAbsoluteIndex: 1162,
+                                generatedLineIndex: 42,
+                                generatedCharacterOffsetIndex: 25,
+                                contentLength: 14),
+                            BuildLineMapping(
+                                documentAbsoluteIndex: 131,
+                                documentLineIndex: 7,
+                                generatedAbsoluteIndex: 1398,
+                                generatedLineIndex: 49,
+                                characterOffsetIndex: 15,
+                                contentLength: 20),
+                            BuildLineMapping(
+                                documentAbsoluteIndex: 171,
+                                documentLineIndex: 8,
+                                documentCharacterOffsetIndex: 14,
+                                generatedAbsoluteIndex: 1695,
+                                generatedLineIndex: 56,
+                                generatedCharacterOffsetIndex: 70,
+                                contentLength: 7),
+                            BuildLineMapping(
+                                documentAbsoluteIndex: 198,
+                                documentLineIndex: 9,
+                                documentCharacterOffsetIndex: 14,
+                                generatedAbsoluteIndex: 1980,
+                                generatedLineIndex: 63,
+                                generatedCharacterOffsetIndex: 70,
+                                contentLength: 13),
+                            BuildLineMapping(
+                                documentAbsoluteIndex: 224,
+                                documentLineIndex: 9,
+                                documentCharacterOffsetIndex: 40,
+                                generatedAbsoluteIndex: 2146,
+                                generatedLineIndex: 68,
+                                generatedCharacterOffsetIndex: 85,
+                                contentLength: 7),
+                            BuildLineMapping(
+                                documentAbsoluteIndex: 251,
+                                documentLineIndex: 10,
+                                documentCharacterOffsetIndex: 15,
+                                generatedAbsoluteIndex: 2386,
+                                generatedLineIndex: 75,
+                                generatedCharacterOffsetIndex: 25,
+                                contentLength: 9),
+                            BuildLineMapping(
+                                documentAbsoluteIndex: 274,
+                                documentLineIndex: 10,
+                                documentCharacterOffsetIndex: 38,
+                                generatedAbsoluteIndex: 2500,
+                                generatedLineIndex: 80,
+                                generatedCharacterOffsetIndex: 37,
+                                contentLength: 9),
+                        }
                     }
                 };
             }
@@ -1640,6 +1759,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                     { "TransitionsInTagHelperAttributes", null, DefaultPAndInputTagHelperDescriptors },
                     { "NestedScriptTagTagHelpers", null, DefaultPAndInputTagHelperDescriptors },
                     { "SymbolBoundAttributes", null, SymbolBoundTagHelperDescriptors },
+                    { "EnumTagHelpers", null, EnumTagHelperDescriptors },
                 };
             }
         }
@@ -1792,5 +1912,11 @@ namespace Microsoft.AspNet.Razor.Test.Generator
 
             public string BoundProperty { get; set; }
         }
+    }
+
+    public enum MyEnum
+    {
+        MyValue,
+        MySecondValue
     }
 }

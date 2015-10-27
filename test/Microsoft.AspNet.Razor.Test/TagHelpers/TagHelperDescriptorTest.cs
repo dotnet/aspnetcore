@@ -73,7 +73,8 @@ namespace Microsoft.AspNet.Razor.Compilation.TagHelpers
                    {
                         Name = "attribute one",
                         PropertyName = "property name",
-                        TypeName = "property type name"
+                        TypeName = "property type name",
+                        IsEnum = true,
                    },
                     new TagHelperAttributeDescriptor
                    {
@@ -94,12 +95,14 @@ namespace Microsoft.AspNet.Razor.Compilation.TagHelpers
                 $"\"{ nameof(TagHelperDescriptor.AssemblyName) }\":\"assembly name\"," +
                 $"\"{ nameof(TagHelperDescriptor.Attributes) }\":[" +
                 $"{{\"{ nameof(TagHelperAttributeDescriptor.IsIndexer) }\":false," +
+                $"\"{ nameof(TagHelperAttributeDescriptor.IsEnum) }\":true," +
                 $"\"{ nameof(TagHelperAttributeDescriptor.IsStringProperty) }\":false," +
                 $"\"{ nameof(TagHelperAttributeDescriptor.Name) }\":\"attribute one\"," +
                 $"\"{ nameof(TagHelperAttributeDescriptor.PropertyName) }\":\"property name\"," +
                 $"\"{ nameof(TagHelperAttributeDescriptor.TypeName) }\":\"property type name\"," +
                 $"\"{ nameof(TagHelperAttributeDescriptor.DesignTimeDescriptor) }\":null}}," +
                 $"{{\"{ nameof(TagHelperAttributeDescriptor.IsIndexer) }\":false," +
+                $"\"{ nameof(TagHelperAttributeDescriptor.IsEnum) }\":false," +
                 $"\"{ nameof(TagHelperAttributeDescriptor.IsStringProperty) }\":true," +
                 $"\"{ nameof(TagHelperAttributeDescriptor.Name) }\":\"attribute two\"," +
                 $"\"{ nameof(TagHelperAttributeDescriptor.PropertyName) }\":\"property name\"," +
@@ -135,7 +138,8 @@ namespace Microsoft.AspNet.Razor.Compilation.TagHelpers
                         Name = "attribute one",
                         PropertyName = "property name",
                         TypeName = "property type name",
-                        IsIndexer = true
+                        IsIndexer = true,
+                        IsEnum = true,
                     },
                     new TagHelperAttributeDescriptor
                    {
@@ -143,6 +147,7 @@ namespace Microsoft.AspNet.Razor.Compilation.TagHelpers
                         PropertyName = "property name",
                         TypeName = typeof(string).FullName,
                         IsIndexer = true,
+                        IsEnum = false,
                         IsStringProperty = true
                     },
                 },
@@ -158,12 +163,14 @@ namespace Microsoft.AspNet.Razor.Compilation.TagHelpers
                 $"\"{ nameof(TagHelperDescriptor.AssemblyName) }\":\"assembly name\"," +
                 $"\"{ nameof(TagHelperDescriptor.Attributes) }\":[" +
                 $"{{\"{ nameof(TagHelperAttributeDescriptor.IsIndexer) }\":true," +
+                $"\"{ nameof(TagHelperAttributeDescriptor.IsEnum) }\":true," +
                 $"\"{ nameof(TagHelperAttributeDescriptor.IsStringProperty) }\":false," +
                 $"\"{ nameof(TagHelperAttributeDescriptor.Name) }\":\"attribute one\"," +
                 $"\"{ nameof(TagHelperAttributeDescriptor.PropertyName) }\":\"property name\"," +
                 $"\"{ nameof(TagHelperAttributeDescriptor.TypeName) }\":\"property type name\"," +
                 $"\"{ nameof(TagHelperAttributeDescriptor.DesignTimeDescriptor) }\":null}}," +
                 $"{{\"{ nameof(TagHelperAttributeDescriptor.IsIndexer) }\":true," +
+                $"\"{ nameof(TagHelperAttributeDescriptor.IsEnum) }\":false," +
                 $"\"{ nameof(TagHelperAttributeDescriptor.IsStringProperty) }\":true," +
                 $"\"{ nameof(TagHelperAttributeDescriptor.Name) }\":\"attribute two\"," +
                 $"\"{ nameof(TagHelperAttributeDescriptor.PropertyName) }\":\"property name\"," +
@@ -249,12 +256,14 @@ namespace Microsoft.AspNet.Razor.Compilation.TagHelpers
                 $"\"{ nameof(TagHelperDescriptor.AssemblyName) }\":\"assembly name\"," +
                 $"\"{ nameof(TagHelperDescriptor.Attributes) }\":[" +
                 $"{{\"{ nameof(TagHelperAttributeDescriptor.IsIndexer) }\":false," +
+                $"\"{ nameof(TagHelperAttributeDescriptor.IsEnum) }\":true," +
                 $"\"{ nameof(TagHelperAttributeDescriptor.IsStringProperty) }\":false," +
                 $"\"{ nameof(TagHelperAttributeDescriptor.Name) }\":\"attribute one\"," +
                 $"\"{ nameof(TagHelperAttributeDescriptor.PropertyName) }\":\"property name\"," +
                 $"\"{ nameof(TagHelperAttributeDescriptor.TypeName) }\":\"property type name\"," +
                 $"\"{ nameof(TagHelperAttributeDescriptor.DesignTimeDescriptor) }\":null}}," +
                 $"{{\"{ nameof(TagHelperAttributeDescriptor.IsIndexer) }\":false," +
+                $"\"{ nameof(TagHelperAttributeDescriptor.IsEnum) }\":false," +
                 $"\"{ nameof(TagHelperAttributeDescriptor.IsStringProperty) }\":true," +
                 $"\"{ nameof(TagHelperAttributeDescriptor.Name) }\":\"attribute two\"," +
                 $"\"{ nameof(TagHelperAttributeDescriptor.PropertyName) }\":\"property name\"," +
@@ -277,13 +286,15 @@ namespace Microsoft.AspNet.Razor.Compilation.TagHelpers
                    {
                         Name = "attribute one",
                         PropertyName = "property name",
-                        TypeName = "property type name"
+                        TypeName = "property type name",
+                        IsEnum = true,
                     },
                     new TagHelperAttributeDescriptor
                    {
                         Name = "attribute two",
                         PropertyName = "property name",
                         TypeName = typeof(string).FullName,
+                        IsEnum = false,
                         IsStringProperty = true
                     },
                 },
@@ -316,12 +327,14 @@ namespace Microsoft.AspNet.Razor.Compilation.TagHelpers
                 $"\"{ nameof(TagHelperDescriptor.AssemblyName) }\":\"assembly name\"," +
                 $"\"{ nameof(TagHelperDescriptor.Attributes) }\":[" +
                 $"{{\"{ nameof(TagHelperAttributeDescriptor.IsIndexer) }\":true," +
+                $"\"{ nameof(TagHelperAttributeDescriptor.IsEnum) }\":true," +
                 $"\"{ nameof(TagHelperAttributeDescriptor.IsStringProperty) }\":false," +
                 $"\"{ nameof(TagHelperAttributeDescriptor.Name) }\":\"attribute one\"," +
                 $"\"{ nameof(TagHelperAttributeDescriptor.PropertyName) }\":\"property name\"," +
                 $"\"{ nameof(TagHelperAttributeDescriptor.TypeName) }\":\"property type name\"," +
                 $"\"{ nameof(TagHelperAttributeDescriptor.DesignTimeDescriptor) }\":null}}," +
                 $"{{\"{ nameof(TagHelperAttributeDescriptor.IsIndexer) }\":true," +
+                $"\"{ nameof(TagHelperAttributeDescriptor.IsEnum) }\":false," +
                 $"\"{ nameof(TagHelperAttributeDescriptor.IsStringProperty) }\":true," +
                 $"\"{ nameof(TagHelperAttributeDescriptor.Name) }\":\"attribute two\"," +
                 $"\"{ nameof(TagHelperAttributeDescriptor.PropertyName) }\":\"property name\"," +
@@ -345,7 +358,8 @@ namespace Microsoft.AspNet.Razor.Compilation.TagHelpers
                         Name = "attribute one",
                         PropertyName = "property name",
                         TypeName = "property type name",
-                        IsIndexer = true
+                        IsIndexer = true,
+                        IsEnum = true,
                     },
                     new TagHelperAttributeDescriptor
                    {
@@ -353,6 +367,7 @@ namespace Microsoft.AspNet.Razor.Compilation.TagHelpers
                         PropertyName = "property name",
                         TypeName = typeof(string).FullName,
                         IsIndexer = true,
+                        IsEnum = false,
                         IsStringProperty = true
                     }
                 },

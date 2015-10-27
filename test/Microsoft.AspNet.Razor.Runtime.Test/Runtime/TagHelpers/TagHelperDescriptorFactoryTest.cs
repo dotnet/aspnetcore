@@ -19,6 +19,93 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
         protected static readonly string AssemblyName = TagHelperDescriptorFactoryTestAssembly.Name;
 
+        public static TheoryData IsEnumData
+        {
+            get
+            {
+                var attributeDescriptors = new[]
+                {
+                    new TagHelperAttributeDescriptor
+                    {
+                        Name = "non-enum-property",
+                        PropertyName = nameof(EnumTagHelper.NonEnumProperty),
+                        TypeName = typeof(int).FullName
+                    },
+                    new TagHelperAttributeDescriptor
+                    {
+                        Name = "enum-property",
+                        PropertyName = nameof(EnumTagHelper.EnumProperty),
+                        TypeName = typeof(CustomEnum).FullName,
+                        IsEnum = true
+                    },
+                };
+
+                // tagHelperType, expectedDescriptors
+                return new TheoryData<Type, TagHelperDescriptor[]>
+                {
+                    {
+                        typeof(EnumTagHelper),
+                        new[]
+                        {
+                            new TagHelperDescriptor
+                            {
+                                TagName = "enum",
+                                TypeName = typeof(EnumTagHelper).FullName,
+                                AssemblyName = AssemblyName,
+                                Attributes = attributeDescriptors
+                            }
+                        }
+                    },
+                    {
+                        typeof(MultiEnumTagHelper),
+                        new[]
+                        {
+                            new TagHelperDescriptor
+                            {
+                                TagName = "input",
+                                TypeName = typeof(MultiEnumTagHelper).FullName,
+                                AssemblyName = AssemblyName,
+                                Attributes = attributeDescriptors
+                            },
+                            new TagHelperDescriptor
+                            {
+                                TagName = "p",
+                                TypeName = typeof(MultiEnumTagHelper).FullName,
+                                AssemblyName = AssemblyName,
+                                Attributes = attributeDescriptors
+                            }
+                        }
+                    }
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(IsEnumData))]
+        public void CreateDescriptors_IsEnumIsSetCorrectly(
+            Type tagHelperType,
+            TagHelperDescriptor[] expectedDescriptors)
+        {
+            // Arrange
+            var errorSink = new ErrorSink();
+
+            // Act
+            var descriptors = TagHelperDescriptorFactory.CreateDescriptors(
+                AssemblyName,
+                GetTypeInfo(tagHelperType),
+                designTime: false,
+                errorSink: errorSink);
+
+            // Assert
+            Assert.Empty(errorSink.Errors);
+
+            // We don't care about order. Mono returns reflected attributes differently so we need to ensure order
+            // doesn't matter by sorting.
+            descriptors = descriptors.OrderBy(descriptor => descriptor.TagName);
+
+            Assert.Equal(expectedDescriptors, descriptors, CaseSensitiveTagHelperDescriptorComparer.Default);
+        }
+
         public static TheoryData RequiredParentData
         {
             get

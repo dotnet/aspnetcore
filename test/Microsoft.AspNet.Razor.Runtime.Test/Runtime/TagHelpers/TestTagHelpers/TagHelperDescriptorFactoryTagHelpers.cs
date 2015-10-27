@@ -9,6 +9,25 @@ using Microsoft.AspNet.Razor.TagHelpers;
 
 namespace Microsoft.AspNet.Razor.TagHelpers
 {
+    public enum CustomEnum
+    {
+        FirstValue,
+        SecondValue
+    }
+
+    public class EnumTagHelper : TagHelper
+    {
+        public int NonEnumProperty { get; set; }
+
+        public CustomEnum EnumProperty { get; set; }
+    }
+
+    [HtmlTargetElement("p")]
+    [HtmlTargetElement("input")]
+    public class MultiEnumTagHelper : EnumTagHelper
+    {
+    }
+
     [HtmlTargetElement("input", ParentTag = "div")]
     public class RequiredParentTagHelper : TagHelper
     {

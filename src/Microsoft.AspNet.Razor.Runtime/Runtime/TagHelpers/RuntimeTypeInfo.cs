@@ -51,6 +51,9 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         public string FullName => TypeInfo.FullName;
 
         /// <inheritdoc />
+        public bool IsEnum => TypeInfo.IsEnum;
+
+        /// <inheritdoc />
         public bool IsAbstract => TypeInfo.IsAbstract;
 
         /// <inheritdoc />

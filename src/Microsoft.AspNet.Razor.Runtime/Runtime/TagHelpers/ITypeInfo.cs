@@ -34,6 +34,11 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         IEnumerable<IPropertyInfo> Properties { get; }
 
         /// <summary>
+        /// Gets a value indicating whether the type is an <see cref="Enum"/>.
+        /// </summary>
+        bool IsEnum { get; }
+
+        /// <summary>
         /// Gets a value indicating whether the type is public.
         /// </summary>
         bool IsPublic { get; }

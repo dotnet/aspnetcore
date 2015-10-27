@@ -719,6 +719,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             {
                 Name = attributeName,
                 PropertyName = property.Name,
+                IsEnum = property.PropertyType.IsEnum,
                 TypeName = typeName,
                 IsStringProperty = isStringProperty,
                 IsIndexer = isIndexer,

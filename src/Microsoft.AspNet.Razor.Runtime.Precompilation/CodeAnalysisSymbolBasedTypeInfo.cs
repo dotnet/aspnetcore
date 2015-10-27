@@ -61,6 +61,9 @@ namespace Microsoft.AspNet.Razor.Runtime.Precompilation
         public ITypeSymbol TypeSymbol => _type;
 
         /// <inheritdoc />
+        public bool IsEnum => _type.TypeKind == TypeKind.Enum;
+
+        /// <inheritdoc />
         public bool IsAbstract => _type.IsAbstract;
 
         /// <inheritdoc />
