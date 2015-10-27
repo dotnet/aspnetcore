@@ -1,5 +1,4 @@
-﻿@inject WaitService WaitService
-@{
+﻿@{
     Layout = "/Views/Shared/_LayoutWithRenderSectionOnly.cshtml";
     ViewBag.Title = "Page With Layout";
 }
@@ -9,7 +8,6 @@ Inside Nested Layout
 {
     @{
         await FlushAsync();
-        WaitService.WaitForClient();
     }
     <span>Nested content that takes time to produce</span>
 }

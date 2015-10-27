@@ -1,13 +1,6 @@
-﻿@inject WaitService WaitService
-<title>@ViewBag.Title</title>
+﻿<title>@ViewBag.Title</title>
 @RenderBody()
 @await FlushAsync()
-@{
-    WaitService.WaitForClient();
-}
 @await Html.PartialAsync("_PartialThatSetsTitle")
-@await RenderSectionAsync("content")
+@RenderSection("content")
 More content from layout
-@{
-    WaitService.NotifyClient();
-}

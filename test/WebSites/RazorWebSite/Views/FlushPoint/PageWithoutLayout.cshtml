@@ -1,14 +1,7 @@
-﻿@inject WaitService WaitService
-Initial content
+﻿Initial content
 @await FlushAsync()
-@{
-    WaitService.WaitForClient();
-}
 Secondary content
 @await FlushAsync()
-@{
-    WaitService.WaitForClient();
-}
 @{
     await Html.RenderPartialAsync("_PartialWithFlush");
 }
@@ -16,9 +9,5 @@ Secondary content
 {
     @Html.TextBox("Name1")
     @await FlushAsync()
-    WaitService.WaitForClient();
     @Html.TextBox("Name2")
-}
-@{
-    WaitService.NotifyClient();
 }

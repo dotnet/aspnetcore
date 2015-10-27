@@ -1,11 +1,4 @@
-﻿@inject WaitService WaitService
-<title>@ViewBag.Title</title>
+﻿<title>@ViewBag.Title</title>
 @await FlushAsync()
-@{
-    WaitService.WaitForClient();
-}
 @RenderBody()
 @await RenderSectionAsync("content")
-@{
-    WaitService.NotifyClient();
-}

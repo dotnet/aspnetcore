@@ -1,5 +1,4 @@
-﻿@inject WaitService WaitService
-@{
+﻿@{
     Layout = "/Views/Shared/_LayoutWithFlush.cshtml";
     ViewBag.Title = "Page With Layout";
 }
@@ -8,7 +7,6 @@ RenderBody content
 {
     @{
         await FlushAsync();
-        WaitService.WaitForClient();
     }
     <span>Content that takes time to produce</span>
 }
