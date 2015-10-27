@@ -240,9 +240,12 @@ namespace Microsoft.AspNet.Session
                 var client = server.CreateClient();
                 var response = await client.GetAsync(string.Empty);
                 response.EnsureSuccessStatusCode();
-                Assert.Single(sink.Writes);
-                Assert.Contains("started", sink.Writes[0].State.ToString());
-                Assert.Equal(LogLevel.Information, sink.Writes[0].LogLevel);
+
+                var sessionLogMessages = sink.Writes.OnlyMessagesFromSource<DistributedSession>().ToArray();
+
+                Assert.Single(sessionLogMessages);
+                Assert.Contains("started", sessionLogMessages[0].State.ToString());
+                Assert.Equal(LogLevel.Information, sessionLogMessages[0].LogLevel);
             }
         }
 
@@ -287,11 +290,14 @@ namespace Microsoft.AspNet.Session
                 client.DefaultRequestHeaders.Add("Cookie", new CookieHeaderValue(cookie.Name, cookie.Value).ToString());
                 Thread.Sleep(50);
                 Assert.Equal("2", await client.GetStringAsync("/second"));
-                Assert.Equal(2, sink.Writes.Count);
-                Assert.Contains("started", sink.Writes[0].State.ToString());
-                Assert.Contains("expired", sink.Writes[1].State.ToString());
-                Assert.Equal(LogLevel.Information, sink.Writes[0].LogLevel);
-                Assert.Equal(LogLevel.Warning, sink.Writes[1].LogLevel);
+
+                var sessionLogMessages = sink.Writes.OnlyMessagesFromSource<DistributedSession>().ToArray();
+
+                Assert.Equal(2, sessionLogMessages.Length);
+                Assert.Contains("started", sessionLogMessages[0].State.ToString());
+                Assert.Contains("expired", sessionLogMessages[1].State.ToString());
+                Assert.Equal(LogLevel.Information, sessionLogMessages[0].LogLevel);
+                Assert.Equal(LogLevel.Warning, sessionLogMessages[1].LogLevel);
             }
         }
 
