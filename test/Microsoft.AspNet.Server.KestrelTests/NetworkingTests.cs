@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Server.Kestrel;
 using Microsoft.AspNet.Server.Kestrel.Infrastructure;
 using Microsoft.AspNet.Server.Kestrel.Networking;
-using Microsoft.Extensions.PlatformAbstractions;
 using Xunit;
 
 namespace Microsoft.AspNet.Server.KestrelTests
@@ -23,27 +22,9 @@ namespace Microsoft.AspNet.Server.KestrelTests
         private readonly IKestrelTrace _logger;
         public NetworkingTests()
         {
-            var engine = new KestrelEngine(LibraryManager, new TestServiceContext());
+            var engine = new KestrelEngine(new TestServiceContext());
             _uv = engine.Libuv;
             _logger = engine.Log;
-        }
-
-        ILibraryManager LibraryManager
-        {
-            get
-            {
-                var locator = CallContextServiceLocator.Locator;
-                if (locator == null)
-                {
-                    return null;
-                }
-                var services = locator.ServiceProvider;
-                if (services == null)
-                {
-                    return null;
-                }
-                return (ILibraryManager)services.GetService(typeof(ILibraryManager));
-            }
         }
 
         [Fact]

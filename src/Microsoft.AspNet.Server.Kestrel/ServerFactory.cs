@@ -11,7 +11,6 @@ using Microsoft.AspNet.Server.Features;
 using Microsoft.AspNet.Server.Kestrel.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.PlatformAbstractions;
 
 namespace Microsoft.AspNet.Server.Kestrel
 {
@@ -20,13 +19,11 @@ namespace Microsoft.AspNet.Server.Kestrel
     /// </summary>
     public class ServerFactory : IServerFactory
     {
-        private readonly ILibraryManager _libraryManager;
         private readonly IApplicationLifetime _appLifetime;
         private readonly ILogger _logger;
 
-        public ServerFactory(ILibraryManager libraryManager, IApplicationLifetime appLifetime, ILoggerFactory loggerFactory)
+        public ServerFactory(IApplicationLifetime appLifetime, ILoggerFactory loggerFactory)
         {
-            _libraryManager = libraryManager;
             _appLifetime = appLifetime;
             _logger = loggerFactory.CreateLogger("Microsoft.AspNet.Server.Kestrel");
         }
@@ -56,7 +53,7 @@ namespace Microsoft.AspNet.Server.Kestrel
             {
                 var information = (KestrelServerInformation)serverFeatures.Get<IKestrelServerInformation>();
                 var dateHeaderValueManager = new DateHeaderValueManager();
-                var engine = new KestrelEngine(_libraryManager, new ServiceContext
+                var engine = new KestrelEngine(new ServiceContext
                 {
                     AppLifetime = _appLifetime,
                     Log = new KestrelTrace(_logger),

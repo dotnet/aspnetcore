@@ -7,29 +7,20 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Server.Kestrel.Http;
 using Microsoft.AspNet.Server.Kestrel.Networking;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.PlatformAbstractions;
 
 namespace Microsoft.AspNet.Server.Kestrel
 {
     public class KestrelEngine : ServiceContext, IDisposable
     {
-        public KestrelEngine(ILibraryManager libraryManager, ServiceContext context)
-            : this(context)
-        {
-            Libuv = new Libuv();
-        }
+        public KestrelEngine(ServiceContext context)
+            : this(new Libuv(), context)
+        { }
 
         // For testing
         internal KestrelEngine(Libuv uv, ServiceContext context)
-           : this(context)
+           : base(context)
         {
             Libuv = uv;
-        }
-
-        private KestrelEngine(ServiceContext context)
-            : base(context)
-        {
             Threads = new List<KestrelThread>();
         }
 

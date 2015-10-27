@@ -4,8 +4,6 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Server.Kestrel;
-using Microsoft.AspNet.Server.Kestrel.Http;
-using Microsoft.Extensions.PlatformAbstractions;
 using Microsoft.AspNet.Http.Features;
 
 namespace Microsoft.AspNet.Server.KestrelTests
@@ -32,33 +30,10 @@ namespace Microsoft.AspNet.Server.KestrelTests
             Create(app, context, serverAddress);
         }
 
-        ILibraryManager LibraryManager
-        {
-            get
-            {
-                try
-                {
-                    var locator = CallContextServiceLocator.Locator;
-                    if (locator == null)
-                    {
-                        return null;
-                    }
-                    var services = locator.ServiceProvider;
-                    if (services == null)
-                    {
-                        return null;
-                    }
-                    return (ILibraryManager)services.GetService(typeof(ILibraryManager));
-                }
-                catch (NullReferenceException) { return null; }
-            }
-        }
 
         public void Create(Func<IFeatureCollection, Task> app, ServiceContext context, string serverAddress)
         {
-            _engine = new KestrelEngine(
-                LibraryManager, 
-                context);
+            _engine = new KestrelEngine(context);
             _engine.Start(1);
             _server = _engine.CreateServer(
                 ServerAddress.FromUrl(serverAddress),

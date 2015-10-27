@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Server.Kestrel;
 using Microsoft.AspNet.Server.Kestrel.Filter;
-using Microsoft.Extensions.PlatformAbstractions;
 using Microsoft.Extensions.Logging;
 using Xunit;
 
@@ -57,29 +56,6 @@ namespace Microsoft.AspNet.Server.KestrelTests
             }
         }
 
-        ILibraryManager LibraryManager
-        {
-            get
-            {
-                try
-                {
-                    var locator = CallContextServiceLocator.Locator;
-                    if (locator == null)
-                    {
-                        return null;
-                    }
-                    var services = locator.ServiceProvider;
-                    if (services == null)
-                    {
-                        return null;
-                    }
-                    return (ILibraryManager)services.GetService(typeof(ILibraryManager));
-                }
-                catch (NullReferenceException)
-                { return null; }
-            }
-        }
-
         private async Task AppChunked(IFeatureCollection frame)
         {
             var request = frame.Get<IHttpRequestFeature>();
@@ -103,7 +79,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
         [MemberData(nameof(ConnectionFilterData))]
         public void EngineCanStartAndStop(ServiceContext testContext)
         {
-            var engine = new KestrelEngine(LibraryManager, testContext);
+            var engine = new KestrelEngine(testContext);
             engine.Start(1);
             engine.Dispose();
         }
@@ -112,7 +88,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
         [MemberData(nameof(ConnectionFilterData))]
         public void ListenerCanCreateAndDispose(ServiceContext testContext)
         {
-            var engine = new KestrelEngine(LibraryManager, testContext);
+            var engine = new KestrelEngine(testContext);
             engine.Start(1);
             var address = ServerAddress.FromUrl("http://localhost:54321/");
             var started = engine.CreateServer(address, App);
@@ -124,7 +100,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
         [MemberData(nameof(ConnectionFilterData))]
         public void ConnectionCanReadAndWrite(ServiceContext testContext)
         {
-            var engine = new KestrelEngine(LibraryManager, testContext);
+            var engine = new KestrelEngine(testContext);
             engine.Start(1);
             var address = ServerAddress.FromUrl("http://localhost:54321/");
             var started = engine.CreateServer(address, App);
