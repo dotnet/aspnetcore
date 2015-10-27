@@ -3,6 +3,7 @@
 
 using System;
 using System.Net;
+using System.Runtime.InteropServices;
 using Microsoft.AspNet.Server.Kestrel.Infrastructure;
 
 namespace Microsoft.AspNet.Server.Kestrel.Networking
@@ -17,7 +18,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
         {
             CreateMemory(
                 loop.Libuv,
-                loop.ThreadId, 
+                loop.ThreadId,
                 loop.Libuv.handle_size(Libuv.HandleType.TCP));
 
             _uv.tcp_init(loop, this);
@@ -26,7 +27,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
         public void Init(UvLoopHandle loop, Action<Action<IntPtr>, IntPtr> queueCloseHandle)
         {
             CreateHandle(
-                loop.Libuv, 
+                loop.Libuv,
                 loop.ThreadId,
                 loop.Libuv.handle_size(Libuv.HandleType.TCP), queueCloseHandle);
 
@@ -37,7 +38,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
         {
             var endpoint = CreateIPEndpoint(address);
 
-            Libuv.sockaddr addr;
+            SockAddr addr;
             var addressText = endpoint.Address.ToString();
 
             Exception error1;
@@ -54,6 +55,24 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
             }
 
             _uv.tcp_bind(this, ref addr, 0);
+        }
+
+        public IPEndPoint GetPeerIPEndPoint()
+        {
+            SockAddr socketAddress;
+            int namelen = Marshal.SizeOf<SockAddr>();
+            _uv.tcp_getpeername(this, out socketAddress, ref namelen);
+
+            return socketAddress.GetIPEndPoint();
+        }
+
+        public IPEndPoint GetSockIPEndPoint()
+        {
+            SockAddr socketAddress;
+            int namelen = Marshal.SizeOf<SockAddr>();
+            _uv.tcp_getsockname(this, out socketAddress, ref namelen);
+
+            return socketAddress.GetIPEndPoint();
         }
 
         public void Open(IntPtr hSocket)

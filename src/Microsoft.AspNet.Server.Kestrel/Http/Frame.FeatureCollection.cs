@@ -6,6 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
@@ -13,7 +14,11 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNet.Server.Kestrel.Http
 {
-    public partial class Frame : IFeatureCollection, IHttpRequestFeature, IHttpResponseFeature, IHttpUpgradeFeature
+    public partial class Frame : IFeatureCollection,
+                                 IHttpRequestFeature,
+                                 IHttpResponseFeature,
+                                 IHttpUpgradeFeature,
+                                 IHttpConnectionFeature
     {
         // NOTE: When feature interfaces are added to or removed from this Frame class implementation,
         // then the list of `implementedFeatures` in the generated code project MUST also be updated.
@@ -245,6 +250,16 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         bool IFeatureCollection.IsReadOnly => false;
 
         int IFeatureCollection.Revision => _featureRevision;
+
+        IPAddress IHttpConnectionFeature.RemoteIpAddress { get; set; }
+
+        IPAddress IHttpConnectionFeature.LocalIpAddress { get; set; }
+
+        int IHttpConnectionFeature.RemotePort { get; set; }
+
+        int IHttpConnectionFeature.LocalPort { get; set; }
+
+        bool IHttpConnectionFeature.IsLocal { get; set; }
 
         object IFeatureCollection.this[Type key]
         {

@@ -5,10 +5,12 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Server.Kestrel.Infrastructure;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
@@ -44,8 +46,22 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         private bool _autoChunk;
         private Exception _applicationException;
 
-        public Frame(ConnectionContext context) : base(context)
+        private readonly IPEndPoint _localEndPoint;
+        private readonly IPEndPoint _remoteEndPoint;
+
+        public Frame(ConnectionContext context)
+            : this(context, remoteEndPoint: null, localEndPoint: null)
         {
+        }
+
+        public Frame(ConnectionContext context,
+                     IPEndPoint remoteEndPoint,
+                     IPEndPoint localEndPoint)
+            : base(context)
+        {
+            _remoteEndPoint = remoteEndPoint;
+            _localEndPoint = localEndPoint;
+
             FrameControl = this;
             Reset();
         }
@@ -99,6 +115,21 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             ResponseBody = null;
             DuplexStream = null;
 
+            var httpConnectionFeature = this as IHttpConnectionFeature;
+            httpConnectionFeature.RemoteIpAddress = _remoteEndPoint?.Address;
+            httpConnectionFeature.RemotePort = _remoteEndPoint?.Port ?? 0;
+
+            httpConnectionFeature.LocalIpAddress = _localEndPoint?.Address;
+            httpConnectionFeature.LocalPort = _localEndPoint?.Port ?? 0;
+
+            if (_remoteEndPoint != null && _localEndPoint != null)
+            {
+                httpConnectionFeature.IsLocal = _remoteEndPoint.Address.Equals(_localEndPoint.Address);
+            }
+            else
+            {
+                httpConnectionFeature.IsLocal = false;
+            }
         }
 
         public void ResetResponseHeaders()
@@ -123,7 +154,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         /// <summary>
         /// Should be called when the server wants to initiate a shutdown. The Task returned will
         /// become complete when the RequestProcessingAsync function has exited. It is expected that
-        /// Stop will be called on all active connections, and Task.WaitAll() will be called on every 
+        /// Stop will be called on all active connections, and Task.WaitAll() will be called on every
         /// return value.
         /// </summary>
         public Task Stop()
@@ -136,7 +167,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         }
 
         /// <summary>
-        /// Primary loop which consumes socket input, parses it for protocol framing, and invokes the 
+        /// Primary loop which consumes socket input, parses it for protocol framing, and invokes the
         /// application delegate for as long as the socket is intended to remain open.
         /// The resulting Task from this loop is preserved in a field which is used when the server needs
         /// to drain and close all currently active connections.
@@ -731,7 +762,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
                         if (chSecond != '\n')
                         {
-                            // "\r" was all by itself, move just after it and try again 
+                            // "\r" was all by itself, move just after it and try again
                             scan = endValue;
                             scan.Take();
                             continue;
@@ -740,7 +771,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         var chThird = scan.Peek();
                         if (chThird == ' ' || chThird == '\t')
                         {
-                            // special case, "\r\n " or "\r\n\t". 
+                            // special case, "\r\n " or "\r\n\t".
                             // this is considered wrapping"linear whitespace" and is actually part of the header value
                             // continue past this for the next
                             wrapping = true;

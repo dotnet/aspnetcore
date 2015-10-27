@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Net;
 using System.Threading;
 using Microsoft.AspNet.Server.Kestrel.Filter;
 using Microsoft.AspNet.Server.Kestrel.Infrastructure;
@@ -28,6 +29,9 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         private readonly object _stateLock = new object();
         private ConnectionState _connectionState;
 
+        private IPEndPoint _remoteEndPoint;
+        private IPEndPoint _localEndPoint;
+
         public Connection(ListenerContext context, UvStreamHandle socket) : base(context)
         {
             _socket = socket;
@@ -46,13 +50,20 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             // Start socket prior to applying the ConnectionFilter
             _socket.ReadStart(_allocCallback, _readCallback, this);
 
+            var tcpHandle = _socket as UvTcpHandle;
+            if (tcpHandle != null)
+            {
+                _remoteEndPoint = tcpHandle.GetPeerIPEndPoint();
+                _localEndPoint = tcpHandle.GetSockIPEndPoint();
+            }
+
             // Don't initialize _frame until SocketInput and SocketOutput are set to their final values.
             if (ConnectionFilter == null)
             {
                 SocketInput = _rawSocketInput;
                 SocketOutput = _rawSocketOutput;
 
-                _frame = new Frame(this);
+                _frame = CreateFrame();
                 _frame.Start();
             }
             else
@@ -94,7 +105,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             SocketInput = filteredStreamAdapter.SocketInput;
             SocketOutput = filteredStreamAdapter.SocketOutput;
 
-            _frame = new Frame(this);
+            _frame = CreateFrame();
             _frame.Start();
         }
 
@@ -140,6 +151,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 handle.Libuv.Check(status, out error);
             }
             _rawSocketInput.IncomingComplete(readCount, error);
+        }
+
+        private Frame CreateFrame()
+        {
+            return new Frame(this, _remoteEndPoint, _localEndPoint);
         }
 
         void IConnectionControl.Pause()

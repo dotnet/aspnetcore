@@ -56,6 +56,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
                 _uv_req_size = NativeDarwinMonoMethods.uv_req_size;
                 _uv_ip4_addr = NativeDarwinMonoMethods.uv_ip4_addr;
                 _uv_ip6_addr = NativeDarwinMonoMethods.uv_ip6_addr;
+                _uv_tcp_getpeername = NativeDarwinMonoMethods.uv_tcp_getpeername;
+                _uv_tcp_getsockname = NativeDarwinMonoMethods.uv_tcp_getsockname;
                 _uv_walk = NativeDarwinMonoMethods.uv_walk;
             }
             else
@@ -95,6 +97,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
                 _uv_req_size = NativeMethods.uv_req_size;
                 _uv_ip4_addr = NativeMethods.uv_ip4_addr;
                 _uv_ip6_addr = NativeMethods.uv_ip6_addr;
+                _uv_tcp_getpeername = NativeMethods.uv_tcp_getpeername;
+                _uv_tcp_getsockname = NativeMethods.uv_tcp_getsockname;
                 _uv_walk = NativeMethods.uv_walk;
             }
         }
@@ -206,9 +210,9 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
             Check(_uv_tcp_init(loop, handle));
         }
 
-        protected delegate int uv_tcp_bind_func(UvTcpHandle handle, ref sockaddr addr, int flags);
+        protected delegate int uv_tcp_bind_func(UvTcpHandle handle, ref SockAddr addr, int flags);
         protected uv_tcp_bind_func _uv_tcp_bind;
-        public void tcp_bind(UvTcpHandle handle, ref sockaddr addr, int flags)
+        public void tcp_bind(UvTcpHandle handle, ref SockAddr addr, int flags)
         {
             handle.Validate();
             Check(_uv_tcp_bind(handle, ref addr, flags));
@@ -365,16 +369,16 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
             return _uv_req_size(reqType);
         }
 
-        protected delegate int uv_ip4_addr_func(string ip, int port, out sockaddr addr);
+        protected delegate int uv_ip4_addr_func(string ip, int port, out SockAddr addr);
         protected uv_ip4_addr_func _uv_ip4_addr;
-        public int ip4_addr(string ip, int port, out sockaddr addr, out Exception error)
+        public int ip4_addr(string ip, int port, out SockAddr addr, out Exception error)
         {
             return Check(_uv_ip4_addr(ip, port, out addr), out error);
         }
 
-        protected delegate int uv_ip6_addr_func(string ip, int port, out sockaddr addr);
+        protected delegate int uv_ip6_addr_func(string ip, int port, out SockAddr addr);
         protected uv_ip6_addr_func _uv_ip6_addr;
-        public int ip6_addr(string ip, int port, out sockaddr addr, out Exception error)
+        public int ip6_addr(string ip, int port, out SockAddr addr, out Exception error)
         {
             return Check(_uv_ip6_addr(ip, port, out addr), out error);
         }
@@ -388,24 +392,25 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
             _uv_walk(loop, walk_cb, arg);
         }
 
+        public delegate int uv_tcp_getsockname_func(UvTcpHandle handle, out SockAddr addr, ref int namelen);
+        protected uv_tcp_getsockname_func _uv_tcp_getsockname;
+        public void tcp_getsockname(UvTcpHandle handle, out SockAddr addr, ref int namelen)
+        {
+            handle.Validate();
+            Check(_uv_tcp_getsockname(handle, out addr, ref namelen));
+        }
+
+        public delegate int uv_tcp_getpeername_func(UvTcpHandle handle, out SockAddr addr, ref int namelen);
+        protected uv_tcp_getpeername_func _uv_tcp_getpeername;
+        public void tcp_getpeername(UvTcpHandle handle, out SockAddr addr, ref int namelen)
+        {
+            handle.Validate();
+            Check(_uv_tcp_getpeername(handle, out addr, ref namelen));
+        }
+
         public uv_buf_t buf_init(IntPtr memory, int len)
         {
             return new uv_buf_t(memory, len, IsWindows);
-        }
-
-        public struct sockaddr
-        {
-            // this type represents native memory occupied by sockaddr struct
-            // https://msdn.microsoft.com/en-us/library/windows/desktop/ms740496(v=vs.85).aspx
-            // although the c/c++ header defines it as a 2-byte short followed by a 14-byte array,
-            // the simplest way to reserve the same size in c# is with four nameless long values
-
-            private long _field0;
-            private long _field1;
-            private long _field2;
-            private long _field3;
-
-            public sockaddr(long ignored) { _field3 = _field0 = _field1 = _field2 = _field3 = 0; }
         }
 
         public struct uv_buf_t
@@ -504,7 +509,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
             public static extern int uv_tcp_init(UvLoopHandle loop, UvTcpHandle handle);
 
             [DllImport("libuv", CallingConvention = CallingConvention.Cdecl)]
-            public static extern int uv_tcp_bind(UvTcpHandle handle, ref sockaddr addr, int flags);
+            public static extern int uv_tcp_bind(UvTcpHandle handle, ref SockAddr addr, int flags);
 
             [DllImport("libuv", CallingConvention = CallingConvention.Cdecl)]
             public static extern int uv_tcp_open(UvTcpHandle handle, IntPtr hSocket);
@@ -564,10 +569,16 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
             public static extern int uv_req_size(RequestType reqType);
 
             [DllImport("libuv", CallingConvention = CallingConvention.Cdecl)]
-            public static extern int uv_ip4_addr(string ip, int port, out sockaddr addr);
+            public static extern int uv_ip4_addr(string ip, int port, out SockAddr addr);
 
             [DllImport("libuv", CallingConvention = CallingConvention.Cdecl)]
-            public static extern int uv_ip6_addr(string ip, int port, out sockaddr addr);
+            public static extern int uv_ip6_addr(string ip, int port, out SockAddr addr);
+
+            [DllImport("libuv", CallingConvention = CallingConvention.Cdecl)]
+            public static extern int uv_tcp_getsockname(UvTcpHandle handle, out SockAddr name, ref int namelen);
+
+            [DllImport("libuv", CallingConvention = CallingConvention.Cdecl)]
+            public static extern int uv_tcp_getpeername(UvTcpHandle handle, out SockAddr name, ref int namelen);
 
             [DllImport("libuv", CallingConvention = CallingConvention.Cdecl)]
             unsafe public static extern int uv_walk(UvLoopHandle loop, uv_walk_cb walk_cb, IntPtr arg);
@@ -606,7 +617,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
             public static extern int uv_tcp_init(UvLoopHandle loop, UvTcpHandle handle);
 
             [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
-            public static extern int uv_tcp_bind(UvTcpHandle handle, ref sockaddr addr, int flags);
+            public static extern int uv_tcp_bind(UvTcpHandle handle, ref SockAddr addr, int flags);
 
             [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
             public static extern int uv_tcp_open(UvTcpHandle handle, IntPtr hSocket);
@@ -666,10 +677,16 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
             public static extern int uv_req_size(RequestType reqType);
 
             [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
-            public static extern int uv_ip4_addr(string ip, int port, out sockaddr addr);
+            public static extern int uv_ip4_addr(string ip, int port, out SockAddr addr);
 
             [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
-            public static extern int uv_ip6_addr(string ip, int port, out sockaddr addr);
+            public static extern int uv_ip6_addr(string ip, int port, out SockAddr addr);
+
+            [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
+            public static extern int uv_tcp_getsockname(UvTcpHandle handle, out SockAddr name, ref int namelen);
+
+            [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
+            public static extern int uv_tcp_getpeername(UvTcpHandle handle, out SockAddr name, ref int namelen);
 
             [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
             unsafe public static extern int uv_walk(UvLoopHandle loop, uv_walk_cb walk_cb, IntPtr arg);
