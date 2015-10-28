@@ -66,9 +66,9 @@ namespace Microsoft.AspNet.Server.Testing
 
         private void SetAspEnvironmentWithJson()
         {
-            // Drop a Microsoft.AspNet.Hosting.json with Hosting:Environment information.
-            Logger.LogInformation("Creating Microsoft.AspNet.Hosting.json file with Hosting:Environment.");
-            var jsonFile = Path.Combine(DeploymentParameters.ApplicationPath, "Microsoft.AspNet.Hosting.json");
+            // Drop a hosting.json with Hosting:Environment information.
+            Logger.LogInformation("Creating hosting.json file with Hosting:Environment.");
+            var jsonFile = Path.Combine(DeploymentParameters.ApplicationPath, "hosting.json");
             File.WriteAllText(jsonFile, string.Format("{ \"Hosting:Environment\":\"{0}\" }", DeploymentParameters.EnvironmentName));
         }
 
