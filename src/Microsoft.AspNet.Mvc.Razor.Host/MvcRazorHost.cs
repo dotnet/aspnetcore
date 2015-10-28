@@ -95,7 +95,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     ScopeManagerBeginMethodName = nameof(TagHelperScopeManager.Begin),
                     ScopeManagerEndMethodName = nameof(TagHelperScopeManager.End),
 
-                    TagHelperContentTypeName = nameof(TagHelperContent),
+                    TagHelperContentTypeName = typeof(TagHelperContent).FullName,
 
                     // Can't use nameof because RazorPage is not accessible here.
                     CreateTagHelperMethodName = "CreateTagHelper",
