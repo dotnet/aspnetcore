@@ -75,6 +75,18 @@ namespace Microsoft.AspNet.Hosting
         }
 
         [Fact]
+        public async Task StartupCtorThrows_TypeLoadException()
+        {
+            var builder = CreateWebHostBuilder();
+            var serverFactory = new TestServerFactory();
+            var engine = builder.UseServer(serverFactory).UseStartup<StartupThrowTypeLoadException>().Build();
+            using (engine.Start())
+            {
+                await AssertResponseContains(serverFactory.Application, "Message from the LoaderException</span>");
+            }
+        }
+
+        [Fact]
         public async Task IApplicationLifetimeRegisteredEvenWhenStartupCtorThrows_Fallback()
         {
             var builder = CreateWebHostBuilder();
