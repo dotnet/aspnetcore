@@ -8,10 +8,10 @@ using Microsoft.AspNet.Routing.Template;
 namespace Microsoft.AspNet.Mvc.Routing
 {
     /// <summary>
-    /// Used to build an <see cref="InnerAttributeRoute"/>. Represents an individual URL-generating route that will be
-    /// aggregated into the <see cref="InnerAttributeRoute"/>.
+    /// Used to build a <see cref="TreeRouter"/>. Represents an individual URL-generating route that will be
+    /// aggregated into the <see cref="TreeRouter"/>.
     /// </summary>
-    public class AttributeRouteLinkGenerationEntry
+    public class TreeRouteLinkGenerationEntry
     {
         /// <summary>
         /// The <see cref="TemplateBinder"/>.

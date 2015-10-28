@@ -9,10 +9,10 @@ using Microsoft.Extensions.Logging;
 namespace Microsoft.AspNet.Mvc.Routing
 {
     /// <summary>
-    /// Used to build an <see cref="InnerAttributeRoute"/>. Represents an individual URL-matching route that will be
-    /// aggregated into the <see cref="InnerAttributeRoute"/>.
+    /// Used to build an <see cref="TreeRouter"/>. Represents an individual URL-matching route that will be
+    /// aggregated into the <see cref="TreeRouter"/>.
     /// </summary>
-    public class AttributeRouteMatchingEntry
+    public class TreeRouteMatchingEntry
     {
         /// <summary>
         /// The order of the template.
@@ -28,7 +28,7 @@ namespace Microsoft.AspNet.Mvc.Routing
 
         public string RouteName { get; set; }
 
-        public string RouteTemplate { get; set; }
+        public RouteTemplate RouteTemplate { get; set; }
 
         public TemplateMatcher TemplateMatcher { get; set; }
 

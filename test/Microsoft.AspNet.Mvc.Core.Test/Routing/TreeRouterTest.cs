@@ -16,7 +16,7 @@ using Xunit;
 
 namespace Microsoft.AspNet.Mvc.Routing
 {
-    public class InnerAttributeRouteTest
+    public class TreeRouterTest
     {
         [Theory]
         [InlineData("template/5", "template/{parameter:int}")]
@@ -53,7 +53,7 @@ namespace Microsoft.AspNet.Mvc.Routing
             // try to route the request, the route with a higher precedence gets tried first.
             var matchingRoutes = new[] { secondRoute, firstRoute };
 
-            var linkGenerationEntries = Enumerable.Empty<AttributeRouteLinkGenerationEntry>();
+            var linkGenerationEntries = Enumerable.Empty<TreeRouteLinkGenerationEntry>();
 
             var route = CreateAttributeRoute(next.Object, matchingRoutes, linkGenerationEntries);
 
@@ -102,7 +102,7 @@ namespace Microsoft.AspNet.Mvc.Routing
             // relative order gets tried first.
             var matchingRoutes = new[] { firstRoute, secondRoute };
 
-            var linkGenerationEntries = Enumerable.Empty<AttributeRouteLinkGenerationEntry>();
+            var linkGenerationEntries = Enumerable.Empty<TreeRouteLinkGenerationEntry>();
 
             var route = CreateAttributeRoute(next.Object, matchingRoutes, linkGenerationEntries);
 
@@ -143,7 +143,7 @@ namespace Microsoft.AspNet.Mvc.Routing
             // we try to route the request, the route with the higher relative order gets tried first.
             var matchingRoutes = new[] { firstRoute, secondRoute };
 
-            var linkGenerationEntries = Enumerable.Empty<AttributeRouteLinkGenerationEntry>();
+            var linkGenerationEntries = Enumerable.Empty<TreeRouteLinkGenerationEntry>();
 
             var route = CreateAttributeRoute(next.Object, matchingRoutes, linkGenerationEntries);
 
@@ -185,7 +185,7 @@ namespace Microsoft.AspNet.Mvc.Routing
             // we try to route the request, the route with the higher template order gets tried first.
             var matchingRoutes = new[] { secondRoute, firstRoute };
 
-            var linkGenerationEntries = Enumerable.Empty<AttributeRouteLinkGenerationEntry>();
+            var linkGenerationEntries = Enumerable.Empty<TreeRouteLinkGenerationEntry>();
 
             var route = CreateAttributeRoute(next.Object, matchingRoutes, linkGenerationEntries);
 
@@ -225,7 +225,7 @@ namespace Microsoft.AspNet.Mvc.Routing
             // try to route the request, the route with a higher precedence gets tried first.
             var matchingRoutes = new[] { firstRoute };
 
-            var linkGenerationEntries = Enumerable.Empty<AttributeRouteLinkGenerationEntry>();
+            var linkGenerationEntries = Enumerable.Empty<TreeRouteLinkGenerationEntry>();
 
             var route = CreateAttributeRoute(next.Object, matchingRoutes, linkGenerationEntries);
 
@@ -290,7 +290,7 @@ namespace Microsoft.AspNet.Mvc.Routing
             // We setup the route entries in reverse order of precedence to ensure that when we
             // try to route the request, the route with a higher precedence gets tried first.
             var matchingEntries = new[] { firstRoute };
-            var linkGenerationEntries = Enumerable.Empty<AttributeRouteLinkGenerationEntry>();
+            var linkGenerationEntries = Enumerable.Empty<TreeRouteLinkGenerationEntry>();
             var route = CreateAttributeRoute(next.Object, matchingEntries, linkGenerationEntries);
             var context = CreateRouteContext(request);
 
@@ -348,7 +348,7 @@ namespace Microsoft.AspNet.Mvc.Routing
             // We setup the route entries in reverse order of precedence to ensure that when we
             // try to route the request, the route with a higher precedence gets tried first.
             var matchingEntries = new[] { firstRoute };
-            var linkGenerationEntries = Enumerable.Empty<AttributeRouteLinkGenerationEntry>();
+            var linkGenerationEntries = Enumerable.Empty<TreeRouteLinkGenerationEntry>();
             var route = CreateAttributeRoute(next.Object, matchingEntries, linkGenerationEntries);
 
             var context = CreateRouteContext(request);
@@ -547,7 +547,7 @@ namespace Microsoft.AspNet.Mvc.Routing
             })
             .Returns((VirtualPathData)null);
 
-            var matchingRoutes = Enumerable.Empty<AttributeRouteMatchingEntry>();
+            var matchingRoutes = Enumerable.Empty<TreeRouteMatchingEntry>();
 
             var firstEntry = CreateGenerationEntry(firstTemplate, requiredValues: null);
             var secondEntry = CreateGenerationEntry(secondTemplate, requiredValues: null, order: 0);
@@ -598,7 +598,7 @@ namespace Microsoft.AspNet.Mvc.Routing
             })
             .Returns((VirtualPathData)null);
 
-            var matchingRoutes = Enumerable.Empty<AttributeRouteMatchingEntry>();
+            var matchingRoutes = Enumerable.Empty<TreeRouteMatchingEntry>();
 
             var entry = CreateGenerationEntry(template, requiredValues: null);
 
@@ -658,7 +658,7 @@ namespace Microsoft.AspNet.Mvc.Routing
             })
             .Returns((VirtualPathData)null);
 
-            var matchingRoutes = Enumerable.Empty<AttributeRouteMatchingEntry>();
+            var matchingRoutes = Enumerable.Empty<TreeRouteMatchingEntry>();
 
             var firstRoute = CreateGenerationEntry(firstTemplate, requiredValues: null, order: 1);
             var secondRoute = CreateGenerationEntry(secondTemplate, requiredValues: null, order: 0);
@@ -704,7 +704,7 @@ namespace Microsoft.AspNet.Mvc.Routing
             })
             .Returns((VirtualPathData)null);
 
-            var matchingRoutes = Enumerable.Empty<AttributeRouteMatchingEntry>();
+            var matchingRoutes = Enumerable.Empty<TreeRouteMatchingEntry>();
 
             var firstRoute = CreateGenerationEntry(firstTemplate, requiredValues: null, order: 1);
             var secondRoute = CreateGenerationEntry(secondTemplate, requiredValues: null, order: 0);
@@ -749,7 +749,7 @@ namespace Microsoft.AspNet.Mvc.Routing
             })
             .Returns((VirtualPathData)null);
 
-            var matchingRoutes = Enumerable.Empty<AttributeRouteMatchingEntry>();
+            var matchingRoutes = Enumerable.Empty<TreeRouteMatchingEntry>();
 
             var firstRoute = CreateGenerationEntry(firstTemplate, requiredValues: null, order: 0);
             var secondRoute = CreateGenerationEntry(secondTemplate, requiredValues: null, order: 0);
@@ -778,7 +778,7 @@ namespace Microsoft.AspNet.Mvc.Routing
         {
             get
             {
-                var data = new TheoryData<IEnumerable<AttributeRouteLinkGenerationEntry>>();
+                var data = new TheoryData<IEnumerable<TreeRouteLinkGenerationEntry>>();
                 data.Add(new[]
                 {
                         CreateGenerationEntry("template", null, 0, "NamedEntry"),
@@ -806,9 +806,9 @@ namespace Microsoft.AspNet.Mvc.Routing
         }
 
         [Theory]
-        [MemberData(nameof(InnerAttributeRouteTest.NamedEntriesWithDifferentTemplates))]
+        [MemberData(nameof(TreeRouterTest.NamedEntriesWithDifferentTemplates))]
         public void AttributeRoute_CreateAttributeRoute_ThrowsIfDifferentEntriesHaveTheSameName(
-            IEnumerable<AttributeRouteLinkGenerationEntry> namedEntries)
+            IEnumerable<TreeRouteLinkGenerationEntry> namedEntries)
         {
             // Arrange
             string expectedExceptionMessage = "Two or more routes named 'NamedEntry' have different templates." +
@@ -817,18 +817,19 @@ namespace Microsoft.AspNet.Mvc.Routing
 
             var next = new Mock<IRouter>().Object;
 
-            var matchingEntries = Enumerable.Empty<AttributeRouteMatchingEntry>();
-
             // Act
+            var builder = new TreeRouteBuilder(next, NullLogger.Instance, NullLogger.Instance);
             var exception = Assert.Throws<ArgumentException>(
                 "linkGenerationEntries",
-                () => new InnerAttributeRoute(
-                    next,
-                    matchingEntries,
-                    namedEntries,
-                    NullLogger.Instance,
-                    NullLogger.Instance,
-                    version: 1));
+                () =>
+                {
+                    foreach (var entry in namedEntries)
+                    {
+                        builder.Add(entry);
+                    }
+
+                    return builder.Build(version: 1);
+                });
 
             Assert.Equal(expectedExceptionMessage, exception.Message, StringComparer.OrdinalIgnoreCase);
         }
@@ -837,7 +838,7 @@ namespace Microsoft.AspNet.Mvc.Routing
         {
             get
             {
-                var data = new TheoryData<IEnumerable<AttributeRouteLinkGenerationEntry>>();
+                var data = new TheoryData<IEnumerable<TreeRouteLinkGenerationEntry>>();
 
                 data.Add(new[]
                 {
@@ -866,9 +867,9 @@ namespace Microsoft.AspNet.Mvc.Routing
         }
 
         [Theory]
-        [MemberData(nameof(InnerAttributeRouteTest.NamedEntriesWithTheSameTemplate))]
+        [MemberData(nameof(TreeRouterTest.NamedEntriesWithTheSameTemplate))]
         public void AttributeRoute_GeneratesLink_ForMultipleNamedEntriesWithTheSameTemplate(
-            IEnumerable<AttributeRouteLinkGenerationEntry> namedEntries)
+            IEnumerable<TreeRouteLinkGenerationEntry> namedEntries)
         {
             // Arrange
             var expectedLink = new PathString(
@@ -885,7 +886,7 @@ namespace Microsoft.AspNet.Mvc.Routing
                 })
                 .Returns((VirtualPathData)null);
 
-            var matchingEntries = Enumerable.Empty<AttributeRouteMatchingEntry>();
+            var matchingEntries = Enumerable.Empty<TreeRouteMatchingEntry>();
 
             var route = CreateAttributeRoute(next.Object, matchingEntries, namedEntries);
 
@@ -926,7 +927,7 @@ namespace Microsoft.AspNet.Mvc.Routing
             // if it were an unnamed route.
             var linkGenerationEntries = new[] { namedEntry, unnamedEntry };
 
-            var matchingEntries = Enumerable.Empty<AttributeRouteMatchingEntry>();
+            var matchingEntries = Enumerable.Empty<TreeRouteMatchingEntry>();
 
             var route = CreateAttributeRoute(next.Object, matchingEntries, linkGenerationEntries);
 
@@ -966,7 +967,7 @@ namespace Microsoft.AspNet.Mvc.Routing
             // if it were an unnamed route.
             var linkGenerationEntries = new[] { namedEntry, unnamedEntry };
 
-            var matchingEntries = Enumerable.Empty<AttributeRouteMatchingEntry>();
+            var matchingEntries = Enumerable.Empty<TreeRouteMatchingEntry>();
 
             var route = CreateAttributeRoute(next.Object, matchingEntries, linkGenerationEntries);
 
@@ -1006,7 +1007,7 @@ namespace Microsoft.AspNet.Mvc.Routing
             // if it were an unnamed route.
             var linkGenerationEntries = new[] { namedEntry, unnamedEntry };
 
-            var matchingEntries = Enumerable.Empty<AttributeRouteMatchingEntry>();
+            var matchingEntries = Enumerable.Empty<TreeRouteMatchingEntry>();
 
             var route = CreateAttributeRoute(next.Object, matchingEntries, linkGenerationEntries);
 
@@ -1048,7 +1049,7 @@ namespace Microsoft.AspNet.Mvc.Routing
             // if it were an unnamed route.
             var linkGenerationEntries = new[] { namedEntry, unnamedEntry };
 
-            var matchingEntries = Enumerable.Empty<AttributeRouteMatchingEntry>();
+            var matchingEntries = Enumerable.Empty<TreeRouteMatchingEntry>();
 
             var route = CreateAttributeRoute(next.Object, matchingEntries, linkGenerationEntries);
 
@@ -1796,12 +1797,12 @@ namespace Microsoft.AspNet.Mvc.Routing
                 name);
         }
 
-        private static AttributeRouteMatchingEntry CreateMatchingEntry(IRouter router, string template, int order)
+        private static TreeRouteMatchingEntry CreateMatchingEntry(IRouter router, string template, int order)
         {
             var routeGroup = string.Format("{0}&&{1}", order, template);
-            var entry = new AttributeRouteMatchingEntry();
+            var entry = new TreeRouteMatchingEntry();
             entry.Target = router;
-            entry.RouteTemplate = template;
+            entry.RouteTemplate = TemplateParser.Parse(template);
             var parsedRouteTemplate = TemplateParser.Parse(template);
             entry.TemplateMatcher = new TemplateMatcher(
                 parsedRouteTemplate,
@@ -1812,7 +1813,7 @@ namespace Microsoft.AspNet.Mvc.Routing
             return entry;
         }
 
-        private static AttributeRouteLinkGenerationEntry CreateGenerationEntry(
+        private static TreeRouteLinkGenerationEntry CreateGenerationEntry(
             string template,
             object requiredValues,
             int order = 0,
@@ -1820,7 +1821,7 @@ namespace Microsoft.AspNet.Mvc.Routing
         {
             var constraintResolver = CreateConstraintResolver();
 
-            var entry = new AttributeRouteLinkGenerationEntry();
+            var entry = new TreeRouteLinkGenerationEntry();
             entry.TemplateText = template;
             entry.Template = TemplateParser.Parse(template);
 
@@ -1858,7 +1859,7 @@ namespace Microsoft.AspNet.Mvc.Routing
             return entry;
         }
 
-        private AttributeRouteMatchingEntry CreateMatchingEntry(string template)
+        private TreeRouteMatchingEntry CreateMatchingEntry(string template)
         {
             var mockConstraint = new Mock<IRouteConstraint>();
             mockConstraint.Setup(c => c.Match(
@@ -1874,9 +1875,9 @@ namespace Microsoft.AspNet.Mvc.Routing
                 It.IsAny<string>()))
             .Returns(mockConstraint.Object);
 
-            var entry = new AttributeRouteMatchingEntry();
+            var entry = new TreeRouteMatchingEntry();
             entry.Target = new StubRouter();
-            entry.RouteTemplate = template;
+            entry.RouteTemplate = TemplateParser.Parse(template);
 
             return entry;
         }
@@ -1895,52 +1896,61 @@ namespace Microsoft.AspNet.Mvc.Routing
             return new DefaultInlineConstraintResolver(optionsMock.Object);
         }
 
-        private static InnerAttributeRoute CreateAttributeRoute(AttributeRouteLinkGenerationEntry entry)
+        private static TreeRouter CreateAttributeRoute(TreeRouteLinkGenerationEntry entry)
         {
             return CreateAttributeRoute(new StubRouter(), entry);
         }
 
-        private static InnerAttributeRoute CreateAttributeRoute(IRouter next, AttributeRouteLinkGenerationEntry entry)
+        private static TreeRouter CreateAttributeRoute(IRouter next, TreeRouteLinkGenerationEntry entry)
         {
             return CreateAttributeRoute(next, new[] { entry });
         }
 
-        private static InnerAttributeRoute CreateAttributeRoute(params AttributeRouteLinkGenerationEntry[] entries)
+        private static TreeRouter CreateAttributeRoute(params TreeRouteLinkGenerationEntry[] entries)
         {
             return CreateAttributeRoute(new StubRouter(), entries);
         }
 
-        private static InnerAttributeRoute CreateAttributeRoute(IRouter next, params AttributeRouteLinkGenerationEntry[] entries)
+        private static TreeRouter CreateAttributeRoute(IRouter next, params TreeRouteLinkGenerationEntry[] entries)
         {
             return CreateAttributeRoute(
                 next,
-                Enumerable.Empty<AttributeRouteMatchingEntry>(),
+                Enumerable.Empty<TreeRouteMatchingEntry>(),
                 entries);
         }
 
-        private static InnerAttributeRoute CreateAttributeRoute(IRouter next, params AttributeRouteMatchingEntry[] entries)
+        private static TreeRouter CreateAttributeRoute(IRouter next, params TreeRouteMatchingEntry[] entries)
         {
             return CreateAttributeRoute(
                 next,
                 entries,
-                Enumerable.Empty<AttributeRouteLinkGenerationEntry>());
+                Enumerable.Empty<TreeRouteLinkGenerationEntry>());
         }
 
-        private static InnerAttributeRoute CreateAttributeRoute(
+        private static TreeRouter CreateAttributeRoute(
             IRouter next,
-            IEnumerable<AttributeRouteMatchingEntry> matchingEntries,
-            IEnumerable<AttributeRouteLinkGenerationEntry> generationEntries)
+            IEnumerable<TreeRouteMatchingEntry> matchingEntries,
+            IEnumerable<TreeRouteLinkGenerationEntry> generationEntries)
         {
-            return new InnerAttributeRoute(
+            var builder = new TreeRouteBuilder(
                 next,
-                matchingEntries,
-                generationEntries,
                 NullLogger.Instance,
-                NullLogger.Instance,
-                version: 1);
+                NullLogger.Instance);
+
+            foreach (var entry in matchingEntries)
+            {
+                builder.Add(entry);
+            }
+
+            foreach (var entry in generationEntries)
+            {
+                builder.Add(entry);
+            }
+
+            return builder.Build(version: 1);
         }
 
-        private static InnerAttributeRoute CreateAttributeRoute(
+        private static TreeRouter CreateAttributeRoute(
             Action<VirtualPathContext> virtualPathCallback,
             string firstTemplate,
             string secondTemplate)
@@ -1949,7 +1959,7 @@ namespace Microsoft.AspNet.Mvc.Routing
             next.Setup(n => n.GetVirtualPath(It.IsAny<VirtualPathContext>())).Callback<VirtualPathContext>(virtualPathCallback)
             .Returns((VirtualPathData)null);
 
-            var matchingRoutes = Enumerable.Empty<AttributeRouteMatchingEntry>();
+            var matchingRoutes = Enumerable.Empty<TreeRouteMatchingEntry>();
             var firstEntry = CreateGenerationEntry(firstTemplate, requiredValues: null);
             var secondEntry = CreateGenerationEntry(secondTemplate, requiredValues: null);
 
@@ -1959,19 +1969,23 @@ namespace Microsoft.AspNet.Mvc.Routing
                 new[] { secondEntry, firstEntry });
         }
 
-        private static InnerAttributeRoute CreateRoutingAttributeRoute(
+        private static TreeRouter CreateRoutingAttributeRoute(
             ILoggerFactory loggerFactory = null,
-            params AttributeRouteMatchingEntry[] entries)
+            params TreeRouteMatchingEntry[] entries)
         {
             loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
 
-            return new InnerAttributeRoute(
+            var builder = new TreeRouteBuilder(
                 new StubRouter(),
-                entries,
-                Enumerable.Empty<AttributeRouteLinkGenerationEntry>(),
                 loggerFactory.CreateLogger<AttributeRoute>(),
-                loggerFactory.CreateLogger(typeof(RouteConstraintMatcher).FullName),
-                version: 1);
+                loggerFactory.CreateLogger(typeof(RouteConstraintMatcher).FullName));
+
+            foreach (var entry in entries)
+            {
+                builder.Add(entry);
+            }
+
+            return builder.Build(version: 1);
         }
 
         private static IReadOnlyDictionary<string, IRouteConstraint> GetRouteConstriants(

@@ -12,11 +12,11 @@ namespace Microsoft.AspNet.Mvc.Internal.Routing
     // A decision tree that matches link generation entries based on route data.
     public class LinkGenerationDecisionTree
     {
-        private readonly DecisionTreeNode<AttributeRouteLinkGenerationEntry> _root;
+        private readonly DecisionTreeNode<TreeRouteLinkGenerationEntry> _root;
 
-        public LinkGenerationDecisionTree(IReadOnlyList<AttributeRouteLinkGenerationEntry> entries)
+        public LinkGenerationDecisionTree(IReadOnlyList<TreeRouteLinkGenerationEntry> entries)
         {
-            _root = DecisionTreeBuilder<AttributeRouteLinkGenerationEntry>.GenerateTree(
+            _root = DecisionTreeBuilder<TreeRouteLinkGenerationEntry>.GenerateTree(
                 entries,
                 new AttributeRouteLinkGenerationEntryClassifier());
         }
@@ -57,7 +57,7 @@ namespace Microsoft.AspNet.Mvc.Internal.Routing
         private void Walk(
             List<LinkGenerationMatch> results,
             VirtualPathContext context,
-            DecisionTreeNode<AttributeRouteLinkGenerationEntry> node,
+            DecisionTreeNode<TreeRouteLinkGenerationEntry> node,
             bool isFallbackPath)
         {
             // Any entries in node.Matches have had all their required values satisfied, so add them
@@ -75,7 +75,7 @@ namespace Microsoft.AspNet.Mvc.Internal.Routing
                 object value;
                 if (context.Values.TryGetValue(key, out value))
                 {
-                    DecisionTreeNode<AttributeRouteLinkGenerationEntry> branch;
+                    DecisionTreeNode<TreeRouteLinkGenerationEntry> branch;
                     if (criterion.Branches.TryGetValue(value ?? string.Empty, out branch))
                     {
                         Walk(results, context, branch, isFallbackPath);
@@ -86,7 +86,7 @@ namespace Microsoft.AspNet.Mvc.Internal.Routing
                     // If a value wasn't explicitly supplied, match BOTH the ambient value and the empty value
                     // if an ambient value was supplied. The path explored with the empty value is considered
                     // the fallback path.
-                    DecisionTreeNode<AttributeRouteLinkGenerationEntry> branch;
+                    DecisionTreeNode<TreeRouteLinkGenerationEntry> branch;
                     if (context.AmbientValues.TryGetValue(key, out value) &&
                         !criterion.Branches.Comparer.Equals(value, string.Empty))
                     {
@@ -104,7 +104,7 @@ namespace Microsoft.AspNet.Mvc.Internal.Routing
             }
         }
 
-        private class AttributeRouteLinkGenerationEntryClassifier : IClassifier<AttributeRouteLinkGenerationEntry>
+        private class AttributeRouteLinkGenerationEntryClassifier : IClassifier<TreeRouteLinkGenerationEntry>
         {
             public AttributeRouteLinkGenerationEntryClassifier()
             {
@@ -113,7 +113,7 @@ namespace Microsoft.AspNet.Mvc.Internal.Routing
 
             public IEqualityComparer<object> ValueComparer { get; private set; }
 
-            public IDictionary<string, DecisionCriterionValue> GetCriteria(AttributeRouteLinkGenerationEntry item)
+            public IDictionary<string, DecisionCriterionValue> GetCriteria(TreeRouteLinkGenerationEntry item)
             {
                 var results = new Dictionary<string, DecisionCriterionValue>(StringComparer.OrdinalIgnoreCase);
                 foreach (var kvp in item.RequiredLinkValues)

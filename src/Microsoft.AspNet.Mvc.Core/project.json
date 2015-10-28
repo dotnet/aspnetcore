@@ -19,6 +19,10 @@
       "version": "1.0.0-*",
       "type": "build"
     },
+    "Microsoft.Extensions.HashCodeCombiner.Sources": {
+      "type": "build",
+      "version": "1.0.0-*"
+    },
     "Microsoft.Extensions.Logging.Abstractions": "1.0.0-*",
     "Microsoft.Extensions.MemoryPool": "1.0.0-*",
     "Microsoft.Extensions.PropertyActivator.Sources": {

@@ -1,13 +1,16 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNet.Mvc.Logging
 {
-    internal static class InnerAttributeRouteLoggerExtensions
+    internal static class TreeRouterLoggerExtensions
     {
         private static readonly Action<ILogger, string, string, Exception> _matchedRouteName;
 
-        static InnerAttributeRouteLoggerExtensions()
+        static TreeRouterLoggerExtensions()
         {
             _matchedRouteName = LoggerMessage.Define<string, string>(
                 LogLevel.Verbose,

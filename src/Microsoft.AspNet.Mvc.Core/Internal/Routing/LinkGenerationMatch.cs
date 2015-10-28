@@ -8,15 +8,15 @@ namespace Microsoft.AspNet.Mvc.Internal.Routing
     public struct LinkGenerationMatch
     {
         private readonly bool _isFallbackMatch;
-        private readonly AttributeRouteLinkGenerationEntry _entry;
+        private readonly TreeRouteLinkGenerationEntry _entry;
 
-        public LinkGenerationMatch(AttributeRouteLinkGenerationEntry entry, bool isFallbackMatch)
+        public LinkGenerationMatch(TreeRouteLinkGenerationEntry entry, bool isFallbackMatch)
         {
             _entry = entry;
             _isFallbackMatch = isFallbackMatch;
         }
 
-        public AttributeRouteLinkGenerationEntry Entry { get { return _entry; } }
+        public TreeRouteLinkGenerationEntry Entry { get { return _entry; } }
 
         public bool IsFallbackMatch { get { return _isFallbackMatch; } }
     }

@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Mvc.Internal.Routing
         public void SelectSingleEntry_NoCriteria()
         {
             // Arrange
-            var entries = new List<AttributeRouteLinkGenerationEntry>();
+            var entries = new List<TreeRouteLinkGenerationEntry>();
 
             var entry = CreateEntry(new { });
             entries.Add(entry);
@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.Mvc.Internal.Routing
         public void SelectSingleEntry_MultipleCriteria()
         {
             // Arrange
-            var entries = new List<AttributeRouteLinkGenerationEntry>();
+            var entries = new List<TreeRouteLinkGenerationEntry>();
 
             var entry = CreateEntry(new { controller = "Store", action = "Buy" });
             entries.Add(entry);
@@ -56,7 +56,7 @@ namespace Microsoft.AspNet.Mvc.Internal.Routing
         public void SelectSingleEntry_MultipleCriteria_AmbientValues()
         {
             // Arrange
-            var entries = new List<AttributeRouteLinkGenerationEntry>();
+            var entries = new List<TreeRouteLinkGenerationEntry>();
 
             var entry = CreateEntry(new { controller = "Store", action = "Buy" });
             entries.Add(entry);
@@ -78,7 +78,7 @@ namespace Microsoft.AspNet.Mvc.Internal.Routing
         public void SelectSingleEntry_MultipleCriteria_Replaced()
         {
             // Arrange
-            var entries = new List<AttributeRouteLinkGenerationEntry>();
+            var entries = new List<TreeRouteLinkGenerationEntry>();
 
             var entry = CreateEntry(new { controller = "Store", action = "Buy" });
             entries.Add(entry);
@@ -102,7 +102,7 @@ namespace Microsoft.AspNet.Mvc.Internal.Routing
         public void SelectSingleEntry_MultipleCriteria_AmbientValue_Ignored()
         {
             // Arrange
-            var entries = new List<AttributeRouteLinkGenerationEntry>();
+            var entries = new List<TreeRouteLinkGenerationEntry>();
 
             var entry = CreateEntry(new { controller = "Store", action = (string)null });
             entries.Add(entry);
@@ -126,7 +126,7 @@ namespace Microsoft.AspNet.Mvc.Internal.Routing
         public void SelectSingleEntry_MultipleCriteria_NoMatch()
         {
             // Arrange
-            var entries = new List<AttributeRouteLinkGenerationEntry>();
+            var entries = new List<TreeRouteLinkGenerationEntry>();
 
             var entry = CreateEntry(new { controller = "Store", action = "Buy" });
             entries.Add(entry);
@@ -146,7 +146,7 @@ namespace Microsoft.AspNet.Mvc.Internal.Routing
         public void SelectSingleEntry_MultipleCriteria_AmbientValue_NoMatch()
         {
             // Arrange
-            var entries = new List<AttributeRouteLinkGenerationEntry>();
+            var entries = new List<TreeRouteLinkGenerationEntry>();
 
             var entry = CreateEntry(new { controller = "Store", action = "Buy" });
             entries.Add(entry);
@@ -168,7 +168,7 @@ namespace Microsoft.AspNet.Mvc.Internal.Routing
         public void SelectMultipleEntries_OneDoesntMatch()
         {
             // Arrange
-            var entries = new List<AttributeRouteLinkGenerationEntry>();
+            var entries = new List<TreeRouteLinkGenerationEntry>();
 
             var entry1 = CreateEntry(new { controller = "Store", action = "Buy" });
             entries.Add(entry1);
@@ -193,7 +193,7 @@ namespace Microsoft.AspNet.Mvc.Internal.Routing
         public void SelectMultipleEntries_BothMatch_CriteriaSubset()
         {
             // Arrange
-            var entries = new List<AttributeRouteLinkGenerationEntry>();
+            var entries = new List<TreeRouteLinkGenerationEntry>();
 
             var entry1 = CreateEntry(new { controller = "Store", action = "Buy" });
             entries.Add(entry1);
@@ -219,7 +219,7 @@ namespace Microsoft.AspNet.Mvc.Internal.Routing
         public void SelectMultipleEntries_BothMatch_NonOverlappingCriteria()
         {
             // Arrange
-            var entries = new List<AttributeRouteLinkGenerationEntry>();
+            var entries = new List<TreeRouteLinkGenerationEntry>();
 
             var entry1 = CreateEntry(new { controller = "Store", action = "Buy" });
             entries.Add(entry1);
@@ -244,7 +244,7 @@ namespace Microsoft.AspNet.Mvc.Internal.Routing
         public void SelectMultipleEntries_BothMatch_OrderedByOrder()
         {
             // Arrange
-            var entries = new List<AttributeRouteLinkGenerationEntry>();
+            var entries = new List<TreeRouteLinkGenerationEntry>();
 
             var entry1 = CreateEntry(new { controller = "Store", action = "Buy" });
             entry1.GenerationPrecedence = 0;
@@ -271,7 +271,7 @@ namespace Microsoft.AspNet.Mvc.Internal.Routing
         public void SelectMultipleEntries_BothMatch_OrderedByPrecedence()
         {
             // Arrange
-            var entries = new List<AttributeRouteLinkGenerationEntry>();
+            var entries = new List<TreeRouteLinkGenerationEntry>();
 
             var entry1 = CreateEntry(new { controller = "Store", action = "Buy" });
             entry1.GenerationPrecedence = 1;
@@ -297,7 +297,7 @@ namespace Microsoft.AspNet.Mvc.Internal.Routing
         public void SelectMultipleEntries_BothMatch_OrderedByTemplate()
         {
             // Arrange
-            var entries = new List<AttributeRouteLinkGenerationEntry>();
+            var entries = new List<TreeRouteLinkGenerationEntry>();
 
             var entry1 = CreateEntry(new { controller = "Store", action = "Buy" });
             entry1.TemplateText = "a";
@@ -318,9 +318,9 @@ namespace Microsoft.AspNet.Mvc.Internal.Routing
             Assert.Equal(entries, matches);
         }
 
-        private AttributeRouteLinkGenerationEntry CreateEntry(object requiredValues)
+        private TreeRouteLinkGenerationEntry CreateEntry(object requiredValues)
         {
-            var entry = new AttributeRouteLinkGenerationEntry();
+            var entry = new TreeRouteLinkGenerationEntry();
             entry.RequiredLinkValues = new RouteValueDictionary(requiredValues);
             return entry;
         }

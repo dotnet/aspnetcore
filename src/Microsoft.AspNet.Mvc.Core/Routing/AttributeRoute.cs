@@ -19,12 +19,10 @@ namespace Microsoft.AspNet.Mvc.Routing
         private readonly IRouter _target;
         private readonly IActionDescriptorsCollectionProvider _actionDescriptorsCollectionProvider;
         private readonly IInlineConstraintResolver _constraintResolver;
-
-        // These loggers are used by the inner route, keep them around to avoid re-creating.
         private readonly ILogger _routeLogger;
         private readonly ILogger _constraintLogger;
 
-        private InnerAttributeRoute _inner;
+        private TreeRouter _router;
 
         public AttributeRoute(
             IRouter target,
@@ -56,48 +54,48 @@ namespace Microsoft.AspNet.Mvc.Routing
             _actionDescriptorsCollectionProvider = actionDescriptorsCollectionProvider;
             _constraintResolver = constraintResolver;
 
-            _routeLogger = loggerFactory.CreateLogger<InnerAttributeRoute>();
+            _routeLogger = loggerFactory.CreateLogger<TreeRouter>();
             _constraintLogger = loggerFactory.CreateLogger(typeof(RouteConstraintMatcher).FullName);
         }
 
         /// <inheritdoc />
         public VirtualPathData GetVirtualPath(VirtualPathContext context)
         {
-            var route = GetInnerRoute();
-            return route.GetVirtualPath(context);
+            var router = GetTreeRouter();
+            return router.GetVirtualPath(context);
         }
 
         /// <inheritdoc />
         public Task RouteAsync(RouteContext context)
         {
-            var route = GetInnerRoute();
-            return route.RouteAsync(context);
+            var router = GetTreeRouter();
+            return router.RouteAsync(context);
         }
 
-        private InnerAttributeRoute GetInnerRoute()
+        private TreeRouter GetTreeRouter()
         {
             var actions = _actionDescriptorsCollectionProvider.ActionDescriptors;
 
-            // This is a safe-race. We'll never set inner back to null after initializing
+            // This is a safe-race. We'll never set router back to null after initializing
             // it on startup.
-            if (_inner == null || _inner.Version != actions.Version)
+            if (_router == null || _router.Version != actions.Version)
             {
-                _inner = BuildRoute(actions);
+                _router = BuildRoute(actions);
             }
 
-            return _inner;
+            return _router;
         }
 
-        private InnerAttributeRoute BuildRoute(ActionDescriptorsCollection actions)
+        private TreeRouter BuildRoute(ActionDescriptorsCollection actions)
         {
+            var routeBuilder = new TreeRouteBuilder(_target, _routeLogger, _constraintLogger);
             var routeInfos = GetRouteInfos(_constraintResolver, actions.Items);
 
             // We're creating one AttributeRouteGenerationEntry per action. This allows us to match the intended
             // action by expected route values, and then use the TemplateBinder to generate the link.
-            var generationEntries = new List<AttributeRouteLinkGenerationEntry>();
             foreach (var routeInfo in routeInfos)
             {
-                generationEntries.Add(new AttributeRouteLinkGenerationEntry()
+                routeBuilder.Add(new TreeRouteLinkGenerationEntry()
                 {
                     Binder = new TemplateBinder(routeInfo.ParsedTemplate, routeInfo.Defaults),
                     Defaults = routeInfo.Defaults,
@@ -116,16 +114,15 @@ namespace Microsoft.AspNet.Mvc.Routing
             // groups. It's guaranteed that all members of the group have the same template and precedence,
             // so we only need to hang on to a single instance of the RouteInfo for each group.
             var distinctRouteInfosByGroup = GroupRouteInfosByGroupId(routeInfos);
-            var matchingEntries = new List<AttributeRouteMatchingEntry>();
             foreach (var routeInfo in distinctRouteInfosByGroup)
             {
-                matchingEntries.Add(new AttributeRouteMatchingEntry()
+                routeBuilder.Add(new TreeRouteMatchingEntry()
                 {
                     Order = routeInfo.Order,
                     Precedence = routeInfo.MatchPrecedence,
                     Target = _target,
                     RouteName = routeInfo.Name,
-                    RouteTemplate = routeInfo.RouteTemplate,
+                    RouteTemplate = TemplateParser.Parse(routeInfo.RouteTemplate),
                     TemplateMatcher = new TemplateMatcher(
                         routeInfo.ParsedTemplate,
                         new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
@@ -136,13 +133,7 @@ namespace Microsoft.AspNet.Mvc.Routing
                 });
             }
 
-            return new InnerAttributeRoute(
-                _target,
-                matchingEntries,
-                generationEntries,
-                _routeLogger,
-                _constraintLogger,
-                actions.Version);
+            return routeBuilder.Build(actions.Version);
         }
 
         private static IEnumerable<RouteInfo> GroupRouteInfosByGroupId(List<RouteInfo> routeInfos)
