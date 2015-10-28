@@ -47,28 +47,29 @@ namespace Microsoft.AspNet.Razor.CodeGenerators.Visitors
                     // Need to disable the warning "X is assigned to but never used." for the value buffer since
                     // whether it's used depends on how a TagHelper is used.
                     Writer.WritePragma("warning disable 0414");
-                    WritePrivateField(_tagHelperContext.TagHelperContentTypeName,
-                                      CSharpTagHelperCodeRenderer.StringValueBufferVariableName,
-                                      value: null);
+                    WritePrivateField(
+                        "global::" + _tagHelperContext.TagHelperContentTypeName,
+                        CSharpTagHelperCodeRenderer.StringValueBufferVariableName,
+                        value: null);
                     Writer.WritePragma("warning restore 0414");
 
-                    WritePrivateField(_tagHelperContext.ExecutionContextTypeName,
-                                      CSharpTagHelperCodeRenderer.ExecutionContextVariableName,
-                                      value: null);
+                    WritePrivateField(
+                        "global::" + _tagHelperContext.ExecutionContextTypeName,
+                        CSharpTagHelperCodeRenderer.ExecutionContextVariableName,
+                        value: null);
 
-                    Writer
-                        .Write("private ")
-                        .WriteVariableDeclaration(
-                        _tagHelperContext.RunnerTypeName,
+                    WritePrivateField(
+                        "global::" + _tagHelperContext.RunnerTypeName,
                         CSharpTagHelperCodeRenderer.RunnerVariableName,
                         value: null);
 
-                    Writer.Write("private ")
-                          .Write(_tagHelperContext.ScopeManagerTypeName)
-                          .Write(" ")
-                          .WriteStartAssignment(CSharpTagHelperCodeRenderer.ScopeManagerVariableName)
-                          .WriteStartNewObject(_tagHelperContext.ScopeManagerTypeName)
-                          .WriteEndMethodInvocation();
+                    Writer
+                        .Write("private global::")
+                        .Write(_tagHelperContext.ScopeManagerTypeName)
+                        .Write(" ")
+                        .WriteStartAssignment(CSharpTagHelperCodeRenderer.ScopeManagerVariableName)
+                        .WriteStartNewObject("global::" + _tagHelperContext.ScopeManagerTypeName)
+                        .WriteEndMethodInvocation();
                 }
             }
 
@@ -78,9 +79,10 @@ namespace Microsoft.AspNet.Razor.CodeGenerators.Visitors
                 {
                     _declaredTagHelpers.Add(descriptor.TypeName);
 
-                    WritePrivateField(descriptor.TypeName,
-                                      CSharpTagHelperCodeRenderer.GetVariableName(descriptor),
-                                      value: null);
+                    WritePrivateField(
+                        "global::" + descriptor.TypeName,
+                        CSharpTagHelperCodeRenderer.GetVariableName(descriptor),
+                        value: null);
                 }
             }
 
@@ -116,8 +118,9 @@ namespace Microsoft.AspNet.Razor.CodeGenerators.Visitors
 
         private void WritePrivateField(string type, string name, string value)
         {
-            Writer.Write("private ")
-                  .WriteVariableDeclaration(type, name, value);
+            Writer
+                .Write("private ")
+                .WriteVariableDeclaration(type, name, value);
         }
     }
 }

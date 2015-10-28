@@ -29,10 +29,10 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
             MarkAsHtmlEncodedMethodName = "Html.Raw";
             StartTagHelperWritingScopeMethodName = "StartTagHelperWritingScope";
             EndTagHelperWritingScopeMethodName = "EndTagHelperWritingScope";
-            RunnerTypeName = "TagHelperRunner";
-            ScopeManagerTypeName = "TagHelperScopeManager";
-            ExecutionContextTypeName = "TagHelperExecutionContext";
-            TagHelperContentTypeName = "TagHelperContent";
+            RunnerTypeName = "Microsoft.AspNet.Razor.Runtime.TagHelperRunner";
+            ScopeManagerTypeName = "Microsoft.AspNet.Razor.Runtime.TagHelperScopeManager";
+            ExecutionContextTypeName = "Microsoft.AspNet.Razor.Runtime.TagHelperExecutionContext";
+            TagHelperContentTypeName = "Microsoft.AspNet.Razor.TagHelperContent";
             WriteTagHelperAsyncMethodName = "WriteTagHelperAsync";
             WriteTagHelperToAsyncMethodName = "WriteTagHelperToAsync";
             TagHelperContentGetContentMethodName = "GetContent";

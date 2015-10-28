@@ -20,9 +20,9 @@ namespace TestOutput
             #pragma warning restore 219
         }
         #line hidden
-        private InputTagHelper __InputTagHelper = null;
-        private InputTagHelper2 __InputTagHelper2 = null;
-        private PTagHelper __PTagHelper = null;
+        private global::TestNamespace.InputTagHelper __TestNamespace_InputTagHelper = null;
+        private global::TestNamespace.InputTagHelper2 __TestNamespace_InputTagHelper2 = null;
+        private global::TestNamespace.PTagHelper __TestNamespace_PTagHelper = null;
         #line hidden
         public EmptyAttributeTagHelpers()
         {
@@ -31,27 +31,27 @@ namespace TestOutput
         #pragma warning disable 1998
         public override async Task ExecuteAsync()
         {
-            __InputTagHelper = CreateTagHelper<InputTagHelper>();
-            __InputTagHelper2 = CreateTagHelper<InputTagHelper2>();
-            __InputTagHelper.Type = "";
-            __InputTagHelper2.Type = __InputTagHelper.Type;
+            __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
+            __TestNamespace_InputTagHelper2 = CreateTagHelper<global::TestNamespace.InputTagHelper2>();
+            __TestNamespace_InputTagHelper.Type = "";
+            __TestNamespace_InputTagHelper2.Type = __TestNamespace_InputTagHelper.Type;
 #line 4 "EmptyAttributeTagHelpers.cshtml"
-__InputTagHelper2.Checked = ;
+__TestNamespace_InputTagHelper2.Checked = ;
 
 #line default
 #line hidden
-            __InputTagHelper = CreateTagHelper<InputTagHelper>();
-            __InputTagHelper2 = CreateTagHelper<InputTagHelper2>();
-            __InputTagHelper.Type = "";
-            __InputTagHelper2.Type = __InputTagHelper.Type;
+            __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
+            __TestNamespace_InputTagHelper2 = CreateTagHelper<global::TestNamespace.InputTagHelper2>();
+            __TestNamespace_InputTagHelper.Type = "";
+            __TestNamespace_InputTagHelper2.Type = __TestNamespace_InputTagHelper.Type;
 #line 6 "EmptyAttributeTagHelpers.cshtml"
-  __InputTagHelper2.Checked = ;
+__TestNamespace_InputTagHelper2.Checked = ;
 
 #line default
 #line hidden
-            __PTagHelper = CreateTagHelper<PTagHelper>();
+            __TestNamespace_PTagHelper = CreateTagHelper<global::TestNamespace.PTagHelper>();
 #line 5 "EmptyAttributeTagHelpers.cshtml"
-__PTagHelper.Age = ;
+__TestNamespace_PTagHelper.Age = ;
 
 #line default
 #line hidden

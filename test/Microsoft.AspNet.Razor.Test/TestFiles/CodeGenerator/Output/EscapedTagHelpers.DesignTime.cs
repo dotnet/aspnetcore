@@ -20,8 +20,8 @@ namespace TestOutput
             #pragma warning restore 219
         }
         #line hidden
-        private InputTagHelper __InputTagHelper = null;
-        private InputTagHelper2 __InputTagHelper2 = null;
+        private global::TestNamespace.InputTagHelper __TestNamespace_InputTagHelper = null;
+        private global::TestNamespace.InputTagHelper2 __TestNamespace_InputTagHelper2 = null;
         #line hidden
         public EscapedTagHelpers()
         {
@@ -35,17 +35,17 @@ namespace TestOutput
 
 #line default
 #line hidden
-            __InputTagHelper = CreateTagHelper<InputTagHelper>();
-            __InputTagHelper2 = CreateTagHelper<InputTagHelper2>();
+            __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
+            __TestNamespace_InputTagHelper2 = CreateTagHelper<global::TestNamespace.InputTagHelper2>();
 #line 6 "EscapedTagHelpers.cshtml"
                                              __o = DateTime.Now;
 
 #line default
 #line hidden
-            __InputTagHelper.Type = string.Empty;
-            __InputTagHelper2.Type = __InputTagHelper.Type;
+            __TestNamespace_InputTagHelper.Type = string.Empty;
+            __TestNamespace_InputTagHelper2.Type = __TestNamespace_InputTagHelper.Type;
 #line 6 "EscapedTagHelpers.cshtml"
-                                              __InputTagHelper2.Checked = true;
+                                __TestNamespace_InputTagHelper2.Checked = true;
 
 #line default
 #line hidden

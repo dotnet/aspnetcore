@@ -20,7 +20,7 @@ namespace TestOutput
             #pragma warning restore 219
         }
         #line hidden
-        private PTagHelper __PTagHelper = null;
+        private global::TestNamespace.PTagHelper __TestNamespace_PTagHelper = null;
         #line hidden
         public SingleTagHelper()
         {
@@ -29,9 +29,9 @@ namespace TestOutput
         #pragma warning disable 1998
         public override async Task ExecuteAsync()
         {
-            __PTagHelper = CreateTagHelper<PTagHelper>();
+            __TestNamespace_PTagHelper = CreateTagHelper<global::TestNamespace.PTagHelper>();
 #line 3 "SingleTagHelper.cshtml"
-         __PTagHelper.Age = 1337;
+__TestNamespace_PTagHelper.Age = 1337;
 
 #line default
 #line hidden

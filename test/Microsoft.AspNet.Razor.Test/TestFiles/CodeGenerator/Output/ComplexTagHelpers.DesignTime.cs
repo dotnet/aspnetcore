@@ -20,9 +20,9 @@ namespace TestOutput
             #pragma warning restore 219
         }
         #line hidden
-        private PTagHelper __PTagHelper = null;
-        private InputTagHelper __InputTagHelper = null;
-        private InputTagHelper2 __InputTagHelper2 = null;
+        private global::TestNamespace.PTagHelper __TestNamespace_PTagHelper = null;
+        private global::TestNamespace.InputTagHelper __TestNamespace_InputTagHelper = null;
+        private global::TestNamespace.InputTagHelper2 __TestNamespace_InputTagHelper2 = null;
         #line hidden
         public ComplexTagHelpers()
         {
@@ -53,11 +53,11 @@ if (true)
 #line default
 #line hidden
 
-            __InputTagHelper = CreateTagHelper<InputTagHelper>();
-            __InputTagHelper2 = CreateTagHelper<InputTagHelper2>();
-            __InputTagHelper.Type = "text";
-            __InputTagHelper2.Type = __InputTagHelper.Type;
-            __PTagHelper = CreateTagHelper<PTagHelper>();
+            __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
+            __TestNamespace_InputTagHelper2 = CreateTagHelper<global::TestNamespace.InputTagHelper2>();
+            __TestNamespace_InputTagHelper.Type = "text";
+            __TestNamespace_InputTagHelper2.Type = __TestNamespace_InputTagHelper.Type;
+            __TestNamespace_PTagHelper = CreateTagHelper<global::TestNamespace.PTagHelper>();
 #line 13 "ComplexTagHelpers.cshtml"
             }
             else
@@ -66,32 +66,32 @@ if (true)
 #line default
 #line hidden
 
-            __InputTagHelper = CreateTagHelper<InputTagHelper>();
-            __InputTagHelper2 = CreateTagHelper<InputTagHelper2>();
+            __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
+            __TestNamespace_InputTagHelper2 = CreateTagHelper<global::TestNamespace.InputTagHelper2>();
 #line 16 "ComplexTagHelpers.cshtml"
                                         __o = checkbox;
 
 #line default
 #line hidden
-            __InputTagHelper.Type = string.Empty;
-            __InputTagHelper2.Type = __InputTagHelper.Type;
+            __TestNamespace_InputTagHelper.Type = string.Empty;
+            __TestNamespace_InputTagHelper2.Type = __TestNamespace_InputTagHelper.Type;
 #line 16 "ComplexTagHelpers.cshtml"
-                                   __InputTagHelper2.Checked = true;
+                     __TestNamespace_InputTagHelper2.Checked = true;
 
 #line default
 #line hidden
-            __PTagHelper = CreateTagHelper<PTagHelper>();
-            __InputTagHelper = CreateTagHelper<InputTagHelper>();
-            __InputTagHelper2 = CreateTagHelper<InputTagHelper2>();
+            __TestNamespace_PTagHelper = CreateTagHelper<global::TestNamespace.PTagHelper>();
+            __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
+            __TestNamespace_InputTagHelper2 = CreateTagHelper<global::TestNamespace.InputTagHelper2>();
 #line 17 "ComplexTagHelpers.cshtml"
                          __o = true ? "checkbox" : "anything";
 
 #line default
 #line hidden
-            __InputTagHelper.Type = string.Empty;
-            __InputTagHelper2.Type = __InputTagHelper.Type;
-            __InputTagHelper = CreateTagHelper<InputTagHelper>();
-            __InputTagHelper2 = CreateTagHelper<InputTagHelper2>();
+            __TestNamespace_InputTagHelper.Type = string.Empty;
+            __TestNamespace_InputTagHelper2.Type = __TestNamespace_InputTagHelper.Type;
+            __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
+            __TestNamespace_InputTagHelper2 = CreateTagHelper<global::TestNamespace.InputTagHelper2>();
 #line 18 "ComplexTagHelpers.cshtml"
                              if(true) {
 
@@ -122,15 +122,15 @@ if (true)
 #line default
 #line hidden
 
-            __InputTagHelper.Type = string.Empty;
-            __InputTagHelper2.Type = __InputTagHelper.Type;
+            __TestNamespace_InputTagHelper.Type = string.Empty;
+            __TestNamespace_InputTagHelper2.Type = __TestNamespace_InputTagHelper.Type;
 #line 19 "ComplexTagHelpers.cshtml"
             }
 
 #line default
 #line hidden
 
-            __PTagHelper = CreateTagHelper<PTagHelper>();
+            __TestNamespace_PTagHelper = CreateTagHelper<global::TestNamespace.PTagHelper>();
 #line 8 "ComplexTagHelpers.cshtml"
                           __o = DateTime.Now;
 
@@ -148,70 +148,70 @@ if (true)
 #line default
 #line hidden
 
-            __InputTagHelper = CreateTagHelper<InputTagHelper>();
-            __InputTagHelper2 = CreateTagHelper<InputTagHelper2>();
+            __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
+            __TestNamespace_InputTagHelper2 = CreateTagHelper<global::TestNamespace.InputTagHelper2>();
 #line 23 "ComplexTagHelpers.cshtml"
-__InputTagHelper2.Checked = (@object);
+__TestNamespace_InputTagHelper2.Checked = (@object);
 
 #line default
 #line hidden
-            __PTagHelper = CreateTagHelper<PTagHelper>();
+            __TestNamespace_PTagHelper = CreateTagHelper<global::TestNamespace.PTagHelper>();
 #line 21 "ComplexTagHelpers.cshtml"
-                   __PTagHelper.Age = DateTimeOffset.Now.Year - 1970;
+     __TestNamespace_PTagHelper.Age = DateTimeOffset.Now.Year - 1970;
 
 #line default
 #line hidden
-            __InputTagHelper = CreateTagHelper<InputTagHelper>();
-            __InputTagHelper2 = CreateTagHelper<InputTagHelper2>();
+            __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
+            __TestNamespace_InputTagHelper2 = CreateTagHelper<global::TestNamespace.InputTagHelper2>();
 #line 26 "ComplexTagHelpers.cshtml"
-                                __InputTagHelper2.Checked = (DateTimeOffset.Now.Year > 2014);
+                  __TestNamespace_InputTagHelper2.Checked = (DateTimeOffset.Now.Year > 2014);
 
 #line default
 #line hidden
-            __PTagHelper = CreateTagHelper<PTagHelper>();
+            __TestNamespace_PTagHelper = CreateTagHelper<global::TestNamespace.PTagHelper>();
 #line 25 "ComplexTagHelpers.cshtml"
-__PTagHelper.Age = -1970 + @DateTimeOffset.Now.Year;
+__TestNamespace_PTagHelper.Age = -1970 + @DateTimeOffset.Now.Year;
 
 #line default
 #line hidden
-            __InputTagHelper = CreateTagHelper<InputTagHelper>();
-            __InputTagHelper2 = CreateTagHelper<InputTagHelper2>();
+            __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
+            __TestNamespace_InputTagHelper2 = CreateTagHelper<global::TestNamespace.InputTagHelper2>();
 #line 29 "ComplexTagHelpers.cshtml"
-__InputTagHelper2.Checked = DateTimeOffset.Now.Year > 2014;
+__TestNamespace_InputTagHelper2.Checked = DateTimeOffset.Now.Year > 2014;
 
 #line default
 #line hidden
-            __PTagHelper = CreateTagHelper<PTagHelper>();
+            __TestNamespace_PTagHelper = CreateTagHelper<global::TestNamespace.PTagHelper>();
 #line 28 "ComplexTagHelpers.cshtml"
-__PTagHelper.Age = DateTimeOffset.Now.Year - 1970;
+__TestNamespace_PTagHelper.Age = DateTimeOffset.Now.Year - 1970;
 
 #line default
 #line hidden
-            __InputTagHelper = CreateTagHelper<InputTagHelper>();
-            __InputTagHelper2 = CreateTagHelper<InputTagHelper2>();
+            __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
+            __TestNamespace_InputTagHelper2 = CreateTagHelper<global::TestNamespace.InputTagHelper2>();
 #line 32 "ComplexTagHelpers.cshtml"
-__InputTagHelper2.Checked =    @(  DateTimeOffset.Now.Year  ) > 2014   ;
+__TestNamespace_InputTagHelper2.Checked =    @(  DateTimeOffset.Now.Year  ) > 2014   ;
 
 #line default
 #line hidden
-            __PTagHelper = CreateTagHelper<PTagHelper>();
+            __TestNamespace_PTagHelper = CreateTagHelper<global::TestNamespace.PTagHelper>();
 #line 31 "ComplexTagHelpers.cshtml"
-__PTagHelper.Age = ("My age is this long.".Length);
+__TestNamespace_PTagHelper.Age = ("My age is this long.".Length);
 
 #line default
 #line hidden
 #line 34 "ComplexTagHelpers.cshtml"
    __o = someMethod(item => new Template(async(__razor_template_writer) => {
-    __InputTagHelper = CreateTagHelper<InputTagHelper>();
-    __InputTagHelper2 = CreateTagHelper<InputTagHelper2>();
+    __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
+    __TestNamespace_InputTagHelper2 = CreateTagHelper<global::TestNamespace.InputTagHelper2>();
 #line 34 "ComplexTagHelpers.cshtml"
-                                   __InputTagHelper2.Checked = checked;
+                     __TestNamespace_InputTagHelper2.Checked = checked;
 
 #line default
 #line hidden
-    __PTagHelper = CreateTagHelper<PTagHelper>();
+    __TestNamespace_PTagHelper = CreateTagHelper<global::TestNamespace.PTagHelper>();
 #line 34 "ComplexTagHelpers.cshtml"
-          __PTagHelper.Age = 123;
+__TestNamespace_PTagHelper.Age = 123;
 
 #line default
 #line hidden

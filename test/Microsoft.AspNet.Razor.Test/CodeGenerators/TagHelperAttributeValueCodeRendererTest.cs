@@ -26,13 +26,13 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                 new TagHelperDescriptor
                 {
                     TagName = "p",
-                    TypeName = "PTagHelper",
+                    TypeName = "TestNamespace.PTagHelper",
                     AssemblyName = "SomeAssembly"
                 },
                 new TagHelperDescriptor
                 {
                     TagName = "input",
-                    TypeName = "InputTagHelper",
+                    TypeName = "TestNamespace.InputTagHelper",
                     AssemblyName = "SomeAssembly",
                     Attributes = new TagHelperAttributeDescriptor[]
                     {
@@ -43,7 +43,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                 new TagHelperDescriptor
                 {
                     TagName = "input",
-                    TypeName = "InputTagHelper2",
+                    TypeName = "TestNamespace.InputTagHelper2",
                     AssemblyName = "SomeAssembly",
                     Attributes = new TagHelperAttributeDescriptor[]
                     {

@@ -20,7 +20,7 @@ namespace TestOutput
             #pragma warning restore 219
         }
         #line hidden
-        private CatchAllTagHelper __CatchAllTagHelper = null;
+        private global::TestNamespace.CatchAllTagHelper __TestNamespace_CatchAllTagHelper = null;
         #line hidden
         public SymbolBoundAttributes()
         {
@@ -29,35 +29,35 @@ namespace TestOutput
         #pragma warning disable 1998
         public override async Task ExecuteAsync()
         {
-            __CatchAllTagHelper = CreateTagHelper<CatchAllTagHelper>();
+            __TestNamespace_CatchAllTagHelper = CreateTagHelper<global::TestNamespace.CatchAllTagHelper>();
 #line 12 "SymbolBoundAttributes.cshtml"
-__CatchAllTagHelper.ListItems = items;
+__TestNamespace_CatchAllTagHelper.ListItems = items;
 
 #line default
 #line hidden
-            __CatchAllTagHelper = CreateTagHelper<CatchAllTagHelper>();
+            __TestNamespace_CatchAllTagHelper = CreateTagHelper<global::TestNamespace.CatchAllTagHelper>();
 #line 13 "SymbolBoundAttributes.cshtml"
-__CatchAllTagHelper.ArrayItems = items;
+__TestNamespace_CatchAllTagHelper.ArrayItems = items;
 
 #line default
 #line hidden
-            __CatchAllTagHelper = CreateTagHelper<CatchAllTagHelper>();
+            __TestNamespace_CatchAllTagHelper = CreateTagHelper<global::TestNamespace.CatchAllTagHelper>();
 #line 14 "SymbolBoundAttributes.cshtml"
-__CatchAllTagHelper.Event1 = doSomething();
+__TestNamespace_CatchAllTagHelper.Event1 = doSomething();
 
 #line default
 #line hidden
-            __CatchAllTagHelper = CreateTagHelper<CatchAllTagHelper>();
+            __TestNamespace_CatchAllTagHelper = CreateTagHelper<global::TestNamespace.CatchAllTagHelper>();
 #line 15 "SymbolBoundAttributes.cshtml"
-__CatchAllTagHelper.Event2 = doSomething();
+__TestNamespace_CatchAllTagHelper.Event2 = doSomething();
 
 #line default
 #line hidden
-            __CatchAllTagHelper = CreateTagHelper<CatchAllTagHelper>();
-            __CatchAllTagHelper.StringProperty1 = "value";
-            __CatchAllTagHelper = CreateTagHelper<CatchAllTagHelper>();
-            __CatchAllTagHelper = CreateTagHelper<CatchAllTagHelper>();
-            __CatchAllTagHelper.StringProperty2 = "value";
+            __TestNamespace_CatchAllTagHelper = CreateTagHelper<global::TestNamespace.CatchAllTagHelper>();
+            __TestNamespace_CatchAllTagHelper.StringProperty1 = "value";
+            __TestNamespace_CatchAllTagHelper = CreateTagHelper<global::TestNamespace.CatchAllTagHelper>();
+            __TestNamespace_CatchAllTagHelper = CreateTagHelper<global::TestNamespace.CatchAllTagHelper>();
+            __TestNamespace_CatchAllTagHelper.StringProperty2 = "value";
         }
         #pragma warning restore 1998
     }

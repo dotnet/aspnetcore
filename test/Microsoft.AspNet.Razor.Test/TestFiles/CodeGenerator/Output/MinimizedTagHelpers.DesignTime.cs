@@ -20,8 +20,8 @@ namespace TestOutput
             #pragma warning restore 219
         }
         #line hidden
-        private CatchAllTagHelper __CatchAllTagHelper = null;
-        private InputTagHelper __InputTagHelper = null;
+        private global::TestNamespace.CatchAllTagHelper __TestNamespace_CatchAllTagHelper = null;
+        private global::TestNamespace.InputTagHelper __TestNamespace_InputTagHelper = null;
         #line hidden
         public MinimizedTagHelpers()
         {
@@ -30,18 +30,18 @@ namespace TestOutput
         #pragma warning disable 1998
         public override async Task ExecuteAsync()
         {
-            __CatchAllTagHelper = CreateTagHelper<CatchAllTagHelper>();
-            __InputTagHelper = CreateTagHelper<InputTagHelper>();
-            __CatchAllTagHelper = CreateTagHelper<CatchAllTagHelper>();
-            __InputTagHelper.BoundRequiredString = "hello";
-            __InputTagHelper = CreateTagHelper<InputTagHelper>();
-            __CatchAllTagHelper = CreateTagHelper<CatchAllTagHelper>();
-            __CatchAllTagHelper.BoundRequiredString = "world";
-            __InputTagHelper.BoundRequiredString = "hello2";
-            __InputTagHelper = CreateTagHelper<InputTagHelper>();
-            __CatchAllTagHelper = CreateTagHelper<CatchAllTagHelper>();
-            __InputTagHelper.BoundRequiredString = "world";
-            __CatchAllTagHelper = CreateTagHelper<CatchAllTagHelper>();
+            __TestNamespace_CatchAllTagHelper = CreateTagHelper<global::TestNamespace.CatchAllTagHelper>();
+            __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
+            __TestNamespace_CatchAllTagHelper = CreateTagHelper<global::TestNamespace.CatchAllTagHelper>();
+            __TestNamespace_InputTagHelper.BoundRequiredString = "hello";
+            __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
+            __TestNamespace_CatchAllTagHelper = CreateTagHelper<global::TestNamespace.CatchAllTagHelper>();
+            __TestNamespace_CatchAllTagHelper.BoundRequiredString = "world";
+            __TestNamespace_InputTagHelper.BoundRequiredString = "hello2";
+            __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
+            __TestNamespace_CatchAllTagHelper = CreateTagHelper<global::TestNamespace.CatchAllTagHelper>();
+            __TestNamespace_InputTagHelper.BoundRequiredString = "world";
+            __TestNamespace_CatchAllTagHelper = CreateTagHelper<global::TestNamespace.CatchAllTagHelper>();
         }
         #pragma warning restore 1998
     }

@@ -11,14 +11,6 @@ namespace Microsoft.AspNet.Razor.CodeGenerators.Visitors
 {
     public class CSharpUsingVisitor : CodeVisitor<CSharpCodeWriter>
     {
-        private static readonly string[] TagHelpersRuntimeNamespaces = new[]
-        {
-            "Microsoft.AspNet.Razor.TagHelpers",
-            "Microsoft.AspNet.Razor.Runtime.TagHelpers"
-        };
-
-        private bool _foundTagHelpers;
-
         public CSharpUsingVisitor(CSharpCodeWriter writer, CodeGeneratorContext context)
             : base(writer, context)
         {
@@ -88,29 +80,6 @@ namespace Microsoft.AspNet.Razor.CodeGenerators.Visitors
             if (!mapSemicolon)
             {
                 Writer.WriteLine(";");
-            }
-        }
-
-        protected override void Visit(TagHelperChunk chunk)
-        {
-            if (Context.Host.DesignTimeMode)
-            {
-                return;
-            }
-
-            if (!_foundTagHelpers)
-            {
-                _foundTagHelpers = true;
-
-                foreach (var tagHelperRuntimeNamespace in TagHelpersRuntimeNamespaces)
-                {
-                    if (ImportedUsings.Add(tagHelperRuntimeNamespace))
-                    {
-                        // If we find TagHelpers then we need to add the TagHelper runtime namespaces to our list of
-                        // usings.
-                        Writer.WriteUsing(tagHelperRuntimeNamespace);
-                    }
-                }
             }
         }
     }

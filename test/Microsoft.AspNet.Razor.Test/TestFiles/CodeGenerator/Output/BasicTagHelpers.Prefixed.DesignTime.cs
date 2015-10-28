@@ -27,9 +27,9 @@ namespace TestOutput
             #pragma warning restore 219
         }
         #line hidden
-        private PTagHelper __PTagHelper = null;
-        private InputTagHelper __InputTagHelper = null;
-        private InputTagHelper2 __InputTagHelper2 = null;
+        private global::TestNamespace.PTagHelper __TestNamespace_PTagHelper = null;
+        private global::TestNamespace.InputTagHelper __TestNamespace_InputTagHelper = null;
+        private global::TestNamespace.InputTagHelper2 __TestNamespace_InputTagHelper2 = null;
         #line hidden
         public BasicTagHelpers.Prefixed()
         {
@@ -38,16 +38,16 @@ namespace TestOutput
         #pragma warning disable 1998
         public override async Task ExecuteAsync()
         {
-            __InputTagHelper = CreateTagHelper<InputTagHelper>();
-            __InputTagHelper2 = CreateTagHelper<InputTagHelper2>();
-            __InputTagHelper.Type = "checkbox";
-            __InputTagHelper2.Type = __InputTagHelper.Type;
+            __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
+            __TestNamespace_InputTagHelper2 = CreateTagHelper<global::TestNamespace.InputTagHelper2>();
+            __TestNamespace_InputTagHelper.Type = "checkbox";
+            __TestNamespace_InputTagHelper2.Type = __TestNamespace_InputTagHelper.Type;
 #line 8 "BasicTagHelpers.Prefixed.cshtml"
-               __InputTagHelper2.Checked = true;
+ __TestNamespace_InputTagHelper2.Checked = true;
 
 #line default
 #line hidden
-            __PTagHelper = CreateTagHelper<PTagHelper>();
+            __TestNamespace_PTagHelper = CreateTagHelper<global::TestNamespace.PTagHelper>();
         }
         #pragma warning restore 1998
     }

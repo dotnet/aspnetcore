@@ -74,7 +74,7 @@ namespace Microsoft.AspNet.Razor.CodeGenerators.Visitors
                     .WriteStartAssignment(CSharpTagHelperCodeRenderer.RunnerVariableName)
                     .Write(CSharpTagHelperCodeRenderer.RunnerVariableName)
                     .Write(" ?? ")
-                    .WriteStartNewObject(_tagHelperContext.RunnerTypeName)
+                    .WriteStartNewObject("global::" + _tagHelperContext.RunnerTypeName)
                     .WriteEndMethodInvocation();
             }
         }

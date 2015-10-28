@@ -20,7 +20,7 @@ namespace TestOutput
             #pragma warning restore 219
         }
         #line hidden
-        private InputTagHelper __InputTagHelper = null;
+        private global::TestNamespace.InputTagHelper __TestNamespace_InputTagHelper = null;
         #line hidden
         public DynamicAttributeTagHelpers()
         {
@@ -29,13 +29,13 @@ namespace TestOutput
         #pragma warning disable 1998
         public override async Task ExecuteAsync()
         {
-            __InputTagHelper = CreateTagHelper<InputTagHelper>();
+            __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
 #line 3 "DynamicAttributeTagHelpers.cshtml"
                   __o = DateTime.Now;
 
 #line default
 #line hidden
-            __InputTagHelper = CreateTagHelper<InputTagHelper>();
+            __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
 #line 5 "DynamicAttributeTagHelpers.cshtml"
                 if (true) { 
 
@@ -64,19 +64,19 @@ namespace TestOutput
 #line default
 #line hidden
 
-            __InputTagHelper = CreateTagHelper<InputTagHelper>();
+            __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
 #line 7 "DynamicAttributeTagHelpers.cshtml"
                 __o = DateTime.Now;
 
 #line default
 #line hidden
-            __InputTagHelper.Bound = string.Empty;
+            __TestNamespace_InputTagHelper.Bound = string.Empty;
 #line 7 "DynamicAttributeTagHelpers.cshtml"
                                                       __o = DateTime.Now;
 
 #line default
 #line hidden
-            __InputTagHelper = CreateTagHelper<InputTagHelper>();
+            __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
 #line 9 "DynamicAttributeTagHelpers.cshtml"
          __o = long.MinValue;
 
@@ -115,7 +115,7 @@ namespace TestOutput
 
 #line default
 #line hidden
-            __InputTagHelper.Bound = string.Empty;
+            __TestNamespace_InputTagHelper.Bound = string.Empty;
 #line 10 "DynamicAttributeTagHelpers.cshtml"
            __o = long.MinValue;
 
@@ -154,7 +154,7 @@ namespace TestOutput
 
 #line default
 #line hidden
-            __InputTagHelper = CreateTagHelper<InputTagHelper>();
+            __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
 #line 12 "DynamicAttributeTagHelpers.cshtml"
            __o = long.MinValue;
 
@@ -170,7 +170,7 @@ namespace TestOutput
 
 #line default
 #line hidden
-            __InputTagHelper = CreateTagHelper<InputTagHelper>();
+            __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
 #line 14 "DynamicAttributeTagHelpers.cshtml"
                 if (true) { 
 
