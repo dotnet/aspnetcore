@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Threading;
 using Microsoft.AspNet.Http;
 using Microsoft.Extensions.Logging;
 
@@ -108,55 +107,75 @@ namespace Microsoft.AspNet.Hosting.Internal
                 _httpContext = httpContext;
             }
 
-            public override string ToString() => _cachedToString ?? Interlocked.CompareExchange(
-                ref _cachedToString,
-                $"RequestId:{_httpContext.TraceIdentifier} RequestPath:{_httpContext.Request.Path}",
-                null);
-
-            public IEnumerable<KeyValuePair<string, object>> GetValues() => _cachedGetValues ?? Interlocked.CompareExchange(
-                ref _cachedGetValues,
-                new[]
+            public override string ToString()
+            {
+                if (_cachedToString == null)
                 {
-                    new KeyValuePair<string, object>("RequestId", _httpContext.TraceIdentifier),
-                    new KeyValuePair<string, object>("RequestPath", _httpContext.Request.Path.ToString()),
-                },
-                null);
+                    _cachedToString = $"RequestId:{_httpContext.TraceIdentifier} RequestPath:{_httpContext.Request.Path}";
+                }
+
+                return _cachedToString;
+            }
+
+            public IEnumerable<KeyValuePair<string, object>> GetValues()
+            {
+                if (_cachedGetValues == null)
+                {
+                    _cachedGetValues = new[]
+                    {
+                        new KeyValuePair<string, object>("RequestId", _httpContext.TraceIdentifier),
+                        new KeyValuePair<string, object>("RequestPath", _httpContext.Request.Path.ToString()),
+                    };
+                }
+
+                return _cachedGetValues;
+            }
         }
 
         private class HostingRequestStarting : ILogValues
         {
             internal static readonly Func<object, Exception, string> Callback = (state, exception) => ((HostingRequestStarting)state).ToString();
 
-            private readonly HttpContext _httpContext;
+            private readonly HttpRequest _request;
 
             private string _cachedToString;
             private IEnumerable<KeyValuePair<string, object>> _cachedGetValues;
 
             public HostingRequestStarting(HttpContext httpContext)
             {
-                _httpContext = httpContext;
+                _request = httpContext.Request;
             }
 
-            public override string ToString() => _cachedToString ?? Interlocked.CompareExchange(
-                ref _cachedToString,
-                $"Request starting {_httpContext.Request.Protocol} {_httpContext.Request.Method} {_httpContext.Request.Scheme}://{_httpContext.Request.Host}{_httpContext.Request.PathBase}{_httpContext.Request.Path}{_httpContext.Request.QueryString} {_httpContext.Request.ContentType} {_httpContext.Request.ContentLength}",
-                null);
-
-            public IEnumerable<KeyValuePair<string, object>> GetValues() => _cachedGetValues ?? Interlocked.CompareExchange(
-                ref _cachedGetValues,
-                new[]
+            public override string ToString()
+            {
+                if (_cachedToString == null)
                 {
-                    new KeyValuePair<string, object>("Protocol", _httpContext.Request.Protocol),
-                    new KeyValuePair<string, object>("Method", _httpContext.Request.Method),
-                    new KeyValuePair<string, object>("ContentType", _httpContext.Request.ContentType),
-                    new KeyValuePair<string, object>("ContentLength", _httpContext.Request.ContentLength),
-                    new KeyValuePair<string, object>("Scheme", _httpContext.Request.Scheme.ToString()),
-                    new KeyValuePair<string, object>("Host", _httpContext.Request.Host.ToString()),
-                    new KeyValuePair<string, object>("PathBase", _httpContext.Request.PathBase.ToString()),
-                    new KeyValuePair<string, object>("Path", _httpContext.Request.Path.ToString()),
-                    new KeyValuePair<string, object>("QueryString", _httpContext.Request.QueryString.ToString()),
-                },
-                null);
+                    _cachedToString = $"Request starting {_request.Protocol} {_request.Method} {_request.Scheme}://{_request.Host}{_request.PathBase}{_request.Path}{_request.QueryString} {_request.ContentType} {_request.ContentLength}";
+                }
+
+                return _cachedToString;
+            }
+
+            public IEnumerable<KeyValuePair<string, object>> GetValues()
+            {
+                if (_cachedGetValues == null)
+                {
+                    _cachedGetValues = new[]
+                    {
+                        new KeyValuePair<string, object>("Protocol", _request.Protocol),
+                        new KeyValuePair<string, object>("Method", _request.Method),
+                        new KeyValuePair<string, object>("ContentType", _request.ContentType),
+                        new KeyValuePair<string, object>("ContentLength", _request.ContentLength),
+                        new KeyValuePair<string, object>("Scheme", _request.Scheme.ToString()),
+                        new KeyValuePair<string, object>("Host", _request.Host.ToString()),
+                        new KeyValuePair<string, object>("PathBase", _request.PathBase.ToString()),
+                        new KeyValuePair<string, object>("Path", _request.Path.ToString()),
+                        new KeyValuePair<string, object>("QueryString", _request.QueryString.ToString()),
+                    };
+                }
+
+                return _cachedGetValues;
+            }
         }
 
         private class HostingRequestFinished
@@ -175,20 +194,30 @@ namespace Microsoft.AspNet.Hosting.Internal
                 _elapsed = elapsed;
             }
 
-            public override string ToString() => _cachedToString ?? Interlocked.CompareExchange(
-                ref _cachedToString,
-                $"Request finished in {_elapsed.TotalMilliseconds}ms {_httpContext.Response.StatusCode} {_httpContext.Response.ContentType}",
-                null);
-
-            public IEnumerable<KeyValuePair<string, object>> GetValues() => _cachedGetValues ?? Interlocked.CompareExchange(
-                ref _cachedGetValues,
-                new[]
+            public override string ToString()
+            {
+                if (_cachedToString == null)
                 {
-                    new KeyValuePair<string, object>("ElapsedMilliseconds", _elapsed.TotalMilliseconds),
-                    new KeyValuePair<string, object>("StatusCode", _httpContext.Response.StatusCode),
-                    new KeyValuePair<string, object>("ContentType", _httpContext.Response.ContentType),
-                },
-                null);
+                    _cachedToString = $"Request finished in {_elapsed.TotalMilliseconds}ms {_httpContext.Response.StatusCode} {_httpContext.Response.ContentType}";
+                }
+
+                return _cachedToString;
+            }
+
+            public IEnumerable<KeyValuePair<string, object>> GetValues()
+            {
+                if (_cachedGetValues == null)
+                {
+                    _cachedGetValues = new[]
+                    {
+                        new KeyValuePair<string, object>("ElapsedMilliseconds", _elapsed.TotalMilliseconds),
+                        new KeyValuePair<string, object>("StatusCode", _httpContext.Response.StatusCode),
+                        new KeyValuePair<string, object>("ContentType", _httpContext.Response.ContentType),
+                    };
+                }
+
+                return _cachedGetValues;
+            }
         }
 
         private class HostingRequestFailed
@@ -207,20 +236,30 @@ namespace Microsoft.AspNet.Hosting.Internal
                 _elapsed = elapsed;
             }
 
-            public override string ToString() => _cachedToString ?? Interlocked.CompareExchange(
-                ref _cachedToString,
-                $"Request finished in {_elapsed.TotalMilliseconds}ms 500",
-                null);
-
-            public IEnumerable<KeyValuePair<string, object>> GetValues() => _cachedGetValues ?? Interlocked.CompareExchange(
-                ref _cachedGetValues,
-                new[]
+            public override string ToString()
+            {
+                if (_cachedToString == null)
                 {
-                    new KeyValuePair<string, object>("ElapsedMilliseconds", _elapsed.TotalMilliseconds),
-                    new KeyValuePair<string, object>("StatusCode", 500),
-                    new KeyValuePair<string, object>("ContentType", null),
-                },
-                null);
+                    _cachedToString = $"Request finished in {_elapsed.TotalMilliseconds}ms 500";
+                }
+
+                return _cachedToString;
+            }
+
+            public IEnumerable<KeyValuePair<string, object>> GetValues()
+            {
+                if (_cachedGetValues == null)
+                {
+                    _cachedGetValues = new[]
+                    {
+                        new KeyValuePair<string, object>("ElapsedMilliseconds", _elapsed.TotalMilliseconds),
+                        new KeyValuePair<string, object>("StatusCode", 500),
+                        new KeyValuePair<string, object>("ContentType", null),
+                    };
+                }
+
+                return _cachedGetValues;
+            }
         }
     }
 }
