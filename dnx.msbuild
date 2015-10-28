@@ -79,7 +79,7 @@
             />
         </ItemGroup>
 
-        <Message Text="%(UnsignedPackages.Identity)" Importance="low" />
+        <Message Text="%(UnsignedPackages.Identity)" Importance="high" />
 
         <Exec Command="$(DNXToolsPath)7za.exe x -y -scsUTF-8 -o@(UnsignedPackages->'$(UnsignedPackagesPath)%(Filename)') %(UnsignedPackages.Identity)" />
         <Exec Command="$(DNXToolsPath)7za.exe x -y -scsUTF-8 -o@(SymbolPackages->'$(UnsignedSymbolPackagesPath)%(Filename)') %(SymbolPackages.Identity)" />
