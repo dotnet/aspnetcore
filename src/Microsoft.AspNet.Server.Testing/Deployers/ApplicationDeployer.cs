@@ -10,6 +10,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using Microsoft.AspNet.Testing;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.PlatformAbstractions;
 
 namespace Microsoft.AspNet.Server.Testing
 {
@@ -99,23 +100,7 @@ namespace Microsoft.AspNet.Server.Testing
 
         protected string PopulateChosenRuntimeInformation()
         {
-            string currentRuntimeBinPath = string.Empty;
-            if (TestPlatformHelper.IsMac && DeploymentParameters.RuntimeFlavor == RuntimeFlavor.CoreClr)
-            {
-                var path = Environment.GetEnvironmentVariable("PATH");
-                currentRuntimeBinPath = path.Split(new char[] { ':' }, StringSplitOptions.RemoveEmptyEntries).
-                    Where(c => c.Contains("dnx-coreclr-darwin") || c.Contains("dnx-mono")).FirstOrDefault();
-
-                if (string.IsNullOrWhiteSpace(currentRuntimeBinPath))
-                {
-                    throw new Exception("Runtime not detected on the machine.");
-                }
-            }
-            else
-            {
-                // ex: runtimes/dnx-coreclr-win-x64.1.0.0-rc1-15844/bin
-                currentRuntimeBinPath = Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName);
-            }
+            string currentRuntimeBinPath = PlatformServices.Default.Runtime.RuntimePath;
             Logger.LogInformation($"Current runtime path is : {currentRuntimeBinPath}");
 
             var targetRuntimeName = new StringBuilder()
