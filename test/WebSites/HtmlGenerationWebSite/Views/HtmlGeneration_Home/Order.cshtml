@@ -84,7 +84,7 @@
             @Html.EditorFor(model => model.Customer.Gender)
             <span asp-validation-for="Customer.Gender"></span>
         </div>
-        <div asp-validation-summary="ValidationSummary.All" class="order"></div>
+        <div asp-validation-summary="All" class="order"></div>
         <input type="hidden" asp-for="Customer.Key" />
         <input type="submit" />
     </form>

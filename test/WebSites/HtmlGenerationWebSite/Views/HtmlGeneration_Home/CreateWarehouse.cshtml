@@ -20,7 +20,7 @@
             <select asp-for="Product" asp-items="(IEnumerable<SelectListItem>)ViewBag.Items"></select>
             <span asp-validation-for="Product"></span>
         </div>
-        <div asp-validation-summary="ValidationSummary.All" class="warehouse"></div>
+        <div asp-validation-summary="All" class="warehouse"></div>
         <input type="submit" />
     }
 </body>
