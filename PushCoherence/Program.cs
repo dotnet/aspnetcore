@@ -25,6 +25,7 @@ namespace PushCoherence
             var nugetFeed = Environment.GetEnvironmentVariable("NUGET_FEED");
             var dropRoot = Environment.GetEnvironmentVariable("DROP_ROOT");
             var apiKey = Environment.GetEnvironmentVariable("APIKEY");
+            var nugetExe = Environment.GetEnvironmentVariable("PUSH_NUGET_EXE");
 
             if (string.IsNullOrEmpty(nugetFeed))
             {
@@ -41,10 +42,13 @@ namespace PushCoherence
                 throw new Exception("APIKEY not specified");
             }
 
+            if (string.IsNullOrEmpty(nugetExe))
+            {
+                throw new Exception("PUSH_NUGET_EXE not specified");
+            }
+
             var lastUploadedFile = Path.Combine(dropRoot, "uploaded-files");
             var packagesDir = Path.Combine(Directory.GetCurrentDirectory(), "bin", "Signed", "Packages");
-            var nugetExe = Path.Combine(Directory.GetCurrentDirectory(), "tools", "nuget.exe");
-
             var nonTimeStampedDir = Path.Combine(Directory.GetCurrentDirectory(), "bin", "Signed", "Packages-NoTimeStamp");
             Directory.CreateDirectory(nonTimeStampedDir);
 
@@ -140,7 +144,7 @@ namespace PushCoherence
 
         private static void Retry(Action pushPackage)
         {
-            int attempts = 3;
+            int attempts = 5;
             while (attempts-- > 0)
             {
                 try
