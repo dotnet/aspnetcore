@@ -8,8 +8,6 @@
             "EntityFramework.Commands": { },
             "EntityFramework.Core": { },
             "EntityFramework.InMemory": { },
-            "EntityFramework.MicrosoftSqlServer": { },
-            "EntityFramework.MicrosoftSqlServer.Design": { },
             "EntityFramework.Relational": { },
             "EntityFramework.Relational.Design": { },
             "EntityFramework.Sqlite": { },
@@ -35,16 +33,28 @@
                     "bin\\mscorlib.dll": "Need to follow up, not from ADX team",
                     "bin\\System.Console.dll": "Need to follow up, not from ADX team",
                     "bin\\System.Diagnostics.Debug.dll": "Need to follow up, not from ADX team",
+                    "bin\\System.Diagnostics.FileVersionInfo.dll": "Need to follow up, not from ADX team",
                     "bin\\System.Diagnostics.Process.dll": "Need to follow up, not from ADX team",
+                    "bin\\System.Diagnostics.TraceSource.dll": "Need to follow up, not from ADX team",
+                    "bin\\System.Globalization.Extensions.dll": "Need to follow up, not from ADX team",
                     "bin\\System.IO.Compression.dll": "Need to follow up, not from ADX team",
                     "bin\\System.IO.FileSystem.dll": "Need to follow up, not from ADX team",
+                    "bin\\System.IO.FileSystem.DriveInfo.dll": "Need to follow up, not from ADX team",
                     "bin\\System.IO.FileSystem.Watcher.dll": "Need to follow up, not from ADX team",
+                    "bin\\System.IO.MemoryMappedFiles.dll": "Need to follow up, not from ADX team",
+                    "bin\\System.IO.Pipes.dll": "Need to follow up, not from ADX team",
+                    "bin\\System.Net.Http.dll": "Need to follow up, not from ADX team",
+                    "bin\\System.Net.NameResolution.dll": "Need to follow up, not from ADX team",
+                    "bin\\System.Net.Sockets.dll": "Need to follow up, not from ADX team",
                     "bin\\System.Net.Primitives.dll": "Need to follow up, not from ADX team",
+                    "bin\\System.Net.Requests.dll": "Need to follow up, not from ADX team",
                     "bin\\System.Private.Uri.dll": "Need to follow up, not from ADX team",
                     "bin\\System.Runtime.Extensions.dll": "Need to follow up, not from ADX team",
+                    "bin\\System.Runtime.InteropServices.RuntimeInformation.dll": "Need to follow up, not from ADX team",
                     "bin\\System.Security.Cryptography.Algorithms.dll": "Need to follow up, not from ADX team",
                     "bin\\System.Security.Cryptography.Encoding.dll": "Need to follow up, not from ADX team",
                     "bin\\System.Security.Cryptography.X509Certificates.dll": "Need to follow up, not from ADX team",
+                    "bin\\System.Text.Encoding.CodePages.dll": "Need to follow up, not from ADX team",
                     "bin\\System.Threading.dll": "Need to follow up, not from ADX team"
                 }
             },
@@ -57,16 +67,28 @@
                     "bin\\mscorlib.dll": "Need to follow up, not from ADX team",
                     "bin\\System.Console.dll": "Need to follow up, not from ADX team",
                     "bin\\System.Diagnostics.Debug.dll": "Need to follow up, not from ADX team",
+                    "bin\\System.Diagnostics.FileVersionInfo.dll": "Need to follow up, not from ADX team",
                     "bin\\System.Diagnostics.Process.dll": "Need to follow up, not from ADX team",
+                    "bin\\System.Diagnostics.TraceSource.dll": "Need to follow up, not from ADX team",
+                    "bin\\System.Globalization.Extensions.dll": "Need to follow up, not from ADX team",
                     "bin\\System.IO.Compression.dll": "Need to follow up, not from ADX team",
                     "bin\\System.IO.FileSystem.dll": "Need to follow up, not from ADX team",
+                    "bin\\System.IO.FileSystem.DriveInfo.dll": "Need to follow up, not from ADX team",
                     "bin\\System.IO.FileSystem.Watcher.dll": "Need to follow up, not from ADX team",
+                    "bin\\System.IO.MemoryMappedFiles.dll": "Need to follow up, not from ADX team",
+                    "bin\\System.IO.Pipes.dll": "Need to follow up, not from ADX team",
+                    "bin\\System.Net.Http.dll": "Need to follow up, not from ADX team",
+                    "bin\\System.Net.NameResolution.dll": "Need to follow up, not from ADX team",
+                    "bin\\System.Net.Sockets.dll": "Need to follow up, not from ADX team",
                     "bin\\System.Net.Primitives.dll": "Need to follow up, not from ADX team",
+                    "bin\\System.Net.Requests.dll": "Need to follow up, not from ADX team",
                     "bin\\System.Private.Uri.dll": "Need to follow up, not from ADX team",
                     "bin\\System.Runtime.Extensions.dll": "Need to follow up, not from ADX team",
+                    "bin\\System.Runtime.InteropServices.RuntimeInformation.dll": "Need to follow up, not from ADX team",
                     "bin\\System.Security.Cryptography.Algorithms.dll": "Need to follow up, not from ADX team",
                     "bin\\System.Security.Cryptography.Encoding.dll": "Need to follow up, not from ADX team",
                     "bin\\System.Security.Cryptography.X509Certificates.dll": "Need to follow up, not from ADX team",
+                    "bin\\System.Text.Encoding.CodePages.dll": "Need to follow up, not from ADX team",
                     "bin\\System.Threading.dll": "Need to follow up, not from ADX team"
                 }
             },
@@ -164,7 +186,6 @@
                     "runtimes\\win7-x86\\native\\libuv.dll": "We don't sign 3rd party DLLs"
                 }
             },
-            "Microsoft.AspNet.Server.Kestrel.Https": { },
             "Microsoft.AspNet.Server.Testing": { },
             "Microsoft.AspNet.Server.WebListener": { },
             "Microsoft.AspNet.Session": { },
@@ -207,47 +228,6 @@
             "Microsoft.Dnx.Tooling": { },
             "Microsoft.Dnx.Watcher": { },
             "Microsoft.Dnx.Watcher.Core": { },
-            "Microsoft.Extensions.Caching.Abstractions": { },
-            "Microsoft.Extensions.Caching.Memory": { },
-            "Microsoft.Extensions.Caching.Redis": { },
-            "Microsoft.Extensions.Caching.SqlConfig": { },
-            "Microsoft.Extensions.Caching.SqlServer": { },
-            "Microsoft.Extensions.CodeGeneration": { },
-            "Microsoft.Extensions.CodeGeneration.Core": { },
-            "Microsoft.Extensions.CodeGeneration.EntityFramework": { },
-            "Microsoft.Extensions.CodeGeneration.Templating": { },
-            "Microsoft.Extensions.CodeGenerators.Mvc": { },
-            "Microsoft.Extensions.Configuration": { },
-            "Microsoft.Extensions.Configuration.Abstractions": { },
-            "Microsoft.Extensions.Configuration.Binder": { },
-            "Microsoft.Extensions.Configuration.CommandLine": { },
-            "Microsoft.Extensions.Configuration.EnvironmentVariables": { },
-            "Microsoft.Extensions.Configuration.FileExtensions": { },
-            "Microsoft.Extensions.Configuration.Ini": { },
-            "Microsoft.Extensions.Configuration.Json": { },
-            "Microsoft.Extensions.Configuration.UserSecrets": { },
-            "Microsoft.Extensions.Configuration.Xml": { },
-            "Microsoft.Extensions.DependencyInjection": { },
-            "Microsoft.Extensions.DependencyInjection.Abstractions": { },
-            "Microsoft.Extensions.FileSystemGlobbing": { },
-            "Microsoft.Extensions.Globalization.CultureInfoCache": { },
-            "Microsoft.Extensions.Localization": { },
-            "Microsoft.Extensions.Localization.Abstractions": { },
-            "Microsoft.Extensions.Logging": { },
-            "Microsoft.Extensions.Logging.Abstractions": { },
-            "Microsoft.Extensions.Logging.Console": { },
-            "Microsoft.Extensions.Logging.Debug": { },
-            "Microsoft.Extensions.Logging.EventLog": { },
-            "Microsoft.Extensions.Logging.Testing": { },
-            "Microsoft.Extensions.Logging.TraceSource": { },
-            "Microsoft.Extensions.MemoryPool": { },
-            "Microsoft.Extensions.OptionsModel": { },
-            "Microsoft.Extensions.Primitives": { },
-            "Microsoft.Extensions.SecretManager": { },
-            "Microsoft.Extensions.TelemetryAdapter": { },
-            "Microsoft.Extensions.WebEncoders": { },
-            "Microsoft.Extensions.WebEncoders.Core": { },
-            "Microsoft.Extensions.WebEncoders.Testing": { },
             "Microsoft.Net.Http.Headers": { },
             "Microsoft.Net.Http.Server": { },
             "Microsoft.Net.WebSockets": { },
@@ -280,24 +260,9 @@
             "Microsoft.Dnx.Host.Mono": { },
             "Microsoft.Dnx.Runtime.CommandParsing.Sources": { },
             "Microsoft.Dnx.Runtime.Internals": { },
-            "Microsoft.Extensions.JsonParser.Sources": { },
             "Microsoft.Dnx.Runtime.Sources": { },
             "Microsoft.Dnx.TestHost.Client.Sources": { },
-            "Microsoft.Extensions.ActivatorUtilities.Sources": { },
-            "Microsoft.Extensions.BufferedHtmlContent.Sources": { },
-            "Microsoft.Extensions.ClosedGenericMatcher.Sources": { },
-            "Microsoft.Extensions.CodeGeneration.Sources": { },
-            "Microsoft.Extensions.CommandLineUtils.Sources": { },
-            "Microsoft.Extensions.CopyOnWriteDictionary.Sources": { },
-            "Microsoft.Extensions.HashCodeCombiner.Sources": { },
-            "Microsoft.Extensions.Logging.NLog": { },
-            "Microsoft.Extensions.NotNullAttribute.Sources": { },
-            "Microsoft.Extensions.PropertyActivator.Sources": { },
-            "Microsoft.Extensions.PropertyHelper.Sources": { },
-            "Microsoft.Extensions.SecurityHelper.Sources": { },
-            "Microsoft.Extensions.TypeNameHelper.Sources": { },
             "PageGenerator": { },
-            "Placeholder": { },
             "xunit.execution.AspNet": { },
             "xunit.runner.aspnet": { },
             "xunit.runner.utility.AspNet": { }
@@ -390,7 +355,16 @@
             },
             "runtime.linux.System.Net.NameResolution": {
                 "SIGN_STRONGNAME": {
-                    "lib\\dotnet\\System.Net.NameResolution.dll": "3rd party DLLs don't need this"
+                    "lib\\dotnet\\System.Net.NameResolution.dll": "3rd party DLLs don't need this",
+                    "lib\\dnxcore50\\System.Net.NameResolution.dll": "3rd party DLLs don't need this"
+                }
+            },
+            "runtime.linux.System.Net.Sockets": {
+                "SIGN_STRONGNAME": {
+                    "lib\\dnxcore50\\System.Net.Sockets.dll": "3rd party DLLs don't need this"
+                },
+                "SIGN_AUTHENTICODE": {
+                    "lib\\dnxcore50\\System.Net.Sockets.dll": "We don't sign 3rd party DLLs"
                 }
             },
             "runtime.linux.System.Runtime.Extensions": {
@@ -445,12 +419,22 @@
             },
             "runtime.osx.10.10.System.Net.NameResolution": {
                 "SIGN_STRONGNAME": {
-                    "lib\\dotnet\\System.Net.NameResolution.dll": "3rd party DLLs don't need this"
+                    "lib\\dotnet\\System.Net.NameResolution.dll": "3rd party DLLs don't need this",
+                    "lib\\dnxcore50\\System.Net.NameResolution.dll": "3rd party DLLs don't need this"
+                
                 }
             },
             "runtime.osx.10.10.System.Net.Primitives": {
                 "SIGN_STRONGNAME": {
                     "lib\\dnxcore50\\System.Net.Primitives.dll": "3rd party DLLs don't need this"
+                }
+            },
+            "runtime.osx.10.10.System.Net.Sockets": {
+                "SIGN_AUTHENTICODE": {
+                    "lib\\dnxcore50\\System.Net.Sockets.dll": "We don't sign 3rd party DLLs"
+                },
+                "SIGN_STRONGNAME": {
+                    "lib\\dnxcore50\\System.Net.Sockets.dll": "We don't sign 3rd party DLLs"
                 }
             },
             "runtime.osx.10.10.System.Runtime.Extensions": {
@@ -528,6 +512,13 @@
                     "lib\\dotnet\\System.Net.Requests.dll": "3rd party DLLs don't need this"
                 }
             },
+            "runtime.unix.System.Net.Security": {
+                "SIGN_STRONGNAME": {
+                    "lib\\dnxcore50\\System.Net.Security.dll": "We don't sign 3rd party DLLs"
+                },
+                "SIGN_AUTHENTICODE": {
+                    "lib\\dnxcore50\\System.Net.Security.dll": "We don't sign 3rd party DLLs"
+                }            },
             "runtime.unix.System.Private.Uri": {
                 "SIGN_STRONGNAME": {
                     "lib\\dotnet\\System.Private.Uri.dll": "3rd party DLLs don't need this"
