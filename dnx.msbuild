@@ -52,7 +52,6 @@
                 Include="$(DropSource)**\EntityFramework*.nupkg;
                          $(DropSource)**\Microsoft.Data.Sqlite*.nupkg;
                          $(DropSource)**\Microsoft.VisualStudio.Web.BrowserLink*.nupkg;
-                         $(DropSource)**\Kestrel*.nupkg;
                          $(DropSource)**\dnx*.nupkg;
                          $(DropSource)**\KoreBuild*.nupkg;
                          $(DropSource)**\Microsoft.AspNet*.nupkg;
@@ -66,7 +65,6 @@
                 Include="$(SymbolPackagePath)**\EntityFramework*.nupkg;
                          $(SymbolPackagePath)**\Microsoft.Data.Sqlite*.nupkg;
                          $(SymbolPackagePath)**\Microsoft.VisualStudio.Web.BrowserLink*.nupkg;
-                         $(SymbolPackagePath)**\Kestrel*.nupkg;
                          $(SymbolPackagePath)**\KoreBuild*.nupkg;
                          $(SymbolPackagePath)**\dnx*.nupkg;
                          $(SymbolPackagePath)**\Microsoft.AspNet*.nupkg;
@@ -101,7 +99,6 @@
                          $(UnsignedPackagesPath)**\EntityFramework*\**\install.ps1;
                          $(UnsignedPackagesPath)**\Microsoft.Data.Sqlite*.dll;
                          $(UnsignedPackagesPath)**\Microsoft.VisualStudio.Web.BrowserLink*.dll;
-                         $(UnsignedPackagesPath)**\Kestrel*.dll;
                          $(UnsignedPackagesPath)**\dnx*.dll;
                          $(UnsignedPackagesPath)**\Microsoft.AspNet*.dll;
                          $(UnsignedPackagesPath)**\Microsoft.Dnx*.dll;
@@ -176,7 +173,6 @@
             <NuSpecEULA Include="$(UnsignedPackagesPath)**\EntityFramework*.nuspec;
                                  $(UnsignedPackagesPath)**\Microsoft.Data.Sqlite*.nuspec;
                                  $(UnsignedPackagesPath)**\Microsoft.VisualStudio.Web.BrowserLink*.nuspec;
-                                 $(UnsignedPackagesPath)**\Kestrel*.nuspec;
                                  $(UnsignedPackagesPath)**\dnvm.*.nuspec;
                                  $(UnsignedPackagesPath)**\KoreBuild*.nuspec;
                                  $(UnsignedPackagesPath)**\dnx*.nuspec;
@@ -282,7 +278,6 @@
         <ItemGroup>
             <PoliCheckPackages Include="$(SymbolPackagePath)EntityFramework.*.symbols.nupkg;
                                         $(SymbolPackagePath)Microsoft.Data.Sqlite.*.symbols.nupkg;
-                                        $(SymbolPackagePath)Kestrel*.symbols.nupkg;
                                         $(SymbolPackagePath)dnx*.symbols.nupkg;
                                         $(SymbolPackagePath)Microsoft.AspNet*.symbols.nupkg;
                                         $(SymbolPackagePath)Microsoft.Dnx*.symbols.nupkg;
