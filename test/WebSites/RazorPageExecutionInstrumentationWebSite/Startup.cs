@@ -9,7 +9,6 @@ using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Mvc.Razor.Compilation;
 using Microsoft.AspNet.PageExecutionInstrumentation;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace RazorPageExecutionInstrumentationWebSite
 {
@@ -19,26 +18,28 @@ namespace RazorPageExecutionInstrumentationWebSite
         public void ConfigureServices(IServiceCollection services)
         {
             // Normalize line endings to avoid changes in instrumentation locations between systems.
-            services.TryAdd(ServiceDescriptor.Transient<IRazorCompilationService, TestRazorCompilationService>());
+            services.AddTransient<IRazorCompilationService, TestRazorCompilationService>();
 
-            // Add MVC services to the services container
+            // Add MVC services to the services container.
             services.AddMvc();
+
+            // Make instrumentation data available in views.
+            services.AddScoped<TestPageExecutionListenerFeature, TestPageExecutionListenerFeature>();
+            services.AddScoped<IHoldInstrumentationData>(
+                provider => provider.GetRequiredService<TestPageExecutionListenerFeature>().Holder);
         }
 
         public void Configure(IApplicationBuilder app)
         {
             app.UseCultureReplacer();
 
-            app.Use(async (HttpContext context, Func<Task> next) =>
+            // Execute views with instrumentation enabled.
+            app.Use((HttpContext context, Func<Task> next) =>
             {
-                if (!string.IsNullOrEmpty(context.Request.Headers["ENABLE-RAZOR-INSTRUMENTATION"]))
-                {
-                    var pageExecutionContext = context.ApplicationServices.GetRequiredService<TestPageExecutionContext>();
-                    var listenerFeature = new TestPageExecutionListenerFeature(pageExecutionContext);
-                    context.Features.Set<IPageExecutionListenerFeature>(listenerFeature);
-                }
+                var listenerFeature = context.RequestServices.GetRequiredService<TestPageExecutionListenerFeature>();
+                context.Features.Set<IPageExecutionListenerFeature>(listenerFeature);
 
-                await next();
+                return next();
             });
 
             // Add MVC to the request pipeline

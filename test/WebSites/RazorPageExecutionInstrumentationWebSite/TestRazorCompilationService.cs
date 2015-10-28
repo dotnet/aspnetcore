@@ -22,16 +22,13 @@ namespace RazorPageExecutionInstrumentationWebSite
 
         protected override GeneratorResults GenerateCode(string relativePath, Stream inputStream)
         {
-            // Normalize line endings to '\n' (LF). This removes core.autocrlf, core.eol, core.safecrlf, and
-            // .gitattributes from the equation and treats "\r\n", "\r", and "\n" as equivalent. Does not handle
-            // some obscure line endings (e.g. "\n\r") but otherwise ensures instrumentation locations are
-            // consistent.
+            // Normalize line endings to '\r\n' (CRLF). This removes core.autocrlf, core.eol, core.safecrlf, and
+            // .gitattributes from the equation and treats "\r\n" and "\n" as equivalent. Does not handle
+            // some line endings like "\r" but otherwise ensures checksums and line mappings are consistent.
             string text;
             using (var streamReader = new StreamReader(inputStream))
             {
-                text = streamReader.ReadToEnd()
-                    .Replace("\r\n", "\n")  // Windows line endings
-                    .Replace("\r", "\n");   // Older Mac OS line endings
+                text = streamReader.ReadToEnd().Replace("\r", "").Replace("\n", "\r\n");
             }
 
             var bytes = Encoding.UTF8.GetBytes(text);

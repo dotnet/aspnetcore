@@ -7,16 +7,6 @@ namespace RazorPageExecutionInstrumentationWebSite
 {
     public class HomeController : Controller
     {
-        public ActionResult FullPath()
-        {
-            return View("/Views/Home/FullPath.cshtml");
-        }
-
-        public ActionResult ViewDiscoveryPath()
-        {
-            return View();
-        }
-
         public ActionResult ViewWithPartial()
         {
             return View();
