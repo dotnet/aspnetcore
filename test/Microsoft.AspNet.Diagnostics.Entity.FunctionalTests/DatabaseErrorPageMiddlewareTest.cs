@@ -281,7 +281,8 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
             }
         }
 
-        [Fact]
+        [ConditionalTheory]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task Pass_thru_when_context_not_in_services()
         {
             using (var database = SqlServerTestStore.CreateScratch())
