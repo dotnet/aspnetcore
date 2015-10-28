@@ -11,8 +11,8 @@ _DNVM_RUNTIME_FOLDER_NAME=".dnx"
 _DNVM_COMMAND_NAME="dnvm"
 _DNVM_PACKAGE_MANAGER_NAME="dnu"
 _DNVM_VERSION_MANAGER_NAME=".NET Version Manager"
-_DNVM_DEFAULT_FEED="https://www.myget.org/F/aspnetcidev/api/v2"
-_DNVM_DEFAULT_UNSTABLE_FEED="https://www.myget.org/F/aspnetcidev/api/v2"
+_DNVM_DEFAULT_FEED="https://www.myget.org/F/aspnetcirelease/api/v2"
+_DNVM_DEFAULT_UNSTABLE_FEED="https://www.myget.org/F/aspnetcirelease/api/v2"
 _DNVM_UPDATE_LOCATION="https://raw.githubusercontent.com/aspnet/Home/dev/dnvm.sh"
 
 if [ "$NO_COLOR" != "1" ]; then
