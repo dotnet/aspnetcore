@@ -4,7 +4,7 @@
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Server.Kestrel.Filter;
-using Microsoft.AspNet.Server.Kestrel.Http;
+using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
 using Xunit;
 
@@ -12,10 +12,10 @@ namespace Microsoft.AspNet.Server.KestrelTests
 {
     public class ConnectionFilterTests
     {
-        private async Task App(IFeatureCollection frame)
+        private async Task App(HttpContext httpContext)
         {
-            var request = frame.Get<IHttpRequestFeature>();
-            var response = frame.Get<IHttpResponseFeature>();
+            var request = httpContext.Request;
+            var response = httpContext.Response;
             response.Headers.Clear();
             while (true)
             {

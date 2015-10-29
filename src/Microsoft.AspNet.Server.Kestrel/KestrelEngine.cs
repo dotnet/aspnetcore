@@ -3,8 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
-using Microsoft.AspNet.Http.Features;
+using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Server.Kestrel.Http;
 using Microsoft.AspNet.Server.Kestrel.Networking;
 
@@ -49,7 +48,7 @@ namespace Microsoft.AspNet.Server.Kestrel
             Threads.Clear();
         }
 
-        public IDisposable CreateServer(ServerAddress address, Func<IFeatureCollection, Task> application)
+        public IDisposable CreateServer(ServerAddress address, RequestDelegate application)
         {
             var listeners = new List<IDisposable>();
 

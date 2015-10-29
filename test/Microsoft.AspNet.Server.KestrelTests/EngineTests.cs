@@ -7,7 +7,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http.Features;
+using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Server.Kestrel;
 using Microsoft.AspNet.Server.Kestrel.Filter;
 using Microsoft.Extensions.Logging;
@@ -39,10 +39,10 @@ namespace Microsoft.AspNet.Server.KestrelTests
             }
         }
 
-        private async Task App(IFeatureCollection frame)
+        private async Task App(HttpContext httpContext)
         {
-            var request = frame.Get<IHttpRequestFeature>();
-            var response = frame.Get<IHttpResponseFeature>();
+            var request = httpContext.Request;
+            var response = httpContext.Response;
             response.Headers.Clear();
             while (true)
             {
@@ -56,10 +56,10 @@ namespace Microsoft.AspNet.Server.KestrelTests
             }
         }
 
-        private async Task AppChunked(IFeatureCollection frame)
+        private async Task AppChunked(HttpContext httpContext)
         {
-            var request = frame.Get<IHttpRequestFeature>();
-            var response = frame.Get<IHttpResponseFeature>();
+            var request = httpContext.Request;
+            var response = httpContext.Response;
             var data = new MemoryStream();
             await request.Body.CopyToAsync(data);
             var bytes = data.ToArray();
@@ -69,9 +69,9 @@ namespace Microsoft.AspNet.Server.KestrelTests
             await response.Body.WriteAsync(bytes, 0, bytes.Length);
         }
 
-        private Task EmptyApp(IFeatureCollection frame)
+        private Task EmptyApp(HttpContext httpContext)
         {
-            frame.Get<IHttpResponseFeature>().Headers.Clear();
+            httpContext.Response.Headers.Clear();
             return Task.FromResult<object>(null);
         }
 
@@ -471,10 +471,10 @@ namespace Microsoft.AspNet.Server.KestrelTests
         [MemberData(nameof(ConnectionFilterData))]
         public async Task ZeroContentLengthNotSetAutomaticallyForCertainStatusCodes(ServiceContext testContext)
         {
-            using (var server = new TestServer(async frame =>
+            using (var server = new TestServer(async httpContext =>
             {
-                var request = frame.Get<IHttpRequestFeature>();
-                var response = frame.Get<IHttpResponseFeature>();
+                var request = httpContext.Request;
+                var response = httpContext.Response;
                 response.Headers.Clear();
 
                 using (var reader = new StreamReader(request.Body, Encoding.ASCII))
@@ -529,9 +529,9 @@ namespace Microsoft.AspNet.Server.KestrelTests
             var testLogger = new TestApplicationErrorLogger();
             testContext.Log = new KestrelTrace(testLogger);
 
-            using (var server = new TestServer(frame =>
+            using (var server = new TestServer(httpContext =>
             {
-                var response = frame.Get<IHttpResponseFeature>();
+                var response = httpContext.Response;
                 response.OnStarting(_ =>
                 {
                     onStartingCalled = true;
@@ -586,9 +586,9 @@ namespace Microsoft.AspNet.Server.KestrelTests
             var testLogger = new TestApplicationErrorLogger();
             testContext.Log = new KestrelTrace(testLogger);
 
-            using (var server = new TestServer(async frame =>
+            using (var server = new TestServer(async httpContext =>
             {
-                var response = frame.Get<IHttpResponseFeature>();
+                var response = httpContext.Response;
                 response.OnStarting(_ =>
                 {
                     onStartingCalled = true;
@@ -628,9 +628,9 @@ namespace Microsoft.AspNet.Server.KestrelTests
             var testLogger = new TestApplicationErrorLogger();
             testContext.Log = new KestrelTrace(testLogger);
 
-            using (var server = new TestServer(async frame =>
+            using (var server = new TestServer(async httpContext =>
             {
-                var response = frame.Get<IHttpResponseFeature>();
+                var response = httpContext.Response;
                 response.OnStarting(_ =>
                 {
                     onStartingCalled = true;
@@ -741,11 +741,11 @@ namespace Microsoft.AspNet.Server.KestrelTests
             var testLogger = new TestApplicationErrorLogger();
             testContext.Log = new KestrelTrace(testLogger);
 
-            using (var server = new TestServer(async frame =>
+            using (var server = new TestServer(async httpContext =>
             {
                 var onStartingException = new Exception();
 
-                var response = frame.Get<IHttpResponseFeature>();
+                var response = httpContext.Response;
                 response.OnStarting(_ =>
                 {
                     onStartingCallCount1++;
@@ -812,9 +812,9 @@ namespace Microsoft.AspNet.Server.KestrelTests
             var testLogger = new TestApplicationErrorLogger();
             testContext.Log = new KestrelTrace(testLogger);
 
-            using (var server = new TestServer(async frame =>
+            using (var server = new TestServer(async httpContext =>
             {
-                var response = frame.Get<IHttpResponseFeature>();
+                var response = httpContext.Response;
                 response.OnCompleted(_ =>
                 {
                     onCompletedCalled1 = true;
@@ -856,10 +856,10 @@ namespace Microsoft.AspNet.Server.KestrelTests
         [MemberData(nameof(ConnectionFilterData))]
         public async Task RequestBodyIsConsumedAutomaticallyIfAppDoesntConsumeItFully(ServiceContext testContext)
         {
-            using (var server = new TestServer(async frame =>
+            using (var server = new TestServer(async httpContext =>
             {
-                var response = frame.Get<IHttpResponseFeature>();
-                var request = frame.Get<IHttpRequestFeature>();
+                var response = httpContext.Response;
+                var request = httpContext.Request;
 
                 Assert.Equal("POST", request.Method);
 

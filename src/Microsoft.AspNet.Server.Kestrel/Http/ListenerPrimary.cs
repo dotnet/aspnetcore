@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Server.Kestrel.Infrastructure;
 using Microsoft.AspNet.Server.Kestrel.Networking;
 using Microsoft.Extensions.Logging;
@@ -33,7 +34,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             string pipeName,
             ServerAddress address,
             KestrelThread thread,
-            Func<Frame, Task> application)
+            RequestDelegate application)
         {
             await StartAsync(address, thread, application).ConfigureAwait(false);
 

@@ -4,7 +4,6 @@
 using System;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http.Features;
 using Xunit;
 
 namespace Microsoft.AspNet.Server.KestrelTests
@@ -14,9 +13,9 @@ namespace Microsoft.AspNet.Server.KestrelTests
         [Fact]
         public async Task ResponsesAreChunkedAutomatically()
         {
-            using (var server = new TestServer(async frame =>
+            using (var server = new TestServer(async httpContext =>
             {
-                var response = frame.Get<IHttpResponseFeature>();
+                var response = httpContext.Response;
                 response.Headers.Clear();
                 await response.Body.WriteAsync(Encoding.ASCII.GetBytes("Hello "), 0, 6);
                 await response.Body.WriteAsync(Encoding.ASCII.GetBytes("World!"), 0, 6);
@@ -46,9 +45,9 @@ namespace Microsoft.AspNet.Server.KestrelTests
         [Fact]
         public async Task ZeroLengthWritesAreIgnored()
         {
-            using (var server = new TestServer(async frame =>
+            using (var server = new TestServer(async httpContext =>
             {
-                var response = frame.Get<IHttpResponseFeature>();
+                var response = httpContext.Response;
                 response.Headers.Clear();
                 await response.Body.WriteAsync(Encoding.ASCII.GetBytes("Hello "), 0, 6);
                 await response.Body.WriteAsync(new byte[0], 0, 0);
@@ -79,9 +78,9 @@ namespace Microsoft.AspNet.Server.KestrelTests
         [Fact]
         public async Task EmptyResponseBodyHandledCorrectlyWithZeroLengthWrite()
         {
-            using (var server = new TestServer(async frame =>
+            using (var server = new TestServer(async httpContext =>
             {
-                var response = frame.Get<IHttpResponseFeature>();
+                var response = httpContext.Response;
                 response.Headers.Clear();
                 await response.Body.WriteAsync(new byte[0], 0, 0);
             }))
@@ -106,9 +105,9 @@ namespace Microsoft.AspNet.Server.KestrelTests
         [Fact]
         public async Task ConnectionClosedIfExeptionThrownAfterWrite()
         {
-            using (var server = new TestServer(async frame =>
+            using (var server = new TestServer(async httpContext =>
             {
-                var response = frame.Get<IHttpResponseFeature>();
+                var response = httpContext.Response;
                 response.Headers.Clear();
                 await response.Body.WriteAsync(Encoding.ASCII.GetBytes("Hello World!"), 0, 12);
                 throw new Exception();
@@ -136,9 +135,9 @@ namespace Microsoft.AspNet.Server.KestrelTests
         [Fact]
         public async Task ConnectionClosedIfExeptionThrownAfterZeroLengthWrite()
         {
-            using (var server = new TestServer(async frame =>
+            using (var server = new TestServer(async httpContext =>
             {
-                var response = frame.Get<IHttpResponseFeature>();
+                var response = httpContext.Response;
                 response.Headers.Clear();
                 await response.Body.WriteAsync(new byte[0], 0, 0);
                 throw new Exception();

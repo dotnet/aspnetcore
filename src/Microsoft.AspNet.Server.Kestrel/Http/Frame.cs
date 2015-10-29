@@ -206,9 +206,10 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         ResponseBody = new FrameResponseStream(this);
                         DuplexStream = new FrameDuplexStream(RequestBody, ResponseBody);
 
+                        var httpContext = HttpContextFactory.Create(this);
                         try
                         {
-                            await Application.Invoke(this).ConfigureAwait(false);
+                            await Application.Invoke(httpContext).ConfigureAwait(false);
                         }
                         catch (Exception ex)
                         {
@@ -226,6 +227,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             }
 
                             await FireOnCompleted();
+
+                            HttpContextFactory.Dispose(httpContext);
 
                             await ProduceEnd();
 

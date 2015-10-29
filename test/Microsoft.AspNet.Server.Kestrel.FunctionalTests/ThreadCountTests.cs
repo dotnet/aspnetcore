@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.Server.Kestrel.FunctionalTests
                 .Build();
 
             var hostBuilder = new WebHostBuilder(config);
-            hostBuilder.UseServer("Microsoft.AspNet.Server.Kestrel");
+            hostBuilder.UseServerFactory("Microsoft.AspNet.Server.Kestrel");
             hostBuilder.UseStartup(app =>
             {
                 var serverInfo = app.ServerFeatures.Get<IKestrelServerInformation>();

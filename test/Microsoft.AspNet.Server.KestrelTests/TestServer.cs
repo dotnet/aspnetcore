@@ -2,9 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Threading.Tasks;
+using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Server.Kestrel;
-using Microsoft.AspNet.Http.Features;
 
 namespace Microsoft.AspNet.Server.KestrelTests
 {
@@ -16,22 +15,22 @@ namespace Microsoft.AspNet.Server.KestrelTests
         private KestrelEngine _engine;
         private IDisposable _server;
 
-        public TestServer(Func<IFeatureCollection, Task> app)
+        public TestServer(RequestDelegate app)
             : this(app, new TestServiceContext())
         {
         }
 
-        public TestServer(Func<IFeatureCollection, Task> app, ServiceContext context)
+        public TestServer(RequestDelegate app, ServiceContext context)
             : this(app, context, "http://localhost:54321/")
         {
         }
-        public TestServer(Func<IFeatureCollection, Task> app, ServiceContext context, string serverAddress)
+        public TestServer(RequestDelegate app, ServiceContext context, string serverAddress)
         {
             Create(app, context, serverAddress);
         }
 
 
-        public void Create(Func<IFeatureCollection, Task> app, ServiceContext context, string serverAddress)
+        public void Create(RequestDelegate app, ServiceContext context, string serverAddress)
         {
             _engine = new KestrelEngine(context);
             _engine.Start(1);

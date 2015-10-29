@@ -8,21 +8,20 @@ using System.Net.Http;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Server.Kestrel.Filter;
-using Microsoft.AspNet.Server.Kestrel.Http;
 using Microsoft.AspNet.Server.Kestrel.Https;
 using Microsoft.AspNet.Testing.xunit;
 using Xunit;
-using Microsoft.AspNet.Http.Features;
 
 namespace Microsoft.AspNet.Server.KestrelTests
 {
     public class HttpsConnectionFilterTests
     {
-        private async Task App(IFeatureCollection frame)
+        private async Task App(HttpContext httpContext)
         {
-            var request = frame.Get<IHttpRequestFeature>();
-            var response = frame.Get<IHttpResponseFeature>();
+            var request = httpContext.Request;
+            var response = httpContext.Response;
             response.Headers.Clear();
             while (true)
             {
