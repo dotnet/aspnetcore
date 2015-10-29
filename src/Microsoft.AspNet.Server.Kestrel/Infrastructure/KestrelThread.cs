@@ -30,6 +30,7 @@ namespace Microsoft.AspNet.Server.Kestrel
         private Queue<CloseHandle> _closeHandleRunning = new Queue<CloseHandle>();
         private object _workSync = new Object();
         private bool _stopImmediate = false;
+        private bool _initCompleted = false;
         private ExceptionDispatchInfo _closeError;
         private IKestrelTrace _log;
 
@@ -58,6 +59,11 @@ namespace Microsoft.AspNet.Server.Kestrel
 
         public void Stop(TimeSpan timeout)
         {
+            if (!_initCompleted)
+            {
+                return;
+            }
+
             Post(OnStop, null);
             if (!_thread.Join((int)timeout.TotalMilliseconds))
             {
@@ -195,7 +201,10 @@ namespace Microsoft.AspNet.Server.Kestrel
             catch (Exception ex)
             {
                 tcs.SetException(ex);
+                return;
             }
+
+            _initCompleted = true;
 
             try
             {
