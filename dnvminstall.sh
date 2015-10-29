@@ -59,6 +59,8 @@ fi
 if [ -z "$ZPROFILE" ]; then
     if [ -f "$HOME/.zshrc" ]; then
         ZPROFILE="$HOME/.zshrc"
+    elif [ ! -z "$ZDOTDIR" -a -f "$ZDOTDIR/.zshrc" ]; then
+    	ZPROFILE="$ZDOTDIR/.zshrc"
     fi
 fi
 
