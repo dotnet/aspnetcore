@@ -78,6 +78,13 @@ namespace Microsoft.AspNet.Http.Authentication
             return SignInAsync(authenticationScheme, principal, properties: null);
         }
 
+        /// <summary>
+        /// Creates a challenge for the authentication manager with <see cref="ChallengeBehavior.Forbidden"/>.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> that represents the asynchronous challenge operation.</returns>
+        public virtual Task ForbidAsync()
+            => ForbidAsync(AutomaticScheme, properties: null);
+
         public virtual Task ForbidAsync(string authenticationScheme)
         {
             if (authenticationScheme == null)
@@ -98,6 +105,14 @@ namespace Microsoft.AspNet.Http.Authentication
 
             return ChallengeAsync(authenticationScheme, properties, ChallengeBehavior.Forbidden);
         }
+
+        /// <summary>
+        /// Creates a challenge for the authentication manager with <see cref="ChallengeBehavior.Forbidden"/>.
+        /// </summary>
+        /// <param name="properties">Additional arbitrary values which may be used by particular authentication types.</param>
+        /// <returns>A <see cref="Task"/> that represents the asynchronous challenge operation.</returns>
+        public virtual Task ForbidAsync(AuthenticationProperties properties)
+            => ForbidAsync(AutomaticScheme, properties);
 
         public abstract Task ChallengeAsync(string authenticationScheme, AuthenticationProperties properties, ChallengeBehavior behavior);
 
