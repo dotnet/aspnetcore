@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.Hosting
 {
     public class WebApplication
     {
-        private const string HostingJsonFile = "Microsoft.AspNet.Hosting.json";
+        private const string HostingJsonFile = "hosting.json";
         private const string ConfigFileKey = "config";
 
         public static void Run(string[] args)
