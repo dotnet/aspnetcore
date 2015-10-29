@@ -58,6 +58,7 @@
                          $(DropSource)**\Microsoft.Dnx*.nupkg;
                          $(DropSource)**\Microsoft.Extensions*.nupkg;
                          $(DropSource)**\Microsoft.Net*.nupkg;
+                         $(DropSource)**\Microsoft.Owin.Security*.nupkg;
                          $(DropSource)**\NuGet.*.nupkg;
                          $(DropSource)**\StyleCop.KRules*.nupkg"
             />
@@ -71,6 +72,7 @@
                          $(SymbolPackagePath)**\Microsoft.Dnx*.nupkg;
                          $(SymbolPackagePath)**\Microsoft.Extensions*.nupkg;
                          $(SymbolPackagePath)**\Microsoft.Net*.nupkg;
+                         $(SymbolPackagePath)**\Microsoft.Owin.Security*.nupkg;
                          $(DropSource)**\NuGet.*.nupkg"
             />
         </ItemGroup>
@@ -104,6 +106,7 @@
                          $(UnsignedPackagesPath)**\Microsoft.Dnx*.dll;
                          $(UnsignedPackagesPath)**\Microsoft.Extensions*.dll;
                          $(UnsignedPackagesPath)**\Microsoft.Net*.dll;
+                         $(UnsignedPackagesPath)**\Microsoft.Owin.Security*.dll;
                          $(UnsignedPackagesPath)**\NuGet.*.dll;
                          $(UnsignedPackagesPath)**\signalrclient.dll;
                          $(UnsignedPackagesPath)**\StyleCop.KRules*.dll;
@@ -180,6 +183,7 @@
                                  $(UnsignedPackagesPath)**\Microsoft.Dnx.*.nuspec;
                                  $(UnsignedPackagesPath)**\Microsoft.Extensions.*.nuspec;
                                  $(UnsignedPackagesPath)**\Microsoft.Net.*.nuspec;
+                                 $(UnsignedPackagesPath)**\Microsoft.Owin.Security.*.nuspec;
                                  $(UnsignedPackagesPath)**\NuGet.*.nuspec;
                                  $(UnsignedPackagesPath)**\StyleCop.KRules*.nuspec"/>
         </ItemGroup>
@@ -283,6 +287,7 @@
                                         $(SymbolPackagePath)Microsoft.Dnx*.symbols.nupkg;
                                         $(SymbolPackagePath)Microsoft.Extensions*.symbols.nupkg;
                                         $(SymbolPackagePath)Microsoft.Net*.symbols.nupkg;
+                                        $(SymbolPackagePath)Microsoft.Owin.Security*.symbols.nupkg;
                                         $(SymbolPackagePath)Microsoft.VisualStudio*.symbols.nupkg;
                                         $(SymbolPackagePath)NuGet.*.symbols.nupkg;
                                         $(SymbolPackagePath)PageGenerator.*.symbols.nupkg;
