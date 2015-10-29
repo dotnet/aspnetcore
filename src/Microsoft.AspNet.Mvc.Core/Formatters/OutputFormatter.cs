@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
@@ -251,27 +250,84 @@ namespace Microsoft.AspNet.Mvc.Formatters
         {
             if (acceptCharsetHeaders != null && acceptCharsetHeaders.Count > 0)
             {
-                var sortedAcceptCharsetHeaders = acceptCharsetHeaders
-                    .Where(acceptCharset => acceptCharset.Quality != HeaderQuality.NoMatch)
-                    .OrderByDescending(m => m, StringWithQualityHeaderValueComparer.QualityComparer);
-
-                foreach (var acceptCharset in sortedAcceptCharsetHeaders)
+                var acceptValues = Sort(acceptCharsetHeaders);
+                for (var i = 0; i < acceptValues.Count; i++)
                 {
-                    var charset = acceptCharset.Value;
+                    var charset = acceptValues[i].Value;
                     if (!string.IsNullOrWhiteSpace(charset))
                     {
-                        var encoding = SupportedEncodings.FirstOrDefault(supportedEncoding =>
-                            charset.Equals(supportedEncoding.WebName, StringComparison.OrdinalIgnoreCase) ||
-                            charset.Equals("*", StringComparison.Ordinal));
-                        if (encoding != null)
+                        for (var j = 0; j < SupportedEncodings.Count; j++)
                         {
-                            return encoding;
+                            var encoding = SupportedEncodings[j];
+                            if (charset.Equals(encoding.WebName, StringComparison.OrdinalIgnoreCase) ||
+                                charset.Equals("*", StringComparison.Ordinal))
+                            {
+                                return encoding;
+                            }
                         }
                     }
                 }
             }
 
             return null;
+        }
+
+        // There's no allocation-free way to sort an IList and we may have to filter anyway,
+        // so we're going to have to live with the copy + insertion sort.
+        private IList<StringWithQualityHeaderValue> Sort(IList<StringWithQualityHeaderValue> values)
+        {
+            var sortNeeded = false;
+            var count = 0;
+
+            for (var i = 0; i < values.Count; i++)
+            {
+                var value = values[i];
+                if (value.Quality == HeaderQuality.NoMatch)
+                {
+                    // Exclude this one
+                }
+                else if (value.Quality != null)
+                {
+                    count++;
+                    sortNeeded = true;
+                }
+                else
+                {
+                    count++;
+                }
+            }
+
+            if (!sortNeeded)
+            {
+                return values;
+            }
+
+            var sorted = new List<StringWithQualityHeaderValue>();
+            for (var i = 0; i < values.Count; i++)
+            {
+                var value = values[i];
+                if (value.Quality == HeaderQuality.NoMatch)
+                {
+                    // Exclude this one
+                }
+                else
+                {
+                    // Doing an insertion sort.
+                    var position = sorted.BinarySearch(value, StringWithQualityHeaderValueComparer.QualityComparer);
+                    if (position >= 0)
+                    {
+                        sorted.Insert(position + 1, value);
+                    }
+                    else
+                    {
+                        sorted.Insert(~position, value);
+                    }
+                }
+            }
+
+            // We want a descending sort, but BinarySearch does ascending
+            sorted.Reverse();
+            return sorted;
         }
     }
 }

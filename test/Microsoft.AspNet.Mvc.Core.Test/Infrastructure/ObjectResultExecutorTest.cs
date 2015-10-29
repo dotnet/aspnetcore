@@ -526,7 +526,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
             public new IOutputFormatter SelectFormatter(
                 OutputFormatterWriteContext formatterContext,
                 IList<MediaTypeHeaderValue> contentTypes,
-                IEnumerable<IOutputFormatter> formatters)
+                IList<IOutputFormatter> formatters)
             {
                 return base.SelectFormatter(formatterContext, contentTypes, formatters);
             }
