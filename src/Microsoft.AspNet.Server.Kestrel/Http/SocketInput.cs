@@ -176,6 +176,22 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             }
         }
 
+        public void AbortAwaiting()
+        {
+            var awaitableState = Interlocked.Exchange(
+                ref _awaitableState,
+                _awaitableIsCompleted);
+
+            _awaitableError = new ObjectDisposedException(nameof(SocketInput), "The request was aborted");
+            _manualResetEvent.Set();
+
+            if (awaitableState != _awaitableIsCompleted &&
+                awaitableState != _awaitableIsNotCompleted)
+            {
+                Task.Run(awaitableState);
+            }
+        }
+
         public SocketInput GetAwaiter()
         {
             return this;
@@ -199,6 +215,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             else
             {
                 // THIS IS AN ERROR STATE - ONLY ONE WAITER CAN WAIT
+                throw new InvalidOperationException("Concurrent reads are not supported.");
             }
         }
 

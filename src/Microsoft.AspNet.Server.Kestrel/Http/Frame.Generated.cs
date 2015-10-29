@@ -45,11 +45,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             _currentIHttpRequestFeature = this;
             _currentIHttpResponseFeature = this;
             _currentIHttpUpgradeFeature = this;
+            _currentIHttpRequestLifetimeFeature = this;
             _currentIHttpConnectionFeature = this;
             
             _currentIHttpRequestIdentifierFeature = null;
             _currentIServiceProvidersFeature = null;
-            _currentIHttpRequestLifetimeFeature = null;
             _currentIHttpAuthenticationFeature = null;
             _currentIQueryFeature = null;
             _currentIFormFeature = null;

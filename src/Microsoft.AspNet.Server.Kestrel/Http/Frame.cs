@@ -41,6 +41,12 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         private bool _requestProcessingStarted;
         private Task _requestProcessingTask;
         private volatile bool _requestProcessingStopping; // volatile, see: https://msdn.microsoft.com/en-us/library/x13ttww7.aspx
+        private volatile bool _requestAborted;
+        private CancellationTokenSource _disconnectCts = new CancellationTokenSource();
+        private CancellationTokenSource _requestAbortCts;
+
+        private FrameRequestStream _requestBody;
+        private FrameResponseStream _responseBody;
 
         private bool _responseStarted;
         private bool _keepAlive;
@@ -74,7 +80,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         public string QueryString { get; set; }
         public string HttpVersion { get; set; }
         public IHeaderDictionary RequestHeaders { get; set; }
-        public MessageBody MessageBody { get; set; }
         public Stream RequestBody { get; set; }
 
         public int StatusCode { get; set; }
@@ -110,7 +115,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             QueryString = null;
             HttpVersion = null;
             RequestHeaders = _requestHeaders;
-            MessageBody = null;
             RequestBody = null;
             StatusCode = 200;
             ReasonPhrase = null;
@@ -133,6 +137,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             {
                 httpConnectionFeature.IsLocal = false;
             }
+
+            _requestAbortCts?.Dispose();
         }
 
         public void ResetResponseHeaders()
@@ -170,6 +176,30 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         }
 
         /// <summary>
+        /// Immediate kill the connection and poison the request and response streams.
+        /// </summary>
+        public void Abort()
+        {
+            _requestProcessingStopping = true;
+            _requestAborted = true;
+
+            _requestBody?.StopAcceptingReads();
+            _responseBody?.StopAcceptingWrites();
+
+            try
+            {
+                ConnectionControl.End(ProduceEndType.SocketDisconnect);
+                SocketInput.AbortAwaiting();
+
+                _disconnectCts.Cancel();
+            }
+            catch (Exception ex)
+            {
+                Log.LogError("Abort", ex);
+            }
+        }
+
+        /// <summary>
         /// Primary loop which consumes socket input, parses it for protocol framing, and invokes the
         /// application delegate for as long as the socket is intended to remain open.
         /// The resulting Task from this loop is preserved in a field which is used when the server needs
@@ -202,13 +232,16 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
                     if (!terminated && !_requestProcessingStopping)
                     {
-                        MessageBody = MessageBody.For(HttpVersion, _requestHeaders, this);
-                        _keepAlive = MessageBody.RequestKeepAlive;
-                        var requestBody = new FrameRequestStream(MessageBody);
-                        RequestBody = requestBody;
-                        var responseBody = new FrameResponseStream(this);
-                        ResponseBody = responseBody;
+                        var messageBody = MessageBody.For(HttpVersion, _requestHeaders, this);
+                        _keepAlive = messageBody.RequestKeepAlive;
+                        _requestBody = new FrameRequestStream(messageBody);
+                        RequestBody = _requestBody;
+                        _responseBody = new FrameResponseStream(this);
+                        ResponseBody = _responseBody;
                         DuplexStream = new FrameDuplexStream(RequestBody, ResponseBody);
+
+                        _requestAbortCts = CancellationTokenSource.CreateLinkedTokenSource(_disconnectCts.Token);
+                        ((IHttpRequestLifetimeFeature)this).RequestAborted = _requestAbortCts.Token;
 
                         var httpContext = HttpContextFactory.Create(this);
                         try
@@ -234,13 +267,17 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
                             HttpContextFactory.Dispose(httpContext);
 
-                            await ProduceEnd();
+                            // If _requestAbort is set, the connection has already been closed.
+                            if (!_requestAborted)
+                            {
+                                await ProduceEnd();
 
-                            // Finish reading the request body in case the app did not.
-                            await MessageBody.Consume();
+                                // Finish reading the request body in case the app did not.
+                                await messageBody.Consume();
+                            }
 
-                            requestBody.StopAcceptingReads();
-                            responseBody.StopAcceptingWrites();
+                            _requestBody.StopAcceptingReads();
+                            _responseBody.StopAcceptingWrites();
                         }
 
                         terminated = !_keepAlive;
@@ -257,14 +294,20 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             {
                 try
                 {
-                    // Inform client no more data will ever arrive
-                    ConnectionControl.End(ProduceEndType.SocketShutdownSend);
+                    _disconnectCts.Dispose();
 
-                    // Wait for client to either disconnect or send unexpected data
-                    await SocketInput;
+                    // If _requestAborted is set, the connection has already been closed.
+                    if (!_requestAborted)
+                    {
+                        // Inform client no more data will ever arrive
+                        ConnectionControl.End(ProduceEndType.SocketShutdownSend);
 
-                    // Dispose socket
-                    ConnectionControl.End(ProduceEndType.SocketDisconnect);
+                        // Wait for client to either disconnect or send unexpected data
+                        await SocketInput;
+
+                        // Dispose socket
+                        ConnectionControl.End(ProduceEndType.SocketDisconnect);
+                    }
                 }
                 catch (Exception ex)
                 {

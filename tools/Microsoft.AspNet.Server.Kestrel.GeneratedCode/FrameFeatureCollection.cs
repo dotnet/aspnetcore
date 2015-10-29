@@ -66,6 +66,7 @@ namespace Microsoft.AspNet.Server.Kestrel.GeneratedCode
                 typeof(IHttpRequestFeature),
                 typeof(IHttpResponseFeature),
                 typeof(IHttpUpgradeFeature),
+                typeof(IHttpRequestLifetimeFeature),
                 typeof(IHttpConnectionFeature)
             };
 

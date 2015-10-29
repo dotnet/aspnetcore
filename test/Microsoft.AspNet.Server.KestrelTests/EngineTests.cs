@@ -6,8 +6,10 @@ using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Server.Kestrel;
 using Microsoft.AspNet.Server.Kestrel.Filter;
 using Microsoft.AspNet.Testing.xunit;
@@ -923,6 +925,76 @@ namespace Microsoft.AspNet.Server.KestrelTests
                         "Hello World");
                 }
             }
+        }
+
+        [Theory]
+        [MemberData(nameof(ConnectionFilterData))]
+        public async Task RequestsCanBeAbortedMidRead(ServiceContext testContext)
+        {
+            var readTcs = new TaskCompletionSource<object>();
+            var registrationTcs = new TaskCompletionSource<int>();
+            var requestId = 0;
+
+            using (var server = new TestServer(async httpContext =>
+            {
+                requestId++;
+
+                var response = httpContext.Response;
+                var request = httpContext.Request;
+                var lifetime = httpContext.Features.Get<IHttpRequestLifetimeFeature>();
+
+                lifetime.RequestAborted.Register(() => registrationTcs.TrySetResult(requestId));
+
+                if (requestId == 1)
+                {
+                    response.Headers.Clear();
+                    response.Headers["Content-Length"] = new[] { "5" };
+
+                    await response.WriteAsync("World");
+                }
+                else
+                {
+                    var readTask = request.Body.CopyToAsync(Stream.Null);
+
+                    lifetime.Abort();
+
+                    try
+                    {
+                        await readTask;
+                    }
+                    catch (Exception ex)
+                    {
+                        readTcs.SetException(ex);
+                        throw;
+                    }
+                }
+            }, testContext))
+            {
+                using (var connection = new TestConnection())
+                {
+                    // Never send the body so CopyToAsync always fails.
+                    await connection.Send(
+                        "POST / HTTP/1.1",
+                        "Content-Length: 5",
+                        "",
+                        "HelloPOST / HTTP/1.1",
+                        "Content-Length: 5",
+                        "",
+                        "");
+
+                    await connection.ReceiveEnd(
+                        "HTTP/1.1 200 OK",
+                        "Content-Length: 5",
+                        "",
+                        "World");
+                }
+            }
+
+            await Assert.ThrowsAsync<IOException>(async () => await readTcs.Task);
+
+            // The cancellation token for only the last request should be triggered.
+            var abortedRequestId = await registrationTcs.Task;
+            Assert.Equal(2, abortedRequestId);
         }
 
         private class TestApplicationErrorLogger : ILogger

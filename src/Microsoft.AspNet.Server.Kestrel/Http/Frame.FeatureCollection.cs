@@ -7,9 +7,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNet.Server.Kestrel.Http
@@ -18,7 +20,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                                  IHttpRequestFeature,
                                  IHttpResponseFeature,
                                  IHttpUpgradeFeature,
-                                 IHttpConnectionFeature
+                                 IHttpConnectionFeature,
+                                 IHttpRequestLifetimeFeature
     {
         // NOTE: When feature interfaces are added to or removed from this Frame class implementation,
         // then the list of `implementedFeatures` in the generated code project MUST also be updated.
@@ -260,6 +263,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         bool IHttpConnectionFeature.IsLocal { get; set; }
 
+        CancellationToken IHttpRequestLifetimeFeature.RequestAborted { get; set; }
+
         object IFeatureCollection.this[Type key]
         {
             get { return FastFeatureGet(key); }
@@ -298,5 +303,10 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         IEnumerator<KeyValuePair<Type, object>> IEnumerable<KeyValuePair<Type, object>>.GetEnumerator() => FastEnumerable().GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator() => FastEnumerable().GetEnumerator();
+
+        void IHttpRequestLifetimeFeature.Abort()
+        {
+            Abort();
+        }
     }
 }
