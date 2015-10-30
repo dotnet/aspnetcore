@@ -4,6 +4,7 @@
 using System;
 using System.Globalization;
 using System.IO;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Abstractions;
@@ -14,7 +15,6 @@ using Microsoft.AspNet.Mvc.ViewEngines;
 using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.AspNet.Mvc.ViewFeatures.Internal;
 using Microsoft.AspNet.Routing;
-using Microsoft.Extensions.WebEncoders;
 using Microsoft.Extensions.WebEncoders.Testing;
 using Moq;
 using Xunit;
@@ -32,13 +32,13 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             var myService = new MyService();
             var helper = Mock.Of<IHtmlHelper<object>>();
-            var htmlEncoder = new CommonTestEncoder();
+            var htmlEncoder = new HtmlTestEncoder();
             var serviceProvider = new Mock<IServiceProvider>();
             serviceProvider.Setup(p => p.GetService(typeof(MyService)))
                            .Returns(myService);
             serviceProvider.Setup(p => p.GetService(typeof(IHtmlHelper<object>)))
                            .Returns(helper);
-            serviceProvider.Setup(p => p.GetService(typeof(IHtmlEncoder)))
+            serviceProvider.Setup(p => p.GetService(typeof(HtmlEncoder)))
                            .Returns(htmlEncoder);
             var httpContext = new Mock<HttpContext>();
             httpContext.SetupGet(c => c.RequestServices)
@@ -103,13 +103,13 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             var myService = new MyService();
             var helper = Mock.Of<IHtmlHelper<object>>();
-            var htmlEncoder = new CommonTestEncoder();
+            var htmlEncoder = new HtmlTestEncoder();
             var serviceProvider = new Mock<IServiceProvider>();
             serviceProvider.Setup(p => p.GetService(typeof(MyService)))
                            .Returns(myService);
             serviceProvider.Setup(p => p.GetService(typeof(IHtmlHelper<object>)))
                            .Returns(helper);
-            serviceProvider.Setup(p => p.GetService(typeof(IHtmlEncoder)))
+            serviceProvider.Setup(p => p.GetService(typeof(HtmlEncoder)))
                            .Returns(htmlEncoder);
             var httpContext = new Mock<HttpContext>();
             httpContext.SetupGet(c => c.RequestServices)
@@ -142,13 +142,13 @@ namespace Microsoft.AspNet.Mvc.Razor
             var instance = new TestRazorPage();
             var myService = new MyService();
             var helper = Mock.Of<IHtmlHelper<object>>();
-            var htmlEncoder = new CommonTestEncoder();
+            var htmlEncoder = new HtmlTestEncoder();
             var serviceProvider = new Mock<IServiceProvider>();
             serviceProvider.Setup(p => p.GetService(typeof(MyService)))
                            .Returns(myService);
             serviceProvider.Setup(p => p.GetService(typeof(IHtmlHelper<object>)))
                            .Returns(helper);
-            serviceProvider.Setup(p => p.GetService(typeof(IHtmlEncoder)))
+            serviceProvider.Setup(p => p.GetService(typeof(HtmlEncoder)))
                            .Returns(htmlEncoder);
             var httpContext = new Mock<HttpContext>();
             httpContext.SetupGet(c => c.RequestServices)
@@ -181,13 +181,13 @@ namespace Microsoft.AspNet.Mvc.Razor
             var instance = new DoesNotDeriveFromRazorPageOfTButHasModelProperty();
             var myService = new MyService();
             var helper = Mock.Of<IHtmlHelper<object>>();
-            var htmlEncoder = new CommonTestEncoder();
+            var htmlEncoder = new HtmlTestEncoder();
             var serviceProvider = new Mock<IServiceProvider>();
             serviceProvider.Setup(p => p.GetService(typeof(MyService)))
                            .Returns(myService);
             serviceProvider.Setup(p => p.GetService(typeof(IHtmlHelper<object>)))
                            .Returns(helper);
-            serviceProvider.Setup(p => p.GetService(typeof(IHtmlEncoder)))
+            serviceProvider.Setup(p => p.GetService(typeof(HtmlEncoder)))
                            .Returns(htmlEncoder);
             var httpContext = new Mock<HttpContext>();
             httpContext.SetupGet(c => c.RequestServices)

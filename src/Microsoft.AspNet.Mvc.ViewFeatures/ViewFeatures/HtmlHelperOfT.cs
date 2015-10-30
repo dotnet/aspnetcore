@@ -4,11 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using System.Text.Encodings.Web;
 using Microsoft.AspNet.Html.Abstractions;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.ViewEngines;
-using Microsoft.Extensions.WebEncoders;
 
 namespace Microsoft.AspNet.Mvc.ViewFeatures
 {
@@ -21,10 +21,10 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             IHtmlGenerator htmlGenerator,
             ICompositeViewEngine viewEngine,
             IModelMetadataProvider metadataProvider,
-            IHtmlEncoder htmlEncoder,
-            IUrlEncoder urlEncoder,
-            IJavaScriptStringEncoder javaScriptStringEncoder)
-            : base(htmlGenerator, viewEngine, metadataProvider, htmlEncoder, urlEncoder, javaScriptStringEncoder)
+            HtmlEncoder htmlEncoder,
+            UrlEncoder urlEncoder,
+            JavaScriptEncoder javaScriptEncoder)
+            : base(htmlGenerator, viewEngine, metadataProvider, htmlEncoder, urlEncoder, javaScriptEncoder)
         {
             if (htmlGenerator == null)
             {
@@ -46,9 +46,9 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             {
                 throw new ArgumentNullException(nameof(urlEncoder));
             }
-            if (javaScriptStringEncoder == null)
+            if (javaScriptEncoder == null)
             {
-                throw new ArgumentNullException(nameof(javaScriptStringEncoder));
+                throw new ArgumentNullException(nameof(javaScriptEncoder));
             }
         }
 

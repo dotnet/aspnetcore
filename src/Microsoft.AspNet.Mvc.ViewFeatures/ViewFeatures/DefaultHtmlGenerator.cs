@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using System.Text.Encodings.Web;
 using Microsoft.AspNet.Antiforgery;
 using Microsoft.AspNet.Html.Abstractions;
 using Microsoft.AspNet.Mvc.ModelBinding;
@@ -16,7 +17,6 @@ using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.ViewFeatures.Internal;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.OptionsModel;
-using Microsoft.Extensions.WebEncoders;
 
 namespace Microsoft.AspNet.Mvc.ViewFeatures
 {
@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         private readonly IClientModelValidatorProvider _clientModelValidatorProvider;
         private readonly IModelMetadataProvider _metadataProvider;
         private readonly IUrlHelper _urlHelper;
-        private readonly IHtmlEncoder _htmlEncoder;
+        private readonly HtmlEncoder _htmlEncoder;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DefaultHtmlGenerator"/> class.
@@ -40,13 +40,13 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         /// <param name="optionsAccessor">The accessor for <see cref="MvcOptions"/>.</param>
         /// <param name="metadataProvider">The <see cref="IModelMetadataProvider"/>.</param>
         /// <param name="urlHelper">The <see cref="IUrlHelper"/>.</param>
-        /// <param name="htmlEncoder">The <see cref="IHtmlEncoder"/>.</param>
+        /// <param name="htmlEncoder">The <see cref="HtmlEncoder"/>.</param>
         public DefaultHtmlGenerator(
             IAntiforgery antiforgery,
             IOptions<MvcViewOptions> optionsAccessor,
             IModelMetadataProvider metadataProvider,
             IUrlHelper urlHelper,
-            IHtmlEncoder htmlEncoder)
+            HtmlEncoder htmlEncoder)
         {
             if (antiforgery == null)
             {
@@ -90,13 +90,13 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         /// <inheritdoc />
         public string Encode(string value)
         {
-            return !string.IsNullOrEmpty(value) ? _htmlEncoder.HtmlEncode(value) : string.Empty;
+            return !string.IsNullOrEmpty(value) ? _htmlEncoder.Encode(value) : string.Empty;
         }
 
         /// <inheritdoc />
         public string Encode(object value)
         {
-            return (value != null) ? _htmlEncoder.HtmlEncode(value.ToString()) : string.Empty;
+            return (value != null) ? _htmlEncoder.Encode(value.ToString()) : string.Empty;
         }
 
         /// <inheritdoc />

@@ -37,7 +37,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             var viewContext = CreateViewContext();
             var page = CreatePage(v =>
             {
-                v.HtmlEncoder = new CommonTestEncoder();
+                v.HtmlEncoder = new HtmlTestEncoder();
                 v.Write("Hello Prefix");
                 v.StartTagHelperWritingScope();
                 v.Write("Hello from Output");
@@ -63,7 +63,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             var viewContext = CreateViewContext();
             var page = CreatePage(v =>
             {
-                v.HtmlEncoder = new CommonTestEncoder();
+                v.HtmlEncoder = new HtmlTestEncoder();
                 v.Write("Hello Prefix");
                 v.StartTagHelperWritingScope();
                 v.Write("Hello In Scope");
@@ -87,7 +87,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             var viewContext = CreateViewContext();
             var page = CreatePage(v =>
             {
-                v.HtmlEncoder = new CommonTestEncoder();
+                v.HtmlEncoder = new HtmlTestEncoder();
                 v.Write("Hello Prefix");
                 v.StartTagHelperWritingScope();
                 v.Write("Hello In Scope Pre Nest");
@@ -161,7 +161,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             // Act
             var page = CreatePage(v =>
             {
-                v.HtmlEncoder = new CommonTestEncoder();
+                v.HtmlEncoder = new HtmlTestEncoder();
                 v.StartTagHelperWritingScope();
                 v.Write("Hello World!");
                 var returnValue = v.EndTagHelperWritingScope();
@@ -182,7 +182,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             // Act
             var page = CreatePage(v =>
             {
-                v.HtmlEncoder = new CommonTestEncoder();
+                v.HtmlEncoder = new HtmlTestEncoder();
                 v.StartTagHelperWritingScope(new RazorTextWriter(TextWriter.Null, Encoding.UTF8, v.HtmlEncoder));
                 v.Write("Hello ");
                 v.Write("World!");
@@ -560,7 +560,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                   .Verifiable();
             var page = CreatePage(v =>
             {
-                v.HtmlEncoder = new CommonTestEncoder();
+                v.HtmlEncoder = new HtmlTestEncoder();
                 v.Write(v.Href("url"));
             });
             var services = new Mock<IServiceProvider>();
@@ -664,7 +664,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             // Arrange
             var page = CreatePage(p =>
             {
-                p.HtmlEncoder = new CommonTestEncoder();
+                p.HtmlEncoder = new HtmlTestEncoder();
                 p.BeginWriteAttribute("href", "prefix", 0, "suffix", 34, 2);
                 p.WriteAttributeValue("prefix", 0, "attr1-value", 8, 14, true);
                 p.WriteAttributeValue("prefix2", 22, "attr2", 29, 5, false);
@@ -699,7 +699,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             // Arrange
             var page = CreatePage(p =>
             {
-                p.HtmlEncoder = new CommonTestEncoder();
+                p.HtmlEncoder = new HtmlTestEncoder();
                 p.BeginWriteAttribute("href", "prefix", 0, "suffix", 10, 1);
                 p.WriteAttributeValue("", 6, "true", 6, 4, false);
                 p.EndWriteAttribute();
@@ -810,7 +810,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             // Arrange
             var page = CreatePage(p => { });
-            page.HtmlEncoder = new CommonTestEncoder();
+            page.HtmlEncoder = new HtmlTestEncoder();
             var executionContext = new TagHelperExecutionContext(
                 "p",
                 tagMode: TagMode.StartTagAndEndTag,
@@ -850,7 +850,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             // Arrange
             var page = CreatePage(p => { });
-            page.HtmlEncoder = new CommonTestEncoder();
+            page.HtmlEncoder = new HtmlTestEncoder();
             var executionContext = new TagHelperExecutionContext(
                 "p",
                 tagMode: TagMode.StartTagAndEndTag,
@@ -878,7 +878,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             // Arrange
             var page = CreatePage(p => { });
-            page.HtmlEncoder = new CommonTestEncoder();
+            page.HtmlEncoder = new HtmlTestEncoder();
             var executionContext = new TagHelperExecutionContext(
                 "p",
                 tagMode: TagMode.StartTagAndEndTag,
@@ -966,7 +966,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             // Arrange
             var page = CreatePage(p => { });
-            page.HtmlEncoder = new CommonTestEncoder();
+            page.HtmlEncoder = new HtmlTestEncoder();
             var writer = new StringWriter();
             var prefix = "someattr=";
             var suffix = string.Empty;
@@ -994,7 +994,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         public async Task Write_WithHtmlString_WritesValueWithoutEncoding()
         {
             // Arrange
-            var writer = new RazorTextWriter(TextWriter.Null, Encoding.UTF8, new CommonTestEncoder());
+            var writer = new RazorTextWriter(TextWriter.Null, Encoding.UTF8, new HtmlTestEncoder());
 
             var page = CreatePage(p =>
             {
@@ -1630,7 +1630,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             // Act
             var page = CreatePage(p =>
             {
-                p.HtmlEncoder = new CommonTestEncoder();
+                p.HtmlEncoder = new HtmlTestEncoder();
                 p.WriteTagHelperAsync(tagHelperExecutionContext).Wait();
             }, context);
             await page.ExecuteAsync();
@@ -1675,7 +1675,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             // Act
             var page = CreatePage(p =>
             {
-                p.HtmlEncoder = new CommonTestEncoder();
+                p.HtmlEncoder = new HtmlTestEncoder();
                 p.WriteTagHelperAsync(tagHelperExecutionContext).Wait();
             }, context);
             await page.ExecuteAsync();
@@ -1707,7 +1707,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             // Act
             var page = CreatePage(p =>
             {
-                p.HtmlEncoder = new CommonTestEncoder();
+                p.HtmlEncoder = new HtmlTestEncoder();
                 p.WriteTagHelperToAsync(writer, tagHelperExecutionContext).Wait();
             }, context);
             await page.ExecuteAsync();
@@ -1736,7 +1736,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             // Act
             var page = CreatePage(p =>
             {
-                p.HtmlEncoder = new CommonTestEncoder();
+                p.HtmlEncoder = new HtmlTestEncoder();
                 p.WriteTagHelperToAsync(writer, tagHelperExecutionContext).Wait();
             }, context);
             await page.ExecuteAsync();
@@ -1828,7 +1828,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             public TestableRazorPage()
             {
-                HtmlEncoder = new CommonTestEncoder();
+                HtmlEncoder = new HtmlTestEncoder();
             }
 
             public string RenderedContent

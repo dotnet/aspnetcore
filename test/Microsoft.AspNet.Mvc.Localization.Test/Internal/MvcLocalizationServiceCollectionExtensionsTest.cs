@@ -4,13 +4,12 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
+using System.Text.Encodings.Web;
 using Microsoft.AspNet.Mvc.Razor;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.OptionsModel;
-using Microsoft.Extensions.WebEncoders;
 using Microsoft.Extensions.WebEncoders.Testing;
 using Xunit;
 
@@ -57,7 +56,7 @@ namespace Microsoft.AspNet.Mvc.Localization.Internal
                 },
                 service =>
                 {
-                    Assert.Equal(typeof(IHtmlEncoder), service.ServiceType);
+                    Assert.Equal(typeof(HtmlEncoder), service.ServiceType);
                     Assert.Equal(ServiceLifetime.Singleton, service.Lifetime);
                 },
                 service =>
@@ -84,13 +83,13 @@ namespace Microsoft.AspNet.Mvc.Localization.Internal
         {
             // Arrange
             var collection = new ServiceCollection();
-            var testEncoder = new CommonTestEncoder();
+            var testEncoder = new HtmlTestEncoder();
 
             // Act
             collection.Add(ServiceDescriptor.Singleton(typeof(IHtmlLocalizerFactory), typeof(TestHtmlLocalizerFactory)));
             collection.Add(ServiceDescriptor.Transient(typeof(IHtmlLocalizer<>), typeof(TestHtmlLocalizer<>)));
             collection.Add(ServiceDescriptor.Transient(typeof(IViewLocalizer), typeof(TestViewLocalizer)));
-            collection.Add(ServiceDescriptor.Instance(typeof(IHtmlEncoder), testEncoder));
+            collection.Add(ServiceDescriptor.Instance(typeof(HtmlEncoder), testEncoder));
 
             MvcLocalizationServices.AddLocalizationServices(
                 collection,
@@ -119,7 +118,7 @@ namespace Microsoft.AspNet.Mvc.Localization.Internal
                 },
                 service =>
                 {
-                    Assert.Equal(typeof(IHtmlEncoder), service.ServiceType);
+                    Assert.Equal(typeof(HtmlEncoder), service.ServiceType);
                     Assert.Same(testEncoder, service.ImplementationInstance);
                 },
                 service =>
@@ -165,7 +164,7 @@ namespace Microsoft.AspNet.Mvc.Localization.Internal
 
             collection.Add(ServiceDescriptor.Transient(typeof(IHtmlLocalizer<>), typeof(TestHtmlLocalizer<>)));
             collection.Add(ServiceDescriptor.Transient(typeof(IHtmlLocalizer), typeof(TestViewLocalizer)));
-            collection.Add(ServiceDescriptor.Instance(typeof(IHtmlEncoder), typeof(CommonTestEncoder)));
+            collection.Add(ServiceDescriptor.Instance(typeof(HtmlEncoder), typeof(HtmlTestEncoder)));
 
             // Assert
             Assert.Collection(collection,
@@ -199,7 +198,7 @@ namespace Microsoft.AspNet.Mvc.Localization.Internal
                 },
                 service =>
                 {
-                    Assert.Equal(typeof(IHtmlEncoder), service.ServiceType);
+                    Assert.Equal(typeof(HtmlEncoder), service.ServiceType);
                     Assert.Equal(ServiceLifetime.Singleton, service.Lifetime);
                 },
                 service =>
@@ -233,8 +232,8 @@ namespace Microsoft.AspNet.Mvc.Localization.Internal
                 },
                 service =>
                 {
-                    Assert.Equal(typeof(IHtmlEncoder), service.ServiceType);
-                    Assert.Equal(typeof(CommonTestEncoder), service.ImplementationInstance);
+                    Assert.Equal(typeof(HtmlEncoder), service.ServiceType);
+                    Assert.Equal(typeof(HtmlTestEncoder), service.ImplementationInstance);
                     Assert.Equal(ServiceLifetime.Singleton, service.Lifetime);
                 });
         }
@@ -278,7 +277,7 @@ namespace Microsoft.AspNet.Mvc.Localization.Internal
                 },
                 service =>
                 {
-                    Assert.Equal(typeof(IHtmlEncoder), service.ServiceType);
+                    Assert.Equal(typeof(HtmlEncoder), service.ServiceType);
                     Assert.Equal(ServiceLifetime.Singleton, service.Lifetime);
                 },
                 service =>

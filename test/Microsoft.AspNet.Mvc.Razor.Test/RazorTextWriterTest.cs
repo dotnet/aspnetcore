@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         {
             // Arrange
             var expected = new[] { "True", "3", "18446744073709551615", "Hello world", "3.14", "2.718", "m" };
-            var writer = new RazorTextWriter(TextWriter.Null, Encoding.UTF8, new CommonTestEncoder());
+            var writer = new RazorTextWriter(TextWriter.Null, Encoding.UTF8, new HtmlTestEncoder());
 
             // Act
             writer.Write(true);
@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             // Arrange
             var expected = new[] { "True", "3", "18446744073709551615", "Hello world", "3.14", "2.718" };
             var unbufferedWriter = new Mock<TextWriter>();
-            var writer = new RazorTextWriter(unbufferedWriter.Object, Encoding.UTF8, new CommonTestEncoder());
+            var writer = new RazorTextWriter(unbufferedWriter.Object, Encoding.UTF8, new HtmlTestEncoder());
             var testClass = new TestClass();
 
             // Act
@@ -70,7 +70,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         {
             // Arrange
             var unbufferedWriter = new Mock<TextWriter> { CallBase = true };
-            var writer = new RazorTextWriter(unbufferedWriter.Object, Encoding.UTF8, new CommonTestEncoder());
+            var writer = new RazorTextWriter(unbufferedWriter.Object, Encoding.UTF8, new HtmlTestEncoder());
             var buffer1 = new[] { 'a', 'b', 'c', 'd' };
             var buffer2 = new[] { 'd', 'e', 'f' };
 
@@ -98,7 +98,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         {
             // Arrange
             var unbufferedWriter = new Mock<TextWriter>();
-            var writer = new RazorTextWriter(unbufferedWriter.Object, Encoding.UTF8, new CommonTestEncoder());
+            var writer = new RazorTextWriter(unbufferedWriter.Object, Encoding.UTF8, new HtmlTestEncoder());
 
             // Act
             await writer.FlushAsync();
@@ -122,7 +122,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             // Arrange
             var newLine = Environment.NewLine;
             var expected = new List<object> { "False", newLine, "1.1", newLine, "3", newLine };
-            var writer = new RazorTextWriter(TextWriter.Null, Encoding.UTF8, new CommonTestEncoder());
+            var writer = new RazorTextWriter(TextWriter.Null, Encoding.UTF8, new HtmlTestEncoder());
 
             // Act
             writer.WriteLine(false);
@@ -139,7 +139,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         {
             // Arrange
             var unbufferedWriter = new Mock<TextWriter>();
-            var writer = new RazorTextWriter(unbufferedWriter.Object, Encoding.UTF8, new CommonTestEncoder());
+            var writer = new RazorTextWriter(unbufferedWriter.Object, Encoding.UTF8, new HtmlTestEncoder());
 
             // Act
             writer.Flush();
@@ -162,7 +162,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             var input1 = new ArraySegment<char>(new char[] { 'a', 'b', 'c', 'd' }, 1, 3);
             var input2 = new ArraySegment<char>(new char[] { 'e', 'f' }, 0, 2);
             var input3 = new ArraySegment<char>(new char[] { 'g', 'h', 'i', 'j' }, 3, 1);
-            var writer = new RazorTextWriter(TextWriter.Null, Encoding.UTF8, new CommonTestEncoder());
+            var writer = new RazorTextWriter(TextWriter.Null, Encoding.UTF8, new HtmlTestEncoder());
 
             // Act
             writer.Write(input1.Array, input1.Offset, input1.Count);
@@ -183,7 +183,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         {
             // Arrange
             var newLine = Environment.NewLine;
-            var writer = new RazorTextWriter(TextWriter.Null, Encoding.UTF8, new CommonTestEncoder());
+            var writer = new RazorTextWriter(TextWriter.Null, Encoding.UTF8, new HtmlTestEncoder());
 
             // Act
             writer.WriteLine();
@@ -203,7 +203,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             var input2 = "from";
             var input3 = "ASP";
             var input4 = ".Net";
-            var writer = new RazorTextWriter(TextWriter.Null, Encoding.UTF8, new CommonTestEncoder());
+            var writer = new RazorTextWriter(TextWriter.Null, Encoding.UTF8, new HtmlTestEncoder());
 
             // Act
             writer.Write(input1);
@@ -220,7 +220,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         public void Write_HtmlContent_AddsToEntries()
         {
             // Arrange
-            var writer = new RazorTextWriter(TextWriter.Null, Encoding.UTF8, new CommonTestEncoder());
+            var writer = new RazorTextWriter(TextWriter.Null, Encoding.UTF8, new HtmlTestEncoder());
             var content = new HtmlString("Hello, world!");
 
             // Act
@@ -236,7 +236,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         public void Write_Object_HtmlContent_AddsToEntries()
         {
             // Arrange
-            var writer = new RazorTextWriter(TextWriter.Null, Encoding.UTF8, new CommonTestEncoder());
+            var writer = new RazorTextWriter(TextWriter.Null, Encoding.UTF8, new HtmlTestEncoder());
             var content = new HtmlString("Hello, world!");
 
             // Act
@@ -252,7 +252,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         public void WriteLine_Object_HtmlContent_AddsToEntries()
         {
             // Arrange
-            var writer = new RazorTextWriter(TextWriter.Null, Encoding.UTF8, new CommonTestEncoder());
+            var writer = new RazorTextWriter(TextWriter.Null, Encoding.UTF8, new HtmlTestEncoder());
             var content = new HtmlString("Hello, world!");
 
             // Act
@@ -271,7 +271,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             // Arrange
             var stringWriter = new StringWriter();
 
-            var writer = new RazorTextWriter(stringWriter, Encoding.UTF8, new CommonTestEncoder());
+            var writer = new RazorTextWriter(stringWriter, Encoding.UTF8, new HtmlTestEncoder());
             writer.Flush();
 
             var content = new HtmlString("Hello, world!");
@@ -287,8 +287,8 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         public void Copy_CopiesContent_IfTargetTextWriterIsARazorTextWriterAndBuffering()
         {
             // Arrange
-            var source = new RazorTextWriter(TextWriter.Null, Encoding.UTF8, new CommonTestEncoder());
-            var target = new RazorTextWriter(TextWriter.Null, Encoding.UTF8, new CommonTestEncoder());
+            var source = new RazorTextWriter(TextWriter.Null, Encoding.UTF8, new HtmlTestEncoder());
+            var target = new RazorTextWriter(TextWriter.Null, Encoding.UTF8, new HtmlTestEncoder());
 
             // Act
             source.Write("Hello world");
@@ -307,8 +307,8 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         {
             // Arrange
             var unbufferedWriter = new Mock<TextWriter>();
-            var source = new RazorTextWriter(TextWriter.Null, Encoding.UTF8, new CommonTestEncoder());
-            var target = new RazorTextWriter(unbufferedWriter.Object, Encoding.UTF8, new CommonTestEncoder());
+            var source = new RazorTextWriter(TextWriter.Null, Encoding.UTF8, new HtmlTestEncoder());
+            var target = new RazorTextWriter(unbufferedWriter.Object, Encoding.UTF8, new HtmlTestEncoder());
 
             // Act
             target.Flush();
@@ -328,7 +328,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         public void Copy_WritesContent_IfTargetTextWriterIsNotARazorTextWriter()
         {
             // Arrange
-            var source = new RazorTextWriter(TextWriter.Null, Encoding.UTF8, new CommonTestEncoder());
+            var source = new RazorTextWriter(TextWriter.Null, Encoding.UTF8, new HtmlTestEncoder());
             var target = new StringWriter();
             var expected = "Hello world" + Environment.NewLine + "abc";
 
@@ -345,8 +345,8 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         public async Task CopyAsync_WritesContent_IfTargetTextWriterIsARazorTextWriterAndBuffering()
         {
             // Arrange
-            var source = new RazorTextWriter(TextWriter.Null, Encoding.UTF8, new CommonTestEncoder());
-            var target = new RazorTextWriter(TextWriter.Null, Encoding.UTF8, new CommonTestEncoder());
+            var source = new RazorTextWriter(TextWriter.Null, Encoding.UTF8, new HtmlTestEncoder());
+            var target = new RazorTextWriter(TextWriter.Null, Encoding.UTF8, new HtmlTestEncoder());
 
             // Act
             source.WriteLine("Hello world");
@@ -365,8 +365,8 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         {
             // Arrange
             var unbufferedWriter = new Mock<TextWriter>();
-            var source = new RazorTextWriter(TextWriter.Null, Encoding.UTF8, new CommonTestEncoder());
-            var target = new RazorTextWriter(unbufferedWriter.Object, Encoding.UTF8, new CommonTestEncoder());
+            var source = new RazorTextWriter(TextWriter.Null, Encoding.UTF8, new HtmlTestEncoder());
+            var target = new RazorTextWriter(unbufferedWriter.Object, Encoding.UTF8, new HtmlTestEncoder());
 
             // Act
             await target.FlushAsync();
@@ -387,7 +387,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         public async Task CopyAsync_WritesContent_IfTargetTextWriterIsNotARazorTextWriter()
         {
             // Arrange
-            var source = new RazorTextWriter(TextWriter.Null, Encoding.UTF8, new CommonTestEncoder());
+            var source = new RazorTextWriter(TextWriter.Null, Encoding.UTF8, new HtmlTestEncoder());
             var target = new StringWriter();
             var expected = "Hello world" + Environment.NewLine;
 

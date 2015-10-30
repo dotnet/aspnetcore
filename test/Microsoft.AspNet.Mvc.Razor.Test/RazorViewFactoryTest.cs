@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             var factory = new RazorViewFactory(
                 Mock.Of<IRazorPageActivator>(),
                 Mock.Of<IViewStartProvider>(),
-                new CommonTestEncoder());
+                new HtmlTestEncoder());
             var page = Mock.Of<IRazorPage>();
             var viewEngine = Mock.Of<IRazorViewEngine>();
 
@@ -38,7 +38,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             var factory = new RazorViewFactory(
                 Mock.Of<IRazorPageActivator>(),
                 Mock.Of<IViewStartProvider>(),
-                new CommonTestEncoder());
+                new HtmlTestEncoder());
 
             var page = Mock.Of<IRazorPage>();
             var viewEngine = Mock.Of<IRazorViewEngine>();

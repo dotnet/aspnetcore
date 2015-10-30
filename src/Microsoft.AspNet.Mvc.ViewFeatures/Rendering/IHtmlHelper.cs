@@ -3,12 +3,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Html.Abstractions;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.AspNet.Mvc.ViewFeatures;
-using Microsoft.Extensions.WebEncoders;
 
 namespace Microsoft.AspNet.Mvc.Rendering
 {
@@ -55,14 +55,14 @@ namespace Microsoft.AspNet.Mvc.Rendering
         ITempDataDictionary TempData { get; }
 
         /// <summary>
-        /// Gets the <see cref="IUrlEncoder"/> to be used for encoding a URL.
+        /// Gets the <see cref="UrlEncoder"/> to be used for encoding a URL.
         /// </summary>
-        IUrlEncoder UrlEncoder { get; }
+        UrlEncoder UrlEncoder { get; }
 
         /// <summary>
-        /// Gets the <see cref="IJavaScriptStringEncoder"/> to be used for encoding JavaScript.
+        /// Gets the <see cref="JavaScriptEncoder"/> to be used for encoding JavaScript.
         /// </summary>
-        IJavaScriptStringEncoder JavaScriptStringEncoder { get; }
+        JavaScriptEncoder JavaScriptEncoder { get; }
 
         /// <summary>
         /// Returns an anchor (&lt;a&gt;) element that contains a URL path to the specified action.

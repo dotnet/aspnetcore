@@ -66,7 +66,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var expectedPostContent = "Something" +
                 HtmlContentUtilities.HtmlContentToString(
                     htmlGenerator.GenerateAntiforgery(viewContext),
-                    new NullTestEncoder());
+                    new HtmlTestEncoder());
             var formTagHelper = new FormTagHelper(htmlGenerator)
             {
                 Action = "index",

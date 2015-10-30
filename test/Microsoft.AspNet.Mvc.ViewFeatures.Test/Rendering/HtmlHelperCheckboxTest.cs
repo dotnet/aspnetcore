@@ -149,7 +149,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(html));
             var writer = new StringWriter();
             var hiddenTag = Assert.Single(helper.ViewContext.FormContext.EndOfFormContent);
-            hiddenTag.WriteTo(writer, new CommonTestEncoder());
+            hiddenTag.WriteTo(writer, new HtmlTestEncoder());
             Assert.Equal("<input name=\"HtmlEncode[[Property1]]\" type=\"HtmlEncode[[hidden]]\" value=\"HtmlEncode[[false]]\" />",
                 writer.ToString());
         }

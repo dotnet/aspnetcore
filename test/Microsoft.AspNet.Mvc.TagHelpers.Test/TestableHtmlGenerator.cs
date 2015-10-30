@@ -43,7 +43,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             IOptions<MvcViewOptions> options,
             IUrlHelper urlHelper,
             IDictionary<string, object> validationAttributes)
-            : base(Mock.Of<IAntiforgery>(), options, metadataProvider, urlHelper, new CommonTestEncoder())
+            : base(Mock.Of<IAntiforgery>(), options, metadataProvider, urlHelper, new HtmlTestEncoder())
         {
             _validationAttributes = validationAttributes;
         }

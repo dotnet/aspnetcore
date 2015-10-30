@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Text.Encodings.Web;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Mvc.Razor.TagHelpers;
 using Microsoft.AspNet.Mvc.Rendering;
@@ -12,7 +13,6 @@ using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.AspNet.Razor.TagHelpers;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.WebEncoders;
 
 namespace Microsoft.AspNet.Mvc.TagHelpers
 {
@@ -77,15 +77,15 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         /// <param name="logger">The <see cref="ILogger{ScriptTagHelper}"/>.</param>
         /// <param name="hostingEnvironment">The <see cref="IHostingEnvironment"/>.</param>
         /// <param name="cache">The <see cref="IMemoryCache"/>.</param>
-        /// <param name="htmlEncoder">The <see cref="IHtmlEncoder"/>.</param>
-        /// <param name="javaScriptEncoder">The <see cref="IJavaScriptStringEncoder"/>.</param>
+        /// <param name="htmlEncoder">The <see cref="HtmlEncoder"/>.</param>
+        /// <param name="javaScriptEncoder">The <see cref="JavaScriptEncoder"/>.</param>
         /// <param name="urlHelper">The <see cref="IUrlHelper"/>.</param>
         public ScriptTagHelper(
             ILogger<ScriptTagHelper> logger,
             IHostingEnvironment hostingEnvironment,
             IMemoryCache cache,
-            IHtmlEncoder htmlEncoder,
-            IJavaScriptStringEncoder javaScriptEncoder,
+            HtmlEncoder htmlEncoder,
+            JavaScriptEncoder javaScriptEncoder,
             IUrlHelper urlHelper)
             : base(urlHelper, htmlEncoder)
         {
@@ -176,7 +176,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
         protected IMemoryCache Cache { get; }
 
-        protected IJavaScriptStringEncoder JavaScriptEncoder { get; }
+        protected JavaScriptEncoder JavaScriptEncoder { get; }
 
         // Internal for ease of use when testing.
         protected internal GlobbingUrlBuilder GlobbingUrlBuilder { get; set; }
@@ -316,9 +316,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     {
                         if (!attribute.Name.Equals(SrcAttributeName, StringComparison.OrdinalIgnoreCase))
                         {
-                            var encodedKey = JavaScriptEncoder.JavaScriptStringEncode(attribute.Name);
+                            var encodedKey = JavaScriptEncoder.Encode(attribute.Name);
                             var attributeValue = attribute.Value.ToString();
-                            var encodedValue = JavaScriptEncoder.JavaScriptStringEncode(attributeValue);
+                            var encodedValue = JavaScriptEncoder.Encode(attributeValue);
 
                             AppendAttribute(builder, encodedKey, encodedValue, escapeQuotes: true);
                         }
@@ -332,7 +332,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                             }
 
                             // attribute.Key ("src") does not need to be JavaScript-encoded.
-                            var encodedValue = JavaScriptEncoder.JavaScriptStringEncode(attributeValue);
+                            var encodedValue = JavaScriptEncoder.Encode(attributeValue);
 
                             AppendAttribute(builder, attribute.Name, encodedValue, escapeQuotes: true);
                         }

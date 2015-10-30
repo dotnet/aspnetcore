@@ -8,6 +8,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Security.Claims;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Antiforgery;
 using Microsoft.AspNet.Html.Abstractions;
@@ -20,7 +21,6 @@ using Microsoft.AspNet.PageExecutionInstrumentation;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.AspNet.Razor.TagHelpers;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.WebEncoders;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
@@ -76,10 +76,10 @@ namespace Microsoft.AspNet.Mvc.Razor
         public bool IsPartial { get; set; }
 
         /// <summary>
-        /// Gets the <see cref="IHtmlEncoder"/> to be used for encoding HTML.
+        /// Gets the <see cref="HtmlEncoder"/> to be used for encoding HTML.
         /// </summary>
         [RazorInject]
-        public IHtmlEncoder HtmlEncoder { get; set; }
+        public HtmlEncoder HtmlEncoder { get; set; }
 
         /// <inheritdoc />
         public IPageExecutionContext PageExecutionContext { get; set; }
@@ -423,7 +423,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <param name="value">The <see cref="object"/> to write.</param>
         /// <remarks>
         /// <paramref name="value"/>s of type <see cref="IHtmlContent"/> are written using
-        /// <see cref="IHtmlContent.WriteTo(TextWriter, IHtmlEncoder)"/>.
+        /// <see cref="IHtmlContent.WriteTo(TextWriter, HtmlEncoder)"/>.
         /// For all other types, the encoded result of <see cref="object.ToString"/> is written to the
         /// <paramref name="writer"/>.
         /// </remarks>
@@ -441,7 +441,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// Writes the specified <paramref name="value"/> with HTML encoding to given <paramref name="writer"/>.
         /// </summary>
         /// <param name="writer">The <see cref="TextWriter"/> instance to write to.</param>
-        /// <param name="encoder">The <see cref="IHtmlEncoder"/> to use when encoding <paramref name="value"/>.</param>
+        /// <param name="encoder">The <see cref="HtmlEncoder"/> to use when encoding <paramref name="value"/>.</param>
         /// <param name="value">The <see cref="object"/> to write.</param>
         /// <param name="escapeQuotes">
         /// If <c>true</c> escapes double quotes in a <paramref name="value"/> of type <see cref="HtmlString"/>.
@@ -449,13 +449,13 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// </param>
         /// <remarks>
         /// <paramref name="value"/>s of type <see cref="IHtmlContent"/> are written using
-        /// <see cref="IHtmlContent.WriteTo(TextWriter, IHtmlEncoder)"/>.
+        /// <see cref="IHtmlContent.WriteTo(TextWriter, HtmlEncoder)"/>.
         /// For all other types, the encoded result of <see cref="object.ToString"/> is written to the
         /// <paramref name="writer"/>.
         /// </remarks>
         public static void WriteTo(
             TextWriter writer,
-            IHtmlEncoder encoder,
+            HtmlEncoder encoder,
             object value,
             bool escapeQuotes)
         {
@@ -532,11 +532,11 @@ namespace Microsoft.AspNet.Mvc.Razor
             WriteTo(writer, HtmlEncoder, value);
         }
 
-        private static void WriteTo(TextWriter writer, IHtmlEncoder encoder, string value)
+        private static void WriteTo(TextWriter writer, HtmlEncoder encoder, string value)
         {
             if (!string.IsNullOrEmpty(value))
             {
-                encoder.HtmlEncode(value, writer);
+                encoder.Encode(writer, value);
             }
         }
 

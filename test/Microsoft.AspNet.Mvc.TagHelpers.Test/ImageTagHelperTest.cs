@@ -67,7 +67,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var helper = new ImageTagHelper(
                 hostingEnvironment,
                 MakeCache(),
-                new CommonTestEncoder(),
+                new HtmlTestEncoder(),
                 urlHelper.Object)
             {
                 ViewContext = viewContext,
@@ -118,7 +118,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var hostingEnvironment = MakeHostingEnvironment();
             var viewContext = MakeViewContext();
 
-            var helper = new ImageTagHelper(hostingEnvironment, MakeCache(), new CommonTestEncoder(), MakeUrlHelper())
+            var helper = new ImageTagHelper(hostingEnvironment, MakeCache(), new HtmlTestEncoder(), MakeUrlHelper())
             {
                 ViewContext = viewContext,
                 Src = "testimage.png",
@@ -159,7 +159,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var hostingEnvironment = MakeHostingEnvironment();
             var viewContext = MakeViewContext();
 
-            var helper = new ImageTagHelper(hostingEnvironment, MakeCache(), new CommonTestEncoder(), MakeUrlHelper())
+            var helper = new ImageTagHelper(hostingEnvironment, MakeCache(), new HtmlTestEncoder(), MakeUrlHelper())
             {
                 ViewContext = viewContext,
                 Src = "/images/test-image.png",
@@ -195,7 +195,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var hostingEnvironment = MakeHostingEnvironment();
             var viewContext = MakeViewContext();
 
-            var helper = new ImageTagHelper(hostingEnvironment, MakeCache(), new CommonTestEncoder(), MakeUrlHelper())
+            var helper = new ImageTagHelper(hostingEnvironment, MakeCache(), new HtmlTestEncoder(), MakeUrlHelper())
             {
                 ViewContext = viewContext,
                 Src = "/images/test-image.png",
@@ -231,7 +231,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var hostingEnvironment = MakeHostingEnvironment();
             var viewContext = MakeViewContext("/bar");
 
-            var helper = new ImageTagHelper(hostingEnvironment, MakeCache(), new CommonTestEncoder(), MakeUrlHelper())
+            var helper = new ImageTagHelper(hostingEnvironment, MakeCache(), new HtmlTestEncoder(), MakeUrlHelper())
             {
                 ViewContext = viewContext,
                 Src = "/bar/images/image.jpg",

@@ -5,9 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
+using System.Text.Encodings.Web;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Razor.TagHelpers;
-using Microsoft.Extensions.WebEncoders;
 
 namespace Microsoft.AspNet.Mvc.Razor.TagHelpers
 {
@@ -84,8 +84,8 @@ namespace Microsoft.AspNet.Mvc.Razor.TagHelpers
         /// Creates a new <see cref="UrlResolutionTagHelper"/>.
         /// </summary>
         /// <param name="urlHelper">The <see cref="IUrlHelper"/>.</param>
-        /// <param name="htmlEncoder">The <see cref="IHtmlEncoder"/>.</param>
-        public UrlResolutionTagHelper(IUrlHelper urlHelper, IHtmlEncoder htmlEncoder)
+        /// <param name="htmlEncoder">The <see cref="HtmlEncoder"/>.</param>
+        public UrlResolutionTagHelper(IUrlHelper urlHelper, HtmlEncoder htmlEncoder)
         {
             UrlHelper = urlHelper;
             HtmlEncoder = htmlEncoder;
@@ -102,7 +102,7 @@ namespace Microsoft.AspNet.Mvc.Razor.TagHelpers
 
         protected IUrlHelper UrlHelper { get; }
 
-        protected IHtmlEncoder HtmlEncoder { get; }
+        protected HtmlEncoder HtmlEncoder { get; }
 
         /// <inheritdoc />
         public override void Process(TagHelperContext context, TagHelperOutput output)
@@ -221,7 +221,7 @@ namespace Microsoft.AspNet.Mvc.Razor.TagHelpers
                     }
 
                     var applicationPath = appRelativeUrl.Substring(0, appRelativeUrl.Length - postTildeSlashUrlValue.Length);
-                    var encodedApplicationPath = HtmlEncoder.HtmlEncode(applicationPath);
+                    var encodedApplicationPath = HtmlEncoder.Encode(applicationPath);
 
                     resolvedUrl = string.Concat(encodedApplicationPath, postTildeSlashUrlValue);
                 }

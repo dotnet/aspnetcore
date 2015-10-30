@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Text.Encodings.Web;
 using Microsoft.AspNet.Mvc.ViewEngines;
-using Microsoft.Extensions.WebEncoders;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.Mvc.Razor
     /// </summary>
     public class RazorViewFactory : IRazorViewFactory
     {
-        private readonly IHtmlEncoder _htmlEncoder;
+        private readonly HtmlEncoder _htmlEncoder;
         private readonly IRazorPageActivator _pageActivator;
         private readonly IViewStartProvider _viewStartProvider;
 
@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         public RazorViewFactory(
             IRazorPageActivator pageActivator,
             IViewStartProvider viewStartProvider,
-            IHtmlEncoder htmlEncoder)
+            HtmlEncoder htmlEncoder)
         {
             _pageActivator = pageActivator;
             _viewStartProvider = viewStartProvider;

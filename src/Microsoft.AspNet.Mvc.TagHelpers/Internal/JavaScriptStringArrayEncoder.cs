@@ -3,7 +3,7 @@
 
 using System.Collections.Generic;
 using System.IO;
-using Microsoft.Extensions.WebEncoders;
+using System.Text.Encodings.Web;
 
 namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
 {
@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
         /// <summary>
         /// Encodes a .NET string array for safe use as a JavaScript array literal, including inline in an HTML file.
         /// </summary>
-        public static string Encode(IJavaScriptStringEncoder encoder, IEnumerable<string> values)
+        public static string Encode(JavaScriptEncoder encoder, IEnumerable<string> values)
         {
             var writer = new StringWriter();
 
@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
                     writer.Write(',');
                 }
                 writer.Write('"');
-                encoder.JavaScriptStringEncode(value, writer);
+                encoder.Encode(writer, value);
                 writer.Write('"');
                 firstAdded = true;
             }

@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Text.Encodings.Web;
 using Microsoft.AspNet.Mvc.ViewFeatures;
-using Microsoft.Extensions.WebEncoders;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNet.Mvc.Rendering
@@ -61,10 +61,10 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 var writer = _viewContext.Writer;
                 var htmlWriter = writer as HtmlTextWriter;
 
-                IHtmlEncoder htmlEncoder = null;
+                HtmlEncoder htmlEncoder = null;
                 if (htmlWriter == null)
                 {
-                    htmlEncoder = _viewContext.HttpContext.RequestServices.GetRequiredService<IHtmlEncoder>();
+                    htmlEncoder = _viewContext.HttpContext.RequestServices.GetRequiredService<HtmlEncoder>();
                 }
 
                 foreach (var content in formContext.EndOfFormContent)

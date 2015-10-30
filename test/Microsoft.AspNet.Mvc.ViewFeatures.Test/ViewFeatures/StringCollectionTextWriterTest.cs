@@ -175,7 +175,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             // Act
             source.Write("Hello world");
             source.Write(new char[1], 0, 1);
-            source.CopyTo(target, new CommonTestEncoder());
+            source.CopyTo(target, new HtmlTestEncoder());
 
             // Assert
             // Make sure content was written to the source.
@@ -197,7 +197,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             // Act
             source.WriteLine("Hello world");
             source.Write(new[] { 'x', 'a', 'b', 'c' }, 1, 3);
-            source.CopyTo(target, new CommonTestEncoder());
+            source.CopyTo(target, new HtmlTestEncoder());
 
             // Assert
             Assert.Equal(expected, target.ToString());

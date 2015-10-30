@@ -8,7 +8,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Razor.TagHelpers;
-using Microsoft.Extensions.WebEncoders;
+using Microsoft.Extensions.WebEncoders.Testing;
 using Moq;
 using Xunit;
 
@@ -58,7 +58,7 @@ namespace Microsoft.AspNet.Mvc.Razor.TagHelpers
             urlHelperMock
                 .Setup(urlHelper => urlHelper.Content(It.IsAny<string>()))
                 .Returns(new Func<string, string>(value => "/approot" + value.Substring(1)));
-            var tagHelper = new UrlResolutionTagHelper(urlHelperMock.Object, new TestHtmlEncoder());
+            var tagHelper = new UrlResolutionTagHelper(urlHelperMock.Object, new HtmlTestEncoder());
 
             var context = new TagHelperContext(
                 allAttributes: new ReadOnlyTagHelperAttributeList<IReadOnlyTagHelperAttribute>(

@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.IO;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Antiforgery;
 using Microsoft.AspNet.Http.Internal;
@@ -17,7 +18,6 @@ using Microsoft.AspNet.Mvc.ViewEngines;
 using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.AspNet.Routing;
 using Microsoft.Extensions.OptionsModel;
-using Microsoft.Extensions.WebEncoders;
 using Microsoft.Extensions.WebEncoders.Testing;
 using Moq;
 
@@ -254,7 +254,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                     optionsAccessor.Object,
                     provider,
                     urlHelper,
-                    new CommonTestEncoder());
+                    new HtmlTestEncoder());
             }
 
             // TemplateRenderer will Contextualize this transient service.
@@ -262,9 +262,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 htmlGenerator,
                 viewEngine,
                 provider,
-                new CommonTestEncoder(),
-                new UrlEncoder(),
-                new JavaScriptStringEncoder());
+                new HtmlTestEncoder(),
+                UrlEncoder.Default,
+                JavaScriptEncoder.Default);
 
             if (innerHelperWrapper != null)
             {
@@ -278,9 +278,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 htmlGenerator,
                 viewEngine,
                 provider,
-                new CommonTestEncoder(),
-                new UrlEncoder(),
-                new JavaScriptStringEncoder());
+                new HtmlTestEncoder(),
+                UrlEncoder.Default,
+                JavaScriptEncoder.Default);
 
             var viewContext = new ViewContext(
                 actionContext,

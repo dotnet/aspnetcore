@@ -3,9 +3,9 @@
 
 using System;
 using System.Text;
+using System.Text.Encodings.Web;
 using Microsoft.AspNet.Mvc.Razor;
 using Microsoft.AspNet.Razor.TagHelpers;
-using Microsoft.Extensions.WebEncoders;
 
 namespace Microsoft.AspNet.Mvc.TagHelpers
 {
@@ -18,19 +18,19 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         /// Writes the specified <paramref name="value"/> with HTML encoding to given <paramref name="content"/>.
         /// </summary>
         /// <param name="content">The <see cref="TagHelperContent"/> to write to.</param>
-        /// <param name="encoder">The <see cref="IHtmlEncoder"/> to use when encoding <paramref name="value"/>.</param>
+        /// <param name="encoder">The <see cref="HtmlEncoder"/> to use when encoding <paramref name="value"/>.</param>
         /// <param name="encoding">The character encoding in which the <paramref name="value"/> is written.</param>
         /// <param name="value">The <see cref="object"/> to write.</param>
         /// <returns><paramref name="content"/> after the write operation has completed.</returns>
         /// <remarks>
         /// <paramref name="value"/>s of type <see cref="Html.Abstractions.IHtmlContent"/> are written using 
-        /// <see cref="Html.Abstractions.IHtmlContent.WriteTo(System.IO.TextWriter, IHtmlEncoder)"/>.
+        /// <see cref="Html.Abstractions.IHtmlContent.WriteTo(System.IO.TextWriter, HtmlEncoder)"/>.
         /// For all other types, the encoded result of <see cref="object.ToString"/>
         /// is written to the <paramref name="content"/>.
         /// </remarks>
         public static TagHelperContent Append(
             this TagHelperContent content,
-            IHtmlEncoder encoder,
+            HtmlEncoder encoder,
             Encoding encoding,
             object value)
         {

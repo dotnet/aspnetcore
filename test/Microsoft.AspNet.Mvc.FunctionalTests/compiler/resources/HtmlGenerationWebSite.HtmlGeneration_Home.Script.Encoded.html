@@ -13,27 +13,27 @@
     <script src="HtmlEncode[[/blank.js?a=b&c=d]]" data-foo="foo-data2" title="&lt;the title>">
         // TagHelper script with comment in body, and extra properties.
     </script>
-<script>(false||document.write("<script src=\"JavaScriptStringEncode[[/styles/site.js?a=b&c=d]]\" JavaScriptStringEncode[[data-foo]]=\"JavaScriptStringEncode[[foo-data2]]\" JavaScriptStringEncode[[title]]=\"JavaScriptStringEncode[[&lt;the title>]]\"><\/script>"));</script>
+<script>(false||document.write("<script src=\"JavaScriptEncode[[/styles/site.js?a=b&c=d]]\" JavaScriptEncode[[data-foo]]=\"JavaScriptEncode[[foo-data2]]\" JavaScriptEncode[[title]]=\"JavaScriptEncode[[&lt;the title>]]\"><\/script>"));</script>
 
     <script src="HtmlEncode[[/blank.js]]" title="&quot;the&quot; title">
         // Fallback to globbed src
     </script>
-<script>(false||document.write("<script src=\"JavaScriptStringEncode[[/styles/site.js]]\" JavaScriptStringEncode[[title]]=\"JavaScriptStringEncode[["the" title]]\"><\/script>"));</script>
+<script>(false||document.write("<script src=\"JavaScriptEncode[[/styles/site.js]]\" JavaScriptEncode[[title]]=\"JavaScriptEncode[["the" title]]\"><\/script>"));</script>
 
     <script src="HtmlEncode[[/blank.js]]">
         // Fallback to globbed src with exclude
     </script>
-<script>(false||document.write("<script src=\"JavaScriptStringEncode[[/styles/site.js]]\"><\/script><script src=\"JavaScriptStringEncode[[/styles/sub/site2.js]]\"><\/script>"));</script>
+<script>(false||document.write("<script src=\"JavaScriptEncode[[/styles/site.js]]\"><\/script><script src=\"JavaScriptEncode[[/styles/sub/site2.js]]\"><\/script>"));</script>
 
     <script src="HtmlEncode[[/blank.js]]">
         // Fallback to globbed and static src
     </script>
-<script>(false||document.write("<script src=\"JavaScriptStringEncode[[/styles/site.js]]\"><\/script><script src=\"JavaScriptStringEncode[[/styles/sub/site2.js]]\"><\/script>"));</script>
+<script>(false||document.write("<script src=\"JavaScriptEncode[[/styles/site.js]]\"><\/script><script src=\"JavaScriptEncode[[/styles/sub/site2.js]]\"><\/script>"));</script>
 
     <script src="HtmlEncode[[/blank.js]]">
         // Fallback to globbed and static src should de-dupe
     </script>
-<script>(false||document.write("<script src=\"JavaScriptStringEncode[[/styles/site.js]]\"><\/script>"));</script>
+<script>(false||document.write("<script src=\"JavaScriptEncode[[/styles/site.js]]\"><\/script>"));</script>
 
     <script src="HtmlEncode[[/blank.js]]">
         // Fallback to globbed src with missing include
@@ -42,7 +42,7 @@
     <script src="HtmlEncode[[/blank.js]]">
         // Fallback to static and globbed src with missing include
     </script>
-<script>(false||document.write("<script src=\"JavaScriptStringEncode[[/styles/site.js]]\"><\/script>"));</script>
+<script>(false||document.write("<script src=\"JavaScriptEncode[[/styles/site.js]]\"><\/script>"));</script>
 
     <script src="HtmlEncode[[/blank.js]]">
         // Fallback to globbed src outside of webroot
@@ -55,7 +55,7 @@
     <script data-foo="foo-data3">
         // Valid TagHelper (although no src is provided) script with comment in body, and extra properties.
     </script>
-<script>(false||document.write("<script JavaScriptStringEncode[[data-foo]]=\"JavaScriptStringEncode[[foo-data3]]\" src=\"JavaScriptStringEncode[[/styles/site.js]]\"><\/script>"));</script>
+<script>(false||document.write("<script JavaScriptEncode[[data-foo]]=\"JavaScriptEncode[[foo-data3]]\" src=\"JavaScriptEncode[[/styles/site.js]]\"><\/script>"));</script>
 
     <script src="HtmlEncode[[/blank.js]]">
         // Invalid TagHelper script with comment in body.
@@ -98,12 +98,12 @@
     <script src="HtmlEncode[[/blank.js]]">
         // TagHelper script with comment in body, and file version.
     </script>
-<script>(false||document.write("<script src=\"JavaScriptStringEncode[[/styles/site.js?v=jx1PJjLX32-xgQQx2BxnckU9QH9DVKkm4-M5bSK869I]]\"><\/script>"));</script>
+<script>(false||document.write("<script src=\"JavaScriptEncode[[/styles/site.js?v=jx1PJjLX32-xgQQx2BxnckU9QH9DVKkm4-M5bSK869I]]\"><\/script>"));</script>
 
     <script src="HtmlEncode[[/blank.js]]">
         // Fallback to globbed src with file version.
     </script>
-<script>(false||document.write("<script src=\"JavaScriptStringEncode[[/styles/site.js?v=jx1PJjLX32-xgQQx2BxnckU9QH9DVKkm4-M5bSK869I]]\"><\/script>"));</script>
+<script>(false||document.write("<script src=\"JavaScriptEncode[[/styles/site.js?v=jx1PJjLX32-xgQQx2BxnckU9QH9DVKkm4-M5bSK869I]]\"><\/script>"));</script>
 
     <script src="HtmlEncode[[/styles/site.js?v=jx1PJjLX32-xgQQx2BxnckU9QH9DVKkm4-M5bSK869I]]">
         // Regular script with comment in body, and file version.

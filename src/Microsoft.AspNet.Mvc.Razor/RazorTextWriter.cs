@@ -4,10 +4,10 @@
 using System;
 using System.IO;
 using System.Text;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Html.Abstractions;
 using Microsoft.AspNet.Mvc.ViewFeatures;
-using Microsoft.Extensions.WebEncoders;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// is no longer buffering.</param>
         /// <param name="encoding">The character <see cref="Encoding"/> in which the output is written.</param>
         /// <param name="encoder">The HTML encoder.</param>
-        public RazorTextWriter(TextWriter unbufferedWriter, Encoding encoding, IHtmlEncoder encoder)
+        public RazorTextWriter(TextWriter unbufferedWriter, Encoding encoding, HtmlEncoder encoder)
         {
             UnbufferedWriter = unbufferedWriter;
             HtmlEncoder = encoder;
@@ -55,7 +55,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         private TextWriter TargetWriter { get; set; }
 
-        private IHtmlEncoder HtmlEncoder { get; }
+        private HtmlEncoder HtmlEncoder { get; }
 
         /// <inheritdoc />
         public override void Write(char value)

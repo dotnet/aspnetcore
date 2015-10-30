@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Text.Encodings.Web;
 using Microsoft.Extensions.Localization;
-using Microsoft.Extensions.WebEncoders;
 
 namespace Microsoft.AspNet.Mvc.Localization
 {
@@ -13,14 +13,14 @@ namespace Microsoft.AspNet.Mvc.Localization
     public class HtmlLocalizerFactory : IHtmlLocalizerFactory
     {
         private readonly IStringLocalizerFactory _factory;
-        private readonly IHtmlEncoder _encoder;
+        private readonly HtmlEncoder _encoder;
 
         /// <summary>
         /// Creates a new <see cref="HtmlLocalizer"/>.
         /// </summary>
         /// <param name="localizerFactory">The <see cref="IStringLocalizerFactory"/>.</param>
-        /// <param name="encoder">The <see cref="IHtmlEncoder"/>.</param>
-        public HtmlLocalizerFactory(IStringLocalizerFactory localizerFactory, IHtmlEncoder encoder)
+        /// <param name="encoder">The <see cref="HtmlEncoder"/>.</param>
+        public HtmlLocalizerFactory(IStringLocalizerFactory localizerFactory, HtmlEncoder encoder)
         {
             if (localizerFactory == null)
             {

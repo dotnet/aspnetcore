@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Html.Abstractions;
 using Microsoft.AspNet.Mvc.ModelBinding;
@@ -14,7 +15,6 @@ using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.ViewEngines;
 using Microsoft.AspNet.Mvc.ViewFeatures.Internal;
 using Microsoft.Extensions.Internal;
-using Microsoft.Extensions.WebEncoders;
 
 namespace Microsoft.AspNet.Mvc.ViewFeatures
 {
@@ -32,7 +32,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
 
         private readonly IHtmlGenerator _htmlGenerator;
         private readonly ICompositeViewEngine _viewEngine;
-        private readonly IHtmlEncoder _htmlEncoder;
+        private readonly HtmlEncoder _htmlEncoder;
 
         private ViewContext _viewContext;
 
@@ -43,9 +43,9 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             IHtmlGenerator htmlGenerator,
             ICompositeViewEngine viewEngine,
             IModelMetadataProvider metadataProvider,
-            IHtmlEncoder htmlEncoder,
-            IUrlEncoder urlEncoder,
-            IJavaScriptStringEncoder javaScriptStringEncoder)
+            HtmlEncoder htmlEncoder,
+            UrlEncoder urlEncoder,
+            JavaScriptEncoder javaScriptEncoder)
         {
             if (htmlGenerator == null)
             {
@@ -72,9 +72,9 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                 throw new ArgumentNullException(nameof(urlEncoder));
             }
 
-            if (javaScriptStringEncoder == null)
+            if (javaScriptEncoder == null)
             {
-                throw new ArgumentNullException(nameof(javaScriptStringEncoder));
+                throw new ArgumentNullException(nameof(javaScriptEncoder));
             }
 
             _viewEngine = viewEngine;
@@ -82,7 +82,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             _htmlEncoder = htmlEncoder;
             MetadataProvider = metadataProvider;
             UrlEncoder = urlEncoder;
-            JavaScriptStringEncoder = javaScriptStringEncoder;
+            JavaScriptEncoder = javaScriptEncoder;
         }
 
         /// <inheritdoc />
@@ -153,10 +153,10 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         }
 
         /// <inheritdoc />
-        public IUrlEncoder UrlEncoder { get; }
+        public UrlEncoder UrlEncoder { get; }
 
         /// <inheritdoc />
-        public IJavaScriptStringEncoder JavaScriptStringEncoder { get; }
+        public JavaScriptEncoder JavaScriptEncoder { get; }
 
         /// <inheritdoc />
         public IModelMetadataProvider MetadataProvider { get; }

@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var writer = new StringWriter();
 
             // Act
-            content.WriteTo(writer, new CommonTestEncoder());
+            content.WriteTo(writer, new HtmlTestEncoder());
 
             // Assert
             Assert.Equal(expectedText, writer.ToString());

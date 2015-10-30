@@ -4,8 +4,8 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Text.Encodings.Web;
 using Microsoft.AspNet.Html.Abstractions;
-using Microsoft.Extensions.WebEncoders;
 
 namespace Microsoft.AspNet.Mvc.ViewFeatures
 {
@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         }
 
         /// <inheritdoc />
-        public void WriteTo(TextWriter writer, IHtmlEncoder encoder)
+        public void WriteTo(TextWriter writer, HtmlEncoder encoder)
         {
             if (writer == null)
             {
@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                 throw new ArgumentNullException(nameof(encoder));
             }
 
-            encoder.HtmlEncode(_input, writer);
+            encoder.Encode(writer, _input);
         }
 
         private string DebuggerToString()

@@ -3,8 +3,8 @@
 
 using System;
 using System.IO;
+using System.Text.Encodings.Web;
 using Microsoft.AspNet.Html.Abstractions;
-using Microsoft.Extensions.WebEncoders;
 
 namespace Microsoft.AspNet.Mvc.Rendering
 {
@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <inheritdoc />
-        public void WriteTo(TextWriter writer, IHtmlEncoder encoder)
+        public void WriteTo(TextWriter writer, HtmlEncoder encoder)
         {
             if (writer == null)
             {

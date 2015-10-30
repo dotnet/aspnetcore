@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.Encodings.Web;
 using Microsoft.AspNet.Antiforgery;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.Abstractions;
@@ -14,7 +15,6 @@ using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.ViewEngines;
 using Microsoft.AspNet.Routing;
 using Microsoft.Extensions.OptionsModel;
-using Microsoft.Extensions.WebEncoders;
 using Moq;
 using Xunit;
 
@@ -645,7 +645,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         {
             var mvcViewOptionsAccessor = new Mock<IOptions<MvcViewOptions>>();
             mvcViewOptionsAccessor.SetupGet(accessor => accessor.Value).Returns(new MvcViewOptions());
-            var htmlEncoder = Mock.Of<IHtmlEncoder>();
+            var htmlEncoder = Mock.Of<HtmlEncoder>();
             var antiforgery = Mock.Of<IAntiforgery>();
 
             var optionsAccessor = new Mock<IOptions<MvcOptions>>();

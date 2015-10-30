@@ -8,6 +8,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Html.Abstractions;
 using Microsoft.AspNet.Http;
@@ -18,7 +19,6 @@ using Microsoft.AspNet.Mvc.TestCommon;
 using Microsoft.AspNet.Mvc.ViewEngines;
 using Microsoft.AspNet.Mvc.ViewFeatures.Internal;
 using Microsoft.AspNet.Testing;
-using Microsoft.Extensions.WebEncoders;
 using Moq;
 using Xunit;
 
@@ -919,14 +919,14 @@ Environment.NewLine;
                 get { return _innerHelper.TempData; }
             }
 
-            public IUrlEncoder UrlEncoder
+            public UrlEncoder UrlEncoder
             {
                 get { return _innerHelper.UrlEncoder; }
             }
 
-            public IJavaScriptStringEncoder JavaScriptStringEncoder
+            public JavaScriptEncoder JavaScriptEncoder
             {
-                get { return _innerHelper.JavaScriptStringEncoder; }
+                get { return _innerHelper.JavaScriptEncoder; }
             }
 
             public void Contextualize(ViewContext viewContext)

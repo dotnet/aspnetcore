@@ -6,9 +6,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Html.Abstractions;
-using Microsoft.Extensions.WebEncoders;
 
 namespace Microsoft.AspNet.Mvc.ViewFeatures
 {
@@ -180,8 +180,8 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         /// are copied. It is just written to the <paramref name="writer"/> otherwise.
         /// </summary>
         /// <param name="writer">The <see cref="TextWriter"/> to which the content must be copied/written.</param>
-        /// <param name="encoder">The <see cref="IHtmlEncoder"/> to encode the copied/written content.</param>
-        public void CopyTo(TextWriter writer, IHtmlEncoder encoder)
+        /// <param name="encoder">The <see cref="HtmlEncoder"/> to encode the copied/written content.</param>
+        public void CopyTo(TextWriter writer, HtmlEncoder encoder)
         {
             var targetStringCollectionWriter = writer as StringCollectionTextWriter;
             if (targetStringCollectionWriter != null)
@@ -199,8 +199,8 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         /// are copied. It is just written to the <paramref name="writer"/> otherwise.
         /// </summary>
         /// <param name="writer">The <see cref="TextWriter"/> to which the content must be copied/written.</param>
-        /// <param name="encoder">The <see cref="IHtmlEncoder"/> to encode the copied/written content.</param>
-        public Task CopyToAsync(TextWriter writer, IHtmlEncoder encoder)
+        /// <param name="encoder">The <see cref="HtmlEncoder"/> to encode the copied/written content.</param>
+        public Task CopyToAsync(TextWriter writer, HtmlEncoder encoder)
         {
             CopyTo(writer, encoder);
             return _completedTask;
@@ -226,7 +226,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                 _entries.Add(content);
             }
 
-            public void WriteTo(TextWriter writer, IHtmlEncoder encoder)
+            public void WriteTo(TextWriter writer, HtmlEncoder encoder)
             {
                 foreach (var item in _entries)
                 {

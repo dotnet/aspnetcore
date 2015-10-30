@@ -69,8 +69,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 logger.Object,
                 hostingEnvironment,
                 MakeCache(),
-                new CommonTestEncoder(),
-                new CommonTestEncoder(),
+                new HtmlTestEncoder(),
+                new JavaScriptTestEncoder(),
                 urlHelper.Object)
             {
                 ViewContext = viewContext,
@@ -168,8 +168,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 logger.Object,
                 hostingEnvironment,
                 MakeCache(),
-                new CommonTestEncoder(),
-                new CommonTestEncoder(),
+                new HtmlTestEncoder(),
+                new JavaScriptTestEncoder(),
                 MakeUrlHelper())
             {
                 ViewContext = viewContext,
@@ -288,8 +288,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 logger.Object,
                 hostingEnvironment,
                 MakeCache(),
-                new CommonTestEncoder(),
-                new CommonTestEncoder(),
+                new HtmlTestEncoder(),
+                new JavaScriptTestEncoder(),
                 MakeUrlHelper())
             {
                 ViewContext = viewContext,
@@ -384,8 +384,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 logger.Object,
                 hostingEnvironment,
                 MakeCache(),
-                new CommonTestEncoder(),
-                new CommonTestEncoder(),
+                new HtmlTestEncoder(),
+                new JavaScriptTestEncoder(),
                 MakeUrlHelper())
             {
                 ViewContext = viewContext,
@@ -431,8 +431,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 logger.Object,
                 hostingEnvironment,
                 MakeCache(),
-                new CommonTestEncoder(),
-                new CommonTestEncoder(),
+                new HtmlTestEncoder(),
+                new JavaScriptTestEncoder(),
                 MakeUrlHelper())
             {
                 ViewContext = viewContext,
@@ -541,8 +541,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 logger.Object,
                 hostingEnvironment,
                 MakeCache(),
-                new CommonTestEncoder(),
-                new CommonTestEncoder(),
+                new HtmlTestEncoder(),
+                new JavaScriptTestEncoder(),
                 MakeUrlHelper())
             {
                 ViewContext = viewContext,
@@ -573,8 +573,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 logger.Object,
                 hostingEnvironment,
                 MakeCache(),
-                new CommonTestEncoder(),
-                new CommonTestEncoder(),
+                new HtmlTestEncoder(),
+                new JavaScriptTestEncoder(),
                 MakeUrlHelper())
             {
                 ViewContext = viewContext,
@@ -616,8 +616,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 logger.Object,
                 hostingEnvironment,
                 MakeCache(),
-                new CommonTestEncoder(),
-                new CommonTestEncoder(),
+                new HtmlTestEncoder(),
+                new JavaScriptTestEncoder(),
                 MakeUrlHelper())
             {
                 GlobbingUrlBuilder = globbingUrlBuilder.Object,
@@ -661,8 +661,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 logger.Object,
                 hostingEnvironment,
                 MakeCache(),
-                new CommonTestEncoder(),
-                new CommonTestEncoder(),
+                new HtmlTestEncoder(),
+                new JavaScriptTestEncoder(),
                 MakeUrlHelper())
             {
                 GlobbingUrlBuilder = globbingUrlBuilder.Object,
@@ -704,8 +704,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 logger.Object,
                 hostingEnvironment,
                 MakeCache(),
-                new CommonTestEncoder(),
-                new CommonTestEncoder(),
+                new HtmlTestEncoder(),
+                new JavaScriptTestEncoder(),
                 MakeUrlHelper())
             {
                 ViewContext = viewContext,
@@ -744,8 +744,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 logger.Object,
                 hostingEnvironment,
                 MakeCache(),
-                new CommonTestEncoder(),
-                new CommonTestEncoder(),
+                new HtmlTestEncoder(),
+                new JavaScriptTestEncoder(),
                 MakeUrlHelper())
             {
                 ViewContext = viewContext,
@@ -788,8 +788,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 logger.Object,
                 hostingEnvironment,
                 MakeCache(),
-                new CommonTestEncoder(),
-                new CommonTestEncoder(),
+                new HtmlTestEncoder(),
+                new JavaScriptTestEncoder(),
                 MakeUrlHelper())
             {
                 GlobbingUrlBuilder = globbingUrlBuilder.Object,

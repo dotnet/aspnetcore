@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Text.Encodings.Web;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Mvc.Razor.TagHelpers;
 using Microsoft.AspNet.Mvc.Rendering;
@@ -9,7 +10,6 @@ using Microsoft.AspNet.Mvc.TagHelpers.Internal;
 using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.AspNet.Razor.TagHelpers;
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.WebEncoders;
 
 namespace Microsoft.AspNet.Mvc.TagHelpers
 {
@@ -41,7 +41,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         public ImageTagHelper(
             IHostingEnvironment hostingEnvironment,
             IMemoryCache cache,
-            IHtmlEncoder htmlEncoder,
+            HtmlEncoder htmlEncoder,
             IUrlHelper urlHelper)
             : base(urlHelper, htmlEncoder)
         {

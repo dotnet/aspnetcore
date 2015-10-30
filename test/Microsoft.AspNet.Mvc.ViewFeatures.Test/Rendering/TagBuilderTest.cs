@@ -3,7 +3,6 @@
 
 using System.Collections.Generic;
 using System.IO;
-using Microsoft.AspNet.Html.Abstractions;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.Extensions.WebEncoders.Testing;
 using Xunit;
@@ -85,7 +84,7 @@ namespace Microsoft.AspNet.Mvc.Core.Rendering
             // Act
             using (var writer = new StringWriter())
             {
-                tagBuilder.WriteTo(writer, new NullTestEncoder());
+                tagBuilder.WriteTo(writer, new HtmlTestEncoder());
 
                 // Assert
                 Assert.Equal(expectedOutput, writer.ToString());
@@ -116,7 +115,7 @@ namespace Microsoft.AspNet.Mvc.Core.Rendering
             // Act
             using (var writer = new StringWriter())
             {
-                tagBuilder.WriteTo(writer, new CommonTestEncoder());
+                tagBuilder.WriteTo(writer, new HtmlTestEncoder());
 
                 // Assert
                 Assert.Equal("<p><span>Hello</span>HtmlEncode[[, World!]]</p>", writer.ToString());

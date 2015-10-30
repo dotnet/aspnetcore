@@ -6,10 +6,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.Encodings.Web;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.AspNet.Mvc.ViewFeatures;
-using Microsoft.Extensions.WebEncoders;
 using Microsoft.Extensions.WebEncoders.Testing;
 using Moq;
 using Xunit;
@@ -327,7 +327,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             // Arrange
             var htmlHelper = DefaultTemplatesUtilities.GetHtmlHelper();
             var serviceProvider = new Mock<IServiceProvider>();
-            serviceProvider.Setup(s => s.GetService(typeof(IHtmlEncoder))).Returns(new CommonTestEncoder());
+            serviceProvider.Setup(s => s.GetService(typeof(HtmlEncoder))).Returns(new HtmlTestEncoder());
             var viewContext = htmlHelper.ViewContext;
             viewContext.HttpContext.RequestServices = serviceProvider.Object;
 

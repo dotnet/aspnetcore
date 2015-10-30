@@ -7,10 +7,10 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Text;
+using System.Text.Encodings.Web;
 using Microsoft.AspNet.Html.Abstractions;
 using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.Extensions.Internal;
-using Microsoft.Extensions.WebEncoders;
 
 namespace Microsoft.AspNet.Mvc.Rendering
 {
@@ -189,7 +189,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             }
         }
 
-        private void AppendAttributes(TextWriter writer, IHtmlEncoder encoder)
+        private void AppendAttributes(TextWriter writer, HtmlEncoder encoder)
         {
             // Perf: Avoid allocating enumerator for `_attributes` if possible
             if (_attributes != null && _attributes.Count > 0)
@@ -206,7 +206,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                     writer.Write(" ");
                     writer.Write(key);
                     writer.Write("=\"");
-                    encoder.HtmlEncode(attribute.Value, writer);
+                    encoder.Encode(writer, attribute.Value);
                     writer.Write("\"");
                 }
             }
@@ -250,7 +250,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         /// <inheritdoc />
-        public void WriteTo(TextWriter writer, IHtmlEncoder encoder)
+        public void WriteTo(TextWriter writer, HtmlEncoder encoder)
         {
             switch (TagRenderMode)
             {

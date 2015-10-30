@@ -5,9 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
+using System.Text.Encodings.Web;
 using Microsoft.Extensions.Localization;
-using Microsoft.Extensions.WebEncoders;
-
 
 namespace Microsoft.AspNet.Mvc.Localization
 {
@@ -18,14 +17,14 @@ namespace Microsoft.AspNet.Mvc.Localization
     public class HtmlLocalizer : IHtmlLocalizer
     {
         private IStringLocalizer _localizer;
-        private readonly IHtmlEncoder _encoder;
+        private readonly HtmlEncoder _encoder;
 
         /// <summary>
         /// Creates a new <see cref="HtmlLocalizer"/>.
         /// </summary>
         /// <param name="localizer">The <see cref="IStringLocalizer"/> to read strings from.</param>
-        /// <param name="encoder">The <see cref="IHtmlEncoder"/>.</param>
-        public HtmlLocalizer(IStringLocalizer localizer, IHtmlEncoder encoder)
+        /// <param name="encoder">The <see cref="HtmlEncoder"/>.</param>
+        public HtmlLocalizer(IStringLocalizer localizer, HtmlEncoder encoder)
         {
             if (localizer == null)
             {
@@ -266,7 +265,7 @@ namespace Microsoft.AspNet.Mvc.Localization
         {
             if (tokenBuffer != null && tokenBuffer.Length > 0)
             {
-                outputBuffer.Append(_encoder.HtmlEncode(string.Format(tokenBuffer.ToString(), arguments)));
+                outputBuffer.Append(_encoder.Encode(string.Format(tokenBuffer.ToString(), arguments)));
             }
         }
     }

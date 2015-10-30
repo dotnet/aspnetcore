@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.Mvc.Localization.Test
             var stringLocalizer = new Mock<IStringLocalizer>();
             stringLocalizer.Setup(s => s["Hello"]).Returns(localizedString);
 
-            var htmlLocalizer = new HtmlLocalizer(stringLocalizer.Object, new CommonTestEncoder());
+            var htmlLocalizer = new HtmlLocalizer(stringLocalizer.Object, new HtmlTestEncoder());
 
             // Act
             var actualLocalizedString = htmlLocalizer["Hello"];
@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.Mvc.Localization.Test
             var stringLocalizer = new Mock<IStringLocalizer>();
             stringLocalizer.Setup(s => s["Hello", "test"]).Returns(localizedString);
 
-            var htmlLocalizer = new HtmlLocalizer(stringLocalizer.Object, new CommonTestEncoder());
+            var htmlLocalizer = new HtmlLocalizer(stringLocalizer.Object, new HtmlTestEncoder());
 
             // Act
             var actualLocalizedString = htmlLocalizer["Hello", "test"];
@@ -102,7 +102,7 @@ namespace Microsoft.AspNet.Mvc.Localization.Test
             var stringLocalizer = new Mock<IStringLocalizer>();
             stringLocalizer.Setup(s => s["Hello"]).Returns(localizedString);
 
-            var htmlLocalizer = new HtmlLocalizer(stringLocalizer.Object, new CommonTestEncoder());
+            var htmlLocalizer = new HtmlLocalizer(stringLocalizer.Object, new HtmlTestEncoder());
 
             // Act
             var localizedHtmlString = htmlLocalizer.Html("Hello", arguments);
@@ -141,7 +141,7 @@ namespace Microsoft.AspNet.Mvc.Localization.Test
             var stringLocalizer = new Mock<IStringLocalizer>();
             stringLocalizer.Setup(s => s["Hello"]).Returns(localizedString);
 
-            var htmlLocalizer = new HtmlLocalizer(stringLocalizer.Object, new CommonTestEncoder());
+            var htmlLocalizer = new HtmlLocalizer(stringLocalizer.Object, new HtmlTestEncoder());
 
             // Act
             var exception = Assert.Throws<FormatException>(() => htmlLocalizer.Html("Hello", new object[] { }));

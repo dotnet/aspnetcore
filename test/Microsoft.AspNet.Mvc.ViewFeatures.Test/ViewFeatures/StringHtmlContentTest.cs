@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             // Assert
             using (var writer = new StringWriter())
             {
-                content.WriteTo(writer, new CommonTestEncoder());
+                content.WriteTo(writer, new HtmlTestEncoder());
                 Assert.Equal("HtmlEncode[[Hello World]]", writer.ToString());
             }
         }

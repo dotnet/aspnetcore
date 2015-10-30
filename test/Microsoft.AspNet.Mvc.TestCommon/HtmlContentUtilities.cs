@@ -2,19 +2,19 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
+using System.Text.Encodings.Web;
 using Microsoft.AspNet.Html.Abstractions;
-using Microsoft.Extensions.WebEncoders;
 using Microsoft.Extensions.WebEncoders.Testing;
 
 namespace Microsoft.AspNet.Mvc.TestCommon
 {
     public class HtmlContentUtilities
     {
-        public static string HtmlContentToString(IHtmlContent content, IHtmlEncoder encoder = null)
+        public static string HtmlContentToString(IHtmlContent content, HtmlEncoder encoder = null)
         {
             if (encoder == null)
             {
-                encoder = new CommonTestEncoder();
+                encoder = new HtmlTestEncoder();
             }
 
             using (var writer = new StringWriter())

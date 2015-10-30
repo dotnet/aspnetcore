@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq;
+using System.Text.Encodings.Web;
 using Microsoft.AspNet.Mvc.Razor;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -27,9 +28,9 @@ namespace Microsoft.AspNet.Mvc.Localization.Internal
             services.TryAdd(ServiceDescriptor.Singleton<IHtmlLocalizerFactory, HtmlLocalizerFactory>());
             services.TryAdd(ServiceDescriptor.Transient(typeof(IHtmlLocalizer<>), typeof(HtmlLocalizer<>)));
             services.TryAdd(ServiceDescriptor.Transient<IViewLocalizer, ViewLocalizer>());
-            if (!services.Any(sd => sd.ServiceType == typeof(IHtmlEncoder)))
+            if (!services.Any(sd => sd.ServiceType == typeof(HtmlEncoder)))
             {
-                services.TryAdd(ServiceDescriptor.Instance<IHtmlEncoder>(HtmlEncoder.Default));
+                services.TryAdd(ServiceDescriptor.Instance<HtmlEncoder>(HtmlEncoder.Default));
             }
 
             services.AddLocalization(setupAction);

@@ -5,25 +5,25 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.ViewEngines;
 using Microsoft.AspNet.PageExecutionInstrumentation;
-using Microsoft.Extensions.WebEncoders;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
     /// <summary>
     /// Default implementation for <see cref="IView"/> that executes one or more <see cref="IRazorPage"/>
-    /// as parts of its exeuction.
+    /// as parts of its execution.
     /// </summary>
     public class RazorView : IView
     {
         private readonly IRazorViewEngine _viewEngine;
         private readonly IRazorPageActivator _pageActivator;
         private readonly IViewStartProvider _viewStartProvider;
-        private readonly IHtmlEncoder _htmlEncoder;
+        private readonly HtmlEncoder _htmlEncoder;
         private IPageExecutionListenerFeature _pageExecutionFeature;
 
         /// <summary>
@@ -41,7 +41,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             IRazorPageActivator pageActivator,
             IViewStartProvider viewStartProvider,
             IRazorPage razorPage,
-            IHtmlEncoder htmlEncoder,
+            HtmlEncoder htmlEncoder,
             bool isPartial)
         {
             _viewEngine = viewEngine;
