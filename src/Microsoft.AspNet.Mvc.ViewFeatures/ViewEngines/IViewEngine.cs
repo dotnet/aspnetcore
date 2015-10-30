@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-
 namespace Microsoft.AspNet.Mvc.ViewEngines
 {
     /// <summary>
@@ -10,19 +9,23 @@ namespace Microsoft.AspNet.Mvc.ViewEngines
     public interface IViewEngine
     {
         /// <summary>
-        /// Finds the specified view by using the specified action context.
+        /// Finds the view with the given <paramref name="viewName"/> using view locations and information from the
+        /// <paramref name="context"/>.
         /// </summary>
-        /// <param name="context">The action context.</param>
-        /// <param name="viewName">The name or full path to the view.</param>
-        /// <returns>A result representing the result of locating the view.</returns>
-        ViewEngineResult FindView(ActionContext context, string viewName);
+        /// <param name="context">The <see cref="ActionContext"/>.</param>
+        /// <param name="viewName">The name of the view.</param>
+        /// <param name="isPartial">Determines if the view being found is a partial.</param>
+        /// <returns>The <see cref="ViewEngineResult"/> of locating the view.</returns>
+        ViewEngineResult FindView(ActionContext context, string viewName, bool isPartial);
 
         /// <summary>
-        /// Finds the specified partial view by using the specified action context.
+        /// Gets the view with the given <paramref name="viewPath"/>, relative to <paramref name="executingFilePath"/>
+        /// unless <paramref name="viewPath"/> is already absolute.
         /// </summary>
-        /// <param name="context">The action context.</param>
-        /// <param name="partialViewName">The name or full path to the view.</param>
-        /// <returns>A result representing the result of locating the view.</returns>
-        ViewEngineResult FindPartialView(ActionContext context, string partialViewName);
+        /// <param name="executingFilePath">The absolute path to the currently-executing view, if any.</param>
+        /// <param name="viewPath">The path to the view.</param>
+        /// <param name="isPartial">Determines if the view being found is a partial.</param>
+        /// <returns>The <see cref="ViewEngineResult"/> of locating the view.</returns>
+        ViewEngineResult GetView(string executingFilePath, string viewPath, bool isPartial);
     }
 }

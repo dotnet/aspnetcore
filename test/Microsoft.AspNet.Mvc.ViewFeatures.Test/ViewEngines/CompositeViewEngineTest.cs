@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.Mvc.ViewEngines
             var compositeViewEngine = new CompositeViewEngine(optionsAccessor);
 
             // Act
-            var result = compositeViewEngine.FindView(actionContext, viewName);
+            var result = compositeViewEngine.FindView(actionContext, viewName, isPartial: false);
 
             // Assert
             Assert.False(result.Success);
@@ -55,15 +55,16 @@ namespace Microsoft.AspNet.Mvc.ViewEngines
         {
             // Arrange
             var viewName = "test-view";
-            var engine = new Mock<IViewEngine>();
-            engine.Setup(e => e.FindView(It.IsAny<ActionContext>(), It.IsAny<string>()))
-                   .Returns(ViewEngineResult.NotFound(viewName, new[] { "controller/test-view" }));
+            var engine = new Mock<IViewEngine>(MockBehavior.Strict);
+            engine
+                .Setup(e => e.FindView(It.IsAny<ActionContext>(), viewName, /*isPartial*/ false))
+                .Returns(ViewEngineResult.NotFound(viewName, new[] { "controller/test-view" }));
             var optionsAccessor = new TestOptionsManager<MvcViewOptions>();
             optionsAccessor.Value.ViewEngines.Add(engine.Object);
             var compositeViewEngine = new CompositeViewEngine(optionsAccessor);
 
             // Act
-            var result = compositeViewEngine.FindView(GetActionContext(), viewName);
+            var result = compositeViewEngine.FindView(GetActionContext(), viewName, isPartial: false);
 
             // Assert
             Assert.False(result.Success);
@@ -75,16 +76,17 @@ namespace Microsoft.AspNet.Mvc.ViewEngines
         {
             // Arrange
             var viewName = "test-view";
-            var engine = new Mock<IViewEngine>();
+            var engine = new Mock<IViewEngine>(MockBehavior.Strict);
             var view = Mock.Of<IView>();
-            engine.Setup(e => e.FindView(It.IsAny<ActionContext>(), It.IsAny<string>()))
-                   .Returns(ViewEngineResult.Found(viewName, view));
+            engine
+                .Setup(e => e.FindView(It.IsAny<ActionContext>(), viewName, /*isPartial*/ false))
+                .Returns(ViewEngineResult.Found(viewName, view));
             var optionsAccessor = new TestOptionsManager<MvcViewOptions>();
             optionsAccessor.Value.ViewEngines.Add(engine.Object);
             var compositeViewEngine = new CompositeViewEngine(optionsAccessor);
 
             // Act
-            var result = compositeViewEngine.FindView(GetActionContext(), viewName);
+            var result = compositeViewEngine.FindView(GetActionContext(), viewName, isPartial: false);
 
             // Assert
             Assert.True(result.Success);
@@ -96,17 +98,20 @@ namespace Microsoft.AspNet.Mvc.ViewEngines
         {
             // Arrange
             var viewName = "foo";
-            var engine1 = new Mock<IViewEngine>();
-            var engine2 = new Mock<IViewEngine>();
-            var engine3 = new Mock<IViewEngine>();
+            var engine1 = new Mock<IViewEngine>(MockBehavior.Strict);
+            var engine2 = new Mock<IViewEngine>(MockBehavior.Strict);
+            var engine3 = new Mock<IViewEngine>(MockBehavior.Strict);
             var view2 = Mock.Of<IView>();
             var view3 = Mock.Of<IView>();
-            engine1.Setup(e => e.FindView(It.IsAny<ActionContext>(), It.IsAny<string>()))
-                   .Returns(ViewEngineResult.NotFound(viewName, Enumerable.Empty<string>()));
-            engine2.Setup(e => e.FindView(It.IsAny<ActionContext>(), It.IsAny<string>()))
-                   .Returns(ViewEngineResult.Found(viewName, view2));
-            engine3.Setup(e => e.FindView(It.IsAny<ActionContext>(), It.IsAny<string>()))
-                   .Returns(ViewEngineResult.Found(viewName, view3));
+            engine1
+                .Setup(e => e.FindView(It.IsAny<ActionContext>(), viewName, /*isPartial*/ false))
+                .Returns(ViewEngineResult.NotFound(viewName, Enumerable.Empty<string>()));
+            engine2
+                .Setup(e => e.FindView(It.IsAny<ActionContext>(), viewName, /*isPartial*/ false))
+                .Returns(ViewEngineResult.Found(viewName, view2));
+            engine3
+                .Setup(e => e.FindView(It.IsAny<ActionContext>(), viewName, /*isPartial*/ false))
+                .Returns(ViewEngineResult.Found(viewName, view3));
 
             var optionsAccessor = new TestOptionsManager<MvcViewOptions>();
             optionsAccessor.Value.ViewEngines.Add(engine1.Object);
@@ -115,7 +120,7 @@ namespace Microsoft.AspNet.Mvc.ViewEngines
             var compositeViewEngine = new CompositeViewEngine(optionsAccessor);
 
             // Act
-            var result = compositeViewEngine.FindView(GetActionContext(), viewName);
+            var result = compositeViewEngine.FindView(GetActionContext(), viewName, isPartial: false);
 
             // Assert
             Assert.True(result.Success);
@@ -128,15 +133,18 @@ namespace Microsoft.AspNet.Mvc.ViewEngines
         {
             // Arrange
             var viewName = "foo";
-            var engine1 = new Mock<IViewEngine>();
-            var engine2 = new Mock<IViewEngine>();
-            var engine3 = new Mock<IViewEngine>();
-            engine1.Setup(e => e.FindView(It.IsAny<ActionContext>(), It.IsAny<string>()))
-                   .Returns(ViewEngineResult.NotFound(viewName, new[] { "1", "2" }));
-            engine2.Setup(e => e.FindView(It.IsAny<ActionContext>(), It.IsAny<string>()))
-                   .Returns(ViewEngineResult.NotFound(viewName, new[] { "3" }));
-            engine3.Setup(e => e.FindView(It.IsAny<ActionContext>(), It.IsAny<string>()))
-                   .Returns(ViewEngineResult.NotFound(viewName, new[] { "4", "5" }));
+            var engine1 = new Mock<IViewEngine>(MockBehavior.Strict);
+            var engine2 = new Mock<IViewEngine>(MockBehavior.Strict);
+            var engine3 = new Mock<IViewEngine>(MockBehavior.Strict);
+            engine1
+                .Setup(e => e.FindView(It.IsAny<ActionContext>(), viewName, /*isPartial*/ false))
+                .Returns(ViewEngineResult.NotFound(viewName, new[] { "1", "2" }));
+            engine2
+                .Setup(e => e.FindView(It.IsAny<ActionContext>(), viewName, /*isPartial*/ false))
+                .Returns(ViewEngineResult.NotFound(viewName, new[] { "3" }));
+            engine3
+                .Setup(e => e.FindView(It.IsAny<ActionContext>(), viewName, /*isPartial*/ false))
+                .Returns(ViewEngineResult.NotFound(viewName, new[] { "4", "5" }));
 
             var optionsAccessor = new TestOptionsManager<MvcViewOptions>();
             optionsAccessor.Value.ViewEngines.Add(engine1.Object);
@@ -145,7 +153,149 @@ namespace Microsoft.AspNet.Mvc.ViewEngines
             var compositeViewEngine = new CompositeViewEngine(optionsAccessor);
 
             // Act
-            var result = compositeViewEngine.FindView(GetActionContext(), viewName);
+            var result = compositeViewEngine.FindView(GetActionContext(), viewName, isPartial: false);
+
+            // Assert
+            Assert.False(result.Success);
+            Assert.Equal(new[] { "1", "2", "3", "4", "5" }, result.SearchedLocations);
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void GetView_ReturnsNotFoundResult_WhenNoViewEnginesAreRegistered(bool isPartial)
+        {
+            // Arrange
+            var viewName = "test-view.cshtml";
+            var optionsAccessor = new TestOptionsManager<MvcViewOptions>();
+            var compositeViewEngine = new CompositeViewEngine(optionsAccessor);
+
+            // Act
+            var result = compositeViewEngine.GetView("~/Index.html", viewName, isPartial);
+
+            // Assert
+            Assert.False(result.Success);
+            Assert.Empty(result.SearchedLocations);
+        }
+
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void GetView_ReturnsNotFoundResult_WhenExactlyOneViewEngineIsRegisteredWhichReturnsNotFoundResult(
+            bool isPartial)
+        {
+            // Arrange
+            var viewName = "test-view.cshtml";
+            var expectedViewName = "~/" + viewName;
+            var engine = new Mock<IViewEngine>(MockBehavior.Strict);
+            engine
+                .Setup(e => e.GetView("~/Index.html", viewName, isPartial))
+                .Returns(ViewEngineResult.NotFound(expectedViewName, new[] { expectedViewName }));
+            var optionsAccessor = new TestOptionsManager<MvcViewOptions>();
+            optionsAccessor.Value.ViewEngines.Add(engine.Object);
+            var compositeViewEngine = new CompositeViewEngine(optionsAccessor);
+
+            // Act
+            var result = compositeViewEngine.GetView("~/Index.html", viewName, isPartial);
+
+            // Assert
+            Assert.False(result.Success);
+            Assert.Equal(new[] { expectedViewName }, result.SearchedLocations);
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void GetView_ReturnsView_WhenExactlyOneViewEngineIsRegisteredWhichReturnsAFoundResult(bool isPartial)
+        {
+            // Arrange
+            var viewName = "test-view.cshtml";
+            var expectedViewName = "~/" + viewName;
+            var engine = new Mock<IViewEngine>(MockBehavior.Strict);
+            var view = Mock.Of<IView>();
+            engine
+                .Setup(e => e.GetView("~/Index.html", viewName, isPartial))
+                .Returns(ViewEngineResult.Found(expectedViewName, view));
+            var optionsAccessor = new TestOptionsManager<MvcViewOptions>();
+            optionsAccessor.Value.ViewEngines.Add(engine.Object);
+            var compositeViewEngine = new CompositeViewEngine(optionsAccessor);
+
+            // Act
+            var result = compositeViewEngine.GetView("~/Index.html", viewName, isPartial);
+
+            // Assert
+            Assert.True(result.Success);
+            Assert.Same(view, result.View);
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void GetView_ReturnsViewFromFirstViewEngineWithFoundResult(bool isPartial)
+        {
+            // Arrange
+            var viewName = "foo.cshtml";
+            var expectedViewName = "~/" + viewName;
+            var engine1 = new Mock<IViewEngine>(MockBehavior.Strict);
+            var engine2 = new Mock<IViewEngine>(MockBehavior.Strict);
+            var engine3 = new Mock<IViewEngine>(MockBehavior.Strict);
+            var view2 = Mock.Of<IView>();
+            var view3 = Mock.Of<IView>();
+            engine1
+                .Setup(e => e.GetView("~/Index.html", viewName, isPartial))
+                .Returns(ViewEngineResult.NotFound(expectedViewName, Enumerable.Empty<string>()));
+            engine2
+                .Setup(e => e.GetView("~/Index.html", viewName, isPartial))
+                .Returns(ViewEngineResult.Found(expectedViewName, view2));
+            engine3
+                .Setup(e => e.GetView("~/Index.html", viewName, isPartial))
+                .Returns(ViewEngineResult.Found(expectedViewName, view3));
+
+            var optionsAccessor = new TestOptionsManager<MvcViewOptions>();
+            optionsAccessor.Value.ViewEngines.Add(engine1.Object);
+            optionsAccessor.Value.ViewEngines.Add(engine2.Object);
+            optionsAccessor.Value.ViewEngines.Add(engine3.Object);
+            var compositeViewEngine = new CompositeViewEngine(optionsAccessor);
+
+            // Act
+            var result = compositeViewEngine.GetView("~/Index.html", viewName, isPartial);
+
+            // Assert
+            Assert.True(result.Success);
+            Assert.Same(view2, result.View);
+            Assert.Equal(expectedViewName, result.ViewName);
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void GetView_ReturnsNotFound_IfAllViewEnginesReturnNotFound(bool isPartial)
+        {
+            // Arrange
+            var viewName = "foo.cshtml";
+            var expectedViewName = "~/" + viewName;
+            var engine1 = new Mock<IViewEngine>(MockBehavior.Strict);
+            var engine2 = new Mock<IViewEngine>(MockBehavior.Strict);
+            var engine3 = new Mock<IViewEngine>(MockBehavior.Strict);
+            engine1
+                .Setup(e => e.GetView("~/Index.html", viewName, isPartial))
+                .Returns(ViewEngineResult.NotFound(expectedViewName, new[] { "1", "2" }));
+            engine2
+                .Setup(e => e.GetView("~/Index.html", viewName, isPartial))
+                .Returns(ViewEngineResult.NotFound(expectedViewName, new[] { "3" }));
+            engine3
+                .Setup(e => e.GetView("~/Index.html", viewName, isPartial))
+                .Returns(ViewEngineResult.NotFound(expectedViewName, new[] { "4", "5" }));
+
+            var optionsAccessor = new TestOptionsManager<MvcViewOptions>();
+            optionsAccessor.Value.ViewEngines.Add(engine1.Object);
+            optionsAccessor.Value.ViewEngines.Add(engine2.Object);
+            optionsAccessor.Value.ViewEngines.Add(engine3.Object);
+            var compositeViewEngine = new CompositeViewEngine(optionsAccessor);
+
+            // Act
+            var result = compositeViewEngine.GetView("~/Index.html", viewName, isPartial);
 
             // Assert
             Assert.False(result.Success);
@@ -153,7 +303,7 @@ namespace Microsoft.AspNet.Mvc.ViewEngines
         }
 
         [Fact]
-        public void FindPartialView_ReturnsNotFoundResult_WhenNoViewEnginesAreRegistered()
+        public void FindView_IsPartial_ReturnsNotFoundResult_WhenNoViewEnginesAreRegistered()
         {
             // Arrange
             var viewName = "my-partial-view";
@@ -161,7 +311,7 @@ namespace Microsoft.AspNet.Mvc.ViewEngines
             var compositeViewEngine = new CompositeViewEngine(optionsAccessor);
 
             // Act
-            var result = compositeViewEngine.FindPartialView(GetActionContext(), viewName);
+            var result = compositeViewEngine.FindView(GetActionContext(), viewName, isPartial: true);
 
             // Assert
             Assert.False(result.Success);
@@ -169,19 +319,20 @@ namespace Microsoft.AspNet.Mvc.ViewEngines
         }
 
         [Fact]
-        public void FindPartialView_ReturnsNotFoundResult_WhenExactlyOneViewEngineIsRegisteredWhichReturnsNotFoundResult()
+        public void FindView_IsPartial_ReturnsNotFoundResult_WhenExactlyOneViewEngineIsRegisteredWhichReturnsNotFoundResult()
         {
             // Arrange
             var viewName = "partial-view";
-            var engine = new Mock<IViewEngine>();
-            engine.Setup(e => e.FindPartialView(It.IsAny<ActionContext>(), It.IsAny<string>()))
-                   .Returns(ViewEngineResult.NotFound(viewName, new[] { "Shared/partial-view" }));
+            var engine = new Mock<IViewEngine>(MockBehavior.Strict);
+            engine
+                .Setup(e => e.FindView(It.IsAny<ActionContext>(), viewName, /*isPartial*/ true))
+                .Returns(ViewEngineResult.NotFound(viewName, new[] { "Shared/partial-view" }));
             var optionsAccessor = new TestOptionsManager<MvcViewOptions>();
             optionsAccessor.Value.ViewEngines.Add(engine.Object);
             var compositeViewEngine = new CompositeViewEngine(optionsAccessor);
 
             // Act
-            var result = compositeViewEngine.FindPartialView(GetActionContext(), viewName);
+            var result = compositeViewEngine.FindView(GetActionContext(), viewName, isPartial: true);
 
             // Assert
             Assert.False(result.Success);
@@ -189,20 +340,21 @@ namespace Microsoft.AspNet.Mvc.ViewEngines
         }
 
         [Fact]
-        public void FindPartialView_ReturnsView_WhenExactlyOneViewEngineIsRegisteredWhichReturnsAFoundResult()
+        public void FindView_IsPartial_ReturnsView_WhenExactlyOneViewEngineIsRegisteredWhichReturnsAFoundResult()
         {
             // Arrange
             var viewName = "test-view";
-            var engine = new Mock<IViewEngine>();
+            var engine = new Mock<IViewEngine>(MockBehavior.Strict);
             var view = Mock.Of<IView>();
-            engine.Setup(e => e.FindPartialView(It.IsAny<ActionContext>(), It.IsAny<string>()))
-                   .Returns(ViewEngineResult.Found(viewName, view));
+            engine
+                .Setup(e => e.FindView(It.IsAny<ActionContext>(), viewName, /*isPartial*/ true))
+                .Returns(ViewEngineResult.Found(viewName, view));
             var optionsAccessor = new TestOptionsManager<MvcViewOptions>();
             optionsAccessor.Value.ViewEngines.Add(engine.Object);
             var compositeViewEngine = new CompositeViewEngine(optionsAccessor);
 
             // Act
-            var result = compositeViewEngine.FindPartialView(GetActionContext(), viewName);
+            var result = compositeViewEngine.FindView(GetActionContext(), viewName, isPartial: true);
 
             // Assert
             Assert.True(result.Success);
@@ -210,21 +362,24 @@ namespace Microsoft.AspNet.Mvc.ViewEngines
         }
 
         [Fact]
-        public void FindPartialView_ReturnsViewFromFirstViewEngineWithFoundResult()
+        public void FindView_IsPartial_ReturnsViewFromFirstViewEngineWithFoundResult()
         {
             // Arrange
             var viewName = "bar";
-            var engine1 = new Mock<IViewEngine>();
-            var engine2 = new Mock<IViewEngine>();
-            var engine3 = new Mock<IViewEngine>();
+            var engine1 = new Mock<IViewEngine>(MockBehavior.Strict);
+            var engine2 = new Mock<IViewEngine>(MockBehavior.Strict);
+            var engine3 = new Mock<IViewEngine>(MockBehavior.Strict);
             var view2 = Mock.Of<IView>();
             var view3 = Mock.Of<IView>();
-            engine1.Setup(e => e.FindPartialView(It.IsAny<ActionContext>(), It.IsAny<string>()))
-                   .Returns(ViewEngineResult.NotFound(viewName, Enumerable.Empty<string>()));
-            engine2.Setup(e => e.FindPartialView(It.IsAny<ActionContext>(), It.IsAny<string>()))
-                   .Returns(ViewEngineResult.Found(viewName, view2));
-            engine3.Setup(e => e.FindPartialView(It.IsAny<ActionContext>(), It.IsAny<string>()))
-                   .Returns(ViewEngineResult.Found(viewName, view3));
+            engine1
+                .Setup(e => e.FindView(It.IsAny<ActionContext>(), viewName, /*isPartial*/ true))
+                .Returns(ViewEngineResult.NotFound(viewName, Enumerable.Empty<string>()));
+            engine2
+                .Setup(e => e.FindView(It.IsAny<ActionContext>(), viewName, /*isPartial*/ true))
+                .Returns(ViewEngineResult.Found(viewName, view2));
+            engine3
+                .Setup(e => e.FindView(It.IsAny<ActionContext>(), viewName, /*isPartial*/ true))
+                .Returns(ViewEngineResult.Found(viewName, view3));
 
             var optionsAccessor = new TestOptionsManager<MvcViewOptions>();
             optionsAccessor.Value.ViewEngines.Add(engine1.Object);
@@ -233,7 +388,7 @@ namespace Microsoft.AspNet.Mvc.ViewEngines
             var compositeViewEngine = new CompositeViewEngine(optionsAccessor);
 
             // Act
-            var result = compositeViewEngine.FindPartialView(GetActionContext(), viewName);
+            var result = compositeViewEngine.FindView(GetActionContext(), viewName, isPartial: true);
 
             // Assert
             Assert.True(result.Success);
@@ -242,19 +397,22 @@ namespace Microsoft.AspNet.Mvc.ViewEngines
         }
 
         [Fact]
-        public void FindPartialView_ReturnsNotFound_IfAllViewEnginesReturnNotFound()
+        public void FindView_IsPartial_ReturnsNotFound_IfAllViewEnginesReturnNotFound()
         {
             // Arrange
             var viewName = "foo";
-            var engine1 = new Mock<IViewEngine>();
-            var engine2 = new Mock<IViewEngine>();
-            var engine3 = new Mock<IViewEngine>();
-            engine1.Setup(e => e.FindPartialView(It.IsAny<ActionContext>(), It.IsAny<string>()))
-                   .Returns(ViewEngineResult.NotFound(viewName, new[] { "1", "2" }));
-            engine2.Setup(e => e.FindPartialView(It.IsAny<ActionContext>(), It.IsAny<string>()))
-                   .Returns(ViewEngineResult.NotFound(viewName, new[] { "3" }));
-            engine3.Setup(e => e.FindPartialView(It.IsAny<ActionContext>(), It.IsAny<string>()))
-                   .Returns(ViewEngineResult.NotFound(viewName, new[] { "4", "5" }));
+            var engine1 = new Mock<IViewEngine>(MockBehavior.Strict);
+            var engine2 = new Mock<IViewEngine>(MockBehavior.Strict);
+            var engine3 = new Mock<IViewEngine>(MockBehavior.Strict);
+            engine1
+                .Setup(e => e.FindView(It.IsAny<ActionContext>(), viewName, /*isPartial*/ true))
+                .Returns(ViewEngineResult.NotFound(viewName, new[] { "1", "2" }));
+            engine2
+                .Setup(e => e.FindView(It.IsAny<ActionContext>(), viewName, /*isPartial*/ true))
+                .Returns(ViewEngineResult.NotFound(viewName, new[] { "3" }));
+            engine3
+                .Setup(e => e.FindView(It.IsAny<ActionContext>(), viewName, /*isPartial*/ true))
+                .Returns(ViewEngineResult.NotFound(viewName, new[] { "4", "5" }));
 
             var optionsAccessor = new TestOptionsManager<MvcViewOptions>();
             optionsAccessor.Value.ViewEngines.Add(engine1.Object);
@@ -263,7 +421,7 @@ namespace Microsoft.AspNet.Mvc.ViewEngines
             var compositeViewEngine = new CompositeViewEngine(optionsAccessor);
 
             // Act
-            var result = compositeViewEngine.FindPartialView(GetActionContext(), viewName);
+            var result = compositeViewEngine.FindView(GetActionContext(), viewName, isPartial: true);
 
             // Assert
             Assert.False(result.Success);
@@ -285,12 +443,12 @@ namespace Microsoft.AspNet.Mvc.ViewEngines
 
             public ITestService Service { get; private set; }
 
-            public ViewEngineResult FindPartialView(ActionContext context, string partialViewName)
+            public ViewEngineResult FindView(ActionContext context, string viewName, bool isPartial)
             {
                 throw new NotImplementedException();
             }
 
-            public ViewEngineResult FindView(ActionContext context, string viewName)
+            public ViewEngineResult GetView(string executingFilePath, string viewPath, bool isPartial)
             {
                 throw new NotImplementedException();
             }

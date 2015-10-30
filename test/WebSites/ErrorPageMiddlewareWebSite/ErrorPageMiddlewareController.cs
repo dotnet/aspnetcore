@@ -22,7 +22,7 @@ namespace ErrorPageMiddlewareWebSite
         [HttpGet("/ErrorFromViewImports")]
         public IActionResult ViewImportsError()
         {
-            return View("~/Views/ErrorFromViewImports/Index");
+            return View("~/Views/ErrorFromViewImports/Index.cshtml");
         }
     }
 }

@@ -68,7 +68,12 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             var viewEngine = viewResult.ViewEngine ?? ViewEngine;
             var viewName = viewResult.ViewName ?? actionContext.ActionDescriptor.Name;
 
-            var result = viewEngine.FindView(actionContext, viewName);
+            var result = viewEngine.GetView(executingFilePath: null, viewPath: viewName, isPartial: false);
+            if (!result.Success)
+            {
+                result = viewEngine.FindView(actionContext, viewName, isPartial: false);
+            }
+
             if (result.Success)
             {
                 if (DiagnosticSource.IsEnabled("Microsoft.AspNet.Mvc.ViewFound"))

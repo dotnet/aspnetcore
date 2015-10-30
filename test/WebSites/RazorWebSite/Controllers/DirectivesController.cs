@@ -29,7 +29,7 @@ namespace RazorWebSite
                 }
             };
 
-            return View("/Views/InheritingInherits/Index", model);
+            return View("/Views/InheritingInherits/Index.cshtml", model);
         }
     }
 }

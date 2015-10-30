@@ -3,6 +3,7 @@
 
 #if MOCK_SUPPORT
 using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.Abstractions;
@@ -26,9 +27,13 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             var executor = GetViewExecutor();
 
             var viewName = "my-view";
-            var viewEngine = new Mock<ICompositeViewEngine>();
+            var viewEngine = new Mock<ICompositeViewEngine>(MockBehavior.Strict);
             viewEngine
-                .Setup(e => e.FindView(context, viewName))
+                .Setup(e => e.GetView(/*executingFilePath*/ null, viewName, /*isPartial*/ false))
+                .Returns(ViewEngineResult.NotFound(viewName, Enumerable.Empty<string>()))
+                .Verifiable();
+            viewEngine
+                .Setup(e => e.FindView(context, viewName, /*isPartial*/ false))
                 .Returns(ViewEngineResult.Found(viewName, Mock.Of<IView>()))
                 .Verifiable();
 
@@ -116,9 +121,12 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             var executor = GetViewExecutor(diagnosticSource);
 
             var viewName = "myview";
-            var viewEngine = new Mock<IViewEngine>();
+            var viewEngine = new Mock<IViewEngine>(MockBehavior.Strict);
             viewEngine
-                .Setup(e => e.FindView(context, "myview"))
+                .Setup(e => e.GetView(/*executingFilePath*/ null, "myview", /*isPartial*/ false))
+                .Returns(ViewEngineResult.NotFound("myview", Enumerable.Empty<string>()));
+            viewEngine
+                .Setup(e => e.FindView(context, "myview", /*isPartial*/ false))
                 .Returns(ViewEngineResult.NotFound("myview", new string[] { "location/myview" }));
 
             var viewResult = new ViewResult
@@ -209,8 +217,13 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
 
             var viewEngine = new Mock<IViewEngine>(MockBehavior.Strict);
             viewEngine
-                .Setup(e => e.FindView(It.IsAny<ActionContext>(), It.IsAny<string>()))
-                .Returns<ActionContext, string>((_, name) => ViewEngineResult.Found(name, Mock.Of<IView>()));
+                .Setup(e => e.GetView(/*executingFilePath*/ null, It.IsAny<string>(), /*isPartial*/ false))
+                .Returns<string, string, bool>(
+                    (path, name, partial) => ViewEngineResult.NotFound(name, Enumerable.Empty<string>()));
+            viewEngine
+                .Setup(e => e.FindView(It.IsAny<ActionContext>(), It.IsAny<string>(), /*isPartial*/ false))
+                .Returns<ActionContext, string, bool>(
+                    (context, name, partial) => ViewEngineResult.Found(name, Mock.Of<IView>()));
 
             var options = new TestOptionsManager<MvcViewOptions>();
             options.Value.ViewEngines.Add(viewEngine.Object);

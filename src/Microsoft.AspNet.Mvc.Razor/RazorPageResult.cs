@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <summary>
         /// Initializes a new instance of <see cref="RazorPageResult"/> for a successful discovery.
         /// </summary>
-        /// <param name="name">The name of the page that was located.</param>
+        /// <param name="name">The name of the page that was found.</param>
         /// <param name="page">The located <see cref="IRazorPage"/>.</param>
         public RazorPageResult(string name, IRazorPage page)
         {
@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <summary>
         /// Initializes a new instance of <see cref="RazorPageResult"/> for an unsuccessful discovery.
         /// </summary>
-        /// <param name="name">The name of the page that was located.</param>
+        /// <param name="name">The name of the page that was not found.</param>
         /// <param name="searchedLocations">The locations that were searched.</param>
         public RazorPageResult(string name, IEnumerable<string> searchedLocations)
         {
@@ -56,10 +56,8 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         /// <summary>
-        /// Gets the name of the page being located.
+        /// Gets the name or the path of the page being located.
         /// </summary>
-        /// <remarks>This property maps to the <c>name</c> parameter of
-        /// <see cref="IRazorViewEngine.FindPage(ActionContext, string)"/>.</remarks>
         public string Name { get; }
 
         /// <summary>
@@ -69,7 +67,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         public IRazorPage Page { get; }
 
         /// <summary>
-        /// Gets the locations that were searched when <see cref="Page"/> could not be located.
+        /// Gets the locations that were searched when <see cref="Page"/> could not be found.
         /// </summary>
         /// <remarks>This property is <c>null</c> if the page was found.</remarks>
         public IEnumerable<string> SearchedLocations { get; }

@@ -109,9 +109,14 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures.Internal
 
             foreach (string viewName in GetViewNames())
             {
-                var fullViewName = modeViewPath + "/" + viewName;
+                var viewEngineResult = _viewEngine.GetView(_viewContext.ExecutingFilePath, viewName, isPartial: true);
+                if (!viewEngineResult.Success)
+                {
+                    // Success here is more common than with GetView() but GetView() is less expensive.
+                    var fullViewName = modeViewPath + "/" + viewName;
+                    viewEngineResult = _viewEngine.FindView(_viewContext, fullViewName, isPartial: true);
+                }
 
-                var viewEngineResult = _viewEngine.FindPartialView(_viewContext, fullViewName);
                 if (viewEngineResult.Success)
                 {
                     using (var writer = new StringCollectionTextWriter(_viewContext.Writer.Encoding))

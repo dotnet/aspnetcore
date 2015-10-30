@@ -130,6 +130,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             ValidationSummaryMessageElement = viewContext.ValidationSummaryMessageElement;
             ValidationMessageElement = viewContext.ValidationMessageElement;
 
+            ExecutingFilePath = viewContext.ExecutingFilePath;
             View = view;
             ViewData = viewData;
             TempData = viewContext.TempData;

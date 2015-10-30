@@ -4,6 +4,7 @@
 #if MOCK_SUPPORT
 using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Internal;
@@ -36,9 +37,13 @@ namespace Microsoft.AspNet.Mvc
 
             var actionContext = GetActionContext();
 
-            var viewEngine = new Mock<IViewEngine>();
+            var viewEngine = new Mock<IViewEngine>(MockBehavior.Strict);
             viewEngine
-                .Setup(v => v.FindPartialView(It.IsAny<ActionContext>(), It.IsAny<string>()))
+                .Setup(v => v.GetView(/*executingFilePath*/ null, "MyView", /*isPartial*/ true))
+                .Returns(ViewEngineResult.NotFound("MyView", Enumerable.Empty<string>()))
+                .Verifiable();
+            viewEngine
+                .Setup(v => v.FindView(It.IsAny<ActionContext>(), "MyView", /*isPartial*/ true))
                 .Returns(ViewEngineResult.NotFound("MyView", new[] { "Location1", "Location2" }))
                 .Verifiable();
 
@@ -82,7 +87,11 @@ namespace Microsoft.AspNet.Mvc
 
             var viewEngine = new Mock<IViewEngine>(MockBehavior.Strict);
             viewEngine
-                .Setup(e => e.FindPartialView(context, "myview"))
+                .Setup(v => v.GetView(/*executingFilePath*/ null, "myview", /*isPartial*/ true))
+                .Returns(ViewEngineResult.NotFound("myview", Enumerable.Empty<string>()))
+                .Verifiable();
+            viewEngine
+                .Setup(v => v.FindView(It.IsAny<ActionContext>(), "myview", /*isPartial*/ true))
                 .Returns(ViewEngineResult.Found("myview", view.Object))
                 .Verifiable();
 

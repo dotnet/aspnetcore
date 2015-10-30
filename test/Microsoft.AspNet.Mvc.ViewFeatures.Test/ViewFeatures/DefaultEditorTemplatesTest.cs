@@ -189,9 +189,13 @@ Environment.NewLine +
 Environment.NewLine;
 
             var model = new DefaultTemplatesUtilities.ObjectWithScaffoldColumn();
-            var viewEngine = new Mock<ICompositeViewEngine>();
-            viewEngine.Setup(v => v.FindPartialView(It.IsAny<ActionContext>(), It.IsAny<string>()))
-                      .Returns(ViewEngineResult.NotFound("", Enumerable.Empty<string>()));
+            var viewEngine = new Mock<ICompositeViewEngine>(MockBehavior.Strict);
+            viewEngine
+                .Setup(v => v.GetView(/*executingFilePath*/ null, It.IsAny<string>(), /*isPartial*/ true))
+                .Returns(ViewEngineResult.NotFound(string.Empty, Enumerable.Empty<string>()));
+            viewEngine
+                .Setup(v => v.FindView(It.IsAny<ActionContext>(), It.IsAny<string>(), /*isPartial*/ true))
+                .Returns(ViewEngineResult.NotFound("", Enumerable.Empty<string>()));
             var htmlHelper = DefaultTemplatesUtilities.GetHtmlHelper(model, viewEngine.Object);
 
             // Act
@@ -354,10 +358,13 @@ Environment.NewLine;
         {
             // Arrange
             var model = new DefaultTemplatesUtilities.ObjectTemplateModel { Property1 = "True" };
-            var viewEngine = new Mock<ICompositeViewEngine>();
+            var viewEngine = new Mock<ICompositeViewEngine>(MockBehavior.Strict);
             viewEngine
-                .Setup(v => v.FindPartialView(It.IsAny<ActionContext>(), It.IsAny<string>()))
-                .Returns(ViewEngineResult.NotFound("", Enumerable.Empty<string>()));
+                .Setup(v => v.GetView(/*executingFilePath*/ null, It.IsAny<string>(), /*isPartial*/ true))
+                .Returns(ViewEngineResult.NotFound(string.Empty, Enumerable.Empty<string>()));
+            viewEngine
+                .Setup(v => v.FindView(It.IsAny<ActionContext>(), It.IsAny<string>(), /*isPartial*/ true))
+                .Returns(ViewEngineResult.NotFound(string.Empty, Enumerable.Empty<string>()));
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(
                 model,
                 viewEngine.Object,
@@ -384,10 +391,13 @@ Environment.NewLine;
         {
             // Arrange
             var model = new DefaultTemplatesUtilities.ObjectTemplateModel { Property1 = "True" };
-            var viewEngine = new Mock<ICompositeViewEngine>();
+            var viewEngine = new Mock<ICompositeViewEngine>(MockBehavior.Strict);
             viewEngine
-                .Setup(v => v.FindPartialView(It.IsAny<ActionContext>(), It.IsAny<string>()))
-                .Returns(ViewEngineResult.NotFound("", Enumerable.Empty<string>()));
+                .Setup(v => v.GetView(/*executingFilePath*/ null, It.IsAny<string>(), /*isPartial*/ true))
+                .Returns(ViewEngineResult.NotFound(string.Empty, Enumerable.Empty<string>()));
+            viewEngine
+                .Setup(v => v.FindView(It.IsAny<ActionContext>(), It.IsAny<string>(), /*isPartial*/ true))
+                .Returns(ViewEngineResult.NotFound(string.Empty, Enumerable.Empty<string>()));
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(
                 model,
                 viewEngine.Object,
@@ -413,10 +423,13 @@ Environment.NewLine;
         {
             // Arrange
             var model = new DefaultTemplatesUtilities.ObjectTemplateModel { Property1 = "True" };
-            var viewEngine = new Mock<ICompositeViewEngine>();
+            var viewEngine = new Mock<ICompositeViewEngine>(MockBehavior.Strict);
             viewEngine
-                .Setup(v => v.FindPartialView(It.IsAny<ActionContext>(), It.IsAny<string>()))
-                .Returns(ViewEngineResult.NotFound("", Enumerable.Empty<string>()));
+                .Setup(v => v.GetView(/*executingFilePath*/ null, It.IsAny<string>(), /*isPartial*/ true))
+                .Returns(ViewEngineResult.NotFound(string.Empty, Enumerable.Empty<string>()));
+            viewEngine
+                .Setup(v => v.FindView(It.IsAny<ActionContext>(), It.IsAny<string>(), /*isPartial*/ true))
+                .Returns(ViewEngineResult.NotFound(string.Empty, Enumerable.Empty<string>()));
 
             var provider = new TestModelMetadataProvider();
             provider.ForProperty<DefaultTemplatesUtilities.ObjectTemplateModel>("Property1").DisplayDetails(dd =>
@@ -452,10 +465,13 @@ Environment.NewLine;
         {
             // Arrange
             var model = new DefaultTemplatesUtilities.ObjectTemplateModel { Property1 = "True" };
-            var viewEngine = new Mock<ICompositeViewEngine>();
+            var viewEngine = new Mock<ICompositeViewEngine>(MockBehavior.Strict);
             viewEngine
-                .Setup(v => v.FindPartialView(It.IsAny<ActionContext>(), It.IsAny<string>()))
-                .Returns(ViewEngineResult.NotFound("", Enumerable.Empty<string>()));
+                .Setup(v => v.GetView(/*executingFilePath*/ null, It.IsAny<string>(), /*isPartial*/ true))
+                .Returns(ViewEngineResult.NotFound(string.Empty, Enumerable.Empty<string>()));
+            viewEngine
+                .Setup(v => v.FindView(It.IsAny<ActionContext>(), It.IsAny<string>(), /*isPartial*/ true))
+                .Returns(ViewEngineResult.NotFound(string.Empty, Enumerable.Empty<string>()));
 
             var provider = new TestModelMetadataProvider();
             provider.ForProperty<DefaultTemplatesUtilities.ObjectTemplateModel>("Property1").DisplayDetails(dd =>
@@ -490,10 +506,13 @@ Environment.NewLine;
         {
             // Arrange
             var model = new DefaultTemplatesUtilities.ObjectTemplateModel { Property1 = "True" };
-            var viewEngine = new Mock<ICompositeViewEngine>();
+            var viewEngine = new Mock<ICompositeViewEngine>(MockBehavior.Strict);
             viewEngine
-                .Setup(v => v.FindPartialView(It.IsAny<ActionContext>(), It.IsAny<string>()))
-                .Returns(ViewEngineResult.NotFound("", Enumerable.Empty<string>()));
+                .Setup(v => v.GetView(/*executingFilePath*/ null, It.IsAny<string>(), /*isPartial*/ true))
+                .Returns(ViewEngineResult.NotFound(string.Empty, Enumerable.Empty<string>()));
+            viewEngine
+                .Setup(v => v.FindView(It.IsAny<ActionContext>(), It.IsAny<string>(), /*isPartial*/ true))
+                .Returns(ViewEngineResult.NotFound(string.Empty, Enumerable.Empty<string>()));
 
             var provider = new TestModelMetadataProvider();
             provider.ForProperty<DefaultTemplatesUtilities.ObjectTemplateModel>("Property1").DisplayDetails(dd =>
@@ -529,10 +548,13 @@ Environment.NewLine;
         {
             // Arrange
             var model = new DefaultTemplatesUtilities.ObjectTemplateModel { Property1 = "True" };
-            var viewEngine = new Mock<ICompositeViewEngine>();
+            var viewEngine = new Mock<ICompositeViewEngine>(MockBehavior.Strict);
             viewEngine
-                .Setup(v => v.FindPartialView(It.IsAny<ActionContext>(), It.IsAny<string>()))
-                .Returns(ViewEngineResult.NotFound("", Enumerable.Empty<string>()));
+                .Setup(v => v.GetView(/*executingFilePath*/ null, It.IsAny<string>(), /*isPartial*/ true))
+                .Returns(ViewEngineResult.NotFound(string.Empty, Enumerable.Empty<string>()));
+            viewEngine
+                .Setup(v => v.FindView(It.IsAny<ActionContext>(), It.IsAny<string>(), /*isPartial*/ true))
+                .Returns(ViewEngineResult.NotFound(string.Empty, Enumerable.Empty<string>()));
 
             var provider = new TestModelMetadataProvider();
             provider.ForProperty<DefaultTemplatesUtilities.ObjectTemplateModel>("Property1").DisplayDetails(dd =>
@@ -566,10 +588,13 @@ Environment.NewLine;
         {
             // Arrange
             var model = new DefaultTemplatesUtilities.ObjectTemplateModel { Property1 = "Model string" };
-            var viewEngine = new Mock<ICompositeViewEngine>();
+            var viewEngine = new Mock<ICompositeViewEngine>(MockBehavior.Strict);
             viewEngine
-                .Setup(v => v.FindPartialView(It.IsAny<ActionContext>(), It.IsAny<string>()))
-                .Returns(ViewEngineResult.NotFound("", Enumerable.Empty<string>()));
+                .Setup(v => v.GetView(/*executingFilePath*/ null, It.IsAny<string>(), /*isPartial*/ true))
+                .Returns(ViewEngineResult.NotFound(string.Empty, Enumerable.Empty<string>()));
+            viewEngine
+                .Setup(v => v.FindView(It.IsAny<ActionContext>(), It.IsAny<string>(), /*isPartial*/ true))
+                .Returns(ViewEngineResult.NotFound(string.Empty, Enumerable.Empty<string>()));
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(model, viewEngine.Object);
             helper.ViewData["Property1"] = "ViewData string";
 
@@ -597,7 +622,7 @@ Environment.NewLine;
                 "<input class=\"HtmlEncode[[text-box single-line]]\" data-val=\"HtmlEncode[[true]]\" " +
                 "data-val-required=\"HtmlEncode[[The DateTimeOffset field is required.]]\" id=\"HtmlEncode[[FieldPrefix]]\" " +
                 "name=\"HtmlEncode[[FieldPrefix]]\" type=\"HtmlEncode[[" +
-                dataTypeName + 
+                dataTypeName +
                 "]]\" value=\"HtmlEncode[[" + expected + "]]\" />");
 
             var offset = TimeSpan.FromHours(0);
@@ -610,10 +635,13 @@ Environment.NewLine;
                 second: 5,
                 millisecond: 6,
                 offset: offset);
-            var viewEngine = new Mock<ICompositeViewEngine>();
+            var viewEngine = new Mock<ICompositeViewEngine>(MockBehavior.Strict);
             viewEngine
-                .Setup(v => v.FindPartialView(It.IsAny<ActionContext>(), It.IsAny<string>()))
-                .Returns(ViewEngineResult.NotFound("", Enumerable.Empty<string>()));
+                .Setup(v => v.GetView(/*executingFilePath*/ null, It.IsAny<string>(), /*isPartial*/ true))
+                .Returns(ViewEngineResult.NotFound(string.Empty, Enumerable.Empty<string>()));
+            viewEngine
+                .Setup(v => v.FindView(It.IsAny<ActionContext>(), It.IsAny<string>(), /*isPartial*/ true))
+                .Returns(ViewEngineResult.NotFound(string.Empty, Enumerable.Empty<string>()));
 
             var provider = new TestModelMetadataProvider();
             provider.ForType<DateTimeOffset>().DisplayDetails(dd =>
@@ -630,7 +658,7 @@ Environment.NewLine;
             helper.ViewData.TemplateInfo.HtmlFieldPrefix = "FieldPrefix";
 
             // Act
-            var result = helper.Editor("");
+            var result = helper.Editor(string.Empty);
 
             // Assert
             Assert.Equal(expectedInput, HtmlContentUtilities.HtmlContentToString(result));
@@ -650,11 +678,11 @@ Environment.NewLine;
                 "<input class=\"HtmlEncode[[text-box single-line]]\" data-val=\"HtmlEncode[[true]]\" " +
                 "data-val-required=\"HtmlEncode[[The DateTimeOffset field is required.]]\" id=\"HtmlEncode[[FieldPrefix]]\" " +
                 "name=\"HtmlEncode[[FieldPrefix]]\" type=\"HtmlEncode[[" +
-                dataTypeName + 
+                dataTypeName +
                 "]]\" value=\"HtmlEncode[[" + expected + "]]\" />");
 
             // Place DateTime-local value in current timezone.
-            var offset = string.Equals("", dataTypeName) ? DateTimeOffset.Now.Offset : TimeSpan.FromHours(0);
+            var offset = string.Equals(string.Empty, dataTypeName) ? DateTimeOffset.Now.Offset : TimeSpan.FromHours(0);
             var model = new DateTimeOffset(
                 year: 2000,
                 month: 1,
@@ -664,10 +692,13 @@ Environment.NewLine;
                 second: 5,
                 millisecond: 60,
                 offset: offset);
-            var viewEngine = new Mock<ICompositeViewEngine>();
+            var viewEngine = new Mock<ICompositeViewEngine>(MockBehavior.Strict);
             viewEngine
-                .Setup(v => v.FindPartialView(It.IsAny<ActionContext>(), It.IsAny<string>()))
-                .Returns(ViewEngineResult.NotFound("", Enumerable.Empty<string>()));
+                .Setup(v => v.GetView(/*executingFilePath*/ null, It.IsAny<string>(), /*isPartial*/ true))
+                .Returns(ViewEngineResult.NotFound(string.Empty, Enumerable.Empty<string>()));
+            viewEngine
+                .Setup(v => v.FindView(It.IsAny<ActionContext>(), It.IsAny<string>(), /*isPartial*/ true))
+                .Returns(ViewEngineResult.NotFound(string.Empty, Enumerable.Empty<string>()));
 
             var provider = new TestModelMetadataProvider();
             provider.ForType<DateTimeOffset>().DisplayDetails(dd =>
@@ -685,7 +716,7 @@ Environment.NewLine;
             helper.ViewData.TemplateInfo.HtmlFieldPrefix = "FieldPrefix";
 
             // Act
-            var result = helper.Editor("");
+            var result = helper.Editor(string.Empty);
 
             // Assert
             Assert.Equal(expectedInput, HtmlContentUtilities.HtmlContentToString(result));
@@ -708,7 +739,7 @@ Environment.NewLine;
                 "<input class=\"HtmlEncode[[text-box single-line]]\" data-val=\"HtmlEncode[[true]]\" " +
                 "data-val-required=\"HtmlEncode[[The DateTimeOffset field is required.]]\" id=\"HtmlEncode[[FieldPrefix]]\" " +
                 "name=\"HtmlEncode[[FieldPrefix]]\" type=\"HtmlEncode[[" +
-                dataTypeName + 
+                dataTypeName +
                 "]]\" value=\"HtmlEncode[[Formatted as 2000-01-02T03:04:05.0600000+00:00]]\" />");
 
             var offset = TimeSpan.FromHours(0);
@@ -721,11 +752,13 @@ Environment.NewLine;
                 second: 5,
                 millisecond: 60,
                 offset: offset);
-            var viewEngine = new Mock<ICompositeViewEngine>();
+            var viewEngine = new Mock<ICompositeViewEngine>(MockBehavior.Strict);
             viewEngine
-                .Setup(v => v.FindPartialView(It.IsAny<ActionContext>(), It.IsAny<string>()))
-                .Returns(ViewEngineResult.NotFound("", Enumerable.Empty<string>()));
-
+                .Setup(v => v.GetView(/*executingFilePath*/ null, It.IsAny<string>(), /*isPartial*/ true))
+                .Returns(ViewEngineResult.NotFound(string.Empty, Enumerable.Empty<string>()));
+            viewEngine
+                .Setup(v => v.FindView(It.IsAny<ActionContext>(), It.IsAny<string>(), /*isPartial*/ true))
+                .Returns(ViewEngineResult.NotFound(string.Empty, Enumerable.Empty<string>()));
 
             var provider = new TestModelMetadataProvider();
             provider.ForType<DateTimeOffset>().DisplayDetails(dd =>
@@ -745,7 +778,7 @@ Environment.NewLine;
             helper.ViewData.TemplateInfo.HtmlFieldPrefix = "FieldPrefix";
 
             // Act
-            var result = helper.Editor("");
+            var result = helper.Editor(string.Empty);
 
             // Assert
             Assert.Equal(expectedInput, HtmlContentUtilities.HtmlContentToString(result));
@@ -756,10 +789,13 @@ Environment.NewLine;
         {
             // Arrange
             var model = new DefaultTemplatesUtilities.ObjectTemplateModel { Property1 = "Model string" };
-            var viewEngine = new Mock<ICompositeViewEngine>();
+            var viewEngine = new Mock<ICompositeViewEngine>(MockBehavior.Strict);
             viewEngine
-                .Setup(v => v.FindPartialView(It.IsAny<ActionContext>(), It.IsAny<string>()))
-                .Returns(ViewEngineResult.NotFound("", Enumerable.Empty<string>()));
+                .Setup(v => v.GetView(/*executingFilePath*/ null, It.IsAny<string>(), /*isPartial*/ true))
+                .Returns(ViewEngineResult.NotFound(string.Empty, Enumerable.Empty<string>()));
+            viewEngine
+                .Setup(v => v.FindView(It.IsAny<ActionContext>(), It.IsAny<string>(), /*isPartial*/ true))
+                .Returns(ViewEngineResult.NotFound(string.Empty, Enumerable.Empty<string>()));
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(model, viewEngine.Object);
             helper.ViewData["Property1"] = "ViewData string";
 
@@ -777,10 +813,13 @@ Environment.NewLine;
         {
             // Arrange
             var model = new DefaultTemplatesUtilities.ObjectTemplateModel { Property1 = "Model string" };
-            var viewEngine = new Mock<ICompositeViewEngine>();
+            var viewEngine = new Mock<ICompositeViewEngine>(MockBehavior.Strict);
             viewEngine
-                .Setup(v => v.FindPartialView(It.IsAny<ActionContext>(), It.IsAny<string>()))
-                .Returns(ViewEngineResult.NotFound("", Enumerable.Empty<string>()));
+                .Setup(v => v.GetView(/*executingFilePath*/ null, It.IsAny<string>(), /*isPartial*/ true))
+                .Returns(ViewEngineResult.NotFound(string.Empty, Enumerable.Empty<string>()));
+            viewEngine
+                .Setup(v => v.FindView(It.IsAny<ActionContext>(), It.IsAny<string>(), /*isPartial*/ true))
+                .Returns(ViewEngineResult.NotFound(string.Empty, Enumerable.Empty<string>()));
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(model, viewEngine.Object);
 
             // Act
@@ -799,10 +838,13 @@ Environment.NewLine;
         {
             // Arrange
             var model = new DefaultTemplatesUtilities.ObjectTemplateModel { Property1 = propertyValue, };
-            var viewEngine = new Mock<ICompositeViewEngine>();
+            var viewEngine = new Mock<ICompositeViewEngine>(MockBehavior.Strict);
             viewEngine
-                .Setup(v => v.FindPartialView(It.IsAny<ActionContext>(), It.IsAny<string>()))
-                .Returns(ViewEngineResult.NotFound("", Enumerable.Empty<string>()));
+                .Setup(v => v.GetView(/*executingFilePath*/ null, It.IsAny<string>(), /*isPartial*/ true))
+                .Returns(ViewEngineResult.NotFound(string.Empty, Enumerable.Empty<string>()));
+            viewEngine
+                .Setup(v => v.FindView(It.IsAny<ActionContext>(), It.IsAny<string>(), /*isPartial*/ true))
+                .Returns(ViewEngineResult.NotFound(string.Empty, Enumerable.Empty<string>()));
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(model, viewEngine.Object);
             helper.ViewData["Property1"] = "ViewData string";
 
@@ -827,9 +869,12 @@ Environment.NewLine;
                 {
                     throw new FormatException(expectedMessage);
                 }));
-            var viewEngine = new Mock<ICompositeViewEngine>();
+            var viewEngine = new Mock<ICompositeViewEngine>(MockBehavior.Strict);
             viewEngine
-                .Setup(v => v.FindPartialView(It.IsAny<ActionContext>(), It.IsAny<string>()))
+                .Setup(v => v.GetView(/*executingFilePath*/ null, It.IsAny<string>(), /*isPartial*/ true))
+                .Returns(ViewEngineResult.NotFound(string.Empty, Enumerable.Empty<string>()));
+            viewEngine
+                .Setup(v => v.FindView(It.IsAny<ActionContext>(), It.IsAny<string>(), /*isPartial*/ true))
                 .Returns(ViewEngineResult.Found("test-view", view.Object));
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(model, viewEngine.Object);
             helper.ViewData["Property1"] = "ViewData string";
@@ -840,14 +885,15 @@ Environment.NewLine;
         }
 
         [Fact]
-        public void EditorForModel_CallsFindPartialView_WithExpectedPath()
+        public void EditorForModel_CallsFindView_WithIsPartialAndExpectedPath()
         {
             // Arrange
             var viewEngine = new Mock<ICompositeViewEngine>(MockBehavior.Strict);
             viewEngine
-                .Setup(v => v.FindPartialView(It.IsAny<ActionContext>(), 
-                                              It.Is<string>(view => String.Equals(view, 
-                                                                                  "EditorTemplates/String"))))
+                .Setup(v => v.GetView(/*executingFilePath*/ null, It.IsAny<string>(), /*isPartial*/ true))
+                .Returns(ViewEngineResult.NotFound(string.Empty, Enumerable.Empty<string>()));
+            viewEngine
+                .Setup(v => v.FindView(It.IsAny<ActionContext>(), "EditorTemplates/String", /*isPartial*/ true))
                 .Returns(ViewEngineResult.Found(string.Empty, new Mock<IView>().Object))
                 .Verifiable();
             var html = DefaultTemplatesUtilities.GetHtmlHelper(new object(), viewEngine: viewEngine.Object);

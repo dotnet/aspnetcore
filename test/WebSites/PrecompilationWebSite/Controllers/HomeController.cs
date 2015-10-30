@@ -14,18 +14,18 @@ namespace PrecompilationWebSite.Controllers
 
         public IActionResult PrecompiledViewsCanConsumeCompilationOptions()
         {
-            return View("~/Views/ViewsConsumingCompilationOptions/Index");
+            return View("~/Views/ViewsConsumingCompilationOptions/Index.cshtml");
         }
 
         public IActionResult GlobalDeletedPriorToFirstRequest()
         {
-            return View("~/Views/ViewImportsDelete/Index");
+            return View("~/Views/ViewImportsDelete/Index.cshtml");
         }
 
         [HttpGet("/Test")]
         public IActionResult TestView()
         {
-            return View("~/Views/Test/Index");
+            return View("~/Views/Test/Index.cshtml");
         }
     }
 }

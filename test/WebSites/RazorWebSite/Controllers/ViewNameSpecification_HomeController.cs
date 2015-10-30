@@ -17,12 +17,12 @@ namespace RazorWebSite.Controllers
             return View("LayoutSpecifiedWithPartialPathInViewStart");
         }
 
-        public IActionResult LayoutSpecifiedWithPartialPathInViewStart_ForViewSpecifiedWithAppRelativePath()
+        public IActionResult LayoutSpecifiedWithPartialPathInViewStart_ForViewSpecifiedWithRelativePath()
         {
-            return View("~/Views/ViewNameSpecification_Home/LayoutSpecifiedWithPartialPathInViewStart");
+            return View("Views/ViewNameSpecification_Home/LayoutSpecifiedWithPartialPathInViewStart.cshtml");
         }
 
-        public IActionResult LayoutSpecifiedWithPartialPathInViewStart_ForViewSpecifiedWithAppRelativePathWithExtension()
+        public IActionResult LayoutSpecifiedWithPartialPathInViewStart_ForViewSpecifiedWithAppRelativePath()
         {
             return View("~/Views/ViewNameSpecification_Home/LayoutSpecifiedWithPartialPathInViewStart.cshtml");
         }
@@ -37,23 +37,23 @@ namespace RazorWebSite.Controllers
             return View("LayoutSpecifiedWithPartialPathInPage");
         }
 
-        public IActionResult LayoutSpecifiedWithPartialPathInPageWithAppRelativePath()
+        public IActionResult LayoutSpecifiedWithPartialPathInPageWithRelativePath()
         {
-            return View("~/Views/ViewNameSpecification_Home/LayoutSpecifiedWithPartialPathInPage");
+            return View("Views/ViewNameSpecification_Home/LayoutSpecifiedWithPartialPathInPage.cshtml");
         }
 
-        public IActionResult LayoutSpecifiedWithPartialPathInPageWithAppRelativePathWithExtension()
+        public IActionResult LayoutSpecifiedWithPartialPathInPageWithAppRelativePath()
         {
             return View("~/Views/ViewNameSpecification_Home/LayoutSpecifiedWithPartialPathInPage.cshtml");
         }
 
-        public IActionResult LayoutSpecifiedWithNonPartialPath()
+        public IActionResult LayoutSpecifiedWithRelativePath()
         {
-            ViewData["Layout"] = "~/Views/ViewNameSpecification_Home/_NonSharedLayout";
+            ViewData["Layout"] = "_NonSharedLayout.cshtml";
             return View("PageWithNonPartialLayoutPath");
         }
 
-        public IActionResult LayoutSpecifiedWithNonPartialPathWithExtension()
+        public IActionResult LayoutSpecifiedWithAppRelativePath()
         {
             ViewData["Layout"] = "~/Views/ViewNameSpecification_Home/_NonSharedLayout.cshtml";
             return View("PageWithNonPartialLayoutPath");
@@ -65,13 +65,13 @@ namespace RazorWebSite.Controllers
             return View("ViewWithPartials");
         }
 
-        public IActionResult ViewWithPartial_SpecifiedWithAbsoluteName()
+        public IActionResult ViewWithPartial_SpecifiedWithRelativePath()
         {
-            ViewBag.Partial = "~/Views/ViewNameSpecification_Home/NonSharedPartial";
+            ViewBag.Partial = "NonSharedPartial.cshtml";
             return View("ViewWithPartials");
         }
 
-        public IActionResult ViewWithPartial_SpecifiedWithAbsoluteNameAndExtension()
+        public IActionResult ViewWithPartial_SpecifiedWithAppRelativePath()
         {
             ViewBag.Partial = "~/Views/ViewNameSpecification_Home/NonSharedPartial.cshtml";
             return View("ViewWithPartials");

@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Antiforgery;
@@ -315,10 +316,15 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 })
                 .Returns(Task.FromResult(0));
 
-            var viewEngine = new Mock<ICompositeViewEngine>();
+            var viewEngine = new Mock<ICompositeViewEngine>(MockBehavior.Strict);
             viewEngine
-                .Setup(v => v.FindPartialView(It.IsAny<ActionContext>(), It.IsAny<string>()))
-                .Returns(ViewEngineResult.Found("MyView", view.Object));
+                .Setup(v => v.GetView(/*executingFilePath*/ null, It.IsAny<string>(), /*isPartial*/ true))
+                .Returns(ViewEngineResult.NotFound("MyView", Enumerable.Empty<string>()))
+                .Verifiable();
+            viewEngine
+                .Setup(v => v.FindView(It.IsAny<ActionContext>(), It.IsAny<string>(), /*isPartial*/ true))
+                .Returns(ViewEngineResult.Found("MyView", view.Object))
+                .Verifiable();
 
             return viewEngine.Object;
         }

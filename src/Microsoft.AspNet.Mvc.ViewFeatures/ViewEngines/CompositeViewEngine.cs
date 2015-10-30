@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.OptionsModel;
@@ -11,6 +10,8 @@ namespace Microsoft.AspNet.Mvc.ViewEngines
     /// <inheritdoc />
     public class CompositeViewEngine : ICompositeViewEngine
     {
+        private const string ViewExtension = ".cshtml";
+
         /// <summary>
         /// Initializes a new instance of <see cref="CompositeViewEngine"/>.
         /// </summary>
@@ -24,61 +25,53 @@ namespace Microsoft.AspNet.Mvc.ViewEngines
         public IReadOnlyList<IViewEngine> ViewEngines { get; }
 
         /// <inheritdoc />
-        public ViewEngineResult FindPartialView(
-            ActionContext context,
-            string partialViewName)
+        public ViewEngineResult FindView(ActionContext context, string viewName, bool isPartial)
         {
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            if (partialViewName == null)
-            {
-                throw new ArgumentNullException(nameof(partialViewName));
-            }
-
-            return FindView(context, partialViewName, partial: true);
-        }
-
-        /// <inheritdoc />
-        public ViewEngineResult FindView(
-            ActionContext context,
-            string viewName)
-        {
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            if (viewName == null)
-            {
-                throw new ArgumentNullException(nameof(viewName));
-            }
-
-            return FindView(context, viewName, partial: false);
-        }
-
-        private ViewEngineResult FindView(
-            ActionContext context,
-            string viewName,
-            bool partial)
-        {
-            var searchedLocations = Enumerable.Empty<string>();
+            List<string> searchedLocations = null;
             foreach (var engine in ViewEngines)
             {
-                var result = partial ? engine.FindPartialView(context, viewName) :
-                                       engine.FindView(context, viewName);
-
+                var result = engine.FindView(context, viewName, isPartial);
                 if (result.Success)
                 {
                     return result;
                 }
 
-                searchedLocations = searchedLocations.Concat(result.SearchedLocations);
+                if (searchedLocations == null)
+                {
+                    searchedLocations = new List<string>(result.SearchedLocations);
+                }
+                else
+                {
+                    searchedLocations.AddRange(result.SearchedLocations);
+                }
             }
 
-            return ViewEngineResult.NotFound(viewName, searchedLocations);
+            return ViewEngineResult.NotFound(viewName, searchedLocations ?? Enumerable.Empty<string>());
+        }
+
+        /// <inheritdoc />
+        public ViewEngineResult GetView(string executingFilePath, string viewPath, bool isPartial)
+        {
+            List<string> searchedLocations = null;
+            foreach (var engine in ViewEngines)
+            {
+                var result = engine.GetView(executingFilePath, viewPath, isPartial);
+                if (result.Success)
+                {
+                    return result;
+                }
+
+                if (searchedLocations == null)
+                {
+                    searchedLocations = new List<string>(result.SearchedLocations);
+                }
+                else
+                {
+                    searchedLocations.AddRange(result.SearchedLocations);
+                }
+            }
+
+            return ViewEngineResult.NotFound(viewPath, searchedLocations ?? Enumerable.Empty<string>());
         }
     }
 }

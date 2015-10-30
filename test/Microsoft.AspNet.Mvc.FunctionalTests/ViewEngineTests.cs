@@ -327,6 +327,30 @@ Page Content
         }
 
         [Fact]
+        public async Task RelativePathsWorkAsExpected()
+        {
+            // Arrange
+            var expected =
+@"<layout>
+<nested-layout>
+/ViewEngine/ViewWithRelativePath
+ViewWithRelativePath-content
+<partial>partial-content</partial>
+<component-title>View with relative path title</component-title>
+<component-body>Component with Relative Path
+<label><strong>Name:</strong> Fred</label>
+WriteLiteral says:<strong>Write says:98052WriteLiteral says:</strong></component-body>
+</nested-layout>
+</layout>";
+
+            // Act
+            var body = await Client.GetStringAsync("http://localhost/ViewEngine/ViewWithRelativePath");
+
+            // Assert
+            Assert.Equal(expected, body.Trim(), ignoreLineEndingDifferences: true);
+        }
+
+        [Fact]
         public async Task ViewComponentsDoNotExecuteViewStarts()
         {
             // Arrange

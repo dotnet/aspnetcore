@@ -10,7 +10,7 @@ namespace RazorWebSite.Components
     {
         public IViewComponentResult Invoke(Address address)
         {
-            return View("/Views/InheritingInherits/_ViewComponent", address);
+            return View("/Views/InheritingInherits/_ViewComponent.cshtml", address);
         }
     }
 }

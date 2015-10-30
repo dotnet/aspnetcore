@@ -20,9 +20,9 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
         [Theory]
         [InlineData("LayoutSpecifiedWithPartialPathInViewStart")]
-        [InlineData("LayoutSpecifiedWithPartialPathInViewStart_ForViewSpecifiedWithAppRelativePath")]
+        [InlineData("LayoutSpecifiedWithPartialPathInViewStart_ForViewSpecifiedWithRelativePath")]
         [InlineData("LayoutSpecifiedWithPartialPathInViewStart_ForViewSpecifiedWithPartialName")]
-        [InlineData("LayoutSpecifiedWithPartialPathInViewStart_ForViewSpecifiedWithAppRelativePathWithExtension")]
+        [InlineData("LayoutSpecifiedWithPartialPathInViewStart_ForViewSpecifiedWithAppRelativePath")]
         public async Task PartialLayoutPaths_SpecifiedInViewStarts_GetResolvedByViewEngine(string action)
         {
             // Arrange
@@ -41,8 +41,8 @@ _ViewStart that specifies partial Layout
         [Theory]
         [InlineData("LayoutSpecifiedWithPartialPathInPage")]
         [InlineData("LayoutSpecifiedWithPartialPathInPageWithPartialPath")]
+        [InlineData("LayoutSpecifiedWithPartialPathInPageWithRelativePath")]
         [InlineData("LayoutSpecifiedWithPartialPathInPageWithAppRelativePath")]
-        [InlineData("LayoutSpecifiedWithPartialPathInPageWithAppRelativePathWithExtension")]
         public async Task PartialLayoutPaths_SpecifiedInPage_GetResolvedByViewEngine(string actionName)
         {
             // Arrange
@@ -58,8 +58,8 @@ _ViewStart that specifies partial Layout
         }
 
         [Theory]
-        [InlineData("LayoutSpecifiedWithNonPartialPath")]
-        [InlineData("LayoutSpecifiedWithNonPartialPathWithExtension")]
+        [InlineData("LayoutSpecifiedWithRelativePath")]
+        [InlineData("LayoutSpecifiedWithAppRelativePath")]
         public async Task NonPartialLayoutPaths_GetResolvedByViewEngine(string actionName)
         {
             // Arrange
@@ -76,8 +76,8 @@ _ViewStart that specifies partial Layout
 
         [Theory]
         [InlineData("ViewWithPartial_SpecifiedWithPartialName")]
-        [InlineData("ViewWithPartial_SpecifiedWithAbsoluteName")]
-        [InlineData("ViewWithPartial_SpecifiedWithAbsoluteNameAndExtension")]
+        [InlineData("ViewWithPartial_SpecifiedWithRelativePath")]
+        [InlineData("ViewWithPartial_SpecifiedWithAppRelativePath")]
         public async Task PartialsCanBeSpecifiedWithPartialPath(string actionName)
         {
             // Arrange

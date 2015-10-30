@@ -166,10 +166,15 @@ namespace Microsoft.AspNet.Mvc.Razor
                 {
                     var viewStart = ViewStartPages[i];
                     context.ExecutingFilePath = viewStart.Path;
+
                     // Copy the layout value from the previous view start (if any) to the current.
                     viewStart.Layout = layout;
+
                     await RenderPageCoreAsync(viewStart, context);
-                    layout = viewStart.Layout;
+
+                    // Pass correct absolute path to next layout or the entry page if this view start set Layout to a
+                    // relative path.
+                    layout = _viewEngine.MakePathAbsolute(viewStart.Path, viewStart.Layout);
                 }
             }
             finally
@@ -177,13 +182,13 @@ namespace Microsoft.AspNet.Mvc.Razor
                 context.ExecutingFilePath = oldFilePath;
             }
 
-            // Copy over interesting properties from the ViewStart page to the entry page.
+            // Copy the layout value from the view start page(s) (if any) to the entry page.
             RazorPage.Layout = layout;
         }
 
         private async Task RenderLayoutAsync(
             ViewContext context,
-                                             IBufferedTextWriter bodyWriter)
+            IBufferedTextWriter bodyWriter)
         {
             // A layout page can specify another layout page. We'll need to continue
             // looking for layout pages until they're no longer specified.
@@ -202,7 +207,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     throw new InvalidOperationException(message);
                 }
 
-                var layoutPage = GetLayoutPage(context, previousPage.Layout);
+                var layoutPage = GetLayoutPage(context, previousPage.Path, previousPage.Layout);
 
                 if (renderedLayouts.Count > 0 &&
                     renderedLayouts.Any(l => string.Equals(l.Path, layoutPage.Path, StringComparison.Ordinal)))
@@ -237,13 +242,18 @@ namespace Microsoft.AspNet.Mvc.Razor
             }
         }
 
-        private IRazorPage GetLayoutPage(ViewContext context, string layoutPath)
+        private IRazorPage GetLayoutPage(ViewContext context, string executingFilePath, string layoutPath)
         {
-            var layoutPageResult = _viewEngine.FindPage(context, layoutPath);
+            var layoutPageResult = _viewEngine.GetPage(executingFilePath, layoutPath, isPartial: true);
             if (layoutPageResult.Page == null)
             {
-                var locations = Environment.NewLine +
-                                string.Join(Environment.NewLine, layoutPageResult.SearchedLocations);
+                layoutPageResult = _viewEngine.FindPage(context, layoutPath, isPartial: true);
+            }
+
+            if (layoutPageResult.Page == null)
+            {
+                var locations =
+                    Environment.NewLine + string.Join(Environment.NewLine, layoutPageResult.SearchedLocations);
                 throw new InvalidOperationException(Resources.FormatLayoutCannotBeLocated(layoutPath, locations));
             }
 

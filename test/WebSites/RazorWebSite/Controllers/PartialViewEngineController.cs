@@ -14,7 +14,7 @@ namespace RazorWebSite.Controllers
 
         public IActionResult ViewWithFullPath()
         {
-            return PartialView(@"/Views/ViewEngine/ViewWithFullPath.cshtml");
+            return PartialView("/Views/ViewEngine/ViewWithFullPath.rzr");
         }
 
         public IActionResult PartialViewWithNamePassedIn()

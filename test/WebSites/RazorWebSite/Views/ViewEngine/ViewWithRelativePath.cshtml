@@ -1,0 +1,15 @@
+﻿@{
+    Layout = "_NestedLayout.cshtml";
+    ViewData["Title"] = "View with relative path title";
+    var person = new Person
+    {
+        Address = new Address
+        {
+            ZipCode = "98052",
+        },
+        Name = "Fred",
+    };
+}
+ViewWithRelativePath-content
+<partial>@await Html.PartialAsync("../Shared/_PartialThatSetsTitle.cshtml")</partial>
+@await Component.InvokeAsync("ComponentWithRelativePath", person)

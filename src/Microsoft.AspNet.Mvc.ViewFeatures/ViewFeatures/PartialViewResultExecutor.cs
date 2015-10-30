@@ -69,7 +69,12 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             var viewEngine = viewResult.ViewEngine ?? ViewEngine;
             var viewName = viewResult.ViewName ?? actionContext.ActionDescriptor.Name;
 
-            var result = viewEngine.FindPartialView(actionContext, viewName);
+            var result = viewEngine.GetView(executingFilePath: null, viewPath: viewName, isPartial: true);
+            if (!result.Success)
+            {
+                result = viewEngine.FindView(actionContext, viewName, isPartial: true);
+            }
+
             if (result.Success)
             {
                 DiagnosticSource.ViewFound(actionContext, true, viewResult, viewName, result.View);
