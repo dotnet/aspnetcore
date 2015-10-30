@@ -7,6 +7,7 @@ using System.Net;
 using System.Net.Http;
 using System.Security.Claims;
 using System.Text;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Authentication.OAuth;
 using Microsoft.AspNet.Builder;
@@ -16,7 +17,6 @@ using Microsoft.AspNet.Http.Authentication;
 using Microsoft.AspNet.Http.Features.Authentication;
 using Microsoft.AspNet.TestHost;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.WebEncoders;
 using Newtonsoft.Json;
 using Xunit;
 
@@ -137,7 +137,7 @@ namespace Microsoft.AspNet.Authentication.Google
             var transaction = await server.SendAsync("https://example.com/challenge");
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
             var query = transaction.Response.Headers.Location.Query;
-            Assert.Contains("&scope=" + UrlEncoder.Default.UrlEncode("openid profile email"), query);
+            Assert.Contains("&scope=" + UrlEncoder.Default.Encode("openid profile email"), query);
         }
 
         [Fact]
@@ -152,7 +152,7 @@ namespace Microsoft.AspNet.Authentication.Google
             var transaction = await server.SendAsync("https://example.com/401");
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
             var query = transaction.Response.Headers.Location.Query;
-            Assert.Contains("&scope=" + UrlEncoder.Default.UrlEncode("openid profile email"), query);
+            Assert.Contains("&scope=" + UrlEncoder.Default.Encode("openid profile email"), query);
         }
 
         [Fact]
@@ -185,10 +185,10 @@ namespace Microsoft.AspNet.Authentication.Google
             var transaction = await server.SendAsync("https://example.com/challenge2");
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
             var query = transaction.Response.Headers.Location.Query;
-            Assert.Contains("scope=" + UrlEncoder.Default.UrlEncode("https://www.googleapis.com/auth/plus.login"), query);
+            Assert.Contains("scope=" + UrlEncoder.Default.Encode("https://www.googleapis.com/auth/plus.login"), query);
             Assert.Contains("access_type=offline", query);
             Assert.Contains("approval_prompt=force", query);
-            Assert.Contains("login_hint=" + UrlEncoder.Default.UrlEncode("test@example.com"), query);
+            Assert.Contains("login_hint=" + UrlEncoder.Default.Encode("test@example.com"), query);
         }
 
         [Fact]
@@ -263,7 +263,7 @@ namespace Microsoft.AspNet.Authentication.Google
                     {
                         OnRemoteError = ctx =>
                         {
-                            ctx.Response.Redirect("/error?ErrorMessage=" + UrlEncoder.Default.UrlEncode(ctx.Error.Message));
+                            ctx.Response.Redirect("/error?ErrorMessage=" + UrlEncoder.Default.Encode(ctx.Error.Message));
                             ctx.HandleResponse();
                             return Task.FromResult(0);
                         }
@@ -341,7 +341,7 @@ namespace Microsoft.AspNet.Authentication.Google
             properties.RedirectUri = "/me";
             var state = stateFormat.Protect(properties);
             var transaction = await server.SendAsync(
-                "https://example.com/signin-google?code=TestCode&state=" + UrlEncoder.Default.UrlEncode(state),
+                "https://example.com/signin-google?code=TestCode&state=" + UrlEncoder.Default.Encode(state),
                 correlationKey + "=" + correlationValue);
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
             Assert.Equal("/me", transaction.Response.Headers.GetValues("Location").First());
@@ -388,7 +388,7 @@ namespace Microsoft.AspNet.Authentication.Google
                     {
                         OnRemoteError = ctx =>
                         {
-                            ctx.Response.Redirect("/error?ErrorMessage=" + UrlEncoder.Default.UrlEncode(ctx.Error.Message));
+                            ctx.Response.Redirect("/error?ErrorMessage=" + UrlEncoder.Default.Encode(ctx.Error.Message));
                             ctx.HandleResponse();
                             return Task.FromResult(0);
                         }
@@ -404,16 +404,16 @@ namespace Microsoft.AspNet.Authentication.Google
             var state = stateFormat.Protect(properties);
 
             await Assert.ThrowsAsync<HttpRequestException>(() => server.SendAsync(
-                "https://example.com/signin-google?code=TestCode&state=" + UrlEncoder.Default.UrlEncode(state),
+                "https://example.com/signin-google?code=TestCode&state=" + UrlEncoder.Default.Encode(state),
                 correlationKey + "=" + correlationValue));
 
             //var transaction = await server.SendAsync(
-            //    "https://example.com/signin-google?code=TestCode&state=" + UrlEncoder.Default.UrlEncode(state),
+            //    "https://example.com/signin-google?code=TestCode&state=" + UrlEncoder.Default.Encode(state),
             //    correlationKey + "=" + correlationValue);
             //if (redirect)
             //{
             //    Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
-            //    Assert.Equal("/error?ErrorMessage=" + UrlEncoder.Default.UrlEncode("Access token was not found."),
+            //    Assert.Equal("/error?ErrorMessage=" + UrlEncoder.Default.Encode("Access token was not found."),
             //        transaction.Response.Headers.GetValues("Location").First());
             //}
             //else
@@ -446,7 +446,7 @@ namespace Microsoft.AspNet.Authentication.Google
                     {
                         OnRemoteError = ctx =>
                         {
-                            ctx.Response.Redirect("/error?ErrorMessage=" + UrlEncoder.Default.UrlEncode(ctx.Error.Message));
+                            ctx.Response.Redirect("/error?ErrorMessage=" + UrlEncoder.Default.Encode(ctx.Error.Message));
                             ctx.HandleResponse();
                             return Task.FromResult(0);
                         }
@@ -460,12 +460,12 @@ namespace Microsoft.AspNet.Authentication.Google
             properties.RedirectUri = "/me";
             var state = stateFormat.Protect(properties);
             var transaction = await server.SendAsync(
-                "https://example.com/signin-google?code=TestCode&state=" + UrlEncoder.Default.UrlEncode(state),
+                "https://example.com/signin-google?code=TestCode&state=" + UrlEncoder.Default.Encode(state),
                 correlationKey + "=" + correlationValue);
             if (redirect)
             {
                 Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
-                Assert.Equal("/error?ErrorMessage=" + UrlEncoder.Default.UrlEncode("Access token was not found."),
+                Assert.Equal("/error?ErrorMessage=" + UrlEncoder.Default.Encode("Access token was not found."),
                     transaction.Response.Headers.GetValues("Location").First());
             }
             else
@@ -540,7 +540,7 @@ namespace Microsoft.AspNet.Authentication.Google
             properties.RedirectUri = "/me";
             var state = stateFormat.Protect(properties);
             var transaction = await server.SendAsync(
-                "https://example.com/signin-google?code=TestCode&state=" + UrlEncoder.Default.UrlEncode(state),
+                "https://example.com/signin-google?code=TestCode&state=" + UrlEncoder.Default.Encode(state),
                 correlationKey + "=" + correlationValue);
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
             Assert.Equal("/me", transaction.Response.Headers.GetValues("Location").First());
@@ -618,7 +618,7 @@ namespace Microsoft.AspNet.Authentication.Google
             properties.Items.Add(correlationKey, correlationValue);
             var state = stateFormat.Protect(properties);
             var transaction = await server.SendAsync(
-                "https://example.com/signin-google?code=TestCode&state=" + UrlEncoder.Default.UrlEncode(state),
+                "https://example.com/signin-google?code=TestCode&state=" + UrlEncoder.Default.Encode(state),
                 correlationKey + "=" + correlationValue);
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
             Assert.Equal("/", transaction.Response.Headers.GetValues("Location").First());
@@ -704,7 +704,7 @@ namespace Microsoft.AspNet.Authentication.Google
 
             //Post a message to the Google middleware
             var transaction = await server.SendAsync(
-                "https://example.com/signin-google?code=TestCode&state=" + UrlEncoder.Default.UrlEncode(state),
+                "https://example.com/signin-google?code=TestCode&state=" + UrlEncoder.Default.Encode(state),
                 correlationKey + "=" + correlationValue);
 
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
@@ -740,7 +740,7 @@ namespace Microsoft.AspNet.Authentication.Google
                 {
                     OnRemoteError = ctx =>
                     {
-                        ctx.Response.Redirect("/error?ErrorMessage=" + UrlEncoder.Default.UrlEncode(ctx.Error.Message));
+                        ctx.Response.Redirect("/error?ErrorMessage=" + UrlEncoder.Default.Encode(ctx.Error.Message));
                         ctx.HandleResponse();
                         return Task.FromResult(0);
                     }
@@ -752,7 +752,7 @@ namespace Microsoft.AspNet.Authentication.Google
                 "https://example.com/signin-google?code=TestCode");
 
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
-            Assert.Equal("/error?ErrorMessage=" + UrlEncoder.Default.UrlEncode("The oauth state was missing or invalid."),
+            Assert.Equal("/error?ErrorMessage=" + UrlEncoder.Default.Encode("The oauth state was missing or invalid."),
                 transaction.Response.Headers.GetValues("Location").First());
         }
 

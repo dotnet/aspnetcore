@@ -2,6 +2,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Claims;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Authentication.Cookies;
 using Microsoft.AspNet.Authentication.Google;
@@ -13,7 +14,6 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Authentication;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.WebEncoders;
 using Newtonsoft.Json.Linq;
 
 namespace CookieSample
@@ -66,7 +66,7 @@ namespace CookieSample
                     OnRemoteError = ctx =>
 
                     {
-                        ctx.Response.Redirect("/error?ErrorMessage=" + UrlEncoder.Default.UrlEncode(ctx.Error.Message));
+                        ctx.Response.Redirect("/error?ErrorMessage=" + UrlEncoder.Default.Encode(ctx.Error.Message));
                         ctx.HandleResponse();
                         return Task.FromResult(0);
                     }
@@ -83,7 +83,7 @@ namespace CookieSample
                 {
                     OnRemoteError = ctx =>
                     {
-                        ctx.Response.Redirect("/error?ErrorMessage=" + UrlEncoder.Default.UrlEncode(ctx.Error.Message));
+                        ctx.Response.Redirect("/error?ErrorMessage=" + UrlEncoder.Default.Encode(ctx.Error.Message));
                         ctx.HandleResponse();
                         return Task.FromResult(0);
                     }

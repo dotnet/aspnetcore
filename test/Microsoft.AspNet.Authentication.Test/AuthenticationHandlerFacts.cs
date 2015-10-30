@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Security.Claims;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Authentication;
@@ -90,7 +91,7 @@ namespace Microsoft.AspNet.Authentication
                 await handler.InitializeAsync(
                     new CountOptions(), context,
                     new LoggerFactory().CreateLogger("CountHandler"),
-                    Extensions.WebEncoders.UrlEncoder.Default);
+                    UrlEncoder.Default);
                 handler.Options.AuthenticationScheme = scheme;
                 handler.Options.AutomaticAuthenticate = true;
                 return handler;
@@ -116,7 +117,7 @@ namespace Microsoft.AspNet.Authentication
                 await handler.InitializeAsync(
                     new TestOptions(), context,
                     new LoggerFactory().CreateLogger("TestHandler"),
-                    Extensions.WebEncoders.UrlEncoder.Default);
+                    UrlEncoder.Default);
                 handler.Options.AuthenticationScheme = scheme;
                 return handler;
             }
@@ -149,7 +150,7 @@ namespace Microsoft.AspNet.Authentication
                 await handler.InitializeAsync(
                     new TestAutoOptions(), context,
                     new LoggerFactory().CreateLogger("TestAutoHandler"),
-                    Extensions.WebEncoders.UrlEncoder.Default);
+                    UrlEncoder.Default);
                 handler.Options.AuthenticationScheme = scheme;
                 handler.Options.AutomaticAuthenticate = auto;
                 return handler;

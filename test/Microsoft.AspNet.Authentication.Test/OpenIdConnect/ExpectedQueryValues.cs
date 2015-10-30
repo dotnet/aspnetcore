@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
-using Microsoft.Extensions.WebEncoders;
+using System.Text.Encodings.Web;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Xunit;
 
@@ -144,32 +144,32 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
 
         public string ExpectedClientId
         {
-            get { return OpenIdConnectParameterNames.ClientId + "=" + Encoder.UrlEncode(ClientId); }
+            get { return OpenIdConnectParameterNames.ClientId + "=" + Encoder.Encode(ClientId); }
         }
 
         public string ExpectedRedirectUri
         {
-            get { return OpenIdConnectParameterNames.RedirectUri + "=" + Encoder.UrlEncode(RedirectUri); }
+            get { return OpenIdConnectParameterNames.RedirectUri + "=" + Encoder.Encode(RedirectUri); }
         }
 
         public string ExpectedResource
         {
-            get { return OpenIdConnectParameterNames.Resource + "=" + Encoder.UrlEncode(Resource); }
+            get { return OpenIdConnectParameterNames.Resource + "=" + Encoder.Encode(Resource); }
         }
 
         public string ExpectedResponseMode
         {
-            get { return OpenIdConnectParameterNames.ResponseMode + "=" + Encoder.UrlEncode(ResponseMode); }
+            get { return OpenIdConnectParameterNames.ResponseMode + "=" + Encoder.Encode(ResponseMode); }
         }
 
         public string ExpectedScope
         {
-            get { return OpenIdConnectParameterNames.Scope + "=" + Encoder.UrlEncode(Scope); }
+            get { return OpenIdConnectParameterNames.Scope + "=" + Encoder.Encode(Scope); }
         }
 
         public string ExpectedState
         {
-            get { return Encoder.UrlEncode(State); }
+            get { return Encoder.Encode(State); }
         }
     }
 }

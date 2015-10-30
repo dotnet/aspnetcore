@@ -2,12 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Text.Encodings.Web;
 using Microsoft.AspNet.Authentication.OAuth;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.DataProtection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.OptionsModel;
-using Microsoft.Extensions.WebEncoders;
 
 namespace Microsoft.AspNet.Authentication.MicrosoftAccount
 {
@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.Authentication.MicrosoftAccount
             RequestDelegate next,
             IDataProtectionProvider dataProtectionProvider,
             ILoggerFactory loggerFactory,
-            IUrlEncoder encoder,
+            UrlEncoder encoder,
             IOptions<SharedAuthenticationOptions> sharedOptions,
             MicrosoftAccountOptions options)
             : base(next, dataProtectionProvider, loggerFactory, encoder, sharedOptions, options)

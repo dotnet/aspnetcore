@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Text.Encodings.Web;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.DataProtection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.WebEncoders;
 
 namespace Microsoft.AspNet.Authentication.Cookies
 {
@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
             RequestDelegate next,
             IDataProtectionProvider dataProtectionProvider,
             ILoggerFactory loggerFactory,
-            IUrlEncoder urlEncoder,
+            UrlEncoder urlEncoder,
             CookieAuthenticationOptions options)
             : base(next, options, loggerFactory, urlEncoder)
         {

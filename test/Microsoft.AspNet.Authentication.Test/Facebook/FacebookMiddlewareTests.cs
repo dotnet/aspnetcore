@@ -2,12 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Collections.Generic;
 using System.Text;
-using System.Linq;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Authentication.Cookies;
 using Microsoft.AspNet.Authentication.OAuth;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.DataProtection;
@@ -15,11 +17,8 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Authentication;
 using Microsoft.AspNet.TestHost;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.WebEncoders;
 using Newtonsoft.Json;
 using Xunit;
-using System.Diagnostics;
-using Microsoft.AspNet.Authentication.Cookies;
 
 namespace Microsoft.AspNet.Authentication.Facebook
 {
@@ -90,7 +89,7 @@ namespace Microsoft.AspNet.Authentication.Facebook
             Assert.Contains("https://www.facebook.com/v2.2/dialog/oauth", location);
             Assert.Contains("response_type=code", location);
             Assert.Contains("client_id=", location);
-            Assert.Contains("redirect_uri=" + UrlEncoder.Default.UrlEncode("http://example.com/base/signin-facebook"), location);
+            Assert.Contains("redirect_uri=" + UrlEncoder.Default.Encode("http://example.com/base/signin-facebook"), location);
             Assert.Contains("scope=", location);
             Assert.Contains("state=", location);
         }
@@ -117,7 +116,7 @@ namespace Microsoft.AspNet.Authentication.Facebook
             Assert.Contains("https://www.facebook.com/v2.2/dialog/oauth", location);
             Assert.Contains("response_type=code", location);
             Assert.Contains("client_id=", location);
-            Assert.Contains("redirect_uri="+ UrlEncoder.Default.UrlEncode("http://example.com/signin-facebook"), location);
+            Assert.Contains("redirect_uri="+ UrlEncoder.Default.Encode("http://example.com/signin-facebook"), location);
             Assert.Contains("scope=", location);
             Assert.Contains("state=", location);
         }
@@ -216,7 +215,7 @@ namespace Microsoft.AspNet.Authentication.Facebook
             properties.RedirectUri = "/me";
             var state = stateFormat.Protect(properties);
             var transaction = await server.SendAsync(
-                "https://example.com/signin-facebook?code=TestCode&state=" + UrlEncoder.Default.UrlEncode(state),
+                "https://example.com/signin-facebook?code=TestCode&state=" + UrlEncoder.Default.Encode(state),
                 correlationKey + "=" + correlationValue);
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
             Assert.Equal("/me", transaction.Response.Headers.GetValues("Location").First());

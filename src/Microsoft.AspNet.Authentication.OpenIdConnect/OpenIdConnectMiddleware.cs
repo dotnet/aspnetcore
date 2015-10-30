@@ -5,12 +5,12 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Text;
+using System.Text.Encodings.Web;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.DataProtection;
 using Microsoft.AspNet.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.OptionsModel;
-using Microsoft.Extensions.WebEncoders;
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
@@ -36,11 +36,11 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
             RequestDelegate next,
             IDataProtectionProvider dataProtectionProvider,
             ILoggerFactory loggerFactory,
-            IUrlEncoder encoder,
+            UrlEncoder encoder,
             IServiceProvider services,
             IOptions<SharedAuthenticationOptions> sharedOptions,
             OpenIdConnectOptions options,
-            IHtmlEncoder htmlEncoder)
+            HtmlEncoder htmlEncoder)
             : base(next, options, loggerFactory, encoder)
         {
             if (next == null)
@@ -169,7 +169,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
 
         protected HttpClient Backchannel { get; private set; }
 
-        protected IHtmlEncoder HtmlEncoder { get; private set; }
+        protected HtmlEncoder HtmlEncoder { get; private set; }
 
         /// <summary>
         /// Provides the <see cref="AuthenticationHandler"/> object for processing authentication-related requests.

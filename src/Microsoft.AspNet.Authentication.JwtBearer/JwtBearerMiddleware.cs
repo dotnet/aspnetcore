@@ -3,9 +3,9 @@
 
 using System;
 using System.Net.Http;
+using System.Text.Encodings.Web;
 using Microsoft.AspNet.Builder;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.WebEncoders;
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
         public JwtBearerMiddleware(
             RequestDelegate next,
             ILoggerFactory loggerFactory,
-            IUrlEncoder encoder,
+            UrlEncoder encoder,
             JwtBearerOptions options)
             : base(next, options, loggerFactory, encoder)
         {

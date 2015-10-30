@@ -3,8 +3,8 @@
 
 using System;
 using System.Text;
+using System.Text.Encodings.Web;
 using Microsoft.AspNet.Http.Authentication;
-using Microsoft.Extensions.WebEncoders;
 
 namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
 {
@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
             var sb = new StringBuilder();
             foreach(var item in data.Items)
             {
-                sb.Append(encoder.UrlEncode(item.Key) + " " + encoder.UrlEncode(item.Value) + " ");
+                sb.Append(encoder.Encode(item.Key) + " " + encoder.Encode(item.Value) + " ");
             }
 
             return sb.ToString();

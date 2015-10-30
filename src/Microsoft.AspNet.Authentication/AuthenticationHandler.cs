@@ -2,13 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Authentication;
 using Microsoft.AspNet.Http.Features.Authentication;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.WebEncoders;
 
 namespace Microsoft.AspNet.Authentication
 {
@@ -43,7 +43,7 @@ namespace Microsoft.AspNet.Authentication
 
         protected ILogger Logger { get; private set; }
 
-        protected IUrlEncoder UrlEncoder { get; private set; }
+        protected UrlEncoder UrlEncoder { get; private set; }
 
         public IAuthenticationHandler PriorHandler { get; set; }
 
@@ -64,7 +64,7 @@ namespace Microsoft.AspNet.Authentication
         /// <param name="context">The utility object to observe the current request and response</param>
         /// <param name="logger">The logging factory used to create loggers</param>
         /// <returns>async completion</returns>
-        public async Task InitializeAsync(TOptions options, HttpContext context, ILogger logger, IUrlEncoder encoder)
+        public async Task InitializeAsync(TOptions options, HttpContext context, ILogger logger, UrlEncoder encoder)
         {
             if (options == null)
             {

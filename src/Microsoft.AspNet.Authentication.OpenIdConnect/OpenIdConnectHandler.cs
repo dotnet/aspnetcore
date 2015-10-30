@@ -12,12 +12,12 @@ using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Authentication;
 using Microsoft.AspNet.Http.Features.Authentication;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.WebEncoders;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json.Linq;
@@ -53,9 +53,9 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
 
         protected HttpClient Backchannel { get; private set; }
 
-        protected IHtmlEncoder HtmlEncoder { get; private set; }
+        protected HtmlEncoder HtmlEncoder { get; private set; }
 
-        public OpenIdConnectHandler(HttpClient backchannel, IHtmlEncoder htmlEncoder)
+        public OpenIdConnectHandler(HttpClient backchannel, HtmlEncoder htmlEncoder)
         {
             Backchannel = backchannel;
             HtmlEncoder = htmlEncoder;
@@ -133,14 +133,14 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
                     var inputs = new StringBuilder();
                     foreach (var parameter in message.Parameters)
                     {
-                        var name = HtmlEncoder.HtmlEncode(parameter.Key);
-                        var value = HtmlEncoder.HtmlEncode(parameter.Value);
+                        var name = HtmlEncoder.Encode(parameter.Key);
+                        var value = HtmlEncoder.Encode(parameter.Value);
 
                         var input = string.Format(CultureInfo.InvariantCulture, InputTagFormat, name, value);
                         inputs.AppendLine(input);
                     }
 
-                    var issuer = HtmlEncoder.HtmlEncode(message.IssuerAddress);
+                    var issuer = HtmlEncoder.Encode(message.IssuerAddress);
 
                     var content = string.Format(CultureInfo.InvariantCulture, HtmlFormFormat, issuer, inputs);
                     var buffer = Encoding.UTF8.GetBytes(content);
@@ -260,14 +260,14 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
                 var inputs = new StringBuilder();
                 foreach (var parameter in message.Parameters)
                 {
-                    var name = HtmlEncoder.HtmlEncode(parameter.Key);
-                    var value = HtmlEncoder.HtmlEncode(parameter.Value);
+                    var name = HtmlEncoder.Encode(parameter.Key);
+                    var value = HtmlEncoder.Encode(parameter.Value);
 
                     var input = string.Format(CultureInfo.InvariantCulture, InputTagFormat, name, value);
                     inputs.AppendLine(input);
                 }
 
-                var issuer = HtmlEncoder.HtmlEncode(message.IssuerAddress);
+                var issuer = HtmlEncoder.Encode(message.IssuerAddress);
 
                 var content = string.Format(CultureInfo.InvariantCulture, HtmlFormFormat, issuer, inputs);
                 var buffer = Encoding.UTF8.GetBytes(content);

@@ -3,12 +3,12 @@
 
 using System;
 using System.Globalization;
+using System.Text.Encodings.Web;
 using Microsoft.AspNet.Authentication.OAuth;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.DataProtection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.OptionsModel;
-using Microsoft.Extensions.WebEncoders;
 
 namespace Microsoft.AspNet.Authentication.Facebook
 {
@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.Authentication.Facebook
             RequestDelegate next,
             IDataProtectionProvider dataProtectionProvider,
             ILoggerFactory loggerFactory,
-            IUrlEncoder encoder,
+            UrlEncoder encoder,
             IOptions<SharedAuthenticationOptions> sharedOptions,
             FacebookOptions options)
             : base(next, dataProtectionProvider, loggerFactory, encoder, sharedOptions, options)

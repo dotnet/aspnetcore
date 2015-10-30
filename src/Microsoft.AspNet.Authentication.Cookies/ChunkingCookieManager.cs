@@ -5,9 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Text.Encodings.Web;
 using Microsoft.AspNet.Http;
 using Microsoft.Extensions.Primitives;
-using Microsoft.Extensions.WebEncoders;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Authentication.Cookies
@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
     /// </summary>
     public class ChunkingCookieManager : ICookieManager
     {
-        public ChunkingCookieManager(IUrlEncoder urlEncoder)
+        public ChunkingCookieManager(UrlEncoder urlEncoder)
         {
             // Lowest common denominator. Safari has the lowest known limit (4093), and we leave little extra just in case.
             // See http://browsercookielimits.x64.me/.
@@ -41,7 +41,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
         /// </summary>
         public bool ThrowForPartialCookies { get; set; }
 
-        private IUrlEncoder Encoder { get; set; }
+        private UrlEncoder Encoder { get; set; }
 
         // Parse the "chunks:XX" to determine how many chunks there should be.
         private static int ParseChunksCount(string value)
@@ -149,7 +149,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
                 throw new ArgumentNullException(nameof(options));
             }
 
-            var escapedKey = Encoder.UrlEncode(key);
+            var escapedKey = Encoder.Encode(key);
 
             var template = new SetCookieHeaderValue(escapedKey)
             {
@@ -169,7 +169,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
                 quoted = true;
                 value = RemoveQuotes(value);
             }
-            var escapedValue = Encoder.UrlEncode(value);
+            var escapedValue = Encoder.Encode(value);
 
             // Normal cookie
             var responseHeaders = context.Response.Headers;
@@ -239,7 +239,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
                 throw new ArgumentNullException(nameof(options));
             }
 
-            var escapedKey = Encoder.UrlEncode(key);
+            var escapedKey = Encoder.Encode(key);
             var keys = new List<string>();
             keys.Add(escapedKey + "=");
 
