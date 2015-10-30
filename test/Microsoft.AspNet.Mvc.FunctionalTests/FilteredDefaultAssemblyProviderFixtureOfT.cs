@@ -5,8 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNet.Mvc.Infrastructure;
-using Microsoft.Extensions.PlatformAbstractions;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.PlatformAbstractions;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
@@ -15,9 +15,9 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
     {
         protected override void AddAdditionalServices(IServiceCollection services)
         {
-            // TestHelper.CreateServer normally replaces the DefaultAssemblyProvider with a provider that limits the
-            // set of candidate assemblies to the executing application. Switch it back to using a filtered default
-            // assembly provider.
+            // MvcTestFixture<TStartup> normally replaces the DefaultAssemblyProvider with an IAssemblyProvider
+            // implementation that limits the set of candidate assemblies to the executing application. Switch it back
+            // to using a filtered default assembly provider.
             services.AddTransient<IAssemblyProvider, FilteredDefaultAssemblyProvider>();
         }
 

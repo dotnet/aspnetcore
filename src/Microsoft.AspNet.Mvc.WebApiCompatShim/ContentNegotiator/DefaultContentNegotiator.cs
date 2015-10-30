@@ -9,8 +9,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net.Http.Headers;
 using System.Text;
-using Microsoft.AspNet.Mvc;
-using Microsoft.Extensions.Internal;
 
 namespace System.Net.Http.Formatting
 {
@@ -85,14 +83,25 @@ namespace System.Net.Http.Formatting
             // We found a best formatter
             if (bestFormatterMatch != null)
             {
-                // Find the best character encoding for the selected formatter
+                var bestMediaType = bestFormatterMatch.MediaType;
+
+                // Find the best character encoding for the selected formatter.
                 var bestEncodingMatch = SelectResponseCharacterEncoding(request, bestFormatterMatch.Formatter);
                 if (bestEncodingMatch != null)
                 {
-                    bestFormatterMatch.MediaType.CharSet = bestEncodingMatch.WebName;
+                    // Clone media type value since this is not done defensively in this implementation.
+                    // `MediaTypeHeaderValue` lacks a Clone() method in this runtime. Fortunately, this is the only
+                    // update to an existing instance we need.
+                    var clonedMediaType = new MediaTypeHeaderValue(bestMediaType.MediaType);
+                    foreach (var parameter in bestMediaType.Parameters)
+                    {
+                        clonedMediaType.Parameters.Add(new NameValueHeaderValue(parameter.Name, parameter.Value));
+                    }
+
+                    bestMediaType = clonedMediaType;
+                    bestMediaType.CharSet = bestEncodingMatch.WebName;
                 }
 
-                var bestMediaType = bestFormatterMatch.MediaType;
                 var bestFormatter =
                     bestFormatterMatch.Formatter.GetPerRequestFormatterInstance(type, request, bestMediaType);
                 return new ContentNegotiationResult(bestFormatter, bestMediaType);

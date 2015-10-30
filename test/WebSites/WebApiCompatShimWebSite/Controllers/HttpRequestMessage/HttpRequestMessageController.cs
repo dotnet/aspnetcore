@@ -70,7 +70,7 @@ namespace WebApiCompatShimWebSite
 
             if (mediaType == null)
             {
-                // This will perform content negotation
+                // This will perform content negotiation
                 return Request.CreateResponse<User>(HttpStatusCode.OK, user);
             }
             else
@@ -93,7 +93,7 @@ namespace WebApiCompatShimWebSite
         [HttpGet]
         public HttpResponseMessage Fail()
         {
-            // This will perform content negotation
+            // This will perform content negotiation
             return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "It failed.");
         }
 
