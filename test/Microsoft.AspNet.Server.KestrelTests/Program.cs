@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
 
         public int Main()
         {
-            return new Xunit.Runner.Dnx.Program(env, sp, _libraryManager).Main(new string[]
+            return Xunit.Runner.Dnx.Program.Main(new string[]
             {
                 "-class",
                 typeof(MultipleLoopTests).FullName
