@@ -7,7 +7,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Text.Encodings.Web;
 using Microsoft.AspNet.Html.Abstractions;
-using Microsoft.Extensions.WebEncoders;
 
 namespace Microsoft.Extensions.Internal
 {
