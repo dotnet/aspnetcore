@@ -9,7 +9,7 @@
         "dnx451": { },
         "dnxcore50": {
             "dependencies": {
-                "System.Console": "4.0.0-beta-beta8"
+                "System.Console": "4.0.0-23427"
             }
         }
     }
