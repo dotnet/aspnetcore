@@ -9,8 +9,6 @@
     "Microsoft.AspNet.DataProtection": "1.0.0-*",
     "Microsoft.AspNet.Http.Abstractions": "1.0.0-*",
     "Microsoft.AspNet.WebUtilities": "1.0.0-*",
-    "Microsoft.Extensions.DependencyInjection.Abstractions": "1.0.0-*",
-    "Microsoft.Extensions.OptionsModel": "1.0.0-*",
     "Microsoft.Extensions.WebEncoders": "1.0.0-*"
   },
   "frameworks": {

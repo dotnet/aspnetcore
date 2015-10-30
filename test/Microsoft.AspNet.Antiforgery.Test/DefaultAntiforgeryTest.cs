@@ -474,7 +474,7 @@ namespace Microsoft.AspNet.Antiforgery
                 tokenGenerator: tokenGenerator,
                 tokenSerializer: tokenSerializer,
                 tokenStore: tokenStore,
-                htmlEncoder: new CommonTestEncoder());
+                htmlEncoder: new HtmlTestEncoder());
         }
 
         private HttpContext GetHttpContext()

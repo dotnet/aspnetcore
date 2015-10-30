@@ -3,10 +3,10 @@
 
 using System;
 using System.Diagnostics;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.Extensions.OptionsModel;
-using Microsoft.Extensions.WebEncoders;
 
 namespace Microsoft.AspNet.Antiforgery
 {
@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Antiforgery
     /// </summary>
     public class DefaultAntiforgery : IAntiforgery
     {
-        private readonly IHtmlEncoder _htmlEncoder;
+        private readonly HtmlEncoder _htmlEncoder;
         private readonly AntiforgeryOptions _options;
         private readonly IAntiforgeryTokenGenerator _tokenGenerator;
         private readonly IAntiforgeryTokenSerializer _tokenSerializer;
@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Antiforgery
             IAntiforgeryTokenGenerator tokenGenerator,
             IAntiforgeryTokenSerializer tokenSerializer,
             IAntiforgeryTokenStore tokenStore,
-            IHtmlEncoder htmlEncoder)
+            HtmlEncoder htmlEncoder)
         {
             _options = antiforgeryOptionsAccessor.Value;
             _tokenGenerator = tokenGenerator;
@@ -50,9 +50,9 @@ namespace Microsoft.AspNet.Antiforgery
 
             var inputTag = string.Format(
                 "<input name=\"{0}\" type=\"{1}\" value=\"{2}\" />",
-                _htmlEncoder.HtmlEncode(_options.FormFieldName),
-                _htmlEncoder.HtmlEncode("hidden"),
-                _htmlEncoder.HtmlEncode(tokenSet.FormToken));
+                _htmlEncoder.Encode(_options.FormFieldName),
+                _htmlEncoder.Encode("hidden"),
+                _htmlEncoder.Encode(tokenSet.FormToken));
             return inputTag;
         }
 
