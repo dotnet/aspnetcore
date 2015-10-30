@@ -197,7 +197,7 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
         public string WriteTagHelperToAsyncMethodName { get; set; }
 
         /// <summary>
-        /// The name of the property containing the <c>IHtmlEncoder</c>.
+        /// The name of the property containing the <c>HtmlEncoder</c>.
         /// </summary>
         public string HtmlEncoderPropertyName { get; set; }
 

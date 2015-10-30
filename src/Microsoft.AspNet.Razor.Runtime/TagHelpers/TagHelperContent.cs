@@ -3,8 +3,8 @@
 
 using System;
 using System.IO;
+using System.Text.Encodings.Web;
 using Microsoft.AspNet.Html.Abstractions;
-using Microsoft.Extensions.WebEncoders;
 
 namespace Microsoft.AspNet.Razor.TagHelpers
 {
@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
     public abstract class TagHelperContent : IHtmlContentBuilder
     {
         /// <summary>
-        /// Gets a value indicating whether the content was modifed.
+        /// Gets a value indicating whether the content was modified.
         /// </summary>
         public abstract bool IsModified { get; }
 
@@ -137,12 +137,12 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         /// <summary>
         /// Gets the content.
         /// </summary>
-        /// <param name="encoder">The <see cref="IHtmlEncoder"/>.</param>
+        /// <param name="encoder">The <see cref="HtmlEncoder"/>.</param>
         /// <returns>A <see cref="string"/> containing the content.</returns>
-        public abstract string GetContent(IHtmlEncoder encoder);
+        public abstract string GetContent(HtmlEncoder encoder);
 
         /// <inheritdoc />
-        public abstract void WriteTo(TextWriter writer, IHtmlEncoder encoder);
+        public abstract void WriteTo(TextWriter writer, HtmlEncoder encoder);
 
         /// <inheritdoc />
         IHtmlContentBuilder IHtmlContentBuilder.Append(IHtmlContent content)

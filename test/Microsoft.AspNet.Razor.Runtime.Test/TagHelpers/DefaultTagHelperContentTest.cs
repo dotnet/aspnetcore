@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
             tagHelperContent.SetContent("Hello World!");
 
             // Assert
-            Assert.Equal(expected, tagHelperContent.GetContent(new CommonTestEncoder()));
+            Assert.Equal(expected, tagHelperContent.GetContent(new HtmlTestEncoder()));
         }
 
         [Fact]
@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
             tagHelperContent.SetContent("Hello World!");
 
             // Assert
-            Assert.Equal(expected, tagHelperContent.GetContent(new CommonTestEncoder()));
+            Assert.Equal(expected, tagHelperContent.GetContent(new HtmlTestEncoder()));
         }
 
         [Fact]
@@ -49,7 +49,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
             tagHelperContent.SetHtmlContent("Hi");
 
             // Assert
-            Assert.Equal("Hi", tagHelperContent.GetContent(new CommonTestEncoder()));
+            Assert.Equal("Hi", tagHelperContent.GetContent(new HtmlTestEncoder()));
         }
 
         [Fact]
@@ -63,7 +63,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
             tagHelperContent.SetHtmlContent("Hello World!");
 
             // Assert
-            Assert.Equal("Hello World!", tagHelperContent.GetContent(new CommonTestEncoder()));
+            Assert.Equal("Hello World!", tagHelperContent.GetContent(new HtmlTestEncoder()));
         }
 
         [Theory]
@@ -80,7 +80,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
             copiedTagHelperContent.SetContent(tagHelperContent);
 
             // Assert
-            Assert.Equal(expected, copiedTagHelperContent.GetContent(new CommonTestEncoder()));
+            Assert.Equal(expected, copiedTagHelperContent.GetContent(new HtmlTestEncoder()));
         }
 
         // GetContent - this one relies on the default encoder.
@@ -110,7 +110,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
             tagHelperContent.Append("Hello World!");
 
             // Assert
-            Assert.Equal(expected, tagHelperContent.GetContent(new CommonTestEncoder()));
+            Assert.Equal(expected, tagHelperContent.GetContent(new HtmlTestEncoder()));
         }
 
         [Fact]
@@ -125,7 +125,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
             // Assert
             Assert.Equal(
                 "HtmlEncode[[First]] HtmlEncode[[Second]] HtmlEncode[[Third]] HtmlEncode[[Fourth]]!",
-                tagHelperContent.GetContent(new CommonTestEncoder()));
+                tagHelperContent.GetContent(new HtmlTestEncoder()));
         }
 
         [Fact]
@@ -147,7 +147,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
             Assert.Equal(
                 "Numbers in InvariantCulture - HtmlEncode[[1.10]] HtmlEncode[[2.98]] " +
                     "HtmlEncode[[145.82]] HtmlEncode[[32.86]]!",
-                tagHelperContent.GetContent(new CommonTestEncoder()));
+                tagHelperContent.GetContent(new HtmlTestEncoder()));
         }
 
         [Fact]
@@ -163,7 +163,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
             tagHelperContent.AppendFormat("Content was {0}", helloWorldContent);
 
             // Assert
-            Assert.Equal(expected, tagHelperContent.GetContent(new CommonTestEncoder()));
+            Assert.Equal(expected, tagHelperContent.GetContent(new HtmlTestEncoder()));
         }
 
         [Fact]
@@ -182,7 +182,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
             copiedTagHelperContent.Append(tagHelperContent);
 
             // Assert
-            Assert.Equal(expected, copiedTagHelperContent.GetContent(new CommonTestEncoder()));
+            Assert.Equal(expected, copiedTagHelperContent.GetContent(new HtmlTestEncoder()));
         }
 
         [Fact]
@@ -403,7 +403,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
             tagHelperContent.SetContent("Hello ").Append("World!");
 
             // Assert
-            Assert.Equal(expected, tagHelperContent.GetContent(new CommonTestEncoder()));
+            Assert.Equal(expected, tagHelperContent.GetContent(new HtmlTestEncoder()));
         }
 
         [Fact]
@@ -417,7 +417,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
             tagHelperContent.SetContent("First ").AppendFormat("{0} Third", "Second");
 
             // Assert
-            Assert.Equal(expected, tagHelperContent.GetContent(new CommonTestEncoder()));
+            Assert.Equal(expected, tagHelperContent.GetContent(new HtmlTestEncoder()));
         }
 
         [Fact]
@@ -434,7 +434,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                 .Append("Fourth");
 
             // Assert
-            Assert.Equal(expected, tagHelperContent.GetContent(new CommonTestEncoder()));
+            Assert.Equal(expected, tagHelperContent.GetContent(new HtmlTestEncoder()));
         }
 
         [Fact]
@@ -449,7 +449,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
             tagHelperContent.Clear().SetContent("Hello World");
 
             // Assert
-            Assert.Equal(expected, tagHelperContent.GetContent(new CommonTestEncoder()));
+            Assert.Equal(expected, tagHelperContent.GetContent(new HtmlTestEncoder()));
         }
 
         [Fact]
@@ -464,7 +464,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
             tagHelperContent.Clear().SetContent("Hello ").Append("World!");
 
             // Assert
-            Assert.Equal(expected, tagHelperContent.GetContent(new CommonTestEncoder()));
+            Assert.Equal(expected, tagHelperContent.GetContent(new HtmlTestEncoder()));
         }
 
         [Fact]
@@ -477,7 +477,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
             tagHelperContent.Append("World");
 
             // Act
-            tagHelperContent.WriteTo(writer, new CommonTestEncoder());
+            tagHelperContent.WriteTo(writer, new HtmlTestEncoder());
 
             // Assert
             Assert.Equal("HtmlEncode[[Hello ]]HtmlEncode[[World]]", writer.ToString());
@@ -493,7 +493,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
             var writer = new StringWriter();
 
             // Act
-            tagHelperContent.WriteTo(writer, new CommonTestEncoder());
+            tagHelperContent.WriteTo(writer, new HtmlTestEncoder());
 
             // Assert
             Assert.Equal("HtmlEncode[[Hi]]", writer.ToString());
@@ -509,7 +509,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
             var writer = new StringWriter();
 
             // Act
-            tagHelperContent.WriteTo(writer, new CommonTestEncoder());
+            tagHelperContent.WriteTo(writer, new HtmlTestEncoder());
 
             // Assert
             Assert.Equal("Hi", writer.ToString());

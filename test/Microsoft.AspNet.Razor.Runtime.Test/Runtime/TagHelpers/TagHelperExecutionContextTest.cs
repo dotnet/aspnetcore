@@ -83,8 +83,8 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             var content2 = await executionContext.GetChildContentAsync(useCachedResult: true);
 
             // Assert
-            Assert.Equal(expectedContent, content1.GetContent(new CommonTestEncoder()));
-            Assert.Equal(expectedContent, content2.GetContent(new CommonTestEncoder()));
+            Assert.Equal(expectedContent, content1.GetContent(new HtmlTestEncoder()));
+            Assert.Equal(expectedContent, content2.GetContent(new HtmlTestEncoder()));
         }
 
         [Fact]
@@ -140,7 +140,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             Assert.NotSame(content1, content2);
 
             var content3 = await executionContext.GetChildContentAsync(useCachedResult);
-            Assert.Empty(content3.GetContent(new CommonTestEncoder()));
+            Assert.Empty(content3.GetContent(new HtmlTestEncoder()));
         }
 
         [Fact]

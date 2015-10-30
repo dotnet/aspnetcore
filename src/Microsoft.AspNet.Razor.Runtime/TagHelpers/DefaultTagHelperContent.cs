@@ -5,10 +5,10 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
+using System.Text.Encodings.Web;
 using Microsoft.AspNet.Html.Abstractions;
 using Microsoft.AspNet.Razor.TagHelpers;
 using Microsoft.Extensions.Internal;
-using Microsoft.Extensions.WebEncoders;
 
 namespace Microsoft.AspNet.Razor.TagHelpers
 {
@@ -156,7 +156,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         }
 
         /// <inheritdoc />
-        public override string GetContent(IHtmlEncoder encoder)
+        public override string GetContent(HtmlEncoder encoder)
         {
             if (_buffer == null)
             {
@@ -171,7 +171,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         }
 
         /// <inheritdoc />
-        public override void WriteTo(TextWriter writer, IHtmlEncoder encoder)
+        public override void WriteTo(TextWriter writer, HtmlEncoder encoder)
         {
             if (writer == null)
             {
