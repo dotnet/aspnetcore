@@ -18,7 +18,6 @@
             "Microsoft.AspNet.WebUtilities": { },
             "Microsoft.Extensions.BufferedHtmlContent.Sources": { },
             "Microsoft.Extensions.WebEncoders": { },
-            "Microsoft.Extensions.WebEncoders.Core": { },
             "Microsoft.Net.Http.Headers": { }
         }
     },
