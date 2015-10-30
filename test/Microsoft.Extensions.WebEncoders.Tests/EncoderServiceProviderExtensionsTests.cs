@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Text.Encodings.Web;
 using Xunit;
 
 namespace Microsoft.Extensions.WebEncoders
@@ -25,7 +26,7 @@ namespace Microsoft.Extensions.WebEncoders
         public void GetHtmlEncoder_ServiceProviderHasEncoder_ReturnsRegisteredInstance()
         {
             // Arrange
-            var expectedEncoder = new HtmlEncoder();
+            var expectedEncoder = HtmlEncoder.Default;
             var serviceProvider = new TestServiceProvider() { Service = expectedEncoder };
 
             // Act
@@ -36,27 +37,27 @@ namespace Microsoft.Extensions.WebEncoders
         }
 
         [Fact]
-        public void GetJavaScriptStringEncoder_ServiceProviderDoesNotHaveEncoder_UsesDefault()
+        public void GetJavaScriptEncoder_ServiceProviderDoesNotHaveEncoder_UsesDefault()
         {
             // Arrange
             var serviceProvider = new TestServiceProvider();
 
             // Act
-            var retVal = serviceProvider.GetJavaScriptStringEncoder();
+            var retVal = serviceProvider.GetJavaScriptEncoder();
 
             // Assert
-            Assert.Same(JavaScriptStringEncoder.Default, retVal);
+            Assert.Same(JavaScriptEncoder.Default, retVal);
         }
 
         [Fact]
-        public void GetJavaScriptStringEncoder_ServiceProviderHasEncoder_ReturnsRegisteredInstance()
+        public void GetJavaScriptEncoder_ServiceProviderHasEncoder_ReturnsRegisteredInstance()
         {
             // Arrange
-            var expectedEncoder = new JavaScriptStringEncoder();
+            var expectedEncoder = JavaScriptEncoder.Default;
             var serviceProvider = new TestServiceProvider() { Service = expectedEncoder };
 
             // Act
-            var retVal = serviceProvider.GetJavaScriptStringEncoder();
+            var retVal = serviceProvider.GetJavaScriptEncoder();
 
             // Assert
             Assert.Same(expectedEncoder, retVal);
@@ -79,7 +80,7 @@ namespace Microsoft.Extensions.WebEncoders
         public void GetUrlEncoder_ServiceProviderHasEncoder_ReturnsRegisteredInstance()
         {
             // Arrange
-            var expectedEncoder = new UrlEncoder();
+            var expectedEncoder = UrlEncoder.Default;
             var serviceProvider = new TestServiceProvider() { Service = expectedEncoder };
 
             // Act

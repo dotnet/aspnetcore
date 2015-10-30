@@ -4,8 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.Encodings.Web;
 using Microsoft.Extensions.Primitives;
-using Microsoft.Extensions.WebEncoders;
 
 namespace Microsoft.AspNet.Http
 {
@@ -119,7 +119,16 @@ namespace Microsoft.AspNet.Http
         /// <returns>The resulting QueryString</returns>
         public static QueryString Create(string name, string value)
         {
-            return new QueryString("?" + UrlEncoder.Default.UrlEncode(name) + '=' + UrlEncoder.Default.UrlEncode(value));
+            if (name == null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+            if (value == null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+
+            return new QueryString("?" + UrlEncoder.Default.Encode(name) + '=' + UrlEncoder.Default.Encode(value));
         }
 
         /// <summary>
@@ -135,9 +144,9 @@ namespace Microsoft.AspNet.Http
             {
                 builder.Append(first ? "?" : "&");
                 first = false;
-                builder.Append(UrlEncoder.Default.UrlEncode(pair.Key));
+                builder.Append(UrlEncoder.Default.Encode(pair.Key));
                 builder.Append("=");
-                builder.Append(UrlEncoder.Default.UrlEncode(pair.Value));
+                builder.Append(UrlEncoder.Default.Encode(pair.Value));
             }
 
             return new QueryString(builder.ToString());
@@ -158,9 +167,9 @@ namespace Microsoft.AspNet.Http
                 {
                     builder.Append(first ? "?" : "&");
                     first = false;
-                    builder.Append(UrlEncoder.Default.UrlEncode(pair.Key));
+                    builder.Append(UrlEncoder.Default.Encode(pair.Key));
                     builder.Append("=");
-                    builder.Append(UrlEncoder.Default.UrlEncode(value));
+                    builder.Append(UrlEncoder.Default.Encode(value));
                 }
             }
 
@@ -184,6 +193,15 @@ namespace Microsoft.AspNet.Http
 
         public QueryString Add(string name, string value)
         {
+            if (name == null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+            if (value == null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+
             if (!HasValue || Value.Equals("?", StringComparison.Ordinal))
             {
                 return Create(name, value);
@@ -191,9 +209,9 @@ namespace Microsoft.AspNet.Http
 
             var builder = new StringBuilder(Value);
             builder.Append("&");
-            builder.Append(UrlEncoder.Default.UrlEncode(name));
+            builder.Append(UrlEncoder.Default.Encode(name));
             builder.Append("=");
-            builder.Append(UrlEncoder.Default.UrlEncode(value));
+            builder.Append(UrlEncoder.Default.Encode(value));
             return new QueryString(builder.ToString());
         }
 

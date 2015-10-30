@@ -5,7 +5,7 @@ using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using Microsoft.Extensions.WebEncoders;
+using System.Text.Encodings.Web;
 
 namespace Microsoft.AspNet.Html.Abstractions
 {
@@ -197,7 +197,7 @@ namespace Microsoft.AspNet.Html.Abstractions
                 _value = value;
             }
 
-            public void WriteTo(TextWriter writer, IHtmlEncoder encoder)
+            public void WriteTo(TextWriter writer, HtmlEncoder encoder)
             {
                 writer.Write(_value);
             }
@@ -234,7 +234,7 @@ namespace Microsoft.AspNet.Html.Abstractions
                 _args = args;
             }
 
-            public void WriteTo(TextWriter writer, IHtmlEncoder encoder)
+            public void WriteTo(TextWriter writer, HtmlEncoder encoder)
             {
                 if (writer == null)
                 {
@@ -269,10 +269,10 @@ namespace Microsoft.AspNet.Html.Abstractions
         // https://msdn.microsoft.com/en-us/library/system.string.format(v=vs.110).aspx#Format6_Example
         private class EncodingFormatProvider : IFormatProvider, ICustomFormatter
         {
-            private readonly IHtmlEncoder _encoder;
+            private readonly HtmlEncoder _encoder;
             private readonly IFormatProvider _formatProvider;
 
-            public EncodingFormatProvider(IFormatProvider formatProvider, IHtmlEncoder encoder)
+            public EncodingFormatProvider(IFormatProvider formatProvider, HtmlEncoder encoder)
             {
                 Debug.Assert(formatProvider != null);
                 Debug.Assert(encoder != null);
@@ -306,7 +306,7 @@ namespace Microsoft.AspNet.Html.Abstractions
                     var result = customFormatter.Format(format, arg, _formatProvider);
                     if (result != null)
                     {
-                        return _encoder.HtmlEncode(result);
+                        return _encoder.Encode(result);
                     }
                 }
 
@@ -320,7 +320,7 @@ namespace Microsoft.AspNet.Html.Abstractions
                     var result = formattable.ToString(format, _formatProvider);
                     if (result != null)
                     {
-                        return _encoder.HtmlEncode(result);
+                        return _encoder.Encode(result);
                     }
                 }
 
@@ -330,7 +330,7 @@ namespace Microsoft.AspNet.Html.Abstractions
                     var result = arg.ToString();
                     if (result != null)
                     {
-                        return _encoder.HtmlEncode(result);
+                        return _encoder.Encode(result);
                     }
                 }
 

@@ -4,7 +4,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
-using Microsoft.Extensions.WebEncoders;
+using System.Text.Encodings.Web;
 
 namespace Microsoft.AspNet.Http.Extensions
 {
@@ -45,9 +45,9 @@ namespace Microsoft.AspNet.Http.Extensions
                 var pair = _params[i];
                 builder.Append(first ? "?" : "&");
                 first = false;
-                builder.Append(UrlEncoder.Default.UrlEncode(pair.Key));
+                builder.Append(UrlEncoder.Default.Encode(pair.Key));
                 builder.Append("=");
-                builder.Append(UrlEncoder.Default.UrlEncode(pair.Value));
+                builder.Append(UrlEncoder.Default.Encode(pair.Value));
             }
 
             return builder.ToString();

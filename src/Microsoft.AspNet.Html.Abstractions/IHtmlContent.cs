@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
-using Microsoft.Extensions.WebEncoders;
+using System.Text.Encodings.Web;
 
 namespace Microsoft.AspNet.Html.Abstractions
 {
@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Html.Abstractions
         /// to the specified <paramref name="writer"/>.
         /// </summary>
         /// <param name="writer">The <see cref="TextWriter"/> to which the content is written.</param>
-        /// <param name="encoder">The <see cref="IHtmlEncoder"/> which encodes the content to be written.</param>
-        void WriteTo(TextWriter writer, IHtmlEncoder encoder);
+        /// <param name="encoder">The <see cref="HtmlEncoder"/> which encodes the content to be written.</param>
+        void WriteTo(TextWriter writer, HtmlEncoder encoder);
     }
 }

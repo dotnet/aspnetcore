@@ -19,7 +19,8 @@
     "dotnet5.4": {
       "dependencies": {
         "System.Diagnostics.Debug": "4.0.11-beta-*",
-        "System.Text.Encoding": "4.0.11-beta-*"
+        "System.Text.Encoding": "4.0.11-beta-*",
+        "System.Threading":  "4.0.11-beta-*"
       }
     }
   }

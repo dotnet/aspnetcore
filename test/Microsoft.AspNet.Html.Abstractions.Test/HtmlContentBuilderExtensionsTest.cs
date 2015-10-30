@@ -5,8 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Text.Encodings.Web;
 using Microsoft.AspNet.Testing;
-using Microsoft.Extensions.WebEncoders;
+using Microsoft.Extensions.WebEncoders.Testing;
 using Xunit;
 
 namespace Microsoft.AspNet.Html.Abstractions.Test
@@ -345,7 +346,7 @@ namespace Microsoft.AspNet.Html.Abstractions.Test
         {
             using (var writer = new StringWriter())
             {
-                content.WriteTo(writer, new CommonTestEncoder());
+                content.WriteTo(writer, new HtmlTestEncoder());
                 return writer.ToString();
             }
         }
@@ -378,7 +379,7 @@ namespace Microsoft.AspNet.Html.Abstractions.Test
                 return this;
             }
 
-            public void WriteTo(TextWriter writer, IHtmlEncoder encoder)
+            public void WriteTo(TextWriter writer, HtmlEncoder encoder)
             {
                 foreach (var entry in Entries)
                 {
@@ -396,7 +397,7 @@ namespace Microsoft.AspNet.Html.Abstractions.Test
 
             public string Value { get; }
 
-            public void WriteTo(TextWriter writer, IHtmlEncoder encoder)
+            public void WriteTo(TextWriter writer, HtmlEncoder encoder)
             {
                 writer.Write(Value);
             }
@@ -411,9 +412,9 @@ namespace Microsoft.AspNet.Html.Abstractions.Test
 
             public string Value { get; }
 
-            public void WriteTo(TextWriter writer, IHtmlEncoder encoder)
+            public void WriteTo(TextWriter writer, HtmlEncoder encoder)
             {
-                encoder.HtmlEncode(Value, writer);
+                encoder.Encode(writer, Value);
             }
         }
 
@@ -426,7 +427,7 @@ namespace Microsoft.AspNet.Html.Abstractions.Test
 
             public string Value { get; }
 
-            public void WriteTo(TextWriter writer, IHtmlEncoder encoder)
+            public void WriteTo(TextWriter writer, HtmlEncoder encoder)
             {
                 throw new NotImplementedException();
             }

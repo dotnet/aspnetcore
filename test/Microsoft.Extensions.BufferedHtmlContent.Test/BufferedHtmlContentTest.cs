@@ -2,8 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
+using System.Text.Encodings.Web;
 using Microsoft.AspNet.Html.Abstractions;
-using Microsoft.Extensions.WebEncoders;
+using Microsoft.Extensions.WebEncoders.Testing;
 using Xunit;
 
 namespace Microsoft.Extensions.Internal
@@ -34,7 +35,7 @@ namespace Microsoft.Extensions.Internal
             var writer = new StringWriter();
 
             // Act
-            content.WriteTo(writer, new CommonTestEncoder());
+            content.WriteTo(writer, new HtmlTestEncoder());
 
             // Assert
             Assert.Equal("HtmlEncode[[Hello]]", writer.ToString());
@@ -50,7 +51,7 @@ namespace Microsoft.Extensions.Internal
             var writer = new StringWriter();
 
             // Act
-            content.WriteTo(writer, new CommonTestEncoder());
+            content.WriteTo(writer, new HtmlTestEncoder());
 
             // Assert
             Assert.Equal("Hello", writer.ToString());
@@ -69,7 +70,7 @@ namespace Microsoft.Extensions.Internal
             // Assert
             var result = Assert.Single(content.Entries);
             var testHtmlContent = Assert.IsType<TestHtmlContent>(result);
-            testHtmlContent.WriteTo(writer, new CommonTestEncoder());
+            testHtmlContent.WriteTo(writer, new HtmlTestEncoder());
             Assert.Equal("Written from TestHtmlContent: Hello", writer.ToString());
         }
 
@@ -114,7 +115,7 @@ namespace Microsoft.Extensions.Internal
             content.Append("Test");
 
             // Act
-            content.WriteTo(writer, new CommonTestEncoder());
+            content.WriteTo(writer, new HtmlTestEncoder());
 
             // Assert
             Assert.Equal(2, content.Entries.Count);
@@ -130,7 +131,7 @@ namespace Microsoft.Extensions.Internal
                 _content = content;
             }
 
-            public void WriteTo(TextWriter writer, IHtmlEncoder encoder)
+            public void WriteTo(TextWriter writer, HtmlEncoder encoder)
             {
                 writer.Write(ToString());
             }

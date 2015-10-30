@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Text.Encodings.Web;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.OptionsModel;
 using Microsoft.Extensions.WebEncoders;
@@ -31,12 +32,12 @@ namespace Microsoft.Extensions.DependencyInjection
 
             // Register the default encoders
             // We want to call the 'Default' property getters lazily since they perform static caching
-            services.TryAdd(ServiceDescriptor.Singleton<IHtmlEncoder>(
-                CreateFactory(() => HtmlEncoder.Default, filter => new HtmlEncoder(filter))));
-            services.TryAdd(ServiceDescriptor.Singleton<IJavaScriptStringEncoder>(
-                CreateFactory(() => JavaScriptStringEncoder.Default, filter => new JavaScriptStringEncoder(filter))));
-            services.TryAdd(ServiceDescriptor.Singleton<IUrlEncoder>(
-                CreateFactory(() => UrlEncoder.Default, filter => new UrlEncoder(filter))));
+            services.TryAdd(ServiceDescriptor.Singleton<HtmlEncoder>(
+                CreateFactory(() => HtmlEncoder.Default, settings => HtmlEncoder.Create(settings))));
+            services.TryAdd(ServiceDescriptor.Singleton<JavaScriptEncoder>(
+                CreateFactory(() => JavaScriptEncoder.Default, settings => JavaScriptEncoder.Create(settings))));
+            services.TryAdd(ServiceDescriptor.Singleton<UrlEncoder>(
+                CreateFactory(() => UrlEncoder.Default, settings => UrlEncoder.Create(settings))));
 
             if (configureOptions != null)
             {
@@ -48,14 +49,14 @@ namespace Microsoft.Extensions.DependencyInjection
 
         private static Func<IServiceProvider, T> CreateFactory<T>(
             Func<T> defaultFactory,
-            Func<ICodePointFilter, T> customFilterFactory)
+            Func<TextEncoderSettings, T> customSettingsFactory)
         {
             return serviceProvider =>
             {
-                var codePointFilter = serviceProvider?.GetService<IOptions<WebEncoderOptions>>()?
+                var settings = serviceProvider?.GetService<IOptions<WebEncoderOptions>>()?
                                                       .Value?
-                                                      .CodePointFilter;
-                return (codePointFilter != null) ? customFilterFactory(codePointFilter) : defaultFactory();
+                                                      .TextEncoderSettings;
+                return (settings != null) ? customSettingsFactory(settings) : defaultFactory();
             };
         }
     }

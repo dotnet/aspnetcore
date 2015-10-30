@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Text.Encodings.Web;
 
 namespace Microsoft.Extensions.WebEncoders
 {
@@ -11,39 +12,39 @@ namespace Microsoft.Extensions.WebEncoders
     public static class EncoderServiceProviderExtensions
     {
         /// <summary>
-        /// Retrieves an <see cref="IHtmlEncoder"/> from an <see cref="IServiceProvider"/>.
+        /// Retrieves an <see cref="HtmlEncoder"/> from an <see cref="IServiceProvider"/>.
         /// </summary>
         /// <remarks>
         /// This method is guaranteed never to return null.
         /// It will return a default encoder instance if <paramref name="serviceProvider"/> does not contain one or is null.
         /// </remarks>
-        public static IHtmlEncoder GetHtmlEncoder(this IServiceProvider serviceProvider)
+        public static HtmlEncoder GetHtmlEncoder(this IServiceProvider serviceProvider)
         {
-            return (IHtmlEncoder)serviceProvider?.GetService(typeof(IHtmlEncoder)) ?? HtmlEncoder.Default;
+            return (HtmlEncoder)serviceProvider?.GetService(typeof(HtmlEncoder)) ?? HtmlEncoder.Default;
         }
 
         /// <summary>
-        /// Retrieves an <see cref="IJavaScriptStringEncoder"/> from an <see cref="IServiceProvider"/>.
+        /// Retrieves an <see cref="JavaScriptEncoder"/> from an <see cref="IServiceProvider"/>.
         /// </summary>
         /// <remarks>
         /// This method is guaranteed never to return null.
         /// It will return a default encoder instance if <paramref name="serviceProvider"/> does not contain one or is null.
         /// </remarks>
-        public static IJavaScriptStringEncoder GetJavaScriptStringEncoder(this IServiceProvider serviceProvider)
+        public static JavaScriptEncoder GetJavaScriptEncoder(this IServiceProvider serviceProvider)
         {
-            return (IJavaScriptStringEncoder)serviceProvider?.GetService(typeof(IJavaScriptStringEncoder)) ?? JavaScriptStringEncoder.Default;
+            return (JavaScriptEncoder)serviceProvider?.GetService(typeof(JavaScriptEncoder)) ?? JavaScriptEncoder.Default;
         }
 
         /// <summary>
-        /// Retrieves an <see cref="IUrlEncoder"/> from an <see cref="IServiceProvider"/>.
+        /// Retrieves an <see cref="UrlEncoder"/> from an <see cref="IServiceProvider"/>.
         /// </summary>
         /// <remarks>
         /// This method is guaranteed never to return null.
         /// It will return a default encoder instance if <paramref name="serviceProvider"/> does not contain one or is null.
         /// </remarks>
-        public static IUrlEncoder GetUrlEncoder(this IServiceProvider serviceProvider)
+        public static UrlEncoder GetUrlEncoder(this IServiceProvider serviceProvider)
         {
-            return (IUrlEncoder)serviceProvider?.GetService(typeof(IUrlEncoder)) ?? UrlEncoder.Default;
+            return (UrlEncoder)serviceProvider?.GetService(typeof(UrlEncoder)) ?? UrlEncoder.Default;
         }
     }
 }

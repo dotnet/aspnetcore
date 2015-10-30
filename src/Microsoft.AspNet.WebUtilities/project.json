@@ -10,10 +10,14 @@
   },
   "dependencies": {
     "Microsoft.Extensions.Primitives": "1.0.0-*",
-    "Microsoft.Extensions.WebEncoders.Core": "1.0.0-*"
+    "System.Text.Encodings.Web": "4.0.0-beta-*"
   },
   "frameworks": {
-    "net451": {},
+    "net451": {
+      "frameworkAssemblies": {
+        "System.Runtime": ""
+      }
+    },
     "dotnet5.4": {
       "dependencies": {
         "System.Collections": "4.0.11-beta-*",

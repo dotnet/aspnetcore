@@ -18,6 +18,5 @@
         "System.Text.Encoding.Extensions": "4.0.11-beta-*"
       }
     }
-  },
-  "resource": "..\\..\\unicode\\UnicodeData.txt"
+  }
 }

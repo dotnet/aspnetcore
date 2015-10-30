@@ -4,8 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.Encodings.Web;
 using Microsoft.Extensions.Primitives;
-using Microsoft.Extensions.WebEncoders;
 
 namespace Microsoft.AspNet.WebUtilities
 {
@@ -92,9 +92,9 @@ namespace Microsoft.AspNet.WebUtilities
             foreach (var parameter in queryString)
             {
                 sb.Append(hasQuery ? '&' : '?');
-                sb.Append(UrlEncoder.Default.UrlEncode(parameter.Key));
+                sb.Append(UrlEncoder.Default.Encode(parameter.Key));
                 sb.Append('=');
-                sb.Append(UrlEncoder.Default.UrlEncode(parameter.Value));
+                sb.Append(UrlEncoder.Default.Encode(parameter.Value));
                 hasQuery = true;
             }
 

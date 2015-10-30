@@ -56,7 +56,6 @@ namespace Microsoft.AspNet.Http.Abstractions
         [InlineData("name", "", "?name=")]
         [InlineData("", "value", "?=value")]
         [InlineData("", "", "?=")]
-        [InlineData(null, null, "?=")]
         public void CreateNameValue_Success(string name, string value, string exepcted)
         {
             var query = QueryString.Create(name, value);
@@ -94,7 +93,6 @@ namespace Microsoft.AspNet.Http.Abstractions
         }
 
         [Theory]
-        [InlineData(null, null, null, "?=")]
         [InlineData("", "", "", "?=")]
         [InlineData("?", "", "", "?=")]
         [InlineData("?", "name2", "value2", "?name2=value2")]

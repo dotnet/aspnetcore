@@ -3,8 +3,8 @@
 
 using System;
 using System.Linq;
+using System.Text.Encodings.Web;
 using Microsoft.Extensions.Primitives;
-using Microsoft.Extensions.WebEncoders;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Http.Internal
@@ -38,8 +38,8 @@ namespace Microsoft.AspNet.Http.Internal
         public void Append(string key, string value)
         {
             var setCookieHeaderValue = new SetCookieHeaderValue(
-                    UrlEncoder.Default.UrlEncode(key),
-                    UrlEncoder.Default.UrlEncode(value))
+                    UrlEncoder.Default.Encode(key),
+                    UrlEncoder.Default.Encode(value))
             {
                 Path = "/"
             };
@@ -61,8 +61,8 @@ namespace Microsoft.AspNet.Http.Internal
             }
 
             var setCookieHeaderValue = new SetCookieHeaderValue(
-                    UrlEncoder.Default.UrlEncode(key),
-                    UrlEncoder.Default.UrlEncode(value))
+                    UrlEncoder.Default.Encode(key),
+                    UrlEncoder.Default.Encode(value))
             {
                 Domain = options.Domain,
                 Path = options.Path,
@@ -80,7 +80,7 @@ namespace Microsoft.AspNet.Http.Internal
         /// <param name="key"></param>
         public void Delete(string key)
         {
-            var encodedKeyPlusEquals = UrlEncoder.Default.UrlEncode(key) + "=";
+            var encodedKeyPlusEquals = UrlEncoder.Default.Encode(key) + "=";
             Func<string, bool> predicate = value => value.StartsWith(encodedKeyPlusEquals, StringComparison.OrdinalIgnoreCase);
 
             StringValues deleteCookies = encodedKeyPlusEquals + "; expires=Thu, 01-Jan-1970 00:00:00 GMT";
@@ -107,7 +107,7 @@ namespace Microsoft.AspNet.Http.Internal
                 throw new ArgumentNullException(nameof(options));
             }
 
-            var encodedKeyPlusEquals = UrlEncoder.Default.UrlEncode(key) + "=";
+            var encodedKeyPlusEquals = UrlEncoder.Default.Encode(key) + "=";
             bool domainHasValue = !string.IsNullOrEmpty(options.Domain);
             bool pathHasValue = !string.IsNullOrEmpty(options.Path);
 

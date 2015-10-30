@@ -6,15 +6,21 @@
     "url": "git://github.com/aspnet/httpabstractions"
   },
   "compilationOptions": {
-    "warningsAsErrors": true
+    "warningsAsErrors": true,
+    "allowUnsafe": true
   },
   "dependencies": {
     "Microsoft.Extensions.DependencyInjection.Abstractions": "1.0.0-*",
     "Microsoft.Extensions.OptionsModel": "1.0.0-*",
-    "Microsoft.Extensions.WebEncoders.Core": "1.0.0-*"
+    "System.Text.Encodings.Web": "4.0.0-beta-*"
   },
   "frameworks": {
-    "net451": {},
+    "net451": {
+      "frameworkAssemblies": {
+        "System.IO": "",
+        "System.Runtime": ""
+      }
+    },
     "dotnet5.4": {}
   }
 }

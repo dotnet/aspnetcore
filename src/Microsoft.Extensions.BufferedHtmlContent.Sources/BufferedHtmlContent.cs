@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Text.Encodings.Web;
 using Microsoft.AspNet.Html.Abstractions;
 using Microsoft.Extensions.WebEncoders;
 
@@ -64,7 +65,7 @@ namespace Microsoft.Extensions.Internal
         }
 
         /// <inheritdoc />
-        public void WriteTo(TextWriter writer, IHtmlEncoder encoder)
+        public void WriteTo(TextWriter writer, HtmlEncoder encoder)
         {
             if (writer == null)
             {
@@ -86,7 +87,7 @@ namespace Microsoft.Extensions.Internal
                 var entryAsString = entry as string;
                 if (entryAsString != null)
                 {
-                    encoder.HtmlEncode(entryAsString, writer);
+                    encoder.Encode(writer, entryAsString);
                 }
                 else
                 {
@@ -116,7 +117,7 @@ namespace Microsoft.Extensions.Internal
                 _value = value;
             }
 
-            public void WriteTo(TextWriter writer, IHtmlEncoder encoder)
+            public void WriteTo(TextWriter writer, HtmlEncoder encoder)
             {
                 writer.Write(_value);
             }
