@@ -4,8 +4,8 @@
 using System;
 using System.Text.Encodings.Web;
 using Microsoft.AspNet.Authentication.OAuth;
-using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.DataProtection;
+using Microsoft.AspNet.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.OptionsModel;
 

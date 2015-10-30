@@ -4,7 +4,7 @@
 using System;
 using System.Net.Http;
 using System.Text.Encodings.Web;
-using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
