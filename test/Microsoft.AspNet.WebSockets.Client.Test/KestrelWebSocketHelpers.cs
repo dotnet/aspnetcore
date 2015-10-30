@@ -46,7 +46,7 @@ namespace Microsoft.AspNet.WebSockets.Client.Test
             config["server.urls"] = "http://localhost:54321";
 
             var host = new WebHostBuilder(config)
-                .UseServer("Microsoft.AspNet.Server.Kestrel")
+                .UseServerFactory("Microsoft.AspNet.Server.Kestrel")
                 .UseStartup(startup)
                 .Build();
 
