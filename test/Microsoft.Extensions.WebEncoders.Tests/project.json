@@ -9,7 +9,9 @@
     "test": "xunit.runner.aspnet"
   },
   "compilationOptions": {
-    "allowUnsafe": true
+    "allowUnsafe": true,
+    "warningsAsErrors": true,
+    "keyFile": "../../tools/Key.snk"
   },
   "frameworks": {
     "dnx451": { },

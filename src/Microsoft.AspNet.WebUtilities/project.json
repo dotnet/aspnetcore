@@ -6,7 +6,8 @@
     "url": "git://github.com/aspnet/httpabstractions"
   },
   "compilationOptions": {
-    "warningsAsErrors": true
+    "warningsAsErrors": true,
+    "keyFile": "../../tools/Key.snk"
   },
   "dependencies": {
     "Microsoft.Extensions.Primitives": "1.0.0-*",
