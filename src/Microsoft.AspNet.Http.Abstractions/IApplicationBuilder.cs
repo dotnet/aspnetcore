@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
 
 namespace Microsoft.AspNet.Builder
