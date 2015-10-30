@@ -11,9 +11,9 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
 using System.Text;
+using System.Text.Encodings.Web;
 using Microsoft.Dnx.Compilation;
 using Microsoft.Extensions.PlatformAbstractions;
-using Microsoft.Extensions.WebEncoders;
 
 namespace Microsoft.AspNet.Hosting.Startup
 {
@@ -411,7 +411,7 @@ namespace Microsoft.AspNet.Hosting.Startup
             return string.Join("<br />" + Environment.NewLine,
                 input.Split(new[] { "\r\n" }, StringSplitOptions.None)
                 .SelectMany(s => s.Split(new[] { '\r', '\n' }, StringSplitOptions.None))
-                .Select(HtmlEncoder.Default.HtmlEncode));
+                .Select(HtmlEncoder.Default.Encode));
         }
 
         private static void WriteException(Exception ex, StringBuilder builder, ref bool wasFailingCallSiteSourceWritten)
