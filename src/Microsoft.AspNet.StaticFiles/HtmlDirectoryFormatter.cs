@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Http;
@@ -20,7 +21,7 @@ namespace Microsoft.AspNet.StaticFiles
     {
         private const string TextHtmlUtf8 = "text/html; charset=utf-8";
 
-        private static IHtmlEncoder _htmlEncoder;
+        private static HtmlEncoder _htmlEncoder;
 
         /// <summary>
         /// Generates an HTML view for a directory.
@@ -161,7 +162,7 @@ namespace Microsoft.AspNet.StaticFiles
 
         private static string HtmlEncode(string body)
         {
-            return _htmlEncoder.HtmlEncode(body);
+            return _htmlEncoder.Encode(body);
         }
     }
 }
