@@ -91,7 +91,7 @@ namespace Microsoft.AspNet.Server.Kestrel.FunctionalTests
                 }).Build();
 
             var builder = new WebHostBuilder(config)
-                .UseServer("Microsoft.AspNet.Server.Kestrel")
+                .UseServerFactory("Microsoft.AspNet.Server.Kestrel")
                 .UseStartup(app => 
                 {
                     app.Run(async context =>
