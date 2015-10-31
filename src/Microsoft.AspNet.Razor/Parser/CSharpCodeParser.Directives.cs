@@ -26,23 +26,17 @@ namespace Microsoft.AspNet.Razor.Parser
         {
             TagHelperDirective(
                 SyntaxConstants.CSharp.TagHelperPrefixKeyword,
-                prefix => new TagHelperPrefixDirectiveChunkGenerator(prefix));
+                new TagHelperPrefixDirectiveChunkGenerator());
         }
 
         protected virtual void AddTagHelperDirective()
         {
-            TagHelperDirective(
-                SyntaxConstants.CSharp.AddTagHelperKeyword,
-                lookupText =>
-                    new AddOrRemoveTagHelperChunkGenerator(removeTagHelperDescriptors: false, lookupText: lookupText));
+            TagHelperDirective(SyntaxConstants.CSharp.AddTagHelperKeyword, new AddTagHelperChunkGenerator());
         }
 
         protected virtual void RemoveTagHelperDirective()
         {
-            TagHelperDirective(
-                SyntaxConstants.CSharp.RemoveTagHelperKeyword,
-                lookupText =>
-                    new AddOrRemoveTagHelperChunkGenerator(removeTagHelperDescriptors: true, lookupText: lookupText));
+            TagHelperDirective(SyntaxConstants.CSharp.RemoveTagHelperKeyword, new RemoveTagHelperChunkGenerator());
         }
 
         protected virtual void SectionDirective()
@@ -289,7 +283,7 @@ namespace Microsoft.AspNet.Razor.Parser
             Output(SpanKind.Code, AcceptedCharacters.AnyExceptNewline);
         }
 
-        private void TagHelperDirective(string keyword, Func<string, ISpanChunkGenerator> buildChunkGenerator)
+        private void TagHelperDirective(string keyword, ISpanChunkGenerator chunkGenerator)
         {
             AssertDirective(keyword);
             var keywordStartLocation = CurrentLocation;
@@ -324,33 +318,9 @@ namespace Microsoft.AspNet.Razor.Parser
                 // Parse to the end of the line. Essentially accepts anything until end of line, comments, invalid code
                 // etc.
                 AcceptUntil(CSharpSymbolType.NewLine);
-
-                // Pull out the value minus the spaces at the end
-                var rawValue = Span.GetContent().Value.TrimEnd();
-                var startsWithQuote = rawValue.StartsWith("\"", StringComparison.OrdinalIgnoreCase);
-
-                // If the value starts with a quote then we should generate appropriate C# code to colorize the value.
-                if (startsWithQuote)
-                {
-                    // Set up chunk generation
-                    // The generated chunk of this chunk generator is picked up by CSharpDesignTimeHelpersVisitor which
-                    // renders the C# to colorize the user provided value. We trim the quotes around the user's value
-                    // so when we render the code we can project the users value into double quotes to not invoke C#
-                    // IntelliSense.
-                    Span.ChunkGenerator = buildChunkGenerator(rawValue.Trim('"'));
-                }
-
-                // We expect the directive to be surrounded in quotes.
-                // The format for tag helper directives are: @directivename "SomeValue"
-                if (!startsWithQuote ||
-                    !rawValue.EndsWith("\"", StringComparison.OrdinalIgnoreCase))
-                {
-                    Context.OnError(
-                        startLocation,
-                        RazorResources.FormatParseError_DirectiveMustBeSurroundedByQuotes(keyword),
-                        rawValue.Length);
-                }
             }
+
+            Span.ChunkGenerator = chunkGenerator;
 
             // Output the span and finish the block
             CompleteBlock();

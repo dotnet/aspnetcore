@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using Microsoft.AspNet.Razor.Chunks.Generators;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Compilation.TagHelpers;
+using System.Diagnostics;
 
 namespace Microsoft.AspNet.Razor.Parser.TagHelpers
 {
@@ -82,50 +83,42 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers
 
         public override void VisitSpan(Span span)
         {
-            // We're only interested in spans with an AddOrRemoveTagHelperChunkGenerator.
-
-            if (span.ChunkGenerator is AddOrRemoveTagHelperChunkGenerator)
+            if (span == null)
             {
-                var chunkGenerator = (AddOrRemoveTagHelperChunkGenerator)span.ChunkGenerator;
+                throw new ArgumentNullException(nameof(span));
+            }
 
-                var directive =
-                    chunkGenerator.RemoveTagHelperDescriptors ?
-                    TagHelperDirectiveType.RemoveTagHelper :
-                    TagHelperDirectiveType.AddTagHelper;
-                var textLocation = GetSubTextSourceLocation(span, chunkGenerator.LookupText);
-
-                var directiveDescriptor = new TagHelperDirectiveDescriptor
-                {
-                    DirectiveText = chunkGenerator.LookupText,
-                    Location = textLocation,
-                    DirectiveType = directive
-                };
-
-                _directiveDescriptors.Add(directiveDescriptor);
+            TagHelperDirectiveType directiveType;
+            if (span.ChunkGenerator is AddTagHelperChunkGenerator)
+            {
+                directiveType = TagHelperDirectiveType.AddTagHelper;
+            }
+            else if (span.ChunkGenerator is RemoveTagHelperChunkGenerator)
+            {
+                directiveType = TagHelperDirectiveType.RemoveTagHelper;
             }
             else if (span.ChunkGenerator is TagHelperPrefixDirectiveChunkGenerator)
             {
-                var chunkGenerator = (TagHelperPrefixDirectiveChunkGenerator)span.ChunkGenerator;
-                var textLocation = GetSubTextSourceLocation(span, chunkGenerator.Prefix);
-
-                var directiveDescriptor = new TagHelperDirectiveDescriptor
-                {
-                    DirectiveText = chunkGenerator.Prefix,
-                    Location = textLocation,
-                    DirectiveType = TagHelperDirectiveType.TagHelperPrefix
-                };
-
-                _directiveDescriptors.Add(directiveDescriptor);
+                directiveType = TagHelperDirectiveType.TagHelperPrefix;
             }
-        }
+            else
+            {
+                // Not a chunk generator that we're interested in.
+                return;
+            }
 
-        private static SourceLocation GetSubTextSourceLocation(Span span, string text)
-        {
-            var startOffset = span.Content.IndexOf(text);
+            var directiveText = span.Content.Trim();
+            var startOffset = span.Content.IndexOf(directiveText);
             var offsetContent = span.Content.Substring(0, startOffset);
             var offsetTextLocation = SourceLocation.Advance(span.Start, offsetContent);
+            var directiveDescriptor = new TagHelperDirectiveDescriptor
+            {
+                DirectiveText = directiveText,
+                Location = offsetTextLocation,
+                DirectiveType = directiveType
+            };
 
-            return offsetTextLocation;
+            _directiveDescriptors.Add(directiveDescriptor);
         }
     }
 }

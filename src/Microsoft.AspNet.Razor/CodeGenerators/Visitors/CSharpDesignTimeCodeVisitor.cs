@@ -98,15 +98,16 @@ namespace Microsoft.AspNet.Razor.CodeGenerators.Visitors
                 Writer.WriteVariableDeclaration("string", TagHelperDirectiveSyntaxHelper, "null");
             }
 
-            Writer.WriteStartAssignment(TagHelperDirectiveSyntaxHelper);
+            Writer
+                .WriteStartAssignment(TagHelperDirectiveSyntaxHelper)
+                .Write("\"");
 
-            // The parsing mechanism for a TagHelper directive chunk (CSharpCodeParser.TagHelperDirective())
-            // removes quotes that surround the text.
-            CSharpCodeVisitor.CreateExpressionCodeMapping(
-                string.Format(CultureInfo.InvariantCulture, "\"{0}\"", text),
-                chunk);
+            using (new CSharpLineMappingWriter(Writer, chunk.Start, text.Length))
+            {
+                Writer.Write(text);
+            }
 
-            Writer.WriteLine(";");
+            Writer.WriteLine("\";");
         }
     }
 }
