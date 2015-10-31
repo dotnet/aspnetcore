@@ -39,7 +39,10 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                 throw new ArgumentNullException(nameof(encoder));
             }
 
-            encoder.Encode(writer, _input);
+            if (!string.IsNullOrEmpty(_input))
+            {
+                encoder.Encode(writer, _input);
+            }
         }
 
         private string DebuggerToString()

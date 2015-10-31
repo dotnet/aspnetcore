@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.Abstractions;
@@ -16,7 +17,6 @@ using Microsoft.AspNet.Mvc.ViewEngines;
 using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.AspNet.Razor.TagHelpers;
 using Microsoft.AspNet.Routing;
-using Microsoft.Extensions.WebEncoders.Testing;
 using Moq;
 using Xunit;
 
@@ -60,13 +60,14 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 .Setup(mock => mock.Action(It.IsAny<UrlActionContext>())).Returns("home/index");
 
             var htmlGenerator = new TestableHtmlGenerator(metadataProvider, urlHelper.Object);
-            var viewContext = TestableHtmlGenerator.GetViewContext(model: null,
-                                                                   htmlGenerator: htmlGenerator,
-                                                                   metadataProvider: metadataProvider);
+            var viewContext = TestableHtmlGenerator.GetViewContext(
+                model: null,
+                htmlGenerator: htmlGenerator,
+                metadataProvider: metadataProvider);
             var expectedPostContent = "Something" +
                 HtmlContentUtilities.HtmlContentToString(
                     htmlGenerator.GenerateAntiforgery(viewContext),
-                    new HtmlTestEncoder());
+                    HtmlEncoder.Default);
             var formTagHelper = new FormTagHelper(htmlGenerator)
             {
                 Action = "index",

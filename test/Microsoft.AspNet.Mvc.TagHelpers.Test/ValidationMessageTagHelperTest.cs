@@ -63,9 +63,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             output.Content.SetContent(expectedContent);
             output.PostContent.SetContent(expectedPostContent);
 
-            var viewContext = TestableHtmlGenerator.GetViewContext(model: null,
-                                                                   htmlGenerator: htmlGenerator,
-                                                                   metadataProvider: metadataProvider);
+            var viewContext = TestableHtmlGenerator.GetViewContext(
+                model: null,
+                htmlGenerator: htmlGenerator,
+                metadataProvider: metadataProvider);
             validationMessageTagHelper.ViewContext = viewContext;
 
             // Act

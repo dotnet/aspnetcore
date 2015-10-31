@@ -206,7 +206,10 @@ namespace Microsoft.AspNet.Mvc.Rendering
                     writer.Write(" ");
                     writer.Write(key);
                     writer.Write("=\"");
-                    encoder.Encode(writer, attribute.Value);
+                    if (!string.IsNullOrEmpty(attribute.Value))
+                    {
+                        encoder.Encode(writer, attribute.Value);
+                    }
                     writer.Write("\"");
                 }
             }
