@@ -3,7 +3,7 @@
 
 using System.Text.Encodings.Web;
 using Microsoft.AspNet.Authentication;
-using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.Http;
 using Microsoft.Extensions.Logging;
 
 namespace FiltersWebSite
