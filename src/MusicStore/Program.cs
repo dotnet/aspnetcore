@@ -1,5 +1,4 @@
 using System;
-using System.Threading.Tasks;
 using Microsoft.AspNet.Hosting;
 using Microsoft.Extensions.Configuration;
 
@@ -19,7 +18,7 @@ namespace MusicStore
             var config = builder.Build();
 
             using (new WebHostBuilder(config)
-                .UseServer("Microsoft.AspNet.Server.WebListener")
+                .UseServerFactory("Microsoft.AspNet.Server.WebListener")
                 .Build()
                 .Start())
             {

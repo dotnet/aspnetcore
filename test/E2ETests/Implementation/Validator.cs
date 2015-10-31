@@ -96,6 +96,7 @@ namespace E2ETests
             _logger.LogInformation("Fetching favicon.ico..");
             var response = await _httpClient.GetAsync("favicon.ico");
             await ThrowIfResponseStatusNotOk(response);
+            Assert.NotNull(response.Headers.ETag);
             _logger.LogInformation("Etag received: {etag}", response.Headers.ETag.Tag);
 
             //Check if you receive a NotModified on sending an etag
