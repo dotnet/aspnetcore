@@ -57,7 +57,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                                                                 GetRouteValuesAsString(routeValues),
                                                                 fragment,
                                                                 GetHtmlAttributesAsString(htmlAttributes));
-            expectedLink = expectedLink.Replace("HtmlEncode[[]]", "");
+            expectedLink = expectedLink.Replace("HtmlEncode[[]]", string.Empty);
 
             var urlHelper = new Mock<IUrlHelper>();
             urlHelper.Setup(h => h.Action(It.IsAny<UrlActionContext>()))
@@ -122,7 +122,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                                                                     GetRouteValuesAsString(routeValues),
                                                                     fragment,
                                                                     GetHtmlAttributesAsString(htmlAttributes));
-            expectedLink = expectedLink.Replace("HtmlEncode[[]]", "");
+            expectedLink = expectedLink.Replace("HtmlEncode[[]]", string.Empty);
 
             var urlHelper = new Mock<IUrlHelper>();
             urlHelper

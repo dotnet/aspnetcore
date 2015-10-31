@@ -45,15 +45,15 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     modelWithNull,
                     modelWithText,
                 };
-                var noneSelected = "<option>HtmlEncode[[]]</option>" + Environment.NewLine +
+                var noneSelected = "<option></option>" + Environment.NewLine +
                     "<option>HtmlEncode[[outer text]]</option>" + Environment.NewLine +
                     "<option>HtmlEncode[[inner text]]</option>" + Environment.NewLine +
                     "<option>HtmlEncode[[other text]]</option>" + Environment.NewLine;
-                var innerSelected = "<option>HtmlEncode[[]]</option>" + Environment.NewLine +
+                var innerSelected = "<option></option>" + Environment.NewLine +
                     "<option>HtmlEncode[[outer text]]</option>" + Environment.NewLine +
                     "<option selected=\"HtmlEncode[[selected]]\">HtmlEncode[[inner text]]</option>" + Environment.NewLine +
                     "<option>HtmlEncode[[other text]]</option>" + Environment.NewLine;
-                var outerSelected = "<option>HtmlEncode[[]]</option>" + Environment.NewLine +
+                var outerSelected = "<option></option>" + Environment.NewLine +
                     "<option selected=\"HtmlEncode[[selected]]\">HtmlEncode[[outer text]]</option>" + Environment.NewLine +
                     "<option>HtmlEncode[[inner text]]</option>" + Environment.NewLine +
                     "<option>HtmlEncode[[other text]]</option>" + Environment.NewLine;

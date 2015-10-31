@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html>
 <head>
     <meta charset="utf-8" />
@@ -62,10 +62,10 @@
     </script>
 
     <!-- Globbed script tag with existing file -->
-    HtmlEncode[[]]<script src="HtmlEncode[[/styles/site.js]]"></script>
+    <script src="HtmlEncode[[/styles/site.js]]"></script>
 
     <!-- Globbed script tag with existing file and exclude -->
-    HtmlEncode[[]]<script src="HtmlEncode[[/styles/site.js]]"></script><script src="HtmlEncode[[/styles/sub/site2.js]]"></script>
+    <script src="HtmlEncode[[/styles/site.js]]"></script><script src="HtmlEncode[[/styles/sub/site2.js]]"></script>
 
     <script>
         // Globbed script tag missing include
@@ -76,16 +76,16 @@
     </script>
 
     <!-- Globbed script tag with comma separated include pattern -->
-    HtmlEncode[[]]<script src="HtmlEncode[[/styles/site.js]]"></script><script src="HtmlEncode[[/styles/sub/site2.js]]"></script><script src="HtmlEncode[[/styles/sub/site3.js]]"></script>
+    <script src="HtmlEncode[[/styles/site.js]]"></script><script src="HtmlEncode[[/styles/sub/site2.js]]"></script><script src="HtmlEncode[[/styles/sub/site3.js]]"></script>
 
     <!-- Globbed script tag with missing file -->
-    HtmlEncode[[]]
+    
 
     <!-- Globbed script tag with file outside of webroot -->
-    HtmlEncode[[]]
+    
 
     <!-- Globbed script tag with file outside of webroot -->
-    HtmlEncode[[]]
+    
 
     <script src="HtmlEncode[[/styles/site.js]]">
         // Globbed script tag with existing file and static src
@@ -110,9 +110,9 @@
     </script>
 
     <!-- Globbed script tag with existing files and version -->
-    HtmlEncode[[]]<script src="HtmlEncode[[/styles/site.js?v=jx1PJjLX32-xgQQx2BxnckU9QH9DVKkm4-M5bSK869I]]"></script><script src="HtmlEncode[[/styles/sub/site2.js?v=pwJaxaQxnb-rPAdF2JlAp4xiPNq1XuJFd6TyOOfNF-0]]"></script><script src="HtmlEncode[[/styles/sub/site3.js?v=lmeAMiqm76lnGyqHhu6PIBHAC0Vt46mgVB_KaG_gGdA]]"></script>
+    <script src="HtmlEncode[[/styles/site.js?v=jx1PJjLX32-xgQQx2BxnckU9QH9DVKkm4-M5bSK869I]]"></script><script src="HtmlEncode[[/styles/sub/site2.js?v=pwJaxaQxnb-rPAdF2JlAp4xiPNq1XuJFd6TyOOfNF-0]]"></script><script src="HtmlEncode[[/styles/sub/site3.js?v=lmeAMiqm76lnGyqHhu6PIBHAC0Vt46mgVB_KaG_gGdA]]"></script>
 
     <!-- Globbed script tag with existing file, exclude and version -->
-    HtmlEncode[[]]<script src="HtmlEncode[[/styles/site.js?v=jx1PJjLX32-xgQQx2BxnckU9QH9DVKkm4-M5bSK869I]]"></script><script src="HtmlEncode[[/styles/sub/site2.js?v=pwJaxaQxnb-rPAdF2JlAp4xiPNq1XuJFd6TyOOfNF-0]]"></script>
+    <script src="HtmlEncode[[/styles/site.js?v=jx1PJjLX32-xgQQx2BxnckU9QH9DVKkm4-M5bSK869I]]"></script><script src="HtmlEncode[[/styles/sub/site2.js?v=pwJaxaQxnb-rPAdF2JlAp4xiPNq1XuJFd6TyOOfNF-0]]"></script>
 </body>
 </html>

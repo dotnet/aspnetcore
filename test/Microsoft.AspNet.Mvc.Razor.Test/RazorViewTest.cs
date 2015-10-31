@@ -914,7 +914,6 @@ namespace Microsoft.AspNet.Mvc.Razor
                            "]]BodyContent" +
                            "foo-content" +
                            Environment.NewLine +
-                           "HtmlEncode[[]]" +
                            Environment.NewLine;
 
             var page = new TestableRazorPage(v =>

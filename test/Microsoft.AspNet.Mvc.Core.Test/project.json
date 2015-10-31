@@ -5,20 +5,19 @@
   "dependencies": {
     "Microsoft.AspNet.Http": "1.0.0-*",
     "Microsoft.AspNet.Mvc": "6.0.0-*",
+    "Microsoft.AspNet.Mvc.Formatters.Xml": "6.0.0-*",
     "Microsoft.AspNet.Mvc.TestCommon": {
       "version": "6.0.0-*",
       "type": "build"
     },
-    "Microsoft.AspNet.Mvc.Formatters.Xml": "6.0.0-*",
     "Microsoft.AspNet.Mvc.TestDiagnosticListener.Sources": {
       "version": "6.0.0-*",
       "type": "build"
     },
     "Microsoft.AspNet.Testing": "1.0.0-*",
     "Microsoft.Extensions.DependencyInjection": "1.0.0-*",
-    "Microsoft.Extensions.Logging.Testing": "1.0.0-*",
     "Microsoft.Extensions.DiagnosticAdapter": "1.0.0-*",
-    "Microsoft.Extensions.WebEncoders.Testing": "1.0.0-*",
+    "Microsoft.Extensions.Logging.Testing": "1.0.0-*",
     "Moq": "4.2.1312.1622",
     "xunit.runner.aspnet": "2.0.0-aspnet-*"
   },

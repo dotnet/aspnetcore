@@ -44,7 +44,6 @@
     "Microsoft.AspNet.WebUtilities": "1.0.0-*",
     "Microsoft.Extensions.Configuration.Json": "1.0.0-*",
     "Microsoft.Extensions.Logging.Testing": "1.0.0-*",
-    "Microsoft.Extensions.WebEncoders.Testing": "1.0.0-*",
     "ModelBindingWebSite": "1.0.0",
     "MvcSample.Web": "1.0.0",
     "PrecompilationWebSite": "1.0.0",

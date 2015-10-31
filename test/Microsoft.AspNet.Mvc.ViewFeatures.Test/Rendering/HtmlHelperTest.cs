@@ -72,8 +72,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 var data = new TheoryData<object, string>
                 {
                     { null, string.Empty },
-                    // Object overload does not special case the empty string.
-                    { string.Empty, "HtmlEncode[[]]" },
+                    { string.Empty, string.Empty },
                     { "<\">", "HtmlEncode[[<\">]]" },
                     { "<br />", "HtmlEncode[[<br />]]" },
                     { "<b>bold</b>", "HtmlEncode[[<b>bold</b>]]" },
