@@ -66,7 +66,7 @@ namespace Microsoft.AspNet.Server.Kestrel.LibuvCopier
 #if DNX451
             return Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 #else
-            var runtimeEnv = PlatformServices.Default.Runtime;
+            var runtimeEnv = Extensions.PlatformAbstractions.PlatformServices.Default.Runtime;
             if (runtimeEnv.OperatingSystem == "Windows")
             {
                 return Environment.GetEnvironmentVariable("USERPROFILE") ??
