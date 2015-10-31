@@ -10,13 +10,7 @@ namespace TestOutput
         {
             #pragma warning disable 219
             string __tagHelperDirectiveSyntaxHelper = null;
-            __tagHelperDirectiveSyntaxHelper = 
-#line 1 "AttributeTargetingTagHelpers.cshtml"
-              "*, something"
-
-#line default
-#line hidden
-            ;
+            __tagHelperDirectiveSyntaxHelper = "*, something";
             #pragma warning restore 219
         }
         #line hidden

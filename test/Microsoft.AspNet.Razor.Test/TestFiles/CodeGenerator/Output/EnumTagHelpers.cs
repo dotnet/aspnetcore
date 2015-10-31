@@ -1,4 +1,4 @@
-#pragma checksum "EnumTagHelpers.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "57102d182f8d5da659bb113653552ea18f42bb76"
+#pragma checksum "EnumTagHelpers.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "f9124dcd7da8c06ab193a971690c676c5e0adaac"
 namespace TestOutput
 {
     using System;
@@ -24,7 +24,7 @@ namespace TestOutput
         public override async Task ExecuteAsync()
         {
             __tagHelperRunner = __tagHelperRunner ?? new global::Microsoft.AspNet.Razor.Runtime.TagHelperRunner();
-            Instrumentation.BeginContext(33, 2, true);
+            Instrumentation.BeginContext(31, 2, true);
             WriteLiteral("\r\n");
             Instrumentation.EndContext();
 #line 3 "EnumTagHelpers.cshtml"
@@ -34,7 +34,7 @@ namespace TestOutput
 #line default
 #line hidden
 
-            Instrumentation.BeginContext(79, 2, true);
+            Instrumentation.BeginContext(77, 2, true);
             WriteLiteral("\r\n");
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input", global::Microsoft.AspNet.Razor.TagHelpers.TagMode.SelfClosing, "test", async() => {
@@ -51,11 +51,11 @@ __TestNamespace_InputTagHelper.Value = MyEnum.MyValue;
 #line hidden
             __tagHelperExecutionContext.AddTagHelperAttribute("value", __TestNamespace_InputTagHelper.Value);
             __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
-            Instrumentation.BeginContext(81, 33, false);
+            Instrumentation.BeginContext(79, 33, false);
             await WriteTagHelperAsync(__tagHelperExecutionContext);
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
-            Instrumentation.BeginContext(114, 2, true);
+            Instrumentation.BeginContext(112, 2, true);
             WriteLiteral("\r\n");
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input", global::Microsoft.AspNet.Razor.TagHelpers.TagMode.SelfClosing, "test", async() => {
@@ -67,17 +67,17 @@ __TestNamespace_InputTagHelper.Value = MyEnum.MyValue;
             __tagHelperExecutionContext.Add(__TestNamespace_CatchAllTagHelper);
             BeginAddHtmlAttributeValues(__tagHelperExecutionContext, "class", 1);
 #line 8 "EnumTagHelpers.cshtml"
-AddHtmlAttributeValue("", 130, MyEnum.MySecondValue, 130, 21, false);
+AddHtmlAttributeValue("", 128, MyEnum.MySecondValue, 128, 21, false);
 
 #line default
 #line hidden
             EndAddHtmlAttributeValues(__tagHelperExecutionContext);
             __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
-            Instrumentation.BeginContext(116, 39, false);
+            Instrumentation.BeginContext(114, 39, false);
             await WriteTagHelperAsync(__tagHelperExecutionContext);
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
-            Instrumentation.BeginContext(155, 2, true);
+            Instrumentation.BeginContext(153, 2, true);
             WriteLiteral("\r\n");
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input", global::Microsoft.AspNet.Razor.TagHelpers.TagMode.SelfClosing, "test", async() => {
@@ -94,11 +94,11 @@ __TestNamespace_InputTagHelper.Value = Microsoft.AspNet.Razor.Test.Generator.MyE
 #line hidden
             __tagHelperExecutionContext.AddTagHelperAttribute("value", __TestNamespace_InputTagHelper.Value);
             __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
-            Instrumentation.BeginContext(157, 25, false);
+            Instrumentation.BeginContext(155, 25, false);
             await WriteTagHelperAsync(__tagHelperExecutionContext);
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
-            Instrumentation.BeginContext(182, 2, true);
+            Instrumentation.BeginContext(180, 2, true);
             WriteLiteral("\r\n");
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input", global::Microsoft.AspNet.Razor.TagHelpers.TagMode.SelfClosing, "test", async() => {
@@ -121,11 +121,11 @@ __TestNamespace_CatchAllTagHelper.CatchAll = Microsoft.AspNet.Razor.Test.Generat
 #line hidden
             __tagHelperExecutionContext.AddTagHelperAttribute("catch-all", __TestNamespace_CatchAllTagHelper.CatchAll);
             __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
-            Instrumentation.BeginContext(184, 50, false);
+            Instrumentation.BeginContext(182, 50, false);
             await WriteTagHelperAsync(__tagHelperExecutionContext);
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
-            Instrumentation.BeginContext(234, 2, true);
+            Instrumentation.BeginContext(232, 2, true);
             WriteLiteral("\r\n");
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input", global::Microsoft.AspNet.Razor.TagHelpers.TagMode.SelfClosing, "test", async() => {
@@ -148,11 +148,11 @@ __TestNamespace_CatchAllTagHelper.CatchAll = enumValue;
 #line hidden
             __tagHelperExecutionContext.AddTagHelperAttribute("catch-all", __TestNamespace_CatchAllTagHelper.CatchAll);
             __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
-            Instrumentation.BeginContext(236, 51, false);
+            Instrumentation.BeginContext(234, 51, false);
             await WriteTagHelperAsync(__tagHelperExecutionContext);
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
-            Instrumentation.BeginContext(287, 2, true);
+            Instrumentation.BeginContext(285, 2, true);
             WriteLiteral("\r\n");
             Instrumentation.EndContext();
         }

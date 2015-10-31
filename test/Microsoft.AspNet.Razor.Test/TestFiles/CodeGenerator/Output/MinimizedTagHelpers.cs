@@ -1,4 +1,4 @@
-#pragma checksum "MinimizedTagHelpers.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "07839be4304797e30b19b50b95e2247c93cdff06"
+#pragma checksum "MinimizedTagHelpers.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "1356aa716cf24203ad0a7415f199cce7e97089db"
 namespace TestOutput
 {
     using System;
@@ -24,11 +24,11 @@ namespace TestOutput
         public override async Task ExecuteAsync()
         {
             __tagHelperRunner = __tagHelperRunner ?? new global::Microsoft.AspNet.Razor.Runtime.TagHelperRunner();
-            Instrumentation.BeginContext(33, 2, true);
+            Instrumentation.BeginContext(31, 2, true);
             WriteLiteral("\r\n");
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.Begin("p", global::Microsoft.AspNet.Razor.TagHelpers.TagMode.StartTagAndEndTag, "test", async() => {
-                Instrumentation.BeginContext(64, 34, true);
+                Instrumentation.BeginContext(62, 34, true);
                 WriteLiteral("\r\n    <input nottaghelper />\r\n    ");
                 Instrumentation.EndContext();
                 __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input", global::Microsoft.AspNet.Razor.TagHelpers.TagMode.SelfClosing, "test", async() => {
@@ -39,11 +39,11 @@ namespace TestOutput
                 __tagHelperExecutionContext.AddHtmlAttribute("class", Html.Raw("btn"));
                 __tagHelperExecutionContext.AddMinimizedHtmlAttribute("catchall-unbound-required");
                 __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
-                Instrumentation.BeginContext(98, 59, false);
+                Instrumentation.BeginContext(96, 59, false);
                 await WriteTagHelperAsync(__tagHelperExecutionContext);
                 Instrumentation.EndContext();
                 __tagHelperExecutionContext = __tagHelperScopeManager.End();
-                Instrumentation.BeginContext(157, 6, true);
+                Instrumentation.BeginContext(155, 6, true);
                 WriteLiteral("\r\n    ");
                 Instrumentation.EndContext();
                 __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input", global::Microsoft.AspNet.Razor.TagHelpers.TagMode.SelfClosing, "test", async() => {
@@ -59,11 +59,11 @@ namespace TestOutput
                 __TestNamespace_InputTagHelper.BoundRequiredString = "hello";
                 __tagHelperExecutionContext.AddTagHelperAttribute("input-bound-required-string", __TestNamespace_InputTagHelper.BoundRequiredString);
                 __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
-                Instrumentation.BeginContext(163, 119, false);
+                Instrumentation.BeginContext(161, 119, false);
                 await WriteTagHelperAsync(__tagHelperExecutionContext);
                 Instrumentation.EndContext();
                 __tagHelperExecutionContext = __tagHelperScopeManager.End();
-                Instrumentation.BeginContext(282, 6, true);
+                Instrumentation.BeginContext(280, 6, true);
                 WriteLiteral("\r\n    ");
                 Instrumentation.EndContext();
                 __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input", global::Microsoft.AspNet.Razor.TagHelpers.TagMode.SelfClosing, "test", async() => {
@@ -81,11 +81,11 @@ namespace TestOutput
                 __TestNamespace_InputTagHelper.BoundRequiredString = "hello2";
                 __tagHelperExecutionContext.AddTagHelperAttribute("input-bound-required-string", __TestNamespace_InputTagHelper.BoundRequiredString);
                 __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
-                Instrumentation.BeginContext(288, 176, false);
+                Instrumentation.BeginContext(286, 176, false);
                 await WriteTagHelperAsync(__tagHelperExecutionContext);
                 Instrumentation.EndContext();
                 __tagHelperExecutionContext = __tagHelperScopeManager.End();
-                Instrumentation.BeginContext(464, 6, true);
+                Instrumentation.BeginContext(462, 6, true);
                 WriteLiteral("\r\n    ");
                 Instrumentation.EndContext();
                 __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input", global::Microsoft.AspNet.Razor.TagHelpers.TagMode.SelfClosing, "test", async() => {
@@ -102,11 +102,11 @@ namespace TestOutput
                 __TestNamespace_InputTagHelper.BoundRequiredString = "world";
                 __tagHelperExecutionContext.AddTagHelperAttribute("input-bound-required-string", __TestNamespace_InputTagHelper.BoundRequiredString);
                 __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
-                Instrumentation.BeginContext(470, 206, false);
+                Instrumentation.BeginContext(468, 206, false);
                 await WriteTagHelperAsync(__tagHelperExecutionContext);
                 Instrumentation.EndContext();
                 __tagHelperExecutionContext = __tagHelperScopeManager.End();
-                Instrumentation.BeginContext(676, 2, true);
+                Instrumentation.BeginContext(674, 2, true);
                 WriteLiteral("\r\n");
                 Instrumentation.EndContext();
             }
@@ -115,7 +115,7 @@ namespace TestOutput
             __tagHelperExecutionContext.Add(__TestNamespace_CatchAllTagHelper);
             __tagHelperExecutionContext.AddMinimizedHtmlAttribute("catchall-unbound-required");
             __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
-            Instrumentation.BeginContext(35, 647, false);
+            Instrumentation.BeginContext(33, 647, false);
             await WriteTagHelperAsync(__tagHelperExecutionContext);
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.End();

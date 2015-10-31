@@ -10,13 +10,7 @@ namespace TestOutput
         {
             #pragma warning disable 219
             string __tagHelperDirectiveSyntaxHelper = null;
-            __tagHelperDirectiveSyntaxHelper = 
-#line 1 "SymbolBoundAttributes.cshtml"
-              "*, nice"
-
-#line default
-#line hidden
-            ;
+            __tagHelperDirectiveSyntaxHelper = "*, nice";
             #pragma warning restore 219
         }
         #line hidden

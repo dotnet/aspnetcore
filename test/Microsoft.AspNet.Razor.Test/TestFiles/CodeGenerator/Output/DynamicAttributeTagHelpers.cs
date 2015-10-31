@@ -1,4 +1,4 @@
-#pragma checksum "DynamicAttributeTagHelpers.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "782463195265ee647cc2fc63fd5095a80090845b"
+#pragma checksum "DynamicAttributeTagHelpers.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "107e341010aad754fc5c952722dbfdc7e33fc38e"
 namespace TestOutput
 {
     using System;
@@ -23,7 +23,7 @@ namespace TestOutput
         public override async Task ExecuteAsync()
         {
             __tagHelperRunner = __tagHelperRunner ?? new global::Microsoft.AspNet.Razor.Runtime.TagHelperRunner();
-            Instrumentation.BeginContext(33, 2, true);
+            Instrumentation.BeginContext(31, 2, true);
             WriteLiteral("\r\n");
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input", global::Microsoft.AspNet.Razor.TagHelpers.TagMode.SelfClosing, "test", async() => {
@@ -32,19 +32,19 @@ namespace TestOutput
             __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
             __tagHelperExecutionContext.Add(__TestNamespace_InputTagHelper);
             BeginAddHtmlAttributeValues(__tagHelperExecutionContext, "unbound", 2);
-            AddHtmlAttributeValue("", 51, "prefix", 51, 6, true);
+            AddHtmlAttributeValue("", 49, "prefix", 49, 6, true);
 #line 3 "DynamicAttributeTagHelpers.cshtml"
-AddHtmlAttributeValue(" ", 57, DateTime.Now, 58, 14, false);
+AddHtmlAttributeValue(" ", 55, DateTime.Now, 56, 14, false);
 
 #line default
 #line hidden
             EndAddHtmlAttributeValues(__tagHelperExecutionContext);
             __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
-            Instrumentation.BeginContext(35, 40, false);
+            Instrumentation.BeginContext(33, 40, false);
             await WriteTagHelperAsync(__tagHelperExecutionContext);
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
-            Instrumentation.BeginContext(75, 4, true);
+            Instrumentation.BeginContext(73, 4, true);
             WriteLiteral("\r\n\r\n");
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input", global::Microsoft.AspNet.Razor.TagHelpers.TagMode.SelfClosing, "test", async() => {
@@ -53,14 +53,14 @@ AddHtmlAttributeValue(" ", 57, DateTime.Now, 58, 14, false);
             __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
             __tagHelperExecutionContext.Add(__TestNamespace_InputTagHelper);
             BeginAddHtmlAttributeValues(__tagHelperExecutionContext, "unbound", 2);
-            AddHtmlAttributeValue("", 95, new Template(async(__razor_attribute_value_writer) => {
+            AddHtmlAttributeValue("", 93, new Template(async(__razor_attribute_value_writer) => {
 #line 5 "DynamicAttributeTagHelpers.cshtml"
                  if (true) { 
 
 #line default
 #line hidden
 
-                Instrumentation.BeginContext(109, 12, false);
+                Instrumentation.BeginContext(107, 12, false);
 #line 5 "DynamicAttributeTagHelpers.cshtml"
 WriteTo(__razor_attribute_value_writer, string.Empty);
 
@@ -73,7 +73,7 @@ WriteTo(__razor_attribute_value_writer, string.Empty);
 #line default
 #line hidden
 
-                Instrumentation.BeginContext(132, 5, false);
+                Instrumentation.BeginContext(130, 5, false);
 #line 5 "DynamicAttributeTagHelpers.cshtml"
              WriteTo(__razor_attribute_value_writer, false);
 
@@ -87,15 +87,15 @@ WriteTo(__razor_attribute_value_writer, string.Empty);
 #line hidden
 
             }
-            ), 95, 44, false);
-            AddHtmlAttributeValue(" ", 139, "suffix", 140, 7, true);
+            ), 93, 44, false);
+            AddHtmlAttributeValue(" ", 137, "suffix", 138, 7, true);
             EndAddHtmlAttributeValues(__tagHelperExecutionContext);
             __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
-            Instrumentation.BeginContext(79, 71, false);
+            Instrumentation.BeginContext(77, 71, false);
             await WriteTagHelperAsync(__tagHelperExecutionContext);
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
-            Instrumentation.BeginContext(150, 4, true);
+            Instrumentation.BeginContext(148, 4, true);
             WriteLiteral("\r\n\r\n");
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input", global::Microsoft.AspNet.Razor.TagHelpers.TagMode.SelfClosing, "test", async() => {
@@ -115,20 +115,20 @@ WriteTo(__razor_attribute_value_writer, string.Empty);
             __TestNamespace_InputTagHelper.Bound = __tagHelperStringValueBuffer.GetContent(HtmlEncoder);
             __tagHelperExecutionContext.AddTagHelperAttribute("bound", __TestNamespace_InputTagHelper.Bound);
             BeginAddHtmlAttributeValues(__tagHelperExecutionContext, "unbound", 3);
-            AddHtmlAttributeValue("", 206, "prefix", 206, 6, true);
+            AddHtmlAttributeValue("", 204, "prefix", 204, 6, true);
 #line 7 "DynamicAttributeTagHelpers.cshtml"
-AddHtmlAttributeValue(" ", 212, DateTime.Now, 213, 14, false);
+AddHtmlAttributeValue(" ", 210, DateTime.Now, 211, 14, false);
 
 #line default
 #line hidden
-            AddHtmlAttributeValue(" ", 226, "suffix", 227, 7, true);
+            AddHtmlAttributeValue(" ", 224, "suffix", 225, 7, true);
             EndAddHtmlAttributeValues(__tagHelperExecutionContext);
             __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
-            Instrumentation.BeginContext(154, 83, false);
+            Instrumentation.BeginContext(152, 83, false);
             await WriteTagHelperAsync(__tagHelperExecutionContext);
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
-            Instrumentation.BeginContext(237, 4, true);
+            Instrumentation.BeginContext(235, 4, true);
             WriteLiteral("\r\n\r\n");
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input", global::Microsoft.AspNet.Razor.TagHelpers.TagMode.SelfClosing, "test", async() => {
@@ -182,18 +182,18 @@ AddHtmlAttributeValue(" ", 212, DateTime.Now, 213, 14, false);
             __tagHelperExecutionContext.AddTagHelperAttribute("bound", __TestNamespace_InputTagHelper.Bound);
             BeginAddHtmlAttributeValues(__tagHelperExecutionContext, "unbound", 3);
 #line 10 "DynamicAttributeTagHelpers.cshtml"
-AddHtmlAttributeValue("", 347, long.MinValue, 347, 14, false);
+AddHtmlAttributeValue("", 345, long.MinValue, 345, 14, false);
 
 #line default
 #line hidden
-            AddHtmlAttributeValue(" ", 361, new Template(async(__razor_attribute_value_writer) => {
+            AddHtmlAttributeValue(" ", 359, new Template(async(__razor_attribute_value_writer) => {
 #line 10 "DynamicAttributeTagHelpers.cshtml"
                                 if (true) { 
 
 #line default
 #line hidden
 
-                Instrumentation.BeginContext(376, 12, false);
+                Instrumentation.BeginContext(374, 12, false);
 #line 10 "DynamicAttributeTagHelpers.cshtml"
      WriteTo(__razor_attribute_value_writer, string.Empty);
 
@@ -206,7 +206,7 @@ AddHtmlAttributeValue("", 347, long.MinValue, 347, 14, false);
 #line default
 #line hidden
 
-                Instrumentation.BeginContext(399, 5, false);
+                Instrumentation.BeginContext(397, 5, false);
 #line 10 "DynamicAttributeTagHelpers.cshtml"
                             WriteTo(__razor_attribute_value_writer, false);
 
@@ -220,19 +220,19 @@ AddHtmlAttributeValue("", 347, long.MinValue, 347, 14, false);
 #line hidden
 
             }
-            ), 362, 45, false);
+            ), 360, 45, false);
 #line 10 "DynamicAttributeTagHelpers.cshtml"
-AddHtmlAttributeValue(" ", 406, int.MaxValue, 407, 14, false);
+AddHtmlAttributeValue(" ", 404, int.MaxValue, 405, 14, false);
 
 #line default
 #line hidden
             EndAddHtmlAttributeValues(__tagHelperExecutionContext);
             __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
-            Instrumentation.BeginContext(241, 183, false);
+            Instrumentation.BeginContext(239, 183, false);
             await WriteTagHelperAsync(__tagHelperExecutionContext);
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
-            Instrumentation.BeginContext(424, 4, true);
+            Instrumentation.BeginContext(422, 4, true);
             WriteLiteral("\r\n\r\n");
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input", global::Microsoft.AspNet.Razor.TagHelpers.TagMode.SelfClosing, "test", async() => {
@@ -242,29 +242,29 @@ AddHtmlAttributeValue(" ", 406, int.MaxValue, 407, 14, false);
             __tagHelperExecutionContext.Add(__TestNamespace_InputTagHelper);
             BeginAddHtmlAttributeValues(__tagHelperExecutionContext, "unbound", 5);
 #line 12 "DynamicAttributeTagHelpers.cshtml"
-AddHtmlAttributeValue("", 444, long.MinValue, 444, 14, false);
+AddHtmlAttributeValue("", 442, long.MinValue, 442, 14, false);
 
 #line default
 #line hidden
 #line 12 "DynamicAttributeTagHelpers.cshtml"
-AddHtmlAttributeValue(" ", 458, DateTime.Now, 459, 14, false);
+AddHtmlAttributeValue(" ", 456, DateTime.Now, 457, 14, false);
 
 #line default
 #line hidden
-            AddHtmlAttributeValue(" ", 472, "static", 473, 7, true);
-            AddHtmlAttributeValue("    ", 479, "content", 483, 11, true);
+            AddHtmlAttributeValue(" ", 470, "static", 471, 7, true);
+            AddHtmlAttributeValue("    ", 477, "content", 481, 11, true);
 #line 12 "DynamicAttributeTagHelpers.cshtml"
-AddHtmlAttributeValue(" ", 490, int.MaxValue, 491, 14, false);
+AddHtmlAttributeValue(" ", 488, int.MaxValue, 489, 14, false);
 
 #line default
 #line hidden
             EndAddHtmlAttributeValues(__tagHelperExecutionContext);
             __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
-            Instrumentation.BeginContext(428, 80, false);
+            Instrumentation.BeginContext(426, 80, false);
             await WriteTagHelperAsync(__tagHelperExecutionContext);
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
-            Instrumentation.BeginContext(508, 4, true);
+            Instrumentation.BeginContext(506, 4, true);
             WriteLiteral("\r\n\r\n");
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input", global::Microsoft.AspNet.Razor.TagHelpers.TagMode.SelfClosing, "test", async() => {
@@ -273,14 +273,14 @@ AddHtmlAttributeValue(" ", 490, int.MaxValue, 491, 14, false);
             __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
             __tagHelperExecutionContext.Add(__TestNamespace_InputTagHelper);
             BeginAddHtmlAttributeValues(__tagHelperExecutionContext, "unbound", 1);
-            AddHtmlAttributeValue("", 528, new Template(async(__razor_attribute_value_writer) => {
+            AddHtmlAttributeValue("", 526, new Template(async(__razor_attribute_value_writer) => {
 #line 14 "DynamicAttributeTagHelpers.cshtml"
                  if (true) { 
 
 #line default
 #line hidden
 
-                Instrumentation.BeginContext(542, 12, false);
+                Instrumentation.BeginContext(540, 12, false);
 #line 14 "DynamicAttributeTagHelpers.cshtml"
 WriteTo(__razor_attribute_value_writer, string.Empty);
 
@@ -293,7 +293,7 @@ WriteTo(__razor_attribute_value_writer, string.Empty);
 #line default
 #line hidden
 
-                Instrumentation.BeginContext(565, 5, false);
+                Instrumentation.BeginContext(563, 5, false);
 #line 14 "DynamicAttributeTagHelpers.cshtml"
              WriteTo(__razor_attribute_value_writer, false);
 
@@ -307,10 +307,10 @@ WriteTo(__razor_attribute_value_writer, string.Empty);
 #line hidden
 
             }
-            ), 528, 44, false);
+            ), 526, 44, false);
             EndAddHtmlAttributeValues(__tagHelperExecutionContext);
             __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
-            Instrumentation.BeginContext(512, 64, false);
+            Instrumentation.BeginContext(510, 64, false);
             await WriteTagHelperAsync(__tagHelperExecutionContext);
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.End();

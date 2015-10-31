@@ -1,4 +1,4 @@
-#pragma checksum "SingleTagHelper.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "070b72826371f13e4d364e6324cf512220ec1c0f"
+#pragma checksum "SingleTagHelper.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "4d7ff17da750ffcbca3130faffef1030e5eb03b8"
 namespace TestOutput
 {
     using System;
@@ -23,11 +23,11 @@ namespace TestOutput
         public override async Task ExecuteAsync()
         {
             __tagHelperRunner = __tagHelperRunner ?? new global::Microsoft.AspNet.Razor.Runtime.TagHelperRunner();
-            Instrumentation.BeginContext(33, 2, true);
+            Instrumentation.BeginContext(31, 2, true);
             WriteLiteral("\r\n");
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.Begin("p", global::Microsoft.AspNet.Razor.TagHelpers.TagMode.StartTagAndEndTag, "test", async() => {
-                Instrumentation.BeginContext(69, 11, true);
+                Instrumentation.BeginContext(67, 11, true);
                 WriteLiteral("Body of Tag");
                 Instrumentation.EndContext();
             }
@@ -42,7 +42,7 @@ __TestNamespace_PTagHelper.Age = 1337;
 #line hidden
             __tagHelperExecutionContext.AddTagHelperAttribute("age", __TestNamespace_PTagHelper.Age);
             __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
-            Instrumentation.BeginContext(35, 49, false);
+            Instrumentation.BeginContext(33, 49, false);
             await WriteTagHelperAsync(__tagHelperExecutionContext);
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.End();

@@ -1,4 +1,4 @@
-#pragma checksum "NestedScriptTagTagHelpers.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "9e6bc8d09df124eda650118b208b7c5e6e058f6b"
+#pragma checksum "NestedScriptTagTagHelpers.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "e3cbc45bc2d4185bf69128f14721795d68e6961a"
 namespace TestOutput
 {
     using System;
@@ -25,12 +25,12 @@ namespace TestOutput
         public override async Task ExecuteAsync()
         {
             __tagHelperRunner = __tagHelperRunner ?? new global::Microsoft.AspNet.Razor.Runtime.TagHelperRunner();
-            Instrumentation.BeginContext(33, 106, true);
+            Instrumentation.BeginContext(31, 106, true);
             WriteLiteral("\r\n<script type=\"text/html\">\r\n    <div data-animation=\"fade\" class=\"randomNonTagHe" +
 "lperAttribute\">\r\n        ");
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.Begin("p", global::Microsoft.AspNet.Razor.TagHelpers.TagMode.StartTagAndEndTag, "test", async() => {
-                Instrumentation.BeginContext(180, 2, true);
+                Instrumentation.BeginContext(178, 2, true);
                 WriteLiteral("\r\n");
                 Instrumentation.EndContext();
 #line 6 "NestedScriptTagTagHelpers.cshtml"
@@ -45,7 +45,7 @@ namespace TestOutput
 #line default
 #line hidden
 
-                Instrumentation.BeginContext(225, 84, true);
+                Instrumentation.BeginContext(223, 84, true);
                 WriteLiteral("                <script id=\"nestedScriptTag\" type=\"text/html\">\r\n                 " +
 "   ");
                 Instrumentation.EndContext();
@@ -76,11 +76,11 @@ namespace TestOutput
 #line hidden
                 __tagHelperExecutionContext.AddTagHelperAttribute("checked", __TestNamespace_InputTagHelper2.Checked);
                 __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
-                Instrumentation.BeginContext(309, 86, false);
+                Instrumentation.BeginContext(307, 86, false);
                 await WriteTagHelperAsync(__tagHelperExecutionContext);
                 Instrumentation.EndContext();
                 __tagHelperExecutionContext = __tagHelperScopeManager.End();
-                Instrumentation.BeginContext(395, 29, true);
+                Instrumentation.BeginContext(393, 29, true);
                 WriteLiteral("\r\n                </script>\r\n");
                 Instrumentation.EndContext();
 #line 10 "NestedScriptTagTagHelpers.cshtml"
@@ -89,7 +89,7 @@ namespace TestOutput
 #line default
 #line hidden
 
-                Instrumentation.BeginContext(439, 129, true);
+                Instrumentation.BeginContext(437, 129, true);
                 WriteLiteral("            <script type=\"text/javascript\">\r\n                var tag = \'<input ch" +
 "ecked=\"true\">\';\r\n            </script>\r\n        ");
                 Instrumentation.EndContext();
@@ -100,11 +100,11 @@ namespace TestOutput
             __tagHelperExecutionContext.AddHtmlAttribute("class", Html.Raw("Hello World"));
             __tagHelperExecutionContext.AddHtmlAttribute("data-delay", Html.Raw("1000"));
             __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
-            Instrumentation.BeginContext(139, 433, false);
+            Instrumentation.BeginContext(137, 433, false);
             await WriteTagHelperAsync(__tagHelperExecutionContext);
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
-            Instrumentation.BeginContext(572, 23, true);
+            Instrumentation.BeginContext(570, 23, true);
             WriteLiteral("\r\n    </div>\r\n</script>");
             Instrumentation.EndContext();
         }

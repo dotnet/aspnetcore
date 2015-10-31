@@ -10,20 +10,8 @@ namespace TestOutput
         {
             #pragma warning disable 219
             string __tagHelperDirectiveSyntaxHelper = null;
-            __tagHelperDirectiveSyntaxHelper = 
-#line 1 "BasicTagHelpers.Prefixed.cshtml"
-                 "THS"
-
-#line default
-#line hidden
-            ;
-            __tagHelperDirectiveSyntaxHelper = 
-#line 2 "BasicTagHelpers.Prefixed.cshtml"
-              "something, nice"
-
-#line default
-#line hidden
-            ;
+            __tagHelperDirectiveSyntaxHelper = "THS";
+            __tagHelperDirectiveSyntaxHelper = "something, nice";
             #pragma warning restore 219
         }
         #line hidden

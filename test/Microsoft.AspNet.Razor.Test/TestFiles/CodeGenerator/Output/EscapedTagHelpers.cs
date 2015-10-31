@@ -1,4 +1,4 @@
-#pragma checksum "EscapedTagHelpers.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "dcdd88b4f52fa03367f94849021a84a290cb3c1e"
+#pragma checksum "EscapedTagHelpers.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "93da17a7091c4d218cfc54282dec1b7b7beac072"
 namespace TestOutput
 {
     using System;
@@ -24,17 +24,17 @@ namespace TestOutput
         public override async Task ExecuteAsync()
         {
             __tagHelperRunner = __tagHelperRunner ?? new global::Microsoft.AspNet.Razor.Runtime.TagHelperRunner();
-            Instrumentation.BeginContext(27, 72, true);
+            Instrumentation.BeginContext(25, 72, true);
             WriteLiteral("\r\n<div class=\"randomNonTagHelperAttribute\">\r\n    <p class=\"Hello World\" ");
             Instrumentation.EndContext();
-            Instrumentation.BeginContext(102, 12, false);
+            Instrumentation.BeginContext(100, 12, false);
 #line 4 "EscapedTagHelpers.cshtml"
                        Write(DateTime.Now);
 
 #line default
 #line hidden
             Instrumentation.EndContext();
-            Instrumentation.BeginContext(114, 69, true);
+            Instrumentation.BeginContext(112, 69, true);
             WriteLiteral(">\r\n        <input type=\"text\" />\r\n        <em>Not a TagHelper: </em> ");
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input", global::Microsoft.AspNet.Razor.TagHelpers.TagMode.SelfClosing, "test", async() => {
@@ -61,11 +61,11 @@ namespace TestOutput
 #line hidden
             __tagHelperExecutionContext.AddTagHelperAttribute("checked", __TestNamespace_InputTagHelper2.Checked);
             __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
-            Instrumentation.BeginContext(186, 45, false);
+            Instrumentation.BeginContext(184, 45, false);
             await WriteTagHelperAsync(__tagHelperExecutionContext);
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
-            Instrumentation.BeginContext(231, 18, true);
+            Instrumentation.BeginContext(229, 18, true);
             WriteLiteral("\r\n    </p>\r\n</div>");
             Instrumentation.EndContext();
         }

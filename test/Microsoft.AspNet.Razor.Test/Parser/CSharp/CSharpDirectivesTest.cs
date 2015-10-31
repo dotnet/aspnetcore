@@ -12,29 +12,16 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
     public class CSharpDirectivesTest : CsHtmlCodeParserTestBase
     {
         [Fact]
-        public void TagHelperPrefixDirective_NoValueSucceeds()
-        {
-            ParseBlockTest("@tagHelperPrefix \"\"",
-                new DirectiveBlock(
-                    Factory.CodeTransition(),
-                    Factory
-                        .MetaCode(SyntaxConstants.CSharp.TagHelperPrefixKeyword + " ")
-                        .Accepts(AcceptedCharacters.None),
-                    Factory.Code("\"\"")
-                        .AsTagHelperPrefixDirective(string.Empty)));
-        }
-
-        [Fact]
         public void TagHelperPrefixDirective_Succeeds()
         {
-            ParseBlockTest("@tagHelperPrefix \"Foo\"",
+            ParseBlockTest("@tagHelperPrefix Foo",
                 new DirectiveBlock(
                     Factory.CodeTransition(),
                     Factory
                         .MetaCode(SyntaxConstants.CSharp.TagHelperPrefixKeyword + " ")
                         .Accepts(AcceptedCharacters.None),
-                    Factory.Code("\"Foo\"")
-                        .AsTagHelperPrefixDirective("Foo")));
+                    Factory.Code("Foo")
+                        .AsTagHelperPrefixDirective()));
         }
 
         [Fact]
@@ -47,7 +34,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                         .MetaCode(SyntaxConstants.CSharp.TagHelperPrefixKeyword + " ")
                         .Accepts(AcceptedCharacters.None),
                     Factory.EmptyCSharp()
-                        .AsStatement()
+                        .AsTagHelperPrefixDirective()
                         .Accepts(AcceptedCharacters.AnyExceptNewline)),
                  new RazorError(
                     RazorResources.FormatParseError_DirectiveMustHaveValue(
@@ -56,86 +43,27 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
         }
 
         [Fact]
-        public void TagHelperPrefixDirective_StartQuoteRequiresDoubleQuotesAroundValue()
-        {
-            ParseBlockTest("@tagHelperPrefix \"Foo",
-                new DirectiveBlock(
-                    Factory.CodeTransition(),
-                    Factory
-                        .MetaCode(SyntaxConstants.CSharp.TagHelperPrefixKeyword + " ")
-                        .Accepts(AcceptedCharacters.None),
-                    Factory.Code("\"Foo")
-                        .AsTagHelperPrefixDirective("Foo")),
-                new RazorError(
-                    RazorResources.ParseError_Unterminated_String_Literal,
-                    absoluteIndex: 17, lineIndex: 0, columnIndex: 17, length: 1),
-                new RazorError(
-                    RazorResources.FormatParseError_DirectiveMustBeSurroundedByQuotes(
-                        SyntaxConstants.CSharp.TagHelperPrefixKeyword),
-                        absoluteIndex: 17, lineIndex: 0, columnIndex: 17, length: 4));
-        }
-
-        [Fact]
-        public void TagHelperPrefixDirective_EndQuoteRequiresDoubleQuotesAroundValue()
-        {
-            ParseBlockTest("@tagHelperPrefix Foo\"",
-                new DirectiveBlock(
-                    Factory.CodeTransition(),
-                    Factory
-                        .MetaCode(SyntaxConstants.CSharp.TagHelperPrefixKeyword + " ")
-                        .Accepts(AcceptedCharacters.None),
-                    Factory.Code("Foo\"")
-                        .AsStatement()
-                        .Accepts(AcceptedCharacters.AnyExceptNewline)),
-                 new RazorError(
-                     RazorResources.ParseError_Unterminated_String_Literal,
-                     absoluteIndex: 20, lineIndex: 0, columnIndex: 20, length: 1),
-                 new RazorError(
-                     RazorResources.FormatParseError_DirectiveMustBeSurroundedByQuotes(
-                        SyntaxConstants.CSharp.TagHelperPrefixKeyword),
-                        absoluteIndex: 17, lineIndex: 0, columnIndex: 17, length: 4));
-        }
-
-        [Fact]
-        public void TagHelperPrefixDirective_RequiresDoubleQuotesAroundValue()
-        {
-            ParseBlockTest("@tagHelperPrefix Foo",
-                new DirectiveBlock(
-                    Factory.CodeTransition(),
-                    Factory
-                        .MetaCode(SyntaxConstants.CSharp.TagHelperPrefixKeyword + " ")
-                        .Accepts(AcceptedCharacters.None),
-                    Factory.Code("Foo")
-                        .AsStatement()
-                        .Accepts(AcceptedCharacters.AnyExceptNewline)),
-                 new RazorError(
-                     RazorResources.FormatParseError_DirectiveMustBeSurroundedByQuotes(
-                        SyntaxConstants.CSharp.TagHelperPrefixKeyword),
-                        absoluteIndex: 17, lineIndex: 0, columnIndex: 17, length: 3));
-        }
-
-        [Fact]
         public void RemoveTagHelperDirective_Succeeds()
         {
-            ParseBlockTest("@removeTagHelper \"Foo\"",
+            ParseBlockTest("@removeTagHelper Foo",
                 new DirectiveBlock(
                     Factory.CodeTransition(),
                     Factory.MetaCode(SyntaxConstants.CSharp.RemoveTagHelperKeyword + " ")
                            .Accepts(AcceptedCharacters.None),
-                    Factory.Code("\"Foo\"")
-                        .AsRemoveTagHelper("Foo")));
+                    Factory.Code("Foo")
+                        .AsRemoveTagHelper()));
         }
 
         [Fact]
         public void RemoveTagHelperDirective_SupportsSpaces()
         {
-            ParseBlockTest("@removeTagHelper   \"  Foo,   Bar \"   ",
+            ParseBlockTest("@removeTagHelper     Foo,   Bar    ",
                 new DirectiveBlock(
                     Factory.CodeTransition(),
-                    Factory.MetaCode(SyntaxConstants.CSharp.RemoveTagHelperKeyword + "   ")
+                    Factory.MetaCode(SyntaxConstants.CSharp.RemoveTagHelperKeyword + "     ")
                            .Accepts(AcceptedCharacters.None),
-                    Factory.Code("\"  Foo,   Bar \"   ")
-                        .AsRemoveTagHelper("Foo,   Bar")
+                    Factory.Code("Foo,   Bar    ")
+                        .AsRemoveTagHelper()
                         .Accepts(AcceptedCharacters.AnyExceptNewline)));
         }
 
@@ -148,7 +76,7 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                     Factory.MetaCode(SyntaxConstants.CSharp.RemoveTagHelperKeyword + " ")
                            .Accepts(AcceptedCharacters.None),
                     Factory.EmptyCSharp()
-                        .AsStatement()
+                        .AsRemoveTagHelper()
                         .Accepts(AcceptedCharacters.AnyExceptNewline)),
                  new RazorError(
                     RazorResources.FormatParseError_DirectiveMustHaveValue(
@@ -157,83 +85,27 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
         }
 
         [Fact]
-        public void RemoveTagHelperDirective_StartQuoteRequiresDoubleQuotesAroundValue()
-        {
-            ParseBlockTest("@removeTagHelper \"Foo",
-                new DirectiveBlock(
-                    Factory.CodeTransition(),
-                    Factory.MetaCode(SyntaxConstants.CSharp.RemoveTagHelperKeyword + " ")
-                           .Accepts(AcceptedCharacters.None),
-                    Factory.Code("\"Foo")
-                        .AsRemoveTagHelper("Foo")),
-                 new RazorError(
-                     RazorResources.ParseError_Unterminated_String_Literal,
-                     absoluteIndex: 17, lineIndex: 0, columnIndex: 17, length: 1),
-                 new RazorError(
-                     RazorResources.FormatParseError_DirectiveMustBeSurroundedByQuotes(
-                        SyntaxConstants.CSharp.RemoveTagHelperKeyword),
-                        absoluteIndex: 17, lineIndex: 0, columnIndex: 17, length: 4));
-        }
-
-        [Fact]
-        public void RemoveTagHelperDirective_EndQuoteRequiresDoubleQuotesAroundValue()
-        {
-            ParseBlockTest("@removeTagHelper Foo\"",
-                new DirectiveBlock(
-                    Factory.CodeTransition(),
-                    Factory.MetaCode(SyntaxConstants.CSharp.RemoveTagHelperKeyword + " ")
-                           .Accepts(AcceptedCharacters.None),
-                    Factory.Code("Foo\"")
-                        .AsStatement()
-                        .Accepts(AcceptedCharacters.AnyExceptNewline)),
-                 new RazorError(
-                     RazorResources.ParseError_Unterminated_String_Literal,
-                     absoluteIndex: 20, lineIndex: 0, columnIndex: 20, length: 1),
-                 new RazorError(
-                     RazorResources.FormatParseError_DirectiveMustBeSurroundedByQuotes(
-                        SyntaxConstants.CSharp.RemoveTagHelperKeyword),
-                        absoluteIndex: 17, lineIndex: 0, columnIndex: 17, length: 4));
-        }
-
-        [Fact]
-        public void RemoveTagHelperDirective_RequiresDoubleQuotesAroundValue()
-        {
-            ParseBlockTest("@removeTagHelper Foo",
-                new DirectiveBlock(
-                    Factory.CodeTransition(),
-                    Factory.MetaCode(SyntaxConstants.CSharp.RemoveTagHelperKeyword + " ")
-                           .Accepts(AcceptedCharacters.None),
-                    Factory.Code("Foo")
-                        .AsStatement()
-                        .Accepts(AcceptedCharacters.AnyExceptNewline)),
-                 new RazorError(
-                     RazorResources.FormatParseError_DirectiveMustBeSurroundedByQuotes(
-                        SyntaxConstants.CSharp.RemoveTagHelperKeyword),
-                        absoluteIndex: 17, lineIndex: 0, columnIndex: 17, length: 3));
-        }
-
-        [Fact]
         public void AddTagHelperDirective_Succeeds()
         {
-            ParseBlockTest("@addTagHelper \"Foo\"",
+            ParseBlockTest("@addTagHelper Foo",
                 new DirectiveBlock(
                     Factory.CodeTransition(),
                     Factory.MetaCode(SyntaxConstants.CSharp.AddTagHelperKeyword + " ")
                            .Accepts(AcceptedCharacters.None),
-                    Factory.Code("\"Foo\"")
-                        .AsAddTagHelper("Foo")));
+                    Factory.Code("Foo")
+                        .AsAddTagHelper()));
         }
 
         [Fact]
         public void AddTagHelperDirectiveSupportsSpaces()
         {
-            ParseBlockTest("@addTagHelper   \"  Foo,   Bar \"   ",
+            ParseBlockTest("@addTagHelper     Foo,   Bar    ",
                 new DirectiveBlock(
                     Factory.CodeTransition(),
-                    Factory.MetaCode(SyntaxConstants.CSharp.AddTagHelperKeyword + "   ")
+                    Factory.MetaCode(SyntaxConstants.CSharp.AddTagHelperKeyword + "     ")
                            .Accepts(AcceptedCharacters.None),
-                    Factory.Code("\"  Foo,   Bar \"   ")
-                        .AsAddTagHelper("Foo,   Bar")));
+                    Factory.Code("Foo,   Bar    ")
+                        .AsAddTagHelper()));
         }
 
         [Fact]
@@ -245,67 +117,11 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                     Factory.MetaCode(SyntaxConstants.CSharp.AddTagHelperKeyword + " ")
                            .Accepts(AcceptedCharacters.None),
                     Factory.EmptyCSharp()
-                        .AsStatement()
+                        .AsAddTagHelper()
                         .Accepts(AcceptedCharacters.AnyExceptNewline)),
                  new RazorError(
                     RazorResources.FormatParseError_DirectiveMustHaveValue(SyntaxConstants.CSharp.AddTagHelperKeyword),
                     absoluteIndex: 1, lineIndex: 0, columnIndex: 1, length: 12));
-        }
-
-        [Fact]
-        public void AddTagHelperDirectiveWithStartQuoteRequiresDoubleQuotesAroundValue()
-        {
-            ParseBlockTest("@addTagHelper \"Foo",
-                new DirectiveBlock(
-                    Factory.CodeTransition(),
-                    Factory.MetaCode(SyntaxConstants.CSharp.AddTagHelperKeyword + " ")
-                           .Accepts(AcceptedCharacters.None),
-                    Factory.Code("\"Foo")
-                        .AsAddTagHelper("Foo")),
-                 new RazorError(
-                     RazorResources.ParseError_Unterminated_String_Literal,
-                     absoluteIndex: 14, lineIndex: 0, columnIndex: 14, length: 1),
-                 new RazorError(
-                     RazorResources.FormatParseError_DirectiveMustBeSurroundedByQuotes(
-                        SyntaxConstants.CSharp.AddTagHelperKeyword),
-                        absoluteIndex: 14, lineIndex: 0, columnIndex: 14, length: 4));
-        }
-
-        [Fact]
-        public void AddTagHelperDirectiveWithEndQuoteRequiresDoubleQuotesAroundValue()
-        {
-            ParseBlockTest("@addTagHelper Foo\"",
-                new DirectiveBlock(
-                    Factory.CodeTransition(),
-                    Factory.MetaCode(SyntaxConstants.CSharp.AddTagHelperKeyword + " ")
-                           .Accepts(AcceptedCharacters.None),
-                    Factory.Code("Foo\"")
-                        .AsStatement()
-                        .Accepts(AcceptedCharacters.AnyExceptNewline)),
-                 new RazorError(
-                     RazorResources.ParseError_Unterminated_String_Literal,
-                     absoluteIndex: 17, lineIndex: 0, columnIndex: 17, length: 1),
-                 new RazorError(
-                     RazorResources.FormatParseError_DirectiveMustBeSurroundedByQuotes(
-                        SyntaxConstants.CSharp.AddTagHelperKeyword),
-                        absoluteIndex: 14, lineIndex: 0, columnIndex: 14, length: 4));
-        }
-
-        [Fact]
-        public void AddTagHelperDirectiveRequiresDoubleQuotesAroundValue()
-        {
-            ParseBlockTest("@addTagHelper Foo",
-                new DirectiveBlock(
-                    Factory.CodeTransition(),
-                    Factory.MetaCode(SyntaxConstants.CSharp.AddTagHelperKeyword + " ")
-                           .Accepts(AcceptedCharacters.None),
-                    Factory.Code("Foo")
-                        .AsStatement()
-                        .Accepts(AcceptedCharacters.AnyExceptNewline)),
-                 new RazorError(
-                     RazorResources.FormatParseError_DirectiveMustBeSurroundedByQuotes(
-                        SyntaxConstants.CSharp.AddTagHelperKeyword),
-                        absoluteIndex: 14, lineIndex: 0, columnIndex: 14, length: 3));
         }
 
         [Fact]

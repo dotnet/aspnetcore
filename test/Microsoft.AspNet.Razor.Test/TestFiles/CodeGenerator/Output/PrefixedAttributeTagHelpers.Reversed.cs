@@ -1,4 +1,4 @@
-#pragma checksum "PrefixedAttributeTagHelpers.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "4e7fe9697b745af1a07d41f6a8532fdc288fa046"
+#pragma checksum "PrefixedAttributeTagHelpers.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "5ae668a393146e4a06179eb37952603907a9b825"
 namespace TestOutput
 {
     using System;
@@ -24,7 +24,7 @@ namespace TestOutput
         public override async Task ExecuteAsync()
         {
             __tagHelperRunner = __tagHelperRunner ?? new global::Microsoft.AspNet.Razor.Runtime.TagHelperRunner();
-            Instrumentation.BeginContext(33, 2, true);
+            Instrumentation.BeginContext(31, 2, true);
             WriteLiteral("\r\n");
             Instrumentation.EndContext();
 #line 3 "PrefixedAttributeTagHelpers.cshtml"
@@ -42,7 +42,7 @@ namespace TestOutput
 #line default
 #line hidden
 
-            Instrumentation.BeginContext(282, 49, true);
+            Instrumentation.BeginContext(280, 49, true);
             WriteLiteral("\r\n<div class=\"randomNonTagHelperAttribute\">\r\n    ");
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input", global::Microsoft.AspNet.Razor.TagHelpers.TagMode.SelfClosing, "test", async() => {
@@ -68,11 +68,11 @@ __TestNamespace_InputTagHelper2.IntDictionaryProperty = intDictionary;
             __tagHelperExecutionContext.AddTagHelperAttribute("string-dictionary", __TestNamespace_InputTagHelper2.StringDictionaryProperty);
             __TestNamespace_InputTagHelper1.StringDictionaryProperty = __TestNamespace_InputTagHelper2.StringDictionaryProperty;
             __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
-            Instrumentation.BeginContext(331, 92, false);
+            Instrumentation.BeginContext(329, 92, false);
             await WriteTagHelperAsync(__tagHelperExecutionContext);
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
-            Instrumentation.BeginContext(423, 6, true);
+            Instrumentation.BeginContext(421, 6, true);
             WriteLiteral("\r\n    ");
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input", global::Microsoft.AspNet.Razor.TagHelpers.TagMode.SelfClosing, "test", async() => {
@@ -113,11 +113,11 @@ __TestNamespace_InputTagHelper2.IntDictionaryProperty = intDictionary;
             __tagHelperExecutionContext.AddTagHelperAttribute("int-prefix-grabber", __TestNamespace_InputTagHelper2.IntDictionaryProperty["grabber"]);
             __TestNamespace_InputTagHelper1.IntProperty = __TestNamespace_InputTagHelper2.IntDictionaryProperty["grabber"];
             __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
-            Instrumentation.BeginContext(429, 103, false);
+            Instrumentation.BeginContext(427, 103, false);
             await WriteTagHelperAsync(__tagHelperExecutionContext);
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
-            Instrumentation.BeginContext(532, 6, true);
+            Instrumentation.BeginContext(530, 6, true);
             WriteLiteral("\r\n    ");
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input", global::Microsoft.AspNet.Razor.TagHelpers.TagMode.SelfClosing, "test", async() => {
@@ -185,11 +185,11 @@ __TestNamespace_InputTagHelper2.IntDictionaryProperty["salt"] = 37;
             __tagHelperExecutionContext.AddTagHelperAttribute("string-prefix-cumin", __TestNamespace_InputTagHelper2.StringDictionaryProperty["cumin"]);
             __TestNamespace_InputTagHelper1.StringDictionaryProperty["cumin"] = __TestNamespace_InputTagHelper2.StringDictionaryProperty["cumin"];
             __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
-            Instrumentation.BeginContext(538, 257, false);
+            Instrumentation.BeginContext(536, 257, false);
             await WriteTagHelperAsync(__tagHelperExecutionContext);
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
-            Instrumentation.BeginContext(795, 6, true);
+            Instrumentation.BeginContext(793, 6, true);
             WriteLiteral("\r\n    ");
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input", global::Microsoft.AspNet.Razor.TagHelpers.TagMode.SelfClosing, "test", async() => {
@@ -226,11 +226,11 @@ __TestNamespace_InputTagHelper2.IntDictionaryProperty["value"] = 37;
             __tagHelperExecutionContext.AddTagHelperAttribute("string-prefix-thyme", __TestNamespace_InputTagHelper2.StringDictionaryProperty["thyme"]);
             __TestNamespace_InputTagHelper1.StringDictionaryProperty["thyme"] = __TestNamespace_InputTagHelper2.StringDictionaryProperty["thyme"];
             __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
-            Instrumentation.BeginContext(801, 60, false);
+            Instrumentation.BeginContext(799, 60, false);
             await WriteTagHelperAsync(__tagHelperExecutionContext);
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
-            Instrumentation.BeginContext(861, 8, true);
+            Instrumentation.BeginContext(859, 8, true);
             WriteLiteral("\r\n</div>");
             Instrumentation.EndContext();
         }

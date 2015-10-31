@@ -1,4 +1,4 @@
-#pragma checksum "TransitionsInTagHelperAttributes.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "050ce5cabf326eaa117aa12f5a1a10dbf82a8917"
+#pragma checksum "TransitionsInTagHelperAttributes.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "b9b5a5baa9e2ea89cb37a127c0623b083bff74c3"
 namespace TestOutput
 {
     using System;
@@ -31,11 +31,11 @@ namespace TestOutput
 #line default
 #line hidden
 
-            Instrumentation.BeginContext(97, 2, true);
+            Instrumentation.BeginContext(95, 2, true);
             WriteLiteral("\r\n");
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.Begin("p", global::Microsoft.AspNet.Razor.TagHelpers.TagMode.StartTagAndEndTag, "test", async() => {
-                Instrumentation.BeginContext(128, 11, true);
+                Instrumentation.BeginContext(126, 11, true);
                 WriteLiteral("Body of Tag");
                 Instrumentation.EndContext();
             }
@@ -43,9 +43,9 @@ namespace TestOutput
             __TestNamespace_PTagHelper = CreateTagHelper<global::TestNamespace.PTagHelper>();
             __tagHelperExecutionContext.Add(__TestNamespace_PTagHelper);
             BeginAddHtmlAttributeValues(__tagHelperExecutionContext, "class", 1);
-            AddHtmlAttributeValue("", 109, new Template(async(__razor_attribute_value_writer) => {
+            AddHtmlAttributeValue("", 107, new Template(async(__razor_attribute_value_writer) => {
             }
-            ), 109, 6, false);
+            ), 107, 6, false);
             EndAddHtmlAttributeValues(__tagHelperExecutionContext);
 #line 7 "TransitionsInTagHelperAttributes.cshtml"
 __TestNamespace_PTagHelper.Age = 1337;
@@ -54,11 +54,11 @@ __TestNamespace_PTagHelper.Age = 1337;
 #line hidden
             __tagHelperExecutionContext.AddTagHelperAttribute("age", __TestNamespace_PTagHelper.Age);
             __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
-            Instrumentation.BeginContext(99, 44, false);
+            Instrumentation.BeginContext(97, 44, false);
             await WriteTagHelperAsync(__tagHelperExecutionContext);
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
-            Instrumentation.BeginContext(143, 2, true);
+            Instrumentation.BeginContext(141, 2, true);
             WriteLiteral("\r\n");
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.Begin("p", global::Microsoft.AspNet.Razor.TagHelpers.TagMode.StartTagAndEndTag, "test", async() => {
@@ -68,7 +68,7 @@ __TestNamespace_PTagHelper.Age = 1337;
             __tagHelperExecutionContext.Add(__TestNamespace_PTagHelper);
             BeginAddHtmlAttributeValues(__tagHelperExecutionContext, "class", 1);
 #line 8 "TransitionsInTagHelperAttributes.cshtml"
-AddHtmlAttributeValue("", 155, @class, 155, 9, false);
+AddHtmlAttributeValue("", 153, @class, 153, 9, false);
 
 #line default
 #line hidden
@@ -80,11 +80,11 @@ __TestNamespace_PTagHelper.Age = 42;
 #line hidden
             __tagHelperExecutionContext.AddTagHelperAttribute("age", __TestNamespace_PTagHelper.Age);
             __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
-            Instrumentation.BeginContext(145, 34, false);
+            Instrumentation.BeginContext(143, 34, false);
             await WriteTagHelperAsync(__tagHelperExecutionContext);
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
-            Instrumentation.BeginContext(179, 2, true);
+            Instrumentation.BeginContext(177, 2, true);
             WriteLiteral("\r\n");
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.Begin("p", global::Microsoft.AspNet.Razor.TagHelpers.TagMode.StartTagAndEndTag, "test", async() => {
@@ -100,11 +100,11 @@ __TestNamespace_PTagHelper.Age = 42 + @int;
 #line hidden
             __tagHelperExecutionContext.AddTagHelperAttribute("age", __TestNamespace_PTagHelper.Age);
             __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
-            Instrumentation.BeginContext(181, 36, false);
+            Instrumentation.BeginContext(179, 36, false);
             await WriteTagHelperAsync(__tagHelperExecutionContext);
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
-            Instrumentation.BeginContext(217, 2, true);
+            Instrumentation.BeginContext(215, 2, true);
             WriteLiteral("\r\n");
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.Begin("p", global::Microsoft.AspNet.Razor.TagHelpers.TagMode.StartTagAndEndTag, "test", async() => {
@@ -120,11 +120,11 @@ __TestNamespace_PTagHelper.Age = int;
 #line hidden
             __tagHelperExecutionContext.AddTagHelperAttribute("age", __TestNamespace_PTagHelper.Age);
             __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
-            Instrumentation.BeginContext(219, 31, false);
+            Instrumentation.BeginContext(217, 31, false);
             await WriteTagHelperAsync(__tagHelperExecutionContext);
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
-            Instrumentation.BeginContext(250, 2, true);
+            Instrumentation.BeginContext(248, 2, true);
             WriteLiteral("\r\n");
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.Begin("p", global::Microsoft.AspNet.Razor.TagHelpers.TagMode.StartTagAndEndTag, "test", async() => {
@@ -140,11 +140,11 @@ __TestNamespace_PTagHelper.Age = (@int);
 #line hidden
             __tagHelperExecutionContext.AddTagHelperAttribute("age", __TestNamespace_PTagHelper.Age);
             __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
-            Instrumentation.BeginContext(252, 34, false);
+            Instrumentation.BeginContext(250, 34, false);
             await WriteTagHelperAsync(__tagHelperExecutionContext);
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
-            Instrumentation.BeginContext(286, 2, true);
+            Instrumentation.BeginContext(284, 2, true);
             WriteLiteral("\r\n");
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.Begin("p", global::Microsoft.AspNet.Razor.TagHelpers.TagMode.StartTagAndEndTag, "test", async() => {
@@ -153,9 +153,9 @@ __TestNamespace_PTagHelper.Age = (@int);
             __TestNamespace_PTagHelper = CreateTagHelper<global::TestNamespace.PTagHelper>();
             __tagHelperExecutionContext.Add(__TestNamespace_PTagHelper);
             BeginAddHtmlAttributeValues(__tagHelperExecutionContext, "class", 2);
-            AddHtmlAttributeValue("", 298, "custom-", 298, 7, true);
+            AddHtmlAttributeValue("", 296, "custom-", 296, 7, true);
 #line 12 "TransitionsInTagHelperAttributes.cshtml"
-AddHtmlAttributeValue("", 305, @class, 305, 9, false);
+AddHtmlAttributeValue("", 303, @class, 303, 9, false);
 
 #line default
 #line hidden
@@ -167,11 +167,11 @@ __TestNamespace_PTagHelper.Age = 4 * @(@int + 2);
 #line hidden
             __tagHelperExecutionContext.AddTagHelperAttribute("age", __TestNamespace_PTagHelper.Age);
             __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
-            Instrumentation.BeginContext(288, 54, false);
+            Instrumentation.BeginContext(286, 54, false);
             await WriteTagHelperAsync(__tagHelperExecutionContext);
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
-            Instrumentation.BeginContext(342, 2, true);
+            Instrumentation.BeginContext(340, 2, true);
             WriteLiteral("\r\n");
             Instrumentation.EndContext();
         }
