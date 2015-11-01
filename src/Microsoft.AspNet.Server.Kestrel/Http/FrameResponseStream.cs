@@ -11,6 +11,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
     class FrameResponseStream : Stream
     {
         private readonly FrameContext _context;
+        private bool _stopped;
 
         public FrameResponseStream(FrameContext context)
         {
@@ -35,11 +36,21 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         public override void Flush()
         {
+            if (_stopped)
+            {
+                throw new ObjectDisposedException("ResponseStream has been disposed");
+            }
+
             _context.FrameControl.Flush();
         }
 
         public override Task FlushAsync(CancellationToken cancellationToken)
         {
+            if (_stopped)
+            {
+                throw new ObjectDisposedException("ResponseStream has been disposed");
+            }
+
             return _context.FrameControl.FlushAsync(cancellationToken);
         }
 
@@ -60,12 +71,27 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         public override void Write(byte[] buffer, int offset, int count)
         {
+            if (_stopped)
+            {
+                throw new ObjectDisposedException("ResponseStream has been disposed");
+            }
+
             _context.FrameControl.Write(new ArraySegment<byte>(buffer, offset, count));
         }
 
         public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
+            if (_stopped)
+            {
+                throw new ObjectDisposedException("ResponseStream has been disposed");
+            }
+
             return _context.FrameControl.WriteAsync(new ArraySegment<byte>(buffer, offset, count), cancellationToken);
+        }
+
+        public void StopAcceptingWrites()
+        {
+            _stopped = true;
         }
     }
 }

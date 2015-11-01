@@ -204,8 +204,10 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                     {
                         MessageBody = MessageBody.For(HttpVersion, _requestHeaders, this);
                         _keepAlive = MessageBody.RequestKeepAlive;
-                        RequestBody = new FrameRequestStream(MessageBody);
-                        ResponseBody = new FrameResponseStream(this);
+                        var requestBody = new FrameRequestStream(MessageBody);
+                        RequestBody = requestBody;
+                        var responseBody = new FrameResponseStream(this);
+                        ResponseBody = responseBody;
                         DuplexStream = new FrameDuplexStream(RequestBody, ResponseBody);
 
                         var httpContext = HttpContextFactory.Create(this);
@@ -236,6 +238,9 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
                             // Finish reading the request body in case the app did not.
                             await MessageBody.Consume();
+
+                            requestBody.StopAcceptingReads();
+                            responseBody.StopAcceptingWrites();
                         }
 
                         terminated = !_keepAlive;

@@ -11,6 +11,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
     public class FrameRequestStream : Stream
     {
         private readonly MessageBody _body;
+        private bool _stopped;
 
         public FrameRequestStream(MessageBody body)
         {
@@ -50,12 +51,22 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         public override int Read(byte[] buffer, int offset, int count)
         {
+            if (_stopped)
+            {
+                throw new ObjectDisposedException("RequestStream has been disposed");
+            }
+
             return ReadAsync(buffer, offset, count).GetAwaiter().GetResult();
         }
 
 #if NET451
         public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
         {
+            if (_stopped)
+            {
+                throw new ObjectDisposedException("RequestStream has been disposed");
+            }
+
             var task = ReadAsync(buffer, offset, count, CancellationToken.None, state);
             if (callback != null)
             {
@@ -71,6 +82,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         private Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken, object state)
         {
+            if (_stopped)
+            {
+                throw new ObjectDisposedException("RequestStream has been disposed");
+            }
+
             var tcs = new TaskCompletionSource<int>(state);
             var task = _body.ReadAsync(new ArraySegment<byte>(buffer, offset, count), cancellationToken);
             task.ContinueWith((task2, state2) =>
@@ -101,6 +117,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         public override void Write(byte[] buffer, int offset, int count)
         {
             throw new NotImplementedException();
+        }
+
+        public void StopAcceptingReads()
+        {
+            _stopped = true;
         }
     }
 }
