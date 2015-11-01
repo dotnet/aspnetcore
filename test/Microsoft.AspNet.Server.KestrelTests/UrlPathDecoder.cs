@@ -115,7 +115,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
             var end = GetIterator(begin, rawLength);
 
             var end2 = UrlPathDecoder.Unescape(begin, end);
-            var result = begin.GetString(end2);
+            var result = begin.GetUtf8String(end2);
 
             Assert.Equal(expectLength, result.Length);
             Assert.Equal(expect, result);
@@ -147,7 +147,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
             var end = GetIterator(begin, raw.Length);
 
             var result = UrlPathDecoder.Unescape(begin, end);
-            Assert.Equal(expect, begin.GetString(result));
+            Assert.Equal(expect, begin.GetUtf8String(result));
         }
 
         private void PositiveAssert(string raw)
@@ -156,7 +156,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
             var end = GetIterator(begin, raw.Length);
 
             var result = UrlPathDecoder.Unescape(begin, end);
-            Assert.NotEqual(raw.Length, begin.GetString(result).Length);
+            Assert.NotEqual(raw.Length, begin.GetUtf8String(result).Length);
         }
 
         private void NegativeAssert(string raw)
@@ -165,7 +165,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
             var end = GetIterator(begin, raw.Length);
 
             var resultEnd = UrlPathDecoder.Unescape(begin, end);
-            var result = begin.GetString(resultEnd);
+            var result = begin.GetUtf8String(resultEnd);
             Assert.Equal(raw, result);
         }
     }

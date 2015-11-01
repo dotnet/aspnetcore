@@ -629,7 +629,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 {
                     return false;
                 }
-                var method = begin.GetString(scan);
+                var method = begin.GetAsciiString(scan);
 
                 scan.Take();
                 begin = scan;
@@ -653,7 +653,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                     {
                         return false;
                     }
-                    queryString = begin.GetString(scan);
+                    queryString = begin.GetAsciiString(scan);
                 }
 
                 scan.Take();
@@ -662,7 +662,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 {
                     return false;
                 }
-                var httpVersion = begin.GetString(scan);
+                var httpVersion = begin.GetAsciiString(scan);
 
                 scan.Take();
                 if (scan.Take() != '\n')
@@ -670,12 +670,21 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                     return false;
                 }
 
+                // URIs are always encoded/escaped to ASCII https://tools.ietf.org/html/rfc3986#page-11 
+                // Multibyte Internationalized Resource Identifiers (IRIs) are first converted to utf8; 
+                // then encoded/escaped to ASCII  https://www.ietf.org/rfc/rfc3987.txt "Mapping of IRIs to URIs"
+                string requestUrlPath;
                 if (needDecode)
                 {
+                    // URI was encoded, unescape and then parse as utf8
                     pathEnd = UrlPathDecoder.Unescape(pathBegin, pathEnd);
+                    requestUrlPath = pathBegin.GetUtf8String(pathEnd);
                 }
-
-                var requestUrlPath = pathBegin.GetString(pathEnd);
+                else
+                {
+                    // URI wasn't encoded, parse as ASCII
+                    requestUrlPath = pathBegin.GetAsciiString(pathEnd);
+                }
 
                 consumed = scan;
                 Method = method;
@@ -689,11 +698,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             {
                 input.ConsumingComplete(consumed, scan);
             }
-        }
-
-        static string GetString(ArraySegment<byte> range, int startIndex, int endIndex)
-        {
-            return Encoding.UTF8.GetString(range.Array, range.Offset + startIndex, endIndex - startIndex);
         }
 
         public static bool TakeMessageHeaders(SocketInput input, FrameRequestHeaders requestHeaders)
@@ -787,7 +791,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         }
 
                         var name = beginName.GetArraySegment(endName);
-                        var value = beginValue.GetString(endValue);
+                        var value = beginValue.GetAsciiString(endValue);
                         if (wrapping)
                         {
                             value = value.Replace("\r\n", " ");

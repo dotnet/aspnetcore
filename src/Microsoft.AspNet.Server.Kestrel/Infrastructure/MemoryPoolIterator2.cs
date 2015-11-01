@@ -4,7 +4,6 @@
 using System;
 using System.Linq;
 using System.Numerics;
-using System.Text;
 
 namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
 {
@@ -21,8 +20,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
         /// Used as an argument in the vector dot product that determines matching character index.
         /// </summary>
         private static Vector<byte> _dotIndex = new Vector<byte>(Enumerable.Range(0, Vector<byte>.Count).Select(x => (byte)-x).ToArray());
-
-        private static Encoding _utf8 = Encoding.UTF8;
 
         private MemoryPoolBlock2 _block;
         private int _index;
@@ -486,101 +483,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
                     index = block.Start;
                 }
             }
-        }
-
-        public string GetString(MemoryPoolIterator2 end)
-        {
-            if (IsDefault || end.IsDefault)
-            {
-                return default(string);
-            }
-            if (end._block == _block)
-            {
-                return _utf8.GetString(_block.Array, _index, end._index - _index);
-            }
-
-            var decoder = _utf8.GetDecoder();
-
-            var length = GetLength(end);
-            var charLength = length * 2;
-            var chars = new char[charLength];
-            var charIndex = 0;
-
-            var block = _block;
-            var index = _index;
-            var remaining = length;
-            while (true)
-            {
-                int bytesUsed;
-                int charsUsed;
-                bool completed;
-                var following = block.End - index;
-                if (remaining <= following)
-                {
-                    decoder.Convert(
-                        block.Array,
-                        index,
-                        remaining,
-                        chars,
-                        charIndex,
-                        charLength - charIndex,
-                        true,
-                        out bytesUsed,
-                        out charsUsed,
-                        out completed);
-                    return new string(chars, 0, charIndex + charsUsed);
-                }
-                else if (block.Next == null)
-                {
-                    decoder.Convert(
-                        block.Array,
-                        index,
-                        following,
-                        chars,
-                        charIndex,
-                        charLength - charIndex,
-                        true,
-                        out bytesUsed,
-                        out charsUsed,
-                        out completed);
-                    return new string(chars, 0, charIndex + charsUsed);
-                }
-                else
-                {
-                    decoder.Convert(
-                        block.Array,
-                        index,
-                        following,
-                        chars,
-                        charIndex,
-                        charLength - charIndex,
-                        false,
-                        out bytesUsed,
-                        out charsUsed,
-                        out completed);
-                    charIndex += charsUsed;
-                    remaining -= following;
-                    block = block.Next;
-                    index = block.Start;
-                }
-            }
-        }
-
-        public ArraySegment<byte> GetArraySegment(MemoryPoolIterator2 end)
-        {
-            if (IsDefault || end.IsDefault)
-            {
-                return default(ArraySegment<byte>);
-            }
-            if (end._block == _block)
-            {
-                return new ArraySegment<byte>(_block.Array, _index, end._index - _index);
-            }
-
-            var length = GetLength(end);
-            var array = new byte[length];
-            CopyTo(array, 0, length, out length);
-            return new ArraySegment<byte>(array, 0, length);
         }
 
         public MemoryPoolIterator2 CopyTo(byte[] array, int offset, int count, out int actual)
