@@ -10,9 +10,10 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
 {
     public abstract class UvStreamHandle : UvHandle
     {
-        private readonly static Libuv.uv_connection_cb _uv_connection_cb = UvConnectionCb;
-        private readonly static Libuv.uv_alloc_cb _uv_alloc_cb = UvAllocCb;
-        private readonly static Libuv.uv_read_cb _uv_read_cb = UvReadCb;
+        private readonly static Libuv.uv_connection_cb _uv_connection_cb = (handle, status) => UvConnectionCb(handle, status);
+        // Ref and out lamda params must be explicitly typed
+        private readonly static Libuv.uv_alloc_cb _uv_alloc_cb = (IntPtr handle, int suggested_size, out Libuv.uv_buf_t buf) => UvAllocCb(handle, suggested_size, out buf);
+        private readonly static Libuv.uv_read_cb _uv_read_cb = (IntPtr handle, int status, ref Libuv.uv_buf_t buf) => UvReadCb(handle, status, ref buf);
 
         public Action<UvStreamHandle, int, Exception, object> _listenCallback;
         public object _listenState;

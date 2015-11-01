@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             socket.Init(Thread.Loop, Thread.QueueCloseHandle);
             socket.NoDelay(NoDelay);
             socket.Bind(ServerAddress);
-            socket.Listen(Constants.ListenBacklog, ConnectionCallback, this);
+            socket.Listen(Constants.ListenBacklog, (stream, status, error, state) => ConnectionCallback(stream, status, error, state), this);
             return socket;
         }
 
