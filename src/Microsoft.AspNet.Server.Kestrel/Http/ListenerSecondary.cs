@@ -17,6 +17,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
     /// </summary>
     public abstract class ListenerSecondary : ListenerContext, IDisposable
     {
+        private string _pipeName;
+
         protected ListenerSecondary(ServiceContext serviceContext) : base(serviceContext)
         {
         }
@@ -29,95 +31,112 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             KestrelThread thread,
             RequestDelegate application)
         {
+            _pipeName = pipeName;
             ServerAddress = address;
             Thread = thread;
             Application = application;
 
             DispatchPipe = new UvPipeHandle(Log);
 
-            var tcs = new TaskCompletionSource<int>();
-            Thread.Post(_ =>
-            {
-                try
-                {
-                    DispatchPipe.Init(Thread.Loop, true);
-                    var connect = new UvConnectRequest(Log);
-                    connect.Init(Thread.Loop);
-                    connect.Connect(
-                        DispatchPipe,
-                        pipeName,
-                        (connect2, status, error, state) =>
-                        {
-                            connect.Dispose();
-                            if (error != null)
-                            {
-                                tcs.SetException(error);
-                                return;
-                            }
-
-                            try
-                            {
-                                var ptr = Marshal.AllocHGlobal(4);
-                                var buf = Thread.Loop.Libuv.buf_init(ptr, 4);
-
-                                DispatchPipe.ReadStart(
-                                    (_1, _2, _3) => buf,
-                                    (_1, status2, state2) =>
-                                    {
-                                        if (status2 < 0)
-                                        {
-                                            if (status2 != Constants.EOF)
-                                            {
-                                                Exception ex;
-                                                Thread.Loop.Libuv.Check(status2, out ex);
-                                                Log.LogError("DispatchPipe.ReadStart", ex);
-                                            }
-
-                                            DispatchPipe.Dispose();
-                                            Marshal.FreeHGlobal(ptr);
-                                            return;
-                                        }
-
-                                        if (DispatchPipe.PendingCount() == 0)
-                                        {
-                                            return;
-                                        }
-
-                                        var acceptSocket = CreateAcceptSocket();
-
-                                        try
-                                        {
-                                            DispatchPipe.Accept(acceptSocket);
-                                        }
-                                        catch (UvException ex)
-                                        {
-                                            Log.LogError("DispatchPipe.Accept", ex);
-                                            acceptSocket.Dispose();
-                                            return;
-                                        }
-
-                                        var connection = new Connection(this, acceptSocket);
-                                        connection.Start();
-                                    },
-                                    null);
-
-                                tcs.SetResult(0);
-                            }
-                            catch (Exception ex)
-                            {
-                                DispatchPipe.Dispose();
-                                tcs.SetException(ex);
-                            }
-                        },
-                        null);
-                }
-                catch (Exception ex)
-                {
-                    DispatchPipe.Dispose();
-                    tcs.SetException(ex);
-                }
-            }, null);
+            var tcs = new TaskCompletionSource<int>(this);
+            Thread.Post(tcs2 => StartCallback(tcs2), tcs);
             return tcs.Task;
+        }
+
+        private static void StartCallback(TaskCompletionSource<int> tcs)
+        {
+            var listener = (ListenerSecondary)tcs.Task.AsyncState;
+            listener.StartedCallback(tcs);
+        }
+
+        private void StartedCallback(TaskCompletionSource<int> tcs)
+        {
+            try
+            {
+                DispatchPipe.Init(Thread.Loop, true);
+                var connect = new UvConnectRequest(Log);
+                connect.Init(Thread.Loop);
+                connect.Connect(
+                    DispatchPipe,
+                    _pipeName,
+                    (connect2, status, error, state) => ConnectCallback(connect2, status, error, (TaskCompletionSource<int>)state),
+                    tcs);
+            }
+            catch (Exception ex)
+            {
+                DispatchPipe.Dispose();
+                tcs.SetException(ex);
+            }
+        }
+
+        private static void ConnectCallback(UvConnectRequest connect, int status, Exception error, TaskCompletionSource<int> tcs)
+        {
+            var listener = (ListenerSecondary)tcs.Task.AsyncState;
+            listener.ConnectedCallback(connect, status, error, tcs);
+        }
+        private void ConnectedCallback(UvConnectRequest connect, int status, Exception error, TaskCompletionSource<int> tcs)
+        {
+            connect.Dispose();
+            if (error != null)
+            {
+                tcs.SetException(error);
+                return;
+            }
+
+            try
+            {
+                var ptr = Marshal.AllocHGlobal(4);
+                var buf = Thread.Loop.Libuv.buf_init(ptr, 4);
+
+                DispatchPipe.ReadStart(
+                    (handle, status2, state) => buf,
+                    (handle, status2, state) => ((ListenerSecondary)state).ReadStartCallback(handle, status2, ptr), this);
+
+                tcs.SetResult(0);
+            }
+            catch (Exception ex)
+            {
+                DispatchPipe.Dispose();
+                tcs.SetException(ex);
+            }
+        }
+
+        private void ReadStartCallback(UvStreamHandle handle, int status, IntPtr ptr)
+        {
+            if (status < 0)
+            {
+                if (status != Constants.EOF)
+                {
+                    Exception ex;
+                    Thread.Loop.Libuv.Check(status, out ex);
+                    Log.LogError("DispatchPipe.ReadStart", ex);
+                }
+
+                DispatchPipe.Dispose();
+                Marshal.FreeHGlobal(ptr);
+                return;
+            }
+
+            if (DispatchPipe.PendingCount() == 0)
+            {
+                return;
+            }
+
+            var acceptSocket = CreateAcceptSocket();
+
+            try
+            {
+                DispatchPipe.Accept(acceptSocket);
+            }
+            catch (UvException ex)
+            {
+                Log.LogError("DispatchPipe.Accept", ex);
+                acceptSocket.Dispose();
+                return;
+            }
+
+            var connection = new Connection(this, acceptSocket);
+            connection.Start();
         }
 
         /// <summary>
@@ -133,7 +152,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             // the exception that stopped the event loop will never be surfaced.
             if (Thread.FatalError == null)
             {
-                Thread.Send(_ => DispatchPipe.Dispose(), null);
+                Thread.Send(listener => ((ListenerSecondary)listener).DispatchPipe.Dispose(), this);
             }
         }
     }
