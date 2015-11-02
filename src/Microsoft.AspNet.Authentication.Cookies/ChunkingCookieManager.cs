@@ -87,7 +87,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
                 for (var chunkId = 1; chunkId <= chunksCount; chunkId++)
                 {
                     var chunk = requestCookies[key + "C" + chunkId.ToString(CultureInfo.InvariantCulture)];
-                    if (chunk.Count == 0)
+                    if (string.IsNullOrEmpty(chunk))
                     {
                         if (ThrowForPartialCookies)
                         {
