@@ -12,7 +12,7 @@
     "Microsoft.AspNet.WebUtilities": "1.0.0-*",
     "Microsoft.Extensions.Logging.Abstractions": "1.0.0-*",
     "Microsoft.Extensions.OptionsModel": "1.0.0-*",
-    "Microsoft.Dnx.Compilation.Abstractions": "1.0.0-*",
+    "Microsoft.Extensions.Compilation.Abstractions": "1.0.0-*",
     "Microsoft.Extensions.WebEncoders.Core": "1.0.0-*",
     "System.Diagnostics.DiagnosticSource": "4.0.0-beta-*"
   },
