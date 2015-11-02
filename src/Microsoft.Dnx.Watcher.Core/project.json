@@ -1,6 +1,9 @@
 {
   "version": "1.0.0-*",
-  "compilationOptions": { "warningsAsErrors": true },
+  "compilationOptions": {
+    "warningsAsErrors": true,
+    "keyFile": "../../tools/Key.snk"
+  },
   "dependencies": {
     "Microsoft.AspNet.FileProviders.Abstractions": "1.0.0-*",
     "Microsoft.AspNet.FileProviders.Physical": "1.0.0-*",

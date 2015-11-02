@@ -2,7 +2,8 @@
     "version": "1.0.0-*",
     "compilationOptions": { 
         "warningsAsErrors": true,
-        "emitEntryPoint": true
+        "emitEntryPoint": true,
+        "keyFile": "../../tools/Key.snk"
     },
     "dependencies": {
         "Microsoft.Dnx.Watcher.Core": "1.0.0-*",
