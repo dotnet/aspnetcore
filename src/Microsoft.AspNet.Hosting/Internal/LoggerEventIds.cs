@@ -7,10 +7,9 @@ namespace Microsoft.AspNet.Hosting.Internal
     {
         public const int RequestStarting = 1;
         public const int RequestFinished = 2;
-        public const int RequestFailed = 3;
-        public const int Starting = 4;
-        public const int Started = 5;
-        public const int Shutdown = 6;
-        public const int ApplicationStartupException = 7;
+        public const int Starting = 3;
+        public const int Started = 4;
+        public const int Shutdown = 5;
+        public const int ApplicationStartupException = 6;
     }
 }

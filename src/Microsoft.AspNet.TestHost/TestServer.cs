@@ -11,6 +11,7 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Context = Microsoft.AspNet.Hosting.Internal.HostingApplication.Context;
 
 namespace Microsoft.AspNet.TestHost
 {
@@ -18,15 +19,13 @@ namespace Microsoft.AspNet.TestHost
     {
         private const string DefaultEnvironmentName = "Development";
         private const string ServerName = nameof(TestServer);
-        private RequestDelegate _appDelegate;
         private IDisposable _appInstance;
         private bool _disposed = false;
-        private IHttpContextFactory _httpContextFactory;
+        private IHttpApplication<Context> _application;
 
         public TestServer(WebHostBuilder builder)
         {
             var hostingEngine = builder.UseServer(this).Build();
-            _httpContextFactory = hostingEngine.ApplicationServices.GetService<IHttpContextFactory>();
             _appInstance = hostingEngine.Start();
         }
 
@@ -99,7 +98,7 @@ namespace Microsoft.AspNet.TestHost
         public HttpMessageHandler CreateHandler()
         {
             var pathBase = BaseAddress == null ? PathString.Empty : PathString.FromUriComponent(BaseAddress);
-            return new ClientHandler(Invoke, pathBase, _httpContextFactory);
+            return new ClientHandler(pathBase, _application);
         }
 
         public HttpClient CreateClient()
@@ -110,7 +109,7 @@ namespace Microsoft.AspNet.TestHost
         public WebSocketClient CreateWebSocketClient()
         {
             var pathBase = BaseAddress == null ? PathString.Empty : PathString.FromUriComponent(BaseAddress);
-            return new WebSocketClient(Invoke, pathBase, _httpContextFactory);
+            return new WebSocketClient(pathBase, _application);
         }
 
         /// <summary>
@@ -123,24 +122,49 @@ namespace Microsoft.AspNet.TestHost
             return new RequestBuilder(this, path);
         }
 
-        public Task Invoke(HttpContext context)
-        {
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(GetType().FullName);
-            }
-            return _appDelegate(context);
-        }
-
         public void Dispose()
         {
             _disposed = true;
             _appInstance.Dispose();
         }
 
-        void IServer.Start(RequestDelegate requestDelegate)
+        void IServer.Start<TContext>(IHttpApplication<TContext> application)
         {
-            _appDelegate = requestDelegate;
+            _application = new ApplicationWrapper<Context>((IHttpApplication<Context>)application, () =>
+            {
+                if (_disposed)
+                {
+                    throw new ObjectDisposedException(GetType().FullName);
+                }
+            });
+        }
+
+        private class ApplicationWrapper<TContext> : IHttpApplication<TContext>
+        {
+            IHttpApplication<TContext> _application;
+            Action _preProcessRequestAsync;
+
+            public ApplicationWrapper(IHttpApplication<TContext> application, Action preProcessRequestAsync)
+            {
+                _application = application;
+                _preProcessRequestAsync = preProcessRequestAsync;
+            }
+
+            public TContext CreateContext(IFeatureCollection contextFeatures)
+            {
+                return _application.CreateContext(contextFeatures);
+            }
+
+            public void DisposeContext(TContext context, Exception exception)
+            {
+                _application.DisposeContext(context, exception);
+            }
+
+            public Task ProcessRequestAsync(TContext context)
+            {
+                _preProcessRequestAsync();
+                return _application.ProcessRequestAsync(context);
+            }
         }
     }
 }

@@ -3,13 +3,12 @@
 
 using System;
 using System.Diagnostics;
-using System.IO;
 using System.Net;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting;
-using Microsoft.AspNet.Hosting.Startup;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Http.Features.Internal;
@@ -393,6 +392,9 @@ namespace Microsoft.AspNet.TestHost
             diagnosticListener.SubscribeWithAdapter(listener);
             var result = await server.CreateClient().GetStringAsync("/path");
 
+            // This ensures that all diagnostics are completely written to the diagnostic listener
+            Thread.Sleep(1000);
+
             Assert.Equal("Hello World", result);
             Assert.NotNull(listener.BeginRequest?.HttpContext);
             Assert.NotNull(listener.EndRequest?.HttpContext);
@@ -414,6 +416,9 @@ namespace Microsoft.AspNet.TestHost
             var listener = new TestDiagnosticListener();
             diagnosticListener.SubscribeWithAdapter(listener);
             await Assert.ThrowsAsync<Exception>(() => server.CreateClient().GetAsync("/path"));
+            
+            // This ensures that all diagnostics are completely written to the diagnostic listener
+            Thread.Sleep(1000);
 
             Assert.NotNull(listener.BeginRequest?.HttpContext);
             Assert.Null(listener.EndRequest?.HttpContext);

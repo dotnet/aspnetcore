@@ -14,7 +14,6 @@ using Microsoft.AspNet.Hosting.Server;
 using Microsoft.AspNet.Hosting.Startup;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
-using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Server.Features;
 using Microsoft.AspNet.Testing.xunit;
 using Microsoft.Extensions.Configuration;
@@ -477,11 +476,21 @@ namespace Microsoft.AspNet.Hosting
             return new WebHostBuilder(config ?? new ConfigurationBuilder().Build());
         }
 
-        public void Start(RequestDelegate requestDelegate)
+        public void Start<TContext>(IHttpApplication<TContext> application)
         {
-            var startInstance = new StartInstance(requestDelegate);
+            var startInstance = new StartInstance();
             _startInstances.Add(startInstance);
-            requestDelegate(new DefaultHttpContext(Features));
+            var context = application.CreateContext(Features);
+            try
+            {
+                application.ProcessRequestAsync(context);
+            }
+            catch (Exception ex)
+            {
+                application.DisposeContext(context, ex);
+                throw;
+            }
+            application.DisposeContext(context, null);
         }
 
         public void Dispose()
@@ -504,13 +513,6 @@ namespace Microsoft.AspNet.Hosting
 
         private class StartInstance : IDisposable
         {
-            private readonly RequestDelegate _application;
-
-            public StartInstance(RequestDelegate application)
-            {
-                _application = application;
-            }
-
             public int DisposeCalls { get; set; }
 
             public void Dispose()

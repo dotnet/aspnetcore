@@ -11,9 +11,10 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Hosting.Server;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
-using Microsoft.AspNet.Http.Internal;
+using Context = Microsoft.AspNet.Hosting.Internal.HostingApplication.Context;
 
 namespace Microsoft.AspNet.TestHost
 {
@@ -23,27 +24,21 @@ namespace Microsoft.AspNet.TestHost
     /// </summary>
     public class ClientHandler : HttpMessageHandler
     {
-        private readonly RequestDelegate _next;
+        private readonly IHttpApplication<Context> _application;
         private readonly PathString _pathBase;
-        private readonly IHttpContextFactory _factory;
 
         /// <summary>
         /// Create a new handler.
         /// </summary>
         /// <param name="next">The pipeline entry point.</param>
-        public ClientHandler(RequestDelegate next, PathString pathBase, IHttpContextFactory httpContextFactory)
+        public ClientHandler(PathString pathBase, IHttpApplication<Context> application)
         {
-            if (next == null)
+            if (application == null)
             {
-                throw new ArgumentNullException(nameof(next));
+                throw new ArgumentNullException(nameof(application));
             }
-            if (httpContextFactory == null)
-            {
-                throw new ArgumentNullException(nameof(httpContextFactory));
-            }
-
-            _next = next;
-            _factory = httpContextFactory;
+            
+            _application = application;
 
             // PathString.StartsWithSegments that we use below requires the base path to not end in a slash.
             if (pathBase.HasValue && pathBase.Value.EndsWith("/"))
@@ -69,7 +64,7 @@ namespace Microsoft.AspNet.TestHost
                 throw new ArgumentNullException(nameof(request));
             }
 
-            var state = new RequestState(request, _pathBase, _factory);
+            var state = new RequestState(request, _pathBase, _application);
             var requestContent = request.Content ?? new StreamContent(Stream.Null);
             var body = await requestContent.ReadAsStreamAsync();
             if (body.CanSeek)
@@ -77,7 +72,7 @@ namespace Microsoft.AspNet.TestHost
                 // This body may have been consumed before, rewind it.
                 body.Seek(0, SeekOrigin.Begin);
             }
-            state.HttpContext.Request.Body = body;
+            state.Context.HttpContext.Request.Body = body;
             var registration = cancellationToken.Register(state.AbortRequest);
 
             // Async offload, don't let the test code block the caller.
@@ -85,16 +80,17 @@ namespace Microsoft.AspNet.TestHost
                 {
                     try
                     {
-                        await _next(state.HttpContext);
+                        await _application.ProcessRequestAsync(state.Context);
                         state.CompleteResponse();
+                        state.ServerCleanup(exception: null);
                     }
                     catch (Exception ex)
                     {
                         state.Abort(ex);
+                        state.ServerCleanup(ex);
                     }
                     finally
                     {
-                        state.ServerCleanup();
                         registration.Dispose();
                     }
                 });
@@ -105,20 +101,20 @@ namespace Microsoft.AspNet.TestHost
         private class RequestState
         {
             private readonly HttpRequestMessage _request;
+            private readonly IHttpApplication<Context> _application;
             private TaskCompletionSource<HttpResponseMessage> _responseTcs;
             private ResponseStream _responseStream;
             private ResponseFeature _responseFeature;
             private CancellationTokenSource _requestAbortedSource;
-            private IHttpContextFactory _factory;
             private bool _pipelineFinished;
 
-            internal RequestState(HttpRequestMessage request, PathString pathBase, IHttpContextFactory factory)
+            internal RequestState(HttpRequestMessage request, PathString pathBase, IHttpApplication<Context> application)
             {
                 _request = request;
+                _application = application;
                 _responseTcs = new TaskCompletionSource<HttpResponseMessage>();
                 _requestAbortedSource = new CancellationTokenSource();
                 _pipelineFinished = false;
-                _factory = factory;
 
                 if (request.RequestUri.IsDefaultPort)
                 {
@@ -129,12 +125,13 @@ namespace Microsoft.AspNet.TestHost
                     request.Headers.Host = request.RequestUri.GetComponents(UriComponents.HostAndPort, UriFormat.UriEscaped);
                 }
 
-                HttpContext = _factory.Create(new FeatureCollection());
-                
-                HttpContext.Features.Set<IHttpRequestFeature>(new RequestFeature());
+                Context = application.CreateContext(new FeatureCollection());
+                var httpContext = Context.HttpContext;
+
+                httpContext.Features.Set<IHttpRequestFeature>(new RequestFeature());
                 _responseFeature = new ResponseFeature();
-                HttpContext.Features.Set<IHttpResponseFeature>(_responseFeature);
-                var serverRequest = HttpContext.Request;
+                httpContext.Features.Set<IHttpResponseFeature>(_responseFeature);
+                var serverRequest = httpContext.Request;
                 serverRequest.Protocol = "HTTP/" + request.Version.ToString(2);
                 serverRequest.Scheme = request.RequestUri.Scheme;
                 serverRequest.Method = request.Method.ToString();
@@ -168,12 +165,12 @@ namespace Microsoft.AspNet.TestHost
                 }
 
                 _responseStream = new ResponseStream(ReturnResponseMessage, AbortRequest);
-                HttpContext.Response.Body = _responseStream;
-                HttpContext.Response.StatusCode = 200;
-                HttpContext.RequestAborted = _requestAbortedSource.Token;
+                httpContext.Response.Body = _responseStream;
+                httpContext.Response.StatusCode = 200;
+                httpContext.RequestAborted = _requestAbortedSource.Token;
             }
 
-            public HttpContext HttpContext { get; private set; }
+            public Context Context { get; private set; }
 
             public Task<HttpResponseMessage> ResponseTask
             {
@@ -212,16 +209,17 @@ namespace Microsoft.AspNet.TestHost
             private HttpResponseMessage GenerateResponse()
             {
                 _responseFeature.FireOnSendingHeaders();
+                var httpContext = Context.HttpContext;
 
                 var response = new HttpResponseMessage();
-                response.StatusCode = (HttpStatusCode)HttpContext.Response.StatusCode;
-                response.ReasonPhrase = HttpContext.Features.Get<IHttpResponseFeature>().ReasonPhrase;
+                response.StatusCode = (HttpStatusCode)httpContext.Response.StatusCode;
+                response.ReasonPhrase = httpContext.Features.Get<IHttpResponseFeature>().ReasonPhrase;
                 response.RequestMessage = _request;
                 // response.Version = owinResponse.Protocol;
 
                 response.Content = new StreamContent(_responseStream);
 
-                foreach (var header in HttpContext.Response.Headers)
+                foreach (var header in httpContext.Response.Headers)
                 {
                     if (!response.Headers.TryAddWithoutValidation(header.Key, (IEnumerable<string>)header.Value))
                     {
@@ -239,12 +237,9 @@ namespace Microsoft.AspNet.TestHost
                 _responseTcs.TrySetException(exception);
             }
 
-            internal void ServerCleanup()
+            internal void ServerCleanup(Exception exception)
             {
-                if (HttpContext != null)
-                {
-                    _factory.Dispose(HttpContext);
-                }
+                _application.DisposeContext(Context, exception);
             }
         }
     }

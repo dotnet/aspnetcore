@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
 
 namespace Microsoft.AspNet.Hosting.Server
@@ -18,9 +17,9 @@ namespace Microsoft.AspNet.Hosting.Server
         IFeatureCollection Features { get; }
 
         /// <summary>
-        /// Start the server with the given function that processes an HTTP request.
+        /// Start the server with an HttpApplication.
         /// </summary>
-        /// <param name="requestDelegate">A function that processes an HTTP request.</param>
-        void Start(RequestDelegate requestDelegate);
+        /// <param name="application">An instance of <see cref="IHttpApplication"/>.</param>
+        void Start<TContext>(IHttpApplication<TContext> application);
     }
 }

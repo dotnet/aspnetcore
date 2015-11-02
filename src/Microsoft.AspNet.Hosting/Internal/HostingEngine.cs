@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
-using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting.Builder;
 using Microsoft.AspNet.Hosting.Server;
 using Microsoft.AspNet.Hosting.Startup;
@@ -90,45 +89,11 @@ namespace Microsoft.AspNet.Hosting.Internal
 
             var logger = _applicationServices.GetRequiredService<ILogger<HostingEngine>>();
             var diagnosticSource = _applicationServices.GetRequiredService<DiagnosticSource>();
+            var httpContextFactory = _applicationServices.GetRequiredService<IHttpContextFactory>();
 
             logger.Starting();
 
-            Server.Start(
-                async httpContext =>
-                {
-                    if (diagnosticSource.IsEnabled("Microsoft.AspNet.Hosting.BeginRequest"))
-                    {
-                        diagnosticSource.Write("Microsoft.AspNet.Hosting.BeginRequest", new { httpContext = httpContext });
-                    }
-
-                    using (logger.RequestScope(httpContext))
-                    {
-                        int startTime = 0;
-                        try
-                        {
-                            logger.RequestStarting(httpContext);
-
-                            startTime = Environment.TickCount;
-                            await application(httpContext);
-
-                            logger.RequestFinished(httpContext, startTime);
-                        }
-                        catch (Exception ex)
-                        {
-                            logger.RequestFailed(httpContext, startTime);
-
-                            if (diagnosticSource.IsEnabled("Microsoft.AspNet.Hosting.UnhandledException"))
-                            {
-                                diagnosticSource.Write("Microsoft.AspNet.Hosting.UnhandledException", new { httpContext = httpContext, exception = ex });
-                            }
-                            throw;
-                        }
-                    }
-                    if (diagnosticSource.IsEnabled("Microsoft.AspNet.Hosting.EndRequest"))
-                    {
-                        diagnosticSource.Write("Microsoft.AspNet.Hosting.EndRequest", new { httpContext = httpContext });
-                    }
-                });
+            Server.Start(new HostingApplication(application, logger, diagnosticSource, httpContextFactory));
 
             _applicationLifetime.NotifyStarted();
             logger.Started();

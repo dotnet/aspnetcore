@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
@@ -174,9 +175,22 @@ namespace Microsoft.AspNet.Hosting
 
             }
 
-            public void Start(RequestDelegate requestDelegate)
+            public void Start<TContext>(IHttpApplication<TContext> application)
             {
-                RequestDelegate = requestDelegate;
+                RequestDelegate = async ctx =>
+                {
+                    var httpContext = application.CreateContext(ctx.Features);
+                    try
+                    {
+                        await application.ProcessRequestAsync(httpContext);
+                    }
+                    catch (Exception ex)
+                    {
+                        application.DisposeContext(httpContext, ex);
+                        throw;
+                    }
+                    application.DisposeContext(httpContext, null);
+                };
             }
         }
     }
