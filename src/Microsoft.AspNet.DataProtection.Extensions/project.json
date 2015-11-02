@@ -18,6 +18,7 @@
     "dotnet5.4": {}
   },
   "compilationOptions": {
-    "warningsAsErrors": true
+    "warningsAsErrors": true,
+    "keyFile": "../../tools/Key.snk"
   }
 }

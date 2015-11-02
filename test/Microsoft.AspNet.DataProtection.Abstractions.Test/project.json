@@ -14,6 +14,7 @@
     },
     "compile": "..\\common\\**\\*.cs",
     "compilationOptions": {
-        
+        "warningsAsErrors": true,
+        "keyFile": "../../tools/Key.snk"
     }
 }

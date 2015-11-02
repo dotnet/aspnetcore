@@ -19,7 +19,8 @@
     }
   },
   "compilationOptions": {
-    "warningsAsErrors": true
+    "warningsAsErrors": true,
+    "keyFile": "../../tools/Key.snk"
   },
   "packInclude": {
     "content/net451/": "web.config.transform"
