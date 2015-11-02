@@ -6,8 +6,11 @@ namespace Microsoft.Net.Http.Server
 {
     internal static class Utilities
     {
-        private const int BasePort = 5001;
-        private const int MaxPort = 8000;
+        // When tests projects are run in parallel, overlapping port ranges can cause a race condition when looking for free 
+        // ports during dynamic port allocation. To avoid this, make sure the port range here is different from the range in 
+        // Microsoft.AspNet.Server.WebListener.
+        private const int BasePort = 8001;
+        private const int MaxPort = 11000;
         private static int NextPort = BasePort;
         private static object PortLock = new object();
 
