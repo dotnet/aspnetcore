@@ -16,7 +16,7 @@ using Xunit;
 
 namespace Microsoft.AspNet.Mvc
 {
-    public class ForbiddenResultTest
+    public class ForbidResultTest
     {
         [Fact]
         public async Task ExecuteResultAsync_InvokesForbiddenAsyncOnAuthenticationManager()
@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.Mvc
             var httpContext = new Mock<HttpContext>();
             httpContext.Setup(c => c.RequestServices).Returns(CreateServices());
             httpContext.Setup(c => c.Authentication).Returns(authenticationManager.Object);
-            var result = new ForbiddenResult("", null);
+            var result = new ForbidResult("", null);
             var routeData = new RouteData();
 
             var actionContext = new ActionContext(
@@ -62,7 +62,7 @@ namespace Microsoft.AspNet.Mvc
             var httpContext = new Mock<HttpContext>();
             httpContext.Setup(c => c.RequestServices).Returns(CreateServices());
             httpContext.Setup(c => c.Authentication).Returns(authenticationManager.Object);
-            var result = new ForbiddenResult(new[] { "Scheme1", "Scheme2" }, authProperties);
+            var result = new ForbidResult(new[] { "Scheme1", "Scheme2" }, authProperties);
             var routeData = new RouteData();
 
             var actionContext = new ActionContext(
@@ -97,7 +97,7 @@ namespace Microsoft.AspNet.Mvc
             var httpContext = new Mock<HttpContext>();
             httpContext.Setup(c => c.RequestServices).Returns(CreateServices());
             httpContext.Setup(c => c.Authentication).Returns(authenticationManager.Object);
-            var result = new ForbiddenResult(expected);
+            var result = new ForbidResult(expected);
             var routeData = new RouteData();
 
             var actionContext = new ActionContext(
@@ -126,7 +126,7 @@ namespace Microsoft.AspNet.Mvc
             var httpContext = new Mock<HttpContext>();
             httpContext.Setup(c => c.RequestServices).Returns(CreateServices());
             httpContext.Setup(c => c.Authentication).Returns(authenticationManager.Object);
-            var result = new ForbiddenResult(expected)
+            var result = new ForbidResult(expected)
             {
                 AuthenticationSchemes = new string[0]
             };

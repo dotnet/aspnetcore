@@ -8,15 +8,15 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNet.Mvc.Logging
 {
-    internal static class ForbiddenResultLoggerExtensions
+    internal static class ForbidResultLoggerExtensions
     {
         private static readonly Action<ILogger, string[], Exception> _resultExecuting =
             LoggerMessage.Define<string[]>(
                 LogLevel.Information,
                 eventId: 1,
-                formatString: $"Executing {nameof(ForbiddenResult)} with authentication schemes ({{Schemes}}).");
+                formatString: $"Executing {nameof(ForbidResult)} with authentication schemes ({{Schemes}}).");
 
-        public static void ForbiddenResultExecuting(this ILogger logger, IList<string> authenticationSchemes)
+        public static void ForbidResultExecuting(this ILogger logger, IList<string> authenticationSchemes)
         {
             _resultExecuting(logger, authenticationSchemes.ToArray(), null);
         }

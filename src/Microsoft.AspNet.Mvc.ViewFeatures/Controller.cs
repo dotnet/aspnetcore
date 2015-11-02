@@ -2,12 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq.Expressions;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Authentication;
 using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
@@ -1179,6 +1181,128 @@ namespace Microsoft.AspNet.Mvc
 
             return new CreatedAtRouteResult(routeName, routeValues, value);
         }
+
+        /// <summary>
+        /// Creates a <see cref="ChallengeResult"/>.
+        /// </summary>
+        /// <returns>The created <see cref="ChallengeResult"/> for the response.</returns>
+        [NonAction]
+        public virtual ChallengeResult Challenge()
+            => new ChallengeResult();
+
+        /// <summary>
+        /// Creates a <see cref="ChallengeResult"/> with the specified authentication scheme.
+        /// </summary>
+        /// <param name="authenticationScheme">The authentication scheme to challenge.</param>
+        /// <returns>The created <see cref="ChallengeResult"/> for the response.</returns>
+        [NonAction]
+        public virtual ChallengeResult Challenge(string authenticationScheme)
+            => new ChallengeResult(authenticationScheme);
+
+        /// <summary>
+        /// Creates a <see cref="ChallengeResult"/> with the specified authentication schemes.
+        /// </summary>
+        /// <param name="authenticationScheme">The authentication schemes to challenge.</param>
+        /// <returns>The created <see cref="ChallengeResult"/> for the response.</returns>
+        [NonAction]
+        public virtual ChallengeResult Challenge(IList<string> authenticationSchemes)
+            => new ChallengeResult(authenticationSchemes);
+
+        /// <summary>
+        /// Creates a <see cref="ChallengeResult"/> with the specified <paramref name="properties" />.
+        /// </summary>
+        /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the authentication
+        /// challenge.</param>
+        /// <returns>The created <see cref="ChallengeResult"/> for the response.</returns>
+        [NonAction]
+        public virtual ChallengeResult Challenge(AuthenticationProperties properties)
+            => new ChallengeResult(properties);
+
+        /// <summary>
+        /// Creates a <see cref="ChallengeResult"/> with the specified specified authentication scheme and
+        /// <paramref name="properties" />.
+        /// </summary>
+        /// <param name="authenticationScheme">The authentication scheme to challenge.</param>
+        /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the authentication
+        /// challenge.</param>
+        /// <returns>The created <see cref="ChallengeResult"/> for the response.</returns>
+        [NonAction]
+        public virtual ChallengeResult Challenge(string authenticationScheme, AuthenticationProperties properties)
+            => new ChallengeResult(authenticationScheme, properties);
+
+        /// <summary>
+        /// Creates a <see cref="ChallengeResult"/> with the specified specified authentication schemes and
+        /// <paramref name="properties" />.
+        /// </summary>
+        /// <param name="authenticationScheme">The authentication schemes to challenge.</param>
+        /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the authentication
+        /// challenge.</param>
+        /// <returns>The created <see cref="ChallengeResult"/> for the response.</returns>
+        [NonAction]
+        public virtual ChallengeResult Challenge(
+            IList<string> authenticationSchemes,
+            AuthenticationProperties properties)
+            => new ChallengeResult(authenticationSchemes, properties);
+
+        /// <summary>
+        /// Creates a <see cref="ForbidResult"/>.
+        /// </summary>
+        /// <returns>The created <see cref="ForbidResult"/> for the response.</returns>
+        [NonAction]
+        public virtual ForbidResult Forbid()
+            => new ForbidResult();
+
+        /// <summary>
+        /// Creates a <see cref="ForbidResult"/> with the specified authentication scheme.
+        /// </summary>
+        /// <param name="authenticationScheme">The authentication scheme to challenge.</param>
+        /// <returns>The created <see cref="ForbidResult"/> for the response.</returns>
+        [NonAction]
+        public virtual ForbidResult Forbid(string authenticationScheme)
+            => new ForbidResult(authenticationScheme);
+
+        /// <summary>
+        /// Creates a <see cref="ForbidResult"/> with the specified authentication schemes.
+        /// </summary>
+        /// <param name="authenticationScheme">The authentication schemes to challenge.</param>
+        /// <returns>The created <see cref="ForbidResult"/> for the response.</returns>
+        [NonAction]
+        public virtual ForbidResult Forbid(IList<string> authenticationSchemes)
+            => new ForbidResult(authenticationSchemes);
+
+        /// <summary>
+        /// Creates a <see cref="ForbidResult"/> with the specified <paramref name="properties" />.
+        /// </summary>
+        /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the authentication
+        /// challenge.</param>
+        /// <returns>The created <see cref="ForbidResult"/> for the response.</returns>
+        [NonAction]
+        public virtual ForbidResult Forbid(AuthenticationProperties properties)
+            => new ForbidResult(properties);
+
+        /// <summary>
+        /// Creates a <see cref="ForbidResult"/> with the specified specified authentication scheme and
+        /// <paramref name="properties" />.
+        /// </summary>
+        /// <param name="authenticationScheme">The authentication scheme to challenge.</param>
+        /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the authentication
+        /// challenge.</param>
+        /// <returns>The created <see cref="ForbidResult"/> for the response.</returns>
+        [NonAction]
+        public virtual ForbidResult Forbid(string authenticationScheme, AuthenticationProperties properties)
+            => new ForbidResult(authenticationScheme, properties);
+
+        /// <summary>
+        /// Creates a <see cref="ForbidResult"/> with the specified specified authentication schemes and
+        /// <paramref name="properties" />.
+        /// </summary>
+        /// <param name="authenticationScheme">The authentication schemes to challenge.</param>
+        /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the authentication
+        /// challenge.</param>
+        /// <returns>The created <see cref="ForbidResult"/> for the response.</returns>
+        [NonAction]
+        public virtual ForbidResult Forbid(IList<string> authenticationSchemes, AuthenticationProperties properties)
+            => new ForbidResult(authenticationSchemes, properties);
 
         /// <summary>
         /// Called before the action method is invoked.

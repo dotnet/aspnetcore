@@ -12,70 +12,69 @@ using Microsoft.Extensions.Logging;
 namespace Microsoft.AspNet.Mvc
 {
     /// <summary>
-    /// An <see cref="ActionResult"/> that on execution issues a 403 forbidden response
-    /// if the authentication challenge is unacceptable.
+    /// An <see cref="ActionResult"/> that on execution invokes <see cref="AuthenticationManager.ForbidAsync"/>.
     /// </summary>
-    public class ForbiddenResult : ActionResult
+    public class ForbidResult : ActionResult
     {
         /// <summary>
-        /// Initializes a new instance of <see cref="ForbiddenResult"/>.
+        /// Initializes a new instance of <see cref="ForbidResult"/>.
         /// </summary>
-        public ForbiddenResult()
+        public ForbidResult()
             : this(new string[] { })
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of <see cref="ForbiddenResult"/> with the
+        /// Initializes a new instance of <see cref="ForbidResult"/> with the
         /// specified authentication scheme.
         /// </summary>
         /// <param name="authenticationScheme">The authentication scheme to challenge.</param>
-        public ForbiddenResult(string authenticationScheme)
+        public ForbidResult(string authenticationScheme)
             : this(new[] { authenticationScheme })
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of <see cref="ForbiddenResult"/> with the
+        /// Initializes a new instance of <see cref="ForbidResult"/> with the
         /// specified authentication schemes.
         /// </summary>
         /// <param name="authenticationScheme">The authentication schemes to challenge.</param>
-        public ForbiddenResult(IList<string> authenticationSchemes)
+        public ForbidResult(IList<string> authenticationSchemes)
             : this(authenticationSchemes, properties: null)
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of <see cref="ForbiddenResult"/> with the
+        /// Initializes a new instance of <see cref="ForbidResult"/> with the
         /// specified <paramref name="properties"/>.
         /// </summary>
         /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the authentication
         /// challenge.</param>
-        public ForbiddenResult(AuthenticationProperties properties)
+        public ForbidResult(AuthenticationProperties properties)
             : this(new string[] { }, properties)
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of <see cref="ForbiddenResult"/> with the
+        /// Initializes a new instance of <see cref="ForbidResult"/> with the
         /// specified authentication scheme and <paramref name="properties"/>.
         /// </summary>
         /// <param name="authenticationScheme">The authentication schemes to challenge.</param>
         /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the authentication
         /// challenge.</param>
-        public ForbiddenResult(string authenticationScheme, AuthenticationProperties properties)
+        public ForbidResult(string authenticationScheme, AuthenticationProperties properties)
             : this(new[] { authenticationScheme }, properties)
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of <see cref="ForbiddenResult"/> with the
+        /// Initializes a new instance of <see cref="ForbidResult"/> with the
         /// specified authentication schemes and <paramref name="properties"/>.
         /// </summary>
         /// <param name="authenticationScheme">The authentication scheme to challenge.</param>
         /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the authentication
         /// challenge.</param>
-        public ForbiddenResult(IList<string> authenticationSchemes, AuthenticationProperties properties)
+        public ForbidResult(IList<string> authenticationSchemes, AuthenticationProperties properties)
         {
             AuthenticationSchemes = authenticationSchemes;
             Properties = properties;
@@ -100,7 +99,7 @@ namespace Microsoft.AspNet.Mvc
             }
 
             var loggerFactory = context.HttpContext.RequestServices.GetRequiredService<ILoggerFactory>();
-            var logger = loggerFactory.CreateLogger<ForbiddenResult>();
+            var logger = loggerFactory.CreateLogger<ForbidResult>();
 
             var authentication = context.HttpContext.Authentication;
 
@@ -116,7 +115,7 @@ namespace Microsoft.AspNet.Mvc
                 await authentication.ForbidAsync(Properties);
             }
 
-            logger.ForbiddenResultExecuting(AuthenticationSchemes);
+            logger.ForbidResultExecuting(AuthenticationSchemes);
         }
     }
 }
