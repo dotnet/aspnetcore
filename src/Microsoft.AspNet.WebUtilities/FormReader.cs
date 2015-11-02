@@ -165,7 +165,7 @@ namespace Microsoft.AspNet.WebUtilities
         /// </summary>
         /// <param name="text">The HTTP form body to parse.</param>
         /// <returns>The collection containing the parsed HTTP form body.</returns>
-        public static IDictionary<string, StringValues> ReadForm(string text)
+        public static Dictionary<string, StringValues> ReadForm(string text)
         {
             var reader = new FormReader(text);
 
