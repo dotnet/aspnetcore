@@ -1,0 +1,30 @@
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container">
+        <div class="navbar-header">
+            <a class="navbar-brand" [router-link]="['/Home']">Music Store</a>
+        </div>
+        <div class="collapse navbar-collapse">
+            <ul class="nav navbar-nav">
+                <li><a [router-link]="['/Home']">Home</a></li>
+                <li class="dropdown">
+                    <a class="dropdown-toggle" data-toggle="dropdown">Store <b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                        <li *ng-for="#genre of genres">
+                            <a title="{{ genre.Description }}" [router-link]="['/Genre', { genreId: genre.GenreId }]">
+                                {{ genre.Name }}
+                            </a>
+                        </li>
+                        <li class="divider"></li>
+                        <li>
+                            <a [router-link]="['/GenresList']">More…</a>
+                        </li>
+                    </ul>
+                </li>
+                <li><a [router-link]="['/Admin/Albums']">Admin</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+<div class="container body-content">
+    <router-outlet></router-outlet>
+</div>

@@ -1,0 +1,33 @@
+{
+  "version": "1.0.0-alpha1",
+  "description": "Microsoft.AspNet.NodeServices.React Class Library",
+  "authors": [
+    "Microsoft"
+  ],
+  "tags": [
+    ""
+  ],
+  "projectUrl": "",
+  "licenseUrl": "",
+  "tooling": {
+    "defaultNamespace": "Microsoft.AspNet.NodeServices.React"
+  },
+  "frameworks": {
+    "dnx451": {},
+    "dnxcore50": {
+      "dependencies": {
+        "Microsoft.CSharp": "4.0.1-beta-*",
+        "System.Collections": "4.0.11-beta-*",
+        "System.Linq": "4.0.1-beta-*",
+        "System.Runtime": "4.0.21-beta-*",
+        "System.Threading": "4.0.11-beta-*"
+      }
+    }
+  },
+  "dependencies": {
+    "Microsoft.AspNet.NodeServices": "1.0.0-alpha1"
+  },
+  "resource": [
+    "Content/**/*"
+  ]
+}

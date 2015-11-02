@@ -1,0 +1,27 @@
+{
+  "name": "MusicStore",
+  "version": "0.0.0",
+  "dependencies": {
+    "angular2": "2.0.0-alpha.44",
+    "angular2-universal-patched": "^0.5.4",
+    "body-parser": "^1.14.1",
+    "bootstrap": "^3.3.5",
+    "del": "^2.0.2",
+    "es6-module-loader": "^0.15.0",
+    "express": "^4.13.3",
+    "jquery": "^2.1.4",
+    "less": "^2.5.3",
+    "reflect-metadata": "^0.1.2",
+    "systemjs": "^0.19.3",
+    "traceur": "0.0.91"
+  },
+  "devDependencies": {
+    "del": "^2.0.2",
+    "event-stream": "^3.3.1",
+    "gulp": "^3.9.0",
+    "gulp-inline-ng2-template": "0.0.7",
+    "gulp-sourcemaps": "^1.6.0",
+    "gulp-typescript": "^2.9.0",
+    "typescript": "^1.6.2"
+  }
+}

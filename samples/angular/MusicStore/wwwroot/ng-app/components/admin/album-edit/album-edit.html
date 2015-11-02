@@ -1,0 +1,45 @@
+<h2>Album <small>Edit</small></h2>
+<hr />
+
+<form class="form-horizontal" [ng-form-model]="form" (ng-submit)="onSubmitModelBased()">
+    <form-field label="Artist" [validate]="form.controls.artist">
+        <select class="form-control" ng-control="artist">
+            <option value="">-- choose Artist --</option>
+            <option *ng-for="#artist of artists" [value]="artist.ArtistId">{{ artist.Name }}</option>
+        </select>
+    </form-field>
+    
+    <form-field label="Genre" [validate]="form.controls.genre">
+        <select class="form-control" ng-control="genre">
+            <option value="">-- choose Genre --</option>
+            <option *ng-for="#genre of genres" [value]="genre.GenreId">{{ genre.Name }}</option>
+        </select>
+    </form-field>
+    
+    <form-field label="Title" [validate]="form.controls.title">
+        <input class="form-control" type="text" ng-control="title">
+    </form-field>
+    
+    <form-field label="Price" [validate]="form.controls.price">
+        <div class="input-group">
+            <span class="input-group-addon">$</span>
+            <input class="form-control" type="text" ng-control="price">
+        </div>
+    </form-field>
+
+    <form-field label="Album Art URL" [validate]="form.controls.albumArtUrl">
+        <input class="form-control" ng-control="albumArtUrl">
+    </form-field>
+    
+    <form-field label="Album Art">
+        <img src="{{ form.controls.albumArtUrl.value }}">
+    </form-field>
+
+    <form-field>
+        <button type="submit" class="btn btn-primary">Submit</button>
+        <button type="button" class="btn btn-danger" (click)="deleteprompt.show(originalAlbum)">Delete</button>
+        <a class="btn btn-default" [router-link]="['/Admin/Albums']">Back to List</a>
+    </form-field>
+</form>
+
+<album-delete-prompt #deleteprompt></album-delete-prompt>

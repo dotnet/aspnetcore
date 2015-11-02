@@ -1,0 +1,3 @@
+System.config({
+    defaultJSExtensions: true
+});

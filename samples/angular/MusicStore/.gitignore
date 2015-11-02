@@ -1,0 +1,5 @@
+/node_modules/
+/wwwroot/lib/
+/wwwroot/ng-app/**/*.js
+/project.lock.json
+/music-db.sqlite

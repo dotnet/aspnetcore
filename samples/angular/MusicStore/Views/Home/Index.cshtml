@@ -1,0 +1,21 @@
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+<cache vary-by="@Context.Request.Path">
+    <app aspnet-ng2-prerender-module="wwwroot/ng-app/components/app/app">
+        Loading...
+    </app>
+</cache>
+
+@section scripts {
+    <script src="~/lib/traceur/bin/traceur-runtime.js"></script>
+    <script src="~/lib/es6-module-loader/dist/es6-module-loader-sans-promises.js"></script>
+    <script src="~/lib/reflect-metadata/Reflect.js"></script>
+    <script src="~/lib/systemjs/dist/system.src.js"></script>
+    <script src="~/system.config.js"></script>
+    <script src="~/lib/angular2/bundles/angular2.dev.js"></script>
+    <script src="~/lib/angular2/bundles/router.dev.js"></script>
+    <script src="~/lib/angular2/bundles/http.dev.js"></script>
+    <script>System.import('./ng-app/components/app/bootstrap');</script>
+}
