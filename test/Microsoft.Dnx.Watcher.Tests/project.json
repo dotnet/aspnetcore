@@ -1,4 +1,8 @@
 ﻿{
+    "compilationOptions": {
+        "warningsAsErrors": true,
+        "keyFile": "../../tools/Key.snk"
+    },
     "dependencies": {
         "Microsoft.Extensions.PlatformAbstractions": "1.0.0-*",
         "Microsoft.Dnx.Watcher": "1.0.0-*",
