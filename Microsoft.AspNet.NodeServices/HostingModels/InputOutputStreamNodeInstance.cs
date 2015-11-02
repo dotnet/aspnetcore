@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.NodeServices {
     // Instead of directly using stdin/stdout, we could use either regular sockets (TCP) or use named pipes
     // on Windows and domain sockets on Linux / OS X, but either way would need a system for framing the
     // requests, associating them with responses, and scheduling use of the comms channel.
-    internal class InputOutputStreamNodeHost : OutOfProcessNodeRunner
+    internal class InputOutputStreamNodeInstance : OutOfProcessNodeInstance
     {
         private SemaphoreSlim _invocationSemaphore = new SemaphoreSlim(1);
         private TaskCompletionSource<string> _currentInvocationResult;
@@ -24,8 +24,8 @@ namespace Microsoft.AspNet.NodeServices {
             ContractResolver = new CamelCasePropertyNamesContractResolver() 
         };
 		
-		public InputOutputStreamNodeHost()
-            : base(EmbeddedResourceReader.Read(typeof(InputOutputStreamNodeHost), "/Content/Node/entrypoint-stream.js"))
+		public InputOutputStreamNodeInstance()
+            : base(EmbeddedResourceReader.Read(typeof(InputOutputStreamNodeInstance), "/Content/Node/entrypoint-stream.js"))
         {
 		}
         

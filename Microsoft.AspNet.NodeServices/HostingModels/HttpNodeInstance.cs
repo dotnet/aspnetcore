@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
 namespace Microsoft.AspNet.NodeServices {
-	internal class HttpNodeHost : OutOfProcessNodeRunner {
+	internal class HttpNodeInstance : OutOfProcessNodeInstance {
         private readonly static Regex PortMessageRegex = new Regex(@"^\[Microsoft.AspNet.NodeServices.HttpNodeHost:Listening on port (\d+)\]$");
         
 		private readonly static JsonSerializerSettings jsonSerializerSettings =  new JsonSerializerSettings { 
@@ -15,8 +15,8 @@ namespace Microsoft.AspNet.NodeServices {
         
         private int _portNumber;
 		
-		public HttpNodeHost(int port = 0)
-            : base(EmbeddedResourceReader.Read(typeof(HttpNodeHost), "/Content/Node/entrypoint-http.js"), port.ToString())
+		public HttpNodeInstance(int port = 0)
+            : base(EmbeddedResourceReader.Read(typeof(HttpNodeInstance), "/Content/Node/entrypoint-http.js"), port.ToString())
         {
 		}
         

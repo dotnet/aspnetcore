@@ -20,8 +20,6 @@ namespace Microsoft.AspNet.NodeServices.Angular
         const string PrerenderModuleAttributeName = "aspnet-ng2-prerender-module";
         const string PrerenderExportAttributeName = "aspnet-ng2-prerender-export";
         
-        private static NodeInstance nodeInstance = new NodeInstance();
-
         [HtmlAttributeName(PrerenderModuleAttributeName)]
         public string ModuleName { get; set; }
         
@@ -29,15 +27,17 @@ namespace Microsoft.AspNet.NodeServices.Angular
         public string ExportName { get; set; }
 
         private IHttpContextAccessor contextAccessor;
+        private INodeServices nodeServices;
 
-        public AngularRunAtServerTagHelper(IHttpContextAccessor contextAccessor)
+        public AngularRunAtServerTagHelper(INodeServices nodeServices, IHttpContextAccessor contextAccessor)
         {
             this.contextAccessor = contextAccessor;
+            this.nodeServices = nodeServices;
         }
 
         public override async Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
         {
-            var result = await nodeInstance.InvokeExport(nodeScript.FileName, "renderComponent", new {
+            var result = await this.nodeServices.InvokeExport(nodeScript.FileName, "renderComponent", new {
                 componentModule = this.ModuleName,
                 componentExport = this.ExportName,
                 tagName = output.TagName,

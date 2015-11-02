@@ -5,6 +5,7 @@ using Microsoft.Dnx.Runtime;
 using Microsoft.Framework.Configuration;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
+using Microsoft.AspNet.NodeServices;
 
 namespace ES2015Example
 {
@@ -27,6 +28,9 @@ namespace ES2015Example
         {
             // Add MVC services to the services container.
             services.AddMvc();
+
+            // Enable Node Services
+            services.AddNodeServices();
         }
 
         // Configure is called after ConfigureServices is called.

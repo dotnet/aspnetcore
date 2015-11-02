@@ -5,7 +5,6 @@ namespace Microsoft.AspNet.NodeServices.React
     public static class ReactRenderer
     {
         private static StringAsTempFile nodeScript;
-        private static NodeInstance nodeInstance = new NodeInstance();
         
         static ReactRenderer() {
             // Consider populating this lazily
@@ -13,8 +12,8 @@ namespace Microsoft.AspNet.NodeServices.React
             nodeScript = new StringAsTempFile(script); // Will be cleaned up on process exit
         }
         
-        public static async Task<string> RenderToString(string moduleName, string exportName, string baseUrl) {
-            return await nodeInstance.InvokeExport(nodeScript.FileName, "renderToString", new {
+        public static async Task<string> RenderToString(INodeServices nodeServices, string moduleName, string exportName, string baseUrl) {
+            return await nodeServices.InvokeExport(nodeScript.FileName, "renderToString", new {
                 moduleName,
                 exportName,
                 baseUrl

@@ -5,7 +5,7 @@ namespace ES2015Example.Controllers
 {
     public class HomeController : Controller
     {
-        public async Task<IActionResult> Index(int pageIndex)
+        public IActionResult Index(int pageIndex)
         {
             return View();
         }

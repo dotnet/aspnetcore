@@ -8,7 +8,7 @@ namespace Microsoft.AspNet.NodeServices {
      * Class responsible for launching the Node child process, determining when it is ready to accept invocations,
      * and finally killing it when the parent process exits. Also it restarts the child process if it dies.
      */
-    internal abstract class OutOfProcessNodeRunner : NodeHost {
+    public abstract class OutOfProcessNodeInstance : INodeServices {
         private object _childProcessLauncherLock;
         private bool disposed;
         private StringAsTempFile _entryPointScript;
@@ -18,17 +18,31 @@ namespace Microsoft.AspNet.NodeServices {
         
         protected Process NodeProcess {
             get {
-                // This is only exposed to support the UnreliableStreamNodeHost, which is just to verify that
+                // This is only exposed to support the unreliable OutOfProcessNodeRunner, which is just to verify that
                 // other hosting/transport mechanisms are possible. This shouldn't really be exposed.
                 return this._nodeProcess;
             }
         }
         
-        public OutOfProcessNodeRunner(string entryPointScript, string commandLineArguments = null)
+        public OutOfProcessNodeInstance(string entryPointScript, string commandLineArguments = null)
         {
             this._childProcessLauncherLock = new object();
             this._entryPointScript = new StringAsTempFile(entryPointScript);
             this._commandLineArguments = commandLineArguments ?? string.Empty;
+        }
+        
+        public abstract Task<string> Invoke(NodeInvocationInfo invocationInfo);
+        
+        public Task<string> Invoke(string moduleName, params object[] args) {
+            return this.InvokeExport(moduleName, null, args);
+        }
+    
+        public async Task<string> InvokeExport(string moduleName, string exportedFunctionName, params object[] args) {
+            return await this.Invoke(new NodeInvocationInfo {
+                ModuleName = moduleName,
+                ExportedFunctionName = exportedFunctionName,
+                Args = args
+            });
         }
         
         protected async Task EnsureReady() {
@@ -104,8 +118,8 @@ namespace Microsoft.AspNet.NodeServices {
         protected virtual void OnErrorDataReceived(string errorData) {
             Console.WriteLine("[Node] " + errorData);
         }
-        
-        public override void Dispose()
+
+        public void Dispose()
         {
             Dispose(true);
             GC.SuppressFinalize(this);
@@ -125,8 +139,8 @@ namespace Microsoft.AspNet.NodeServices {
                 disposed = true;
             }
         }
-    
-        ~OutOfProcessNodeRunner() {
+
+        ~OutOfProcessNodeInstance() {
             Dispose (false);
         }
     }

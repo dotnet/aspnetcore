@@ -79,6 +79,9 @@ namespace MusicStore
             Mapper.CreateMap<ArtistResultDto, Artist>();
             Mapper.CreateMap<Genre, GenreResultDto>();
             Mapper.CreateMap<GenreResultDto, Genre>();
+            
+            // Enable Node Services
+            services.AddNodeServices();
         }
 
         // Configure is called after ConfigureServices is called.
@@ -107,17 +110,6 @@ namespace MusicStore
                 // send the request to the following path or controller action.
                 app.UseExceptionHandler("/Home/Error");
             }
-            
-            var nodeInstance = new NodeInstance();
-            app.Use(async (context, next) => {
-                if (context.Request.Path.Value.EndsWith(".less")) {
-                    // Note: check for directory traversal
-                    var output = await nodeInstance.Invoke("lessCompiler.js", env.WebRootPath + context.Request.Path.Value);
-                    await context.Response.WriteAsync(output);
-                } else {
-                    await next();
-                }
-            });
             
             // Add static files to the request pipeline.
             app.UseStaticFiles();

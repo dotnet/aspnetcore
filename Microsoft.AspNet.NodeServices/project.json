@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0-alpha1",
+  "version": "1.0.0-alpha2",
   "description": "Microsoft.AspNet.NodeServices",
   "authors": [ "Microsoft" ],
   "tags": [""],
@@ -8,7 +8,8 @@
 
   "dependencies": {
       "System.Net.Http": "4.0.1-beta-23409",
-      "Newtonsoft.Json": "8.0.1-beta1"
+      "Newtonsoft.Json": "8.0.1-beta1",
+      "Microsoft.Framework.DependencyInjection": "1.0.0-beta8"
   },
 
   "frameworks": {

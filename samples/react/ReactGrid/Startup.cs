@@ -1,5 +1,6 @@
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting;
+using Microsoft.AspNet.NodeServices;
 using Microsoft.Dnx.Runtime;
 using Microsoft.Framework.Configuration;
 using Microsoft.Framework.DependencyInjection;
@@ -26,6 +27,9 @@ namespace ReactExample
         {
             // Add MVC services to the services container.
             services.AddMvc();
+            
+            // Enable Node Services
+            services.AddNodeServices();
         }
 
         // Configure is called after ConfigureServices is called.

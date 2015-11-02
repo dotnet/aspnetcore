@@ -16,7 +16,7 @@
     "Microsoft.Framework.Logging": "1.0.0-beta8",
     "Microsoft.Framework.Logging.Console": "1.0.0-beta8",
     "Microsoft.Framework.Logging.Debug": "1.0.0-beta8",
-    "Microsoft.AspNet.NodeServices.React": "1.0.0-alpha1"
+    "Microsoft.AspNet.NodeServices.React": "1.0.0-alpha2"
   },
   "commands": {
     "web": "Microsoft.AspNet.Server.Kestrel"
