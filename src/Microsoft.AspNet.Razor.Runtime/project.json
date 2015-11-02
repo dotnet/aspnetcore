@@ -1,6 +1,10 @@
 {
   "description": "Runtime components for rendering Razor pages.",
   "version": "4.0.0-*",
+  "compilationOptions": {
+    "warningsAsErrors": true,
+    "keyFile": "../../tools/Key.snk"
+  },
   "repository": {
     "type": "git",
     "url": "git://github.com/aspnet/razor"

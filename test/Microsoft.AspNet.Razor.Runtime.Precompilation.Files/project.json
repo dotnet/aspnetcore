@@ -1,5 +1,9 @@
 ﻿{
     "version": "1.0.0-*",
+    "compilationOptions": {
+        "warningsAsErrors": true,
+        "keyFile": "../../tools/Key.snk"
+    },
     "dependencies": {
         "Microsoft.AspNet.Razor.Runtime.Precompilation": "4.0.0-*"
     },

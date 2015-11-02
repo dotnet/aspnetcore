@@ -28,6 +28,8 @@
     }
   },
   "compilationOptions": {
-    "define": [ "__RemoveThisBitTo__GENERATE_BASELINES" ]
+    "define": [ "__RemoveThisBitTo__GENERATE_BASELINES" ],
+    "warningsAsErrors": true,
+    "keyFile": "../../tools/Key.snk"
   }
 }
