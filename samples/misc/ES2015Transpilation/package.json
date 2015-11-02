@@ -1,0 +1,9 @@
+{
+  "name": "ES2015Example",
+  "version": "0.0.0",
+  "dependencies": {
+    "babel-core": "^5.8.29",
+    "body-parser": "^1.14.1",
+    "express": "^4.13.3"
+  }
+}
