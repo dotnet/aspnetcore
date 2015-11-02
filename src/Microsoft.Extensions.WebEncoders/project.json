@@ -7,7 +7,8 @@
   },
   "compilationOptions": {
     "warningsAsErrors": true,
-    "allowUnsafe": true
+    "allowUnsafe": true,
+    "keyFile": "../../tools/Key.snk"
   },
   "dependencies": {
     "Microsoft.Extensions.DependencyInjection.Abstractions": "1.0.0-*",
