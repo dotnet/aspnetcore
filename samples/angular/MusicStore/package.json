@@ -4,11 +4,8 @@
   "dependencies": {
     "angular2": "2.0.0-alpha.44",
     "angular2-universal-patched": "^0.5.4",
-    "body-parser": "^1.14.1",
     "bootstrap": "^3.3.5",
-    "del": "^2.0.2",
     "es6-module-loader": "^0.15.0",
-    "express": "^4.13.3",
     "jquery": "^2.1.4",
     "less": "^2.5.3",
     "reflect-metadata": "^0.1.2",

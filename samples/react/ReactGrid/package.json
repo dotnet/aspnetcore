@@ -3,9 +3,7 @@
   "version": "0.0.0",
   "dependencies": {
     "babel-core": "^5.8.29",
-    "body-parser": "^1.14.1",
     "bootstrap": "^3.3.5",
-    "express": "^4.13.3",
     "griddle-react": "^0.2.14",
     "history": "^1.12.6",
     "react": "^0.14.0",

@@ -1,50 +1,55 @@
+// Limit dependencies to core Node modules. This means the code in this file has to be very low-level and unattractive,
+// but simplifies things for the consumer of this module.
+var http = require('http');
 var path = require('path');
-var express = require('express');
-var bodyParser = require('body-parser')
 var requestedPortOrZero = parseInt(process.argv[2]) || 0; // 0 means 'let the OS decide'
 
 autoQuitOnFileChange(process.cwd(), ['.js', '.json', '.html']);
 
-var app = express();
-app.use(bodyParser.json());
-
-app.all('/', function (req, res) {
-    var resolvedPath = path.resolve(process.cwd(), req.body.moduleName);
-    var invokedModule = require(resolvedPath);
-    var func = req.body.exportedFunctionName ? invokedModule[req.body.exportedFunctionName] : invokedModule;
-    if (!func) {
-        throw new Error('The module "' + resolvedPath + '" has no export named "' + req.body.exportedFunctionName + '"');
-    }
-    
-    var hasSentResult = false;
-    var callback = function(errorValue, successValue) {
-        if (!hasSentResult) {
-            hasSentResult = true;
-            if (errorValue) {
-                res.status(500).send(errorValue);
-            } else {
-                sendResult(res, successValue);
-            }
+var server = http.createServer(function(req, res) {
+    readRequestBodyAsJson(req, function(bodyJson) {
+        var resolvedPath = path.resolve(process.cwd(), bodyJson.moduleName);
+        var invokedModule = require(resolvedPath);
+        var func = bodyJson.exportedFunctionName ? invokedModule[bodyJson.exportedFunctionName] : invokedModule;
+        if (!func) {
+            throw new Error('The module "' + resolvedPath + '" has no export named "' + bodyJson.exportedFunctionName + '"');
         }
-    };
-    
-    func.apply(null, [callback].concat(req.body.args));
+        
+        var hasSentResult = false;
+        var callback = function(errorValue, successValue) {
+            if (!hasSentResult) {
+                hasSentResult = true;
+                if (errorValue) {
+                    res.status(500).send(errorValue);
+                } else if (typeof successValue === 'object') {
+                    // Arbitrary object - JSON-serialize it
+                    res.setHeader('Content-Type', 'application/json');
+                    res.end(JSON.stringify(successValue));
+                } else {
+                    // String - can bypass JSON-serialization altogether
+                    res.setHeader('Content-Type', 'text/plain');
+                    res.end(successValue);
+                }
+            }
+        };
+        
+        func.apply(null, [callback].concat(bodyJson.args));        
+    });
 });
 
-var listener = app.listen(requestedPortOrZero, 'localhost', function () {
+server.listen(requestedPortOrZero, 'localhost', function () {
     // Signal to HttpNodeHost which port it should make its HTTP connections on
-    console.log('[Microsoft.AspNet.NodeServices.HttpNodeHost:Listening on port ' + listener.address().port + '\]');
+    console.log('[Microsoft.AspNet.NodeServices.HttpNodeHost:Listening on port ' + server.address().port + '\]');
     
     // Signal to the NodeServices base class that we're ready to accept invocations
     console.log('[Microsoft.AspNet.NodeServices:Listening]');
 });
 
-function sendResult(response, result) {
-    if (typeof result === 'object') {
-        response.json(result);
-    } else {
-        response.send(result);
-    }
+function readRequestBodyAsJson(request, callback) {
+    var requestBodyAsString = '';
+    request
+        .on('data', function(chunk) { requestBodyAsString += chunk; })
+        .on('end', function() { callback(JSON.parse(requestBodyAsString)); });
 }
 
 function autoQuitOnFileChange(rootDir, extensions) {
