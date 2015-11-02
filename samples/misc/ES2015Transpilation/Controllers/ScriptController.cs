@@ -12,7 +12,7 @@ namespace ES2015Example.Controllers
         {
             // TODO: Don't hard-code wwwroot; use proper path conversions
             var fileContents = System.IO.File.ReadAllText("wwwroot/" + filename);
-            var transpiledResult = await nodeInstance.Invoke("transpilation.js", fileContents);
+            var transpiledResult = await nodeInstance.Invoke("transpilation.js", fileContents, Request.Path.Value);
             return Content(transpiledResult, "application/javascript");
         }
     }
