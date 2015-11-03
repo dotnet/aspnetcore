@@ -904,12 +904,12 @@ namespace Microsoft.AspNet.Server.KestrelTests
 
             public IDisposable BeginScopeImpl(object state)
             {
-                throw new NotImplementedException();
+                return new Disposable(() => { });
             }
 
             public bool IsEnabled(LogLevel logLevel)
             {
-                throw new NotImplementedException();
+                return true;
             }
 
             public void Log(LogLevel logLevel, int eventId, object state, Exception exception, Func<object, Exception, string> formatter)
