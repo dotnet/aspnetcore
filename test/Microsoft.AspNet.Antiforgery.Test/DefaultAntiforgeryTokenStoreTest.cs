@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.Antiforgery
         public void GetCookieToken_CookieDoesNotExist_ReturnsNull()
         {
             // Arrange
-            var requestCookies = new Mock<IReadableStringCollection>();
+            var requestCookies = new Mock<IRequestCookieCollection>();
             requestCookies
                 .Setup(o => o[It.IsAny<string>()])
                 .Returns(string.Empty);
@@ -54,7 +54,7 @@ namespace Microsoft.AspNet.Antiforgery
         public void GetCookieToken_CookieIsMissingInRequest_LooksUpCookieInAntiforgeryContext()
         {
             // Arrange
-            var requestCookies = new Mock<IReadableStringCollection>();
+            var requestCookies = new Mock<IRequestCookieCollection>();
             requestCookies
                 .Setup(o => o[It.IsAny<string>()])
                 .Returns(string.Empty);
@@ -167,7 +167,7 @@ namespace Microsoft.AspNet.Antiforgery
             // Arrange
             var httpContext = new DefaultHttpContext();
             httpContext.Request.Form = new FormCollection(new Dictionary<string, StringValues>());
-            httpContext.Request.Cookies = new ReadableStringCollection(new Dictionary<string, StringValues>());
+            httpContext.Request.Cookies = new RequestCookieCollection(new Dictionary<string, string>());
 
             var options = new AntiforgeryOptions()
             {
@@ -196,7 +196,7 @@ namespace Microsoft.AspNet.Antiforgery
 
             // Will not be accessed
             httpContext.Request.Form = null;
-            httpContext.Request.Cookies = new ReadableStringCollection(new Dictionary<string, StringValues>()
+            httpContext.Request.Cookies = new RequestCookieCollection(new Dictionary<string, string>()
             {
                 { "cookie-name", "cookie-value" },
             });
@@ -226,7 +226,7 @@ namespace Microsoft.AspNet.Antiforgery
             var httpContext = new DefaultHttpContext();
             httpContext.Request.ContentType = "application/x-www-form-urlencoded";
             httpContext.Request.Form = new FormCollection(new Dictionary<string, StringValues>());
-            httpContext.Request.Cookies = new ReadableStringCollection(new Dictionary<string, StringValues>()
+            httpContext.Request.Cookies = new RequestCookieCollection(new Dictionary<string, string>()
             {
                 { "cookie-name", "cookie-value" },
             });
@@ -259,7 +259,7 @@ namespace Microsoft.AspNet.Antiforgery
             {
                 { "form-field-name", "form-value" },
             });
-            httpContext.Request.Cookies = new ReadableStringCollection(new Dictionary<string, StringValues>()
+            httpContext.Request.Cookies = new RequestCookieCollection(new Dictionary<string, string>()
             {
                 { "cookie-name", "cookie-value" },
             });
@@ -385,7 +385,7 @@ namespace Microsoft.AspNet.Antiforgery
             }
         }
 
-        private class MockCookieCollection : IReadableStringCollection
+        private class MockCookieCollection : IRequestCookieCollection
         {
             private Dictionary<string, string> _dictionary;
 
@@ -415,22 +415,26 @@ namespace Microsoft.AspNet.Antiforgery
                 return new MockCookieCollection(new Dictionary<string, string>() { { key, value } });
             }
 
-            public string Get(string key)
-            {
-                return this[key];
-            }
-
             public bool ContainsKey(string key)
             {
                 return _dictionary.ContainsKey(key);
             }
 
-            public StringValues this[string key]
+            public string this[string key]
             {
-                get { return _dictionary[key]; }
+                get
+                {
+                    string value;
+                    return _dictionary.TryGetValue(key, out value) ? value : null;
+                }
             }
 
-            public IEnumerator<KeyValuePair<string, StringValues>> GetEnumerator()
+            public bool TryGetValue(string key, out string value)
+            {
+                return _dictionary.TryGetValue(key, out value);
+            }
+
+            public IEnumerator<KeyValuePair<string, string>> GetEnumerator()
             {
                 throw new NotImplementedException();
             }
