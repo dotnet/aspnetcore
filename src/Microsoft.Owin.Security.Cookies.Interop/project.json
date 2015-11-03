@@ -1,5 +1,9 @@
 {
     "version": "1.0.0-*",
+    "compilationOptions": {
+        "warningsAsErrors": true,
+        "keyFile": "../../tools/Key.snk"
+    },
     "description": "A compatibility layer for sharing authentication tickets between Microsoft.Owin.Security.Cookies and Microsoft.AspNet.Authentication.Cookies.",
     "dependencies": {
     },
