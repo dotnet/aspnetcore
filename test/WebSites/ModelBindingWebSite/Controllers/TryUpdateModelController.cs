@@ -107,7 +107,7 @@ namespace ModelBindingWebSite.Controllers
 
         public async Task<Employee> GetEmployeeAsync_BindToBaseDeclaredType()
         {
-            var backingStore = new ReadableStringCollection(
+            var backingStore = new QueryCollection(
             new Dictionary<string, StringValues>
             {
                 { "Parent.Name", new[] { "fatherName"} },
@@ -120,7 +120,7 @@ namespace ModelBindingWebSite.Controllers
                 employee,
                 employee.GetType(),
                 prefix: string.Empty,
-                valueProvider: new ReadableStringCollectionValueProvider(
+                valueProvider: new QueryStringValueProvider(
                     BindingSource.Query,
                     backingStore,
                     CultureInfo.CurrentCulture),
@@ -131,7 +131,7 @@ namespace ModelBindingWebSite.Controllers
 
         public async Task<User> GetUserAsync_ModelType_IncludeAll(int id)
         {
-            var backingStore = new ReadableStringCollection(
+            var backingStore = new QueryCollection(
             new Dictionary<string, StringValues>
             {
                 { "Key", new[] { "123"} },
@@ -144,7 +144,7 @@ namespace ModelBindingWebSite.Controllers
             await TryUpdateModelAsync(user,
                 typeof(User),
                 prefix: string.Empty,
-                valueProvider: new ReadableStringCollectionValueProvider(
+                valueProvider: new QueryStringValueProvider(
                     BindingSource.Query,
                     backingStore,
                     CultureInfo.CurrentCulture),

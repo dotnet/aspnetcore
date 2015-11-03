@@ -25,6 +25,6 @@ namespace LoggingWebSite
 
         public string Query { get; set; }
 
-        public IEnumerable<KeyValuePair<string, StringValues>> Cookies { get; set; }
+        public IEnumerable<KeyValuePair<string, string>> Cookies { get; set; }
     }
 }
