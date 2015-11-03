@@ -3,7 +3,8 @@
   "description": "Implementation of WebSocket abstract base class. Used by WebListener.",
   "dependencies": {},
   "compilationOptions": {
-    "allowUnsafe": true
+    "allowUnsafe": true,
+    "keyFile": "../../tools/Key.snk"
   },
   "frameworks": {
     "net451": {},
