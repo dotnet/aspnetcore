@@ -27,7 +27,7 @@ module.exports = {
     renderToString: function(callback, options) {
         var resolvedPath = path.resolve(process.cwd(), options.moduleName);
         var requestedModule = require(resolvedPath);
-        var component = requestedModule[options.exportName]; 
+        var component = options.exportName ? requestedModule[options.exportName] : requestedModule; 
         if (!component) {
             throw new Error('The module "' + resolvedPath + '" has no export named "' + options.exportName + '"');
         }

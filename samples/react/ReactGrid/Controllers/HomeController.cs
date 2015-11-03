@@ -17,7 +17,6 @@ namespace ReactExample.Controllers
         {
             ViewData["ReactOutput"] = await ReactRenderer.RenderToString(this.nodeServices,
                 moduleName: "ReactApp/components/ReactApp.jsx",
-                exportName: "ReactApp",
                 baseUrl: Request.Path
             );
             return View();

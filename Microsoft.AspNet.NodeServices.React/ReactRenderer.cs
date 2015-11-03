@@ -12,6 +12,10 @@ namespace Microsoft.AspNet.NodeServices.React
             nodeScript = new StringAsTempFile(script); // Will be cleaned up on process exit
         }
         
+        public static Task<string> RenderToString(INodeServices nodeServices, string moduleName, string baseUrl) {
+            return RenderToString(nodeServices, moduleName, /* exportName */ null, baseUrl);
+        }
+        
         public static async Task<string> RenderToString(INodeServices nodeServices, string moduleName, string exportName, string baseUrl) {
             return await nodeServices.InvokeExport(nodeScript.FileName, "renderToString", new {
                 moduleName,
