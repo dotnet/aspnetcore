@@ -9,6 +9,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.Extensions.WebEncoders;
@@ -43,17 +44,17 @@ namespace Microsoft.AspNet.Diagnostics.Views
         /// <summary>
         /// Html encoder used to encode content.
         /// </summary>
-        protected IHtmlEncoder HtmlEncoder { get; set; }
+        protected HtmlEncoder HtmlEncoder { get; set; }
 
         /// <summary>
         /// Url encoder used to encode content.
         /// </summary>
-        protected IUrlEncoder UrlEncoder { get; set; }
+        protected UrlEncoder UrlEncoder { get; set; }
 
         /// <summary>
         /// JavaScript encoder used to encode content.
         /// </summary>
-        protected IJavaScriptStringEncoder JavaScriptStringEncoder { get; set; }
+        protected JavaScriptEncoder JavaScriptEncoder { get; set; }
 
         /// <summary>
         /// Execute an individual request
@@ -67,7 +68,7 @@ namespace Microsoft.AspNet.Diagnostics.Views
             Output = new StreamWriter(Response.Body, Encoding.UTF8, 4096, leaveOpen: true);
             HtmlEncoder = context.ApplicationServices.GetHtmlEncoder();
             UrlEncoder = context.ApplicationServices.GetUrlEncoder();
-            JavaScriptStringEncoder = context.ApplicationServices.GetJavaScriptStringEncoder();
+            JavaScriptEncoder = context.ApplicationServices.GetJavaScriptEncoder();
             await ExecuteAsync();
             Output.Dispose();
         }
@@ -272,7 +273,7 @@ namespace Microsoft.AspNet.Diagnostics.Views
         /// <param name="value">The <see cref="string"/> to write.</param>
         protected void WriteTo(TextWriter writer, string value)
         {
-            WriteLiteralTo(writer, HtmlEncoder.HtmlEncode(value));
+            WriteLiteralTo(writer, HtmlEncoder.Encode(value));
         }
 
         /// <summary>
@@ -308,7 +309,7 @@ namespace Microsoft.AspNet.Diagnostics.Views
             return string.Join("<br />" + Environment.NewLine,
                 input.Split(new[] { "\r\n" }, StringSplitOptions.None)
                 .SelectMany(s => s.Split(new[] { '\r', '\n' }, StringSplitOptions.None))
-                .Select(HtmlEncoder.HtmlEncode));
+                .Select(HtmlEncoder.Encode));
         }
     }
 }

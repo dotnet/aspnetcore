@@ -31,6 +31,6 @@ namespace Microsoft.AspNet.Diagnostics.Elm
 
         public QueryString Query { get; set; }
 
-        public IReadableStringCollection Cookies { get; set; }
+        public IRequestCookieCollection Cookies { get; set; }
     }
 }

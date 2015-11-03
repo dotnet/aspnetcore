@@ -7,6 +7,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Diagnostics.Entity.FunctionalTests.Helpers;
@@ -18,7 +19,6 @@ using Microsoft.Data.Entity;
 using Microsoft.Data.Entity.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.WebEncoders;
 using Xunit;
 
 namespace Microsoft.AspNet.Diagnostics.Entity.Tests
@@ -209,7 +209,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
             var content = await response.Content.ReadAsStringAsync();
 
             // Ensure the url we're going to test is what the page is using in it's JavaScript
-            var javaScriptEncoder = new JavaScriptStringEncoder();
+            var javaScriptEncoder = JavaScriptEncoder.Default;
             Assert.Contains("req.open(\"POST\", \"" + JavaScriptEncode(expectedMigrationsEndpoint) + "\", true);", content);
             Assert.Contains("var formBody = \"context=" + JavaScriptEncode(UrlEncode(expectedContextType)) + "\";", content);
 
@@ -436,16 +436,16 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
             }
         }
 
-        private static UrlEncoder _urlEncoder = new UrlEncoder();
+        private static UrlEncoder _urlEncoder = UrlEncoder.Default;
         private static string UrlEncode(string content)
         {
-            return _urlEncoder.UrlEncode(content);
+            return _urlEncoder.Encode(content);
         }
 
-        private static JavaScriptStringEncoder _javaScriptEncoder = new JavaScriptStringEncoder();
+        private static JavaScriptEncoder _javaScriptEncoder = JavaScriptEncoder.Default;
         private static string JavaScriptEncode(string content)
         {
-            return _javaScriptEncoder.JavaScriptStringEncode(content);
+            return _javaScriptEncoder.Encode(content);
         }
     }
 }

@@ -27,13 +27,13 @@ namespace Microsoft.AspNet.Diagnostics.Views
         /// Parsed query data.
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly", Justification = "Model class contains collection")]
-        public IReadableStringCollection Query { get; set; }
+        public IQueryCollection Query { get; set; }
         
         /// <summary>
         /// Request cookies.
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly", Justification = "Model class contains collection")]
-        public IReadableStringCollection Cookies { get; set; }
+        public IRequestCookieCollection Cookies { get; set; }
         
         /// <summary>
         /// Request headers.

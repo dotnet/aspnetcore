@@ -34,12 +34,12 @@ using Microsoft.AspNet.Diagnostics.Entity.Views
 
     public string UrlEncode(string content)
     {
-        return UrlEncoder.UrlEncode(content);
+        return UrlEncoder.Encode(content);
     }
 
     public string JavaScriptEncode(string content)
     {
-        return JavaScriptStringEncoder.JavaScriptStringEncode(content);
+        return JavaScriptEncoder.Encode(content);
     }
 
 #line default

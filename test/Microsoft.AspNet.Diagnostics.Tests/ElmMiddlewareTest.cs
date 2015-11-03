@@ -207,10 +207,10 @@ namespace Microsoft.AspNet.Diagnostics.Tests
                 .Returns(new QueryString());
             contextMock
                 .SetupGet(c => c.Request.Query)
-                .Returns(new Mock<IReadableStringCollection>().Object);
+                .Returns(new Mock<IQueryCollection>().Object);
             contextMock
                 .SetupGet(c => c.Request.Cookies)
-                .Returns(new Mock<IReadableStringCollection>().Object);
+                .Returns(new Mock<IRequestCookieCollection>().Object);
             contextMock
                 .Setup(c => c.Request.ReadFormAsync(It.IsAny<System.Threading.CancellationToken>()))
                 .Returns(Task.FromResult(new Mock<IFormCollection>().Object));

@@ -7,12 +7,13 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.PlatformAbstractions;
-using Microsoft.Extensions.WebEncoders;
+using Microsoft.Extensions.WebEncoders.Testing;
 #if DNX451
 using Moq;
 #endif
@@ -204,7 +205,7 @@ namespace Microsoft.AspNet.Diagnostics.Tests
                 contextMock
                     .SetupGet(c => c.ApplicationServices)
                     .Returns(new ServiceCollection().
-                                AddInstance<IHtmlEncoder>(new CustomHtmlEncoder()).
+                                AddInstance<HtmlEncoder>(new HtmlTestEncoder()).
                                 BuildServiceProvider());
 
                 // Act
@@ -213,29 +214,11 @@ namespace Microsoft.AspNet.Diagnostics.Tests
                 // Assert
                 string response = Encoding.UTF8.GetString(buffer);
 
-                Assert.True(response.Contains("<td>[LibInfo1]</td>"));
-                Assert.True(response.Contains("<td>[1.0.0-beta1]</td>"));
-                Assert.True(response.Contains("<td>[Path1]</td>"));
+                Assert.True(response.Contains("<td>HtmlEncode[[LibInfo1]]</td>"));
+                Assert.True(response.Contains("<td>HtmlEncode[[1.0.0-beta1]]</td>"));
+                Assert.True(response.Contains("<td>HtmlEncode[[Path1]]</td>"));
             }
         }
 #endif
-
-        private class CustomHtmlEncoder : IHtmlEncoder
-        {
-            public string HtmlEncode(string value)
-            {
-                return "[" + value + "]";
-            }
-
-            public void HtmlEncode(string value, int startIndex, int charCount, TextWriter output)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void HtmlEncode(char[] value, int startIndex, int charCount, TextWriter output)
-            {
-                throw new NotImplementedException();
-            }
-        }
     }
 }

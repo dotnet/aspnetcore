@@ -4,12 +4,12 @@
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Diagnostics;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
-using Microsoft.Extensions.WebEncoders;
 
 namespace StatusCodePagesSample
 {
@@ -63,11 +63,11 @@ namespace StatusCodePagesSample
                 {
                     var builder = new StringBuilder();
                     builder.AppendLine("<html><body>");
-                    builder.AppendLine("An error occurred, Status Code: " + HtmlEncoder.Default.HtmlEncode(context.Request.Path.ToString().Substring(1)) + "<br>");
+                    builder.AppendLine("An error occurred, Status Code: " + HtmlEncoder.Default.Encode(context.Request.Path.ToString().Substring(1)) + "<br>");
                     var referrer = context.Request.Headers["referer"];
                     if (!string.IsNullOrEmpty(referrer))
                     {
-                        builder.AppendLine("<a href=\"" + HtmlEncoder.Default.HtmlEncode(referrer) + "\">Retry " + WebUtility.HtmlEncode(referrer) + "</a><br>");
+                        builder.AppendLine("<a href=\"" + HtmlEncoder.Default.Encode(referrer) + "\">Retry " + WebUtility.HtmlEncode(referrer) + "</a><br>");
                     }
                     builder.AppendLine("</body></html>");
                     context.Response.ContentType = "text/html";
@@ -81,8 +81,8 @@ namespace StatusCodePagesSample
                 var builder = new StringBuilder();
                 builder.AppendLine("<html><body>");
                 builder.AppendLine("<a href=\"" +
-                    HtmlEncoder.Default.HtmlEncode(context.Request.PathBase.ToString()) + "/missingpage/\">" +
-                    HtmlEncoder.Default.HtmlEncode(context.Request.PathBase.ToString()) + "/missingpage/</a><br>");
+                    HtmlEncoder.Default.Encode(context.Request.PathBase.ToString()) + "/missingpage/\">" +
+                    HtmlEncoder.Default.Encode(context.Request.PathBase.ToString()) + "/missingpage/</a><br>");
 
                 var space = string.Concat(Enumerable.Repeat("&nbsp;", 12));
                 builder.AppendFormat("<br><b>{0}{1}{2}</b><br>", "Status Code", space, "Status Code Pages");
