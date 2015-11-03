@@ -20,11 +20,9 @@ using System.IO;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Hosting.Builder;
 using Microsoft.AspNet.Hosting.Server;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
-using Microsoft.AspNet.Http.Internal;
 using Microsoft.Net.Http.Server;
 using Xunit;
 
@@ -171,7 +169,7 @@ namespace Microsoft.AspNet.Server.WebListener
             var dynamicServer = Utilities.CreateHttpServerReturnRoot("/", out root, app);
             dynamicServer.Dispose();
             var rootUri = new Uri(root);
-            var factory = new ServerFactory(loggerFactory: null, httpContextFactory: new HttpContextFactory(new HttpContextAccessor()));
+            var factory = new ServerFactory(loggerFactory: null);
             var server = factory.CreateServer(configuration: null);
             var listener = server.Features.Get<Microsoft.Net.Http.Server.WebListener>();
 
@@ -180,7 +178,7 @@ namespace Microsoft.AspNet.Server.WebListener
                 listener.UrlPrefixes.Add(UrlPrefix.Create(rootUri.Scheme, rootUri.Host, rootUri.Port, path));
             }
 
-            server.Start(app);
+            server.Start(new DummyApplication(app));
             return server;
         }
 

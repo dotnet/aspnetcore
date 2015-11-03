@@ -24,10 +24,8 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Hosting.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
-using Microsoft.AspNet.Http.Internal;
 using Microsoft.Net.Http.Server;
 using Xunit;
 
@@ -253,7 +251,7 @@ namespace Microsoft.AspNet.Server.WebListener
             string address;
             using (Utilities.CreateHttpServer(out address, httpContext => Task.FromResult(0))) { }
 
-            var factory = new ServerFactory(loggerFactory: null, httpContextFactory: new HttpContextFactory(new HttpContextAccessor()));
+            var factory = new ServerFactory(loggerFactory: null);
             var server = factory.CreateServer(configuration: null);
             var listener = server.Features.Get<Microsoft.Net.Http.Server.WebListener>();
             listener.UrlPrefixes.Add(UrlPrefix.Create(address));
@@ -261,7 +259,7 @@ namespace Microsoft.AspNet.Server.WebListener
 
             using (server)
             {
-                server.Start(httpContext => Task.FromResult(0));
+                server.Start(new DummyApplication(httpContext => Task.FromResult(0)));
                 string response = await SendRequestAsync(address);
                 Assert.Equal(string.Empty, response);
             }

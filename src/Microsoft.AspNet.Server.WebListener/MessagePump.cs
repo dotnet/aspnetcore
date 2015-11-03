@@ -21,7 +21,6 @@ using System.Diagnostics.Contracts;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Hosting.Server;
-using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Server.Features;
 using Microsoft.Extensions.Logging;
@@ -35,9 +34,8 @@ namespace Microsoft.AspNet.Server.WebListener
 
         private readonly Microsoft.Net.Http.Server.WebListener _listener;
         private readonly ILogger _logger;
-        private readonly IHttpContextFactory _httpContextFactory;
 
-        private RequestDelegate _appFunc;
+        private IHttpApplication<object> _application;
 
         private int _maxAccepts;
         private int _acceptorCounts;
@@ -47,17 +45,16 @@ namespace Microsoft.AspNet.Server.WebListener
         private int _outstandingRequests;
         private ManualResetEvent _shutdownSignal;
         
-        internal MessagePump(Microsoft.Net.Http.Server.WebListener listener, ILoggerFactory loggerFactory, IFeatureCollection features, IHttpContextFactory httpContextFactory)
+        internal MessagePump(Microsoft.Net.Http.Server.WebListener listener, ILoggerFactory loggerFactory, IFeatureCollection features)
         {
             if (features == null)
             {
-                throw new ArgumentNullException(nameof(Features));
+                throw new ArgumentNullException(nameof(features));
             }
 
             Contract.Assert(listener != null);
             _listener = listener;
             _logger = LogHelper.CreateLogger(loggerFactory, typeof(MessagePump));
-            _httpContextFactory = httpContextFactory;
             Features = features;
 
             _processRequest = new Action<object>(ProcessRequestAsync);
@@ -90,11 +87,11 @@ namespace Microsoft.AspNet.Server.WebListener
 
         public IFeatureCollection Features { get; }
 
-        public void Start(RequestDelegate app)
+        public void Start<TContext>(IHttpApplication<TContext> application)
         {
-            if (app == null)
+            if (application == null)
             {
-                throw new ArgumentNullException(nameof(app));
+                throw new ArgumentNullException(nameof(application));
             }
 
             var addressesFeature = Features.Get<IServerAddressesFeature>();
@@ -106,11 +103,11 @@ namespace Microsoft.AspNet.Server.WebListener
             ParseAddresses(addressesFeature.Addresses, Listener);
 
             // Can't call Start twice
-            Contract.Assert(_appFunc == null);
+            Contract.Assert(_application == null);
 
-            Contract.Assert(app != null);
+            Contract.Assert(application != null);
 
-            _appFunc = app;
+            _application = new ApplicationWrapper<TContext>(application);
 
             if (_listener.UrlPrefixes.Count == 0)
             {
@@ -183,14 +180,15 @@ namespace Microsoft.AspNet.Server.WebListener
                     return;
                 }
 
-                HttpContext httpContext = null;
+                object context = null;
                 try
                 {
                     Interlocked.Increment(ref _outstandingRequests);
                     FeatureContext featureContext = new FeatureContext(requestContext, EnableResponseCaching);
-                    httpContext = _httpContextFactory.Create(featureContext.Features);
-                    await _appFunc(httpContext).SupressContext();
+                    context = _application.CreateContext(featureContext.Features);
+                    await _application.ProcessRequestAsync(context).SupressContext();
                     requestContext.Dispose();
+                    _application.DisposeContext(context, null);
                 }
                 catch (Exception ex)
                 {
@@ -205,13 +203,10 @@ namespace Microsoft.AspNet.Server.WebListener
                         requestContext.Response.Reset();
                         SetFatalResponse(requestContext, 500);
                     }
+                    _application.DisposeContext(context, ex);
                 }
                 finally
                 {
-                    if (httpContext != null)
-                    {
-                        _httpContextFactory.Dispose(httpContext);
-                    }
                     if (Interlocked.Decrement(ref _outstandingRequests) == 0 && _stopping)
                     {
                         _shutdownSignal.Set();
@@ -252,6 +247,31 @@ namespace Microsoft.AspNet.Server.WebListener
             }
             // All requests are finished
             _listener.Dispose();
+        }
+
+        private class ApplicationWrapper<TContext> : IHttpApplication<object>
+        {
+            private readonly IHttpApplication<TContext> _application;
+
+            public ApplicationWrapper(IHttpApplication<TContext> application)
+            {
+                _application = application;
+            }
+
+            public object CreateContext(IFeatureCollection contextFeatures)
+            {
+                return _application.CreateContext(contextFeatures);
+            }
+
+            public void DisposeContext(object context, Exception exception)
+            {
+                _application.DisposeContext((TContext)context, exception);
+            }
+
+            public Task ProcessRequestAsync(object context)
+            {
+                return _application.ProcessRequestAsync((TContext)context);
+            }
         }
     }
 }

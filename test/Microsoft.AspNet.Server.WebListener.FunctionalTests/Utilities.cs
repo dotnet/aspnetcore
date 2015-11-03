@@ -56,7 +56,7 @@ namespace Microsoft.AspNet.Server.WebListener
 
         internal static IServer CreateDynamicHttpServer(string basePath, AuthenticationSchemes authType, out string root, out string baseAddress, RequestDelegate app)
         {
-            var factory = new ServerFactory(loggerFactory: null, httpContextFactory: Factory);
+            var factory = new ServerFactory(loggerFactory: null);
             lock (PortLock)
             {
                 while (NextPort < MaxPort)
@@ -73,7 +73,7 @@ namespace Microsoft.AspNet.Server.WebListener
                     listener.AuthenticationManager.AuthenticationSchemes = authType;
                     try
                     {
-                        server.Start(app);
+                        server.Start(new DummyApplication(app));
                         return server;
                     }
                     catch (WebListenerException)
@@ -92,10 +92,10 @@ namespace Microsoft.AspNet.Server.WebListener
 
         internal static IServer CreateServer(string scheme, string host, int port, string path, RequestDelegate app)
         {
-            var factory = new ServerFactory(loggerFactory: null, httpContextFactory: Factory);
+            var factory = new ServerFactory(loggerFactory: null);
             var server = factory.CreateServer(configuration: null);
             server.Features.Get<IServerAddressesFeature>().Addresses.Add(UrlPrefix.Create(scheme, host, port, path).ToString());
-            server.Start(app);
+            server.Start(new DummyApplication(app));
             return server;
         }
     }

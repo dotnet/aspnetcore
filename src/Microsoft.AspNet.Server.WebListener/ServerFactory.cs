@@ -37,7 +37,6 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNet.Hosting.Server;
-using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Server.Features;
 using Microsoft.Extensions.Configuration;
@@ -51,12 +50,10 @@ namespace Microsoft.AspNet.Server.WebListener
     public class ServerFactory : IServerFactory
     {
         private ILoggerFactory _loggerFactory;
-        private IHttpContextFactory _httpContextFactory;
 
-        public ServerFactory(ILoggerFactory loggerFactory, IHttpContextFactory httpContextFactory)
+        public ServerFactory(ILoggerFactory loggerFactory)
         {
             _loggerFactory = loggerFactory;
-            _httpContextFactory = httpContextFactory;
         }
 
         /// <summary>
@@ -72,7 +69,7 @@ namespace Microsoft.AspNet.Server.WebListener
             serverFeatures.Set(listener);
             serverFeatures.Set(SplitAddresses(configuration));
 
-            return new MessagePump(listener, _loggerFactory, serverFeatures, _httpContextFactory);
+            return new MessagePump(listener, _loggerFactory, serverFeatures);
         }
 
         private IServerAddressesFeature SplitAddresses(IConfiguration config)
