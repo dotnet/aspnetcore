@@ -31,7 +31,7 @@ namespace E2ETests
             var content = new FormUrlEncodedContent(formParameters.ToArray());
             response = await _httpClient.PostAsync("Account/ExternalLogin", content);
             Assert.Equal<string>("https://login.live.com/oauth20_authorize.srf", response.Headers.Location.AbsoluteUri.Replace(response.Headers.Location.Query, string.Empty));
-            var queryItems = new ReadableStringCollection(QueryHelpers.ParseQuery(response.Headers.Location.Query));
+            var queryItems = new QueryCollection(QueryHelpers.ParseQuery(response.Headers.Location.Query));
             Assert.Equal<string>("code", queryItems["response_type"]);
             Assert.Equal<string>("[ClientId]", queryItems["client_id"]);
             Assert.Equal<string>(_deploymentResult.ApplicationBaseUri + "signin-microsoft", queryItems["redirect_uri"]);

@@ -31,7 +31,7 @@ namespace E2ETests
             var content = new FormUrlEncodedContent(formParameters.ToArray());
             response = await _httpClient.PostAsync("Account/ExternalLogin", content);
             Assert.Equal<string>("https://login.windows.net/4afbc689-805b-48cf-a24c-d4aa3248a248/oauth2/authorize", response.Headers.Location.AbsoluteUri.Replace(response.Headers.Location.Query, string.Empty));
-            var queryItems = new ReadableStringCollection(QueryHelpers.ParseQuery(response.Headers.Location.Query));
+            var queryItems = new QueryCollection(QueryHelpers.ParseQuery(response.Headers.Location.Query));
             Assert.Equal<string>("c99497aa-3ee2-4707-b8a8-c33f51323fef", queryItems["client_id"]);
             Assert.Equal<string>("form_post", queryItems["response_mode"]);
             Assert.Equal<string>("code id_token", queryItems["response_type"]);
@@ -105,7 +105,7 @@ namespace E2ETests
             Assert.Equal<string>(
                 "https://login.windows.net/4afbc689-805b-48cf-a24c-d4aa3248a248/oauth2/logout",
                 response.Headers.Location.AbsoluteUri.Replace(response.Headers.Location.Query, string.Empty));
-            queryItems = new ReadableStringCollection(QueryHelpers.ParseQuery(response.Headers.Location.Query));
+            queryItems = new QueryCollection(QueryHelpers.ParseQuery(response.Headers.Location.Query));
             Assert.Equal<string>(_deploymentResult.ApplicationBaseUri + "Account/Login", queryItems["post_logout_redirect_uri"]);
         }
     }

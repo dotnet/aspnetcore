@@ -34,7 +34,7 @@ namespace E2ETests
             var content = new FormUrlEncodedContent(formParameters.ToArray());
             response = await _httpClient.PostAsync("Account/ExternalLogin", content);
             Assert.Equal<string>("https://twitter.com/oauth/authenticate", response.Headers.Location.AbsoluteUri.Replace(response.Headers.Location.Query, string.Empty));
-            var queryItems = new ReadableStringCollection(QueryHelpers.ParseQuery(response.Headers.Location.Query));
+            var queryItems = new QueryCollection(QueryHelpers.ParseQuery(response.Headers.Location.Query));
             Assert.Equal<string>("custom", queryItems["custom_redirect_uri"]);
             Assert.Equal<string>("valid_oauth_token", queryItems["oauth_token"]);
             //Check for the correlation cookie
