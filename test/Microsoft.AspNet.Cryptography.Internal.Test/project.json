@@ -13,6 +13,7 @@
         "test": "xunit.runner.aspnet"
     },
     "compilationOptions": {
-        "allowUnsafe": true
+        "allowUnsafe": true,
+        "keyFile": "../../tools/Key.snk"
     }
 }
