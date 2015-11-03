@@ -7,7 +7,8 @@
     "Microsoft.Net.WebSockets": "1.0.0-*"
   },
   "compilationOptions": {
-    "allowUnsafe": true
+    "allowUnsafe": true,
+    "keyFile": "../../tools/Key.snk"
   },
   "frameworks": {
     "net451": {},
