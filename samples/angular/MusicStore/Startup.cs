@@ -8,7 +8,6 @@ using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Identity.EntityFramework;
-using Microsoft.AspNet.NodeServices;
 using Microsoft.Data.Entity;
 using Microsoft.Dnx.Runtime;
 using Microsoft.Framework.Configuration;
@@ -79,9 +78,6 @@ namespace MusicStore
             Mapper.CreateMap<ArtistResultDto, Artist>();
             Mapper.CreateMap<Genre, GenreResultDto>();
             Mapper.CreateMap<GenreResultDto, Genre>();
-            
-            // Enable Node Services
-            services.AddNodeServices();
         }
 
         // Configure is called after ConfigureServices is called.

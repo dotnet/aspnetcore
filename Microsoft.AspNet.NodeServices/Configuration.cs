@@ -8,7 +8,7 @@ namespace Microsoft.AspNet.NodeServices {
             });
         }
 
-        private static INodeServices CreateNodeServices(NodeHostingModel hostingModel)
+        public static INodeServices CreateNodeServices(NodeHostingModel hostingModel)
         {
             switch (hostingModel)
             {

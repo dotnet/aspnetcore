@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0-alpha2",
+  "version": "1.0.0-alpha3",
   "description": "Microsoft.AspNet.NodeServices.React Class Library",
   "authors": [
     "Microsoft"
@@ -25,7 +25,7 @@
     }
   },
   "dependencies": {
-    "Microsoft.AspNet.NodeServices": "1.0.0-alpha2"
+    "Microsoft.AspNet.NodeServices": "1.0.0-alpha3"
   },
   "resource": [
     "Content/**/*"
