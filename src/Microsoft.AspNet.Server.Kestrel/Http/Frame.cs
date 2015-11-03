@@ -183,8 +183,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             _requestProcessingStopping = true;
             _requestAborted = true;
 
-            _requestBody?.StopAcceptingReads();
-            _responseBody?.StopAcceptingWrites();
+            _requestBody?.Abort();
+            _responseBody?.Abort();
 
             try
             {

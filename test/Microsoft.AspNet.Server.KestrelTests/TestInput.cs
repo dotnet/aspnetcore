@@ -51,6 +51,10 @@ namespace Microsoft.AspNet.Server.KestrelTests
         {
         }
 
+        public void Abort()
+        {
+        }
+
         public void Write(ArraySegment<byte> data, Action<Exception, object> callback, object state)
         {
         }

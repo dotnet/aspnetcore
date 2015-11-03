@@ -12,6 +12,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
     {
         private readonly MessageBody _body;
         private bool _stopped;
+        private bool _aborted;
 
         public FrameRequestStream(MessageBody body)
         {
@@ -55,6 +56,10 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             {
                 throw new ObjectDisposedException(nameof(FrameRequestStream));
             }
+            if (_aborted)
+            {
+                throw new IOException("The request has been aborted.");
+            }
 
             return ReadAsync(buffer, offset, count).GetAwaiter().GetResult();
         }
@@ -65,6 +70,10 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             if (_stopped)
             {
                 throw new ObjectDisposedException(nameof(FrameRequestStream));
+            }
+            if (_aborted)
+            {
+                throw new IOException("The request has been aborted.");
             }
 
             var task = ReadAsync(buffer, offset, count, CancellationToken.None, state);
@@ -85,6 +94,10 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             if (_stopped)
             {
                 throw new ObjectDisposedException(nameof(FrameRequestStream));
+            }
+            if (_aborted)
+            {
+                throw new IOException("The request has been aborted.");
             }
 
             var tcs = new TaskCompletionSource<int>(state);
@@ -111,6 +124,15 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
+            if (_stopped)
+            {
+                throw new ObjectDisposedException(nameof(FrameRequestStream));
+            }
+            if (_aborted)
+            {
+                throw new IOException("The request has been aborted.");
+            }
+
             return _body.ReadAsync(new ArraySegment<byte>(buffer, offset, count), cancellationToken);
         }
 
@@ -124,6 +146,13 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             // Can't use dispose (or close) as can be disposed too early by user code
             // As exampled in EngineTests.ZeroContentLengthNotSetAutomaticallyForCertainStatusCodes
             _stopped = true;
+        }
+
+        public void Abort()
+        {
+            // We don't want to throw an ODE until the app func actually completes.
+            // If the request is aborted, we throw an IOException instead.
+            _aborted = true;
         }
     }
 }
