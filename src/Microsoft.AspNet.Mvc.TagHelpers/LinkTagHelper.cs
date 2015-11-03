@@ -338,7 +338,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
                 // Build the <meta /> tag that's used to test for the presence of the stylesheet
                 builder
-                    .AppendHtml("<meta name=\"x-stylesheet-fallback-test\" class=\"")
+                    .AppendHtml("<meta name=\"x-stylesheet-fallback-test\" content=\"\" class=\"")
                     .Append(FallbackTestClass)
                     .AppendHtml("\" />");
 
