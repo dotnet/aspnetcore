@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.Dnx.Compilation;
 using Microsoft.Dnx.Compilation.CSharp;
+using Microsoft.Extensions.Compilation;
 using Microsoft.Extensions.PlatformAbstractions;
 
 namespace Microsoft.AspNet.Mvc.Razor.Compilation

@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.Dnx.Compilation;
+using Microsoft.Extensions.Compilation;
 
 namespace Microsoft.AspNet.Mvc.Razor.Compilation
 {

@@ -16,9 +16,9 @@ using Microsoft.AspNet.Razor.Runtime.Precompilation;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.Dnx.Compilation;
 using Microsoft.Dnx.Compilation.CSharp;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Compilation;
 
 namespace Microsoft.AspNet.Mvc.Razor.Precompilation
 {

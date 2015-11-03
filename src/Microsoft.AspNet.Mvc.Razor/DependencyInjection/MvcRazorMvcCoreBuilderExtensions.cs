@@ -11,8 +11,8 @@ using Microsoft.AspNet.Mvc.Razor.Directives;
 using Microsoft.AspNet.Mvc.Razor.Internal;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Razor.TagHelpers;
-using Microsoft.Dnx.Compilation;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Compilation;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.OptionsModel;
 
