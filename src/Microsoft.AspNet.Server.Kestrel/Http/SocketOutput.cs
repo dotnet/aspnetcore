@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Server.Kestrel.Infrastructure;
@@ -18,6 +19,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         private readonly KestrelThread _thread;
         private readonly UvStreamHandle _socket;
+        private readonly Connection _connection;
         private readonly long _connectionId;
         private readonly IKestrelTrace _log;
 
@@ -33,10 +35,16 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         private WriteContext _nextWriteContext;
         private readonly Queue<TaskCompletionSource<object>> _tasksPending;
 
-        public SocketOutput(KestrelThread thread, UvStreamHandle socket, long connectionId, IKestrelTrace log)
+        public SocketOutput(
+            KestrelThread thread,
+            UvStreamHandle socket,
+            Connection connection,
+            long connectionId,
+            IKestrelTrace log)
         {
             _thread = thread;
             _socket = socket;
+            _connection = connection;
             _connectionId = connectionId;
             _log = log;
             _tasksPending = new Queue<TaskCompletionSource<object>>();
@@ -176,10 +184,16 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             _log.ConnectionWriteCallback(_connectionId, status);
 
+            if (error != null)
+            {
+                _lastWriteError = new IOException(error.Message, error);
+
+                // Abort the connection for any failed write.
+                _connection.Abort();
+            }
+
             lock (_lockObj)
             {
-                _lastWriteError = error;
-
                 if (_nextWriteContext != null)
                 {
                     ScheduleWrite();
@@ -208,7 +222,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                     _numBytesPreCompleted += bytesToWrite;
                     bytesLeftToBuffer -= bytesToWrite;
 
-                    if (error == null)
+                    if (_lastWriteError == null)
                     {
                         ThreadPool.QueueUserWorkItem(
                             (o) => ((TaskCompletionSource<object>)o).SetResult(null), 
@@ -218,7 +232,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                     {
                         // error is closure captured 
                         ThreadPool.QueueUserWorkItem(
-                            (o) => ((TaskCompletionSource<object>)o).SetException(error), 
+                            (o) => ((TaskCompletionSource<object>)o).SetException(_lastWriteError), 
                             tcs);
                     }
                 }

@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             _connectionId = Interlocked.Increment(ref _lastConnectionId);
 
             _rawSocketInput = new SocketInput(Memory2);
-            _rawSocketOutput = new SocketOutput(Thread, _socket, _connectionId, Log);
+            _rawSocketOutput = new SocketOutput(Thread, _socket, this, _connectionId, Log);
         }
 
         public void Start()
@@ -96,6 +96,20 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                     {
                         connection.ApplyConnectionFilter();
                     }
+                }, this);
+            }
+        }
+
+        public void Abort()
+        {
+            if (_frame != null)
+            {
+                // Frame.Abort calls user code while this method is always
+                // called from a libuv thread.
+                ThreadPool.QueueUserWorkItem(state =>
+                {
+                    var connection = (Connection)this;
+                    connection._frame.Abort();
                 }, this);
             }
         }
@@ -157,7 +171,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
             if (errorDone)
             {
-                _frame.Abort();
+                Abort();
             }
         }
 

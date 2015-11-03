@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
                 var kestrelThread = kestrelEngine.Threads[0];
                 var socket = new MockSocket(kestrelThread.Loop.ThreadId, new TestKestrelTrace());
                 var trace = new KestrelTrace(new TestKestrelTrace());
-                var socketOutput = new SocketOutput(kestrelThread, socket, 0, trace);
+                var socketOutput = new SocketOutput(kestrelThread, socket, null, 0, trace);
 
                 // I doubt _maxBytesPreCompleted will ever be over a MB. If it is, we should change this test.
                 var bufferSize = 1048576;
@@ -85,7 +85,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
                 var kestrelThread = kestrelEngine.Threads[0];
                 var socket = new MockSocket(kestrelThread.Loop.ThreadId, new TestKestrelTrace());
                 var trace = new KestrelTrace(new TestKestrelTrace());
-                var socketOutput = new SocketOutput(kestrelThread, socket, 0, trace);
+                var socketOutput = new SocketOutput(kestrelThread, socket, null, 0, trace);
 
                 var bufferSize = maxBytesPreCompleted;
                 var buffer = new ArraySegment<byte>(new byte[bufferSize], 0, bufferSize);
@@ -140,7 +140,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
                 var kestrelThread = kestrelEngine.Threads[0];
                 var socket = new MockSocket(kestrelThread.Loop.ThreadId, new TestKestrelTrace());
                 var trace = new KestrelTrace(new TestKestrelTrace());
-                var socketOutput = new SocketOutput(kestrelThread, socket, 0, trace);
+                var socketOutput = new SocketOutput(kestrelThread, socket, null, 0, trace);
 
                 var bufferSize = maxBytesPreCompleted;
 
@@ -219,7 +219,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
                 var kestrelThread = kestrelEngine.Threads[0];
                 var socket = new MockSocket(kestrelThread.Loop.ThreadId, new TestKestrelTrace());
                 var trace = new KestrelTrace(new TestKestrelTrace());
-                var socketOutput = new SocketOutput(kestrelThread, socket, 0, trace);
+                var socketOutput = new SocketOutput(kestrelThread, socket, null, 0, trace);
 
                 var bufferSize = maxBytesPreCompleted;
                 var buffer = new ArraySegment<byte>(new byte[bufferSize], 0, bufferSize);

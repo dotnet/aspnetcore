@@ -967,6 +967,8 @@ namespace Microsoft.AspNet.Server.KestrelTests
                         readTcs.SetException(ex);
                         throw;
                     }
+
+                    readTcs.SetCanceled();
                 }
             }, testContext))
             {
@@ -995,6 +997,68 @@ namespace Microsoft.AspNet.Server.KestrelTests
             // The cancellation token for only the last request should be triggered.
             var abortedRequestId = await registrationTcs.Task;
             Assert.Equal(2, abortedRequestId);
+        }
+
+        [Theory]
+        [MemberData(nameof(ConnectionFilterData))]
+        public async Task FailedWritesResultInAbortedRequest(ServiceContext testContext)
+        {
+            var writeTcs = new TaskCompletionSource<object>();
+            var registrationWh = new ManualResetEventSlim();
+            var connectionCloseWh = new ManualResetEventSlim();
+
+            using (var server = new TestServer(async httpContext =>
+            {
+                var response = httpContext.Response;
+                var request = httpContext.Request;
+                var lifetime = httpContext.Features.Get<IHttpRequestLifetimeFeature>();
+
+                lifetime.RequestAborted.Register(() => registrationWh.Set());
+
+                await request.Body.CopyToAsync(Stream.Null);
+                connectionCloseWh.Wait();
+
+                response.Headers.Clear();
+                response.Headers["Content-Length"] = new[] { "5" };
+
+                try
+                {
+                    // Ensure write is long enough to disable write-behind buffering
+                    for (int i = 0; i < 10; i++)
+                    {
+                        await response.WriteAsync(new string('a', 65537));
+                    }
+                }
+                catch (Exception ex)
+                {
+                    writeTcs.SetException(ex);
+
+                    // Give a chance for RequestAborted to trip before the app completes
+                    registrationWh.Wait(1000);
+
+                    throw;
+                }
+
+                writeTcs.SetCanceled();
+            }, testContext))
+            {
+                using (var connection = new TestConnection())
+                {
+                    await connection.Send(
+                        "POST / HTTP/1.1",
+                        "Content-Length: 5",
+                        "",
+                        "Hello");
+                    // Don't wait to receive the response. Just close the socket.
+                }
+
+                connectionCloseWh.Set();
+
+                // Write failed
+                await Assert.ThrowsAsync<IOException>(async () => await writeTcs.Task);
+                // RequestAborted tripped
+                Assert.True(registrationWh.Wait(200));
+            }
         }
 
         private class TestApplicationErrorLogger : ILogger
