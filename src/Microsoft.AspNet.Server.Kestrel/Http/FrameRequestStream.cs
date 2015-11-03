@@ -53,7 +53,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             if (_stopped)
             {
-                throw new ObjectDisposedException("RequestStream has been disposed");
+                throw new ObjectDisposedException(nameof(FrameRequestStream));
             }
 
             return ReadAsync(buffer, offset, count).GetAwaiter().GetResult();
@@ -64,7 +64,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             if (_stopped)
             {
-                throw new ObjectDisposedException("RequestStream has been disposed");
+                throw new ObjectDisposedException(nameof(FrameRequestStream));
             }
 
             var task = ReadAsync(buffer, offset, count, CancellationToken.None, state);
@@ -84,7 +84,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             if (_stopped)
             {
-                throw new ObjectDisposedException("RequestStream has been disposed");
+                throw new ObjectDisposedException(nameof(FrameRequestStream));
             }
 
             var tcs = new TaskCompletionSource<int>(state);

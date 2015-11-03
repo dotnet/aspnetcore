@@ -38,7 +38,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             if (_stopped)
             {
-                throw new ObjectDisposedException("ResponseStream has been disposed");
+                throw new ObjectDisposedException(nameof(FrameResponseStream));
             }
 
             _context.FrameControl.Flush();
@@ -48,7 +48,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             if (_stopped)
             {
-                throw new ObjectDisposedException("ResponseStream has been disposed");
+                throw new ObjectDisposedException(nameof(FrameResponseStream));
             }
 
             return _context.FrameControl.FlushAsync(cancellationToken);
@@ -73,7 +73,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             if (_stopped)
             {
-                throw new ObjectDisposedException("ResponseStream has been disposed");
+                throw new ObjectDisposedException(nameof(FrameResponseStream));
             }
 
             _context.FrameControl.Write(new ArraySegment<byte>(buffer, offset, count));
@@ -83,7 +83,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             if (_stopped)
             {
-                throw new ObjectDisposedException("ResponseStream has been disposed");
+                throw new ObjectDisposedException(nameof(FrameResponseStream));
             }
 
             return _context.FrameControl.WriteAsync(new ArraySegment<byte>(buffer, offset, count), cancellationToken);
