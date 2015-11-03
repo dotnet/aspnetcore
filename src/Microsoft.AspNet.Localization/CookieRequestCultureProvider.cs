@@ -40,9 +40,9 @@ namespace Microsoft.AspNet.Localization
 
             var cookie = httpContext.Request.Cookies[CookieName];
 
-            if (cookie.Count == 0)
+            if (string.IsNullOrEmpty(cookie))
             {
-                return Task.FromResult((ProviderCultureResult)null);
+                return Task.FromResult<ProviderCultureResult>(null);
             }
 
             var providerResultCulture = ParseCookieValue(cookie);
