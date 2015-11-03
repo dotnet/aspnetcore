@@ -80,7 +80,7 @@ namespace Microsoft.AspNet.Http.Internal
         /// <param name="key"></param>
         public void Delete(string key)
         {
-            var encodedKeyPlusEquals = $"{UrlEncoder.Default.Encode(key)}=";
+            var encodedKeyPlusEquals = UrlEncoder.Default.Encode(key) + "=";
             Func<string, string, bool> predicate = (value, encKeyPlusEquals) => value.StartsWith(encKeyPlusEquals, StringComparison.OrdinalIgnoreCase);
 
             StringValues deleteCookies = $"{encodedKeyPlusEquals}; expires=Thu, 01-Jan-1970 00:00:00 GMT";
@@ -124,7 +124,7 @@ namespace Microsoft.AspNet.Http.Internal
                 throw new ArgumentNullException(nameof(options));
             }
             
-            var encodedKeyPlusEquals = $"{UrlEncoder.Default.Encode(key)}=";
+            var encodedKeyPlusEquals = UrlEncoder.Default.Encode(key) + "=";
             bool domainHasValue = !string.IsNullOrEmpty(options.Domain);
             bool pathHasValue = !string.IsNullOrEmpty(options.Path);
 

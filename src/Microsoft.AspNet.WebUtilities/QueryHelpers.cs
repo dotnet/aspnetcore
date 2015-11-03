@@ -105,7 +105,7 @@ namespace Microsoft.AspNet.WebUtilities
         /// <summary>
         /// Parse a query string into its component key and value parts.
         /// </summary>
-        /// <param name="text">The raw query string value, with or without the leading '?'.</param>
+        /// <param name="queryString">The raw query string value, with or without the leading '?'.</param>
         /// <returns>A collection of parsed keys and values.</returns>
         public static Dictionary<string, StringValues> ParseQuery(string queryString)
         {
@@ -123,7 +123,7 @@ namespace Microsoft.AspNet.WebUtilities
         /// <summary>
         /// Parse a query string into its component key and value parts.
         /// </summary>
-        /// <param name="text">The raw query string value, with or without the leading '?'.</param>
+        /// <param name="queryString">The raw query string value, with or without the leading '?'.</param>
         /// <returns>A collection of parsed keys and values, null if there are no entries.</returns>
         public static Dictionary<string, StringValues> ParseNullableQuery(string queryString)
         {
@@ -135,7 +135,7 @@ namespace Microsoft.AspNet.WebUtilities
             }
 
             int scanIndex = 0;
-            if (!string.IsNullOrEmpty(queryString) && queryString[0] == '?')
+            if (queryString[0] == '?')
             {
                 scanIndex = 1;
             }

@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.Http.Extensions
             FragmentString fragment = new FragmentString())
         {
             string combinePath = (pathBase.HasValue || path.HasValue) ? (pathBase + path).ToString() : "/";
-            return $"{combinePath}{query.ToString()}{fragment.ToString()}";
+            return combinePath + query.ToString() + fragment.ToString();
         }
 
         /// <summary>
