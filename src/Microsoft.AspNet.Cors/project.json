@@ -5,7 +5,8 @@
     "url": "https://github.com/aspnet/cors"
   },
   "compilationOptions": {
-    "warningsAsErrors": true
+    "warningsAsErrors": true,
+    "keyFile": "../../tools/Key.snk"
   },
   "dependencies": {
     "Microsoft.AspNet.Http.Extensions": "1.0.0-*",
