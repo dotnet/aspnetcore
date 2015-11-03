@@ -444,11 +444,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var backingStore = dictionary.ToDictionary(
                 kvp => string.Format(keyFormat, kvp.Key),
                 kvp => (StringValues)kvp.Value);
-            var stringCollection = new ReadableStringCollection(backingStore);
+            
+            var formCollection = new FormCollection(backingStore);
 
-            return new ReadableStringCollectionValueProvider(
+            return new FormValueProvider(
                 BindingSource.Form,
-                stringCollection,
+                formCollection,
                 CultureInfo.InvariantCulture);
         }
 

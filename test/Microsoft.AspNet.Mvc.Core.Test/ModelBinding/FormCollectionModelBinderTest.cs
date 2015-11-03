@@ -134,20 +134,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             return bindingContext;
         }
-
-        private class MyFormCollection : ReadableStringCollection, IFormCollection
-        {
-            public MyFormCollection(IDictionary<string, StringValues> store) : this(store, new FormFileCollection())
-            {
-            }
-
-            public MyFormCollection(IDictionary<string, StringValues> store, IFormFileCollection files) : base(store)
-            {
-                Files = files;
-            }
-
-            public IFormFileCollection Files { get; private set; }
-        }
     }
 }
 

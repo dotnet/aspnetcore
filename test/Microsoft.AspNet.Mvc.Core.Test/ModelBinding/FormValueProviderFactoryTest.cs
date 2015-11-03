@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var result = await factory.GetValueProviderAsync(context);
 
             // Assert
-            var valueProvider = Assert.IsType<ReadableStringCollectionValueProvider>(result);
+            var valueProvider = Assert.IsType<FormValueProvider>(result);
             Assert.Equal(CultureInfo.CurrentCulture, valueProvider.Culture);
         }
 

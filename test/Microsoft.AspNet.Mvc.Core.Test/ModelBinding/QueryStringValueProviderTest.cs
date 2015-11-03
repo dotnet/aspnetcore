@@ -3,18 +3,20 @@
 
 using System.Collections.Generic;
 using System.Globalization;
+using Microsoft.AspNet.Http.Internal;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
-    public class JQueryFormValueProviderTest : EnumerableValueProviderTest
+    public class QueryStringValueProviderTest : EnumerableValueProviderTest
     {
         protected override IEnumerableValueProvider GetEnumerableValueProvider(
             BindingSource bindingSource,
             Dictionary<string, StringValues> values,
             CultureInfo culture)
         {
-            return new JQueryFormValueProvider(bindingSource, values, culture);
+            var backingStore = new QueryCollection(values);
+            return new QueryStringValueProvider(bindingSource, backingStore, culture);
         }
     }
 }

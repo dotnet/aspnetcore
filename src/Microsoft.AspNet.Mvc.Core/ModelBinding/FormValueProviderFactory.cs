@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         private static async Task<IValueProvider> CreateValueProviderAsync(HttpRequest request)
         {
-            return new ReadableStringCollectionValueProvider(
+            return new FormValueProvider(
                 BindingSource.Form,
                 await request.ReadFormAsync(),
                 CultureInfo.CurrentCulture);

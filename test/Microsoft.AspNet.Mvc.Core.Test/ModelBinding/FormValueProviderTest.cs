@@ -8,15 +8,15 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
-    public class ReadableStringCollectionValueProviderTest : EnumerableValueProviderTest
+    public class FormValueProviderTest : EnumerableValueProviderTest
     {
         protected override IEnumerableValueProvider GetEnumerableValueProvider(
             BindingSource bindingSource,
-            IDictionary<string, StringValues> values,
+            Dictionary<string, StringValues> values,
             CultureInfo culture)
         {
-            var backingStore = new ReadableStringCollection(values);
-            return new ReadableStringCollectionValueProvider(bindingSource, backingStore, culture);
+            var backingStore = new FormCollection(values);
+            return new FormValueProvider(bindingSource, backingStore, culture);
         }
     }
 }

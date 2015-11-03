@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     public abstract class EnumerableValueProviderTest
     {
-        private static readonly IDictionary<string, StringValues> _backingStore = new Dictionary<string, StringValues>
+        private static readonly Dictionary<string, StringValues> _backingStore = new Dictionary<string, StringValues>
         {
             { "some", new[] { "someValue1", "someValue2" } },
             { "null_value", StringValues.Empty },
@@ -279,7 +279,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         private IBindingSourceValueProvider GetBindingSourceValueProvider(
             BindingSource bindingSource,
-            IDictionary<string, StringValues> values,
+            Dictionary<string, StringValues> values,
             CultureInfo culture)
         {
             var provider = GetEnumerableValueProvider(bindingSource, values, culture) as IBindingSourceValueProvider;
@@ -292,7 +292,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
         protected abstract IEnumerableValueProvider GetEnumerableValueProvider(
             BindingSource bindingSource,
-            IDictionary<string, StringValues> values,
+            Dictionary<string, StringValues> values,
             CultureInfo culture);
     }
 }

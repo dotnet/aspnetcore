@@ -109,6 +109,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 return null;
             }
 
+            public bool TryGetValue(string key, out StringValues value)
+            {
+                value = default(StringValues);
+                return false;
+            }
+
             IEnumerator IEnumerable.GetEnumerator()
             {
                 return GetEnumerator();
@@ -132,7 +138,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             IReadOnlyList<IFormFile> IFormFileCollection.GetFiles(string name)
             {
-                throw new NotImplementedException();
+                return null;
             }
         }
     }

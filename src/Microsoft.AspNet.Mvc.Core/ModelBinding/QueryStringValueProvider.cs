@@ -9,23 +9,23 @@ using Microsoft.AspNet.Http;
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     /// <summary>
-    /// An <see cref="IValueProvider"/> adapter for data stored in an <see cref="IReadableStringCollection"/>.
+    /// An <see cref="IValueProvider"/> adapter for data stored in an <see cref="IQueryCollection"/>.
     /// </summary>
-    public class ReadableStringCollectionValueProvider : BindingSourceValueProvider, IEnumerableValueProvider
+    public class QueryStringValueProvider : BindingSourceValueProvider, IEnumerableValueProvider
     {
         private readonly CultureInfo _culture;
         private PrefixContainer _prefixContainer;
-        private IReadableStringCollection _values;
+        private IQueryCollection _values;
 
         /// <summary>
-        /// Creates a provider for <see cref="IReadableStringCollection"/> wrapping an existing set of key value pairs.
+        /// Creates a value provider for <see cref="IQueryCollection"/>.
         /// </summary>
         /// <param name="bindingSource">The <see cref="BindingSource"/> for the data.</param>
         /// <param name="values">The key value pairs to wrap.</param>
         /// <param name="culture">The culture to return with ValueProviderResult instances.</param>
-        public ReadableStringCollectionValueProvider(
+        public QueryStringValueProvider(
             BindingSource bindingSource,
-            IReadableStringCollection values,
+            IQueryCollection values,
             CultureInfo culture)
             : base(bindingSource)
         {

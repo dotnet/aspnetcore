@@ -12,6 +12,7 @@ using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.AspNet.Razor.TagHelpers;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNet.Mvc.TagHelpers
 {
@@ -195,9 +196,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                        .Append(VaryBy);
             }
 
-            AddStringCollectionKey(builder, nameof(VaryByCookie), VaryByCookie, request.Cookies);
-            AddStringCollectionKey(builder, nameof(VaryByHeader), VaryByHeader, request.Headers);
-            AddStringCollectionKey(builder, nameof(VaryByQuery), VaryByQuery, request.Query);
+            AddStringCollectionKey(builder, nameof(VaryByCookie), VaryByCookie, request.Cookies, (c, key) => c[key]);
+            AddStringCollectionKey(builder, nameof(VaryByHeader), VaryByHeader, request.Headers, (c, key) => c[key]);
+            AddStringCollectionKey(builder, nameof(VaryByQuery), VaryByQuery, request.Query, (c, key) => c[key]);
             AddVaryByRouteKey(builder);
 
             if (VaryByUser)
@@ -251,7 +252,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             StringBuilder builder,
             string keyName,
             string value,
-            IReadableStringCollection sourceCollection)
+            IDictionary<string, StringValues> sourceCollection)
         {
             if (!string.IsNullOrEmpty(value))
             {
@@ -281,11 +282,12 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             }
         }
 
-        private static void AddStringCollectionKey(
+        private static void AddStringCollectionKey<T>(
             StringBuilder builder,
             string keyName,
             string value,
-            IHeaderDictionary sourceCollection)
+            T sourceCollection,
+            Func<T, string, StringValues> accessor)
         {
             if (!string.IsNullOrEmpty(value))
             {
@@ -301,7 +303,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
                     builder.Append(item)
                            .Append(CacheKeyTokenSeparator)
-                           .Append(sourceCollection[item])
+                           .Append(accessor(sourceCollection, item))
                            .Append(CacheKeyTokenSeparator);
                 }
 

@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 throw new ArgumentNullException(nameof(context));
             }
 
-            return Task.FromResult<IValueProvider>(new ReadableStringCollectionValueProvider(
+            return Task.FromResult<IValueProvider>(new QueryStringValueProvider(
                 BindingSource.Query,
                 context.HttpContext.Request.Query,
                 CultureInfo.InvariantCulture));

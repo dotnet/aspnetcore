@@ -908,7 +908,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
         [MemberData(nameof(CollectionTypeData))]
         public async Task CollectionModelBinder_BindsParameterToExpectedType(
             Type parameterType,
-            IDictionary<string, StringValues> formContent,
+            Dictionary<string, StringValues> formContent,
             Type expectedType)
         {
             // Arrange

@@ -438,7 +438,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
         [Theory]
         [MemberData(nameof(PersonStoreData))]
-        public async Task BindParameter_FromFormData_BindsCorrectly(IDictionary<string, StringValues> personStore)
+        public async Task BindParameter_FromFormData_BindsCorrectly(Dictionary<string, StringValues> personStore)
         {
             // Arrange
             var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();

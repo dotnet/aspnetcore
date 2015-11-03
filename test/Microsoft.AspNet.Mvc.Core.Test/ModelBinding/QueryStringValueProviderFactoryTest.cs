@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
         {
             // Arrange
             var request = new Mock<HttpRequest>();
-            request.SetupGet(f => f.Query).Returns(Mock.Of<IReadableStringCollection>());
+            request.SetupGet(f => f.Query).Returns(Mock.Of<IQueryCollection>());
             var context = new Mock<HttpContext>();
             context.SetupGet(c => c.Items).Returns(new Dictionary<object, object>());
             context.SetupGet(c => c.Request).Returns(request.Object);
@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var result = await _factory.GetValueProviderAsync(factoryContext);
 
             // Assert
-            var valueProvider = Assert.IsType<ReadableStringCollectionValueProvider>(result);
+            var valueProvider = Assert.IsType<QueryStringValueProvider>(result);
             Assert.Equal(CultureInfo.InvariantCulture, valueProvider.Culture);
         }
 #endif
