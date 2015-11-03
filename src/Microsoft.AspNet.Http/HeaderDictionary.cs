@@ -72,12 +72,7 @@ namespace Microsoft.AspNet.Http.Internal
 
                 if (StringValues.IsNullOrEmpty(value))
                 {
-                    if (Store == null)
-                    {
-                        return;
-                    }
-
-                    Store.Remove(key);
+                    Store?.Remove(key);
                 }
                 else
                 {
@@ -110,11 +105,7 @@ namespace Microsoft.AspNet.Http.Internal
         {
             get
             {
-                if (Store == null)
-                {
-                    return 0;
-                }
-                return Store.Count;
+                return Store?.Count ?? 0;
             }
         }
 
@@ -195,11 +186,7 @@ namespace Microsoft.AspNet.Http.Internal
         /// </summary>
         public void Clear()
         {
-            if (Store == null)
-            {
-                return;
-            }
-            Store.Clear();
+            Store?.Clear();
         }
 
         /// <summary>

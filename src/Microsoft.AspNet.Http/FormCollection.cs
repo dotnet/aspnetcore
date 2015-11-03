@@ -83,11 +83,7 @@ namespace Microsoft.AspNet.Http.Internal
         {
             get
             {
-                if (Store == null)
-                {
-                    return 0;
-                }
-                return Store.Count;
+                return Store?.Count ?? 0;
             }
         }
 

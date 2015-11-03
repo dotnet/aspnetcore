@@ -88,7 +88,6 @@ namespace Microsoft.AspNet.Http
         /// <summary>
         /// The file collection sent with the request.
         /// </summary>
-        /// <param name="key"></param>
         /// <returns>The files included with the request.</returns>
         IFormFileCollection Files { get; }
     }

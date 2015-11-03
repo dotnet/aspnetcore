@@ -121,7 +121,7 @@ namespace Microsoft.AspNet.WebUtilities
             // Special-case empty input
             if (count == 0)
             {
-                return String.Empty;
+                return string.Empty;
             }
 
             // We're going to use base64url encoding with no padding characters.

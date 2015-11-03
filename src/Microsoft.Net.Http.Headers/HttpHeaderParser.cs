@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Globalization;
@@ -37,11 +36,11 @@ namespace Microsoft.Net.Http.Headers
 
             // If a parser returns 'null', it means there was no value, but that's valid (e.g. "Accept: "). The caller
             // can ignore the value.
-            T result = default(T);
+            T result;
             if (!TryParseValue(value, ref index, out result))
             {
                 throw new FormatException(string.Format(CultureInfo.InvariantCulture, "Invalid value '{0}'.",
-                    value == null ? "<null>" : value.Substring(index)));
+                    value?.Substring(index) ?? "<null>"));
             }
             return result;
         }
@@ -114,7 +113,7 @@ namespace Microsoft.Net.Http.Headers
                     else
                     {
                         throw new FormatException(string.Format(CultureInfo.InvariantCulture, "Invalid values '{0}'.",
-                            values == null ? "<null>" : value.Substring(index)));
+                            value.Substring(index)));
                     }
                 }
             }

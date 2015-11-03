@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.Http.Internal
             get
             {
                 var handle = CallContext.LogicalGetData(LogicalDataKey) as ObjectHandle;
-                return handle != null ? handle.Unwrap() as HttpContext : null;
+                return handle?.Unwrap() as HttpContext;
             }
             set
             {

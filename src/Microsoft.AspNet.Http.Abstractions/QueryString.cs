@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Http
         /// <summary>
         /// Represents the empty query string. This field is read-only.
         /// </summary>
-        public static readonly QueryString Empty = new QueryString(String.Empty);
+        public static readonly QueryString Empty = new QueryString(string.Empty);
 
         private readonly string _value;
 
@@ -84,7 +84,7 @@ namespace Microsoft.AspNet.Http
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1057:StringUriOverloadsCallSystemUriOverloads", Justification = "Delimiter characters ? and # must be escaped by this method instead of truncating the value")]
         public static QueryString FromUriComponent(string uriComponent)
         {
-            if (String.IsNullOrEmpty(uriComponent))
+            if (string.IsNullOrEmpty(uriComponent))
             {
                 return new QueryString(string.Empty);
             }
@@ -231,7 +231,7 @@ namespace Microsoft.AspNet.Http
 
         public override int GetHashCode()
         {
-            return (_value != null ? _value.GetHashCode() : 0);
+            return _value?.GetHashCode() ?? 0;
         }
 
         public static bool operator ==(QueryString left, QueryString right)

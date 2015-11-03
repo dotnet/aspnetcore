@@ -44,7 +44,7 @@ namespace Microsoft.Net.Http.Headers
                 return SupportsMultipleValues;
             }
 
-            T result = default(T);
+            T result;
             var length = GetParsedValueLength(value, current, out result);
 
             if (length == 0)

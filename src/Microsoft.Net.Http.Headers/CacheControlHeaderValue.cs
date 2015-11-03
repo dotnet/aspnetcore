@@ -369,7 +369,7 @@ namespace Microsoft.Net.Http.Headers
                     return 0;
                 }
 
-                nameValueList.Add(nameValue as NameValueHeaderValue);
+                nameValueList.Add(nameValue);
             }
 
             // If we get here, we were able to successfully parse the string as list of name/value pairs. Now analyze

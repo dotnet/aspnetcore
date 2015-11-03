@@ -184,7 +184,7 @@ namespace Microsoft.Net.Http.Headers
         public void SetCookieHeaderValue_Value()
         {
             var cookie = new SetCookieHeaderValue("name");
-            Assert.Equal(String.Empty, cookie.Value);
+            Assert.Equal(string.Empty, cookie.Value);
 
             cookie.Value = "value1";
             Assert.Equal("value1", cookie.Value);

@@ -64,13 +64,13 @@ namespace Microsoft.Net.Http.Headers
                 return 1;
             }
 
-            if (!String.Equals(stringWithQuality1.Value, stringWithQuality2.Value, StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals(stringWithQuality1.Value, stringWithQuality2.Value, StringComparison.OrdinalIgnoreCase))
             {
-                if (String.Equals(stringWithQuality1.Value, "*", StringComparison.Ordinal))
+                if (string.Equals(stringWithQuality1.Value, "*", StringComparison.Ordinal))
                 {
                     return -1;
                 }
-                else if (String.Equals(stringWithQuality2.Value, "*", StringComparison.Ordinal))
+                else if (string.Equals(stringWithQuality2.Value, "*", StringComparison.Ordinal))
                 {
                     return 1;
                 }

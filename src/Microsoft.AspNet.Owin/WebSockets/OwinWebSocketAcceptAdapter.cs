@@ -57,7 +57,7 @@ namespace Microsoft.AspNet.Owin
                 options = acceptContext.Options;
                 _subProtocol = acceptContext.SubProtocol;
             }
-            else if (context != null && context.SubProtocol != null)
+            else if (context?.SubProtocol != null)
             {
                 options = new Dictionary<string, object>(1)
                 {
