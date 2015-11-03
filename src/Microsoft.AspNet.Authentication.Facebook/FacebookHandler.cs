@@ -46,7 +46,7 @@ namespace Microsoft.AspNet.Authentication.Facebook
             }
 
             // The refresh token is not available.
-            return new OAuthTokenResponse(payload);
+            return OAuthTokenResponse.Success(payload);
         }
 
         protected override async Task<AuthenticationTicket> CreateTicketAsync(ClaimsIdentity identity, AuthenticationProperties properties, OAuthTokenResponse tokens)

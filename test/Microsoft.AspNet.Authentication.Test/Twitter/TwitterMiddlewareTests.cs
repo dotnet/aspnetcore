@@ -64,7 +64,7 @@ namespace Microsoft.AspNet.Authentication.Twitter
         }
 
         [Fact]
-        public async Task BadSignInWill500()
+        public async Task BadSignInWillThrow()
         {
             var server = CreateServer(options =>
             {
@@ -73,10 +73,8 @@ namespace Microsoft.AspNet.Authentication.Twitter
             });
 
             // Send a bogus sign in
-            var transaction = await server.SendAsync(
-                "https://example.com/signin-twitter");
-
-            Assert.Equal(HttpStatusCode.InternalServerError, transaction.Response.StatusCode);
+            var error = await Assert.ThrowsAnyAsync<Exception>(() => server.SendAsync("https://example.com/signin-twitter"));
+            Assert.Equal("Invalid state cookie.", error.Message);
         }
 
         [Fact]

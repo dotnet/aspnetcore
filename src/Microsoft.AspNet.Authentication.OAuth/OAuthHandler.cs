@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Security.Cryptography;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Authentication;
@@ -62,9 +63,14 @@ namespace Microsoft.AspNet.Authentication.OAuth
 
             var tokens = await ExchangeCodeAsync(code, BuildRedirectUri(Options.CallbackPath));
 
+            if (tokens.Error != null)
+            {
+                return AuthenticateResult.Failed(tokens.Error);
+            }
+
             if (string.IsNullOrEmpty(tokens.AccessToken))
             {
-                return AuthenticateResult.Failed("Access token was not found.");
+                return AuthenticateResult.Failed("Failed to retrieve access token.");
             }
 
             var identity = new ClaimsIdentity(Options.ClaimsIssuer);
@@ -113,9 +119,25 @@ namespace Microsoft.AspNet.Authentication.OAuth
             requestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             requestMessage.Content = requestContent;
             var response = await Backchannel.SendAsync(requestMessage, Context.RequestAborted);
-            response.EnsureSuccessStatusCode();
-            var payload = JObject.Parse(await response.Content.ReadAsStringAsync());
-            return new OAuthTokenResponse(payload);
+            if (response.IsSuccessStatusCode)
+            {
+                var payload = JObject.Parse(await response.Content.ReadAsStringAsync());
+                return OAuthTokenResponse.Success(payload);
+            }
+            else
+            {
+                var error = "OAuth token endpoint failure: " + await Display(response);
+                return OAuthTokenResponse.Failed(new Exception(error));
+            }
+        }
+
+        private static async Task<string> Display(HttpResponseMessage response)
+        {
+            var output = new StringBuilder();
+            output.Append("Status: " + response.StatusCode + ";");
+            output.Append("Headers: " + response.Headers.ToString() + ";");
+            output.Append("Body: " + await response.Content.ReadAsStringAsync() + ";");
+            return output.ToString();
         }
 
         protected virtual async Task<AuthenticationTicket> CreateTicketAsync(ClaimsIdentity identity, AuthenticationProperties properties, OAuthTokenResponse tokens)

@@ -36,8 +36,7 @@ namespace Microsoft.AspNet.Authentication
                     return false;
                 }
 
-                Context.Response.StatusCode = 500;
-                return true;
+                throw new AggregateException("Unhandled remote error.", errorContext.Error);
             }
 
             // We have a ticket if we get here
