@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
 using Microsoft.AspNet.Testing;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.WebEncoders.Testing;
@@ -149,6 +151,99 @@ namespace Microsoft.AspNet.Mvc.Localization.Test
             // Assert
             Assert.NotNull(exception);
             Assert.Equal("Input string was not in a correct format.", exception.Message);
+        }
+
+        [Fact]
+        public void HtmlLocalizer_GetString_ReturnsLocalizedString()
+        {
+            // Arrange
+            var stringLocalizer = new TestStringLocalizer();
+
+            var htmlLocalizer = new HtmlLocalizer(stringLocalizer, new HtmlTestEncoder());
+
+            // Act
+            var actualLocalizedString = htmlLocalizer.GetString("John");
+
+            // Assert
+            Assert.Equal("Hello John", actualLocalizedString.Value);
+        }
+
+        [Fact]
+        public void HtmlLocalizer_GetStringWithArguments_ReturnsLocalizedString()
+        {
+            // Arrange
+            var stringLocalizer = new TestStringLocalizer();
+
+            var htmlLocalizer = new HtmlLocalizer(stringLocalizer, new HtmlTestEncoder());
+
+            // Act
+            var actualLocalizedString = htmlLocalizer.GetString("John", "Doe");
+
+            // Assert
+            Assert.Equal("Hello John Doe", actualLocalizedString.Value);
+        }
+
+        [Fact]
+        public void HtmlLocalizer_Html_ReturnsLocalizedHtmlString()
+        {
+            // Arrange
+            var stringLocalizer = new TestStringLocalizer();
+
+            var htmlLocalizer = new HtmlLocalizer(stringLocalizer, new HtmlTestEncoder());
+
+            // Act
+            var actualLocalizedString = htmlLocalizer.Html("John");
+
+            // Assert
+            Assert.Equal("Hello John", actualLocalizedString.Value);
+        }
+
+        [Fact]
+        public void HtmlLocalizer_WithCulture_ReturnsLocalizedHtmlString()
+        {
+            // Arrange
+            var stringLocalizer = new TestStringLocalizer();
+
+            var htmlLocalizer = new HtmlLocalizer(stringLocalizer, new HtmlTestEncoder());
+
+            // Act
+            var actualLocalizedString = htmlLocalizer.WithCulture(new CultureInfo("fr"))["John"];
+
+            // Assert
+            Assert.Equal("Bonjour John", actualLocalizedString.Value);
+        }
+
+        [Fact]
+        public void HtmlLocalizer_GetAllStrings_ReturnsAllLocalizedStrings()
+        {
+            // Arrange
+            var stringLocalizer = new TestStringLocalizer();
+
+            var htmlLocalizer = new HtmlLocalizer(stringLocalizer, new HtmlTestEncoder());
+
+            // Act
+            var allLocalizedStrings = htmlLocalizer.GetAllStrings(includeAncestorCultures: false).ToList();
+
+            //Assert
+            Assert.Equal(1, allLocalizedStrings.Count);
+            Assert.Equal("World", allLocalizedStrings.First().Value);
+        }
+
+        [Fact]
+        public void HtmlLocalizer_GetAllStringsIncludeAncestorCulture_ReturnsAllLocalizedStrings()
+        {
+            // Arrange
+            var stringLocalizer = new TestStringLocalizer();
+
+            var htmlLocalizer = new HtmlLocalizer(stringLocalizer, new HtmlTestEncoder());
+
+            // Act
+            var allLocalizedStrings = htmlLocalizer.GetAllStrings().ToList();
+
+            //Assert
+            Assert.Equal(2, allLocalizedStrings.Count);
+            Assert.Equal("World", allLocalizedStrings[0].Value);
+            Assert.Equal("Bar", allLocalizedStrings[1].Value);
         }
     }
 
