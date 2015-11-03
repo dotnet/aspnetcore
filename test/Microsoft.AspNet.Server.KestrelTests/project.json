@@ -22,7 +22,8 @@
         }
     },
     "compilationOptions": {
-        "allowUnsafe": true
+        "allowUnsafe": true,
+        "keyFile": "../../tools/Key.snk"
     },
     "commands": {
         "run": "Microsoft.AspNet.Server.KestrelTests",

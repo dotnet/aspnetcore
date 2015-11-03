@@ -1,5 +1,8 @@
 {
   "version": "1.0.0-*",
+  "compilationOptions": {
+    "keyFile": "../../tools/Key.snk"
+  },
   "description": "Adds HTTPS support to Kestrel",
   "repository": {
     "type": "git",

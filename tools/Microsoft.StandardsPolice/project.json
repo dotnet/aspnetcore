@@ -1,6 +1,10 @@
 ﻿{
   "version": "1.0.0-*",
 
+  "compilationOptions": {
+    "keyFile": "../../tools/Key.snk"
+  },
+
   "description": "Microsoft.StandardsPolice Class Library",
 
   "dependencies": {

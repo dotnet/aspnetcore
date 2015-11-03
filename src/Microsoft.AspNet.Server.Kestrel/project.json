@@ -67,7 +67,8 @@
     }
   },
   "compilationOptions": {
-    "allowUnsafe": true
+    "allowUnsafe": true,
+    "keyFile": "../../tools/Key.snk"
   },
   "scripts": {
     "prepare": [
