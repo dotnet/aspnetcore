@@ -1,4 +1,8 @@
 {
+    "compilationOptions": {
+        "warningsAsErrors": true,
+        "keyFile": "../../tools/Key.snk"
+    },
     "dependencies": {
         "Microsoft.AspNet.Testing": "1.0.0-*",
         "Microsoft.AspNet.TestHost": "1.0.0-*",

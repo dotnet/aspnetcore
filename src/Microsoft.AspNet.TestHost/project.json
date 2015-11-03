@@ -1,5 +1,9 @@
 {
   "version": "1.0.0-*",
+  "compilationOptions": {
+    "warningsAsErrors": true,
+    "keyFile": "../../tools/Key.snk"
+  },
   "description": "ASP.NET 5 web server for writing and running tests.",
   "repository": {
     "type": "git",
