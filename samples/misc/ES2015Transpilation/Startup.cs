@@ -1,11 +1,11 @@
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting;
-using Microsoft.AspNet.Routing.Template;
 using Microsoft.Dnx.Runtime;
 using Microsoft.Framework.Configuration;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
 using Microsoft.AspNet.NodeServices;
+using Microsoft.AspNet.Http;
 
 namespace ES2015Example
 {
@@ -34,7 +34,7 @@ namespace ES2015Example
         }
 
         // Configure is called after ConfigureServices is called.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory, INodeServices nodeServices)
         {
             loggerFactory.MinimumLevel = LogLevel.Information;
             loggerFactory.AddConsole();
@@ -57,13 +57,20 @@ namespace ES2015Example
                 app.UseExceptionHandler("/Home/Error");
             }
             
-            app.UseMvc(routes => {
-                routes.MapRoute(
-                    name: "Script",
-                    template: "{*filename}",
-                    defaults: new { controller="Script", action="Transpile" },
-                    constraints: new { filename = @"js/(.*?)\.js" }
-                );                
+            // Dynamically transpile any .js files under the '/js/' directory
+            app.Use(next => async context => {
+                var requestPath = context.Request.Path.Value;
+                if (requestPath.StartsWith("/js/") && requestPath.EndsWith(".js")) {
+                    var fileInfo = env.WebRootFileProvider.GetFileInfo(requestPath); 
+                    if (fileInfo.Exists) {
+                        var transpiled = await nodeServices.Invoke("transpilation.js", fileInfo.PhysicalPath, requestPath);
+                        await context.Response.WriteAsync(transpiled);
+                        return;
+                    }
+                }
+                
+                // Not a JS file, or doesn't exist - let some other middleware handle it
+                await next.Invoke(context);
             });
             
             // Add static files to the request pipeline.
