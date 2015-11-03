@@ -1,5 +1,9 @@
 {
   "version": "1.0.0-*",
+  "compilationOptions": {
+    "warningsAsErrors": true,
+    "keyFile": "../../tools/Key.snk"
+  },
   "description": "XForward and Method override middlewares for ASP.NET",
   "repository": {
     "type": "git",
