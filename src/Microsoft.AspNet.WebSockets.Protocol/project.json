@@ -6,7 +6,8 @@
     "url": "git://github.com/aspnet/websockets"
   },
   "compilationOptions": {
-    "warningsAsErrors": true
+    "warningsAsErrors": true,
+    "keyFile": "../../tools/Key.snk"
   },
   "frameworks": {
     "net451": {},
