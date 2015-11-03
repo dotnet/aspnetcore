@@ -7,7 +7,7 @@ namespace LocalizationWebSite.Models
 {
     public class User
     {
-        [MinLength(4, ErrorMessage = "Name")]
+        [MinLength(4, ErrorMessage = "NameError")]
         public string Name { get; set; }
 
         public Product Product { get; set; }

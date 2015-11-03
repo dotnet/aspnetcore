@@ -52,16 +52,15 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
                 throw new ArgumentNullException(nameof(modelMetadata));
             }
 
-            var displayName = modelMetadata.GetDisplayName();
             if (_stringLocalizer != null &&
-                    !string.IsNullOrEmpty(Attribute.ErrorMessage) &&
-                    string.IsNullOrEmpty(Attribute.ErrorMessageResourceName) &&
-                    Attribute.ErrorMessageResourceType == null)
+                !string.IsNullOrEmpty(Attribute.ErrorMessage) &&
+                string.IsNullOrEmpty(Attribute.ErrorMessageResourceName) &&
+                Attribute.ErrorMessageResourceType == null)
             {
-                return _stringLocalizer[displayName];
+                return _stringLocalizer[Attribute.ErrorMessage];
             }
             
-            return Attribute.FormatErrorMessage(displayName);
+            return Attribute.FormatErrorMessage(modelMetadata.GetDisplayName());
         }
     }
 }
