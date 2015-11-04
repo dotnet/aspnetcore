@@ -18,6 +18,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
     public abstract class ListenerSecondary : ListenerContext, IDisposable
     {
         private string _pipeName;
+        private IntPtr _ptr = IntPtr.Zero;
+        private Libuv.uv_buf_t _buf;
 
         protected ListenerSecondary(ServiceContext serviceContext) : base(serviceContext)
         {
@@ -74,6 +76,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             var listener = (ListenerSecondary)tcs.Task.AsyncState;
             listener.ConnectedCallback(connect, status, error, tcs);
         }
+
         private void ConnectedCallback(UvConnectRequest connect, int status, Exception error, TaskCompletionSource<int> tcs)
         {
             connect.Dispose();
@@ -85,12 +88,16 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
             try
             {
-                var ptr = Marshal.AllocHGlobal(4);
-                var buf = Thread.Loop.Libuv.buf_init(ptr, 4);
+                _ptr = Marshal.AllocHGlobal(4);
+                _buf = Thread.Loop.Libuv.buf_init(_ptr, 4);
 
                 DispatchPipe.ReadStart(
-                    (handle, status2, state) => buf,
-                    (handle, status2, state) => ((ListenerSecondary)state).ReadStartCallback(handle, status2, ptr), this);
+                    (handle, status2, state) => ((ListenerSecondary)state)._buf,
+                    (handle, status2, state) => 
+                        {
+                            var listener = ((ListenerSecondary)state);
+                            listener.ReadStartCallback(handle, status2, listener._ptr);
+                        }, this);
 
                 tcs.SetResult(0);
             }
@@ -146,6 +153,12 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         public void Dispose()
         {
+            if (_ptr != IntPtr.Zero)
+            {
+                Marshal.FreeHGlobal(_ptr);
+                _ptr = IntPtr.Zero;
+            }
+
             // Ensure the event loop is still running.
             // If the event loop isn't running and we try to wait on this Post
             // to complete, then KestrelEngine will never be disposed and
