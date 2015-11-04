@@ -6,7 +6,8 @@
     "url": "git://github.com/aspnet/diagnostics"
   },
   "compilationOptions": {
-    "warningsAsErrors": true
+    "warningsAsErrors": true,
+    "keyFile": "../../tools/Key.snk"
   },
   "dependencies": {
     "Microsoft.AspNet.Diagnostics": "1.0.0-*",
