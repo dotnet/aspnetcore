@@ -28,7 +28,7 @@
     },
     "dotnet5.4": {
       "dependencies": {
-        "System.Runtime.Serialization.Xml": "4.0.11-beta-*",
+        "System.Runtime.Serialization.Xml": "4.1.0-beta-*",
         "System.Xml.XmlSerializer": "4.0.11-beta-*"
       }
     }
