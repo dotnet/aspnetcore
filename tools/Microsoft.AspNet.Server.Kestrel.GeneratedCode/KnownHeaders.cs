@@ -177,7 +177,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         private long _bits = 0;
         {Each(loop.Headers, header => @"
         private StringValues _" + header.Identifier + ";")}
-
         {Each(loop.Headers, header => $@"
         public StringValues Header{header.Identifier}
         {{
@@ -361,7 +360,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             else
                             {{
                                 {header.SetBit()};
-                                _{header.Identifier} = new[] {{value}};
+                                _{header.Identifier} = new StringValues(value);
                             }}
                             return;
                         }}
