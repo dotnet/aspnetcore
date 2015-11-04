@@ -19,6 +19,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
     {
         private List<UvPipeHandle> _dispatchPipes = new List<UvPipeHandle>();
         private int _dispatchIndex;
+        private string _pipeName;
 
         // this message is passed to write2 because it must be non-zero-length, 
         // but it has no other functional significance
@@ -36,18 +37,24 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             KestrelThread thread,
             RequestDelegate application)
         {
+            _pipeName = pipeName;
+
             await StartAsync(address, thread, application).ConfigureAwait(false);
 
-            await Thread.PostAsync(_ =>
-            {
-                ListenPipe = new UvPipeHandle(Log);
-                ListenPipe.Init(Thread.Loop, false);
-                ListenPipe.Bind(pipeName);
-                ListenPipe.Listen(Constants.ListenBacklog, OnListenPipe, null);
-            }, null).ConfigureAwait(false);
+            await Thread.PostAsync(_this => _this.PostCallback(), 
+                                    this).ConfigureAwait(false);
         }
 
-        private void OnListenPipe(UvStreamHandle pipe, int status, Exception error, object state)
+        private void PostCallback()
+        {
+            ListenPipe = new UvPipeHandle(Log);
+            ListenPipe.Init(Thread.Loop, false);
+            ListenPipe.Bind(_pipeName);
+            ListenPipe.Listen(Constants.ListenBacklog,
+                (pipe, status, error, state) => ((ListenerPrimary)state).OnListenPipe(pipe, status, error), this);
+        }
+
+        private void OnListenPipe(UvStreamHandle pipe, int status, Exception error)
         {
             if (status < 0)
             {
