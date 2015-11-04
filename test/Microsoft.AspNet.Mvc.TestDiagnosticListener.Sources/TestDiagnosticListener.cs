@@ -146,7 +146,7 @@ namespace Microsoft.AspNet.Mvc
             string viewName,
             IProxyView view)
         {
-           ViewFound = new OnViewFoundEventData()
+            ViewFound = new OnViewFoundEventData()
             {
                 ActionContext = actionContext,
                 IsPartial = isPartial,
@@ -323,6 +323,69 @@ namespace Microsoft.AspNet.Mvc
                 ViewComponentContext = viewComponentContext,
                 View = view
             };
+        }
+
+        public class BeginPageInstrumentationData
+        {
+            public IProxyHttpContext HttpContext { get; set; }
+
+            public string Path { get; set; }
+
+            public bool IsPartial { get; set; }
+
+            public int Position { get; set; }
+
+            public int Length { get; set; }
+
+            public bool IsLiteral { get; set; }
+        }
+
+        public class EndPageInstrumentationData
+        {
+            public IProxyHttpContext HttpContext { get; set; }
+
+            public string Path { get; set; }
+
+            public bool IsPartial { get; set; }
+        }
+
+        public List<object> PageInstrumentationData { get; set; } = new List<object>();
+
+        [DiagnosticName("Microsoft.AspNet.Mvc.Razor.BeginInstrumentationContext")]
+        public virtual void OnBeginPageInstrumentationContext(
+            IProxyHttpContext httpContext,
+            string path,
+            bool isPartial,
+            int position,
+            int length,
+            bool isLiteral)
+        {
+            PageInstrumentationData.Add(new BeginPageInstrumentationData
+            {
+                HttpContext = httpContext,
+                Path = path,
+                IsPartial = isPartial,
+                Position = position,
+                Length = length,
+                IsLiteral = isLiteral,
+            });
+        }
+
+        [DiagnosticName("Microsoft.AspNet.Mvc.Razor.EndInstrumentationContext")]
+        public virtual void OnEndPageInstrumentationContext(
+            IProxyHttpContext httpContext,
+            string path,
+            bool isPartial,
+            int position,
+            int length,
+            bool isLiteral)
+        {
+            PageInstrumentationData.Add(new EndPageInstrumentationData
+            {
+                HttpContext = httpContext,
+                Path = path,
+                IsPartial = isPartial,
+            });
         }
     }
 }

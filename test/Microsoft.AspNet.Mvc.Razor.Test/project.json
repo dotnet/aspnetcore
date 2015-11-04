@@ -13,9 +13,14 @@
       "version": "6.0.0-*",
       "type": "build"
     },
+    "Microsoft.AspNet.Mvc.TestDiagnosticListener.Sources": {
+      "version": "6.0.0-*",
+      "type": "build"
+    },
     "Microsoft.AspNet.Testing": "1.0.0-*",
     "Microsoft.Dnx.Runtime": "1.0.0-*",
     "Microsoft.Extensions.DependencyInjection": "1.0.0-*",
+    "Microsoft.Extensions.DiagnosticAdapter": "1.0.0-*",
     "xunit.runner.aspnet": "2.0.0-aspnet-*"
   },
     "commands": {

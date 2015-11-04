@@ -2,11 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.Abstractions;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Razor.Internal;
@@ -15,6 +17,7 @@ using Microsoft.AspNet.Mvc.ViewEngines;
 using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.AspNet.Mvc.ViewFeatures.Internal;
 using Microsoft.AspNet.Routing;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.WebEncoders.Testing;
 using Moq;
 using Xunit;
@@ -33,24 +36,26 @@ namespace Microsoft.AspNet.Mvc.Razor
             var myService = new MyService();
             var helper = Mock.Of<IHtmlHelper<object>>();
             var htmlEncoder = new HtmlTestEncoder();
-            var serviceProvider = new Mock<IServiceProvider>();
-            serviceProvider.Setup(p => p.GetService(typeof(MyService)))
-                           .Returns(myService);
-            serviceProvider.Setup(p => p.GetService(typeof(IHtmlHelper<object>)))
-                           .Returns(helper);
-            serviceProvider.Setup(p => p.GetService(typeof(HtmlEncoder)))
-                           .Returns(htmlEncoder);
-            var httpContext = new Mock<HttpContext>();
-            httpContext.SetupGet(c => c.RequestServices)
-                       .Returns(serviceProvider.Object);
+            var diagnosticSource = new DiagnosticListener("Microsoft.AspNet");
+            var serviceProvider = new ServiceCollection()
+                .AddInstance(myService)
+                .AddInstance(helper)
+                .AddInstance<HtmlEncoder>(htmlEncoder)
+                .AddInstance<DiagnosticSource>(diagnosticSource)
+                .BuildServiceProvider();
+            var httpContext = new DefaultHttpContext
+            {
+                RequestServices = serviceProvider
+            };
 
-            var actionContext = new ActionContext(httpContext.Object, new RouteData(), new ActionDescriptor());
-            var viewContext = new ViewContext(actionContext,
-                                              Mock.Of<IView>(),
-                                              new ViewDataDictionary(new EmptyModelMetadataProvider()),
-                                              Mock.Of<ITempDataDictionary>(),
-                                              TextWriter.Null,
-                                              new HtmlHelperOptions());
+            var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
+            var viewContext = new ViewContext(
+                actionContext,
+                Mock.Of<IView>(),
+                new ViewDataDictionary(new EmptyModelMetadataProvider()),
+                Mock.Of<ITempDataDictionary>(),
+                TextWriter.Null,
+                new HtmlHelperOptions());
 
             // Act
             activator.Activate(instance, viewContext);
@@ -59,6 +64,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             Assert.Same(helper, instance.Html);
             Assert.Same(myService, instance.MyService);
             Assert.Same(viewContext, myService.ViewContext);
+            Assert.Same(diagnosticSource, instance.DiagnosticSource);
             Assert.Null(instance.MyService2);
         }
 
@@ -72,25 +78,23 @@ namespace Microsoft.AspNet.Mvc.Razor
             var myService = new MyService();
             var helper = Mock.Of<IHtmlHelper<object>>();
             var serviceProvider = new Mock<IServiceProvider>();
-            var httpContext = new Mock<HttpContext>();
-            httpContext.SetupGet(c => c.RequestServices)
-                       .Returns(serviceProvider.Object);
+            var httpContext = new DefaultHttpContext
+            {
+                RequestServices = new ServiceCollection().BuildServiceProvider()
+            };
 
-            var actionContext = new ActionContext(httpContext.Object, new RouteData(), new ActionDescriptor());
-            var viewContext = new ViewContext(actionContext,
-                                              Mock.Of<IView>(),
-                                              new ViewDataDictionary(new EmptyModelMetadataProvider()),
-                                              Mock.Of<ITempDataDictionary>(),
-                                              TextWriter.Null,
-                                              new HtmlHelperOptions());
+            var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
+            var viewContext = new ViewContext(
+                actionContext,
+                Mock.Of<IView>(),
+                new ViewDataDictionary(new EmptyModelMetadataProvider()),
+                Mock.Of<ITempDataDictionary>(),
+                TextWriter.Null,
+                new HtmlHelperOptions());
 
             // Act and Assert
             var ex = Assert.Throws<InvalidOperationException>(() => activator.Activate(instance, viewContext));
-            var message = string.Format(CultureInfo.InvariantCulture,
-                                        "View of type '{0}' cannot be activated by '{1}'.",
-                                        instance.GetType().FullName,
-                                        typeof(RazorPageActivator).FullName);
-
+            var message = $"View of type '{instance.GetType()}' cannot be activated by '{typeof(RazorPageActivator)}'.";
             Assert.Equal(message, ex.Message);
         }
 
@@ -104,28 +108,29 @@ namespace Microsoft.AspNet.Mvc.Razor
             var myService = new MyService();
             var helper = Mock.Of<IHtmlHelper<object>>();
             var htmlEncoder = new HtmlTestEncoder();
-            var serviceProvider = new Mock<IServiceProvider>();
-            serviceProvider.Setup(p => p.GetService(typeof(MyService)))
-                           .Returns(myService);
-            serviceProvider.Setup(p => p.GetService(typeof(IHtmlHelper<object>)))
-                           .Returns(helper);
-            serviceProvider.Setup(p => p.GetService(typeof(HtmlEncoder)))
-                           .Returns(htmlEncoder);
-            var httpContext = new Mock<HttpContext>();
-            httpContext.SetupGet(c => c.RequestServices)
-                       .Returns(serviceProvider.Object);
+            var serviceProvider = new ServiceCollection()
+                .AddInstance(myService)
+                .AddInstance(helper)
+                .AddInstance<HtmlEncoder>(htmlEncoder)
+                .AddInstance<DiagnosticSource>(new DiagnosticListener("Microsoft.Aspnet.Mvc"))
+                .BuildServiceProvider();
+            var httpContext = new DefaultHttpContext
+            {
+                RequestServices = serviceProvider
+            };
 
-            var actionContext = new ActionContext(httpContext.Object, new RouteData(), new ActionDescriptor());
+            var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
             var viewData = new ViewDataDictionary<object>(new EmptyModelMetadataProvider())
             {
                 Model = new MyModel()
             };
-            var viewContext = new ViewContext(actionContext,
-                                              Mock.Of<IView>(),
-                                              viewData,
-                                              Mock.Of<ITempDataDictionary>(),
-                                              TextWriter.Null,
-                                              new HtmlHelperOptions());
+            var viewContext = new ViewContext(
+                actionContext,
+                Mock.Of<IView>(),
+                viewData,
+                Mock.Of<ITempDataDictionary>(),
+                TextWriter.Null,
+                new HtmlHelperOptions());
 
             // Act
             activator.Activate(instance, viewContext);
@@ -143,28 +148,29 @@ namespace Microsoft.AspNet.Mvc.Razor
             var myService = new MyService();
             var helper = Mock.Of<IHtmlHelper<object>>();
             var htmlEncoder = new HtmlTestEncoder();
-            var serviceProvider = new Mock<IServiceProvider>();
-            serviceProvider.Setup(p => p.GetService(typeof(MyService)))
-                           .Returns(myService);
-            serviceProvider.Setup(p => p.GetService(typeof(IHtmlHelper<object>)))
-                           .Returns(helper);
-            serviceProvider.Setup(p => p.GetService(typeof(HtmlEncoder)))
-                           .Returns(htmlEncoder);
-            var httpContext = new Mock<HttpContext>();
-            httpContext.SetupGet(c => c.RequestServices)
-                       .Returns(serviceProvider.Object);
+            var serviceProvider = new ServiceCollection()
+                .AddInstance(myService)
+                .AddInstance(helper)
+                .AddInstance<HtmlEncoder>(htmlEncoder)
+                .AddInstance<DiagnosticSource>(new DiagnosticListener("Microsoft.Aspnet.Mvc"))
+                .BuildServiceProvider();
+            var httpContext = new DefaultHttpContext
+            {
+                RequestServices = serviceProvider
+            };
 
-            var actionContext = new ActionContext(httpContext.Object, new RouteData(), new ActionDescriptor());
+            var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
             var viewData = new ViewDataDictionary<MyModel>(new EmptyModelMetadataProvider())
             {
                 Model = new MyModel()
             };
-            var viewContext = new ViewContext(actionContext,
-                                              Mock.Of<IView>(),
-                                              viewData,
-                                              Mock.Of<ITempDataDictionary>(),
-                                              TextWriter.Null,
-                                              new HtmlHelperOptions());
+            var viewContext = new ViewContext(
+                actionContext,
+                Mock.Of<IView>(),
+                viewData,
+                Mock.Of<ITempDataDictionary>(),
+                TextWriter.Null,
+                new HtmlHelperOptions());
 
             // Act
             activator.Activate(instance, viewContext);
@@ -182,25 +188,26 @@ namespace Microsoft.AspNet.Mvc.Razor
             var myService = new MyService();
             var helper = Mock.Of<IHtmlHelper<object>>();
             var htmlEncoder = new HtmlTestEncoder();
-            var serviceProvider = new Mock<IServiceProvider>();
-            serviceProvider.Setup(p => p.GetService(typeof(MyService)))
-                           .Returns(myService);
-            serviceProvider.Setup(p => p.GetService(typeof(IHtmlHelper<object>)))
-                           .Returns(helper);
-            serviceProvider.Setup(p => p.GetService(typeof(HtmlEncoder)))
-                           .Returns(htmlEncoder);
-            var httpContext = new Mock<HttpContext>();
-            httpContext.SetupGet(c => c.RequestServices)
-                       .Returns(serviceProvider.Object);
+            var serviceProvider = new ServiceCollection()
+                .AddInstance(myService)
+                .AddInstance(helper)
+                .AddInstance<HtmlEncoder>(htmlEncoder)
+                .AddInstance<DiagnosticSource>(new DiagnosticListener("Microsoft.AspNet.Mvc"))
+                .BuildServiceProvider();
+            var httpContext = new DefaultHttpContext
+            {
+                RequestServices = serviceProvider
+            };
 
-            var actionContext = new ActionContext(httpContext.Object, new RouteData(), new ActionDescriptor());
+            var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
             var viewData = new ViewDataDictionary<object>(new EmptyModelMetadataProvider());
-            var viewContext = new ViewContext(actionContext,
-                                              Mock.Of<IView>(),
-                                              viewData,
-                                              Mock.Of<ITempDataDictionary>(),
-                                              TextWriter.Null,
-                                              new HtmlHelperOptions());
+            var viewContext = new ViewContext(
+                actionContext,
+                Mock.Of<IView>(),
+                viewData,
+                Mock.Of<ITempDataDictionary>(),
+                TextWriter.Null,
+                new HtmlHelperOptions());
 
             // Act
             activator.Activate(instance, viewContext);

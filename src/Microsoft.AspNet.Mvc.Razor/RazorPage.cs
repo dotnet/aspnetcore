@@ -85,6 +85,12 @@ namespace Microsoft.AspNet.Mvc.Razor
         public IPageExecutionContext PageExecutionContext { get; set; }
 
         /// <summary>
+        /// Gets or sets a <see cref="DiagnosticSource.DiagnosticSource"/> instance used to instrument the page execution.
+        /// </summary>
+        [RazorInject]
+        public DiagnosticSource DiagnosticSource { get; set; }
+
+        /// <summary>
         /// Gets the <see cref="TextWriter"/> that the page is writing output to.
         /// </summary>
         public virtual TextWriter Output
@@ -1063,12 +1069,41 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         public void BeginContext(int position, int length, bool isLiteral)
         {
+            const string BeginContextEvent = "Microsoft.AspNet.Mvc.Razor.BeginInstrumentationContext";
+
             PageExecutionContext?.BeginContext(position, length, isLiteral);
+            if (DiagnosticSource?.IsEnabled(BeginContextEvent) == true)
+            {
+                DiagnosticSource.Write(
+                    BeginContextEvent,
+                    new
+                    {
+                        httpContext = Context,
+                        path = Path,
+                        isPartial = IsPartial,
+                        position = position,
+                        length = length,
+                        isLiteral = isLiteral,
+                    });
+            }
         }
 
         public void EndContext()
         {
+            const string EndContextEvent = "Microsoft.AspNet.Mvc.Razor.EndInstrumentationContext";
+
             PageExecutionContext?.EndContext();
+            if (DiagnosticSource?.IsEnabled(EndContextEvent) == true)
+            {
+                DiagnosticSource.Write(
+                    EndContextEvent,
+                    new
+                    {
+                        httpContext = Context,
+                        path = Path,
+                        isPartial = IsPartial,
+                    });
+            }
         }
 
         /// <summary>
