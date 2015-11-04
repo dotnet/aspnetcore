@@ -1,6 +1,7 @@
 {
   "compilationOptions": {
-    "warningsAsErrors": true
+    "warningsAsErrors": true,
+    "keyFile": "../../tools/Key.snk"
   },
   "dependencies": {
     "Microsoft.AspNet.Mvc" : "6.0.0-*",

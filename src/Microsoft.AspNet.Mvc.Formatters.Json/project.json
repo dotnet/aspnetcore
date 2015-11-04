@@ -6,7 +6,8 @@
     "url": "git://github.com/aspnet/mvc"
   },
   "compilationOptions": {
-    "warningsAsErrors": true
+    "warningsAsErrors": true,
+    "keyFile": "../../tools/Key.snk"
   },
   "dependencies": {
     "Microsoft.AspNet.JsonPatch": "1.0.0-*",
