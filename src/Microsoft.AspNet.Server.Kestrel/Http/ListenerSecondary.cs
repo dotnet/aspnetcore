@@ -18,11 +18,13 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
     public abstract class ListenerSecondary : ListenerContext, IDisposable
     {
         private string _pipeName;
-        private IntPtr _ptr = IntPtr.Zero;
+        private IntPtr _ptr;
         private Libuv.uv_buf_t _buf;
 
         protected ListenerSecondary(ServiceContext serviceContext) : base(serviceContext)
         {
+            _ptr = Marshal.AllocHGlobal(4);
+            _buf = Thread.Loop.Libuv.buf_init(_ptr, 4);
         }
 
         UvPipeHandle DispatchPipe { get; set; }
@@ -88,9 +90,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
             try
             {
-                _ptr = Marshal.AllocHGlobal(4);
-                _buf = Thread.Loop.Libuv.buf_init(_ptr, 4);
-
                 DispatchPipe.ReadStart(
                     (handle, status2, state) => ((ListenerSecondary)state)._buf,
                     (handle, status2, state) => 
@@ -153,11 +152,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         public void Dispose()
         {
-            if (_ptr != IntPtr.Zero)
-            {
-                Marshal.FreeHGlobal(_ptr);
-                _ptr = IntPtr.Zero;
-            }
+            Marshal.FreeHGlobal(_ptr);
 
             // Ensure the event loop is still running.
             // If the event loop isn't running and we try to wait on this Post
