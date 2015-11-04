@@ -1,6 +1,7 @@
 {
     "compilationOptions": {
-        "warningsAsErrors": false
+        "warningsAsErrors": false,
+        "keyFile": "../../tools/Key.snk"
     },
     "dependencies": {
         "Microsoft.AspNet.Diagnostics.Elm": "1.0.0-*",
