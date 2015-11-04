@@ -74,24 +74,21 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
                     slab: null);
             }
 
-            while (true)
+            MemoryPoolBlock2 block;
+            if (_blocks.TryPop(out block))
             {
-                MemoryPoolBlock2 block;
-                if (_blocks.TryPop(out block))
-                {
-                    // block successfully taken from the stack - return it
-                    return block;
-                }
-                // no blocks available - grow the pool and try again
-                AllocateSlab();
+                // block successfully taken from the stack - return it
+                return block;
             }
+            // no blocks available - grow the pool
+            return AllocateSlab();
         }
 
         /// <summary>
         /// Internal method called when a block is requested and the pool is empty. It allocates one additional slab, creates all of the 
         /// block tracking objects, and adds them all to the pool.
         /// </summary>
-        private void AllocateSlab()
+        private MemoryPoolBlock2 AllocateSlab()
         {
             var slab = MemoryPoolSlab2.Create(_slabLength);
             _slabs.Push(slab);
@@ -99,8 +96,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
             var basePtr = slab.ArrayPtr;
             var firstOffset = (int)((_blockStride - 1) - ((ulong)(basePtr + _blockStride - 1) % _blockStride));
 
-            for (var offset = firstOffset;
-                offset + _blockLength <= _slabLength;
+            var poolAllocationLength = _slabLength - (_blockLength + _blockStride);
+
+            var offset = firstOffset;
+            for (;
+                offset < poolAllocationLength;
                 offset += _blockStride)
             {
                 var block = MemoryPoolBlock2.Create(
@@ -110,6 +110,15 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
                     slab);
                 Return(block);
             }
+
+            // return last block rather than adding to pool
+            var newBlock = MemoryPoolBlock2.Create(
+                    new ArraySegment<byte>(slab.Array, offset, _blockLength),
+                    basePtr,
+                    this,
+                    slab);
+
+            return newBlock;
         }
 
         /// <summary>
