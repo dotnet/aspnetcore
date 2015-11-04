@@ -38,6 +38,7 @@ namespace Microsoft.AspNet.IISPlatformHandler.FunctionalTests
                 var deploymentParameters = new DeploymentParameters(Helpers.GetTestSitesPath(), serverType, runtimeFlavor, architecture)
                 {
                     ApplicationBaseUriHint = applicationBaseUrl,
+                    PublishWithNoSource = true, // Always publish with no source, otherwise it can't build and sign IISPlatformHandler
                     EnvironmentName = "HttpsHelloWorld", // Will pick the Start class named 'StartupHttpsHelloWorld',
                     ApplicationHostConfigTemplateContent = (serverType == ServerType.IISExpress) ? File.ReadAllText("Https.config") : null,
                     SiteName = "HttpsTestSite", // This is configured in the Https.config
@@ -106,6 +107,7 @@ namespace Microsoft.AspNet.IISPlatformHandler.FunctionalTests
                 var deploymentParameters = new DeploymentParameters(Helpers.GetTestSitesPath(), serverType, runtimeFlavor, architecture)
                 {
                     ApplicationBaseUriHint = applicationBaseUrl,
+                    PublishWithNoSource = true, // Always publish with no source, otherwise it can't build and sign IISPlatformHandler
                     EnvironmentName = "HttpsHelloWorld", // Will pick the Start class named 'StartupHttpsHelloWorld',
                     ApplicationHostConfigTemplateContent = (serverType == ServerType.IISExpress) ? File.ReadAllText("Https.config") : null,
                     SiteName = "HttpsTestSite", // This is configured in the Https.config

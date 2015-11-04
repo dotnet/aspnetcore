@@ -29,18 +29,6 @@ namespace Microsoft.AspNet.IISPlatformHandler.FunctionalTests
         }
 
         [ConditionalTheory]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
-        [InlineData(RuntimeFlavor.Clr, RuntimeArchitecture.x86, "http://localhost:5065/", ServerType.Kestrel)]
-        [InlineData(RuntimeFlavor.Clr, RuntimeArchitecture.x64, "http://localhost:5066/", ServerType.Kestrel)]
-        [InlineData(RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "http://localhost:5067/", ServerType.Kestrel)]
-        [InlineData(RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5068/", ServerType.Kestrel)]
-        public Task HelloWorld_IISExpress_NoSource(RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, ServerType delegateServer)
-        {
-            return HelloWorld(ServerType.IISExpress, runtimeFlavor, architecture, applicationBaseUrl, delegateServer, noSource: true);
-        }
-
-        [ConditionalTheory]
         [SkipIfIISVariationsNotEnabled]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
@@ -52,7 +40,7 @@ namespace Microsoft.AspNet.IISPlatformHandler.FunctionalTests
             return HelloWorld(ServerType.IIS, runtimeFlavor, architecture, applicationBaseUrl, delegateServer);
         }
 
-        public async Task HelloWorld(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, ServerType delegateServer, bool noSource = false)
+        public async Task HelloWorld(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl, ServerType delegateServer)
         {
             var logger = new LoggerFactory()
                             .AddConsole()
@@ -64,7 +52,7 @@ namespace Microsoft.AspNet.IISPlatformHandler.FunctionalTests
                 {
                     ApplicationBaseUriHint = applicationBaseUrl,
                     Command = delegateServer == ServerType.WebListener ? "weblistener" : "web",
-                    PublishWithNoSource = noSource,
+                    PublishWithNoSource = true, // Always publish with no source, otherwise it can't build and sign IISPlatformHandler
                     EnvironmentName = "HelloWorld", // Will pick the Start class named 'StartupHelloWorld',
                     ApplicationHostConfigTemplateContent = (serverType == ServerType.IISExpress) ? File.ReadAllText("Http.config") : null,
                     SiteName = "HttpTestSite", // This is configured in the Http.config
