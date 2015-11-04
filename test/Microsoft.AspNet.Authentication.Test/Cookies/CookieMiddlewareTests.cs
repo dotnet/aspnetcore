@@ -645,6 +645,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
             Assert.Equal(HttpStatusCode.Redirect, transaction2.Response.StatusCode);
             var location = transaction2.Response.Headers.Location;
             Assert.Equal("/Account/AccessDenied", location.LocalPath);
+            Assert.Equal("?ReturnUrl=%2Fchallenge", location.Query);
         }
 
         [Theory]
