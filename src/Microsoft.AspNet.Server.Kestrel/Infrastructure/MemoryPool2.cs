@@ -96,11 +96,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
             var basePtr = slab.ArrayPtr;
             var firstOffset = (int)((_blockStride - 1) - ((ulong)(basePtr + _blockStride - 1) % _blockStride));
 
-            var poolAllocationLength = _slabLength - (_blockLength + _blockStride);
+            var poolAllocationLength = _slabLength - _blockStride;
 
             var offset = firstOffset;
             for (;
-                offset < poolAllocationLength;
+                offset + _blockLength < poolAllocationLength;
                 offset += _blockStride)
             {
                 var block = MemoryPoolBlock2.Create(
