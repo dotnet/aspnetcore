@@ -3,6 +3,7 @@
 
 using System;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Server.Kestrel.Infrastructure;
@@ -24,7 +25,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         protected ListenerSecondary(ServiceContext serviceContext) : base(serviceContext)
         {
             _ptr = Marshal.AllocHGlobal(4);
-            _buf = Thread.Loop.Libuv.buf_init(_ptr, 4);
         }
 
         UvPipeHandle DispatchPipe { get; set; }
@@ -36,6 +36,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             RequestDelegate application)
         {
             _pipeName = pipeName;
+            _buf = thread.Loop.Libuv.buf_init(_ptr, 4);
+
             ServerAddress = address;
             Thread = thread;
             Application = application;
@@ -93,10 +95,10 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 DispatchPipe.ReadStart(
                     (handle, status2, state) => ((ListenerSecondary)state)._buf,
                     (handle, status2, state) => 
-                        {
-                            var listener = ((ListenerSecondary)state);
-                            listener.ReadStartCallback(handle, status2, listener._ptr);
-                        }, this);
+                    {
+                        var listener = ((ListenerSecondary)state);
+                        listener.ReadStartCallback(handle, status2, listener._ptr);
+                    }, this);
 
                 tcs.SetResult(0);
             }
@@ -119,7 +121,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 }
 
                 DispatchPipe.Dispose();
-                Marshal.FreeHGlobal(ptr);
                 return;
             }
 
@@ -150,17 +151,33 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         /// </summary>
         protected abstract UvStreamHandle CreateAcceptSocket();
 
+        private void FreeBuffer()
+        {
+            var ptr = Interlocked.Exchange(ref _ptr, IntPtr.Zero);
+            if (ptr != IntPtr.Zero)
+            {
+                Marshal.FreeHGlobal(_ptr);
+            }
+        }
+
         public void Dispose()
         {
-            Marshal.FreeHGlobal(_ptr);
-
             // Ensure the event loop is still running.
             // If the event loop isn't running and we try to wait on this Post
             // to complete, then KestrelEngine will never be disposed and
             // the exception that stopped the event loop will never be surfaced.
             if (Thread.FatalError == null)
             {
-                Thread.Send(listener => ((ListenerSecondary)listener).DispatchPipe.Dispose(), this);
+                Thread.Send(state =>
+                {
+                    var listener = (ListenerSecondary)state;
+                    listener.DispatchPipe.Dispose();
+                    listener.FreeBuffer();
+                }, this);
+            }
+            else
+            {
+                FreeBuffer();
             }
         }
     }
