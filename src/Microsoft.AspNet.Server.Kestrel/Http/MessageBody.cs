@@ -3,10 +3,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Primitives;
-using System.IO;
 
 namespace Microsoft.AspNet.Server.Kestrel.Http
 {
@@ -94,7 +94,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 value = values[0];
                 return true;
             }
-            value = String.Join(",", values);
+            value = string.Join(",", values.ToArray());
             return true;
         }
 

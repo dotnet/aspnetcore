@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
     /// </summary>
     public class UvConnectRequest : UvRequest
     {
-        private readonly static Libuv.uv_connect_cb _uv_connect_cb = UvConnectCb;
+        private readonly static Libuv.uv_connect_cb _uv_connect_cb = (req, status) => UvConnectCb(req, status);
 
         private Action<UvConnectRequest, int, Exception, object> _callback;
         private object _state;

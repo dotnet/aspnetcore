@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             var socket = new UvPipeHandle(Log);
             socket.Init(Thread.Loop, false);
             socket.Bind(ServerAddress.UnixPipePath);
-            socket.Listen(Constants.ListenBacklog, ConnectionCallback, this);
+            socket.Listen(Constants.ListenBacklog, (stream, status, error, state) => ConnectionCallback(stream, status, error, state), this);
             return socket;
         }
 
