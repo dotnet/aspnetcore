@@ -55,7 +55,8 @@ namespace Microsoft.AspNet.NodeServices {
                         UseShellExecute = false,
                         RedirectStandardInput = true,
                         RedirectStandardOutput = true,
-                        RedirectStandardError = true
+                        RedirectStandardError = true,
+                        WorkingDirectory = this._projectPath 
                     };
                     
                     // Append projectPath to NODE_PATH so it can locate node_modules
