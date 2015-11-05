@@ -67,7 +67,10 @@ namespace Microsoft.AspNet.Antiforgery
             CheckSSLConfig(context);
 
             var tokenSet = GetTokensInternal(context);
-            SaveCookieTokenAndHeader(context, tokenSet.CookieToken);
+            if (tokenSet.IsNewCookieToken)
+            {
+                SaveCookieTokenAndHeader(context, tokenSet.CookieToken);
+            }
             return Serialize(tokenSet);
         }
 
@@ -226,8 +229,9 @@ namespace Microsoft.AspNet.Antiforgery
             return new AntiforgeryTokenSetInternal()
             {
                 // Note : The new cookie would be null if the old cookie is valid.
-                CookieToken = newCookieToken,
-                FormToken = formToken
+                CookieToken = cookieToken,
+                FormToken = formToken,
+                IsNewCookieToken = newCookieToken != null
             };
         }
 
@@ -243,6 +247,8 @@ namespace Microsoft.AspNet.Antiforgery
             public AntiforgeryToken FormToken { get; set; }
 
             public AntiforgeryToken CookieToken { get; set; }
+
+            public bool IsNewCookieToken { get; set; }
         }
     }
 }
