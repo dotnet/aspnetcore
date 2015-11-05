@@ -294,17 +294,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
         }
 #endif
 
-        [Fact]
-        public void IsRequiredTests()
-        {
-            // Arrange & Act & Assert
-            Assert.False(new DataAnnotationsModelValidator(new RangeAttribute(10, 20), stringLocalizer: null)
-                .IsRequired);
-            Assert.True(new DataAnnotationsModelValidator(new RequiredAttribute(), stringLocalizer: null).IsRequired);
-            Assert.True(new DataAnnotationsModelValidator(new DerivedRequiredAttribute(), stringLocalizer: null)
-                .IsRequired);
-        }
-
         private class DerivedRequiredAttribute : RequiredAttribute
         {
         }

@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
         /// <summary>
         /// Gets the <see cref="ModelBinding.ModelMetadata"/>.
         /// </summary>
-        public ModelMetadata ModelMetadata { get; }
+        public ModelMetadata ModelMetadata { get; set; }
 
         /// <summary>
         /// Gets the validator metadata.

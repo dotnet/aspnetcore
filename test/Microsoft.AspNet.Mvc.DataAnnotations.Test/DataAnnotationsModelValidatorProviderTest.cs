@@ -39,6 +39,27 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 #endif
 
         [Fact]
+        public void GetValidators_InsertsRequiredValidatorsFirst()
+        {
+            var provider = new DataAnnotationsModelValidatorProvider(
+                new TestOptionsManager<MvcDataAnnotationsLocalizationOptions>(),
+                stringLocalizerFactory: null);
+            var metadata = _metadataProvider.GetMetadataForProperty(
+                typeof(ClassWithProperty),
+                "PropertyWithMultipleValidationAttributes");
+
+            var providerContext = new ModelValidatorProviderContext(metadata);
+
+            // Act
+            provider.GetValidators(providerContext);
+
+            // Assert
+            Assert.Equal(4, providerContext.Validators.Count);
+            Assert.IsAssignableFrom<RequiredAttribute>(((DataAnnotationsModelValidator)providerContext.Validators[0]).Attribute);
+            Assert.IsAssignableFrom<RequiredAttribute>(((DataAnnotationsModelValidator)providerContext.Validators[1]).Attribute);
+        }
+
+        [Fact]
         public void UnknownValidationAttributeGetsDefaultAdapter()
         {
             // Arrange
@@ -129,6 +150,31 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             public int WithAttribute { get; set; }
 
             public int WithoutAttribute { get; set; }
+        }
+
+        private class ClassWithProperty
+        {
+            [CustomNonRequiredAttribute1]
+            [CustomNonRequiredAttribute2]
+            [CustomRequiredAttribute1]
+            [CustomRequiredAttribute2]
+            public string PropertyWithMultipleValidationAttributes { get; set; }
+        }
+
+        public class CustomRequiredAttribute1 : RequiredAttribute
+        {
+        }
+
+        public class CustomRequiredAttribute2 : RequiredAttribute
+        {
+        }
+
+        public class CustomNonRequiredAttribute1 : ValidationAttribute
+        {
+        }
+
+        public class CustomNonRequiredAttribute2 : ValidationAttribute
+        {
         }
     }
 }

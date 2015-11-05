@@ -218,14 +218,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
         {
             public string Tag { get; set; }
 
-            public bool IsRequired
-            {
-                get
-                {
-                    throw new NotImplementedException();
-                }
-            }
-
             public IEnumerable<ModelValidationResult> Validate(ModelValidationContext context)
             {
                 throw new NotImplementedException();

@@ -26,11 +26,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 
         public ValidationAttribute Attribute { get; }
 
-        public bool IsRequired
-        {
-            get { return Attribute is RequiredAttribute; }
-        }
-
         public IEnumerable<ModelValidationResult> Validate(ModelValidationContext validationContext)
         {
             var metadata = validationContext.Metadata;

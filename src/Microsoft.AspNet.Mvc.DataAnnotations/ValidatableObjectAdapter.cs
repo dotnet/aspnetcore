@@ -11,11 +11,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 {
     public class ValidatableObjectAdapter : IModelValidator
     {
-        public bool IsRequired
-        {
-            get { return false; }
-        }
-
         public IEnumerable<ModelValidationResult> Validate(ModelValidationContext context)
         {
             var model = context.Model;

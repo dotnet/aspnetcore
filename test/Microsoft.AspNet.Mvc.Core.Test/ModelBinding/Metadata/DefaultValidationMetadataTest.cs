@@ -70,14 +70,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
 
         private class TestModelValidationAttribute : Attribute, IModelValidator
         {
-            public bool IsRequired
-            {
-                get
-                {
-                    throw new NotImplementedException();
-                }
-            }
-
             public IEnumerable<ModelValidationResult> Validate(ModelValidationContext context)
             {
                 throw new NotImplementedException();
@@ -94,14 +86,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
 
         private class TestValidationAttribute : Attribute, IModelValidator, IClientModelValidator
         {
-            public bool IsRequired
-            {
-                get
-                {
-                    throw new NotImplementedException();
-                }
-            }
-
             public IEnumerable<ModelClientValidationRule> GetClientValidationRules(ClientModelValidationContext context)
             {
                 throw new NotImplementedException();
