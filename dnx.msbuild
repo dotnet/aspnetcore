@@ -396,6 +396,10 @@
                 <term>lez</term>
                 <Justification>part of a name, false positive</Justification>
             </SrcExclusions>
+            <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.AspNet.Authentication.OpenIdConnect\OpenIdConnectHandler.cs">
+                <term>nuts</term>
+                <Justification>Temporary exclusion, will be removed.</Justification>
+            </SrcExclusions>
             <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.Extensions.WebEncoders.Core\UnicodeRanges.generated.cs;
                                     $(PoliCheckPath)**\src\Microsoft.Extensions.WebEncoders\CodePointFilters.cs;
                                     $(PoliCheckPath)**\Microsoft.Extensions.WebEncoders.Core.dll;
