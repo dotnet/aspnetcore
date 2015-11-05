@@ -17,19 +17,13 @@
             "dnx-clr-win-x64": {
                 "SIGN_AUTHENTICODE": {
                     "bin\\lib\\Microsoft.Dnx.DesignTimeHost\\Newtonsoft.Json.dll": "We don't sign 3rd party DLLs",
-                    "bin\\lib\\Microsoft.Dnx.Tooling\\Newtonsoft.Json.dll": "We don't sign 3rd party DLLs",
-                    "bin\\Microsoft.DiaSymReader.Native.amd64.dll": "Need to follow up, not from ADX team",
-                    "bin\\Microsoft.DiaSymReader.Native.arm.dll": "Need to follow up, not from ADX team",
-                    "bin\\Microsoft.DiaSymReader.Native.x86.dll": "Need to follow up, not from ADX team"
+                    "bin\\lib\\Microsoft.Dnx.Tooling\\Newtonsoft.Json.dll": "We don't sign 3rd party DLLs"
                 }
             },
             "dnx-clr-win-x86": {
                 "SIGN_AUTHENTICODE": {
                     "bin\\lib\\Microsoft.Dnx.DesignTimeHost\\Newtonsoft.Json.dll": "We don't sign 3rd party DLLs",
-                    "bin\\lib\\Microsoft.Dnx.Tooling\\Newtonsoft.Json.dll": "We don't sign 3rd party DLLs",
-                    "bin\\Microsoft.DiaSymReader.Native.amd64.dll": "Need to follow up, not from ADX team",
-                    "bin\\Microsoft.DiaSymReader.Native.arm.dll": "Need to follow up, not from ADX team",
-                    "bin\\Microsoft.DiaSymReader.Native.x86.dll": "Need to follow up, not from ADX team"
+                    "bin\\lib\\Microsoft.Dnx.Tooling\\Newtonsoft.Json.dll": "We don't sign 3rd party DLLs"
                 }
             },
             "dnx-coreclr-darwin-x64": {
@@ -103,19 +97,13 @@
             "dnx-coreclr-win-x64": {
                 "SIGN_AUTHENTICODE": {
                     "bin\\lib\\Microsoft.Dnx.DesignTimeHost\\Newtonsoft.Json.dll": "We don't sign 3rd party DLLs",
-                    "bin\\lib\\Microsoft.Dnx.Tooling\\Newtonsoft.Json.dll": "We don't sign 3rd party DLLs",
-                    "bin\\Microsoft.DiaSymReader.Native.amd64.dll": "Need to follow up, not from ADX team",
-                    "bin\\Microsoft.DiaSymReader.Native.arm.dll": "Need to follow up, not from ADX team",
-                    "bin\\Microsoft.DiaSymReader.Native.x86.dll": "Need to follow up, not from ADX team"
+                    "bin\\lib\\Microsoft.Dnx.Tooling\\Newtonsoft.Json.dll": "We don't sign 3rd party DLLs"
                 }
             },
             "dnx-coreclr-win-x86": {
                 "SIGN_AUTHENTICODE": {
                     "bin\\lib\\Microsoft.Dnx.DesignTimeHost\\Newtonsoft.Json.dll": "We don't sign 3rd party DLLs",
-                    "bin\\lib\\Microsoft.Dnx.Tooling\\Newtonsoft.Json.dll": "We don't sign 3rd party DLLs",
-                    "bin\\Microsoft.DiaSymReader.Native.amd64.dll": "Need to follow up, not from ADX team",
-                    "bin\\Microsoft.DiaSymReader.Native.arm.dll": "Need to follow up, not from ADX team",
-                    "bin\\Microsoft.DiaSymReader.Native.x86.dll": "Need to follow up, not from ADX team"
+                    "bin\\lib\\Microsoft.Dnx.Tooling\\Newtonsoft.Json.dll": "We don't sign 3rd party DLLs"
                 }
             },
             "dnx-mono": {
@@ -351,6 +339,7 @@
             "Microsoft.CodeAnalysis.Compilers": { },
             "Microsoft.CodeAnalysis.CSharp": { },
             "Microsoft.CodeAnalysis.CSharp.Features": { },
+            "Microsoft.CodeAnalysis.CSharp.Scripting": { },
             "Microsoft.CodeAnalysis.CSharp.Workspaces": { },
             "Microsoft.CodeAnalysis.EditorFeatures": { },
             "Microsoft.CodeAnalysis.EditorFeatures.Text": { },
@@ -358,7 +347,6 @@
             "Microsoft.CodeAnalysis.VisualBasic": { },
             "Microsoft.CodeAnalysis.Scripting": { },
             "Microsoft.CodeAnalysis.Scripting.Common": { },
-            "Microsoft.CodeAnalysis.Scripting.CSharp": { },
             "Microsoft.CodeAnalysis.Scripting.VisualBasic": { },
             "Microsoft.CodeAnalysis.VisualBasic.Workspaces": { },
             "Microsoft.CodeAnalysis.Test.Resources.Proprietary": { },
