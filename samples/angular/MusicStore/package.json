@@ -8,6 +8,7 @@
     "es6-module-loader": "^0.15.0",
     "jquery": "^2.1.4",
     "less": "^2.5.3",
+    "lodash": "^3.10.1",
     "reflect-metadata": "^0.1.2",
     "systemjs": "^0.19.3",
     "traceur": "0.0.91"
