@@ -4,6 +4,13 @@
     var dynamicUrl = "~/SomeUrl";
 }
 
+@functions {
+    public Task DoSomething()
+    {
+        return Task.FromResult(true);
+    }
+}
+
 <html manifest="~/Person">
 <head>
     <base href="~/A+Really(Crazy),Url.Is:This/@Model.Name/Detail" target="_blank">
@@ -33,6 +40,7 @@
         <menuitem icon=~/Person />
     </menu>
     <object data="~/Person" archive="~/Person/@Model.Name" data="~/Person" archive="~/Person/@Model.Name" />
+    <object archive="@if(Model.Name != null) { <text>~/Person/@Model.Name</text> } else { await DoSomething(); <text>~/Person</text>  } " />
     <applet archive="~/A+Really(Crazy),Url.Is:This/@Model.Name/Detail" />
 </body>
 </html>
