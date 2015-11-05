@@ -3,7 +3,9 @@
     <li>
         <a asp-controller="ShoppingCart" asp-action="Index" title="@ViewBag.CartSummary">
             <span class="glyphicon glyphicon glyphicon-shopping-cart"></span>
-            @ViewBag.CartCount
+            <span id="cart-status">
+                @ViewBag.CartCount
+            </span>
         </a>
     </li>
 }
