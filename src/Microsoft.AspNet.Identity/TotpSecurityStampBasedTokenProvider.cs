@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.Identity
         where TUser : class
     {
         /// <summary>
-        /// Generates a token for the specified <paramref name="ref"/> and <paramref name="purpose"/>, as an asynchronous operation.
+        /// Generates a token for the specified <paramref name="ref"/> and <paramref name="purpose"/>.
         /// </summary>
         /// <param name="purpose">The purpose the token will be used for.</param>
         /// <param name="manager">The <see cref="UserManager{TUser}"/> that can be used to retrieve user properties.</param>
@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.Identity
 
         /// <summary>
         /// Returns a flag indicating whether the specified <paramref name="token"/> is valid for the given
-        /// <paramref name="user"/> and <paramref name="purpose"/>, as an asynchronous operation.
+        /// <paramref name="user"/> and <paramref name="purpose"/>.
         /// </summary>
         /// <param name="purpose">The purpose the token will be used for.</param>
         /// <param name="token">The token to validate.</param>
@@ -72,7 +72,7 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// Returns a constant, provider and user unique modifier used for entropy in generated tokens from user information, as an asynchronous operation.
+        /// Returns a constant, provider and user unique modifier used for entropy in generated tokens from user information.
         /// </summary>
         /// <param name="purpose">The purpose the token will be generated for.</param>
         /// <param name="manager">The <see cref="UserManager{TUser}"/> that can be used to retrieve user properties.</param>

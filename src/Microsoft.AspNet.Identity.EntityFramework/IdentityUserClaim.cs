@@ -6,28 +6,28 @@ using System;
 namespace Microsoft.AspNet.Identity.EntityFramework
 {
     /// <summary>
-    ///     EntityType that represents one specific user claim
+    /// Represents a claim that a user possesses. 
     /// </summary>
-    /// <typeparam name="TKey"></typeparam>
+    /// <typeparam name="TKey">The type used for the primary key for this user that possesses this claim.</typeparam>
     public class IdentityUserClaim<TKey> where TKey : IEquatable<TKey>
     {
         /// <summary>
-        ///     Primary key
+        /// Gets or sets the identifier for this user claim.
         /// </summary>
         public virtual int Id { get; set; }
 
         /// <summary>
-        ///     User Id for the user who owns this claim
+        /// Gets or sets the of the primary key of the user associated with this claim.
         /// </summary>
         public virtual TKey UserId { get; set; }
 
         /// <summary>
-        ///     Claim type
+        /// Gets or sets the claim type for this claim.
         /// </summary>
         public virtual string ClaimType { get; set; }
 
         /// <summary>
-        ///     Claim value
+        /// Gets or sets the claim value for this claim.
         /// </summary>
         public virtual string ClaimValue { get; set; }
     }

@@ -6,28 +6,28 @@ using System;
 namespace Microsoft.AspNet.Identity.EntityFramework
 {
     /// <summary>
-    ///     Entity type for a user's login (i.e. facebook, google)
+    /// Represents a login and its associated provider for a user.
     /// </summary>
-    /// <typeparam name="TKey"></typeparam>
+    /// <typeparam name="TKey">The type of the primary key of the user associated with this login.</typeparam>
     public class IdentityUserLogin<TKey> where TKey : IEquatable<TKey>
     {
         /// <summary>
-        ///     The login provider for the login (i.e. facebook, google)
+        /// Gets or sets the login provider for the login (e.g. facebook, google)
         /// </summary>
         public virtual string LoginProvider { get; set; }
 
         /// <summary>
-        ///     Key representing the login for the provider
+        /// Gets or sets the unique provider identifier for this login.
         /// </summary>
         public virtual string ProviderKey { get; set; }
 
         /// <summary>
-        ///     Display name for the login
+        /// Gets or sets the friendly name used in a UI for this login.
         /// </summary>
         public virtual string ProviderDisplayName { get; set; }
 
         /// <summary>
-        ///     User Id for the user who owns this login
+        /// Gets or sets the of the primary key of the user associated with this login.
         /// </summary>
         public virtual TKey UserId { get; set; }
     }

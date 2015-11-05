@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.Identity
     public interface IUserRoleStore<TUser> : IUserStore<TUser> where TUser : class
     {
         /// <summary>
-        /// Add a the specified <paramref name="user"/> to the named role, as an asynchronous operation.
+        /// Add a the specified <paramref name="user"/> to the named role.
         /// </summary>
         /// <param name="user">The user to add to the named role.</param>
         /// <param name="roleName">The name of the role to add the user to.</param>
@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.Identity
         Task AddToRoleAsync(TUser user, string roleName, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Add a the specified <paramref name="user"/> from the named role, as an asynchronous operation.
+        /// Add a the specified <paramref name="user"/> from the named role.
         /// </summary>
         /// <param name="user">The user to remove the named role from.</param>
         /// <param name="roleName">The name of the role to remove.</param>
@@ -32,7 +32,7 @@ namespace Microsoft.AspNet.Identity
         Task RemoveFromRoleAsync(TUser user, string roleName, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Gets a list of role names the specified <paramref name="user"/> belongs to, as an asynchronous operation.
+        /// Gets a list of role names the specified <paramref name="user"/> belongs to.
         /// </summary>
         /// <param name="user">The user whose role names to retrieve.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.Identity
         Task<IList<string>> GetRolesAsync(TUser user, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Returns a flag indicating whether the specified <paramref name="user"/> is a member of the give named role, as an asynchronous operation.
+        /// Returns a flag indicating whether the specified <paramref name="user"/> is a member of the give named role.
         /// </summary>
         /// <param name="user">The user whose role membership should be checked.</param>
         /// <param name="roleName">The name of the role to be checked.</param>

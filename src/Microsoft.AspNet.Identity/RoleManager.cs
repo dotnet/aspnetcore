@@ -149,7 +149,7 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// Creates the specified <paramref name="role"/> in the persistence store, as an asynchronous operation.
+        /// Creates the specified <paramref name="role"/> in the persistence store.
         /// </summary>
         /// <param name="role">The role to create.</param>
         /// <returns>
@@ -173,7 +173,7 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// Updates the normalized name for the specified <paramref name="role"/>, as an asynchronous operation.
+        /// Updates the normalized name for the specified <paramref name="role"/>.
         /// </summary>
         /// <param name="role">The role whose normalized name needs to be updated.</param>
         /// <returns>
@@ -186,7 +186,7 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// Updates the specified <paramref name="role"/>, as an asynchronous operation.
+        /// Updates the specified <paramref name="role"/>.
         /// </summary>
         /// <param name="role">The role to updated.</param>
         /// <returns>
@@ -204,7 +204,7 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// Deletes the specified <paramref name="role"/>, as an asynchronous operation.
+        /// Deletes the specified <paramref name="role"/>.
         /// </summary>
         /// <param name="role">The role to delete.</param>
         /// <returns>
@@ -222,7 +222,7 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// Gets a flag indicating whether the specified <paramref name="roleName"/> exists, as an asynchronous operation.
+        /// Gets a flag indicating whether the specified <paramref name="roleName"/> exists.
         /// </summary>
         /// <param name="roleName">The role name whose existence should be checked.</param>
         /// <returns>
@@ -250,7 +250,7 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// Finds the role associated with the specified <paramref name="roleId"/> if any, as an asynchronous operation.
+        /// Finds the role associated with the specified <paramref name="roleId"/> if any.
         /// </summary>
         /// <param name="roleId">The role ID whose role should be returned.</param>
         /// <returns>
@@ -264,7 +264,7 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// Gets the name of the specified <paramref name="role"/>, as an asynchronous operation.
+        /// Gets the name of the specified <paramref name="role"/>.
         /// </summary>
         /// <param name="role">The role whose name should be retrieved.</param>
         /// <returns>
@@ -278,7 +278,7 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// Sets the name of the specified <paramref name="role"/>, as an asynchronous operation.
+        /// Sets the name of the specified <paramref name="role"/>.
         /// </summary>
         /// <param name="role">The role whose name should be set.</param>
         /// <param name="name">The name to set.</param>
@@ -296,7 +296,7 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// Gets the ID of the specified <paramref name="role"/>, as an asynchronous operation.
+        /// Gets the ID of the specified <paramref name="role"/>.
         /// </summary>
         /// <param name="role">The role whose ID should be retrieved.</param>
         /// <returns>
@@ -310,7 +310,7 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// Finds the role associated with the specified <paramref name="roleName"/> if any, as an asynchronous operation.
+        /// Finds the role associated with the specified <paramref name="roleName"/> if any.
         /// </summary>
         /// <param name="roleName">The name of the role to be returned.</param>
         /// <returns>
@@ -329,7 +329,7 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// Adds a claim to a role, as an asynchronous operation.
+        /// Adds a claim to a role.
         /// </summary>
         /// <param name="role">The role to add the claim to.</param>
         /// <param name="claim">The claim to add.</param>
@@ -355,7 +355,7 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// Removes a claim from a role, as an asynchronous operation.
+        /// Removes a claim from a role.
         /// </summary>
         /// <param name="role">The role to remove the claim from.</param>
         /// <param name="claim">The claim to add.</param>
@@ -377,7 +377,7 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// Gets a list of claims associated with the specified <paramref name="role"/>, as an asynchronous operation.
+        /// Gets a list of claims associated with the specified <paramref name="role"/>.
         /// </summary>
         /// <param name="role">The role whose claims should be returned.</param>
         /// <returns>

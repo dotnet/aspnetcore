@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.Identity
     public interface IUserEmailStore<TUser> : IUserStore<TUser> where TUser : class
     {
         /// <summary>
-        /// Sets the <paramref name="email"/> address for a <paramref name="user"/>, as an asynchronous operation.
+        /// Sets the <paramref name="email"/> address for a <paramref name="user"/>.
         /// </summary>
         /// <param name="user">The user whose email should be set.</param>
         /// <param name="email">The email to set.</param>
@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Identity
         Task SetEmailAsync(TUser user, string email, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Gets the email address for the specified <paramref name="user"/>, as an asynchronous operation.
+        /// Gets the email address for the specified <paramref name="user"/>.
         /// </summary>
         /// <param name="user">The user whose email should be returned.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.Identity
 
         /// <summary>
         /// Gets a flag indicating whether the email address for the specified <paramref name="user"/> has been verified, true if the email address is verified otherwise
-        /// false, as an asynchronous operation.
+        /// false.
         /// </summary>
         /// <param name="user">The user whose email confirmation status should be returned.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.Identity
         Task<bool> GetEmailConfirmedAsync(TUser user, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Sets the flag indicating whether the specified <paramref name="user"/>'s email address has been confirmed or not, as an asynchronous operation.
+        /// Sets the flag indicating whether the specified <paramref name="user"/>'s email address has been confirmed or not.
         /// </summary>
         /// <param name="user">The user whose email confirmation status should be set.</param>
         /// <param name="confirmed">A flag indicating if the email address has been confirmed, true if the address is confirmed otherwise false.</param>
@@ -51,7 +51,7 @@ namespace Microsoft.AspNet.Identity
         Task SetEmailConfirmedAsync(TUser user, bool confirmed, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Gets the user, if any, associated with the specified, normalized email address, as an asynchronous operation.
+        /// Gets the user, if any, associated with the specified, normalized email address.
         /// </summary>
         /// <param name="normalizedEmail">The normalized email address to return the user for.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
@@ -61,7 +61,7 @@ namespace Microsoft.AspNet.Identity
         Task<TUser> FindByEmailAsync(string normalizedEmail, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Returns the normalized email for the specified <paramref name="user"/>, as an asynchronous operation.
+        /// Returns the normalized email for the specified <paramref name="user"/>.
         /// </summary>
         /// <param name="user">The user whose email address to retrieve.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
@@ -71,7 +71,7 @@ namespace Microsoft.AspNet.Identity
         Task<string> GetNormalizedEmailAsync(TUser user, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Sets the normalized email for the specified <paramref name="user"/>, as an asynchronous operation.
+        /// Sets the normalized email for the specified <paramref name="user"/>.
         /// </summary>
         /// <param name="user">The user whose email address to set.</param>
         /// <param name="normalizedEmail">The normalized email to set for the specified <paramref name="user"/>.</param>

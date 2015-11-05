@@ -301,7 +301,7 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// Generates a value suitable for use in concurrency tracking, as an asynchronous operation.
+        /// Generates a value suitable for use in concurrency tracking.
         /// </summary>
         /// <param name="user">The user to generate the stamp for.</param>
         /// <returns>
@@ -342,7 +342,7 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// Updates the specified <paramref name="user"/> in the backing store, as an asynchronous operation.
+        /// Updates the specified <paramref name="user"/> in the backing store.
         /// </summary>
         /// <param name="user">The user to update.</param>
         /// <returns>
@@ -361,7 +361,7 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// Deletes the specified <paramref name="user"/> from the backing store, as an asynchronous operation.
+        /// Deletes the specified <paramref name="user"/> from the backing store.
         /// </summary>
         /// <param name="user">The user to delete.</param>
         /// <returns>
@@ -453,7 +453,7 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// Updates the normalized user name for the specified <paramref name="user"/>, as an asynchronous operation.
+        /// Updates the normalized user name for the specified <paramref name="user"/>.
         /// </summary>
         /// <param name="user">The user whose user name should be normalized and updated.</param>
         /// <returns>The <see cref="Task"/> that represents the asynchronous operation.</returns>
@@ -464,7 +464,7 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// Gets the user name for the specified <paramref name="user"/>, as an asynchronous operation.
+        /// Gets the user name for the specified <paramref name="user"/>.
         /// </summary>
         /// <param name="user">The user whose name should be retrieved.</param>
         /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the name for the specified <paramref name="user"/>.</returns>
@@ -479,7 +479,7 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// Sets the given <paramref name="userName" /> for the specified <paramref name="user"/>, as an asynchronous operation.
+        /// Sets the given <paramref name="userName" /> for the specified <paramref name="user"/>.
         /// </summary>
         /// <param name="user">The user whose name should be set.</param>
         /// <param name="userName">The user name to set.</param>
@@ -498,7 +498,7 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// Gets the user identifier for the specified <paramref name="user"/>, as an asynchronous operation.
+        /// Gets the user identifier for the specified <paramref name="user"/>.
         /// </summary>
         /// <param name="user">The user whose identifier should be retrieved.</param>
         /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the identifier for the specified <paramref name="user"/>.</returns>
@@ -510,7 +510,7 @@ namespace Microsoft.AspNet.Identity
 
         /// <summary>
         /// Returns a flag indicating whether the given <paramref name="password"/> is valid for the 
-        /// specified <paramref name="user"/>, as an asynchronous operation.
+        /// specified <paramref name="user"/>.
         /// </summary>
         /// <param name="user">The user whose password should be validated.</param>
         /// <param name="password">The password to validate</param>
@@ -542,7 +542,7 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// Gets a flag indicating whether the specified <paramref name="user"/> has a password, as an asynchronous operation.
+        /// Gets a flag indicating whether the specified <paramref name="user"/> has a password.
         /// </summary>
         /// <param name="user">The user to return a flag for, indicating whether they have a password or not.</param>
         /// <returns>
@@ -563,7 +563,7 @@ namespace Microsoft.AspNet.Identity
 
         /// <summary>
         /// Adds the <paramref name="password"/> to the specified <paramref name="user"/> only if the user
-        /// does not already have a password, as an asynchronous operation.
+        /// does not already have a password.
         /// </summary>
         /// <param name="user">The user whose password should be set.</param>
         /// <param name="password">The password to set.</param>
@@ -629,7 +629,7 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// Removes a user's password, as an asynchronous operation.
+        /// Removes a user's password.
         /// </summary>
         /// <param name="user">The user whose password should be removed.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
@@ -672,7 +672,7 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// Get the security stamp for the specified <paramref name="user" />, as an asynchronous operation.
+        /// Get the security stamp for the specified <paramref name="user" />.
         /// </summary>
         /// <param name="user">The user whose security stamp should be set.</param>
         /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the security stamp for the specified <paramref name="user"/>.</returns>
@@ -688,7 +688,7 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// Regenerates the security stamp for the specified <paramref name="user" />, as an asynchronous operation.
+        /// Regenerates the security stamp for the specified <paramref name="user" />.
         /// </summary>
         /// <param name="user">The user whose security stamp should be regenerated.</param>
         /// <returns>
@@ -713,7 +713,7 @@ namespace Microsoft.AspNet.Identity
 
         /// <summary>
         /// Generates a password reset token for the specified <paramref name="user"/>, using
-        /// the configured password reset token provider, as an asynchronous operation. 
+        /// the configured password reset token provider. 
         /// </summary>
         /// <param name="user">The user to generate a password reset token for.</param>
         /// <returns>The <see cref="Task"/> that represents the asynchronous operation, 
@@ -726,7 +726,7 @@ namespace Microsoft.AspNet.Identity
 
         /// <summary>
         /// Resets the <paramref name="user"/>'s password to the specified <paramref name="newPassword"/> after
-        /// validating the given password reset <paramref name="token"/>, as an asynchronous operation.
+        /// validating the given password reset <paramref name="token"/>.
         /// </summary>
         /// <param name="user">The user whose password should be reset.</param>
         /// <param name="token">The password reset token to verify.</param>
@@ -758,7 +758,7 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// Retrieves the user associated with the specified external login provider and login provider key, as an asynchronous operation..
+        /// Retrieves the user associated with the specified external login provider and login provider key..
         /// </summary>
         /// <param name="loginProvider">The login provider who provided the <paramref name="providerKey"/>.</param>
         /// <param name="providerKey">The key provided by the <paramref name="loginProvider"/> to identify a user.</param>
@@ -781,7 +781,7 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// Attempts to remove the provided external login information from the specified <paramref name="user"/>, as an asynchronous operation.
+        /// Attempts to remove the provided external login information from the specified <paramref name="user"/>.
         /// and returns a flag indicating whether the removal succeed or not.
         /// </summary>
         /// <param name="user">The user to remove the login information from.</param>
@@ -814,7 +814,7 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// Adds an external <see cref="UserLoginInfo"/> to the specified <paramref name="user"/>, as an asynchronous operation.
+        /// Adds an external <see cref="UserLoginInfo"/> to the specified <paramref name="user"/>.
         /// </summary>
         /// <param name="user">The user to add the login to.</param>
         /// <param name="login">The external <see cref="UserLoginInfo"/> to add to the specified <paramref name="user"/>.</param>
@@ -846,7 +846,7 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// Retrieves the associated logins for the specified <param ref="user"/>, as an asynchronous operation.
+        /// Retrieves the associated logins for the specified <param ref="user"/>.
         /// </summary>
         /// <param name="user">The user whose associated logins to retrieve.</param>
         /// <returns>
@@ -864,7 +864,7 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// Adds the specified <paramref name="claim"/> to the <paramref name="user"/>, as an asynchronous operation.
+        /// Adds the specified <paramref name="claim"/> to the <paramref name="user"/>.
         /// </summary>
         /// <param name="user">The user to add the claim to.</param>
         /// <param name="claim">The claim to add.</param>
@@ -888,7 +888,7 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// Adds the specified <paramref name="claims"/> to the <paramref name="user"/>, as an asynchronous operation.
+        /// Adds the specified <paramref name="claims"/> to the <paramref name="user"/>.
         /// </summary>
         /// <param name="user">The user to add the claim to.</param>
         /// <param name="claims">The claims to add.</param>
@@ -1014,7 +1014,7 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// Add the specified <paramref name="user"/> to the named role, as an asynchronous operation.
+        /// Add the specified <paramref name="user"/> to the named role.
         /// </summary>
         /// <param name="user">The user to add to the named role.</param>
         /// <param name="roleName">The name of the role to add the user to.</param>
@@ -1040,7 +1040,7 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// Add the specified <paramref name="user"/> to the named roles, as an asynchronous operation.
+        /// Add the specified <paramref name="user"/> to the named roles.
         /// </summary>
         /// <param name="user">The user to add to the named roles.</param>
         /// <param name="roleName">The name of the roles to add the user to.</param>
@@ -1073,7 +1073,7 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// Removes the specified <paramref name="user"/> from the named role, as an asynchronous operation.
+        /// Removes the specified <paramref name="user"/> from the named role.
         /// </summary>
         /// <param name="user">The user to remove from the named role.</param>
         /// <param name="roleName">The name of the role to remove the user from.</param>
@@ -1111,7 +1111,7 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// Removes the specified <paramref name="user"/> from the named roles, as an asynchronous operation.
+        /// Removes the specified <paramref name="user"/> from the named roles.
         /// </summary>
         /// <param name="user">The user to remove from the named roles.</param>
         /// <param name="roleName">The name of the roles to remove the user from.</param>
@@ -1144,7 +1144,7 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// Gets a list of role names the specified <paramref name="user"/> belongs to, as an asynchronous operation.
+        /// Gets a list of role names the specified <paramref name="user"/> belongs to.
         /// </summary>
         /// <param name="user">The user whose role names to retrieve.</param>
         /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing a list of role names.</returns>
@@ -1160,7 +1160,7 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// Returns a flag indicating whether the specified <paramref name="user"/> is a member of the give named role, as an asynchronous operation.
+        /// Returns a flag indicating whether the specified <paramref name="user"/> is a member of the give named role.
         /// </summary>
         /// <param name="user">The user whose role membership should be checked.</param>
         /// <param name="role">The name of the role to be checked.</param>
@@ -1180,7 +1180,7 @@ namespace Microsoft.AspNet.Identity
         }
         
         /// <summary>
-        /// Gets the email address for the specified <paramref name="user"/>, as an asynchronous operation.
+        /// Gets the email address for the specified <paramref name="user"/>.
         /// </summary>
         /// <param name="user">The user whose email should be returned.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
@@ -1197,7 +1197,7 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// Sets the <paramref name="email"/> address for a <paramref name="user"/>, as an asynchronous operation.
+        /// Sets the <paramref name="email"/> address for a <paramref name="user"/>.
         /// </summary>
         /// <param name="user">The user whose email should be set.</param>
         /// <param name="email">The email to set.</param>
@@ -1255,7 +1255,7 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// Generates an email confirmation token for the specified user, as an asynchronous operation.
+        /// Generates an email confirmation token for the specified user.
         /// </summary>
         /// <param name="user">The user to generate an email confirmation token for.</param>
         /// <returns>
@@ -1268,7 +1268,7 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// Validates that an email confirmation token matches the specified <paramref name="user"/>, as an asynchronous operation.
+        /// Validates that an email confirmation token matches the specified <paramref name="user"/>.
         /// </summary>
         /// <param name="user">The user to validate the token against.</param>
         /// <param name="token">The email confirmation token to validate.</param>
@@ -1295,7 +1295,7 @@ namespace Microsoft.AspNet.Identity
 
         /// <summary>
         /// Gets a flag indicating whether the email address for the specified <paramref name="user"/> has been verified, true if the email address is verified otherwise
-        /// false, as an asynchronous operation.
+        /// false.
         /// </summary>
         /// <param name="user">The user whose email confirmation status should be returned.</param>
         /// <returns>
@@ -1314,7 +1314,7 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// Generates an email change token for the specified user, as an asynchronous operation.
+        /// Generates an email change token for the specified user.
         /// </summary>
         /// <param name="user">The user to generate an email change token for.</param>
         /// <returns>
@@ -1357,7 +1357,7 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// Gets the telephone number, if any, for the specified <paramref name="user"/>, as an asynchronous operation.
+        /// Gets the telephone number, if any, for the specified <paramref name="user"/>.
         /// </summary>
         /// <param name="user">The user whose telephone number should be retrieved.</param>
         /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the user's telephone number, if any.</returns>
@@ -1428,7 +1428,7 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// Gets a flag indicating whether the specified <paramref name="user"/>'s telephone number has been confirmed, as an asynchronous operation.
+        /// Gets a flag indicating whether the specified <paramref name="user"/>'s telephone number has been confirmed.
         /// </summary>
         /// <param name="user">The user to return a flag for, indicating whether their telephone number is confirmed.</param>
         /// <returns>
@@ -1447,7 +1447,7 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// Generates a telephone number change token for the specified user, as an asynchronous operation.
+        /// Generates a telephone number change token for the specified user.
         /// </summary>
         /// <param name="user">The user to generate a telephone number token for.</param>
         /// <param name="phoneNumber">The new phone number the validation token should be sent to.</param>
@@ -1464,7 +1464,7 @@ namespace Microsoft.AspNet.Identity
 
         /// <summary>
         /// Returns a flag indicating whether the specified <paramref name="user"/>'s phone number change verification
-        /// token is valid for the given <paramref name="phoneNumber"/>, as an asynchronous operation.
+        /// token is valid for the given <paramref name="phoneNumber"/>.
         /// </summary>
         /// <param name="user">The user to validate the token against.</param>
         /// <param name="token">The telephone number change token to validate.</param>
@@ -1492,7 +1492,7 @@ namespace Microsoft.AspNet.Identity
 
         /// <summary>
         /// Returns a flag indicating whether the specified <paramref name="token"/> is valid for
-        /// the given <paramref name="user"/> and <paramref name="purpose"/>, as an asynchronous operation.
+        /// the given <paramref name="user"/> and <paramref name="purpose"/>.
         /// </summary>
         /// <param name="user">The user to validate the token against.</param>
         /// <param name="tokenProvider">The token provider used to generate the token.</param>
@@ -1529,7 +1529,7 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// Generates a token for the given <paramref name="user"/> and <paramref name="purpose"/>, as an asynchronous operation.
+        /// Generates a token for the given <paramref name="user"/> and <paramref name="purpose"/>.
         /// </summary>
         /// <param name="purpose">The purpose the token will be for.</param>
         /// <param name="user">The user the token will be for.</param>
@@ -1600,7 +1600,7 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// Verifies the specified two factor authentication <paramref name="token" /> against the <paramref name="user"/>, as an asynchronous operation.
+        /// Verifies the specified two factor authentication <paramref name="token" /> against the <paramref name="user"/>.
         /// </summary>
         /// <param name="user">The user the token is supposed to be for.</param>
         /// <param name="tokenProvider">The provider which will verify the token.</param>
@@ -1632,7 +1632,7 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// Gets a two factor authentication token for the specified <paramref name="user"/>, as an asynchronous operation.
+        /// Gets a two factor authentication token for the specified <paramref name="user"/>.
         /// </summary>
         /// <param name="user">The user the token is for.</param>
         /// <param name="tokenProvider">The provider which will generate the token.</param>
@@ -1746,7 +1746,7 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// Retrieves a flag indicating whether user lockout can enabled for the specified user, as an asynchronous operation.
+        /// Retrieves a flag indicating whether user lockout can enabled for the specified user.
         /// </summary>
         /// <param name="user">The user whose ability to be locked out should be returned.</param>
         /// <returns>
@@ -1764,7 +1764,7 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// Gets the last <see cref="DateTimeOffset"/> a user's last lockout expired, if any, as an asynchronous operation.
+        /// Gets the last <see cref="DateTimeOffset"/> a user's last lockout expired, if any.
         /// Any time in the past should be indicates a user is not locked out.
         /// </summary>
         /// <param name="user">The user whose lockout date should be retrieved.</param>
@@ -1783,7 +1783,7 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// Locks out a user until the specified end date has passed, as an asynchronous operation. Setting a end date in the past immediately unlocks a user.
+        /// Locks out a user until the specified end date has passed. Setting a end date in the past immediately unlocks a user.
         /// </summary>
         /// <param name="user">The user whose lockout date should be set.</param>
         /// <param name="lockoutEnd">The <see cref="DateTimeOffset"/> after which the <paramref name="user"/>'s lockout should end.</param>
@@ -1836,7 +1836,7 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// Resets the access failed count for the specified <paramref name="user"/>, as an asynchronous operation.
+        /// Resets the access failed count for the specified <paramref name="user"/>.
         /// </summary>
         /// <param name="user">The user whose failed access count should be reset.</param>
         /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="IdentityResult"/> of the operation.</returns>
@@ -1858,7 +1858,7 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// Retrieves the current number of failed accesses for the given <paramref name="user"/>, as an asynchronous operation. 
+        /// Retrieves the current number of failed accesses for the given <paramref name="user"/>. 
         /// </summary>
         /// <param name="user">The user whose access failed count should be retrieved for.</param>
         /// <returns>The <see cref="Task"/> that contains the result the asynchronous operation, the current failed access count

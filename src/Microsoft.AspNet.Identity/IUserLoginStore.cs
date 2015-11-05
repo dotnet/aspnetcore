@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.Identity
     public interface IUserLoginStore<TUser> : IUserStore<TUser> where TUser : class
     {
         /// <summary>
-        /// Adds an external <see cref="UserLoginInfo"/> to the specified <paramref name="user"/>, as an asynchronous operation.
+        /// Adds an external <see cref="UserLoginInfo"/> to the specified <paramref name="user"/>.
         /// </summary>
         /// <param name="user">The user to add the login to.</param>
         /// <param name="login">The external <see cref="UserLoginInfo"/> to add to the specified <paramref name="user"/>.</param>
@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.Identity
         Task AddLoginAsync(TUser user, UserLoginInfo login, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Attempts to remove the provided login information from the specified <paramref name="user"/>, as an asynchronous operation.
+        /// Attempts to remove the provided login information from the specified <paramref name="user"/>.
         /// and returns a flag indicating whether the removal succeed or not.
         /// </summary>
         /// <param name="user">The user to remove the login information from.</param>
@@ -38,7 +38,7 @@ namespace Microsoft.AspNet.Identity
         Task RemoveLoginAsync(TUser user, string loginProvider, string providerKey, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Retrieves the associated logins for the specified <param ref="user"/>, as an asynchronous operation.
+        /// Retrieves the associated logins for the specified <param ref="user"/>.
         /// </summary>
         /// <param name="user">The user whose associated logins to retrieve.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
@@ -48,7 +48,7 @@ namespace Microsoft.AspNet.Identity
         Task<IList<UserLoginInfo>> GetLoginsAsync(TUser user, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Retrieves the user associated with the specified login provider and login provider key, as an asynchronous operation..
+        /// Retrieves the user associated with the specified login provider and login provider key..
         /// </summary>
         /// <param name="loginProvider">The login provider who provided the <paramref name="providerKey"/>.</param>
         /// <param name="providerKey">The key provided by the <paramref name="loginProvider"/> to identify a user.</param>

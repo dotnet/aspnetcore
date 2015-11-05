@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.Identity
     public interface IUserPhoneNumberStore<TUser> : IUserStore<TUser> where TUser : class
     {
         /// <summary>
-        /// Sets the telephone number for the specified <paramref name="user"/>, as an asynchronous operation.
+        /// Sets the telephone number for the specified <paramref name="user"/>.
         /// </summary>
         /// <param name="user">The user whose telephone number should be set.</param>
         /// <param name="phoneNumber">The telephone number to set.</param>
@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Identity
         Task SetPhoneNumberAsync(TUser user, string phoneNumber, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Gets the telephone number, if any, for the specified <paramref name="user"/>, as an asynchronous operation.
+        /// Gets the telephone number, if any, for the specified <paramref name="user"/>.
         /// </summary>
         /// <param name="user">The user whose telephone number should be retrieved.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.Identity
         Task<string> GetPhoneNumberAsync(TUser user, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Gets a flag indicating whether the specified <paramref name="user"/>'s telephone number has been confirmed, as an asynchronous operation.
+        /// Gets a flag indicating whether the specified <paramref name="user"/>'s telephone number has been confirmed.
         /// </summary>
         /// <param name="user">The user to return a flag for, indicating whether their telephone number is confirmed.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
@@ -41,7 +41,7 @@ namespace Microsoft.AspNet.Identity
         Task<bool> GetPhoneNumberConfirmedAsync(TUser user, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Sets a flag indicating if the specified <paramref name="user"/>'s phone number has been confirmed, as an asynchronous operation..
+        /// Sets a flag indicating if the specified <paramref name="user"/>'s phone number has been confirmed..
         /// </summary>
         /// <param name="user">The user whose telephone number confirmation status should be set.</param>
         /// <param name="confirmed">A flag indicating whether the user's telephone number has been confirmed.</param>
