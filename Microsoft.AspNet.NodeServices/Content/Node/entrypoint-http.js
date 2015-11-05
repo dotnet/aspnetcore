@@ -14,15 +14,15 @@ var server = http.createServer(function(req, res) {
         if (!func) {
             throw new Error('The module "' + resolvedPath + '" has no export named "' + bodyJson.exportedFunctionName + '"');
         }
-        
+
         var hasSentResult = false;
         var callback = function(errorValue, successValue) {
             if (!hasSentResult) {
                 hasSentResult = true;
                 if (errorValue) {
                     res.status(500).send(errorValue);
-                } else if (typeof successValue === 'object') {
-                    // Arbitrary object - JSON-serialize it
+                } else if (typeof successValue !== 'string') {
+                    // Arbitrary object/number/etc - JSON-serialize it
                     res.setHeader('Content-Type', 'application/json');
                     res.end(JSON.stringify(successValue));
                 } else {

@@ -33,14 +33,14 @@ namespace Microsoft.AspNet.NodeServices {
             this._commandLineArguments = commandLineArguments ?? string.Empty;
         }
         
-        public abstract Task<string> Invoke(NodeInvocationInfo invocationInfo);
+        public abstract Task<T> Invoke<T>(NodeInvocationInfo invocationInfo);
         
-        public Task<string> Invoke(string moduleName, params object[] args) {
-            return this.InvokeExport(moduleName, null, args);
+        public Task<T> Invoke<T>(string moduleName, params object[] args) {
+            return this.InvokeExport<T>(moduleName, null, args);
         }
     
-        public async Task<string> InvokeExport(string moduleName, string exportedFunctionName, params object[] args) {
-            return await this.Invoke(new NodeInvocationInfo {
+        public async Task<T> InvokeExport<T>(string moduleName, string exportedFunctionName, params object[] args) {
+            return await this.Invoke<T>(new NodeInvocationInfo {
                 ModuleName = moduleName,
                 ExportedFunctionName = exportedFunctionName,
                 Args = args

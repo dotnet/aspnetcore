@@ -6,7 +6,7 @@ function invocationCallback(errorValue, successValue) {
     if (errorValue) {
         throw new Error('InputOutputStreamHost doesn\'t support errors. Got error: ' + errorValue.toString());
     } else {
-        var serializedResult = typeof successValue === 'object' ? JSON.stringify(successValue) : successValue;
+        var serializedResult = JSON.stringify(successValue);
         console.log(serializedResult);
     }
 }

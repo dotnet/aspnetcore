@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.NodeServices {
         {
 		}
         
-        public override async Task<string> Invoke(NodeInvocationInfo invocationInfo) {
+        public override async Task<T> Invoke<T>(NodeInvocationInfo invocationInfo) {
             await this._invocationSemaphore.WaitAsync();
             try {
                 await this.EnsureReady();
@@ -39,7 +39,8 @@ namespace Microsoft.AspNet.NodeServices {
                 this._currentInvocationResult = new TaskCompletionSource<string>();
                 nodeProcess.StandardInput.Write("\ninvoke:");
                 nodeProcess.StandardInput.WriteLine(payloadJson); // WriteLineAsync isn't supported cross-platform
-                return await this._currentInvocationResult.Task;
+                var resultString = await this._currentInvocationResult.Task;
+                return JsonConvert.DeserializeObject<T>(resultString);
             } finally {
                 this._invocationSemaphore.Release();
                 this._currentInvocationResult = null;

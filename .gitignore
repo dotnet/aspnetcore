@@ -1,3 +1,4 @@
 .vs
 *.xproj.user
 project.lock.json
+npm-debug.log

@@ -63,7 +63,7 @@ namespace ES2015Example
                 if (requestPath.StartsWith("/js/") && requestPath.EndsWith(".js")) {
                     var fileInfo = env.WebRootFileProvider.GetFileInfo(requestPath); 
                     if (fileInfo.Exists) {
-                        var transpiled = await nodeServices.Invoke("transpilation.js", fileInfo.PhysicalPath, requestPath);
+                        var transpiled = await nodeServices.Invoke<string>("transpilation.js", fileInfo.PhysicalPath, requestPath);
                         await context.Response.WriteAsync(transpiled);
                         return;
                     }

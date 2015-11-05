@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.NodeServices.Angular
         }
         
         public static async Task<string> RenderToString(INodeServices nodeServices, string componentModuleName, string componentExportName, string componentTagName, string requestUrl) {
-            return await nodeServices.InvokeExport(nodeScript.FileName, "renderToString", new {
+            return await nodeServices.InvokeExport<string>(nodeScript.FileName, "renderToString", new {
                 moduleName = componentModuleName,
                 exportName = componentExportName,
                 tagName = componentTagName,

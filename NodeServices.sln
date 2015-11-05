@@ -1,0 +1,64 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.23107.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{E6E88944-4800-40BA-8AF5-069EA3ADFEB8}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.NodeServices", "Microsoft.AspNet.NodeServices\Microsoft.AspNet.NodeServices.xproj", "{B0FA4175-8B29-4904-9780-28B3C24B0567}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ES2015Transpilation", "samples\misc\ES2015Transpilation\ES2015Transpilation.xproj", "{6D4BCDD6-7951-449B-BE55-CB7F014B7430}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{78DAC76C-1092-45AB-BF0D-594B8C7B6569}"
+	ProjectSection(SolutionItems) = preProject
+		global.json = global.json
+	EndProjectSection
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "MusicStore", "samples\angular\MusicStore\MusicStore.xproj", "{1A74148F-9DC0-435D-B5AC-7D1B0D3D5E0B}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ReactGrid", "samples\react\ReactGrid\ReactGrid.xproj", "{ABF90A5B-F4E0-438C-A6E4-9549FB43690B}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.NodeServices.Angular", "Microsoft.AspNet.NodeServices.Angular\Microsoft.AspNet.NodeServices.Angular.xproj", "{421807E6-B62C-417B-B901-46C5DEDAA8F1}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.NodeServices.React", "Microsoft.AspNet.NodeServices.React\Microsoft.AspNet.NodeServices.React.xproj", "{B04381DE-991F-4831-A0B5-FE1BD3EF80C4}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B0FA4175-8B29-4904-9780-28B3C24B0567}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B0FA4175-8B29-4904-9780-28B3C24B0567}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B0FA4175-8B29-4904-9780-28B3C24B0567}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B0FA4175-8B29-4904-9780-28B3C24B0567}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6D4BCDD6-7951-449B-BE55-CB7F014B7430}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6D4BCDD6-7951-449B-BE55-CB7F014B7430}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6D4BCDD6-7951-449B-BE55-CB7F014B7430}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6D4BCDD6-7951-449B-BE55-CB7F014B7430}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1A74148F-9DC0-435D-B5AC-7D1B0D3D5E0B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1A74148F-9DC0-435D-B5AC-7D1B0D3D5E0B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1A74148F-9DC0-435D-B5AC-7D1B0D3D5E0B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1A74148F-9DC0-435D-B5AC-7D1B0D3D5E0B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ABF90A5B-F4E0-438C-A6E4-9549FB43690B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ABF90A5B-F4E0-438C-A6E4-9549FB43690B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ABF90A5B-F4E0-438C-A6E4-9549FB43690B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ABF90A5B-F4E0-438C-A6E4-9549FB43690B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{421807E6-B62C-417B-B901-46C5DEDAA8F1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{421807E6-B62C-417B-B901-46C5DEDAA8F1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{421807E6-B62C-417B-B901-46C5DEDAA8F1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{421807E6-B62C-417B-B901-46C5DEDAA8F1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B04381DE-991F-4831-A0B5-FE1BD3EF80C4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B04381DE-991F-4831-A0B5-FE1BD3EF80C4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B04381DE-991F-4831-A0B5-FE1BD3EF80C4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B04381DE-991F-4831-A0B5-FE1BD3EF80C4}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{6D4BCDD6-7951-449B-BE55-CB7F014B7430} = {E6E88944-4800-40BA-8AF5-069EA3ADFEB8}
+		{1A74148F-9DC0-435D-B5AC-7D1B0D3D5E0B} = {E6E88944-4800-40BA-8AF5-069EA3ADFEB8}
+		{ABF90A5B-F4E0-438C-A6E4-9549FB43690B} = {E6E88944-4800-40BA-8AF5-069EA3ADFEB8}
+	EndGlobalSection
+EndGlobal

@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.NodeServices {
         {
 		}
         
-        public override async Task<string> Invoke(NodeInvocationInfo invocationInfo) {
+        public override async Task<T> Invoke<T>(NodeInvocationInfo invocationInfo) {
             await this.EnsureReady();
             
             using (var client = new HttpClient()) {
@@ -29,7 +29,14 @@ namespace Microsoft.AspNet.NodeServices {
                 var payload = new StringContent(payloadJson, Encoding.UTF8, "application/json");
                 var response = await client.PostAsync("http://localhost:" + this._portNumber, payload);
                 var responseString = await response.Content.ReadAsStringAsync();
-                return responseString;
+                var responseIsJson = response.Content.Headers.ContentType.MediaType == "application/json";
+                if (responseIsJson) {
+                    return JsonConvert.DeserializeObject<T>(responseString);
+                } else if (typeof(T) != typeof(string)) {
+                    throw new System.ArgumentException("Node module responded with non-JSON string. This cannot be converted to the requested generic type: " + typeof(T).FullName);
+                } else {
+                    return (T)(object)responseString;
+                }
             }
         }
         
