@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Extensions;
+using Microsoft.Dnx.Runtime;
 
 namespace Microsoft.AspNet.NodeServices.Angular
 {
@@ -23,15 +24,16 @@ namespace Microsoft.AspNet.NodeServices.Angular
         private IHttpContextAccessor contextAccessor;
         private INodeServices nodeServices;
 
-        public AngularPrerenderTagHelper(IServiceProvider nodeServices, IHttpContextAccessor contextAccessor)
+        public AngularPrerenderTagHelper(IServiceProvider serviceProvider, IHttpContextAccessor contextAccessor)
         {
             this.contextAccessor = contextAccessor;
-            this.nodeServices = (INodeServices)nodeServices.GetService(typeof (INodeServices)) ?? fallbackNodeServices;
+            this.nodeServices = (INodeServices)serviceProvider.GetService(typeof (INodeServices)) ?? fallbackNodeServices;
             
             // Consider removing the following. Having it means you can get away with not putting app.AddNodeServices()
             // in your startup file, but then again it might be confusing that you don't need to.
             if (this.nodeServices == null) {
-                this.nodeServices = fallbackNodeServices = Configuration.CreateNodeServices(NodeHostingModel.Http);
+                var appEnv = (IApplicationEnvironment)serviceProvider.GetService(typeof (IApplicationEnvironment));
+                this.nodeServices = fallbackNodeServices = Configuration.CreateNodeServices(NodeHostingModel.Http, appEnv.ApplicationBasePath);
             }
         }
 

@@ -1,19 +1,22 @@
 {
-  "version": "1.0.0-alpha4",
+  "version": "1.0.0-alpha5",
   "description": "Microsoft.AspNet.NodeServices",
-  "authors": [ "Microsoft" ],
-  "tags": [""],
+  "authors": [
+    "Microsoft"
+  ],
+  "tags": [
+    ""
+  ],
   "projectUrl": "",
   "licenseUrl": "",
-
   "dependencies": {
-      "System.Net.Http": "4.0.1-beta-23409",
-      "Newtonsoft.Json": "8.0.1-beta1",
-      "Microsoft.Framework.DependencyInjection": "1.0.0-beta8"
+    "System.Net.Http": "4.0.1-beta-23409",
+    "Newtonsoft.Json": "8.0.1-beta1",
+    "Microsoft.Framework.DependencyInjection": "1.0.0-beta8",
+    "Microsoft.Dnx.Runtime.Abstractions": "1.0.0-beta8"
   },
-
   "frameworks": {
-    "dnx451": { },
+    "dnx451": {},
     "dnxcore50": {
       "dependencies": {
         "Microsoft.CSharp": "4.0.1-beta-23217",
@@ -28,8 +31,7 @@
       }
     }
   },
-  
   "resource": [
-      "Content/**/*"
+    "Content/**/*"
   ]
 }

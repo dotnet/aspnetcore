@@ -12,6 +12,7 @@ namespace Microsoft.AspNet.NodeServices {
         private object _childProcessLauncherLock;
         private bool disposed;
         private StringAsTempFile _entryPointScript;
+        private string _projectPath;
         private string _commandLineArguments;
         private Process _nodeProcess;
         private TaskCompletionSource<bool> _nodeProcessIsReadySource;
@@ -24,10 +25,11 @@ namespace Microsoft.AspNet.NodeServices {
             }
         }
         
-        public OutOfProcessNodeInstance(string entryPointScript, string commandLineArguments = null)
+        public OutOfProcessNodeInstance(string entryPointScript, string projectPath, string commandLineArguments = null)
         {
             this._childProcessLauncherLock = new object();
             this._entryPointScript = new StringAsTempFile(entryPointScript);
+            this._projectPath = projectPath;
             this._commandLineArguments = commandLineArguments ?? string.Empty;
         }
         
@@ -49,20 +51,20 @@ namespace Microsoft.AspNet.NodeServices {
             lock (this._childProcessLauncherLock) {
                 if (this._nodeProcess == null || this._nodeProcess.HasExited) {
                     var startInfo = new ProcessStartInfo("node") {
-                        Arguments = this._entryPointScript.FileName + " " + this._commandLineArguments,
+                        Arguments = "\"" + this._entryPointScript.FileName + "\" " + this._commandLineArguments,
                         UseShellExecute = false,
                         RedirectStandardInput = true,
                         RedirectStandardOutput = true,
                         RedirectStandardError = true
                     };
                     
-                    // Append current directory to NODE_PATH so it can locate node_modules
+                    // Append projectPath to NODE_PATH so it can locate node_modules
                     var existingNodePath = Environment.GetEnvironmentVariable("NODE_PATH") ?? string.Empty;
                     if (existingNodePath != string.Empty) {
                         existingNodePath += ":";
                     }
                     
-                    var nodePathValue = existingNodePath + Path.Combine(Directory.GetCurrentDirectory(), "node_modules");
+                    var nodePathValue = existingNodePath + Path.Combine(this._projectPath, "node_modules");
                     #if DNX451
                     startInfo.EnvironmentVariables.Add("NODE_PATH", nodePathValue);
                     #else

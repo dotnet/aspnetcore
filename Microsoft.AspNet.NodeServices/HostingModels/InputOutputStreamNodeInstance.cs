@@ -24,8 +24,8 @@ namespace Microsoft.AspNet.NodeServices {
             ContractResolver = new CamelCasePropertyNamesContractResolver() 
         };
 		
-		public InputOutputStreamNodeInstance()
-            : base(EmbeddedResourceReader.Read(typeof(InputOutputStreamNodeInstance), "/Content/Node/entrypoint-stream.js"))
+		public InputOutputStreamNodeInstance(string projectPath)
+            : base(EmbeddedResourceReader.Read(typeof(InputOutputStreamNodeInstance), "/Content/Node/entrypoint-stream.js"), projectPath)
         {
 		}
         
