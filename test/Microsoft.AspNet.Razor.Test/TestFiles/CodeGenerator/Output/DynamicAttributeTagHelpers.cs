@@ -53,7 +53,7 @@ AddHtmlAttributeValue(" ", 57, DateTime.Now, 58, 14, false);
             __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
             __tagHelperExecutionContext.Add(__TestNamespace_InputTagHelper);
             BeginAddHtmlAttributeValues(__tagHelperExecutionContext, "unbound", 2);
-            AddHtmlAttributeValue("", 95, new Template((__razor_attribute_value_writer) => {
+            AddHtmlAttributeValue("", 95, new Template(async(__razor_attribute_value_writer) => {
 #line 5 "DynamicAttributeTagHelpers.cshtml"
                  if (true) { 
 
@@ -186,7 +186,7 @@ AddHtmlAttributeValue("", 347, long.MinValue, 347, 14, false);
 
 #line default
 #line hidden
-            AddHtmlAttributeValue(" ", 361, new Template((__razor_attribute_value_writer) => {
+            AddHtmlAttributeValue(" ", 361, new Template(async(__razor_attribute_value_writer) => {
 #line 10 "DynamicAttributeTagHelpers.cshtml"
                                 if (true) { 
 
@@ -273,7 +273,7 @@ AddHtmlAttributeValue(" ", 490, int.MaxValue, 491, 14, false);
             __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
             __tagHelperExecutionContext.Add(__TestNamespace_InputTagHelper);
             BeginAddHtmlAttributeValues(__tagHelperExecutionContext, "unbound", 1);
-            AddHtmlAttributeValue("", 528, new Template((__razor_attribute_value_writer) => {
+            AddHtmlAttributeValue("", 528, new Template(async(__razor_attribute_value_writer) => {
 #line 14 "DynamicAttributeTagHelpers.cshtml"
                  if (true) { 
 

@@ -236,7 +236,7 @@ namespace Microsoft.AspNet.Razor.CodeGenerators.Visitors
                     .WriteParameterSeparator()
                     .WriteStartNewObject(Context.Host.GeneratedClassContext.TemplateTypeName);
 
-                using (Writer.BuildLambda(endLine: false, parameterNames: ValueWriterName))
+                using (Writer.BuildAsyncLambda(endLine: false, parameterNames: ValueWriterName))
                 {
                     Accept(chunk.Children);
                 }

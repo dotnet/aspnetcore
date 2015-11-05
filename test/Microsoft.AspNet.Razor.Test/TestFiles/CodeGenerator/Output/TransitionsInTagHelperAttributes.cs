@@ -43,7 +43,7 @@ namespace TestOutput
             __TestNamespace_PTagHelper = CreateTagHelper<global::TestNamespace.PTagHelper>();
             __tagHelperExecutionContext.Add(__TestNamespace_PTagHelper);
             BeginAddHtmlAttributeValues(__tagHelperExecutionContext, "class", 1);
-            AddHtmlAttributeValue("", 109, new Template((__razor_attribute_value_writer) => {
+            AddHtmlAttributeValue("", 109, new Template(async(__razor_attribute_value_writer) => {
             }
             ), 109, 6, false);
             EndAddHtmlAttributeValues(__tagHelperExecutionContext);

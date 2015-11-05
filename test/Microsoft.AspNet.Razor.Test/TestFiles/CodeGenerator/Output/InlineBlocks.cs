@@ -21,7 +21,7 @@ namespace TestOutput
             WriteLiteral("(string link) {\r\n    <a");
             Instrumentation.EndContext();
             BeginWriteAttribute("href", " href=\"", 36, "\"", 94, 1);
-            WriteAttributeValue("", 43, new Template((__razor_attribute_value_writer) => {
+            WriteAttributeValue("", 43, new Template(async(__razor_attribute_value_writer) => {
 #line 2 "InlineBlocks.cshtml"
               if(link != null) { 
 

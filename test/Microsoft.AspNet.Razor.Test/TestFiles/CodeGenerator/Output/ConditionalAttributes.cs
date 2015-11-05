@@ -79,7 +79,7 @@ WriteAttributeValue(" ", 232, ch, 233, 4, false);
             WriteLiteral(" />\r\n    <p");
             Instrumentation.EndContext();
             BeginWriteAttribute("class", " class=\"", 248, "\"", 281, 1);
-            WriteAttributeValue("", 256, new Template((__razor_attribute_value_writer) => {
+            WriteAttributeValue("", 256, new Template(async(__razor_attribute_value_writer) => {
 #line 10 "ConditionalAttributes.cshtml"
                if(cls != null) { 
 
