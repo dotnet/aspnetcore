@@ -18,9 +18,9 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "MusicStore", "samples\angul
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ReactGrid", "samples\react\ReactGrid\ReactGrid.xproj", "{ABF90A5B-F4E0-438C-A6E4-9549FB43690B}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.NodeServices.Angular", "Microsoft.AspNet.NodeServices.Angular\Microsoft.AspNet.NodeServices.Angular.xproj", "{421807E6-B62C-417B-B901-46C5DEDAA8F1}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.AngularServices", "Microsoft.AspNet.AngularServices\Microsoft.AspNet.AngularServices.xproj", "{421807E6-B62C-417B-B901-46C5DEDAA8F1}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.NodeServices.React", "Microsoft.AspNet.NodeServices.React\Microsoft.AspNet.NodeServices.React.xproj", "{B04381DE-991F-4831-A0B5-FE1BD3EF80C4}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.ReactServices", "Microsoft.AspNet.ReactServices\Microsoft.AspNet.ReactServices.xproj", "{B04381DE-991F-4831-A0B5-FE1BD3EF80C4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

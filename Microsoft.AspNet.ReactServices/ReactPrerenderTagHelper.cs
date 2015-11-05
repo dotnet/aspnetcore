@@ -2,18 +2,18 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Extensions;
+using Microsoft.AspNet.NodeServices;
 using Microsoft.Dnx.Runtime;
 
-namespace Microsoft.AspNet.NodeServices.Angular
+namespace Microsoft.AspNet.ReactServices
 {
     [HtmlTargetElement(Attributes = PrerenderModuleAttributeName)]
-    public class AngularPrerenderTagHelper : TagHelper
+    public class ReactPrerenderTagHelper : TagHelper
     {
         static INodeServices fallbackNodeServices; // Used only if no INodeServices was registered with DI
         
-        const string PrerenderModuleAttributeName = "asp-ng2-prerender-module";
-        const string PrerenderExportAttributeName = "asp-ng2-prerender-export";
+        const string PrerenderModuleAttributeName = "asp-react-prerender-module";
+        const string PrerenderExportAttributeName = "asp-react-prerender-export";
         
         [HtmlAttributeName(PrerenderModuleAttributeName)]
         public string ModuleName { get; set; }
@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.NodeServices.Angular
         private IHttpContextAccessor contextAccessor;
         private INodeServices nodeServices;
 
-        public AngularPrerenderTagHelper(IServiceProvider serviceProvider, IHttpContextAccessor contextAccessor)
+        public ReactPrerenderTagHelper(IServiceProvider serviceProvider, IHttpContextAccessor contextAccessor)
         {
             this.contextAccessor = contextAccessor;
             this.nodeServices = (INodeServices)serviceProvider.GetService(typeof (INodeServices)) ?? fallbackNodeServices;
@@ -32,22 +32,20 @@ namespace Microsoft.AspNet.NodeServices.Angular
             // Consider removing the following. Having it means you can get away with not putting app.AddNodeServices()
             // in your startup file, but then again it might be confusing that you don't need to.
             if (this.nodeServices == null) {
-                var appEnv = (IApplicationEnvironment)serviceProvider.GetService(typeof (IApplicationEnvironment));
+                var appEnv = (IApplicationEnvironment)serviceProvider.GetService(typeof(IApplicationEnvironment));
                 this.nodeServices = fallbackNodeServices = Configuration.CreateNodeServices(NodeHostingModel.Http, appEnv.ApplicationBasePath);
             }
         }
 
         public override async Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
         {
-            var result = await AngularRenderer.RenderToString(
+            var request = this.contextAccessor.HttpContext.Request;
+            var result = await ReactRenderer.RenderToString(
                 nodeServices: this.nodeServices,
                 componentModuleName: this.ModuleName,
                 componentExportName: this.ExportName,
-                componentTagName: output.TagName,
-                requestUrl: UriHelper.GetEncodedUrl(this.contextAccessor.HttpContext.Request)
-            );
-            output.SuppressOutput();
-            output.PostElement.AppendEncoded(result);
+                requestUrl: request.Path + request.QueryString.Value);
+            output.Content.SetContentEncoded(result);
         }
     }
 }

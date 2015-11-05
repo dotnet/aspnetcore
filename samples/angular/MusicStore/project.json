@@ -19,8 +19,7 @@
     "EntityFramework.SQLite": "7.0.0-beta8",
     "Microsoft.AspNet.Identity.EntityFramework": "3.0.0-beta8",
     "AutoMapper": "4.0.0-alpha1",
-    "Microsoft.AspNet.NodeServices.Angular": "1.0.0-alpha5",
-    "Microsoft.AspNet.NodeServices": "1.0.0-alpha5"
+    "Microsoft.AspNet.AngularServices": "1.0.0-alpha6"
   },
   "commands": {
     "web": "Microsoft.AspNet.Server.Kestrel"
