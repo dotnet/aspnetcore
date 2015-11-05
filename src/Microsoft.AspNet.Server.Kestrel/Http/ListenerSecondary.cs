@@ -94,11 +94,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             {
                 DispatchPipe.ReadStart(
                     (handle, status2, state) => ((ListenerSecondary)state)._buf,
-                    (handle, status2, state) => 
-                    {
-                        var listener = ((ListenerSecondary)state);
-                        listener.ReadStartCallback(handle, status2, listener._ptr);
-                    }, this);
+                    (handle, status2, state) => ((ListenerSecondary)state).ReadStartCallback(handle, status2),
+                    this);
 
                 tcs.SetResult(0);
             }
@@ -109,7 +106,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             }
         }
 
-        private void ReadStartCallback(UvStreamHandle handle, int status, IntPtr ptr)
+        private void ReadStartCallback(UvStreamHandle handle, int status)
         {
             if (status < 0)
             {
