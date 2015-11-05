@@ -170,7 +170,7 @@ namespace Microsoft.AspNet.Http.Headers
         {
             get
             {
-                return HostString.FromUriComponent(Headers[HeaderNames.Host].ToString());
+                return HostString.FromUriComponent(Headers[HeaderNames.Host]);
             }
             set
             {

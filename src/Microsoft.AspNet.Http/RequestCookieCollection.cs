@@ -48,7 +48,7 @@ namespace Microsoft.AspNet.Http.Internal
 
                 if (Store == null)
                 {
-                    return string.Empty;
+                    return null;
                 }
 
                 string value;
@@ -56,7 +56,7 @@ namespace Microsoft.AspNet.Http.Internal
                 {
                     return value;
                 }
-                return string.Empty;
+                return null;
             }
         }
         
@@ -126,7 +126,7 @@ namespace Microsoft.AspNet.Http.Internal
         {
             if (Store == null)
             {
-                value = string.Empty;
+                value = null;
                 return false;
             }
             return Store.TryGetValue(key, out value);

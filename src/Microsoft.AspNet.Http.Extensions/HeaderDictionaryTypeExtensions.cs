@@ -179,7 +179,7 @@ namespace Microsoft.AspNet.Http
             if (KnownParsers.TryGetValue(typeof(T), out temp))
             {
                 var func = (Func<string, T>)temp;
-                return func(headers[name].ToString());
+                return func(headers[name]);
             }
 
             var value = headers[name];
@@ -202,7 +202,7 @@ namespace Microsoft.AspNet.Http
             if (KnownListParsers.TryGetValue(typeof(T), out temp))
             {
                 var func = (Func<IList<string>, IList<T>>)temp;
-                return func(headers[name].ToArray());
+                return func(headers[name]);
             }
 
             var values = headers[name];

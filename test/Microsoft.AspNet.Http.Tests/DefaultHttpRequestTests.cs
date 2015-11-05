@@ -169,6 +169,8 @@ namespace Microsoft.AspNet.Http.Internal
             Assert.Equal(0, cookieHeaders.Count);
             var cookies0 = request.Cookies;
             Assert.Equal(0, cookies0.Count);
+            Assert.Null(cookies0["key0"]);
+            Assert.False(cookies0.ContainsKey("key0"));
 
             var newCookies = new[] { "name0=value0", "name1=value1" };
             request.Headers["Cookie"] = newCookies;

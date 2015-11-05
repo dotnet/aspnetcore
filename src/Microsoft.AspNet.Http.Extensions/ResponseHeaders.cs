@@ -134,7 +134,7 @@ namespace Microsoft.AspNet.Http.Headers
             get
             {
                 Uri uri;
-                if (Uri.TryCreate(Headers[HeaderNames.Location].ToString(), UriKind.RelativeOrAbsolute, out uri))
+                if (Uri.TryCreate(Headers[HeaderNames.Location], UriKind.RelativeOrAbsolute, out uri))
                 {
                     return uri;
                 }

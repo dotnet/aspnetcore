@@ -55,7 +55,7 @@ namespace Microsoft.AspNet.Http.Internal
         {
             get
             {
-                return ParsingHelpers.GetHeaderSplit(HttpRequestFeature.Headers, HeaderNames.WebSocketSubProtocols).ToArray();
+                return ParsingHelpers.GetHeaderSplit(HttpRequestFeature.Headers, HeaderNames.WebSocketSubProtocols);
             }
         }
 

@@ -140,7 +140,7 @@ namespace Microsoft.AspNet.Http.Internal
 
         public override HostString Host
         {
-            get { return HostString.FromUriComponent(Headers["Host"].ToString()); }
+            get { return HostString.FromUriComponent(Headers["Host"]); }
             set { Headers["Host"] = value.ToUriComponent(); }
         }
 

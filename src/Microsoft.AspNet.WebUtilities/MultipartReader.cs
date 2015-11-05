@@ -87,7 +87,7 @@ namespace Microsoft.AspNet.WebUtilities
                     throw new InvalidOperationException("Total header size limit exceeded: " + TotalHeaderSizeLimit.ToString());
                 }
                 int splitIndex = line.IndexOf(':');
-                Debug.Assert(splitIndex > 0, $"Invalid header line: {line.ToString()}");
+                Debug.Assert(splitIndex > 0, $"Invalid header line: {line}");
                 if (splitIndex >= 0)
                 {
                     var name = line.Substring(0, splitIndex);

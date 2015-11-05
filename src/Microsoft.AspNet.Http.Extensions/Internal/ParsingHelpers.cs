@@ -126,7 +126,7 @@ namespace Microsoft.AspNet.Http.Internal
                 return;
             }
 
-            string existing = GetHeader(headers, key).ToString();
+            string existing = GetHeader(headers, key);
             if (existing == null)
             {
                 SetHeaderJoined(headers, key, values);

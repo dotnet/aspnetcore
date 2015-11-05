@@ -21,13 +21,13 @@ namespace Microsoft.AspNet.Http.Features.Internal
 
         public string ContentDisposition
         {
-            get { return Headers["Content-Disposition"].ToString(); }
+            get { return Headers["Content-Disposition"]; }
             set { Headers["Content-Disposition"] = value; }
         }
 
         public string ContentType
         {
-            get { return Headers["Content-Type"].ToString(); }
+            get { return Headers["Content-Type"]; }
             set { Headers["Content-Type"] = value; }
         }
 
