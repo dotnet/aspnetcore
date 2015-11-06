@@ -18,7 +18,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Dnx.Compilation.CSharp;
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Compilation;
+using Microsoft.Extensions.CompilationAbstractions;
 
 namespace Microsoft.AspNet.Mvc.Razor.Precompilation
 {

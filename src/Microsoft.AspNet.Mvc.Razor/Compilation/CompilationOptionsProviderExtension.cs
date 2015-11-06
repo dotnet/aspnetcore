@@ -3,7 +3,7 @@
 
 using System;
 using Microsoft.Dnx.Compilation.CSharp;
-using Microsoft.Extensions.Compilation;
+using Microsoft.Extensions.CompilationAbstractions;
 using Microsoft.Extensions.PlatformAbstractions;
 
 namespace Microsoft.AspNet.Mvc.Razor.Compilation
