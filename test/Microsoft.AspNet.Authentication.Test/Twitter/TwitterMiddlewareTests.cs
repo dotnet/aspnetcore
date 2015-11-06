@@ -74,7 +74,7 @@ namespace Microsoft.AspNet.Authentication.Twitter
 
             // Send a bogus sign in
             var error = await Assert.ThrowsAnyAsync<Exception>(() => server.SendAsync("https://example.com/signin-twitter"));
-            Assert.Equal("Invalid state cookie.", error.Message);
+            Assert.Equal("Invalid state cookie.", error.GetBaseException().Message);
         }
 
         [Fact]

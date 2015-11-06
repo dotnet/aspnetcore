@@ -245,7 +245,7 @@ namespace Microsoft.AspNet.Authentication.Google
                 options.ClientSecret = "Test Secret";
             });
             var error = await Assert.ThrowsAnyAsync<Exception>(() => server.SendAsync("https://example.com/signin-google?code=TestCode"));
-            Assert.Equal("The oauth state was missing or invalid.", error.Message);
+            Assert.Equal("The oauth state was missing or invalid.", error.GetBaseException().Message);
         }
 
         [Theory]
@@ -279,7 +279,7 @@ namespace Microsoft.AspNet.Authentication.Google
             else
             {
                 var error = await Assert.ThrowsAnyAsync<Exception>(() => server.SendAsync("https://example.com/signin-google?error=OMG"));
-                Assert.Equal("OMG", error.Message);
+                Assert.Equal("OMG", error.GetBaseException().Message);
             }
         }
 
@@ -417,7 +417,7 @@ namespace Microsoft.AspNet.Authentication.Google
             else
             {
                 var error = await Assert.ThrowsAnyAsync<Exception>(() => sendTask);
-                Assert.Equal("OAuth token endpoint failure: Status: BadRequest;Headers: ;Body: {\"Error\":\"Error\"};", error.Message);
+                Assert.Equal("OAuth token endpoint failure: Status: BadRequest;Headers: ;Body: {\"Error\":\"Error\"};", error.GetBaseException().Message);
             }
         }
 
@@ -471,7 +471,7 @@ namespace Microsoft.AspNet.Authentication.Google
             else
             {
                 var error = await Assert.ThrowsAnyAsync<Exception>(() => sendTask);
-                Assert.Equal("Failed to retrieve access token.", error.Message);
+                Assert.Equal("Failed to retrieve access token.", error.GetBaseException().Message);
             }
         }
 
@@ -723,7 +723,7 @@ namespace Microsoft.AspNet.Authentication.Google
 
             //Post a message to the Google middleware
             var error = await Assert.ThrowsAnyAsync<Exception>(() => server.SendAsync("https://example.com/signin-google?code=TestCode"));
-            Assert.Equal("The oauth state was missing or invalid.", error.Message);
+            Assert.Equal("The oauth state was missing or invalid.", error.GetBaseException().Message);
         }
 
         [Fact]
