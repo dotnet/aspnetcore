@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             return new TestModelValidatorProvider(providers);
         }
 
-        public TestModelValidatorProvider(IEnumerable<IModelValidatorProvider> providers)
+        public TestModelValidatorProvider(IList<IModelValidatorProvider> providers)
             : base(providers)
         {
         }

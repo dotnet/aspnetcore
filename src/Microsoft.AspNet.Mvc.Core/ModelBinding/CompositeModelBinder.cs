@@ -23,18 +23,18 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// Initializes a new instance of the CompositeModelBinder class.
         /// </summary>
         /// <param name="modelBinders">A collection of <see cref="IModelBinder"/> instances.</param>
-        public CompositeModelBinder(IEnumerable<IModelBinder> modelBinders)
+        public CompositeModelBinder(IList<IModelBinder> modelBinders)
         {
             if (modelBinders == null)
             {
                 throw new ArgumentNullException(nameof(modelBinders));
             }
 
-            ModelBinders = new List<IModelBinder>(modelBinders);
+            ModelBinders = modelBinders;
         }
 
         /// <inheritdoc />
-        public IReadOnlyList<IModelBinder> ModelBinders { get; }
+        public IList<IModelBinder> ModelBinders { get; }
 
         public virtual Task<ModelBindingResult> BindModelAsync(ModelBindingContext bindingContext)
         {

@@ -17,20 +17,20 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
         /// <param name="providers">
         /// A collection of <see cref="IModelValidatorProvider"/> instances.
         /// </param>
-        public CompositeModelValidatorProvider(IEnumerable<IModelValidatorProvider> providers)
+        public CompositeModelValidatorProvider(IList<IModelValidatorProvider> providers)
         {
             if (providers == null)
             {
                 throw new ArgumentNullException(nameof(providers));
             }
 
-            ValidatorProviders = new List<IModelValidatorProvider>(providers);
+            ValidatorProviders = providers;
         }
 
         /// <summary>
         /// Gets the list of <see cref="IModelValidatorProvider"/> instances.
         /// </summary>
-        public IReadOnlyList<IModelValidatorProvider> ValidatorProviders { get; }
+        public IList<IModelValidatorProvider> ValidatorProviders { get; }
 
         /// <inheritdoc />
         public void GetValidators(ModelValidatorProviderContext context)
