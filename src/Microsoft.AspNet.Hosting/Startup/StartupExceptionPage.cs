@@ -12,7 +12,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
 using System.Text;
 using System.Text.Encodings.Web;
-using Microsoft.Extensions.Compilation;
+using Microsoft.Extensions.CompilationAbstractions;
 using Microsoft.Extensions.PlatformAbstractions;
 
 namespace Microsoft.AspNet.Hosting.Startup
