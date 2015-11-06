@@ -14,13 +14,7 @@ namespace Asp
         {
             #pragma warning disable 219
             string __tagHelperDirectiveSyntaxHelper = null;
-            __tagHelperDirectiveSyntaxHelper = 
-#line 3 "testfiles/input/modelexpressiontaghelper.cshtml"
-              "Microsoft.AspNet.Mvc.Razor.InputTestTagHelper, Microsoft.AspNet.Mvc.Razor.Host.Test"
-
-#line default
-#line hidden
-            ;
+            __tagHelperDirectiveSyntaxHelper = "Microsoft.AspNet.Mvc.Razor.InputTestTagHelper, Microsoft.AspNet.Mvc.Razor.Host.Test";
 #line 1 "testfiles/input/modelexpressiontaghelper.cshtml"
 var __modelHelper = default(DateTime);
 
