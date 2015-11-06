@@ -59,7 +59,7 @@ namespace Microsoft.Net.Http.Headers
                     // Remove charset parameter
                     if (charsetParameter != null)
                     {
-                        _parameters.Remove(charsetParameter);
+                        Parameters.Remove(charsetParameter);
                     }
                 }
                 else
@@ -123,7 +123,7 @@ namespace Microsoft.Net.Http.Headers
                     // Remove charset parameter
                     if (boundaryParameter != null)
                     {
-                        _parameters.Remove(boundaryParameter);
+                        Parameters.Remove(boundaryParameter);
                     }
                 }
                 else
@@ -140,7 +140,7 @@ namespace Microsoft.Net.Http.Headers
             }
         }
 
-        public ICollection<NameValueHeaderValue> Parameters
+        public IList<NameValueHeaderValue> Parameters
         {
             get
             {
@@ -161,8 +161,12 @@ namespace Microsoft.Net.Http.Headers
 
         public double? Quality
         {
-            get { return HeaderUtilities.GetQuality(Parameters); }
-            set { HeaderUtilities.SetQuality(Parameters, value); }
+            get { return HeaderUtilities.GetQuality(_parameters); }
+            set
+            {
+                HeaderUtilities.ThrowIfReadOnly(IsReadOnly);
+                HeaderUtilities.SetQuality(Parameters, value);
+            }
         }
 
         public string MediaType
@@ -210,7 +214,7 @@ namespace Microsoft.Net.Http.Headers
         {
             get
             {
-                return SubType.Equals("*", StringComparison.Ordinal);
+                return string.Compare(_mediaType, _mediaType.IndexOf('/') + 1, "*", 0, 1, StringComparison.Ordinal) == 0;
             }
         }
 
@@ -241,15 +245,31 @@ namespace Microsoft.Net.Http.Headers
                 return false;
             }
 
+            // PERF: Avoid doing anything here that allocates a substring, this is a very hot path
+            // for content-negotiation.
+            var indexOfSlash = _mediaType.IndexOf('/');
+
             // "text/plain" is a subset of "text/plain", "text/*" and "*/*". "*/*" is a subset only of "*/*".
-            if (!Type.Equals(otherMediaType.Type, StringComparison.OrdinalIgnoreCase))
+            if (string.Compare(
+                strA: _mediaType,
+                indexA: 0,
+                strB: otherMediaType._mediaType,
+                indexB: 0,
+                length: indexOfSlash,
+                comparisonType: StringComparison.OrdinalIgnoreCase) != 0)
             {
                 if (!otherMediaType.MatchesAllTypes)
                 {
                     return false;
                 }
             }
-            else if (!SubType.Equals(otherMediaType.SubType, StringComparison.OrdinalIgnoreCase))
+            else if (string.Compare(
+                strA: MediaType,
+                indexA: indexOfSlash + 1,
+                strB: otherMediaType._mediaType,
+                indexB: indexOfSlash + 1, // We know the Type is equal, so the index of '/' is the same in both strings.
+                length: _mediaType.Length - indexOfSlash,
+                comparisonType: StringComparison.OrdinalIgnoreCase) != 0)
             {
                 if (!otherMediaType.MatchesAllSubTypes)
                 {
@@ -457,17 +477,17 @@ namespace Microsoft.Net.Http.Headers
 
             // If there is no whitespace between <type> and <subtype> in <type>/<subtype> get the media type using
             // one Substring call. Otherwise get substrings for <type> and <subtype> and combine them.
-            var mediatTypeLength = current + subtypeLength - startIndex;
-            if (typeLength + subtypeLength + 1 == mediatTypeLength)
+            var mediaTypeLength = current + subtypeLength - startIndex;
+            if (typeLength + subtypeLength + 1 == mediaTypeLength)
             {
-                mediaType = input.Substring(startIndex, mediatTypeLength);
+                mediaType = input.Substring(startIndex, mediaTypeLength);
             }
             else
             {
                 mediaType = input.Substring(startIndex, typeLength) + "/" + input.Substring(current, subtypeLength);
             }
 
-            return mediatTypeLength;
+            return mediaTypeLength;
         }
 
         private static void CheckMediaTypeFormat(string mediaType, string parameterName)

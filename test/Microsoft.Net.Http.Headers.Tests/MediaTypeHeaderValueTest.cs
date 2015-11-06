@@ -122,9 +122,9 @@ namespace Microsoft.Net.Http.Headers
             Assert.False(mediaType0.Parameters.IsReadOnly);
             Assert.True(mediaType1.Parameters.IsReadOnly);
             Assert.Equal(mediaType0.Parameters.Count, mediaType1.Parameters.Count);
-            Assert.Throws<InvalidOperationException>(() => mediaType1.Parameters.Add(new NameValueHeaderValue("name")));
-            Assert.Throws<InvalidOperationException>(() => mediaType1.Parameters.Remove(new NameValueHeaderValue("name")));
-            Assert.Throws<InvalidOperationException>(() => mediaType1.Parameters.Clear());
+            Assert.Throws<NotSupportedException>(() => mediaType1.Parameters.Add(new NameValueHeaderValue("name")));
+            Assert.Throws<NotSupportedException>(() => mediaType1.Parameters.Remove(new NameValueHeaderValue("name")));
+            Assert.Throws<NotSupportedException>(() => mediaType1.Parameters.Clear());
 
             var pair0 = mediaType0.Parameters.First();
             var pair1 = mediaType1.Parameters.First();

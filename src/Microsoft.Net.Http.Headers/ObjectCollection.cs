@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
@@ -12,15 +11,28 @@ namespace Microsoft.Net.Http.Headers
     // type to throw if 'null' gets added. Collection<T> internally uses List<T> which comes at some cost. In addition
     // Collection<T>.Add() calls List<T>.InsertItem() which is an O(n) operation (compared to O(1) for List<T>.Add()).
     // This type is only used for very small collections (1-2 items) to keep the impact of using Collection<T> small.
-    internal class ObjectCollection<T> : ICollection<T> where T : class
+    internal class ObjectCollection<T> : Collection<T> where T : class
     {
         internal static readonly Action<T> DefaultValidator = CheckNotNull;
         internal static readonly ObjectCollection<T> EmptyReadOnlyCollection
             = new ObjectCollection<T>(DefaultValidator, isReadOnly: true);
 
-        private readonly Collection<T> _collection = new Collection<T>();
         private readonly Action<T> _validator;
-        private readonly bool _isReadOnly;
+
+        // We need to create a 'read-only' inner list for Collection<T> to do the right
+        // thing.
+        private static IList<T> CreateInnerList(bool isReadOnly, IEnumerable <T> other = null)
+        {
+            var list = other == null ? new List<T>() : new List<T>(other);
+            if (isReadOnly)
+            {
+                return new ReadOnlyCollection<T>(list);
+            }
+            else
+            {
+                return list;
+            }
+        }
 
         public ObjectCollection()
             : this(DefaultValidator)
@@ -28,57 +40,44 @@ namespace Microsoft.Net.Http.Headers
         }
 
         public ObjectCollection(Action<T> validator, bool isReadOnly = false)
+            : base(CreateInnerList(isReadOnly))
         {
             _validator = validator;
-            _isReadOnly = isReadOnly;
         }
 
         public ObjectCollection(IEnumerable<T> other, bool isReadOnly = false)
+            : base(CreateInnerList(isReadOnly, other))
         {
             _validator = DefaultValidator;
-            foreach (T item in other)
+            foreach (T item in Items)
             {
-                Add(item);
+                _validator(item);
             }
-            _isReadOnly = isReadOnly;
         }
 
-        public int Count
+        public bool IsReadOnly => ((ICollection<T>)this).IsReadOnly;
+
+        protected override void ClearItems()
         {
-            get { return _collection.Count; }
+            base.ClearItems();
         }
 
-        public bool IsReadOnly
+        protected override void InsertItem(int index, T item)
         {
-            get { return _isReadOnly; }
-        }
-
-        public void Add(T item)
-        {
-            HeaderUtilities.ThrowIfReadOnly(IsReadOnly);
             _validator(item);
-            _collection.Add(item);
+            base.InsertItem(index, item);
         }
 
-        public bool Remove(T item)
+        protected override void RemoveItem(int index)
         {
-            HeaderUtilities.ThrowIfReadOnly(IsReadOnly);
-            return _collection.Remove(item);
+            base.RemoveItem(index);
         }
 
-        public void Clear()
+        protected override void SetItem(int index, T item)
         {
-            HeaderUtilities.ThrowIfReadOnly(IsReadOnly);
-            _collection.Clear();
+            _validator(item);
+            base.SetItem(index, item);
         }
-
-        public bool Contains(T item) => _collection.Contains(item);
-
-        public void CopyTo(T[] array, int arrayIndex) => _collection.CopyTo(array, arrayIndex);
-
-        public IEnumerator<T> GetEnumerator() => _collection.GetEnumerator();
-
-        IEnumerator IEnumerable.GetEnumerator() => _collection.GetEnumerator();
 
         private static void CheckNotNull(T item)
         {

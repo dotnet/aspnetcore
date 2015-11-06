@@ -13,7 +13,7 @@ namespace Microsoft.Net.Http.Headers
         private const string QualityName = "q";
         internal const string BytesUnit = "bytes";
 
-        internal static void SetQuality(ICollection<NameValueHeaderValue> parameters, double? value)
+        internal static void SetQuality(IList<NameValueHeaderValue> parameters, double? value)
         {
             Contract.Requires(parameters != null);
 
@@ -50,7 +50,7 @@ namespace Microsoft.Net.Http.Headers
             }
         }
 
-        internal static double? GetQuality(ICollection<NameValueHeaderValue> parameters)
+        internal static double? GetQuality(IList<NameValueHeaderValue> parameters)
         {
             Contract.Requires(parameters != null);
 

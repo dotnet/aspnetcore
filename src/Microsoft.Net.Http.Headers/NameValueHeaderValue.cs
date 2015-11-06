@@ -173,7 +173,7 @@ namespace Microsoft.Net.Http.Headers
         }
 
         internal static void ToString(
-            ICollection<NameValueHeaderValue> values,
+            IList<NameValueHeaderValue> values,
             char separator,
             bool leadingSeparator,
             StringBuilder destination)
@@ -185,18 +185,18 @@ namespace Microsoft.Net.Http.Headers
                 return;
             }
 
-            foreach (var value in values)
+            for (var i = 0; i < values.Count; i++)
             {
                 if (leadingSeparator || (destination.Length > 0))
                 {
                     destination.Append(separator);
                     destination.Append(' ');
                 }
-                destination.Append(value.ToString());
+                destination.Append(values[i].ToString());
             }
         }
 
-        internal static string ToString(ICollection<NameValueHeaderValue> values, char separator, bool leadingSeparator)
+        internal static string ToString(IList<NameValueHeaderValue> values, char separator, bool leadingSeparator)
         {
             if ((values == null) || (values.Count == 0))
             {
@@ -210,7 +210,7 @@ namespace Microsoft.Net.Http.Headers
             return sb.ToString();
         }
 
-        internal static int GetHashCode(ICollection<NameValueHeaderValue> values)
+        internal static int GetHashCode(IList<NameValueHeaderValue> values)
         {
             if ((values == null) || (values.Count == 0))
             {
@@ -218,9 +218,9 @@ namespace Microsoft.Net.Http.Headers
             }
 
             var result = 0;
-            foreach (var value in values)
+            for (var i = 0; i < values.Count; i++)
             {
-                result = result ^ value.GetHashCode();
+                result = result ^ values[i].GetHashCode();
             }
             return result;
         }
@@ -282,7 +282,7 @@ namespace Microsoft.Net.Http.Headers
             string input,
             int startIndex,
             char delimiter,
-            ICollection<NameValueHeaderValue> nameValueCollection)
+            IList<NameValueHeaderValue> nameValueCollection)
         {
             Contract.Requires(nameValueCollection != null);
             Contract.Requires(startIndex >= 0);
@@ -320,7 +320,7 @@ namespace Microsoft.Net.Http.Headers
             }
         }
 
-        public static NameValueHeaderValue Find(ICollection<NameValueHeaderValue> values, string name)
+        public static NameValueHeaderValue Find(IList<NameValueHeaderValue> values, string name)
         {
             Contract.Requires((name != null) && (name.Length > 0));
 
@@ -329,8 +329,9 @@ namespace Microsoft.Net.Http.Headers
                 return null;
             }
 
-            foreach (var value in values)
+            for (var i = 0; i < values.Count; i++)
             {
+                var value = values[i];
                 if (string.Compare(value.Name, name, StringComparison.OrdinalIgnoreCase) == 0)
                 {
                     return value;

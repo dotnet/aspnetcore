@@ -24,7 +24,7 @@ namespace Microsoft.Net.Http.Headers
             = new GenericHeaderParser<ContentDispositionHeaderValue>(false, GetDispositionTypeLength);
 
         // Use list instead of dictionary since we may have multiple parameters with the same name.
-        private ICollection<NameValueHeaderValue> _parameters;
+        private ObjectCollection<NameValueHeaderValue> _parameters;
         private string _dispositionType;
 
         private ContentDispositionHeaderValue()
@@ -48,7 +48,7 @@ namespace Microsoft.Net.Http.Headers
             }
         }
 
-        public ICollection<NameValueHeaderValue> Parameters
+        public IList<NameValueHeaderValue> Parameters
         {
             get
             {
