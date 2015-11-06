@@ -47,6 +47,26 @@ namespace CorsWebSite
                                .WithMethods("PUT", "POST")
                                .WithExposedHeaders("exposed1", "exposed2");
                     });
+
+                options.AddPolicy(
+                    "AllowAll",
+                    builder =>
+                    {
+                        builder.AllowCredentials()
+                               .AllowAnyMethod()
+                               .AllowAnyHeader()
+                               .AllowAnyOrigin();
+                    });
+
+                options.AddPolicy(
+                    "Allow example.com",
+                    builder =>
+                    {
+                        builder.AllowCredentials()
+                               .AllowAnyMethod()
+                               .AllowAnyHeader()
+                               .WithOrigins("http://example.com");
+                    });
             });
         }
 

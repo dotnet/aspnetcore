@@ -28,7 +28,9 @@ namespace Microsoft.AspNet.Mvc.Cors
         {
             get
             {
-                return int.MaxValue - 100;
+                // Since clients' preflight requests would not have data to authenticate requests, this
+                // filter must run before any other authorization filters.
+                return int.MinValue + 100;
             }
         }
 

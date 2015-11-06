@@ -215,5 +215,91 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var content = await response.Content.ReadAsStringAsync();
             Assert.Empty(content);
         }
+
+        [Theory]
+        [InlineData("http://localhost/api/store/actionusingcontrollercorssettings")]
+        [InlineData("http://localhost/api/store/actionwithcorssettings")]
+        public async Task CorsFilter_RunsBeforeOtherAuthorizationFilters(string url)
+        {
+            // Arrange
+            var request = new HttpRequestMessage(new HttpMethod(CorsConstants.PreflightHttpMethod), url);
+
+            // Adding a custom header makes it a non-simple request.
+            request.Headers.Add(CorsConstants.Origin, "http://example.com");
+            request.Headers.Add(CorsConstants.AccessControlRequestMethod, "GET");
+            request.Headers.Add(CorsConstants.AccessControlRequestHeaders, "Custom");
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var responseHeaders = response.Headers;
+            Assert.Equal(
+                new[] { "http://example.com" },
+                responseHeaders.GetValues(CorsConstants.AccessControlAllowOrigin).ToArray());
+            Assert.Equal(
+               new[] { "true" },
+               responseHeaders.GetValues(CorsConstants.AccessControlAllowCredentials).ToArray());
+            Assert.Equal(
+               new[] { "Custom" },
+               responseHeaders.GetValues(CorsConstants.AccessControlAllowHeaders).ToArray());
+
+            var content = await response.Content.ReadAsStringAsync();
+            Assert.Empty(content);
+        }
+
+        [Fact]
+        public async Task DisableCorsFilter_RunsBeforeOtherAuthorizationFilters()
+        {
+            // Controller has an authorization filter and Cors filter and the action has a DisableCors filter
+            // In this scenario, the CorsFilter should be executed before any other authorization filters
+            // i.e irrespective of where the Cors filter is applied(controller or action), Cors filters must
+            // always be executed before any other type of authorization filters.
+
+            // Arrange
+            var request = new HttpRequestMessage(
+                new HttpMethod(CorsConstants.PreflightHttpMethod),
+                "http://localhost/api/store/actionwithcorsdisabled");
+
+            // Adding a custom header makes it a non-simple request.
+            request.Headers.Add(CorsConstants.Origin, "http://example.com");
+            request.Headers.Add(CorsConstants.AccessControlRequestMethod, "GET");
+            request.Headers.Add(CorsConstants.AccessControlRequestHeaders, "Custom");
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Empty(response.Headers);
+
+            // Nothing gets executed for a pre-flight request.
+            var content = await response.Content.ReadAsStringAsync();
+            Assert.Empty(content);
+        }
+
+        [Fact]
+        public async Task CorsFilter_OnAction_PreferredOverController_AndAuthorizationFiltersRunAfterCors()
+        {
+            // Arrange
+            var request = new HttpRequestMessage(
+                new HttpMethod(CorsConstants.PreflightHttpMethod),
+                "http://localhost/api/store/actionwithdifferentcorspolicy");
+            request.Headers.Add(CorsConstants.Origin, "http://notexpecteddomain.com");
+            request.Headers.Add(CorsConstants.AccessControlRequestMethod, "GET");
+            request.Headers.Add(CorsConstants.AccessControlRequestHeaders, "Custom");
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Empty(response.Headers);
+
+            // Nothing gets executed for a pre-flight request.
+            var content = await response.Content.ReadAsStringAsync();
+            Assert.Empty(content);
+        }
     }
 }
