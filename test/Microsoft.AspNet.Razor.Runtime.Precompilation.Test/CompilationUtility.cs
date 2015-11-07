@@ -9,7 +9,7 @@ using System.Reflection;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Dnx.Compilation.CSharp;
-using Microsoft.Extensions.Compilation;
+using Microsoft.Extensions.CompilationAbstractions;
 using Microsoft.Extensions.PlatformAbstractions;
 
 namespace Microsoft.AspNet.Razor.Runtime.Precompilation
