@@ -9,28 +9,28 @@
     "warningsAsErrors": true
   },
   "dependencies": {
-    "Microsoft.AspNet.WebUtilities": "1.0.0-*",
     "Microsoft.AspNet.Mvc.Core": "6.0.0-*",
     "Microsoft.AspNet.Mvc.Formatters.Json": "6.0.0-*",
     "Microsoft.AspNet.WebApi.Client": "5.2.2",
+    "Microsoft.AspNet.WebUtilities": "1.0.0-*",
     "Microsoft.Extensions.PropertyHelper.Sources": {
-      "version": "1.0.0-*",
-      "type": "build"
+      "type": "build",
+      "version": "1.0.0-*"
     }
   },
   "frameworks": {
     "net451": {
       "frameworkAssemblies": {
         "System.Net.Http": "",
-        "System.Xml": "",
-        "System.Runtime.Serialization": ""
+        "System.Runtime.Serialization": "",
+        "System.Xml": ""
       }
     },
     "dotnet5.4": {
       "dependencies": {
         "System.Net.Http": "4.0.1-beta-*",
-        "System.Xml.XmlSerializer": "4.0.11-beta-*",
-        "System.Runtime.Serialization.Xml": "4.0.11-beta-*"
+        "System.Runtime.Serialization.Xml": "4.1.0-beta-*",
+        "System.Xml.XmlSerializer": "4.0.11-beta-*"
       }
     }
   }
