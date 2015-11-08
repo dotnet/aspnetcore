@@ -6,6 +6,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Server.Kestrel.Http;
+using Microsoft.AspNet.Server.Kestrel.Infrastructure;
 
 namespace Microsoft.AspNet.Server.Kestrel.Filter
 {
@@ -17,8 +18,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Filter
     /// </summary>
     public class SocketInputStream : Stream
     {
-        private static Task _emptyTask = Task.FromResult<object>(null);
-
         private readonly SocketInput _socketInput;
 
         public SocketInputStream(SocketInput socketInput)
@@ -85,7 +84,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Filter
         public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken token)
         {
             Write(buffer, offset, count);
-            return _emptyTask;
+            return TaskUtilities.CompletedTask;
         }
 
         protected override void Dispose(bool disposing)

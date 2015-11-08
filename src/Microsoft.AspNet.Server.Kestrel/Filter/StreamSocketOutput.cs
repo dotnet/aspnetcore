@@ -6,13 +6,12 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Server.Kestrel.Http;
+using Microsoft.AspNet.Server.Kestrel.Infrastructure;
 
 namespace Microsoft.AspNet.Server.Kestrel.Filter
 {
     public class StreamSocketOutput : ISocketOutput
     {
-        private static readonly Task _emptyTask = Task.FromResult<object>(null);
-
         private readonly Stream _outputStream;
 
         public StreamSocketOutput(Stream outputStream)
@@ -29,7 +28,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Filter
         {
             // TODO: Use _outputStream.WriteAsync
             _outputStream.Write(buffer.Array, buffer.Offset, buffer.Count);
-            return _emptyTask;
+            return TaskUtilities.CompletedTask;
         }
     }
 }
