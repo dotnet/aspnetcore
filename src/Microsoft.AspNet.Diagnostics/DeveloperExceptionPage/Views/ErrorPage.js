@@ -169,10 +169,14 @@
     $(".page").hide();
     $("#stackpage").show();
 
-    $("#rawExceptionButton").click(function () {
+    $("#rawExceptionButton").click(function (event) {
         var div = document.getElementById('rawException');
         div.style.display = 'inline-block';
         div.scrollIntoView(true);
+        event.preventDefault();
+        event.stopPropagation();
+
+        return false;
     });
 
     $(".frame")
