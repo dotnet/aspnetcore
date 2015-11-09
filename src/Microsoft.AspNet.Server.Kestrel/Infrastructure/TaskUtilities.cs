@@ -7,13 +7,10 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
 {
     public static class TaskUtilities
     {
-        public static Task CompletedTask = NewCompletedTask();
-
-        private static Task NewCompletedTask()
-        {
-            var tcs = new TaskCompletionSource<int>();
-            tcs.SetResult(0);
-            return tcs.Task;
-        }
+#if DOTNET5_4 || DNXCORE50
+        public static Task CompletedTask = Task.CompletedTask;
+#else
+        public static Task CompletedTask = Task.FromResult<object>(null);
+#endif
     }
 }
