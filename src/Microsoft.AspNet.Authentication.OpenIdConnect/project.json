@@ -11,7 +11,7 @@
     },
     "dependencies": {
         "Microsoft.AspNet.Authentication": "1.0.0-*",
-        "Microsoft.IdentityModel.Protocols.OpenIdConnect": "2.0.0-rc1-211061307"
+        "Microsoft.IdentityModel.Protocols.OpenIdConnect": "2.0.0-rc1-211090924"
     },
     "frameworks": {
         "dnx451": {
