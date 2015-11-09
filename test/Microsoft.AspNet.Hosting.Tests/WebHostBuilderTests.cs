@@ -129,7 +129,7 @@ namespace Microsoft.AspNet.Hosting
             var vals = new Dictionary<string, string>
             {
                 { "server", "Microsoft.AspNet.Hosting.Tests" },
-                { "Hosting:DetailedErrors", "true" },
+                { "DetailedErrors", "true" },
             };
             var builder = new ConfigurationBuilder()
                 .AddInMemoryCollection(vals);

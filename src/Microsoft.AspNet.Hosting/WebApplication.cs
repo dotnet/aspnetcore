@@ -12,6 +12,7 @@ namespace Microsoft.AspNet.Hosting
     public class WebApplication
     {
         private const string HostingJsonFile = "hosting.json";
+        private const string EnvironmentVariablesPrefix = "ASPNET_";
         private const string ConfigFileKey = "config";
 
         public static void Run(string[] args)
@@ -40,12 +41,7 @@ namespace Microsoft.AspNet.Hosting
             var tempBuilder = new ConfigurationBuilder().AddCommandLine(args);
             var tempConfig = tempBuilder.Build();
             var configFilePath = tempConfig[ConfigFileKey] ?? HostingJsonFile;
-
-            var config = new ConfigurationBuilder()
-                .AddJsonFile(configFilePath, optional: true)
-                .AddEnvironmentVariables()
-                .AddCommandLine(args)
-                .Build();
+            var config = LoadHostingConfiguration(configFilePath, args);
 
             var hostBuilder = new WebHostBuilder(config, captureStartupErrors: true);
             if (startupType != null)
@@ -80,6 +76,15 @@ namespace Microsoft.AspNet.Hosting
 
                 appLifetime.ApplicationStopping.WaitHandle.WaitOne();
             }
+        }
+
+        internal static IConfiguration LoadHostingConfiguration(string configJsonPath, string[] args)
+        {
+            return new ConfigurationBuilder()
+                .AddJsonFile(configJsonPath, optional: true)
+                .AddEnvironmentVariables(prefix: EnvironmentVariablesPrefix)
+                .AddCommandLine(args)
+                .Build();
         }
     }
 }

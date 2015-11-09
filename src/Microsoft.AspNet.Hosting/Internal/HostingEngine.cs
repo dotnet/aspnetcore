@@ -24,11 +24,11 @@ namespace Microsoft.AspNet.Hosting.Internal
     {
         // This is defined by IIS's HttpPlatformHandler.
         private static readonly string ServerPort = "HTTP_PLATFORM_PORT";
-        private static readonly string DetailedErrors = "Hosting:DetailedErrors";
 
         private readonly IServiceCollection _applicationServiceCollection;
         private readonly IStartupLoader _startupLoader;
         private readonly ApplicationLifetime _applicationLifetime;
+        private readonly WebHostOptions _options;
         private readonly IConfiguration _config;
         private readonly bool _captureStartupErrors;
 
@@ -47,6 +47,7 @@ namespace Microsoft.AspNet.Hosting.Internal
         public HostingEngine(
             IServiceCollection appServices,
             IStartupLoader startupLoader,
+            WebHostOptions options,
             IConfiguration config,
             bool captureStartupErrors)
         {
@@ -66,6 +67,7 @@ namespace Microsoft.AspNet.Hosting.Internal
             }
 
             _config = config;
+            _options = options;
             _applicationServiceCollection = appServices;
             _startupLoader = startupLoader;
             _captureStartupErrors = captureStartupErrors;
@@ -226,9 +228,7 @@ namespace Microsoft.AspNet.Hosting.Internal
                 // Generate an HTML error page.
                 var runtimeEnv = _applicationServices.GetRequiredService<IRuntimeEnvironment>();
                 var hostingEnv = _applicationServices.GetRequiredService<IHostingEnvironment>();
-                var showDetailedErrors = hostingEnv.IsDevelopment()
-                    || string.Equals("true", _config[DetailedErrors], StringComparison.OrdinalIgnoreCase)
-                    || string.Equals("1", _config[DetailedErrors], StringComparison.OrdinalIgnoreCase);
+                var showDetailedErrors = hostingEnv.IsDevelopment() || _options.DetailedErrors;
                 var errorBytes = StartupExceptionPage.GenerateErrorHtml(showDetailedErrors, runtimeEnv, ex);
 
                 return context =>

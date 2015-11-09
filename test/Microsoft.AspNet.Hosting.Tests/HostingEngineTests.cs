@@ -98,7 +98,7 @@ namespace Microsoft.AspNet.Hosting
         {
             var vals = new Dictionary<string, string>
             {
-                { "Hosting:Server", "Microsoft.AspNet.Hosting.Tests" }
+                { "Server", "Microsoft.AspNet.Hosting.Tests" }
             };
 
             var builder = new ConfigurationBuilder()
@@ -114,7 +114,7 @@ namespace Microsoft.AspNet.Hosting
         {
             var vals = new Dictionary<string, string>
             {
-                { "Hosting:Server", "Microsoft.AspNet.Hosting.Tests" },
+                { "Server", "Microsoft.AspNet.Hosting.Tests" },
                 { "HTTP_PLATFORM_PORT", "abc123" }
             };
 
@@ -132,7 +132,7 @@ namespace Microsoft.AspNet.Hosting
         {
             var vals = new Dictionary<string, string>
             {
-                { "Hosting:Server", "Microsoft.AspNet.Hosting.Tests" }
+                { "Server", "Microsoft.AspNet.Hosting.Tests" }
             };
 
             var builder = new ConfigurationBuilder()
@@ -250,7 +250,9 @@ namespace Microsoft.AspNet.Hosting
         {
             var vals = new Dictionary<string, string>
             {
-                { "ASPNET_ENV", "Staging" }
+                // Old key is actualy ASPNET_ENV but WebHostConfiguration expects environment
+                // variable names stripped from ASPNET_ prefix so using just ENV here
+                { "ENV", "Staging" }
             };
 
             var builder = new ConfigurationBuilder()
@@ -267,7 +269,7 @@ namespace Microsoft.AspNet.Hosting
         {
             var vals = new Dictionary<string, string>
             {
-                { "Hosting:Environment", "Staging" }
+                { "Environment", "Staging" }
             };
 
             var builder = new ConfigurationBuilder()

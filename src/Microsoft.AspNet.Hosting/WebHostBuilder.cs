@@ -21,15 +21,10 @@ namespace Microsoft.AspNet.Hosting
 {
     public class WebHostBuilder
     {
-        public const string OldApplicationKey = "app";
-        public const string ApplicationKey = "Hosting:Application";
-
-        public const string OldServerKey = "server";
-        public const string ServerKey = "Hosting:Server";
-
         private readonly IHostingEnvironment _hostingEnvironment;
         private readonly ILoggerFactory _loggerFactory;
         private readonly IConfiguration _config;
+        private readonly WebHostOptions _options;
 
         private Action<IServiceCollection> _configureServices;
 
@@ -64,6 +59,7 @@ namespace Microsoft.AspNet.Hosting
             _hostingEnvironment = new HostingEnvironment();
             _loggerFactory = new LoggerFactory();
             _config = config;
+            _options = new WebHostOptions(config);
             _captureStartupErrors = captureStartupErrors;
         }
 
@@ -130,18 +126,18 @@ namespace Microsoft.AspNet.Hosting
             var appEnvironment = hostingContainer.GetRequiredService<IApplicationEnvironment>();
             var startupLoader = hostingContainer.GetRequiredService<IStartupLoader>();
 
-            _hostingEnvironment.Initialize(appEnvironment.ApplicationBasePath, _config);
-            var engine = new HostingEngine(hostingServices, startupLoader, _config, _captureStartupErrors);
+            _hostingEnvironment.Initialize(appEnvironment.ApplicationBasePath, _options);
+            var engine = new HostingEngine(hostingServices, startupLoader, _options, _config, _captureStartupErrors);
 
             // Only one of these should be set, but they are used in priority
             engine.Server = _server;
             engine.ServerFactory = _serverFactory;
-            engine.ServerFactoryLocation = _config[ServerKey] ?? _config[OldServerKey] ?? _serverFactoryLocation;
+            engine.ServerFactoryLocation = _options.Server ?? _serverFactoryLocation;
 
             // Only one of these should be set, but they are used in priority
             engine.Startup = _startup;
             engine.StartupType = _startupType;
-            engine.StartupAssemblyName = _startupAssemblyName ?? _config[ApplicationKey] ?? _config[OldApplicationKey] ?? appEnvironment.ApplicationName;
+            engine.StartupAssemblyName = _startupAssemblyName ?? _options.Application ?? appEnvironment.ApplicationName;
 
             return engine;
         }
