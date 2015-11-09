@@ -67,21 +67,26 @@ namespace Microsoft.AspNet.Builder
 
         public static IApplicationBuilder UseBuilder(this AddMiddleware app)
         {
+            return app.UseBuilder(serviceProvider: null);
+        }
+
+        public static IApplicationBuilder UseBuilder(this AddMiddleware app, IServiceProvider serviceProvider)
+        {
             // Adapt WebSockets by default.
             app(OwinWebSocketAcceptAdapter.AdaptWebSockets);
-            var builder = new ApplicationBuilder(serviceProvider: null);
+            var builder = new ApplicationBuilder(serviceProvider: serviceProvider);
 
-            CreateMiddleware middleware = CreateMiddlewareFactory(exit =>
+            var middleware = CreateMiddlewareFactory(exit =>
             {
                 builder.Use(ignored => exit);
                 return builder.Build();
-            });
+            }, builder.ApplicationServices);
 
             app(middleware);
             return builder;
         }
 
-        private static CreateMiddleware CreateMiddlewareFactory(Func<RequestDelegate, RequestDelegate> middleware)
+        private static CreateMiddleware CreateMiddlewareFactory(Func<RequestDelegate, RequestDelegate> middleware, IServiceProvider applicationServices)
         {
             return next =>
             {
@@ -105,6 +110,7 @@ namespace Microsoft.AspNet.Builder
                         context = new DefaultHttpContext(
                                     new FeatureCollection(
                                         new OwinFeatureCollection(env)));
+                        context.ApplicationServices = applicationServices;
                     }
 
                     return app.Invoke(context);
@@ -114,7 +120,12 @@ namespace Microsoft.AspNet.Builder
 
         public static AddMiddleware UseBuilder(this AddMiddleware app, Action<IApplicationBuilder> pipeline)
         {
-            var builder = app.UseBuilder();
+            return app.UseBuilder(pipeline, serviceProvider: null);
+        }
+
+        public static AddMiddleware UseBuilder(this AddMiddleware app, Action<IApplicationBuilder> pipeline, IServiceProvider serviceProvider)
+        {
+            var builder = app.UseBuilder(serviceProvider);
             pipeline(builder);
             return app;
         }
