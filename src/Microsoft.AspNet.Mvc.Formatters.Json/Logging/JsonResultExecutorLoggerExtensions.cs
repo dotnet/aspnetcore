@@ -6,11 +6,11 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNet.Mvc.Logging
 {
-    internal static class JsonResultLoggerExtensions
+    internal static class JsonResultExecutorLoggerExtensions
     {
         private static readonly Action<ILogger, string, Exception> _jsonResultExecuting;
 
-        static JsonResultLoggerExtensions()
+        static JsonResultExecutorLoggerExtensions()
         {
             _jsonResultExecuting = LoggerMessage.Define<string>(
                 LogLevel.Information,

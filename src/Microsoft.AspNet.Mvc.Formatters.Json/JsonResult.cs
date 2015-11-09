@@ -2,15 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Mvc.Internal;
+using Microsoft.AspNet.Mvc.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.OptionsModel;
 using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json;
-using Microsoft.AspNet.Mvc.Logging;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -19,13 +15,6 @@ namespace Microsoft.AspNet.Mvc
     /// </summary>
     public class JsonResult : ActionResult
     {
-        private readonly JsonSerializerSettings _serializerSettings;
-
-        private static readonly MediaTypeHeaderValue DefaultContentType = new MediaTypeHeaderValue("application/json")
-        {
-            Encoding = Encoding.UTF8
-        };
-
         /// <summary>
         /// Creates a new <see cref="JsonResult"/> with the given <paramref name="value"/>.
         /// </summary>
@@ -49,13 +38,18 @@ namespace Microsoft.AspNet.Mvc
             }
 
             Value = value;
-            _serializerSettings = serializerSettings;
+            SerializerSettings = serializerSettings;
         }
 
         /// <summary>
         /// Gets or sets the <see cref="MediaTypeHeaderValue"/> representing the Content-Type header of the response.
         /// </summary>
         public MediaTypeHeaderValue ContentType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="JsonSerializerSettings"/>.
+        /// </summary>
+        public JsonSerializerSettings SerializerSettings { get; set; }
 
         /// <summary>
         /// Gets or sets the HTTP status code.
@@ -75,50 +69,9 @@ namespace Microsoft.AspNet.Mvc
                 throw new ArgumentNullException(nameof(context));
             }
 
-            var loggerFactory = context.HttpContext.RequestServices.GetRequiredService<ILoggerFactory>();
-            var logger = loggerFactory.CreateLogger<JsonResult>();
-
-            var response = context.HttpContext.Response;
-
-            string resolvedContentType = null;
-            Encoding resolvedContentTypeEncoding = null;
-            ResponseContentTypeHelper.ResolveContentTypeAndEncoding(
-                ContentType,
-                response.ContentType,
-                DefaultContentType,
-                out resolvedContentType,
-                out resolvedContentTypeEncoding);
-
-            response.ContentType = resolvedContentType;
-
-            if (StatusCode != null)
-            {
-                response.StatusCode = StatusCode.Value;
-            }
-
-            var serializerSettings = _serializerSettings;
-            if (serializerSettings == null)
-            {
-                serializerSettings = context
-                    .HttpContext
-                    .RequestServices
-                    .GetRequiredService<IOptions<MvcJsonOptions>>()
-                    .Value
-                    .SerializerSettings;
-            }
-
-            logger.JsonResultExecuting(Value);
-            using (var writer = new HttpResponseStreamWriter(response.Body, resolvedContentTypeEncoding))
-            {
-                using (var jsonWriter = new JsonTextWriter(writer))
-                {
-                    jsonWriter.CloseOutput = false;
-                    var jsonSerializer = JsonSerializer.Create(serializerSettings);
-                    jsonSerializer.Serialize(jsonWriter, Value);
-                }
-            }
-
-            return Task.FromResult(true);
+            var services = context.HttpContext.RequestServices;
+            var executor = services.GetRequiredService<JsonResultExecutor>();
+            return executor.ExecuteAsync(context, this);
         }
     }
 }
