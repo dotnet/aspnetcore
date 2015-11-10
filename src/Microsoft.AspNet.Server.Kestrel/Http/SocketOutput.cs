@@ -203,8 +203,10 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                        (int)(_tasksPending.Peek().Task.AsyncState) <= bytesLeftToBuffer)
                 {
                     var tcs = _tasksPending.Dequeue();
+                    var bytesToWrite = (int)tcs.Task.AsyncState;
 
-                    _numBytesPreCompleted += (int)(tcs.Task.AsyncState);
+                    _numBytesPreCompleted += bytesToWrite;
+                    bytesLeftToBuffer -= bytesToWrite;
 
                     if (error == null)
                     {

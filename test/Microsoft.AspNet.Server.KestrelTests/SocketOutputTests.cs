@@ -192,6 +192,84 @@ namespace Microsoft.AspNet.Server.KestrelTests
             }
         }
 
+        [Fact]
+        public void WritesDontGetCompletedTooQuickly()
+        {
+            // This should match _maxBytesPreCompleted in SocketOutput
+            var maxBytesPreCompleted = 65536;
+            var completeQueue = new Queue<Action<int>>();
+            var onWriteWh = new ManualResetEventSlim();
+
+            // Arrange
+            var mockLibuv = new MockLibuv
+            {
+                OnWrite = (socket, buffers, triggerCompleted) =>
+                {
+                    completeQueue.Enqueue(triggerCompleted);
+                    onWriteWh.Set();
+
+                    return 0;
+                }
+            };
+
+            using (var kestrelEngine = new KestrelEngine(mockLibuv, new TestServiceContext()))
+            {
+                kestrelEngine.Start(count: 1);
+
+                var kestrelThread = kestrelEngine.Threads[0];
+                var socket = new MockSocket(kestrelThread.Loop.ThreadId, new TestKestrelTrace());
+                var trace = new KestrelTrace(new TestKestrelTrace());
+                var socketOutput = new SocketOutput(kestrelThread, socket, 0, trace);
+
+                var bufferSize = maxBytesPreCompleted;
+                var buffer = new ArraySegment<byte>(new byte[bufferSize], 0, bufferSize);
+
+                var completedWh = new ManualResetEventSlim();
+                Action<Task> onCompleted = (Task t) =>
+                {
+                    Assert.Null(t.Exception);
+                    completedWh.Set();
+                };
+
+                var completedWh2 = new ManualResetEventSlim();
+                Action<Task> onCompleted2 = (Task t) =>
+                {
+                    Assert.Null(t.Exception);
+                    completedWh2.Set();
+                };
+
+                // Act (Pre-complete the maximum number of bytes in preparation for the rest of the test)
+                socketOutput.WriteAsync(buffer).ContinueWith(onCompleted);
+                // Assert
+                // The first write should pre-complete since it is <= _maxBytesPreCompleted.
+                Assert.True(completedWh.Wait(1000));
+                Assert.True(onWriteWh.Wait(1000));
+                // Arrange
+                completedWh.Reset();
+                onWriteWh.Reset();
+
+                // Act
+                socketOutput.WriteAsync(buffer).ContinueWith(onCompleted);
+                socketOutput.WriteAsync(buffer).ContinueWith(onCompleted2);
+
+                Assert.True(onWriteWh.Wait(1000));
+                completeQueue.Dequeue()(0);
+
+                // Assert 
+                // Too many bytes are already pre-completed for the third but not the second write to pre-complete.
+                // https://github.com/aspnet/KestrelHttpServer/issues/356
+                Assert.True(completedWh.Wait(1000));
+                Assert.False(completedWh2.Wait(1000));
+
+                // Act
+                completeQueue.Dequeue()(0);
+
+                // Assert
+                // Finishing the first write should allow the second write to pre-complete.
+                Assert.True(completedWh2.Wait(1000));
+            }
+        }
+
         private class MockSocket : UvStreamHandle
         {
             public MockSocket(int threadId, IKestrelTrace logger) : base(logger)
