@@ -56,6 +56,7 @@ namespace Microsoft.AspNet.Http.Extensions
             var encodedQuery = query.ToString();
             var encodedFragment = fragment.ToString();
 
+            // PERF: Calculate string length to allocate correct buffer size for StringBuilder.
             var length = scheme.Length + SchemeDelimiter.Length + encodedHost.Length
                 + combinedPath.Length + encodedQuery.Length + encodedFragment.Length;
 
@@ -116,6 +117,7 @@ namespace Microsoft.AspNet.Http.Extensions
             var path = request.Path.Value;
             var queryString = request.QueryString.Value;
 
+            // PERF: Calculate string length to allocate correct buffer size for StringBuilder.
             var length = request.Scheme.Length + SchemeDelimiter.Length + host.Length
                 + pathBase.Length + path.Length + queryString.Length;
 
