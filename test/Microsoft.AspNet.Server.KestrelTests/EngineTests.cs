@@ -367,7 +367,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
         {
             using (var server = new TestServer(App, testContext))
             {
-                var socket = new Socket(SocketType.Stream, ProtocolType.IP);
+                var socket = new Socket(SocketType.Stream, ProtocolType.Tcp);
                 socket.Connect(IPAddress.Loopback, 54321);
                 await Task.Delay(200);
                 socket.Dispose();
