@@ -26,12 +26,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
             _uv.async_init(loop, this, _uv_async_cb);
         }
 
-        public void DangerousClose()
-        {
-            Dispose();
-            ReleaseHandle();
-        }
-
         public void Send()
         {
             _uv.async_send(this);

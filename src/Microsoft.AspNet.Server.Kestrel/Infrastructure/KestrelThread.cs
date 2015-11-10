@@ -67,10 +67,24 @@ namespace Microsoft.AspNet.Server.Kestrel
             Post(OnStop, null);
             if (!_thread.Join((int)timeout.TotalMilliseconds))
             {
-                Post(OnStopRude, null);
-                if (!_thread.Join((int)timeout.TotalMilliseconds))
+                try
                 {
-                    Post(OnStopImmediate, null);
+                    Post(OnStopRude, null);
+                    if (!_thread.Join((int)timeout.TotalMilliseconds))
+                    {
+                        Post(OnStopImmediate, null);
+                        if (!_thread.Join((int)timeout.TotalMilliseconds))
+                        {
+#if NET451
+                            _thread.Abort();
+#endif
+                        }
+                    }
+                }
+                catch (ObjectDisposedException)
+                {
+                    // REVIEW: Should we log something here?
+                    // Until we rework this logic, ODEs are bound to happen sometimes.
                     if (!_thread.Join((int)timeout.TotalMilliseconds))
                     {
 #if NET451
@@ -79,6 +93,7 @@ namespace Microsoft.AspNet.Server.Kestrel
                     }
                 }
             }
+
             if (_closeError != null)
             {
                 _closeError.Throw();
@@ -217,7 +232,7 @@ namespace Microsoft.AspNet.Server.Kestrel
 
                 // run the loop one more time to delete the open handles
                 _post.Reference();
-                _post.DangerousClose();
+                _post.Dispose();
 
                 _engine.Libuv.walk(
                     _loop,
@@ -231,7 +246,7 @@ namespace Microsoft.AspNet.Server.Kestrel
                     },
                     IntPtr.Zero);
 
-                // Ensure the "DangerousClose" operation completes in the event loop.
+                // Ensure the Dispose operations complete in the event loop.
                 var ran2 = _loop.Run();
 
                 _loop.Dispose();
