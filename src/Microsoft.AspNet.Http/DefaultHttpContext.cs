@@ -18,8 +18,8 @@ namespace Microsoft.AspNet.Http.Internal
     {
         private readonly HttpRequest _request;
         private readonly HttpResponse _response;
-        private readonly ConnectionInfo _connection;
-        private readonly AuthenticationManager _authenticationManager;
+        private ConnectionInfo _connection;
+        private AuthenticationManager _authenticationManager;
 
         private IItemsFeature _items;
         private IServiceProvidersFeature _serviceProviders;
@@ -43,8 +43,6 @@ namespace Microsoft.AspNet.Http.Internal
             _features = features;
             _request = new DefaultHttpRequest(this, features);
             _response = new DefaultHttpResponse(this, features);
-            _connection = new DefaultConnectionInfo(features);
-            _authenticationManager = new DefaultAuthenticationManager(features);
         }
 
         void IFeatureCache.CheckFeaturesRevision()
@@ -133,9 +131,29 @@ namespace Microsoft.AspNet.Http.Internal
 
         public override HttpResponse Response { get { return _response; } }
 
-        public override ConnectionInfo Connection { get { return _connection; } }
+        public override ConnectionInfo Connection
+        {
+            get
+            {
+                if (_connection == null)
+                {
+                    _connection = new DefaultConnectionInfo(_features);
+                }
+                return _connection;
+            }
+        }
 
-        public override AuthenticationManager Authentication { get { return _authenticationManager; } }
+        public override AuthenticationManager Authentication
+        {
+            get
+            {
+                if (_authenticationManager == null)
+                {
+                    _authenticationManager = new DefaultAuthenticationManager(_features);
+                }
+                return _authenticationManager;
+            }
+        }
 
         public override ClaimsPrincipal User
         {
