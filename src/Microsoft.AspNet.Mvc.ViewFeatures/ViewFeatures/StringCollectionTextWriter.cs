@@ -176,17 +176,17 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         }
 
         /// <summary>
-        /// If the specified <paramref name="writer"/> is a <see cref="StringCollectionTextWriter"/> the contents
+        /// If the specified <paramref name="writer"/> is a <see cref="HtmlTextWriter"/> the contents
         /// are copied. It is just written to the <paramref name="writer"/> otherwise.
         /// </summary>
         /// <param name="writer">The <see cref="TextWriter"/> to which the content must be copied/written.</param>
         /// <param name="encoder">The <see cref="HtmlEncoder"/> to encode the copied/written content.</param>
         public void CopyTo(TextWriter writer, HtmlEncoder encoder)
         {
-            var targetStringCollectionWriter = writer as StringCollectionTextWriter;
-            if (targetStringCollectionWriter != null)
+            var htmlTextWriter = writer as HtmlTextWriter;
+            if (htmlTextWriter != null)
             {
-                targetStringCollectionWriter._content.Append(Content);
+                htmlTextWriter.Write(Content);
             }
             else
             {
@@ -195,7 +195,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         }
 
         /// <summary>
-        /// If the specified <paramref name="writer"/> is a <see cref="StringCollectionTextWriter"/> the contents
+        /// If the specified <paramref name="writer"/> is a <see cref="HtmlTextWriter"/> the contents
         /// are copied. It is just written to the <paramref name="writer"/> otherwise.
         /// </summary>
         /// <param name="writer">The <see cref="TextWriter"/> to which the content must be copied/written.</param>

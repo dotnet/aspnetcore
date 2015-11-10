@@ -2,16 +2,17 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO;
 using System.Text;
+using Microsoft.AspNet.Html.Abstractions;
+using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.AspNet.Razor.TagHelpers;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
     /// <summary>
-    /// <see cref="TextWriter"/> implementation which writes to a <see cref="TagHelperContent"/> instance.
+    /// <see cref="HtmlTextWriter"/> implementation which writes to a <see cref="TagHelperContent"/> instance.
     /// </summary>
-    public class TagHelperContentWrapperTextWriter : TextWriter
+    public class TagHelperContentWrapperTextWriter : HtmlTextWriter
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="TagHelperContentWrapperTextWriter"/> class.
@@ -61,6 +62,12 @@ namespace Microsoft.AspNet.Mvc.Razor
         public override void Write(char value)
         {
             Content.AppendHtml(value.ToString());
+        }
+
+        /// <inheritdoc />
+        public override void Write(IHtmlContent value)
+        {
+            Content.Append(value);
         }
 
         /// <inheritdoc />
