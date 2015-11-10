@@ -293,7 +293,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                     var _this = (WriteContext)state;
                     _this.WriteStatus = status;
                     _this.WriteError = error;
-                    DoShutdownIfNeeded();
+                    _this.DoShutdownIfNeeded();
                 }, this);
             }
 
@@ -316,9 +316,9 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                     var _this = (WriteContext)state;
                     _this.ShutdownSendStatus = status;
 
-                    Self._log.ConnectionWroteFin(Self._connectionId, status);
+                    _this.Self._log.ConnectionWroteFin(Self._connectionId, status);
 
-                    DoDisconnectIfNeeded();
+                    _this.DoDisconnectIfNeeded();
                 }, this);
             }
 
