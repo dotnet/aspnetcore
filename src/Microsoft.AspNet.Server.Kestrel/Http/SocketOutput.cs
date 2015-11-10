@@ -56,7 +56,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 buffer = new ArraySegment<byte>(copy);
                 _log.ConnectionWrite(_connectionId, buffer.Count);
             }
-            
+
             TaskCompletionSource<object> tcs = null;
 
             lock (_lockObj)
@@ -79,24 +79,25 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                     _nextWriteContext.SocketDisconnect = true;
                 }
 
-                // Complete the write task immediately if all previous write tasks have been completed,
-                // the buffers haven't grown too large, and the last write to the socket succeeded.
-                if (_lastWriteError == null &&
-                    _tasksPending.Count == 0 &&
-                    _numBytesPreCompleted + buffer.Count <= _maxBytesPreCompleted)
+                if (!immediate)
                 {
+                    // immediate==false calls always return complete tasks, because there is guaranteed
+                    // to be a subsequent immediate==true call which will go down one of the previous code-paths
                     _numBytesPreCompleted += buffer.Count;
                 }
-                else if (immediate)
+                else if (_lastWriteError == null &&
+                        _tasksPending.Count == 0 &&
+                        _numBytesPreCompleted + buffer.Count <= _maxBytesPreCompleted)
+                {
+                    // Complete the write task immediately if all previous write tasks have been completed,
+                    // the buffers haven't grown too large, and the last write to the socket succeeded.
+                    _numBytesPreCompleted += buffer.Count;
+                }
+                else
                 {
                     // immediate write, which is not eligable for instant completion above
                     tcs = new TaskCompletionSource<object>(buffer.Count);
                     _tasksPending.Enqueue(tcs);
-                }
-                else
-                {
-                    // immediate==false calls always return complete tasks, because there is guaranteed
-                    // to be a subsequent immediate==true call which will go down one of the previous code-paths
                 }
 
                 if (_writesPending < _maxPendingWrites && immediate)
@@ -222,7 +223,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
                 // Now that the while loop has completed the following invariants should hold true:
                 Debug.Assert(_numBytesPreCompleted >= 0);
-                Debug.Assert(_numBytesPreCompleted <= _maxBytesPreCompleted);
             }
         }
 

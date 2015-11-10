@@ -115,6 +115,82 @@ namespace Microsoft.AspNet.Server.KestrelTests
                 Assert.True(completedWh.Wait(1000));
             }
         }
+        
+        [Fact]
+        public void WritesDontCompleteImmediatelyWhenTooManyBytesIncludingNonImmediateAreAlreadyPreCompleted()
+        {
+            // This should match _maxBytesPreCompleted in SocketOutput
+            var maxBytesPreCompleted = 65536;
+            var completeQueue = new Queue<Action<int>>();
+
+            // Arrange
+            var mockLibuv = new MockLibuv
+            {
+                OnWrite = (socket, buffers, triggerCompleted) =>
+                {
+                    completeQueue.Enqueue(triggerCompleted);
+                    return 0;
+                }
+            };
+
+            using (var kestrelEngine = new KestrelEngine(mockLibuv, new TestServiceContext()))
+            {
+                kestrelEngine.Start(count: 1);
+
+                var kestrelThread = kestrelEngine.Threads[0];
+                var socket = new MockSocket(kestrelThread.Loop.ThreadId, new TestKestrelTrace());
+                var trace = new KestrelTrace(new TestKestrelTrace());
+                var socketOutput = new SocketOutput(kestrelThread, socket, 0, trace);
+
+                var bufferSize = maxBytesPreCompleted;
+
+                var data = new byte[bufferSize];
+                var fullBuffer = new ArraySegment<byte>(data, 0, bufferSize);
+                var halfBuffer = new ArraySegment<byte>(data, 0, bufferSize / 2);
+
+                var completedWh = new ManualResetEventSlim();
+                Action<Task> onCompleted = (Task t) =>
+                {
+                    Assert.Null(t.Exception);
+                    completedWh.Set();
+                };
+
+                // Act 
+                socketOutput.WriteAsync(halfBuffer, false).ContinueWith(onCompleted);
+                // Assert
+                // The first write should pre-complete since it is not immediate.
+                Assert.True(completedWh.Wait(1000));
+                // Arrange
+                completedWh.Reset();
+                // Act 
+                socketOutput.WriteAsync(halfBuffer).ContinueWith(onCompleted);
+                // Assert
+                // The second write should pre-complete since it is <= _maxBytesPreCompleted.
+                Assert.True(completedWh.Wait(1000));
+                // Arrange
+                completedWh.Reset();
+                // Act 
+                socketOutput.WriteAsync(halfBuffer, false).ContinueWith(onCompleted);
+                // Assert
+                // The third write should pre-complete since it is not immediate, even though too many.
+                Assert.True(completedWh.Wait(1000));
+                // Arrange
+                completedWh.Reset();
+                // Act
+                socketOutput.WriteAsync(halfBuffer).ContinueWith(onCompleted);
+                // Assert 
+                // Too many bytes are already pre-completed for the fourth write to pre-complete.
+                Assert.False(completedWh.Wait(1000));
+                // Act
+                while (completeQueue.Count > 0)
+                {
+                    completeQueue.Dequeue()(0);
+                }
+                // Assert
+                // Finishing the first write should allow the second write to pre-complete.
+                Assert.True(completedWh.Wait(1000));
+            }
+        }
 
         private class MockSocket : UvStreamHandle
         {
