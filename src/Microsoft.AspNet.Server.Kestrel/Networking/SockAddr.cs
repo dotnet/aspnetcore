@@ -41,18 +41,32 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
             // 0000 0000 0000 0000
             //
             // Example 3: 10.135.34.141:12804, not dual-stack sockets
+            //
             // 8d22 870a fd31 0002  => sa_family == AF_INET (02)
             // 0000 0000 0000 0000
             // 0000 0000 0000 0000
             // 0000 0000 0000 0000
-
+            //
+            // Example 4: 127.0.0.1:52798, on a Mac OS
+            //
+            // 0100 007F 3ECE 0210  => sa_family == AF_INET (02) Note that struct sockaddr on mac use
+            // 0000 0000 0000 0000     the second unint8 field for sa family type
+            // 0000 0000 0000 0000     http://www.opensource.apple.com/source/xnu/xnu-1456.1.26/bsd/sys/socket.h
+            // 0000 0000 0000 0000
 
             // Quick calculate the port by mask the field and locate the byte 3 and byte 4
             // and then shift them to correct place to form a int.
             var port = ((int)(_field0 & 0x00FF0000) >> 8) | (int)((_field0 & 0xFF000000) >> 24);
+            
+            int family = (int)_field0;
+            if (PlatformApis.IsDarwin())
+            {
+                // see explaination in example 4
+                family = family >> 8;
+            }
+            family = family & 0xFF;
 
-            var family = (int)_field0 & 0x000000FF;
-            if (family == 0x00000002)
+            if (family == 2)
             {
                 // AF_INET => IPv4
                 return new IPEndPoint(new IPAddress((_field0 >> 32) & 0xFFFFFFFF), port);
