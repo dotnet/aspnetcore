@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNet.Server.Kestrel;
 using Microsoft.AspNet.Server.Kestrel.Http;
 using Microsoft.AspNet.Server.Kestrel.Infrastructure;
@@ -45,15 +46,15 @@ namespace Microsoft.AspNet.Server.KestrelTests
                 var bufferSize = 1048576;
                 var buffer = new ArraySegment<byte>(new byte[bufferSize], 0, bufferSize);
                 var completedWh = new ManualResetEventSlim();
-                Action<Exception, object, bool> onCompleted = (ex, state, calledInline) =>
-                {
-                    Assert.Null(ex);
-                    Assert.Null(state);
-                    completedWh.Set();
-                };
 
                 // Act
-                socketOutput.Write(buffer, onCompleted, null);
+                socketOutput.WriteAsync(buffer).ContinueWith(
+                    (t) =>
+                    {
+                        Assert.Null(t.Exception);
+                        completedWh.Set();
+                    }
+                );
 
                 // Assert
                 Assert.True(completedWh.Wait(1000));
@@ -89,22 +90,21 @@ namespace Microsoft.AspNet.Server.KestrelTests
                 var bufferSize = maxBytesPreCompleted;
                 var buffer = new ArraySegment<byte>(new byte[bufferSize], 0, bufferSize);
                 var completedWh = new ManualResetEventSlim();
-                Action<Exception, object, bool> onCompleted = (ex, state, calledInline) =>
+                Action<Task> onCompleted = (Task t) =>
                 {
-                    Assert.Null(ex);
-                    Assert.Null(state);
+                    Assert.Null(t.Exception);
                     completedWh.Set();
                 };
 
                 // Act 
-                socketOutput.Write(buffer, onCompleted, null);
+                socketOutput.WriteAsync(buffer).ContinueWith(onCompleted);
                 // Assert
                 // The first write should pre-complete since it is <= _maxBytesPreCompleted.
                 Assert.True(completedWh.Wait(1000));
                 // Arrange
                 completedWh.Reset();
                 // Act
-                socketOutput.Write(buffer, onCompleted, null);
+                socketOutput.WriteAsync(buffer).ContinueWith(onCompleted);
                 // Assert 
                 // Too many bytes are already pre-completed for the second write to pre-complete.
                 Assert.False(completedWh.Wait(1000));
