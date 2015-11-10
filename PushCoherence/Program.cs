@@ -20,6 +20,11 @@ namespace PushCoherence
 {
     class Program
     {
+        static IEnumerable<string> excludedExternalDependencies = new string[] { 
+            "Microsoft.IdentityModel",
+            "System.IdentityModel"
+        };
+
         public static void Main(string[] args)
         {
             var nugetFeed = Environment.GetEnvironmentVariable("NUGET_FEED");
@@ -102,7 +107,9 @@ namespace PushCoherence
                     var version = xdoc.Descendants(XName.Get("version", ns)).First();
                     version.Value = StripBuildVersion(version.Value);
 
-                    var dependencies = xdoc.Descendants(XName.Get("dependency", ns));
+                    var dependencies = xdoc.Descendants(XName.Get("dependency", ns)).Where(
+                        dep => excludedExternalDependencies.All(
+                            excl => !dep.Attribute("id").Value.StartsWith(excl)));
                     foreach (var dependency in dependencies)
                     {
                         var attr = dependency.Attribute("version");
