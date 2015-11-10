@@ -8,7 +8,7 @@ Please start a discussion on the [Home repo issue tracker](https://github.com/as
 
 
 ## Bugs and feature requests?
-Please log a new issue in the appropriate GitHub repo. Here are some of the most common repos:
+For non-security related bugs please log a new issue in the appropriate GitHub repo. Here are some of the most common repos:
 
 * [DependencyInjection](https://github.com/aspnet/DependencyInjection)
 * [EntityFramework](https://github.com/aspnet/EntityFramework)
@@ -19,6 +19,8 @@ Please log a new issue in the appropriate GitHub repo. Here are some of the most
 
 Or browse the full list of repos in the [aspnet](https://github.com/aspnet/) organization.
 
+## Reporting security issues and bugs
+Security issues and bugs should be reported privately, via email, to the Microsoft Security Response Center (MSRC)  secure@microsoft.com. You should receive a response within 24 hours. If for some reason you do not, please follow up via email to ensure we received your original message. Further information, including the MSRC PGP key, can be found in the [Security TechCenter](https://technet.microsoft.com/en-us/security/ff852094.aspx).
 
 ## Other discussions
 Our team members also monitor several other discussion forums:
