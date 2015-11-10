@@ -17,13 +17,19 @@
             "dnx-clr-win-x64": {
                 "SIGN_AUTHENTICODE": {
                     "bin\\lib\\Microsoft.Dnx.DesignTimeHost\\Newtonsoft.Json.dll": "We don't sign 3rd party DLLs",
-                    "bin\\lib\\Microsoft.Dnx.Tooling\\Newtonsoft.Json.dll": "We don't sign 3rd party DLLs"
+                    "bin\\lib\\Microsoft.Dnx.Tooling\\Newtonsoft.Json.dll": "We don't sign 3rd party DLLs",
+                    "bin\\Microsoft.DiaSymReader.Native.amd64.dll": "Need to follow up, not from ADX team",
+                    "bin\\Microsoft.DiaSymReader.Native.arm.dll": "Need to follow up, not from ADX team",
+                    "bin\\Microsoft.DiaSymReader.Native.x86.dll": "Need to follow up, not from ADX team"
                 }
             },
             "dnx-clr-win-x86": {
                 "SIGN_AUTHENTICODE": {
                     "bin\\lib\\Microsoft.Dnx.DesignTimeHost\\Newtonsoft.Json.dll": "We don't sign 3rd party DLLs",
-                    "bin\\lib\\Microsoft.Dnx.Tooling\\Newtonsoft.Json.dll": "We don't sign 3rd party DLLs"
+                    "bin\\lib\\Microsoft.Dnx.Tooling\\Newtonsoft.Json.dll": "We don't sign 3rd party DLLs",
+                    "bin\\Microsoft.DiaSymReader.Native.amd64.dll": "Need to follow up, not from ADX team",
+                    "bin\\Microsoft.DiaSymReader.Native.arm.dll": "Need to follow up, not from ADX team",
+                    "bin\\Microsoft.DiaSymReader.Native.x86.dll": "Need to follow up, not from ADX team"
                 }
             },
             "dnx-coreclr-darwin-x64": {
@@ -97,13 +103,19 @@
             "dnx-coreclr-win-x64": {
                 "SIGN_AUTHENTICODE": {
                     "bin\\lib\\Microsoft.Dnx.DesignTimeHost\\Newtonsoft.Json.dll": "We don't sign 3rd party DLLs",
-                    "bin\\lib\\Microsoft.Dnx.Tooling\\Newtonsoft.Json.dll": "We don't sign 3rd party DLLs"
+                    "bin\\lib\\Microsoft.Dnx.Tooling\\Newtonsoft.Json.dll": "We don't sign 3rd party DLLs",
+                    "bin\\Microsoft.DiaSymReader.Native.amd64.dll": "Need to follow up, not from ADX team",
+                    "bin\\Microsoft.DiaSymReader.Native.arm.dll": "Need to follow up, not from ADX team",
+                    "bin\\Microsoft.DiaSymReader.Native.x86.dll": "Need to follow up, not from ADX team"
                 }
             },
             "dnx-coreclr-win-x86": {
                 "SIGN_AUTHENTICODE": {
                     "bin\\lib\\Microsoft.Dnx.DesignTimeHost\\Newtonsoft.Json.dll": "We don't sign 3rd party DLLs",
-                    "bin\\lib\\Microsoft.Dnx.Tooling\\Newtonsoft.Json.dll": "We don't sign 3rd party DLLs"
+                    "bin\\lib\\Microsoft.Dnx.Tooling\\Newtonsoft.Json.dll": "We don't sign 3rd party DLLs",
+                    "bin\\Microsoft.DiaSymReader.Native.amd64.dll": "Need to follow up, not from ADX team",
+                    "bin\\Microsoft.DiaSymReader.Native.arm.dll": "Need to follow up, not from ADX team",
+                    "bin\\Microsoft.DiaSymReader.Native.x86.dll": "Need to follow up, not from ADX team"
                 }
             },
             "dnx-mono": {
@@ -115,7 +127,10 @@
             "dnx-coreclr-win-arm": {
                 "SIGN_AUTHENTICODE": {
                     "bin\\lib\\Microsoft.Dnx.DesignTimeHost\\Newtonsoft.Json.dll": "We don't sign 3rd party DLLs",
-                    "bin\\lib\\Microsoft.Dnx.Tooling\\Newtonsoft.Json.dll": "We don't sign 3rd party DLLs"
+                    "bin\\lib\\Microsoft.Dnx.Tooling\\Newtonsoft.Json.dll": "We don't sign 3rd party DLLs",
+                    "bin\\Microsoft.DiaSymReader.Native.amd64.dll": "Need to follow up, not from ADX team",
+                    "bin\\Microsoft.DiaSymReader.Native.arm.dll": "Need to follow up, not from ADX team",
+                    "bin\\Microsoft.DiaSymReader.Native.x86.dll": "Need to follow up, not from ADX team"
                 }
             },
             "Microsoft.AspNet.Antiforgery": { },
@@ -205,19 +220,15 @@
             "Microsoft.AspNet.WebUtilities": { },
             "Microsoft.Data.Sqlite": {
                 "SIGN_AUTHENTICODE": {
-                    "runtimes\\win-x64\\native\\sqlite3.dll": "We don't sign 3rd party DLLs",
-                    "runtimes\\win-x86\\native\\sqlite3.dll": "We don't sign 3rd party DLLs",
-                    "runtimes\\win\\native\\x64\\sqlite3.dll": "We don't sign 3rd party DLLs",
-                    "runtimes\\win\\native\\x64\\x86\\sqlite3.dll": "We don't sign 3rd party DLLs",
-                    "runtimes\\win\\native\\x86\\sqlite3.dll": "We don't sign 3rd party DLLs",
-                    "runtimes\\win10-arm\\native\\sqlite3.dll": "We don't sign 3rd party DLLs",
-                    "runtimes\\win10-x64\\native\\sqlite3.dll": "We don't sign 3rd party DLLs",
-                    "runtimes\\win10-x86\\native\\sqlite3.dll": "We don't sign 3rd party DLLs"
+                    "build\\netcore50\\win10-arm\\native\\sqlite3.dll": "We don't sign 3rd party DLLs",
+                    "build\\netcore50\\win10-x64\\native\\sqlite3.dll": "We don't sign 3rd party DLLs",
+                    "build\\netcore50\\win10-x86\\native\\sqlite3.dll": "We don't sign 3rd party DLLs",
+                    "runtimes\\win7-x64\\native\\sqlite3.dll": "We don't sign 3rd party DLLs",
+                    "runtimes\\win7-x86\\native\\sqlite3.dll": "We don't sign 3rd party DLLs"
                 }
             },
             "Microsoft.Dnx.ApplicationHost": { },
             "Microsoft.Dnx.Compilation": { },
-            "Microsoft.Dnx.Compilation.Abstractions": { },
             "Microsoft.Dnx.Compilation.CSharp": { },
             "Microsoft.Dnx.Compilation.CSharp.Abstractions": { },
             "Microsoft.Dnx.Compilation.CSharp.Common": { },
@@ -242,6 +253,7 @@
             "Microsoft.Extensions.CodeGeneration.EntityFramework": { },
             "Microsoft.Extensions.CodeGeneration.Templating": { },
             "Microsoft.Extensions.CodeGenerators.Mvc": { },
+            "Microsoft.Extensions.CompilationAbstractions": { },
             "Microsoft.Extensions.Configuration": { },
             "Microsoft.Extensions.Configuration.Abstractions": { },
             "Microsoft.Extensions.Configuration.Binder": { },
@@ -255,6 +267,7 @@
             "Microsoft.Extensions.Configuration.Xml": { },
             "Microsoft.Extensions.DependencyInjection": { },
             "Microsoft.Extensions.DependencyInjection.Abstractions": { },
+            "Microsoft.Extensions.DependencyInjection.Specification.Tests": { },
             "Microsoft.Extensions.DiagnosticAdapter": { },
             "Microsoft.Extensions.FileSystemGlobbing": { },
             "Microsoft.Extensions.Globalization.CultureInfoCache": { },
@@ -273,8 +286,6 @@
             "Microsoft.Extensions.Primitives": { },
             "Microsoft.Extensions.SecretManager": { },
             "Microsoft.Extensions.WebEncoders": { },
-            "Microsoft.Extensions.WebEncoders.Core": { },
-            "Microsoft.Extensions.WebEncoders.Testing": { },
             "Microsoft.Net.Http.Headers": { },
             "Microsoft.Net.Http.Server": { },
             "Microsoft.Net.WebSockets": { },
@@ -323,6 +334,7 @@
             "Microsoft.Extensions.SecurityHelper.Sources": { },
             "Microsoft.Extensions.TypeNameHelper.Sources": { },
             "PageGenerator": { },
+            "Placeholder": { },
             "xunit.execution.AspNet": { },
             "xunit.runner.aspnet": { },
             "xunit.runner.utility.AspNet": { }
@@ -333,13 +345,13 @@
             "AssemblyStrongNameRule"
         ],
         "packages": {
+            "Console.for.NETCore": { },
             "Microsoft.Cci": { },
             "Microsoft.CodeAnalysis": { },
             "Microsoft.CodeAnalysis.Common": { },
             "Microsoft.CodeAnalysis.Compilers": { },
             "Microsoft.CodeAnalysis.CSharp": { },
             "Microsoft.CodeAnalysis.CSharp.Features": { },
-            "Microsoft.CodeAnalysis.CSharp.Scripting": { },
             "Microsoft.CodeAnalysis.CSharp.Workspaces": { },
             "Microsoft.CodeAnalysis.EditorFeatures": { },
             "Microsoft.CodeAnalysis.EditorFeatures.Text": { },
@@ -347,25 +359,19 @@
             "Microsoft.CodeAnalysis.VisualBasic": { },
             "Microsoft.CodeAnalysis.Scripting": { },
             "Microsoft.CodeAnalysis.Scripting.Common": { },
+            "Microsoft.CodeAnalysis.Scripting.CSharp": { },
             "Microsoft.CodeAnalysis.Scripting.VisualBasic": { },
             "Microsoft.CodeAnalysis.VisualBasic.Workspaces": { },
             "Microsoft.CodeAnalysis.Test.Resources.Proprietary": { },
             "Microsoft.CodeAnalysis.VisualBasic.Features": { },
             "Microsoft.CodeAnalysis.Workspaces.Common": { },
             "Microsoft.CSharp": { },
-            "Microsoft.DotNet.BuildTools.ApiTools": {
+            "Microsoft.DNXCore": { },
+            "Microsoft.DotNet.CoreCLR": {
                 "SIGN_STRONGNAME": {
-                    "tools\\ApiCompat.exe": "Need to follow up, not from ADX team",
-                    "tools\\GenFacades.exe": "Need to follow up, not from ADX team"
+                    "lib\\aspnetcore50\\mscorlib.dll": "Need to follow up, not from ADX team"
                 }
             },
-            "Microsoft.DotNet.BuildTools.CoreCLR": {
-                "SIGN_STRONGNAME": {
-                    "BclRewriter.exe": "Need to follow up, not from ADX team"
-                }
-            },
-            "Microsoft.DotNet.CoreCLR": { },
-            "Microsoft.DotNet.TestHost": { },
             "Microsoft.NETCore.ConsoleHost-arm": { },
             "Microsoft.NETCore.ConsoleHost-x86": { },
             "Microsoft.NETCore": { },
@@ -374,9 +380,24 @@
             "Microsoft.NETCore.Platforms": { },
             "Microsoft.NETCore.Portable.Compatibility": { },
             "Microsoft.NETCore.Runtime": { },
+            "Microsoft.NETCore.Runtime.ApiSets-x64": { },
+            "Microsoft.NETCore.Runtime.ApiSets-x86": { },
             "Microsoft.NETCore.Runtime.CoreCLR": { },
             "Microsoft.NETCore.Runtime.CoreCLR-x64": { },
+            "Microsoft.NETCore.Runtime.CoreCLR.ConsoleHost-arm": { },
+            "Microsoft.NETCore.Runtime.CoreCLR.ConsoleHost-x64": { },
+            "Microsoft.NETCore.Runtime.CoreCLR.ConsoleHost-x86": { },
+            "Microsoft.NETCore.Runtime.CoreCLR.TestHost-arm": { },
+            "Microsoft.NETCore.Runtime.CoreCLR.TestHost-x64": { },
+            "Microsoft.NETCore.Runtime.CoreCLR.TestHost-x86": { },
+            "Microsoft.NETCore.Runtime.CoreCLR.UAPHost-arm": { },
+            "Microsoft.NETCore.Runtime.CoreCLR.UAPHost-x64": { },
+            "Microsoft.NETCore.Runtime.CoreCLR.UAPHost-x86": { },
+            "Microsoft.NETCore.Runtime.CoreCLR.UWPHost-arm": { },
+            "Microsoft.NETCore.Runtime.CoreCLR.UWPHost-x64": { },
+            "Microsoft.NETCore.Runtime.CoreCLR.UWPHost-x86": { },
             "Microsoft.NETCore.Runtime.Native": { },
+            "Microsoft.NETCore.TargetRuntimes": { },
             "Microsoft.NETCore.Targets": { },
             "Microsoft.NETCore.Targets.DNXCore": { },
             "Microsoft.NETCore.Targets.NETFramework": { },
@@ -386,6 +407,9 @@
             "Microsoft.NETCore.TestHost-x64": { },
             "Microsoft.NETCore.TestHost-x86": { },
             "Microsoft.NETCore.UniversalWindowsPlatform": { },
+            "Microsoft.NETCore.UWPHost-arm": { },
+            "Microsoft.NETCore.UWPHost-x64": { },
+            "Microsoft.NETCore.UWPHost-x86": { },
             "Microsoft.NETCore.Windows.ApiSets": { },
             "Microsoft.NETCore.Windows.ApiSets-x64": { },
             "Microsoft.NETCore.Windows.ApiSets-x86": { },
@@ -393,6 +417,14 @@
             "Microsoft.Win32.Primitives": { },
             "Microsoft.Win32.Registry": { },
             "Microsoft.Win32.Registry.AccessControl": { },
+            "runtime.any.System.Linq.Expressions": { },
+            "runtime.any.System.Private.DataContractSerialization": { },
+            "runtime.any.System.Reflection.DispatchProxy": { },
+            "runtime.any.System.Xml.XmlSerializer": { },
+            "runtime.aot.System.Linq.Expressions": { },
+            "runtime.aot.System.Private.DataContractSerialization": { },
+            "runtime.aot.System.Reflection.DispatchProxy": { },
+            "runtime.aot.System.Xml.XmlSerializer": { },
             "runtime.centos.7.1-x64.Microsoft.NETCore.ConsoleHost": { },
             "runtime.centos.7.1-x64.Microsoft.NETCore.Runtime.CoreCLR": {
                 "SIGN_STRONGNAME": {
@@ -452,7 +484,7 @@
             },
             "runtime.linux.System.Runtime.InteropServices.RuntimeInformation": {
                 "SIGN_STRONGNAME": {
-                    "runtimes\\unix\\lib\\dotnet5.4\\System.Runtime.InteropServices.RuntimeInformation.dll": "Need to follow up, not from ADX team"
+                    "runtimes\\unix\\lib\\dotnet5.1\\System.Runtime.InteropServices.RuntimeInformation.dll": "Need to follow up, not from ADX team"
                 }
             },
             "runtime.linux.System.Security.Cryptography.Algorithms": {
@@ -522,7 +554,7 @@
             },
             "runtime.osx.10.10.System.Runtime.InteropServices.RuntimeInformation": {
                 "SIGN_STRONGNAME": {
-                    "runtimes\\unix\\lib\\dotnet5.4\\System.Runtime.InteropServices.RuntimeInformation.dll": "Need to follow up, not from ADX team"
+                    "runtimes\\unix\\lib\\dotnet5.1\\System.Runtime.InteropServices.RuntimeInformation.dll": "Need to follow up, not from ADX team"
                 }
             },
             "runtime.osx.10.10.System.Security.Cryptography.Algorithms": {
@@ -875,7 +907,9 @@
             "System.Xml.XmlSerializer": { },
             "System.Xml.XPath": { },
             "System.Xml.XPath.XDocument": { },
-            "System.Xml.XPath.XmlDocument": { }
+            "System.Xml.XPath.XmlDocument": { },
+            "UAP.for.NETCore": { },
+            "UWP.for.NETCore": { }
         }
     },
     "default": { // Rules to run for packages not listed in any other set.
