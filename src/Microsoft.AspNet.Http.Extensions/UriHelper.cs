@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Text;
 
 namespace Microsoft.AspNet.Http.Extensions
 {
@@ -10,6 +11,8 @@ namespace Microsoft.AspNet.Http.Extensions
     /// </summary>
     public static class UriHelper
     {
+        private const string SchemeDelimiter = "://";
+
         /// <summary>
         /// Combines the given URI components into a string that is properly encoded for use in HTTP headers.
         /// </summary>
@@ -48,7 +51,15 @@ namespace Microsoft.AspNet.Http.Extensions
             FragmentString fragment = new FragmentString())
         {
             string combinePath = (pathBase.HasValue || path.HasValue) ? (pathBase + path).ToString() : "/";
-            return $"{scheme}://{host.ToString()}{combinePath}{query.ToString()}{fragment.ToString()}";
+
+            return new StringBuilder()
+                .Append(scheme)
+                .Append(SchemeDelimiter)
+                .Append(host.ToString())
+                .Append(combinePath)
+                .Append(query.ToString())
+                .Append(fragment.ToString())
+                .ToString();
         }
 
         /// <summary>
@@ -93,7 +104,14 @@ namespace Microsoft.AspNet.Http.Extensions
         /// <returns></returns>
         public static string GetDisplayUrl(this HttpRequest request)
         {
-            return request.Scheme + "://" + request.Host.Value + request.PathBase.Value + request.Path.Value + request.QueryString.Value;
+            return new StringBuilder()
+                .Append(request.Scheme)
+                .Append(SchemeDelimiter)
+                .Append(request.Host.Value)
+                .Append(request.PathBase.Value)
+                .Append(request.Path.Value)
+                .Append(request.QueryString.Value)
+                .ToString();
         }
     }
 }
