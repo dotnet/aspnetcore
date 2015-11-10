@@ -53,6 +53,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
             // 0000 0000 0000 0000     the second unint8 field for sa family type
             // 0000 0000 0000 0000     http://www.opensource.apple.com/source/xnu/xnu-1456.1.26/bsd/sys/socket.h
             // 0000 0000 0000 0000
+            //
+            // Reference:
+            //  - Windows: https://msdn.microsoft.com/en-us/library/windows/desktop/ms740506(v=vs.85).aspx
+            //  - Linux: https://github.com/torvalds/linux/blob/master/include/linux/socket.h
+            //  - Apple: http://www.opensource.apple.com/source/xnu/xnu-1456.1.26/bsd/sys/socket.h
 
             // Quick calculate the port by mask the field and locate the byte 3 and byte 4
             // and then shift them to correct place to form a int.
