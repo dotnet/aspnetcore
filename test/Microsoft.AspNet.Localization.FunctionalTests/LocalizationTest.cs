@@ -30,20 +30,31 @@ namespace Microsoft.AspNet.Localization.FunctionalTests
                 "Bonjour from StartupResourcesInFolder Bonjour from Test in resources folder Bonjour from Customer in resources folder");
         }
 
-        [ConditionalTheory]
+        [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Windows)]
-        [InlineData(RuntimeFlavor.Mono, "http://localhost:5072/", RuntimeArchitecture.x86)]
-        [InlineData(RuntimeFlavor.CoreClr, "http://localhost:5073/", RuntimeArchitecture.x64)]
-        public Task Localization_ResourcesInFolder_ReturnLocalizedValue_Mono(
-            RuntimeFlavor runtimeFlavor,
-            string applicationBaseUrl,
-            RuntimeArchitecture runtimeArchitechture)
+        [FrameworkSkipCondition(RuntimeFrameworks.CoreCLR)]
+        public Task Localization_ResourcesInFolder_ReturnLocalizedValue_Mono()
         {
             var testRunner = new TestRunner();
             return testRunner.RunTestAndVerifyResponse(
-                runtimeFlavor,
-                runtimeArchitechture,
-                applicationBaseUrl,
+                RuntimeFlavor.Mono,
+                RuntimeArchitecture.x86,
+                "http://localhost:5072",
+                "ResourcesInFolder",
+                "fr-FR",
+                "Bonjour from StartupResourcesInFolder Bonjour from Test in resources folder Bonjour from Customer in resources folder");
+        }
+
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Windows)]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        public Task Localization_ResourcesInFolder_ReturnLocalizedValue_CoreCLR_NonWindows()
+        {
+            var testRunner = new TestRunner();
+            return testRunner.RunTestAndVerifyResponse(
+                RuntimeFlavor.CoreClr,
+                RuntimeArchitecture.x64,
+                "http://localhost:5073/",
                 "ResourcesInFolder",
                 "fr-FR",
                 "Bonjour from StartupResourcesInFolder Bonjour from Test in resources folder Bonjour from Customer in resources folder");
@@ -69,20 +80,31 @@ namespace Microsoft.AspNet.Localization.FunctionalTests
                 "Bonjour from StartupResourcesAtRootFolder Bonjour from Test in root folder Bonjour from Customer in root folder");
         }
 
-        [ConditionalTheory]
+        [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Windows)]
-        [InlineData(RuntimeFlavor.Mono, "http://localhost:5076/", RuntimeArchitecture.x86)]
-        [InlineData(RuntimeFlavor.CoreClr, "http://localhost:5077/", RuntimeArchitecture.x64)]
-        public Task Localization_ResourcesAtRootFolder_ReturnLocalizedValue_Mono(
-            RuntimeFlavor runtimeFlavor,
-            string applicationBaseUrl,
-            RuntimeArchitecture runtimeArchitechture)
+        [FrameworkSkipCondition(RuntimeFrameworks.CoreCLR)]
+        public Task Localization_ResourcesAtRootFolder_ReturnLocalizedValue_Mono()
         {
             var testRunner = new TestRunner();
             return testRunner.RunTestAndVerifyResponse(
-                runtimeFlavor,
-                runtimeArchitechture,
-                applicationBaseUrl,
+                RuntimeFlavor.Mono,
+                RuntimeArchitecture.x86,
+                "http://localhost:5076",
+                "ResourcesAtRootFolder",
+                "fr-FR",
+                "Bonjour from StartupResourcesAtRootFolder Bonjour from Test in root folder Bonjour from Customer in root folder");
+        }
+
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Windows)]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        public Task Localization_ResourcesAtRootFolder_ReturnLocalizedValue_CoreCLR_NonWindows()
+        {
+            var testRunner = new TestRunner();
+            return testRunner.RunTestAndVerifyResponse(
+                RuntimeFlavor.CoreClr,
+                RuntimeArchitecture.x64,
+                "http://localhost:5077/",
                 "ResourcesAtRootFolder",
                 "fr-FR",
                 "Bonjour from StartupResourcesAtRootFolder Bonjour from Test in root folder Bonjour from Customer in root folder");
