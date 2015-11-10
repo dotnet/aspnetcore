@@ -2,18 +2,15 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
+using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Server.Kestrel;
-using Microsoft.Extensions.PlatformAbstractions;
-using Microsoft.Extensions.Logging;
-
-#if DNX451
-using System.IO;
-using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNet.Server.Kestrel.Https;
-#endif
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.PlatformAbstractions;
 
 namespace SampleApp
 {
@@ -29,7 +26,6 @@ namespace SampleApp
 
             loggerFactory.AddConsole(LogLevel.Debug);
 
-#if DNX451
             var testCertPath = Path.Combine(
                 env.ApplicationBasePath,
                 @"../../test/Microsoft.AspNet.Server.KestrelTests/TestResources/testCert.pfx");
@@ -42,7 +38,6 @@ namespace SampleApp
             {
                 Console.WriteLine("Could not find certificate at '{0}'. HTTPS is not enabled.", testCertPath);
             }
-#endif
 
             app.Run(async context =>
             {

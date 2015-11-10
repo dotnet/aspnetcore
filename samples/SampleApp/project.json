@@ -2,13 +2,11 @@
     "version": "1.0.0-*",
     "dependencies": {
         "Microsoft.AspNet.Server.Kestrel": "1.0.0-*",
+        "Microsoft.AspNet.Server.Kestrel.Https": "1.0.0-*",
         "Microsoft.Extensions.Logging.Console": "1.0.0-*"
     },
     "frameworks": {
         "dnx451": {
-            "dependencies": {
-                "Microsoft.AspNet.Server.Kestrel.Https": "1.0.0-*"
-            }
         },
         "dnxcore50": {
             "dependencies": {

@@ -3,19 +3,17 @@
     "dependencies": {
         "xunit.runner.aspnet": "2.0.0-aspnet-*",
         "Microsoft.AspNet.Server.Kestrel": "1.0.0-*",
-        "Microsoft.AspNet.Testing": "1.0.0-*"
+        "Microsoft.AspNet.Server.Kestrel.Https": "1.0.0-*",
+        "Microsoft.AspNet.Testing": "1.0.0-*",
+        "System.Net.Http": "4.0.1-beta-*"
     },
     "frameworks": {
-        "dnx451": {
-            "dependencies": {
-                "System.Net.Http": "4.0.1-beta-*",
-                "Microsoft.AspNet.Server.Kestrel.Https": "1.0.0-*"
-            }
-        },
+        "dnx451": { },
         "dnxcore50": {
             "dependencies": {
                 "System.Diagnostics.TraceSource": "4.0.0-beta-*",
                 "System.IO": "4.0.11-beta-*",
+                "System.Net.Http.WinHttpHandler": "4.0.0-beta-*",
                 "System.Net.Sockets": "4.1.0-beta-*",
                 "System.Runtime.Handles": "4.0.1-beta-*"
             }

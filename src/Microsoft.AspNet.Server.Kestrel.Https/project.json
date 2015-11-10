@@ -12,6 +12,11 @@
     "Microsoft.AspNet.Server.Kestrel": "1.0.0-*"
   },
   "frameworks": {
-    "net451": { }
+    "net451": { },
+    "dotnet5.4": {
+      "dependencies": {
+        "System.Net.Security": "4.0.0-beta-*"
+      }
+    }
   }
 }

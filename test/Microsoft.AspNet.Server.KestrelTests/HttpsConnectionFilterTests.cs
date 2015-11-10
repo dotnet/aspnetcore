@@ -1,7 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if DNX451
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
@@ -47,7 +47,13 @@ namespace Microsoft.AspNet.Server.KestrelTests
 
             try
             {
+#if DNX451
+                var handler = new HttpClientHandler();
                 ServicePointManager.ServerCertificateValidationCallback += validationCallback;
+#else
+                var handler = new WinHttpHandler();
+                handler.ServerCertificateValidationCallback += (sender, cert, chain, sslPolicyErrors) => true;
+#endif
 
                 var sereverAddress = "https://localhost:54321/";
                 var serviceContext = new TestServiceContext()
@@ -59,7 +65,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
 
                 using (var server = new TestServer(App, serviceContext, sereverAddress))
                 {
-                    using (var client = new HttpClient())
+                    using (var client = new HttpClient(handler))
                     {
                         var result = await client.PostAsync(sereverAddress, new FormUrlEncodedContent(new[] {
                             new KeyValuePair<string, string>("content", "Hello World?")
@@ -71,9 +77,10 @@ namespace Microsoft.AspNet.Server.KestrelTests
             }
             finally
             {
+#if DNX451
                 ServicePointManager.ServerCertificateValidationCallback -= validationCallback;
+#endif
             }
         }
     }
 }
-#endif
