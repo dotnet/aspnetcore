@@ -56,7 +56,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
             //
             // Reference:
             //  - Windows: https://msdn.microsoft.com/en-us/library/windows/desktop/ms740506(v=vs.85).aspx
-            //  - Linux: https://github.com/torvalds/linux/blob/master/include/linux/socket.h
+            //  - Linux: https://github.com/torvalds/linux/blob/6a13feb9c82803e2b815eca72fa7a9f5561d7861/include/linux/socket.h
             //  - Apple: http://www.opensource.apple.com/source/xnu/xnu-1456.1.26/bsd/sys/socket.h
 
             // Quick calculate the port by mask the field and locate the byte 3 and byte 4
