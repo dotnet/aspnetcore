@@ -50,15 +50,22 @@ namespace Microsoft.AspNet.Http.Extensions
             QueryString query = new QueryString(),
             FragmentString fragment = new FragmentString())
         {
-            string combinePath = (pathBase.HasValue || path.HasValue) ? (pathBase + path).ToString() : "/";
+            var combinedPath = (pathBase.HasValue || path.HasValue) ? (pathBase + path).ToString() : "/";
 
-            return new StringBuilder()
+            var encodedHost = host.ToString();
+            var encodedQuery = query.ToString();
+            var encodedFragment = fragment.ToString();
+
+            var length = scheme.Length + SchemeDelimiter.Length + encodedHost.Length
+                + combinedPath.Length + encodedQuery.Length + encodedFragment.Length;
+
+            return new StringBuilder(length)
                 .Append(scheme)
                 .Append(SchemeDelimiter)
-                .Append(host.ToString())
-                .Append(combinePath)
-                .Append(query.ToString())
-                .Append(fragment.ToString())
+                .Append(encodedHost)
+                .Append(combinedPath)
+                .Append(encodedQuery)
+                .Append(encodedFragment)
                 .ToString();
         }
 
@@ -104,13 +111,21 @@ namespace Microsoft.AspNet.Http.Extensions
         /// <returns></returns>
         public static string GetDisplayUrl(this HttpRequest request)
         {
-            return new StringBuilder()
+            var host = request.Host.Value;
+            var pathBase = request.PathBase.Value;
+            var path = request.Path.Value;
+            var queryString = request.QueryString.Value;
+
+            var length = request.Scheme.Length + SchemeDelimiter.Length + host.Length
+                + pathBase.Length + path.Length + queryString.Length;
+
+            return new StringBuilder(length)
                 .Append(request.Scheme)
                 .Append(SchemeDelimiter)
-                .Append(request.Host.Value)
-                .Append(request.PathBase.Value)
-                .Append(request.Path.Value)
-                .Append(request.QueryString.Value)
+                .Append(host)
+                .Append(pathBase)
+                .Append(path)
+                .Append(queryString)
                 .ToString();
         }
     }
