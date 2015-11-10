@@ -80,8 +80,11 @@ namespace Microsoft.AspNet.Hosting
 
         internal static IConfiguration LoadHostingConfiguration(string configJsonPath, string[] args)
         {
+            // We are adding all environment variables first and then adding the ASPNET_ ones
+            // with the prefix removed to unify with the command line and config file formats
             return new ConfigurationBuilder()
                 .AddJsonFile(configJsonPath, optional: true)
+                .AddEnvironmentVariables()
                 .AddEnvironmentVariables(prefix: EnvironmentVariablesPrefix)
                 .AddCommandLine(args)
                 .Build();
