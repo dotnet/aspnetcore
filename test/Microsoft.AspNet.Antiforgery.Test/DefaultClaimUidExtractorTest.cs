@@ -4,9 +4,7 @@
 using System;
 using System.Linq;
 using System.Security.Claims;
-#if DNX451
 using Moq;
-#endif
 using Xunit;
 
 namespace Microsoft.AspNet.Antiforgery
@@ -26,7 +24,6 @@ namespace Microsoft.AspNet.Antiforgery
             Assert.Null(claimUid);
         }
 
-#if DNX451
         [Fact]
         public void ExtractClaimUid_Unauthenticated()
         {
@@ -61,7 +58,6 @@ namespace Microsoft.AspNet.Antiforgery
             Assert.NotNull(claimUid);
             Assert.Equal("47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=", claimUid);
         }
-#endif
 
         [Fact]
         public void DefaultUniqueClaimTypes_NotPresent_SerializesAllClaimTypes()

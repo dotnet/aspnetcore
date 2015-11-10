@@ -5,9 +5,7 @@ using System;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using Microsoft.AspNet.Http.Internal;
-#if DNX451
 using Moq;
-#endif
 using Xunit;
 
 namespace Microsoft.AspNet.Antiforgery
@@ -53,8 +51,6 @@ namespace Microsoft.AspNet.Antiforgery
             Assert.Null(fieldToken.ClaimUid);
             Assert.Empty(fieldToken.AdditionalData);
         }
-
-#if DNX451
 
         [Fact]
         public void GenerateFormToken_AuthenticatedWithoutUsernameAndNoAdditionalData_NoAdditionalData()
@@ -191,7 +187,6 @@ namespace Microsoft.AspNet.Antiforgery
             Assert.Null(fieldToken.ClaimUid);
             Assert.Empty(fieldToken.AdditionalData);
         }
-#endif
 
         [Fact]
         public void IsCookieTokenValid_FieldToken_ReturnsFalse()
@@ -345,8 +340,6 @@ namespace Microsoft.AspNet.Antiforgery
                 @"The antiforgery cookie token and form field token do not match.",
                 exception.Message);
         }
-
-#if DNX451
 
         [Theory]
         [InlineData("the-user", "the-other-user")]
@@ -542,7 +535,6 @@ namespace Microsoft.AspNet.Antiforgery
             // Assert
             // Nothing to assert - if we got this far, success!
         }
-#endif
 
         private static ClaimsIdentity GetAuthenticatedIdentity(string identityUsername)
         {

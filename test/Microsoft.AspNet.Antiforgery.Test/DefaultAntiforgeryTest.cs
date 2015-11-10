@@ -8,9 +8,7 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.Extensions.OptionsModel;
 using Microsoft.Extensions.WebEncoders.Testing;
-#if DNX451
 using Moq;
-#endif
 using Xunit;
 
 namespace Microsoft.AspNet.Antiforgery
@@ -148,8 +146,6 @@ namespace Microsoft.AspNet.Antiforgery
                  "but the current request is not an SSL request.",
                  exception.Message);
         }
-
-#if DNX451
 
         [Fact]
         public void GetHtml_ExistingInvalidCookieToken_GeneratesANewCookieAndAnAntiforgeryToken()
@@ -496,8 +492,6 @@ namespace Microsoft.AspNet.Antiforgery
             Assert.Equal(expectedHeaderValue, xFrameOptions);
         }
 
-#endif
-
         private DefaultAntiforgery GetAntiforgery(
             AntiforgeryOptions options = null,
             IAntiforgeryTokenGenerator tokenGenerator = null,
@@ -524,8 +518,6 @@ namespace Microsoft.AspNet.Antiforgery
             httpContext.User = new ClaimsPrincipal(new ClaimsIdentity("some-auth"));
             return httpContext;
         }
-
-#if DNX451
 
         private DefaultAntiforgery GetAntiforgery(AntiforgeryMockContext context)
         {
@@ -666,8 +658,6 @@ namespace Microsoft.AspNet.Antiforgery
 
             public Mock<IAntiforgeryTokenSerializer> TokenSerializer { get; set; }
         }
-
-#endif
 
         private class TestOptionsManager : IOptions<AntiforgeryOptions>
         {
