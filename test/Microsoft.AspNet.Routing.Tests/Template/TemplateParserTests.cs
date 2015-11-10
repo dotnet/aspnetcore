@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             // Arrange
             var template = "cool";
 
-            var expected = new RouteTemplate(new List<TemplateSegment>());
+            var expected = new RouteTemplate(template, new List<TemplateSegment>());
             expected.Segments.Add(new TemplateSegment());
             expected.Segments[0].Parts.Add(TemplatePart.CreateLiteral("cool"));
 
@@ -38,7 +38,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             // Arrange
             var template = "{p}";
 
-            var expected = new RouteTemplate(new List<TemplateSegment>());
+            var expected = new RouteTemplate(template, new List<TemplateSegment>());
             expected.Segments.Add(new TemplateSegment());
             expected.Segments[0].Parts.Add(
                 TemplatePart.CreateParameter("p", false, false, defaultValue: null, inlineConstraints: null));
@@ -57,7 +57,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             // Arrange
             var template = "{p?}";
 
-            var expected = new RouteTemplate(new List<TemplateSegment>());
+            var expected = new RouteTemplate(template, new List<TemplateSegment>());
             expected.Segments.Add(new TemplateSegment());
             expected.Segments[0].Parts.Add(
                 TemplatePart.CreateParameter("p", false, true, defaultValue: null, inlineConstraints: null));
@@ -76,7 +76,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             // Arrange
             var template = "cool/awesome/super";
 
-            var expected = new RouteTemplate(new List<TemplateSegment>());
+            var expected = new RouteTemplate(template, new List<TemplateSegment>());
             expected.Segments.Add(new TemplateSegment());
             expected.Segments[0].Parts.Add(TemplatePart.CreateLiteral("cool"));
             expected.Segments.Add(new TemplateSegment());
@@ -97,7 +97,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             // Arrange
             var template = "{p1}/{p2}/{*p3}";
 
-            var expected = new RouteTemplate(new List<TemplateSegment>());
+            var expected = new RouteTemplate(template, new List<TemplateSegment>());
 
             expected.Segments.Add(new TemplateSegment());
             expected.Segments[0].Parts.Add(TemplatePart.CreateParameter("p1",
@@ -136,7 +136,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             // Arrange
             var template = "cool-{p1}";
 
-            var expected = new RouteTemplate(new List<TemplateSegment>());
+            var expected = new RouteTemplate(template, new List<TemplateSegment>());
             expected.Segments.Add(new TemplateSegment());
             expected.Segments[0].Parts.Add(TemplatePart.CreateLiteral("cool-"));
             expected.Segments[0].Parts.Add(TemplatePart.CreateParameter("p1",
@@ -159,7 +159,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             // Arrange
             var template = "{p1}-cool";
 
-            var expected = new RouteTemplate(new List<TemplateSegment>());
+            var expected = new RouteTemplate(template, new List<TemplateSegment>());
             expected.Segments.Add(new TemplateSegment());
             expected.Segments[0].Parts.Add(TemplatePart.CreateParameter("p1",
                                                                         false,
@@ -182,7 +182,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             // Arrange
             var template = "{p1}-cool-{p2}";
 
-            var expected = new RouteTemplate(new List<TemplateSegment>());
+            var expected = new RouteTemplate(template, new List<TemplateSegment>());
             expected.Segments.Add(new TemplateSegment());
             expected.Segments[0].Parts.Add(TemplatePart.CreateParameter("p1",
                                                                         false,
@@ -211,7 +211,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             // Arrange
             var template = "cool-{p1}-awesome";
 
-            var expected = new RouteTemplate(new List<TemplateSegment>());
+            var expected = new RouteTemplate(template, new List<TemplateSegment>());
             expected.Segments.Add(new TemplateSegment());
             expected.Segments[0].Parts.Add(TemplatePart.CreateLiteral("cool-"));
             expected.Segments[0].Parts.Add(TemplatePart.CreateParameter("p1",
@@ -235,7 +235,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             // Arrange
             var template = "{p1}.{p2?}";
 
-            var expected = new RouteTemplate(new List<TemplateSegment>());
+            var expected = new RouteTemplate(template, new List<TemplateSegment>());
             expected.Segments.Add(new TemplateSegment());
             expected.Segments[0].Parts.Add(TemplatePart.CreateParameter("p1",
                                                                         false,
@@ -265,7 +265,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             // Arrange
             var template = "{p1}.{p2}";
 
-            var expected = new RouteTemplate(new List<TemplateSegment>());
+            var expected = new RouteTemplate(template, new List<TemplateSegment>());
             expected.Segments.Add(new TemplateSegment());
             expected.Segments[0].Parts.Add(TemplatePart.CreateParameter("p1",
                                                                         false,
@@ -295,7 +295,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             // Arrange
             var template = "{p1}.{p2}.{p3?}";
 
-            var expected = new RouteTemplate(new List<TemplateSegment>());
+            var expected = new RouteTemplate(template, new List<TemplateSegment>());
             expected.Segments.Add(new TemplateSegment());
             expected.Segments[0].Parts.Add(TemplatePart.CreateParameter("p1",
                                                                         false,
@@ -334,7 +334,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             // Arrange
             var template = "{p1}.{p2}.{p3}";
 
-            var expected = new RouteTemplate(new List<TemplateSegment>());
+            var expected = new RouteTemplate(template, new List<TemplateSegment>());
             expected.Segments.Add(new TemplateSegment());
             expected.Segments[0].Parts.Add(TemplatePart.CreateParameter("p1",
                                                                         false,
@@ -373,7 +373,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             // Arrange
             var template = "{p1}.{p2?}/{p3}";
 
-            var expected = new RouteTemplate(new List<TemplateSegment>());
+            var expected = new RouteTemplate(template, new List<TemplateSegment>());
             expected.Segments.Add(new TemplateSegment());
             expected.Segments[0].Parts.Add(TemplatePart.CreateParameter("p1",
                                                                         false,
@@ -409,7 +409,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             // Arrange
             var template = "{p1}/{p2}.{p3?}";
 
-            var expected = new RouteTemplate(new List<TemplateSegment>());
+            var expected = new RouteTemplate(template, new List<TemplateSegment>());
             expected.Segments.Add(new TemplateSegment());
             expected.Segments[0].Parts.Add(TemplatePart.CreateParameter("p1",
                                                                         false,
@@ -446,7 +446,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             // Arrange
             var template = "{p2}/.{p3?}";
 
-            var expected = new RouteTemplate(new List<TemplateSegment>());
+            var expected = new RouteTemplate(template, new List<TemplateSegment>());
             expected.Segments.Add(new TemplateSegment());
             expected.Segments[0].Parts.Add(TemplatePart.CreateParameter("p2",
                                                                         false,
@@ -480,7 +480,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         public void Parse_RegularExpressions(string template, string constraint)
         {
             // Arrange
-            var expected = new RouteTemplate(new List<TemplateSegment>());
+            var expected = new RouteTemplate(template, new List<TemplateSegment>());
             expected.Segments.Add(new TemplateSegment());
             var c = new InlineConstraint(constraint);
             expected.Segments[0].Parts.Add(
@@ -830,6 +830,11 @@ namespace Microsoft.AspNet.Routing.Template.Tests
                 }
                 else
                 {
+                    if (!string.Equals(x.Template, y.Template, StringComparison.Ordinal))
+                    {
+                        return false;
+                    }
+
                     if (x.Segments.Count != y.Segments.Count)
                     {
                         return false;

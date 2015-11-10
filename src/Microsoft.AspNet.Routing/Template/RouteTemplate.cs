@@ -13,12 +13,14 @@ namespace Microsoft.AspNet.Routing.Template
     {
         private const string SeparatorString = "/";
 
-        public RouteTemplate(List<TemplateSegment> segments)
+        public RouteTemplate(string template, List<TemplateSegment> segments)
         {
             if (segments == null)
             {
                 throw new ArgumentNullException(nameof(segments));
             }
+
+            Template = template;
 
             Segments = segments;
 
@@ -37,9 +39,11 @@ namespace Microsoft.AspNet.Routing.Template
             }
         }
 
-        public IList<TemplatePart> Parameters { get; private set; }
+        public string Template { get; }
 
-        public IList<TemplateSegment> Segments { get; private set; }
+        public IList<TemplatePart> Parameters { get; }
+
+        public IList<TemplateSegment> Segments { get; }
 
         public TemplateSegment GetSegment(int index)
         {

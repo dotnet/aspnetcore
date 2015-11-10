@@ -53,7 +53,7 @@ namespace Microsoft.AspNet.Routing.Template
 
             if (IsAllValid(context, segments))
             {
-                return new RouteTemplate(segments);
+                return new RouteTemplate(routeTemplate, segments);
             }
             else
             {
