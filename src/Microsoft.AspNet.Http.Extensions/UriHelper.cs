@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Text;
 
 namespace Microsoft.AspNet.Http.Extensions
 {
@@ -10,6 +11,8 @@ namespace Microsoft.AspNet.Http.Extensions
     /// </summary>
     public static class UriHelper
     {
+        private const string SchemeDelimiter = "://";
+
         /// <summary>
         /// Combines the given URI components into a string that is properly encoded for use in HTTP headers.
         /// </summary>
@@ -47,8 +50,24 @@ namespace Microsoft.AspNet.Http.Extensions
             QueryString query = new QueryString(),
             FragmentString fragment = new FragmentString())
         {
-            string combinePath = (pathBase.HasValue || path.HasValue) ? (pathBase + path).ToString() : "/";
-            return $"{scheme}://{host.ToString()}{combinePath}{query.ToString()}{fragment.ToString()}";
+            var combinedPath = (pathBase.HasValue || path.HasValue) ? (pathBase + path).ToString() : "/";
+
+            var encodedHost = host.ToString();
+            var encodedQuery = query.ToString();
+            var encodedFragment = fragment.ToString();
+
+            // PERF: Calculate string length to allocate correct buffer size for StringBuilder.
+            var length = scheme.Length + SchemeDelimiter.Length + encodedHost.Length
+                + combinedPath.Length + encodedQuery.Length + encodedFragment.Length;
+
+            return new StringBuilder(length)
+                .Append(scheme)
+                .Append(SchemeDelimiter)
+                .Append(encodedHost)
+                .Append(combinedPath)
+                .Append(encodedQuery)
+                .Append(encodedFragment)
+                .ToString();
         }
 
         /// <summary>
@@ -93,7 +112,23 @@ namespace Microsoft.AspNet.Http.Extensions
         /// <returns></returns>
         public static string GetDisplayUrl(this HttpRequest request)
         {
-            return request.Scheme + "://" + request.Host.Value + request.PathBase.Value + request.Path.Value + request.QueryString.Value;
+            var host = request.Host.Value;
+            var pathBase = request.PathBase.Value;
+            var path = request.Path.Value;
+            var queryString = request.QueryString.Value;
+
+            // PERF: Calculate string length to allocate correct buffer size for StringBuilder.
+            var length = request.Scheme.Length + SchemeDelimiter.Length + host.Length
+                + pathBase.Length + path.Length + queryString.Length;
+
+            return new StringBuilder(length)
+                .Append(request.Scheme)
+                .Append(SchemeDelimiter)
+                .Append(host)
+                .Append(pathBase)
+                .Append(path)
+                .Append(queryString)
+                .ToString();
         }
     }
 }
