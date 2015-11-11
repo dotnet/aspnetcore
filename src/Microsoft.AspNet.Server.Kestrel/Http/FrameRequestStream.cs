@@ -94,7 +94,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 {
                     tcs2.SetResult(task2.Result);
                 }
-            }, tcs);
+            }, tcs, cancellationToken);
             return tcs.Task;
         }
 

@@ -75,7 +75,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Filter
         public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken token)
         {
             var segment = new ArraySegment<byte>(buffer, offset, count);
-            return _output.WriteAsync(segment);
+            return _output.WriteAsync(segment, cancellationToken: token);
         }
 
         public override void Flush()
