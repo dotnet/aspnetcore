@@ -22,24 +22,43 @@ namespace System.Web.Http
     [UseWebApiOverloading]
     public abstract class ApiController : IDisposable
     {
+        private ControllerContext _controllerContext;
         private HttpRequestMessage _request;
         private IModelMetadataProvider _metadataProvider;
         private IObjectModelValidator _objectValidator;
         private IUrlHelper _urlHelper;
 
         /// <summary>
-        /// Gets the action context.
+        /// Gets the <see cref="Microsoft.AspNet.Mvc.ActionContext"/>.
         /// </summary>
-        /// <remarks>The setter is intended for unit testing purposes only.</remarks>
-        [ActionContext]
-        public ActionContext ActionContext { get; set; }
+        public ActionContext ActionContext => ControllerContext;
 
         /// <summary>
-        /// Gets the <see cref="ActionBindingContext"/>.
+        /// Gets or sets the <see cref="ControllerContext"/>.
         /// </summary>
         /// <remarks>The setter is intended for unit testing purposes only.</remarks>
-        [ActionBindingContext]
-        public ActionBindingContext BindingContext { get; set; }
+        [ControllerContext]
+        public ControllerContext ControllerContext
+        {
+            get
+            {
+                if (_controllerContext == null)
+                {
+                    _controllerContext = new ControllerContext();
+                }
+
+                return _controllerContext;
+            }
+            set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
+
+                _controllerContext = value;
+            }
+        }
 
         /// <summary>
         /// Gets the http context.
@@ -48,7 +67,7 @@ namespace System.Web.Http
         {
             get
             {
-                return ActionContext?.HttpContext;
+                return ControllerContext.HttpContext;
             }
         }
 
@@ -101,7 +120,7 @@ namespace System.Web.Http
         {
             get
             {
-                return ActionContext?.ModelState;
+                return ControllerContext.ModelState;
             }
         }
 
@@ -115,7 +134,7 @@ namespace System.Web.Http
             {
                 if (_request == null && ActionContext != null)
                 {
-                    _request = ActionContext.HttpContext.GetHttpRequestMessage();
+                    _request = ControllerContext.HttpContext.GetHttpRequestMessage();
                 }
 
                 return _request;
@@ -553,7 +572,7 @@ namespace System.Web.Http
         {
             var validatidationState = new ValidationStateDictionary();
             ObjectValidator.Validate(
-                BindingContext.ValidatorProvider,
+                new CompositeModelValidatorProvider(ControllerContext.ValidatorProviders),
                 ModelState,
                 validatidationState,
                 keyPrefix,

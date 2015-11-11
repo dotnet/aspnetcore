@@ -47,12 +47,12 @@ namespace ModelBindingWebSite.Controllers
 
         public bool ActionWithCancellationToken(CancellationToken token)
         {
-            return token == ActionContext.HttpContext.RequestAborted;
+            return token == HttpContext.RequestAborted;
         }
 
         public bool ActionWithCancellationTokenModel(CancellationTokenModel wrapper)
         {
-            return wrapper.CancellationToken == ActionContext.HttpContext.RequestAborted;
+            return wrapper.CancellationToken == HttpContext.RequestAborted;
         }
 
         [HttpGet("Home/ActionWithPersonFromUrlWithPrefix/{person.name}/{person.age}")]

@@ -261,7 +261,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
             var result = new ObjectResult("input");
 
             // This formatter won't write anything
-            result.Formatters = new List<IOutputFormatter>
+            result.Formatters = new FormatterCollection<IOutputFormatter>
             {
                 new CannotWriteFormatter(),
             };
@@ -271,36 +271,6 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
 
             // Assert
             Assert.Equal(StatusCodes.Status406NotAcceptable, actionContext.HttpContext.Response.StatusCode);
-        }
-
-        [Fact]
-        public async Task ExecuteAsync_FallsBackOnFormattersInBindingContext()
-        {
-            // Arrange
-            var bindingContext = new ActionBindingContext()
-            {
-                OutputFormatters = new List<IOutputFormatter>()
-                {
-                    new TestJsonOutputFormatter(),
-                }
-            };
-
-            var executor = CreateExecutor(bindingContext: bindingContext);
-
-            var actionContext = new ActionContext()
-            {
-                HttpContext = GetHttpContext(),
-            };
-
-            var result = new ObjectResult("someValue");
-
-            // Act
-            await executor.ExecuteAsync(actionContext, result);
-
-            // Assert
-            Assert.Equal(
-                "application/json; charset=utf-8",
-                actionContext.HttpContext.Response.Headers[HeaderNames.ContentType]);
         }
 
         [Fact]
@@ -450,19 +420,10 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
             return httpContext;
         }
 
-        private static TestObjectResultExecutor CreateExecutor(
-            IOptions<MvcOptions> options = null,
-            ActionBindingContext bindingContext = null)
+        private static TestObjectResultExecutor CreateExecutor(IOptions<MvcOptions> options = null)
         {
-            var bindingContextAccessor = new ActionBindingContextAccessor();
-            if (bindingContext != null)
-            {
-                bindingContextAccessor.ActionBindingContext = bindingContext;
-            }
-
             return new TestObjectResultExecutor(
                 options ?? new TestOptionsManager<MvcOptions>(),
-                bindingContextAccessor,
                 new TestHttpResponseStreamWriterFactory(),
                 NullLoggerFactory.Instance);
         }
@@ -516,10 +477,9 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
         {
             public TestObjectResultExecutor(
                 IOptions<MvcOptions> options, 
-                IActionBindingContextAccessor bindingContextAccessor,
                 IHttpResponseStreamWriterFactory writerFactory,
                 ILoggerFactory loggerFactory) 
-                : base(options, bindingContextAccessor, writerFactory, loggerFactory)
+                : base(options, writerFactory, loggerFactory)
             {
             }
 

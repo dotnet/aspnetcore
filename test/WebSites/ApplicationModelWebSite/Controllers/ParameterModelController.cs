@@ -16,7 +16,7 @@ namespace ApplicationModelWebSite
     {
         public string GetParameterMetadata([Cool] int? id)
         {
-            return ActionContext.ActionDescriptor.Parameters[0].BindingInfo.BinderModelName;
+            return ControllerContext.ActionDescriptor.Parameters[0].BindingInfo.BinderModelName;
         }
 
         private class CoolAttribute : Attribute, IParameterModelConvention

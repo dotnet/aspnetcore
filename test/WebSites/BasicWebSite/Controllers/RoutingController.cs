@@ -35,8 +35,8 @@ namespace BasicWebSite
 
         private object GetData()
         {
-            var routers = ActionContext.RouteData.Routers.Select(r => r.GetType().FullName).ToArray();
-            var dataTokens = ActionContext.RouteData.DataTokens;
+            var routers = RouteData.Routers.Select(r => r.GetType().FullName).ToArray();
+            var dataTokens = RouteData.DataTokens;
 
             return new
             {

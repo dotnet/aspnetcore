@@ -12,58 +12,43 @@ namespace Microsoft.AspNet.Mvc.Controllers
 {
     public class DefaultControllerPropertyActivator : IControllerPropertyActivator
     {
-        private readonly IActionBindingContextAccessor _actionBindingContextAccessor;
-        private readonly ConcurrentDictionary<Type, PropertyActivator<Contexts>[]> _activateActions;
-        private readonly Func<Type, PropertyActivator<Contexts>[]> _getPropertiesToActivate;
+        private readonly ConcurrentDictionary<Type, PropertyActivator<ControllerContext>[]> _activateActions;
+        private readonly Func<Type, PropertyActivator<ControllerContext>[]> _getPropertiesToActivate;
 
-        public DefaultControllerPropertyActivator(IActionBindingContextAccessor actionBindingContextAccessor)
+        public DefaultControllerPropertyActivator()
         {
-            _actionBindingContextAccessor = actionBindingContextAccessor;
-
-            _activateActions = new ConcurrentDictionary<Type, PropertyActivator<Contexts>[]>();
+            _activateActions = new ConcurrentDictionary<Type, PropertyActivator<ControllerContext>[]>();
             _getPropertiesToActivate = GetPropertiesToActivate;
         }
 
-        public void Activate(ActionContext actionContext, object controller)
+        public void Activate(ControllerContext context, object controller)
         {
             var controllerType = controller.GetType();
             var propertiesToActivate = _activateActions.GetOrAdd(
                 controllerType,
                 _getPropertiesToActivate);
 
-            var contexts = new Contexts()
-            {
-                ActionBindingContext = _actionBindingContextAccessor.ActionBindingContext,
-                ActionContext = actionContext,
-            };
-
             for (var i = 0; i < propertiesToActivate.Length; i++)
             {
                 var activateInfo = propertiesToActivate[i];
-                activateInfo.Activate(controller, contexts);
+                activateInfo.Activate(controller, context);
             }
         }
 
-        private PropertyActivator<Contexts>[] GetPropertiesToActivate(Type type)
+        private PropertyActivator<ControllerContext>[] GetPropertiesToActivate(Type type)
         {
-            IEnumerable<PropertyActivator<Contexts>> activators;
-            activators = PropertyActivator<Contexts>.GetPropertiesToActivate(
+            IEnumerable<PropertyActivator<ControllerContext>> activators;
+            activators = PropertyActivator<ControllerContext>.GetPropertiesToActivate(
                 type,
                 typeof(ActionContextAttribute),
-                p => new PropertyActivator<Contexts>(p, c => c.ActionContext));
+                p => new PropertyActivator<ControllerContext>(p, c => c));
 
-            activators = activators.Concat(PropertyActivator<Contexts>.GetPropertiesToActivate(
+            activators = activators.Concat(PropertyActivator<ControllerContext>.GetPropertiesToActivate(
                 type,
-                typeof(ActionBindingContextAttribute),
-                p => new PropertyActivator<Contexts>(p, c => c.ActionBindingContext)));
+                typeof(ControllerContextAttribute),
+                p => new PropertyActivator<ControllerContext>(p, c => c)));
 
             return activators.ToArray();
-        }
-
-        private struct Contexts
-        {
-            public ActionBindingContext ActionBindingContext;
-            public ActionContext ActionContext;
         }
     }
 }

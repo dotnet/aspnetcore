@@ -12,11 +12,10 @@ namespace FormatterWebSite.Controllers
         [HttpPost]
         public object ActionHandlesError([FromBody] DummyClass dummy)
         {
-            if (!ActionContext.ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
                 // Body model binder normally reports errors for parameters using the empty name.
-                var parameterBindingErrors = ActionContext.ModelState["dummy"]?.Errors ??
-                    ActionContext.ModelState[string.Empty]?.Errors;
+                var parameterBindingErrors = ModelState["dummy"]?.Errors ?? ModelState[string.Empty]?.Errors;
                 if (parameterBindingErrors != null && parameterBindingErrors.Count != 0)
                 {
                     return new ErrorInfo

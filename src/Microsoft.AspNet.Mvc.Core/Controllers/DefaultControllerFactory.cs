@@ -47,23 +47,21 @@ namespace Microsoft.AspNet.Mvc.Controllers
         }
 
         /// <inheritdoc />
-        public virtual object CreateController(ActionContext actionContext)
+        public virtual object CreateController(ControllerContext context)
         {
-            if (actionContext == null)
+            if (context == null)
             {
-                throw new ArgumentNullException(nameof(actionContext));
+                throw new ArgumentNullException(nameof(context));
             }
 
-            var actionDescriptor = actionContext.ActionDescriptor as ControllerActionDescriptor;
-            if (actionDescriptor == null)
+            if (context.ActionDescriptor == null)
             {
-                throw new ArgumentException(
-                    Resources.FormatActionDescriptorMustBeBasedOnControllerAction(
-                        typeof(ControllerActionDescriptor)),
-                    nameof(actionContext));
+                throw new ArgumentException(Resources.FormatPropertyOfTypeCannotBeNull(
+                    nameof(ControllerContext.ActionDescriptor),
+                    nameof(ControllerContext)));
             }
 
-            var controllerType = actionDescriptor.ControllerTypeInfo.AsType();
+            var controllerType = context.ActionDescriptor.ControllerTypeInfo.AsType();
             var controllerTypeInfo = controllerType.GetTypeInfo();
             if (controllerTypeInfo.IsValueType ||
                 controllerTypeInfo.IsInterface ||
@@ -71,14 +69,15 @@ namespace Microsoft.AspNet.Mvc.Controllers
                 (controllerTypeInfo.IsGenericType && controllerTypeInfo.IsGenericTypeDefinition))
             {
                 var message = Resources.FormatValueInterfaceAbstractOrOpenGenericTypesCannotBeActivated(
-                    controllerType.FullName, GetType().FullName);
+                    controllerType.FullName, 
+                    GetType().FullName);
                 throw new InvalidOperationException(message);
             }
 
-            var controller = _controllerActivator.Create(actionContext, controllerType);
+            var controller = _controllerActivator.Create(context, controllerType);
             foreach (var propertyActivator in _propertyActivators)
             {
-                propertyActivator.Activate(actionContext, controller);
+                propertyActivator.Activate(context, controller);
             }
 
             return controller;

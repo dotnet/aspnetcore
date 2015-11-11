@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     public class QueryStringValueProviderFactory : IValueProviderFactory
     {
         /// <inheritdoc />
-        public Task<IValueProvider> GetValueProviderAsync(ValueProviderFactoryContext context)
+        public Task<IValueProvider> GetValueProviderAsync(ActionContext context)
         {
             if (context == null)
             {

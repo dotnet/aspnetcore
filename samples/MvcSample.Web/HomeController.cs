@@ -58,7 +58,7 @@ namespace MvcSample.Web
 
         public bool IsDefaultNameSpace()
         {
-            var namespaceToken = ActionContext.RouteData.DataTokens["NameSpace"] as string;
+            var namespaceToken = RouteData.DataTokens["NameSpace"] as string;
             return namespaceToken == "default";
         }
 

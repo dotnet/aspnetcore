@@ -7,11 +7,11 @@ namespace Microsoft.AspNet.Mvc
 {
     /// <summary>
     /// Specifies that a controller property should be set with the current
-    /// <see cref="ActionBindingContext"/> when creating the controller. The property must have a public
+    /// <see cref="ControllerContext"/> when creating the controller. The property must have a public
     /// set method.
     /// </summary>
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
-    public class ActionBindingContextAttribute : Attribute
+    public class ControllerContextAttribute : Attribute
     {
     }
 }

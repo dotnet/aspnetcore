@@ -15,9 +15,7 @@ namespace ApplicationModelWebSite
     {
         public string GetControllerName()
         {
-            var actionDescriptor = (ControllerActionDescriptor)ActionContext.ActionDescriptor;
-
-            return actionDescriptor.ControllerName;
+            return ControllerContext.ActionDescriptor.ControllerName;
         }
 
         private class ControllerNameAttribute : Attribute, IControllerModelConvention

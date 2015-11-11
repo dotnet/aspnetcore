@@ -11,7 +11,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Internal;
-using Microsoft.AspNet.Mvc.Abstractions;
 using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.AspNet.Mvc.Formatters;
 using Microsoft.AspNet.Mvc.ModelBinding;
@@ -479,10 +478,9 @@ namespace Microsoft.AspNet.Mvc.Test
             mockHttpContext.Setup(x => x.Response.RegisterForDispose(It.IsAny<IDisposable>()));
             var uri = new Uri("/test/url", UriKind.Relative);
 
-            var controller = new TestableController()
-            {
-                ActionContext = new ActionContext(mockHttpContext.Object, new RouteData(), new ActionDescriptor())
-            };
+            var controller = new TestableController();
+            controller.ControllerContext.HttpContext = mockHttpContext.Object;
+
             var input = new DisposableObject();
 
             // Act
@@ -565,10 +563,9 @@ namespace Microsoft.AspNet.Mvc.Test
             var mockHttpContext = new Mock<DefaultHttpContext>();
             mockHttpContext.Setup(x => x.Response.RegisterForDispose(It.IsAny<IDisposable>()));
 
-            var controller = new TestableController()
-            {
-                ActionContext = new ActionContext(mockHttpContext.Object, new RouteData(), new ActionDescriptor())
-            };
+            var controller = new TestableController();
+            controller.ControllerContext.HttpContext = mockHttpContext.Object;
+
             var input = new DisposableObject();
 
             // Act
@@ -648,10 +645,9 @@ namespace Microsoft.AspNet.Mvc.Test
             var mockHttpContext = new Mock<DefaultHttpContext>();
             mockHttpContext.Setup(x => x.Response.RegisterForDispose(It.IsAny<IDisposable>()));
 
-            var controller = new TestableController()
-            {
-                ActionContext = new ActionContext(mockHttpContext.Object, new RouteData(), new ActionDescriptor())
-            };
+            var controller = new TestableController();
+            controller.ControllerContext.HttpContext = mockHttpContext.Object;
+
             var input = new DisposableObject();
 
             // Act
@@ -741,10 +737,10 @@ namespace Microsoft.AspNet.Mvc.Test
             // Arrange
             var mockHttpContext = new Mock<DefaultHttpContext>();
             mockHttpContext.Setup(x => x.Response.RegisterForDispose(It.IsAny<IDisposable>()));
-            var controller = new TestableController()
-            {
-                ActionContext = new ActionContext(mockHttpContext.Object, new RouteData(), new ActionDescriptor())
-            };
+
+            var controller = new TestableController();
+            controller.ControllerContext.HttpContext = mockHttpContext.Object;
+
             var fileStream = Stream.Null;
 
             // Act
@@ -764,10 +760,9 @@ namespace Microsoft.AspNet.Mvc.Test
             var mockHttpContext = new Mock<DefaultHttpContext>();
             mockHttpContext.Setup(x => x.Response.RegisterForDispose(It.IsAny<IDisposable>()));
 
-            var controller = new TestableController()
-            {
-                ActionContext = new ActionContext(mockHttpContext.Object, new RouteData(), new ActionDescriptor())
-            };
+            var controller = new TestableController();
+            controller.ControllerContext.HttpContext = mockHttpContext.Object;
+
             var fileStream = Stream.Null;
 
             // Act
@@ -833,10 +828,9 @@ namespace Microsoft.AspNet.Mvc.Test
             var mockHttpContext = new Mock<DefaultHttpContext>();
             mockHttpContext.Setup(x => x.Response.RegisterForDispose(It.IsAny<IDisposable>()));
 
-            var controller = new TestableController()
-            {
-                ActionContext = new ActionContext(mockHttpContext.Object, new RouteData(), new ActionDescriptor())
-            };
+            var controller = new TestableController();
+            controller.ControllerContext.HttpContext = mockHttpContext.Object;
+
             var input = new DisposableObject();
 
             // Act
@@ -872,10 +866,9 @@ namespace Microsoft.AspNet.Mvc.Test
             var mockHttpContext = new Mock<DefaultHttpContext>();
             mockHttpContext.Setup(x => x.Response.RegisterForDispose(It.IsAny<IDisposable>()));
 
-            var controller = new TestableController()
-            {
-                ActionContext = new ActionContext(mockHttpContext.Object, new RouteData(), new ActionDescriptor())
-            };
+            var controller = new TestableController();
+            controller.ControllerContext.HttpContext = mockHttpContext.Object;
+
             var input = new DisposableObject();
 
             // Act
@@ -927,10 +920,9 @@ namespace Microsoft.AspNet.Mvc.Test
             var mockHttpContext = new Mock<DefaultHttpContext>();
             mockHttpContext.Setup(x => x.Response.RegisterForDispose(It.IsAny<IDisposable>()));
 
-            var controller = new TestableController()
-            {
-                ActionContext = new ActionContext(mockHttpContext.Object, new RouteData(), new ActionDescriptor())
-            };
+            var controller = new TestableController();
+            controller.ControllerContext.HttpContext = mockHttpContext.Object;
+
             var input = new DisposableObject();
 
             // Act
@@ -1153,10 +1145,9 @@ namespace Microsoft.AspNet.Mvc.Test
             var mockHttpContext = new Mock<DefaultHttpContext>();
             mockHttpContext.Setup(x => x.Response.RegisterForDispose(It.IsAny<IDisposable>()));
 
-            var controller = new TestableController()
-            {
-                ActionContext = new ActionContext(mockHttpContext.Object, new RouteData(), new ActionDescriptor())
-            };
+            var controller = new TestableController();
+            controller.ControllerContext.HttpContext = mockHttpContext.Object;
+
             var input = new DisposableObject();
 
             // Act
@@ -1177,10 +1168,9 @@ namespace Microsoft.AspNet.Mvc.Test
             var mockHttpContext = new Mock<DefaultHttpContext>();
             mockHttpContext.Setup(x => x.Response.RegisterForDispose(It.IsAny<IDisposable>()));
 
-            var controller = new TestableController()
-            {
-                ActionContext = new ActionContext(mockHttpContext.Object, new RouteData(), new ActionDescriptor())
-            };
+            var controller = new TestableController();
+            controller.ControllerContext.HttpContext = mockHttpContext.Object;
+
             var input = new DisposableObject();
             var serializerSettings = new JsonSerializerSettings();
 
@@ -1255,7 +1245,7 @@ namespace Microsoft.AspNet.Mvc.Test
                   .Callback((ModelBindingContext context) =>
                   {
                       Assert.Empty(context.ModelName);
-                      Assert.Same(valueProvider, context.ValueProvider);
+                      Assert.Same(valueProvider, Assert.IsType<CompositeValueProvider>(context.ValueProvider)[0]);
 
                       // Include and exclude should be null, resulting in property
                       // being included.
@@ -1287,8 +1277,7 @@ namespace Microsoft.AspNet.Mvc.Test
             binder.Setup(b => b.BindModelAsync(It.IsAny<ModelBindingContext>()))
                   .Callback((ModelBindingContext context) =>
                   {
-                      Assert.Equal(modelName, context.ModelName);
-                      Assert.Same(valueProvider, context.ValueProvider);
+                      Assert.Same(valueProvider, Assert.IsType<CompositeValueProvider>(context.ValueProvider)[0]);
 
                       // Include and exclude should be null, resulting in property
                       // being included.
@@ -1319,7 +1308,6 @@ namespace Microsoft.AspNet.Mvc.Test
             binder.Setup(b => b.BindModelAsync(It.IsAny<ModelBindingContext>()))
                   .Callback((ModelBindingContext context) =>
                   {
-                      Assert.Equal(modelName, context.ModelName);
                       Assert.Same(valueProvider, context.ValueProvider);
 
                       // Include and exclude should be null, resulting in property
@@ -1330,7 +1318,7 @@ namespace Microsoft.AspNet.Mvc.Test
                   .Returns(ModelBindingResult.NoResultAsync)
                   .Verifiable();
 
-            var controller = GetController(binder.Object, provider: null);
+            var controller = GetController(binder.Object, valueProvider: null);
             var model = new MyModel();
 
             // Act
@@ -1355,8 +1343,7 @@ namespace Microsoft.AspNet.Mvc.Test
             binder.Setup(b => b.BindModelAsync(It.IsAny<ModelBindingContext>()))
                   .Callback((ModelBindingContext context) =>
                   {
-                      Assert.Equal(modelName, context.ModelName);
-                      Assert.Same(valueProvider, context.ValueProvider);
+                      Assert.Same(valueProvider, Assert.IsType<CompositeValueProvider>(context.ValueProvider)[0]);
 
                       Assert.True(context.PropertyFilter(context, "include1"));
                       Assert.True(context.PropertyFilter(context, "include2"));
@@ -1392,7 +1379,6 @@ namespace Microsoft.AspNet.Mvc.Test
             binder.Setup(b => b.BindModelAsync(It.IsAny<ModelBindingContext>()))
                   .Callback((ModelBindingContext context) =>
                   {
-                      Assert.Equal(modelName, context.ModelName);
                       Assert.Same(valueProvider, context.ValueProvider);
 
                       Assert.True(context.PropertyFilter(context, "include1"));
@@ -1404,7 +1390,7 @@ namespace Microsoft.AspNet.Mvc.Test
                   .Returns(ModelBindingResult.NoResultAsync)
                   .Verifiable();
 
-            var controller = GetController(binder.Object, provider: null);
+            var controller = GetController(binder.Object, valueProvider: null);
 
             var model = new MyModel();
 
@@ -1421,13 +1407,18 @@ namespace Microsoft.AspNet.Mvc.Test
         public async Task TryUpdateModel_IncludeExpressionOverload_UsesPassedArguments(string prefix)
         {
             // Arrange
+            var valueProvider = new Mock<IValueProvider>();
+            valueProvider
+                .Setup(v => v.ContainsPrefix(prefix))
+                .Returns(true);
+
             var binder = new Mock<IModelBinder>();
-            var valueProvider = Mock.Of<IValueProvider>();
             binder.Setup(b => b.BindModelAsync(It.IsAny<ModelBindingContext>()))
                   .Callback((ModelBindingContext context) =>
                   {
-                      Assert.Equal(prefix, context.ModelName);
-                      Assert.Same(valueProvider, context.ValueProvider);
+                      Assert.Same(
+                          valueProvider.Object,
+                          Assert.IsType<CompositeValueProvider>(context.ValueProvider)[0]);
 
                       Assert.True(context.PropertyFilter(context, "Property1"));
                       Assert.True(context.PropertyFilter(context, "Property2"));
@@ -1439,7 +1430,7 @@ namespace Microsoft.AspNet.Mvc.Test
                   .Verifiable();
 
 
-            var controller = GetController(binder.Object, valueProvider);
+            var controller = GetController(binder.Object, valueProvider.Object);
             var model = new MyModel();
 
             // Act
@@ -1456,12 +1447,15 @@ namespace Microsoft.AspNet.Mvc.Test
             TryUpdateModel_IncludeExpressionWithValueProviderOverload_UsesPassedArguments(string prefix)
         {
             // Arrange
-            var binder = new Mock<IModelBinder>();
             var valueProvider = new Mock<IValueProvider>();
+            valueProvider
+                .Setup(v => v.ContainsPrefix(prefix))
+                .Returns(true);
+
+            var binder = new Mock<IModelBinder>();
             binder.Setup(b => b.BindModelAsync(It.IsAny<ModelBindingContext>()))
                   .Callback((ModelBindingContext context) =>
                   {
-                      Assert.Equal(prefix, context.ModelName);
                       Assert.Same(valueProvider.Object, context.ValueProvider);
 
                       Assert.True(context.PropertyFilter(context, "Property1"));
@@ -1473,7 +1467,7 @@ namespace Microsoft.AspNet.Mvc.Test
                   .Returns(ModelBindingResult.NoResultAsync)
                   .Verifiable();
 
-            var controller = GetController(binder.Object, provider: null);
+            var controller = GetController(binder.Object, valueProvider: null);
             var model = new MyModel();
 
             // Act
@@ -1493,12 +1487,12 @@ namespace Microsoft.AspNet.Mvc.Test
                (context, propertyName) => string.Equals(propertyName, "include1", StringComparison.OrdinalIgnoreCase) ||
                                           string.Equals(propertyName, "include2", StringComparison.OrdinalIgnoreCase);
 
-            var binder = new Mock<IModelBinder>();
             var valueProvider = Mock.Of<IValueProvider>();
+
+            var binder = new Mock<IModelBinder>();
             binder.Setup(b => b.BindModelAsync(It.IsAny<ModelBindingContext>()))
                   .Callback((ModelBindingContext context) =>
                   {
-                      Assert.Equal(modelName, context.ModelName);
                       Assert.Same(valueProvider, context.ValueProvider);
 
                       Assert.True(context.PropertyFilter(context, "include1"));
@@ -1510,7 +1504,7 @@ namespace Microsoft.AspNet.Mvc.Test
                   .Returns(ModelBindingResult.NoResultAsync)
                   .Verifiable();
 
-            var controller = GetController(binder.Object, provider: null);
+            var controller = GetController(binder.Object, valueProvider: null);
 
             var model = new MyModel();
 
@@ -1533,8 +1527,7 @@ namespace Microsoft.AspNet.Mvc.Test
             binder.Setup(b => b.BindModelAsync(It.IsAny<ModelBindingContext>()))
                   .Callback((ModelBindingContext context) =>
                   {
-                      Assert.Equal(modelName, context.ModelName);
-                      Assert.Same(valueProvider, context.ValueProvider);
+                      Assert.Same(valueProvider, Assert.IsType<CompositeValueProvider>(context.ValueProvider)[0]);
 
                       // Include and exclude should be null, resulting in property
                       // being included.
@@ -1566,8 +1559,7 @@ namespace Microsoft.AspNet.Mvc.Test
             binder.Setup(b => b.BindModelAsync(It.IsAny<ModelBindingContext>()))
                   .Callback((ModelBindingContext context) =>
                   {
-                      Assert.Equal(modelName, context.ModelName);
-                      Assert.Same(valueProvider, context.ValueProvider);
+                      Assert.Same(valueProvider, Assert.IsType<CompositeValueProvider>(context.ValueProvider)[0]);
 
                       // Include and exclude should be null, resulting in property
                       // being included.
@@ -1600,9 +1592,7 @@ namespace Microsoft.AspNet.Mvc.Test
             httpContext.Setup(c => c.RequestServices)
                            .Returns(serviceProvider);
 
-            controller.ActionContext = new ActionContext(httpContext.Object,
-                                                  Mock.Of<RouteData>(),
-                                                  new ActionDescriptor());
+            controller.ControllerContext.HttpContext = httpContext.Object;
 
             // Act
             var innerServiceProvider = controller.Resolver;
@@ -1622,9 +1612,7 @@ namespace Microsoft.AspNet.Mvc.Test
             httpContext.Setup(c => c.Request)
                            .Returns(request);
 
-            controller.ActionContext = new ActionContext(httpContext.Object,
-                                                  Mock.Of<RouteData>(),
-                                                  new ActionDescriptor());
+            controller.ControllerContext.HttpContext = httpContext.Object;
 
             // Act
             var innerRequest = controller.Request;
@@ -1644,9 +1632,7 @@ namespace Microsoft.AspNet.Mvc.Test
             httpContext.Setup(c => c.Response)
                            .Returns(response);
 
-            controller.ActionContext = new ActionContext(httpContext.Object,
-                                                  Mock.Of<RouteData>(),
-                                                  new ActionDescriptor());
+            controller.ControllerContext.HttpContext = httpContext.Object;
 
             // Act
             var innerResponse = controller.Response;
@@ -1662,10 +1648,7 @@ namespace Microsoft.AspNet.Mvc.Test
             var controller = new TestableController();
 
             var routeData = Mock.Of<RouteData>();
-
-            controller.ActionContext = new ActionContext(Mock.Of<HttpContext>(),
-                                                  routeData,
-                                                  new ActionDescriptor());
+            controller.ControllerContext.RouteData = routeData;
 
             // Act
             var innerRouteData = controller.RouteData;
@@ -1692,8 +1675,12 @@ namespace Microsoft.AspNet.Mvc.Test
         {
             // Arrange
             var binder = new Mock<IModelBinder>();
-            var controller = GetController(binder.Object, provider: null);
-            controller.BindingContext.ValidatorProvider = Mock.Of<IModelValidatorProvider>();
+            var controller = GetController(binder.Object, valueProvider: null);
+            controller.ControllerContext.ValidatorProviders = new List<IModelValidatorProvider>()
+            {
+                Mock.Of<IModelValidatorProvider>(),
+            };
+
             var model = new TryValidateModelModel();
 
             // Act
@@ -1724,8 +1711,11 @@ namespace Microsoft.AspNet.Mvc.Test
                 .Callback<ModelValidatorProviderContext>(c => c.Validators.Add(validator1.Object));
 
             var binder = new Mock<IModelBinder>();
-            var controller = GetController(binder.Object, provider: null);
-            controller.BindingContext.ValidatorProvider = provider.Object;
+            var controller = GetController(binder.Object, valueProvider: null);
+            controller.ControllerContext.ValidatorProviders = new List<IModelValidatorProvider>()
+            {
+                provider.Object,
+            };
 
             // Act
             var result = controller.TryValidateModel(model, "Prefix");
@@ -1757,8 +1747,11 @@ namespace Microsoft.AspNet.Mvc.Test
                 .Callback<ModelValidatorProviderContext>(c => c.Validators.Add(validator1.Object));
 
             var binder = new Mock<IModelBinder>();
-            var controller = GetController(binder.Object, provider: null);
-            controller.BindingContext.ValidatorProvider = provider.Object;
+            var controller = GetController(binder.Object, valueProvider: null);
+            controller.ControllerContext.ValidatorProviders = new List<IModelValidatorProvider>()
+            {
+                provider.Object,
+            };
 
             // Act
             var result = controller.TryValidateModel(model);
@@ -1777,7 +1770,7 @@ namespace Microsoft.AspNet.Mvc.Test
             // Do not add a Mock validator provider to this test. Test is intended to demonstrate ease of unit testing
             // and exercise DataAnnotationsModelValidatorProvider, avoiding #3586 regressions.
             var model = new TryValidateModelModel();
-            var controller = GetController(binder: null, provider: null);
+            var controller = GetController(binder: null, valueProvider: null);
 
             // Act
             var result = controller.TryValidateModel(model);
@@ -1786,19 +1779,6 @@ namespace Microsoft.AspNet.Mvc.Test
             Assert.True(controller.ModelState.IsValid);
         }
 
-        [Fact]
-        public void TryValidateModelEmptyBindingContextThrowsException()
-        {
-            // Arrange
-            var controller = new TestableController();
-            var model = new TryValidateModelModel();
-
-            // Act & Assert
-            var exception = Assert.Throws<InvalidOperationException>(() => controller.TryValidateModel(model));
-            Assert.Equal("The 'BindingContext' property of 'Microsoft.AspNet.Mvc.Controller' must not be null.", exception.Message);
-        }
-
-        [Fact]
         public void TempData_CanSetAndGetValues()
         {
             // Arrange
@@ -1813,34 +1793,34 @@ namespace Microsoft.AspNet.Mvc.Test
             Assert.Equal(input, result);
         }
 
-        private static Controller GetController(IModelBinder binder, IValueProvider provider)
+        private static Controller GetController(IModelBinder binder, IValueProvider valueProvider)
         {
             var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
             var httpContext = new DefaultHttpContext();
-            var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
 
             var viewData = new ViewDataDictionary(metadataProvider, new ModelStateDictionary());
             var tempData = new TempDataDictionary(Mock.Of<IHttpContextAccessor>(), Mock.Of<ITempDataProvider>());
 
-            var bindingContext = new ActionBindingContext()
+            var controllerContext = new ControllerContext()
             {
-                ModelBinder = binder,
-                ValueProvider = provider,
-                InputFormatters = new List<IInputFormatter>(),
-                ValidatorProvider = new DataAnnotationsModelValidatorProvider(
-                    options: null,
-                    stringLocalizerFactory: null)
+                HttpContext = httpContext,
+                ModelBinders = new[] { binder, },
+                ValueProviders = new[] { valueProvider, },
+                ValidatorProviders = new []
+                {
+                    new DataAnnotationsModelValidatorProvider(options: null, stringLocalizerFactory: null),
+                },
             };
 
-            return new TestableController()
+            var controller = new TestableController()
             {
-                ActionContext = actionContext,
-                BindingContext = bindingContext,
+                ControllerContext = controllerContext,
                 MetadataProvider = metadataProvider,
-                ViewData = viewData,
+                ObjectValidator = new DefaultObjectValidator(new IExcludeTypeValidationFilter[0], metadataProvider),
                 TempData = tempData,
-                ObjectValidator = new DefaultObjectValidator(new IExcludeTypeValidationFilter[0], metadataProvider)
+                ViewData = viewData,
             };
+            return controller;
         }
 
         private class MyModel

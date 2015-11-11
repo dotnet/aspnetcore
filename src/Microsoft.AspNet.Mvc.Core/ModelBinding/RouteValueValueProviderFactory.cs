@@ -8,7 +8,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     public class RouteValueValueProviderFactory : IValueProviderFactory
     {
-        public Task<IValueProvider> GetValueProviderAsync(ValueProviderFactoryContext context)
+        public Task<IValueProvider> GetValueProviderAsync(ActionContext context)
         {
             if (context == null)
             {
@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             return Task.FromResult<IValueProvider>(new DictionaryBasedValueProvider(
                 BindingSource.Path,
-                context.RouteValues));
+                context.RouteData.Values));
         }
     }
 }

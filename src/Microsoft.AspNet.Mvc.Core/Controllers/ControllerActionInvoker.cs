@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.AspNet.Mvc.Formatters;
-using Microsoft.AspNet.Mvc.Infrastructure;
 using Microsoft.AspNet.Mvc.Logging;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
@@ -30,12 +29,10 @@ namespace Microsoft.AspNet.Mvc.Controllers
             IControllerFactory controllerFactory,
             ControllerActionDescriptor descriptor,
             IReadOnlyList<IInputFormatter> inputFormatters,
-            IReadOnlyList<IOutputFormatter> outputFormatters,
             IControllerActionArgumentBinder controllerActionArgumentBinder,
             IReadOnlyList<IModelBinder> modelBinders,
             IReadOnlyList<IModelValidatorProvider> modelValidatorProviders,
             IReadOnlyList<IValueProviderFactory> valueProviderFactories,
-            IActionBindingContextAccessor actionBindingContextAccessor,
             ILogger logger,
             DiagnosticSource diagnosticSource,
             int maxModelValidationErrors)
@@ -43,11 +40,9 @@ namespace Microsoft.AspNet.Mvc.Controllers
                   actionContext,
                   filterProviders,
                   inputFormatters,
-                  outputFormatters,
                   modelBinders,
                   modelValidatorProviders,
                   valueProviderFactories,
-                  actionBindingContextAccessor,
                   logger,
                   diagnosticSource,
                   maxModelValidationErrors)
@@ -77,11 +72,6 @@ namespace Microsoft.AspNet.Mvc.Controllers
                 throw new ArgumentNullException(nameof(inputFormatters));
             }
 
-            if (outputFormatters == null)
-            {
-                throw new ArgumentNullException(nameof(outputFormatters));
-            }
-
             if (controllerActionArgumentBinder == null)
             {
                 throw new ArgumentNullException(nameof(controllerActionArgumentBinder));
@@ -100,11 +90,6 @@ namespace Microsoft.AspNet.Mvc.Controllers
             if (valueProviderFactories == null)
             {
                 throw new ArgumentNullException(nameof(valueProviderFactories));
-            }
-
-            if (actionBindingContextAccessor == null)
-            {
-                throw new ArgumentNullException(nameof(actionBindingContextAccessor));
             }
 
             if (logger == null)
@@ -132,9 +117,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
 
         protected override object CreateInstance()
         {
-            // The binding context is used in activation
-            Debug.Assert(ActionBindingContext != null);
-            return _controllerFactory.CreateController(ActionContext);
+            return _controllerFactory.CreateController(Context);
         }
 
         protected override void ReleaseInstance(object instance)
@@ -165,21 +148,9 @@ namespace Microsoft.AspNet.Mvc.Controllers
             return actionResult;
         }
 
-        protected override Task<IDictionary<string, object>> BindActionArgumentsAsync(
-            ActionContext context,
-            ActionBindingContext bindingContext)
+        protected override Task<IDictionary<string, object>> BindActionArgumentsAsync()
         {
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            if (bindingContext == null)
-            {
-                throw new ArgumentNullException(nameof(bindingContext));
-            }
-
-            return _argumentBinder.BindActionArgumentsAsync(context, bindingContext, Instance);
+            return _argumentBinder.BindActionArgumentsAsync(Context, Instance);
         }
 
         // Marking as internal for Unit Testing purposes.

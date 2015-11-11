@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
@@ -30,46 +29,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// </summary>
         /// <param name="valueProviders">The sequence of <see cref="IValueProvider"/> to add to this instance of
         /// <see cref="CompositeValueProvider"/>.</param>
-        protected CompositeValueProvider(IList<IValueProvider> valueProviders)
+        public CompositeValueProvider(IList<IValueProvider> valueProviders)
             : base(valueProviders)
         {
-        }
-
-        /// <summary>
-        /// Creates a new <see cref="CompositeValueProvider"/> from the provided <paramref name="context"/>
-        /// and <paramref name="factories"/>.
-        /// </summary>
-        /// <param name="factories">The set of <see cref="IValueProviderFactory"/> instances.</param>
-        /// <param name="context">The <see cref="ValueProviderFactoryContext"/>.</param>
-        /// <returns>
-        /// A <see cref="CompositeValueProvider"/> containing all <see cref="IValueProvider"/> instances
-        /// created.
-        /// </returns>
-        public static async Task<CompositeValueProvider> CreateAsync(
-            IEnumerable<IValueProviderFactory> factories,
-            ValueProviderFactoryContext context)
-        {
-            if (factories == null)
-            {
-                throw new ArgumentNullException(nameof(factories));
-            }
-
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            var composite = new CompositeValueProvider();
-            foreach (var valueProvidersFactory in factories)
-            {
-                var valueProvider = await valueProvidersFactory.GetValueProviderAsync(context);
-                if (valueProvider != null)
-                {
-                    composite.Add(valueProvider);
-                }
-            }
-
-            return composite;
         }
 
         /// <inheritdoc />

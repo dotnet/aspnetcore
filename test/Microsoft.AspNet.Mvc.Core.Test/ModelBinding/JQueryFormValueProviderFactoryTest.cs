@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Internal;
+using Microsoft.AspNet.Mvc.Abstractions;
+using Microsoft.AspNet.Routing;
 using Microsoft.Extensions.Primitives;
 using Xunit;
 
@@ -114,9 +116,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             Assert.Equal("found", (string)result);
         }
 
-        private static ValueProviderFactoryContext CreateContext(
-            string contentType,
-            Dictionary<string, StringValues> formValues)
+        private static ActionContext CreateContext(string contentType, Dictionary<string, StringValues> formValues)
         {
             var context = new DefaultHttpContext();
             context.Request.ContentType = contentType;
@@ -126,9 +126,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                 context.Request.Form = new FormCollection(formValues ?? new Dictionary<string, StringValues>());
             }
 
-            return new ValueProviderFactoryContext(
-                context,
-                new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase));
+            return new ActionContext(context, new RouteData(), new ActionDescriptor());
         }
     }
 }

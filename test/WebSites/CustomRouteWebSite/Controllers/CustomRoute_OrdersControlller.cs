@@ -10,7 +10,7 @@ namespace CustomRouteWebSite.Controllers
         [HttpGet("CustomRoute_Orders/{id}")]
         public string Index(int id)
         {
-            return "Hello from " + ActionContext.RouteData.Values["locale"] + ".";
+            return "Hello from " + RouteData.Values["locale"] + ".";
         }
     }
 }

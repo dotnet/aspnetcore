@@ -9,11 +9,11 @@ namespace Microsoft.AspNet.Mvc.Controllers
     public interface IControllerFactory
     {
         /// <summary>
-        /// Creates a new controller for the specified <paramref name="actionContext"/>.
+        /// Creates a new controller for the specified <paramref name="context"/>.
         /// </summary>
-        /// <param name="actionContext"><see cref="ActionContext"/> for the action to execute.</param>
+        /// <param name="context"><see cref="ControllerContext"/> for the action to execute.</param>
         /// <returns>The controller.</returns>
-        object CreateController(ActionContext actionContext);
+        object CreateController(ControllerContext context);
 
         /// <summary>
         /// Releases a controller instance.

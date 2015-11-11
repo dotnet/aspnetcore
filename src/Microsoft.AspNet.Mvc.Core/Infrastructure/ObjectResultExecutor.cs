@@ -22,17 +22,14 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
     /// </summary>
     public class ObjectResultExecutor
     {
-        private readonly IActionBindingContextAccessor _bindingContextAccessor;
-
         /// <summary>
         /// Creates a new <see cref="ObjectResultExecutor"/>.
         /// </summary>
         /// <param name="options">An accessor to <see cref="MvcOptions"/>.</param>
-        /// <param name="bindingContextAccessor">The <see cref="IActionBindingContextAccessor"/>.</param>
+        /// <param name="writerFactory">The <see cref="IHttpResponseStreamWriterFactory"/>.</param>
         /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
         public ObjectResultExecutor(
             IOptions<MvcOptions> options,
-            IActionBindingContextAccessor bindingContextAccessor,
             IHttpResponseStreamWriterFactory writerFactory,
             ILoggerFactory loggerFactory)
         {
@@ -41,28 +38,16 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
                 throw new ArgumentNullException(nameof(options));
             }
 
-            if (bindingContextAccessor == null)
-            {
-                throw new ArgumentNullException(nameof(bindingContextAccessor));
-            }
-
             if (loggerFactory == null)
             {
                 throw new ArgumentNullException(nameof(loggerFactory));
             }
-
-            _bindingContextAccessor = bindingContextAccessor;
 
             OptionsFormatters = options.Value.OutputFormatters;
             RespectBrowserAcceptHeader = options.Value.RespectBrowserAcceptHeader;
             Logger = loggerFactory.CreateLogger<ObjectResultExecutor>();
             WriterFactory = writerFactory.CreateWriter;
         }
-
-        /// <summary>
-        /// Gets the <see cref="ActionBindingContext"/> for the current request.
-        /// </summary>
-        protected ActionBindingContext BindingContext => _bindingContextAccessor.ActionBindingContext;
         
         /// <summary>
         /// Gets the <see cref="ILogger"/>.
@@ -72,7 +57,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
         /// <summary>
         /// Gets the list of <see cref="IOutputFormatter"/> instances from <see cref="MvcOptions"/>.
         /// </summary>
-        protected IList<IOutputFormatter> OptionsFormatters { get; }
+        protected FormatterCollection<IOutputFormatter> OptionsFormatters { get; }
 
         /// <summary>
         /// Gets the value of <see cref="MvcOptions.RespectBrowserAcceptHeader"/>.
@@ -109,7 +94,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
             var formatters = result.Formatters;
             if (formatters == null || formatters.Count == 0)
             {
-                formatters = GetDefaultFormatters();
+                formatters = OptionsFormatters;
             }
 
             var objectType = result.DeclaredType;
@@ -505,12 +490,6 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
                     throw new InvalidOperationException(message);
                 }
             }
-        }
-
-        // This can't be cached, because the BindingContext is per-request.
-        private IList<IOutputFormatter> GetDefaultFormatters()
-        {
-            return BindingContext?.OutputFormatters ?? OptionsFormatters;
         }
     }
 }

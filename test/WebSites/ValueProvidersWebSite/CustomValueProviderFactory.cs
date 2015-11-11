@@ -4,13 +4,14 @@
 using System;
 using System.Globalization;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.ModelBinding;
 
 namespace ValueProvidersWebSite
 {
     public class CustomValueProviderFactory : IValueProviderFactory
     {
-        public Task<IValueProvider> GetValueProviderAsync(ValueProviderFactoryContext context)
+        public Task<IValueProvider> GetValueProviderAsync(ActionContext context)
         {
             if (context.HttpContext.Request.Path.Value.Contains("TestValueProvider"))
             {

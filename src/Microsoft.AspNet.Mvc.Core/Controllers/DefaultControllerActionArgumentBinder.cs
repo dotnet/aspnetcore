@@ -36,18 +36,12 @@ namespace Microsoft.AspNet.Mvc.Controllers
         }
 
         public Task<IDictionary<string, object>> BindActionArgumentsAsync(
-            ActionContext actionContext,
-            ActionBindingContext actionBindingContext,
+            ControllerContext context, 
             object controller)
         {
-            if (actionContext == null)
+            if (context == null)
             {
-                throw new ArgumentNullException(nameof(actionContext));
-            }
-
-            if (actionBindingContext == null)
-            {
-                throw new ArgumentNullException(nameof(actionBindingContext));
+                throw new ArgumentNullException(nameof(context));
             }
 
             if (controller == null)
@@ -55,16 +49,15 @@ namespace Microsoft.AspNet.Mvc.Controllers
                 throw new ArgumentNullException(nameof(controller));
             }
 
-            var actionDescriptor = actionContext.ActionDescriptor as ControllerActionDescriptor;
-            if (actionDescriptor == null)
+            if (context.ActionDescriptor == null)
             {
-                throw new ArgumentException(
-                    Resources.FormatActionDescriptorMustBeBasedOnControllerAction(
-                        typeof(ControllerActionDescriptor)),
-                        nameof(actionContext));
+                throw new ArgumentException(Resources.FormatPropertyOfTypeCannotBeNull(
+                    nameof(ControllerContext.ActionDescriptor),
+                    nameof(ControllerContext)));
             }
 
             // Perf: Avoid allocating async state machines when we know there's nothing to bind.
+            var actionDescriptor = context.ActionDescriptor;
             if (actionDescriptor.BoundProperties.Count == 0 &&
                 actionDescriptor.Parameters.Count == 0)
             {
@@ -74,24 +67,22 @@ namespace Microsoft.AspNet.Mvc.Controllers
             else
             {
                 return BindActionArgumentsCoreAsync(
-                    actionContext,
-                    actionBindingContext,
+                    context,
                     controller,
                     actionDescriptor);
             }
         }
 
         private async Task<IDictionary<string, object>> BindActionArgumentsCoreAsync(
-            ActionContext actionContext,
-            ActionBindingContext actionBindingContext,
+            ControllerContext context,
             object controller,
             ControllerActionDescriptor actionDescriptor)
         {
-            var operationBindingContext = GetOperationBindingContext(actionContext, actionBindingContext);
+            var operationBindingContext = GetOperationBindingContext(context);
             var controllerProperties = new Dictionary<string, object>(StringComparer.Ordinal);
             await PopulateArgumentsAsync(
                 operationBindingContext,
-                actionContext.ModelState,
+                context.ModelState,
                 controllerProperties,
                 actionDescriptor.BoundProperties);
             var controllerType = actionDescriptor.ControllerTypeInfo.AsType();
@@ -100,7 +91,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
             var actionArguments = new Dictionary<string, object>(StringComparer.Ordinal);
             await PopulateArgumentsAsync(
                 operationBindingContext,
-                actionContext.ModelState,
+                context.ModelState,
                 actionArguments,
                 actionDescriptor.Parameters);
             return actionArguments;
@@ -229,18 +220,16 @@ namespace Microsoft.AspNet.Mvc.Controllers
             }
         }
 
-        private OperationBindingContext GetOperationBindingContext(
-            ActionContext actionContext,
-            ActionBindingContext bindingContext)
+        private OperationBindingContext GetOperationBindingContext(ControllerContext context)
         {
             return new OperationBindingContext
             {
-                InputFormatters = bindingContext.InputFormatters,
-                ModelBinder = bindingContext.ModelBinder,
-                ValidatorProvider = bindingContext.ValidatorProvider,
+                InputFormatters = context.InputFormatters,
+                ModelBinder = new CompositeModelBinder(context.ModelBinders),
+                ValidatorProvider = new CompositeModelValidatorProvider(context.ValidatorProviders),
                 MetadataProvider = _modelMetadataProvider,
-                HttpContext = actionContext.HttpContext,
-                ValueProvider = bindingContext.ValueProvider,
+                HttpContext = context.HttpContext,
+                ValueProvider = new CompositeValueProvider(context.ValueProviders),
             };
         }
     }

@@ -573,11 +573,9 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
             var actionDescriptorProvider = GetActionDescriptorProvider();
 
             // Act
-            var result = actionDescriptorProvider.GetDescriptors()
-                                                 .Select(x => x as ControllerActionDescriptor)
-                                                 .FirstOrDefault(
-                                                            x => x.ControllerName == "NonAction" &&
-                                                                x.Name == actionName);
+            var result = actionDescriptorProvider
+                .GetDescriptors()
+                .FirstOrDefault(x => x.ControllerName == "NonAction" && x.Name == actionName);
 
             // Assert
             Assert.Null(result);

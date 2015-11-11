@@ -19,7 +19,7 @@ namespace MvcSample.Web
         public string GetOtherThing()
         {
             // Will be GetOtherThing
-            return (string)ActionContext.RouteData.Values["action"];
+            return (string)RouteData.Values["action"];
         }
 
         [HttpGet("Link")]

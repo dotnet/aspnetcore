@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNet.Mvc;
-using Microsoft.AspNet.Mvc.Controllers;
 
 namespace ApplicationModelWebSite
 {
@@ -10,15 +9,13 @@ namespace ApplicationModelWebSite
     {
         public string GetCommonDescription()
         {
-            var actionDescriptor = (ControllerActionDescriptor)ActionContext.ActionDescriptor;
-            return actionDescriptor.Properties["description"].ToString();
+            return ControllerContext.ActionDescriptor.Properties["description"].ToString();
         }
 
         [HttpGet("Home/GetHelloWorld")]
         public object GetHelloWorld([FromHeader] string helloWorld)
         {
-            var actionDescriptor = (ControllerActionDescriptor)ActionContext.ActionDescriptor;
-            return actionDescriptor.Properties["source"].ToString() + " - " + helloWorld;
+            return ControllerContext.ActionDescriptor.Properties["source"].ToString() + " - " + helloWorld;
         }
     }
 }

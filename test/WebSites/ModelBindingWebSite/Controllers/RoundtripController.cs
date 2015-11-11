@@ -32,7 +32,7 @@ namespace ModelBindingWebSite.Controllers
                     _activated = true;
                     var viewData = new ViewDataDictionary<Person>(ViewData);
                     var context = new ViewContext(
-                        ActionContext,
+                        ControllerContext,
                         new TestView(),
                         viewData,
                         TempData,

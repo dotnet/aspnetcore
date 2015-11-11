@@ -41,7 +41,7 @@ namespace Microsoft.AspNet.Mvc
             var result = new ObjectResult("Hello")
             {
                 StatusCode = 404,
-                Formatters = new List<IOutputFormatter>()
+                Formatters = new FormatterCollection<IOutputFormatter>()
                 {
                     new NoOpOutputFormatter(),
                 },
@@ -67,7 +67,6 @@ namespace Microsoft.AspNet.Mvc
             var services = new ServiceCollection();
             services.AddSingleton(new ObjectResultExecutor(
                 new TestOptionsManager<MvcOptions>(),
-                new ActionBindingContextAccessor(),
                 new TestHttpResponseStreamWriterFactory(),
                 NullLoggerFactory.Instance));
             services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);

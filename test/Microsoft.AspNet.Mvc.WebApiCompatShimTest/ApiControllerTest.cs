@@ -9,7 +9,7 @@ using System.Text;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc;
-using Microsoft.AspNet.Mvc.Abstractions;
+using Microsoft.AspNet.Mvc.Controllers;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Routing;
 using Newtonsoft.Json;
@@ -27,12 +27,11 @@ namespace System.Web.Http
 
             var httpContext = new DefaultHttpContext();
             httpContext.User = new ClaimsPrincipal();
-
-            var routeContext = new RouteContext(httpContext);
-            var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
+            
+            var actionContext = new ActionContext(httpContext, new RouteData(), new ControllerActionDescriptor());
 
             // Act
-            controller.ActionContext = actionContext;
+            controller.ControllerContext = new ControllerContext(actionContext);
 
             // Assert
             Assert.Same(httpContext, controller.Context);
@@ -48,7 +47,7 @@ namespace System.Web.Http
 
             // Act & Assert
             Assert.Null(controller.Context);
-            Assert.Null(controller.ModelState);
+            Assert.NotNull(controller.ModelState);
             Assert.Null(controller.User);
         }
 

@@ -12,16 +12,12 @@ namespace Microsoft.AspNet.Mvc.Controllers
     public interface IControllerActionArgumentBinder
     {
         /// <summary>
-        /// Returns a dictionary of representing the parameter-argument name-value pairs,
+        /// Returns a dictionary of the parameter-argument name-value pairs,
         /// which can be used to invoke the action. Also binds properties explicitly marked properties on the 
         /// <paramref name="controller"/>.
         /// </summary>
-        /// <param name="context">The action context assoicated with the current action.</param>
-        /// <param name="bindingContext">The <see cref="ActionBindingContext"/>.</param>
+        /// <param name="context">The <see cref="ControllerContext"/> associated with the current action.</param>
         /// <param name="controller">The controller object which contains the action.</param>
-        Task<IDictionary<string, object>> BindActionArgumentsAsync(
-            ActionContext context,
-            ActionBindingContext bindingContext,
-            object controller);
+        Task<IDictionary<string, object>> BindActionArgumentsAsync(ControllerContext context, object controller);
     }
 }

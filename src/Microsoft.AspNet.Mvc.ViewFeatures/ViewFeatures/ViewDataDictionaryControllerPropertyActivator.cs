@@ -12,18 +12,18 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
     public class ViewDataDictionaryControllerPropertyActivator : IControllerPropertyActivator
     {
         private readonly IModelMetadataProvider _modelMetadataProvider;
-        private readonly ConcurrentDictionary<Type, PropertyActivator<ActionContext>[]> _activateActions;
-        private readonly Func<Type, PropertyActivator<ActionContext>[]> _getPropertiesToActivate;
+        private readonly ConcurrentDictionary<Type, PropertyActivator<ControllerContext>[]> _activateActions;
+        private readonly Func<Type, PropertyActivator<ControllerContext>[]> _getPropertiesToActivate;
 
         public ViewDataDictionaryControllerPropertyActivator(IModelMetadataProvider modelMetadataProvider)
         {
             _modelMetadataProvider = modelMetadataProvider;
 
-            _activateActions = new ConcurrentDictionary<Type, PropertyActivator<ActionContext>[]>();
+            _activateActions = new ConcurrentDictionary<Type, PropertyActivator<ControllerContext>[]>();
             _getPropertiesToActivate = GetPropertiesToActivate;
         }
 
-        public void Activate(ActionContext actionContext, object controller)
+        public void Activate(ControllerContext actionContext, object controller)
         {
             var controllerType = controller.GetType();
             var propertiesToActivate = _activateActions.GetOrAdd(
@@ -37,17 +37,17 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             }
         }
 
-        private PropertyActivator<ActionContext>[] GetPropertiesToActivate(Type type)
+        private PropertyActivator<ControllerContext>[] GetPropertiesToActivate(Type type)
         {
-            var activators = PropertyActivator<ActionContext>.GetPropertiesToActivate(
+            var activators = PropertyActivator<ControllerContext>.GetPropertiesToActivate(
                 type,
                 typeof(ViewDataDictionaryAttribute),
-                p => new PropertyActivator<ActionContext>(p, GetViewDataDictionary));
+                p => new PropertyActivator<ControllerContext>(p, GetViewDataDictionary));
 
             return activators;
         }
 
-        private ViewDataDictionary GetViewDataDictionary(ActionContext context)
+        private ViewDataDictionary GetViewDataDictionary(ControllerContext context)
         {
             var serviceProvider = context.HttpContext.RequestServices;
             return new ViewDataDictionary(

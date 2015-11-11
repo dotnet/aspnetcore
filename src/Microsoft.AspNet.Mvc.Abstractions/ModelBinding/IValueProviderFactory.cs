@@ -10,10 +10,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// <summary>
         /// Gets a <see cref="IValueProvider"/> with values from the current request.
         /// </summary>
-        /// <param name="context">The <see cref="ValueProviderFactoryContext"/>.</param>
+        /// <param name="context">The <see cref="ActionContext"/>.</param>
         /// <returns>
         /// A <see cref="Task"/> that when completed will yield a <see cref="IValueProvider"/> instance or <c>null</c>.
         /// </returns>
-        Task<IValueProvider> GetValueProviderAsync(ValueProviderFactoryContext context);
+        Task<IValueProvider> GetValueProviderAsync(ActionContext context);
     }
 }

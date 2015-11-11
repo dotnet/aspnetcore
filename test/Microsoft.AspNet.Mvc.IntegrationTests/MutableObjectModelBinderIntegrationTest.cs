@@ -1351,6 +1351,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
             var model = Assert.IsType<Order9>(modelBindingResult.Model);
             Assert.NotNull(model.Customer);
+
             Assert.NotNull(model.Customer.Address);
             Assert.Equal(AddressStreetContent, model.Customer.Address.Street);
 

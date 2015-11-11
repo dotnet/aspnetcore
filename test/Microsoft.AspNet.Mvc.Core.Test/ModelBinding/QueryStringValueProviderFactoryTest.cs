@@ -2,11 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 #if DNX451
-using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Mvc.Abstractions;
+using Microsoft.AspNet.Routing;
 using Moq;
 using Xunit;
 #endif
@@ -27,12 +28,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             var context = new Mock<HttpContext>();
             context.SetupGet(c => c.Items).Returns(new Dictionary<object, object>());
             context.SetupGet(c => c.Request).Returns(request.Object);
-            var factoryContext = new ValueProviderFactoryContext(
-                context.Object,
-                new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase));
+            var actionContext = new ActionContext(context.Object, new RouteData(), new ActionDescriptor());
 
             // Act
-            var result = await _factory.GetValueProviderAsync(factoryContext);
+            var result = await _factory.GetValueProviderAsync(actionContext);
 
             // Assert
             var valueProvider = Assert.IsType<QueryStringValueProvider>(result);

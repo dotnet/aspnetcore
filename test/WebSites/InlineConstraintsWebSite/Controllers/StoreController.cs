@@ -11,12 +11,12 @@ namespace InlineConstraintsWebSite.Controllers
     {
         public IDictionary<string, object> GetStoreById(Guid id)
         {
-            return ActionContext.RouteData.Values;
+            return RouteData.Values;
         }
 
         public IDictionary<string, object> GetStoreByLocation(string location)
         {
-            return ActionContext.RouteData.Values;
+            return RouteData.Values;
         }
     }
 }

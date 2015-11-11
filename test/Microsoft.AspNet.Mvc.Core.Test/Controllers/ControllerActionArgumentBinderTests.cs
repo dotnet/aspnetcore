@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.Abstractions;
+using Microsoft.AspNet.Mvc.Formatters;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.ModelBinding.Test;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
@@ -31,24 +32,21 @@ namespace Microsoft.AspNet.Mvc.Controllers
                     BindingInfo = new BindingInfo(),
                 });
 
-            var actionContext = GetActionContext(actionDescriptor);
-
             var binder = new Mock<IModelBinder>();
             binder
                 .Setup(b => b.BindModelAsync(It.IsAny<ModelBindingContext>()))
                 .Returns(ModelBindingResult.NoResultAsync);
-            var actionBindingContext = new ActionBindingContext()
-            {
-                ModelBinder = binder.Object,
-                ValueProvider = new SimpleValueProvider(),
-            };
+
+            var controllerContext = GetControllerContext(actionDescriptor);
+            controllerContext.ModelBinders.Add(binder.Object);
+            controllerContext.ValueProviders.Add(new SimpleValueProvider());
 
             var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
             var argumentBinder = GetArgumentBinder();
 
             // Act
             var result = await argumentBinder
-                .BindActionArgumentsAsync(actionContext, actionBindingContext, new TestController());
+                .BindActionArgumentsAsync(controllerContext, new TestController());
 
             // Assert
             Assert.Empty(result);
@@ -72,23 +70,16 @@ namespace Microsoft.AspNet.Mvc.Controllers
                 .Setup(b => b.BindModelAsync(It.IsAny<ModelBindingContext>()))
                 .Returns(ModelBindingResult.FailedAsync(string.Empty));
 
-            var actionContext = new ActionContext(
-                new DefaultHttpContext(),
-                new RouteData(),
-                actionDescriptor);
-
-            var actionBindingContext = new ActionBindingContext()
-            {
-                ModelBinder = binder.Object,
-                ValueProvider = new SimpleValueProvider(),
-            };
+            var controllerContext = GetControllerContext(actionDescriptor);
+            controllerContext.ModelBinders.Add(binder.Object);
+            controllerContext.ValueProviders.Add(new SimpleValueProvider());
 
             var argumentBinder = GetArgumentBinder();
             var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
 
             // Act
             var result = await argumentBinder
-                .BindActionArgumentsAsync(actionContext, actionBindingContext, new TestController());
+                .BindActionArgumentsAsync(controllerContext, new TestController());
 
             // Assert
             Assert.Empty(result);
@@ -120,22 +111,15 @@ namespace Microsoft.AspNet.Mvc.Controllers
                 })
                 .Returns(ModelBindingResult.SuccessAsync(string.Empty, value));
 
-            var actionContext = new ActionContext(
-                new DefaultHttpContext(),
-                new RouteData(),
-                actionDescriptor);
-
-            var actionBindingContext = new ActionBindingContext()
-            {
-                ModelBinder = binder.Object,
-                ValueProvider = new SimpleValueProvider(),
-            };
+            var controllerContext = GetControllerContext(actionDescriptor);
+            controllerContext.ModelBinders.Add(binder.Object);
+            controllerContext.ValueProviders.Add(new SimpleValueProvider());
 
             var argumentBinder = GetArgumentBinder();
 
             // Act
             var result = await argumentBinder
-                .BindActionArgumentsAsync(actionContext, actionBindingContext, new TestController());
+                .BindActionArgumentsAsync(controllerContext, new TestController());
 
             // Assert
             Assert.Equal(1, result.Count);
@@ -154,8 +138,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
                     ParameterType = typeof(object),
                 });
 
-            var actionContext = GetActionContext(actionDescriptor);
-            var actionBindingContext = GetActionBindingContext();
+            var controllerContext = GetControllerContext(actionDescriptor, "Hello");
 
             var mockValidator = new Mock<IObjectModelValidator>(MockBehavior.Strict);
             mockValidator
@@ -169,8 +152,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
             var argumentBinder = GetArgumentBinder(mockValidator.Object);
 
             // Act
-            var result = await argumentBinder
-                .BindActionArgumentsAsync(actionContext, actionBindingContext, new TestController());
+            var result = await argumentBinder.BindActionArgumentsAsync(controllerContext, new TestController());
 
             // Assert
             mockValidator
@@ -197,21 +179,14 @@ namespace Microsoft.AspNet.Mvc.Controllers
                     BindingInfo = new BindingInfo(),
                 });
 
-            var actionContext = new ActionContext(
-                new DefaultHttpContext(),
-                new RouteData(),
-                actionDescriptor);
-
             var binder = new Mock<IModelBinder>();
             binder
                 .Setup(b => b.BindModelAsync(It.IsAny<ModelBindingContext>()))
                 .Returns(ModelBindingResult.NoResultAsync);
 
-            var actionBindingContext = new ActionBindingContext()
-            {
-                ModelBinder = binder.Object,
-                ValueProvider = new SimpleValueProvider(),
-            };
+            var controllerContext = GetControllerContext(actionDescriptor);
+            controllerContext.ModelBinders.Add(binder.Object);
+            controllerContext.ValueProviders.Add(new SimpleValueProvider());
 
             var mockValidator = new Mock<IObjectModelValidator>(MockBehavior.Strict);
             mockValidator
@@ -225,8 +200,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
             var argumentBinder = GetArgumentBinder(mockValidator.Object);
 
             // Act
-            var result = await argumentBinder
-                .BindActionArgumentsAsync(actionContext, actionBindingContext, new TestController());
+            var result = await argumentBinder.BindActionArgumentsAsync(controllerContext, new TestController());
 
             // Assert
             mockValidator
@@ -251,8 +225,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
                     ParameterType = typeof(string),
                 });
 
-            var actionContext = GetActionContext(actionDescriptor);
-            var actionBindingContext = GetActionBindingContext();
+            var controllerContext = GetControllerContext(actionDescriptor, "Hello");
 
             var mockValidator = new Mock<IObjectModelValidator>(MockBehavior.Strict);
             mockValidator
@@ -266,8 +239,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
             var argumentBinder = GetArgumentBinder(mockValidator.Object);
 
             // Act
-            var result = await argumentBinder
-                .BindActionArgumentsAsync(actionContext, actionBindingContext, new TestController());
+            var result = await argumentBinder.BindActionArgumentsAsync(controllerContext, new TestController());
 
             // Assert
             mockValidator
@@ -293,21 +265,14 @@ namespace Microsoft.AspNet.Mvc.Controllers
                     ParameterType = typeof(string),
                 });
 
-            var actionContext = new ActionContext(
-                new DefaultHttpContext(),
-                new RouteData(),
-                actionDescriptor);
-
             var binder = new Mock<IModelBinder>();
             binder
                 .Setup(b => b.BindModelAsync(It.IsAny<ModelBindingContext>()))
                 .Returns(ModelBindingResult.NoResultAsync);
 
-            var actionBindingContext = new ActionBindingContext()
-            {
-                ModelBinder = binder.Object,
-                ValueProvider = new SimpleValueProvider(),
-            };
+            var controllerContext = GetControllerContext(actionDescriptor);
+            controllerContext.ModelBinders.Add(binder.Object);
+            controllerContext.ValueProviders.Add(new SimpleValueProvider());
 
             var mockValidator = new Mock<IObjectModelValidator>(MockBehavior.Strict);
             mockValidator
@@ -321,8 +286,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
             var argumentBinder = GetArgumentBinder(mockValidator.Object);
 
             // Act
-            var result = await argumentBinder
-                .BindActionArgumentsAsync(actionContext, actionBindingContext, new TestController());
+            var result = await argumentBinder.BindActionArgumentsAsync(controllerContext, new TestController());
 
             // Assert
             mockValidator
@@ -348,13 +312,12 @@ namespace Microsoft.AspNet.Mvc.Controllers
                     ParameterType = typeof(string)
                 });
 
-            var actionContext = GetActionContext(actionDescriptor);
-            var actionBindingContext = GetActionBindingContext();
+            var controllerContext = GetControllerContext(actionDescriptor, "Hello");
             var argumentBinder = GetArgumentBinder();
             var controller = new TestController();
 
             // Act
-            var result = await argumentBinder.BindActionArgumentsAsync(actionContext, actionBindingContext, controller);
+            var result = await argumentBinder.BindActionArgumentsAsync(controllerContext, controller);
 
             // Assert
             Assert.Equal("Hello", controller.StringProperty);
@@ -376,13 +339,13 @@ namespace Microsoft.AspNet.Mvc.Controllers
                 });
 
             var expected = new List<string> { "Hello", "World", "!!" };
-            var actionContext = GetActionContext(actionDescriptor);
-            var actionBindingContext = GetActionBindingContext(model: expected);
+            var controllerContext = GetControllerContext(actionDescriptor, expected);
+
             var argumentBinder = GetArgumentBinder();
             var controller = new TestController();
 
             // Act
-            var result = await argumentBinder.BindActionArgumentsAsync(actionContext, actionBindingContext, controller);
+            var result = await argumentBinder.BindActionArgumentsAsync(controllerContext, controller);
 
             // Assert
             Assert.Equal(expected, controller.CollectionProperty);
@@ -405,18 +368,14 @@ namespace Microsoft.AspNet.Mvc.Controllers
                     ParameterType = typeof(int)
                 });
 
-            var actionContext = GetActionContext(actionDescriptor);
-
             var binder = new Mock<IModelBinder>();
             binder
                 .Setup(b => b.BindModelAsync(It.IsAny<ModelBindingContext>()))
                 .Returns(ModelBindingResult.SuccessAsync(string.Empty, model: null));
 
-            var actionBindingContext = new ActionBindingContext()
-            {
-                ModelBinder = binder.Object,
-                ValueProvider = new SimpleValueProvider(),
-            };
+            var controllerContext = GetControllerContext(actionDescriptor);
+            controllerContext.ModelBinders.Add(binder.Object);
+            controllerContext.ValueProviders.Add(new SimpleValueProvider());
 
             var argumentBinder = GetArgumentBinder();
             var controller = new TestController();
@@ -425,7 +384,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
             controller.NonNullableProperty = -1;
 
             // Act
-            var result = await argumentBinder.BindActionArgumentsAsync(actionContext, actionBindingContext, controller);
+            var result = await argumentBinder.BindActionArgumentsAsync(controllerContext, controller);
 
             // Assert
             Assert.Equal(-1, controller.NonNullableProperty);
@@ -444,18 +403,14 @@ namespace Microsoft.AspNet.Mvc.Controllers
                     ParameterType = typeof(int?)
                 });
 
-            var actionContext = GetActionContext(actionDescriptor);
-
             var binder = new Mock<IModelBinder>();
             binder
                 .Setup(b => b.BindModelAsync(It.IsAny<ModelBindingContext>()))
                 .Returns(ModelBindingResult.SuccessAsync(key: string.Empty, model: null));
 
-            var actionBindingContext = new ActionBindingContext()
-            {
-                ModelBinder = binder.Object,
-                ValueProvider = new SimpleValueProvider(),
-            };
+            var controllerContext = GetControllerContext(actionDescriptor);
+            controllerContext.ModelBinders.Add(binder.Object);
+            controllerContext.ValueProviders.Add(new SimpleValueProvider());
 
             var argumentBinder = GetArgumentBinder();
             var controller = new TestController();
@@ -464,7 +419,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
             controller.NullableProperty = -1;
 
             // Act
-            var result = await argumentBinder.BindActionArgumentsAsync(actionContext, actionBindingContext, controller);
+            var result = await argumentBinder.BindActionArgumentsAsync(controllerContext, controller);
 
             // Assert
             Assert.Null(controller.NullableProperty);
@@ -528,13 +483,12 @@ namespace Microsoft.AspNet.Mvc.Controllers
                     ParameterType = propertyType,
                 });
 
-            var actionContext = GetActionContext(actionDescriptor);
-            var actionBindingContext = GetActionBindingContext(model: inputValue);
+            var controllerContext = GetControllerContext(actionDescriptor, inputValue);
             var argumentBinder = GetArgumentBinder();
             var controller = new TestController();
 
             // Act
-            var result = await argumentBinder.BindActionArgumentsAsync(actionContext, actionBindingContext, controller);
+            var result = await argumentBinder.BindActionArgumentsAsync(controllerContext, controller);
 
             // Assert
             Assert.Equal(expectedValue, propertyAccessor(controller));
@@ -583,16 +537,19 @@ namespace Microsoft.AspNet.Mvc.Controllers
                     });
             }
 
-            var actionContext = GetActionContext(actionDescriptor);
+            var controllerContext = GetControllerContext(actionDescriptor);
             var argumentBinder = GetArgumentBinder();
             var controller = new TestController();
+
             var binder = new Mock<IModelBinder>();
             binder
                 .Setup(b => b.BindModelAsync(It.IsAny<ModelBindingContext>()))
                 .Returns<ModelBindingContext>(bindingContext =>
                 {
+                    // BindingContext.ModelName will be string.Empty here. This is a 'fallback to empty prefix'
+                    // because the value providers have no data.
                     object model;
-                    if (inputPropertyValues.TryGetValue(bindingContext.ModelName, out model))
+                    if (inputPropertyValues.TryGetValue(bindingContext.FieldName, out model))
                     {
                         return ModelBindingResult.SuccessAsync(bindingContext.ModelName, model);
                     }
@@ -601,14 +558,11 @@ namespace Microsoft.AspNet.Mvc.Controllers
                         return ModelBindingResult.FailedAsync(bindingContext.ModelName);
                     }
                 });
-            var actionBindingContext = new ActionBindingContext
-            {
-                ModelBinder = binder.Object,
-                ValueProvider = new SimpleValueProvider(),
-            };
+            controllerContext.ModelBinders.Add(binder.Object);
+            controllerContext.ValueProviders.Add(new SimpleValueProvider());
 
             // Act
-            var result = await argumentBinder.BindActionArgumentsAsync(actionContext, actionBindingContext, controller);
+            var result = await argumentBinder.BindActionArgumentsAsync(controllerContext, controller);
 
             // Assert
             Assert.Equal(new string[] { "goodbye" }, controller.ArrayProperty);                 // Skipped
@@ -619,15 +573,19 @@ namespace Microsoft.AspNet.Mvc.Controllers
             Assert.Equal("Hello", controller.StringProperty);
         }
 
-        private static ActionContext GetActionContext(ActionDescriptor descriptor = null)
+        private static ControllerContext GetControllerContext(ControllerActionDescriptor descriptor = null)
         {
-            return new ActionContext(
-                 new DefaultHttpContext(),
-                 new RouteData(),
-                 descriptor ?? GetActionDescriptor());
+            var context = new ControllerContext()
+            {
+                ActionDescriptor = descriptor ?? GetActionDescriptor(),
+                HttpContext = new DefaultHttpContext(),
+                RouteData = new RouteData(),
+            };
+
+            return context;
         }
 
-        private static ActionDescriptor GetActionDescriptor()
+        private static ControllerActionDescriptor GetActionDescriptor()
         {
             Func<object, int> method = foo => 1;
             return new ControllerActionDescriptor
@@ -639,13 +597,15 @@ namespace Microsoft.AspNet.Mvc.Controllers
             };
         }
 
-        private static ActionBindingContext GetActionBindingContext()
+        private static ControllerContext GetControllerContext(ControllerActionDescriptor descriptor = null, object model = null)
         {
-            return GetActionBindingContext("Hello");
-        }
+            var context = new ControllerContext()
+            {
+                ActionDescriptor = descriptor ?? GetActionDescriptor(),
+                HttpContext = new DefaultHttpContext(),
+                RouteData = new RouteData(),
+            };
 
-        private static ActionBindingContext GetActionBindingContext(object model)
-        {
             var binder = new Mock<IModelBinder>();
             binder.Setup(b => b.BindModelAsync(It.IsAny<ModelBindingContext>()))
                   .Returns<ModelBindingContext>(mbc =>
@@ -653,11 +613,9 @@ namespace Microsoft.AspNet.Mvc.Controllers
                       return ModelBindingResult.SuccessAsync(string.Empty, model);
                   });
 
-            return new ActionBindingContext()
-            {
-                ModelBinder = binder.Object,
-                ValueProvider = new SimpleValueProvider(),
-            };
+            context.ModelBinders.Add(binder.Object);
+            context.ValueProviders.Add(new SimpleValueProvider());
+            return context;
         }
 
         private static DefaultControllerActionArgumentBinder GetArgumentBinder(IObjectModelValidator validator = null)

@@ -2040,7 +2040,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
 
             var actionArgumentsBinder = new Mock<IControllerActionArgumentBinder>();
             actionArgumentsBinder.Setup(
-                    b => b.BindActionArgumentsAsync(actionContext, It.IsAny<ActionBindingContext>(), It.IsAny<object>()))
+                    b => b.BindActionArgumentsAsync(It.IsAny<ControllerContext>(), It.IsAny<object>()))
                 .Returns(Task.FromResult<IDictionary<string, object>>(new Dictionary<string, object>()));
 
             filterProvider
@@ -2053,12 +2053,10 @@ namespace Microsoft.AspNet.Mvc.Controllers
                 new MockControllerFactory(this),
                 actionDescriptor,
                 new IInputFormatter[0],
-                new IOutputFormatter[0],
                 actionArgumentsBinder.Object,
                 new IModelBinder[0],
                 new IModelValidatorProvider[0],
                 new IValueProviderFactory[0],
-                new ActionBindingContextAccessor(),
                 new NullLoggerFactory().CreateLogger<ControllerActionInvoker>(),
                 new DiagnosticListener("Microsoft.AspNet"),
                 maxAllowedErrorsInModelState);
@@ -2101,7 +2099,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
             var actionContext = new ActionContext(context.Object, new RouteData(), actionDescriptor);
 
             var controllerFactory = new Mock<IControllerFactory>();
-            controllerFactory.Setup(c => c.CreateController(It.IsAny<ActionContext>()))
+            controllerFactory.Setup(c => c.CreateController(It.IsAny<ControllerContext>()))
                              .Returns(new TestController());
 
             var metadataProvider = new EmptyModelMetadataProvider();
@@ -2112,14 +2110,12 @@ namespace Microsoft.AspNet.Mvc.Controllers
                 controllerFactory.Object,
                 actionDescriptor,
                 new IInputFormatter[0],
-                new IOutputFormatter[0],
                 new DefaultControllerActionArgumentBinder(
                     metadataProvider,
                     new DefaultObjectValidator(new IExcludeTypeValidationFilter[0], metadataProvider)),
                 new IModelBinder[] { binder.Object },
                 new IModelValidatorProvider[0],
                 new IValueProviderFactory[0],
-                new ActionBindingContextAccessor(),
                 new NullLoggerFactory().CreateLogger<ControllerActionInvoker>(),
                 new DiagnosticListener("Microsoft.AspNet"),
                 200);
@@ -2204,7 +2200,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
 
             public bool ReleaseCalled { get; private set; }
 
-            public object CreateController(ActionContext actionContext)
+            public object CreateController(ControllerContext context)
             {
                 CreateCalled = true;
                 return _controller;
@@ -2234,12 +2230,10 @@ namespace Microsoft.AspNet.Mvc.Controllers
                 MockControllerFactory controllerFactory,
                 ControllerActionDescriptor descriptor,
                 IReadOnlyList<IInputFormatter> inputFormatters,
-                IReadOnlyList<IOutputFormatter> outputFormatters,
                 IControllerActionArgumentBinder controllerActionArgumentBinder,
                 IReadOnlyList<IModelBinder> modelBinders,
                 IReadOnlyList<IModelValidatorProvider> modelValidatorProviders,
                 IReadOnlyList<IValueProviderFactory> valueProviderFactories,
-                IActionBindingContextAccessor actionBindingContext,
                 ILogger logger,
                 DiagnosticSource diagnosticSource,
                 int maxAllowedErrorsInModelState)
@@ -2249,12 +2243,10 @@ namespace Microsoft.AspNet.Mvc.Controllers
                       controllerFactory,
                       descriptor,
                       inputFormatters,
-                      outputFormatters,
                       controllerActionArgumentBinder,
                       modelBinders,
                       modelValidatorProviders,
                       valueProviderFactories,
-                      actionBindingContext,
                       logger,
                       diagnosticSource,
                       maxAllowedErrorsInModelState)

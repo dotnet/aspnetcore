@@ -2,51 +2,40 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.Controllers;
-using Microsoft.AspNet.Mvc.Infrastructure;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.AspNet.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.OptionsModel;
 
 namespace Microsoft.AspNet.Mvc.IntegrationTests
 {
     public static class ModelBindingTestHelper
     {
-        public static HttpContext GetHttpContext(
-            Action<HttpRequest> updateRequest = null,
-            Action<MvcOptions> updateOptions = null)
-        {
-            var httpContext = new DefaultHttpContext();
-
-            if (updateRequest != null)
-            {
-                updateRequest(httpContext.Request);
-            }
-
-            InitializeServices(httpContext, updateOptions);
-            return httpContext;
-        }
-
         public static OperationBindingContext GetOperationBindingContext(
             Action<HttpRequest> updateRequest = null,
             Action<MvcOptions> updateOptions = null)
         {
             var httpContext = GetHttpContext(updateRequest, updateOptions);
-
             var services = httpContext.RequestServices;
-            var actionBindingContext = services.GetRequiredService<IActionBindingContextAccessor>().ActionBindingContext;
+
+            var actionContext = new ActionContext(httpContext, new RouteData(), new ControllerActionDescriptor());
+            var controllerContext = GetControllerContext(
+                services.GetRequiredService<IOptions<MvcOptions>>().Value,
+                actionContext);
 
             return new OperationBindingContext()
             {
                 HttpContext = httpContext,
-                InputFormatters = actionBindingContext.InputFormatters,
+                InputFormatters = controllerContext.InputFormatters,
                 MetadataProvider = TestModelMetadataProvider.CreateDefaultProvider(),
-                ValidatorProvider = actionBindingContext.ValidatorProvider,
-                ValueProvider = actionBindingContext.ValueProvider,
-                ModelBinder = actionBindingContext.ModelBinder
+                ValidatorProvider = new CompositeModelValidatorProvider(controllerContext.ValidatorProviders),
+                ValueProvider = new CompositeValueProvider(controllerContext.ValueProviders),
+                ModelBinder = new CompositeModelBinder(controllerContext.ModelBinders),
             };
         }
 
@@ -68,47 +57,47 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                     metadataProvider);
         }
 
-        private static void InitializeServices(HttpContext httpContext, Action<MvcOptions> updateOptions = null)
+        private static HttpContext GetHttpContext(
+            Action<HttpRequest> updateRequest = null,
+            Action<MvcOptions> updateOptions = null)
         {
+            var httpContext = new DefaultHttpContext();
+
+            if (updateRequest != null)
+            {
+                updateRequest(httpContext.Request);
+            }
+
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddMvc();
 
-            httpContext.RequestServices = serviceCollection.BuildServiceProvider();
-
-            var actionContext = new ActionContext(httpContext, new RouteData(), new ControllerActionDescriptor());
-
-            var actionContextAccessor =
-                httpContext.RequestServices.GetRequiredService<IActionContextAccessor>();
-            actionContextAccessor.ActionContext = actionContext;
-
-            var options = new TestMvcOptions().Value;
             if (updateOptions != null)
             {
-                updateOptions(options);
+                serviceCollection.Configure(updateOptions);
             }
 
-            var actionBindingContextAccessor =
-                httpContext.RequestServices.GetRequiredService<IActionBindingContextAccessor>();
-            actionBindingContextAccessor.ActionBindingContext = GetActionBindingContext(options, actionContext);
+            httpContext.RequestServices = serviceCollection.BuildServiceProvider();
+            return httpContext;
         }
 
-        private static ActionBindingContext GetActionBindingContext(MvcOptions options, ActionContext actionContext)
+        private static ControllerContext GetControllerContext(MvcOptions options, ActionContext context)
         {
-            var valueProviderFactoryContext = new ValueProviderFactoryContext(
-                actionContext.HttpContext,
-                actionContext.RouteData.Values);
+            var valueProviders = new List<IValueProvider>();
+            foreach (var factory in options.ValueProviderFactories)
+            {
+                var valueProvider = factory.GetValueProviderAsync(context).Result;
+                if (valueProvider != null)
+                {
+                    valueProviders.Add(valueProvider);
+                }
+            }
 
-            var valueProvider = CompositeValueProvider.CreateAsync(
-                options.ValueProviderFactories,
-                valueProviderFactoryContext).Result;
-
-            return new ActionBindingContext()
+            return new ControllerContext(context)
             {
                 InputFormatters = options.InputFormatters,
-                OutputFormatters = options.OutputFormatters, // Not required for model binding.
-                ValidatorProvider = new TestModelValidatorProvider(options.ModelValidatorProviders),
-                ModelBinder = new CompositeModelBinder(options.ModelBinders),
-                ValueProvider = valueProvider
+                ValidatorProviders = options.ModelValidatorProviders,
+                ModelBinders = options.ModelBinders,
+                ValueProviders = valueProviders
             };
         }
     }

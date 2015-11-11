@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNet.Mvc;
-using Microsoft.AspNet.Mvc.Controllers;
 
 namespace ApplicationModelWebSite.Controllers
 {
@@ -11,8 +10,7 @@ namespace ApplicationModelWebSite.Controllers
         [HttpGet("Lisence/GetLisence")]
         public string GetLisence()
         {
-            var actionDescriptor = (ControllerActionDescriptor)ActionContext.ActionDescriptor;
-            return actionDescriptor.Properties["lisence"].ToString();
+            return ControllerContext.ActionDescriptor.Properties["lisence"].ToString();
         }
     }
 }

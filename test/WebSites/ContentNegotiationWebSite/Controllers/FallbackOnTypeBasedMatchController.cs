@@ -52,7 +52,7 @@ namespace ContentNegotiationWebSite
         public IActionResult OverrideTheFallback_WithDefaultFormatters(int input)
         {
             var objectResult = new ObjectResult(input);
-            var optionsAccessor = ActionContext.HttpContext.RequestServices
+            var optionsAccessor = HttpContext.RequestServices
                 .GetRequiredService<IOptions<MvcOptions>>();
             objectResult.Formatters.Add(new HttpNotAcceptableOutputFormatter());
             foreach (var formatter in optionsAccessor.Value.OutputFormatters)

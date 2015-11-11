@@ -11,7 +11,6 @@ using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.Diagnostics;
 using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.AspNet.Mvc.Formatters;
-using Microsoft.AspNet.Mvc.Infrastructure;
 using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.AspNet.Mvc.Logging;
 using Microsoft.AspNet.Mvc.ModelBinding;
@@ -27,10 +26,8 @@ namespace Microsoft.AspNet.Mvc.Controllers
         private readonly IReadOnlyList<IFilterProvider> _filterProviders;
         private readonly IReadOnlyList<IInputFormatter> _inputFormatters;
         private readonly IReadOnlyList<IModelBinder> _modelBinders;
-        private readonly IReadOnlyList<IOutputFormatter> _outputFormatters;
         private readonly IReadOnlyList<IModelValidatorProvider> _modelValidatorProviders;
         private readonly IReadOnlyList<IValueProviderFactory> _valueProviderFactories;
-        private readonly IActionBindingContextAccessor _actionBindingContextAccessor;
         private readonly DiagnosticSource _diagnosticSource;
         private readonly int _maxModelValidationErrors;
 
@@ -54,11 +51,9 @@ namespace Microsoft.AspNet.Mvc.Controllers
             ActionContext actionContext,
             IReadOnlyList<IFilterProvider> filterProviders,
             IReadOnlyList<IInputFormatter> inputFormatters,
-            IReadOnlyList<IOutputFormatter> outputFormatters,
             IReadOnlyList<IModelBinder> modelBinders,
             IReadOnlyList<IModelValidatorProvider> modelValidatorProviders,
             IReadOnlyList<IValueProviderFactory> valueProviderFactories,
-            IActionBindingContextAccessor actionBindingContextAccessor,
             ILogger logger,
             DiagnosticSource diagnosticSource,
             int maxModelValidationErrors)
@@ -78,11 +73,6 @@ namespace Microsoft.AspNet.Mvc.Controllers
                 throw new ArgumentNullException(nameof(inputFormatters));
             }
 
-            if (outputFormatters == null)
-            {
-                throw new ArgumentNullException(nameof(outputFormatters));
-            }
-
             if (modelBinders == null)
             {
                 throw new ArgumentNullException(nameof(modelBinders));
@@ -98,11 +88,6 @@ namespace Microsoft.AspNet.Mvc.Controllers
                 throw new ArgumentNullException(nameof(valueProviderFactories));
             }
 
-            if (actionBindingContextAccessor == null)
-            {
-                throw new ArgumentNullException(nameof(actionBindingContextAccessor));
-            }
-
             if (logger == null)
             {
                 throw new ArgumentNullException(nameof(logger));
@@ -113,33 +98,19 @@ namespace Microsoft.AspNet.Mvc.Controllers
                 throw new ArgumentNullException(nameof(diagnosticSource));
             }
 
-            ActionContext = actionContext;
+            Context = new ControllerContext(actionContext);
 
             _filterProviders = filterProviders;
             _inputFormatters = inputFormatters;
-            _outputFormatters = outputFormatters;
             _modelBinders = modelBinders;
             _modelValidatorProviders = modelValidatorProviders;
             _valueProviderFactories = valueProviderFactories;
-            _actionBindingContextAccessor = actionBindingContextAccessor;
             Logger = logger;
             _diagnosticSource = diagnosticSource;
             _maxModelValidationErrors = maxModelValidationErrors;
         }
 
-        protected ActionContext ActionContext { get; private set; }
-
-        protected ActionBindingContext ActionBindingContext
-        {
-            get
-            {
-                return _actionBindingContextAccessor.ActionBindingContext;
-            }
-            private set
-            {
-                _actionBindingContextAccessor.ActionBindingContext = value;
-            }
-        }
+        protected ControllerContext Context { get; }
 
         protected object Instance { get; private set; }
 
@@ -160,16 +131,14 @@ namespace Microsoft.AspNet.Mvc.Controllers
 
         protected abstract Task<IActionResult> InvokeActionAsync(ActionExecutingContext actionExecutingContext);
 
-        protected abstract Task<IDictionary<string, object>> BindActionArgumentsAsync(
-            ActionContext context,
-            ActionBindingContext bindingContext);
+        protected abstract Task<IDictionary<string, object>> BindActionArgumentsAsync();
 
         public virtual async Task InvokeAsync()
         {
             _filters = GetFilters();
             _cursor = new FilterCursor(_filters);
 
-            ActionContext.ModelState.MaxAllowedErrors = _maxModelValidationErrors;
+            Context.ModelState.MaxAllowedErrors = _maxModelValidationErrors;
 
             await InvokeAllAuthorizationFiltersAsync();
 
@@ -215,14 +184,14 @@ namespace Microsoft.AspNet.Mvc.Controllers
 
         private IFilterMetadata[] GetFilters()
         {
-            var filterDescriptors = ActionContext.ActionDescriptor.FilterDescriptors;
+            var filterDescriptors = Context.ActionDescriptor.FilterDescriptors;
             var items = new List<FilterItem>(filterDescriptors.Count);
             for (var i = 0; i < filterDescriptors.Count; i++)
             {
                 items.Add(new FilterItem(filterDescriptors[i]));
             }
 
-            var context = new FilterProviderContext(ActionContext, items);
+            var context = new FilterProviderContext(Context, items);
             for (var i = 0; i < _filterProviders.Count; i++)
             {
                 _filterProviders[i].OnProvidersExecuting(context);
@@ -266,7 +235,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
         {
             _cursor.Reset();
 
-            _authorizationContext = new AuthorizationContext(ActionContext, _filters);
+            _authorizationContext = new AuthorizationContext(Context, _filters);
             return InvokeAuthorizationFilterAsync();
         }
 
@@ -332,12 +301,10 @@ namespace Microsoft.AspNet.Mvc.Controllers
         {
             _cursor.Reset();
 
-            var context = new ResourceExecutingContext(ActionContext, _filters);
+            var context = new ResourceExecutingContext(Context, _filters);
 
             context.InputFormatters = new FormatterCollection<IInputFormatter>(
                 new CopyOnWriteList<IInputFormatter>(_inputFormatters));
-            context.OutputFormatters = new FormatterCollection<IOutputFormatter>(
-                new CopyOnWriteList<IOutputFormatter>(_outputFormatters));
             context.ModelBinders = new CopyOnWriteList<IModelBinder>(_modelBinders);
             context.ValidatorProviders = new CopyOnWriteList<IModelValidatorProvider>(_modelValidatorProviders);
             context.ValueProviderFactories = new CopyOnWriteList<IValueProviderFactory>(_valueProviderFactories);
@@ -441,20 +408,22 @@ namespace Microsoft.AspNet.Mvc.Controllers
                 {
                     // We've reached the end of resource filters, so move to setting up state to invoke model
                     // binding.
-                    ActionBindingContext = new ActionBindingContext();
-                    ActionBindingContext.InputFormatters = _resourceExecutingContext.InputFormatters;
-                    ActionBindingContext.OutputFormatters = _resourceExecutingContext.OutputFormatters;
-                    ActionBindingContext.ModelBinder = new CompositeModelBinder(_resourceExecutingContext.ModelBinders);
-                    ActionBindingContext.ValidatorProvider = new CompositeModelValidatorProvider(
-                        _resourceExecutingContext.ValidatorProviders);
+                    Context.InputFormatters = _resourceExecutingContext.InputFormatters;
+                    Context.ModelBinders = _resourceExecutingContext.ModelBinders;
+                    Context.ValidatorProviders = _resourceExecutingContext.ValidatorProviders;
 
-                    var valueProviderFactoryContext = new ValueProviderFactoryContext(
-                        ActionContext.HttpContext,
-                        ActionContext.RouteData.Values);
+                    var valueProviders = new List<IValueProvider>();
 
-                    ActionBindingContext.ValueProvider = await CompositeValueProvider.CreateAsync(
-                        _resourceExecutingContext.ValueProviderFactories,
-                        valueProviderFactoryContext);
+                    for (var i = 0; i < _resourceExecutingContext.ValueProviderFactories.Count; i++)
+                    {
+                        var factory = _resourceExecutingContext.ValueProviderFactories[i];
+                        var valueProvider = await factory.GetValueProviderAsync(Context);
+                        if (valueProvider != null)
+                        {
+                            valueProviders.Add(valueProvider);
+                        }
+                    }
+                    Context.ValueProviders = valueProviders;
 
                     // >> ExceptionFilters >> Model Binding >> ActionFilters >> Action
                     await InvokeAllExceptionFiltersAsync();
@@ -587,7 +556,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
                 // 1) Call the filter (if we have an exception)
                 // 2) No-op (if we don't have an exception)
                 Debug.Assert(_exceptionContext == null);
-                _exceptionContext = new ExceptionContext(ActionContext, _filters);
+                _exceptionContext = new ExceptionContext(Context, _filters);
 
                 try
                 {
@@ -617,10 +586,10 @@ namespace Microsoft.AspNet.Mvc.Controllers
 
             Instance = CreateInstance();
 
-            var arguments = await BindActionArgumentsAsync(ActionContext, ActionBindingContext);
+            var arguments = await BindActionArgumentsAsync();
 
             _actionExecutingContext = new ActionExecutingContext(
-                ActionContext,
+                Context,
                 _filters,
                 arguments,
                 Instance);
@@ -723,7 +692,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
                     try
                     {
                         _diagnosticSource.BeforeActionMethod(
-                            ActionContext,
+                            Context,
                             _actionExecutingContext.ActionArguments,
                             _actionExecutingContext.Controller);
 
@@ -732,7 +701,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
                     finally
                     {
                         _diagnosticSource.AfterActionMethod(
-                            ActionContext,
+                            Context,
                             _actionExecutingContext.ActionArguments,
                             _actionExecutingContext.Controller,
                             result);
@@ -765,7 +734,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
         {
             _cursor.Reset();
 
-            _resultExecutingContext = new ResultExecutingContext(ActionContext, _filters, result, Instance);
+            _resultExecutingContext = new ResultExecutingContext(Context, _filters, result, Instance);
             await InvokeResultFilterAsync();
 
             Debug.Assert(_resultExecutingContext != null);
@@ -908,15 +877,15 @@ namespace Microsoft.AspNet.Mvc.Controllers
 
         private async Task InvokeResultAsync(IActionResult result)
         {
-            _diagnosticSource.BeforeActionResult(ActionContext, result);
+            _diagnosticSource.BeforeActionResult(Context, result);
 
             try
             {
-                await result.ExecuteResultAsync(ActionContext);
+                await result.ExecuteResultAsync(Context);
             }
             finally
             {
-                _diagnosticSource.AfterActionResult(ActionContext, result);
+                _diagnosticSource.AfterActionResult(Context, result);
             }
         }
 

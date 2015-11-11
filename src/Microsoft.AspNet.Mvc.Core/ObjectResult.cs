@@ -16,13 +16,13 @@ namespace Microsoft.AspNet.Mvc
         public ObjectResult(object value)
         {
             Value = value;
-            Formatters = new List<IOutputFormatter>();
+            Formatters = new FormatterCollection<IOutputFormatter>();
             ContentTypes = new List<MediaTypeHeaderValue>();
         }
 
         public object Value { get; set; }
 
-        public IList<IOutputFormatter> Formatters { get; set; }
+        public FormatterCollection<IOutputFormatter> Formatters { get; set; }
 
         public IList<MediaTypeHeaderValue> ContentTypes { get; set; }
 

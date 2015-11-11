@@ -41,7 +41,7 @@ namespace BasicWebSite
         }
 
         [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
-        private class CamelCaseJsonFormattersAttribute : Attribute, IResourceFilter
+        private class CamelCaseJsonFormattersAttribute : Attribute, IResourceFilter, IResultFilter
         {
             private readonly JsonSerializerSettings _serializerSettings;
 
@@ -61,10 +61,22 @@ namespace BasicWebSite
                 // Instead remove and add new formatters which only effects the controllers this
                 // attribute is decorated on.
                 context.InputFormatters.RemoveType<JsonInputFormatter>();
-                context.OutputFormatters.RemoveType<JsonOutputFormatter>();
-
                 context.InputFormatters.Add(new JsonInputFormatter(_serializerSettings));
-                context.OutputFormatters.Add(new JsonOutputFormatter(_serializerSettings));
+                
+            }
+
+            public void OnResultExecuted(ResultExecutedContext context)
+            {
+            }
+
+            public void OnResultExecuting(ResultExecutingContext context)
+            {
+                var objectResult = context.Result as ObjectResult;
+                if (objectResult != null)
+                {
+                    objectResult.Formatters.RemoveType<JsonOutputFormatter>();
+                    objectResult.Formatters.Add(new JsonOutputFormatter(_serializerSettings));
+                }
             }
         }
     }
