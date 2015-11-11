@@ -4,12 +4,12 @@
 using System;
 using Microsoft.AspNet.DataProtection.AuthenticatedEncryption;
 
-namespace Microsoft.AspNet.DataProtection.Cng
+namespace Microsoft.AspNet.DataProtection.Cng.Internal
 {
     /// <summary>
     /// Base class used for all CNG-related authentication encryption operations.
     /// </summary>
-    internal unsafe abstract class CngAuthenticatedEncryptorBase : IOptimizedAuthenticatedEncryptor, IDisposable
+    public unsafe abstract class CngAuthenticatedEncryptorBase : IOptimizedAuthenticatedEncryptor, IDisposable
     {
         public byte[] Decrypt(ArraySegment<byte> ciphertext, ArraySegment<byte> additionalAuthenticatedData)
         {

@@ -53,7 +53,7 @@ namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationM
             var control = new ManagedAuthenticatedEncryptorDescriptor(
                 new ManagedAuthenticatedEncryptionOptions()
                 {
-                    EncryptionAlgorithmType = typeof(AesCryptoServiceProvider),
+                    EncryptionAlgorithmType = typeof(Aes),
                     EncryptionAlgorithmKeySize = 192,
                     ValidationAlgorithmType = typeof(HMACSHA384)
                 },
@@ -67,7 +67,7 @@ namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationM
                     <value>k88VrwGLINfVAqzlAp7U4EAjdlmUG17c756McQGdjHU8Ajkfc/A3YOKdqlMcF6dXaIxATED+g2f62wkRRRRRzA==</value>
                   </masterKey>
                 </descriptor>",
-                 typeof(AesCryptoServiceProvider).AssemblyQualifiedName, typeof(HMACSHA384).AssemblyQualifiedName);
+                 typeof(Aes).AssemblyQualifiedName, typeof(HMACSHA384).AssemblyQualifiedName);
             var test = new ManagedAuthenticatedEncryptorDescriptorDeserializer().ImportFromXml(XElement.Parse(xml)).CreateEncryptorInstance();
 
             // Act & assert

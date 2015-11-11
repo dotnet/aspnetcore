@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNet.Cryptography;
 using Microsoft.AspNet.DataProtection.AuthenticatedEncryption;
+using Microsoft.AspNet.DataProtection.KeyManagement.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNet.DataProtection.KeyManagement

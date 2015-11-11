@@ -9,6 +9,7 @@ using System.Linq;
 using System.Xml.Linq;
 using Microsoft.AspNet.Cryptography;
 using Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationModel;
+using Microsoft.AspNet.DataProtection.Internal;
 
 namespace Microsoft.AspNet.DataProtection.XmlEncryption
 {

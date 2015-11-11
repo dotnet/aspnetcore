@@ -3,9 +3,9 @@
 
 using System;
 
-namespace Microsoft.AspNet.DataProtection.KeyManagement
+namespace Microsoft.AspNet.DataProtection.KeyManagement.Internal
 {
-    internal struct DefaultKeyResolution
+    public struct DefaultKeyResolution
     {
         /// <summary>
         /// The default key, may be null if no key is a good default candidate.

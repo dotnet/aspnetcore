@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using Microsoft.AspNet.Cryptography;
+using Microsoft.AspNet.DataProtection.KeyManagement.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 

@@ -7,7 +7,7 @@ using Microsoft.AspNet.Testing.xunit;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.DataProtection.Cng
+namespace Microsoft.AspNet.DataProtection.Cng.Internal
 {
     public unsafe class CngAuthenticatedEncryptorBaseTests
     {
@@ -89,7 +89,7 @@ namespace Microsoft.AspNet.DataProtection.Cng
             Assert.Equal(new byte[] { 0x20, 0x21, 0x22 }, retVal);
         }
 
-        internal abstract class MockableEncryptor : CngAuthenticatedEncryptorBase
+        public abstract class MockableEncryptor : CngAuthenticatedEncryptorBase
         {
             public override void Dispose()
             {

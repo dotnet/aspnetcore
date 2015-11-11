@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading;
 using Microsoft.AspNet.Cryptography;
 using Microsoft.AspNet.DataProtection.AuthenticatedEncryption;
+using Microsoft.AspNet.DataProtection.KeyManagement.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNet.DataProtection.KeyManagement

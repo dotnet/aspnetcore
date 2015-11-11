@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.DataProtection.AuthenticatedEncryption;
+using Microsoft.AspNet.DataProtection.KeyManagement.Internal;
 using Microsoft.AspNet.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;

@@ -3,6 +3,7 @@
 
 using System;
 using System.Threading;
+using Microsoft.AspNet.DataProtection.KeyManagement.Internal;
 using Moq;
 using Xunit;
 

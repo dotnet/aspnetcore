@@ -3,10 +3,10 @@
 
 using System;
 
-namespace Microsoft.AspNet.DataProtection.KeyManagement
+namespace Microsoft.AspNet.DataProtection.KeyManagement.Internal
 {
-    internal interface IKeyRingProvider
+    public interface ICacheableKeyRingProvider
     {
-        IKeyRing GetCurrentKeyRing();
+        CacheableKeyRing GetCacheableKeyRing(DateTimeOffset now);
     }
 }

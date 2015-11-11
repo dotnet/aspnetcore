@@ -5,12 +5,12 @@ using System;
 using Microsoft.AspNet.DataProtection.Repositories;
 using Microsoft.AspNet.DataProtection.XmlEncryption;
 
-namespace Microsoft.AspNet.DataProtection.KeyManagement
+namespace Microsoft.AspNet.DataProtection.KeyManagement.Internal
 {
     /// <summary>
     /// Provides default implementations of the services required by an <see cref="IKeyManager"/>.
     /// </summary>
-    internal interface IDefaultKeyServices
+    public interface IDefaultKeyServices
     {
         /// <summary>
         /// Gets the default <see cref="IXmlEncryptor"/> service (could return null).

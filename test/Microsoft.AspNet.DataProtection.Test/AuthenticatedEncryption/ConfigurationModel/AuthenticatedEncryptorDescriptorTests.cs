@@ -74,14 +74,23 @@ namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationM
             Assert.Equal(plaintext, roundTripPlaintext);
         }
 
+        public static TheoryData CreateAuthenticatedEncryptor_RoundTripsData_ManagedImplementationData
+            => new TheoryData<EncryptionAlgorithm, ValidationAlgorithm, Func<HMAC>>
+            {
+                { EncryptionAlgorithm.AES_128_CBC, ValidationAlgorithm.HMACSHA256, () => new HMACSHA256() },
+                { EncryptionAlgorithm.AES_192_CBC, ValidationAlgorithm.HMACSHA256, () => new HMACSHA256() },
+                { EncryptionAlgorithm.AES_256_CBC, ValidationAlgorithm.HMACSHA256, () => new HMACSHA256() },
+                { EncryptionAlgorithm.AES_128_CBC, ValidationAlgorithm.HMACSHA512, () => new HMACSHA512() },
+                { EncryptionAlgorithm.AES_192_CBC, ValidationAlgorithm.HMACSHA512, () => new HMACSHA512() },
+                { EncryptionAlgorithm.AES_256_CBC, ValidationAlgorithm.HMACSHA512, () => new HMACSHA512() },
+            };
+
         [Theory]
-        [InlineData(EncryptionAlgorithm.AES_128_CBC, ValidationAlgorithm.HMACSHA256)]
-        [InlineData(EncryptionAlgorithm.AES_192_CBC, ValidationAlgorithm.HMACSHA256)]
-        [InlineData(EncryptionAlgorithm.AES_256_CBC, ValidationAlgorithm.HMACSHA256)]
-        [InlineData(EncryptionAlgorithm.AES_128_CBC, ValidationAlgorithm.HMACSHA512)]
-        [InlineData(EncryptionAlgorithm.AES_192_CBC, ValidationAlgorithm.HMACSHA512)]
-        [InlineData(EncryptionAlgorithm.AES_256_CBC, ValidationAlgorithm.HMACSHA512)]
-        public void CreateAuthenticatedEncryptor_RoundTripsData_ManagedImplementation(EncryptionAlgorithm encryptionAlgorithm, ValidationAlgorithm validationAlgorithm)
+        [MemberData(nameof(CreateAuthenticatedEncryptor_RoundTripsData_ManagedImplementationData))]
+        public void CreateAuthenticatedEncryptor_RoundTripsData_ManagedImplementation(
+            EncryptionAlgorithm encryptionAlgorithm,
+            ValidationAlgorithm validationAlgorithm,
+            Func<HMAC> validationAlgorithmFactory)
         {
             // Parse test input
             int keyLengthInBits = Int32.Parse(Regex.Match(encryptionAlgorithm.ToString(), @"^AES_(?<keyLength>\d{3})_CBC$").Groups["keyLength"].Value, CultureInfo.InvariantCulture);
@@ -90,9 +99,9 @@ namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationM
             var masterKey = Secret.Random(512 / 8);
             var control = new ManagedAuthenticatedEncryptor(
                 keyDerivationKey: masterKey,
-                symmetricAlgorithmFactory: () => new AesCryptoServiceProvider(),
+                symmetricAlgorithmFactory: () => Aes.Create(),
                 symmetricAlgorithmKeySizeInBytes: keyLengthInBits / 8,
-                validationAlgorithmFactory: () => KeyedHashAlgorithm.Create(validationAlgorithm.ToString()));
+                validationAlgorithmFactory: validationAlgorithmFactory);
             var test = CreateDescriptor(encryptionAlgorithm, validationAlgorithm, masterKey).CreateEncryptorInstance();
 
             // Act & assert - data round trips properly from control to test

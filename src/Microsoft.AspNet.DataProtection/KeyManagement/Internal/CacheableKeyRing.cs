@@ -5,12 +5,12 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 
-namespace Microsoft.AspNet.DataProtection.KeyManagement
+namespace Microsoft.AspNet.DataProtection.KeyManagement.Internal
 {
     /// <summary>
     /// Wraps both a keyring and its expiration policy.
     /// </summary>
-    internal sealed class CacheableKeyRing
+    public sealed class CacheableKeyRing
     {
         private readonly CancellationToken _expirationToken;
 

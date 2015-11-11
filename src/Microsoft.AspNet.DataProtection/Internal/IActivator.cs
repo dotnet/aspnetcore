@@ -3,13 +3,13 @@
 
 using System;
 
-namespace Microsoft.AspNet.DataProtection
+namespace Microsoft.AspNet.DataProtection.Internal
 {
     /// <summary>
     /// An interface into <see cref="Activator.CreateInstance{T}"/> that also supports
     /// limited dependency injection (of <see cref="IServiceProvider"/>).
     /// </summary>
-    internal interface IActivator
+    public interface IActivator
     {
         /// <summary>
         /// Creates an instance of <paramref name="implementationTypeName"/> and ensures

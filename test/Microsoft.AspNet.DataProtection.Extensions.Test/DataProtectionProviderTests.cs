@@ -86,7 +86,7 @@ namespace Microsoft.AspNet.DataProtection
 
         private class ConditionalRunTestOnlyIfLocalAppDataAvailable : Attribute, ITestCondition
         {
-            public bool IsMet => (Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) != null);
+            public bool IsMet => Environment.ExpandEnvironmentVariables("%LOCALAPPDATA%") != null;
 
             public string SkipReason { get; } = "%LOCALAPPDATA% couldn't be located.";
         }

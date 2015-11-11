@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using Microsoft.AspNet.DataProtection.AuthenticatedEncryption;
+using Microsoft.AspNet.DataProtection.KeyManagement.Internal;
 
 namespace Microsoft.AspNet.DataProtection.KeyManagement
 {

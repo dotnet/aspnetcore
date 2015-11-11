@@ -5,6 +5,7 @@ using System;
 using System.Xml.Linq;
 using Microsoft.AspNet.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationModel;
+using Microsoft.AspNet.DataProtection.KeyManagement.Internal;
 using Microsoft.AspNet.DataProtection.XmlEncryption;
 
 namespace Microsoft.AspNet.DataProtection.KeyManagement
@@ -15,7 +16,13 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
     /// </summary>
     internal sealed class DeferredKey : KeyBase
     {
-        public DeferredKey(Guid keyId, DateTimeOffset creationDate, DateTimeOffset activationDate, DateTimeOffset expirationDate, IInternalXmlKeyManager keyManager, XElement keyElement)
+        public DeferredKey(
+            Guid keyId,
+            DateTimeOffset creationDate,
+            DateTimeOffset activationDate,
+            DateTimeOffset expirationDate,
+            IInternalXmlKeyManager keyManager,
+            XElement keyElement)
             : base(keyId, creationDate, activationDate, expirationDate, new Lazy<IAuthenticatedEncryptor>(GetLazyEncryptorDelegate(keyManager, keyElement)))
         {
         }

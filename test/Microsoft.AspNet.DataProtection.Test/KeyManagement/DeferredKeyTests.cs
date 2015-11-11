@@ -5,6 +5,7 @@ using System;
 using System.Xml.Linq;
 using Microsoft.AspNet.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationModel;
+using Microsoft.AspNet.DataProtection.KeyManagement.Internal;
 using Microsoft.AspNet.Testing;
 using Moq;
 using Xunit;

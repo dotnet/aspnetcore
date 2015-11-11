@@ -5,6 +5,7 @@ using System;
 using System.Xml.Linq;
 using Microsoft.AspNet.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationModel;
+using Microsoft.AspNet.DataProtection.Internal;
 using Microsoft.AspNet.DataProtection.XmlEncryption;
 using Moq;
 

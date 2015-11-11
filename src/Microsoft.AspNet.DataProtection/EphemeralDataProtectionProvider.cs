@@ -5,6 +5,7 @@ using System;
 using Microsoft.AspNet.Cryptography.Cng;
 using Microsoft.AspNet.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNet.DataProtection.KeyManagement;
+using Microsoft.AspNet.DataProtection.KeyManagement.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNet.DataProtection

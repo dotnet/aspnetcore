@@ -33,6 +33,7 @@ namespace Microsoft.AspNet.DataProtection.XmlEncryption
             XmlAssert.Equal(originalXml, roundTrippedElement);
         }
 
+#if !DNXCORE50
         [ConditionalFact]
         [ConditionalRunTestOnlyOnWindows]
         public void Encrypt_CurrentUser_Decrypt_ImpersonatedAsAnonymous_Fails()
@@ -51,5 +52,6 @@ namespace Microsoft.AspNet.DataProtection.XmlEncryption
             ExceptionAssert2.ThrowsCryptographicException(() =>
                 AnonymousImpersonation.Run(() => decryptor.Decrypt(encryptedXmlInfo.EncryptedElement)));
         }
+#endif
     }
 }

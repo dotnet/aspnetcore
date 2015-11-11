@@ -4,6 +4,7 @@
 using System;
 using System.Linq;
 using System.Xml.Linq;
+using Microsoft.AspNet.DataProtection.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit;

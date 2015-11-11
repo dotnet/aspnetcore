@@ -8,6 +8,7 @@ using Microsoft.AspNet.DataProtection;
 using Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 using Microsoft.AspNet.DataProtection.Cng;
 using Microsoft.AspNet.DataProtection.KeyManagement;
+using Microsoft.AspNet.DataProtection.KeyManagement.Internal;
 using Microsoft.AspNet.DataProtection.Repositories;
 using Microsoft.Extensions.Logging;
 using Microsoft.Win32;

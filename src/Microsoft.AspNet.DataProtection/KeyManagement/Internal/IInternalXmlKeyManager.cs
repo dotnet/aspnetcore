@@ -5,10 +5,9 @@ using System;
 using System.Xml.Linq;
 using Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 
-namespace Microsoft.AspNet.DataProtection.KeyManagement
+namespace Microsoft.AspNet.DataProtection.KeyManagement.Internal
 {
-    // Used for unit testing
-    internal interface IInternalXmlKeyManager
+    public interface IInternalXmlKeyManager
     {
         IKey CreateNewKey(Guid keyId, DateTimeOffset creationDate, DateTimeOffset activationDate, DateTimeOffset expirationDate);
 

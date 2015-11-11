@@ -195,7 +195,7 @@ namespace Microsoft.AspNet.DataProtection
                 ["EncryptionType"] = "managed",
                 ["EncryptionAlgorithmType"] = typeof(TripleDES).AssemblyQualifiedName,
                 ["EncryptionAlgorithmKeySize"] = 2048,
-                ["ValidationAlgorithmType"] = typeof(HMACMD5).AssemblyQualifiedName
+                ["ValidationAlgorithmType"] = typeof(HMACSHA1).AssemblyQualifiedName
             });
 
             var services = serviceCollection.BuildServiceProvider();
@@ -203,7 +203,7 @@ namespace Microsoft.AspNet.DataProtection
             {
                 EncryptionAlgorithmType = typeof(TripleDES),
                 EncryptionAlgorithmKeySize = 2048,
-                ValidationAlgorithmType = typeof(HMACMD5)
+                ValidationAlgorithmType = typeof(HMACSHA1)
             });
             var actualConfiguration = (ManagedAuthenticatedEncryptorConfiguration)services.GetService<IAuthenticatedEncryptorConfiguration>();
 

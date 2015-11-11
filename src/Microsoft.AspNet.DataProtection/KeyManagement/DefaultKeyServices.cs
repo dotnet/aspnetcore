@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNet.Cryptography;
+using Microsoft.AspNet.DataProtection.KeyManagement.Internal;
 using Microsoft.AspNet.DataProtection.Repositories;
 using Microsoft.AspNet.DataProtection.XmlEncryption;
 using Microsoft.Extensions.DependencyInjection;

@@ -4,12 +4,12 @@
 using System;
 using Microsoft.AspNet.DataProtection.AuthenticatedEncryption;
 
-namespace Microsoft.AspNet.DataProtection.KeyManagement
+namespace Microsoft.AspNet.DataProtection.KeyManagement.Internal
 {
     /// <summary>
     /// The basic interface for accessing a read-only keyring.
     /// </summary>
-    internal interface IKeyRing
+    public interface IKeyRing
     {
         /// <summary>
         /// The authenticated encryptor that shall be used for new encryption operations.
