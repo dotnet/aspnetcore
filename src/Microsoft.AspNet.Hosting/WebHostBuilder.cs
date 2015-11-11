@@ -75,7 +75,6 @@ namespace Microsoft.AspNet.Hosting
             services.AddTransient<IServerLoader, ServerLoader>();
             services.AddTransient<IApplicationBuilderFactory, ApplicationBuilderFactory>();
             services.AddTransient<IHttpContextFactory, HttpContextFactory>();
-            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddLogging();
 
             var diagnosticSource = new DiagnosticListener("Microsoft.AspNet");

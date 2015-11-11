@@ -13,6 +13,7 @@ using Microsoft.AspNet.Hosting.Startup;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Http.Features.Internal;
+using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Testing.xunit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -289,6 +290,10 @@ namespace Microsoft.AspNet.TestHost
         [Fact]
         public async Task CanAccessHttpContext()
         {
+            Action<IServiceCollection> configureServices = services =>
+            {
+                services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            };
             TestServer server = TestServer.Create(app =>
             {
                 app.Run(context =>
@@ -296,7 +301,7 @@ namespace Microsoft.AspNet.TestHost
                     var accessor = app.ApplicationServices.GetRequiredService<IHttpContextAccessor>();
                     return context.Response.WriteAsync("HasContext:"+(accessor.HttpContext != null));
                 });
-            });
+            }, configureServices);
 
             string result = await server.CreateClient().GetStringAsync("/path");
             Assert.Equal("HasContext:True", result);
@@ -315,6 +320,11 @@ namespace Microsoft.AspNet.TestHost
         [Fact]
         public async Task CanAddNewHostServices()
         {
+            Action<IServiceCollection> configureServices = services =>
+            {
+                services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+                services.AddSingleton<ContextHolder>();
+            };
             TestServer server = TestServer.Create(app =>
             {
                 app.Run(context =>
@@ -322,8 +332,7 @@ namespace Microsoft.AspNet.TestHost
                     var accessor = app.ApplicationServices.GetRequiredService<ContextHolder>();
                     return context.Response.WriteAsync("HasContext:" + (accessor.Accessor.HttpContext != null));
                 });
-            },
-            services => services.AddSingleton<ContextHolder>());
+            }, configureServices);
 
             string result = await server.CreateClient().GetStringAsync("/path");
             Assert.Equal("HasContext:True", result);
