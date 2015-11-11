@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.Server.Kestrel
     /// </summary>
     public class KestrelThread
     {
-        private static Action<object, object> _objectCallbackAdapter = (callback, state) => ((Action<object>)callback).Invoke(state);
+        private static Action<object, object> _threadCallbackAdapter = (callback, state) => ((Action<KestrelThread>)callback).Invoke((KestrelThread)state);
         private KestrelEngine _engine;
         private readonly IApplicationLifetime _appLifetime;
         private Thread _thread;
@@ -64,15 +64,15 @@ namespace Microsoft.AspNet.Server.Kestrel
                 return;
             }
 
-            Post(OnStop, null);
+            Post((t) => OnStop(t));
             if (!_thread.Join((int)timeout.TotalMilliseconds))
             {
                 try
                 {
-                    Post(OnStopRude, null);
+                    Post((t) => OnStopRude(t));
                     if (!_thread.Join((int)timeout.TotalMilliseconds))
                     {
-                        Post(OnStopImmediate, null);
+                        Post((t) => OnStopImmediate(t));
                         if (!_thread.Join((int)timeout.TotalMilliseconds))
                         {
 #if NET451
@@ -100,19 +100,19 @@ namespace Microsoft.AspNet.Server.Kestrel
             }
         }
 
-        private void OnStop(object obj)
+        private static void OnStop(KestrelThread thread)
         {
-            _post.Unreference();
+            thread._post.Unreference();
         }
 
-        private void OnStopRude(object obj)
+        private static void OnStopRude(KestrelThread thread)
         {
-            _engine.Libuv.walk(
-                _loop,
+            thread._engine.Libuv.walk(
+                thread._loop,
                 (ptr, arg) =>
                 {
                     var handle = UvMemory.FromIntPtr<UvHandle>(ptr);
-                    if (handle != _post)
+                    if (handle != thread._post)
                     {
                         handle.Dispose();
                     }
@@ -120,17 +120,17 @@ namespace Microsoft.AspNet.Server.Kestrel
                 IntPtr.Zero);
         }
 
-        private void OnStopImmediate(object obj)
+        private static void OnStopImmediate(KestrelThread thread)
         {
-            _stopImmediate = true;
-            _loop.Stop();
+            thread._stopImmediate = true;
+            thread._loop.Stop();
         }
 
-        public void Post(Action<object> callback, object state)
+        private void Post(Action<KestrelThread> callback)
         {
             lock (_workSync)
             {
-                _workAdding.Enqueue(new Work { CallbackAdapter = _objectCallbackAdapter, Callback = callback, State = state });
+                _workAdding.Enqueue(new Work { CallbackAdapter = _threadCallbackAdapter, Callback = callback, State = this });
             }
             _post.Send();
         }
@@ -147,23 +147,6 @@ namespace Microsoft.AspNet.Server.Kestrel
                 });
             }
             _post.Send();
-        }
-
-        public Task PostAsync(Action<object> callback, object state)
-        {
-            var tcs = new TaskCompletionSource<int>();
-            lock (_workSync)
-            {
-                _workAdding.Enqueue(new Work
-                {
-                    CallbackAdapter = _objectCallbackAdapter,
-                    Callback = callback,
-                    State = state,
-                    Completion = tcs
-                });
-            }
-            _post.Send();
-            return tcs.Task;
         }
 
         public Task PostAsync<T>(Action<T> callback, T state)
@@ -183,7 +166,7 @@ namespace Microsoft.AspNet.Server.Kestrel
             return tcs.Task;
         }
 
-        public void Send(Action<object> callback, object state)
+        public void Send<T>(Action<T> callback, T state)
         {
             if (_loop.ThreadId == Thread.CurrentThread.ManagedThreadId)
             {
@@ -295,7 +278,12 @@ namespace Microsoft.AspNet.Server.Kestrel
                 {
                     if (work.Completion != null)
                     {
-                        ThreadPool.QueueUserWorkItem(_ => work.Completion.SetException(ex), null);
+                        ThreadPool.QueueUserWorkItem(
+                            tcs =>
+                            {
+                                ((TaskCompletionSource<int>)tcs).SetException(ex);
+                            }, 
+                            work.Completion);
                     }
                     else
                     {

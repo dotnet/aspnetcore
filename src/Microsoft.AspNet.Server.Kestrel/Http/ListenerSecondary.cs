@@ -165,9 +165,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             // the exception that stopped the event loop will never be surfaced.
             if (Thread.FatalError == null)
             {
-                Thread.Send(state =>
+                Thread.Send(listener =>
                 {
-                    var listener = (ListenerSecondary)state;
                     listener.DispatchPipe.Dispose();
                     listener.FreeBuffer();
                 }, this);
