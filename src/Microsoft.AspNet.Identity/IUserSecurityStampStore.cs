@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.Identity
     public interface IUserSecurityStampStore<TUser> : IUserStore<TUser> where TUser : class
     {
         /// <summary>
-        /// Sets the provided security <paramref name="stamp"/> for the specified <paramref name="user"/>, as an asynchronous operation.
+        /// Sets the provided security <paramref name="stamp"/> for the specified <paramref name="user"/>.
         /// </summary>
         /// <param name="user">The user whose security stamp should be set.</param>
         /// <param name="stamp">The security stamp to set.</param>
@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Identity
         Task SetSecurityStampAsync(TUser user, string stamp, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Get the security stamp for the specified <paramref name="user" />, as an asynchronous operation.
+        /// Get the security stamp for the specified <paramref name="user" />.
         /// </summary>
         /// <param name="user">The user whose security stamp should be set.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>

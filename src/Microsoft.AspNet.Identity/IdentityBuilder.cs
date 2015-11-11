@@ -60,7 +60,7 @@ namespace Microsoft.AspNet.Identity
         /// Adds an <see cref="IUserValidator"/> for the <seealso cref="UserType"/>.
         /// </summary>
         /// <typeparam name="T">The user type to validate.</typeparam>
-        /// <returns>The <see cref="IdentityBuilder"/>.</returns>
+        /// <returns>The current <see cref="IdentityBuilder"/> instance.</returns>
         public virtual IdentityBuilder AddUserValidator<T>() where T : class
         {
             return AddScoped(typeof(IUserValidator<>).MakeGenericType(UserType), typeof(T));
@@ -70,7 +70,7 @@ namespace Microsoft.AspNet.Identity
         /// Adds an <see cref="IRoleValidator{TRole}"/> for the <seealso cref="RoleType"/>.
         /// </summary>
         /// <typeparam name="T">The role type to validate.</typeparam>
-        /// <returns>The <see cref="IdentityBuilder"/>.</returns>
+        /// <returns>The current <see cref="IdentityBuilder"/> instance.</returns>
         public virtual IdentityBuilder AddRoleValidator<T>() where T : class
         {
             return AddScoped(typeof(IRoleValidator<>).MakeGenericType(RoleType), typeof(T));
@@ -80,7 +80,7 @@ namespace Microsoft.AspNet.Identity
         /// Adds an <see cref="IdentityErrorDescriber"/>.
         /// </summary>
         /// <typeparam name="T">The type of the error describer.</typeparam>
-        /// <returns>The <see cref="IdentityBuilder"/>.</returns>
+        /// <returns>The current <see cref="IdentityBuilder"/> instance.</returns>
         public virtual IdentityBuilder AddErrorDescriber<TDescriber>() where TDescriber : IdentityErrorDescriber
         {
             Services.AddScoped<IdentityErrorDescriber, TDescriber>();
@@ -91,7 +91,7 @@ namespace Microsoft.AspNet.Identity
         /// Adds an <see cref="IPasswordValidator{TUser}"/> for the <seealso cref="UserType"/>.
         /// </summary>
         /// <typeparam name="T">The user type whose password will be validated.</typeparam>
-        /// <returns>The <see cref="IdentityBuilder"/>.</returns>
+        /// <returns>The current <see cref="IdentityBuilder"/> instance.</returns>
         public virtual IdentityBuilder AddPasswordValidator<T>() where T : class
         {
             return AddScoped(typeof(IPasswordValidator<>).MakeGenericType(UserType), typeof(T));
@@ -101,7 +101,7 @@ namespace Microsoft.AspNet.Identity
         /// Adds an <see cref="IUserStore{TUser}"/> for the <seealso cref="UserType"/>.
         /// </summary>
         /// <typeparam name="T">The user type whose password will be validated.</typeparam>
-        /// <returns>The <see cref="IdentityBuilder"/>.</returns>
+        /// <returns>The current <see cref="IdentityBuilder"/> instance.</returns>
         public virtual IdentityBuilder AddUserStore<T>() where T : class
         {
             return AddScoped(typeof(IUserStore<>).MakeGenericType(UserType), typeof(T));
@@ -111,7 +111,7 @@ namespace Microsoft.AspNet.Identity
         /// Adds a <see cref="IRoleStore{TRole}"/> for the <seealso cref="RoleType"/>.
         /// </summary>
         /// <typeparam name="T">The role type held in the store.</typeparam>
-        /// <returns>The <see cref="IdentityBuilder"/>.</returns>
+        /// <returns>The current <see cref="IdentityBuilder"/> instance.</returns>
         public virtual IdentityBuilder AddRoleStore<T>() where T : class
         {
             return AddScoped(typeof(IRoleStore<>).MakeGenericType(RoleType), typeof(T));
@@ -122,7 +122,7 @@ namespace Microsoft.AspNet.Identity
         /// </summary>
         /// <typeparam name="TProvider">The type of the token provider to add.</typeparam>
         /// <param name="providerName">The name of the provider to add.</param>
-        /// <returns>The <see cref="IdentityBuilder"/>.</returns>
+        /// <returns>The current <see cref="IdentityBuilder"/> instance.</returns>
         public virtual IdentityBuilder AddTokenProvider<TProvider>(string providerName) where TProvider : class
         {
             return AddTokenProvider(providerName, typeof(TProvider));
@@ -133,7 +133,7 @@ namespace Microsoft.AspNet.Identity
         /// </summary>
         /// <param name="providerName">The name of the provider to add.</param>
         /// <param name="provider">The type of the <see cref="IUserTokenProvider{TUser}"/> to add.</param>
-        /// <returns>The <see cref="IdentityBuilder"/>.</returns>
+        /// <returns>The current <see cref="IdentityBuilder"/> instance.</returns>
         public virtual IdentityBuilder AddTokenProvider(string providerName, Type provider)
         {
             if (!typeof(IUserTokenProvider<>).MakeGenericType(UserType).GetTypeInfo().IsAssignableFrom(provider.GetTypeInfo()))
@@ -149,9 +149,10 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// Adds the default token providers.
+        /// Adds the default token providers used to generate tokens for reset passwords, change email
+        /// and change telephone number operations, and for two factor authentication token generation.
         /// </summary>
-        /// <returns>The <see cref="IdentityBuilder"/>.</returns>
+        /// <returns>The current <see cref="IdentityBuilder"/> instance.</returns>
         public virtual IdentityBuilder AddDefaultTokenProviders()
         {
             var dataProtectionProviderType = typeof(DataProtectorTokenProvider<>).MakeGenericType(UserType);
@@ -166,7 +167,7 @@ namespace Microsoft.AspNet.Identity
         /// Adds a <see cref="UserManager{TUser}"/> for the <seealso cref="UserType"/>.
         /// </summary>
         /// <typeparam name="TUserManager">The type of the user manager to add.</typeparam>
-        /// <returns>The <see cref="IdentityBuilder"/>.</returns>
+        /// <returns>The current <see cref="IdentityBuilder"/> instance.</returns>
         public virtual IdentityBuilder AddUserManager<TUserManager>() where TUserManager : class
         {
             var userManagerType = typeof(UserManager<>).MakeGenericType(UserType);
@@ -184,7 +185,7 @@ namespace Microsoft.AspNet.Identity
         /// Adds a <see cref="RoleManager{TRole}"/> for the <seealso cref="RoleType"/>.
         /// </summary>
         /// <typeparam name="TRoleManager">The type of the role manager to add.</typeparam>
-        /// <returns>The <see cref="IdentityBuilder"/>.</returns>
+        /// <returns>The current <see cref="IdentityBuilder"/> instance.</returns>
         public virtual IdentityBuilder AddRoleManager<TRoleManager>() where TRoleManager : class
         {
             var managerType = typeof(RoleManager<>).MakeGenericType(RoleType);

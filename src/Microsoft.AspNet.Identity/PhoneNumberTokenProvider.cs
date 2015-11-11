@@ -34,7 +34,7 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// Returns a constant, provider and user unique modifier used for entropy in generated tokens from user information, as an asynchronous operation.
+        /// Returns a constant, provider and user unique modifier used for entropy in generated tokens from user information.
         /// </summary>
         /// <param name="purpose">The purpose the token will be generated for.</param>
         /// <param name="manager">The <see cref="UserManager{TUser}"/> that can be used to retrieve user properties.</param>

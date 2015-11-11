@@ -1,6 +1,10 @@
 {
   "description": "Core implementation for ASP.NET Identity.",
   "version": "3.0.0-*",
+  "compilationOptions": {
+    "warningsAsErrors": true,
+    "keyFile": "../../tools/Key.snk"
+  },
   "repository": {
     "type": "git",
     "url": "git://github.com/aspnet/identity"

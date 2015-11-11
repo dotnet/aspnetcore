@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.Identity
     public interface IUserStore<TUser> : IDisposable where TUser : class
     {
         /// <summary>
-        /// Gets the user identifier for the specified <paramref name="user"/>, as an asynchronous operation.
+        /// Gets the user identifier for the specified <paramref name="user"/>.
         /// </summary>
         /// <param name="user">The user whose identifier should be retrieved.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Identity
         Task<string> GetUserIdAsync(TUser user, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Gets the user name for the specified <paramref name="user"/>, as an asynchronous operation.
+        /// Gets the user name for the specified <paramref name="user"/>.
         /// </summary>
         /// <param name="user">The user whose name should be retrieved.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.Identity
         Task<string> GetUserNameAsync(TUser user, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Sets the given <paramref name="userName" /> for the specified <paramref name="user"/>, as an asynchronous operation.
+        /// Sets the given <paramref name="userName" /> for the specified <paramref name="user"/>.
         /// </summary>
         /// <param name="user">The user whose name should be set.</param>
         /// <param name="userName">The user name to set.</param>
@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.Identity
         Task SetUserNameAsync(TUser user, string userName, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Gets the normalized user name for the specified <paramref name="user"/>, as an asynchronous operation.
+        /// Gets the normalized user name for the specified <paramref name="user"/>.
         /// </summary>
         /// <param name="user">The user whose normalized name should be retrieved.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
@@ -47,7 +47,7 @@ namespace Microsoft.AspNet.Identity
         Task<string> GetNormalizedUserNameAsync(TUser user, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Sets the given normalized name for the specified <paramref name="user"/>, as an asynchronous operation.
+        /// Sets the given normalized name for the specified <paramref name="user"/>.
         /// </summary>
         /// <param name="user">The user whose name should be set.</param>
         /// <param name="normalizedName">The normalized name to set.</param>
@@ -56,7 +56,7 @@ namespace Microsoft.AspNet.Identity
         Task SetNormalizedUserNameAsync(TUser user, string normalizedName, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Creates the specified <paramref name="user"/> in the user store, as an asynchronous operation.
+        /// Creates the specified <paramref name="user"/> in the user store.
         /// </summary>
         /// <param name="user">The user to create.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
@@ -64,7 +64,7 @@ namespace Microsoft.AspNet.Identity
         Task<IdentityResult> CreateAsync(TUser user, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Updates the specified <paramref name="user"/> in the user store, as an asynchronous operation.
+        /// Updates the specified <paramref name="user"/> in the user store.
         /// </summary>
         /// <param name="user">The user to update.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
@@ -72,7 +72,7 @@ namespace Microsoft.AspNet.Identity
         Task<IdentityResult> UpdateAsync(TUser user, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Deletes the specified <paramref name="user"/> from the user store, as an asynchronous operation.
+        /// Deletes the specified <paramref name="user"/> from the user store.
         /// </summary>
         /// <param name="user">The user to delete.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>

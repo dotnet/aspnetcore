@@ -8,43 +8,101 @@ using Microsoft.Data.Entity.Metadata;
 
 namespace Microsoft.AspNet.Identity.EntityFramework
 {
+    /// <summary>
+    /// Base class for the Entity Framework database context used for identity.
+    /// </summary>
     public class IdentityDbContext : IdentityDbContext<IdentityUser, IdentityRole, string> { }
 
+    /// <summary>
+    /// Base class for the Entity Framework database context used for identity.
+    /// </summary>
+    /// <typeparam name="TUser">The type of the user objects.</typeparam>
     public class IdentityDbContext<TUser> : IdentityDbContext<TUser, IdentityRole, string> where TUser : IdentityUser
     { }
 
+    /// <summary>
+    /// Base class for the Entity Framework database context used for identity.
+    /// </summary>
+    /// <typeparam name="TUser">The type of user objects.</typeparam>
+    /// <typeparam name="TRole">The type of role objects.</typeparam>
+    /// <typeparam name="TKey">The type of the primary key for users and roles.</typeparam>
     public class IdentityDbContext<TUser, TRole, TKey> : DbContext
         where TUser : IdentityUser<TKey>
         where TRole : IdentityRole<TKey>
         where TKey : IEquatable<TKey>
     {
+        /// <summary>
+        /// Initializes a new instance of <see cref="IdentityDbContext"/>.
+        /// </summary>
+        /// <param name="options">The options to be used by a <see cref="DbContext"/>.</param>
         public IdentityDbContext(DbContextOptions options) : base(options)
         {
 
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="IdentityDbContext" /> class using an <see cref="IServiceProvider" />.
+        /// </summary>
+        /// <param name="serviceProvider"> The service provider to be used.</param>
         public IdentityDbContext(IServiceProvider serviceProvider) : base(serviceProvider)
         {
 
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="IdentityDbContext" /> class using an <see cref="IServiceProvider" />.
+        /// </summary>
+        /// <param name="options">The options to be used by a <see cref="DbContext"/>.</param>
+        /// <param name="serviceProvider"> The service provider to be used.</param>
         public IdentityDbContext(IServiceProvider serviceProvider, DbContextOptions options) : base(serviceProvider, options)
         {
 
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="IdentityDbContext" /> class.
+        /// </summary>
         protected IdentityDbContext()
         {
 
         }
 
+        /// <summary>
+        /// Gets or sets the <see cref="DbSet{TEntity}"/> of Users.
+        /// </summary>
         public DbSet<TUser> Users { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="DbSet{TEntity}"/> of User claims.
+        /// </summary>
         public DbSet<IdentityUserClaim<TKey>> UserClaims { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="DbSet{TEntity}"/> of User logins.
+        /// </summary>
         public DbSet<IdentityUserLogin<TKey>> UserLogins { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="DbSet{TEntity}"/> of User roles.
+        /// </summary>
         public DbSet<IdentityUserRole<TKey>> UserRoles { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="DbSet{TEntity}"/> of roles.
+        /// </summary>
         public DbSet<TRole> Roles { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="DbSet{TEntity}"/> of role claims.
+        /// </summary>
         public DbSet<IdentityRoleClaim<TKey>> RoleClaims { get; set; }
 
+        /// <summary>
+        /// Configures the schema needed for the identity framework.
+        /// </summary>
+        /// <param name="builder">
+        /// The builder being used to construct the model for this context.
+        /// </param>
         protected override void OnModelCreating(ModelBuilder builder)
         {
             builder.Entity<TUser>(b =>

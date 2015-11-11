@@ -1,6 +1,10 @@
 {
   "description": "ASP.NET Identity providers that use Entity Framework.",
   "version": "3.0.0-*",
+  "compilationOptions": {
+    "warningsAsErrors": true,
+    "keyFile": "../../tools/Key.snk"
+  },
   "repository": {
     "type": "git",
     "url": "git://github.com/aspnet/identity"
