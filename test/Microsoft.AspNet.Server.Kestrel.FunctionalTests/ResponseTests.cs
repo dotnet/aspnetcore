@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting;
+using Microsoft.AspNet.Testing.xunit;
 using Microsoft.Extensions.Configuration;
 using Xunit;
 
@@ -13,7 +14,8 @@ namespace Microsoft.AspNet.Server.Kestrel.FunctionalTests
 {
     public class ResponseTests
     {
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Test hangs after execution on mono.")]
         public async Task LargeDownload()
         {
             var config = new ConfigurationBuilder()

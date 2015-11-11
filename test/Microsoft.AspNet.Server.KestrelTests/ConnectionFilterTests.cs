@@ -3,9 +3,10 @@
 
 using System.IO;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Server.Kestrel.Filter;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
+using Microsoft.AspNet.Server.Kestrel.Filter;
+using Microsoft.AspNet.Testing.xunit;
 using Xunit;
 
 namespace Microsoft.AspNet.Server.KestrelTests
@@ -29,7 +30,8 @@ namespace Microsoft.AspNet.Server.KestrelTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Test hangs after execution on Mono.")]
         public async Task CanReadAndWriteWithRewritingConnectionFilter()
         {
             var filter = new RewritingConnectionFilter();
@@ -55,7 +57,8 @@ namespace Microsoft.AspNet.Server.KestrelTests
             Assert.Equal(sendString.Length, filter.BytesRead);
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Test hangs after execution on Mono.")]
         public async Task CanReadAndWriteWithAsyncConnectionFilter()
         {
             var serviceContext = new TestServiceContext()

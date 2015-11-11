@@ -3,7 +3,9 @@
   "dependencies": {
     "Microsoft.AspNet.Http.Abstractions": "1.0.0-*",
     "Microsoft.AspNet.Server.Kestrel": "1.0.0-*",
+    "Microsoft.AspNet.Testing": "1.0.0-*",
     "System.Net.Http": "4.0.1-*",
+    "System.Net.NameResolution": "4.0.0-*",
     "xunit.runner.aspnet": "2.0.0-aspnet-*"
   },
   "frameworks": {

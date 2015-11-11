@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Testing.xunit;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -17,7 +18,8 @@ namespace Microsoft.AspNet.Server.Kestrel.FunctionalTests
 {
     public class RequestTests
     {
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Test hangs after execution on Mono.")]
         public async Task LargeUpload()
         {
             var config = new ConfigurationBuilder()
@@ -69,15 +71,18 @@ namespace Microsoft.AspNet.Server.Kestrel.FunctionalTests
             }
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData("127.0.0.1", "127.0.0.1", "8792")]
         [InlineData("localhost", "127.0.0.1", "8792")]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Test hangs after execution on Mono.")]
         public Task RemoteIPv4Address(string requestAddress, string expectAddress, string port)
         {
             return TestRemoteIPAddress("localhost", requestAddress, expectAddress, port);
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Test hangs after execution on Mono.")]
+        [IPv6SupportedCondition]
         public Task RemoteIPv6Address()
         {
             return TestRemoteIPAddress("[::1]", "[::1]", "::1", "8792");
@@ -92,7 +97,7 @@ namespace Microsoft.AspNet.Server.Kestrel.FunctionalTests
 
             var builder = new WebHostBuilder(config)
                 .UseServerFactory("Microsoft.AspNet.Server.Kestrel")
-                .UseStartup(app => 
+                .UseStartup(app =>
                 {
                     app.Run(async context =>
                     {
