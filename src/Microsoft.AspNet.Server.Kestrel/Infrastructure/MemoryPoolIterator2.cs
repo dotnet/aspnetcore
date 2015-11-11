@@ -572,5 +572,109 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
 
             return new MemoryPoolIterator2(block, blockIndex);
         }
+
+        public void CopyFrom(byte[] data)
+        {
+            CopyFrom(data, 0, data.Length);
+        }
+
+        public void CopyFrom(byte[] data, int offset, int count)
+        {
+            Debug.Assert(_block.Next == null);
+            Debug.Assert(_block.End == _index);
+
+            var block = _block;
+
+            var sourceData = data;
+            var sourceStart = offset;
+            var sourceEnd = offset + count;
+
+            var targetData = block.Array;
+            var targetStart = block.End;
+            var targetEnd = block.Data.Offset + block.Data.Count;
+
+            while (true)
+            {
+                // actual count to copy is remaining data, or unused trailing space in the current block, whichever is smaller
+                var copyCount = Math.Min(sourceEnd - sourceStart, targetEnd - targetStart);
+
+                Buffer.BlockCopy(sourceData, sourceStart, targetData, targetStart, copyCount);
+                sourceStart += copyCount;
+                targetStart += copyCount;
+
+                // if this means all source data has been copied
+                if (sourceStart == sourceEnd)
+                {
+                    // increase occupied space in the block, and adjust iterator at start of unused trailing space
+                    block.End = targetStart;
+                    _block = block;
+                    _index = targetStart;
+                    return;
+                }
+
+                // otherwise another block needs to be allocated to follow this one
+                block.Next = block.Pool.Lease();
+                block = block.Next;
+
+                targetData = block.Array;
+                targetStart = block.End;
+                targetEnd = block.Data.Offset + block.Data.Count;
+            }
+        }
+
+        public unsafe void CopyFromAscii(string data)
+        {
+            Debug.Assert(_block.Next == null);
+            Debug.Assert(_block.End == _index);
+
+            var block = _block;
+
+            var inputLength = data.Length;
+            var inputLengthMinusSpan = inputLength - 3;
+
+            fixed (char* pData = data)
+            {
+                var input = pData;
+                var inputEnd = pData + data.Length;
+                var blockRemaining = block.Data.Offset + block.Data.Count - block.End;
+                var blockRemainingMinusSpan = blockRemaining - 3;
+
+                while (input < inputEnd)
+                {
+                    if (blockRemaining == 0)
+                    {
+                        block.Next = block.Pool.Lease();
+                        block = block.Next;
+                        blockRemaining = block.Data.Count;
+                        blockRemainingMinusSpan = blockRemaining - 3;
+                    }
+
+                    fixed (byte* pOutput = block.Data.Array)
+                    {
+                        var output = pOutput + block.End;
+
+                        var copied = 0;
+                        for (; copied < inputLengthMinusSpan && copied < blockRemainingMinusSpan; copied += 4)
+                        {
+                            *(output) = (byte)*(input);
+                            *(output + 1) = (byte)*(input + 1);
+                            *(output + 2) = (byte)*(input + 2);
+                            *(output + 3) = (byte)*(input + 3);
+                            output += 4;
+                            input += 4;
+                            blockRemainingMinusSpan -= 4;
+                        }
+                        for (; copied < inputLength && copied < blockRemaining; copied++)
+                        {
+                            *(output++) = (byte)*(input++);
+                            blockRemaining--;
+                        }
+                        block.End += copied;
+                        _block = block;
+                        _index = block.End;
+                    }
+                }
+            }
+        }
     }
 }

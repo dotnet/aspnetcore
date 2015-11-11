@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Dnx.Compilation.CSharp;
+using System.Text;
 
 namespace Microsoft.AspNet.Server.Kestrel.GeneratedCode
 {
@@ -11,7 +12,7 @@ namespace Microsoft.AspNet.Server.Kestrel.GeneratedCode
     {
         static string Each<T>(IEnumerable<T> values, Func<T, string> formatter)
         {
-            return values.Select(formatter).Aggregate((a, b) => a + b);
+            return values.Any() ? values.Select(formatter).Aggregate((a, b) => a + b) : "";
         }
 
         class KnownHeader
@@ -19,10 +20,14 @@ namespace Microsoft.AspNet.Server.Kestrel.GeneratedCode
             public string Name { get; set; }
             public int Index { get; set; }
             public string Identifier => Name.Replace("-", "");
+
+            public byte[] Bytes => Encoding.ASCII.GetBytes($"\r\n{Name}: ");
+            public int BytesOffset { get; set; }
+            public int BytesCount { get; set; }
+            public bool EnhancedSetter { get; set; }
             public string TestBit() => $"((_bits & {1L << Index}L) != 0)";
             public string SetBit() => $"_bits |= {1L << Index}L";
             public string ClearBit() => $"_bits &= ~{1L << Index}L";
-
             public string EqualIgnoreCaseBytes()
             {
                 var result = "";
@@ -54,7 +59,6 @@ namespace Microsoft.AspNet.Server.Kestrel.GeneratedCode
                 }
                 return $"({result})";
             }
-
             protected string Term(string name, int offset, int count, string array, string suffix)
             {
                 ulong mask = 0;
@@ -69,13 +73,11 @@ namespace Microsoft.AspNet.Server.Kestrel.GeneratedCode
                 return $"(({array}[{offset / count}] & {mask}{suffix}) == {comp}{suffix})";
             }
         }
-
         public virtual void BeforeCompile(BeforeCompileContext context)
         {
             var syntaxTree = Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(GeneratedFile());
             context.Compilation = context.Compilation.AddSyntaxTrees(syntaxTree);
         }
-
         public static string GeneratedFile()
         {
             var commonHeaders = new[]
@@ -128,8 +130,15 @@ namespace Microsoft.AspNet.Server.Kestrel.GeneratedCode
             {
                 Name = header,
                 Index = index
-            });
-
+            }).ToArray();
+            var enhancedHeaders = new[]
+            {
+                "Connection",
+                "Server",
+                "Date",
+                "Transfer-Encoding",
+                "Content-Length",
+            };
             var responseHeaders = commonHeaders.Concat(new[]
             {
                 "Accept-Ranges",
@@ -145,38 +154,60 @@ namespace Microsoft.AspNet.Server.Kestrel.GeneratedCode
             }).Select((header, index) => new KnownHeader
             {
                 Name = header,
-                Index = index
-            });
-
+                Index = index,
+                EnhancedSetter = enhancedHeaders.Contains(header)
+            }).ToArray();
             var loops = new[]
             {
                 new
                 {
                     Headers = requestHeaders,
                     HeadersByLength = requestHeaders.GroupBy(x => x.Name.Length),
-                    ClassName = "FrameRequestHeaders"
+                    ClassName = "FrameRequestHeaders",
+                    Bytes = default(byte[])
                 },
                 new
                 {
                     Headers = responseHeaders,
                     HeadersByLength = responseHeaders.GroupBy(x => x.Name.Length),
-                    ClassName = "FrameResponseHeaders"
+                    ClassName = "FrameResponseHeaders",
+                    Bytes = responseHeaders.SelectMany(header => header.Bytes).ToArray()
                 }
             };
-
+            foreach (var loop in loops.Where(l => l.Bytes != null))
+            {
+                var offset = 0;
+                foreach (var header in loop.Headers)
+                {
+                    header.BytesOffset = offset;
+                    header.BytesCount += header.Bytes.Length;
+                    offset += header.BytesCount;
+                }
+            }
             return $@"
 using System;
 using System.Collections.Generic;
+using System.Text;
+using Microsoft.AspNet.Server.Kestrel.Infrastructure;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNet.Server.Kestrel.Http 
 {{
 {Each(loops, loop => $@"
-    public partial class {loop.ClassName} 
-    {{
+    public partial class {loop.ClassName}
+    {{{(loop.Bytes != null ?
+        $@"
+        private static byte[] _headerBytes = new byte[]
+        {{
+            {Each(loop.Bytes, b => $"{b},")}
+        }};"
+        : "")}
+        
         private long _bits = 0;
         {Each(loop.Headers, header => @"
         private StringValues _" + header.Identifier + ";")}
+        {Each(loop.Headers.Where(header => header.EnhancedSetter), header => @"
+        private byte[] _raw" + header.Identifier + ";")}
         {Each(loop.Headers, header => $@"
         public StringValues Header{header.Identifier}
         {{
@@ -187,22 +218,28 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             set
             {{
                 {header.SetBit()};
-                _{header.Identifier} = value;
+                _{header.Identifier} = value; {(header.EnhancedSetter == false ? "" : $@"
+                _raw{header.Identifier} = null;")}
             }}
-        }}
-        ")}
+        }}")}
+        {Each(loop.Headers.Where(header => header.EnhancedSetter), header => $@"
+        public void SetRaw{header.Identifier}(StringValues value, byte[] raw)
+        {{
+            {header.SetBit()};
+            _{header.Identifier} = value; 
+            _raw{header.Identifier} = raw;
+        }}")}
         protected override int GetCountFast()
         {{
             return BitCount(_bits) + (MaybeUnknown?.Count ?? 0);
         }}
-
         protected override StringValues GetValueFast(string key)
         {{
             switch(key.Length)
             {{{Each(loop.HeadersByLength, byLength => $@"
                 case {byLength.Key}:
                     {{{Each(byLength, header => $@"
-                        if (""{header.Name}"".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        if (""{header.Name}"".Equals(key, StringComparison.OrdinalIgnoreCase))
                         {{
                             if ({header.TestBit()})
                             {{
@@ -215,14 +252,13 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         }}
                     ")}}}
                     break;
-            ")}}}
+")}}}
             if (MaybeUnknown == null) 
             {{
                 throw new System.Collections.Generic.KeyNotFoundException();
             }}
             return MaybeUnknown[key];
         }}
-
         protected override bool TryGetValueFast(string key, out StringValues value)
         {{
             switch(key.Length)
@@ -244,11 +280,10 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         }}
                     ")}}}
                     break;
-            ")}}}
+")}}}
             value = StringValues.Empty;
             return MaybeUnknown?.TryGetValue(key, out value) ?? false;
         }}
-
         protected override void SetValueFast(string key, StringValues value)
         {{
             switch(key.Length)
@@ -258,29 +293,30 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         if (""{header.Name}"".Equals(key, StringComparison.OrdinalIgnoreCase)) 
                         {{
                             {header.SetBit()};
-                            _{header.Identifier} = value;
+                            _{header.Identifier} = value;{(header.EnhancedSetter == false ? "" : $@"
+                            _raw{header.Identifier} = null;")}
                             return;
                         }}
                     ")}}}
                     break;
-            ")}}}
+")}}}
             Unknown[key] = value;
         }}
-
         protected override void AddValueFast(string key, StringValues value)
         {{
             switch(key.Length)
             {{{Each(loop.HeadersByLength, byLength => $@"
                 case {byLength.Key}:
                     {{{Each(byLength, header => $@"
-                        if (""{header.Name}"".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        if (""{header.Name}"".Equals(key, StringComparison.OrdinalIgnoreCase))
                         {{
                             if ({header.TestBit()})
                             {{
                                 throw new ArgumentException(""An item with the same key has already been added."");
                             }}
                             {header.SetBit()};
-                            _{header.Identifier} = value;
+                            _{header.Identifier} = value;{(header.EnhancedSetter == false ? "" : $@"
+                            _raw{header.Identifier} = null;")}
                             return;
                         }}
                     ")}}}
@@ -288,7 +324,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             ")}}}
             Unknown.Add(key, value);
         }}
-
         protected override bool RemoveFast(string key)
         {{
             switch(key.Length)
@@ -300,7 +335,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             if ({header.TestBit()})
                             {{
                                 {header.ClearBit()};
-                                _{header.Identifier} = StringValues.Empty;
+                                _{header.Identifier} = StringValues.Empty;{(header.EnhancedSetter == false ? "" : $@"
+                                _raw{header.Identifier} = null;")}
                                 return true;
                             }}
                             else
@@ -313,12 +349,13 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             ")}}}
             return MaybeUnknown?.Remove(key) ?? false;
         }}
-
         protected override void ClearFast()
         {{
             _bits = 0;
             {Each(loop.Headers, header => $@"
             _{header.Identifier} = StringValues.Empty;")}
+            {Each(loop.Headers.Where(header => header.EnhancedSetter), header => $@"
+            _raw{header.Identifier} = null;")}
             MaybeUnknown?.Clear();
         }}
         
@@ -328,7 +365,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             {{
                 throw new ArgumentException();
             }}
-
             {Each(loop.Headers, header => $@"
                 if ({header.TestBit()}) 
                 {{
@@ -343,7 +379,24 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             ")}
             ((ICollection<KeyValuePair<string, StringValues>>)MaybeUnknown)?.CopyTo(array, arrayIndex);
         }}
-
+        {(loop.ClassName == "FrameResponseHeaders" ? $@"
+        protected void CopyToFast(ref MemoryPoolIterator2 output)
+        {{
+            {Each(loop.Headers, header => $@"
+                if ({header.TestBit()}) 
+                {{ {(header.EnhancedSetter == false ? "" : $@"
+                    if (_raw{header.Identifier} != null) 
+                    {{
+                        output.CopyFromAscii(_raw{header.Identifier}, 0, _raw{header.Identifier}.Length);
+                    }} else ")}
+                    foreach(var value in _{header.Identifier})
+                    {{
+                        output.CopyFromAscii(_headerBytes, {header.BytesOffset}, {header.BytesCount});
+                        output.CopyFromAscii(value);
+                    }}
+                }}
+            ")}
+        }}" : "")}
         public unsafe void Append(byte[] keyBytes, int keyOffset, int keyLength, string value)
         {{
             fixed(byte* ptr = keyBytes) {{ var pUB = ptr + keyOffset; var pUL = (ulong*)pUB; var pUI = (uint*)pUB; var pUS = (ushort*)pUB;
@@ -360,7 +413,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             else
                             {{
                                 {header.SetBit()};
-                                _{header.Identifier} = new StringValues(value);
+                                _{header.Identifier} = new StringValues(value);{(header.EnhancedSetter == false ? "" : $@"
+                                _raw{header.Identifier} = null;")}
                             }}
                             return;
                         }}
@@ -372,7 +426,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             Unknown.TryGetValue(key, out existing);
             Unknown[key] = AppendValue(existing, value);
         }}
-
         public partial struct Enumerator
         {{
             public bool MoveNext()
@@ -409,7 +462,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 ")}}}
 ";
         }
-
         public virtual void AfterCompile(AfterCompileContext context)
         {
         }
