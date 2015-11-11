@@ -2,7 +2,8 @@
   "description": "Features that enable globalization & localization of MVC applications.",
   "version": "6.0.0-*",
   "compilationOptions": {
-    "warningsAsErrors": true
+    "warningsAsErrors": true,
+    "keyFile": "../../tools/Key.snk"
   },
   "dependencies": {
     "Microsoft.AspNet.Localization": "1.0.0-*",

@@ -18,7 +18,8 @@
     "test": "xunit.runner.aspnet"
   },
   "compilationOptions": {
-    "define": [ "__RemoveThisBitTo__GENERATE_BASELINES" ]
+    "define": [ "__RemoveThisBitTo__GENERATE_BASELINES" ],
+    "keyFile": "../../tools/Key.snk"
   },
   "frameworks": {
     "dnx451": {
