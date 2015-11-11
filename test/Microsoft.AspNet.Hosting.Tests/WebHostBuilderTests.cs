@@ -124,6 +124,23 @@ namespace Microsoft.AspNet.Hosting
             }
         }
 
+        [Fact]
+        public void UseEnvironmentIsNotOverriden()
+        {
+            var vals = new Dictionary<string, string>
+            {
+                { "ENV", "Dev" },
+            };
+            var builder = new ConfigurationBuilder()
+                .AddInMemoryCollection(vals);
+            var config = builder.Build();
+
+            var expected = "MY_TEST_ENVIRONMENT";
+            var webHost = new WebHostBuilder(config, captureStartupErrors: true).UseEnvironment(expected).Build();
+
+            Assert.Equal(expected, webHost.ApplicationServices.GetService<IHostingEnvironment>().EnvironmentName);
+        }
+
         private WebHostBuilder CreateWebHostBuilder()
         {
             var vals = new Dictionary<string, string>

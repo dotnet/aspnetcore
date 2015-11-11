@@ -27,6 +27,7 @@ namespace Microsoft.AspNet.Hosting
         private readonly WebHostOptions _options;
 
         private Action<IServiceCollection> _configureServices;
+        private string _environmentName;
 
         // Only one of these should be set
         private StartupMethods _startup;
@@ -127,6 +128,10 @@ namespace Microsoft.AspNet.Hosting
             var startupLoader = hostingContainer.GetRequiredService<IStartupLoader>();
 
             _hostingEnvironment.Initialize(appEnvironment.ApplicationBasePath, _options);
+            if (!string.IsNullOrEmpty(_environmentName))
+            {
+                _hostingEnvironment.EnvironmentName = _environmentName;
+            }
             var engine = new HostingEngine(hostingServices, startupLoader, _options, _config, _captureStartupErrors);
 
             // Only one of these should be set, but they are used in priority
@@ -155,7 +160,7 @@ namespace Microsoft.AspNet.Hosting
                 throw new ArgumentNullException(nameof(environment));
             }
 
-            _hostingEnvironment.EnvironmentName = environment;
+            _environmentName = environment;
             return this;
         }
 
