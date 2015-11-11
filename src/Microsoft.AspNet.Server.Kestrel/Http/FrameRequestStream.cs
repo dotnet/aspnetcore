@@ -50,7 +50,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         public override int Read(byte[] buffer, int offset, int count)
         {
-            return ReadAsync(buffer, offset, count).Result;
+            return ReadAsync(buffer, offset, count).GetAwaiter().GetResult();
         }
 
 #if NET451
