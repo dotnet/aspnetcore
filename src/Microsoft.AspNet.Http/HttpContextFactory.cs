@@ -9,6 +9,10 @@ namespace Microsoft.AspNet.Http.Internal
     {
         private IHttpContextAccessor _httpContextAccessor;
 
+        public HttpContextFactory() : this(httpContextAccessor: null)
+        {
+        }
+
         public HttpContextFactory(IHttpContextAccessor httpContextAccessor)
         {
             _httpContextAccessor = httpContextAccessor;
@@ -17,13 +21,19 @@ namespace Microsoft.AspNet.Http.Internal
         public HttpContext Create(IFeatureCollection featureCollection)
         {
             var httpContext = new DefaultHttpContext(featureCollection);
-            _httpContextAccessor.HttpContext = httpContext;
+            if (_httpContextAccessor != null)
+            {
+                _httpContextAccessor.HttpContext = httpContext;
+            }
             return httpContext;
         }
 
         public void Dispose(HttpContext httpContext)
         {
-            _httpContextAccessor.HttpContext = null;
+            if (_httpContextAccessor != null)
+            {
+                _httpContextAccessor.HttpContext = null;
+            }
         }
     }
 }

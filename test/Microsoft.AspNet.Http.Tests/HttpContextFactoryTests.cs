@@ -21,5 +21,16 @@ namespace Microsoft.AspNet.Http.Internal
             // Assert
             Assert.True(ReferenceEquals(context, accessor.HttpContext));
         }
+
+        [Fact]
+        public void AllowsCreatingContextWithoutSettingAccessor()
+        {
+            // Arrange
+            var contextFactory = new HttpContextFactory();
+
+            // Act & Assert
+            var context = contextFactory.Create(new FeatureCollection());
+            contextFactory.Dispose(context);
+        }
     }
 }
