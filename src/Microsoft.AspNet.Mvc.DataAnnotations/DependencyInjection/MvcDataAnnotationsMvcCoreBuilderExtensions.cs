@@ -32,6 +32,21 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
+        /// Adds MVC data annotations localization to the application.
+        /// </summary>
+        /// <param name="builder">The <see cref="IMvcCoreBuilder"/>.</param>
+        /// <returns>The <see cref="IMvcCoreBuilder"/>.</returns>
+        public static IMvcCoreBuilder AddDataAnnotationsLocalization(this IMvcCoreBuilder builder)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            return AddDataAnnotationsLocalization(builder, setupAction: null);
+        }
+
+        /// <summary>
         /// Registers an action to configure <see cref="MvcDataAnnotationsLocalizationOptions"/> for MVC data
         /// annotations localization.
         /// </summary>
