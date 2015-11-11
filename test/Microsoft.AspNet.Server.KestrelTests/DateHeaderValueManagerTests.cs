@@ -77,8 +77,8 @@ namespace Microsoft.AspNet.Server.KestrelTests
             {
                 UtcNow = now
             };
-            var timeWithoutRequestsUntilIdle = TimeSpan.FromMilliseconds(50);
-            var timerInterval = TimeSpan.FromMilliseconds(10);
+            var timeWithoutRequestsUntilIdle = TimeSpan.FromMilliseconds(250);
+            var timerInterval = TimeSpan.FromMilliseconds(100);
             var dateHeaderValueManager = new DateHeaderValueManager(systemClock, timeWithoutRequestsUntilIdle, timerInterval);
             string result1;
             string result2;
@@ -87,8 +87,8 @@ namespace Microsoft.AspNet.Server.KestrelTests
             {
                 result1 = dateHeaderValueManager.GetDateHeaderValue();
                 systemClock.UtcNow = future;
-                // Wait for twice the idle timeout to ensure the timer is stopped
-                await Task.Delay(timeWithoutRequestsUntilIdle.Add(timeWithoutRequestsUntilIdle));
+                // Wait for longer than the idle timeout to ensure the timer is stopped
+                await Task.Delay(TimeSpan.FromSeconds(1));
                 result2 = dateHeaderValueManager.GetDateHeaderValue();
             }
             finally
