@@ -29,8 +29,8 @@
     },
     "dnxcore50": {
       "dependencies": {
-        "System.Reflection.TypeExtensions": "4.0.1-beta-*",
-        "System.Runtime.Extensions": "4.0.11-beta-*"
+        "System.Reflection.TypeExtensions": "4.0.1-*",
+        "System.Runtime.Extensions": "4.0.11-*"
       }
     }
   }

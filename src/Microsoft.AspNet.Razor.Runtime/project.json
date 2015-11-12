@@ -34,8 +34,8 @@
     },
     "dotnet5.4": {
       "dependencies": {
-        "System.Reflection.Extensions": "4.0.1-beta-*",
-        "System.Text.RegularExpressions": "4.0.11-beta-*"
+        "System.Reflection.Extensions": "4.0.1-*",
+        "System.Text.RegularExpressions": "4.0.11-*"
       }
     }
   }
