@@ -18,7 +18,7 @@
     "Microsoft.Extensions.Logging.Abstractions": "1.0.0-*",
     "Microsoft.Extensions.OptionsModel": "1.0.0-*",
     "Microsoft.Extensions.WebEncoders": "1.0.0-*",
-    "System.Diagnostics.DiagnosticSource": "4.0.0-beta-*"
+    "System.Diagnostics.DiagnosticSource": "4.0.0-*"
   },
   "frameworks": {
     "net451": {
@@ -28,7 +28,7 @@
     },
     "dotnet5.4": {
       "dependencies": {
-        "System.Reflection.Extensions": "4.0.1-beta-*"
+        "System.Reflection.Extensions": "4.0.1-*"
       }
     }
   },
