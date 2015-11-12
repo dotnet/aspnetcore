@@ -128,7 +128,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             if (awaitableState != _awaitableIsCompleted &&
                 awaitableState != _awaitableIsNotCompleted)
             {
-                Task.Run(awaitableState);
+                ThreadPool.QueueUserWorkItem((o) => ((Action)o)(), awaitableState);
             }
         }
 
@@ -194,7 +194,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             }
             else if (awaitableState == _awaitableIsCompleted)
             {
-                Task.Run(continuation);
+                ThreadPool.QueueUserWorkItem((o) => ((Action)o)(), continuation);
             }
             else
             {
