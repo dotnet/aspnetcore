@@ -28,13 +28,13 @@
     "dotnet5.4": {
       "dependencies": {
         "Microsoft.Win32.Registry": "4.0.0-beta-*",
-        "System.Linq": "4.0.1-beta-*",
-        "System.Reflection.Extensions": "4.0.1-beta-*",
-        "System.Reflection.TypeExtensions": "4.0.1-beta-*",
-        "System.Security.Cryptography.X509Certificates": "4.0.0-beta-*",
-        "System.Security.Claims": "4.0.1-beta-*",
-        "System.Security.Principal.Windows": "4.0.0-beta-*",
-        "System.Xml.XDocument": "4.0.11-beta-*"
+        "System.Linq": "4.0.1-*",
+        "System.Reflection.Extensions": "4.0.1-*",
+        "System.Reflection.TypeExtensions": "4.0.1-*",
+        "System.Security.Cryptography.X509Certificates": "4.0.0-*",
+        "System.Security.Claims": "4.0.1-*",
+        "System.Security.Principal.Windows": "4.0.0-*",
+        "System.Xml.XDocument": "4.0.11-*"
       }
     }
   },
