@@ -27,7 +27,7 @@
     },
     "dotnet5.4": {
       "dependencies": {
-        "Microsoft.Win32.Registry": "4.0.0-beta-*",
+        "Microsoft.Win32.Registry": "4.0.0-*",
         "System.Linq": "4.0.1-*",
         "System.Reflection.Extensions": "4.0.1-*",
         "System.Reflection.TypeExtensions": "4.0.1-*",
