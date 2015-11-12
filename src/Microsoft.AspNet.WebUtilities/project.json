@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "Microsoft.Extensions.Primitives": "1.0.0-*",
-    "System.Text.Encodings.Web": "4.0.0-beta-*"
+    "System.Text.Encodings.Web": "4.0.0-*"
   },
   "frameworks": {
     "net451": {
@@ -21,12 +21,12 @@
     },
     "dotnet5.4": {
       "dependencies": {
-        "System.Collections": "4.0.11-beta-*",
-        "System.Diagnostics.Debug": "4.0.11-beta-*",
-        "System.IO": "4.0.11-beta-*",
-        "System.IO.FileSystem": "4.0.1-beta-*",
-        "System.Runtime": "4.0.21-beta-*",
-        "System.Runtime.Extensions": "4.0.11-beta-*"
+        "System.Collections": "4.0.11-*",
+        "System.Diagnostics.Debug": "4.0.11-*",
+        "System.IO": "4.0.11-*",
+        "System.IO.FileSystem": "4.0.1-*",
+        "System.Runtime": "4.0.21-*",
+        "System.Runtime.Extensions": "4.0.11-*"
       }
     }
   }
