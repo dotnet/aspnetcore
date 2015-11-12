@@ -14,9 +14,7 @@ using Microsoft.AspNet.Http.Features.Internal;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.OptionsModel;
-#if DNX451
 using Moq;
-#endif
 using Xunit;
 
 namespace Microsoft.AspNet.Diagnostics.Tests
@@ -35,7 +33,6 @@ namespace Microsoft.AspNet.Diagnostics.Tests
             Assert.Equal(DefaultPath, options.Path.Value);
         }
 
-#if DNX451
         [Fact]
         public async void Invoke_WithNonMatchingPath_IgnoresRequest()
         {
@@ -226,7 +223,6 @@ namespace Microsoft.AspNet.Diagnostics.Tests
                 .Returns(featureCollection);
             return contextMock;
         }
-#endif
 
         [Fact]
         public async Task SetsNewIdentifierFeature_IfNotPresentOnContext()

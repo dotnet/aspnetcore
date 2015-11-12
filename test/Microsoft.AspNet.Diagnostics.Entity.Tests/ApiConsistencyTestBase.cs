@@ -14,9 +14,9 @@ namespace Microsoft.Data.Entity
 {
     public abstract class ApiConsistencyTestBase
     {
-        private static readonly HashSet<Type> _typesToSkip = new HashSet<Type>
+        private static readonly HashSet<TypeInfo> _typesToSkip = new HashSet<TypeInfo>
         {
-            typeof(DatabaseErrorPage)
+            typeof(DatabaseErrorPage).GetTypeInfo()
         };
 
         protected const BindingFlags PublicInstance
@@ -29,15 +29,15 @@ namespace Microsoft.Data.Entity
         public void Public_inheritable_apis_should_be_virtual()
         {
             var nonVirtualMethods
-                = (from type in GetAllTypes(TargetAssembly.GetTypes())
+                = (from type in GetAllTypes(TargetAssembly.DefinedTypes)
                     where type.IsVisible
                           && !type.IsSealed
-                          && type.GetConstructors(AnyInstance).Any(c => c.IsPublic || c.IsFamily || c.IsFamilyOrAssembly)
+                          && type.DeclaredConstructors.Any(c => c.IsPublic || c.IsFamily || c.IsFamilyOrAssembly)
                           && type.Namespace != null
                           && !type.Namespace.EndsWith(".Compiled")
                           && !_typesToSkip.Contains(type)
-                    from method in type.GetMethods(PublicInstance)
-                    where method.DeclaringType == type
+                    from method in type.DeclaredMethods.Where(m => m.IsPublic && !m.IsStatic)
+                    where method.DeclaringType.GetTypeInfo() == type
                           && !(method.IsVirtual && !method.IsFinal)
                     select type.FullName + "." + method.Name)
                     .ToList();
@@ -51,17 +51,17 @@ namespace Microsoft.Data.Entity
         public void Public_api_arguments_should_have_not_null_annotation()
         {
             var parametersMissingAttribute
-                = (from type in GetAllTypes(TargetAssembly.GetTypes())
-                    where type.IsVisible && !typeof(Delegate).IsAssignableFrom(type) && !_typesToSkip.Contains(type)
-                    let interfaceMappings = type.GetInterfaces().Select(type.GetInterfaceMap)
-                    let events = type.GetEvents()
-                    from method in type.GetMethods(PublicInstance | BindingFlags.Static)
-                        .Concat<MethodBase>(type.GetConstructors())
-                    where method.DeclaringType == type
+                = (from type in GetAllTypes(TargetAssembly.DefinedTypes)
+                    where type.IsVisible && !typeof(Delegate).GetTypeInfo().IsAssignableFrom(type) && !_typesToSkip.Contains(type)
+                    let interfaceMappings = type.ImplementedInterfaces.Select(type.GetRuntimeInterfaceMap)
+                    let events = type.DeclaredEvents
+                    from method in type.DeclaredMethods.Where(m => m.IsPublic)
+                        .Concat<MethodBase>(type.DeclaredConstructors)
+                    where method.DeclaringType.GetTypeInfo() == type
                     where type.IsInterface || !interfaceMappings.Any(im => im.TargetMethods.Contains(method))
                     where !events.Any(e => e.AddMethod == method || e.RemoveMethod == method)
                     from parameter in method.GetParameters()
-                    where !parameter.ParameterType.IsValueType
+                    where !parameter.ParameterType.GetTypeInfo().IsValueType
                           && !parameter.GetCustomAttributes()
                               .Any(
                                   a => a.GetType().Name == "NotNullAttribute"
@@ -78,10 +78,10 @@ namespace Microsoft.Data.Entity
         public void Async_methods_should_have_overload_with_cancellation_token_and_end_with_async_suffix()
         {
             var asyncMethods
-                = (from type in GetAllTypes(TargetAssembly.GetTypes())
+                = (from type in GetAllTypes(TargetAssembly.DefinedTypes)
                     where type.IsVisible
-                    from method in type.GetMethods(PublicInstance | BindingFlags.Static)
-                    where method.DeclaringType == type
+                    from method in type.DeclaredMethods.Where(m => m.IsPublic)
+                    where method.DeclaringType.GetTypeInfo() == type
                     where typeof(Task).IsAssignableFrom(method.ReturnType)
                     select method).ToList();
 
@@ -99,7 +99,7 @@ namespace Microsoft.Data.Entity
                 = (from methodWithoutToken in asyncMethodsWithoutToken
                     where !asyncMethodsWithToken
                         .Any(methodWithToken => methodWithoutToken.Name == methodWithToken.Name
-                                                && methodWithoutToken.ReflectedType == methodWithToken.ReflectedType)
+                                                && methodWithoutToken.DeclaringType == methodWithToken.DeclaringType)
                     // ReSharper disable once PossibleNullReferenceException
                     select methodWithoutToken.DeclaringType.Name + "." + methodWithoutToken.Name)
                     .Except(GetCancellationTokenExceptions())
@@ -133,13 +133,13 @@ namespace Microsoft.Data.Entity
 
         protected abstract Assembly TargetAssembly { get; }
 
-        protected virtual IEnumerable<Type> GetAllTypes(IEnumerable<Type> types)
+        protected virtual IEnumerable<TypeInfo> GetAllTypes(IEnumerable<TypeInfo> typeInfos)
         {
-            foreach (var type in types)
+            foreach (var typeInfo in typeInfos)
             {
-                yield return type;
+                yield return typeInfo;
 
-                foreach (var nestedType in GetAllTypes(type.GetNestedTypes()))
+                foreach (var nestedType in GetAllTypes(typeInfo.DeclaredNestedTypes))
                 {
                     yield return nestedType;
                 }

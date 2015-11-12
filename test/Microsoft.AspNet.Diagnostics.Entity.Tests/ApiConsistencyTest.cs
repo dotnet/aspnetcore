@@ -10,10 +10,7 @@ namespace Microsoft.AspNet.Diagnostics.EntityTests
 {
     public class ApiConsistencyTest : ApiConsistencyTestBase
     {
-        protected override Assembly TargetAssembly
-        {
-            get { return typeof(DatabaseErrorPageMiddleware).Assembly; }
-        }
+        protected override Assembly TargetAssembly => typeof(DatabaseErrorPageMiddleware).GetTypeInfo().Assembly;
 
         protected override IEnumerable<string> GetCancellationTokenExceptions()
         {

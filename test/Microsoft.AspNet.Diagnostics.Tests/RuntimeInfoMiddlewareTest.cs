@@ -1,22 +1,17 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.PlatformAbstractions;
 using Microsoft.Extensions.WebEncoders.Testing;
-#if DNX451
 using Moq;
-#endif
 using Xunit;
 
 namespace Microsoft.AspNet.Diagnostics.Tests
@@ -35,12 +30,11 @@ namespace Microsoft.AspNet.Diagnostics.Tests
             Assert.Equal(DefaultPath, options.Path.Value);
         }
 
-#if DNX451
         [Fact]
         public void CreateRuntimeInfoModel_GetsTheVersionAndAllPackages()
         {
             // Arrage
-            var libraries = new [] {
+            var libraries = new[] {
                 new Library("LibInfo1", string.Empty, "Path1", string.Empty, Enumerable.Empty<string>(), Enumerable.Empty<AssemblyName>()),
                 new Library("LibInfo2", string.Empty, "Path2", string.Empty, Enumerable.Empty<string>(), Enumerable.Empty<AssemblyName>())
             };
@@ -111,7 +105,7 @@ namespace Microsoft.AspNet.Diagnostics.Tests
         {
             // Arrange
             var libraryManagerMock = new Mock<ILibraryManager>(MockBehavior.Strict);
-            libraryManagerMock.Setup(l => l.GetLibraries()).Returns(new [] {
+            libraryManagerMock.Setup(l => l.GetLibraries()).Returns(new[] {
                         new Library("LibInfo1", "1.0.0-beta1", "Path1", string.Empty, Enumerable.Empty<string>(), Enumerable.Empty<AssemblyName>()),
                         new Library("LibInfo2", "1.0.0-beta2", "Path2", string.Empty, Enumerable.Empty<string>(), Enumerable.Empty<AssemblyName>())
                     });
@@ -171,7 +165,7 @@ namespace Microsoft.AspNet.Diagnostics.Tests
         {
             // Arrange
             var libraryManagerMock = new Mock<ILibraryManager>(MockBehavior.Strict);
-            libraryManagerMock.Setup(l => l.GetLibraries()).Returns(new [] {
+            libraryManagerMock.Setup(l => l.GetLibraries()).Returns(new[] {
                         new Library("LibInfo1", "1.0.0-beta1", "Path1", string.Empty, Enumerable.Empty<string>(), Enumerable.Empty<AssemblyName>()),
                     });
 
@@ -219,6 +213,5 @@ namespace Microsoft.AspNet.Diagnostics.Tests
                 Assert.True(response.Contains("<td>HtmlEncode[[Path1]]</td>"));
             }
         }
-#endif
     }
 }

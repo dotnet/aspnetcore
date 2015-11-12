@@ -1,31 +1,34 @@
 {
-    "compilationOptions": {
-        "warningsAsErrors": false,
-        "keyFile": "../../tools/Key.snk"
-    },
-    "dependencies": {
-        "Microsoft.AspNet.Diagnostics.Elm": "1.0.0-*",
-        "Microsoft.AspNet.FileProviders.Embedded": "1.0.0-*",
-        "Microsoft.AspNet.TestHost": "1.0.0-*",
-        "Microsoft.AspNet.Testing": "1.0.0-*",
-        "Microsoft.Extensions.DependencyInjection": "1.0.0-*",
-        "Microsoft.Extensions.DiagnosticAdapter": "1.0.0-*",
-        "xunit.runner.aspnet": "2.0.0-aspnet-*"
-    },
+  "compilationOptions": {
+    "warningsAsErrors": true,
+    "keyFile": "../../tools/Key.snk"
+  },
+  "dependencies": {
+    "Microsoft.AspNet.Diagnostics.Elm": "1.0.0-*",
+    "Microsoft.AspNet.FileProviders.Embedded": "1.0.0-*",
+    "Microsoft.AspNet.TestHost": "1.0.0-*",
+    "Microsoft.AspNet.Testing": "1.0.0-*",
+    "Microsoft.Extensions.DependencyInjection": "1.0.0-*",
+    "Microsoft.Extensions.DiagnosticAdapter": "1.0.0-*",
+    "xunit.runner.aspnet": "2.0.0-aspnet-*"
+  },
 
-    "frameworks": {
-        "dnx451": {
-            "dependencies": {
-                "Moq": "4.2.1312.1622"
-            }
-        },
-        "dnxcore50": {
-        }
+  "frameworks": {
+    "dnx451": {
+      "dependencies": {
+        "Moq": "4.2.1312.1622"
+      }
     },
+    "dnxcore50": {
+      "dependencies": {
+        "moq.netcore": "4.4.0-beta8"
+      }
+    }
+  },
 
-    "commands": {
-        "test": "xunit.runner.aspnet"
-    },
+  "commands": {
+    "test": "xunit.runner.aspnet"
+  },
 
-    "resource": [ "Resources/**" ]
+  "resource": [ "Resources/**" ]
 }
