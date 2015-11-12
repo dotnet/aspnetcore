@@ -359,7 +359,6 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
                 // if any of the error fields are set, throw error null
                 if (!string.IsNullOrEmpty(message.Error))
                 {
-                    // REVIEW: this error formatting is pretty nuts
                     Logger.LogError(13, "Message contains error: '{0}', error_description: '{1}', error_uri: '{2}'.", message.Error, message.ErrorDescription ?? "ErrorDecription null", message.ErrorUri ?? "ErrorUri null");
                     return AuthenticateResult.Failed(new OpenIdConnectProtocolException(string.Format(CultureInfo.InvariantCulture, Resources.MessageContainsError, message.Error, message.ErrorDescription ?? "ErrorDecription null", message.ErrorUri ?? "ErrorUri null")));
                 }
