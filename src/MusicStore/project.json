@@ -47,7 +47,7 @@
         "dnx451": { },
         "dnxcore50": {
             "dependencies": {
-                "System.Runtime.Serialization.Primitives": "4.0.10-beta-*"
+                "System.Runtime.Serialization.Primitives": "4.0.10-*"
             }
         }
     }
