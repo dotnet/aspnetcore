@@ -15,12 +15,12 @@
     "dotnet5.4": {
       "dependencies": {
         "Microsoft.Win32.Primitives": "4.0.1-beta-*",
-        "System.Diagnostics.Debug": "4.0.11-beta-*",
-        "System.IO.FileSystem": "4.0.1-beta-*",
-        "System.Security.Claims": "4.0.1-beta-*",
-        "System.Security.Cryptography.X509Certificates": "4.0.0-beta-*",
-        "System.Security.Principal.Windows": "4.0.0-beta-*",
-        "System.Threading.Overlapped": "4.0.0-beta-*"
+        "System.Diagnostics.Debug": "4.0.11-*",
+        "System.IO.FileSystem": "4.0.1-*",
+        "System.Security.Claims": "4.0.1-*",
+        "System.Security.Cryptography.X509Certificates": "4.0.0-*",
+        "System.Security.Principal.Windows": "4.0.0-*",
+        "System.Threading.Overlapped": "4.0.0-*"
       }
     }
   }
