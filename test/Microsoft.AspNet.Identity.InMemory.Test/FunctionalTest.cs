@@ -15,11 +15,10 @@ using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Authentication;
 using Microsoft.AspNet.Http.Features.Authentication;
+using Microsoft.AspNet.Identity.Test;
 using Microsoft.AspNet.TestHost;
 using Microsoft.Extensions.DependencyInjection;
-using Shouldly;
 using Xunit;
-using Microsoft.AspNet.Identity.Test;
 
 namespace Microsoft.AspNet.Identity.InMemory
 {
@@ -45,7 +44,9 @@ namespace Microsoft.AspNet.Identity.InMemory
             }));
 
             var transaction1 = await SendAsync(server, "http://example.com/createSimple");
-            transaction1.Response.StatusCode.ShouldBe(HttpStatusCode.OK);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, transaction1.Response.StatusCode);
             Assert.Null(transaction1.SetCookie);
         }
 
@@ -61,28 +62,28 @@ namespace Microsoft.AspNet.Identity.InMemory
             }));
 
             var transaction1 = await SendAsync(server, "http://example.com/createMe");
-            transaction1.Response.StatusCode.ShouldBe(HttpStatusCode.OK);
+            Assert.Equal(HttpStatusCode.OK, transaction1.Response.StatusCode);
             Assert.Null(transaction1.SetCookie);
 
             var transaction2 = await SendAsync(server, "http://example.com/pwdLogin/false");
-            transaction2.Response.StatusCode.ShouldBe(HttpStatusCode.OK);
+            Assert.Equal(HttpStatusCode.OK, transaction2.Response.StatusCode);
             Assert.NotNull(transaction2.SetCookie);
-            transaction2.SetCookie.ShouldNotContain("; expires=");
+            Assert.DoesNotContain("; expires=", transaction2.SetCookie);
 
             var transaction3 = await SendAsync(server, "http://example.com/me", transaction2.CookieNameValue);
-            FindClaimValue(transaction3, ClaimTypes.Name).ShouldBe("hao");
+            Assert.Equal("hao", FindClaimValue(transaction3, ClaimTypes.Name));
             Assert.Null(transaction3.SetCookie);
 
             clock.Add(TimeSpan.FromMinutes(7));
 
             var transaction4 = await SendAsync(server, "http://example.com/me", transaction2.CookieNameValue);
-            FindClaimValue(transaction4, ClaimTypes.Name).ShouldBe("hao");
+            Assert.Equal("hao", FindClaimValue(transaction4, ClaimTypes.Name));
             Assert.Null(transaction4.SetCookie);
 
             clock.Add(TimeSpan.FromMinutes(7));
 
             var transaction5 = await SendAsync(server, "http://example.com/me", transaction2.CookieNameValue);
-            FindClaimValue(transaction5, ClaimTypes.Name).ShouldBe(null);
+            Assert.Null(FindClaimValue(transaction5, ClaimTypes.Name));
             Assert.Null(transaction5.SetCookie);
         }
 
@@ -98,29 +99,29 @@ namespace Microsoft.AspNet.Identity.InMemory
             }));
 
             var transaction1 = await SendAsync(server, "http://example.com/createMe");
-            transaction1.Response.StatusCode.ShouldBe(HttpStatusCode.OK);
+            Assert.Equal(HttpStatusCode.OK, transaction1.Response.StatusCode);
             Assert.Null(transaction1.SetCookie);
 
             var transaction2 = await SendAsync(server, "http://example.com/pwdLogin/" + rememberMe);
-            transaction2.Response.StatusCode.ShouldBe(HttpStatusCode.OK);
+            Assert.Equal(HttpStatusCode.OK, transaction2.Response.StatusCode);
             Assert.NotNull(transaction2.SetCookie);
             if (rememberMe)
             {
-                transaction2.SetCookie.ShouldContain("; expires=");
+                Assert.Contains("; expires=", transaction2.SetCookie);
             }
             else
             {
-                transaction2.SetCookie.ShouldNotContain("; expires=");
+                Assert.DoesNotContain("; expires=", transaction2.SetCookie);
             }
 
             var transaction3 = await SendAsync(server, "http://example.com/me", transaction2.CookieNameValue);
-            FindClaimValue(transaction3, ClaimTypes.Name).ShouldBe("hao");
+            Assert.Equal("hao", FindClaimValue(transaction3, ClaimTypes.Name));
             Assert.Null(transaction3.SetCookie);
 
             // Make sure we don't get a new cookie yet
             clock.Add(TimeSpan.FromMinutes(10));
             var transaction4 = await SendAsync(server, "http://example.com/me", transaction2.CookieNameValue);
-            FindClaimValue(transaction4, ClaimTypes.Name).ShouldBe("hao");
+            Assert.Equal("hao", FindClaimValue(transaction4, ClaimTypes.Name));
             Assert.Null(transaction4.SetCookie);
 
             // Go past SecurityStampValidation interval and ensure we get a new cookie
@@ -128,11 +129,11 @@ namespace Microsoft.AspNet.Identity.InMemory
 
             var transaction5 = await SendAsync(server, "http://example.com/me", transaction2.CookieNameValue);
             Assert.NotNull(transaction5.SetCookie);
-            FindClaimValue(transaction5, ClaimTypes.Name).ShouldBe("hao");
+            Assert.Equal("hao", FindClaimValue(transaction5, ClaimTypes.Name));
 
             // Make sure new cookie is valid
             var transaction6 = await SendAsync(server, "http://example.com/me", transaction5.CookieNameValue);
-            FindClaimValue(transaction6, ClaimTypes.Name).ShouldBe("hao");
+            Assert.Equal("hao", FindClaimValue(transaction6, ClaimTypes.Name));
         }
 
         [Fact]
@@ -141,18 +142,18 @@ namespace Microsoft.AspNet.Identity.InMemory
             var server = CreateServer();
 
             var transaction1 = await SendAsync(server, "http://example.com/createMe");
-            transaction1.Response.StatusCode.ShouldBe(HttpStatusCode.OK);
+            Assert.Equal(HttpStatusCode.OK, transaction1.Response.StatusCode);
             Assert.Null(transaction1.SetCookie);
 
             var transaction2 = await SendAsync(server, "http://example.com/twofactorRememeber");
-            transaction2.Response.StatusCode.ShouldBe(HttpStatusCode.OK);
+            Assert.Equal(HttpStatusCode.OK, transaction2.Response.StatusCode);
 
             var setCookie = transaction2.SetCookie;
-            setCookie.ShouldContain(new IdentityCookieOptions().TwoFactorRememberMeCookieAuthenticationScheme + "=");
-            setCookie.ShouldContain("; expires=");
+            Assert.Contains(new IdentityCookieOptions().TwoFactorRememberMeCookieAuthenticationScheme + "=", setCookie);
+            Assert.Contains("; expires=", setCookie);
 
             var transaction3 = await SendAsync(server, "http://example.com/isTwoFactorRememebered", transaction2.CookieNameValue);
-            transaction3.Response.StatusCode.ShouldBe(HttpStatusCode.OK);
+            Assert.Equal(HttpStatusCode.OK, transaction3.Response.StatusCode);
         }
 
         private static string FindClaimValue(Transaction transaction, string claimType)
@@ -278,7 +279,7 @@ namespace Microsoft.AspNet.Identity.InMemory
             }
             using (var memory = new MemoryStream())
             {
-                using (var writer = new XmlTextWriter(memory, Encoding.UTF8))
+                using (var writer = XmlWriter.Create(memory, new XmlWriterSettings { Encoding = Encoding.UTF8 }))
                 {
                     xml.WriteTo(writer);
                 }

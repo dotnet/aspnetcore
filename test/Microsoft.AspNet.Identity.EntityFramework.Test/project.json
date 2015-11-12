@@ -16,11 +16,16 @@
     "Microsoft.Extensions.OptionsModel": "1.0.0-*",
     "xunit.runner.aspnet": "2.0.0-aspnet-*"
   },
-  "compile": "..\\Shared\\*.cs",
+  "compile": "../Shared/*.cs",
   "frameworks": {
     "dnx451": {
       "dependencies": {
         "Moq": "4.2.1312.1622"
+      }
+    },
+    "dnxcore50": {
+      "dependencies": {
+        "moq.netcore": "4.4.0-beta8"
       }
     }
   },

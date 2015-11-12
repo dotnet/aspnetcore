@@ -14,14 +14,18 @@
     "Microsoft.Extensions.Configuration": "1.0.0-*",
     "Microsoft.Extensions.DependencyInjection": "1.0.0-*",
     "Microsoft.Extensions.OptionsModel": "1.0.0-*",
-    "Moq": "4.2.1312.1622",
     "xunit.runner.aspnet": "2.0.0-aspnet-*"
   },
-  "compile": "..\\Shared\\*.cs",
+  "compile": "../Shared/*.cs",
   "frameworks": {
     "dnx451": {
       "dependencies": {
-        "Shouldly": "1.1.1.1"
+        "Moq": "4.2.1312.1622"
+      }
+    },
+    "dnxcore50": {
+      "dependencies": {
+        "moq.netcore": "4.4.0-beta8"
       }
     }
   },
