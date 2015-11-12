@@ -8,7 +8,7 @@
   "dependencies": {
     "Microsoft.AspNet.Hosting": "1.0.0-*",
     "Microsoft.Extensions.Logging.Abstractions": "1.0.0-*",
-    "System.Numerics.Vectors": "4.1.1-beta-*",
+    "System.Numerics.Vectors": "4.1.1-*",
     "Microsoft.StandardsPolice": {
       "version": "1.0.0-*",
       "type": "build"
@@ -27,42 +27,42 @@
     "net451": { },
     "dnxcore50": {
       "dependencies": {
-        "System.Collections": "4.0.11-beta-*",
-        "System.Diagnostics.Debug": "4.0.11-beta-*",
-        "System.Diagnostics.TraceSource": "4.0.0-beta-*",
-        "System.Diagnostics.Tracing": "4.0.21-beta-*",
-        "System.Globalization": "4.0.11-beta-*",
-        "System.IO": "4.0.11-beta-*",
-        "System.Linq": "4.0.1-beta-*",
-        "System.Net.Primitives": "4.0.11-beta-*",
-        "System.Runtime.Extensions": "4.0.11-beta-*",
-        "System.Runtime.InteropServices": "4.0.21-beta-*",
-        "System.Text.Encoding": "4.0.11-beta-*",
-        "System.Threading": "4.0.11-beta-*",
-        "System.Threading.Tasks": "4.0.11-beta-*",
-        "System.Threading.Thread": "4.0.0-beta-*",
-        "System.Threading.ThreadPool": "4.0.10-beta-*",
-        "System.Threading.Timer": "4.0.1-beta-*"
+        "System.Collections": "4.0.11-*",
+        "System.Diagnostics.Debug": "4.0.11-*",
+        "System.Diagnostics.TraceSource": "4.0.0-*",
+        "System.Diagnostics.Tracing": "4.0.21-*",
+        "System.Globalization": "4.0.11-*",
+        "System.IO": "4.0.11-*",
+        "System.Linq": "4.0.1-*",
+        "System.Net.Primitives": "4.0.11-*",
+        "System.Runtime.Extensions": "4.0.11-*",
+        "System.Runtime.InteropServices": "4.0.21-*",
+        "System.Text.Encoding": "4.0.11-*",
+        "System.Threading": "4.0.11-*",
+        "System.Threading.Tasks": "4.0.11-*",
+        "System.Threading.Thread": "4.0.0-*",
+        "System.Threading.ThreadPool": "4.0.10-*",
+        "System.Threading.Timer": "4.0.1-*"
       }
     },
     "dotnet5.4": {
       "dependencies": {
-        "System.Collections": "4.0.11-beta-*",
-        "System.Diagnostics.Debug": "4.0.11-beta-*",
-        "System.Diagnostics.TraceSource": "4.0.0-beta-*",
-        "System.Diagnostics.Tracing": "4.0.21-beta-*",
-        "System.Globalization": "4.0.11-beta-*",
-        "System.IO": "4.0.11-beta-*",
-        "System.Linq": "4.0.1-beta-*",
-        "System.Net.Primitives": "4.0.11-beta-*",
-        "System.Runtime.Extensions": "4.0.11-beta-*",
-        "System.Runtime.InteropServices": "4.0.21-beta-*",
-        "System.Text.Encoding": "4.0.11-beta-*",
-        "System.Threading": "4.0.11-beta-*",
-        "System.Threading.Tasks": "4.0.11-beta-*",
-        "System.Threading.Thread": "4.0.0-beta-*",
-        "System.Threading.ThreadPool": "4.0.10-beta-*",
-        "System.Threading.Timer": "4.0.1-beta-*"
+        "System.Collections": "4.0.11-*",
+        "System.Diagnostics.Debug": "4.0.11-*",
+        "System.Diagnostics.TraceSource": "4.0.0-*",
+        "System.Diagnostics.Tracing": "4.0.21-*",
+        "System.Globalization": "4.0.11-*",
+        "System.IO": "4.0.11-*",
+        "System.Linq": "4.0.1-*",
+        "System.Net.Primitives": "4.0.11-*",
+        "System.Runtime.Extensions": "4.0.11-*",
+        "System.Runtime.InteropServices": "4.0.21-*",
+        "System.Text.Encoding": "4.0.11-*",
+        "System.Threading": "4.0.11-*",
+        "System.Threading.Tasks": "4.0.11-*",
+        "System.Threading.Thread": "4.0.0-*",
+        "System.Threading.ThreadPool": "4.0.10-*",
+        "System.Threading.Timer": "4.0.1-*"
       }
     }
   },

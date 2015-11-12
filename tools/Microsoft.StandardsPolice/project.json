@@ -1,4 +1,4 @@
-﻿{
+{
   "version": "1.0.0-*",
 
   "compilationOptions": {
@@ -32,12 +32,12 @@
     },
     "dotnet5.4": {
       "dependencies": {
-        "System.Console": "4.0.0-beta-*"
+        "System.Console": "4.0.0-*"
       }
     },
     "dnxcore50": {
       "dependencies": {
-        "System.Console": "4.0.0-beta-*"
+        "System.Console": "4.0.0-*"
       }
     }
   }

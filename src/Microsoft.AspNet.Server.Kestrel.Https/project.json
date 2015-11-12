@@ -15,7 +15,7 @@
     "net451": { },
     "dotnet5.4": {
       "dependencies": {
-        "System.Net.Security": "4.0.0-beta-*"
+        "System.Net.Security": "4.0.0-*"
       }
     }
   }
