@@ -1,13 +1,12 @@
 using System;
 using System.Security.Claims;
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Diagnostics.Entity;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.Data.Entity;
-using Microsoft.Extensions.PlatformAbstractions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.PlatformAbstractions;
 using Microsoft.Net.Http.Server;
 using MusicStore.Components;
 using MusicStore.Models;
