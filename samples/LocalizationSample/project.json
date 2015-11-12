@@ -16,8 +16,8 @@
     "dnx451": { },
     "dnxcore50": {
       "dependencies": {
-        "System.Globalization": "4.0.11-beta-*",
-        "System.Globalization.Extensions": "4.0.1-beta-*"
+        "System.Globalization": "4.0.11-*",
+        "System.Globalization.Extensions": "4.0.1-*"
       }
     }
   },

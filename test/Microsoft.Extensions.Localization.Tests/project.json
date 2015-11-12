@@ -13,7 +13,7 @@
     "dnx451": { },
     "dnxcore50": {
       "dependencies": {
-        "System.Reflection": "4.0.11-beta-*"
+        "System.Reflection": "4.0.11-*"
       }
     }
   },
