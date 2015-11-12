@@ -29,7 +29,7 @@
     },
     "dotnet5.4": {
       "dependencies": {
-        "System.Net.Http": "4.0.1-beta-*"
+        "System.Net.Http": "4.0.1-*"
       }
     }
   }
