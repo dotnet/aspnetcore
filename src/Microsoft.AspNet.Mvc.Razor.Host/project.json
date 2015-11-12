@@ -27,10 +27,10 @@
     "dotnet5.4": {
       "dependencies": {
         "Microsoft.Extensions.PlatformAbstractions": "1.0.0-*",
-        "System.Collections.Concurrent": "4.0.11-beta-*",
-        "System.ComponentModel.TypeConverter": "4.0.1-beta-*",
-        "System.Reflection.Extensions": "4.0.1-beta-*",
-        "System.Text.Encoding.Extensions": "4.0.11-beta-*"
+        "System.Collections.Concurrent": "4.0.11-*",
+        "System.ComponentModel.TypeConverter": "4.0.1-*",
+        "System.Reflection.Extensions": "4.0.1-*",
+        "System.Text.Encoding.Extensions": "4.0.11-*"
       }
     }
   },

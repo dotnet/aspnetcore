@@ -1,11 +1,11 @@
-﻿{
+{
   "version": "6.0.0-*",
   "shared": "**/*.cs",
   "frameworks": {
     "dnx451": { },
     "dnxcore50": {
       "dependencies": {
-        "System.Runtime": "4.0.21-beta-*"
+        "System.Runtime": "4.0.21-*"
       }
     }
   }

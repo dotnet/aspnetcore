@@ -33,7 +33,7 @@
       "version": "1.0.0-*",
       "type": "build"
     },
-    "System.Diagnostics.DiagnosticSource": "4.0.0-beta-*"
+    "System.Diagnostics.DiagnosticSource": "4.0.0-*"
   },
   "frameworks": {
     "net451": {

@@ -15,7 +15,7 @@
         "dnx451": { },
         "dnxcore50": {
             "dependencies": {
-                "System.Linq.Queryable": "4.0.1-beta-*"
+                "System.Linq.Queryable": "4.0.1-*"
             }
         }
     },
