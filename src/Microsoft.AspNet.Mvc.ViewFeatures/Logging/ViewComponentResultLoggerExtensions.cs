@@ -8,7 +8,7 @@ namespace Microsoft.AspNet.Mvc.Logging
 {
     public static class ViewComponentResultLoggerExtensions
     {
-        private static Action<ILogger, string, string[], Exception> _viewComponentResultExecuting;
+        private static readonly Action<ILogger, string, string[], Exception> _viewComponentResultExecuting;
 
         static ViewComponentResultLoggerExtensions()
         {

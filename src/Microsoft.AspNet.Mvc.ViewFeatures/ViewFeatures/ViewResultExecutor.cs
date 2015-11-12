@@ -85,7 +85,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                         });
                 }
 
-                Logger.PartialViewFound(viewName);
+                Logger.ViewFound(viewName);
             }
             else
             {
@@ -102,7 +102,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                             searchedLocations = result.SearchedLocations
                         });
                 }
-                Logger.PartialViewNotFound(viewName, result.SearchedLocations);
+                Logger.ViewNotFound(viewName, result.SearchedLocations);
             }
 
             return result;
