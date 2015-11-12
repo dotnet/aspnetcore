@@ -24,10 +24,10 @@
     },
     "dnxcore50": {
       "dependencies": {
-        "System.Diagnostics.Process": "4.1.0-beta-*",
-        "System.Linq": "4.0.1-beta-*",
-        "System.Runtime.Extensions": "4.0.11-beta-*",
-        "System.Threading.Thread": "4.0.0-beta-*"
+        "System.Diagnostics.Process": "4.1.0-*",
+        "System.Linq": "4.0.1-*",
+        "System.Runtime.Extensions": "4.0.11-*",
+        "System.Threading.Thread": "4.0.0-*"
       }
     }
   }
