@@ -1056,6 +1056,19 @@ namespace Microsoft.AspNet.Mvc.Test
         }
 
         [Fact]
+        public void Controller_NoContent()
+        {
+            // Arrange
+            var controller = new TestableController();
+
+            // Act
+            var result = controller.NoContent();
+
+            // Assert
+            Assert.Equal(StatusCodes.Status204NoContent, result.StatusCode);
+        }
+
+        [Fact]
         public void Controller_Content_WithParameterContentString_SetsResultContent()
         {
             // Arrange

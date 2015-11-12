@@ -508,6 +508,17 @@ namespace Microsoft.AspNet.Mvc
             return result;
         }
 
+
+        /// <summary>
+        /// Creates a <see cref="NoContentResult"/> object that produces an empty No Content (204) response.
+        /// </summary>
+        /// <returns>The created <see cref="NoContentResult"/> object for the response.</returns>
+        [NonAction]
+        public virtual NoContentResult NoContent()
+        {
+            return new NoContentResult();
+        }
+
         /// <summary>
         /// Creates a <see cref="JsonResult"/> object that serializes the specified <paramref name="data"/> object
         /// to JSON.
