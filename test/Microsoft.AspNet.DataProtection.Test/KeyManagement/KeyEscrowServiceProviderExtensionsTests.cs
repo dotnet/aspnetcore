@@ -43,7 +43,7 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
                 });
 
             var serviceCollection = new ServiceCollection();
-            serviceCollection.AddInstance<IKeyEscrowSink>(mockKeyEscrowSink.Object);
+            serviceCollection.AddSingleton<IKeyEscrowSink>(mockKeyEscrowSink.Object);
             var services = serviceCollection.BuildServiceProvider();
 
             // Act
@@ -75,8 +75,8 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
                 });
 
             var serviceCollection = new ServiceCollection();
-            serviceCollection.AddInstance<IKeyEscrowSink>(mockKeyEscrowSink1.Object);
-            serviceCollection.AddInstance<IKeyEscrowSink>(mockKeyEscrowSink2.Object);
+            serviceCollection.AddSingleton<IKeyEscrowSink>(mockKeyEscrowSink1.Object);
+            serviceCollection.AddSingleton<IKeyEscrowSink>(mockKeyEscrowSink2.Object);
             var services = serviceCollection.BuildServiceProvider();
 
             // Act

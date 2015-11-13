@@ -37,8 +37,8 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
             mockFallback.Setup(o => o.GetKeyRepository()).Returns(expectedRepository);
 
             var serviceCollection = new ServiceCollection();
-            serviceCollection.AddInstance<IDefaultKeyServices>(mockFallback.Object);
-            serviceCollection.AddInstance<IAuthenticatedEncryptorConfiguration>(new Mock<IAuthenticatedEncryptorConfiguration>().Object);
+            serviceCollection.AddSingleton<IDefaultKeyServices>(mockFallback.Object);
+            serviceCollection.AddSingleton<IAuthenticatedEncryptorConfiguration>(new Mock<IAuthenticatedEncryptorConfiguration>().Object);
             var services = serviceCollection.BuildServiceProvider();
 
             // Act
@@ -58,9 +58,9 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
             mockFallback.Setup(o => o.GetKeyRepository()).Returns(new Mock<IXmlRepository>().Object);
 
             var serviceCollection = new ServiceCollection();
-            serviceCollection.AddInstance<IDefaultKeyServices>(mockFallback.Object);
-            serviceCollection.AddInstance<IXmlEncryptor>(new Mock<IXmlEncryptor>().Object);
-            serviceCollection.AddInstance<IAuthenticatedEncryptorConfiguration>(new Mock<IAuthenticatedEncryptorConfiguration>().Object);
+            serviceCollection.AddSingleton<IDefaultKeyServices>(mockFallback.Object);
+            serviceCollection.AddSingleton<IXmlEncryptor>(new Mock<IXmlEncryptor>().Object);
+            serviceCollection.AddSingleton<IAuthenticatedEncryptorConfiguration>(new Mock<IAuthenticatedEncryptorConfiguration>().Object);
             var services = serviceCollection.BuildServiceProvider();
 
             // Act & assert - we don't care about exception type, only exception message
@@ -97,8 +97,8 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
 
             // Arrange - services
             var serviceCollection = new ServiceCollection();
-            serviceCollection.AddInstance<IXmlRepository>(mockXmlRepository.Object);
-            serviceCollection.AddInstance<IAuthenticatedEncryptorConfiguration>(mockConfiguration.Object);
+            serviceCollection.AddSingleton<IXmlRepository>(mockXmlRepository.Object);
+            serviceCollection.AddSingleton<IAuthenticatedEncryptorConfiguration>(mockConfiguration.Object);
             var services = serviceCollection.BuildServiceProvider();
             var keyManager = new XmlKeyManager(services);
 
@@ -188,9 +188,9 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
 
             // Arrange - services
             var serviceCollection = new ServiceCollection();
-            serviceCollection.AddInstance<IXmlRepository>(mockXmlRepository.Object);
-            serviceCollection.AddInstance<IAuthenticatedEncryptorConfiguration>(mockConfiguration.Object);
-            serviceCollection.AddInstance<IKeyEscrowSink>(mockKeyEscrow.Object);
+            serviceCollection.AddSingleton<IXmlRepository>(mockXmlRepository.Object);
+            serviceCollection.AddSingleton<IAuthenticatedEncryptorConfiguration>(mockConfiguration.Object);
+            serviceCollection.AddSingleton<IKeyEscrowSink>(mockKeyEscrow.Object);
             serviceCollection.AddSingleton<IXmlEncryptor, NullXmlEncryptor>();
             var services = serviceCollection.BuildServiceProvider();
             var keyManager = new XmlKeyManager(services);
@@ -288,9 +288,9 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
 
             // Arrange - services
             var serviceCollection = new ServiceCollection();
-            serviceCollection.AddInstance<IXmlRepository>(new Mock<IXmlRepository>().Object);
-            serviceCollection.AddInstance<IAuthenticatedEncryptorConfiguration>(new Mock<IAuthenticatedEncryptorConfiguration>().Object);
-            serviceCollection.AddInstance<IInternalXmlKeyManager>(mockInternalKeyManager.Object);
+            serviceCollection.AddSingleton<IXmlRepository>(new Mock<IXmlRepository>().Object);
+            serviceCollection.AddSingleton<IAuthenticatedEncryptorConfiguration>(new Mock<IAuthenticatedEncryptorConfiguration>().Object);
+            serviceCollection.AddSingleton<IInternalXmlKeyManager>(mockInternalKeyManager.Object);
             var services = serviceCollection.BuildServiceProvider();
             var keyManager = new XmlKeyManager(services);
 
@@ -584,12 +584,12 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
 
             // Arrange - services
             var serviceCollection = new ServiceCollection();
-            serviceCollection.AddInstance<IXmlRepository>(mockXmlRepository.Object);
-            serviceCollection.AddInstance<IActivator>(activator);
-            serviceCollection.AddInstance<IAuthenticatedEncryptorConfiguration>(new Mock<IAuthenticatedEncryptorConfiguration>().Object);
+            serviceCollection.AddSingleton<IXmlRepository>(mockXmlRepository.Object);
+            serviceCollection.AddSingleton<IActivator>(activator);
+            serviceCollection.AddSingleton<IAuthenticatedEncryptorConfiguration>(new Mock<IAuthenticatedEncryptorConfiguration>().Object);
             if (loggerFactory != null)
             {
-                serviceCollection.AddInstance<ILoggerFactory>(loggerFactory);
+                serviceCollection.AddSingleton<ILoggerFactory>(loggerFactory);
             }
             var services = serviceCollection.BuildServiceProvider();
             var keyManager = new XmlKeyManager(services);
@@ -615,8 +615,8 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
 
             // Arrange - services
             var serviceCollection = new ServiceCollection();
-            serviceCollection.AddInstance<IXmlRepository>(mockXmlRepository.Object);
-            serviceCollection.AddInstance<IAuthenticatedEncryptorConfiguration>(new Mock<IAuthenticatedEncryptorConfiguration>().Object);
+            serviceCollection.AddSingleton<IXmlRepository>(mockXmlRepository.Object);
+            serviceCollection.AddSingleton<IAuthenticatedEncryptorConfiguration>(new Mock<IAuthenticatedEncryptorConfiguration>().Object);
             var services = serviceCollection.BuildServiceProvider();
             var keyManager = new XmlKeyManager(services);
 
@@ -664,8 +664,8 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
 
             // Arrange - services
             var serviceCollection = new ServiceCollection();
-            serviceCollection.AddInstance<IXmlRepository>(mockXmlRepository.Object);
-            serviceCollection.AddInstance<IAuthenticatedEncryptorConfiguration>(new Mock<IAuthenticatedEncryptorConfiguration>().Object);
+            serviceCollection.AddSingleton<IXmlRepository>(mockXmlRepository.Object);
+            serviceCollection.AddSingleton<IAuthenticatedEncryptorConfiguration>(new Mock<IAuthenticatedEncryptorConfiguration>().Object);
             var services = serviceCollection.BuildServiceProvider();
             var keyManager = new XmlKeyManager(services);
 
@@ -716,9 +716,9 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
 
             // Arrange - services
             var serviceCollection = new ServiceCollection();
-            serviceCollection.AddInstance<IXmlRepository>(new Mock<IXmlRepository>().Object);
-            serviceCollection.AddInstance<IAuthenticatedEncryptorConfiguration>(new Mock<IAuthenticatedEncryptorConfiguration>().Object);
-            serviceCollection.AddInstance<IInternalXmlKeyManager>(mockInternalKeyManager.Object);
+            serviceCollection.AddSingleton<IXmlRepository>(new Mock<IXmlRepository>().Object);
+            serviceCollection.AddSingleton<IAuthenticatedEncryptorConfiguration>(new Mock<IAuthenticatedEncryptorConfiguration>().Object);
+            serviceCollection.AddSingleton<IInternalXmlKeyManager>(mockInternalKeyManager.Object);
             var services = serviceCollection.BuildServiceProvider();
             var keyManager = new XmlKeyManager(services);
 

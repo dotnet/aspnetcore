@@ -60,7 +60,7 @@ namespace Microsoft.AspNet.DataProtection.SystemWeb
             // Configure the default implementation, passing in our custom discriminator
             var services = new ServiceCollection();
             services.AddDataProtection();
-            services.AddInstance<IApplicationDiscriminator>(new SystemWebApplicationDiscriminator());
+            services.AddSingleton<IApplicationDiscriminator>(new SystemWebApplicationDiscriminator());
 
             // Run user-specified configuration and get an instance of the provider
             ConfigureServices(services);

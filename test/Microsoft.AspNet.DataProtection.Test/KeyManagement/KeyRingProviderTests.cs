@@ -588,7 +588,7 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
         private static KeyRingProvider CreateKeyRingProvider(ICacheableKeyRingProvider cacheableKeyRingProvider)
         {
             var serviceCollection = new ServiceCollection();
-            serviceCollection.AddInstance<ICacheableKeyRingProvider>(cacheableKeyRingProvider);
+            serviceCollection.AddSingleton<ICacheableKeyRingProvider>(cacheableKeyRingProvider);
             return new KeyRingProvider(
                 keyManager: null,
                 keyManagementOptions: null,
@@ -598,7 +598,7 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
         private static ICacheableKeyRingProvider CreateKeyRingProvider(IKeyManager keyManager, IDefaultKeyResolver defaultKeyResolver, KeyManagementOptions keyManagementOptions= null)
         {
             var serviceCollection = new ServiceCollection();
-            serviceCollection.AddInstance<IDefaultKeyResolver>(defaultKeyResolver);
+            serviceCollection.AddSingleton<IDefaultKeyResolver>(defaultKeyResolver);
             return new KeyRingProvider(
                 keyManager: keyManager,
                 keyManagementOptions: keyManagementOptions,

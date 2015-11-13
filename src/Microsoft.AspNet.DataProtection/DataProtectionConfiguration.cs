@@ -79,7 +79,7 @@ namespace Microsoft.AspNet.DataProtection
                 throw new ArgumentNullException(nameof(sink));
             }
 
-            Services.AddInstance<IKeyEscrowSink>(sink);
+            Services.AddSingleton<IKeyEscrowSink>(sink);
             return this;
         }
 

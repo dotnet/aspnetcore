@@ -72,7 +72,7 @@ namespace Microsoft.AspNet.DataProtection
             // Arrange
             var expectedActivator = new Mock<IActivator>().Object;
             var serviceCollection = new ServiceCollection();
-            serviceCollection.AddInstance<IActivator>(expectedActivator);
+            serviceCollection.AddSingleton<IActivator>(expectedActivator);
 
             // Act
             var actualActivator = serviceCollection.BuildServiceProvider().GetActivator();
