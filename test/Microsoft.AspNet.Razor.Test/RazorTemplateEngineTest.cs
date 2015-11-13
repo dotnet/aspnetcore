@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if !DNXCORE50
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -117,8 +116,9 @@ namespace Microsoft.AspNet.Razor.Test
 
             var expected = new CSharpCodeGenerator(codeGeneratorContext);
 
-            mockHost.Setup(h => h.DecorateCodeGenerator(It.IsAny<CSharpCodeGenerator>(), codeGeneratorContext))
-                    .Returns(expected);
+            mockHost
+                .Setup(h => h.DecorateCodeGenerator(It.IsAny<CSharpCodeGenerator>(), codeGeneratorContext))
+                .Returns(expected);
             var engine = new RazorTemplateEngine(mockHost.Object);
 
             // Act
@@ -140,9 +140,10 @@ namespace Microsoft.AspNet.Razor.Test
             mockEngine.Object.ParseTemplate(reader, cancelToken: source.Token);
 
             // Assert
-            mockEngine.Verify(e => e.ParseTemplateCore(It.Is<SeekableTextReader>(l => l.ReadToEnd() == "foo"),
-                                                       null,
-                                                       source.Token));
+            mockEngine.Verify(e => e.ParseTemplateCore(
+                It.Is<SeekableTextReader>(l => l.ReadToEnd() == "foo"),
+                null,
+                source.Token));
         }
 
         [Fact]
@@ -157,11 +158,21 @@ namespace Microsoft.AspNet.Razor.Test
             var src = "Baz";
 
             // Act
-            mockEngine.Object.GenerateCode(reader, className: className, rootNamespace: ns, sourceFileName: src, cancelToken: source.Token);
+            mockEngine.Object.GenerateCode(
+                reader,
+                className: className,
+                rootNamespace: ns,
+                sourceFileName: src,
+                cancelToken: source.Token);
 
             // Assert
-            mockEngine.Verify(e => e.GenerateCodeCore(It.Is<SeekableTextReader>(l => l.ReadToEnd() == "foo"),
-                                                      className, ns, src, null, source.Token));
+            mockEngine.Verify(e => e.GenerateCodeCore(
+                It.Is<SeekableTextReader>(l => l.ReadToEnd() == "foo"),
+                className,
+                ns,
+                src,
+                null,
+                source.Token));
         }
 
         [Fact]
@@ -202,7 +213,11 @@ namespace Microsoft.AspNet.Razor.Test
             var engine = new RazorTemplateEngine(CreateHost(designTime: true));
 
             // Act
-            var results = engine.GenerateCode(new StringTextBuffer("foo @bar()"), className: null, rootNamespace: null, sourceFileName: "foo.cshtml");
+            var results = engine.GenerateCode(
+                new StringTextBuffer("foo @bar()"),
+                className: null,
+                rootNamespace: null,
+                sourceFileName: "foo.cshtml");
 
             // Assert
             Assert.True(results.Success);
@@ -311,12 +326,13 @@ namespace Microsoft.AspNet.Razor.Test
 
             public string Checksum { get; set; }
 
-            protected internal override GeneratorResults GenerateCodeCore(ITextDocument input,
-                                                                          string className,
-                                                                          string rootNamespace,
-                                                                          string sourceFileName,
-                                                                          string checksum,
-                                                                          CancellationToken? cancelToken)
+            protected internal override GeneratorResults GenerateCodeCore(
+                ITextDocument input,
+                string className,
+                string rootNamespace,
+                string sourceFileName,
+                string checksum,
+                CancellationToken? cancelToken)
             {
                 Checksum = checksum;
                 return null;
@@ -324,4 +340,3 @@ namespace Microsoft.AspNet.Razor.Test
         }
     }
 }
-#endif

@@ -9,9 +9,7 @@ using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Parser.TagHelpers;
 using Microsoft.AspNet.Razor.Test.Framework;
 using Microsoft.Extensions.Internal;
-#if !DNXCORE50
 using Moq;
-#endif
 using Xunit;
 
 namespace Microsoft.AspNet.Razor.Compilation.TagHelpers
@@ -20,7 +18,6 @@ namespace Microsoft.AspNet.Razor.Compilation.TagHelpers
     {
         private static readonly SpanFactory Factory = SpanFactory.CreateCsHtml();
 
-#if !DNXCORE50
         [Fact]
         public void GetDescriptors_InvokesResolveOnceForAllDirectives()
         {
@@ -43,7 +40,6 @@ namespace Microsoft.AspNet.Razor.Compilation.TagHelpers
             // Assert
             resolver.Verify(mock => mock.Resolve(It.IsAny<TagHelperDescriptorResolutionContext>()), Times.Once);
         }
-#endif
 
         [Fact]
         public void GetDescriptors_LocatesTagHelperChunkGenerator_CreatesDirectiveDescriptors()

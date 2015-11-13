@@ -6,9 +6,7 @@ using System.Threading;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Test.Framework;
-#if !DNXCORE50
 using Moq;
-#endif
 using Xunit;
 
 namespace Microsoft.AspNet.Razor.Test.Parser
@@ -70,7 +68,6 @@ namespace Microsoft.AspNet.Razor.Test.Parser
             RunOnEndBlockTest(endBlockCallback => new CallbackVisitor(_ => { }, _ => { }, _ => { }, endBlockCallback));
         }
 
-#if !DNXCORE50
         [Fact]
         public void ListenerCallsOnEndSpanCallbackUsingSynchronizationContextIfSpecified()
         {
@@ -123,7 +120,6 @@ namespace Microsoft.AspNet.Razor.Test.Parser
                 Assert.Equal(expected, actual);
             });
         }
-#endif
 
         private static void RunOnStartBlockTest(Func<Action<BlockType>, CallbackVisitor> ctor, Action<BlockType, BlockType> verifyResults = null)
         {

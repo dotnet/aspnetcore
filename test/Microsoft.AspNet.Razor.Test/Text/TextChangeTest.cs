@@ -4,16 +4,13 @@
 using System;
 using System.Web.WebPages.TestUtils;
 using Microsoft.AspNet.Razor.Text;
-#if !DNXCORE50
 using Moq;
-#endif
 using Xunit;
 
 namespace Microsoft.AspNet.Razor.Test.Text
 {
     public class TextChangeTest
     {
-#if !DNXCORE50
         [Fact]
         public void ConstructorRequiresNonNegativeOldPosition()
         {
@@ -149,7 +146,6 @@ namespace Microsoft.AspNet.Razor.Test.Text
             Assert.Equal(1, change.NewText.Length);
             Assert.Equal(5, change.OldText.Length);
         }
-#endif
 
         [Fact]
         public void OldTextReturnsOldSpanFromOldBuffer()

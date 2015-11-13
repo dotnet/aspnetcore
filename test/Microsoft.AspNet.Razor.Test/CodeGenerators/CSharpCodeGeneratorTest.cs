@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if !DNXCORE50
 #if GENERATE_BASELINES
 using System;
 #endif
@@ -66,4 +65,4 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
         }
     }
 }
-#endif
+

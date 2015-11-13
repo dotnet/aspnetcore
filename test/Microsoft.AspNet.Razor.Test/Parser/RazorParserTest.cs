@@ -9,10 +9,8 @@ using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Compilation.TagHelpers;
 using Microsoft.AspNet.Razor.Test.Framework;
-#if !DNXCORE50
 using Moq;
 using Moq.Protected;
-#endif
 using Xunit;
 
 namespace Microsoft.AspNet.Razor.Test.Parser
@@ -66,7 +64,6 @@ namespace Microsoft.AspNet.Razor.Test.Parser
                     factory.Markup(" baz")));
         }
 
-#if !DNXCORE50
         [Fact]
         public void GetTagHelperDescriptors_IsInvokedToLocateTagHelperDescriptors()
         {
@@ -89,7 +86,6 @@ namespace Microsoft.AspNet.Razor.Test.Parser
             // Assert
             parser.Verify();
         }
-#endif
 
         [Fact]
         public void ParseMethodSetsUpRunWithSpecifiedCodeParserMarkupParserAndListenerAndPassesToMarkupParser()
