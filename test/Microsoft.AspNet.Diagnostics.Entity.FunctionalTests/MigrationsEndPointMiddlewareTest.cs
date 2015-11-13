@@ -86,7 +86,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
                 {
                     services.AddEntityFramework().AddSqlServer();
                     services.AddScoped<BloggingContextWithMigrations>();
-                    services.AddInstance(optionsBuilder.Options);
+                    services.AddSingleton(optionsBuilder.Options);
                 });
 
                 using (var db = BloggingContextWithMigrations.CreateWithoutExternalServiceProvider(optionsBuilder.Options))
@@ -190,7 +190,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
                     {
                         services.AddEntityFramework().AddSqlServer();
                         services.AddScoped<BloggingContextWithSnapshotThatThrows>();
-                        services.AddInstance(optionsBuilder.Options);
+                        services.AddSingleton(optionsBuilder.Options);
                     });
 
                 var formData = new FormUrlEncodedContent(new List<KeyValuePair<string, string>>

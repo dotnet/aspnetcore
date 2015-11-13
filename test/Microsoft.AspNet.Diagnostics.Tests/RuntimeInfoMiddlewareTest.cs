@@ -204,9 +204,9 @@ namespace Microsoft.AspNet.Diagnostics.Tests
                     .Returns(responseStream);
                 contextMock
                     .SetupGet(c => c.ApplicationServices)
-                    .Returns(new ServiceCollection().
-                                AddInstance<HtmlEncoder>(new HtmlTestEncoder()).
-                                BuildServiceProvider());
+                    .Returns(new ServiceCollection()
+                                .AddSingleton<HtmlEncoder>(new HtmlTestEncoder())
+                                .BuildServiceProvider());
 
                 // Act
                 await middleware.Invoke(contextMock.Object);

@@ -269,7 +269,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
 
                     var optionsBuilder = new DbContextOptionsBuilder();
                     optionsBuilder.UseSqlServer(database.ConnectionString);
-                    services.AddInstance<DbContextOptions>(optionsBuilder.Options);
+                    services.AddSingleton<DbContextOptions>(optionsBuilder.Options);
                 });
 
                 HttpResponseMessage response = await server.CreateClient().GetAsync("http://localhost/");
@@ -307,7 +307,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
                     {
                         optionsBuilder.UseInMemoryDatabase();
                     }
-                    services.AddInstance<DbContextOptions>(optionsBuilder.Options);
+                    services.AddSingleton<DbContextOptions>(optionsBuilder.Options);
                 });
 
                 var ex = await Assert.ThrowsAsync<SqlException>(async () =>
@@ -431,7 +431,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
                     {
                         optionsBuilder.UseInMemoryDatabase();
                     }
-                    services.AddInstance(optionsBuilder.Options);
+                    services.AddSingleton(optionsBuilder.Options);
                 });
             }
         }
