@@ -67,6 +67,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             Reset();
         }
 
+        public string Scheme { get; set; }
         public string Method { get; set; }
         public string RequestUri { get; set; }
         public string Path { get; set; }
@@ -102,6 +103,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             ResetResponseHeaders();
             ResetFeatureCollection();
 
+            Scheme = null;
             Method = null;
             RequestUri = null;
             Path = null;

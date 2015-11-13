@@ -24,7 +24,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         // then the list of `implementedFeatures` in the generated code project MUST also be updated.
         // See also: tools/Microsoft.AspNet.Server.Kestrel.GeneratedCode/FrameFeatureCollection.cs
 
-        private string _scheme;
         private string _pathBase;
         private int _featureRevision;
 
@@ -90,12 +89,12 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             get
             {
-                return _scheme ?? "http";
+                return Scheme ?? "http";
             }
 
             set
             {
-                _scheme = value;
+                Scheme = value;
             }
         }
 
