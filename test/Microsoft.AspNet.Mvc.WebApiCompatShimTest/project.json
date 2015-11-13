@@ -1,24 +1,24 @@
 {
   "compilationOptions": {
-    "warningsAsErrors": "false"
+    "warningsAsErrors": true
   },
   "dependencies": {
     "Microsoft.AspNet.Http": "1.0.0-*",
     "Microsoft.AspNet.Mvc.WebApiCompatShim": "6.0.0-*",
     "Microsoft.AspNet.Testing": "1.0.0-*",
     "Microsoft.Extensions.Logging.Testing": "1.0.0-*",
-    "Microsoft.Framework.DependencyInjection": "1.0.0-*",
+    "Microsoft.Extensions.DependencyInjection": "1.0.0-*",
     "xunit.runner.aspnet": "2.0.0-aspnet-*"
   },
-    "commands": {
-        "test": "xunit.runner.aspnet"
+  "commands": {
+    "test": "xunit.runner.aspnet"
+  },
+  "frameworks": {
+    "dnx451": {
+      "dependencies": {
+        "Moq": "4.2.1312.1622"
+      }
     },
-    "frameworks": {
-        "dnx451": {
-            "dependencies": {
-                "Moq": "4.2.1312.1622"
-            }
-        },
-        "dnxcore50": { }
-    }
+    "dnxcore50": { }
+  }
 }
