@@ -76,7 +76,7 @@ namespace Microsoft.AspNet.Mvc.ActionConstraints
                 if (string.Equals(
                         request.Method,
                         PreflightHttpMethod,
-                        StringComparison.Ordinal) &&
+                        StringComparison.OrdinalIgnoreCase) &&
                     !StringValues.IsNullOrEmpty(accessControlRequestMethod))
                 {
                     method = accessControlRequestMethod;
@@ -86,7 +86,7 @@ namespace Microsoft.AspNet.Mvc.ActionConstraints
             for (var i = 0; i < _httpMethods.Count; i++)
             {
                 var supportedMethod = _httpMethods[i];
-                if (string.Equals(supportedMethod, method, StringComparison.Ordinal))
+                if (string.Equals(supportedMethod, method, StringComparison.OrdinalIgnoreCase))
                 {
                     return true;
                 }
