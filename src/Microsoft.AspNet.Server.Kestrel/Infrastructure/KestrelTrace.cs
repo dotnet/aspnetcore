@@ -12,7 +12,34 @@ namespace Microsoft.AspNet.Server.Kestrel
     /// </summary>
     public class KestrelTrace : IKestrelTrace
     {
+        private static Action<ILogger, long, Exception> _connectionStart;
+        private static Action<ILogger, long, Exception> _connectionStop;
+        private static Action<ILogger, long, Exception> _connectionPause;
+        private static Action<ILogger, long, Exception> _connectionResume;
+        private static Action<ILogger, long, Exception> _connectionReadFin;
+        private static Action<ILogger, long, Exception> _connectionWriteFin;
+        private static Action<ILogger, long, int, Exception> _connectionWroteFin;
+        private static Action<ILogger, long, Exception> _connectionKeepAlive;
+        private static Action<ILogger, long, Exception> _connectionDisconnect;
+
         protected readonly ILogger _logger;
+
+        static KestrelTrace()
+        {
+            _connectionStart = LoggerMessage.Define<long>(LogLevel.Debug, 1, @"Connection id ""{ConnectionId}"" started.");
+            _connectionStop = LoggerMessage.Define<long>(LogLevel.Debug, 2, @"Connection id ""{ConnectionId}"" stopped.");
+            // ConnectionRead: Reserved: 3
+            _connectionPause = LoggerMessage.Define<long>(LogLevel.Debug, 4, @"Connection id ""{ConnectionId}"" paused.");
+            _connectionResume = LoggerMessage.Define<long>(LogLevel.Debug, 5, @"Connection id ""{ConnectionId}"" resumed.");
+            _connectionReadFin = LoggerMessage.Define<long>(LogLevel.Debug, 6, @"Connection id ""{ConnectionId}"" received FIN.");
+            _connectionWriteFin = LoggerMessage.Define<long>(LogLevel.Debug, 7, @"Connection id ""{ConnectionId}"" sending FIN.");
+            _connectionWroteFin = LoggerMessage.Define<long, int>(LogLevel.Debug, 8, @"Connection id ""{ConnectionId}"" sent FIN with status ""{Status}"".");
+            _connectionKeepAlive = LoggerMessage.Define<long>(LogLevel.Debug, 9, @"Connection id ""{ConnectionId}"" completed keep alive response.");
+            _connectionDisconnect = LoggerMessage.Define<long>(LogLevel.Error, 10, @"Connection id ""{ConnectionId}"" disconnected.");
+            // ConnectionWrite: Reserved: 11
+            // ConnectionWriteCallback: Reserved: 12
+            // ApplicationError: Reserved: 13 - LoggerMessage.Define overload not present 
+        }
 
         public KestrelTrace(ILogger logger)
         {
@@ -21,12 +48,12 @@ namespace Microsoft.AspNet.Server.Kestrel
 
         public virtual void ConnectionStart(long connectionId)
         {
-            _logger.LogDebug(1, @"Connection id ""{ConnectionId}"" started.", connectionId);
+            _connectionStart(_logger, connectionId, null);
         }
 
         public virtual void ConnectionStop(long connectionId)
         {
-            _logger.LogDebug(2, @"Connection id ""{ConnectionId}"" stopped.", connectionId);
+            _connectionStop(_logger, connectionId, null);
         }
 
         public virtual void ConnectionRead(long connectionId, int count)
@@ -37,37 +64,37 @@ namespace Microsoft.AspNet.Server.Kestrel
 
         public virtual void ConnectionPause(long connectionId)
         {
-            _logger.LogDebug(4, @"Connection id ""{ConnectionId}"" paused.", connectionId);
+            _connectionPause(_logger, connectionId, null);
         }
 
         public virtual void ConnectionResume(long connectionId)
         {
-            _logger.LogDebug(5, @"Connection id ""{ConnectionId}"" resumed.", connectionId);
+            _connectionResume(_logger, connectionId, null);
         }
 
         public virtual void ConnectionReadFin(long connectionId)
         {
-            _logger.LogDebug(6, @"Connection id ""{ConnectionId}"" received FIN.", connectionId);
+            _connectionReadFin(_logger, connectionId, null);
         }
 
         public virtual void ConnectionWriteFin(long connectionId)
         {
-            _logger.LogDebug(7, @"Connection id ""{ConnectionId}"" sending FIN.", connectionId);
+            _connectionWriteFin(_logger, connectionId, null);
         }
 
         public virtual void ConnectionWroteFin(long connectionId, int status)
         {
-            _logger.LogDebug(8, @"Connection id ""{ConnectionId}"" sent FIN with status ""{Status}"".", connectionId, status);
+            _connectionWroteFin(_logger, connectionId, status, null);
         }
 
         public virtual void ConnectionKeepAlive(long connectionId)
         {
-            _logger.LogDebug(9, @"Connection id ""{ConnectionId}"" completed keep alive response.", connectionId);
+            _connectionKeepAlive(_logger, connectionId, null);
         }
 
         public virtual void ConnectionDisconnect(long connectionId)
         {
-            _logger.LogDebug(10, @"Connection id ""{ConnectionId}"" disconnected.", connectionId);
+            _connectionDisconnect(_logger, connectionId, null);
         }
 
         public virtual void ConnectionWrite(long connectionId, int count)
