@@ -277,7 +277,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             OnCompleted(callback, state);
         }
 
-        Task<Stream> IHttpUpgradeFeature.UpgradeAsync()
+        async Task<Stream> IHttpUpgradeFeature.UpgradeAsync()
         {
             StatusCode = 101;
             ReasonPhrase = "Switching Protocols";
@@ -290,8 +290,10 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                     ResponseHeaders["Upgrade"] = values;
                 }
             }
-            ProduceStartAndFireOnStarting(immediate: true).GetAwaiter().GetResult();
-            return Task.FromResult(DuplexStream);
+
+            await ProduceStartAndFireOnStarting(immediate: true); 
+
+            return DuplexStream;
         }
 
         IEnumerator<KeyValuePair<Type, object>> IEnumerable<KeyValuePair<Type, object>>.GetEnumerator() => FastEnumerable().GetEnumerator();
