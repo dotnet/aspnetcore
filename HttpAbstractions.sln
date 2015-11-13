@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.23107.0
+VisualStudioVersion = 14.0.24711.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{A5A15F1C-885A-452A-A731-B0173DDBD913}"
 EndProject
@@ -45,10 +45,6 @@ EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "SampleApp", "samples\SampleApp\SampleApp.xproj", "{1D0764B4-1DEB-4232-A714-D4B7E846918A}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Html.Abstractions.Test", "test\Microsoft.AspNet.Html.Abstractions.Test\Microsoft.AspNet.Html.Abstractions.Test.xproj", "{2D187B88-94BD-4A39-AC97-F8F8B9363301}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.BufferedHtmlContent.Sources", "src\Microsoft.Extensions.BufferedHtmlContent.Sources\Microsoft.Extensions.BufferedHtmlContent.Sources.xproj", "{B1B2B906-24AE-4C57-AAC5-19B734014504}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.BufferedHtmlContent.Test", "test\Microsoft.Extensions.BufferedHtmlContent.Test\Microsoft.Extensions.BufferedHtmlContent.Test.xproj", "{3E5311E2-A73E-40CC-A58C-5A62CEAD43AE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -264,30 +260,6 @@ Global
 		{2D187B88-94BD-4A39-AC97-F8F8B9363301}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{2D187B88-94BD-4A39-AC97-F8F8B9363301}.Release|x86.ActiveCfg = Release|Any CPU
 		{2D187B88-94BD-4A39-AC97-F8F8B9363301}.Release|x86.Build.0 = Release|Any CPU
-		{B1B2B906-24AE-4C57-AAC5-19B734014504}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B1B2B906-24AE-4C57-AAC5-19B734014504}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B1B2B906-24AE-4C57-AAC5-19B734014504}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{B1B2B906-24AE-4C57-AAC5-19B734014504}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{B1B2B906-24AE-4C57-AAC5-19B734014504}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{B1B2B906-24AE-4C57-AAC5-19B734014504}.Debug|x86.Build.0 = Debug|Any CPU
-		{B1B2B906-24AE-4C57-AAC5-19B734014504}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B1B2B906-24AE-4C57-AAC5-19B734014504}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B1B2B906-24AE-4C57-AAC5-19B734014504}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{B1B2B906-24AE-4C57-AAC5-19B734014504}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{B1B2B906-24AE-4C57-AAC5-19B734014504}.Release|x86.ActiveCfg = Release|Any CPU
-		{B1B2B906-24AE-4C57-AAC5-19B734014504}.Release|x86.Build.0 = Release|Any CPU
-		{3E5311E2-A73E-40CC-A58C-5A62CEAD43AE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3E5311E2-A73E-40CC-A58C-5A62CEAD43AE}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3E5311E2-A73E-40CC-A58C-5A62CEAD43AE}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{3E5311E2-A73E-40CC-A58C-5A62CEAD43AE}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{3E5311E2-A73E-40CC-A58C-5A62CEAD43AE}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{3E5311E2-A73E-40CC-A58C-5A62CEAD43AE}.Debug|x86.Build.0 = Debug|Any CPU
-		{3E5311E2-A73E-40CC-A58C-5A62CEAD43AE}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3E5311E2-A73E-40CC-A58C-5A62CEAD43AE}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3E5311E2-A73E-40CC-A58C-5A62CEAD43AE}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{3E5311E2-A73E-40CC-A58C-5A62CEAD43AE}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{3E5311E2-A73E-40CC-A58C-5A62CEAD43AE}.Release|x86.ActiveCfg = Release|Any CPU
-		{3E5311E2-A73E-40CC-A58C-5A62CEAD43AE}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -312,7 +284,5 @@ Global
 		{68A28E4A-3ADE-4187-9625-4FF185887CB3} = {A5A15F1C-885A-452A-A731-B0173DDBD913}
 		{1D0764B4-1DEB-4232-A714-D4B7E846918A} = {982F09D8-621E-4872-BA7B-BBDEA47D1EFD}
 		{2D187B88-94BD-4A39-AC97-F8F8B9363301} = {F31FF137-390C-49BF-A3BD-7C6ED3597C21}
-		{B1B2B906-24AE-4C57-AAC5-19B734014504} = {A5A15F1C-885A-452A-A731-B0173DDBD913}
-		{3E5311E2-A73E-40CC-A58C-5A62CEAD43AE} = {F31FF137-390C-49BF-A3BD-7C6ED3597C21}
 	EndGlobalSection
 EndGlobal

@@ -9,13 +9,13 @@ using Xunit;
 
 namespace Microsoft.Extensions.Internal
 {
-    public class BufferedHtmlContentTest
+    public class HtmlContentBuilderTest
     {
         [Fact]
         public void AppendString_AppendsAString()
         {
             // Arrange
-            var content = new BufferedHtmlContent();
+            var content = new HtmlContentBuilder();
 
             // Act
             content.Append("Hello");
@@ -29,7 +29,7 @@ namespace Microsoft.Extensions.Internal
         public void AppendString_WrittenAsEncoded()
         {
             // Arrange
-            var content = new BufferedHtmlContent();
+            var content = new HtmlContentBuilder();
             content.Append("Hello");
 
             var writer = new StringWriter();
@@ -45,7 +45,7 @@ namespace Microsoft.Extensions.Internal
         public void AppendHtml_DoesNotGetWrittenAsEncoded()
         {
             // Arrange
-            var content = new BufferedHtmlContent();
+            var content = new HtmlContentBuilder();
             content.AppendHtml("Hello");
 
             var writer = new StringWriter();
@@ -61,7 +61,7 @@ namespace Microsoft.Extensions.Internal
         public void AppendIHtmlContent_AppendsAsIs()
         {
             // Arrange
-            var content = new BufferedHtmlContent();
+            var content = new HtmlContentBuilder();
             var writer = new StringWriter();
 
             // Act
@@ -78,7 +78,7 @@ namespace Microsoft.Extensions.Internal
         public void CanAppendMultipleItems()
         {
             // Arrange
-            var content = new BufferedHtmlContent();
+            var content = new HtmlContentBuilder();
 
             // Act
             content.Append(new TestHtmlContent("hello"));
@@ -94,7 +94,7 @@ namespace Microsoft.Extensions.Internal
         public void Clear_DeletesAllItems()
         {
             // Arrange
-            var content = new BufferedHtmlContent();
+            var content = new HtmlContentBuilder();
             content.Append(new TestHtmlContent("hello"));
             content.Append("Test");
 
@@ -109,7 +109,7 @@ namespace Microsoft.Extensions.Internal
         public void WriteTo_WritesAllItems()
         {
             // Arrange
-            var content = new BufferedHtmlContent();
+            var content = new HtmlContentBuilder();
             var writer = new StringWriter();
             content.Append(new TestHtmlContent("Hello"));
             content.Append("Test");

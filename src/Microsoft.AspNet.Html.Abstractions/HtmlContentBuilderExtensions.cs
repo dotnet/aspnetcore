@@ -186,33 +186,6 @@ namespace Microsoft.AspNet.Html.Abstractions
         }
 
         [DebuggerDisplay("{DebuggerToString()}")]
-        private class HtmlEncodedString : IHtmlContent
-        {
-            public static readonly IHtmlContent NewLine = new HtmlEncodedString(Environment.NewLine);
-
-            private readonly string _value;
-
-            public HtmlEncodedString(string value)
-            {
-                _value = value;
-            }
-
-            public void WriteTo(TextWriter writer, HtmlEncoder encoder)
-            {
-                writer.Write(_value);
-            }
-
-            private string DebuggerToString()
-            {
-                using (var writer = new StringWriter())
-                {
-                    WriteTo(writer, HtmlEncoder.Default);
-                    return writer.ToString();
-                }
-            }
-        }
-
-        [DebuggerDisplay("{DebuggerToString()}")]
         private class HtmlFormatString : IHtmlContent
         {
             private readonly IFormatProvider _formatProvider;
