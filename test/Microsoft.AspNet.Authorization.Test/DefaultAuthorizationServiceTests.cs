@@ -788,7 +788,7 @@ namespace Microsoft.AspNet.Authorization.Test
             // Arrange
             var authorizationService = BuildAuthorizationService(services =>
             {
-                services.AddInstance<IAuthorizationHandler>(new ExpenseReportAuthorizationHandler(new OperationAuthorizationRequirement[] { Operations.Edit }));
+                services.AddSingleton<IAuthorizationHandler>(new ExpenseReportAuthorizationHandler(new OperationAuthorizationRequirement[] { Operations.Edit }));
                 services.AddTransient<IAuthorizationHandler, SuperUserHandler>();
             });
             var user = new ClaimsPrincipal(
@@ -841,7 +841,7 @@ namespace Microsoft.AspNet.Authorization.Test
             // Arrange
             var authorizationService = BuildAuthorizationService(services =>
             {
-                services.AddInstance<IAuthorizationHandler>(new ExpenseReportAuthorizationHandler(new OperationAuthorizationRequirement[] { Operations.Edit }));
+                services.AddSingleton<IAuthorizationHandler>(new ExpenseReportAuthorizationHandler(new OperationAuthorizationRequirement[] { Operations.Edit }));
             });
             var user = new ClaimsPrincipal();
 
@@ -858,7 +858,7 @@ namespace Microsoft.AspNet.Authorization.Test
             // Arrange
             var authorizationService = BuildAuthorizationService(services =>
             {
-                services.AddInstance<IAuthorizationHandler>(new ExpenseReportAuthorizationHandler(new OperationAuthorizationRequirement[] { Operations.Edit }));
+                services.AddSingleton<IAuthorizationHandler>(new ExpenseReportAuthorizationHandler(new OperationAuthorizationRequirement[] { Operations.Edit }));
             });
             var user = new ClaimsPrincipal();
 
