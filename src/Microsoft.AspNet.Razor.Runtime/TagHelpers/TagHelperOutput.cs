@@ -15,6 +15,12 @@ namespace Microsoft.AspNet.Razor.TagHelpers
     public class TagHelperOutput : IHtmlContent
     {
         private readonly Func<bool, Task<TagHelperContent>> _getChildContentAsync;
+        private TagHelperContent _preElement;
+        private TagHelperContent _preContent;
+        private TagHelperContent _content;
+        private TagHelperContent _postContent;
+        private TagHelperContent _postElement;
+        private bool _wasSuppressOutputCalled;
 
         // Internal for testing
         internal TagHelperOutput(string tagName)
@@ -64,32 +70,96 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         /// Content that precedes the HTML element.
         /// </summary>
         /// <remarks>Value is rendered before the HTML element.</remarks>
-        public TagHelperContent PreElement { get; } = new DefaultTagHelperContent();
+        public TagHelperContent PreElement
+        {
+            get
+            {
+                if (_preElement == null)
+                {
+                    _preElement = new DefaultTagHelperContent();
+                }
+
+                return _preElement;
+            }
+        }
 
         /// <summary>
         /// The HTML element's pre content.
         /// </summary>
         /// <remarks>Value is prepended to the <see cref="ITagHelper"/>'s final output.</remarks>
-        public TagHelperContent PreContent { get; } = new DefaultTagHelperContent();
+        public TagHelperContent PreContent
+        {
+            get
+            {
+                if (_preContent == null)
+                {
+                    _preContent = new DefaultTagHelperContent();
+                }
+
+                return _preContent;
+            }
+        }
 
         /// <summary>
-        /// The HTML element's main content.
+        /// Get or set the HTML element's main content.
         /// </summary>
         /// <remarks>Value occurs in the <see cref="ITagHelper"/>'s final output after <see cref="PreContent"/> and
         /// before <see cref="PostContent"/></remarks>
-        public TagHelperContent Content { get; } = new DefaultTagHelperContent();
+        public TagHelperContent Content
+        {
+            get
+            {
+                if (_content == null)
+                {
+                    _content = new DefaultTagHelperContent();
+                }
+
+                return _content;
+            }
+            set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
+
+                _content = value;
+            }
+        }
 
         /// <summary>
         /// The HTML element's post content.
         /// </summary>
         /// <remarks>Value is appended to the <see cref="ITagHelper"/>'s final output.</remarks>
-        public TagHelperContent PostContent { get; } = new DefaultTagHelperContent();
+        public TagHelperContent PostContent
+        {
+            get
+            {
+                if (_postContent == null)
+                {
+                    _postContent = new DefaultTagHelperContent();
+                }
+
+                return _postContent;
+            }
+        }
 
         /// <summary>
         /// Content that follows the HTML element.
         /// </summary>
         /// <remarks>Value is rendered after the HTML element.</remarks>
-        public TagHelperContent PostElement { get; } = new DefaultTagHelperContent();
+        public TagHelperContent PostElement
+        {
+            get
+            {
+                if (_postElement == null)
+                {
+                    _postElement = new DefaultTagHelperContent();
+                }
+
+                return _postElement;
+            }
+        }
 
         /// <summary>
         /// <c>true</c> if <see cref="Content"/> has been set, <c>false</c> otherwise.
@@ -98,7 +168,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         {
             get
             {
-                return Content.IsModified;
+                return _wasSuppressOutputCalled || _content?.IsModified == true;
             }
         }
 
@@ -127,11 +197,12 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         public void SuppressOutput()
         {
             TagName = null;
-            PreElement.Clear();
-            PreContent.Clear();
-            Content.Clear();
-            PostContent.Clear();
-            PostElement.Clear();
+            _wasSuppressOutputCalled = true;
+            _preElement?.Clear();
+            _preContent?.Clear();
+            _content?.Clear();
+            _postContent?.Clear();
+            _postElement?.Clear();
         }
 
         /// <summary>
@@ -163,7 +234,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                 throw new ArgumentNullException(nameof(writer));
             }
 
-            PreElement.WriteTo(writer, encoder);
+            _preElement?.WriteTo(writer, encoder);
 
             var isTagNameNullOrWhitespace = string.IsNullOrWhiteSpace(TagName);
 
@@ -218,11 +289,11 @@ namespace Microsoft.AspNet.Razor.TagHelpers
 
             if (isTagNameNullOrWhitespace || TagMode == TagMode.StartTagAndEndTag)
             {
-                PreContent.WriteTo(writer, encoder);
+                _preContent?.WriteTo(writer, encoder);
 
-                Content.WriteTo(writer, encoder);
+                _content?.WriteTo(writer, encoder);
 
-                PostContent.WriteTo(writer, encoder);
+                _postContent?.WriteTo(writer, encoder);
             }
 
             if (!isTagNameNullOrWhitespace && TagMode == TagMode.StartTagAndEndTag)
@@ -232,7 +303,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                 writer.Write(">");
             }
 
-            PostElement.WriteTo(writer, encoder);
+            _postElement?.WriteTo(writer, encoder);
         }
     }
 }
