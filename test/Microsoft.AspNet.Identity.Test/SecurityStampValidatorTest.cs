@@ -55,9 +55,9 @@ namespace Microsoft.AspNet.Identity.Test
             signInManager.Setup(s => s.ValidateSecurityStampAsync(It.IsAny<ClaimsPrincipal>(), user.Id)).ReturnsAsync(user).Verifiable();
             signInManager.Setup(s => s.CreateUserPrincipalAsync(user)).ReturnsAsync(principal).Verifiable();
             var services = new ServiceCollection();
-            services.AddInstance(options.Object);
-            services.AddInstance(signInManager.Object);
-            services.AddInstance<ISecurityStampValidator>(new SecurityStampValidator<TestUser>());
+            services.AddSingleton(options.Object);
+            services.AddSingleton(signInManager.Object);
+            services.AddSingleton<ISecurityStampValidator>(new SecurityStampValidator<TestUser>());
             httpContext.Setup(c => c.RequestServices).Returns(services.BuildServiceProvider());
 
             var ticket = new AuthenticationTicket(principal, 
@@ -89,9 +89,9 @@ namespace Microsoft.AspNet.Identity.Test
                 contextAccessor.Object, claimsManager.Object, options.Object, null);
             signInManager.Setup(s => s.ValidateSecurityStampAsync(It.IsAny<ClaimsPrincipal>(), user.Id)).ReturnsAsync(null).Verifiable();
             var services = new ServiceCollection();
-            services.AddInstance(options.Object);
-            services.AddInstance(signInManager.Object);
-            services.AddInstance<ISecurityStampValidator>(new SecurityStampValidator<TestUser>());
+            services.AddSingleton(options.Object);
+            services.AddSingleton(signInManager.Object);
+            services.AddSingleton<ISecurityStampValidator>(new SecurityStampValidator<TestUser>());
             httpContext.Setup(c => c.RequestServices).Returns(services.BuildServiceProvider());
             var id = new ClaimsIdentity(identityOptions.Cookies.ApplicationCookieAuthenticationScheme);
             id.AddClaim(new Claim(ClaimTypes.NameIdentifier, user.Id));
@@ -124,9 +124,9 @@ namespace Microsoft.AspNet.Identity.Test
                 contextAccessor.Object, claimsManager.Object, options.Object, null);
             signInManager.Setup(s => s.ValidateSecurityStampAsync(It.IsAny<ClaimsPrincipal>(), user.Id)).ReturnsAsync(null).Verifiable();
             var services = new ServiceCollection();
-            services.AddInstance(options.Object);
-            services.AddInstance(signInManager.Object);
-            services.AddInstance<ISecurityStampValidator>(new SecurityStampValidator<TestUser>());
+            services.AddSingleton(options.Object);
+            services.AddSingleton(signInManager.Object);
+            services.AddSingleton<ISecurityStampValidator>(new SecurityStampValidator<TestUser>());
             httpContext.Setup(c => c.RequestServices).Returns(services.BuildServiceProvider());
             var id = new ClaimsIdentity(identityOptions.Cookies.ApplicationCookieAuthenticationScheme);
             id.AddClaim(new Claim(ClaimTypes.NameIdentifier, user.Id));
@@ -160,9 +160,9 @@ namespace Microsoft.AspNet.Identity.Test
             signInManager.Setup(s => s.ValidateSecurityStampAsync(It.IsAny<ClaimsPrincipal>(), user.Id)).Throws(new Exception("Shouldn't be called"));
             signInManager.Setup(s => s.SignInAsync(user, false, null)).Throws(new Exception("Shouldn't be called"));
             var services = new ServiceCollection();
-            services.AddInstance(options.Object);
-            services.AddInstance(signInManager.Object);
-            services.AddInstance<ISecurityStampValidator>(new SecurityStampValidator<TestUser>());
+            services.AddSingleton(options.Object);
+            services.AddSingleton(signInManager.Object);
+            services.AddSingleton<ISecurityStampValidator>(new SecurityStampValidator<TestUser>());
             httpContext.Setup(c => c.RequestServices).Returns(services.BuildServiceProvider());
             var id = new ClaimsIdentity(identityOptions.Cookies.ApplicationCookieAuthenticationScheme);
             id.AddClaim(new Claim(ClaimTypes.NameIdentifier, user.Id));

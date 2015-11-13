@@ -17,13 +17,13 @@ namespace Microsoft.AspNet.Identity.EntityFramework.InMemory.Test
 
         protected override void AddUserStore(IServiceCollection services, object context = null)
         {
-            services.AddInstance<IUserStore<IdentityUser>>(new UserStore<IdentityUser>((InMemoryContext)context));
+            services.AddSingleton<IUserStore<IdentityUser>>(new UserStore<IdentityUser>((InMemoryContext)context));
         }
 
         protected override void AddRoleStore(IServiceCollection services, object context = null)
         {
             var store = new RoleStore<IdentityRole, InMemoryContext>((InMemoryContext)context);
-            services.AddInstance<IRoleStore<IdentityRole>>(store);
+            services.AddSingleton<IRoleStore<IdentityRole>>(store);
         }
 
         protected override IdentityUser CreateTestUser(string namePrefix = "", string email = "", string phoneNumber = "",

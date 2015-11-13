@@ -44,8 +44,8 @@ namespace Microsoft.AspNet.Identity.Test
             AddUserStore(services, context);
             AddRoleStore(services, context);
             services.AddLogging();
-            services.AddInstance<ILogger<UserManager<TUser>>>(new TestLogger<UserManager<TUser>>());
-            services.AddInstance<ILogger<RoleManager<TRole>>>(new TestLogger<RoleManager<TRole>>());
+            services.AddSingleton<ILogger<UserManager<TUser>>>(new TestLogger<UserManager<TUser>>());
+            services.AddSingleton<ILogger<RoleManager<TRole>>>(new TestLogger<RoleManager<TRole>>());
         }
 
         protected virtual UserManager<TUser> CreateManager(object context = null, IServiceCollection services = null, Action<IServiceCollection> configureServices = null)

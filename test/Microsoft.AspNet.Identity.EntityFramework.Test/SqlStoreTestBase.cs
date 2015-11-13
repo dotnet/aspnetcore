@@ -93,12 +93,12 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
 
         protected override void AddUserStore(IServiceCollection services, object context = null)
         {
-            services.AddInstance<IUserStore<TUser>>(new UserStore<TUser, TRole, TestDbContext, TKey>((TestDbContext)context));
+            services.AddSingleton<IUserStore<TUser>>(new UserStore<TUser, TRole, TestDbContext, TKey>((TestDbContext)context));
         }
 
         protected override void AddRoleStore(IServiceCollection services, object context = null)
         {
-            services.AddInstance<IRoleStore<TRole>>(new RoleStore<TRole, TestDbContext, TKey>((TestDbContext)context));
+            services.AddSingleton<IRoleStore<TRole>>(new RoleStore<TRole, TestDbContext, TKey>((TestDbContext)context));
         }
 
         protected override void SetUserPasswordHash(TUser user, string hashedPassword)

@@ -85,12 +85,12 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
 
         protected override void AddUserStore(IServiceCollection services, object context = null)
         {
-            services.AddInstance<IUserStore<IdentityUser>>(new UserStore<IdentityUser, IdentityRole, IdentityDbContext>((IdentityDbContext)context));
+            services.AddSingleton<IUserStore<IdentityUser>>(new UserStore<IdentityUser, IdentityRole, IdentityDbContext>((IdentityDbContext)context));
         }
 
         protected override void AddRoleStore(IServiceCollection services, object context = null)
         {
-            services.AddInstance<IRoleStore<IdentityRole>>(new RoleStore<IdentityRole, IdentityDbContext>((IdentityDbContext)context));
+            services.AddSingleton<IRoleStore<IdentityRole>>(new RoleStore<IdentityRole, IdentityDbContext>((IdentityDbContext)context));
         }
 
         [ConditionalFact]

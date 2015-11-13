@@ -1413,8 +1413,8 @@ namespace Microsoft.AspNet.Identity.Test
             var services = new ServiceCollection();
             var store = new Mock<IUserEmailStore<TestUser>>();
             var describer = new TestErrorDescriber();
-            services.AddInstance<IdentityErrorDescriber>(describer)
-                .AddInstance<IUserStore<TestUser>>(store.Object)
+            services.AddSingleton<IdentityErrorDescriber>(describer)
+                .AddSingleton<IUserStore<TestUser>>(store.Object)
                 .AddIdentity<TestUser, TestRole>();
             services.AddLogging();
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();

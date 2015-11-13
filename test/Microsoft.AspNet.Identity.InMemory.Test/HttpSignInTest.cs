@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.Identity.InMemory.Test
             contextAccessor.Setup(a => a.HttpContext).Returns(context.Object);
             var services = new ServiceCollection();
             services.AddLogging();
-            services.AddInstance(contextAccessor.Object);
+            services.AddSingleton(contextAccessor.Object);
             services.AddIdentity<TestUser, TestRole>();
             services.AddSingleton<IUserStore<TestUser>, InMemoryUserStore<TestUser>>();
             services.AddSingleton<IRoleStore<TestRole>, InMemoryRoleStore<TestRole>>();

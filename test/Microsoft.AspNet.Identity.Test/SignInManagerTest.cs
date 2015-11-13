@@ -37,8 +37,8 @@ namespace Microsoft.AspNet.Identity.Test
         //    contextAccessor.Setup(a => a.Value).Returns(context);
         //    app.UseServices(services =>
         //    {
-        //        services.AddInstance(contextAccessor.Object);
-        //        services.AddInstance<Ilogger>(new Nulllogger());
+        //        services.AddSingleton(contextAccessor.Object);
+        //        services.AddSingleton<Ilogger>(new Nulllogger());
         //        services.AddIdentity<ApplicationUser, IdentityRole>(s =>
         //        {
         //            s.AddUserStore(() => new InMemoryUserStore<ApplicationUser>());

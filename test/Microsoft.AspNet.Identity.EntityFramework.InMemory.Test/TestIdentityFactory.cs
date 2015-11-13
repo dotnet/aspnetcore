@@ -33,7 +33,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.InMemory.Test
         public static RoleManager<IdentityRole> CreateRoleManager(InMemoryContext context)
         {
             var services = CreateTestServices();
-            services.AddInstance<IRoleStore<IdentityRole>>(new RoleStore<IdentityRole>(context));
+            services.AddSingleton<IRoleStore<IdentityRole>>(new RoleStore<IdentityRole>(context));
             return services.BuildServiceProvider().GetRequiredService<RoleManager<IdentityRole>>();
         }
 
