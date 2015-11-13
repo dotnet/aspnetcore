@@ -224,15 +224,6 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         }
 
         /// <summary>
-        /// Executes the child content asynchronously.
-        /// </summary>
-        /// <returns>A <see cref="Task"/> which on completion executes all child content.</returns>
-        public Task ExecuteChildContentAsync()
-        {
-            return _executeChildContentAsync();
-        }
-
-        /// <summary>
         /// Execute and retrieve the rendered child content asynchronously.
         /// </summary>
         /// <returns>A <see cref="Task"/> that on completion returns the rendered child content.</returns>

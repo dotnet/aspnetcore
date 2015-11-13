@@ -2,14 +2,17 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Html.Abstractions;
 
 namespace Microsoft.AspNet.Razor.TagHelpers
 {
     /// <summary>
     /// Class used to represent the output of an <see cref="ITagHelper"/>.
     /// </summary>
-    public class TagHelperOutput
+    public class TagHelperOutput : IHtmlContent
     {
         private readonly Func<bool, Task<TagHelperContent>> _getChildContentAsync;
 
@@ -150,6 +153,86 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         public Task<TagHelperContent> GetChildContentAsync(bool useCachedResult)
         {
             return _getChildContentAsync(useCachedResult);
+        }
+
+        /// <inheritdoc />
+        public void WriteTo(TextWriter writer, HtmlEncoder encoder)
+        {
+            if (writer == null)
+            {
+                throw new ArgumentNullException(nameof(writer));
+            }
+
+            PreElement.WriteTo(writer, encoder);
+
+            var isTagNameNullOrWhitespace = string.IsNullOrWhiteSpace(TagName);
+
+            if (!isTagNameNullOrWhitespace)
+            {
+                writer.Write('<');
+                writer.Write(TagName);
+
+                foreach (var attribute in Attributes)
+                {
+                    writer.Write(' ');
+                    writer.Write(attribute.Name);
+
+                    if (attribute.Minimized)
+                    {
+                        continue;
+                    }
+
+                    writer.Write("=\"");
+                    var value = attribute.Value;
+                    var htmlContent = value as IHtmlContent;
+                    if (htmlContent != null)
+                    {
+                        // There's no way of tracking the attribute value quotations in the Razor source. Therefore, we
+                        // must escape any IHtmlContent double quote values in the case that a user wrote:
+                        // <p name='A " is valid in single quotes'></p>
+                        using (var stringWriter = new StringWriter())
+                        {
+                            htmlContent.WriteTo(stringWriter, encoder);
+
+                            var stringValue = stringWriter.ToString();
+                            stringValue = stringValue.Replace("\"", "&quot;");
+
+                            writer.Write(stringValue);
+                        }
+                    }
+                    else if (value != null)
+                    {
+                        encoder.Encode(writer, value.ToString());
+                    }
+
+                    writer.Write('"');
+                }
+
+                if (TagMode == TagMode.SelfClosing)
+                {
+                    writer.Write(" /");
+                }
+
+                writer.Write('>');
+            }
+
+            if (isTagNameNullOrWhitespace || TagMode == TagMode.StartTagAndEndTag)
+            {
+                PreContent.WriteTo(writer, encoder);
+
+                Content.WriteTo(writer, encoder);
+
+                PostContent.WriteTo(writer, encoder);
+            }
+
+            if (!isTagNameNullOrWhitespace && TagMode == TagMode.StartTagAndEndTag)
+            {
+                writer.Write("</");
+                writer.Write(TagName);
+                writer.Write(">");
+            }
+
+            PostElement.WriteTo(writer, encoder);
         }
     }
 }

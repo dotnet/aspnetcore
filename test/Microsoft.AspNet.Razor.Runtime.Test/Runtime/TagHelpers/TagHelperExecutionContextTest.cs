@@ -143,34 +143,6 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             Assert.Empty(content3.GetContent(new HtmlTestEncoder()));
         }
 
-        [Fact]
-        public async Task ExecuteChildContentAsync_IsNotMemoized()
-        {
-            // Arrange
-            var childContentExecutionCount = 0;
-            var executionContext = new TagHelperExecutionContext(
-                "p",
-                tagMode: TagMode.StartTagAndEndTag,
-                items: new Dictionary<object, object>(),
-                uniqueId: string.Empty,
-                executeChildContentAsync: () =>
-                {
-                    childContentExecutionCount++;
-
-                    return Task.FromResult(result: true);
-                },
-                startTagHelperWritingScope: () => { },
-                endTagHelperWritingScope: () => new DefaultTagHelperContent());
-
-            // Act
-            await executionContext.ExecuteChildContentAsync();
-            await executionContext.ExecuteChildContentAsync();
-            await executionContext.ExecuteChildContentAsync();
-
-            // Assert
-            Assert.Equal(3, childContentExecutionCount);
-        }
-
         public static TheoryData<string, string> DictionaryCaseTestingData
         {
             get

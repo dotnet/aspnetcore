@@ -93,7 +93,7 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
             if (!_designTimeMode)
             {
                 RenderRunTagHelpers();
-                RenderWriteTagHelperMethodCall(chunk);
+                RenderTagHelperOutput(chunk);
                 RenderEndTagHelpersScope();
             }
         }
@@ -533,26 +533,50 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
                                                   _tagHelperContext.ScopeManagerEndMethodName);
         }
 
-        private void RenderWriteTagHelperMethodCall(TagHelperChunk chunk)
+        private void RenderTagHelperOutput(TagHelperChunk chunk)
         {
+            var tagHelperOutputAccessor =
+                $"{ExecutionContextVariableName}.{_tagHelperContext.ExecutionContextOutputPropertyName}";
+
+            if (ContainsChildContent(chunk.Children))
+            {
+                _writer
+                    .Write("if (!")
+                    .Write(tagHelperOutputAccessor)
+                    .Write(".")
+                    .Write(_tagHelperContext.TagHelperOutputIsContentModifiedPropertyName)
+                    .WriteLine(")");
+
+                using (_writer.BuildScope())
+                {
+                    _writer
+                        .Write(tagHelperOutputAccessor)
+                        .Write(".")
+                        .WriteStartAssignment(_tagHelperContext.TagHelperOutputContentPropertyName)
+                        .Write("await ")
+                        .WriteInstanceMethodInvocation(
+                            tagHelperOutputAccessor,
+                            _tagHelperContext.TagHelperOutputGetChildContentAsyncMethodName);
+                }
+            }
+
             _writer
-                .WriteStartInstrumentationContext(_context, chunk.Association, isLiteral: false)
-                .Write("await ");
+                .WriteStartInstrumentationContext(_context, chunk.Association, isLiteral: false);
 
             if (!string.IsNullOrEmpty(_context.TargetWriterName))
             {
                 _writer
-                    .WriteStartMethodInvocation(_tagHelperContext.WriteTagHelperToAsyncMethodName)
+                    .WriteStartMethodInvocation(_context.Host.GeneratedClassContext.WriteToMethodName)
                     .Write(_context.TargetWriterName)
                     .WriteParameterSeparator();
             }
             else
             {
-                _writer.WriteStartMethodInvocation(_tagHelperContext.WriteTagHelperAsyncMethodName);
+                _writer.WriteStartMethodInvocation(_context.Host.GeneratedClassContext.WriteMethodName);
             }
 
             _writer
-                .Write(ExecutionContextVariableName)
+                .Write(tagHelperOutputAccessor)
                 .WriteEndMethodInvocation()
                 .WriteEndInstrumentationContext(_context);
         }
@@ -686,6 +710,24 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
                     endLine: false,
                     parameters: new string[] { _tagHelperContext.HtmlEncoderPropertyName });
             }
+        }
+
+        private static bool ContainsChildContent(IList<Chunk> children)
+        {
+            // False will be returned if there are no children or if there are only non-TagHelper ParentChunk leaf
+            // nodes.
+            foreach (var child in children)
+            {
+                var parentChunk = child as ParentChunk;
+                if (parentChunk == null ||
+                    parentChunk is TagHelperChunk ||
+                    ContainsChildContent(parentChunk.Children))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private static bool IsDynamicAttributeValue(Chunk attributeValueChunk)
