@@ -23,6 +23,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
         public CookieAuthenticationOptions()
         {
             AuthenticationScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+            AutomaticAuthenticate = true;
             ReturnUrlParameter = CookieAuthenticationDefaults.ReturnUrlParameter;
             ExpireTimeSpan = TimeSpan.FromDays(14);
             SlidingExpiration = true;
