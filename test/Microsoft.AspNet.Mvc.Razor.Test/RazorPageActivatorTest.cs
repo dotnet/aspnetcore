@@ -38,10 +38,10 @@ namespace Microsoft.AspNet.Mvc.Razor
             var htmlEncoder = new HtmlTestEncoder();
             var diagnosticSource = new DiagnosticListener("Microsoft.AspNet");
             var serviceProvider = new ServiceCollection()
-                .AddInstance(myService)
-                .AddInstance(helper)
-                .AddInstance<HtmlEncoder>(htmlEncoder)
-                .AddInstance<DiagnosticSource>(diagnosticSource)
+                .AddSingleton(myService)
+                .AddSingleton(helper)
+                .AddSingleton<HtmlEncoder>(htmlEncoder)
+                .AddSingleton<DiagnosticSource>(diagnosticSource)
                 .BuildServiceProvider();
             var httpContext = new DefaultHttpContext
             {
@@ -109,10 +109,10 @@ namespace Microsoft.AspNet.Mvc.Razor
             var helper = Mock.Of<IHtmlHelper<object>>();
             var htmlEncoder = new HtmlTestEncoder();
             var serviceProvider = new ServiceCollection()
-                .AddInstance(myService)
-                .AddInstance(helper)
-                .AddInstance<HtmlEncoder>(htmlEncoder)
-                .AddInstance<DiagnosticSource>(new DiagnosticListener("Microsoft.Aspnet.Mvc"))
+                .AddSingleton(myService)
+                .AddSingleton(helper)
+                .AddSingleton<HtmlEncoder>(htmlEncoder)
+                .AddSingleton<DiagnosticSource>(new DiagnosticListener("Microsoft.Aspnet.Mvc"))
                 .BuildServiceProvider();
             var httpContext = new DefaultHttpContext
             {
@@ -149,10 +149,10 @@ namespace Microsoft.AspNet.Mvc.Razor
             var helper = Mock.Of<IHtmlHelper<object>>();
             var htmlEncoder = new HtmlTestEncoder();
             var serviceProvider = new ServiceCollection()
-                .AddInstance(myService)
-                .AddInstance(helper)
-                .AddInstance<HtmlEncoder>(htmlEncoder)
-                .AddInstance<DiagnosticSource>(new DiagnosticListener("Microsoft.Aspnet.Mvc"))
+                .AddSingleton(myService)
+                .AddSingleton(helper)
+                .AddSingleton<HtmlEncoder>(htmlEncoder)
+                .AddSingleton<DiagnosticSource>(new DiagnosticListener("Microsoft.Aspnet.Mvc"))
                 .BuildServiceProvider();
             var httpContext = new DefaultHttpContext
             {
@@ -189,10 +189,10 @@ namespace Microsoft.AspNet.Mvc.Razor
             var helper = Mock.Of<IHtmlHelper<object>>();
             var htmlEncoder = new HtmlTestEncoder();
             var serviceProvider = new ServiceCollection()
-                .AddInstance(myService)
-                .AddInstance(helper)
-                .AddInstance<HtmlEncoder>(htmlEncoder)
-                .AddInstance<DiagnosticSource>(new DiagnosticListener("Microsoft.AspNet.Mvc"))
+                .AddSingleton(myService)
+                .AddSingleton(helper)
+                .AddSingleton<HtmlEncoder>(htmlEncoder)
+                .AddSingleton<DiagnosticSource>(new DiagnosticListener("Microsoft.AspNet.Mvc"))
                 .BuildServiceProvider();
             var httpContext = new DefaultHttpContext
             {
