@@ -68,14 +68,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             return ((Task<int>)asyncResult).Result;
         }
-#endif
 
-        public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
-        {
-            return _body.ReadAsync(new ArraySegment<byte>(buffer, offset, count), cancellationToken);
-        }
-
-        public Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken, object state)
+        private Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken, object state)
         {
             var tcs = new TaskCompletionSource<int>(state);
             var task = _body.ReadAsync(new ArraySegment<byte>(buffer, offset, count), cancellationToken);
@@ -94,8 +88,14 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 {
                     tcs2.SetResult(task2.Result);
                 }
-            }, tcs);
+            }, tcs, cancellationToken);
             return tcs.Task;
+        }
+#endif
+
+        public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+        {
+            return _body.ReadAsync(new ArraySegment<byte>(buffer, offset, count), cancellationToken);
         }
 
         public override void Write(byte[] buffer, int offset, int count)

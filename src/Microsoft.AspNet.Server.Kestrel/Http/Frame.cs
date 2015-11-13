@@ -349,7 +349,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         public async Task FlushAsync(CancellationToken cancellationToken)
         {
             await ProduceStartAndFireOnStarting(immediate: false);
-            await SocketOutput.WriteAsync(_emptyData, immediate: true);
+            await SocketOutput.WriteAsync(_emptyData, immediate: true, cancellationToken: cancellationToken);
         }
 
         public void Write(ArraySegment<byte> data)
