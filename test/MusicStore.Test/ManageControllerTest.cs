@@ -36,7 +36,7 @@ namespace MusicStore.Controllers
             // IHttpContextAccessor is required for SignInManager, and UserManager
             var context = new DefaultHttpContext();
             context.Features.Set<IHttpAuthenticationFeature>(new HttpAuthenticationFeature() { Handler = new TestAuthHandler() });
-            services.AddInstance<IHttpContextAccessor>(
+            services.AddSingleton<IHttpContextAccessor>(
                 new HttpContextAccessor()
                     {
                         HttpContext = context,
