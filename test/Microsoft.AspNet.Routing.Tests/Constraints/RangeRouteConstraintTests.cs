@@ -1,9 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if DNX451
-
-using System;
 using Microsoft.AspNet.Routing.Constraints;
 using Microsoft.AspNet.Testing;
 using Xunit;
@@ -41,12 +38,11 @@ namespace Microsoft.AspNet.Routing.Tests
                                   "argument 'max'.";
 
             // Act & Assert
-            ExceptionAssert.ThrowsArgumentOutOfRange(() => new RangeRouteConstraint(3, 2),
-                                                     "min",
-                                                     expectedMessage,
-                                                     3);
+            ExceptionAssert.ThrowsArgumentOutOfRange(
+                () => new RangeRouteConstraint(3, 2),
+                "min",
+                expectedMessage,
+                3);
         }
     }
 }
-
-#endif

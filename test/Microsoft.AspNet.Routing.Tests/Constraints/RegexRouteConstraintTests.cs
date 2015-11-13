@@ -1,11 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if DNX451
-
-using System.Globalization;
 using System.Text.RegularExpressions;
-using System.Threading;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Routing.Constraints;
 using Microsoft.AspNet.Testing;
@@ -26,16 +22,25 @@ namespace Microsoft.AspNet.Routing.Tests
         [InlineData("123-456-2334", @"^\d{3}-\d{3}-\d{4}$", true)] // ssn
         [InlineData(@"12/4/2013", @"^\d{1,2}\/\d{1,2}\/\d{4}$", true)] // date
         [InlineData(@"abc@def.com", @"^\w+[\w\.]*\@\w+((-\w+)|(\w*))\.[a-z]{2,3}$", true)] // email
-        public void RegexConstraintBuildRegexVerbatimFromInput(string routeValue,
-                                                               string constraintValue,
-                                                               bool shouldMatch)
+        public void RegexConstraintBuildRegexVerbatimFromInput(
+            string routeValue,
+            string constraintValue,
+            bool shouldMatch)
         {
             // Arrange
             var constraint = new RegexRouteConstraint(constraintValue);
-            var values = new RouteValueDictionary(new {controller = routeValue});
+            var values = new RouteValueDictionary(new { controller = routeValue });
+
+            // Act
+            var match = constraint.Match(
+                httpContext: Mock.Of<HttpContext>(),
+                route: new Mock<IRouter>().Object,
+                routeKey: "controller",
+                values: values,
+                routeDirection: RouteDirection.IncomingRequest);
 
             // Assert
-            Assert.Equal(shouldMatch, EasyMatch(constraint, "controller", values));
+            Assert.Equal(shouldMatch, match);
         }
 
         [Fact]
@@ -43,10 +48,18 @@ namespace Microsoft.AspNet.Routing.Tests
         {
             // Arrange
             var constraint = new RegexRouteConstraint(new Regex("^abc$"));
-            var values = new RouteValueDictionary(new { controller = "abc"});
+            var values = new RouteValueDictionary(new { controller = "abc" });
+
+            // Act
+            var match = constraint.Match(
+                httpContext: Mock.Of<HttpContext>(),
+                route: new Mock<IRouter>().Object,
+                routeKey: "controller",
+                values: values,
+                routeDirection: RouteDirection.IncomingRequest);
 
             // Assert
-            Assert.True(EasyMatch(constraint, "controller", values));
+            Assert.True(match);
         }
 
         [Fact]
@@ -56,8 +69,16 @@ namespace Microsoft.AspNet.Routing.Tests
             var constraint = new RegexRouteConstraint(new Regex("^abc$"));
             var values = new RouteValueDictionary(new { controller = "Abc" });
 
+            // Act
+            var match = constraint.Match(
+                httpContext: Mock.Of<HttpContext>(),
+                route: new Mock<IRouter>().Object,
+                routeKey: "controller",
+                values: values,
+                routeDirection: RouteDirection.IncomingRequest);
+
             // Assert
-            Assert.False(EasyMatch(constraint, "controller", values));
+            Assert.False(match);
         }
 
         [Fact]
@@ -67,12 +88,22 @@ namespace Microsoft.AspNet.Routing.Tests
             var constraint = new RegexRouteConstraint(new Regex("^abc$"));
             var values = new RouteValueDictionary(new { action = "abc" });
 
+            // Act
+            var match = constraint.Match(
+                httpContext: Mock.Of<HttpContext>(),
+                route: new Mock<IRouter>().Object,
+                routeKey: "controller",
+                values: values,
+                routeDirection: RouteDirection.IncomingRequest);
+
             // Assert
-            Assert.False(EasyMatch(constraint, "controller", values));
+            Assert.False(match);
         }
 
-        [Fact]
-        public void RegexConstraintIsCultureInsensitiveWhenConstructedWithString()
+        [Theory]
+        [InlineData("tr-TR")]
+        [InlineData("en-US")]
+        public void RegexConstraintIsCultureInsensitiveWhenConstructedWithString(string culture)
         {
             if (TestPlatformHelper.IsMono)
             {
@@ -85,41 +116,19 @@ namespace Microsoft.AspNet.Routing.Tests
             var constraint = new RegexRouteConstraint("^([a-z]+)$");
             var values = new RouteValueDictionary(new { controller = "\u0130" }); // Turkish upper-case dotted I
 
-            var currentThread = Thread.CurrentThread;
-            var backupCulture = currentThread.CurrentCulture;
-
-            bool matchInTurkish;
-            bool matchInUsEnglish;
-
-            // Act
-            try
+            using (new CultureReplacer(culture))
             {
-                currentThread.CurrentCulture = new CultureInfo("tr-TR"); // Turkish culture
-                matchInTurkish = EasyMatch(constraint, "controller", values);
+                // Act
+                var match = constraint.Match(
+                    httpContext: new Mock<HttpContext>().Object,
+                    route: new Mock<IRouter>().Object,
+                    routeKey: "controller",
+                    values: values,
+                    routeDirection: RouteDirection.IncomingRequest);
 
-                currentThread.CurrentCulture = new CultureInfo("en-US");
-                matchInUsEnglish = EasyMatch(constraint, "controller", values);
+                // Assert
+                Assert.False(match);
             }
-            finally
-            {
-                currentThread.CurrentCulture = backupCulture;
-            }
-
-            // Assert
-            Assert.False(matchInUsEnglish); // this just verifies the test
-            Assert.False(matchInTurkish);
-        }
-
-        private static bool EasyMatch(IRouteConstraint constraint,
-                                      string routeKey,
-                                      RouteValueDictionary values)
-        {
-            return constraint.Match(httpContext: new Mock<HttpContext>().Object,
-                route: new Mock<IRouter>().Object,
-                routeKey: routeKey,
-                values: values,
-                routeDirection: RouteDirection.IncomingRequest);
         }
     }
 }
-#endif

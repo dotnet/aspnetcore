@@ -20,10 +20,11 @@ namespace Microsoft.AspNet.Routing
         /// <param name="values">A dictionary that contains the parameters for the URL.</param>
         /// <param name="routeDirection">An object that indicates whether the constraint check is being performed when an incoming request is being handled or when a URL is being generated.</param>
         /// <returns><c>true</c> if the URL parameter contains a valid value; otherwise, <c>false</c>.</returns>
-        bool Match(HttpContext httpContext,
-                   IRouter route,
-                   string routeKey,
-                   IDictionary<string, object> values,
-                   RouteDirection routeDirection);
+        bool Match(
+            HttpContext httpContext,
+            IRouter route,
+            string routeKey,
+            IDictionary<string, object> values,
+            RouteDirection routeDirection);
     }
 }

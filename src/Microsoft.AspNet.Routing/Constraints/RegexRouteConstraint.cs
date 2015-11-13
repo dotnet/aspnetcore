@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.Routing.Constraints
             HttpContext httpContext,
             IRouter route,
             string routeKey,
-            IDictionary<string, object> routeValues,
+            IDictionary<string, object> values,
             RouteDirection routeDirection)
         {
             if (httpContext == null)
@@ -60,14 +60,14 @@ namespace Microsoft.AspNet.Routing.Constraints
                 throw new ArgumentNullException(nameof(routeKey));
             }
 
-            if (routeValues == null)
+            if (values == null)
             {
-                throw new ArgumentNullException(nameof(routeValues));
+                throw new ArgumentNullException(nameof(values));
             }
 
             object routeValue;
 
-            if (routeValues.TryGetValue(routeKey, out routeValue)
+            if (values.TryGetValue(routeKey, out routeValue)
                 && routeValue != null)
             {
                 var parameterValueString = Convert.ToString(routeValue, CultureInfo.InvariantCulture);

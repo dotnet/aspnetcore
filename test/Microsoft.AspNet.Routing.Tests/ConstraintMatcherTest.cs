@@ -3,18 +3,15 @@
 
 using System.Collections.Generic;
 using Microsoft.AspNet.Http;
-#if DNX451
 using Microsoft.AspNet.Routing.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Moq;
-#endif
 using Xunit;
 
 namespace Microsoft.AspNet.Routing
 {
     public class ConstraintMatcherTest
     {
-#if DNX451
         private const string _name = "name";
 
         [Fact]
@@ -213,7 +210,6 @@ namespace Microsoft.AspNet.Routing
                 logger: logger);
             return sink;
         }
-#endif
 
         private class PassConstraint : IRouteConstraint
         {

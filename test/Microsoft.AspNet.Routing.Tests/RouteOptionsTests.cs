@@ -35,11 +35,12 @@ namespace Microsoft.AspNet.Routing.Tests
             }
 
             public string Pattern { get; private set; }
-            public bool Match(HttpContext httpContext,
-                              IRouter route,
-                              string routeKey,
-                              IDictionary<string, object> values,
-                              RouteDirection routeDirection)
+            public bool Match(
+                HttpContext httpContext,
+                IRouter route,
+                string routeKey,
+                IDictionary<string, object> values,
+                RouteDirection routeDirection)
             {
                 throw new NotImplementedException();
             }

@@ -1,9 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if DNX451
-
-using System;
 using Microsoft.AspNet.Routing.Constraints;
 using Microsoft.AspNet.Testing;
 using Xunit;
@@ -36,12 +33,11 @@ namespace Microsoft.AspNet.Routing.Tests
             var expectedMessage = "Value must be greater than or equal to 0.";
 
             // Act & Assert
-            ExceptionAssert.ThrowsArgumentOutOfRange(() => new MaxLengthRouteConstraint(-1),
-                                                     "maxLength",
-                                                     expectedMessage,
-                                                     -1);
+            ExceptionAssert.ThrowsArgumentOutOfRange(
+                () => new MaxLengthRouteConstraint(-1),
+                "maxLength",
+                expectedMessage,
+                -1);
         }
     }
 }
-
-#endif

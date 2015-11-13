@@ -1,9 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if DNX451
-
-using System;
 using Microsoft.AspNet.Routing.Constraints;
 using Microsoft.AspNet.Testing;
 using Xunit;
@@ -53,10 +50,11 @@ namespace Microsoft.AspNet.Routing.Tests
             var expectedMessage = "Value must be greater than or equal to 0.";
 
             // Act & Assert
-            ExceptionAssert.ThrowsArgumentOutOfRange(() => new LengthRouteConstraint(-1),
-                                                     "length",
-                                                     expectedMessage,
-                                                     -1);
+            ExceptionAssert.ThrowsArgumentOutOfRange(
+                () => new LengthRouteConstraint(-1),
+                "length",
+                expectedMessage,
+                -1);
         }
 
         [Fact]
@@ -66,10 +64,11 @@ namespace Microsoft.AspNet.Routing.Tests
             var expectedMessage = "Value must be greater than or equal to 0.";
 
             // Act & Assert
-            ExceptionAssert.ThrowsArgumentOutOfRange(() => new LengthRouteConstraint(-1, 3),
-                                                     "minLength",
-                                                     expectedMessage,
-                                                     -1);
+            ExceptionAssert.ThrowsArgumentOutOfRange(
+                () => new LengthRouteConstraint(-1, 3),
+                "minLength",
+                expectedMessage,
+                -1);
         }
 
         [Fact]
@@ -79,25 +78,26 @@ namespace Microsoft.AspNet.Routing.Tests
             var expectedMessage = "Value must be greater than or equal to 0.";
 
             // Act & Assert
-            ExceptionAssert.ThrowsArgumentOutOfRange(() => new LengthRouteConstraint(0, -1),
-                                                     "maxLength",
-                                                     expectedMessage,
-                                                     -1);
+            ExceptionAssert.ThrowsArgumentOutOfRange(
+                () => new LengthRouteConstraint(0, -1),
+                "maxLength",
+                expectedMessage,
+                -1);
         }
 
         [Fact]
         public void LengthRouteConstraint_MinGreaterThanMax_Throws()
         {
             // Arrange
-            var expectedMessage = "The value for argument 'minLength' should be less than or equal to the " +                                   "value for the argument 'maxLength'.";
+            var expectedMessage = "The value for argument 'minLength' should be less than or equal to the " +
+                "value for the argument 'maxLength'.";
 
             // Arrange Act & Assert
-            ExceptionAssert.ThrowsArgumentOutOfRange(() => new LengthRouteConstraint(3, 2),
-                                                     "minLength",
-                                                     expectedMessage,
-                                                     3);
+            ExceptionAssert.ThrowsArgumentOutOfRange(
+                () => new LengthRouteConstraint(3, 2),
+                "minLength",
+                expectedMessage,
+                3);
         }
     }
 }
-
-#endif

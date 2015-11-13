@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if DNX451
-
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
@@ -19,9 +17,10 @@ namespace Microsoft.AspNet.Routing.Tests
         [InlineData(true, false, false)]
         [InlineData(false, true, false)]
         [InlineData(false, false, false)]
-        public void CompositeRouteConstraint_Match_CallsMatchOnInnerConstraints(bool inner1Result,
-                                                                               bool inner2Result,
-                                                                               bool expected)
+        public void CompositeRouteConstraint_Match_CallsMatchOnInnerConstraints(
+            bool inner1Result,
+            bool inner2Result,
+            bool expected)
         {
             // Arrange
             var inner1 = MockConstraintWithResult(inner1Result);
@@ -36,11 +35,12 @@ namespace Microsoft.AspNet.Routing.Tests
         }
 
         static Expression<Func<IRouteConstraint, bool>> ConstraintMatchMethodExpression =
-            c => c.Match(It.IsAny<HttpContext>(),
-                         It.IsAny<IRouter>(),
-                         It.IsAny<string>(),
-                         It.IsAny<Dictionary<string, object>>(),
-                         It.IsAny<RouteDirection>());
+            c => c.Match(
+                It.IsAny<HttpContext>(),
+                It.IsAny<IRouter>(),
+                It.IsAny<string>(),
+                It.IsAny<Dictionary<string, object>>(),
+                It.IsAny<RouteDirection>());
 
         private static Mock<IRouteConstraint> MockConstraintWithResult(bool result)
         {
@@ -52,5 +52,3 @@ namespace Microsoft.AspNet.Routing.Tests
         }
     }
 }
-
-#endif
