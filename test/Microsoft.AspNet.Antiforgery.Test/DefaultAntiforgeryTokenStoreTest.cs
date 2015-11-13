@@ -350,7 +350,7 @@ namespace Microsoft.AspNet.Antiforgery
         private static IServiceProvider GetServiceProvider(IAntiforgeryContextAccessor contextAccessor)
         {
             var serviceCollection = new ServiceCollection();
-            serviceCollection.AddInstance<IAntiforgeryContextAccessor>(contextAccessor);
+            serviceCollection.AddSingleton(contextAccessor);
             return serviceCollection.BuildServiceProvider();
         }
 
