@@ -66,7 +66,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         public override int EndRead(IAsyncResult asyncResult)
         {
-            return ((Task<int>)asyncResult).Result;
+            return ((Task<int>)asyncResult).GetAwaiter().GetResult();
         }
 
         private Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken, object state)
