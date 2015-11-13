@@ -64,15 +64,15 @@ namespace Microsoft.AspNet.Server.Kestrel
                 return;
             }
 
-            Post((t) => OnStop(t));
+            Post(t => t.OnStop());
             if (!_thread.Join((int)timeout.TotalMilliseconds))
             {
                 try
                 {
-                    Post((t) => OnStopRude(t));
+                    Post(t => t.OnStopRude());
                     if (!_thread.Join((int)timeout.TotalMilliseconds))
                     {
-                        Post((t) => OnStopImmediate(t));
+                        Post(t => t.OnStopImmediate());
                         if (!_thread.Join((int)timeout.TotalMilliseconds))
                         {
 #if NET451
@@ -100,19 +100,19 @@ namespace Microsoft.AspNet.Server.Kestrel
             }
         }
 
-        private static void OnStop(KestrelThread thread)
+        private void OnStop()
         {
-            thread._post.Unreference();
+            _post.Unreference();
         }
 
-        private static void OnStopRude(KestrelThread thread)
+        private void OnStopRude()
         {
-            thread._engine.Libuv.walk(
-                thread._loop,
+            _engine.Libuv.walk(
+                _loop,
                 (ptr, arg) =>
                 {
                     var handle = UvMemory.FromIntPtr<UvHandle>(ptr);
-                    if (handle != thread._post)
+                    if (handle != _post)
                     {
                         handle.Dispose();
                     }
@@ -120,10 +120,10 @@ namespace Microsoft.AspNet.Server.Kestrel
                 IntPtr.Zero);
         }
 
-        private static void OnStopImmediate(KestrelThread thread)
+        private void OnStopImmediate()
         {
-            thread._stopImmediate = true;
-            thread._loop.Stop();
+            _stopImmediate = true;
+            _loop.Stop();
         }
 
         private void Post(Action<KestrelThread> callback)
