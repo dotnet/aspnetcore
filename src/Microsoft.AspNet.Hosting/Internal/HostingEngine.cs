@@ -72,7 +72,7 @@ namespace Microsoft.AspNet.Hosting.Internal
             _startupLoader = startupLoader;
             _captureStartupErrors = captureStartupErrors;
             _applicationLifetime = new ApplicationLifetime();
-            _applicationServiceCollection.AddInstance<IApplicationLifetime>(_applicationLifetime);
+            _applicationServiceCollection.AddSingleton<IApplicationLifetime>(_applicationLifetime);
         }
 
         public IServiceProvider ApplicationServices

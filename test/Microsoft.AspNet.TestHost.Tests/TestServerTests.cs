@@ -203,7 +203,7 @@ namespace Microsoft.AspNet.TestHost
                     return context.Response.WriteAsync("Success");
                 });
             },
-            services => services.AddInstance<IStartupFilter>(new ReplaceServiceProvidersFeatureFilter(appServices, appServices)));
+            services => services.AddSingleton<IStartupFilter>(new ReplaceServiceProvidersFeatureFilter(appServices, appServices)));
             var result = await server.CreateClient().GetStringAsync("/path");
             Assert.Equal("Success", result);
         }

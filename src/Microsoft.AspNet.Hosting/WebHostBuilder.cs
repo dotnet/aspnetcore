@@ -67,8 +67,8 @@ namespace Microsoft.AspNet.Hosting
         private IServiceCollection BuildHostingServices()
         {
             var services = new ServiceCollection();
-            services.AddInstance(_hostingEnvironment);
-            services.AddInstance(_loggerFactory);
+            services.AddSingleton(_hostingEnvironment);
+            services.AddSingleton(_loggerFactory);
 
             services.AddTransient<IStartupLoader, StartupLoader>();
 
@@ -79,8 +79,8 @@ namespace Microsoft.AspNet.Hosting
             services.AddLogging();
 
             var diagnosticSource = new DiagnosticListener("Microsoft.AspNet");
-            services.AddInstance<DiagnosticSource>(diagnosticSource);
-            services.AddInstance<DiagnosticListener>(diagnosticSource);
+            services.AddSingleton<DiagnosticSource>(diagnosticSource);
+            services.AddSingleton<DiagnosticListener>(diagnosticSource);
 
             // Conjure up a RequestServices
             services.AddTransient<IStartupFilter, AutoRequestServicesStartupFilter>();

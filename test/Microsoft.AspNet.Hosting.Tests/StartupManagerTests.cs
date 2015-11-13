@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Hosting.Tests
         public void StartupClassMayHaveHostingServicesInjected()
         {
             var serviceCollection = new ServiceCollection();
-            serviceCollection.AddInstance<IFakeStartupCallback>(this);
+            serviceCollection.AddSingleton<IFakeStartupCallback>(this);
             var services = serviceCollection.BuildServiceProvider();
 
             var diagnosticMessages = new List<string>();
@@ -71,7 +71,7 @@ namespace Microsoft.AspNet.Hosting.Tests
         public void StartupWithNoConfigureThrows()
         {
             var serviceCollection = new ServiceCollection();
-            serviceCollection.AddInstance<IFakeStartupCallback>(this);
+            serviceCollection.AddSingleton<IFakeStartupCallback>(this);
             var services = serviceCollection.BuildServiceProvider();
 
             var diagnosticMessages = new List<string>();
@@ -87,7 +87,7 @@ namespace Microsoft.AspNet.Hosting.Tests
         public void StartupWithTwoConfiguresThrows()
         {
             var serviceCollection = new ServiceCollection();
-            serviceCollection.AddInstance<IFakeStartupCallback>(this);
+            serviceCollection.AddSingleton<IFakeStartupCallback>(this);
             var services = serviceCollection.BuildServiceProvider();
 
             var diagnosticMessages = new List<string>();
@@ -103,7 +103,7 @@ namespace Microsoft.AspNet.Hosting.Tests
         public void StartupWithPrivateConfiguresThrows()
         {
             var serviceCollection = new ServiceCollection();
-            serviceCollection.AddInstance<IFakeStartupCallback>(this);
+            serviceCollection.AddSingleton<IFakeStartupCallback>(this);
             var services = serviceCollection.BuildServiceProvider();
 
             var diagnosticMessages = new List<string>();
@@ -119,7 +119,7 @@ namespace Microsoft.AspNet.Hosting.Tests
         public void StartupWithTwoConfigureServicesThrows()
         {
             var serviceCollection = new ServiceCollection();
-            serviceCollection.AddInstance<IFakeStartupCallback>(this);
+            serviceCollection.AddSingleton<IFakeStartupCallback>(this);
             var services = serviceCollection.BuildServiceProvider();
 
             var diagnosticMessages = new List<string>();
