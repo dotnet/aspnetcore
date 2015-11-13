@@ -204,7 +204,7 @@ namespace Microsoft.AspNet.Identity
         /// <value>
         /// true if the backing user store supports user emails, otherwise false.
         /// </value>
-        public virtual bool SupportsUserEmail 
+        public virtual bool SupportsUserEmail
         {
             get
             {
@@ -1178,7 +1178,7 @@ namespace Microsoft.AspNet.Identity
             }
             return await userRoleStore.IsInRoleAsync(user, role, CancellationToken);
         }
-        
+
         /// <summary>
         /// Gets the email address for the specified <paramref name="user"/>.
         /// </summary>
@@ -1622,7 +1622,7 @@ namespace Microsoft.AspNet.Identity
                     Resources.NoTokenProvider, tokenProvider));
             }
 
-                // Make sure the token is valid
+            // Make sure the token is valid
             var result = await _tokenProviders[tokenProvider].ValidateAsync("TwoFactor", token, this, user);
             if (!result)
             {
@@ -1862,7 +1862,7 @@ namespace Microsoft.AspNet.Identity
         /// </summary>
         /// <param name="user">The user whose access failed count should be retrieved for.</param>
         /// <returns>The <see cref="Task"/> that contains the result the asynchronous operation, the current failed access count
-        /// for the user..</returns>
+        /// for the user.</returns>
         public virtual async Task<int> GetAccessFailedCountAsync(TUser user)
         {
             ThrowIfDisposed();
@@ -1874,6 +1874,14 @@ namespace Microsoft.AspNet.Identity
             return await store.GetAccessFailedCountAsync(user, CancellationToken);
         }
 
+        /// <summary>
+        /// Returns a list of users from the user store who have the specified <paramref name="claim"/>.
+        /// </summary>
+        /// <param name="claim">The claim to look for.</param>
+        /// <returns>
+        /// A <see cref="Task{TResult}"/> that represents the result of the asynchronous query, a list of <typeparamref name="TUser"/>s who
+        /// have the specified claim.
+        /// </returns>
         public virtual Task<IList<TUser>> GetUsersForClaimAsync(Claim claim)
         {
             ThrowIfDisposed();
@@ -1886,12 +1894,12 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// Returns a list of users from the user store who have the specified <see cref="Claim"/>.
+        /// Returns a list of users from the user store who are members of the specified <paramref name="roleName"/>.
         /// </summary>
-        /// <param name="claim">The claim to look for.</param>
+        /// <param name="roleName">The name of the role whose users should be returned.</param>
         /// <returns>
         /// A <see cref="Task{TResult}"/> that represents the result of the asynchronous query, a list of <typeparamref name="TUser"/>s who
-        /// have the specified claim.
+        /// are members of the specified role.
         /// </returns>
         public virtual Task<IList<TUser>> GetUsersInRoleAsync(string roleName)
         {
