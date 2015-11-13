@@ -80,36 +80,7 @@ namespace Microsoft.AspNet.Http.Internal
         /// <param name="key"></param>
         public void Delete(string key)
         {
-            var encodedKeyPlusEquals = UrlEncoder.Default.Encode(key) + "=";
-            Func<string, string, bool> predicate = (value, encKeyPlusEquals) => value.StartsWith(encKeyPlusEquals, StringComparison.OrdinalIgnoreCase);
-
-            StringValues deleteCookies = $"{encodedKeyPlusEquals}; expires=Thu, 01-Jan-1970 00:00:00 GMT";
-            var existingValues = Headers[HeaderNames.SetCookie];
-            if (StringValues.IsNullOrEmpty(existingValues))
-            {
-                Headers[HeaderNames.SetCookie] = deleteCookies;
-            }
-            else
-            {
-                var values = existingValues.ToArray();
-                var newValues = new List<string>();
-
-                for (var i = 0; i < values.Length; i++)
-                {
-                    if (!predicate(values[i], encodedKeyPlusEquals))
-                    {
-                        newValues.Add(values[i]);
-                    }
-                }
-
-                values = deleteCookies.ToArray();
-                for (var i = 0; i < values.Length; i++)
-                {
-                    newValues.Add(values[i]);
-                }
-
-                Headers[HeaderNames.SetCookie] = new StringValues(newValues.ToArray());
-            }
+            Delete(key, new CookieOptions() { Path = "/" });
         }
 
         /// <summary>
