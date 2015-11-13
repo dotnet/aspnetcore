@@ -65,12 +65,12 @@ namespace Microsoft.AspNet.Mvc
         private static IServiceProvider CreateServices()
         {
             var services = new ServiceCollection();
-            services.AddInstance(new ObjectResultExecutor(
+            services.AddSingleton(new ObjectResultExecutor(
                 new TestOptionsManager<MvcOptions>(),
                 new ActionBindingContextAccessor(),
                 new TestHttpResponseStreamWriterFactory(),
                 NullLoggerFactory.Instance));
-            services.AddInstance<ILoggerFactory>(NullLoggerFactory.Instance);
+            services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
 
             return services.BuildServiceProvider();
         }

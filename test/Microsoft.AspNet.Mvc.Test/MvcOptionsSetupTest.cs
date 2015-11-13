@@ -233,10 +233,10 @@ namespace Microsoft.AspNet.Mvc
 
         private static void AddDnxServices(IServiceCollection serviceCollection)
         {
-            serviceCollection.AddInstance(Mock.Of<ILibraryManager>());
-            serviceCollection.AddInstance(Mock.Of<ILibraryExporter>());
-            serviceCollection.AddInstance(Mock.Of<ICompilerOptionsProvider>());
-            serviceCollection.AddInstance(Mock.Of<IAssemblyLoadContextAccessor>());
+            serviceCollection.AddSingleton(Mock.Of<ILibraryManager>());
+            serviceCollection.AddSingleton(Mock.Of<ILibraryExporter>());
+            serviceCollection.AddSingleton(Mock.Of<ICompilerOptionsProvider>());
+            serviceCollection.AddSingleton(Mock.Of<IAssemblyLoadContextAccessor>());
             var applicationEnvironment = new Mock<IApplicationEnvironment>();
 
             // ApplicationBasePath is used to set up a PhysicalFileProvider which requires
@@ -244,7 +244,7 @@ namespace Microsoft.AspNet.Mvc
             applicationEnvironment.SetupGet(e => e.ApplicationBasePath)
                 .Returns(Directory.GetCurrentDirectory());
 
-            serviceCollection.AddInstance(applicationEnvironment.Object);
+            serviceCollection.AddSingleton(applicationEnvironment.Object);
         }
     }
 }

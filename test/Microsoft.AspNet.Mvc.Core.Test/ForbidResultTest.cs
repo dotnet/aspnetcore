@@ -147,7 +147,7 @@ namespace Microsoft.AspNet.Mvc
         private static IServiceProvider CreateServices()
         {
             return new ServiceCollection()
-                .AddInstance<ILoggerFactory>(NullLoggerFactory.Instance)
+                .AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance)
                 .BuildServiceProvider();
         }
     }

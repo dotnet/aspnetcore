@@ -49,7 +49,7 @@ namespace Microsoft.AspNet.Mvc
                 new TestOptionsManager<MvcJsonOptions>());
 
             var services = new ServiceCollection();
-            services.AddInstance(executor);
+            services.AddSingleton(executor);
             httpContext.RequestServices = services.BuildServiceProvider();
 
             return httpContext;

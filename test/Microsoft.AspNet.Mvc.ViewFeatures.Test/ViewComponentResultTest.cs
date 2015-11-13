@@ -467,7 +467,7 @@ namespace Microsoft.AspNet.Mvc
             }
 
             var services = new ServiceCollection();
-            services.AddInstance<DiagnosticSource>(diagnosticSource);
+            services.AddSingleton<DiagnosticSource>(diagnosticSource);
             services.AddSingleton<IOptions<MvcViewOptions>, TestOptionsManager<MvcViewOptions>>();
             services.AddTransient<IViewComponentHelper, DefaultViewComponentHelper>();
             services.AddSingleton<IViewComponentSelector, DefaultViewComponentSelector>();
@@ -475,10 +475,10 @@ namespace Microsoft.AspNet.Mvc
             services.AddSingleton<IViewComponentInvokerFactory, DefaultViewComponentInvokerFactory>();
             services.AddSingleton<ITypeActivatorCache, DefaultTypeActivatorCache>();
             services.AddSingleton<IViewComponentActivator, DefaultViewComponentActivator>();
-            services.AddInstance<IViewComponentDescriptorProvider>(new FixedSetViewComponentDescriptorProvider(descriptors));
+            services.AddSingleton<IViewComponentDescriptorProvider>(new FixedSetViewComponentDescriptorProvider(descriptors));
             services.AddSingleton<IModelMetadataProvider, EmptyModelMetadataProvider>();
-            services.AddInstance<ILoggerFactory>(NullLoggerFactory.Instance);
-            services.AddInstance<ITempDataDictionary>(new TempDataDictionary(httpContext, tempDataProvider));
+            services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
+            services.AddSingleton<ITempDataDictionary>(new TempDataDictionary(httpContext, tempDataProvider));
             services.AddTransient<IHttpContextAccessor, HttpContextAccessor>();
 
             return services;

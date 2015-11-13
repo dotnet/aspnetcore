@@ -50,7 +50,7 @@ namespace Microsoft.AspNet.Mvc
             var httpContext = GetHttpContext();
             httpContext.Response.Body = new MemoryStream();
             httpContext.RequestServices = new ServiceCollection()
-                .AddInstance<IHostingEnvironment>(appEnvironment.Object)
+                .AddSingleton<IHostingEnvironment>(appEnvironment.Object)
                 .AddTransient<ILoggerFactory, LoggerFactory>()
                 .BuildServiceProvider();
             var context = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
@@ -294,7 +294,7 @@ namespace Microsoft.AspNet.Mvc
         {
             var services = new ServiceCollection();
 
-            services.AddInstance<ILoggerFactory>(NullLoggerFactory.Instance);
+            services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
 
             return services;
         }

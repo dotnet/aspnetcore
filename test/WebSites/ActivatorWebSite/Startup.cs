@@ -13,7 +13,7 @@ namespace ActivatorWebSite
         {
             // Add MVC services to the services container
             services.AddMvc();
-            services.AddInstance(new MyService());
+            services.AddSingleton(new MyService());
             services.AddScoped<ViewService, ViewService>();
         }
 

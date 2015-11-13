@@ -52,7 +52,7 @@ namespace Microsoft.AspNet.Mvc
             // Assert
             Assert.NotNull(httpContext.Response.Body);
             var contents = await new StreamReader(httpContext.Response.Body).ReadToEndAsync();
-            Assert.Equal("FilePathResultTestFile contents¡", contents);
+            Assert.Equal("FilePathResultTestFile contentsï¿½", contents);
         }
 
         [Fact]
@@ -120,7 +120,7 @@ namespace Microsoft.AspNet.Mvc
             // Assert
             Assert.NotNull(httpContext.Response.Body);
             var contents = await new StreamReader(httpContext.Response.Body).ReadToEndAsync();
-            Assert.Equal("FilePathResultTestFile contents¡", contents);
+            Assert.Equal("FilePathResultTestFile contentsï¿½", contents);
         }
 
         [Theory]
@@ -204,7 +204,7 @@ namespace Microsoft.AspNet.Mvc
                 }
                 else
                 {
-                    return new MemoryStream(Encoding.UTF8.GetBytes("FilePathResultTestFile contents¡"));
+                    return new MemoryStream(Encoding.UTF8.GetBytes("FilePathResultTestFile contentsï¿½"));
                 }
             }
         }
@@ -212,7 +212,7 @@ namespace Microsoft.AspNet.Mvc
         private static IServiceCollection CreateServices()
         {
             var services = new ServiceCollection();
-            services.AddInstance<ILoggerFactory>(NullLoggerFactory.Instance);
+            services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
             return services;
         }
 

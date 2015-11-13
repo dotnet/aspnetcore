@@ -128,9 +128,9 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         {
             var httpContext = new HttpContextAccessor() { HttpContext = new DefaultHttpContext() };
             var serviceCollection = new ServiceCollection();
-            serviceCollection.AddInstance<IModelMetadataProvider>(new EmptyModelMetadataProvider());
+            serviceCollection.AddSingleton<IModelMetadataProvider>(new EmptyModelMetadataProvider());
             var tempDataProvider = new SessionStateTempDataProvider();
-            serviceCollection.AddInstance<ITempDataDictionary>(new TempDataDictionary(httpContext, tempDataProvider));
+            serviceCollection.AddSingleton<ITempDataDictionary>(new TempDataDictionary(httpContext, tempDataProvider));
 
             return serviceCollection.BuildServiceProvider();
         }

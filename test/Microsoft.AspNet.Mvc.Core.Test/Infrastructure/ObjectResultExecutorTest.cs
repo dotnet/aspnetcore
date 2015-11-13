@@ -435,7 +435,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
         {
             var services = new ServiceCollection();
 
-            services.AddInstance<ILoggerFactory>(NullLoggerFactory.Instance);
+            services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
 
             return services;
         }

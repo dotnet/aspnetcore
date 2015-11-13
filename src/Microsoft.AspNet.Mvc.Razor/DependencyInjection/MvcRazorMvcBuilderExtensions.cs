@@ -69,7 +69,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             var initializer = new TagHelperInitializer<TTagHelper>(initialize);
 
-            builder.Services.AddInstance(typeof(ITagHelperInitializer<TTagHelper>), initializer);
+            builder.Services.AddSingleton(typeof(ITagHelperInitializer<TTagHelper>), initializer);
 
             return builder;
         }

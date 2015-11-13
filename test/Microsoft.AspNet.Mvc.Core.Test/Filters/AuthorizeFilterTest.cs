@@ -213,8 +213,7 @@ namespace Microsoft.AspNet.Mvc.Filters
                 .RequireClaim("Permission", "CanViewComment")
                 .Build());
             var authorizationContext = GetAuthorizationContext(services =>
-                services.AddInstance(authorizationService.Object)
-                );
+                services.AddSingleton(authorizationService.Object));
 
             authorizationContext.Result = new HttpUnauthorizedResult();
 

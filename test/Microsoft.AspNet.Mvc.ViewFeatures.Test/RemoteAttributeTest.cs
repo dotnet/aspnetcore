@@ -443,7 +443,7 @@ namespace Microsoft.AspNet.Mvc
         private static ClientModelValidationContext GetValidationContext(IUrlHelper urlHelper)
         {
             var serviceCollection = GetServiceCollection();
-            serviceCollection.AddInstance<IUrlHelper>(urlHelper);
+            serviceCollection.AddSingleton<IUrlHelper>(urlHelper);
             var serviceProvider = serviceCollection.BuildServiceProvider();
 
             return new ClientModelValidationContext(_metadata, _metadataProvider, serviceProvider);
@@ -474,7 +474,7 @@ namespace Microsoft.AspNet.Mvc
             var contextAccessor = GetContextAccessor(serviceProvider, routeData);
             var actionSelector = new Mock<IActionSelector>(MockBehavior.Strict);
             var urlHelper = new UrlHelper(contextAccessor, actionSelector.Object);
-            serviceCollection.AddInstance<IUrlHelper>(urlHelper);
+            serviceCollection.AddSingleton<IUrlHelper>(urlHelper);
             serviceProvider = serviceCollection.BuildServiceProvider();
 
             return new ClientModelValidationContext(_metadata, _metadataProvider, serviceProvider);
@@ -496,7 +496,7 @@ namespace Microsoft.AspNet.Mvc
             var contextAccessor = GetContextAccessor(serviceProvider, routeData);
             var actionSelector = new Mock<IActionSelector>(MockBehavior.Strict);
             var urlHelper = new UrlHelper(contextAccessor, actionSelector.Object);
-            serviceCollection.AddInstance<IUrlHelper>(urlHelper);
+            serviceCollection.AddSingleton<IUrlHelper>(urlHelper);
             serviceProvider = serviceCollection.BuildServiceProvider();
 
             return new ClientModelValidationContext(_metadata, _metadataProvider, serviceProvider);
@@ -572,7 +572,7 @@ namespace Microsoft.AspNet.Mvc
         private static ServiceCollection GetServiceCollection()
         {
             var serviceCollection = new ServiceCollection();
-            serviceCollection.AddInstance<ILoggerFactory>(new NullLoggerFactory());
+            serviceCollection.AddSingleton<ILoggerFactory>(new NullLoggerFactory());
 
             var routeOptions = new RouteOptions();
             var accessor = new Mock<IOptions<RouteOptions>>();
@@ -580,9 +580,9 @@ namespace Microsoft.AspNet.Mvc
                 .SetupGet(options => options.Value)
                 .Returns(routeOptions);
 
-            serviceCollection.AddInstance<IOptions<RouteOptions>>(accessor.Object);
+            serviceCollection.AddSingleton<IOptions<RouteOptions>>(accessor.Object);
 
-            serviceCollection.AddInstance<IInlineConstraintResolver>(
+            serviceCollection.AddSingleton<IInlineConstraintResolver>(
                 new DefaultInlineConstraintResolver(accessor.Object));
 
             return serviceCollection;

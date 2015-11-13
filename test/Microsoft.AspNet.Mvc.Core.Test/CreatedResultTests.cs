@@ -96,7 +96,7 @@ namespace Microsoft.AspNet.Mvc
             options.Value.OutputFormatters.Add(new JsonOutputFormatter());
 
             var services = new ServiceCollection();
-            services.AddInstance(new ObjectResultExecutor(
+            services.AddSingleton(new ObjectResultExecutor(
                 options,
                 new ActionBindingContextAccessor(),
                 new TestHttpResponseStreamWriterFactory(),

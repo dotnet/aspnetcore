@@ -107,7 +107,7 @@ namespace Microsoft.AspNet.Mvc
         {
             var services = new ServiceCollection();
 
-            services.AddInstance<ILoggerFactory>(NullLoggerFactory.Instance);
+            services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
 
             return services;
         }

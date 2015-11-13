@@ -118,7 +118,7 @@ namespace Microsoft.AspNet.Mvc
                NullLoggerFactory.Instance);
 
             var services = new ServiceCollection();
-            services.AddInstance(viewExecutor);
+            services.AddSingleton(viewExecutor);
 
             var httpContext = new DefaultHttpContext();
             httpContext.RequestServices = services.BuildServiceProvider();

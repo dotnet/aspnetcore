@@ -16,7 +16,7 @@ namespace ActionResultsWebSite
                 .AddMvc()
                 .AddXmlDataContractSerializerFormatters();
 
-            services.AddInstance(new GuidLookupService());
+            services.AddSingleton(new GuidLookupService());
         }
 
         public void Configure(IApplicationBuilder app)

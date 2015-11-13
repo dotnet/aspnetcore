@@ -78,7 +78,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
 
             var services = new ServiceCollection();
-            services.AddInstance<IService>(new Service());
+            services.AddSingleton<IService>(new Service());
 
             var bindingContext = new ModelBindingContext
             {

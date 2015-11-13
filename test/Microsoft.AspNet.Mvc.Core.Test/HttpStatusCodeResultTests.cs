@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.Mvc
         private static IServiceCollection CreateServices()
         {
             var services = new ServiceCollection();
-            services.AddInstance<ILoggerFactory>(NullLoggerFactory.Instance);
+            services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
             return services;
         }
 

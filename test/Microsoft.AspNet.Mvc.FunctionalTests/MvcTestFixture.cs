@@ -106,17 +106,17 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             return (services) =>
             {
-                services.AddInstance<IApplicationEnvironment>(
+                services.AddSingleton<IApplicationEnvironment>(
                     new TestApplicationEnvironment(applicationEnvironment, applicationName, applicationRoot));
 
                 var hostingEnvironment = new HostingEnvironment();
                 hostingEnvironment.Initialize(applicationRoot, new WebHostOptions());
-                services.AddInstance<IHostingEnvironment>(hostingEnvironment);
+                services.AddSingleton<IHostingEnvironment>(hostingEnvironment);
 
                 // Inject a custom assembly provider. Overrides AddMvc() because that uses TryAdd().
                 var assemblyProvider = new StaticAssemblyProvider();
                 assemblyProvider.CandidateAssemblies.Add(startupAssembly);
-                services.AddInstance<IAssemblyProvider>(assemblyProvider);
+                services.AddSingleton<IAssemblyProvider>(assemblyProvider);
 
                 AddAdditionalServices(services);
 

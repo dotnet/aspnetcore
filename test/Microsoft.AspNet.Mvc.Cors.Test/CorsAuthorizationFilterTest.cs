@@ -144,7 +144,7 @@ namespace Microsoft.AspNet.Mvc.Cors
             }
 
             var services = new ServiceCollection();
-            services.AddInstance<ILoggerFactory>(NullLoggerFactory.Instance);
+            services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
             httpContext.RequestServices = services.BuildServiceProvider();
 
             var method = isPreflight ? CorsConstants.PreflightHttpMethod : "GET";

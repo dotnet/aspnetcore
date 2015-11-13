@@ -182,7 +182,7 @@ namespace Microsoft.AspNet.Mvc
         private static IServiceCollection CreateServices(params ViewComponentDescriptor[] descriptors)
         {
             var services = new ServiceCollection();
-            services.AddInstance<ILoggerFactory>(NullLoggerFactory.Instance);
+            services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
             return services;
         }
 

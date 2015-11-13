@@ -173,7 +173,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
 
             var services = new ServiceCollection();
             services.AddOptions();
-            services.AddInstance<ILoggerFactory>(NullLoggerFactory.Instance);
+            services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
             httpContext.RequestServices = services.BuildServiceProvider();
 
             return httpContext;

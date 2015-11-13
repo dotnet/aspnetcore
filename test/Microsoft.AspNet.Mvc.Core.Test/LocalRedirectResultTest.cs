@@ -102,7 +102,7 @@ namespace Microsoft.AspNet.Mvc
         private static IServiceProvider GetServiceProvider(IUrlHelper urlHelper)
         {
             var serviceCollection = new ServiceCollection();
-            serviceCollection.AddInstance<IUrlHelper>(urlHelper);
+            serviceCollection.AddSingleton<IUrlHelper>(urlHelper);
             serviceCollection.AddTransient<ILoggerFactory, LoggerFactory>();
             return serviceCollection.BuildServiceProvider();
         }
