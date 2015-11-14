@@ -7,8 +7,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Abstractions;
 using Microsoft.AspNet.Mvc.Internal;
-using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.AspNet.Routing;
+using Microsoft.AspNet.Routing.Tree;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.OptionsModel;
@@ -141,7 +141,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
             var handler = new MvcRouteHandler();
 
             var originalRouteData = context.RouteData;
-            originalRouteData.Values.Add(AttributeRouting.RouteGroupKey, "/Home/Test");
+            originalRouteData.Values.Add(TreeRouter.RouteGroupKey, "/Home/Test");
 
             // Act
             await handler.RouteAsync(context);
@@ -152,7 +152,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
             Assert.Same(actionRouteData, context.RouteData);
 
             // The new routedata is a copy
-            Assert.False(context.RouteData.Values.ContainsKey(AttributeRouting.RouteGroupKey));
+            Assert.False(context.RouteData.Values.ContainsKey(TreeRouter.RouteGroupKey));
         }
 
         [Fact]

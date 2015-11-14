@@ -10,8 +10,8 @@ using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.Diagnostics;
 using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.AspNet.Mvc.Logging;
-using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.AspNet.Routing;
+using Microsoft.AspNet.Routing.Tree;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -80,7 +80,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
             }
 
             // Removing RouteGroup from RouteValues to simulate the result of conventional routing
-            newRouteData.Values.Remove(AttributeRouting.RouteGroupKey);
+            newRouteData.Values.Remove(TreeRouter.RouteGroupKey);
 
             try
             {

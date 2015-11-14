@@ -10,6 +10,7 @@ using Microsoft.AspNet.Mvc.Abstractions;
 using Microsoft.AspNet.Mvc.Controllers;
 using Microsoft.AspNet.Mvc.Infrastructure;
 using Microsoft.AspNet.Routing;
+using Microsoft.AspNet.Routing.Tree;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.OptionsModel;
@@ -125,7 +126,7 @@ namespace Microsoft.AspNet.Mvc.Routing
             action.MethodInfo = actionMethod;
             action.RouteConstraints = new List<RouteDataActionConstraint>()
             {
-                new RouteDataActionConstraint(AttributeRouting.RouteGroupKey, "group"),
+                new RouteDataActionConstraint(TreeRouter.RouteGroupKey, "group"),
             };
             action.AttributeRouteInfo = new AttributeRouteInfo();
             action.AttributeRouteInfo.Template = "{controller}/{action}";
@@ -161,7 +162,7 @@ namespace Microsoft.AspNet.Mvc.Routing
                 DisplayName = displayName,
                 RouteConstraints = new List<RouteDataActionConstraint>()
                 {
-                    new RouteDataActionConstraint(AttributeRouting.RouteGroupKey, "whatever"),
+                    new RouteDataActionConstraint(TreeRouter.RouteGroupKey, "whatever"),
                 },
                 AttributeRouteInfo = new AttributeRouteInfo { Template = template },
             };

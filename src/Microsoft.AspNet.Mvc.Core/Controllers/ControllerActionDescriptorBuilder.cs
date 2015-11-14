@@ -15,6 +15,7 @@ using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.AspNet.Mvc.Infrastructure;
 using Microsoft.AspNet.Mvc.Routing;
+using Microsoft.AspNet.Routing.Tree;
 
 namespace Microsoft.AspNet.Mvc.Controllers
 {
@@ -120,7 +121,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
                     if (hasAttributeRoutes)
                     {
                         actionDescriptor.RouteConstraints.Add(new RouteDataActionConstraint(
-                            AttributeRouting.RouteGroupKey,
+                            TreeRouter.RouteGroupKey,
                             string.Empty));
                     }
 
@@ -534,7 +535,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
 
             var routeConstraints = new List<RouteDataActionConstraint>();
             routeConstraints.Add(new RouteDataActionConstraint(
-                AttributeRouting.RouteGroupKey,
+                TreeRouter.RouteGroupKey,
                 routeGroupValue));
 
             actionDescriptor.RouteConstraints = routeConstraints;

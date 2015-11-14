@@ -13,6 +13,7 @@ using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.AspNet.Mvc.Infrastructure;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Routing;
+using Microsoft.AspNet.Routing.Tree;
 using Moq;
 using Xunit;
 
@@ -250,7 +251,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
 
             var routeconstraint = Assert.Single(action.RouteConstraints);
             Assert.Equal(RouteKeyHandling.RequireKey, routeconstraint.KeyHandling);
-            Assert.Equal(AttributeRouting.RouteGroupKey, routeconstraint.RouteKey);
+            Assert.Equal(TreeRouter.RouteGroupKey, routeconstraint.RouteKey);
 
             var controller = Assert.Single(action.RouteValueDefaults,
                 rc => rc.Key.Equals("controller"));
@@ -954,7 +955,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
             {
                 Assert.Equal(6, actionDescriptor.RouteConstraints.Count);
                 var routeGroupConstraint = Assert.Single(actionDescriptor.RouteConstraints,
-                    rc => rc.RouteKey.Equals(AttributeRouting.RouteGroupKey));
+                    rc => rc.RouteKey.Equals(TreeRouter.RouteGroupKey));
                 Assert.Equal(RouteKeyHandling.DenyKey, routeGroupConstraint.KeyHandling);
             }
         }
@@ -978,7 +979,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
 
             Assert.Equal(1, indexAction.RouteConstraints.Count);
 
-            var routeGroupConstraint = Assert.Single(indexAction.RouteConstraints, rc => rc.RouteKey.Equals(AttributeRouting.RouteGroupKey));
+            var routeGroupConstraint = Assert.Single(indexAction.RouteConstraints, rc => rc.RouteKey.Equals(TreeRouter.RouteGroupKey));
             Assert.Equal(RouteKeyHandling.RequireKey, routeGroupConstraint.KeyHandling);
             Assert.NotNull(routeGroupConstraint.RouteValue);
 
@@ -1027,7 +1028,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
 
             var groupIds = actions.Select(
                 a => a.RouteConstraints
-                    .Where(rc => rc.RouteKey == AttributeRouting.RouteGroupKey)
+                    .Where(rc => rc.RouteKey == TreeRouter.RouteGroupKey)
                     .Select(rc => rc.RouteValue)
                     .Single())
                 .ToArray();

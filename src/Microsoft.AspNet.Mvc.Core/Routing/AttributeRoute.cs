@@ -10,6 +10,7 @@ using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.Infrastructure;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Routing.Template;
+using Microsoft.AspNet.Routing.Tree;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNet.Mvc.Routing
@@ -19,8 +20,7 @@ namespace Microsoft.AspNet.Mvc.Routing
         private readonly IRouter _target;
         private readonly IActionDescriptorsCollectionProvider _actionDescriptorsCollectionProvider;
         private readonly IInlineConstraintResolver _constraintResolver;
-        private readonly ILogger _routeLogger;
-        private readonly ILogger _constraintLogger;
+        private readonly ILoggerFactory _loggerFactory;
 
         private TreeRouter _router;
 
@@ -53,9 +53,7 @@ namespace Microsoft.AspNet.Mvc.Routing
             _target = target;
             _actionDescriptorsCollectionProvider = actionDescriptorsCollectionProvider;
             _constraintResolver = constraintResolver;
-
-            _routeLogger = loggerFactory.CreateLogger<TreeRouter>();
-            _constraintLogger = loggerFactory.CreateLogger(typeof(RouteConstraintMatcher).FullName);
+            _loggerFactory = loggerFactory;
         }
 
         /// <inheritdoc />
@@ -88,7 +86,7 @@ namespace Microsoft.AspNet.Mvc.Routing
 
         private TreeRouter BuildRoute(ActionDescriptorsCollection actions)
         {
-            var routeBuilder = new TreeRouteBuilder(_target, _routeLogger, _constraintLogger);
+            var routeBuilder = new TreeRouteBuilder(_target, _loggerFactory);
             var routeInfos = GetRouteInfos(_constraintResolver, actions.Items);
 
             // We're creating one AttributeRouteGenerationEntry per action. This allows us to match the intended
@@ -105,7 +103,6 @@ namespace Microsoft.AspNet.Mvc.Routing
                     RequiredLinkValues = routeInfo.ActionDescriptor.RouteValueDefaults,
                     RouteGroup = routeInfo.RouteGroup,
                     Template = routeInfo.ParsedTemplate,
-                    TemplateText = routeInfo.RouteTemplate,
                     Name = routeInfo.Name,
                 });
             }
@@ -127,7 +124,7 @@ namespace Microsoft.AspNet.Mvc.Routing
                         routeInfo.ParsedTemplate,
                         new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
                         {
-                            { AttributeRouting.RouteGroupKey, routeInfo.RouteGroup }
+                            { TreeRouter.RouteGroupKey, routeInfo.RouteGroup }
                         }),
                     Constraints = routeInfo.Constraints
                 });
@@ -203,7 +200,7 @@ namespace Microsoft.AspNet.Mvc.Routing
             ActionDescriptor action)
         {
             var constraint = action.RouteConstraints
-                .Where(c => c.RouteKey == AttributeRouting.RouteGroupKey)
+                .Where(c => c.RouteKey == TreeRouter.RouteGroupKey)
                 .FirstOrDefault();
             if (constraint == null ||
                 constraint.KeyHandling != RouteKeyHandling.RequireKey ||
@@ -260,8 +257,8 @@ namespace Microsoft.AspNet.Mvc.Routing
 
             routeInfo.Order = action.AttributeRouteInfo.Order;
 
-            routeInfo.MatchPrecedence = AttributeRoutePrecedence.ComputeMatched(routeInfo.ParsedTemplate);
-            routeInfo.GenerationPrecedence = AttributeRoutePrecedence.ComputeGenerated(routeInfo.ParsedTemplate);
+            routeInfo.MatchPrecedence = RoutePrecedence.ComputeMatched(routeInfo.ParsedTemplate);
+            routeInfo.GenerationPrecedence = RoutePrecedence.ComputeGenerated(routeInfo.ParsedTemplate);
 
             routeInfo.Name = action.AttributeRouteInfo.Name;
 

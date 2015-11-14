@@ -507,22 +507,6 @@ namespace Microsoft.AspNet.Mvc.Core
         }
 
         /// <summary>
-        /// Two or more routes named '{0}' have different templates.
-        /// </summary>
-        internal static string AttributeRoute_DifferentLinkGenerationEntries_SameName
-        {
-            get { return GetString("AttributeRoute_DifferentLinkGenerationEntries_SameName"); }
-        }
-
-        /// <summary>
-        /// Two or more routes named '{0}' have different templates.
-        /// </summary>
-        internal static string FormatAttributeRoute_DifferentLinkGenerationEntries_SameName(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("AttributeRoute_DifferentLinkGenerationEntries_SameName"), p0);
-        }
-
-        /// <summary>
         /// Action: '{0}' - Template: '{1}'
         /// </summary>
         internal static string AttributeRoute_DuplicateNames_Item
