@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 
 namespace Microsoft.AspNet.Server.Kestrel.Https
@@ -10,10 +11,12 @@ namespace Microsoft.AspNet.Server.Kestrel.Https
         public HttpsConnectionFilterOptions()
         {
             ClientCertificateMode = ClientCertificateMode.NoCertificate;
+            SslProtocols = SslProtocols.Tls12 | SslProtocols.Tls11 | SslProtocols.Tls;
         }
 
         public X509Certificate2 ServerCertificate { get; set; }
         public ClientCertificateMode ClientCertificateMode { get; set; }
         public ClientCertificateValidationCallback ClientCertificateValidation { get; set; }
+        public SslProtocols SslProtocols { get; set; }
     }
 }

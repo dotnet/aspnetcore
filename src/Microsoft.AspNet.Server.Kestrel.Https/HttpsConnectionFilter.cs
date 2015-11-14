@@ -18,6 +18,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Https
         private readonly ClientCertificateMode _clientCertMode;
         private readonly ClientCertificateValidationCallback _clientValidationCallback;
         private readonly IConnectionFilter _previous;
+        private readonly SslProtocols _sslProtocols;
         private X509Certificate2 _clientCert;
 
         public HttpsConnectionFilter(HttpsConnectionFilterOptions options, IConnectionFilter previous)
@@ -34,6 +35,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Https
             _serverCert = options.ServerCertificate;
             _clientCertMode = options.ClientCertificateMode;
             _clientValidationCallback = options.ClientCertificateValidation;
+            _sslProtocols = options.SslProtocols;
             _previous = previous;
         }
 
@@ -47,7 +49,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Https
                 if (_clientCertMode == ClientCertificateMode.NoCertificate)
                 {
                     sslStream = new SslStream(context.Connection);
-                    await sslStream.AuthenticateAsServerAsync(_serverCert);
+                    await sslStream.AuthenticateAsServerAsync(_serverCert, clientCertificateRequired: false,
+                        enabledSslProtocols: _sslProtocols, checkCertificateRevocation: false);
                 }
                 else
                 {
@@ -89,8 +92,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Https
                             return true;
                         });
                     await sslStream.AuthenticateAsServerAsync(_serverCert, clientCertificateRequired: true,
-                        enabledSslProtocols: SslProtocols.Tls12 | SslProtocols.Tls11 | SslProtocols.Tls,
-                        checkCertificateRevocation: false);
+                        enabledSslProtocols: _sslProtocols, checkCertificateRevocation: false);
                 }
                 context.Connection = sslStream;
             }
