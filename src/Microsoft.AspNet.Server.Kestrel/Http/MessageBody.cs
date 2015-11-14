@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             Task<int> result = null;
             var send100Continue = 0;
-            result = SkipImplementation(cancellationToken);
+            result = SkipAsyncImplementation(cancellationToken);
             if (!result.IsCompleted)
             {
                 send100Continue = Interlocked.Exchange(ref _send100Continue, 0);
@@ -56,7 +56,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         public abstract Task<int> ReadAsyncImplementation(ArraySegment<byte> buffer, CancellationToken cancellationToken);
 
-        public abstract Task<int> SkipImplementation(CancellationToken cancellationToken);
+        public abstract Task<int> SkipAsyncImplementation(CancellationToken cancellationToken);
 
         public static MessageBody For(
             string httpVersion,
@@ -128,7 +128,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             {
                 return _context.SocketInput.ReadAsync(buffer);
             }
-            public override Task<int> SkipImplementation(CancellationToken cancellationToken)
+            public override Task<int> SkipAsyncImplementation(CancellationToken cancellationToken)
             {
                 return _context.SocketInput.SkipAsync(4096);
             }
@@ -169,7 +169,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 return actual;
             }
 
-            public override async Task<int> SkipImplementation(CancellationToken cancellationToken)
+            public override async Task<int> SkipAsyncImplementation(CancellationToken cancellationToken)
             {
                 var input = _context.SocketInput;
 
@@ -279,7 +279,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 return 0;
             }
 
-            public override async Task<int> SkipImplementation(CancellationToken cancellationToken)
+            public override async Task<int> SkipAsyncImplementation(CancellationToken cancellationToken)
             {
                 var input = _context.SocketInput;
 
