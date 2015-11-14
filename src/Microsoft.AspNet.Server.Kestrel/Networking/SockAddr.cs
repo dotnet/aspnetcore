@@ -64,7 +64,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
             var port = ((int)(_field0 & 0x00FF0000) >> 8) | (int)((_field0 & 0xFF000000) >> 24);
             
             int family = (int)_field0;
-            if (PlatformApis.IsDarwin())
+            if (PlatformApis.IsDarwin)
             {
                 // see explaination in example 4
                 family = family >> 8;

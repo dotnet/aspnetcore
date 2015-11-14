@@ -10,11 +10,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
     {
         public Libuv()
         {
-            IsWindows = PlatformApis.IsWindows();
+            IsWindows = PlatformApis.IsWindows;
 
             var isDarwinMono =
 #if DNX451
-                IsWindows ? false : PlatformApis.IsDarwin();
+                IsWindows ? false : PlatformApis.IsDarwin;
 #else
                 false;
 #endif
