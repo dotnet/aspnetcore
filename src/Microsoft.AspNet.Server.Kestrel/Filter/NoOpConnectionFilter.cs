@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
+using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Server.Kestrel.Infrastructure;
 
 namespace Microsoft.AspNet.Server.Kestrel.Filter
@@ -12,5 +13,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Filter
         {
             return TaskUtilities.CompletedTask;
         }
+
+        public void PrepareRequest(IFeatureCollection features)
+        {}
     }
 }

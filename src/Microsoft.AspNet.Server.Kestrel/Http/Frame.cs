@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
+using Microsoft.AspNet.Server.Kestrel.Filter;
 using Microsoft.AspNet.Server.Kestrel.Infrastructure;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
@@ -55,19 +56,22 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         private readonly IPEndPoint _localEndPoint;
         private readonly IPEndPoint _remoteEndPoint;
+        private readonly IConnectionFilter _connectionFilter;
 
         public Frame(ConnectionContext context)
-            : this(context, remoteEndPoint: null, localEndPoint: null)
+            : this(context, remoteEndPoint: null, localEndPoint: null, connectionFilter: null)
         {
         }
 
         public Frame(ConnectionContext context,
                      IPEndPoint remoteEndPoint,
-                     IPEndPoint localEndPoint)
+                     IPEndPoint localEndPoint,
+                     IConnectionFilter connectionFilter)
             : base(context)
         {
             _remoteEndPoint = remoteEndPoint;
             _localEndPoint = localEndPoint;
+            _connectionFilter = connectionFilter;
 
             FrameControl = this;
             Reset();
@@ -139,6 +143,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             {
                 httpConnectionFeature.IsLocal = false;
             }
+
+            _connectionFilter?.PrepareRequest(this);
 
             _requestAbortCts?.Dispose();
         }
@@ -272,7 +278,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             // If _requestAbort is set, the connection has already been closed.
                             if (!_requestAborted)
                             {
-                                await ProduceEnd();
+                            await ProduceEnd();
 
                                 // Finish reading the request body in case the app did not.
                                 await messageBody.Consume();
@@ -301,15 +307,15 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                     // If _requestAborted is set, the connection has already been closed.
                     if (!_requestAborted)
                     {
-                        // Inform client no more data will ever arrive
-                        ConnectionControl.End(ProduceEndType.SocketShutdownSend);
+                    // Inform client no more data will ever arrive
+                    ConnectionControl.End(ProduceEndType.SocketShutdownSend);
 
-                        // Wait for client to either disconnect or send unexpected data
-                        await SocketInput;
+                    // Wait for client to either disconnect or send unexpected data
+                    await SocketInput;
 
-                        // Dispose socket
-                        ConnectionControl.End(ProduceEndType.SocketDisconnect);
-                    }
+                    // Dispose socket
+                    ConnectionControl.End(ProduceEndType.SocketDisconnect);
+                }
                 }
                 catch (Exception ex)
                 {

@@ -177,7 +177,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         private Frame CreateFrame()
         {
-            return new Frame(this, _remoteEndPoint, _localEndPoint);
+            return new Frame(this, _remoteEndPoint, _localEndPoint, ConnectionFilter);
         }
 
         void IConnectionControl.Pause()
