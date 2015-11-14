@@ -12,6 +12,12 @@
             "Microsoft.AspNet.Routing": { }
         }
     },
+    "adx-nonshipping": {
+        "rules": [],
+        "packages": {
+            "Microsoft.AspNet.Routing.DecisionTree.Sources": { }
+        }
+    },
     "Default": { // Rules to run for packages not listed in any other set.
         "rules": [
             "AssemblyHasDocumentFileRule",

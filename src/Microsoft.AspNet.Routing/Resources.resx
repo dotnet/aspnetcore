@@ -192,4 +192,7 @@
   <data name="TemplateRoute_OptionalParameterHasTobeTheLast" xml:space="preserve">
     <value>An optional parameter must be at the end of the segment. In the segment '{0}', optional parameter '{1}' is followed by '{2}'.</value>
   </data>
+  <data name="AttributeRoute_DifferentLinkGenerationEntries_SameName" xml:space="preserve">
+    <value>Two or more routes named '{0}' have different templates.</value>
+  </data>
 </root>

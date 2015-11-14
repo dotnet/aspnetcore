@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.Routing.Template
                 throw new ArgumentNullException(nameof(segments));
             }
 
-            Template = template;
+            TemplateText = template;
 
             Segments = segments;
 
@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.Routing.Template
             }
         }
 
-        public string Template { get; }
+        public string TemplateText { get; }
 
         public IList<TemplatePart> Parameters { get; }
 

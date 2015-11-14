@@ -1,0 +1,21 @@
+﻿{
+    "compilationOptions": {
+        "warningsAsErrors": true
+    },
+    "dependencies": {
+        "Microsoft.AspNet.Routing": "1.0.0-*",
+        "Microsoft.AspNet.Routing.DecisionTree.Sources": {
+            "type": "build",
+            "version": "1.0.0-*"
+        },
+        "Microsoft.AspNet.Testing": "1.0.0-*",
+        "xunit.runner.aspnet": "2.0.0-aspnet-*"
+    },
+    "frameworks": {
+        "dnxcore50": { },
+        "dnx451": { }
+    },
+    "commands": {
+        "test": "xunit.runner.aspnet"
+    }
+}

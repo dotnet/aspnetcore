@@ -830,7 +830,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
                 }
                 else
                 {
-                    if (!string.Equals(x.Template, y.Template, StringComparison.Ordinal))
+                    if (!string.Equals(x.TemplateText, y.TemplateText, StringComparison.Ordinal))
                     {
                         return false;
                     }

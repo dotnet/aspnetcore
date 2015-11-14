@@ -1,0 +1,23 @@
+﻿{
+    "description": "Components for building a DecisionTree.",
+    "version": "1.0.0-*",
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/aspnet/routing"
+    },
+    "compilationOptions": {
+        "warningsAsErrors": true,
+        "keyFile": "../../tools/Key.snk"
+    },
+    "shared": "**/*.cs",
+    "frameworks": {
+        "net451": { },
+        "dotnet5.4": {
+            "dependencies": {
+                "System.Collections": "4.0.10",
+                "System.Linq": "4.0.0",
+                "System.Runtime": "4.0.20"
+            }
+        }
+    }
+}

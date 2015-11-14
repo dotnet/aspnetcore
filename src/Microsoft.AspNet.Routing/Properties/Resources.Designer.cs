@@ -410,6 +410,22 @@ namespace Microsoft.AspNet.Routing
             return string.Format(CultureInfo.CurrentCulture, GetString("TemplateRoute_OptionalParameterHasTobeTheLast"), p0, p1, p2);
         }
 
+        /// <summary>
+        /// Two or more routes named '{0}' have different templates.
+        /// </summary>
+        internal static string AttributeRoute_DifferentLinkGenerationEntries_SameName
+        {
+            get { return GetString("AttributeRoute_DifferentLinkGenerationEntries_SameName"); }
+        }
+
+        /// <summary>
+        /// Two or more routes named '{0}' have different templates.
+        /// </summary>
+        internal static string FormatAttributeRoute_DifferentLinkGenerationEntries_SameName(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("AttributeRoute_DifferentLinkGenerationEntries_SameName"), p0);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);
