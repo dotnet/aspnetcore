@@ -3,6 +3,7 @@
 
 using System;
 using System.Text.Encodings.Web;
+using Microsoft.AspNet.Http.Abstractions;
 
 namespace Microsoft.AspNet.Http
 {
@@ -29,7 +30,7 @@ namespace Microsoft.AspNet.Http
         {
             if (!string.IsNullOrEmpty(value) && value[0] != '/')
             {
-                throw new ArgumentException(""/*Resources.Exception_PathMustStartWithSlash*/, nameof(value));
+                throw new ArgumentException(Resources.FormatException_PathMustStartWithSlash(nameof(value)), nameof(value));
             }
             _value = value;
         }

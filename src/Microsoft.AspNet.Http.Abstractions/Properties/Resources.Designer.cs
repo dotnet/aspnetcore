@@ -13,6 +13,14 @@ namespace Microsoft.AspNet.Http.Abstractions
         /// <summary>
         /// '{0}' is not available.
         /// </summary>
+        internal static string FormatException_PathMustStartWithSlash(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Exception_PathMustStartWithSlash"), p0);
+        }
+
+        /// <summary>
+        /// '{0}' is not available.
+        /// </summary>
         internal static string Exception_UseMiddlewareIServiceProviderNotAvailable
         {
             get { return GetString("Exception_UseMiddlewareIServiceProviderNotAvailable"); }

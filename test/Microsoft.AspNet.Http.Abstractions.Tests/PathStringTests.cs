@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.Http
         public void CtorThrows_IfPathDoesNotHaveLeadingSlash()
         {
             // Act and Assert
-            ExceptionAssert.ThrowsArgument(() => new PathString("hello"), "value", "");
+            ExceptionAssert.ThrowsArgument(() => new PathString("hello"), "value", "The path in 'value' must start with '/'.");
         }
 
         [Theory]

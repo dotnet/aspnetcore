@@ -132,4 +132,7 @@
   <data name="Exception_UseMiddleMutlipleInvokes" xml:space="preserve">
     <value>Multiple public '{0}' methods are available.</value>
   </data>
+  <data name="Exception_PathMustStartWithSlash" xml:space="preserve">
+    <value>The path in '{0}' must start with '/'.</value>
+  </data>
 </root>
