@@ -29,5 +29,27 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 }
             }
         }
+
+        public static async Task<int> SkipAsync(this SocketInput input, int limit)
+        {
+            while (true)
+            {
+                await input;
+
+                var begin = input.ConsumingStart();
+                int actual;
+                var end = begin.Skip(limit, out actual);
+                input.ConsumingComplete(end, end);
+
+                if (actual != 0)
+                {
+                    return actual;
+                }
+                if (input.RemoteIntakeFin)
+                {
+                    return 0;
+                }
+            }
+        }
     }
 }
