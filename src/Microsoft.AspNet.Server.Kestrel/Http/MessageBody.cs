@@ -41,17 +41,27 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         public async Task Consume(CancellationToken cancellationToken = default(CancellationToken))
         {
             Task<int> result;
+            var firstLoop = true;
             do
             {
-                var send100Continue = 0;
                 result = SkipAsyncImplementation(cancellationToken);
                 if (!result.IsCompleted)
                 {
-                    send100Continue = Interlocked.Exchange(ref _send100Continue, 0);
+                    if (firstLoop && Interlocked.Exchange(ref _send100Continue, 0) == 1)
+                    {
+                        firstLoop = false;
+                        _context.FrameControl.ProduceContinue();
+                    }
                 }
-                if (send100Continue == 1)
+                else if (result.GetAwaiter().GetResult() == 0) 
                 {
-                    _context.FrameControl.ProduceContinue();
+                    // Completed Task, end of stream
+                    return;
+                }
+                else
+                {
+                    // Completed Task, get next Task rather than await
+                    continue;
                 }
             } while (await result != 0);
         }
