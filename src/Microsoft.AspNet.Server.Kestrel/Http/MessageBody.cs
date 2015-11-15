@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             var firstLoop = true;
             do
             {
-                result = SkipAsyncImplementation(cancellationToken);
+                result = ReadAsyncImplementation(default(ArraySegment<byte>), cancellationToken);
                 if (!result.IsCompleted)
                 {
                     if (firstLoop && Interlocked.Exchange(ref _send100Continue, 0) == 1)
@@ -67,8 +67,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         }
 
         public abstract Task<int> ReadAsyncImplementation(ArraySegment<byte> buffer, CancellationToken cancellationToken);
-
-        public abstract Task<int> SkipAsyncImplementation(CancellationToken cancellationToken);
 
         public static MessageBody For(
             string httpVersion,
@@ -138,11 +136,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
             public override Task<int> ReadAsyncImplementation(ArraySegment<byte> buffer, CancellationToken cancellationToken)
             {
-                return _context.SocketInput.ReadAsync(buffer);
-            }
-            public override Task<int> SkipAsyncImplementation(CancellationToken cancellationToken)
-            {
-                return _context.SocketInput.SkipAsync(4096);
+                return _context.SocketInput.ReadAsync(buffer.Array, buffer.Offset, buffer.Array == null ? 8192 : buffer.Count);
             }
         }
 
@@ -163,35 +157,13 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             {
                 var input = _context.SocketInput;
 
-                var limit = Math.Min(buffer.Count, _inputLength);
+                var limit = buffer.Array == null ? _inputLength : Math.Min(buffer.Count, _inputLength);
                 if (limit == 0)
                 {
                     return 0;
                 }
 
-                var limitedBuffer = new ArraySegment<byte>(buffer.Array, buffer.Offset, limit);
-                var actual = await _context.SocketInput.ReadAsync(limitedBuffer);
-                _inputLength -= actual;
-
-                if (actual == 0)
-                {
-                    throw new InvalidDataException("Unexpected end of request content");
-                }
-
-                return actual;
-            }
-
-            public override async Task<int> SkipAsyncImplementation(CancellationToken cancellationToken)
-            {
-                var input = _context.SocketInput;
-
-                var limit = Math.Min(4096, _inputLength);
-                if (limit == 0)
-                {
-                    return 0;
-                }
-
-                var actual = await _context.SocketInput.SkipAsync(limit);
+                var actual = await _context.SocketInput.ReadAsync(buffer.Array, buffer.Offset, limit);
                 _inputLength -= actual;
 
                 if (actual == 0)
@@ -244,7 +216,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                     }
                     while (_mode == Mode.ChunkData)
                     {
-                        var limit = Math.Min(buffer.Count, _inputLength);
+                        var limit = buffer.Array == null ? _inputLength : Math.Min(buffer.Count, _inputLength);
                         if (limit != 0)
                         {
                             await input;
@@ -253,78 +225,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         var begin = input.ConsumingStart();
                         int actual;
                         var end = begin.CopyTo(buffer.Array, buffer.Offset, limit, out actual);
-                        _inputLength -= actual;
-                        input.ConsumingComplete(end, end);
-
-                        if (_inputLength == 0)
-                        {
-                            _mode = Mode.ChunkSuffix;
-                        }
-                        if (actual != 0)
-                        {
-                            return actual;
-                        }
-                    }
-                    while (_mode == Mode.ChunkSuffix)
-                    {
-                        var scan = input.ConsumingStart();
-                        var consumed = scan;
-                        var ch1 = scan.Take();
-                        var ch2 = scan.Take();
-                        if (ch1 == -1 || ch2 == -1)
-                        {
-                            input.ConsumingComplete(consumed, scan);
-                            await input;
-                        }
-                        else if (ch1 == '\r' && ch2 == '\n')
-                        {
-                            input.ConsumingComplete(scan, scan);
-                            _mode = Mode.ChunkPrefix;
-                        }
-                        else
-                        {
-                            throw new NotImplementedException("INVALID REQUEST FORMAT");
-                        }
-                    }
-                }
-
-                return 0;
-            }
-
-            public override async Task<int> SkipAsyncImplementation(CancellationToken cancellationToken)
-            {
-                var input = _context.SocketInput;
-
-                while (_mode != Mode.Complete)
-                {
-                    while (_mode == Mode.ChunkPrefix)
-                    {
-                        var chunkSize = 0;
-                        if (!TakeChunkedLine(input, ref chunkSize))
-                        {
-                            await input;
-                        }
-                        else if (chunkSize == 0)
-                        {
-                            _mode = Mode.Complete;
-                        }
-                        else
-                        {
-                            _mode = Mode.ChunkData;
-                        }
-                        _inputLength = chunkSize;
-                    }
-                    while (_mode == Mode.ChunkData)
-                    {
-                        var limit = Math.Min(4096, _inputLength);
-                        if (limit != 0)
-                        {
-                            await input;
-                        }
-
-                        var begin = input.ConsumingStart();
-                        int actual;
-                        var end = begin.Skip(limit, out actual);
                         _inputLength -= actual;
                         input.ConsumingComplete(end, end);
 

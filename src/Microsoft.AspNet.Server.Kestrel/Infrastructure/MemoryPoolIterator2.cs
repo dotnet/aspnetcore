@@ -600,51 +600,28 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
                 if (remaining <= following)
                 {
                     actual = count;
-                    Buffer.BlockCopy(block.Array, index, array, offset, remaining);
+                    if (array != null)
+                    {
+                        Buffer.BlockCopy(block.Array, index, array, offset, remaining);
+                    }
                     return new MemoryPoolIterator2(block, index + remaining);
                 }
                 else if (block.Next == null)
                 {
                     actual = count - remaining + following;
-                    Buffer.BlockCopy(block.Array, index, array, offset, following);
+                    if (array != null)
+                    {
+                        Buffer.BlockCopy(block.Array, index, array, offset, following);
+                    }
                     return new MemoryPoolIterator2(block, index + following);
                 }
                 else
                 {
-                    Buffer.BlockCopy(block.Array, index, array, offset, following);
+                    if (array != null)
+                    {
+                        Buffer.BlockCopy(block.Array, index, array, offset, following);
+                    }
                     offset += following;
-                    remaining -= following;
-                    block = block.Next;
-                    index = block.Start;
-                }
-            }
-        }
-        public MemoryPoolIterator2 Skip(int limit, out int actual)
-        {
-            if (IsDefault)
-            {
-                actual = 0;
-                return this;
-            }
-
-            var block = _block;
-            var index = _index;
-            var remaining = limit;
-            while (true)
-            {
-                var following = block.End - index;
-                if (remaining <= following)
-                {
-                    actual = limit;
-                    return new MemoryPoolIterator2(block, index + remaining);
-                }
-                else if (block.Next == null)
-                {
-                    actual = limit - remaining + following;
-                    return new MemoryPoolIterator2(block, index + following);
-                }
-                else
-                {
                     remaining -= following;
                     block = block.Next;
                     index = block.Start;
