@@ -38,20 +38,22 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             return result;
         }
 
-        public Task<int> SkipAsync(CancellationToken cancellationToken = default(CancellationToken))
+        public async Task Consume(CancellationToken cancellationToken = default(CancellationToken))
         {
-            Task<int> result = null;
-            var send100Continue = 0;
-            result = SkipAsyncImplementation(cancellationToken);
-            if (!result.IsCompleted)
+            Task<int> result;
+            do
             {
-                send100Continue = Interlocked.Exchange(ref _send100Continue, 0);
-            }
-            if (send100Continue == 1)
-            {
-                _context.FrameControl.ProduceContinue();
-            }
-            return result;
+                var send100Continue = 0;
+                result = SkipAsyncImplementation(cancellationToken);
+                if (!result.IsCompleted)
+                {
+                    send100Continue = Interlocked.Exchange(ref _send100Continue, 0);
+                }
+                if (send100Continue == 1)
+                {
+                    _context.FrameControl.ProduceContinue();
+                }
+            } while (await result != 0);
         }
 
         public abstract Task<int> ReadAsyncImplementation(ArraySegment<byte> buffer, CancellationToken cancellationToken);

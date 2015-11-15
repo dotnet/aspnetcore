@@ -232,10 +232,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
                             await ProduceEnd();
 
-                            while (await MessageBody.SkipAsync() != 0)
-                            {
-                                // Finish reading the request body in case the app did not.
-                            }
+                            // Finish reading the request body in case the app did not.
+                            await MessageBody.Consume();
                         }
 
                         terminated = !_keepAlive;
