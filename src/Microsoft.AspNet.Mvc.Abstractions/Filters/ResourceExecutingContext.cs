@@ -27,12 +27,12 @@ namespace Microsoft.AspNet.Mvc.Filters
         /// <summary>
         /// Gets or sets the list of <see cref="IInputFormatter"/> instances used by model binding.
         /// </summary>
-        public virtual IList<IInputFormatter> InputFormatters { get; set; }
+        public virtual FormatterCollection<IInputFormatter> InputFormatters { get; set; }
 
         /// <summary>
         /// Gets or sets the list of <see cref="IOutputFormatter"/> instances used to format the response.
         /// </summary>
-        public virtual IList<IOutputFormatter> OutputFormatters { get; set; }
+        public virtual FormatterCollection<IOutputFormatter> OutputFormatters { get; set; }
 
         /// <summary>
         /// Gets or sets the list of <see cref="IModelBinder"/> instances used by model binding.
@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.Mvc.Filters
         public virtual IList<IModelBinder> ModelBinders { get; set; }
 
         /// <summary>
-        /// Gets or sets the result of the action to be executed. 
+        /// Gets or sets the result of the action to be executed.
         /// </summary>
         /// <remarks>
         /// Setting <see cref="Result"/> to a non-<c>null</c> value inside a resource filter will

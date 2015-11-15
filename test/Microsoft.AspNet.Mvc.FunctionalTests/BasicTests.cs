@@ -7,6 +7,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Reflection;
+using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
@@ -345,6 +346,35 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Assert
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task ResourceFilter_CreatesSpecificInputAndOutputFormatters()
+        {
+            // Arrange
+            var input = "{\"fullName\":\"John Doe\"}";
+
+            // Act
+            var response = await Client.PostAsync(
+                "http://localhost/api/ActionUsingSpecificFormatters",
+                new StringContent(input, Encoding.UTF8, "application/json"));
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(input, await response.Content.ReadAsStringAsync());
+
+            // Make sure it does not affect other actions
+            //Arrange
+            input = "{\"FullName\":\"John Doe\"}";
+
+            // Act
+            response = await Client.PostAsync(
+                "http://localhost/api/ActionUsingGlobalFormatters",
+                new StringContent(input, Encoding.UTF8, "application/json"));
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(input, await response.Content.ReadAsStringAsync());
         }
     }
 }

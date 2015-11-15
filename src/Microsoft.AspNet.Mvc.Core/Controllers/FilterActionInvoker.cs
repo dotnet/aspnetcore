@@ -49,7 +49,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
 
         private ResultExecutingContext _resultExecutingContext;
         private ResultExecutedContext _resultExecutedContext;
-        
+
         public FilterActionInvoker(
             ActionContext actionContext,
             IReadOnlyList<IFilterProvider> filterProviders,
@@ -334,8 +334,10 @@ namespace Microsoft.AspNet.Mvc.Controllers
 
             var context = new ResourceExecutingContext(ActionContext, _filters);
 
-            context.InputFormatters = new CopyOnWriteList<IInputFormatter>(_inputFormatters);
-            context.OutputFormatters = new CopyOnWriteList<IOutputFormatter>(_outputFormatters);
+            context.InputFormatters = new FormatterCollection<IInputFormatter>(
+                new CopyOnWriteList<IInputFormatter>(_inputFormatters));
+            context.OutputFormatters = new FormatterCollection<IOutputFormatter>(
+                new CopyOnWriteList<IOutputFormatter>(_outputFormatters));
             context.ModelBinders = new CopyOnWriteList<IModelBinder>(_modelBinders);
             context.ValidatorProviders = new CopyOnWriteList<IModelValidatorProvider>(_modelValidatorProviders);
             context.ValueProviderFactories = new CopyOnWriteList<IValueProviderFactory>(_valueProviderFactories);
@@ -411,7 +413,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
                     {
                         // Short-circuited by setting a result.
                         Logger.ResourceFilterShortCircuited(item.Filter);
-                        
+
                         await InvokeResultAsync(_resourceExecutingContext.Result);
 
                         _resourceExecutedContext = new ResourceExecutedContext(_resourceExecutingContext, _filters)
