@@ -231,6 +231,18 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             }
         }
 
+        CancellationToken IHttpRequestLifetimeFeature.RequestAborted
+        {
+            get
+            {
+                return RequestAborted;
+            }
+            set
+            {
+                RequestAborted = value;
+            }
+        }
+
         bool IHttpResponseFeature.HasStarted
         {
             get { return HasResponseStarted; }
@@ -262,8 +274,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         int IHttpConnectionFeature.LocalPort { get; set; }
 
         bool IHttpConnectionFeature.IsLocal { get; set; }
-
-        CancellationToken IHttpRequestLifetimeFeature.RequestAborted { get; set; }
 
         object IFeatureCollection.this[Type key]
         {

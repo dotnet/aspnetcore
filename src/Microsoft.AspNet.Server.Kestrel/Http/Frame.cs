@@ -89,6 +89,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         public Stream DuplexStream { get; set; }
 
+        public CancellationToken RequestAborted { get; set; }
+
         public bool HasResponseStarted
         {
             get { return _responseStarted; }
@@ -241,7 +243,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         DuplexStream = new FrameDuplexStream(RequestBody, ResponseBody);
 
                         _requestAbortCts = CancellationTokenSource.CreateLinkedTokenSource(_disconnectCts.Token);
-                        ((IHttpRequestLifetimeFeature)this).RequestAborted = _requestAbortCts.Token;
+                        RequestAborted = _requestAbortCts.Token;
 
                         var httpContext = HttpContextFactory.Create(this);
                         try
