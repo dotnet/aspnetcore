@@ -16,7 +16,6 @@
             "Microsoft.AspNet.Http.Features": { },
             "Microsoft.AspNet.Owin": { },
             "Microsoft.AspNet.WebUtilities": { },
-            "Microsoft.Extensions.BufferedHtmlContent.Sources": { },
             "Microsoft.Extensions.WebEncoders": { },
             "Microsoft.Net.Http.Headers": { }
         }
