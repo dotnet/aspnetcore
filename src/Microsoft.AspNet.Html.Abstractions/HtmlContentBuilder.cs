@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.Html.Abstractions
         /// <param name="entries">
         /// The list of entries. The <see cref="HtmlContentBuilder"/> will use this list without making a copy.
         /// </param>
-        public HtmlContentBuilder(List<object> entries)
+        public HtmlContentBuilder(IList<object> entries)
         {
             if (entries == null)
             {
@@ -53,7 +53,7 @@ namespace Microsoft.AspNet.Html.Abstractions
         // a wrapper when encoded strings are used.
         //
         // internal for testing.
-        internal List<object> Entries { get; }
+        internal IList<object> Entries { get; }
 
         /// <inheritdoc />
         public IHtmlContentBuilder Append(string unencoded)
@@ -109,8 +109,10 @@ namespace Microsoft.AspNet.Html.Abstractions
                 throw new ArgumentNullException(nameof(encoder));
             }
 
-            foreach (var entry in Entries)
+            for (var i = 0; i < Entries.Count; i++)
             {
+                var entry = Entries[i];
+
                 var entryAsString = entry as string;
                 if (entryAsString != null)
                 {
