@@ -15,7 +15,7 @@ namespace MusicStore.Models
     {
         const string imgUrl = "~/Images/placeholder.png";
         const string defaultAdminUserName = "DefaultAdminUserName";
-        const string defaultAdminPassword = "defaultAdminPassword";
+        const string defaultAdminPassword = "DefaultAdminPassword";
 
         public static async Task InitializeMusicStoreDatabaseAsync(IServiceProvider serviceProvider, bool createUsers = true)
         {
