@@ -6,7 +6,7 @@ addons:
     packages:
       - libunwind8
 env:
-  - KOREBUILD_DNU_RESTORE_CORECLR=true
+  - KOREBUILD_DNU_RESTORE_CORECLR=true KOREBUILD_TEST_DNXCORE=true
 install:
   - curl -sSL https://github.com/libuv/libuv/archive/v1.4.2.tar.gz | tar zxfv - -C /tmp && cd /tmp/libuv-1.4.2/
   - sh autogen.sh
@@ -16,5 +16,4 @@ install:
   - export LD_LIBRARY_PATH="$HOME/libuvinstall/lib"
   - cd $OLDPWD
 script:
-  - export KOREBUILD_TEST_DNXCORE=1
   - ./build.sh --quiet verify
