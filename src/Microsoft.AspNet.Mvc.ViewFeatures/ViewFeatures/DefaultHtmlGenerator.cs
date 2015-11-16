@@ -776,7 +776,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                 return null;
             }
 
-            var wrappedMessage = new BufferedHtmlContent();
+            var wrappedMessage = new HtmlContentBuilder();
             if (!string.IsNullOrEmpty(message))
             {
                 if (string.IsNullOrEmpty(headerTag))
@@ -1418,7 +1418,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
 
         private IHtmlContent GenerateGroupsAndOptions(string optionLabel, IEnumerable<SelectListItem> selectList)
         {
-            var listItemBuilder = new BufferedHtmlContent();
+            var listItemBuilder = new HtmlContentBuilder();
 
             // Make optionLabel the first item that gets rendered.
             if (optionLabel != null)

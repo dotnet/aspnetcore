@@ -3,7 +3,7 @@
 
 using System;
 using System.Text.Encodings.Web;
-using Microsoft.AspNet.Mvc.ViewFeatures;
+using Microsoft.AspNet.Html.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNet.Mvc.Rendering

@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             }
 
             TagName = tagName;
-            InnerHtml = new BufferedHtmlContent();
+            InnerHtml = new HtmlContentBuilder();
         }
 
         /// <summary>

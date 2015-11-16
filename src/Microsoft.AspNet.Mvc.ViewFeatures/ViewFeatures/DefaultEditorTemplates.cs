@@ -86,7 +86,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                 viewData.TemplateInfo.HtmlFieldPrefix = string.Empty;
 
                 var fieldNameBase = oldPrefix;
-                var result = new BufferedHtmlContent();
+                var result = new HtmlContentBuilder();
                 var viewEngine = serviceProvider.GetRequiredService<ICompositeViewEngine>();
 
                 var index = 0;
@@ -141,7 +141,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             var viewData = htmlHelper.ViewData;
             var model = viewData.Model;
 
-            var result = new BufferedHtmlContent();
+            var result = new HtmlContentBuilder();
             if (!viewData.ModelMetadata.HideSurroundingHtml)
             {
                 result.Append(DefaultDisplayTemplates.StringTemplate(htmlHelper));
@@ -247,7 +247,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             var serviceProvider = htmlHelper.ViewContext.HttpContext.RequestServices;
             var viewEngine = serviceProvider.GetRequiredService<ICompositeViewEngine>();
 
-            var content = new BufferedHtmlContent();
+            var content = new HtmlContentBuilder();
             foreach (var propertyExplorer in modelExplorer.Properties)
             {
                 var propertyMetadata = propertyExplorer.Metadata;
