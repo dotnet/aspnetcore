@@ -55,7 +55,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Https
                     sslStream = new SslStream(context.Connection, leaveInnerStreamOpen: false,
                         userCertificateValidationCallback: (sender, certificate, chain, sslPolicyErrors) =>
                         {
-                            Console.WriteLine("callback type: " + (certificate is X509Certificate2));
                             if (certificate == null)
                             {
                                 return _options.ClientCertificateMode != ClientCertificateMode.RequireCertificate;
@@ -94,7 +93,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Https
                         });
                     await sslStream.AuthenticateAsServerAsync(_options.ServerCertificate, clientCertificateRequired: true,
                         enabledSslProtocols: _options.SslProtocols, checkCertificateRevocation: _options.CheckCertificateRevocation);
-                    Console.WriteLine("remote type: " + (sslStream.RemoteCertificate is X509Certificate2));
                 }
 
                 var previousPrepareRequest = context.PrepareRequest;
