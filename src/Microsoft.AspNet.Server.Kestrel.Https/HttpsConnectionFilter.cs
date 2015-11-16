@@ -14,28 +14,25 @@ namespace Microsoft.AspNet.Server.Kestrel.Https
 {
     public class HttpsConnectionFilter : IConnectionFilter
     {
-        private readonly X509Certificate2 _serverCert;
-        private readonly ClientCertificateMode _clientCertMode;
-        private readonly ClientCertificateValidationCallback _clientValidationCallback;
+        private readonly HttpsConnectionFilterOptions _options;
         private readonly IConnectionFilter _previous;
-        private readonly SslProtocols _sslProtocols;
-        private X509Certificate2 _clientCert;
 
         public HttpsConnectionFilter(HttpsConnectionFilterOptions options, IConnectionFilter previous)
         {
-            if (options.ServerCertificate == null)
+            if (options == null)
             {
-                throw new ArgumentNullException(nameof(options.ServerCertificate));
+                throw new ArgumentNullException(nameof(options));
             }
             if (previous == null)
             {
                 throw new ArgumentNullException(nameof(previous));
             }
+            if (options.ServerCertificate == null)
+            {
+                throw new ArgumentException("The server certificate parameter is required.");
+            }
 
-            _serverCert = options.ServerCertificate;
-            _clientCertMode = options.ClientCertificateMode;
-            _clientValidationCallback = options.ClientCertificateValidation;
-            _sslProtocols = options.SslProtocols;
+            _options = options;
             _previous = previous;
         }
 
@@ -45,67 +42,75 @@ namespace Microsoft.AspNet.Server.Kestrel.Https
 
             if (string.Equals(context.Address.Scheme, "https", StringComparison.OrdinalIgnoreCase))
             {
+                X509Certificate2 clientCertificate = null;
                 SslStream sslStream;
-                if (_clientCertMode == ClientCertificateMode.NoCertificate)
+                if (_options.ClientCertificateMode == ClientCertificateMode.NoCertificate)
                 {
                     sslStream = new SslStream(context.Connection);
-                    await sslStream.AuthenticateAsServerAsync(_serverCert, clientCertificateRequired: false,
-                        enabledSslProtocols: _sslProtocols, checkCertificateRevocation: false);
+                    await sslStream.AuthenticateAsServerAsync(_options.ServerCertificate, clientCertificateRequired: false,
+                        enabledSslProtocols: _options.SslProtocols, checkCertificateRevocation: _options.CheckCertificateRevocation);
                 }
                 else
                 {
                     sslStream = new SslStream(context.Connection, leaveInnerStreamOpen: false,
                         userCertificateValidationCallback: (sender, certificate, chain, sslPolicyErrors) =>
                         {
-                            if (sslPolicyErrors.HasFlag(SslPolicyErrors.RemoteCertificateNotAvailable))
+                            Console.WriteLine("callback type: " + (certificate is X509Certificate2));
+                            if (certificate == null)
                             {
-                                return _clientCertMode != ClientCertificateMode.RequireCertificate;
+                                return _options.ClientCertificateMode != ClientCertificateMode.RequireCertificate;
                             }
 
-
-                            if (_clientValidationCallback == null)
+                            if (_options.ClientCertificateValidation == null)
                             {
                                 if (sslPolicyErrors != SslPolicyErrors.None)
                                 {
                                     return false;
                                 }
                             }
-#if DOTNET5_4
-                            // conversion X509Certificate to X509Certificate2 not supported
-                            // https://github.com/dotnet/corefx/issues/4510
-                            X509Certificate2 certificate2 = null;
-                            return false;
-#else
-                            X509Certificate2 certificate2 = certificate as X509Certificate2 ??
-                                                            new X509Certificate2(certificate);
 
-#endif
-                            if (_clientValidationCallback != null)
+                            X509Certificate2 certificate2 = certificate as X509Certificate2;
+                            if (certificate2 == null)
                             {
-                                if (!_clientValidationCallback(certificate2, chain, sslPolicyErrors))
+#if DOTNET5_4
+                                // conversion X509Certificate to X509Certificate2 not supported
+                                // https://github.com/dotnet/corefx/issues/4510
+                                return false;
+#else
+                                certificate2 = new X509Certificate2(certificate);
+#endif
+                            }
+
+                            if (_options.ClientCertificateValidation != null)
+                            {
+                                if (!_options.ClientCertificateValidation(certificate2, chain, sslPolicyErrors))
                                 {
                                     return false;
                                 }
                             }
 
-                            _clientCert = certificate2;
+                            clientCertificate = certificate2;
                             return true;
                         });
-                    await sslStream.AuthenticateAsServerAsync(_serverCert, clientCertificateRequired: true,
-                        enabledSslProtocols: _sslProtocols, checkCertificateRevocation: false);
+                    await sslStream.AuthenticateAsServerAsync(_options.ServerCertificate, clientCertificateRequired: true,
+                        enabledSslProtocols: _options.SslProtocols, checkCertificateRevocation: _options.CheckCertificateRevocation);
+                    Console.WriteLine("remote type: " + (sslStream.RemoteCertificate is X509Certificate2));
                 }
+
+                var previousPrepareRequest = context.PrepareRequest;
+                context.PrepareRequest = features =>
+                    {
+                        previousPrepareRequest?.Invoke(features);
+
+                        if (clientCertificate != null)
+                        {
+                            features.Set<ITlsConnectionFeature>(
+                                new TlsConnectionFeature {ClientCertificate = clientCertificate});
+                        }
+
+                        features.Get<IHttpRequestFeature>().Scheme = "https";
+                    };
                 context.Connection = sslStream;
-            }
-        }
-
-        public void PrepareRequest(IFeatureCollection features)
-        {
-            _previous.PrepareRequest(features);
-
-            if (_clientCert != null)
-            {
-                features.Set<ITlsConnectionFeature>(
-                    new TlsConnectionFeature { ClientCertificate = _clientCert });
             }
         }
     }

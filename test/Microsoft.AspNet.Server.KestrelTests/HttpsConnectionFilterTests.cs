@@ -122,7 +122,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
 
                 using (var server = new TestServer(App, serviceContext, serverAddress))
                 {
-                    using (var client = new HttpClient())
+                    using (var client = new HttpClient(handler))
                     {
                         await Assert.ThrowsAnyAsync<Exception>(
                             () => client.GetAsync(serverAddress));
@@ -136,10 +136,6 @@ namespace Microsoft.AspNet.Server.KestrelTests
 #endif
             }
         }
-
-        // https://github.com/dotnet/corefx/issues/4512
-        // WinHttpHandler throws an Exception (ERROR_INTERNET_SECURE_FAILURE)
-#if DNX451
 
         // https://github.com/aspnet/KestrelHttpServer/issues/240
         // This test currently fails on mono because of an issue with SslStream.
@@ -181,7 +177,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
 
                 using (var server = new TestServer(app, serviceContext, serverAddress))
                 {
-                    using (var client = new HttpClient())
+                    using (var client = new HttpClient(handler))
                     {
                         var result = await client.GetAsync(serverAddress);
 
@@ -196,11 +192,6 @@ namespace Microsoft.AspNet.Server.KestrelTests
 #endif
             }
         }
-#endif
-
-        // https://github.com/dotnet/corefx/issues/4510
-        // Can't convert X509Certificate to X509Certificate2 in HttpsConnectionFilter
-#if DNX451
 
         // https://github.com/aspnet/KestrelHttpServer/issues/240
         // This test currently fails on mono because of an issue with SslStream.
@@ -269,7 +260,6 @@ namespace Microsoft.AspNet.Server.KestrelTests
 #endif
     }
 }
-#endif
 
     }
 }

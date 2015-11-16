@@ -95,9 +95,6 @@ namespace Microsoft.AspNet.Server.KestrelTests
                 return _empty;
             }
 
-            public void PrepareRequest(IFeatureCollection frame)
-            {}
-
             public int BytesRead => _rewritingStream.BytesRead;
         }
 
@@ -113,9 +110,6 @@ namespace Microsoft.AspNet.Server.KestrelTests
 
                 context.Connection = new RewritingStream(oldConnection);
             }
-
-            public void PrepareRequest(IFeatureCollection frame)
-            {}
         }
 
         private class RewritingStream : Stream

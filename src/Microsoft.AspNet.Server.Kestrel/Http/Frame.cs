@@ -56,22 +56,22 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         private readonly IPEndPoint _localEndPoint;
         private readonly IPEndPoint _remoteEndPoint;
-        private readonly IConnectionFilter _connectionFilter;
+        private readonly Action<IFeatureCollection> _prepareRequest;
 
         public Frame(ConnectionContext context)
-            : this(context, remoteEndPoint: null, localEndPoint: null, connectionFilter: null)
+            : this(context, remoteEndPoint: null, localEndPoint: null, prepareRequest: null)
         {
         }
 
         public Frame(ConnectionContext context,
                      IPEndPoint remoteEndPoint,
                      IPEndPoint localEndPoint,
-                     IConnectionFilter connectionFilter)
+                     Action<IFeatureCollection> prepareRequest)
             : base(context)
         {
             _remoteEndPoint = remoteEndPoint;
             _localEndPoint = localEndPoint;
-            _connectionFilter = connectionFilter;
+            _prepareRequest = prepareRequest;
 
             FrameControl = this;
             Reset();
