@@ -25,7 +25,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [InlineData("http://localhost/Other/FromFilter")]
         [InlineData("http://localhost/Other/FromView")]
         [InlineData("http://localhost/Other/FromViewComponent")]
-        [InlineData("http://localhost/Other/FromModelProperty")]
         [InlineData("http://localhost/Other/FromActionArgument")]
         public async Task RequestServices(string url)
         {
@@ -40,6 +39,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                 var response = await Client.SendAsync(request);
 
                 // Assert
+                response.EnsureSuccessStatusCode();
                 var body = (await response.Content.ReadAsStringAsync()).Trim();
                 Assert.Equal(requestId, body);
             }

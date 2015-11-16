@@ -4,7 +4,6 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNet.Mvc;
-using ModelBindingWebSite.Services;
 
 namespace ModelBindingWebSite.ViewModels
 {
@@ -17,23 +16,28 @@ namespace ModelBindingWebSite.ViewModels
         [FromBody]
         public VehicleViewModel Vehicle { get; set; }
 
-        [FromServices]
-        public ILocationService LocationService { get; set; }
-
         [FromHeader(Name = "X-TrackingId")]
         public string TrackingId { get; set; } = "default-tracking-id";
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
-            if (!LocationService.IsValidMakeForRegion(Vehicle.Make, Dealer.Location))
+            if (!IsValidMakeForRegion(Vehicle.Make, Dealer.Location))
             {
                 yield return new ValidationResult("Make is invalid for region.");
             }
         }
 
-        public void Update()
+        public bool IsValidMakeForRegion(string make, string region)
         {
-            LocationService.Update(this);
+            switch (make)
+            {
+                case "Acme":
+                    return region == "NW" || "region" == "South Central";
+                case "FastCars":
+                    return region != "Central";
+            }
+
+            return true;
         }
     }
 }

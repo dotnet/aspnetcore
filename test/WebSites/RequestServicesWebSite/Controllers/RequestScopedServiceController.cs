@@ -8,13 +8,10 @@ namespace RequestServicesWebSite
     [Route("RequestScoped/[action]")]
     public class RequestScopedServiceController
     {
-        [FromServices]
-        public RequestIdService RequestIdService { get; set; }
-
         [HttpGet]
-        public string FromController()
+        public string FromController([FromServices] RequestIdService requestIdService)
         {
-            return RequestIdService.RequestId;
+            return requestIdService.RequestId;
         }
     }
 }

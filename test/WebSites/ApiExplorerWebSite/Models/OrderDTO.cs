@@ -7,9 +7,6 @@ namespace ApiExplorerWebSite
 {
     public class OrderDTO
     {
-        [FromServices]
-        public IOrderRepository Repository { get; set; }
-
         public string CustomerId { get; set; }
 
         [FromHeader(Name = "Referrer")]

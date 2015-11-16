@@ -7,25 +7,9 @@ using Microsoft.AspNet.Mvc.ModelBinding;
 namespace Microsoft.AspNet.Mvc
 {
     /// <summary>
-    /// Specifies that a parameter or property should be bound using the request services.
+    /// Specifies that an action parameter should be bound using the request services.
     /// </summary>
     /// <example>
-    /// In this example, the LocationService property on the VehicleWithDealerViewModel class 
-    /// will be bound to the value resolved for the ILocationService service from the request services.
-    ///
-    /// <code> 
-    /// public class VehicleWithDealerViewModel 
-    /// {
-    ///     [FromServices]
-    ///     public ILocationService LocationService { get; set; }
-    ///
-    ///     public void Update()
-    ///     {
-    ///         LocationService.Update();
-    ///     }
-    /// }
-    /// </code> 
-    ///
     /// In this example an implementation of IProductModelRequestService is registered as a service.
     /// Then in the GetProduct action, the parameter is bound to an instance of IProductModelRequestService
     /// which is resolved from the the request services.
@@ -38,10 +22,10 @@ namespace Microsoft.AspNet.Mvc
     /// }
     /// </code>
     /// </example> 
-    [AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
+    [AttributeUsage(AttributeTargets.Parameter, AllowMultiple = false, Inherited = true)]
     public class FromServicesAttribute : Attribute, IBindingSourceMetadata
     {
         /// <inheritdoc />
-        public BindingSource BindingSource { get { return BindingSource.Services; } }
+        public BindingSource BindingSource => BindingSource.Services;
     }
 }

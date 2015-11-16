@@ -258,176 +258,6 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.True(modelState.IsValid);
         }
 
-        private class Order2
-        {
-            public int ProductId { get; set; }
-
-            public Person2 Customer { get; set; }
-        }
-
-        private class Person2
-        {
-            public string Name { get; set; }
-
-            [FromServices]
-            public IActionBindingContextAccessor BindingContext { get; set; }
-        }
-
-        [Fact]
-        public async Task MutableObjectModelBinder_BindsNestedPOCO_WithServicesModelBinder_WithPrefix_Success()
-        {
-            // Arrange
-            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
-            var parameter = new ParameterDescriptor()
-            {
-                Name = "parameter",
-                ParameterType = typeof(Order2)
-            };
-
-            // Need to have a key here so that the MutableObjectModelBinder will recurse to bind elements.
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
-            {
-                request.QueryString = new QueryString("?parameter.Customer.Name=bill");
-            });
-
-            var modelState = new ModelStateDictionary();
-
-            // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
-
-            // Assert
-            Assert.True(modelBindingResult.IsModelSet);
-
-            var model = Assert.IsType<Order2>(modelBindingResult.Model);
-            Assert.NotNull(model.Customer);
-            Assert.Equal("bill", model.Customer.Name);
-            Assert.NotNull(model.Customer.BindingContext);
-
-            Assert.Equal(1, modelState.Count);
-            Assert.Equal(0, modelState.ErrorCount);
-            Assert.True(modelState.IsValid);
-
-            var entry = Assert.Single(modelState, e => e.Key == "parameter.Customer.Name").Value;
-            Assert.Equal("bill", entry.AttemptedValue);
-            Assert.Equal("bill", entry.RawValue);
-        }
-
-        [Fact]
-        public async Task MutableObjectModelBinder_BindsNestedPOCO_WithServicesModelBinder_WithEmptyPrefix_Success()
-        {
-            // Arrange
-            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
-            var parameter = new ParameterDescriptor()
-            {
-                Name = "parameter",
-                ParameterType = typeof(Order2)
-            };
-
-            // Need to have a key here so that the MutableObjectModelBinder will recurse to bind elements.
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
-            {
-                request.QueryString = new QueryString("?Customer.Name=bill");
-            });
-
-            var modelState = new ModelStateDictionary();
-
-            // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
-
-            // Assert
-            Assert.True(modelBindingResult.IsModelSet);
-
-            var model = Assert.IsType<Order2>(modelBindingResult.Model);
-            Assert.NotNull(model.Customer);
-            Assert.Equal("bill", model.Customer.Name);
-            Assert.NotNull(model.Customer.BindingContext);
-
-            Assert.Equal(1, modelState.Count);
-            Assert.Equal(0, modelState.ErrorCount);
-            Assert.True(modelState.IsValid);
-
-            var entry = Assert.Single(modelState, e => e.Key == "Customer.Name").Value;
-            Assert.Equal("bill", entry.AttemptedValue);
-            Assert.Equal("bill", entry.RawValue);
-        }
-
-        // We don't provide enough data in this test for the 'Person' model to be created. So even though there is
-        // a [FromServices], it won't be used.
-        [Fact]
-        public async Task MutableObjectModelBinder_BindsNestedPOCO_WithServicesModelBinder_WithPrefix_PartialData()
-        {
-            // Arrange
-            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
-            var parameter = new ParameterDescriptor()
-            {
-                Name = "parameter",
-                ParameterType = typeof(Order2)
-            };
-
-            // Need to have a key here so that the MutableObjectModelBinder will recurse to bind elements.
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
-            {
-                request.QueryString = new QueryString("?parameter.ProductId=10");
-                SetJsonBodyContent(request, AddressBodyContent);
-            });
-
-            var modelState = new ModelStateDictionary();
-
-            // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
-
-            // Assert
-            Assert.True(modelBindingResult.IsModelSet);
-
-            var model = Assert.IsType<Order2>(modelBindingResult.Model);
-            Assert.Null(model.Customer);
-            Assert.Equal(10, model.ProductId);
-
-            Assert.Equal(1, modelState.Count);
-            Assert.Equal(0, modelState.ErrorCount);
-            Assert.True(modelState.IsValid);
-
-            var entry = Assert.Single(modelState, e => e.Key == "parameter.ProductId").Value;
-            Assert.Equal("10", entry.AttemptedValue);
-            Assert.Equal("10", entry.RawValue);
-        }
-
-        // We don't provide enough data in this test for the 'Person' model to be created. So even though there is
-        // a [FromServices], it won't be used.
-        [Fact]
-        public async Task MutableObjectModelBinder_BindsNestedPOCO_WithServicesModelBinder_WithPrefix_NoData()
-        {
-            // Arrange
-            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
-            var parameter = new ParameterDescriptor()
-            {
-                Name = "parameter",
-                ParameterType = typeof(Order2)
-            };
-
-            // Need to have a key here so that the MutableObjectModelBinder will recurse to bind elements.
-            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
-            {
-                request.QueryString = new QueryString("?");
-                SetJsonBodyContent(request, AddressBodyContent);
-            });
-
-            var modelState = new ModelStateDictionary();
-
-            // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
-
-            // Assert
-            Assert.True(modelBindingResult.IsModelSet);
-
-            var model = Assert.IsType<Order2>(modelBindingResult.Model);
-            Assert.Null(model.Customer);
-
-            Assert.Equal(0, modelState.Count);
-            Assert.Equal(0, modelState.ErrorCount);
-            Assert.True(modelState.IsValid);
-        }
-
         private class Order3
         {
             public int ProductId { get; set; }
@@ -1489,9 +1319,6 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
         {
             [FromBody]
             public Address1 Address { get; set; }
-
-            [FromServices]
-            public IActionBindingContextAccessor BindingContext { get; set; }
         }
 
         // If a nested POCO object has all properties bound from a greedy source, then it should be populated
@@ -1524,7 +1351,6 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
             var model = Assert.IsType<Order9>(modelBindingResult.Model);
             Assert.NotNull(model.Customer);
-            Assert.NotNull(model.Customer.BindingContext);
             Assert.NotNull(model.Customer.Address);
             Assert.Equal(AddressStreetContent, model.Customer.Address.Street);
 

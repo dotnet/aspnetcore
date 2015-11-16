@@ -8,9 +8,6 @@ namespace HtmlGenerationWebSite.Controllers
 {
     public class Catalog_CacheTagHelperController : Controller
     {
-        [FromServices]
-        public ProductsService ProductsService { get; set; }
-
         [HttpGet("/catalog")]
         public IActionResult Splash(int categoryId, int correlationId, [FromHeader] string locale)
         {
@@ -75,9 +72,9 @@ namespace HtmlGenerationWebSite.Controllers
         }
 
         [HttpPost("/categories/update-products")]
-        public void UpdateCategories()
+        public void UpdateCategories([FromServices] ProductsService productsService)
         {
-            ProductsService.UpdateProducts();
+            productsService.UpdateProducts();
         }
 
         [HttpGet("/catalog/GetDealPercentage/{dealPercentage}")]

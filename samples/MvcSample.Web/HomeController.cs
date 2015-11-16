@@ -93,13 +93,12 @@ namespace MvcSample.Web
             return View("MyView", user);
         }
 
-        [FromServices]
-        public IHostingEnvironment HostingEnvironment { get; set; }
-
         /// <summary>
         /// Action that shows multiple file upload.
         /// </summary>
-        public async Task<ActionResult> PostFile(IList<IFormFile> files)
+        public async Task<ActionResult> PostFile(
+            [FromServices] IHostingEnvironment hostingEnvironment,
+            IList<IFormFile> files)
         {
             if (!ModelState.IsValid)
             {
@@ -108,7 +107,7 @@ namespace MvcSample.Web
 
             foreach (var f in files)
             {
-                await f.SaveAsAsync(Path.Combine(HostingEnvironment.WebRootPath, "test-file" + files.IndexOf(f)));
+                await f.SaveAsAsync(Path.Combine(hostingEnvironment.WebRootPath, "test-file" + files.IndexOf(f)));
             }
             return View();
         }

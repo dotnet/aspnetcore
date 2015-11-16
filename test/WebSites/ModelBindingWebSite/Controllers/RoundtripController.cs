@@ -18,7 +18,11 @@ namespace ModelBindingWebSite.Controllers
         private IHtmlHelper<Person> _personHelper;
         private bool _activated;
 
-        [FromServices]
+        public RoundtripController(IHtmlHelper<Person> personHelper)
+        {
+            _personHelper = personHelper;
+        }
+
         public IHtmlHelper<Person> PersonHelper
         {
             get
@@ -35,14 +39,10 @@ namespace ModelBindingWebSite.Controllers
                         TextWriter.Null,
                         new HtmlHelperOptions());
 
-                    ((ICanHasViewContext)PersonHelper).Contextualize(context);
+                    ((ICanHasViewContext)_personHelper).Contextualize(context);
                 }
 
                 return _personHelper;
-            }
-            set
-            {
-                _personHelper = value;
             }
         }
 

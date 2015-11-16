@@ -15,9 +15,6 @@ namespace WebApiCompatShimWebSite
 {
     public class BasicApiController : ApiController
     {
-        [FromServices]
-        public IOptions<WebApiCompatShimOptions> OptionsAccessor { get; set; }
-
         // Verifies property activation
         [HttpGet]
         public async Task<IActionResult> WriteToHttpContext()
@@ -43,9 +40,9 @@ namespace WebApiCompatShimWebSite
 
         // Verifies the default options configure formatters correctly.
         [HttpGet]
-        public string[] GetFormatters()
+        public string[] GetFormatters([FromServices] IOptions<WebApiCompatShimOptions> optionsAccessor)
         {
-            return OptionsAccessor.Value.Formatters.Select(f => f.GetType().FullName).ToArray();
+            return optionsAccessor.Value.Formatters.Select(f => f.GetType().FullName).ToArray();
         }
 
         [HttpGet]

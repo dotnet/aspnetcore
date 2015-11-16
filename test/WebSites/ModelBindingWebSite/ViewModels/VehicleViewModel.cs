@@ -38,8 +38,9 @@ namespace ModelBindingWebSite.ViewModels
         {
             if (InspectedDates.Any(d => d.Year > Year))
             {
-                yield return new ValidationResult("Inspection date cannot be later than year of manufacture.",
-                                                  new[] { nameof(InspectedDates) });
+                yield return new ValidationResult(
+                    "Inspection date cannot be later than year of manufacture.",
+                    new[] { nameof(InspectedDates) });
             }
         }
 

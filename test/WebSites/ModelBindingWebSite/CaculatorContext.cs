@@ -7,9 +7,6 @@ namespace ModelBindingWebSite
 {
     public class CalculatorContext
     {
-        [FromServices]
-        public ICalculator Calculator { get; set; }
-
         public int Left { get; set; }
 
         public int Right { get; set; }

@@ -8,9 +8,6 @@ namespace ActivatorWebSite
 {
     public class PlainController
     {
-        [FromServices]
-        public MyService Service { get; set; }
-
         [ActionContext]
         public ActionContext ActionContext { get; set; }
 
@@ -18,12 +15,12 @@ namespace ActivatorWebSite
 
         public HttpResponse Response => ActionContext.HttpContext.Response;
 
-        public IActionResult Index()
+        public IActionResult Index([FromServices] MyService service)
         {
             Response.Headers["X-Fake-Header"] = "Fake-Value";
 
             var value = Request.Query["foo"];
-            return new ContentResult { Content = Service.Random + "|" + value };
+            return new ContentResult { Content = service.Random + "|" + value };
         }
     }
 }

@@ -10,9 +10,12 @@ namespace ActionResultsWebSite
 {
     public class ActionResultsVerificationController : Controller
     {
+        public ActionResultsVerificationController(GuidLookupService guidLookupService)
+        {
+            GuidLookupService = guidLookupService;
+        }
 
-        [FromServices]
-        public GuidLookupService Service { get; set; }
+        public GuidLookupService GuidLookupService { get; }
 
         public IActionResult Index([FromBody]DummyClass test)
         {
@@ -107,7 +110,7 @@ namespace ActionResultsWebSite
         public bool GetDisposeCalled(string guid)
         {
             bool value;
-            if (Service.IsDisposed.TryGetValue(guid, out value))
+            if (GuidLookupService.IsDisposed.TryGetValue(guid, out value))
             {
                 return value;
             }
@@ -131,7 +134,7 @@ namespace ActionResultsWebSite
 
         private DisposableType CreateDisposableType(string guid)
         {
-            return new DisposableType(Service, guid);
+            return new DisposableType(GuidLookupService, guid);
         }
 
         private class DisposableType : IDisposable

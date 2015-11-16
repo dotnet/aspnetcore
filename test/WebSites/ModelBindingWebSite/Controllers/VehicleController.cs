@@ -59,7 +59,6 @@ namespace ModelBindingWebSite
                 return PartialView("UpdateVehicle", model);
             }
 
-            model.Update();
             return PartialView("UpdateSuccessful", model);
         }
 

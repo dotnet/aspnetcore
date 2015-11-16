@@ -8,9 +8,6 @@ namespace ModelBindingWebSite.Controllers
     [Route("Validation/[Action]")]
     public class ValidationController : Controller
     {
-        [FromServices]
-        public ITestService ControllerService { get; set; }
-
         public object AvoidRecursive(SelfishPerson selfishPerson)
         {
             return ModelState.IsValid;

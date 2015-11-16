@@ -7,9 +7,9 @@ namespace ModelBindingWebSite.Controllers
 {
     public class FromServices_CalculatorController : Controller
     {
-        public int Calculate(CalculatorContext context)
+        public int Calculate(CalculatorContext context, [FromServices] ICalculator calculator)
         {
-            return context.Calculator.Operation(context.Operator, context.Left, context.Right);
+            return calculator.Operation(context.Operator, context.Left, context.Right);
         }
 
         public int Add(int left, int right, [FromServices] ICalculator calculator)
@@ -17,9 +17,9 @@ namespace ModelBindingWebSite.Controllers
             return calculator.Operation('+', left, right);
         }
 
-        public int CalculateWithPrecision(DefaultCalculatorContext context)
+        public int CalculateWithPrecision(DefaultCalculatorContext context, [FromServices] ICalculator calculator)
         {
-            return context.Calculator.Operation(context.Operator, context.Left, context.Right);
+            return calculator.Operation(context.Operator, context.Left, context.Right);
         }
     }
 }

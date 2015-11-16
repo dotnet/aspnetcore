@@ -10,6 +10,7 @@ using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.AspNet.Mvc.WebApiCompatShim;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json;
 
@@ -22,6 +23,9 @@ namespace System.Web.Http
     public abstract class ApiController : IDisposable
     {
         private HttpRequestMessage _request;
+        private IModelMetadataProvider _metadataProvider;
+        private IObjectModelValidator _objectValidator;
+        private IUrlHelper _urlHelper;
 
         /// <summary>
         /// Gets the action context.
@@ -52,12 +56,42 @@ namespace System.Web.Http
         /// Gets the <see cref="IModelMetadataProvider"/>.
         /// </summary>
         /// <remarks>The setter is intended for unit testing purposes only.</remarks>
-        [FromServices]
-        public IModelMetadataProvider MetadataProvider { get; set; }
+        public IModelMetadataProvider MetadataProvider
+        {
+            get
+            {
+                if (_metadataProvider == null)
+                {
+                    _metadataProvider = Context?.RequestServices?.GetRequiredService<IModelMetadataProvider>();
+                }
 
+                return _metadataProvider;
+            }
+            set
+            {
+                _metadataProvider = value;
+            }
+        }
 
-        [FromServices]
-        public IObjectModelValidator ObjectValidator { get; set; }
+        /// <summary>
+        /// Gets or sets the <see cref="IObjectModelValidator"/>.
+        /// </summary>
+        public IObjectModelValidator ObjectValidator
+        {
+            get
+            {
+                if (_objectValidator == null)
+                {
+                    _objectValidator = Context?.RequestServices?.GetRequiredService<IObjectModelValidator>();
+                }
+
+                return _objectValidator;
+            }
+            set
+            {
+                _objectValidator = value;
+            }
+        }
 
         /// <summary>
         /// Gets model state after the model binding process. This ModelState will be empty before model binding
@@ -96,8 +130,22 @@ namespace System.Web.Http
         /// Gets a factory used to generate URLs to other APIs.
         /// </summary>
         /// <remarks>The setter is intended for unit testing purposes only.</remarks>
-        [FromServices]
-        public IUrlHelper Url { get; set; }
+        public IUrlHelper Url
+        {
+            get
+            {
+                if (_urlHelper == null)
+                {
+                    _urlHelper = Context?.RequestServices?.GetRequiredService<IUrlHelper>();
+                }
+
+                return _urlHelper;
+            }
+            set
+            {
+                _urlHelper = value;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the current principal associated with this request.

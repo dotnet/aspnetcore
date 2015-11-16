@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             // Arrange
             var modelType = typeof(BaseViewModel);
-            var property = modelType.GetRuntimeProperties().FirstOrDefault(p => p.Name == "BaseProperty");
+            var property = modelType.GetRuntimeProperties().FirstOrDefault(p => p.Name == nameof(BaseModel.BaseProperty));
 
             // Act
             var attributes = ModelAttributes.GetAttributesForProperty(modelType, property);
@@ -34,7 +34,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             // Arrange
             var modelType = typeof(BaseViewModel);
-            var property = modelType.GetRuntimeProperties().FirstOrDefault(p => p.Name == "TestProperty");
+            var property = modelType.GetRuntimeProperties().FirstOrDefault(p => p.Name == nameof(BaseModel.TestProperty));
 
             // Act
             var attributes = ModelAttributes.GetAttributesForProperty(modelType, property);
@@ -64,7 +64,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             // Arrange
             var modelType = typeof(DerivedViewModel);
-            var property = modelType.GetRuntimeProperties().FirstOrDefault(p => p.Name == "BaseProperty");
+            var property = modelType.GetRuntimeProperties().FirstOrDefault(p => p.Name == nameof(BaseModel.BaseProperty));
 
             // Act
             var attributes = ModelAttributes.GetAttributesForProperty(modelType, property);
@@ -82,7 +82,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             // Arrange
             var modelType = typeof(DerivedViewModel);
-            var property = modelType.GetRuntimeProperties().FirstOrDefault(p => p.Name == "TestProperty");
+            var property = modelType.GetRuntimeProperties().FirstOrDefault(p => p.Name == nameof(BaseModel.TestProperty));
 
             // Act
             var attributes = ModelAttributes.GetAttributesForProperty(modelType, property);
@@ -102,7 +102,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             // Arrange
             var modelType = typeof(DerivedViewModel);
-            var property = modelType.GetRuntimeProperties().FirstOrDefault(p => p.Name == "VirtualProperty");
+            var property = modelType.GetRuntimeProperties().FirstOrDefault(p => p.Name == nameof(BaseModel.VirtualProperty));
 
             // Act
             var attributes = ModelAttributes.GetAttributesForProperty(modelType, property);
@@ -120,17 +120,17 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             // Arrange
             var modelType = typeof(DerivedViewModel);
-            var property = modelType.GetRuntimeProperties().FirstOrDefault(p => p.Name == "Calculator");
+            var property = modelType.GetRuntimeProperties().FirstOrDefault(p => p.Name == nameof(BaseModel.RouteValue));
 
             // Act
             var attributes = ModelAttributes.GetAttributesForProperty(modelType, property);
 
             // Assert
             Assert.Single(attributes.Attributes.OfType<RequiredAttribute>());
-            Assert.Single(attributes.Attributes.OfType<FromServicesAttribute>());
+            Assert.Single(attributes.Attributes.OfType<FromRouteAttribute>());
 
             Assert.Single(attributes.PropertyAttributes.OfType<RequiredAttribute>());
-            Assert.Single(attributes.PropertyAttributes.OfType<FromServicesAttribute>());
+            Assert.Single(attributes.PropertyAttributes.OfType<FromRouteAttribute>());
         }
 
         [Fact]
@@ -191,8 +191,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             [Required]
             public virtual int VirtualProperty { get; set; }
 
-            [FromServices]
-            public ICalculator Calculator { get; set; }
+            [FromRoute]
+            public string RouteValue { get; set; }
         }
 
         private class DerivedModel : BaseModel
@@ -218,7 +218,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             public string BaseProperty { get; set; }
 
             [Required]
-            public ICalculator Calculator { get; set; }
+            public string RouteValue { get; set; }
         }
 
         [ModelMetadataType(typeof(DerivedModel))]
