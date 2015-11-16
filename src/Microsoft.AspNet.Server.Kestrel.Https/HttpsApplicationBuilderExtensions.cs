@@ -4,9 +4,9 @@
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http.Features;
-using Microsoft.AspNet.Server.Kestrel.Filter;
+using Microsoft.AspNet.Server.Kestrel.Https;
 
-namespace Microsoft.AspNet.Server.Kestrel.Https
+namespace Microsoft.AspNet.Server.Kestrel.Filter
 {
     public static class HttpsApplicationBuilderExtensions
     {

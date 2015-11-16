@@ -8,7 +8,7 @@ using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Server.Kestrel;
-using Microsoft.AspNet.Server.Kestrel.Https;
+using Microsoft.AspNet.Server.Kestrel.Filter;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.PlatformAbstractions;
 
@@ -38,6 +38,8 @@ namespace SampleApp
             {
                 Console.WriteLine("Could not find certificate at '{0}'. HTTPS is not enabled.", testCertPath);
             }
+
+            app.UseKestrelConnectionLogging();
 
             app.Run(async context =>
             {
