@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Threading.Tasks;
@@ -82,10 +83,12 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
             var isNullOrEmptyViewName = string.IsNullOrEmpty(ViewName);
 
             ViewEngineResult result = null;
+            IEnumerable<string> originalLocations = null;
             if (!isNullOrEmptyViewName)
             {
                 // If view name was passed in is already a path, the view engine will handle this.
                 result = viewEngine.GetView(viewContext.ExecutingFilePath, ViewName, isPartial: true);
+                originalLocations = result.SearchedLocations;
             }
 
             if (result == null || !result.Success)
@@ -111,7 +114,7 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
                 result = viewEngine.FindView(viewContext, qualifiedViewName, isPartial: true);
             }
 
-            var view = result.EnsureSuccessful().View;
+            var view = result.EnsureSuccessful(originalLocations).View;
             using (view as IDisposable)
             {
                 if (_diagnosticSource == null)
@@ -121,7 +124,11 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
 
                 _diagnosticSource.ViewComponentBeforeViewExecute(context, view);
 
-                var childViewContext = new ViewContext(viewContext, view, ViewData ?? context.ViewData, context.Writer);
+                var childViewContext = new ViewContext(
+                    viewContext,
+                    view,
+                    ViewData ?? context.ViewData,
+                    context.Writer);
                 await view.RenderAsync(childViewContext);
 
                 _diagnosticSource.ViewComponentAfterViewExecute(context, view);

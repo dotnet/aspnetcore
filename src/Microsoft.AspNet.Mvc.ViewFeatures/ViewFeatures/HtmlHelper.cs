@@ -544,6 +544,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                 ViewContext.ExecutingFilePath,
                 partialViewName,
                 isPartial: true);
+            var originalLocations = viewEngineResult.SearchedLocations;
             if (!viewEngineResult.Success)
             {
                 viewEngineResult = _viewEngine.FindView(ViewContext, partialViewName, isPartial: true);
@@ -552,10 +553,15 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             if (!viewEngineResult.Success)
             {
                 var locations = string.Empty;
-                if (viewEngineResult.SearchedLocations != null)
+                if (originalLocations.Any())
                 {
-                    locations = Environment.NewLine +
-                        string.Join(Environment.NewLine, viewEngineResult.SearchedLocations);
+                    locations = Environment.NewLine + string.Join(Environment.NewLine, originalLocations);
+                }
+
+                if (viewEngineResult.SearchedLocations.Any())
+                {
+                    locations +=
+                        Environment.NewLine + string.Join(Environment.NewLine, viewEngineResult.SearchedLocations);
                 }
 
                 throw new InvalidOperationException(

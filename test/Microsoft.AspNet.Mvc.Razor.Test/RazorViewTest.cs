@@ -368,7 +368,50 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         [Fact]
-        public async Task RenderAsync_ThrowsIfLayoutPageCannotBeFound()
+        public async Task RenderAsync_ThrowsIfLayoutPageCannotBeFound_MessageUsesGetPageLocations()
+        {
+            // Arrange
+            var expected = string.Join(
+                Environment.NewLine,
+                "The layout view 'Does-Not-Exist-Layout' could not be located. The following locations were searched:",
+                "path1",
+                "path2");
+
+            var layoutPath = "Does-Not-Exist-Layout";
+            var page = new TestableRazorPage(v =>
+            {
+                v.Layout = layoutPath;
+            });
+
+            var viewEngine = new Mock<IRazorViewEngine>(MockBehavior.Strict);
+            var activator = new Mock<IRazorPageActivator>();
+            var view = new RazorView(
+                viewEngine.Object,
+                Mock.Of<IRazorPageActivator>(),
+                new IRazorPage[0],
+                page,
+                new HtmlTestEncoder(),
+                isPartial: false);
+            var viewContext = CreateViewContext(view);
+            viewEngine
+                .Setup(v => v.GetPage(/*executingFilePath*/ null, layoutPath, /*isPartial*/ true))
+                .Returns(new RazorPageResult(layoutPath, new[] { "path1", "path2" }))
+                .Verifiable();
+            viewEngine
+                .Setup(v => v.FindPage(viewContext, layoutPath, /*isPartial*/ true))
+                .Returns(new RazorPageResult(layoutPath, Enumerable.Empty<string>()))
+                .Verifiable();
+
+            // Act
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => view.RenderAsync(viewContext));
+
+            // Assert
+            Assert.Equal(expected, ex.Message);
+            viewEngine.Verify();
+        }
+
+        [Fact]
+        public async Task RenderAsync_ThrowsIfLayoutPageCannotBeFound_MessageUsesFindPageLocations()
         {
             // Arrange
             var expected = string.Join(
@@ -400,6 +443,51 @@ namespace Microsoft.AspNet.Mvc.Razor
             viewEngine
                 .Setup(v => v.FindPage(viewContext, layoutPath, /*isPartial*/ true))
                 .Returns(new RazorPageResult(layoutPath, new[] { "path1", "path2" }))
+                .Verifiable();
+
+            // Act
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => view.RenderAsync(viewContext));
+
+            // Assert
+            Assert.Equal(expected, ex.Message);
+            viewEngine.Verify();
+        }
+
+        [Fact]
+        public async Task RenderAsync_ThrowsIfLayoutPageCannotBeFound_MessageUsesAllLocations()
+        {
+            // Arrange
+            var expected = string.Join(
+                Environment.NewLine,
+                "The layout view 'Does-Not-Exist-Layout' could not be located. The following locations were searched:",
+                "path1",
+                "path2",
+                "path3",
+                "path4");
+
+            var layoutPath = "Does-Not-Exist-Layout";
+            var page = new TestableRazorPage(v =>
+            {
+                v.Layout = layoutPath;
+            });
+
+            var viewEngine = new Mock<IRazorViewEngine>(MockBehavior.Strict);
+            var activator = new Mock<IRazorPageActivator>();
+            var view = new RazorView(
+                viewEngine.Object,
+                Mock.Of<IRazorPageActivator>(),
+                new IRazorPage[0],
+                page,
+                new HtmlTestEncoder(),
+                isPartial: false);
+            var viewContext = CreateViewContext(view);
+            viewEngine
+                .Setup(v => v.GetPage(/*executingFilePath*/ null, layoutPath, /*isPartial*/ true))
+                .Returns(new RazorPageResult(layoutPath, new[] { "path1", "path2" }))
+                .Verifiable();
+            viewEngine
+                .Setup(v => v.FindPage(viewContext, layoutPath, /*isPartial*/ true))
+                .Returns(new RazorPageResult(layoutPath, new[] { "path3", "path4" }))
                 .Verifiable();
 
             // Act

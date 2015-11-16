@@ -245,6 +245,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         private IRazorPage GetLayoutPage(ViewContext context, string executingFilePath, string layoutPath)
         {
             var layoutPageResult = _viewEngine.GetPage(executingFilePath, layoutPath, isPartial: true);
+            var originalLocations = layoutPageResult.SearchedLocations;
             if (layoutPageResult.Page == null)
             {
                 layoutPageResult = _viewEngine.FindPage(context, layoutPath, isPartial: true);
@@ -252,8 +253,18 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             if (layoutPageResult.Page == null)
             {
-                var locations =
-                    Environment.NewLine + string.Join(Environment.NewLine, layoutPageResult.SearchedLocations);
+                var locations = string.Empty;
+                if (originalLocations.Any())
+                {
+                    locations = Environment.NewLine + string.Join(Environment.NewLine, originalLocations);
+                }
+
+                if (layoutPageResult.SearchedLocations.Any())
+                {
+                    locations +=
+                        Environment.NewLine + string.Join(Environment.NewLine, layoutPageResult.SearchedLocations);
+                }
+
                 throw new InvalidOperationException(Resources.FormatLayoutCannotBeLocated(layoutPath, locations));
             }
 

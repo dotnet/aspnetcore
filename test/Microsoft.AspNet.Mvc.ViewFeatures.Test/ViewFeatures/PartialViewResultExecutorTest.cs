@@ -77,6 +77,111 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         }
 
         [Fact]
+        public void FindView_ReturnsExpectedNotFoundResult_WithGetViewLocations()
+        {
+            // Arrange
+            var expectedLocations = new[] { "location1", "location2" };
+            var context = GetActionContext();
+            var executor = GetViewExecutor();
+
+            var viewName = "myview";
+            var viewEngine = new Mock<IViewEngine>(MockBehavior.Strict);
+            viewEngine
+                .Setup(e => e.GetView(/*executingFilePath*/ null, "myview", /*isPartial*/ true))
+                .Returns(ViewEngineResult.NotFound("myview", expectedLocations))
+                .Verifiable();
+            viewEngine
+                .Setup(e => e.FindView(context, "myview", /*isPartial*/ true))
+                .Returns(ViewEngineResult.NotFound("myview", Enumerable.Empty<string>()));
+
+            var viewResult = new PartialViewResult
+            {
+                ViewName = viewName,
+                ViewEngine = viewEngine.Object,
+                ViewData = new ViewDataDictionary(new EmptyModelMetadataProvider()),
+                TempData = Mock.Of<ITempDataDictionary>(),
+            };
+
+            // Act
+            var result = executor.FindView(context, viewResult);
+
+            // Assert
+            Assert.False(result.Success);
+            Assert.Null(result.View);
+            Assert.Equal(expectedLocations, result.SearchedLocations);
+        }
+
+        [Fact]
+        public void FindView_ReturnsExpectedNotFoundResult_WithFindViewLocations()
+        {
+            // Arrange
+            var expectedLocations = new[] { "location1", "location2" };
+            var context = GetActionContext();
+            var executor = GetViewExecutor();
+
+            var viewName = "myview";
+            var viewEngine = new Mock<IViewEngine>(MockBehavior.Strict);
+            viewEngine
+                .Setup(e => e.GetView(/*executingFilePath*/ null, "myview", /*isPartial*/ true))
+                .Returns(ViewEngineResult.NotFound("myview", Enumerable.Empty<string>()))
+                .Verifiable();
+            viewEngine
+                .Setup(e => e.FindView(context, "myview", /*isPartial*/ true))
+                .Returns(ViewEngineResult.NotFound("myview", expectedLocations));
+
+            var viewResult = new PartialViewResult
+            {
+                ViewName = viewName,
+                ViewEngine = viewEngine.Object,
+                ViewData = new ViewDataDictionary(new EmptyModelMetadataProvider()),
+                TempData = Mock.Of<ITempDataDictionary>(),
+            };
+
+            // Act
+            var result = executor.FindView(context, viewResult);
+
+            // Assert
+            Assert.False(result.Success);
+            Assert.Null(result.View);
+            Assert.Equal(expectedLocations, result.SearchedLocations);
+        }
+
+        [Fact]
+        public void FindView_ReturnsExpectedNotFoundResult_WithAllLocations()
+        {
+            // Arrange
+            var expectedLocations = new[] { "location1", "location2", "location3", "location4" };
+            var context = GetActionContext();
+            var executor = GetViewExecutor();
+
+            var viewName = "myview";
+            var viewEngine = new Mock<IViewEngine>(MockBehavior.Strict);
+            viewEngine
+                .Setup(e => e.GetView(/*executingFilePath*/ null, "myview", /*isPartial*/ true))
+                .Returns(ViewEngineResult.NotFound("myview", new[] { "location1", "location2" }))
+                .Verifiable();
+            viewEngine
+                .Setup(e => e.FindView(context, "myview", /*isPartial*/ true))
+                .Returns(ViewEngineResult.NotFound("myview", new[] { "location3", "location4" }));
+
+            var viewResult = new PartialViewResult
+            {
+                ViewName = viewName,
+                ViewEngine = viewEngine.Object,
+                ViewData = new ViewDataDictionary(new EmptyModelMetadataProvider()),
+                TempData = Mock.Of<ITempDataDictionary>(),
+            };
+
+            // Act
+            var result = executor.FindView(context, viewResult);
+
+            // Assert
+            Assert.False(result.Success);
+            Assert.Null(result.View);
+            Assert.Equal(expectedLocations, result.SearchedLocations);
+        }
+
+        [Fact]
         public void FindView_WritesDiagnostic_ViewFound()
         {
             // Arrange

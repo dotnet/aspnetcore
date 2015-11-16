@@ -62,7 +62,7 @@ namespace Microsoft.AspNet.Mvc
             var executor = services.GetRequiredService<PartialViewResultExecutor>();
 
             var result = executor.FindView(context, this);
-            result.EnsureSuccessful();
+            result.EnsureSuccessful(originalLocations: null);
 
             var view = result.View;
             using (view as IDisposable)

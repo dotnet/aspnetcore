@@ -507,7 +507,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         }
 
         /// <summary>
-        /// The view '{0}' was not found. The following locations were searched:{1}.
+        /// The view '{0}' was not found. The following locations were searched:{1}
         /// </summary>
         internal static string ViewEngine_ViewNotFound
         {
@@ -515,7 +515,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         }
 
         /// <summary>
-        /// The view '{0}' was not found. The following locations were searched:{1}.
+        /// The view '{0}' was not found. The following locations were searched:{1}
         /// </summary>
         internal static string FormatViewEngine_ViewNotFound(object p0, object p1)
         {

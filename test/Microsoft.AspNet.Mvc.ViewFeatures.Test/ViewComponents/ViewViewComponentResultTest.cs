@@ -143,13 +143,51 @@ namespace Microsoft.AspNet.Mvc
         }
 
         [Fact]
-        public void Execute_ThrowsIfPartialViewCannotBeFound()
+        public void Execute_ThrowsIfPartialViewCannotBeFound_MessageUsesGetViewLocations()
         {
             // Arrange
             var expected = string.Join(Environment.NewLine,
                         "The view 'Components/Invoke/some-view' was not found. The following locations were searched:",
                         "location1",
-                        "location2.");
+                        "location2");
+
+            var view = Mock.Of<IView>();
+
+            var viewEngine = new Mock<IViewEngine>(MockBehavior.Strict);
+            viewEngine
+                .Setup(v => v.GetView(/*executingFilePath*/ null, "some-view", /*isPartial*/ true))
+                .Returns(ViewEngineResult.NotFound("some-view", new[] { "location1", "location2" }))
+                .Verifiable();
+            viewEngine
+                .Setup(v => v.FindView(It.IsAny<ActionContext>(), "Components/Invoke/some-view", /*isPartial*/ true))
+                .Returns(ViewEngineResult.NotFound("Components/Invoke/some-view", Enumerable.Empty<string>()))
+                .Verifiable();
+
+            var viewData = new ViewDataDictionary(new EmptyModelMetadataProvider());
+
+            var result = new ViewViewComponentResult
+            {
+                ViewEngine = viewEngine.Object,
+                ViewName = "some-view",
+                ViewData = viewData,
+                TempData = _tempDataDictionary,
+            };
+
+            var viewComponentContext = GetViewComponentContext(view, viewData);
+
+            // Act and Assert
+            var ex = Assert.Throws<InvalidOperationException>(() => result.Execute(viewComponentContext));
+            Assert.Equal(expected, ex.Message);
+        }
+
+        [Fact]
+        public void Execute_ThrowsIfPartialViewCannotBeFound_MessageUsesFindViewLocations()
+        {
+            // Arrange
+            var expected = string.Join(Environment.NewLine,
+                        "The view 'Components/Invoke/some-view' was not found. The following locations were searched:",
+                        "location1",
+                        "location2");
 
             var view = Mock.Of<IView>();
 
@@ -161,6 +199,46 @@ namespace Microsoft.AspNet.Mvc
             viewEngine
                 .Setup(v => v.FindView(It.IsAny<ActionContext>(), "Components/Invoke/some-view", /*isPartial*/ true))
                 .Returns(ViewEngineResult.NotFound("Components/Invoke/some-view", new[] { "location1", "location2" }))
+                .Verifiable();
+
+            var viewData = new ViewDataDictionary(new EmptyModelMetadataProvider());
+
+            var result = new ViewViewComponentResult
+            {
+                ViewEngine = viewEngine.Object,
+                ViewName = "some-view",
+                ViewData = viewData,
+                TempData = _tempDataDictionary,
+            };
+
+            var viewComponentContext = GetViewComponentContext(view, viewData);
+
+            // Act and Assert
+            var ex = Assert.Throws<InvalidOperationException>(() => result.Execute(viewComponentContext));
+            Assert.Equal(expected, ex.Message);
+        }
+
+        [Fact]
+        public void Execute_ThrowsIfPartialViewCannotBeFound_MessageUsesAllLocations()
+        {
+            // Arrange
+            var expected = string.Join(Environment.NewLine,
+                        "The view 'Components/Invoke/some-view' was not found. The following locations were searched:",
+                        "location1",
+                        "location2",
+                        "location3",
+                        "location4");
+
+            var view = Mock.Of<IView>();
+
+            var viewEngine = new Mock<IViewEngine>(MockBehavior.Strict);
+            viewEngine
+                .Setup(v => v.GetView(/*executingFilePath*/ null, "some-view", /*isPartial*/ true))
+                .Returns(ViewEngineResult.NotFound("some-view", new[] { "location1", "location2" }))
+                .Verifiable();
+            viewEngine
+                .Setup(v => v.FindView(It.IsAny<ActionContext>(), "Components/Invoke/some-view", /*isPartial*/ true))
+                .Returns(ViewEngineResult.NotFound("Components/Invoke/some-view", new[] { "location3", "location4" }))
                 .Verifiable();
 
             var viewData = new ViewDataDictionary(new EmptyModelMetadataProvider());
@@ -305,20 +383,22 @@ namespace Microsoft.AspNet.Mvc
             var expected = string.Join(Environment.NewLine,
                 "The view 'Components/Invoke/some-view' was not found. The following locations were searched:",
                 "view-location1",
-                "view-location2.");
+                "view-location2",
+                "view-location3",
+                "view-location4");
 
             var view = Mock.Of<IView>();
 
             var viewEngine = new Mock<IViewEngine>(MockBehavior.Strict);
             viewEngine
                 .Setup(v => v.GetView(/*executingFilePath*/ null, "some-view", /*isPartial*/ true))
-                .Returns(ViewEngineResult.NotFound("some-view", Enumerable.Empty<string>()))
+                .Returns(ViewEngineResult.NotFound("some-view", new[] { "view-location1", "view-location2" }))
                 .Verifiable();
             viewEngine
                 .Setup(v => v.FindView(It.IsAny<ActionContext>(), "Components/Invoke/some-view", /*isPartial*/ true))
                 .Returns(ViewEngineResult.NotFound(
                     "Components/Invoke/some-view",
-                    new[] { "view-location1", "view-location2" }))
+                    new[] { "view-location3", "view-location4" }))
                 .Verifiable();
 
             var viewData = new ViewDataDictionary(new EmptyModelMetadataProvider());
@@ -423,7 +503,10 @@ namespace Microsoft.AspNet.Mvc
             viewEngine.Verify();
         }
 
-        private static ViewComponentContext GetViewComponentContext(IView view, ViewDataDictionary viewData, object diagnosticListener = null)
+        private static ViewComponentContext GetViewComponentContext(
+            IView view,
+            ViewDataDictionary viewData,
+            object diagnosticListener = null)
         {
             var diagnosticSource = new DiagnosticListener("Microsoft.AspNet");
             if (diagnosticListener == null)

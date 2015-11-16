@@ -3,10 +3,12 @@
 
 #if MOCK_SUPPORT
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Html.Abstractions;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.TestCommon;
+using Microsoft.AspNet.Mvc.ViewEngines;
 using Microsoft.AspNet.Mvc.ViewFeatures;
 using Moq;
 using Xunit;
@@ -186,6 +188,184 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
             // Assert
             Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(actual));
+        }
+
+        [Fact]
+        public async Task PartialAsync_Throws_IfViewNotFound_MessageUsesGetViewLocations()
+        {
+            // Arrange
+            var expected = "The partial view 'test-view' was not found. The following locations were searched:" +
+                Environment.NewLine +
+                "location1" + Environment.NewLine +
+                "location2";
+
+            var model = new TestModel();
+            var viewEngine = new Mock<ICompositeViewEngine>(MockBehavior.Strict);
+            viewEngine
+                .Setup(v => v.GetView(/*executingFilePath*/ null, It.IsAny<string>(), /*isPartial*/ true))
+                .Returns(ViewEngineResult.NotFound("test-view", new[] { "location1", "location2" }))
+                .Verifiable();
+            viewEngine
+                .Setup(v => v.FindView(It.IsAny<ActionContext>(), It.IsAny<string>(), /*isPartial*/ true))
+                .Returns(ViewEngineResult.NotFound("test-view", Enumerable.Empty<string>()))
+                .Verifiable();
+
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(model, viewEngine.Object);
+            var viewData = helper.ViewData;
+
+            // Act & Assert
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+                () => helper.PartialAsync("test-view", model, viewData));
+            Assert.Equal(expected, exception.Message);
+        }
+
+        [Fact]
+        public async Task PartialAsync_Throws_IfViewNotFound_MessageUsesFindViewLocations()
+        {
+            // Arrange
+            var expected = "The partial view 'test-view' was not found. The following locations were searched:" +
+                Environment.NewLine +
+                "location1" + Environment.NewLine +
+                "location2";
+
+            var model = new TestModel();
+            var viewEngine = new Mock<ICompositeViewEngine>(MockBehavior.Strict);
+            viewEngine
+                .Setup(v => v.GetView(/*executingFilePath*/ null, It.IsAny<string>(), /*isPartial*/ true))
+                .Returns(ViewEngineResult.NotFound("test-view", Enumerable.Empty<string>()))
+                .Verifiable();
+            viewEngine
+                .Setup(v => v.FindView(It.IsAny<ActionContext>(), It.IsAny<string>(), /*isPartial*/ true))
+                .Returns(ViewEngineResult.NotFound("test-view", new[] { "location1", "location2" }))
+                .Verifiable();
+
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(model, viewEngine.Object);
+            var viewData = helper.ViewData;
+
+            // Act & Assert
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+                () => helper.PartialAsync("test-view", model, viewData));
+            Assert.Equal(expected, exception.Message);
+        }
+
+        [Fact]
+        public async Task PartialAsync_Throws_IfViewNotFound_MessageUsesAllLocations()
+        {
+            // Arrange
+            var expected = "The partial view 'test-view' was not found. The following locations were searched:" +
+                Environment.NewLine +
+                "location1" + Environment.NewLine +
+                "location2" + Environment.NewLine +
+                "location3" + Environment.NewLine +
+                "location4";
+
+            var model = new TestModel();
+            var viewEngine = new Mock<ICompositeViewEngine>(MockBehavior.Strict);
+            viewEngine
+                .Setup(v => v.GetView(/*executingFilePath*/ null, It.IsAny<string>(), /*isPartial*/ true))
+                .Returns(ViewEngineResult.NotFound("test-view", new[] { "location1", "location2" }))
+                .Verifiable();
+            viewEngine
+                .Setup(v => v.FindView(It.IsAny<ActionContext>(), It.IsAny<string>(), /*isPartial*/ true))
+                .Returns(ViewEngineResult.NotFound("test-view", new[] { "location3", "location4" }))
+                .Verifiable();
+
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(model, viewEngine.Object);
+            var viewData = helper.ViewData;
+
+            // Act & Assert
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+                () => helper.PartialAsync("test-view", model, viewData));
+            Assert.Equal(expected, exception.Message);
+        }
+
+        [Fact]
+        public async Task RenderPartialAsync_Throws_IfViewNotFound_MessageUsesGetViewLocations()
+        {
+            // Arrange
+            var expected = "The partial view 'test-view' was not found. The following locations were searched:" +
+                Environment.NewLine +
+                "location1" + Environment.NewLine +
+                "location2";
+
+            var model = new TestModel();
+            var viewEngine = new Mock<ICompositeViewEngine>(MockBehavior.Strict);
+            viewEngine
+                .Setup(v => v.GetView(/*executingFilePath*/ null, It.IsAny<string>(), /*isPartial*/ true))
+                .Returns(ViewEngineResult.NotFound("test-view", new[] { "location1", "location2" }))
+                .Verifiable();
+            viewEngine
+                .Setup(v => v.FindView(It.IsAny<ActionContext>(), It.IsAny<string>(), /*isPartial*/ true))
+                .Returns(ViewEngineResult.NotFound("test-view", Enumerable.Empty<string>()))
+                .Verifiable();
+
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(model, viewEngine.Object);
+            var viewData = helper.ViewData;
+
+            // Act & Assert
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+                () => helper.RenderPartialAsync("test-view", model, viewData));
+            Assert.Equal(expected, exception.Message);
+        }
+
+        [Fact]
+        public async Task RenderPartialAsync_Throws_IfViewNotFound_MessageUsesFindViewLocations()
+        {
+            // Arrange
+            var expected = "The partial view 'test-view' was not found. The following locations were searched:" +
+                Environment.NewLine +
+                "location1" + Environment.NewLine +
+                "location2";
+
+            var model = new TestModel();
+            var viewEngine = new Mock<ICompositeViewEngine>(MockBehavior.Strict);
+            viewEngine
+                .Setup(v => v.GetView(/*executingFilePath*/ null, It.IsAny<string>(), /*isPartial*/ true))
+                .Returns(ViewEngineResult.NotFound("test-view", Enumerable.Empty<string>()))
+                .Verifiable();
+            viewEngine
+                .Setup(v => v.FindView(It.IsAny<ActionContext>(), It.IsAny<string>(), /*isPartial*/ true))
+                .Returns(ViewEngineResult.NotFound("test-view", new[] { "location1", "location2" }))
+                .Verifiable();
+
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(model, viewEngine.Object);
+            var viewData = helper.ViewData;
+
+            // Act & Assert
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+                () => helper.RenderPartialAsync("test-view", model, viewData));
+            Assert.Equal(expected, exception.Message);
+        }
+
+        [Fact]
+        public async Task RenderPartialAsync_Throws_IfViewNotFound_MessageUsesAllLocations()
+        {
+            // Arrange
+            var expected = "The partial view 'test-view' was not found. The following locations were searched:" +
+                Environment.NewLine +
+                "location1" + Environment.NewLine +
+                "location2" + Environment.NewLine +
+                "location3" + Environment.NewLine +
+                "location4";
+
+            var model = new TestModel();
+            var viewEngine = new Mock<ICompositeViewEngine>(MockBehavior.Strict);
+            viewEngine
+                .Setup(v => v.GetView(/*executingFilePath*/ null, It.IsAny<string>(), /*isPartial*/ true))
+                .Returns(ViewEngineResult.NotFound("test-view", new[] { "location1", "location2" }))
+                .Verifiable();
+            viewEngine
+                .Setup(v => v.FindView(It.IsAny<ActionContext>(), It.IsAny<string>(), /*isPartial*/ true))
+                .Returns(ViewEngineResult.NotFound("test-view", new[] { "location3", "location4" }))
+                .Verifiable();
+
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(model, viewEngine.Object);
+            var viewData = helper.ViewData;
+
+            // Act & Assert
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+                () => helper.RenderPartialAsync("test-view", model, viewData));
+            Assert.Equal(expected, exception.Message);
         }
 
         private sealed class TestModel

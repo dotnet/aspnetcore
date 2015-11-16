@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Diagnostics;
 using Microsoft.AspNet.Mvc.Infrastructure;
@@ -70,9 +72,29 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             var viewName = viewResult.ViewName ?? actionContext.ActionDescriptor.Name;
 
             var result = viewEngine.GetView(executingFilePath: null, viewPath: viewName, isPartial: true);
+            var originalResult = result;
             if (!result.Success)
             {
                 result = viewEngine.FindView(actionContext, viewName, isPartial: true);
+            }
+
+            if (!result.Success)
+            {
+                if (originalResult.SearchedLocations.Any())
+                {
+                    if (result.SearchedLocations.Any())
+                    {
+                        // Return a new ViewEngineResult listing all searched locations.
+                        var locations = new List<string>(originalResult.SearchedLocations);
+                        locations.AddRange(result.SearchedLocations);
+                        result = ViewEngineResult.NotFound(viewName, locations);
+                    }
+                    else
+                    {
+                        // GetView() searched locations but FindView() did not. Use first ViewEngineResult.
+                        result = originalResult;
+                    }
+                }
             }
 
             if (result.Success)

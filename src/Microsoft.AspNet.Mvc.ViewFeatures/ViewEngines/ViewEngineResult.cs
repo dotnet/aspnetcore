@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.AspNet.Mvc.ViewFeatures;
 
 namespace Microsoft.AspNet.Mvc.ViewEngines
@@ -64,14 +65,30 @@ namespace Microsoft.AspNet.Mvc.ViewEngines
             };
         }
 
-        public ViewEngineResult EnsureSuccessful()
+        /// <summary>
+        /// Ensure this <see cref="ViewEngineResult"/> was successful.
+        /// </summary>
+        /// <param name="originalLocations">
+        /// Additional <see cref="SearchedLocations"/> to include in the thrown <see cref="InvalidOperationException"/>
+        /// if <see cref="Success"/> is <c>false</c>.
+        /// </param>
+        /// <exception cref="InvalidOperationException">
+        /// Thrown if <see cref="Success"/> is <c>false</c>.
+        /// </exception>
+        /// <returns>This <see cref="ViewEngineResult"/> if <see cref="Success"/> is <c>true</c>.</returns>
+        public ViewEngineResult EnsureSuccessful(IEnumerable<string> originalLocations)
         {
             if (!Success)
             {
                 var locations = string.Empty;
-                if (SearchedLocations != null)
+                if (originalLocations != null && originalLocations.Any())
                 {
-                    locations = Environment.NewLine + string.Join(Environment.NewLine, SearchedLocations);
+                    locations = Environment.NewLine + string.Join(Environment.NewLine, originalLocations);
+                }
+
+                if (SearchedLocations.Any())
+                {
+                    locations += Environment.NewLine + string.Join(Environment.NewLine, SearchedLocations);
                 }
 
                 throw new InvalidOperationException(Resources.FormatViewEngine_ViewNotFound(ViewName, locations));
