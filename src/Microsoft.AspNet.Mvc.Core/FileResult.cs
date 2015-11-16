@@ -71,7 +71,7 @@ namespace Microsoft.AspNet.Mvc
             }
 
             var loggerFactory = context.HttpContext.RequestServices.GetRequiredService<ILoggerFactory>();
-            var logger = loggerFactory?.CreateLogger<FileResult>();
+            var logger = loggerFactory.CreateLogger<FileResult>();
 
             var response = context.HttpContext.Response;
             response.ContentType = ContentType.ToString();
