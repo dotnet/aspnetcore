@@ -38,6 +38,37 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             return result;
         }
 
+        public async Task Consume(CancellationToken cancellationToken = default(CancellationToken))
+        {
+            Task<int> result;
+            var send100checked = false;
+            do
+            {
+                result = ReadAsyncImplementation(default(ArraySegment<byte>), cancellationToken);
+                if (!result.IsCompleted)
+                {
+                    if (!send100checked)
+                    {
+                        if (Interlocked.Exchange(ref _send100Continue, 0) == 1)
+                        {
+                            _context.FrameControl.ProduceContinue();
+                        }
+                        send100checked = true;
+                    }
+                }
+                else if (result.GetAwaiter().GetResult() == 0) 
+                {
+                    // Completed Task, end of stream
+                    return;
+                }
+                else
+                {
+                    // Completed Task, get next Task rather than await
+                    continue;
+                }
+            } while (await result != 0);
+        }
+
         public abstract Task<int> ReadAsyncImplementation(ArraySegment<byte> buffer, CancellationToken cancellationToken);
 
         public static MessageBody For(
@@ -108,7 +139,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
             public override Task<int> ReadAsyncImplementation(ArraySegment<byte> buffer, CancellationToken cancellationToken)
             {
-                return _context.SocketInput.ReadAsync(buffer);
+                return _context.SocketInput.ReadAsync(buffer.Array, buffer.Offset, buffer.Array == null ? 8192 : buffer.Count);
             }
         }
 
@@ -129,14 +160,13 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             {
                 var input = _context.SocketInput;
 
-                var limit = Math.Min(buffer.Count, _inputLength);
+                var limit = buffer.Array == null ? _inputLength : Math.Min(buffer.Count, _inputLength);
                 if (limit == 0)
                 {
                     return 0;
                 }
 
-                var limitedBuffer = new ArraySegment<byte>(buffer.Array, buffer.Offset, limit);
-                var actual = await _context.SocketInput.ReadAsync(limitedBuffer);
+                var actual = await _context.SocketInput.ReadAsync(buffer.Array, buffer.Offset, limit);
                 _inputLength -= actual;
 
                 if (actual == 0)
@@ -189,7 +219,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                     }
                     while (_mode == Mode.ChunkData)
                     {
-                        var limit = Math.Min(buffer.Count, _inputLength);
+                        var limit = buffer.Array == null ? _inputLength : Math.Min(buffer.Count, _inputLength);
                         if (limit != 0)
                         {
                             await input;

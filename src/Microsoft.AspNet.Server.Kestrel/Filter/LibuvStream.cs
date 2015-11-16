@@ -85,7 +85,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Filter
 
         private Task<int> ReadAsync(ArraySegment<byte> buffer)
         {
-            return _input.ReadAsync(buffer);
+            return _input.ReadAsync(buffer.Array, buffer.Offset, buffer.Count);
         }
     }
 }

@@ -600,18 +600,27 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
                 if (remaining <= following)
                 {
                     actual = count;
-                    Buffer.BlockCopy(block.Array, index, array, offset, remaining);
+                    if (array != null)
+                    {
+                        Buffer.BlockCopy(block.Array, index, array, offset, remaining);
+                    }
                     return new MemoryPoolIterator2(block, index + remaining);
                 }
                 else if (block.Next == null)
                 {
                     actual = count - remaining + following;
-                    Buffer.BlockCopy(block.Array, index, array, offset, following);
+                    if (array != null)
+                    {
+                        Buffer.BlockCopy(block.Array, index, array, offset, following);
+                    }
                     return new MemoryPoolIterator2(block, index + following);
                 }
                 else
                 {
-                    Buffer.BlockCopy(block.Array, index, array, offset, following);
+                    if (array != null)
+                    {
+                        Buffer.BlockCopy(block.Array, index, array, offset, following);
+                    }
                     offset += following;
                     remaining -= following;
                     block = block.Next;

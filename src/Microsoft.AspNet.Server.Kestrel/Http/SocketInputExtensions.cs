@@ -8,7 +8,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 {
     public static class SocketInputExtensions
     {
-        public static async Task<int> ReadAsync(this SocketInput input, ArraySegment<byte> buffer)
+        public static async Task<int> ReadAsync(this SocketInput input, byte[] buffer, int offset, int count)
         {
             while (true)
             {
@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
                 var begin = input.ConsumingStart();
                 int actual;
-                var end = begin.CopyTo(buffer.Array, buffer.Offset, buffer.Count, out actual);
+                var end = begin.CopyTo(buffer, offset, count, out actual);
                 input.ConsumingComplete(end, end);
 
                 if (actual != 0)
