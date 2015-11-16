@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using Moq;
 using Xunit;
 
@@ -332,6 +334,113 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
 
             // Assert
             Assert.Same(expected, result.CompilationResult.CompiledType);
+        }
+
+        [Fact]
+        public async Task GetOrAdd_AllowsConcurrentCompilationOfMultipleRazorPages()
+        {
+            // Arrange
+            var waitDuration = TimeSpan.FromSeconds(20);
+            var fileProvider = new TestFileProvider();
+            fileProvider.AddFile("/Views/Home/Index.cshtml", "Index content");
+            fileProvider.AddFile("/Views/Home/About.cshtml", "About content");
+            var resetEvent1 = new AutoResetEvent(initialState: false);
+            var resetEvent2 = new ManualResetEvent(initialState: false);
+            var cache = new CompilerCache(fileProvider);
+            var compilingOne = false;
+            var compilingTwo = false;
+
+            // Act
+            var task1 = Task.Run(() =>
+            {
+                return cache.GetOrAdd("/Views/Home/Index.cshtml", file =>
+                {
+                    compilingOne = true;
+
+                    // Event 2
+                    resetEvent1.WaitOne(waitDuration);
+
+                    // Event 3
+                    resetEvent2.Set();
+
+                    // Event 6
+                    resetEvent1.WaitOne(waitDuration);
+
+                    Assert.True(compilingTwo);
+                    return new CompilationResult(typeof(TestView));
+                });
+            });
+
+            var task2 = Task.Run(() =>
+            {
+                // Event 4
+                return cache.GetOrAdd("/Views/Home/About.cshtml", file =>
+                {
+                    compilingTwo = true;
+
+                    // Event 4
+                    resetEvent2.WaitOne(waitDuration);
+
+                    // Event 5
+                    resetEvent1.Set();
+
+                    Assert.True(compilingOne);
+                    return new CompilationResult(typeof(DifferentView));
+                });
+            });
+
+            // Event 1
+            resetEvent1.Set();
+
+            await Task.WhenAll(task1, task2);
+
+            // Assert
+            var result1 = task1.Result;
+            var result2 = task2.Result;
+            Assert.True(compilingOne);
+            Assert.True(compilingTwo);
+        }
+
+        [Fact]
+        public async Task GetOrAdd_DoesNotCreateMultipleCompilationResults_ForConcurrentInvocations()
+        {
+            // Arrange
+            var waitDuration = TimeSpan.FromSeconds(20);
+            var fileProvider = new TestFileProvider();
+            fileProvider.AddFile(ViewPath, "some content");
+            var resetEvent1 = new ManualResetEvent(initialState: false);
+            var resetEvent2 = new ManualResetEvent(initialState: false);
+            var cache = new CompilerCache(fileProvider);
+
+            // Act
+            var task1 = Task.Run(() =>
+            {
+                return cache.GetOrAdd(ViewPath, file =>
+                {
+                    // Event 2
+                    resetEvent1.WaitOne(waitDuration);
+
+                    // Event 3
+                    resetEvent2.Set();
+                    return new CompilationResult(typeof(TestView));
+                });
+            });
+
+            var task2 = Task.Run(() =>
+            {
+                // Event 4
+                resetEvent2.WaitOne(waitDuration);
+                return cache.GetOrAdd(ViewPath, ThrowsIfCalled);
+            });
+
+            // Event 1
+            resetEvent1.Set();
+            await Task.WhenAll(task1, task2);
+
+            // Assert
+            var result1 = task1.Result;
+            var result2 = task2.Result;
+            Assert.Same(result1.CompilationResult.CompiledType, result2.CompilationResult.CompiledType);
         }
 
         private class TestView
