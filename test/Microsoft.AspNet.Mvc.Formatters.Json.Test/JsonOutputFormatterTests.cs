@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.Abstractions;
+using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Testing;
 using Microsoft.Net.Http.Headers;
@@ -66,6 +67,79 @@ namespace Microsoft.AspNet.Mvc.Formatters
 
             // Assert
             var body = outputFormatterContext.HttpContext.Response.Body;
+
+            Assert.NotNull(body);
+            body.Position = 0;
+
+            var content = new StreamReader(body, Encoding.UTF8).ReadToEnd();
+            Assert.Equal(expectedOutput, content);
+        }
+
+        [Fact]
+        public async Task ChangesTo_DefaultSerializerSettings_AfterSerialization_NoEffect()
+        {
+            // Arrange
+            var person = new User() { Name = "John", Age = 35 };
+            var expectedOutput = JsonConvert.SerializeObject(
+                person,
+                SerializerSettingsProvider.CreateSerializerSettings());
+
+            var jsonFormatter = new JsonOutputFormatter();
+
+            // This will create a serializer - which gets cached.
+            var outputFormatterContext1 = GetOutputFormatterContext(person, typeof(User));
+            await jsonFormatter.WriteResponseBodyAsync(outputFormatterContext1);
+
+            // These changes should have no effect.
+            jsonFormatter.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
+            jsonFormatter.SerializerSettings.Formatting = Formatting.Indented;
+
+            var outputFormatterContext2 = GetOutputFormatterContext(person, typeof(User));
+
+            // Act
+            await jsonFormatter.WriteResponseBodyAsync(outputFormatterContext2);
+
+            // Assert
+            var body = outputFormatterContext2.HttpContext.Response.Body;
+
+            Assert.NotNull(body);
+            body.Position = 0;
+
+            var content = new StreamReader(body, Encoding.UTF8).ReadToEnd();
+            Assert.Equal(expectedOutput, content);
+        }
+
+        [Fact]
+        public async Task ReplaceSerializerSettings_AfterSerialization_TakesEffect()
+        {
+            // Arrange
+            var person = new User() { Name = "John", Age = 35 };
+            var expectedOutput = JsonConvert.SerializeObject(person, new JsonSerializerSettings()
+            {
+                ContractResolver = new CamelCasePropertyNamesContractResolver(),
+                Formatting = Formatting.Indented
+            });
+
+            var jsonFormatter = new JsonOutputFormatter();
+
+            // This will create a serializer - which gets cached.
+            var outputFormatterContext1 = GetOutputFormatterContext(person, typeof(User));
+            await jsonFormatter.WriteResponseBodyAsync(outputFormatterContext1);
+
+            // This results in a new serializer being created.
+            jsonFormatter.SerializerSettings = new JsonSerializerSettings()
+            {
+                ContractResolver = new CamelCasePropertyNamesContractResolver(),
+                Formatting = Formatting.Indented,
+            };
+
+            var outputFormatterContext2 = GetOutputFormatterContext(person, typeof(User));
+
+            // Act
+            await jsonFormatter.WriteResponseBodyAsync(outputFormatterContext2);
+
+            // Assert
+            var body = outputFormatterContext2.HttpContext.Response.Body;
 
             Assert.NotNull(body);
             body.Position = 0;

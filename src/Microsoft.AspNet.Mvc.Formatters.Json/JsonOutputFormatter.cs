@@ -17,6 +17,10 @@ namespace Microsoft.AspNet.Mvc.Formatters
     {
         private JsonSerializerSettings _serializerSettings;
 
+        // Perf: JsonSerializers are relatively expensive to create, and are thread safe. We cache
+        // the serializer and invalidate it when the settings change.
+        private JsonSerializer _serializer;
+
         public JsonOutputFormatter()
             : this(SerializerSettingsProvider.CreateSerializerSettings())
         {
@@ -40,6 +44,10 @@ namespace Microsoft.AspNet.Mvc.Formatters
         /// <summary>
         /// Gets or sets the <see cref="JsonSerializerSettings"/> used to configure the <see cref="JsonSerializer"/>.
         /// </summary>
+        /// <remarks>
+        /// Any modifications to the <see cref="JsonSerializerSettings"/> object after this
+        /// <see cref="JsonOutputFormatter"/> has been used will have no effect.
+        /// </remarks>
         public JsonSerializerSettings SerializerSettings
         {
             get
@@ -54,6 +62,9 @@ namespace Microsoft.AspNet.Mvc.Formatters
                 }
 
                 _serializerSettings = value;
+
+                // If the settings change, then invalidate the cached serializer.
+                _serializer = null;
             }
         }
 
@@ -95,7 +106,12 @@ namespace Microsoft.AspNet.Mvc.Formatters
         /// <returns>The <see cref="JsonSerializer"/> used during serialization and deserialization.</returns>
         protected virtual JsonSerializer CreateJsonSerializer()
         {
-            return JsonSerializer.Create(SerializerSettings);
+            if (_serializer == null)
+            {
+                _serializer = JsonSerializer.Create(SerializerSettings);
+            }
+
+            return _serializer;
         }
 
         public override Task WriteResponseBodyAsync(OutputFormatterWriteContext context)
