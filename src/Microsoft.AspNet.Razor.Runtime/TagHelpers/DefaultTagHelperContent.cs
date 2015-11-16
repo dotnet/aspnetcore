@@ -2,13 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Text.Encodings.Web;
 using Microsoft.AspNet.Html.Abstractions;
-using Microsoft.AspNet.Razor.TagHelpers;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNet.Razor.TagHelpers
 {
@@ -18,15 +17,15 @@ namespace Microsoft.AspNet.Razor.TagHelpers
     [DebuggerDisplay("{DebuggerToString(),nq}")]
     public class DefaultTagHelperContent : TagHelperContent
     {
-        private BufferedHtmlContent _buffer;
+        private List<object> _buffer;
 
-        private BufferedHtmlContent Buffer
+        private List<object> Buffer
         {
             get
             {
                 if (_buffer == null)
                 {
-                    _buffer = new BufferedHtmlContent();
+                    _buffer = new List<object>();
                 }
 
                 return _buffer;
@@ -49,7 +48,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
 
                 using (var writer = new EmptyOrWhiteSpaceWriter())
                 {
-                    foreach (var entry in _buffer.Entries)
+                    foreach (var entry in _buffer)
                     {
                         if (entry == null)
                         {
@@ -91,7 +90,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
 
                 using (var writer = new EmptyOrWhiteSpaceWriter())
                 {
-                    foreach (var entry in _buffer.Entries)
+                    foreach (var entry in _buffer)
                     {
                         if (entry == null)
                         {
@@ -124,21 +123,28 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         /// <inheritdoc />
         public override TagHelperContent Append(string unencoded)
         {
-            Buffer.Append(unencoded);
+            Buffer.Add(unencoded);
             return this;
         }
 
         /// <inheritdoc />
         public override TagHelperContent AppendHtml(string encoded)
         {
-            Buffer.AppendHtml(encoded);
+            if (encoded == null)
+            {
+                Buffer.Add(null);
+            }
+            else
+            {
+                Buffer.Add(new HtmlEncodedString(encoded));
+            }
             return this;
         }
 
         /// <inheritdoc />
         public override TagHelperContent Append(IHtmlContent htmlContent)
         {
-            Buffer.Append(htmlContent);
+            Buffer.Add(htmlContent);
             return this;
         }
 
@@ -183,7 +189,28 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                 throw new ArgumentNullException(nameof(encoder));
             }
 
-            Buffer.WriteTo(writer, encoder);
+            if (_buffer == null)
+            {
+                return;
+            }
+
+            foreach (var entry in _buffer)
+            {
+                if (entry == null)
+                {
+                    continue;
+                }
+
+                var stringValue = entry as string;
+                if (stringValue != null)
+                {
+                    encoder.Encode(writer, stringValue);
+                }
+                else
+                {
+                    ((IHtmlContent)entry).WriteTo(writer, encoder);
+                }
+            }
         }
 
         private string DebuggerToString()

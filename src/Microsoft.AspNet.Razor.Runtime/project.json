@@ -12,10 +12,6 @@
   "dependencies": {
     "Microsoft.AspNet.Html.Abstractions": "1.0.0-*",
     "Microsoft.AspNet.Razor": "4.0.0-*",
-    "Microsoft.Extensions.BufferedHtmlContent.Sources": {
-      "type": "build",
-      "version": "1.0.0-*"
-    },
     "Microsoft.Extensions.ClosedGenericMatcher.Sources": {
       "type": "build",
       "version": "1.0.0-*"
