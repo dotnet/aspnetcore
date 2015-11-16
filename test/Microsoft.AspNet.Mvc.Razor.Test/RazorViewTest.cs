@@ -135,7 +135,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             var activator = Mock.Of<IRazorPageActivator>();
             var viewEngine = new Mock<IRazorViewEngine>();
             viewEngine
-                .Setup(p => p.MakePathAbsolute("_ViewStart", LayoutPath))
+                .Setup(p => p.GetAbsolutePath("_ViewStart", LayoutPath))
                 .Returns(LayoutPath);
             viewEngine
                 .Setup(v => v.GetPage(pagePath, LayoutPath, /*isPartial*/ true))
@@ -345,10 +345,10 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             var viewEngine = new Mock<IRazorViewEngine>(MockBehavior.Strict);
             viewEngine
-                .Setup(engine => engine.MakePathAbsolute(/*executingFilePath*/ null, "/fake-layout-path"))
+                .Setup(engine => engine.GetAbsolutePath(/*executingFilePath*/ null, "/fake-layout-path"))
                 .Returns("/fake-layout-path");
             viewEngine
-                .Setup(engine => engine.MakePathAbsolute(/*executingFilePath*/ null, layoutPath))
+                .Setup(engine => engine.GetAbsolutePath(/*executingFilePath*/ null, layoutPath))
                 .Returns(layoutPath);
 
             var view = new RazorView(
@@ -1588,10 +1588,10 @@ namespace Microsoft.AspNet.Mvc.Razor
             });
             var viewEngine = new Mock<IRazorViewEngine>(MockBehavior.Strict);
             viewEngine
-                .Setup(engine => engine.MakePathAbsolute(/*executingFilePath*/ null, expectedViewStart))
+                .Setup(engine => engine.GetAbsolutePath(/*executingFilePath*/ null, expectedViewStart))
                 .Returns(expectedViewStart);
             viewEngine
-                .Setup(engine => engine.MakePathAbsolute(/*executingFilePath*/ null, expectedPage))
+                .Setup(engine => engine.GetAbsolutePath(/*executingFilePath*/ null, expectedPage))
                 .Returns(expectedPage);
 
             var view = new RazorView(
@@ -1646,10 +1646,10 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             var viewEngine = new Mock<IRazorViewEngine>(MockBehavior.Strict);
             viewEngine
-                .Setup(engine => engine.MakePathAbsolute("~/_ViewStart.cshtml", "_Layout.cshtml"))
+                .Setup(engine => engine.GetAbsolutePath("~/_ViewStart.cshtml", "_Layout.cshtml"))
                 .Returns("~/_Layout.cshtml");
             viewEngine
-                .Setup(engine => engine.MakePathAbsolute("~/Home/_ViewStart.cshtml", "_Layout.cshtml"))
+                .Setup(engine => engine.GetAbsolutePath("~/Home/_ViewStart.cshtml", "_Layout.cshtml"))
                 .Returns("~/Home/_Layout.cshtml");
 
             var view = new RazorView(
@@ -1691,10 +1691,10 @@ namespace Microsoft.AspNet.Mvc.Razor
             });
             var viewEngine = new Mock<IRazorViewEngine>(MockBehavior.Strict);
             viewEngine
-                .Setup(engine => engine.MakePathAbsolute(/*executingFilePath*/ null, "Layout"))
+                .Setup(engine => engine.GetAbsolutePath(/*executingFilePath*/ null, "Layout"))
                 .Returns("Layout");
             viewEngine
-                .Setup(engine => engine.MakePathAbsolute(/*executingFilePath*/ null, /*pagePath*/ null))
+                .Setup(engine => engine.GetAbsolutePath(/*executingFilePath*/ null, /*pagePath*/ null))
                 .Returns<string>(null);
 
             var view = new RazorView(
@@ -1737,7 +1737,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             });
             var viewEngine = new Mock<IRazorViewEngine>(MockBehavior.Strict);
             viewEngine
-                .Setup(p => p.MakePathAbsolute(/*executingFilePath*/ null, "/Layout.cshtml"))
+                .Setup(p => p.GetAbsolutePath(/*executingFilePath*/ null, "/Layout.cshtml"))
                 .Returns("/Layout.cshtml");
             viewEngine
                 .Setup(p => p.GetPage(/*executingFilePath*/ null, "/Layout.cshtml", /*isPartial*/ true))

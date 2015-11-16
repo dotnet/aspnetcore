@@ -46,7 +46,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                 " The following locations were searched:" + PlatformNormalizer.GetNewLinesAsUnderscores(1) +
                 "/Areas/Users/Views/Home/Index.cshtml" + PlatformNormalizer.GetNewLinesAsUnderscores(1) +
                 "/Areas/Users/Views/Shared/Index.cshtml" + PlatformNormalizer.GetNewLinesAsUnderscores(1) +
-                "/Views/Shared/Index.cshtml.",
+                "/Views/Shared/Index.cshtml",
                 exception.ExceptionMessage);
         }
 

@@ -276,7 +276,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         private ViewLocationCacheResult LocatePageFromPath(string executingFilePath, string pagePath, bool isPartial)
         {
-            var applicationRelativePath = MakePathAbsolute(executingFilePath, pagePath);
+            var applicationRelativePath = GetAbsolutePath(executingFilePath, pagePath);
             var cacheKey = new ViewLocationCacheKey(applicationRelativePath, isPartial);
             ViewLocationCacheResult cacheResult;
             if (!ViewLookupCache.TryGetValue(cacheKey, out cacheResult))
@@ -350,7 +350,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         /// <inheritdoc />
-        public string MakePathAbsolute(string executingFilePath, string pagePath)
+        public string GetAbsolutePath(string executingFilePath, string pagePath)
         {
             if (string.IsNullOrEmpty(pagePath))
             {
@@ -505,11 +505,14 @@ namespace Microsoft.AspNet.Mvc.Razor
             }
 
             var page = result.ViewEntry.PageFactory();
+            page.IsPartial = isPartial;
+
             var viewStarts = new IRazorPage[result.ViewStartEntries.Count];
             for (var i = 0; i < viewStarts.Length; i++)
             {
                 var viewStartItem = result.ViewStartEntries[i];
                 viewStarts[i] = viewStartItem.PageFactory();
+                viewStarts[i].IsPartial = true;
             }
 
             var view = new RazorView(

@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <param name="pageName">The name of the page.</param>
         /// <param name="isPartial">Determines if the page being found is a partial.</param>
         /// <returns>The <see cref="RazorPageResult"/> of locating the page.</returns>
-        /// <remarks>Page search semantics match <see cref="IViewEngine.FindView"/>.</remarks>
+        /// <remarks><seealso cref="IViewEngine.FindView"/>.</remarks>
         RazorPageResult FindPage(ActionContext context, string pageName, bool isPartial);
 
         /// <summary>
@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <param name="pagePath">The path to the page.</param>
         /// <param name="isPartial">Determines if the page being found is a partial.</param>
         /// <returns>The <see cref="RazorPageResult"/> of locating the page.</returns>
-        /// <remarks>See also <see cref="IViewEngine.GetView"/>.</remarks>
+        /// <remarks><seealso cref="IViewEngine.GetView"/>.</remarks>
         RazorPageResult GetPage(string executingFilePath, string pagePath, bool isPartial);
 
         /// <summary>
@@ -43,6 +43,6 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <paramref name="pagePath"/> is a relative path. The <paramref name="pagePath"/> value (unchanged)
         /// otherwise.
         /// </returns>
-        string MakePathAbsolute(string executingFilePath, string pagePath);
+        string GetAbsolutePath(string executingFilePath, string pagePath);
     }
 }

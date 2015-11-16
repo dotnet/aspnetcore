@@ -68,7 +68,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 throw new ArgumentNullException(nameof(partialViewName));
             }
 
-            return htmlHelper.PartialAsync(partialViewName, htmlHelper.ViewData.Model, viewData: viewData);
+            return htmlHelper.PartialAsync(partialViewName, htmlHelper.ViewData.Model, viewData);
         }
 
         /// <summary>
@@ -259,8 +259,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 throw new ArgumentNullException(nameof(partialViewName));
             }
 
-            return htmlHelper.RenderPartialAsync(partialViewName, htmlHelper.ViewData.Model,
-                                                 viewData: htmlHelper.ViewData);
+            return htmlHelper.RenderPartialAsync(partialViewName, htmlHelper.ViewData.Model, viewData: null);
         }
 
         /// <summary>
@@ -290,7 +289,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 throw new ArgumentNullException(nameof(partialViewName));
             }
 
-            return htmlHelper.RenderPartialAsync(partialViewName, htmlHelper.ViewData.Model, viewData: viewData);
+            return htmlHelper.RenderPartialAsync(partialViewName, htmlHelper.ViewData.Model, viewData);
         }
 
         /// <summary>
@@ -320,7 +319,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 throw new ArgumentNullException(nameof(partialViewName));
             }
 
-            return htmlHelper.RenderPartialAsync(partialViewName, model, htmlHelper.ViewData);
+            return htmlHelper.RenderPartialAsync(partialViewName, model, viewData: null);
         }
     }
 }

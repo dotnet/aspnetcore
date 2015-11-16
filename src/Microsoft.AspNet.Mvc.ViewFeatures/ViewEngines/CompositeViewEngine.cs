@@ -1,8 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.Extensions.OptionsModel;
 
 namespace Microsoft.AspNet.Mvc.ViewEngines
@@ -10,8 +12,6 @@ namespace Microsoft.AspNet.Mvc.ViewEngines
     /// <inheritdoc />
     public class CompositeViewEngine : ICompositeViewEngine
     {
-        private const string ViewExtension = ".cshtml";
-
         /// <summary>
         /// Initializes a new instance of <see cref="CompositeViewEngine"/>.
         /// </summary>
@@ -27,10 +27,22 @@ namespace Microsoft.AspNet.Mvc.ViewEngines
         /// <inheritdoc />
         public ViewEngineResult FindView(ActionContext context, string viewName, bool isPartial)
         {
-            List<string> searchedLocations = null;
-            foreach (var engine in ViewEngines)
+            if (context == null)
             {
-                var result = engine.FindView(context, viewName, isPartial);
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (string.IsNullOrEmpty(viewName))
+            {
+                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(viewName));
+            }
+
+            // Do not allocate in the common cases: ViewEngines contains one entry or initial attempt is successful.
+            IEnumerable<string> searchedLocations = null;
+            List<string> searchedList = null;
+            for (var index = 0; index < ViewEngines.Count; index++)
+            {
+                var result = ViewEngines[index].FindView(context, viewName, isPartial);
                 if (result.Success)
                 {
                     return result;
@@ -38,11 +50,19 @@ namespace Microsoft.AspNet.Mvc.ViewEngines
 
                 if (searchedLocations == null)
                 {
-                    searchedLocations = new List<string>(result.SearchedLocations);
+                    // First failure.
+                    searchedLocations = result.SearchedLocations;
                 }
                 else
                 {
-                    searchedLocations.AddRange(result.SearchedLocations);
+                    if (searchedList == null)
+                    {
+                        // Second failure.
+                        searchedList = new List<string>(searchedLocations);
+                        searchedLocations = searchedList;
+                    }
+
+                    searchedList.AddRange(result.SearchedLocations);
                 }
             }
 
@@ -52,10 +72,17 @@ namespace Microsoft.AspNet.Mvc.ViewEngines
         /// <inheritdoc />
         public ViewEngineResult GetView(string executingFilePath, string viewPath, bool isPartial)
         {
-            List<string> searchedLocations = null;
-            foreach (var engine in ViewEngines)
+            if (string.IsNullOrEmpty(viewPath))
             {
-                var result = engine.GetView(executingFilePath, viewPath, isPartial);
+                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(viewPath));
+            }
+
+            // Do not allocate in the common cases: ViewEngines contains one entry or initial attempt is successful.
+            IEnumerable<string> searchedLocations = null;
+            List<string> searchedList = null;
+            for (var index = 0; index < ViewEngines.Count; index++)
+            {
+                var result = ViewEngines[index].GetView(executingFilePath, viewPath, isPartial);
                 if (result.Success)
                 {
                     return result;
@@ -63,11 +90,19 @@ namespace Microsoft.AspNet.Mvc.ViewEngines
 
                 if (searchedLocations == null)
                 {
-                    searchedLocations = new List<string>(result.SearchedLocations);
+                    // First failure.
+                    searchedLocations = result.SearchedLocations;
                 }
                 else
                 {
-                    searchedLocations.AddRange(result.SearchedLocations);
+                    if (searchedList == null)
+                    {
+                        // Second failure.
+                        searchedList = new List<string>(searchedLocations);
+                        searchedLocations = searchedList;
+                    }
+
+                    searchedList.AddRange(result.SearchedLocations);
                 }
             }
 

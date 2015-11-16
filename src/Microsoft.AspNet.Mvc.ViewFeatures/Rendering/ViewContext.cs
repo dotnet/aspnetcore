@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
     /// </summary>
     public class ViewContext : ActionContext
     {
-        // We need a default FormContext if the user uses html <form> instead of an MvcForm
+        // We need a default FormContext if the user uses HTML <form> instead of an MvcForm
         private readonly FormContext _defaultFormContext = new FormContext();
 
         private FormContext _formContext;

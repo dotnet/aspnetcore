@@ -1306,13 +1306,13 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         [InlineData("/Home/Index.cshtml", "Page")]
         [InlineData("/Home/Index.cshtml", "Folder/Page")]
         [InlineData("/Home/Index.cshtml", "Folder1/Folder2/Page")]
-        public void MakePathAbsolute_ReturnsPagePathUnchanged_IfNotAPath(string executingFilePath, string pagePath)
+        public void GetAbsolutePath_ReturnsPagePathUnchanged_IfNotAPath(string executingFilePath, string pagePath)
         {
             // Arrange
             var viewEngine = CreateViewEngine();
 
             // Act
-            var result = viewEngine.MakePathAbsolute(executingFilePath, pagePath);
+            var result = viewEngine.GetAbsolutePath(executingFilePath, pagePath);
 
             // Assert
             Assert.Same(pagePath, result);
@@ -1325,13 +1325,13 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         [InlineData("/Home/Index.cshtml", "~/Page")]
         [InlineData("/Home/Index.cshtml", "/Folder/Page.cshtml")]
         [InlineData("/Home/Index.cshtml", "~/Folder1/Folder2/Page.rzr")]
-        public void MakePathAbsolute_ReturnsPageUnchanged_IfAppRelative(string executingFilePath, string pagePath)
+        public void GetAbsolutePath_ReturnsPageUnchanged_IfAppRelative(string executingFilePath, string pagePath)
         {
             // Arrange
             var viewEngine = CreateViewEngine();
 
             // Act
-            var result = viewEngine.MakePathAbsolute(executingFilePath, pagePath);
+            var result = viewEngine.GetAbsolutePath(executingFilePath, pagePath);
 
             // Assert
             Assert.Same(pagePath, result);
@@ -1341,14 +1341,14 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         [InlineData("Page.cshtml")]
         [InlineData("Folder/Page.cshtml")]
         [InlineData("../../Folder1/Folder2/Page.cshtml")]
-        public void MakePathAbsolute_ResolvesRelativeToExecutingPage(string pagePath)
+        public void GetAbsolutePath_ResolvesRelativeToExecutingPage(string pagePath)
         {
             // Arrange
             var expectedPagePath = "/Home/" + pagePath;
             var viewEngine = CreateViewEngine();
 
             // Act
-            var result = viewEngine.MakePathAbsolute("/Home/Page.cshtml", pagePath);
+            var result = viewEngine.GetAbsolutePath("/Home/Page.cshtml", pagePath);
 
             // Assert
             Assert.Equal(expectedPagePath, result);
@@ -1358,14 +1358,14 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         [InlineData("Page.cshtml")]
         [InlineData("Folder/Page.cshtml")]
         [InlineData("../../Folder1/Folder2/Page.cshtml")]
-        public void MakePathAbsolute_ResolvesRelativeToAppRoot_IfNoPageExecuting(string pagePath)
+        public void GetAbsolutePath_ResolvesRelativeToAppRoot_IfNoPageExecuting(string pagePath)
         {
             // Arrange
             var expectedPagePath = "/" + pagePath;
             var viewEngine = CreateViewEngine();
 
             // Act
-            var result = viewEngine.MakePathAbsolute(executingFilePath: null, pagePath: pagePath);
+            var result = viewEngine.GetAbsolutePath(executingFilePath: null, pagePath: pagePath);
 
             // Assert
             Assert.Equal(expectedPagePath, result);
@@ -1649,7 +1649,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             }
         }
 
-        // Return RazorViewEngine with factories that always successfully create instances.
+        // Return RazorViewEngine with a page factory provider that is always successful.
         private RazorViewEngine CreateSuccessfulViewEngine()
         {
             var pageFactory = new Mock<IRazorPageFactoryProvider>(MockBehavior.Strict);

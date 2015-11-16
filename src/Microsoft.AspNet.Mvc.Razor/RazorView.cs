@@ -174,7 +174,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
                     // Pass correct absolute path to next layout or the entry page if this view start set Layout to a
                     // relative path.
-                    layout = _viewEngine.MakePathAbsolute(viewStart.Path, viewStart.Layout);
+                    layout = _viewEngine.GetAbsolutePath(viewStart.Path, viewStart.Layout);
                 }
             }
             finally
