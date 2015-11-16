@@ -45,7 +45,7 @@ namespace Microsoft.AspNet.Authorization.Test
                     options.AddPolicy("Basic", policy => policy.RequireClaim("Permission", "CanViewPage"));
                 });
             });
-            var user = new ClaimsPrincipal(new ClaimsIdentity(new Claim[] { new Claim("Permission", "CanViewPage") }, "Basic"));
+            var user = new ClaimsPrincipal(new ClaimsIdentity(new Claim[] { new Claim("Permission", "CanViewPage") }));
 
             // Act
             var allowed = await authorizationService.AuthorizeAsync(user, "Basic");
@@ -62,7 +62,10 @@ namespace Microsoft.AspNet.Authorization.Test
             {
                 services.AddAuthorization(options =>
                 {
-                    options.AddPolicy("Basic", policy => policy.RequireClaim("Permission", "CanViewPage"));
+                    options.AddPolicy("Basic", policy => {
+                        policy.AddAuthenticationSchemes("Basic");
+                        policy.RequireClaim("Permission", "CanViewPage");
+                    });
                 });
             });
             var user = new ClaimsPrincipal(new ClaimsIdentity(new Claim[] { new Claim("Permission", "CanViewPage") }, "Basic"));
