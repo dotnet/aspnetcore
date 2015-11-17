@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.Server.Kestrel
             _connectionWriteFin = LoggerMessage.Define<long>(LogLevel.Debug, 7, @"Connection id ""{ConnectionId}"" sending FIN.");
             _connectionWroteFin = LoggerMessage.Define<long, int>(LogLevel.Debug, 8, @"Connection id ""{ConnectionId}"" sent FIN with status ""{Status}"".");
             _connectionKeepAlive = LoggerMessage.Define<long>(LogLevel.Debug, 9, @"Connection id ""{ConnectionId}"" completed keep alive response.");
-            _connectionDisconnect = LoggerMessage.Define<long>(LogLevel.Error, 10, @"Connection id ""{ConnectionId}"" disconnected.");
+            _connectionDisconnect = LoggerMessage.Define<long>(LogLevel.Debug, 10, @"Connection id ""{ConnectionId}"" disconnected.");
             // ConnectionWrite: Reserved: 11
             // ConnectionWriteCallback: Reserved: 12
             // ApplicationError: Reserved: 13 - LoggerMessage.Define overload not present 
