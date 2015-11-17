@@ -41,9 +41,8 @@ namespace Microsoft.AspNet.DataProtection
             }
 
             // build the service collection
-            ServiceCollection serviceCollection = new ServiceCollection();
-            serviceCollection.AddDataProtection();
-            serviceCollection.ConfigureDataProtection(configurationObject =>
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddDataProtection(configurationObject =>
             {
                 configurationObject.PersistKeysToFileSystem(keyDirectory);
                 configure?.Invoke(configurationObject);

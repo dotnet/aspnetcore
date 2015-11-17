@@ -30,13 +30,13 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Configures the behavior of the Data Protection system.
+        /// Adds default Data Protection services to an <see cref="IServiceCollection"/> and configures the behavior of the Data Protection system.
         /// </summary>
         /// <param name="services">A service collection to which Data Protection has already been added.</param>
         /// <param name="configure">A callback which takes a <see cref="DataProtectionConfiguration"/> parameter.
         /// This callback will be responsible for configuring the system.</param>
         /// <returns>The <paramref name="services"/> instance.</returns>
-        public static IServiceCollection ConfigureDataProtection(this IServiceCollection services, Action<DataProtectionConfiguration> configure)
+        public static IServiceCollection AddDataProtection(this IServiceCollection services, Action<DataProtectionConfiguration> configure)
         {
             if (services == null)
             {
@@ -49,7 +49,7 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             configure(new DataProtectionConfiguration(services));
-            return services;
+            return services.AddDataProtection();
         }
     }
 }
