@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Antiforgery
             // Arrange
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddAntiforgery();
-            serviceCollection.ConfigureDataProtection(o => o.SetApplicationName(applicationId));
+            serviceCollection.AddDataProtection(o => o.SetApplicationName(applicationId));
 
             var services = serviceCollection.BuildServiceProvider();
             var options = services.GetRequiredService<IOptions<AntiforgeryOptions>>();
@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.Antiforgery
                 o.CookieName = "antiforgery";
             });
             serviceCollection.AddAntiforgery();
-            serviceCollection.ConfigureDataProtection(o => o.SetApplicationName("HelloWorldApp"));
+            serviceCollection.AddDataProtection(o => o.SetApplicationName("HelloWorldApp"));
 
             var services = serviceCollection.BuildServiceProvider();
             var options = services.GetRequiredService<IOptions<AntiforgeryOptions>>();
