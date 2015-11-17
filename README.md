@@ -60,7 +60,10 @@ To get started,
 
 **Using Visual Studio on Windows**
 
-1. Open the solution file, `NodeServices.sln`, in Visual Studio. Wait for it to finish fetching and installing dependencies.
+1. Open the solution file, `NodeServices.sln`, in Visual Studio.
+2. Wait for it to finish fetching and installing dependencies.
+3. If you get the error `'reactivex/rxjs' is not in the npm registry`, then your Visual Studio installation's version of the NPM tool is out of date. You will need to restore NPM dependencies manually from a command prompt (e.g., `cd samples\angular\MusicStore` then `npm install`).
+4. Select a sample and run it. For example, right-click on the `MusicStore` project in Solution Explorer and choose `Set as startup project`. Then press `Ctrl+F5` to launch it.
 
 **Using dnx on Windows/Mac/Linux**
 
