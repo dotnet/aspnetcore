@@ -467,7 +467,7 @@ namespace Microsoft.AspNet.Mvc
         [NonAction]
         public virtual ContentResult Content(string content, string contentType)
         {
-            return Content(content, contentType, contentEncoding: null);
+            return Content(content, MediaTypeHeaderValue.Parse(contentType));
         }
 
         /// <summary>
@@ -478,10 +478,16 @@ namespace Microsoft.AspNet.Mvc
         /// <param name="contentType">The content type (MIME type).</param>
         /// <param name="contentEncoding">The content encoding.</param>
         /// <returns>The created <see cref="ContentResult"/> object for the response.</returns>
+        /// <remarks>
+        /// If encoding is provided by both the 'charset' and the <paramref name="contentEncoding"/> parameters, then
+        /// the <paramref name="contentEncoding"/> parameter is chosen as the final encoding.
+        /// </remarks>
         [NonAction]
         public virtual ContentResult Content(string content, string contentType, Encoding contentEncoding)
         {
-            return Content(content, new MediaTypeHeaderValue(contentType) { Encoding = contentEncoding });
+            var mediaTypeHeaderValue = MediaTypeHeaderValue.Parse(contentType);
+            mediaTypeHeaderValue.Encoding = contentEncoding ?? mediaTypeHeaderValue.Encoding;
+            return Content(content, mediaTypeHeaderValue);
         }
 
         /// <summary>
@@ -639,7 +645,7 @@ namespace Microsoft.AspNet.Mvc
         }
 
         /// <summary>
-        /// Creates a <see cref="LocalRedirectResult"/> object with <see cref="LocalRedirectResult.Permanent"/> 
+        /// Creates a <see cref="LocalRedirectResult"/> object with <see cref="LocalRedirectResult.Permanent"/>
         /// set to true using the specified <paramref name="localUrl"/>.
         /// </summary>
         /// <param name="localUrl">The local URL to redirect to.</param>
@@ -1756,7 +1762,7 @@ namespace Microsoft.AspNet.Mvc
             {
                 throw new ArgumentNullException(nameof(model));
             }
-            
+
             var modelName = prefix ?? string.Empty;
 
             // Clear ModelStateDictionary entries for the model so that it will be re-validated.

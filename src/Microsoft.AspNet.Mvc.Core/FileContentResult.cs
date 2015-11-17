@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.Mvc
         /// <param name="fileContents">The bytes that represent the file contents.</param>
         /// <param name="contentType">The Content-Type header of the response.</param>
         public FileContentResult(byte[] fileContents, string contentType)
-            : this(fileContents, new MediaTypeHeaderValue(contentType))
+            : this(fileContents, MediaTypeHeaderValue.Parse(contentType))
         {
             if (fileContents == null)
             {

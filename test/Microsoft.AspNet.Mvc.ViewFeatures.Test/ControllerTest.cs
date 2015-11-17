@@ -18,6 +18,7 @@ using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Testing;
+using Microsoft.Net.Http.Headers;
 using Moq;
 using Newtonsoft.Json;
 using Xunit;
@@ -1108,6 +1109,66 @@ namespace Microsoft.AspNet.Mvc.Test
         }
 
         [Fact]
+        public void Controller_Content_NoContentType_DefaultEncodingIsUsed()
+        {
+            // Arrange
+            var contentController = new ContentController();
+            var expected = MediaTypeHeaderValue.Parse("text/plain; charset=utf-8");
+
+            // Act
+            var contentResult = (ContentResult)contentController.Content_WithNoEncoding();
+
+            // Assert
+            // The default content type of ContentResult is used when the result is executed.
+            Assert.Null(contentResult.ContentType);
+        }
+
+        [Fact]
+        public void Controller_Content_InvalidCharset_DefaultEncodingIsUsed()
+        {
+            // Arrange
+            var contentController = new ContentController();
+            var contentType = "text/xml; charset=invalid; p1=p1-value";
+
+            // Act
+            var contentResult = (ContentResult)contentController.Content_WithInvalidCharset();
+
+            // Assert
+            Assert.NotNull(contentResult.ContentType);
+            Assert.Equal(contentType, contentResult.ContentType.ToString());
+            // The default encoding of ContentResult is used when this result is executed.
+            Assert.Null(contentResult.ContentType.Encoding);
+        }
+
+        [Fact]
+        public void Controller_Content_CharsetAndEncodingProvided_EncodingIsUsed()
+        {
+            // Arrange
+            var contentController = new ContentController();
+            var contentType = MediaTypeHeaderValue.Parse("text/xml; charset=us-ascii; p1=p1-value");
+
+            // Act
+            var contentResult = (ContentResult)contentController.Content_WithEncodingInCharset_AndEncodingParameter();
+
+            // Assert
+            Assert.Equal(contentType, contentResult.ContentType);
+        }
+
+        [Fact]
+        public void Controller_Content_CharsetInContentType_IsUsedForEncoding()
+        {
+            // Arrange
+            var contentController = new ContentController();
+            var contentType = MediaTypeHeaderValue.Parse("text/xml; charset=us-ascii; p1=p1-value");
+
+            // Act
+            var contentResult = (ContentResult)contentController.Content_WithEncodingInCharset();
+
+            // Assert
+            Assert.Equal(contentType, contentResult.ContentType);
+        }
+
+        [Fact]
         public void Controller_Json_WithParameterValue_SetsResultData()
         {
             // Arrange
@@ -1881,6 +1942,29 @@ namespace Microsoft.AspNet.Mvc.Test
             public void Dispose()
             {
                 throw new NotImplementedException();
+            }
+        }
+
+        private class ContentController : Controller
+        {
+            public IActionResult Content_WithNoEncoding()
+            {
+                return Content("Hello!!");
+            }
+
+            public IActionResult Content_WithEncodingInCharset()
+            {
+                return Content("Hello!!", "text/xml; charset=us-ascii; p1=p1-value");
+            }
+
+            public IActionResult Content_WithInvalidCharset()
+            {
+                return Content("Hello!!", "text/xml; charset=invalid; p1=p1-value");
+            }
+
+            public IActionResult Content_WithEncodingInCharset_AndEncodingParameter()
+            {
+                return Content("Hello!!", "text/xml; charset=invalid; p1=p1-value", Encoding.ASCII);
             }
         }
     }

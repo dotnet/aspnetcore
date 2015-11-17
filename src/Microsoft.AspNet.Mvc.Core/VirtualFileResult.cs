@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.Mvc
         /// <param name="fileName">The path to the file. The path must be relative/virtual.</param>
         /// <param name="contentType">The Content-Type header of the response.</param>
         public VirtualFileResult(string fileName, string contentType)
-            : this(fileName, new MediaTypeHeaderValue(contentType))
+            : this(fileName, MediaTypeHeaderValue.Parse(contentType))
         {
             if (fileName == null)
             {

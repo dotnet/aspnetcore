@@ -24,20 +24,6 @@ namespace Microsoft.AspNet.Mvc
         /// the provided <paramref name="contentType"/>.
         /// </summary>
         /// <param name="contentType">The Content-Type header of the response.</param>
-        protected FileResult(string contentType)
-            : this(new MediaTypeHeaderValue(contentType))
-        {
-            if (contentType == null)
-            {
-                throw new ArgumentNullException(nameof(contentType));
-            }
-        }
-
-        /// <summary>
-        /// Creates a new <see cref="FileResult"/> instance with
-        /// the provided <paramref name="contentType"/>.
-        /// </summary>
-        /// <param name="contentType">The Content-Type header of the response.</param>
         protected FileResult(MediaTypeHeaderValue contentType)
         {
             if (contentType == null)
@@ -87,7 +73,7 @@ namespace Microsoft.AspNet.Mvc
                 contentDisposition.SetHttpFileName(FileDownloadName);
                 context.HttpContext.Response.Headers[HeaderNames.ContentDisposition] = contentDisposition.ToString();
             }
-            
+
             logger.FileResultExecuting(FileDownloadName);
             return WriteFileAsync(response);
         }

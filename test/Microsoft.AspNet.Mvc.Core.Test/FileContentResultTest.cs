@@ -32,6 +32,22 @@ namespace Microsoft.AspNet.Mvc
         }
 
         [Fact]
+        public void Constructor_SetsContentTypeAndParameters()
+        {
+            // Arrange
+            var fileContents = new byte[0];
+            var contentType = "text/plain; charset=us-ascii; p1=p1-value";
+            var expectedMediaType = MediaTypeHeaderValue.Parse(contentType);
+
+            // Act
+            var result = new FileContentResult(fileContents, contentType);
+
+            // Assert
+            Assert.Same(fileContents, result.FileContents);
+            Assert.Equal(expectedMediaType, result.ContentType);
+        }
+
+        [Fact]
         public async Task WriteFileAsync_CopiesBuffer_ToOutputStream()
         {
             // Arrange

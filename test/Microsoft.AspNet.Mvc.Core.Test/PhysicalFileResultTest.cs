@@ -36,6 +36,22 @@ namespace Microsoft.AspNet.Mvc
         }
 
         [Fact]
+        public void Constructor_SetsContentTypeAndParameters()
+        {
+            // Arrange
+            var path = Path.GetFullPath("helllo.txt");
+            var contentType = "text/plain; charset=us-ascii; p1=p1-value";
+            var expectedMediaType = MediaTypeHeaderValue.Parse(contentType);
+
+            // Act
+            var result = new PhysicalFileResult(path, contentType);
+
+            // Assert
+            Assert.Equal(path, result.FileName);
+            Assert.Equal(expectedMediaType, result.ContentType);
+        }
+
+        [Fact]
         public async Task ExecuteResultAsync_FallsbackToStreamCopy_IfNoIHttpSendFilePresent()
         {
             // Arrange
