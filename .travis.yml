@@ -1,9 +1,22 @@
 language: csharp
-sudo: false
-mono:
-  - beta
+sudo: required
+dist: trusty
+addons:
+  apt:
+    packages:
+    - gettext
+    - libcurl4-openssl-dev
+    - libicu-dev
+    - libssl-dev
+    - libunwind8
+    - zlib1g
+before_install:
+  - if test "$TRAVIS_OS_NAME" == "osx"; then brew update; fi
+  - if test "$TRAVIS_OS_NAME" == "osx"; then brew install icu4c; fi
 env:
-  - MONO_THREADS_PER_CPU=2000
+  - KOREBUILD_DNU_RESTORE_CORECLR=true MONO_THREADS_PER_CPU=2000
+mono:
+  - 4.0.5
 os:
   - linux
   - osx
