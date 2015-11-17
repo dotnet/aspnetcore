@@ -175,10 +175,7 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
                 else
                 {
                     // Skip unknown elements.
-                    if (_logger.IsWarningLevelEnabled())
-                    {
-                        _logger.LogWarningF($"Unknown element with name '{element.Name}' found in keyring, skipping.");
-                    }
+                    _logger.UnknownElementWithNameFoundInKeyringSkipping(element.Name);
                 }
             }
 
@@ -192,17 +189,11 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
                     if (key != null)
                     {
                         key.SetRevoked();
-                        if (_logger.IsVerboseLevelEnabled())
-                        {
-                            _logger.LogVerboseF($"Marked key {revokedKeyId:B} as revoked in the keyring.");
-                        }
+                        _logger.MarkedKeyAsRevokedInTheKeyring(revokedKeyId);
                     }
                     else
                     {
-                        if (_logger.IsWarningLevelEnabled())
-                        {
-                            _logger.LogWarningF($"Tried to process revocation of key {revokedKeyId:B}, but no such key was found in keyring. Skipping.");
-                        }
+                        _logger.TriedToProcessRevocationOfKeyButNoSuchKeyWasFound(revokedKeyId);
                     }
                 }
             }
@@ -220,10 +211,7 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
                     if (key.CreationDate < mostRecentMassRevocationDate)
                     {
                         key.SetRevoked();
-                        if (_logger.IsVerboseLevelEnabled())
-                        {
-                            _logger.LogVerboseF($"Marked key {key.KeyId:B} as revoked in the keyring.");
-                        }
+                        _logger.MarkedKeyAsRevokedInTheKeyring(key.KeyId);
                     }
                 }
             }
@@ -249,10 +237,7 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
                 DateTimeOffset activationDate = (DateTimeOffset)keyElement.Element(ActivationDateElementName);
                 DateTimeOffset expirationDate = (DateTimeOffset)keyElement.Element(ExpirationDateElementName);
 
-                if (_logger.IsVerboseLevelEnabled())
-                {
-                    _logger.LogVerboseF($"Found key {keyId:B}.");
-                }
+                _logger.FoundKey(keyId);
 
                 return new DeferredKey(
                     keyId: keyId,
@@ -283,20 +268,14 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
                 {
                     // this is a mass revocation of all keys as of the specified revocation date
                     DateTimeOffset massRevocationDate = (DateTimeOffset)revocationElement.Element(RevocationDateElementName);
-                    if (_logger.IsVerboseLevelEnabled())
-                    {
-                        _logger.LogVerboseF($"Found revocation of all keys created prior to {massRevocationDate:u}.");
-                    }
+                    _logger.FoundRevocationOfAllKeysCreatedPriorTo(massRevocationDate);
                     return massRevocationDate;
                 }
                 else
                 {
                     // only one key is being revoked
                     Guid keyId = XmlConvert.ToGuid(keyIdAsString);
-                    if (_logger.IsVerboseLevelEnabled())
-                    {
-                        _logger.LogVerboseF($"Found revocation of key {keyId:B}.");
-                    }
+                    _logger.FoundRevocationOfKey(keyId);
                     return keyId;
                 }
             }
@@ -304,10 +283,7 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
             {
                 // Any exceptions that occur are fatal - we don't want to continue if we cannot process
                 // revocation information.
-                if (_logger.IsErrorLevelEnabled())
-                {
-                    _logger.LogErrorF(ex, $"An exception occurred while processing the revocation element '{revocationElement}'. Cannot continue keyring processing.");
-                }
+                _logger.ExceptionWhileProcessingRevocationElement(revocationElement, ex);
                 throw;
             }
         }
@@ -321,10 +297,7 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
             //   <reason>...</reason>
             // </revocation>
 
-            if (_logger.IsInformationLevelEnabled())
-            {
-                _logger.LogInformationF($"Revoking all keys as of {revocationDate:u} for reason '{reason}'.");
-            }
+            _logger.RevokingAllKeysAsOfForReason(revocationDate, reason);
 
             var revocationElement = new XElement(RevocationElementName,
                 new XAttribute(VersionAttributeName, 1),
@@ -350,9 +323,9 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
 
         private void TriggerAndResetCacheExpirationToken([CallerMemberName] string opName = null, bool suppressLogging = false)
         {
-            if (!suppressLogging && _logger.IsVerboseLevelEnabled())
+            if (!suppressLogging)
             {
-                _logger.LogVerboseF($"Key cache expiration token triggered by '{opName}' operation.");
+                _logger.KeyCacheExpirationTokenTriggeredByOperation(opName);
             }
 
             Interlocked.Exchange(ref _cacheExpirationTokenSource, new CancellationTokenSource())?.Cancel();
@@ -365,17 +338,12 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
             // log and the raw <key> element to the debug log. This works for our out-of-box XML decryptors since they don't
             // include sensitive information in the exception message.
 
-            if (_logger.IsErrorLevelEnabled())
-            {
-                // write sanitized <key> element
-                _logger.LogErrorF(error, $"An exception occurred while processing the key element '{keyElement.WithoutChildNodes()}'.");
-            }
+            // write sanitized <key> element
+            _logger.ExceptionWhileProcessingKeyElement(keyElement.WithoutChildNodes(), error);
 
-            if (_logger.IsDebugLevelEnabled())
-            {
-                // write full <key> element
-                _logger.LogDebugF(error, $"An exception occurred while processing the key element '{keyElement}'.");
-            }
+            // write full <key> element
+            _logger.AnExceptionOccurredWhileProcessingElementDebug(keyElement, error);
+
         }
 
         IKey IInternalXmlKeyManager.CreateNewKey(Guid keyId, DateTimeOffset creationDate, DateTimeOffset activationDate, DateTimeOffset expirationDate)
@@ -389,19 +357,13 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
             //   </descriptor>
             // </key>
 
-            if (_logger.IsInformationLevelEnabled())
-            {
-                _logger.LogInformationF($"Creating key {keyId:B} with creation date {creationDate:u}, activation date {activationDate:u}, and expiration date {expirationDate:u}.");
-            }
+            _logger.CreatingKey(keyId, creationDate, activationDate, expirationDate);
 
             var newDescriptor = _authenticatedEncryptorConfiguration.CreateNewDescriptor()
                 ?? CryptoUtil.Fail<IAuthenticatedEncryptorDescriptor>("CreateNewDescriptor returned null.");
             var descriptorXmlInfo = newDescriptor.ExportToXml();
 
-            if (_logger.IsVerboseLevelEnabled())
-            {
-                _logger.LogVerboseF($"Descriptor deserializer type for key {keyId:B} is '{descriptorXmlInfo.DeserializerType.AssemblyQualifiedName}'.");
-            }
+            _logger.DescriptorDeserializerTypeForKeyIs(keyId, descriptorXmlInfo.DeserializerType.AssemblyQualifiedName);
 
             // build the <key> element
             var keyElement = new XElement(KeyElementName,
@@ -415,23 +377,20 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
                     descriptorXmlInfo.SerializedDescriptorElement));
 
             // If key escrow policy is in effect, write the *unencrypted* key now.
-            if (_logger.IsVerboseLevelEnabled())
+            if (_keyEscrowSink != null)
             {
-                if (_keyEscrowSink != null)
-                {
-                    _logger.LogVerboseF($"Key escrow sink found. Writing key {keyId:B} to escrow.");
-                }
-                else
-                {
-                    _logger.LogVerboseF($"No key escrow sink found. Not writing key {keyId:B} to escrow.");
-                }
+                _logger.KeyEscrowSinkFoundWritingKeyToEscrow(keyId);
+            }
+            else
+            {
+                _logger.NoKeyEscrowSinkFoundNotWritingKeyToEscrow(keyId);
             }
             _keyEscrowSink?.Store(keyId, keyElement);
 
             // If an XML encryptor has been configured, protect secret key material now.
-            if (KeyEncryptor == null && _logger.IsWarningLevelEnabled())
+            if (KeyEncryptor == null)
             {
-                _logger.LogWarningF($"No XML encryptor configured. Key {keyId:B} may be persisted to storage in unencrypted form.");
+                _logger.NoXMLEncryptorConfiguredKeyMayBePersistedToStorageInUnencryptedForm(keyId);
             }
             var possiblyEncryptedKeyElement = KeyEncryptor?.EncryptIfNecessary(keyElement) ?? keyElement;
 
@@ -479,10 +438,7 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
             //   <reason>...</reason>
             // </revocation>
 
-            if (_logger.IsInformationLevelEnabled())
-            {
-                _logger.LogInformationF($"Revoking key {keyId:B} at {revocationDate:u} for reason '{reason}'.");
-            }
+            _logger.RevokingKeyForReason(keyId, revocationDate, reason);
 
             var revocationElement = new XElement(RevocationElementName,
                 new XAttribute(VersionAttributeName, 1),

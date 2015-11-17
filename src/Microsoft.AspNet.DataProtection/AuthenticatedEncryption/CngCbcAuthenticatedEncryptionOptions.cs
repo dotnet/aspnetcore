@@ -111,11 +111,7 @@ namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption
                 throw Error.Common_PropertyCannotBeNullOrEmpty(nameof(HashAlgorithm));
             }
 
-            if (logger.IsVerboseLevelEnabled())
-            {
-                logger.LogVerboseF($"Opening CNG algorithm '{HashAlgorithm}' from provider '{HashAlgorithmProvider}' with HMAC.");
-            }
-
+            logger.OpeningCNGAlgorithmFromProviderWithHMAC(HashAlgorithm, HashAlgorithmProvider);
             BCryptAlgorithmHandle algorithmHandle = null;
 
             // Special-case cached providers
@@ -152,10 +148,7 @@ namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption
                 throw Error.Common_PropertyMustBeNonNegative(nameof(EncryptionAlgorithmKeySize));
             }
 
-            if (logger.IsVerboseLevelEnabled())
-            {
-                logger.LogVerboseF($"Opening CNG algorithm '{EncryptionAlgorithm}' from provider '{EncryptionAlgorithmProvider}' with chaining mode CBC.");
-            }
+            logger.OpeningCNGAlgorithmFromProviderWithChainingModeCBC(EncryptionAlgorithm, EncryptionAlgorithmProvider);
 
             BCryptAlgorithmHandle algorithmHandle = null;
 

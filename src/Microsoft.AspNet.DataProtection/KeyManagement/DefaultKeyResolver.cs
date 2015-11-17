@@ -54,10 +54,7 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
             }
             catch (Exception ex)
             {
-                if (_logger.IsWarningLevelEnabled())
-                {
-                    _logger.LogWarningF(ex, $"Key {key.KeyId:B} is ineligible to be the default key because its {nameof(IKey.CreateEncryptorInstance)} method failed.");
-                }
+                _logger.KeyIsIneligibleToBeTheDefaultKeyBecauseItsMethodFailed(key.KeyId, nameof(IKey.CreateEncryptorInstance), ex);
                 return false;
             }
         }
@@ -72,18 +69,12 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
 
             if (preferredDefaultKey != null)
             {
-                if (_logger.IsVerboseLevelEnabled())
-                {
-                    _logger.LogVerboseF($"Considering key {preferredDefaultKey.KeyId:B} with expiration date {preferredDefaultKey.ExpirationDate:u} as default key.");
-                }
+                _logger.ConsideringKeyWithExpirationDateAsDefaultKey(preferredDefaultKey.KeyId, preferredDefaultKey.ExpirationDate);
 
                 // if the key has been revoked or is expired, it is no longer a candidate
                 if (preferredDefaultKey.IsRevoked || preferredDefaultKey.IsExpired(now) || !CanCreateAuthenticatedEncryptor(preferredDefaultKey))
                 {
-                    if (_logger.IsVerboseLevelEnabled())
-                    {
-                        _logger.LogVerboseF($"Key {preferredDefaultKey.KeyId:B} is no longer under consideration as default key because it is expired, revoked, or cannot be deciphered.");
-                    }
+                    _logger.KeyIsNoLongerUnderConsiderationAsDefault(preferredDefaultKey.KeyId);
                     preferredDefaultKey = null;
                 }
             }
@@ -104,9 +95,9 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
                    && !key.IsExpired(now + _keyPropagationWindow)
                    && !key.IsRevoked);
 
-                if (callerShouldGenerateNewKey && _logger.IsVerboseLevelEnabled())
+                if (callerShouldGenerateNewKey)
                 {
-                    _logger.LogVerbose("Default key expiration imminent and repository contains no viable successor. Caller should generate a successor.");
+                    _logger.DefaultKeyExpirationImminentAndRepository();
                 }
 
                 fallbackKey = null;
@@ -127,10 +118,7 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
                            where !key.IsRevoked && CanCreateAuthenticatedEncryptor(key)
                            select key).FirstOrDefault();
 
-            if (_logger.IsVerboseLevelEnabled())
-            {
-                _logger.LogVerbose("Repository contains no viable default key. Caller should generate a key with immediate activation.");
-            }
+            _logger.RepositoryContainsNoViableDefaultKey();
 
             callerShouldGenerateNewKey = true;
             return null;

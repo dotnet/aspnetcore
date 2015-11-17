@@ -20,10 +20,7 @@ namespace Microsoft.AspNet.DataProtection.Repositories
         public EphemeralXmlRepository(IServiceProvider services)
         {
             var logger = services?.GetLogger<EphemeralXmlRepository>();
-            if (logger.IsWarningLevelEnabled())
-            {
-                logger.LogWarning("Using an in-memory repository. Keys will not be persisted to storage.");
-            }
+            logger.UsingInmemoryRepository();
         }
 
         public virtual IReadOnlyCollection<XElement> GetAllElements()

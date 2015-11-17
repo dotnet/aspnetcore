@@ -111,7 +111,7 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
 
                 if (_logger.IsDebugLevelEnabled())
                 {
-                    _logger.LogDebugF($"Performing protect operation to key {defaultKeyId:B} with purposes {JoinPurposesForLog(Purposes)}.");
+                    _logger.PerformingProtectOperationToKeyWithPurposes(defaultKeyId, JoinPurposesForLog(Purposes));
                 }
 
                 // We'll need to apply the default key id to the template if it hasn't already been applied.
@@ -236,7 +236,7 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
 
                 if (_logger.IsDebugLevelEnabled())
                 {
-                    _logger.LogDebugF($"Performing unprotect operation to key {keyIdFromPayload:B} with purposes {JoinPurposesForLog(Purposes)}.");
+                    _logger.PerformingUnprotectOperationToKeyWithPurposes(keyIdFromPayload, JoinPurposesForLog(Purposes));
                 }
 
                 // Find the correct encryptor in the keyring.
@@ -245,10 +245,7 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
                 var requestedEncryptor = currentKeyRing.GetAuthenticatedEncryptorByKeyId(keyIdFromPayload, out keyWasRevoked);
                 if (requestedEncryptor == null)
                 {
-                    if (_logger.IsDebugLevelEnabled())
-                    {
-                        _logger.LogDebugF($"Key {keyIdFromPayload:B} was not found in the key ring. Unprotect operation cannot proceed.");
-                    }
+                    _logger.KeyWasNotFoundInTheKeyRingUnprotectOperationCannotProceed(keyIdFromPayload);
                     throw Error.Common_KeyNotFound(keyIdFromPayload);
                 }
 
@@ -264,18 +261,12 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
                 {
                     if (allowOperationsOnRevokedKeys)
                     {
-                        if (_logger.IsVerboseLevelEnabled())
-                        {
-                            _logger.LogVerboseF($"Key {keyIdFromPayload:B} was revoked. Caller requested unprotect operation proceed regardless.");
-                        }
+                        _logger.KeyWasRevokedCallerRequestedUnprotectOperationProceedRegardless(keyIdFromPayload);
                         status = UnprotectStatus.DecryptionKeyWasRevoked;
                     }
                     else
                     {
-                        if (_logger.IsVerboseLevelEnabled())
-                        {
-                            _logger.LogVerboseF($"Key {keyIdFromPayload:B} was revoked. Unprotect operation cannot proceed.");
-                        }
+                        _logger.KeyWasRevokedUnprotectOperationCannotProceed(keyIdFromPayload);
                         throw Error.Common_KeyRevoked(keyIdFromPayload);
                     }
                 }

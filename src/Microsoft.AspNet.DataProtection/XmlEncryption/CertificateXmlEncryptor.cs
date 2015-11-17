@@ -149,10 +149,8 @@ namespace Microsoft.AspNet.DataProtection.XmlEncryption
                 }
                 catch (Exception ex)
                 {
-                    if (_logger.IsErrorLevelEnabled())
-                    {
-                        _logger.LogErrorF(ex, $"An exception occurred while trying to resolve certificate with thumbprint '{thumbprint}'.");
-                    }
+                    _logger.ExceptionWhileTryingToResolveCertificateWithThumbprint(thumbprint, ex);
+
                     throw;
                 }
             };
@@ -163,10 +161,7 @@ namespace Microsoft.AspNet.DataProtection.XmlEncryption
             var cert = _certFactory()
                 ?? CryptoUtil.Fail<X509Certificate2>("Cert factory returned null.");
 
-            if (_logger.IsVerboseLevelEnabled())
-            {
-                _logger.LogVerboseF($"Encrypting to X.509 certificate with thumbprint '{cert.Thumbprint}'.");
-            }
+            _logger.EncryptingToX509CertificateWithThumbprint(cert.Thumbprint);
 
             try
             {
@@ -174,10 +169,7 @@ namespace Microsoft.AspNet.DataProtection.XmlEncryption
             }
             catch (Exception ex)
             {
-                if (_logger.IsErrorLevelEnabled())
-                {
-                    _logger.LogErrorF(ex, $"An error occurred while encrypting to X.509 certificate with thumbprint '{cert.Thumbprint}'.");
-                }
+                _logger.AnErrorOccurredWhileEncryptingToX509CertificateWithThumbprint(cert.Thumbprint, ex);
                 throw;
             }
         }

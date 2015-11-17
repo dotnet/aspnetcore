@@ -92,11 +92,7 @@ namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption
 
             BCryptAlgorithmHandle algorithmHandle = null;
 
-            if (logger.IsVerboseLevelEnabled())
-            {
-                logger.LogVerboseF($"Opening CNG algorithm '{EncryptionAlgorithm}' from provider '{EncryptionAlgorithmProvider}' with chaining mode GCM.");
-            }
-
+            logger.OpeningCNGAlgorithmFromProviderWithChainingModeGCM(EncryptionAlgorithm, EncryptionAlgorithmProvider);
             // Special-case cached providers
             if (EncryptionAlgorithmProvider == null)
             {

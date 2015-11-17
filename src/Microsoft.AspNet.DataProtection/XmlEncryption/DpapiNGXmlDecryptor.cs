@@ -72,7 +72,7 @@ namespace Microsoft.AspNet.DataProtection.XmlEncryption
                         // swallow all errors - it's just a log
                         protectionDescriptorRule = null;
                     }
-                    _logger.LogVerboseF($"Decrypting secret element using Windows DPAPI-NG with protection descriptor rule '{protectionDescriptorRule}'.");
+                    _logger.DecryptingSecretElementUsingWindowsDPAPING(protectionDescriptorRule);
                 }
 
                 using (Secret secret = DpapiSecretSerializerHelper.UnprotectWithDpapiNG(protectedSecret))
@@ -84,10 +84,7 @@ namespace Microsoft.AspNet.DataProtection.XmlEncryption
             {
                 // It's OK for us to log the error, as we control the exception, and it doesn't contain
                 // sensitive information.
-                if (_logger.IsErrorLevelEnabled())
-                {
-                    _logger.LogError(ex, "An exception occurred while trying to decrypt the element.");
-                }
+                _logger.ExceptionOccurredTryingToDecryptElement(ex);
                 throw;
             }
         }

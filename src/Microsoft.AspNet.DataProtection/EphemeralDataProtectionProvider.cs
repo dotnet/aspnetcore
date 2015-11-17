@@ -48,10 +48,7 @@ namespace Microsoft.AspNet.DataProtection
             }
 
             var logger = services.GetLogger<EphemeralDataProtectionProvider>();
-            if (logger.IsWarningLevelEnabled())
-            {
-                logger.LogWarning("Using ephemeral data protection provider. Payloads will be undecipherable upon application shutdown.");
-            }
+            logger.UsingEphemeralDataProtectionProvider();
 
             _dataProtectionProvider = new KeyRingBasedDataProtectionProvider(keyringProvider, services);
         }

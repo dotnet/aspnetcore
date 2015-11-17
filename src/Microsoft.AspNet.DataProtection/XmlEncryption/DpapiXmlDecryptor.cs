@@ -48,10 +48,7 @@ namespace Microsoft.AspNet.DataProtection.XmlEncryption
                 throw new ArgumentNullException(nameof(encryptedElement));
             }
 
-            if (_logger.IsVerboseLevelEnabled())
-            {
-                _logger.LogVerbose("Decrypting secret element using Windows DPAPI.");
-            }
+            _logger.DecryptingSecretElementUsingWindowsDPAPI();
 
             try
             {
@@ -70,10 +67,7 @@ namespace Microsoft.AspNet.DataProtection.XmlEncryption
             {
                 // It's OK for us to log the error, as we control the exception, and it doesn't contain
                 // sensitive information.
-                if (_logger.IsErrorLevelEnabled())
-                {
-                    _logger.LogError(ex, "An exception occurred while trying to decrypt the element.");
-                }
+                _logger.AnExceptionOccurredWhileTryingToDecryptElement(ex);
                 throw;
             }
         }

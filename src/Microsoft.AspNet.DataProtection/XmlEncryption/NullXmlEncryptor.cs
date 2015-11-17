@@ -48,10 +48,7 @@ namespace Microsoft.AspNet.DataProtection.XmlEncryption
                 throw new ArgumentNullException(nameof(plaintextElement));
             }
 
-            if (_logger.IsWarningLevelEnabled())
-            {
-                _logger.LogWarning("Encrypting using a null encryptor; secret information isn't being protected.");
-            }
+            _logger.EncryptingUsingNullEncryptor();
 
             // <unencryptedKey>
             //   <!-- This key is not encrypted. -->

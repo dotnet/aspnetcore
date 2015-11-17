@@ -140,10 +140,7 @@ namespace Microsoft.AspNet.DataProtection.Repositories
 
         private XElement ReadElementFromRegKey(RegistryKey regKey, string valueName)
         {
-            if (_logger.IsVerboseLevelEnabled())
-            {
-                _logger.LogVerboseF($"Reading data from registry key '{regKey}', value '{valueName}'.");
-            }
+            _logger.ReadingDataFromRegistryKeyValue(regKey, valueName);
 
             string data = regKey.GetValue(valueName) as string;
             return (!String.IsNullOrEmpty(data)) ? XElement.Parse(data) : null;
@@ -159,10 +156,7 @@ namespace Microsoft.AspNet.DataProtection.Repositories
             if (!IsSafeRegistryValueName(friendlyName))
             {
                 string newFriendlyName = Guid.NewGuid().ToString();
-                if (_logger.IsVerboseLevelEnabled())
-                {
-                    _logger.LogVerboseF($"The name '{friendlyName}' is not a safe registry value name, using '{newFriendlyName}' instead.");
-                }
+                _logger.NameIsNotSafeRegistryValueName(friendlyName, newFriendlyName);
                 friendlyName = newFriendlyName;
             }
 
