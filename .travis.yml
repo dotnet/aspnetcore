@@ -1,5 +1,17 @@
 language: csharp
-sudo: false
+sudo: required
+dist: trusty
+addons:
+  apt:
+    packages:
+    - gettext
+    - libcurl4-openssl-dev
+    - libicu-dev
+    - libssl-dev
+    - libunwind8
+    - zlib1g
+env:
+  - KOREBUILD_DNU_RESTORE_CORECLR=true
 mono:
   - 4.0.5
 script:
