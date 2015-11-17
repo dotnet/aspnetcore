@@ -11,8 +11,7 @@ addons:
     - libunwind8
     - zlib1g
 before_install:
-  - if test "$TRAVIS_OS_NAME" == "osx"; then brew update; fi
-  - if test "$TRAVIS_OS_NAME" == "osx"; then brew install icu4c; fi
+  - if test "$TRAVIS_OS_NAME" == "osx"; then brew update; brew install icu4c; fi
 env:
   - KOREBUILD_DNU_RESTORE_CORECLR=true MONO_THREADS_PER_CPU=2000 MONO_MANAGED_WATCHER=disabled
 mono:
