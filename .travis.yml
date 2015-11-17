@@ -1,4 +1,6 @@
 language: csharp
 sudo: false
+mono:
+  - 4.0.5
 script:
   - ./build.sh --quiet verify
