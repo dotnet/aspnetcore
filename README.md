@@ -7,17 +7,32 @@ This project is part of ASP.NET 5. You can find samples, documentation and getti
 
 This repo hosts sources for the `Microsoft.AspNet.AngularServices` and `Microsoft.AspNet.ReactServices` packages, along with samples and the underlying `Microsoft.AspNet.NodeServices project`.
 
- * `Microsoft.AspNet.AngularServices` provides facilities for developers building Angular 2 applications on ASP.NET.
-   * Most notably, this includes **server-side prerendering**. You can build a "universal" (sometimes called "isomorphic") single-page application that renders its initial HTML on the server, and then continues execution on the client. This massively improves application delivery and startup time (often reducing from 5-10+ seconds to 100ms or so, especially on high-latency networks or low-CPU-speed clients), enables search engine crawlers to explore your SPA, and ensures that users don't wait for any 'loading' UI when they first hit your application. A sample is included in this repo.
-   * We are also working with the Angular team to add support for other client+server features such as cache priming, so that the client-side SPA code does not need to wait for an initial set of ajax requests to complete - the necessary data can be bundled with the initial page.
-   * Another possible future feature would be helpers to emit a JSON representation of C# class model metadata, so some validation rules can transparently apply both on the server and the client.
+#### `Microsoft.AspNet.AngularServices`
 
- * `Microsoft.AspNet.ReactServices` provides similar facilities for React applications on ASP.NET.
-   * This includes **server-side prerendering** to support "universal" (sometimes called "isomorphic") single-page applications as described above. A sample is included in this repo.
-   * We are open to adding other client+server features that will make React developers more productive on ASP.NET. Please let us know if you have specific feature proposals.
+This package provides facilities for developers building Angular 2 applications on ASP.NET.
 
- * *Your favourite JavaScript framework goes here*. Although we have finite resources and are currently focused on adding Angular 2 and React support, the architecture here is designed so that you can build your own server-side support for other client-side libraries and frameworks.
-   * The underlying `Microsoft.AspNet.NodeServices` package is a general-purpose way for ASP.NET applications (or .NET applications more generally) to interoperate with code running inside Node.js. That's how `AngularServices`/`ReactServices` server-side rendering works - those packages transparently spin up Node.js instances that can perform the server-side rendering. Any code that runs inside Node can efficiently be invoked from .NET via this package, which takes care of starting and stopping Node instances and manages the communication between .NET and Node.
+Most notably, this includes **server-side prerendering**. You can build a "universal" (sometimes called "isomorphic") single-page application that renders its initial HTML on the server, and then continues execution on the client. Benefits:
+ * Massively improves application delivery and startup time (often reducing from 5-10+ seconds to 100ms or so, especially on high-latency networks or low-CPU-speed clients)
+ * Enables search engine crawlers to explore your SPA
+ * Ensures that users don't wait for any 'loading' UI when they first hit your application.
+
+A sample is included in this repo.
+
+We are also working with the Angular team to add support for other client+server features such as cache priming, so that the client-side SPA code does not need to wait for an initial set of ajax requests to complete - the necessary data can be bundled with the initial page. Another possible future feature would be helpers to emit a JSON representation of C# class model metadata, so some validation rules can transparently apply both on the server and the client.
+
+#### `Microsoft.AspNet.ReactServices`
+
+This package provides similar facilities for React applications on ASP.NET.
+
+This includes **server-side prerendering** to support "universal" (sometimes called "isomorphic") single-page applications as described above. A sample is included in this repo.
+
+We are open to adding other client+server features that will make React developers more productive on ASP.NET. Please let us know if you have specific feature proposals.
+
+#### *Your favourite JavaScript framework goes here*
+
+Although we have finite resources and are currently focused on adding Angular 2 and React support, the architecture here is designed so that you can build your own server-side support for other client-side libraries and frameworks.
+
+The underlying `Microsoft.AspNet.NodeServices` package is a general-purpose way for ASP.NET applications (or .NET applications more generally) to interoperate with code running inside Node.js. That's how `AngularServices`/`ReactServices` server-side rendering works - those packages transparently spin up Node.js instances that can perform the server-side rendering. Any code that runs inside Node can efficiently be invoked from .NET via this package, which takes care of starting and stopping Node instances and manages the communication between .NET and Node.
 
 ## Using AngularServices/ReactServices in your own projects
 
