@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.NodeServices {
         private string _commandLineArguments;
         private Process _nodeProcess;
         private TaskCompletionSource<bool> _nodeProcessIsReadySource;
-        
+
         protected Process NodeProcess {
             get {
                 // This is only exposed to support the unreliable OutOfProcessNodeRunner, which is just to verify that
@@ -46,7 +46,7 @@ namespace Microsoft.AspNet.NodeServices {
                 Args = args
             });
         }
-        
+
         protected async Task EnsureReady() {
             lock (this._childProcessLauncherLock) {
                 if (this._nodeProcess == null || this._nodeProcess.HasExited) {
@@ -58,36 +58,38 @@ namespace Microsoft.AspNet.NodeServices {
                         RedirectStandardError = true,
                         WorkingDirectory = this._projectPath 
                     };
-                    
+
                     // Append projectPath to NODE_PATH so it can locate node_modules
                     var existingNodePath = Environment.GetEnvironmentVariable("NODE_PATH") ?? string.Empty;
                     if (existingNodePath != string.Empty) {
                         existingNodePath += ":";
                     }
-                    
+
                     var nodePathValue = existingNodePath + Path.Combine(this._projectPath, "node_modules");
                     #if DNX451
                     startInfo.EnvironmentVariables.Add("NODE_PATH", nodePathValue);
                     #else
                     startInfo.Environment.Add("NODE_PATH", nodePathValue);
                     #endif
-                    
+
                     this.OnBeforeLaunchProcess();
                     this._nodeProcess = Process.Start(startInfo);
                     this.ConnectToInputOutputStreams();
                 }
             }
-            
-            var initializationSucceeded = await this._nodeProcessIsReadySource.Task;
+
+            var task = this._nodeProcessIsReadySource.Task;
+            var initializationSucceeded = await task;
+
             if (!initializationSucceeded) {
-                throw new InvalidOperationException("The Node.js process failed to initialize");
+                throw new InvalidOperationException("The Node.js process failed to initialize", task.Exception);
             }
         }
-        
+
         private void ConnectToInputOutputStreams() {
             var initializationIsCompleted = false; // TODO: Make this thread-safe? (Interlocked.Exchange etc.)
             this._nodeProcessIsReadySource = new TaskCompletionSource<bool>();
-            
+
             this._nodeProcess.OutputDataReceived += (sender, evt) => {
                 if (evt.Data == "[Microsoft.AspNet.NodeServices:Listening]" && !initializationIsCompleted) {
                     this._nodeProcessIsReadySource.SetResult(true);
@@ -106,18 +108,18 @@ namespace Microsoft.AspNet.NodeServices {
                     }
                 }
             };
-                                
+
             this._nodeProcess.BeginOutputReadLine();
-            this._nodeProcess.BeginErrorReadLine();            
+            this._nodeProcess.BeginErrorReadLine();
         }
-        
+
         protected virtual void OnBeforeLaunchProcess() {
         }
 
         protected virtual void OnOutputDataReceived(string outputData) {
             Console.WriteLine("[Node] " + outputData);
         }
-        
+
         protected virtual void OnErrorDataReceived(string errorData) {
             Console.WriteLine("[Node] " + errorData);
         }
@@ -127,18 +129,18 @@ namespace Microsoft.AspNet.NodeServices {
             Dispose(true);
             GC.SuppressFinalize(this);
         }
-    
+
         protected virtual void Dispose(bool disposing)
         {
             if (!disposed) {
                 if (disposing) {
                     this._entryPointScript.Dispose();
                 }
-                
+
                 if (this._nodeProcess != null && !this._nodeProcess.HasExited) {
-                    this._nodeProcess.Kill(); // TODO: Is there a more graceful way to end it? Or does this still let it perform any cleanup?                    System.Console.WriteLine("Killed");
+                    this._nodeProcess.Kill(); // TODO: Is there a more graceful way to end it? Or does this still let it perform any cleanup?
                 }
-                
+
                 disposed = true;
             }
         }
