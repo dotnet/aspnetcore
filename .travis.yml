@@ -2,6 +2,8 @@ language: csharp
 sudo: false
 env:
   - MONO_THREADS_PER_CPU=2000
+mono:
+  - 4.0.5
 os:
   - linux
   - osx
