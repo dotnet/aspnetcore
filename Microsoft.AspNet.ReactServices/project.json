@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0-alpha6",
+  "version": "1.0.0-alpha7",
   "description": "Microsoft.AspNet.ReactServices Class Library",
   "authors": [
     "Microsoft"
@@ -25,7 +25,7 @@
     }
   },
   "dependencies": {
-    "Microsoft.AspNet.NodeServices": "1.0.0-alpha6",
+    "Microsoft.AspNet.NodeServices": "1.0.0-alpha7",
     "Microsoft.AspNet.Mvc.TagHelpers": "6.0.0-beta8",
     "Microsoft.Dnx.Runtime.Abstractions": "1.0.0-beta8"
   },
