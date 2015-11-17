@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Html.Abstractions;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.AspNet.Mvc.ViewFeatures.Internal;
@@ -52,7 +53,7 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
             _viewContext = viewContext;
         }
 
-        public HtmlString Invoke(string name, params object[] arguments)
+        public IHtmlContent Invoke(string name, params object[] arguments)
         {
             if (name == null)
             {
@@ -61,14 +62,14 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
 
             var descriptor = SelectComponent(name);
 
-            using (var writer = new StringWriter())
+            using (var writer = new StringCollectionTextWriter(_viewContext.Writer.Encoding))
             {
                 InvokeCore(writer, descriptor, arguments);
-                return new HtmlString(writer.ToString());
+                return writer.Content;
             }
         }
 
-        public HtmlString Invoke(Type componentType, params object[] arguments)
+        public IHtmlContent Invoke(Type componentType, params object[] arguments)
         {
             if (componentType == null)
             {
@@ -77,10 +78,10 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
 
             var descriptor = SelectComponent(componentType);
 
-            using (var writer = new StringWriter())
+            using (var writer = new StringCollectionTextWriter(_viewContext.Writer.Encoding))
             {
                 InvokeCore(writer, descriptor, arguments);
-                return new HtmlString(writer.ToString());
+                return writer.Content;
             }
         }
 
@@ -106,7 +107,7 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
             InvokeCore(_viewContext.Writer, descriptor, arguments);
         }
 
-        public async Task<HtmlString> InvokeAsync(string name, params object[] arguments)
+        public async Task<IHtmlContent> InvokeAsync(string name, params object[] arguments)
         {
             if (name == null)
             {
@@ -115,14 +116,14 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
 
             var descriptor = SelectComponent(name);
 
-            using (var writer = new StringWriter())
+            using (var writer = new StringCollectionTextWriter(_viewContext.Writer.Encoding))
             {
                 await InvokeCoreAsync(writer, descriptor, arguments);
-                return new HtmlString(writer.ToString());
+                return writer.Content;
             }
         }
 
-        public async Task<HtmlString> InvokeAsync(Type componentType, params object[] arguments)
+        public async Task<IHtmlContent> InvokeAsync(Type componentType, params object[] arguments)
         {
             if (componentType == null)
             {
@@ -131,10 +132,10 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
 
             var descriptor = SelectComponent(componentType);
 
-            using (var writer = new StringWriter())
+            using (var writer = new StringCollectionTextWriter(_viewContext.Writer.Encoding))
             {
                 await InvokeCoreAsync(writer, descriptor, arguments);
-                return new HtmlString(writer.ToString());
+                return writer.Content;
             }
         }
 

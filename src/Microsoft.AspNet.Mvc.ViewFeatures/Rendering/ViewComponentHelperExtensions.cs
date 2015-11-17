@@ -3,13 +3,13 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Html.Abstractions;
 
 namespace Microsoft.AspNet.Mvc.Rendering
 {
     public static class ViewComponentHelperExtensions
     {
-        public static HtmlString Invoke<TComponent>(this IViewComponentHelper helper,
-            params object[] args)
+        public static IHtmlContent Invoke<TComponent>(this IViewComponentHelper helper, params object[] args)
         {
             if (helper == null)
             {
@@ -19,8 +19,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             return helper.Invoke(typeof(TComponent), args);
         }
 
-        public static void RenderInvoke<TComponent>(this IViewComponentHelper helper,
-            params object[] args)
+        public static void RenderInvoke<TComponent>(this IViewComponentHelper helper, params object[] args)
         {
             if (helper == null)
             {
@@ -30,7 +29,8 @@ namespace Microsoft.AspNet.Mvc.Rendering
             helper.RenderInvoke(typeof(TComponent), args);
         }
 
-        public static Task<HtmlString> InvokeAsync<TComponent>(this IViewComponentHelper helper,
+        public static Task<IHtmlContent> InvokeAsync<TComponent>(
+            this IViewComponentHelper helper,
             params object[] args)
         {
             if (helper == null)
@@ -41,8 +41,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             return helper.InvokeAsync(typeof(TComponent), args);
         }
 
-        public static Task RenderInvokeAsync<TComponent>(this IViewComponentHelper helper,
-            params object[] args)
+        public static Task RenderInvokeAsync<TComponent>(this IViewComponentHelper helper, params object[] args)
         {
             if (helper == null)
             {
