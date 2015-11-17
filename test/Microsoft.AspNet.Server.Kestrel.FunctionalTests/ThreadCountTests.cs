@@ -15,7 +15,6 @@ namespace Microsoft.AspNet.Server.Kestrel.FunctionalTests
 {
     public class ThreadCountTests
     {
-        [Theory(Skip = "https://github.com/aspnet/KestrelHttpServer/issues/232"), MemberData(nameof(OneToTen))]
         public async Task ZeroToTenThreads(int threadCount)
         {
             var config = new ConfigurationBuilder()

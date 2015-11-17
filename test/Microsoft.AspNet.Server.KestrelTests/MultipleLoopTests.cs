@@ -21,7 +21,6 @@ namespace Microsoft.AspNet.Server.KestrelTests
             _logger = engine.Log;
         }
 
-        [Fact(Skip = "Waiting for adding support for multi loop in libuv")]
         public void InitAndCloseServerPipe()
         {
             var loop = new UvLoopHandle(_logger);
@@ -39,7 +38,6 @@ namespace Microsoft.AspNet.Server.KestrelTests
 
         }
 
-        [Fact(Skip = "Waiting for adding support for multi loop in libuv")]
         public void ServerPipeListenForConnections()
         {
             var loop = new UvLoopHandle(_logger);
@@ -112,7 +110,6 @@ namespace Microsoft.AspNet.Server.KestrelTests
         }
 
 
-        [Fact(Skip = "Waiting for adding support for multi loop in libuv")]
         public void ServerPipeDispatchConnections()
         {
             var pipeName = @"\\.\pipe\ServerPipeDispatchConnections" + Guid.NewGuid().ToString("n");
