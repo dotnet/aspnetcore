@@ -175,7 +175,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         /// <inheritdoc />
-        public RazorPageResult FindPage(ActionContext context, string pageName, bool isPartial)
+        public RazorPageResult FindPage(ActionContext context, string pageName, bool isMainPage)
         {
             if (context == null)
             {
@@ -193,11 +193,10 @@ namespace Microsoft.AspNet.Mvc.Razor
                 return new RazorPageResult(pageName, Enumerable.Empty<string>());
             }
 
-            var cacheResult = LocatePageFromViewLocations(context, pageName, isPartial);
+            var cacheResult = LocatePageFromViewLocations(context, pageName, isMainPage);
             if (cacheResult.Success)
             {
                 var razorPage = cacheResult.ViewEntry.PageFactory();
-                razorPage.IsPartial = isPartial;
                 return new RazorPageResult(pageName, razorPage);
             }
             else
@@ -207,7 +206,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         /// <inheritdoc />
-        public RazorPageResult GetPage(string executingFilePath, string pagePath, bool isPartial)
+        public RazorPageResult GetPage(string executingFilePath, string pagePath, bool isMainPage)
         {
             if (string.IsNullOrEmpty(pagePath))
             {
@@ -220,11 +219,10 @@ namespace Microsoft.AspNet.Mvc.Razor
                 return new RazorPageResult(pagePath, Enumerable.Empty<string>());
             }
 
-            var cacheResult = LocatePageFromPath(executingFilePath, pagePath, isPartial);
+            var cacheResult = LocatePageFromPath(executingFilePath, pagePath, isMainPage);
             if (cacheResult.Success)
             {
                 var razorPage = cacheResult.ViewEntry.PageFactory();
-                razorPage.IsPartial = isPartial;
                 return new RazorPageResult(pagePath, razorPage);
             }
             else
@@ -234,7 +232,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         /// <inheritdoc />
-        public ViewEngineResult FindView(ActionContext context, string viewName, bool isPartial)
+        public ViewEngineResult FindView(ActionContext context, string viewName, bool isMainPage)
         {
             if (context == null)
             {
@@ -252,12 +250,12 @@ namespace Microsoft.AspNet.Mvc.Razor
                 return ViewEngineResult.NotFound(viewName, Enumerable.Empty<string>());
             }
 
-            var cacheResult = LocatePageFromViewLocations(context, viewName, isPartial);
-            return CreateViewEngineResult(cacheResult, viewName, isPartial);
+            var cacheResult = LocatePageFromViewLocations(context, viewName, isMainPage);
+            return CreateViewEngineResult(cacheResult, viewName);
         }
 
         /// <inheritdoc />
-        public ViewEngineResult GetView(string executingFilePath, string viewPath, bool isPartial)
+        public ViewEngineResult GetView(string executingFilePath, string viewPath, bool isMainPage)
         {
             if (string.IsNullOrEmpty(viewPath))
             {
@@ -270,19 +268,19 @@ namespace Microsoft.AspNet.Mvc.Razor
                 return ViewEngineResult.NotFound(viewPath, Enumerable.Empty<string>());
             }
 
-            var cacheResult = LocatePageFromPath(executingFilePath, viewPath, isPartial);
-            return CreateViewEngineResult(cacheResult, viewPath, isPartial);
+            var cacheResult = LocatePageFromPath(executingFilePath, viewPath, isMainPage);
+            return CreateViewEngineResult(cacheResult, viewPath);
         }
 
-        private ViewLocationCacheResult LocatePageFromPath(string executingFilePath, string pagePath, bool isPartial)
+        private ViewLocationCacheResult LocatePageFromPath(string executingFilePath, string pagePath, bool isMainPage)
         {
             var applicationRelativePath = GetAbsolutePath(executingFilePath, pagePath);
-            var cacheKey = new ViewLocationCacheKey(applicationRelativePath, isPartial);
+            var cacheKey = new ViewLocationCacheKey(applicationRelativePath, isMainPage);
             ViewLocationCacheResult cacheResult;
             if (!ViewLookupCache.TryGetValue(cacheKey, out cacheResult))
             {
                 var expirationTokens = new HashSet<IChangeToken>();
-                cacheResult = CreateCacheResult(cacheKey, expirationTokens, applicationRelativePath, isPartial);
+                cacheResult = CreateCacheResult(expirationTokens, applicationRelativePath, isMainPage);
 
                 var cacheEntryOptions = new MemoryCacheEntryOptions();
                 cacheEntryOptions.SetSlidingExpiration(_cacheExpirationDuration);
@@ -309,7 +307,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         private ViewLocationCacheResult LocatePageFromViewLocations(
             ActionContext actionContext,
             string pageName,
-            bool isPartial)
+            bool isMainPage)
         {
             var controllerName = GetNormalizedRouteValue(actionContext, ControllerKey);
             var areaName = GetNormalizedRouteValue(actionContext, AreaKey);
@@ -318,7 +316,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 pageName,
                 controllerName,
                 areaName,
-                isPartial);
+                isMainPage);
             Dictionary<string, string> expanderValues = null;
 
             if (_viewLocationExpanders.Count > 0)
@@ -337,7 +335,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 expanderContext.ViewName,
                 expanderContext.ControllerName,
                 expanderContext.ViewName,
-                expanderContext.IsPartial,
+                expanderContext.IsMainPage,
                 expanderValues);
 
             ViewLocationCacheResult cacheResult;
@@ -411,7 +409,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     expanderContext.ControllerName,
                     expanderContext.AreaName);
 
-                cacheResult = CreateCacheResult(cacheKey, expirationTokens, path, expanderContext.IsPartial);
+                cacheResult = CreateCacheResult(expirationTokens, path, expanderContext.IsMainPage);
                 if (cacheResult != null)
                 {
                     break;
@@ -437,10 +435,9 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         private ViewLocationCacheResult CreateCacheResult(
-            ViewLocationCacheKey cacheKey,
             HashSet<IChangeToken> expirationTokens,
             string relativePath,
-            bool isPartial)
+            bool isMainPage)
         {
             var factoryResult = _pageFactory.CreateFactory(relativePath);
             if (factoryResult.ExpirationTokens != null)
@@ -453,10 +450,10 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             if (factoryResult.Success)
             {
-                // Don't need to lookup _ViewStarts for partials.
-                var viewStartPages = isPartial ?
-                    EmptyViewStartLocationCacheItems :
-                    GetViewStartPages(relativePath, expirationTokens);
+                // Only need to lookup _ViewStarts for the main page.
+                var viewStartPages = isMainPage ?
+                    GetViewStartPages(relativePath, expirationTokens) :
+                    EmptyViewStartLocationCacheItems;
 
                 return new ViewLocationCacheResult(
                     new ViewLocationCacheItem(factoryResult.RazorPageFactory, relativePath),
@@ -494,10 +491,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             return viewStartPages;
         }
 
-        private ViewEngineResult CreateViewEngineResult(
-            ViewLocationCacheResult result,
-            string viewName,
-            bool isPartial)
+        private ViewEngineResult CreateViewEngineResult(ViewLocationCacheResult result, string viewName)
         {
             if (!result.Success)
             {
@@ -505,23 +499,15 @@ namespace Microsoft.AspNet.Mvc.Razor
             }
 
             var page = result.ViewEntry.PageFactory();
-            page.IsPartial = isPartial;
 
             var viewStarts = new IRazorPage[result.ViewStartEntries.Count];
             for (var i = 0; i < viewStarts.Length; i++)
             {
                 var viewStartItem = result.ViewStartEntries[i];
                 viewStarts[i] = viewStartItem.PageFactory();
-                viewStarts[i].IsPartial = true;
             }
 
-            var view = new RazorView(
-                this,
-                _pageActivator,
-                viewStarts,
-                page,
-                _htmlEncoder,
-                isPartial);
+            var view = new RazorView(this, _pageActivator, viewStarts, page, _htmlEncoder);
             return ViewEngineResult.Found(viewName, view);
         }
 

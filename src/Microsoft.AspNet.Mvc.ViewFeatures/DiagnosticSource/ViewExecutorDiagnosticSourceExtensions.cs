@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.Mvc.Diagnostics
         public static void ViewFound(
             this DiagnosticSource diagnosticSource,
             ActionContext actionContext,
-            bool isPartial,
+            bool isMainPage,
             PartialViewResult viewResult,
             string viewName,
             IView view)
@@ -51,7 +51,7 @@ namespace Microsoft.AspNet.Mvc.Diagnostics
                     new
                     {
                         actionContext = actionContext,
-                        isPartial = isPartial,
+                        isMainPage = isMainPage,
                         result = viewResult,
                         viewName = viewName,
                         view = view,
@@ -62,7 +62,7 @@ namespace Microsoft.AspNet.Mvc.Diagnostics
         public static void ViewNotFound(
             this DiagnosticSource diagnosticSource,
             ActionContext actionContext,
-            bool isPartial,
+            bool isMainPage,
             PartialViewResult viewResult,
             string viewName,
             IEnumerable<string> searchedLocations)
@@ -74,7 +74,7 @@ namespace Microsoft.AspNet.Mvc.Diagnostics
                     new
                     {
                         actionContext = actionContext,
-                        isPartial = isPartial,
+                        isMainPage = isMainPage,
                         result = viewResult,
                         viewName = viewName,
                         searchedLocations = searchedLocations,

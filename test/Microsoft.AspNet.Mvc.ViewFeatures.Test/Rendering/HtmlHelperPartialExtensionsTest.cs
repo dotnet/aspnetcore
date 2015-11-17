@@ -337,11 +337,11 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var model = new TestModel();
             var viewEngine = new Mock<ICompositeViewEngine>(MockBehavior.Strict);
             viewEngine
-                .Setup(v => v.GetView(/*executingFilePath*/ null, It.IsAny<string>(), /*isPartial*/ true))
+                .Setup(v => v.GetView(/*executingFilePath*/ null, It.IsAny<string>(), /*isMainPage*/ false))
                 .Returns(ViewEngineResult.NotFound("test-view", new[] { "location1", "location2" }))
                 .Verifiable();
             viewEngine
-                .Setup(v => v.FindView(It.IsAny<ActionContext>(), It.IsAny<string>(), /*isPartial*/ true))
+                .Setup(v => v.FindView(It.IsAny<ActionContext>(), It.IsAny<string>(), /*isMainPage*/ false))
                 .Returns(ViewEngineResult.NotFound("test-view", Enumerable.Empty<string>()))
                 .Verifiable();
 
@@ -366,11 +366,11 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var model = new TestModel();
             var viewEngine = new Mock<ICompositeViewEngine>(MockBehavior.Strict);
             viewEngine
-                .Setup(v => v.GetView(/*executingFilePath*/ null, It.IsAny<string>(), /*isPartial*/ true))
+                .Setup(v => v.GetView(/*executingFilePath*/ null, It.IsAny<string>(), /*isMainPage*/ false))
                 .Returns(ViewEngineResult.NotFound("test-view", Enumerable.Empty<string>()))
                 .Verifiable();
             viewEngine
-                .Setup(v => v.FindView(It.IsAny<ActionContext>(), It.IsAny<string>(), /*isPartial*/ true))
+                .Setup(v => v.FindView(It.IsAny<ActionContext>(), It.IsAny<string>(), /*isMainPage*/ false))
                 .Returns(ViewEngineResult.NotFound("test-view", new[] { "location1", "location2" }))
                 .Verifiable();
 
@@ -397,11 +397,11 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var model = new TestModel();
             var viewEngine = new Mock<ICompositeViewEngine>(MockBehavior.Strict);
             viewEngine
-                .Setup(v => v.GetView(/*executingFilePath*/ null, It.IsAny<string>(), /*isPartial*/ true))
+                .Setup(v => v.GetView(/*executingFilePath*/ null, It.IsAny<string>(), /*isMainPage*/ false))
                 .Returns(ViewEngineResult.NotFound("test-view", new[] { "location1", "location2" }))
                 .Verifiable();
             viewEngine
-                .Setup(v => v.FindView(It.IsAny<ActionContext>(), It.IsAny<string>(), /*isPartial*/ true))
+                .Setup(v => v.FindView(It.IsAny<ActionContext>(), It.IsAny<string>(), /*isMainPage*/ false))
                 .Returns(ViewEngineResult.NotFound("test-view", new[] { "location3", "location4" }))
                 .Verifiable();
 
@@ -426,11 +426,11 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var model = new TestModel();
             var viewEngine = new Mock<ICompositeViewEngine>(MockBehavior.Strict);
             viewEngine
-                .Setup(v => v.GetView(/*executingFilePath*/ null, It.IsAny<string>(), /*isPartial*/ true))
+                .Setup(v => v.GetView(/*executingFilePath*/ null, It.IsAny<string>(), /*isMainPage*/ false))
                 .Returns(ViewEngineResult.NotFound("test-view", new[] { "location1", "location2" }))
                 .Verifiable();
             viewEngine
-                .Setup(v => v.FindView(It.IsAny<ActionContext>(), It.IsAny<string>(), /*isPartial*/ true))
+                .Setup(v => v.FindView(It.IsAny<ActionContext>(), It.IsAny<string>(), /*isMainPage*/ false))
                 .Returns(ViewEngineResult.NotFound("test-view", Enumerable.Empty<string>()))
                 .Verifiable();
 
@@ -455,11 +455,11 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var model = new TestModel();
             var viewEngine = new Mock<ICompositeViewEngine>(MockBehavior.Strict);
             viewEngine
-                .Setup(v => v.GetView(/*executingFilePath*/ null, It.IsAny<string>(), /*isPartial*/ true))
+                .Setup(v => v.GetView(/*executingFilePath*/ null, It.IsAny<string>(), /*isMainPage*/ false))
                 .Returns(ViewEngineResult.NotFound("test-view", Enumerable.Empty<string>()))
                 .Verifiable();
             viewEngine
-                .Setup(v => v.FindView(It.IsAny<ActionContext>(), It.IsAny<string>(), /*isPartial*/ true))
+                .Setup(v => v.FindView(It.IsAny<ActionContext>(), It.IsAny<string>(), /*isMainPage*/ false))
                 .Returns(ViewEngineResult.NotFound("test-view", new[] { "location1", "location2" }))
                 .Verifiable();
 
@@ -486,11 +486,11 @@ namespace Microsoft.AspNet.Mvc.Rendering
             var model = new TestModel();
             var viewEngine = new Mock<ICompositeViewEngine>(MockBehavior.Strict);
             viewEngine
-                .Setup(v => v.GetView(/*executingFilePath*/ null, It.IsAny<string>(), /*isPartial*/ true))
+                .Setup(v => v.GetView(/*executingFilePath*/ null, It.IsAny<string>(), /*isMainPage*/ false))
                 .Returns(ViewEngineResult.NotFound("test-view", new[] { "location1", "location2" }))
                 .Verifiable();
             viewEngine
-                .Setup(v => v.FindView(It.IsAny<ActionContext>(), It.IsAny<string>(), /*isPartial*/ true))
+                .Setup(v => v.FindView(It.IsAny<ActionContext>(), It.IsAny<string>(), /*isMainPage*/ false))
                 .Returns(ViewEngineResult.NotFound("test-view", new[] { "location3", "location4" }))
                 .Verifiable();
 

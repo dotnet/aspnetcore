@@ -14,9 +14,9 @@ namespace Microsoft.AspNet.Mvc.ViewEngines
         /// </summary>
         /// <param name="context">The <see cref="ActionContext"/>.</param>
         /// <param name="viewName">The name of the view.</param>
-        /// <param name="isPartial">Determines if the view being found is a partial.</param>
+        /// <param name="isMainPage">Determines if the page being found is the main page for an action.</param>
         /// <returns>The <see cref="ViewEngineResult"/> of locating the view.</returns>
-        ViewEngineResult FindView(ActionContext context, string viewName, bool isPartial);
+        ViewEngineResult FindView(ActionContext context, string viewName, bool isMainPage);
 
         /// <summary>
         /// Gets the view with the given <paramref name="viewPath"/>, relative to <paramref name="executingFilePath"/>
@@ -24,8 +24,8 @@ namespace Microsoft.AspNet.Mvc.ViewEngines
         /// </summary>
         /// <param name="executingFilePath">The absolute path to the currently-executing view, if any.</param>
         /// <param name="viewPath">The path to the view.</param>
-        /// <param name="isPartial">Determines if the view being found is a partial.</param>
+        /// <param name="isMainPage">Determines if the page being found is the main page for an action.</param>
         /// <returns>The <see cref="ViewEngineResult"/> of locating the view.</returns>
-        ViewEngineResult GetView(string executingFilePath, string viewPath, bool isPartial);
+        ViewEngineResult GetView(string executingFilePath, string viewPath, bool isMainPage);
     }
 }

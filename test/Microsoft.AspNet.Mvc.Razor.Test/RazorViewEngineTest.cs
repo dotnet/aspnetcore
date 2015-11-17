@@ -73,7 +73,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         [Theory]
         [InlineData(null)]
         [InlineData("")]
-        public void FindView_ThrowsIfViewNameIsNullOrEmpty(string viewName)
+        public void FindView_IsMainPage_ThrowsIfViewNameIsNullOrEmpty(string viewName)
         {
             // Arrange
             var viewEngine = CreateViewEngine();
@@ -81,20 +81,20 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
 
             // Act & Assert
             ExceptionAssert.ThrowsArgumentNullOrEmpty(
-                () => viewEngine.FindView(context, viewName, isPartial: false),
+                () => viewEngine.FindView(context, viewName, isMainPage: true),
                 "viewName");
         }
 
         [Theory]
         [MemberData(nameof(AbsoluteViewPathData))]
-        public void FindView_WithFullPath_ReturnsNotFound(string viewName)
+        public void FindView_IsMainPage_WithFullPath_ReturnsNotFound(string viewName)
         {
             // Arrange
             var viewEngine = CreateSuccessfulViewEngine();
             var context = GetActionContext(_controllerTestContext);
 
             // Act
-            var result = viewEngine.FindView(context, viewName, isPartial: false);
+            var result = viewEngine.FindView(context, viewName, isMainPage: true);
 
             // Assert
             Assert.False(result.Success);
@@ -102,7 +102,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
 
         [Theory]
         [MemberData(nameof(AbsoluteViewPathData))]
-        public void FindView_WithFullPathAndCshtmlEnding_ReturnsNotFound(string viewName)
+        public void FindView_IsMainPage_WithFullPathAndCshtmlEnding_ReturnsNotFound(string viewName)
         {
             // Arrange
             var viewEngine = CreateSuccessfulViewEngine();
@@ -110,7 +110,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             viewName += ".cshtml";
 
             // Act
-            var result = viewEngine.FindView(context, viewName, isPartial: false);
+            var result = viewEngine.FindView(context, viewName, isMainPage: true);
 
             // Assert
             Assert.False(result.Success);
@@ -119,14 +119,14 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         [Theory]
         [InlineData(false)]
         [InlineData(true)]
-        public void FindView_WithRelativePath_ReturnsNotFound(bool isPartial)
+        public void FindView_WithRelativePath_ReturnsNotFound(bool isMainPage)
         {
             // Arrange
             var viewEngine = CreateSuccessfulViewEngine();
             var context = GetActionContext(_controllerTestContext);
 
             // Act
-            var result = viewEngine.FindView(context, "View.cshtml", isPartial);
+            var result = viewEngine.FindView(context, "View.cshtml", isMainPage);
 
             // Assert
             Assert.False(result.Success);
@@ -135,214 +135,16 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         [Theory]
         [InlineData(false)]
         [InlineData(true)]
-        public void GetView_WithViewName_ReturnsNotFound(bool isPartial)
+        public void GetView_WithViewName_ReturnsNotFound(bool isMainPage)
         {
             // Arrange
             var viewEngine = CreateSuccessfulViewEngine();
 
             // Act
-            var result = viewEngine.GetView("~/Home/View1.cshtml", "View2", isPartial);
+            var result = viewEngine.GetView("~/Home/View1.cshtml", "View2", isMainPage);
 
             // Assert
             Assert.False(result.Success);
-        }
-
-        [Fact]
-        public void FindView_IsPartial_ReturnsRazorView_IfLookupWasSuccessful()
-        {
-            // Arrange
-            var pageFactory = new Mock<IRazorPageFactoryProvider>();
-            var page = Mock.Of<IRazorPage>();
-            var viewStart1 = Mock.Of<IRazorPage>();
-            var viewStart2 = Mock.Of<IRazorPage>();
-
-            pageFactory
-                .Setup(p => p.CreateFactory("/Views/bar/test-view.cshtml"))
-                .Returns(new RazorPageFactoryResult(() => page, new IChangeToken[0]));
-
-            pageFactory
-                .Setup(p => p.CreateFactory("/Views/_ViewStart.cshtml"))
-                .Returns(new RazorPageFactoryResult(() => viewStart2, new IChangeToken[0]));
-
-            pageFactory
-                .Setup(p => p.CreateFactory("/_ViewStart.cshtml"))
-                .Returns(new RazorPageFactoryResult(() => viewStart1, new IChangeToken[0]));
-
-            var viewEngine = CreateViewEngine(pageFactory.Object);
-            var context = GetActionContext(_controllerTestContext);
-
-            // Act
-            var result = viewEngine.FindView(context, "test-view", isPartial: true);
-
-            // Assert
-            Assert.True(result.Success);
-            var view = Assert.IsType<RazorView>(result.View);
-            Assert.Same(page, view.RazorPage);
-            Assert.Equal("test-view", result.ViewName);
-            Assert.Empty(view.ViewStartPages);
-        }
-
-        [Fact]
-        public void FindView_IsPartial_DoesNotExpireCachedResults_IfViewStartsExpire()
-        {
-            // Arrange
-            var pageFactory = new Mock<IRazorPageFactoryProvider>();
-            var page = Mock.Of<IRazorPage>();
-            var viewStart = Mock.Of<IRazorPage>();
-            var cancellationTokenSource = new CancellationTokenSource();
-            var changeToken = new CancellationChangeToken(cancellationTokenSource.Token);
-
-            pageFactory
-                .Setup(p => p.CreateFactory("/Views/bar/test-view.cshtml"))
-                .Returns(new RazorPageFactoryResult(() => page, new IChangeToken[0]));
-
-            pageFactory
-                .Setup(p => p.CreateFactory("/Views/_ViewStart.cshtml"))
-                .Returns(new RazorPageFactoryResult(() => viewStart, new[] { changeToken }));
-
-            var viewEngine = CreateViewEngine(pageFactory.Object);
-            var context = GetActionContext(_controllerTestContext);
-
-            // Act - 1
-            var result1 = viewEngine.FindView(context, "test-view", isPartial: true);
-
-            // Assert - 1
-            Assert.True(result1.Success);
-            var view1 = Assert.IsType<RazorView>(result1.View);
-            Assert.Same(page, view1.RazorPage);
-            Assert.Equal("test-view", result1.ViewName);
-            Assert.Empty(view1.ViewStartPages);
-
-            // Act - 2
-            cancellationTokenSource.Cancel();
-            var result2 = viewEngine.FindView(context, "test-view", isPartial: true);
-
-            // Assert - 2
-            Assert.True(result2.Success);
-            var view2 = Assert.IsType<RazorView>(result2.View);
-            Assert.Same(page, view2.RazorPage);
-            pageFactory.Verify(p => p.CreateFactory("/Views/bar/test-view.cshtml"), Times.Once());
-        }
-
-        [Theory]
-        [InlineData(null)]
-        [InlineData("")]
-        public void FindView_IsPartial_ThrowsIfViewNameIsNullOrEmpty(string partialViewName)
-        {
-            // Arrange
-            var viewEngine = CreateViewEngine();
-            var context = GetActionContext(_controllerTestContext);
-
-            // Act & Assert
-            ExceptionAssert.ThrowsArgumentNullOrEmpty(
-                () => viewEngine.FindView(context, partialViewName, isPartial: true),
-                "viewName");
-        }
-
-        [Theory]
-        [MemberData(nameof(AbsoluteViewPathData))]
-        public void FindView_IsPartialWithFullPath_ReturnsNotFound(string partialViewName)
-        {
-            // Arrange
-            var viewEngine = CreateSuccessfulViewEngine();
-            var context = GetActionContext(_controllerTestContext);
-
-            // Act
-            var result = viewEngine.FindView(context, partialViewName, isPartial: true);
-
-            // Assert
-            Assert.False(result.Success);
-        }
-
-        [Theory]
-        [MemberData(nameof(AbsoluteViewPathData))]
-        public void FindView_IsPartialWithFullPathAndCshtmlEnding_ReturnsNotFound(string partialViewName)
-        {
-            // Arrange
-            var viewEngine = CreateSuccessfulViewEngine();
-            var context = GetActionContext(_controllerTestContext);
-            partialViewName += ".cshtml";
-
-            // Act
-            var result = viewEngine.FindView(context, partialViewName, isPartial: true);
-
-            // Assert
-            Assert.False(result.Success);
-        }
-
-        [Fact]
-        public void FindView_IsPartial_FailsButSearchesCorrectLocations_WithAreas()
-        {
-            // Arrange
-            var viewEngine = CreateViewEngine();
-            var context = GetActionContext(_areaTestContext);
-
-            // Act
-            var result = viewEngine.FindView(context, "partial", isPartial: true);
-
-            // Assert
-            Assert.False(result.Success);
-            Assert.Equal(new[]
-            {
-                "/Areas/foo/Views/bar/partial.cshtml",
-                "/Areas/foo/Views/Shared/partial.cshtml",
-                "/Views/Shared/partial.cshtml",
-            }, result.SearchedLocations);
-        }
-
-        [Fact]
-        public void FindView_IsPartial_FailsButSearchesCorrectLocations_WithoutAreas()
-        {
-            // Arrange
-            var viewEngine = CreateViewEngine();
-            var context = GetActionContext(_controllerTestContext);
-
-            // Act
-            var result = viewEngine.FindView(context, "partialNoArea", isPartial: true);
-
-            // Assert
-            Assert.False(result.Success);
-            Assert.Equal(new[] {
-                "/Views/bar/partialNoArea.cshtml",
-                "/Views/Shared/partialNoArea.cshtml",
-            }, result.SearchedLocations);
-        }
-
-        [Fact]
-        public void FindView_FailsButSearchesCorrectLocationsWithAreas()
-        {
-            // Arrange
-            var viewEngine = CreateViewEngine();
-            var context = GetActionContext(_areaTestContext);
-
-            // Act
-            var result = viewEngine.FindView(context, "full", isPartial: false);
-
-            // Assert
-            Assert.False(result.Success);
-            Assert.Equal(new[] {
-                "/Areas/foo/Views/bar/full.cshtml",
-                "/Areas/foo/Views/Shared/full.cshtml",
-                "/Views/Shared/full.cshtml",
-            }, result.SearchedLocations);
-        }
-
-        [Fact]
-        public void FindView_FailsButSearchesCorrectLocationsWithoutAreas()
-        {
-            // Arrange
-            var viewEngine = CreateViewEngine();
-            var context = GetActionContext(_controllerTestContext);
-
-            // Act
-            var result = viewEngine.FindView(context, "fullNoArea", isPartial: false);
-
-            // Assert
-            Assert.False(result.Success);
-            Assert.Equal(new[] {
-                "/Views/bar/fullNoArea.cshtml",
-                "/Views/Shared/fullNoArea.cshtml",
-            }, result.SearchedLocations);
         }
 
         [Fact]
@@ -370,19 +172,216 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             var context = GetActionContext(_controllerTestContext);
 
             // Act
-            var result = viewEngine.FindView(context, "test-view", isPartial: false);
+            var result = viewEngine.FindView(context, "test-view", isMainPage: false);
+
+            // Assert
+            Assert.True(result.Success);
+            var view = Assert.IsType<RazorView>(result.View);
+            Assert.Same(page, view.RazorPage);
+            Assert.Equal("test-view", result.ViewName);
+            Assert.Empty(view.ViewStartPages);
+        }
+
+        [Fact]
+        public void FindView_DoesNotExpireCachedResults_IfViewStartsExpire()
+        {
+            // Arrange
+            var pageFactory = new Mock<IRazorPageFactoryProvider>();
+            var page = Mock.Of<IRazorPage>();
+            var viewStart = Mock.Of<IRazorPage>();
+            var cancellationTokenSource = new CancellationTokenSource();
+            var changeToken = new CancellationChangeToken(cancellationTokenSource.Token);
+
+            pageFactory
+                .Setup(p => p.CreateFactory("/Views/bar/test-view.cshtml"))
+                .Returns(new RazorPageFactoryResult(() => page, new IChangeToken[0]));
+
+            pageFactory
+                .Setup(p => p.CreateFactory("/Views/_ViewStart.cshtml"))
+                .Returns(new RazorPageFactoryResult(() => viewStart, new[] { changeToken }));
+
+            var viewEngine = CreateViewEngine(pageFactory.Object);
+            var context = GetActionContext(_controllerTestContext);
+
+            // Act - 1
+            var result1 = viewEngine.FindView(context, "test-view", isMainPage: false);
+
+            // Assert - 1
+            Assert.True(result1.Success);
+            var view1 = Assert.IsType<RazorView>(result1.View);
+            Assert.Same(page, view1.RazorPage);
+            Assert.Equal("test-view", result1.ViewName);
+            Assert.Empty(view1.ViewStartPages);
+
+            // Act - 2
+            cancellationTokenSource.Cancel();
+            var result2 = viewEngine.FindView(context, "test-view", isMainPage: false);
+
+            // Assert - 2
+            Assert.True(result2.Success);
+            var view2 = Assert.IsType<RazorView>(result2.View);
+            Assert.Same(page, view2.RazorPage);
+            pageFactory.Verify(p => p.CreateFactory("/Views/bar/test-view.cshtml"), Times.Once());
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        public void FindView_ThrowsIfViewNameIsNullOrEmpty(string partialViewName)
+        {
+            // Arrange
+            var viewEngine = CreateViewEngine();
+            var context = GetActionContext(_controllerTestContext);
+
+            // Act & Assert
+            ExceptionAssert.ThrowsArgumentNullOrEmpty(
+                () => viewEngine.FindView(context, partialViewName, isMainPage: false),
+                "viewName");
+        }
+
+        [Theory]
+        [MemberData(nameof(AbsoluteViewPathData))]
+        public void FindViewWithFullPath_ReturnsNotFound(string partialViewName)
+        {
+            // Arrange
+            var viewEngine = CreateSuccessfulViewEngine();
+            var context = GetActionContext(_controllerTestContext);
+
+            // Act
+            var result = viewEngine.FindView(context, partialViewName, isMainPage: false);
+
+            // Assert
+            Assert.False(result.Success);
+        }
+
+        [Theory]
+        [MemberData(nameof(AbsoluteViewPathData))]
+        public void FindViewWithFullPathAndCshtmlEnding_ReturnsNotFound(string partialViewName)
+        {
+            // Arrange
+            var viewEngine = CreateSuccessfulViewEngine();
+            var context = GetActionContext(_controllerTestContext);
+            partialViewName += ".cshtml";
+
+            // Act
+            var result = viewEngine.FindView(context, partialViewName, isMainPage: false);
+
+            // Assert
+            Assert.False(result.Success);
+        }
+
+        [Fact]
+        public void FindView_FailsButSearchesCorrectLocations_WithAreas()
+        {
+            // Arrange
+            var viewEngine = CreateViewEngine();
+            var context = GetActionContext(_areaTestContext);
+
+            // Act
+            var result = viewEngine.FindView(context, "partial", isMainPage: false);
+
+            // Assert
+            Assert.False(result.Success);
+            Assert.Equal(new[]
+            {
+                "/Areas/foo/Views/bar/partial.cshtml",
+                "/Areas/foo/Views/Shared/partial.cshtml",
+                "/Views/Shared/partial.cshtml",
+            }, result.SearchedLocations);
+        }
+
+        [Fact]
+        public void FindView_FailsButSearchesCorrectLocations_WithoutAreas()
+        {
+            // Arrange
+            var viewEngine = CreateViewEngine();
+            var context = GetActionContext(_controllerTestContext);
+
+            // Act
+            var result = viewEngine.FindView(context, "partialNoArea", isMainPage: false);
+
+            // Assert
+            Assert.False(result.Success);
+            Assert.Equal(new[] {
+                "/Views/bar/partialNoArea.cshtml",
+                "/Views/Shared/partialNoArea.cshtml",
+            }, result.SearchedLocations);
+        }
+
+        [Fact]
+        public void FindView_IsMainPage_FailsButSearchesCorrectLocationsWithAreas()
+        {
+            // Arrange
+            var viewEngine = CreateViewEngine();
+            var context = GetActionContext(_areaTestContext);
+
+            // Act
+            var result = viewEngine.FindView(context, "full", isMainPage: true);
+
+            // Assert
+            Assert.False(result.Success);
+            Assert.Equal(new[] {
+                "/Areas/foo/Views/bar/full.cshtml",
+                "/Areas/foo/Views/Shared/full.cshtml",
+                "/Views/Shared/full.cshtml",
+            }, result.SearchedLocations);
+        }
+
+        [Fact]
+        public void FindView_IsMainPage_FailsButSearchesCorrectLocationsWithoutAreas()
+        {
+            // Arrange
+            var viewEngine = CreateViewEngine();
+            var context = GetActionContext(_controllerTestContext);
+
+            // Act
+            var result = viewEngine.FindView(context, "fullNoArea", isMainPage: true);
+
+            // Assert
+            Assert.False(result.Success);
+            Assert.Equal(new[] {
+                "/Views/bar/fullNoArea.cshtml",
+                "/Views/Shared/fullNoArea.cshtml",
+            }, result.SearchedLocations);
+        }
+
+        [Fact]
+        public void FindView_IsMainPage_ReturnsRazorView_IfLookupWasSuccessful()
+        {
+            // Arrange
+            var pageFactory = new Mock<IRazorPageFactoryProvider>();
+            var page = Mock.Of<IRazorPage>();
+            var viewStart1 = Mock.Of<IRazorPage>();
+            var viewStart2 = Mock.Of<IRazorPage>();
+
+            pageFactory
+                .Setup(p => p.CreateFactory("/Views/bar/test-view.cshtml"))
+                .Returns(new RazorPageFactoryResult(() => page, new IChangeToken[0]));
+
+            pageFactory
+                .Setup(p => p.CreateFactory("/Views/_ViewStart.cshtml"))
+                .Returns(new RazorPageFactoryResult(() => viewStart2, new IChangeToken[0]));
+
+            pageFactory
+                .Setup(p => p.CreateFactory("/_ViewStart.cshtml"))
+                .Returns(new RazorPageFactoryResult(() => viewStart1, new IChangeToken[0]));
+
+            var viewEngine = CreateViewEngine(pageFactory.Object);
+            var context = GetActionContext(_controllerTestContext);
+
+            // Act
+            var result = viewEngine.FindView(context, "test-view", isMainPage: true);
 
             // Assert
             Assert.True(result.Success);
             var view = Assert.IsType<RazorView>(result.View);
             Assert.Equal("test-view", result.ViewName);
             Assert.Same(page, view.RazorPage);
-            Assert.False(view.IsPartial);
             Assert.Equal(new[] { viewStart1, viewStart2 }, view.ViewStartPages);
         }
 
         [Fact]
-        public void FindView_UsesViewLocationFormat_IfRouteDoesNotContainArea()
+        public void FindView_IsMainPage_UsesViewLocationFormat_IfRouteDoesNotContainArea()
         {
             // Arrange
             var pageFactory = new Mock<IRazorPageFactoryProvider>();
@@ -401,7 +400,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             var context = GetActionContext(_controllerTestContext);
 
             // Act
-            var result = viewEngine.FindView(context, "test-view", isPartial: false);
+            var result = viewEngine.FindView(context, "test-view", isMainPage: true);
 
             // Assert
             pageFactory.Verify();
@@ -410,7 +409,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         }
 
         [Fact]
-        public void FindView_UsesAreaViewLocationFormat_IfRouteContainsArea()
+        public void FindView_IsMainPage_UsesAreaViewLocationFormat_IfRouteContainsArea()
         {
             // Arrange
             var viewName = "test-view2";
@@ -430,7 +429,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             var context = GetActionContext(_areaTestContext);
 
             // Act
-            var result = viewEngine.FindView(context, viewName, isPartial: false);
+            var result = viewEngine.FindView(context, viewName, isMainPage: true);
 
             // Assert
             Assert.True(result.Success);
@@ -441,7 +440,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         [Theory]
         [InlineData("Test-View.cshtml")]
         [InlineData("/Home/Test-View.cshtml")]
-        public void GetView_DoesNotUseViewLocationFormat_WithRelativePath_IfRouteDoesNotContainArea(string viewName)
+        public void GetView_IsMainPage_DoesNotUseViewLocationFormat_WithRelativePath_IfRouteDoesNotContainArea(string viewName)
         {
             // Arrange
             var expectedViewName = "/Home/Test-View.cshtml";
@@ -456,7 +455,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
                 GetOptionsAccessor());
 
             // Act
-            var result = viewEngine.GetView("/Home/Page.cshtml", viewName, isPartial: false);
+            var result = viewEngine.GetView("/Home/Page.cshtml", viewName, isMainPage: true);
 
             // Assert
             Assert.True(result.Success);
@@ -467,7 +466,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         [Theory]
         [InlineData("Test-View.cshtml")]
         [InlineData("/Home/Test-View.cshtml")]
-        public void GetView_DoesNotUseViewLocationFormat_WithRelativePath_IfRouteContainArea(string viewName)
+        public void GetView_IsMainPage_DoesNotUseViewLocationFormat_WithRelativePath_IfRouteContainArea(string viewName)
         {
             // Arrange
             var expectedViewName = "/Home/Test-View.cshtml";
@@ -482,7 +481,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
                 GetOptionsAccessor());
 
             // Act
-            var result = viewEngine.GetView("/Home/Page.cshtml", viewName, isPartial: false);
+            var result = viewEngine.GetView("/Home/Page.cshtml", viewName, isMainPage: true);
 
             // Assert
             Assert.True(result.Success);
@@ -496,7 +495,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         [InlineData("/Home/Test-View.CSHTML")]
         [InlineData("~/Home/Test-View.cshtml")]
         [InlineData("~/SHARED/TEST-VIEW.CSHTML")]
-        public void GetView_UsesGivenPath_WithAppRelativePath(string viewName)
+        public void GetView_IsMainPage_UsesGivenPath_WithAppRelativePath(string viewName)
         {
             // Arrange
             var pageFactory = new Mock<IRazorPageFactoryProvider>();
@@ -510,7 +509,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
                 GetOptionsAccessor());
 
             // Act
-            var result = viewEngine.GetView(executingFilePath: null, viewPath: viewName, isPartial: false);
+            var result = viewEngine.GetView(executingFilePath: null, viewPath: viewName, isMainPage: true);
 
             // Assert
             Assert.True(result.Success);
@@ -523,7 +522,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         [InlineData("Test-View.CSHTML")]
         [InlineData("PATH/TEST-VIEW.CSHTML")]
         [InlineData("Path1/Path2/Test-View.cshtml")]
-        public void GetView_ResolvesRelativeToCurrentPage_WithRelativePath(string viewName)
+        public void GetView_IsMainPage_ResolvesRelativeToCurrentPage_WithRelativePath(string viewName)
         {
             // Arrange
             var expectedViewName = $"/Home/{ viewName }";
@@ -538,7 +537,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
                 GetOptionsAccessor());
 
             // Act
-            var result = viewEngine.GetView("/Home/Page.cshtml", viewName, isPartial: false);
+            var result = viewEngine.GetView("/Home/Page.cshtml", viewName, isMainPage: true);
 
             // Assert
             Assert.True(result.Success);
@@ -551,7 +550,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         [InlineData("Test-View.CSHTML")]
         [InlineData("PATH/TEST-VIEW.CSHTML")]
         [InlineData("Path1/Path2/Test-View.cshtml")]
-        public void GetView_ResolvesRelativeToAppRoot_WithRelativePath_IfNoPageExecuting(string viewName)
+        public void GetView_IsMainPage_ResolvesRelativeToAppRoot_WithRelativePath_IfNoPageExecuting(string viewName)
         {
             // Arrange
             var expectedViewName = $"/{ viewName }";
@@ -566,7 +565,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
                 GetOptionsAccessor());
 
             // Act
-            var result = viewEngine.GetView(executingFilePath: null, viewPath: viewName, isPartial: false);
+            var result = viewEngine.GetView(executingFilePath: null, viewPath: viewName, isMainPage: true);
 
             // Assert
             Assert.True(result.Success);
@@ -578,7 +577,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
 
         [Theory]
         [MemberData(nameof(ViewLocationExpanderTestData))]
-        public void FindView_UsesViewLocationExpandersToLocateViews(
+        public void FindView_IsMainPage_UsesViewLocationExpandersToLocateViews(
             IDictionary<string, object> routeValues,
             IEnumerable<string> expectedSeeds)
         {
@@ -629,7 +628,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             var context = GetActionContext(routeValues);
 
             // Act
-            var result = viewEngine.FindView(context, "test-view", isPartial: false);
+            var result = viewEngine.FindView(context, "test-view", isMainPage: true);
 
             // Assert
             Assert.True(result.Success);
@@ -640,7 +639,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         }
 
         [Fact]
-        public void FindView_CachesValuesIfViewWasFound()
+        public void FindView_IsMainPage_CachesValuesIfViewWasFound()
         {
             // Arrange
             var page = Mock.Of<IRazorPage>();
@@ -658,7 +657,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             var context = GetActionContext(_controllerTestContext);
 
             // Act 1
-            var result1 = viewEngine.FindView(context, "baz", isPartial: false);
+            var result1 = viewEngine.FindView(context, "baz", isMainPage: true);
 
             // Assert 1
             Assert.True(result1.Success);
@@ -671,7 +670,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
                .Setup(p => p.CreateFactory(It.IsAny<string>()))
                .Throws(new Exception("Shouldn't be called"));
 
-            var result2 = viewEngine.FindView(context, "baz", isPartial: false);
+            var result2 = viewEngine.FindView(context, "baz", isMainPage: true);
 
             // Assert 2
             Assert.True(result2.Success);
@@ -681,7 +680,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         }
 
         [Fact]
-        public void FindView_InvokesPageFactoryIfChangeTokenExpired()
+        public void FindView_IsMainPage_InvokesPageFactoryIfChangeTokenExpired()
         {
             // Arrange
             var page1 = Mock.Of<IRazorPage>();
@@ -709,7 +708,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             var context = GetActionContext(_controllerTestContext);
 
             // Act 1
-            var result1 = viewEngine.FindView(context, "baz", isPartial: false);
+            var result1 = viewEngine.FindView(context, "baz", isMainPage: true);
 
             // Assert 1
             Assert.True(result1.Success);
@@ -718,7 +717,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
 
             // Act 2
             cancellationTokenSource.Cancel();
-            var result2 = viewEngine.FindView(context, "baz", isPartial: false);
+            var result2 = viewEngine.FindView(context, "baz", isMainPage: true);
 
             // Assert 2
             Assert.True(result2.Success);
@@ -728,7 +727,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         }
 
         [Fact]
-        public void FindView_InvokesPageFactoryIfViewStartExpirationTokensHaveExpired()
+        public void FindView_IsMainPage_InvokesPageFactoryIfViewStartExpirationTokensHaveExpired()
         {
             // Arrange
             var page1 = Mock.Of<IRazorPage>();
@@ -761,7 +760,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             var context = GetActionContext(_controllerTestContext);
 
             // Act 1
-            var result1 = viewEngine.FindView(context, "baz", isPartial: false);
+            var result1 = viewEngine.FindView(context, "baz", isMainPage: true);
 
             // Assert 1
             Assert.True(result1.Success);
@@ -771,7 +770,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
 
             // Act 2
             cancellationTokenSource.Cancel();
-            var result2 = viewEngine.FindView(context, "baz", isPartial: false);
+            var result2 = viewEngine.FindView(context, "baz", isMainPage: true);
 
             // Assert 2
             Assert.True(result2.Success);
@@ -785,7 +784,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         // This test validates an important perf scenario of RazorViewEngine not constructing
         // multiple strings for views that do not exist in the file system on a per-request basis.
         [Fact]
-        public void FindView_DoesNotInvokeViewLocationExpanders_IfChangeTokenHasNotExpired()
+        public void FindView_IsMainPage_DoesNotInvokeViewLocationExpanders_IfChangeTokenHasNotExpired()
         {
             // Arrange
             var pageFactory = Mock.Of<IRazorPageFactoryProvider>();
@@ -816,7 +815,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             var context = GetActionContext(_controllerTestContext);
 
             // Act - 1
-            var result = viewEngine.FindView(context, "myview", isPartial: false);
+            var result = viewEngine.FindView(context, "myview", isMainPage: true);
 
             // Assert - 1
             Assert.False(result.Success);
@@ -824,7 +823,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             expander.Verify();
 
             // Act - 2
-            result = viewEngine.FindView(context, "myview", isPartial: false);
+            result = viewEngine.FindView(context, "myview", isMainPage: true);
 
             // Assert - 2
             Assert.False(result.Success);
@@ -838,7 +837,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         }
 
         [Fact]
-        public void FindView_InvokesViewLocationExpanders_IfChangeTokenExpires()
+        public void FindView_IsMainPage_InvokesViewLocationExpanders_IfChangeTokenExpires()
         {
             // Arrange
             var cancellationTokenSource = new CancellationTokenSource();
@@ -875,7 +874,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             var context = GetActionContext(_controllerTestContext);
 
             // Act - 1
-            var result = viewEngine.FindView(context, "MyView", isPartial: false);
+            var result = viewEngine.FindView(context, "MyView", isMainPage: true);
 
             // Assert - 1
             Assert.False(result.Success);
@@ -887,7 +886,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
                 .Setup(p => p.CreateFactory("viewlocation3"))
                 .Returns(new RazorPageFactoryResult(() => page, new IChangeToken[0]));
             cancellationTokenSource.Cancel();
-            result = viewEngine.FindView(context, "MyView", isPartial: false);
+            result = viewEngine.FindView(context, "MyView", isMainPage: true);
 
             // Assert - 2
             Assert.True(result.Success);
@@ -903,14 +902,14 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
 
         [Theory]
         [MemberData(nameof(AbsoluteViewPathData))]
-        public void FindPage_WithFullPath_ReturnsNotFound(string viewName)
+        public void FindPage_IsMainPage_WithFullPath_ReturnsNotFound(string viewName)
         {
             // Arrange
             var viewEngine = CreateSuccessfulViewEngine();
             var context = GetActionContext(_controllerTestContext);
 
             // Act
-            var result = viewEngine.FindPage(context, viewName, isPartial: false);
+            var result = viewEngine.FindPage(context, viewName, isMainPage: true);
 
             // Assert
             Assert.Null(result.Page);
@@ -918,7 +917,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
 
         [Theory]
         [MemberData(nameof(AbsoluteViewPathData))]
-        public void FindPage_WithFullPathAndCshtmlEnding_ReturnsNotFound(string viewName)
+        public void FindPage_IsMainPage_WithFullPathAndCshtmlEnding_ReturnsNotFound(string viewName)
         {
             // Arrange
             var viewEngine = CreateSuccessfulViewEngine();
@@ -926,7 +925,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             viewName += ".cshtml";
 
             // Act
-            var result = viewEngine.FindPage(context, viewName, isPartial: false);
+            var result = viewEngine.FindPage(context, viewName, isMainPage: true);
 
             // Assert
             Assert.Null(result.Page);
@@ -935,14 +934,14 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         [Theory]
         [InlineData(false)]
         [InlineData(true)]
-        public void FindPage_WithRelativePath_ReturnsNotFound(bool isPartial)
+        public void FindPage_WithRelativePath_ReturnsNotFound(bool isMainPage)
         {
             // Arrange
             var viewEngine = CreateSuccessfulViewEngine();
             var context = GetActionContext(_controllerTestContext);
 
             // Act
-            var result = viewEngine.FindPage(context, "View.cshtml", isPartial);
+            var result = viewEngine.FindPage(context, "View.cshtml", isMainPage);
 
             // Assert
             Assert.Null(result.Page);
@@ -951,13 +950,13 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         [Theory]
         [InlineData(false)]
         [InlineData(true)]
-        public void GetPage_WithViewName_ReturnsNotFound(bool isPartial)
+        public void GetPage_WithViewName_ReturnsNotFound(bool isMainPage)
         {
             // Arrange
             var viewEngine = CreateSuccessfulViewEngine();
 
             // Act
-            var result = viewEngine.GetPage("~/Home/View1.cshtml", "View2", isPartial);
+            var result = viewEngine.GetPage("~/Home/View1.cshtml", "View2", isMainPage);
 
             // Assert
             Assert.Null(result.Page);
@@ -966,7 +965,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         [Theory]
         [InlineData(null)]
         [InlineData("")]
-        public void FindPage_IsPartial_ThrowsIfNameIsNullOrEmpty(string pageName)
+        public void FindPage_ThrowsIfNameIsNullOrEmpty(string pageName)
         {
             // Arrange
             var viewEngine = CreateViewEngine();
@@ -974,13 +973,13 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
 
             // Act & Assert
             ExceptionAssert.ThrowsArgumentNullOrEmpty(
-                () => viewEngine.FindPage(context, pageName, isPartial: true),
+                () => viewEngine.FindPage(context, pageName, isMainPage: false),
                 "pageName");
         }
 
         [Theory]
         [MemberData(nameof(ViewLocationExpanderTestData))]
-        public void FindPage_IsPartial_UsesViewLocationExpander_ToExpandPaths(
+        public void FindPage_UsesViewLocationExpander_ToExpandPaths(
             IDictionary<string, object> routeValues,
             IEnumerable<string> expectedSeeds)
         {
@@ -1022,7 +1021,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             var context = GetActionContext(routeValues);
 
             // Act
-            var result = viewEngine.FindPage(context, "layout", isPartial: true);
+            var result = viewEngine.FindPage(context, "layout", isMainPage: false);
 
             // Assert
             Assert.Equal("layout", result.Name);
@@ -1035,7 +1034,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         [Theory]
         [InlineData(false)]
         [InlineData(true)]
-        public void FindPage_ReturnsSearchedLocationsIfPageCannotBeFound(bool isPartial)
+        public void FindPage_ReturnsSearchedLocationsIfPageCannotBeFound(bool isMainPage)
         {
             // Arrange
             var expected = new[]
@@ -1048,7 +1047,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             var context = GetActionContext(_controllerTestContext);
 
             // Act
-            var result = viewEngine.FindPage(context, "layout", isPartial);
+            var result = viewEngine.FindPage(context, "layout", isMainPage);
 
             // Assert
             Assert.Equal("layout", result.Name);
@@ -1061,7 +1060,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         [InlineData(true)]
         // Looks in RouteConstraints
         [InlineData(false)]
-        public void FindPage_IsPartial_SelectsActionCaseInsensitively(bool isAttributeRouted)
+        public void FindPage_SelectsActionCaseInsensitively(bool isAttributeRouted)
         {
             // The ActionDescriptor contains "Foo" and the RouteData contains "foo"
             // which matches the case of the constructor thus searching in the appropriate location.
@@ -1071,8 +1070,6 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
                 { "controller", "foo" }
             };
             var page = new Mock<IRazorPage>(MockBehavior.Strict);
-            page.SetupSet(p => p.IsPartial = true);
-
             var pageFactory = new Mock<IRazorPageFactoryProvider>();
             pageFactory
                 .Setup(p => p.CreateFactory("/Views/Foo/details.cshtml"))
@@ -1091,7 +1088,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
                 isAttributeRouted);
 
             // Act
-            var result = viewEngine.FindPage(context, "details", isPartial: true);
+            var result = viewEngine.FindPage(context, "details", isMainPage: false);
 
             // Assert
             Assert.Equal("details", result.Name);
@@ -1105,7 +1102,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         [InlineData(true)]
         // Looks in RouteConstraints
         [InlineData(false)]
-        public void FindPage_IsPartial_LooksForPages_UsingActionDescriptor_Controller(bool isAttributeRouted)
+        public void FindPage_LooksForPages_UsingActionDescriptor_Controller(bool isAttributeRouted)
         {
             // Arrange
             var expected = new[]
@@ -1130,7 +1127,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
                 isAttributeRouted);
 
             // Act
-            var result = viewEngine.FindPage(context, "foo", isPartial: true);
+            var result = viewEngine.FindPage(context, "foo", isMainPage: false);
 
             // Assert
             Assert.Equal("foo", result.Name);
@@ -1143,7 +1140,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         [InlineData(true)]
         // Looks in RouteConstraints
         [InlineData(false)]
-        public void FindPage_IsPartial_LooksForPages_UsingActionDescriptor_Areas(bool isAttributeRouted)
+        public void FindPage_LooksForPages_UsingActionDescriptor_Areas(bool isAttributeRouted)
         {
             // Arrange
             var expected = new[]
@@ -1171,7 +1168,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
                 isAttributeRouted);
 
             // Act
-            var result = viewEngine.FindPage(context, "foo", isPartial: true);
+            var result = viewEngine.FindPage(context, "foo", isMainPage: false);
 
             // Assert
             Assert.Equal("foo", result.Name);
@@ -1182,7 +1179,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        public void FindPage_IsPartial_LooksForPages_UsesRouteValuesAsFallback(bool isAttributeRouted)
+        public void FindPage_LooksForPages_UsesRouteValuesAsFallback(bool isAttributeRouted)
         {
             // Arrange
             var expected = new[]
@@ -1203,7 +1200,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
                 isAttributeRouted);
 
             // Act
-            var result = viewEngine.FindPage(context, "bar", isPartial: true);
+            var result = viewEngine.FindPage(context, "bar", isMainPage: false);
 
             // Assert
             Assert.Equal("bar", result.Name);
@@ -1217,7 +1214,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         [InlineData("/Home/Test-View.CSHTML")]
         [InlineData("~/Home/Test-View.cshtml")]
         [InlineData("~/SHARED/TEST-VIEW.CSHTML")]
-        public void GetPage_UsesGivenPath_WithAppRelativePath(string pageName)
+        public void GetPage_IsMainPage_UsesGivenPath_WithAppRelativePath(string pageName)
         {
             // Arrange
             var pageFactory = new Mock<IRazorPageFactoryProvider>();
@@ -1231,7 +1228,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
                 GetOptionsAccessor());
 
             // Act
-            var result = viewEngine.GetPage("~/Another/Place.cshtml", pagePath: pageName, isPartial: false);
+            var result = viewEngine.GetPage("~/Another/Place.cshtml", pagePath: pageName, isMainPage: true);
 
             // Assert
             Assert.Same(page, result.Page);
@@ -1244,7 +1241,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         [InlineData("Test-View.CSHTML")]
         [InlineData("PATH/TEST-VIEW.CSHTML")]
         [InlineData("Path1/Path2/Test-View.cshtml")]
-        public void GetPage_ResolvesRelativeToCurrentPage_WithRelativePath(string pageName)
+        public void GetPage_IsMainPage_ResolvesRelativeToCurrentPage_WithRelativePath(string pageName)
         {
             // Arrange
             var expectedPageName = $"/Home/{ pageName }";
@@ -1259,7 +1256,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
                 GetOptionsAccessor());
 
             // Act
-            var result = viewEngine.GetPage("/Home/Page.cshtml", pageName, isPartial: false);
+            var result = viewEngine.GetPage("/Home/Page.cshtml", pageName, isMainPage: true);
 
             // Assert
             Assert.Same(page, result.Page);
@@ -1272,7 +1269,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         [InlineData("Test-View.CSHTML")]
         [InlineData("PATH/TEST-VIEW.CSHTML")]
         [InlineData("Path1/Path2/Test-View.cshtml")]
-        public void GetPage_ResolvesRelativeToAppRoot_WithRelativePath_IfNoPageExecuting(string pageName)
+        public void GetPage_IsMainPage_ResolvesRelativeToAppRoot_WithRelativePath_IfNoPageExecuting(string pageName)
         {
             // Arrange
             var expectedPageName = $"/{ pageName }";
@@ -1287,7 +1284,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
                 GetOptionsAccessor());
 
             // Act
-            var result = viewEngine.GetPage(executingFilePath: null, pagePath: pageName, isPartial: false);
+            var result = viewEngine.GetPage(executingFilePath: null, pagePath: pageName, isMainPage: true);
 
             // Assert
             Assert.Same(page, result.Page);

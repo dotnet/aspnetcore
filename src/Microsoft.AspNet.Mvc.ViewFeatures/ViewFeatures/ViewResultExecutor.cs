@@ -69,11 +69,11 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             var viewEngine = viewResult.ViewEngine ?? ViewEngine;
             var viewName = viewResult.ViewName ?? actionContext.ActionDescriptor.Name;
 
-            var result = viewEngine.GetView(executingFilePath: null, viewPath: viewName, isPartial: false);
+            var result = viewEngine.GetView(executingFilePath: null, viewPath: viewName, isMainPage: true);
             var originalResult = result;
             if (!result.Success)
             {
-                result = viewEngine.FindView(actionContext, viewName, isPartial: false);
+                result = viewEngine.FindView(actionContext, viewName, isMainPage: true);
             }
 
             if (!result.Success)
@@ -104,7 +104,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                         new
                         {
                             actionContext = actionContext,
-                            isPartial = false,
+                            isMainPage = true,
                             result = viewResult,
                             viewName = viewName,
                             view = result.View,
@@ -122,7 +122,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                         new
                         {
                             actionContext = actionContext,
-                            isPartial = false,
+                            isMainPage = true,
                             result = viewResult,
                             viewName = viewName,
                             searchedLocations = result.SearchedLocations

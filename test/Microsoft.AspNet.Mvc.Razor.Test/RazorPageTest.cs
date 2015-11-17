@@ -660,7 +660,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         [Fact]
-        public async Task WriteAttribute_CallsBeginAndEndContext_OnPageExecutionListenerContext()
+        public async Task WriteAttribute_CallsBeginAndEndContext_OnPageExecutionContext()
         {
             // Arrange
             var page = CreatePage(p =>
@@ -695,7 +695,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         [Fact]
-        public async Task WriteAttribute_WithBoolValue_CallsBeginAndEndContext_OnPageExecutionListenerContext()
+        public async Task WriteAttribute_WithBoolValue_CallsBeginAndEndContext_OnPageExecutionContext()
         {
             // Arrange
             var page = CreatePage(p =>
@@ -746,10 +746,8 @@ namespace Microsoft.AspNet.Mvc.Razor
             context.Verify();
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public async Task WriteAttribute_CallsBeginAndEndContext_OnPageExecutionListenerContext(bool isPartial)
+        [Fact]
+        public async Task WriteAttribute_WritesBeginAndEndEvents_ToDiagnosticSource()
         {
             // Arrange
             var path = "path-to-page";
@@ -762,7 +760,6 @@ namespace Microsoft.AspNet.Mvc.Razor
                 p.EndWriteAttribute();
             });
             page.Path = path;
-            page.IsPartial = isPartial;
             var adapter = new TestDiagnosticListener();
             var diagnosticListener = new DiagnosticListener("Microsoft.AspNet.Mvc.Razor");
             diagnosticListener.SubscribeWithAdapter(adapter);
@@ -777,7 +774,6 @@ namespace Microsoft.AspNet.Mvc.Razor
                 var beginEvent = Assert.IsType<TestDiagnosticListener.BeginPageInstrumentationData>(data);
                 Assert.NotNull(beginEvent.HttpContext);
                 Assert.Equal(path, beginEvent.Path);
-                Assert.Equal(isPartial, beginEvent.IsPartial);
 
                 return beginEvent;
             };
@@ -787,7 +783,6 @@ namespace Microsoft.AspNet.Mvc.Razor
                 var endEvent = Assert.IsType<TestDiagnosticListener.EndPageInstrumentationData>(data);
                 Assert.NotNull(endEvent.HttpContext);
                 Assert.Equal(path, endEvent.Path);
-                Assert.Equal(isPartial, endEvent.IsPartial);
             };
 
             Assert.Collection(adapter.PageInstrumentationData,
@@ -841,10 +836,8 @@ namespace Microsoft.AspNet.Mvc.Razor
                 assertEndEvent);
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public async Task WriteAttribute_WithBoolValue_CallsBeginAndEndContext_OnPageExecutionListenerContext(bool isPartial)
+        [Fact]
+        public async Task WriteAttribute_WithBoolValue_WritesBeginAndEndEvents_ToDiagnosticSource()
         {
             // Arrange
             var path = "some-path";
@@ -856,7 +849,6 @@ namespace Microsoft.AspNet.Mvc.Razor
                 p.EndWriteAttribute();
             });
             page.Path = path;
-            page.IsPartial = isPartial;
             var adapter = new TestDiagnosticListener();
             var diagnosticListener = new DiagnosticListener("Microsoft.AspNet.Mvc.Razor");
             diagnosticListener.SubscribeWithAdapter(adapter);
@@ -871,7 +863,6 @@ namespace Microsoft.AspNet.Mvc.Razor
                 var beginEvent = Assert.IsType<TestDiagnosticListener.BeginPageInstrumentationData>(data);
                 Assert.NotNull(beginEvent.HttpContext);
                 Assert.Equal(path, beginEvent.Path);
-                Assert.Equal(isPartial, beginEvent.IsPartial);
 
                 return beginEvent;
             };
@@ -881,7 +872,6 @@ namespace Microsoft.AspNet.Mvc.Razor
                 var endEvent = Assert.IsType<TestDiagnosticListener.EndPageInstrumentationData>(data);
                 Assert.NotNull(endEvent.HttpContext);
                 Assert.Equal(path, endEvent.Path);
-                Assert.Equal(isPartial, endEvent.IsPartial);
             };
 
             Assert.Collection(adapter.PageInstrumentationData,
@@ -911,10 +901,8 @@ namespace Microsoft.AspNet.Mvc.Razor
                 assertEndEvent);
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public async Task WriteAttribute_CallsBeginAndEndContext_OnPrefixAndSuffixValues(bool isPartial)
+        [Fact]
+        public async Task WriteAttribute_WritesBeginAndEndEvents_ToDiagnosticSource_OnPrefixAndSuffixValues()
         {
             // Arrange
             var path = "some-path";
@@ -924,7 +912,6 @@ namespace Microsoft.AspNet.Mvc.Razor
                 p.EndWriteAttribute();
             });
             page.Path = path;
-            page.IsPartial = isPartial;
             var adapter = new TestDiagnosticListener();
             var diagnosticListener = new DiagnosticListener("Microsoft.AspNet.Mvc.Razor");
             diagnosticListener.SubscribeWithAdapter(adapter);
@@ -939,7 +926,6 @@ namespace Microsoft.AspNet.Mvc.Razor
                 var beginEvent = Assert.IsType<TestDiagnosticListener.BeginPageInstrumentationData>(data);
                 Assert.NotNull(beginEvent.HttpContext);
                 Assert.Equal(path, beginEvent.Path);
-                Assert.Equal(isPartial, beginEvent.IsPartial);
 
                 return beginEvent;
             };
@@ -949,7 +935,6 @@ namespace Microsoft.AspNet.Mvc.Razor
                 var endEvent = Assert.IsType<TestDiagnosticListener.EndPageInstrumentationData>(data);
                 Assert.NotNull(endEvent.HttpContext);
                 Assert.Equal(path, endEvent.Path);
-                Assert.Equal(isPartial, endEvent.IsPartial);
             };
 
             Assert.Collection(adapter.PageInstrumentationData,

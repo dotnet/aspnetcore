@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.Mvc.ViewEngines
         public IReadOnlyList<IViewEngine> ViewEngines { get; }
 
         /// <inheritdoc />
-        public ViewEngineResult FindView(ActionContext context, string viewName, bool isPartial)
+        public ViewEngineResult FindView(ActionContext context, string viewName, bool isMainPage)
         {
             if (context == null)
             {
@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.Mvc.ViewEngines
             List<string> searchedList = null;
             for (var index = 0; index < ViewEngines.Count; index++)
             {
-                var result = ViewEngines[index].FindView(context, viewName, isPartial);
+                var result = ViewEngines[index].FindView(context, viewName, isMainPage);
                 if (result.Success)
                 {
                     return result;
@@ -70,7 +70,7 @@ namespace Microsoft.AspNet.Mvc.ViewEngines
         }
 
         /// <inheritdoc />
-        public ViewEngineResult GetView(string executingFilePath, string viewPath, bool isPartial)
+        public ViewEngineResult GetView(string executingFilePath, string viewPath, bool isMainPage)
         {
             if (string.IsNullOrEmpty(viewPath))
             {
@@ -82,7 +82,7 @@ namespace Microsoft.AspNet.Mvc.ViewEngines
             List<string> searchedList = null;
             for (var index = 0; index < ViewEngines.Count; index++)
             {
-                var result = ViewEngines[index].GetView(executingFilePath, viewPath, isPartial);
+                var result = ViewEngines[index].GetView(executingFilePath, viewPath, isMainPage);
                 if (result.Success)
                 {
                     return result;

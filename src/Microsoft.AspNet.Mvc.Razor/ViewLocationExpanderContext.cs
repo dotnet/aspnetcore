@@ -18,13 +18,13 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <param name="viewName">The view name.</param>
         /// <param name="controllerName">The controller name.</param>
         /// <param name="areaName">The area name.</param>
-        /// <param name="isPartial">Determines if the view being discovered is a partial.</param>
+        /// <param name="isMainPage">Determines if the page being found is the main page for an action.</param>
         public ViewLocationExpanderContext(
             ActionContext actionContext,
             string viewName,
             string controllerName,
             string areaName,
-            bool isPartial)
+            bool isMainPage)
         {
             if (actionContext == null)
             {
@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             ViewName = viewName;
             ControllerName = controllerName;
             AreaName = areaName;
-            IsPartial = isPartial;
+            IsMainPage = isMainPage;
         }
 
         /// <summary>
@@ -64,9 +64,9 @@ namespace Microsoft.AspNet.Mvc.Razor
         public string AreaName { get; }
 
         /// <summary>
-        /// Gets a value that determines if a partial view is being discovered.
+        /// Determines if the page being found is the main page for an action.
         /// </summary>
-        public bool IsPartial { get; }
+        public bool IsMainPage { get; }
 
         /// <summary>
         /// Gets or sets the <see cref="IDictionary{TKey, TValue}"/> that is populated with values as part of

@@ -16,10 +16,10 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// </summary>
         /// <param name="context">The <see cref="ActionContext"/>.</param>
         /// <param name="pageName">The name of the page.</param>
-        /// <param name="isPartial">Determines if the page being found is a partial.</param>
+        /// <param name="isMainPage">Determines if the page being found is the main page for an action.</param>
         /// <returns>The <see cref="RazorPageResult"/> of locating the page.</returns>
         /// <remarks><seealso cref="IViewEngine.FindView"/>.</remarks>
-        RazorPageResult FindPage(ActionContext context, string pageName, bool isPartial);
+        RazorPageResult FindPage(ActionContext context, string pageName, bool isMainPage);
 
         /// <summary>
         /// Gets the page with the given <paramref name="pagePath"/>, relative to <paramref name="executingFilePath"/>
@@ -27,10 +27,10 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// </summary>
         /// <param name="executingFilePath">The absolute path to the currently-executing page, if any.</param>
         /// <param name="pagePath">The path to the page.</param>
-        /// <param name="isPartial">Determines if the page being found is a partial.</param>
+        /// <param name="isMainPage">Determines if the page being found is the main page for an action.</param>
         /// <returns>The <see cref="RazorPageResult"/> of locating the page.</returns>
         /// <remarks><seealso cref="IViewEngine.GetView"/>.</remarks>
-        RazorPageResult GetPage(string executingFilePath, string pagePath, bool isPartial);
+        RazorPageResult GetPage(string executingFilePath, string pagePath, bool isMainPage);
 
         /// <summary>
         /// Converts the given <paramref name="pagePath"/> to be absolute, relative to

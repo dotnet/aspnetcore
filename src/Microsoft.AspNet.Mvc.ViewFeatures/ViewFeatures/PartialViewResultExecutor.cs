@@ -71,11 +71,11 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             var viewEngine = viewResult.ViewEngine ?? ViewEngine;
             var viewName = viewResult.ViewName ?? actionContext.ActionDescriptor.Name;
 
-            var result = viewEngine.GetView(executingFilePath: null, viewPath: viewName, isPartial: true);
+            var result = viewEngine.GetView(executingFilePath: null, viewPath: viewName, isMainPage: false);
             var originalResult = result;
             if (!result.Success)
             {
-                result = viewEngine.FindView(actionContext, viewName, isPartial: true);
+                result = viewEngine.FindView(actionContext, viewName, isMainPage: false);
             }
 
             if (!result.Success)
@@ -99,13 +99,23 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
 
             if (result.Success)
             {
-                DiagnosticSource.ViewFound(actionContext, true, viewResult, viewName, result.View);
+                DiagnosticSource.ViewFound(
+                    actionContext,
+                    isMainPage: false,
+                    viewResult: viewResult,
+                    viewName: viewName,
+                    view: result.View);
 
                 Logger.PartialViewFound(viewName);
             }
             else
             {
-                DiagnosticSource.ViewNotFound(actionContext, true, viewResult, viewName, result.SearchedLocations);
+                DiagnosticSource.ViewNotFound(
+                    actionContext,
+                    isMainPage: false,
+                    viewResult: viewResult,
+                    viewName: viewName,
+                    searchedLocations: result.SearchedLocations);
 
                 Logger.PartialViewNotFound(viewName, result.SearchedLocations);
             }

@@ -16,15 +16,15 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// Initializes a new instance of <see cref="ViewLocationCacheKey"/>.
         /// </summary>
         /// <param name="viewName">The view name or path.</param>
-        /// <param name="isPartial">Determines if the view is a partial.</param>
+        /// <param name="isMainPage">Determines if the page being found is the main page for an action.</param>
         public ViewLocationCacheKey(
             string viewName,
-            bool isPartial)
+            bool isMainPage)
             : this(
                   viewName,
                   controllerName: null,
                   areaName: null,
-                  isPartial: isPartial,
+                  isMainPage: isMainPage,
                   values: null)
         {
         }
@@ -35,19 +35,19 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <param name="viewName">The view name.</param>
         /// <param name="controllerName">The controller name.</param>
         /// <param name="areaName">The area name.</param>
-        /// <param name="isPartial">Determines if the view is a partial.</param>
+        /// <param name="isMainPage">Determines if the page being found is the main page for an action.</param>
         /// <param name="values">Values from <see cref="IViewLocationExpander"/> instances.</param>
         public ViewLocationCacheKey(
             string viewName,
             string controllerName,
             string areaName,
-            bool isPartial,
+            bool isMainPage,
             IReadOnlyDictionary<string, string> values)
         {
             ViewName = viewName;
             ControllerName = controllerName;
             AreaName = areaName;
-            IsPartial = isPartial;
+            IsMainPage = isMainPage;
             ViewLocationExpanderValues = values;
         }
 
@@ -67,9 +67,9 @@ namespace Microsoft.AspNet.Mvc.Razor
         public string AreaName { get; }
 
         /// <summary>
-        /// Determines if the view is a partial.
+        /// Determines if the page being found is the main page for an action.
         /// </summary>
-        public bool IsPartial { get; }
+        public bool IsMainPage { get; }
 
         /// <summary>
         /// Gets the values populated by <see cref="IViewLocationExpander"/> instances.
@@ -79,7 +79,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <inheritdoc />
         public bool Equals(ViewLocationCacheKey y)
         {
-            if (IsPartial != y.IsPartial ||
+            if (IsMainPage != y.IsMainPage ||
                 !string.Equals(ViewName, y.ViewName, StringComparison.Ordinal) ||
                 !string.Equals(ControllerName, y.ControllerName, StringComparison.Ordinal) ||
                 !string.Equals(AreaName, y.AreaName, StringComparison.Ordinal))
@@ -127,7 +127,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         public override int GetHashCode()
         {
             var hashCodeCombiner = HashCodeCombiner.Start();
-            hashCodeCombiner.Add(IsPartial ? 1 : 0);
+            hashCodeCombiner.Add(IsMainPage ? 1 : 0);
             hashCodeCombiner.Add(ViewName, StringComparer.Ordinal);
             hashCodeCombiner.Add(ControllerName, StringComparer.Ordinal);
             hashCodeCombiner.Add(AreaName, StringComparer.Ordinal);

@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Localization;
-using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.Razor;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -19,7 +18,7 @@ namespace RazorWebSite
                 .AddMvc()
                 .AddRazorOptions(options =>
                 {
-                    options.ViewLocationExpanders.Add(new CustomPartialDirectoryViewLocationExpander());
+                    options.ViewLocationExpanders.Add(new NonMainPageViewLocationExpander());
                 })
                 .AddViewOptions(options =>
                 {

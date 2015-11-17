@@ -543,11 +543,11 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             var viewEngineResult = _viewEngine.GetView(
                 ViewContext.ExecutingFilePath,
                 partialViewName,
-                isPartial: true);
+                isMainPage: false);
             var originalLocations = viewEngineResult.SearchedLocations;
             if (!viewEngineResult.Success)
             {
-                viewEngineResult = _viewEngine.FindView(ViewContext, partialViewName, isPartial: true);
+                viewEngineResult = _viewEngine.FindView(ViewContext, partialViewName, isMainPage: false);
             }
 
             if (!viewEngineResult.Success)

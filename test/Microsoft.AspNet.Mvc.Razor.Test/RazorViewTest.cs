@@ -45,8 +45,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 Mock.Of<IRazorPageActivator>(),
                 new IRazorPage[0],
                 page,
-                new HtmlTestEncoder(),
-                isPartial: true);
+                new HtmlTestEncoder());
             var viewContext = CreateViewContext(view);
             var expected = viewContext.Writer;
 
@@ -75,8 +74,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 activator.Object,
                 new IRazorPage[0],
                 page,
-                new HtmlTestEncoder(),
-                isPartial: true);
+                new HtmlTestEncoder());
 
             var viewContext = CreateViewContext(view);
             var expectedWriter = viewContext.Writer;
@@ -138,15 +136,14 @@ namespace Microsoft.AspNet.Mvc.Razor
                 .Setup(p => p.GetAbsolutePath("_ViewStart", LayoutPath))
                 .Returns(LayoutPath);
             viewEngine
-                .Setup(v => v.GetPage(pagePath, LayoutPath, /*isPartial*/ true))
+                .Setup(v => v.GetPage(pagePath, LayoutPath, /*isMainPage*/ false))
                 .Returns(new RazorPageResult(LayoutPath, layout));
             var view = new RazorView(
                 viewEngine.Object,
                 activator,
                 new[] { viewStart },
                 page,
-                new HtmlTestEncoder(),
-                isPartial: false);
+                new HtmlTestEncoder());
 
             var viewContext = CreateViewContext(view);
             var expectedWriter = viewContext.Writer;
@@ -172,8 +169,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 activator.Object,
                 new IRazorPage[0],
                 page,
-                new HtmlTestEncoder(),
-                isPartial: true);
+                new HtmlTestEncoder());
             var viewContext = CreateViewContext(view);
 
             // Act
@@ -212,7 +208,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             var viewEngine = new Mock<IRazorViewEngine>(MockBehavior.Strict);
             viewEngine
-                .Setup(v => v.GetPage(/*executingFilePath*/ null, LayoutPath, /*isPartial*/ true))
+                .Setup(v => v.GetPage(/*executingFilePath*/ null, LayoutPath, /*isMainPage*/ false))
                 .Returns(new RazorPageResult(LayoutPath, layout));
 
             var view = new RazorView(
@@ -220,8 +216,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 Mock.Of<IRazorPageActivator>(),
                 new IRazorPage[0],
                 page,
-                new HtmlTestEncoder(),
-                isPartial: true);
+                new HtmlTestEncoder());
             var viewContext = CreateViewContext(view);
 
             // Act
@@ -245,8 +240,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 Mock.Of<IRazorPageActivator>(),
                 new IRazorPage[0],
                 page,
-                new HtmlTestEncoder(),
-                isPartial: false);
+                new HtmlTestEncoder());
             var viewContext = CreateViewContext(view);
             var original = viewContext.Writer;
 
@@ -271,8 +265,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 Mock.Of<IRazorPageActivator>(),
                 new IRazorPage[0],
                 page,
-                new HtmlTestEncoder(),
-                isPartial: false);
+                new HtmlTestEncoder());
             var viewContext = CreateViewContext(view);
             var original = viewContext.Writer;
 
@@ -300,8 +293,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 activator.Object,
                 new IRazorPage[0],
                 page,
-                new HtmlTestEncoder(),
-                isPartial: false);
+                new HtmlTestEncoder());
             var viewContext = CreateViewContext(view);
 
             // Act
@@ -356,8 +348,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 activator.Object,
                 new[] { viewStart1, viewStart2 },
                 page,
-                new HtmlTestEncoder(),
-                isPartial: false);
+                new HtmlTestEncoder());
             var viewContext = CreateViewContext(view);
 
             // Act
@@ -390,15 +381,14 @@ namespace Microsoft.AspNet.Mvc.Razor
                 Mock.Of<IRazorPageActivator>(),
                 new IRazorPage[0],
                 page,
-                new HtmlTestEncoder(),
-                isPartial: false);
+                new HtmlTestEncoder());
             var viewContext = CreateViewContext(view);
             viewEngine
-                .Setup(v => v.GetPage(/*executingFilePath*/ null, layoutPath, /*isPartial*/ true))
+                .Setup(v => v.GetPage(/*executingFilePath*/ null, layoutPath, /*isMainPage*/ false))
                 .Returns(new RazorPageResult(layoutPath, new[] { "path1", "path2" }))
                 .Verifiable();
             viewEngine
-                .Setup(v => v.FindPage(viewContext, layoutPath, /*isPartial*/ true))
+                .Setup(v => v.FindPage(viewContext, layoutPath, /*isMainPage*/ false))
                 .Returns(new RazorPageResult(layoutPath, Enumerable.Empty<string>()))
                 .Verifiable();
 
@@ -433,15 +423,14 @@ namespace Microsoft.AspNet.Mvc.Razor
                 Mock.Of<IRazorPageActivator>(),
                 new IRazorPage[0],
                 page,
-                new HtmlTestEncoder(),
-                isPartial: false);
+                new HtmlTestEncoder());
             var viewContext = CreateViewContext(view);
             viewEngine
-                .Setup(v => v.GetPage(/*executingFilePath*/ null, layoutPath, /*isPartial*/ true))
+                .Setup(v => v.GetPage(/*executingFilePath*/ null, layoutPath, /*isMainPage*/ false))
                 .Returns(new RazorPageResult(layoutPath, Enumerable.Empty<string>()))
                 .Verifiable();
             viewEngine
-                .Setup(v => v.FindPage(viewContext, layoutPath, /*isPartial*/ true))
+                .Setup(v => v.FindPage(viewContext, layoutPath, /*isMainPage*/ false))
                 .Returns(new RazorPageResult(layoutPath, new[] { "path1", "path2" }))
                 .Verifiable();
 
@@ -478,15 +467,14 @@ namespace Microsoft.AspNet.Mvc.Razor
                 Mock.Of<IRazorPageActivator>(),
                 new IRazorPage[0],
                 page,
-                new HtmlTestEncoder(),
-                isPartial: false);
+                new HtmlTestEncoder());
             var viewContext = CreateViewContext(view);
             viewEngine
-                .Setup(v => v.GetPage(/*executingFilePath*/ null, layoutPath, /*isPartial*/ true))
+                .Setup(v => v.GetPage(/*executingFilePath*/ null, layoutPath, /*isMainPage*/ false))
                 .Returns(new RazorPageResult(layoutPath, new[] { "path1", "path2" }))
                 .Verifiable();
             viewEngine
-                .Setup(v => v.FindPage(viewContext, layoutPath, /*isPartial*/ true))
+                .Setup(v => v.FindPage(viewContext, layoutPath, /*isMainPage*/ false))
                 .Returns(new RazorPageResult(layoutPath, new[] { "path3", "path4" }))
                 .Verifiable();
 
@@ -545,7 +533,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 .Verifiable();
             var viewEngine = new Mock<IRazorViewEngine>(MockBehavior.Strict);
             viewEngine
-                .Setup(v => v.GetPage(/*executingFilePath*/ null, LayoutPath, /*isPartial*/ true))
+                .Setup(v => v.GetPage(/*executingFilePath*/ null, LayoutPath, /*isMainPage*/ false))
                 .Returns(new RazorPageResult(LayoutPath, layout))
                 .Verifiable();
 
@@ -554,8 +542,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 activator.Object,
                 new IRazorPage[0],
                 page,
-                new HtmlTestEncoder(),
-                isPartial: false);
+                new HtmlTestEncoder());
             var viewContext = CreateViewContext(view);
 
             // Act
@@ -587,7 +574,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             };
             var viewEngine = new Mock<IRazorViewEngine>(MockBehavior.Strict);
             viewEngine
-                .Setup(v => v.GetPage(/*executingFilePath*/ null, LayoutPath, /*isPartial*/ true))
+                .Setup(v => v.GetPage(/*executingFilePath*/ null, LayoutPath, /*isMainPage*/ false))
                 .Returns(new RazorPageResult(LayoutPath, layout));
 
             var view = new RazorView(
@@ -595,8 +582,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 Mock.Of<IRazorPageActivator>(),
                 new IRazorPage[0],
                 page,
-                new HtmlTestEncoder(),
-                isPartial: false);
+                new HtmlTestEncoder());
             var viewContext = CreateViewContext(view);
 
             // Act and Assert
@@ -650,10 +636,10 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             var viewEngine = new Mock<IRazorViewEngine>(MockBehavior.Strict);
             viewEngine
-                .Setup(v => v.GetPage(/*executingFilePath*/ null, "~/Shared/Layout1.cshtml", /*isPartial*/ true))
+                .Setup(v => v.GetPage(/*executingFilePath*/ null, "~/Shared/Layout1.cshtml", /*isMainPage*/ false))
                 .Returns(new RazorPageResult("~/Shared/Layout1.cshtml", nestedLayout));
             viewEngine
-                .Setup(v => v.GetPage("/Shared/Layout1.cshtml", "~/Shared/Layout2.cshtml", /*isPartial*/ true))
+                .Setup(v => v.GetPage("/Shared/Layout1.cshtml", "~/Shared/Layout2.cshtml", /*isMainPage*/ false))
                 .Returns(new RazorPageResult("~/Shared/Layout2.cshtml", baseLayout));
 
             var view = new RazorView(
@@ -661,8 +647,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 Mock.Of<IRazorPageActivator>(),
                 new IRazorPage[0],
                 page,
-                new HtmlTestEncoder(),
-                isPartial: false);
+                new HtmlTestEncoder());
             var viewContext = CreateViewContext(view);
 
             // Act
@@ -713,16 +698,16 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             var viewEngine = new Mock<IRazorViewEngine>(MockBehavior.Strict);
             viewEngine
-                .Setup(v => v.GetPage(/*executingFilePath*/ null, "NestedLayout", /*isPartial*/ true))
+                .Setup(v => v.GetPage(/*executingFilePath*/ null, "NestedLayout", /*isMainPage*/ false))
                 .Returns(new RazorPageResult("NestedLayout", Enumerable.Empty<string>()));
             viewEngine
-                .Setup(p => p.FindPage(It.IsAny<ActionContext>(), "NestedLayout", /*isPartial*/ true))
+                .Setup(p => p.FindPage(It.IsAny<ActionContext>(), "NestedLayout", /*isMainPage*/ false))
                 .Returns(new RazorPageResult("NestedLayout", nestedLayout));
             viewEngine
-                .Setup(v => v.GetPage("NestedLayout", "Layout", /*isPartial*/ true))
+                .Setup(v => v.GetPage("NestedLayout", "Layout", /*isMainPage*/ false))
                 .Returns(new RazorPageResult("Layout", Enumerable.Empty<string>()));
             viewEngine
-                .Setup(p => p.FindPage(It.IsAny<ActionContext>(), "Layout", /*isPartial*/ true))
+                .Setup(p => p.FindPage(It.IsAny<ActionContext>(), "Layout", /*isMainPage*/ false))
                 .Returns(new RazorPageResult("Layout", baseLayout));
 
             var view = new RazorView(
@@ -730,8 +715,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 Mock.Of<IRazorPageActivator>(),
                 new IRazorPage[0],
                 page,
-                new HtmlTestEncoder(),
-                isPartial: false);
+                new HtmlTestEncoder());
             var viewContext = CreateViewContext(view);
 
             // Act
@@ -782,10 +766,10 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             var viewEngine = new Mock<IRazorViewEngine>(MockBehavior.Strict);
             viewEngine
-                .Setup(v => v.GetPage(/*executingFilePath*/ null, "~/Shared/Layout1.cshtml", /*isPartial*/ true))
+                .Setup(v => v.GetPage(/*executingFilePath*/ null, "~/Shared/Layout1.cshtml", /*isMainPage*/ false))
                 .Returns(new RazorPageResult("~/Shared/Layout1.cshtml", nestedLayout));
             viewEngine
-                .Setup(v => v.GetPage("/Shared/Layout1.cshtml", "~/Shared/Layout2.cshtml", /*isPartial*/ true))
+                .Setup(v => v.GetPage("/Shared/Layout1.cshtml", "~/Shared/Layout2.cshtml", /*isMainPage*/ false))
                 .Returns(new RazorPageResult("~/Shared/Layout2.cshtml", baseLayout));
 
             var view = new RazorView(
@@ -793,8 +777,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 Mock.Of<IRazorPageActivator>(),
                 new IRazorPage[0],
                 page,
-                new HtmlTestEncoder(),
-                isPartial: false);
+                new HtmlTestEncoder());
             var viewContext = CreateViewContext(view);
 
             // Act and Assert
@@ -850,10 +833,10 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             var viewEngine = new Mock<IRazorViewEngine>(MockBehavior.Strict);
             viewEngine
-                .Setup(p => p.GetPage("Page", "~/Shared/Layout1.cshtml", /*isPartial*/ true))
+                .Setup(p => p.GetPage("Page", "~/Shared/Layout1.cshtml", /*isMainPage*/ false))
                 .Returns(new RazorPageResult("~/Shared/Layout1.cshtml", nestedLayout));
             viewEngine
-                .Setup(p => p.GetPage("/Shared/Layout1.cshtml", "~/Shared/Layout2.cshtml", /*isPartial*/ true))
+                .Setup(p => p.GetPage("/Shared/Layout1.cshtml", "~/Shared/Layout2.cshtml", /*isMainPage*/ false))
                 .Returns(new RazorPageResult("~/Shared/Layout2.cshtml", baseLayout));
 
             var view = new RazorView(
@@ -861,8 +844,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 Mock.Of<IRazorPageActivator>(),
                 new IRazorPage[0],
                 page,
-                new HtmlTestEncoder(),
-                isPartial: false);
+                new HtmlTestEncoder());
             var viewContext = CreateViewContext(view);
 
             // Act and Assert
@@ -887,7 +869,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             };
             var viewEngine = new Mock<IRazorViewEngine>(MockBehavior.Strict);
             viewEngine
-                .Setup(p => p.GetPage(/*executingFilePath*/ null, LayoutPath, /*isPartial*/ true))
+                .Setup(p => p.GetPage(/*executingFilePath*/ null, LayoutPath, /*isMainPage*/ false))
                 .Returns(new RazorPageResult(LayoutPath, layout));
 
             var view = new RazorView(
@@ -895,8 +877,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 Mock.Of<IRazorPageActivator>(),
                 new IRazorPage[0],
                 page,
-                new HtmlTestEncoder(),
-                isPartial: false);
+                new HtmlTestEncoder());
             var viewContext = CreateViewContext(view);
 
             // Act and Assert
@@ -951,10 +932,10 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             var viewEngine = new Mock<IRazorViewEngine>(MockBehavior.Strict);
             viewEngine
-                .Setup(p => p.GetPage(/*executingFilePath*/ null, "~/Shared/Layout1.cshtml", /*isPartial*/ true))
+                .Setup(p => p.GetPage(/*executingFilePath*/ null, "~/Shared/Layout1.cshtml", /*isMainPage*/ false))
                 .Returns(new RazorPageResult("~/Shared/Layout1.cshtml", layout1));
             viewEngine
-                .Setup(p => p.GetPage("~/Shared/Layout1.cshtml", "~/Shared/Layout2.cshtml", /*isPartial*/ true))
+                .Setup(p => p.GetPage("~/Shared/Layout1.cshtml", "~/Shared/Layout2.cshtml", /*isMainPage*/ false))
                 .Returns(new RazorPageResult("~/Shared/Layout2.cshtml", layout2));
 
             var view = new RazorView(
@@ -962,8 +943,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 Mock.Of<IRazorPageActivator>(),
                 new IRazorPage[0],
                 page,
-                new HtmlTestEncoder(),
-                isPartial: false);
+                new HtmlTestEncoder());
             var viewContext = CreateViewContext(view);
 
             // Act
@@ -1025,10 +1005,10 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             var viewEngine = new Mock<IRazorViewEngine>(MockBehavior.Strict);
             viewEngine
-                .Setup(p => p.GetPage("~/Shared/Page.cshtml", "Layout1.cshtml", /*isPartial*/ true))
+                .Setup(p => p.GetPage("~/Shared/Page.cshtml", "Layout1.cshtml", /*isMainPage*/ false))
                 .Returns(new RazorPageResult("~/Shared/Layout1.cshtml", layout1));
             viewEngine
-                .Setup(p => p.GetPage("~/Shared/Layout1.cshtml", "Layout2.cshtml", /*isPartial*/ true))
+                .Setup(p => p.GetPage("~/Shared/Layout1.cshtml", "Layout2.cshtml", /*isMainPage*/ false))
                 .Returns(new RazorPageResult("~/Shared/Layout2.cshtml", layout2));
 
             var view = new RazorView(
@@ -1036,8 +1016,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 Mock.Of<IRazorPageActivator>(),
                 new IRazorPage[0],
                 page,
-                new HtmlTestEncoder(),
-                isPartial: false);
+                new HtmlTestEncoder());
             var viewContext = CreateViewContext(view);
 
             // Act
@@ -1066,10 +1045,10 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             var viewEngine = new Mock<IRazorViewEngine>(MockBehavior.Strict);
             viewEngine
-                .Setup(p => p.GetPage(It.IsAny<string>(), "_Layout", /*isPartial*/ true))
+                .Setup(p => p.GetPage(It.IsAny<string>(), "_Layout", /*isMainPage*/ false))
                 .Returns(new RazorPageResult("_Layout", Enumerable.Empty<string>()));
             viewEngine
-                .Setup(p => p.FindPage(It.IsAny<ActionContext>(), "_Layout", /*isPartial*/ true))
+                .Setup(p => p.FindPage(It.IsAny<ActionContext>(), "_Layout", /*isMainPage*/ false))
                 .Returns(new RazorPageResult("_Layout", layout));
 
             var view = new RazorView(
@@ -1077,8 +1056,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 Mock.Of<IRazorPageActivator>(),
                 new IRazorPage[0],
                 page,
-                new HtmlTestEncoder(),
-                isPartial: false);
+                new HtmlTestEncoder());
             var viewContext = CreateViewContext(view);
 
             // Act and Assert
@@ -1114,16 +1092,16 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             var viewEngine = new Mock<IRazorViewEngine>(MockBehavior.Strict);
             viewEngine
-                .Setup(p => p.GetPage(It.IsAny<string>(), "_Layout", /*isPartial*/ true))
+                .Setup(p => p.GetPage(It.IsAny<string>(), "_Layout", /*isMainPage*/ false))
                 .Returns(new RazorPageResult("_Layout1", Enumerable.Empty<string>()));
             viewEngine
-                .Setup(p => p.FindPage(It.IsAny<ActionContext>(), "_Layout", /*isPartial*/ true))
+                .Setup(p => p.FindPage(It.IsAny<ActionContext>(), "_Layout", /*isMainPage*/ false))
                 .Returns(new RazorPageResult("_Layout", layout1));
             viewEngine
-                .Setup(p => p.GetPage("Shared/_Layout.cshtml", "_Layout2", /*isPartial*/ true))
+                .Setup(p => p.GetPage("Shared/_Layout.cshtml", "_Layout2", /*isMainPage*/ false))
                 .Returns(new RazorPageResult("_Layout2", Enumerable.Empty<string>()));
             viewEngine
-                .Setup(p => p.FindPage(It.IsAny<ActionContext>(), "_Layout2", /*isPartial*/ true))
+                .Setup(p => p.FindPage(It.IsAny<ActionContext>(), "_Layout2", /*isMainPage*/ false))
                 .Returns(new RazorPageResult("_Layout2", layout2));
 
             var view = new RazorView(
@@ -1131,8 +1109,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 Mock.Of<IRazorPageActivator>(),
                 new IRazorPage[0],
                 page,
-                new HtmlTestEncoder(),
-                isPartial: false);
+                new HtmlTestEncoder());
             var viewContext = CreateViewContext(view);
 
             // Act and Assert
@@ -1190,10 +1167,10 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             var viewEngine = new Mock<IRazorViewEngine>(MockBehavior.Strict);
             viewEngine
-                .Setup(p => p.GetPage(/*executingFilePath*/ null, "~/Shared/Layout1.cshtml", /*isPartial*/ true))
+                .Setup(p => p.GetPage(/*executingFilePath*/ null, "~/Shared/Layout1.cshtml", /*isMainPage*/ false))
                 .Returns(new RazorPageResult("~/Shared/Layout1.cshtml", nestedLayout));
             viewEngine
-                .Setup(p => p.GetPage("~/Shared/Layout1.cshtml", "~/Shared/Layout2.cshtml", /*isPartial*/ true))
+                .Setup(p => p.GetPage("~/Shared/Layout1.cshtml", "~/Shared/Layout2.cshtml", /*isMainPage*/ false))
                 .Returns(new RazorPageResult("~/Shared/Layout2.cshtml", baseLayout));
 
             var view = new RazorView(
@@ -1201,8 +1178,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 Mock.Of<IRazorPageActivator>(),
                 new IRazorPage[0],
                 page,
-                new HtmlTestEncoder(),
-                isPartial: false);
+                new HtmlTestEncoder());
             var viewContext = CreateViewContext(view);
 
             // Act
@@ -1248,10 +1224,10 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             var viewEngine = new Mock<IRazorViewEngine>(MockBehavior.Strict);
             viewEngine
-                .Setup(p => p.GetPage(/*executingFilePath*/ null, "layout-1", /*isPartial*/ true))
+                .Setup(p => p.GetPage(/*executingFilePath*/ null, "layout-1", /*isMainPage*/ false))
                 .Returns(new RazorPageResult("layout-1", Enumerable.Empty<string>()));
             viewEngine
-                .Setup(p => p.FindPage(It.IsAny<ActionContext>(), "layout-1", /*isPartial*/ true))
+                .Setup(p => p.FindPage(It.IsAny<ActionContext>(), "layout-1", /*isMainPage*/ false))
                 .Returns(new RazorPageResult("layout-1", layout1));
 
             var view = new RazorView(
@@ -1259,8 +1235,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 Mock.Of<IRazorPageActivator>(),
                 new IRazorPage[0],
                 page,
-                new HtmlTestEncoder(),
-                isPartial: false);
+                new HtmlTestEncoder());
             var viewContext = CreateViewContext(view);
 
             // Act
@@ -1303,10 +1278,10 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             var viewEngine = new Mock<IRazorViewEngine>(MockBehavior.Strict);
             viewEngine
-                .Setup(p => p.GetPage(/*executingFilePath*/ null, "layout-1", /*isPartial*/ true))
+                .Setup(p => p.GetPage(/*executingFilePath*/ null, "layout-1", /*isMainPage*/ false))
                 .Returns(new RazorPageResult("layout-1", Enumerable.Empty<string>()));
             viewEngine
-                .Setup(p => p.FindPage(It.IsAny<ActionContext>(), "layout-1", /*isPartial*/ true))
+                .Setup(p => p.FindPage(It.IsAny<ActionContext>(), "layout-1", /*isMainPage*/ false))
                 .Returns(new RazorPageResult("layout-1", layout1));
 
             var view = new RazorView(
@@ -1314,8 +1289,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 Mock.Of<IRazorPageActivator>(),
                 new IRazorPage[0],
                 page,
-                new HtmlTestEncoder(),
-                isPartial: false);
+                new HtmlTestEncoder());
             var viewContext = CreateViewContext(view);
 
             // Act
@@ -1345,8 +1319,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 Mock.Of<IRazorPageActivator>(),
                 new IRazorPage[0],
                 page,
-                new HtmlTestEncoder(),
-                isPartial: false);
+                new HtmlTestEncoder());
             var viewContext = CreateViewContext(view);
 
             // Act and Assert
@@ -1384,7 +1357,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             var viewEngine = new Mock<IRazorViewEngine>(MockBehavior.Strict);
             var layoutPath = "~/Shared/Layout1.cshtml";
             viewEngine
-                .Setup(p => p.GetPage("/Views/TestPath/Test.cshtml", layoutPath, /*isPartial*/ true))
+                .Setup(p => p.GetPage("/Views/TestPath/Test.cshtml", layoutPath, /*isMainPage*/ false))
                 .Returns(new RazorPageResult(layoutPath, layoutPage));
 
             var view = new RazorView(
@@ -1392,8 +1365,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 Mock.Of<IRazorPageActivator>(),
                 new IRazorPage[0],
                 page,
-                new HtmlTestEncoder(),
-                isPartial: false);
+                new HtmlTestEncoder());
             var viewContext = CreateViewContext(view);
 
             // Act and Assert
@@ -1462,10 +1434,10 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             var viewEngine = new Mock<IRazorViewEngine>(MockBehavior.Strict);
             viewEngine
-                .Setup(p => p.GetPage("/MyPage.cshtml", "Layout", /*isPartial*/ true))
+                .Setup(p => p.GetPage("/MyPage.cshtml", "Layout", /*isMainPage*/ false))
                 .Returns(new RazorPageResult("Layout", Enumerable.Empty<string>()));
             viewEngine
-                .Setup(p => p.FindPage(It.IsAny<ActionContext>(), "Layout", /*isPartial*/ true))
+                .Setup(p => p.FindPage(It.IsAny<ActionContext>(), "Layout", /*isMainPage*/ false))
                 .Returns(new RazorPageResult("/Layout.cshtml", layout));
 
             var view = new RazorView(
@@ -1473,8 +1445,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 Mock.Of<IRazorPageActivator>(),
                 new IRazorPage[0],
                 page,
-                new HtmlTestEncoder(),
-                isPartial: false);
+                new HtmlTestEncoder());
             var viewContext = CreateViewContext(view);
             viewContext.HttpContext.Features.Set<IPageExecutionListenerFeature>(feature.Object);
 
@@ -1519,8 +1490,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 Mock.Of<IRazorPageActivator>(),
                 new IRazorPage[0],
                 page,
-                new HtmlTestEncoder(),
-                isPartial: true);
+                new HtmlTestEncoder());
             var viewContext = CreateViewContext(view);
             viewContext.Writer = writer;
             viewContext.HttpContext.Features.Set<IPageExecutionListenerFeature>(feature.Object);
@@ -1534,10 +1504,8 @@ namespace Microsoft.AspNet.Mvc.Razor
             Assert.Equal("HtmlEncode[[Hello world]]", viewContext.Writer.ToString());
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public async Task RenderAsync_DoesNotSetExecutionContextWhenListenerIsNotRegistered(bool isPartial)
+        [Fact]
+        public async Task RenderAsync_DoesNotSetExecutionContextWhenListenerIsNotRegistered()
         {
             // Arrange
             var executed = false;
@@ -1547,13 +1515,12 @@ namespace Microsoft.AspNet.Mvc.Razor
                 executed = true;
             });
 
-            var view = new RazorView
-                (Mock.Of<IRazorViewEngine>(),
+            var view = new RazorView(
+                Mock.Of<IRazorViewEngine>(),
                 Mock.Of<IRazorPageActivator>(),
                 new IRazorPage[0],
                 page,
-                new HtmlTestEncoder(),
-                isPartial);
+                new HtmlTestEncoder());
             var viewContext = CreateViewContext(view);
 
             // Act
@@ -1599,8 +1566,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 Mock.Of<IRazorPageActivator>(),
                 new[] { viewStart1, viewStart2 },
                 page,
-                new HtmlTestEncoder(),
-                isPartial: false);
+                new HtmlTestEncoder());
             var viewContext = CreateViewContext(view);
 
             // Act
@@ -1657,8 +1623,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 Mock.Of<IRazorPageActivator>(),
                 new[] { viewStart1, viewStart2 },
                 page,
-                new HtmlTestEncoder(),
-                isPartial: false);
+                new HtmlTestEncoder());
             var viewContext = CreateViewContext(view);
 
             // Act
@@ -1702,8 +1667,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 Mock.Of<IRazorPageActivator>(),
                 new[] { viewStart1, viewStart2 },
                 page,
-                new HtmlTestEncoder(),
-                isPartial: false);
+                new HtmlTestEncoder());
             var viewContext = CreateViewContext(view);
 
             // Act
@@ -1711,79 +1675,6 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             // Assert
             Assert.Equal(expected, actual);
-        }
-
-        [Fact]
-        public async Task IsPartial_IsSetToFalse_ForViewStartPageAndLayoutOfAView()
-        {
-            // Arrange
-            bool? isPartialPage = null;
-            bool? isPartialLayout = null;
-            bool? isPartialViewStart = null;
-
-            var page = new TestableRazorPage(v =>
-            {
-                isPartialPage = v.IsPartial;
-            });
-            var viewStart = new TestableRazorPage(v =>
-            {
-                v.Layout = "/Layout.cshtml";
-                isPartialViewStart = v.IsPartial;
-            });
-            var layout = new TestableRazorPage(v =>
-            {
-                isPartialLayout = v.IsPartial;
-                v.RenderBodyPublic();
-            });
-            var viewEngine = new Mock<IRazorViewEngine>(MockBehavior.Strict);
-            viewEngine
-                .Setup(p => p.GetAbsolutePath(/*executingFilePath*/ null, "/Layout.cshtml"))
-                .Returns("/Layout.cshtml");
-            viewEngine
-                .Setup(p => p.GetPage(/*executingFilePath*/ null, "/Layout.cshtml", /*isPartial*/ true))
-                .Returns(new RazorPageResult("/Layout.cshtml", layout));
-
-            var view = new RazorView(
-                viewEngine.Object,
-                Mock.Of<IRazorPageActivator>(),
-                new[] { viewStart },
-                page,
-                new HtmlTestEncoder(),
-                isPartial: false);
-            var viewContext = CreateViewContext(view);
-
-            // Act
-            await view.RenderAsync(viewContext);
-
-            // Assert
-            Assert.False(isPartialPage.Value);
-            Assert.False(isPartialLayout.Value);
-            Assert.False(isPartialViewStart.Value);
-        }
-
-        [Fact]
-        public async Task IsPartial_IsSetToTrue_ForPartialView()
-        {
-            // Arrange
-            bool? isPartialPage = null;
-            var page = new TestableRazorPage(v =>
-            {
-                isPartialPage = v.IsPartial;
-            });
-            var view = new RazorView(
-                Mock.Of<IRazorViewEngine>(),
-                Mock.Of<IRazorPageActivator>(),
-                new IRazorPage[0],
-                page,
-                new HtmlTestEncoder(),
-                isPartial: true);
-            var viewContext = CreateViewContext(view);
-
-            // Act
-            await view.RenderAsync(viewContext);
-
-            // Assert
-            Assert.True(isPartialPage.Value);
         }
 
         [Fact]
@@ -1817,8 +1708,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 Mock.Of<IRazorPageActivator>(),
                 new[] { viewStart1, viewStart2 },
                 page,
-                new HtmlTestEncoder(),
-                isPartial: false);
+                new HtmlTestEncoder());
             var viewContext = CreateViewContext(view);
 
             // Act

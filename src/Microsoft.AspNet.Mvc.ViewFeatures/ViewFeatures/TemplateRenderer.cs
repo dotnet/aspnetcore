@@ -109,12 +109,12 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures.Internal
 
             foreach (string viewName in GetViewNames())
             {
-                var viewEngineResult = _viewEngine.GetView(_viewContext.ExecutingFilePath, viewName, isPartial: true);
+                var viewEngineResult = _viewEngine.GetView(_viewContext.ExecutingFilePath, viewName, isMainPage: false);
                 if (!viewEngineResult.Success)
                 {
                     // Success here is more common than with GetView() but GetView() is less expensive.
                     var fullViewName = modeViewPath + "/" + viewName;
-                    viewEngineResult = _viewEngine.FindView(_viewContext, fullViewName, isPartial: true);
+                    viewEngineResult = _viewEngine.FindView(_viewContext, fullViewName, isMainPage: false);
                 }
 
                 if (viewEngineResult.Success)

@@ -10,12 +10,12 @@ namespace CompositeViewEngineWebSite
 {
     public class TestViewEngine : IViewEngine
     {
-        public ViewEngineResult FindView(ActionContext context, string viewName, bool isPartial)
+        public ViewEngineResult FindView(ActionContext context, string viewName, bool isMainPage)
         {
             if (string.Equals(viewName, "partial-test-view", StringComparison.Ordinal) ||
                 string.Equals(viewName, "test-view", StringComparison.Ordinal))
             {
-                var view = isPartial ? (IView)new TestPartialView() : new TestView();
+                var view = isMainPage ? (IView)new TestView() : new TestPartialView();
 
                 return ViewEngineResult.Found(viewName, view);
             }
@@ -23,7 +23,7 @@ namespace CompositeViewEngineWebSite
             return ViewEngineResult.NotFound(viewName, Enumerable.Empty<string>());
         }
 
-        public ViewEngineResult GetView(string executingFilePath, string viewPath, bool isPartial)
+        public ViewEngineResult GetView(string executingFilePath, string viewPath, bool isMainPage)
         {
             return ViewEngineResult.NotFound(viewPath, Enumerable.Empty<string>());
         }

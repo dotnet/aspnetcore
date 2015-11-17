@@ -318,11 +318,11 @@ namespace Microsoft.AspNet.Mvc.Rendering
 
             var viewEngine = new Mock<ICompositeViewEngine>(MockBehavior.Strict);
             viewEngine
-                .Setup(v => v.GetView(/*executingFilePath*/ null, It.IsAny<string>(), /*isPartial*/ true))
+                .Setup(v => v.GetView(/*executingFilePath*/ null, It.IsAny<string>(), /*isMainPage*/ false))
                 .Returns(ViewEngineResult.NotFound("MyView", Enumerable.Empty<string>()))
                 .Verifiable();
             viewEngine
-                .Setup(v => v.FindView(It.IsAny<ActionContext>(), It.IsAny<string>(), /*isPartial*/ true))
+                .Setup(v => v.FindView(It.IsAny<ActionContext>(), It.IsAny<string>(), /*isMainPage*/ false))
                 .Returns(ViewEngineResult.Found("MyView", view.Object))
                 .Verifiable();
 

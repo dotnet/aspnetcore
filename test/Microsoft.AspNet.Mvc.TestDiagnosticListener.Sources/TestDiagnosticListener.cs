@@ -130,7 +130,7 @@ namespace Microsoft.AspNet.Mvc
         public class OnViewFoundEventData
         {
             public IProxyActionContext ActionContext { get; set; }
-            public bool IsPartial { get; set; }
+            public bool IsMainPage { get; set; }
             public IProxyActionResult Result { get; set; }
             public string ViewName { get; set; }
             public IProxyView View { get; set; }
@@ -141,7 +141,7 @@ namespace Microsoft.AspNet.Mvc
         [DiagnosticName("Microsoft.AspNet.Mvc.ViewFound")]
         public virtual void OnViewFound(
             IProxyActionContext actionContext,
-            bool isPartial,
+            bool isMainPage,
             IProxyActionResult result,
             string viewName,
             IProxyView view)
@@ -149,7 +149,7 @@ namespace Microsoft.AspNet.Mvc
             ViewFound = new OnViewFoundEventData()
             {
                 ActionContext = actionContext,
-                IsPartial = isPartial,
+                IsMainPage = isMainPage,
                 Result = result,
                 ViewName = viewName,
                 View = view,
@@ -159,7 +159,7 @@ namespace Microsoft.AspNet.Mvc
         public class OnViewNotFoundEventData
         {
             public IProxyActionContext ActionContext { get; set; }
-            public bool IsPartial { get; set; }
+            public bool IsMainPage { get; set; }
             public IProxyActionResult Result { get; set; }
             public string ViewName { get; set; }
             public IEnumerable<string> SearchedLocations { get; set; }
@@ -170,7 +170,7 @@ namespace Microsoft.AspNet.Mvc
         [DiagnosticName("Microsoft.AspNet.Mvc.ViewNotFound")]
         public virtual void OnViewNotFound(
             IProxyActionContext actionContext,
-            bool isPartial,
+            bool isMainPage,
             IProxyActionResult result,
             string viewName,
             IEnumerable<string> searchedLocations)
@@ -178,7 +178,7 @@ namespace Microsoft.AspNet.Mvc
             ViewNotFound = new OnViewNotFoundEventData()
             {
                 ActionContext = actionContext,
-                IsPartial = isPartial,
+                IsMainPage = isMainPage,
                 Result = result,
                 ViewName = viewName,
                 SearchedLocations = searchedLocations,
@@ -331,8 +331,6 @@ namespace Microsoft.AspNet.Mvc
 
             public string Path { get; set; }
 
-            public bool IsPartial { get; set; }
-
             public int Position { get; set; }
 
             public int Length { get; set; }
@@ -345,8 +343,6 @@ namespace Microsoft.AspNet.Mvc
             public IProxyHttpContext HttpContext { get; set; }
 
             public string Path { get; set; }
-
-            public bool IsPartial { get; set; }
         }
 
         public List<object> PageInstrumentationData { get; set; } = new List<object>();
@@ -355,7 +351,6 @@ namespace Microsoft.AspNet.Mvc
         public virtual void OnBeginPageInstrumentationContext(
             IProxyHttpContext httpContext,
             string path,
-            bool isPartial,
             int position,
             int length,
             bool isLiteral)
@@ -364,7 +359,6 @@ namespace Microsoft.AspNet.Mvc
             {
                 HttpContext = httpContext,
                 Path = path,
-                IsPartial = isPartial,
                 Position = position,
                 Length = length,
                 IsLiteral = isLiteral,
@@ -375,7 +369,6 @@ namespace Microsoft.AspNet.Mvc
         public virtual void OnEndPageInstrumentationContext(
             IProxyHttpContext httpContext,
             string path,
-            bool isPartial,
             int position,
             int length,
             bool isLiteral)
@@ -384,7 +377,6 @@ namespace Microsoft.AspNet.Mvc
             {
                 HttpContext = httpContext,
                 Path = path,
-                IsPartial = isPartial,
             });
         }
     }

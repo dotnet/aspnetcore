@@ -72,9 +72,6 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <inheritdoc />
         public string Layout { get; set; }
 
-        /// <inheritdoc />
-        public bool IsPartial { get; set; }
-
         /// <summary>
         /// Gets the <see cref="HtmlEncoder"/> to be used for encoding HTML.
         /// </summary>
@@ -1080,7 +1077,6 @@ namespace Microsoft.AspNet.Mvc.Razor
                     {
                         httpContext = Context,
                         path = Path,
-                        isPartial = IsPartial,
                         position = position,
                         length = length,
                         isLiteral = isLiteral,
@@ -1101,7 +1097,6 @@ namespace Microsoft.AspNet.Mvc.Razor
                     {
                         httpContext = Context,
                         path = Path,
-                        isPartial = IsPartial,
                     });
             }
         }

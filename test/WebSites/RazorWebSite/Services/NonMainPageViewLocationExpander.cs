@@ -6,28 +6,30 @@ using Microsoft.AspNet.Mvc.Razor;
 
 namespace RazorWebSite
 {
-    public class CustomPartialDirectoryViewLocationExpander : IViewLocationExpander
+    public class NonMainPageViewLocationExpander : IViewLocationExpander
     {
         public void PopulateValues(ViewLocationExpanderContext context)
         {
         }
 
-        public virtual IEnumerable<string> ExpandViewLocations(ViewLocationExpanderContext context,
-                                                               IEnumerable<string> viewLocations)
+        public virtual IEnumerable<string> ExpandViewLocations(
+            ViewLocationExpanderContext context,
+            IEnumerable<string> viewLocations)
         {
-            if (context.IsPartial)
+            if (context.IsMainPage)
             {
-                return ExpandViewLocationsCore(viewLocations);
+                return viewLocations;
             }
 
-            return viewLocations;
+            return ExpandViewLocationsCore(viewLocations);
         }
 
         private IEnumerable<string> ExpandViewLocationsCore(IEnumerable<string> viewLocations)
         {
+            yield return "/Shared-Views/{1}/{0}.cshtml";
+
             foreach (var location in viewLocations)
             {
-                yield return "/Shared-Views/{1}/{0}.cshtml";
                 yield return location;
             }
         }

@@ -87,7 +87,7 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
             if (!isNullOrEmptyViewName)
             {
                 // If view name was passed in is already a path, the view engine will handle this.
-                result = viewEngine.GetView(viewContext.ExecutingFilePath, ViewName, isPartial: true);
+                result = viewEngine.GetView(viewContext.ExecutingFilePath, ViewName, isMainPage: false);
                 originalLocations = result.SearchedLocations;
             }
 
@@ -111,7 +111,7 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
                     context.ViewComponentDescriptor.ShortName,
                     viewName);
 
-                result = viewEngine.FindView(viewContext, qualifiedViewName, isPartial: true);
+                result = viewEngine.FindView(viewContext, qualifiedViewName, isMainPage: false);
             }
 
             var view = result.EnsureSuccessful(originalLocations).View;

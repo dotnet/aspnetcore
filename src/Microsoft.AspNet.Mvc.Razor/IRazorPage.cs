@@ -46,12 +46,6 @@ namespace Microsoft.AspNet.Mvc.Razor
         string Layout { get; set; }
 
         /// <summary>
-        /// Gets or sets a value that determines if the current instance of <see cref="IRazorPage"/> is being executed
-        /// from a partial view.
-        /// </summary>
-        bool IsPartial { get; set; }
-
-        /// <summary>
         /// Gets or sets a <see cref="IPageExecutionContext"/> instance used to instrument the page execution.
         /// </summary>
         IPageExecutionContext PageExecutionContext { get; set; }

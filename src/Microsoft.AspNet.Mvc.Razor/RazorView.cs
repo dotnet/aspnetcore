@@ -34,21 +34,43 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// </param>
         /// <param name="razorPage">The <see cref="IRazorPage"/> instance to execute.</param>
         /// <param name="htmlEncoder">The HTML encoder.</param>
-        /// <param name="isPartial">Determines if the view is to be executed as a partial.</param>
         public RazorView(
             IRazorViewEngine viewEngine,
             IRazorPageActivator pageActivator,
             IReadOnlyList<IRazorPage> viewStartPages,
             IRazorPage razorPage,
-            HtmlEncoder htmlEncoder,
-            bool isPartial)
+            HtmlEncoder htmlEncoder)
         {
+            if (viewEngine == null)
+            {
+                throw new ArgumentNullException(nameof(viewEngine));
+            }
+
+            if (pageActivator == null)
+            {
+                throw new ArgumentNullException(nameof(pageActivator));
+            }
+
+            if (viewStartPages == null)
+            {
+                throw new ArgumentNullException(nameof(viewStartPages));
+            }
+
+            if (razorPage == null)
+            {
+                throw new ArgumentNullException(nameof(razorPage));
+            }
+
+            if (htmlEncoder == null)
+            {
+                throw new ArgumentNullException(nameof(htmlEncoder));
+            }
+
             _viewEngine = viewEngine;
             _pageActivator = pageActivator;
             ViewStartPages = viewStartPages;
             RazorPage = razorPage;
             _htmlEncoder = htmlEncoder;
-            IsPartial = isPartial;
         }
 
         /// <inheritdoc />
@@ -63,13 +85,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         public IRazorPage RazorPage { get; }
 
         /// <summary>
-        /// Gets a value that determines if the view is executed as a partial.
-        /// </summary>
-        public bool IsPartial { get; }
-
-        /// <summary>
-        /// Gets the sequence of _ViewStart <see cref="IRazorPage"/> instances
-        /// that are executed by this view if <see cref="IsPartial"/> is <c>false</c>.
+        /// Gets the sequence of _ViewStart <see cref="IRazorPage"/> instances that are executed by this view.
         /// </summary>
         public IReadOnlyList<IRazorPage> ViewStartPages { get; }
 
@@ -88,16 +104,14 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             _pageExecutionFeature = context.HttpContext.Features.Get<IPageExecutionListenerFeature>();
 
-            // Partials don't execute _ViewStart pages, but may execute Layout pages if the Layout property
-            // is explicitly specified in the page.
-            var bodyWriter = await RenderPageAsync(RazorPage, context, executeViewStart: !IsPartial);
+            var bodyWriter = await RenderPageAsync(RazorPage, context, ViewStartPages);
             await RenderLayoutAsync(context, bodyWriter);
         }
 
         private async Task<IBufferedTextWriter> RenderPageAsync(
             IRazorPage page,
             ViewContext context,
-            bool executeViewStart)
+            IReadOnlyList<IRazorPage> viewStartPages)
         {
             var razorTextWriter = new RazorTextWriter(context.Writer, context.Writer.Encoding, _htmlEncoder);
             var writer = (TextWriter)razorTextWriter;
@@ -126,10 +140,10 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             try
             {
-                if (executeViewStart)
+                if (viewStartPages != null)
                 {
                     // Execute view starts using the same context + writer as the page to render.
-                    await RenderViewStartAsync(context);
+                    await RenderViewStartsAsync(context, viewStartPages);
                 }
 
                 await RenderPageCoreAsync(page, context);
@@ -145,7 +159,6 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         private Task RenderPageCoreAsync(IRazorPage page, ViewContext context)
         {
-            page.IsPartial = IsPartial;
             page.ViewContext = context;
             if (EnableInstrumentation)
             {
@@ -156,13 +169,13 @@ namespace Microsoft.AspNet.Mvc.Razor
             return page.ExecuteAsync();
         }
 
-        private async Task RenderViewStartAsync(ViewContext context)
+        private async Task RenderViewStartsAsync(ViewContext context, IReadOnlyList<IRazorPage> viewStartPages)
         {
             string layout = null;
             var oldFilePath = context.ExecutingFilePath;
             try
             {
-                for (var i = 0; i < ViewStartPages.Count; i++)
+                for (var i = 0; i < viewStartPages.Count; i++)
                 {
                     var viewStart = ViewStartPages[i];
                     context.ExecutingFilePath = viewStart.Path;
@@ -223,7 +236,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 previousPage.IsLayoutBeingRendered = true;
                 layoutPage.PreviousSectionWriters = previousPage.SectionWriters;
                 layoutPage.RenderBodyDelegateAsync = bodyWriter.CopyToAsync;
-                bodyWriter = await RenderPageAsync(layoutPage, context, executeViewStart: false);
+                bodyWriter = await RenderPageAsync(layoutPage, context, viewStartPages: null);
 
                 renderedLayouts.Add(layoutPage);
                 previousPage = layoutPage;
@@ -244,11 +257,11 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         private IRazorPage GetLayoutPage(ViewContext context, string executingFilePath, string layoutPath)
         {
-            var layoutPageResult = _viewEngine.GetPage(executingFilePath, layoutPath, isPartial: true);
+            var layoutPageResult = _viewEngine.GetPage(executingFilePath, layoutPath, isMainPage: false);
             var originalLocations = layoutPageResult.SearchedLocations;
             if (layoutPageResult.Page == null)
             {
-                layoutPageResult = _viewEngine.FindPage(context, layoutPath, isPartial: true);
+                layoutPageResult = _viewEngine.FindPage(context, layoutPath, isMainPage: false);
             }
 
             if (layoutPageResult.Page == null)
