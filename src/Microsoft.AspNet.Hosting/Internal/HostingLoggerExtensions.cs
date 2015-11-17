@@ -10,6 +10,8 @@ namespace Microsoft.AspNet.Hosting.Internal
 {
     internal static class HostingLoggerExtensions
     {
+        private const long TicksPerMillisecond = 10000;
+		
         public static IDisposable RequestScope(this ILogger logger, HttpContext httpContext)
         {
             return logger.BeginScopeImpl(new HostingLogScope(httpContext));
@@ -32,7 +34,7 @@ namespace Microsoft.AspNet.Hosting.Internal
         {
             if (logger.IsEnabled(LogLevel.Information))
             {
-                var elapsed = new TimeSpan(Environment.TickCount - startTimeInTicks);
+                var elapsed = new TimeSpan(TicksPerMillisecond * (Environment.TickCount - startTimeInTicks));
                 logger.Log(
                     logLevel: LogLevel.Information,
                     eventId: LoggerEventIds.RequestFinished,
@@ -46,7 +48,7 @@ namespace Microsoft.AspNet.Hosting.Internal
         {
             if (logger.IsEnabled(LogLevel.Information))
             {
-                var elapsed = new TimeSpan(Environment.TickCount - startTimeInTicks);
+                var elapsed = new TimeSpan(TicksPerMillisecond * (Environment.TickCount - startTimeInTicks));
                 logger.Log(
                     logLevel: LogLevel.Information,
                     eventId: LoggerEventIds.RequestFailed,
