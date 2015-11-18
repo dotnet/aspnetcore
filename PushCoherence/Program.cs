@@ -338,7 +338,7 @@ namespace PushCoherence
             {
                 return string.Equals(Id, other.Id, StringComparison.OrdinalIgnoreCase) &&
                        string.Equals(Version, other.Version, StringComparison.OrdinalIgnoreCase) &&
-                       string.Equals(Hash, other.Hash, StringComparison.OrdinalIgnoreCase);
+                       string.Equals(Hash, other.Hash, StringComparison.Ordinal);
             }
         }
     }
