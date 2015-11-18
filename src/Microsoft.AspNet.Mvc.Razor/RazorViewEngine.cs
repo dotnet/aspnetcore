@@ -334,7 +334,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             var cacheKey = new ViewLocationCacheKey(
                 expanderContext.ViewName,
                 expanderContext.ControllerName,
-                expanderContext.ViewName,
+                expanderContext.AreaName,
                 expanderContext.IsMainPage,
                 expanderValues);
 
