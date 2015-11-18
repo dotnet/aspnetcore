@@ -310,6 +310,7 @@
             "Microsoft.AspNet.Internal.libuv-Darwin": { },
             "Microsoft.AspNet.Internal.libuv-Windows": { },
             "Microsoft.AspNet.Razor.Test.Sources": { },
+            "Microsoft.AspNet.Routing.DecisionTree.Sources": { },
             "Microsoft.AspNet.SignalR.Sources": { },
             "Microsoft.Dnx": { },
             "Microsoft.Dnx.Host": { },
