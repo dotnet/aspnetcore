@@ -10,11 +10,12 @@ namespace MusicStore.Controllers
 {
     public class StoreController : Controller
     {
-        [FromServices]
-        public MusicStoreContext DbContext { get; set; }
+        public StoreController(MusicStoreContext dbContext)
+        {
+            DbContext = dbContext;
+        }
 
-        [FromServices]
-        public IMemoryCache Cache { get; set; }
+        public MusicStoreContext DbContext { get; }
 
         //
         // GET: /Store/
@@ -43,11 +44,13 @@ namespace MusicStore.Controllers
             return View(genreModel);
         }
 
-        public async Task<IActionResult> Details(int id)
+        public async Task<IActionResult> Details(
+            [FromServices] IMemoryCache cache,
+            int id)
         {
             var cacheKey = string.Format("album_{0}", id);
             Album album;
-            if(!Cache.TryGetValue(cacheKey, out album))
+            if (!cache.TryGetValue(cacheKey, out album))
             {
                 album = await DbContext.Albums
                                 .Where(a => a.AlbumId == id)
@@ -58,7 +61,7 @@ namespace MusicStore.Controllers
                 if (album != null)
                 {
                     //Remove it from cache if not retrieved in last 10 minutes
-                    Cache.Set(
+                    cache.Set(
                         cacheKey,
                         album,
                         new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(10)));

@@ -14,12 +14,17 @@ namespace MusicStore.Controllers
     [Authorize]
     public class AccountController : Controller
     {
+        public AccountController(
+            UserManager<ApplicationUser> userManager,
+            SignInManager<ApplicationUser> signInManager)
+        {
+            UserManager = userManager;
+            SignInManager = signInManager;
+        }
 
-        [FromServices]
-        public UserManager<ApplicationUser> UserManager { get; set; }
+        public UserManager<ApplicationUser> UserManager { get; }
 
-        [FromServices]
-        public SignInManager<ApplicationUser> SignInManager { get; set; }
+        public SignInManager<ApplicationUser> SignInManager { get; }
 
         //
         // GET: /Account/Login

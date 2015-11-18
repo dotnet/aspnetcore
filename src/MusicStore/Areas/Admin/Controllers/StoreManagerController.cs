@@ -17,11 +17,12 @@ namespace MusicStore.Areas.Admin.Controllers
     [Authorize("ManageStore")]
     public class StoreManagerController : Controller
     {
-        [FromServices]
-        public MusicStoreContext DbContext { get; set; }
+        public StoreManagerController(MusicStoreContext dbContext)
+        {
+            DbContext = dbContext;
+        }
 
-        [FromServices]
-        public IMemoryCache Cache { get; set; }
+        public MusicStoreContext DbContext { get; }
 
         //
         // GET: /StoreManager/
@@ -37,12 +38,14 @@ namespace MusicStore.Areas.Admin.Controllers
 
         //
         // GET: /StoreManager/Details/5
-        public async Task<IActionResult> Details(int id)
+        public async Task<IActionResult> Details(
+            [FromServices] IMemoryCache cache,
+            int id)
         {
             var cacheKey = GetCacheKey(id);
 
             Album album;
-            if(!Cache.TryGetValue(cacheKey, out album))
+            if (!cache.TryGetValue(cacheKey, out album))
             {
                 album = await DbContext.Albums
                         .Where(a => a.AlbumId == id)
@@ -53,7 +56,7 @@ namespace MusicStore.Areas.Admin.Controllers
                 if (album != null)
                 {
                     //Remove it from cache if not retrieved in last 10 minutes.
-                    Cache.Set(
+                    cache.Set(
                         cacheKey,
                         album,
                         new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(10)));
@@ -62,7 +65,7 @@ namespace MusicStore.Areas.Admin.Controllers
 
             if (album == null)
             {
-                Cache.Remove(cacheKey);
+                cache.Remove(cacheKey);
                 return HttpNotFound();
             }
 
@@ -81,7 +84,10 @@ namespace MusicStore.Areas.Admin.Controllers
         // POST: /StoreManager/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Album album, CancellationToken requestAborted)
+        public async Task<IActionResult> Create(
+            Album album,
+            [FromServices] IMemoryCache cache,
+            CancellationToken requestAborted)
         {
             if (ModelState.IsValid)
             {
@@ -94,7 +100,7 @@ namespace MusicStore.Areas.Admin.Controllers
                     Url = Url.Action("Details", "Store", new { id = album.AlbumId })
                 };
 
-                Cache.Remove("latestAlbum");
+                cache.Remove("latestAlbum");
                 return RedirectToAction("Index");
             }
 
@@ -125,14 +131,17 @@ namespace MusicStore.Areas.Admin.Controllers
         // POST: /StoreManager/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Album album, CancellationToken requestAborted)
+        public async Task<IActionResult> Edit(
+            [FromServices] IMemoryCache cache,
+            Album album,
+            CancellationToken requestAborted)
         {
             if (ModelState.IsValid)
             {
                 DbContext.Update(album);
                 await DbContext.SaveChangesAsync(requestAborted);
                 //Invalidate the cache entry as it is modified
-                Cache.Remove(GetCacheKey(album.AlbumId));
+                cache.Remove(GetCacheKey(album.AlbumId));
                 return RedirectToAction("Index");
             }
 
@@ -157,7 +166,10 @@ namespace MusicStore.Areas.Admin.Controllers
         //
         // POST: /StoreManager/RemoveAlbum/5
         [HttpPost, ActionName("RemoveAlbum")]
-        public async Task<IActionResult> RemoveAlbumConfirmed(int id, CancellationToken requestAborted)
+        public async Task<IActionResult> RemoveAlbumConfirmed(
+            [FromServices] IMemoryCache cache,
+            int id,
+            CancellationToken requestAborted)
         {
             var album = await DbContext.Albums.Where(a => a.AlbumId == id).FirstOrDefaultAsync();
             if (album == null)
@@ -168,7 +180,7 @@ namespace MusicStore.Areas.Admin.Controllers
             DbContext.Albums.Remove(album);
             await DbContext.SaveChangesAsync(requestAborted);
             //Remove the cache entry as it is removed
-            Cache.Remove(GetCacheKey(id));
+            cache.Remove(GetCacheKey(id));
 
             return RedirectToAction("Index");
         }

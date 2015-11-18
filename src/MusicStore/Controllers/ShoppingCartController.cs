@@ -12,11 +12,12 @@ namespace MusicStore.Controllers
 {
     public class ShoppingCartController : Controller
     {
-        [FromServices]
-        public MusicStoreContext DbContext { get; set; }
+        public ShoppingCartController(MusicStoreContext dbContext)
+        {
+            DbContext = dbContext;
+        }
 
-        [FromServices]
-        public IAntiforgery Antiforgery { get; set; }
+        public MusicStoreContext DbContext { get; }
 
         //
         // GET: /ShoppingCart/
@@ -58,7 +59,10 @@ namespace MusicStore.Controllers
         //
         // AJAX: /ShoppingCart/RemoveFromCart/5
         [HttpPost]
-        public async Task<IActionResult> RemoveFromCart(int id, CancellationToken requestAborted)
+        public async Task<IActionResult> RemoveFromCart(
+            [FromServices] IAntiforgery antiforgery,
+            int id,
+            CancellationToken requestAborted)
         {
             var cookieToken = string.Empty;
             var formToken = string.Empty;
@@ -75,7 +79,7 @@ namespace MusicStore.Controllers
                 }
             }
 
-            Antiforgery.ValidateTokens(HttpContext, new AntiforgeryTokenSet(formToken, cookieToken));
+            antiforgery.ValidateTokens(HttpContext, new AntiforgeryTokenSet(formToken, cookieToken));
 
             // Retrieve the current user's shopping cart
             var cart = ShoppingCart.GetCart(DbContext, HttpContext);

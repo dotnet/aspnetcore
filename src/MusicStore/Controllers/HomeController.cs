@@ -11,28 +11,24 @@ namespace MusicStore.Controllers
 {
     public class HomeController : Controller
     {
-        [FromServices]
-        public MusicStoreContext DbContext { get; set; }
-
-        [FromServices]
-        public IMemoryCache Cache { get; set; }
-
         //
         // GET: /Home/
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(
+            [FromServices] MusicStoreContext dbContext,
+            [FromServices] IMemoryCache cache)
         {
             // Get most popular albums
             var cacheKey = "topselling";
             List<Album> albums;
-            if(!Cache.TryGetValue(cacheKey, out albums))
+            if (!cache.TryGetValue(cacheKey, out albums))
             {
-                albums = await GetTopSellingAlbumsAsync(6);
+                albums = await GetTopSellingAlbumsAsync(dbContext, 6);
 
                 if (albums != null && albums.Count > 0)
                 {
                     // Refresh it every 10 minutes.
                     // Let this be the last item to be removed by cache if cache GC kicks in.
-                    Cache.Set(
+                    cache.Set(
                         cacheKey,
                         albums,
                         new MemoryCacheEntryOptions()
@@ -59,13 +55,13 @@ namespace MusicStore.Controllers
             return View("~/Views/Shared/AccessDenied.cshtml");
         }
 
-        private async Task<List<Album>> GetTopSellingAlbumsAsync(int count)
+        private async Task<List<Album>> GetTopSellingAlbumsAsync(MusicStoreContext dbContext, int count)
         {
             // Group the order details by album and return
             // the albums with the highest count
 
             // TODO [EF] We don't query related data as yet, so the OrderByDescending isn't doing anything
-            return await DbContext.Albums
+            return await dbContext.Albums
                 .OrderByDescending(a => a.OrderDetails.Count())
                 .Take(count)
                 .ToListAsync();

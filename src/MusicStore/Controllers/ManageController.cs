@@ -8,18 +8,20 @@ using MusicStore.Models;
 
 namespace MusicStore.Controllers
 {
-    /// <summary>
-    /// Summary description for ManageController
-    /// </summary>
     [Authorize]
     public class ManageController : Controller
     {
- 
-        [FromServices]
-        public UserManager<ApplicationUser> UserManager { get; set; }
+        public ManageController(
+            UserManager<ApplicationUser> userManager,
+            SignInManager<ApplicationUser> signInManager)
+        {
+            UserManager = userManager;
+            SignInManager = signInManager;
+        }
 
-        [FromServices]
-        public SignInManager<ApplicationUser> SignInManager { get; set; }
+        public UserManager<ApplicationUser> UserManager { get; }
+
+        public SignInManager<ApplicationUser> SignInManager { get; }
 
         //
         // GET: /Manage/Index
@@ -349,7 +351,7 @@ namespace MusicStore.Controllers
         {
             return await UserManager.FindByIdAsync(HttpContext.User.GetUserId());
         }
-        
+
         #endregion
     }
 }
