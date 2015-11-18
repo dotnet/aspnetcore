@@ -26,6 +26,9 @@ namespace Microsoft.AspNet.Razor.CodeGenerators.Visitors
         protected override void Visit(LiteralChunk chunk)
         {
         }
+        protected override void Visit(ParentLiteralChunk chunk)
+        {
+        }
         protected override void Visit(ExpressionBlockChunk chunk)
         {
         }

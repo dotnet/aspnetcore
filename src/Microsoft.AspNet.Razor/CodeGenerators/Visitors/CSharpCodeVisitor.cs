@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Text;
 using Microsoft.AspNet.Razor.Chunks;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 
@@ -114,6 +115,42 @@ namespace Microsoft.AspNet.Razor.CodeGenerators.Visitors
             Context.TargetWriterName = currentTargetWriterName;
 
             Writer.WriteEndMethodInvocation(false).WriteLine();
+        }
+
+        protected override void Visit(ParentLiteralChunk chunk)
+        {
+            Debug.Assert(chunk.Children.Count > 1);
+
+            if (Context.Host.DesignTimeMode)
+            {
+                // Skip generating the chunk if we're in design time or if the chunk is empty.
+                return;
+            }
+
+            var text = chunk.GetText();
+
+            if (Context.Host.EnableInstrumentation)
+            {
+                var start = chunk.Start.AbsoluteIndex;
+                Writer.WriteStartInstrumentationContext(Context, start, text.Length, isLiteral: true);
+            }
+
+            if (Context.ExpressionRenderingMode == ExpressionRenderingMode.WriteToOutput)
+            {
+                RenderPreWriteStart();
+            }
+
+            Writer.WriteStringLiteral(text);
+
+            if (Context.ExpressionRenderingMode == ExpressionRenderingMode.WriteToOutput)
+            {
+                Writer.WriteEndMethodInvocation();
+            }
+
+            if (Context.Host.EnableInstrumentation)
+            {
+                Writer.WriteEndInstrumentationContext(Context);
+            }
         }
 
         protected override void Visit(LiteralChunk chunk)

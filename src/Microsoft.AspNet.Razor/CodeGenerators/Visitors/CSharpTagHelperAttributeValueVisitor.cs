@@ -90,7 +90,7 @@ namespace Microsoft.AspNet.Razor.CodeGenerators.Visitors
         /// <param name="chunk">The <see cref="ExpressionChunk"/> to render.</param>
         protected override void Visit(ExpressionChunk chunk)
         {
-            RenderCode(chunk.Code, (Span)chunk.Association);
+            RenderCode(chunk.Code, chunk.Start);
         }
 
         /// <summary>
@@ -99,7 +99,12 @@ namespace Microsoft.AspNet.Razor.CodeGenerators.Visitors
         /// <param name="chunk">The <see cref="LiteralChunk"/> to render.</param>
         protected override void Visit(LiteralChunk chunk)
         {
-            RenderCode(chunk.Text, (Span)chunk.Association);
+            RenderCode(chunk.Text, chunk.Start);
+        }
+
+        protected override void Visit(ParentLiteralChunk chunk)
+        {
+            RenderCode(chunk.GetText(), chunk.Start);
         }
 
         /// <summary>
@@ -150,10 +155,10 @@ namespace Microsoft.AspNet.Razor.CodeGenerators.Visitors
         }
 
         // Tracks the code mapping and writes code for a leaf node in the attribute value Chunk tree.
-        private void RenderCode(string code, Span association)
+        private void RenderCode(string code, SourceLocation start)
         {
             _firstChild = false;
-            using (new CSharpLineMappingWriter(Writer, association.Start, code.Length))
+            using (new CSharpLineMappingWriter(Writer, start, code.Length))
             {
                 Writer.Write(code);
             }

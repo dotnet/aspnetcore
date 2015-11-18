@@ -397,7 +397,7 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
                 // statement together and the #line pragma correct to make debugging possible.
                 using (var lineMapper = new CSharpLineMappingWriter(
                     _writer,
-                    attributeValueChunk.Association.Start,
+                    attributeValueChunk.Start,
                     _context.SourceFile))
                 {
                     // Place the assignment LHS to align RHS with original attribute value's indentation.
@@ -710,16 +710,21 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
                 return false;
             }
 
-            var literalChildChunk = parentChunk.Children[0] as LiteralChunk;
-
-            if (literalChildChunk == null)
+            LiteralChunk literalChildChunk;
+            if ((literalChildChunk = parentChunk.Children[0] as LiteralChunk) != null)
             {
-                return false;
+                plainText = literalChildChunk.Text;
+                return true;
             }
 
-            plainText = literalChildChunk.Text;
+            ParentLiteralChunk parentLiteralChunk;
+            if ((parentLiteralChunk = parentChunk.Children[0] as ParentLiteralChunk) != null)
+            {
+                plainText = parentLiteralChunk.GetText();
+                return true;
+            }
 
-            return true;
+            return false;
         }
 
         // A CSharpCodeVisitor which does not HTML encode values. Used when rendering bound string attribute values.

@@ -92,10 +92,45 @@ namespace Microsoft.AspNet.Razor.Chunks.Generators
 
             // Assert
             var chunk = Assert.Single(builder.Root.Children);
-            var literalChunk = Assert.IsType<LiteralChunk>(chunk);
-            Assert.Equal("<a><p>", literalChunk.Text);
-            var span = Assert.IsType<Span>(literalChunk.Association);
-            Assert.Equal(previousSpan.Symbols.Concat(newSpan.Symbols), span.Symbols);
+
+            var literalChunk = Assert.IsType<ParentLiteralChunk>(chunk);
+            Assert.Equal(2, literalChunk.Children.Count);
+            
+            var span = Assert.IsType<Span>(literalChunk.Children[0].Association);
+            Assert.Same(span, previousSpan);
+
+            span = Assert.IsType<Span>(literalChunk.Children[1].Association);
+            Assert.Same(span, newSpan);
+        }
+
+        [Fact]
+        public void AddLiteralChunk_CreatesNewChunk_IfChunkIsNotLiteral()
+        {
+            // Arrange
+            var spanFactory = SpanFactory.CreateCsHtml();
+            var span1 = spanFactory.Markup("<a>").Builder.Build();
+            var span2 = spanFactory.Markup("<p>").Builder.Build();
+            var span3 = spanFactory.Code("Hi!").AsExpression().Builder.Build();
+            var builder = new ChunkTreeBuilder();
+
+            // Act
+            builder.AddLiteralChunk("<a>", span1);
+            builder.AddLiteralChunk("<p>", span2);
+            builder.AddExpressionChunk("Hi!", span3);
+
+            // Assert
+            Assert.Equal(2, builder.Root.Children.Count);
+
+            var literalChunk = Assert.IsType<ParentLiteralChunk>(builder.Root.Children[0]);
+            Assert.Equal(2, literalChunk.Children.Count);
+
+            var span = Assert.IsType<Span>(literalChunk.Children[0].Association);
+            Assert.Same(span, span1);
+
+            span = Assert.IsType<Span>(literalChunk.Children[1].Association);
+            Assert.Same(span, span2);
+
+            Assert.IsType<ExpressionChunk>(builder.Root.Children[1]);
         }
 
         [Fact]

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Diagnostics;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 
 namespace Microsoft.AspNet.Razor.Chunks
@@ -69,22 +70,43 @@ namespace Microsoft.AspNet.Razor.Chunks
 
         public void AddLiteralChunk(string literal, SyntaxTreeNode association)
         {
-            // If the previous chunk was also a LiteralChunk, append the content of the current node to the previous one.
-            var literalChunk = _lastChunk as LiteralChunk;
-            if (literalChunk != null)
+            ParentLiteralChunk parentLiteralChunk;
+
+            // We try to join literal chunks where possible, so that we have fewer 'writes' in the generated code.
+            //
+            // Possible cases here:
+            //  - We just added a LiteralChunk and we need to add another - so merge them into ParentLiteralChunk.
+            //  - We have a ParentLiteralChunk - merge the new chunk into it.
+            //  - We just added something <else> - just add the LiteralChunk like normal.
+            if (_lastChunk is LiteralChunk)
             {
-                // Literal chunks are always associated with Spans
-                var lastSpan = (Span)literalChunk.Association;
-                var currentSpan = (Span)association;
-
-                var builder = new SpanBuilder(lastSpan);
-                foreach (var symbol in currentSpan.Symbols)
+                parentLiteralChunk = new ParentLiteralChunk()
                 {
-                    builder.Accept(symbol);
-                }
+                    Start = _lastChunk.Start,
+                };
 
-                literalChunk.Association = builder.Build();
-                literalChunk.Text += literal;
+                parentLiteralChunk.Children.Add(_lastChunk);
+                parentLiteralChunk.Children.Add(new LiteralChunk
+                {
+                    Association = association,
+                    Start = association.Start,
+                    Text = literal,
+                });
+
+                Debug.Assert(Current.Children[Current.Children.Count - 1] == _lastChunk);
+                Current.Children.RemoveAt(Current.Children.Count - 1);
+                Current.Children.Add(parentLiteralChunk);
+                _lastChunk = parentLiteralChunk;
+            }
+            else if ((parentLiteralChunk = _lastChunk as ParentLiteralChunk) != null)
+            {
+                parentLiteralChunk.Children.Add(new LiteralChunk
+                {
+                    Association = association,
+                    Start = association.Start,
+                    Text = literal,
+                });
+                _lastChunk = parentLiteralChunk;
             }
             else
             {

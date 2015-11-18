@@ -496,10 +496,23 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
             SyntaxTreeNode syntaxNode,
             bool isLiteral)
         {
+            return WriteStartInstrumentationContext(
+                context,
+                syntaxNode.Start.AbsoluteIndex,
+                syntaxNode.Length,
+                isLiteral);
+        }
+
+        public CSharpCodeWriter WriteStartInstrumentationContext(
+            ChunkGeneratorContext context,
+            int absoluteIndex,
+            int length,
+            bool isLiteral)
+        {
             WriteStartMethodInvocation(context.Host.GeneratedClassContext.BeginContextMethodName);
-            Write(syntaxNode.Start.AbsoluteIndex.ToString(CultureInfo.InvariantCulture));
+            Write(absoluteIndex.ToString(CultureInfo.InvariantCulture));
             WriteParameterSeparator();
-            Write(syntaxNode.Length.ToString(CultureInfo.InvariantCulture));
+            Write(length.ToString(CultureInfo.InvariantCulture));
             WriteParameterSeparator();
             Write(isLiteral ? "true" : "false");
             return WriteEndMethodInvocation();

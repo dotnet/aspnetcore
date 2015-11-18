@@ -53,6 +53,10 @@ namespace Microsoft.AspNet.Razor.CodeGenerators.Visitors
             {
                 Visit((LiteralChunk)chunk);
             }
+            else if (chunk is ParentLiteralChunk)
+            {
+                Visit((ParentLiteralChunk)chunk);
+            }
             else if (chunk is ExpressionBlockChunk)
             {
                 Visit((ExpressionBlockChunk)chunk);
@@ -120,6 +124,7 @@ namespace Microsoft.AspNet.Razor.CodeGenerators.Visitors
         }
 
         protected abstract void Visit(LiteralChunk chunk);
+        protected abstract void Visit(ParentLiteralChunk chunk);
         protected abstract void Visit(ExpressionChunk chunk);
         protected abstract void Visit(StatementChunk chunk);
         protected abstract void Visit(TagHelperChunk chunk);
