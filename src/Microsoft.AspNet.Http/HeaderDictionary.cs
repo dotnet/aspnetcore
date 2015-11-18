@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.Http.Internal
     /// </summary>
     public class HeaderDictionary : IHeaderDictionary
     {
-#if DNXCORE50
+#if DOTNET5_4
         private static readonly string[] EmptyKeys = Array.Empty<string>();
         private static readonly StringValues[] EmptyValues = Array.Empty<StringValues>();
 #else

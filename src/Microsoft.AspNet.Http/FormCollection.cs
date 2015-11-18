@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Microsoft.Extensions.Primitives;
@@ -13,7 +14,7 @@ namespace Microsoft.AspNet.Http.Internal
     public class FormCollection : IFormCollection
     {
         public static readonly FormCollection Empty = new FormCollection();
-#if DNXCORE50
+#if DOTNET5_4
         private static readonly string[] EmptyKeys = Array.Empty<string>();
         private static readonly StringValues[] EmptyValues = Array.Empty<StringValues>();
 #else
