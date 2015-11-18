@@ -1,7 +1,7 @@
 ﻿(function (window, undefined) {
     "use strict";
 
-    function $(selector, element) {
+    function ns(selector, element) {
         return new NodeCollection(selector, element);
     }
 
@@ -16,10 +16,6 @@
             for (var i = 0, l = nodeList.length; i < l; i++) {
                 this.items.push(nodeList.item(i));
             }
-        } else if (selector.tagName) {
-            this.items.push(selector);
-        } else if (selector.splice) {
-            this.items = this.items.concat(selector);
         }
     }
 
@@ -35,10 +31,10 @@
             var children = [];
 
             this.each(function (el) {
-                children = children.concat($(selector, el).items);
+                children = children.concat(ns(selector, el).items);
             });
 
-            return $(children);
+            return ns(children);
         },
 
         hide: function () {
@@ -101,19 +97,6 @@
             return this;
         },
 
-        toggleClass: function (className) {
-            this.each(function (el) {
-                var classNames = el.className.split(" ");
-                if (classNames.indexOf(className) >= 0) {
-                    $(el).removeClass(className);
-                } else {
-                    $(el).addClass(className);
-                }
-            });
-
-            return this;
-        },
-
         attr: function (name) {
             if (this.items.length === 0) {
                 return null;
@@ -154,22 +137,22 @@
     };
 
     function frame(el) {
-        $(el).children(".source .collapsible").toggle();
+        ns(el).children(".source .collapsible").toggle();
     }
 
     function tab(el) {
-        var unselected = $("#header .selected").removeClass("selected").attr("id");
-        var selected = $(el).addClass("selected").attr("id");
+        var unselected = ns("#header .selected").removeClass("selected").attr("id");
+        var selected = ns(el).addClass("selected").attr("id");
 
-        $("#" + unselected + "page").hide();
-        $("#" + selected + "page").show();
+        ns("#" + unselected + "page").hide();
+        ns("#" + selected + "page").show();
     }
 
-    $(".collapsible").hide();
-    $(".page").hide();
-    $("#stackpage").show();
+    ns(".collapsible").hide();
+    ns(".page").hide();
+    ns("#stackpage").show();
 
-    $("#rawExceptionButton").click(function (event) {
+    ns("#rawExceptionButton").click(function (event) {
         var div = document.getElementById('rawException');
         div.style.display = 'inline-block';
         div.scrollIntoView(true);
@@ -179,7 +162,7 @@
         return false;
     });
 
-    $(".frame")
+    ns(".frame")
         .click(function () {
             frame(this);
         })
@@ -189,7 +172,7 @@
             }
         });
 
-    $("#header li")
+    ns("#header li")
         .click(function () {
             tab(this);
         })
