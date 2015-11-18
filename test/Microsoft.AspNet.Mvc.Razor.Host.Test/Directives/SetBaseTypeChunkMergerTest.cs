@@ -43,7 +43,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
             merger.MergeInheritedChunks(chunkTree, inheritedChunks);
 
             // Assert
-            var chunk = Assert.Single(chunkTree.Chunks);
+            var chunk = Assert.Single(chunkTree.Children);
             var setBaseTypeChunk = Assert.IsType<SetBaseTypeChunk>(chunk);
             Assert.Equal(expected, setBaseTypeChunk.TypeName);
         }
@@ -64,7 +64,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
             merger.MergeInheritedChunks(chunkTree, inheritedChunks);
 
             // Assert
-            Assert.Empty(chunkTree.Chunks);
+            Assert.Empty(chunkTree.Children);
         }
 
         [Fact]
@@ -84,7 +84,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
             merger.MergeInheritedChunks(chunkTree, inheritedChunks);
 
             // Assert
-            var chunk = Assert.Single(chunkTree.Chunks);
+            var chunk = Assert.Single(chunkTree.Children);
             var setBaseTypeChunk = Assert.IsType<SetBaseTypeChunk>(chunk);
             Assert.Equal("MyBase1", setBaseTypeChunk.TypeName);
         }

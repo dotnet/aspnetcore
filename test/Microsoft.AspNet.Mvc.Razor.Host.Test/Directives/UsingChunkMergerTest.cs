@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
             merger.MergeInheritedChunks(chunkTree, inheritedChunks);
 
             // Assert
-            var chunk = Assert.Single(chunkTree.Chunks);
+            var chunk = Assert.Single(chunkTree.Children);
             var usingChunk = Assert.IsType<UsingChunk>(chunk);
             Assert.Equal(expected, usingChunk.Namespace);
         }
@@ -48,7 +48,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
             merger.MergeInheritedChunks(chunkTree, inheritedChunks);
 
             // Assert
-            Assert.Empty(chunkTree.Chunks);
+            Assert.Empty(chunkTree.Children);
         }
 
         [Fact]
@@ -69,10 +69,10 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
             merger.MergeInheritedChunks(chunkTree, inheritedChunks);
 
             // Assert
-            Assert.Equal(2, chunkTree.Chunks.Count);
-            var chunk = Assert.IsType<UsingChunk>(chunkTree.Chunks[0]);
+            Assert.Equal(2, chunkTree.Children.Count);
+            var chunk = Assert.IsType<UsingChunk>(chunkTree.Children[0]);
             Assert.Equal("Microsoft.AspNet.Mvc", chunk.Namespace);
-            chunk = Assert.IsType<UsingChunk>(chunkTree.Chunks[1]);
+            chunk = Assert.IsType<UsingChunk>(chunkTree.Children[1]);
             Assert.Equal("Microsoft.AspNet.Mvc.Razor", chunk.Namespace);
         }
 
@@ -92,10 +92,10 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
             merger.MergeInheritedChunks(chunkTree, inheritedChunks);
 
             // Assert
-            Assert.Equal(2, chunkTree.Chunks.Count);
-            var chunk = Assert.IsType<UsingChunk>(chunkTree.Chunks[0]);
+            Assert.Equal(2, chunkTree.Children.Count);
+            var chunk = Assert.IsType<UsingChunk>(chunkTree.Children[0]);
             Assert.Equal("Microsoft.AspNet.Mvc", chunk.Namespace);
-            chunk = Assert.IsType<UsingChunk>(chunkTree.Chunks[1]);
+            chunk = Assert.IsType<UsingChunk>(chunkTree.Children[1]);
             Assert.Equal("Microsoft.AspNet.mvc", chunk.Namespace);
         }
     }

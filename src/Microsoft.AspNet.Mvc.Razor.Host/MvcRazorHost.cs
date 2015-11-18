@@ -311,7 +311,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             var inheritedChunkTrees = GetInheritedChunkTrees(context.SourceFile);
 
             ChunkInheritanceUtility.MergeInheritedChunkTrees(
-                context.ChunkTreeBuilder.ChunkTree,
+                context.ChunkTreeBuilder.Root,
                 inheritedChunkTrees,
                 DefaultModel);
 

@@ -65,7 +65,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
                 if (injectChunk != null &&
                     _addedMemberNames.Add(injectChunk.MemberName))
                 {
-                    chunkTree.Chunks.Add(TransformChunk(injectChunk));
+                    chunkTree.Children.Add(TransformChunk(injectChunk));
                 }
             }
         }

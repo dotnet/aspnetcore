@@ -127,7 +127,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
             var chunkMergers = GetChunkMergers(chunkTree, defaultModel);
             // We merge chunks into the ChunkTree in two passes. In the first pass, we traverse the ChunkTree visiting
             // a mapped IChunkMerger for types that are registered.
-            foreach (var chunk in chunkTree.Chunks)
+            foreach (var chunk in chunkTree.Children)
             {
                 foreach (var merger in chunkMergers)
                 {
@@ -136,7 +136,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
             }
 
             var inheritedChunks = _defaultInheritedChunks.Concat(
-                inheritedChunkTrees.SelectMany(tree => tree.Chunks)).ToArray();
+                inheritedChunkTrees.SelectMany(tree => tree.Children)).ToArray();
 
             foreach (var merger in chunkMergers)
             {
@@ -175,8 +175,8 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
                     chunkGenerator.Visit(parseResults);
 
                     // Rewrite the location of inherited chunks so they point to the global import file.
-                    var chunkTree = chunkGenerator.Context.ChunkTreeBuilder.ChunkTree;
-                    foreach (var chunk in chunkTree.Chunks)
+                    var chunkTree = chunkGenerator.Context.ChunkTreeBuilder.Root;
+                    foreach (var chunk in chunkTree.Children)
                     {
                         chunk.Start = new SourceLocation(
                             viewImportsPath,

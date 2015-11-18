@@ -60,7 +60,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
                     var baseTypeChunk = inheritedChunks[i] as SetBaseTypeChunk;
                     if (baseTypeChunk != null)
                     {
-                        chunkTree.Chunks.Add(TransformChunk(baseTypeChunk));
+                        chunkTree.Children.Add(TransformChunk(baseTypeChunk));
                         break;
                     }
                 }

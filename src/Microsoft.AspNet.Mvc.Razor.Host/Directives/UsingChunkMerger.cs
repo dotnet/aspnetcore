@@ -48,7 +48,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
             {
                 if (_currentUsings.Add(namespaceChunk.Namespace))
                 {
-                    chunkTree.Chunks.Add(namespaceChunk);
+                    chunkTree.Children.Add(namespaceChunk);
                 }
             }
         }

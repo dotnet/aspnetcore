@@ -119,7 +119,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             writer.WriteLineHiddenDirective();
 
             var injectVisitor = new InjectChunkVisitor(writer, Context, _injectAttribute);
-            injectVisitor.Accept(Context.ChunkTreeBuilder.ChunkTree.Chunks);
+            injectVisitor.Accept(Context.ChunkTreeBuilder.Root.Children);
 
             writer.WriteLine();
             writer.WriteLineHiddenDirective();

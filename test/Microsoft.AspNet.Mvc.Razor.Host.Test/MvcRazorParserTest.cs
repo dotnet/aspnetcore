@@ -215,7 +215,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             return new ChunkTree
             {
-                Chunks = chunks
+                Children = chunks
             };
         }
 

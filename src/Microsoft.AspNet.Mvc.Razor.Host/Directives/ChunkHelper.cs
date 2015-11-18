@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
             // If there's more than 1 model chunk there will be a Razor error BUT we want intellisense to show up on
             // the current model chunk that the user is typing.
             return chunkTree
-                .Chunks
+                .Children
                 .OfType<ModelChunk>()
                 .LastOrDefault();
         }

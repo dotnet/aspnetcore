@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
             merger.MergeInheritedChunks(chunkTree, inheritedChunks);
 
             // Assert
-            var chunk = Assert.Single(chunkTree.Chunks);
+            var chunk = Assert.Single(chunkTree.Children);
             var injectChunk = Assert.IsType<InjectChunk>(chunk);
             Assert.Equal(expectedType, injectChunk.TypeName);
             Assert.Equal(expectedProperty, injectChunk.MemberName);
@@ -64,7 +64,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
             merger.MergeInheritedChunks(chunkTree, inheritedChunks);
 
             // Assert
-            Assert.Empty(chunkTree.Chunks);
+            Assert.Empty(chunkTree.Children);
         }
 
         [Fact]
@@ -84,12 +84,12 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
             merger.MergeInheritedChunks(chunkTree, inheritedChunks);
 
             // Assert
-            Assert.Equal(2, chunkTree.Chunks.Count);
-            var injectChunk = Assert.IsType<InjectChunk>(chunkTree.Chunks[0]);
+            Assert.Equal(2, chunkTree.Children.Count);
+            var injectChunk = Assert.IsType<InjectChunk>(chunkTree.Children[0]);
             Assert.Equal("MyType", injectChunk.TypeName);
             Assert.Equal("myproperty", injectChunk.MemberName);
 
-            injectChunk = Assert.IsType<InjectChunk>(chunkTree.Chunks[1]);
+            injectChunk = Assert.IsType<InjectChunk>(chunkTree.Children[1]);
             Assert.Equal("MyTypeB", injectChunk.TypeName);
             Assert.Equal("different-property", injectChunk.MemberName);
         }
@@ -109,7 +109,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
             merger.MergeInheritedChunks(chunkTree, inheritedChunks);
 
             // Assert
-            var chunk = Assert.Single(chunkTree.Chunks);
+            var chunk = Assert.Single(chunkTree.Children);
             var injectChunk = Assert.IsType<InjectChunk>(chunk);
             Assert.Equal("MyHelper<dynamic>", injectChunk.TypeName);
             Assert.Equal("MyProperty", injectChunk.MemberName);
@@ -130,7 +130,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
             merger.MergeInheritedChunks(chunkTree, inheritedChunks);
 
             // Assert
-            var chunk = Assert.Single(chunkTree.Chunks);
+            var chunk = Assert.Single(chunkTree.Children);
             var injectChunk = Assert.IsType<InjectChunk>(chunk);
             Assert.Equal("MyHelper<MyTestModel2>", injectChunk.TypeName);
             Assert.Equal("MyProperty", injectChunk.MemberName);
@@ -154,7 +154,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
             merger.MergeInheritedChunks(chunkTree, inheritedChunks);
 
             // Assert
-            Assert.Collection(chunkTree.Chunks,
+            Assert.Collection(chunkTree.Children,
                 chunk =>
                 {
                     var injectChunk = Assert.IsType<InjectChunk>(chunk);

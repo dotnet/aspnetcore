@@ -117,7 +117,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             var descriptors = new List<TagHelperDirectiveDescriptor>();
 
-            var inheritedChunks = defaultInheritedChunks.Concat(inheritedChunkTrees.SelectMany(tree => tree.Chunks));
+            var inheritedChunks = defaultInheritedChunks.Concat(inheritedChunkTrees.SelectMany(tree => tree.Children));
             foreach (var chunk in inheritedChunks)
             {
                 // All TagHelperDirectiveDescriptors created here have undefined source locations because the source

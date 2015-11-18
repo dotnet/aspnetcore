@@ -43,7 +43,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
                 chunkTreeResult =>
                 {
                     var viewImportsPath = @"/Views/_ViewImports.cshtml";
-                    Assert.Collection(chunkTreeResult.ChunkTree.Chunks,
+                    Assert.Collection(chunkTreeResult.ChunkTree.Children,
                         chunk =>
                         {
                             Assert.IsType<LiteralChunk>(chunk);
@@ -87,7 +87,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
                 chunkTreeResult =>
                 {
                     var viewImportsPath = "/Views/home/_ViewImports.cshtml";
-                    Assert.Collection(chunkTreeResult.ChunkTree.Chunks,
+                    Assert.Collection(chunkTreeResult.ChunkTree.Children,
                         chunk =>
                         {
                             Assert.IsType<LiteralChunk>(chunk);
@@ -150,7 +150,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
             {
                 new ChunkTree
                 {
-                    Chunks = new Chunk[]
+                    Children = new Chunk[]
                     {
                         new UsingChunk { Namespace = "InheritedNamespace" },
                         new LiteralChunk { Text = "some text" }
@@ -158,7 +158,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
                 },
                 new ChunkTree
                 {
-                    Chunks = new Chunk[]
+                    Children = new Chunk[]
                     {
                         new UsingChunk { Namespace = "AppNamespace.Model" },
                     }
@@ -172,9 +172,9 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
             utility.MergeInheritedChunkTrees(chunkTree, inheritedChunkTrees, "dynamic");
 
             // Assert
-            Assert.Collection(chunkTree.Chunks,
+            Assert.Collection(chunkTree.Children,
                 chunk => Assert.Same(defaultChunks[1], chunk),
-                chunk => Assert.Same(inheritedChunkTrees[0].Chunks[0], chunk),
+                chunk => Assert.Same(inheritedChunkTrees[0].Children[0], chunk),
                 chunk => Assert.Same(defaultChunks[0], chunk));
         }
     }
