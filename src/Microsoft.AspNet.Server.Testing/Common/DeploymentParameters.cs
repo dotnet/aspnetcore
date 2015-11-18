@@ -39,6 +39,7 @@ namespace Microsoft.AspNet.Server.Testing
             ServerType = serverType;
             RuntimeFlavor = runtimeFlavor;
             RuntimeArchitecture = runtimeArchitecture;
+            EnvironmentVariables.Add(new KeyValuePair<string, string>("ASPNET_DETAILEDERRORS", "true"));
         }
 
         public ServerType ServerType { get; private set; }
