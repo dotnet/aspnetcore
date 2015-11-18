@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.Diagnostics
         /// <summary>
         /// Process an individual request.
         /// </summary>
-        /// <param name="environment"></param>
+        /// <param name="context">The <see cref="Microsoft.AspNet.Http.HttpContext">.</param>
         /// <returns></returns>
         public Task Invoke(HttpContext context)
         {
