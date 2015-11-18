@@ -64,11 +64,7 @@ namespace MusicStore.Controllers
             var httpContext = _serviceProvider.GetRequiredService<IHttpContextAccessor>().HttpContext;
             httpContext.User = new ClaimsPrincipal(new ClaimsIdentity(claims));
 
-            var controller = new ManageController()
-            {
-                UserManager = userManager,
-                SignInManager = signInManager,
-            };
+            var controller = new ManageController(userManager, signInManager);
             controller.ActionContext.HttpContext = httpContext;
 
             // Act

@@ -46,16 +46,13 @@ namespace MusicStore.Controllers
         public async Task Index_GetsSixTopAlbums()
         {
             // Arrange
-            var controller = new HomeController()
-            {
-                DbContext = _serviceProvider.GetRequiredService<MusicStoreContext>(),
-                Cache = _serviceProvider.GetRequiredService<IMemoryCache>(),
-            };
-
-            PopulateData(controller.DbContext);
+            var dbContext = _serviceProvider.GetRequiredService<MusicStoreContext>();
+            var cache = _serviceProvider.GetRequiredService<IMemoryCache>();
+            var controller = new HomeController();
+            PopulateData(dbContext);
 
             // Action
-            var result = await controller.Index();
+            var result = await controller.Index(dbContext, cache);
 
             // Assert
             var viewResult = Assert.IsType<ViewResult>(result);

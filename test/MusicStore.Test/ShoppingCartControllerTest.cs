@@ -42,10 +42,7 @@ namespace MusicStore.Controllers
             var httpContext = new DefaultHttpContext();
             httpContext.Session = new TestSession();
 
-            var controller = new ShoppingCartController()
-            {
-                DbContext = _serviceProvider.GetRequiredService<MusicStoreContext>(),
-            };
+            var controller = new ShoppingCartController(_serviceProvider.GetRequiredService<MusicStoreContext>());
             controller.ActionContext.HttpContext = httpContext;
 
             // Act
@@ -69,10 +66,7 @@ namespace MusicStore.Controllers
             httpContext.Session = new TestSession();
             httpContext.Session.SetString("Session", "CartId_A");
 
-            var controller = new ShoppingCartController()
-            {
-                DbContext = _serviceProvider.GetRequiredService<MusicStoreContext>(),
-            };
+            var controller = new ShoppingCartController(_serviceProvider.GetRequiredService<MusicStoreContext>());
             controller.ActionContext.HttpContext = httpContext;
 
             // Act
@@ -106,10 +100,7 @@ namespace MusicStore.Controllers
             dbContext.AddRange(cartItems);
             dbContext.SaveChanges();
 
-            var controller = new ShoppingCartController()
-            {
-                DbContext = dbContext,
-            };
+            var controller = new ShoppingCartController(dbContext);
             controller.ActionContext.HttpContext = httpContext;
 
             // Act
@@ -140,10 +131,7 @@ namespace MusicStore.Controllers
             dbContext.AddRange(albums);
             dbContext.SaveChanges();
 
-            var controller = new ShoppingCartController()
-            {
-                DbContext = dbContext
-            };
+            var controller = new ShoppingCartController(dbContext);
             controller.ActionContext.HttpContext = httpContext;
 
             // Act
@@ -196,15 +184,11 @@ namespace MusicStore.Controllers
             httpContext.Request.Headers.Add(headers);
 
             // Cotroller initialization
-            var controller = new ShoppingCartController()
-            {
-                DbContext = dbContext,
-                Antiforgery = antiForgery,
-            };
+            var controller = new ShoppingCartController(dbContext);
             controller.ActionContext.HttpContext = httpContext;
 
             // Act
-            var result = await controller.RemoveFromCart(cartItemId, CancellationToken.None);
+            var result = await controller.RemoveFromCart(antiForgery, cartItemId, CancellationToken.None);
 
             // Assert
             var jsonResult = Assert.IsType<JsonResult>(result);
