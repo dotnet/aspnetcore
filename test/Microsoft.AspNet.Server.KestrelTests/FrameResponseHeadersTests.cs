@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
                 DateHeaderValueManager = new DateHeaderValueManager(),
                 ServerAddress = ServerAddress.FromUrl("http://localhost:5000")
             };
-            var frame = new Frame(connectionContext);
+            var frame = new Frame<object>(application: null, context: connectionContext);
             IDictionary<string, StringValues> headers = frame.ResponseHeaders;
 
             Assert.Equal(2, headers.Count);
@@ -48,7 +48,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
                 DateHeaderValueManager = new DateHeaderValueManager(),
                 ServerAddress = ServerAddress.FromUrl("http://localhost:5000")
             };
-            var frame = new Frame(connectionContext);
+            var frame = new Frame<object>(application: null, context: connectionContext);
             
             Assert.True(frame.ResponseHeaders.Count > 0);
 

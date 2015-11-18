@@ -3,7 +3,6 @@
 
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Hosting.Server;
-using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Server.Features;
 using Microsoft.Extensions.Configuration;
@@ -18,13 +17,11 @@ namespace Microsoft.AspNet.Server.Kestrel
     {
         private readonly IApplicationLifetime _appLifetime;
         private readonly ILoggerFactory _loggerFactory;
-        private readonly IHttpContextFactory _httpContextFactory;
 
-        public ServerFactory(IApplicationLifetime appLifetime, ILoggerFactory loggerFactory, IHttpContextFactory httpContextFactory)
+        public ServerFactory(IApplicationLifetime appLifetime, ILoggerFactory loggerFactory)
         {
             _appLifetime = appLifetime;
             _loggerFactory = loggerFactory;
-            _httpContextFactory = httpContextFactory;
         }
 
         public IServer CreateServer(IConfiguration configuration)
@@ -34,7 +31,7 @@ namespace Microsoft.AspNet.Server.Kestrel
             var serverFeatures = new FeatureCollection();
             serverFeatures.Set<IKestrelServerInformation>(information);
             serverFeatures.Set<IServerAddressesFeature>(information);
-            return new KestrelServer(serverFeatures, _appLifetime, _loggerFactory.CreateLogger("Microsoft.AspNet.Server.Kestrel"), _httpContextFactory);
+            return new KestrelServer(serverFeatures, _appLifetime, _loggerFactory.CreateLogger("Microsoft.AspNet.Server.Kestrel"));
         }
     }
 }

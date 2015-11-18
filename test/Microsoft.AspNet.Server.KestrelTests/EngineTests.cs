@@ -12,6 +12,7 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Server.Kestrel;
 using Microsoft.AspNet.Server.Kestrel.Filter;
+using Microsoft.AspNet.Server.Kestrel.Http;
 using Microsoft.AspNet.Testing.xunit;
 using Microsoft.Extensions.Logging;
 using Xunit;
@@ -91,12 +92,13 @@ namespace Microsoft.AspNet.Server.KestrelTests
         [ConditionalTheory]
         [MemberData(nameof(ConnectionFilterData))]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Test hangs after execution on Mono.")]
-        public void ListenerCanCreateAndDispose(ServiceContext testContext)
+        public void ListenerCanCreateAndDispose(TestServiceContext testContext)
         {
+            testContext.App = App;
             var engine = new KestrelEngine(testContext);
             engine.Start(1);
             var address = ServerAddress.FromUrl("http://localhost:54321/");
-            var started = engine.CreateServer(address, App);
+            var started = engine.CreateServer(address);
             started.Dispose();
             engine.Dispose();
         }
@@ -104,12 +106,13 @@ namespace Microsoft.AspNet.Server.KestrelTests
         [ConditionalTheory]
         [MemberData(nameof(ConnectionFilterData))]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Test hangs after execution on Mono.")]
-        public void ConnectionCanReadAndWrite(ServiceContext testContext)
+        public void ConnectionCanReadAndWrite(TestServiceContext testContext)
         {
+            testContext.App = App;
             var engine = new KestrelEngine(testContext);
             engine.Start(1);
             var address = ServerAddress.FromUrl("http://localhost:54321/");
-            var started = engine.CreateServer(address, App);
+            var started = engine.CreateServer(address);
 
             Console.WriteLine("Started");
             var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);

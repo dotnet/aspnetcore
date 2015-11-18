@@ -4,6 +4,7 @@
 using System;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Server.Kestrel;
+using Microsoft.AspNet.Server.Kestrel.Http;
 
 namespace Microsoft.AspNet.Server.KestrelTests
 {
@@ -32,11 +33,14 @@ namespace Microsoft.AspNet.Server.KestrelTests
 
         public void Create(RequestDelegate app, ServiceContext context, string serverAddress)
         {
+            context.FrameFactory = (connectionContext, remoteEP, localEP, prepareRequest) => 
+            {
+                return new Frame<HttpContext>(new DummyApplication(app), connectionContext, remoteEP, localEP, prepareRequest);
+            };
             _engine = new KestrelEngine(context);
             _engine.Start(1);
             _server = _engine.CreateServer(
-                ServerAddress.FromUrl(serverAddress),
-                app);
+                ServerAddress.FromUrl(serverAddress));
         }
 
         public void Dispose()

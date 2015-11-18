@@ -32,15 +32,13 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         public Task StartAsync(
             string pipeName,
             ServerAddress address,
-            KestrelThread thread,
-            RequestDelegate application)
+            KestrelThread thread)
         {
             _pipeName = pipeName;
             _buf = thread.Loop.Libuv.buf_init(_ptr, 4);
 
             ServerAddress = address;
             Thread = thread;
-            Application = application;
 
             DispatchPipe = new UvPipeHandle(Log);
 

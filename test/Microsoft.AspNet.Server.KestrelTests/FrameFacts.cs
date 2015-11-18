@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
                 DateHeaderValueManager = new DateHeaderValueManager(),
                 ServerAddress = ServerAddress.FromUrl("http://localhost:5000")
             };
-            var frame = new Frame(connectionContext);
+            var frame = new Frame<object>(application: null, context: connectionContext);
             frame.Scheme = "https";
 
             // Act

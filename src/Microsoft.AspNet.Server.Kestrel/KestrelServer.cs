@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Hosting.Server;
-using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Server.Kestrel.Http;
 using Microsoft.Extensions.Logging;
@@ -17,9 +16,8 @@ namespace Microsoft.AspNet.Server.Kestrel
         private Stack<IDisposable> _disposables;
         private readonly IApplicationLifetime _applicationLifetime;
         private readonly ILogger _logger;
-        private readonly IHttpContextFactory _httpContextFactory;
 
-        public KestrelServer(IFeatureCollection features, IApplicationLifetime applicationLifetime, ILogger logger, IHttpContextFactory httpContextFactory)
+        public KestrelServer(IFeatureCollection features, IApplicationLifetime applicationLifetime, ILogger logger)
         {
             if (features == null)
             {
@@ -36,20 +34,14 @@ namespace Microsoft.AspNet.Server.Kestrel
                 throw new ArgumentNullException(nameof(logger));
             }
 
-            if (httpContextFactory == null)
-            {
-                throw new ArgumentNullException(nameof(httpContextFactory));
-            }
-
             _applicationLifetime = applicationLifetime;
             _logger = logger;
             Features = features;
-            _httpContextFactory = httpContextFactory;
         }
 
         public IFeatureCollection Features { get; }
 
-        public void Start(RequestDelegate requestDelegate)
+        public void Start<TContext>(IHttpApplication<TContext> application)
         {
             if (_disposables != null)
             {
@@ -64,9 +56,12 @@ namespace Microsoft.AspNet.Server.Kestrel
                 var dateHeaderValueManager = new DateHeaderValueManager();
                 var engine = new KestrelEngine(new ServiceContext
                 {
+                    FrameFactory = (context, remoteEP, localEP, prepareRequest) => 
+                    {
+                        return new Frame<TContext>(application, context, remoteEP, localEP, prepareRequest);
+                    },
                     AppLifetime = _applicationLifetime,
                     Log = new KestrelTrace(_logger),
-                    HttpContextFactory = _httpContextFactory,
                     DateHeaderValueManager = dateHeaderValueManager,
                     ConnectionFilter = information.ConnectionFilter,
                     NoDelay = information.NoDelay
@@ -119,8 +114,7 @@ namespace Microsoft.AspNet.Server.Kestrel
                     {
                         atLeastOneListener = true;
                         _disposables.Push(engine.CreateServer(
-                            parsedAddress,
-                            requestDelegate));
+                            parsedAddress));
                     }
                 }
 

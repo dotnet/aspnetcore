@@ -24,7 +24,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             ServerAddress = listenerContext.ServerAddress;
             Thread = listenerContext.Thread;
-            Application = listenerContext.Application;
             Memory2 = listenerContext.Memory2;
             Log = listenerContext.Log;
         }
@@ -32,8 +31,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         public ServerAddress ServerAddress { get; set; }
 
         public KestrelThread Thread { get; set; }
-
-        public RequestDelegate Application { get; set; }
 
         public MemoryPool2 Memory2 { get; set; }
     }
