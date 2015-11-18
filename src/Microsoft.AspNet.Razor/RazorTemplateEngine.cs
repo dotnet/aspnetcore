@@ -402,7 +402,7 @@ namespace Microsoft.AspNet.Razor
             var codeGeneratorResult = codeGenerator.Generate();
 
             // Collect results and return
-            return new GeneratorResults(results, codeGeneratorResult, codeGeneratorContext.ChunkTreeBuilder.ChunkTree);
+            return new GeneratorResults(results, codeGeneratorResult, codeGeneratorContext.ChunkTreeBuilder.Root);
         }
 
         protected internal virtual RazorChunkGenerator CreateChunkGenerator(

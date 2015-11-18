@@ -13,11 +13,14 @@ namespace Microsoft.AspNet.Razor.Chunks
 
         public ChunkTreeBuilder()
         {
-            ChunkTree = new ChunkTree();
+            Root = new ChunkTree();
             _parentStack = new Stack<ParentChunk>();
+            _parentStack.Push(Root);
         }
 
-        public ChunkTree ChunkTree { get; private set; }
+        public ParentChunk Current => _parentStack.Peek();
+
+        public ChunkTree Root { get; }
 
         public void AddChunk(Chunk chunk, SyntaxTreeNode association, bool topLevel = false)
         {
@@ -27,13 +30,13 @@ namespace Microsoft.AspNet.Razor.Chunks
             chunk.Association = association;
 
             // If we're not in the middle of a parent chunk
-            if (_parentStack.Count == 0 || topLevel == true)
+            if (topLevel)
             {
-                ChunkTree.Chunks.Add(chunk);
+                Root.Children.Add(chunk);
             }
             else
             {
-                _parentStack.Peek().Children.Add(chunk);
+                Current.Children.Add(chunk);
             }
         }
 

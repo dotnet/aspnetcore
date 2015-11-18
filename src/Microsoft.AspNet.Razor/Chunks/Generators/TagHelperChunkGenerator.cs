@@ -61,7 +61,7 @@ namespace Microsoft.AspNet.Razor.Chunks.Generators
                     // Populates the chunk tree with chunks associated with attributes
                     attribute.Value.Accept(chunkGenerator);
 
-                    var chunks = chunkGenerator.Context.ChunkTreeBuilder.ChunkTree.Chunks;
+                    var chunks = chunkGenerator.Context.ChunkTreeBuilder.Root.Children;
                     var first = chunks.FirstOrDefault();
 
                     attributeChunkValue = new ParentChunk

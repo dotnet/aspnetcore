@@ -26,12 +26,12 @@ namespace Microsoft.AspNet.Razor.Chunks.Generators
             builder.EndParentChunk();
 
             // Assert
-            Assert.Equal(2, builder.ChunkTree.Chunks.Count);
+            Assert.Equal(2, builder.Root.Children.Count);
 
-            var parentChunk = Assert.IsType<ExpressionBlockChunk>(builder.ChunkTree.Chunks.First());
+            var parentChunk = Assert.IsType<ExpressionBlockChunk>(builder.Root.Children.First());
             Assert.Empty(parentChunk.Children);
 
-            var addTagHelperChunk = Assert.IsType<AddTagHelperChunk>(builder.ChunkTree.Chunks.Last());
+            var addTagHelperChunk = Assert.IsType<AddTagHelperChunk>(builder.Root.Children.Last());
             Assert.Equal(addTagHelperChunk.LookupText, "some text");
         }
 
@@ -50,12 +50,12 @@ namespace Microsoft.AspNet.Razor.Chunks.Generators
             builder.EndParentChunk();
 
             // Assert
-            Assert.Equal(2, builder.ChunkTree.Chunks.Count);
+            Assert.Equal(2, builder.Root.Children.Count);
 
-            var parentChunk = Assert.IsType<ExpressionBlockChunk>(builder.ChunkTree.Chunks.First());
+            var parentChunk = Assert.IsType<ExpressionBlockChunk>(builder.Root.Children.First());
             Assert.Empty(parentChunk.Children);
 
-            var removeTagHelperChunk = Assert.IsType<RemoveTagHelperChunk>(builder.ChunkTree.Chunks.Last());
+            var removeTagHelperChunk = Assert.IsType<RemoveTagHelperChunk>(builder.Root.Children.Last());
             Assert.Equal(removeTagHelperChunk.LookupText, "some text");
         }
 
@@ -71,7 +71,7 @@ namespace Microsoft.AspNet.Razor.Chunks.Generators
             builder.AddLiteralChunk("some text", previousSpan);
 
             // Assert
-            var chunk = Assert.Single(builder.ChunkTree.Chunks);
+            var chunk = Assert.Single(builder.Root.Children);
             var literalChunk = Assert.IsType<LiteralChunk>(chunk);
             Assert.Equal("some text", literalChunk.Text);
             Assert.Same(previousSpan, literalChunk.Association);
@@ -91,7 +91,7 @@ namespace Microsoft.AspNet.Razor.Chunks.Generators
             builder.AddLiteralChunk("<p>", newSpan);
 
             // Assert
-            var chunk = Assert.Single(builder.ChunkTree.Chunks);
+            var chunk = Assert.Single(builder.Root.Children);
             var literalChunk = Assert.IsType<LiteralChunk>(chunk);
             Assert.Equal("<a><p>", literalChunk.Text);
             var span = Assert.IsType<Span>(literalChunk.Association);
@@ -114,7 +114,7 @@ namespace Microsoft.AspNet.Razor.Chunks.Generators
             builder.AddLiteralChunk("<p>", literalSpan);
 
             // Assert
-            var chunks = builder.ChunkTree.Chunks;
+            var chunks = builder.Root.Children;
             Assert.Equal(2, chunks.Count);
             var statementChunk = Assert.IsType<StatementChunk>(chunks[0]);
             Assert.Equal("int a = 10;", statementChunk.Code);

@@ -49,7 +49,7 @@ namespace Microsoft.AspNet.Razor.CodeGenerators.Visitors
 
         protected virtual void AcceptTreeCore(ChunkTree tree)
         {
-            Accept(tree.Chunks);
+            Accept(tree.Children);
         }
 
         protected override void Visit(SetBaseTypeChunk chunk)
