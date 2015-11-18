@@ -15,6 +15,8 @@ namespace HelloMvc
         {
             loggerFactory.AddConsole();
             
+            app.UseIISPlatformHandler();
+            
             app.UseDeveloperExceptionPage();
 
             app.UseMvcWithDefaultRoute();
