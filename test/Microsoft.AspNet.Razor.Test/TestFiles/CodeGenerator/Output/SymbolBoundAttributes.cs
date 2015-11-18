@@ -44,7 +44,7 @@ __TestNamespace_CatchAllTagHelper.ListItems = items;
             __tagHelperExecutionContext.AddHtmlAttribute("[item]", Html.Raw("items"));
             __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             Instrumentation.BeginContext(276, 45, false);
-            await WriteTagHelperAsync(__tagHelperExecutionContext);
+            Write(__tagHelperExecutionContext.Output);
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
             Instrumentation.BeginContext(321, 2, true);
@@ -65,7 +65,7 @@ __TestNamespace_CatchAllTagHelper.ArrayItems = items;
             __tagHelperExecutionContext.AddHtmlAttribute("[(item)]", Html.Raw("items"));
             __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             Instrumentation.BeginContext(323, 49, false);
-            await WriteTagHelperAsync(__tagHelperExecutionContext);
+            Write(__tagHelperExecutionContext.Output);
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
             Instrumentation.BeginContext(372, 2, true);
@@ -88,8 +88,12 @@ __TestNamespace_CatchAllTagHelper.Event1 = doSomething();
             __tagHelperExecutionContext.AddTagHelperAttribute("(click)", __TestNamespace_CatchAllTagHelper.Event1);
             __tagHelperExecutionContext.AddHtmlAttribute("(click)", Html.Raw("doSomething()"));
             __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
+            if (!__tagHelperExecutionContext.Output.IsContentModified)
+            {
+                __tagHelperExecutionContext.Output.Content = await __tagHelperExecutionContext.Output.GetChildContentAsync();
+            }
             Instrumentation.BeginContext(374, 79, false);
-            await WriteTagHelperAsync(__tagHelperExecutionContext);
+            Write(__tagHelperExecutionContext.Output);
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
             Instrumentation.BeginContext(453, 2, true);
@@ -112,8 +116,12 @@ __TestNamespace_CatchAllTagHelper.Event2 = doSomething();
             __tagHelperExecutionContext.AddTagHelperAttribute("(^click)", __TestNamespace_CatchAllTagHelper.Event2);
             __tagHelperExecutionContext.AddHtmlAttribute("(^click)", Html.Raw("doSomething()"));
             __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
+            if (!__tagHelperExecutionContext.Output.IsContentModified)
+            {
+                __tagHelperExecutionContext.Output.Content = await __tagHelperExecutionContext.Output.GetChildContentAsync();
+            }
             Instrumentation.BeginContext(455, 81, false);
-            await WriteTagHelperAsync(__tagHelperExecutionContext);
+            Write(__tagHelperExecutionContext.Output);
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
             Instrumentation.BeginContext(536, 2, true);
@@ -132,8 +140,12 @@ __TestNamespace_CatchAllTagHelper.Event2 = doSomething();
             __tagHelperExecutionContext.AddTagHelperAttribute("*something", __TestNamespace_CatchAllTagHelper.StringProperty1);
             __tagHelperExecutionContext.AddHtmlAttribute("*something", Html.Raw("value"));
             __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
+            if (!__tagHelperExecutionContext.Output.IsContentModified)
+            {
+                __tagHelperExecutionContext.Output.Content = await __tagHelperExecutionContext.Output.GetChildContentAsync();
+            }
             Instrumentation.BeginContext(538, 67, false);
-            await WriteTagHelperAsync(__tagHelperExecutionContext);
+            Write(__tagHelperExecutionContext.Output);
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
             Instrumentation.BeginContext(605, 2, true);
@@ -148,7 +160,7 @@ __TestNamespace_CatchAllTagHelper.Event2 = doSomething();
             __tagHelperExecutionContext.AddMinimizedHtmlAttribute("#localminimized");
             __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             Instrumentation.BeginContext(607, 33, false);
-            await WriteTagHelperAsync(__tagHelperExecutionContext);
+            Write(__tagHelperExecutionContext.Output);
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
             Instrumentation.BeginContext(640, 2, true);
@@ -165,7 +177,7 @@ __TestNamespace_CatchAllTagHelper.Event2 = doSomething();
             __tagHelperExecutionContext.AddHtmlAttribute("#local", Html.Raw("value"));
             __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             Instrumentation.BeginContext(642, 47, false);
-            await WriteTagHelperAsync(__tagHelperExecutionContext);
+            Write(__tagHelperExecutionContext.Output);
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
         }

@@ -42,8 +42,12 @@ __TestNamespace_PTagHelper.Age = 1337;
 #line hidden
             __tagHelperExecutionContext.AddTagHelperAttribute("age", __TestNamespace_PTagHelper.Age);
             __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
+            if (!__tagHelperExecutionContext.Output.IsContentModified)
+            {
+                __tagHelperExecutionContext.Output.Content = await __tagHelperExecutionContext.Output.GetChildContentAsync();
+            }
             Instrumentation.BeginContext(33, 49, false);
-            await WriteTagHelperAsync(__tagHelperExecutionContext);
+            Write(__tagHelperExecutionContext.Output);
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
         }

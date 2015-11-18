@@ -46,7 +46,7 @@ __TestNamespace_InputTagHelper.Checked = true;
             __TestNamespace_CatchAllTagHelper.Checked = __TestNamespace_InputTagHelper.Checked;
             __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             Instrumentation.BeginContext(33, 40, false);
-            await WriteTagHelperAsync(__tagHelperExecutionContext);
+            Write(__tagHelperExecutionContext.Output);
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
         }

@@ -34,7 +34,7 @@ namespace TestOutput
             __tagHelperExecutionContext.AddHtmlAttribute("class", Html.Raw(""));
             __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             Instrumentation.BeginContext(33, 10, false);
-            await WriteTagHelperAsync(__tagHelperExecutionContext);
+            Write(__tagHelperExecutionContext.Output);
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
         }

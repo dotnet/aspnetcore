@@ -39,7 +39,7 @@ namespace TestOutput
                 __tagHelperExecutionContext.Add(__TestNamespace_PTagHelper);
                 __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
                 Instrumentation.BeginContext(153, 7, false);
-                await WriteTagHelperAsync(__tagHelperExecutionContext);
+                Write(__tagHelperExecutionContext.Output);
                 Instrumentation.EndContext();
                 __tagHelperExecutionContext = __tagHelperScopeManager.End();
                 Instrumentation.BeginContext(160, 10, true);
@@ -67,7 +67,7 @@ namespace TestOutput
                 __TestNamespace_InputTagHelper2.Type = __TestNamespace_InputTagHelper.Type;
                 __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
                 Instrumentation.BeginContext(170, 71, false);
-                await WriteTagHelperAsync(__tagHelperExecutionContext);
+                Write(__tagHelperExecutionContext.Output);
                 Instrumentation.EndContext();
                 __tagHelperExecutionContext = __tagHelperScopeManager.End();
                 Instrumentation.BeginContext(241, 10, true);
@@ -91,7 +91,7 @@ __TestNamespace_InputTagHelper2.Checked = true;
                 __tagHelperExecutionContext.AddTagHelperAttribute("checked", __TestNamespace_InputTagHelper2.Checked);
                 __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
                 Instrumentation.BeginContext(251, 39, false);
-                await WriteTagHelperAsync(__tagHelperExecutionContext);
+                Write(__tagHelperExecutionContext.Output);
                 Instrumentation.EndContext();
                 __tagHelperExecutionContext = __tagHelperScopeManager.End();
                 Instrumentation.BeginContext(290, 6, true);
@@ -104,8 +104,12 @@ __TestNamespace_InputTagHelper2.Checked = true;
             __tagHelperExecutionContext.AddHtmlAttribute("class", Html.Raw("Hello World"));
             __tagHelperExecutionContext.AddHtmlAttribute("data-delay", Html.Raw("1000"));
             __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
+            if (!__tagHelperExecutionContext.Output.IsContentModified)
+            {
+                __tagHelperExecutionContext.Output.Content = await __tagHelperExecutionContext.Output.GetChildContentAsync();
+            }
             Instrumentation.BeginContext(102, 198, false);
-            await WriteTagHelperAsync(__tagHelperExecutionContext);
+            Write(__tagHelperExecutionContext.Output);
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
             Instrumentation.BeginContext(300, 8, true);

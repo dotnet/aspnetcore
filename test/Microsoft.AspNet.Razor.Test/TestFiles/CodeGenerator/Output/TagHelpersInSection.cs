@@ -61,8 +61,12 @@ namespace TestOutput
                     __TestNamespace_NestedTagHelper = CreateTagHelper<global::TestNamespace.NestedTagHelper>();
                     __tagHelperExecutionContext.Add(__TestNamespace_NestedTagHelper);
                     __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
+                    if (!__tagHelperExecutionContext.Output.IsContentModified)
+                    {
+                        __tagHelperExecutionContext.Output.Content = await __tagHelperExecutionContext.Output.GetChildContentAsync();
+                    }
                     Instrumentation.BeginContext(267, 66, false);
-                    await WriteTagHelperAsync(__tagHelperExecutionContext);
+                    Write(__tagHelperExecutionContext.Output);
                     Instrumentation.EndContext();
                     __tagHelperExecutionContext = __tagHelperScopeManager.End();
                     Instrumentation.BeginContext(333, 10, true);
@@ -92,8 +96,12 @@ AddHtmlAttributeValue(" ", 199, DateTime.Now, 200, 14, false);
 #line hidden
                 EndAddHtmlAttributeValues(__tagHelperExecutionContext);
                 __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
+                if (!__tagHelperExecutionContext.Output.IsContentModified)
+                {
+                    __tagHelperExecutionContext.Output.Content = await __tagHelperExecutionContext.Output.GetChildContentAsync();
+                }
                 Instrumentation.BeginContext(112, 245, false);
-                await WriteTagHelperToAsync(__razor_template_writer, __tagHelperExecutionContext);
+                WriteTo(__razor_template_writer, __tagHelperExecutionContext.Output);
                 Instrumentation.EndContext();
                 __tagHelperExecutionContext = __tagHelperScopeManager.End();
                 Instrumentation.BeginContext(357, 14, true);
