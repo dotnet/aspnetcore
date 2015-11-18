@@ -67,7 +67,7 @@ namespace PinVersion
                 using (var fileWriter = new JsonTextWriter(new StreamWriter(file)))
                 {
                     fileWriter.Formatting = Formatting.Indented;
-                    fileWriter.Indentation = 4;
+                    fileWriter.Indentation = 2;
                     projectJson.WriteTo(fileWriter);
                 }
             }
@@ -100,6 +100,21 @@ namespace PinVersion
 
             // Replace all content of the file
             File.WriteAllText(buildCmdFile, buildCmdFileContent);
+
+            // Pin the global.json
+            var globalJsonPath = Path.Combine(repositoryPath, "global.json");
+            var globalJson = JObject.Parse(File.ReadAllText(globalJsonPath));
+            globalJson["sdk"] = new JObject
+            {
+                ["version"] = dnxPackage.Version.ToNormalizedString()
+            };
+
+            using (var fileWriter = new JsonTextWriter(new StreamWriter(globalJsonPath)))
+            {
+                fileWriter.Formatting = Formatting.Indented;
+                fileWriter.Indentation = 2;
+                globalJson.WriteTo(fileWriter);
+            }
         }
     }
 }

@@ -221,7 +221,9 @@ var buildTarget = "compile"
           "Coherence",
           "Coherence-Signed",
           "dnvm",
-          "Entropy"
+          "Entropy",
+          "Setup",
+          "libuv-build",
         };
 
         Exec("cmd", "/C dnu restore", @"tools\PinVersion");
@@ -247,35 +249,11 @@ var buildTarget = "compile"
             var repoPath = Path.Combine(Directory.GetCurrentDirectory(), repo);
 
             Exec("dnx",
-                string.Format(@"run ""{0}"" ""{1}"" ""{2}"" ""{3}""",
+                string.Format(@"run ""{0}"" ""{1}"" ""{2}""",
                     Path.Combine(Directory.GetCurrentDirectory(), repo),
                     COHERENCE_FEED,
-                    KOREBUILD_VERSION,
-                    NUGET_VERSION),
+                    KOREBUILD_VERSION),
                 @"tools\PinVersion");
-
-            // Build projects to produce project.lock.json
-            Exec("build.cmd", "compile", repo);
-
-            // Replace lock=true in project.lock.json
-            foreach(var file in Directory.GetFiles(repo, "project.lock.json", SearchOption.AllDirectories))
-            {
-                var contents = File.ReadAllText(file);
-                var newContents = contents.Replace("\"locked\": false", "\"locked\": true");
-                File.WriteAllText(file, newContents);
-            }
-
-            // Add the project.json and project.lock.json files
-            foreach(var file in Directory.GetFiles(repo, "project*.json", SearchOption.AllDirectories))
-            {
-                var gitFilePath = file.Substring(file.IndexOf(repo) + repo.Length + 1);
-
-                // Check if this needs to be included
-                if(ShouldIncludeProjectJson(gitFilePath))
-                {
-                    GitCommand(repo, string.Format("add -f {0}", gitFilePath));
-                }
-            }
 
             GitCommand(repo, "commit -am \"Updating json files to pin versions and build.cmd to pin KoreBuild and DNX\"");
         }
@@ -624,13 +602,6 @@ functions
                 {
                     Log.Warn(string.Format("Unable to clone repository at '{0}': {1}", repoUrl, ex.Message));
                     return;
-                }
-
-                // Configuring Git bug tracking settings hangs from time to time on Win7/2008 when running as part of the CI build
-                if (!IsTeamCity)
-                {
-                    GitConfig("bugtraq.url", "http://github.com/aspnet/" + repo + "/issues/%BUGID%", repo);
-                    GitConfig("bugtraq.logregex", @"#(\d+)", repo);
                 }
             }
         }
