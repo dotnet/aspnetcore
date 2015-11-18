@@ -97,17 +97,16 @@ namespace Microsoft.AspNet.Server.Kestrel.Https
 
                 var previousPrepareRequest = context.PrepareRequest;
                 context.PrepareRequest = features =>
+                {
+                    previousPrepareRequest?.Invoke(features);
+
+                    if (clientCertificate != null)
                     {
-                        previousPrepareRequest?.Invoke(features);
+                        features.Set<ITlsConnectionFeature>(new TlsConnectionFeature { ClientCertificate = clientCertificate });
+                    }
 
-                        if (clientCertificate != null)
-                        {
-                            features.Set<ITlsConnectionFeature>(
-                                new TlsConnectionFeature {ClientCertificate = clientCertificate});
-                        }
-
-                        features.Get<IHttpRequestFeature>().Scheme = "https";
-                    };
+                    features.Get<IHttpRequestFeature>().Scheme = "https";
+                };
                 context.Connection = sslStream;
             }
         }

@@ -258,8 +258,58 @@ namespace Microsoft.AspNet.Server.KestrelTests
 #if DNX451
                 ServicePointManager.ServerCertificateValidationCallback -= validationCallback;
 #endif
-    }
-}
+            }
+        }
 
+        // https://github.com/aspnet/KestrelHttpServer/issues/240
+        // This test currently fails on mono because of an issue with SslStream.
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
+        public async Task HttpsSchemePassedToRequestFeature()
+        {
+            RemoteCertificateValidationCallback validationCallback =
+                    (sender, cert, chain, sslPolicyErrors) => true;
+
+            try
+            {
+#if DNX451
+                var handler = new HttpClientHandler();
+                ServicePointManager.ServerCertificateValidationCallback += validationCallback;
+#else
+                var handler = new WinHttpHandler();
+                handler.ServerCertificateValidationCallback += (sender, cert, chain, sslPolicyErrors) => true;
+#endif
+
+                var serverAddress = "https://localhost:54321/";
+                var serviceContext = new TestServiceContext()
+                {
+                    ConnectionFilter = new HttpsConnectionFilter(
+                        new HttpsConnectionFilterOptions
+                        {
+                            ServerCertificate = new X509Certificate2(@"TestResources/testCert.pfx", "testPassword")
+                        },
+                        new NoOpConnectionFilter())
+                };
+
+                RequestDelegate app = context => context.Response.WriteAsync(context.Request.Scheme);
+
+                using (var server = new TestServer(app, serviceContext, serverAddress))
+                {
+                    using (var client = new HttpClient(handler))
+                    {
+                        var result = await client.GetAsync(serverAddress);
+
+                        Assert.Equal("https", await result.Content.ReadAsStringAsync());
+                    }
+                }
+            }
+            finally
+            {
+#if DNX451
+                ServicePointManager.ServerCertificateValidationCallback -= validationCallback;
+#endif
+            }
+        }
     }
 }
