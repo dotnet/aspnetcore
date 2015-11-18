@@ -278,7 +278,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             // If _requestAbort is set, the connection has already been closed.
                             if (!_requestAborted)
                             {
-                            await ProduceEnd();
+                                await ProduceEnd();
 
                                 // Finish reading the request body in case the app did not.
                                 await messageBody.Consume();
@@ -307,15 +307,15 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                     // If _requestAborted is set, the connection has already been closed.
                     if (!_requestAborted)
                     {
-                    // Inform client no more data will ever arrive
-                    ConnectionControl.End(ProduceEndType.SocketShutdownSend);
+                        // Inform client no more data will ever arrive
+                        ConnectionControl.End(ProduceEndType.SocketShutdownSend);
 
-                    // Wait for client to either disconnect or send unexpected data
-                    await SocketInput;
+                        // Wait for client to either disconnect or send unexpected data
+                        await SocketInput;
 
-                    // Dispose socket
-                    ConnectionControl.End(ProduceEndType.SocketDisconnect);
-                }
+                        // Dispose socket
+                        ConnectionControl.End(ProduceEndType.SocketDisconnect);
+                    }
                 }
                 catch (Exception ex)
                 {
