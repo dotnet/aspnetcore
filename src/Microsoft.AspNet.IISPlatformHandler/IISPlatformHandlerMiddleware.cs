@@ -23,6 +23,7 @@ namespace Microsoft.AspNet.IISPlatformHandler
         private const string XForwardedForHeaderName = "X-Forwarded-For";
         private const string XForwardedProtoHeaderName = "X-Forwarded-Proto";
         private const string XIISWindowsAuthToken = "X-IIS-WindowsAuthToken";
+        private const string XOriginalPortName = "X-Original-Port";
         private const string XOriginalProtoName = "X-Original-Proto";
         private const string XOriginalIPName = "X-Original-IP";
 
@@ -83,14 +84,24 @@ namespace Microsoft.AspNet.IISPlatformHandler
             if (xForwardedForHeaderValue != null && xForwardedForHeaderValue.Length > 0)
             {
                 IPAddress ipFromHeader;
-                if (IPAddress.TryParse(xForwardedForHeaderValue[0], out ipFromHeader))
+                int? port;
+                if (IPAddressWithPortParser.TryParse(xForwardedForHeaderValue[0], out ipFromHeader, out port))
                 {
-                    var remoteIPString = httpContext.Connection.RemoteIpAddress?.ToString();
+                    var connection = httpContext.Connection;
+                    var remoteIPString = connection.RemoteIpAddress?.ToString();
                     if (!string.IsNullOrEmpty(remoteIPString))
                     {
                         httpContext.Request.Headers[XOriginalIPName] = remoteIPString;
                     }
-                    httpContext.Connection.RemoteIpAddress = ipFromHeader;
+                    if (port.HasValue)
+                    {
+                        if (connection.RemotePort != 0)
+                        {
+                            httpContext.Request.Headers[XOriginalPortName] = connection.RemotePort.ToString(CultureInfo.InvariantCulture);
+                        }
+                        connection.RemotePort = port.Value;
+                    }
+                    connection.RemoteIpAddress = ipFromHeader;
                 }
             }
         }
