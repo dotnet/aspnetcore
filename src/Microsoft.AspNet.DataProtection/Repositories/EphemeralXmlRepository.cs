@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.DataProtection.Repositories
         public EphemeralXmlRepository(IServiceProvider services)
         {
             var logger = services?.GetLogger<EphemeralXmlRepository>();
-            logger.UsingInmemoryRepository();
+            logger?.UsingInmemoryRepository();
         }
 
         public virtual IReadOnlyCollection<XElement> GetAllElements()

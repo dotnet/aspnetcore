@@ -54,7 +54,7 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
             }
             catch (Exception ex)
             {
-                _logger.KeyIsIneligibleToBeTheDefaultKeyBecauseItsMethodFailed(key.KeyId, nameof(IKey.CreateEncryptorInstance), ex);
+                _logger?.KeyIsIneligibleToBeTheDefaultKeyBecauseItsMethodFailed(key.KeyId, nameof(IKey.CreateEncryptorInstance), ex);
                 return false;
             }
         }
@@ -69,12 +69,12 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
 
             if (preferredDefaultKey != null)
             {
-                _logger.ConsideringKeyWithExpirationDateAsDefaultKey(preferredDefaultKey.KeyId, preferredDefaultKey.ExpirationDate);
+                _logger?.ConsideringKeyWithExpirationDateAsDefaultKey(preferredDefaultKey.KeyId, preferredDefaultKey.ExpirationDate);
 
                 // if the key has been revoked or is expired, it is no longer a candidate
                 if (preferredDefaultKey.IsRevoked || preferredDefaultKey.IsExpired(now) || !CanCreateAuthenticatedEncryptor(preferredDefaultKey))
                 {
-                    _logger.KeyIsNoLongerUnderConsiderationAsDefault(preferredDefaultKey.KeyId);
+                    _logger?.KeyIsNoLongerUnderConsiderationAsDefault(preferredDefaultKey.KeyId);
                     preferredDefaultKey = null;
                 }
             }
@@ -97,7 +97,7 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
 
                 if (callerShouldGenerateNewKey)
                 {
-                    _logger.DefaultKeyExpirationImminentAndRepository();
+                    _logger?.DefaultKeyExpirationImminentAndRepository();
                 }
 
                 fallbackKey = null;
@@ -118,7 +118,7 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
                            where !key.IsRevoked && CanCreateAuthenticatedEncryptor(key)
                            select key).FirstOrDefault();
 
-            _logger.RepositoryContainsNoViableDefaultKey();
+            _logger?.RepositoryContainsNoViableDefaultKey();
 
             callerShouldGenerateNewKey = true;
             return null;

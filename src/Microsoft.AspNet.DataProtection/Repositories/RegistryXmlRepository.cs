@@ -140,7 +140,7 @@ namespace Microsoft.AspNet.DataProtection.Repositories
 
         private XElement ReadElementFromRegKey(RegistryKey regKey, string valueName)
         {
-            _logger.ReadingDataFromRegistryKeyValue(regKey, valueName);
+            _logger?.ReadingDataFromRegistryKeyValue(regKey, valueName);
 
             string data = regKey.GetValue(valueName) as string;
             return (!String.IsNullOrEmpty(data)) ? XElement.Parse(data) : null;
@@ -156,7 +156,7 @@ namespace Microsoft.AspNet.DataProtection.Repositories
             if (!IsSafeRegistryValueName(friendlyName))
             {
                 string newFriendlyName = Guid.NewGuid().ToString();
-                _logger.NameIsNotSafeRegistryValueName(friendlyName, newFriendlyName);
+                _logger?.NameIsNotSafeRegistryValueName(friendlyName, newFriendlyName);
                 friendlyName = newFriendlyName;
             }
 

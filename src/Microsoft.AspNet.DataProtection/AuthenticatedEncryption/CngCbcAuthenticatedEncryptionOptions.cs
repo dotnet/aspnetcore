@@ -111,7 +111,7 @@ namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption
                 throw Error.Common_PropertyCannotBeNullOrEmpty(nameof(HashAlgorithm));
             }
 
-            logger.OpeningCNGAlgorithmFromProviderWithHMAC(HashAlgorithm, HashAlgorithmProvider);
+            logger?.OpeningCNGAlgorithmFromProviderWithHMAC(HashAlgorithm, HashAlgorithmProvider);
             BCryptAlgorithmHandle algorithmHandle = null;
 
             // Special-case cached providers
@@ -148,7 +148,7 @@ namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption
                 throw Error.Common_PropertyMustBeNonNegative(nameof(EncryptionAlgorithmKeySize));
             }
 
-            logger.OpeningCNGAlgorithmFromProviderWithChainingModeCBC(EncryptionAlgorithm, EncryptionAlgorithmProvider);
+            logger?.OpeningCNGAlgorithmFromProviderWithChainingModeCBC(EncryptionAlgorithm, EncryptionAlgorithmProvider);
 
             BCryptAlgorithmHandle algorithmHandle = null;
 

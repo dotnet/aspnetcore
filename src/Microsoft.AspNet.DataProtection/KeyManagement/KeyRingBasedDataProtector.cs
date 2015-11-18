@@ -245,7 +245,7 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
                 var requestedEncryptor = currentKeyRing.GetAuthenticatedEncryptorByKeyId(keyIdFromPayload, out keyWasRevoked);
                 if (requestedEncryptor == null)
                 {
-                    _logger.KeyWasNotFoundInTheKeyRingUnprotectOperationCannotProceed(keyIdFromPayload);
+                    _logger?.KeyWasNotFoundInTheKeyRingUnprotectOperationCannotProceed(keyIdFromPayload);
                     throw Error.Common_KeyNotFound(keyIdFromPayload);
                 }
 
@@ -261,12 +261,12 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
                 {
                     if (allowOperationsOnRevokedKeys)
                     {
-                        _logger.KeyWasRevokedCallerRequestedUnprotectOperationProceedRegardless(keyIdFromPayload);
+                        _logger?.KeyWasRevokedCallerRequestedUnprotectOperationProceedRegardless(keyIdFromPayload);
                         status = UnprotectStatus.DecryptionKeyWasRevoked;
                     }
                     else
                     {
-                        _logger.KeyWasRevokedUnprotectOperationCannotProceed(keyIdFromPayload);
+                        _logger?.KeyWasRevokedUnprotectOperationCannotProceed(keyIdFromPayload);
                         throw Error.Common_KeyRevoked(keyIdFromPayload);
                     }
                 }

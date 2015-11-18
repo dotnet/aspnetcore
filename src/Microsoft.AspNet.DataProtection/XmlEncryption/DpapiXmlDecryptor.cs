@@ -48,7 +48,7 @@ namespace Microsoft.AspNet.DataProtection.XmlEncryption
                 throw new ArgumentNullException(nameof(encryptedElement));
             }
 
-            _logger.DecryptingSecretElementUsingWindowsDPAPI();
+            _logger?.DecryptingSecretElementUsingWindowsDPAPI();
 
             try
             {
@@ -67,7 +67,7 @@ namespace Microsoft.AspNet.DataProtection.XmlEncryption
             {
                 // It's OK for us to log the error, as we control the exception, and it doesn't contain
                 // sensitive information.
-                _logger.AnExceptionOccurredWhileTryingToDecryptElement(ex);
+                _logger?.ExceptionOccurredTryingToDecryptElement(ex);
                 throw;
             }
         }

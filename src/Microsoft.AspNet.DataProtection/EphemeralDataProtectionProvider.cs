@@ -48,7 +48,7 @@ namespace Microsoft.AspNet.DataProtection
             }
 
             var logger = services.GetLogger<EphemeralDataProtectionProvider>();
-            logger.UsingEphemeralDataProtectionProvider();
+            logger?.UsingEphemeralDataProtectionProvider();
 
             _dataProtectionProvider = new KeyRingBasedDataProtectionProvider(keyringProvider, services);
         }

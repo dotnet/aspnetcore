@@ -86,7 +86,7 @@ namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption
                 throw Error.Common_PropertyCannotBeNullOrEmpty(nameof(ValidationAlgorithmType));
             }
 
-            logger.UsingManagedKeyedHashAlgorithm(ValidationAlgorithmType.FullName);
+            logger?.UsingManagedKeyedHashAlgorithm(ValidationAlgorithmType.FullName);
             if (ValidationAlgorithmType == typeof(HMACSHA256))
             {
                 return () => new HMACSHA256();
@@ -114,7 +114,7 @@ namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption
                 throw Error.Common_PropertyMustBeNonNegative(nameof(EncryptionAlgorithmKeySize));
             }
 
-            logger.UsingManagedSymmetricAlgorithm(EncryptionAlgorithmType.FullName);
+            logger?.UsingManagedSymmetricAlgorithm(EncryptionAlgorithmType.FullName);
 
             if (EncryptionAlgorithmType == typeof(Aes))
             {

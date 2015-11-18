@@ -42,10 +42,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 var azureWebSitesKeysFolder = FileSystemXmlRepository.GetKeyStorageDirectoryForAzureWebSites();
                 if (azureWebSitesKeysFolder != null)
                 {
-                    if (log.IsInformationLevelEnabled())
-                    {
-                        log.LogInformationF($"Azure Web Sites environment detected. Using '{azureWebSitesKeysFolder.FullName}' as key repository; keys will not be encrypted at rest.");
-                    }
+                    log?.UsingAzureAsKeyRepository(azureWebSitesKeysFolder.FullName);
 
                     // Cloud DPAPI isn't yet available, so we don't encrypt keys at rest.
                     // This isn't all that different than what Azure Web Sites does today, and we can always add this later.
@@ -65,16 +62,13 @@ namespace Microsoft.Extensions.DependencyInjection
                         }
                         keyRepositoryDescriptor = DataProtectionServiceDescriptors.IXmlRepository_FileSystem(localAppDataKeysFolder);
 
-                        if (log.IsInformationLevelEnabled())
+                        if (keyEncryptorDescriptor != null)
                         {
-                            if (keyEncryptorDescriptor != null)
-                            {
-                                log.LogInformationF($"User profile is available. Using '{localAppDataKeysFolder.FullName}' as key repository and Windows DPAPI to encrypt keys at rest.");
-                            }
-                            else
-                            {
-                                log.LogInformationF($"User profile is available. Using '{localAppDataKeysFolder.FullName}' as key repository; keys will not be encrypted at rest.");
-                            }
+                            log?.UsingProfileAsKeyRepositoryWithDPAPI(localAppDataKeysFolder.FullName);
+                        }
+                        else
+                        {
+                            log?.UsingProfileAsKeyRepository(localAppDataKeysFolder.FullName);
                         }
                     }
                     else
@@ -91,10 +85,7 @@ namespace Microsoft.Extensions.DependencyInjection
                             keyEncryptorDescriptor = DataProtectionServiceDescriptors.IXmlEncryptor_Dpapi(protectToMachine: true);
                             keyRepositoryDescriptor = DataProtectionServiceDescriptors.IXmlRepository_Registry(regKeyStorageKey);
 
-                            if (log.IsInformationLevelEnabled())
-                            {
-                                log.LogInformationF($"User profile not available. Using '{regKeyStorageKey.Name}' as key repository and Windows DPAPI to encrypt keys at rest.");
-                            }
+                            log?.UsingRegistryAsKeyRepositoryWithDPAPI(regKeyStorageKey.Name);
                         }
                         else
                         {
@@ -102,10 +93,7 @@ namespace Microsoft.Extensions.DependencyInjection
                             // This can only be used for development scenarios.
                             keyRepositoryDescriptor = DataProtectionServiceDescriptors.IXmlRepository_InMemory();
 
-                            if (log.IsWarningLevelEnabled())
-                            {
-                                log.LogWarning("Neither user profile nor HKLM registry available. Using an ephemeral key repository. Protected data will be unavailable when application exits.");
-                            }
+                            log?.UsingEphemeralKeyRepository();
                         }
                     }
                 }

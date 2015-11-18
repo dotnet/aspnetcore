@@ -185,7 +185,7 @@ namespace Microsoft.AspNet.DataProtection.Repositories
 
         private XElement ReadElementFromFile(string fullPath)
         {
-            _logger.ReadingDataFromFile(fullPath);
+            _logger?.ReadingDataFromFile(fullPath);
 
             using (var fileStream = File.OpenRead(fullPath))
             {
@@ -203,7 +203,7 @@ namespace Microsoft.AspNet.DataProtection.Repositories
             if (!IsSafeFilename(friendlyName))
             {
                 string newFriendlyName = Guid.NewGuid().ToString();
-                _logger.NameIsNotSafeFileName(friendlyName, newFriendlyName);
+                _logger?.NameIsNotSafeFileName(friendlyName, newFriendlyName);
                 friendlyName = newFriendlyName;
             }
 
@@ -229,7 +229,7 @@ namespace Microsoft.AspNet.DataProtection.Repositories
 
                 // Once the file has been fully written, perform the rename.
                 // Renames are atomic operations on the file systems we support.
-                _logger.WritingDataToFile(finalFilename);
+                _logger?.WritingDataToFile(finalFilename);
                 File.Move(tempFilename, finalFilename);
             }
             finally

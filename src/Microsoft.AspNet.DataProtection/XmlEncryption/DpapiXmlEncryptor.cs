@@ -62,11 +62,11 @@ namespace Microsoft.AspNet.DataProtection.XmlEncryption
             }
             if (_protectToLocalMachine)
             {
-                _logger.EncryptingToWindowsDPAPIForLocalMachineAccount();
+                _logger?.EncryptingToWindowsDPAPIForLocalMachineAccount();
             }
             else
             {
-                _logger.EncryptingToWindowsDPAPIForCurrentUserAccount(WindowsIdentity.GetCurrent().Name);
+                _logger?.EncryptingToWindowsDPAPIForCurrentUserAccount(WindowsIdentity.GetCurrent().Name);
             }
 
             // Convert the XML element to a binary secret so that it can be run through DPAPI
@@ -80,7 +80,7 @@ namespace Microsoft.AspNet.DataProtection.XmlEncryption
             }
             catch (Exception ex)
             {
-                _logger.ErrorOccurredWhileEncryptingToWindowsDPAPI(ex);
+                _logger?.ErrorOccurredWhileEncryptingToWindowsDPAPI(ex);
                 throw;
             }
 
