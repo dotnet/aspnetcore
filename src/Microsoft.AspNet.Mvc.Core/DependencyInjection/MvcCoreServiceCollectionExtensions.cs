@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.Abstractions;
 using Microsoft.AspNet.Mvc.ActionConstraints;
@@ -136,6 +138,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<MvcMarkerService, MvcMarkerService>();
             services.TryAddSingleton<ITypeActivatorCache, DefaultTypeActivatorCache>();
             services.TryAddSingleton<IActionContextAccessor, ActionContextAccessor>();
+            services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.TryAddSingleton<IActionBindingContextAccessor, ActionBindingContextAccessor>();
             services.TryAddSingleton<IUrlHelper, UrlHelper>();
             services.TryAddSingleton<IHttpRequestStreamReaderFactory, MemoryPoolHttpRequestStreamReaderFactory>();
