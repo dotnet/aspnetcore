@@ -144,7 +144,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 httpConnectionFeature.IsLocal = false;
             }
 
-            _connectionFilter?.PrepareRequest(this);
+            _prepareRequest?.Invoke(this);
 
             _requestAbortCts?.Dispose();
         }
