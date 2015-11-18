@@ -1,8 +1,8 @@
 FROM microsoft/aspnet:1.0.0-rc1-final
 
-COPY . /app/
+COPY . /app
 WORKDIR /app
 RUN ["dnu", "restore"]
 
 EXPOSE 5004
-ENTRYPOINT ["dnx", "-p", "project.json", "kestrel"]
+ENTRYPOINT ["dnx", "-p", "project.json", "web"]
