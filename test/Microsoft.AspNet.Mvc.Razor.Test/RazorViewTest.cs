@@ -136,7 +136,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 .Setup(p => p.GetAbsolutePath("_ViewStart", LayoutPath))
                 .Returns(LayoutPath);
             viewEngine
-                .Setup(v => v.GetPage(pagePath, LayoutPath, /*isMainPage*/ false))
+                .Setup(v => v.GetPage(pagePath, LayoutPath))
                 .Returns(new RazorPageResult(LayoutPath, layout));
             var view = new RazorView(
                 viewEngine.Object,
@@ -208,7 +208,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             var viewEngine = new Mock<IRazorViewEngine>(MockBehavior.Strict);
             viewEngine
-                .Setup(v => v.GetPage(/*executingFilePath*/ null, LayoutPath, /*isMainPage*/ false))
+                .Setup(v => v.GetPage(/*executingFilePath*/ null, LayoutPath))
                 .Returns(new RazorPageResult(LayoutPath, layout));
 
             var view = new RazorView(
@@ -384,11 +384,11 @@ namespace Microsoft.AspNet.Mvc.Razor
                 new HtmlTestEncoder());
             var viewContext = CreateViewContext(view);
             viewEngine
-                .Setup(v => v.GetPage(/*executingFilePath*/ null, layoutPath, /*isMainPage*/ false))
+                .Setup(v => v.GetPage(/*executingFilePath*/ null, layoutPath))
                 .Returns(new RazorPageResult(layoutPath, new[] { "path1", "path2" }))
                 .Verifiable();
             viewEngine
-                .Setup(v => v.FindPage(viewContext, layoutPath, /*isMainPage*/ false))
+                .Setup(v => v.FindPage(viewContext, layoutPath))
                 .Returns(new RazorPageResult(layoutPath, Enumerable.Empty<string>()))
                 .Verifiable();
 
@@ -426,11 +426,11 @@ namespace Microsoft.AspNet.Mvc.Razor
                 new HtmlTestEncoder());
             var viewContext = CreateViewContext(view);
             viewEngine
-                .Setup(v => v.GetPage(/*executingFilePath*/ null, layoutPath, /*isMainPage*/ false))
+                .Setup(v => v.GetPage(/*executingFilePath*/ null, layoutPath))
                 .Returns(new RazorPageResult(layoutPath, Enumerable.Empty<string>()))
                 .Verifiable();
             viewEngine
-                .Setup(v => v.FindPage(viewContext, layoutPath, /*isMainPage*/ false))
+                .Setup(v => v.FindPage(viewContext, layoutPath))
                 .Returns(new RazorPageResult(layoutPath, new[] { "path1", "path2" }))
                 .Verifiable();
 
@@ -470,11 +470,11 @@ namespace Microsoft.AspNet.Mvc.Razor
                 new HtmlTestEncoder());
             var viewContext = CreateViewContext(view);
             viewEngine
-                .Setup(v => v.GetPage(/*executingFilePath*/ null, layoutPath, /*isMainPage*/ false))
+                .Setup(v => v.GetPage(/*executingFilePath*/ null, layoutPath))
                 .Returns(new RazorPageResult(layoutPath, new[] { "path1", "path2" }))
                 .Verifiable();
             viewEngine
-                .Setup(v => v.FindPage(viewContext, layoutPath, /*isMainPage*/ false))
+                .Setup(v => v.FindPage(viewContext, layoutPath))
                 .Returns(new RazorPageResult(layoutPath, new[] { "path3", "path4" }))
                 .Verifiable();
 
@@ -533,7 +533,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 .Verifiable();
             var viewEngine = new Mock<IRazorViewEngine>(MockBehavior.Strict);
             viewEngine
-                .Setup(v => v.GetPage(/*executingFilePath*/ null, LayoutPath, /*isMainPage*/ false))
+                .Setup(v => v.GetPage(/*executingFilePath*/ null, LayoutPath))
                 .Returns(new RazorPageResult(LayoutPath, layout))
                 .Verifiable();
 
@@ -574,7 +574,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             };
             var viewEngine = new Mock<IRazorViewEngine>(MockBehavior.Strict);
             viewEngine
-                .Setup(v => v.GetPage(/*executingFilePath*/ null, LayoutPath, /*isMainPage*/ false))
+                .Setup(v => v.GetPage(/*executingFilePath*/ null, LayoutPath))
                 .Returns(new RazorPageResult(LayoutPath, layout));
 
             var view = new RazorView(
@@ -636,10 +636,10 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             var viewEngine = new Mock<IRazorViewEngine>(MockBehavior.Strict);
             viewEngine
-                .Setup(v => v.GetPage(/*executingFilePath*/ null, "~/Shared/Layout1.cshtml", /*isMainPage*/ false))
+                .Setup(v => v.GetPage(/*executingFilePath*/ null, "~/Shared/Layout1.cshtml"))
                 .Returns(new RazorPageResult("~/Shared/Layout1.cshtml", nestedLayout));
             viewEngine
-                .Setup(v => v.GetPage("/Shared/Layout1.cshtml", "~/Shared/Layout2.cshtml", /*isMainPage*/ false))
+                .Setup(v => v.GetPage("/Shared/Layout1.cshtml", "~/Shared/Layout2.cshtml"))
                 .Returns(new RazorPageResult("~/Shared/Layout2.cshtml", baseLayout));
 
             var view = new RazorView(
@@ -698,16 +698,16 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             var viewEngine = new Mock<IRazorViewEngine>(MockBehavior.Strict);
             viewEngine
-                .Setup(v => v.GetPage(/*executingFilePath*/ null, "NestedLayout", /*isMainPage*/ false))
+                .Setup(v => v.GetPage(/*executingFilePath*/ null, "NestedLayout"))
                 .Returns(new RazorPageResult("NestedLayout", Enumerable.Empty<string>()));
             viewEngine
-                .Setup(p => p.FindPage(It.IsAny<ActionContext>(), "NestedLayout", /*isMainPage*/ false))
+                .Setup(p => p.FindPage(It.IsAny<ActionContext>(), "NestedLayout"))
                 .Returns(new RazorPageResult("NestedLayout", nestedLayout));
             viewEngine
-                .Setup(v => v.GetPage("NestedLayout", "Layout", /*isMainPage*/ false))
+                .Setup(v => v.GetPage("NestedLayout", "Layout"))
                 .Returns(new RazorPageResult("Layout", Enumerable.Empty<string>()));
             viewEngine
-                .Setup(p => p.FindPage(It.IsAny<ActionContext>(), "Layout", /*isMainPage*/ false))
+                .Setup(p => p.FindPage(It.IsAny<ActionContext>(), "Layout"))
                 .Returns(new RazorPageResult("Layout", baseLayout));
 
             var view = new RazorView(
@@ -766,10 +766,10 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             var viewEngine = new Mock<IRazorViewEngine>(MockBehavior.Strict);
             viewEngine
-                .Setup(v => v.GetPage(/*executingFilePath*/ null, "~/Shared/Layout1.cshtml", /*isMainPage*/ false))
+                .Setup(v => v.GetPage(/*executingFilePath*/ null, "~/Shared/Layout1.cshtml"))
                 .Returns(new RazorPageResult("~/Shared/Layout1.cshtml", nestedLayout));
             viewEngine
-                .Setup(v => v.GetPage("/Shared/Layout1.cshtml", "~/Shared/Layout2.cshtml", /*isMainPage*/ false))
+                .Setup(v => v.GetPage("/Shared/Layout1.cshtml", "~/Shared/Layout2.cshtml"))
                 .Returns(new RazorPageResult("~/Shared/Layout2.cshtml", baseLayout));
 
             var view = new RazorView(
@@ -833,10 +833,10 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             var viewEngine = new Mock<IRazorViewEngine>(MockBehavior.Strict);
             viewEngine
-                .Setup(p => p.GetPage("Page", "~/Shared/Layout1.cshtml", /*isMainPage*/ false))
+                .Setup(p => p.GetPage("Page", "~/Shared/Layout1.cshtml"))
                 .Returns(new RazorPageResult("~/Shared/Layout1.cshtml", nestedLayout));
             viewEngine
-                .Setup(p => p.GetPage("/Shared/Layout1.cshtml", "~/Shared/Layout2.cshtml", /*isMainPage*/ false))
+                .Setup(p => p.GetPage("/Shared/Layout1.cshtml", "~/Shared/Layout2.cshtml"))
                 .Returns(new RazorPageResult("~/Shared/Layout2.cshtml", baseLayout));
 
             var view = new RazorView(
@@ -869,7 +869,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             };
             var viewEngine = new Mock<IRazorViewEngine>(MockBehavior.Strict);
             viewEngine
-                .Setup(p => p.GetPage(/*executingFilePath*/ null, LayoutPath, /*isMainPage*/ false))
+                .Setup(p => p.GetPage(/*executingFilePath*/ null, LayoutPath))
                 .Returns(new RazorPageResult(LayoutPath, layout));
 
             var view = new RazorView(
@@ -932,10 +932,10 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             var viewEngine = new Mock<IRazorViewEngine>(MockBehavior.Strict);
             viewEngine
-                .Setup(p => p.GetPage(/*executingFilePath*/ null, "~/Shared/Layout1.cshtml", /*isMainPage*/ false))
+                .Setup(p => p.GetPage(/*executingFilePath*/ null, "~/Shared/Layout1.cshtml"))
                 .Returns(new RazorPageResult("~/Shared/Layout1.cshtml", layout1));
             viewEngine
-                .Setup(p => p.GetPage("~/Shared/Layout1.cshtml", "~/Shared/Layout2.cshtml", /*isMainPage*/ false))
+                .Setup(p => p.GetPage("~/Shared/Layout1.cshtml", "~/Shared/Layout2.cshtml"))
                 .Returns(new RazorPageResult("~/Shared/Layout2.cshtml", layout2));
 
             var view = new RazorView(
@@ -1005,10 +1005,10 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             var viewEngine = new Mock<IRazorViewEngine>(MockBehavior.Strict);
             viewEngine
-                .Setup(p => p.GetPage("~/Shared/Page.cshtml", "Layout1.cshtml", /*isMainPage*/ false))
+                .Setup(p => p.GetPage("~/Shared/Page.cshtml", "Layout1.cshtml"))
                 .Returns(new RazorPageResult("~/Shared/Layout1.cshtml", layout1));
             viewEngine
-                .Setup(p => p.GetPage("~/Shared/Layout1.cshtml", "Layout2.cshtml", /*isMainPage*/ false))
+                .Setup(p => p.GetPage("~/Shared/Layout1.cshtml", "Layout2.cshtml"))
                 .Returns(new RazorPageResult("~/Shared/Layout2.cshtml", layout2));
 
             var view = new RazorView(
@@ -1045,10 +1045,10 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             var viewEngine = new Mock<IRazorViewEngine>(MockBehavior.Strict);
             viewEngine
-                .Setup(p => p.GetPage(It.IsAny<string>(), "_Layout", /*isMainPage*/ false))
+                .Setup(p => p.GetPage(It.IsAny<string>(), "_Layout"))
                 .Returns(new RazorPageResult("_Layout", Enumerable.Empty<string>()));
             viewEngine
-                .Setup(p => p.FindPage(It.IsAny<ActionContext>(), "_Layout", /*isMainPage*/ false))
+                .Setup(p => p.FindPage(It.IsAny<ActionContext>(), "_Layout"))
                 .Returns(new RazorPageResult("_Layout", layout));
 
             var view = new RazorView(
@@ -1092,16 +1092,16 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             var viewEngine = new Mock<IRazorViewEngine>(MockBehavior.Strict);
             viewEngine
-                .Setup(p => p.GetPage(It.IsAny<string>(), "_Layout", /*isMainPage*/ false))
+                .Setup(p => p.GetPage(It.IsAny<string>(), "_Layout"))
                 .Returns(new RazorPageResult("_Layout1", Enumerable.Empty<string>()));
             viewEngine
-                .Setup(p => p.FindPage(It.IsAny<ActionContext>(), "_Layout", /*isMainPage*/ false))
+                .Setup(p => p.FindPage(It.IsAny<ActionContext>(), "_Layout"))
                 .Returns(new RazorPageResult("_Layout", layout1));
             viewEngine
-                .Setup(p => p.GetPage("Shared/_Layout.cshtml", "_Layout2", /*isMainPage*/ false))
+                .Setup(p => p.GetPage("Shared/_Layout.cshtml", "_Layout2"))
                 .Returns(new RazorPageResult("_Layout2", Enumerable.Empty<string>()));
             viewEngine
-                .Setup(p => p.FindPage(It.IsAny<ActionContext>(), "_Layout2", /*isMainPage*/ false))
+                .Setup(p => p.FindPage(It.IsAny<ActionContext>(), "_Layout2"))
                 .Returns(new RazorPageResult("_Layout2", layout2));
 
             var view = new RazorView(
@@ -1167,10 +1167,10 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             var viewEngine = new Mock<IRazorViewEngine>(MockBehavior.Strict);
             viewEngine
-                .Setup(p => p.GetPage(/*executingFilePath*/ null, "~/Shared/Layout1.cshtml", /*isMainPage*/ false))
+                .Setup(p => p.GetPage(/*executingFilePath*/ null, "~/Shared/Layout1.cshtml"))
                 .Returns(new RazorPageResult("~/Shared/Layout1.cshtml", nestedLayout));
             viewEngine
-                .Setup(p => p.GetPage("~/Shared/Layout1.cshtml", "~/Shared/Layout2.cshtml", /*isMainPage*/ false))
+                .Setup(p => p.GetPage("~/Shared/Layout1.cshtml", "~/Shared/Layout2.cshtml"))
                 .Returns(new RazorPageResult("~/Shared/Layout2.cshtml", baseLayout));
 
             var view = new RazorView(
@@ -1224,10 +1224,10 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             var viewEngine = new Mock<IRazorViewEngine>(MockBehavior.Strict);
             viewEngine
-                .Setup(p => p.GetPage(/*executingFilePath*/ null, "layout-1", /*isMainPage*/ false))
+                .Setup(p => p.GetPage(/*executingFilePath*/ null, "layout-1"))
                 .Returns(new RazorPageResult("layout-1", Enumerable.Empty<string>()));
             viewEngine
-                .Setup(p => p.FindPage(It.IsAny<ActionContext>(), "layout-1", /*isMainPage*/ false))
+                .Setup(p => p.FindPage(It.IsAny<ActionContext>(), "layout-1"))
                 .Returns(new RazorPageResult("layout-1", layout1));
 
             var view = new RazorView(
@@ -1278,10 +1278,10 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             var viewEngine = new Mock<IRazorViewEngine>(MockBehavior.Strict);
             viewEngine
-                .Setup(p => p.GetPage(/*executingFilePath*/ null, "layout-1", /*isMainPage*/ false))
+                .Setup(p => p.GetPage(/*executingFilePath*/ null, "layout-1"))
                 .Returns(new RazorPageResult("layout-1", Enumerable.Empty<string>()));
             viewEngine
-                .Setup(p => p.FindPage(It.IsAny<ActionContext>(), "layout-1", /*isMainPage*/ false))
+                .Setup(p => p.FindPage(It.IsAny<ActionContext>(), "layout-1"))
                 .Returns(new RazorPageResult("layout-1", layout1));
 
             var view = new RazorView(
@@ -1357,7 +1357,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             var viewEngine = new Mock<IRazorViewEngine>(MockBehavior.Strict);
             var layoutPath = "~/Shared/Layout1.cshtml";
             viewEngine
-                .Setup(p => p.GetPage("/Views/TestPath/Test.cshtml", layoutPath, /*isMainPage*/ false))
+                .Setup(p => p.GetPage("/Views/TestPath/Test.cshtml", layoutPath))
                 .Returns(new RazorPageResult(layoutPath, layoutPage));
 
             var view = new RazorView(
@@ -1434,10 +1434,10 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             var viewEngine = new Mock<IRazorViewEngine>(MockBehavior.Strict);
             viewEngine
-                .Setup(p => p.GetPage("/MyPage.cshtml", "Layout", /*isMainPage*/ false))
+                .Setup(p => p.GetPage("/MyPage.cshtml", "Layout"))
                 .Returns(new RazorPageResult("Layout", Enumerable.Empty<string>()));
             viewEngine
-                .Setup(p => p.FindPage(It.IsAny<ActionContext>(), "Layout", /*isMainPage*/ false))
+                .Setup(p => p.FindPage(It.IsAny<ActionContext>(), "Layout"))
                 .Returns(new RazorPageResult("/Layout.cshtml", layout));
 
             var view = new RazorView(

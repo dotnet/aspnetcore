@@ -270,78 +270,44 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             Assert.False(result.Success);
         }
 
-        [Fact]
-        public void FindView_FailsButSearchesCorrectLocations_WithAreas()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void FindView_FailsButSearchesCorrectLocationsWithAreas(bool isMainPage)
         {
             // Arrange
             var viewEngine = CreateViewEngine();
             var context = GetActionContext(_areaTestContext);
 
             // Act
-            var result = viewEngine.FindView(context, "partial", isMainPage: false);
-
-            // Assert
-            Assert.False(result.Success);
-            Assert.Equal(new[]
-            {
-                "/Areas/foo/Views/bar/partial.cshtml",
-                "/Areas/foo/Views/Shared/partial.cshtml",
-                "/Views/Shared/partial.cshtml",
-            }, result.SearchedLocations);
-        }
-
-        [Fact]
-        public void FindView_FailsButSearchesCorrectLocations_WithoutAreas()
-        {
-            // Arrange
-            var viewEngine = CreateViewEngine();
-            var context = GetActionContext(_controllerTestContext);
-
-            // Act
-            var result = viewEngine.FindView(context, "partialNoArea", isMainPage: false);
+            var result = viewEngine.FindView(context, "viewName", isMainPage);
 
             // Assert
             Assert.False(result.Success);
             Assert.Equal(new[] {
-                "/Views/bar/partialNoArea.cshtml",
-                "/Views/Shared/partialNoArea.cshtml",
-            }, result.SearchedLocations);
-        }
-
-        [Fact]
-        public void FindView_IsMainPage_FailsButSearchesCorrectLocationsWithAreas()
-        {
-            // Arrange
-            var viewEngine = CreateViewEngine();
-            var context = GetActionContext(_areaTestContext);
-
-            // Act
-            var result = viewEngine.FindView(context, "full", isMainPage: true);
-
-            // Assert
-            Assert.False(result.Success);
-            Assert.Equal(new[] {
-                "/Areas/foo/Views/bar/full.cshtml",
-                "/Areas/foo/Views/Shared/full.cshtml",
+                "/Areas/foo/Views/bar/viewName.cshtml",
+                "/Areas/foo/Views/Shared/viewName.cshtml",
                 "/Views/Shared/full.cshtml",
             }, result.SearchedLocations);
         }
 
-        [Fact]
-        public void FindView_IsMainPage_FailsButSearchesCorrectLocationsWithoutAreas()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void FindView_FailsButSearchesCorrectLocationsWithoutAreas(bool isMainPage)
         {
             // Arrange
             var viewEngine = CreateViewEngine();
             var context = GetActionContext(_controllerTestContext);
 
             // Act
-            var result = viewEngine.FindView(context, "fullNoArea", isMainPage: true);
+            var result = viewEngine.FindView(context, "viewName", isMainPage);
 
             // Assert
             Assert.False(result.Success);
             Assert.Equal(new[] {
-                "/Views/bar/fullNoArea.cshtml",
-                "/Views/Shared/fullNoArea.cshtml",
+                "/Views/bar/viewName.cshtml",
+                "/Views/Shared/viewName.cshtml",
             }, result.SearchedLocations);
         }
 
@@ -377,11 +343,14 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             var view = Assert.IsType<RazorView>(result.View);
             Assert.Equal("test-view", result.ViewName);
             Assert.Same(page, view.RazorPage);
+
+            // ViewStartPages is not empty as it is in FindView_ReturnsRazorView_IfLookupWasSuccessful() despite
+            // (faked) existence of the view start files in both tests.
             Assert.Equal(new[] { viewStart1, viewStart2 }, view.ViewStartPages);
         }
 
         [Fact]
-        public void FindView_IsMainPage_UsesViewLocationFormat_IfRouteDoesNotContainArea()
+        public void FindView_UsesViewLocationFormat_IfRouteDoesNotContainArea()
         {
             // Arrange
             var pageFactory = new Mock<IRazorPageFactoryProvider>();
@@ -409,7 +378,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         }
 
         [Fact]
-        public void FindView_IsMainPage_UsesAreaViewLocationFormat_IfRouteContainsArea()
+        public void FindView_UsesAreaViewLocationFormat_IfRouteContainsArea()
         {
             // Arrange
             var viewName = "test-view2";
@@ -440,7 +409,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         [Theory]
         [InlineData("Test-View.cshtml")]
         [InlineData("/Home/Test-View.cshtml")]
-        public void GetView_IsMainPage_DoesNotUseViewLocationFormat_WithRelativePath_IfRouteDoesNotContainArea(string viewName)
+        public void GetView_DoesNotUseViewLocationFormat_WithRelativePath_IfRouteDoesNotContainArea(string viewName)
         {
             // Arrange
             var expectedViewName = "/Home/Test-View.cshtml";
@@ -466,7 +435,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         [Theory]
         [InlineData("Test-View.cshtml")]
         [InlineData("/Home/Test-View.cshtml")]
-        public void GetView_IsMainPage_DoesNotUseViewLocationFormat_WithRelativePath_IfRouteContainArea(string viewName)
+        public void GetView_DoesNotUseViewLocationFormat_WithRelativePath_IfRouteContainArea(string viewName)
         {
             // Arrange
             var expectedViewName = "/Home/Test-View.cshtml";
@@ -495,7 +464,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         [InlineData("/Home/Test-View.CSHTML")]
         [InlineData("~/Home/Test-View.cshtml")]
         [InlineData("~/SHARED/TEST-VIEW.CSHTML")]
-        public void GetView_IsMainPage_UsesGivenPath_WithAppRelativePath(string viewName)
+        public void GetView_UsesGivenPath_WithAppRelativePath(string viewName)
         {
             // Arrange
             var pageFactory = new Mock<IRazorPageFactoryProvider>();
@@ -522,7 +491,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         [InlineData("Test-View.CSHTML")]
         [InlineData("PATH/TEST-VIEW.CSHTML")]
         [InlineData("Path1/Path2/Test-View.cshtml")]
-        public void GetView_IsMainPage_ResolvesRelativeToCurrentPage_WithRelativePath(string viewName)
+        public void GetView_ResolvesRelativeToCurrentPage_WithRelativePath(string viewName)
         {
             // Arrange
             var expectedViewName = $"/Home/{ viewName }";
@@ -550,7 +519,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         [InlineData("Test-View.CSHTML")]
         [InlineData("PATH/TEST-VIEW.CSHTML")]
         [InlineData("Path1/Path2/Test-View.cshtml")]
-        public void GetView_IsMainPage_ResolvesRelativeToAppRoot_WithRelativePath_IfNoPageExecuting(string viewName)
+        public void GetView_ResolvesRelativeToAppRoot_WithRelativePath_IfNoPageExecuting(string viewName)
         {
             // Arrange
             var expectedViewName = $"/{ viewName }";
@@ -577,7 +546,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
 
         [Theory]
         [MemberData(nameof(ViewLocationExpanderTestData))]
-        public void FindView_IsMainPage_UsesViewLocationExpandersToLocateViews(
+        public void FindView_UsesViewLocationExpandersToLocateViews(
             IDictionary<string, object> routeValues,
             IEnumerable<string> expectedSeeds)
         {
@@ -639,7 +608,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         }
 
         [Fact]
-        public void FindView_IsMainPage_CachesValuesIfViewWasFound()
+        public void FindView_CachesValuesIfViewWasFound()
         {
             // Arrange
             var page = Mock.Of<IRazorPage>();
@@ -680,7 +649,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         }
 
         [Fact]
-        public void FindView_IsMainPage_InvokesPageFactoryIfChangeTokenExpired()
+        public void FindView_InvokesPageFactoryIfChangeTokenExpired()
         {
             // Arrange
             var page1 = Mock.Of<IRazorPage>();
@@ -727,7 +696,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         }
 
         [Fact]
-        public void FindView_IsMainPage_InvokesPageFactoryIfViewStartExpirationTokensHaveExpired()
+        public void FindView_InvokesPageFactoryIfViewStartExpirationTokensHaveExpired()
         {
             // Arrange
             var page1 = Mock.Of<IRazorPage>();
@@ -784,7 +753,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         // This test validates an important perf scenario of RazorViewEngine not constructing
         // multiple strings for views that do not exist in the file system on a per-request basis.
         [Fact]
-        public void FindView_IsMainPage_DoesNotInvokeViewLocationExpanders_IfChangeTokenHasNotExpired()
+        public void FindView_DoesNotInvokeViewLocationExpanders_IfChangeTokenHasNotExpired()
         {
             // Arrange
             var pageFactory = Mock.Of<IRazorPageFactoryProvider>();
@@ -837,7 +806,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         }
 
         [Fact]
-        public void FindView_IsMainPage_InvokesViewLocationExpanders_IfChangeTokenExpires()
+        public void FindView_InvokesViewLocationExpanders_IfChangeTokenExpires()
         {
             // Arrange
             var cancellationTokenSource = new CancellationTokenSource();
@@ -902,14 +871,14 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
 
         [Theory]
         [MemberData(nameof(AbsoluteViewPathData))]
-        public void FindPage_IsMainPage_WithFullPath_ReturnsNotFound(string viewName)
+        public void FindPage_WithFullPath_ReturnsNotFound(string viewName)
         {
             // Arrange
             var viewEngine = CreateSuccessfulViewEngine();
             var context = GetActionContext(_controllerTestContext);
 
             // Act
-            var result = viewEngine.FindPage(context, viewName, isMainPage: true);
+            var result = viewEngine.FindPage(context, viewName);
 
             // Assert
             Assert.Null(result.Page);
@@ -917,7 +886,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
 
         [Theory]
         [MemberData(nameof(AbsoluteViewPathData))]
-        public void FindPage_IsMainPage_WithFullPathAndCshtmlEnding_ReturnsNotFound(string viewName)
+        public void FindPage_WithFullPathAndCshtmlEnding_ReturnsNotFound(string viewName)
         {
             // Arrange
             var viewEngine = CreateSuccessfulViewEngine();
@@ -925,38 +894,34 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             viewName += ".cshtml";
 
             // Act
-            var result = viewEngine.FindPage(context, viewName, isMainPage: true);
+            var result = viewEngine.FindPage(context, viewName);
 
             // Assert
             Assert.Null(result.Page);
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void FindPage_WithRelativePath_ReturnsNotFound(bool isMainPage)
+        [Fact]
+        public void FindPage_WithRelativePath_ReturnsNotFound()
         {
             // Arrange
             var viewEngine = CreateSuccessfulViewEngine();
             var context = GetActionContext(_controllerTestContext);
 
             // Act
-            var result = viewEngine.FindPage(context, "View.cshtml", isMainPage);
+            var result = viewEngine.FindPage(context, "View.cshtml");
 
             // Assert
             Assert.Null(result.Page);
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void GetPage_WithViewName_ReturnsNotFound(bool isMainPage)
+        [Fact]
+        public void GetPage_WithViewName_ReturnsNotFound()
         {
             // Arrange
             var viewEngine = CreateSuccessfulViewEngine();
 
             // Act
-            var result = viewEngine.GetPage("~/Home/View1.cshtml", "View2", isMainPage);
+            var result = viewEngine.GetPage("~/Home/View1.cshtml", "View2");
 
             // Assert
             Assert.Null(result.Page);
@@ -973,7 +938,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
 
             // Act & Assert
             ExceptionAssert.ThrowsArgumentNullOrEmpty(
-                () => viewEngine.FindPage(context, pageName, isMainPage: false),
+                () => viewEngine.FindPage(context, pageName),
                 "pageName");
         }
 
@@ -1021,7 +986,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             var context = GetActionContext(routeValues);
 
             // Act
-            var result = viewEngine.FindPage(context, "layout", isMainPage: false);
+            var result = viewEngine.FindPage(context, "layout");
 
             // Assert
             Assert.Equal("layout", result.Name);
@@ -1031,10 +996,8 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             expander.Verify();
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void FindPage_ReturnsSearchedLocationsIfPageCannotBeFound(bool isMainPage)
+        [Fact]
+        public void FindPage_ReturnsSearchedLocationsIfPageCannotBeFound()
         {
             // Arrange
             var expected = new[]
@@ -1047,7 +1010,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             var context = GetActionContext(_controllerTestContext);
 
             // Act
-            var result = viewEngine.FindPage(context, "layout", isMainPage);
+            var result = viewEngine.FindPage(context, "layout");
 
             // Assert
             Assert.Equal("layout", result.Name);
@@ -1088,7 +1051,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
                 isAttributeRouted);
 
             // Act
-            var result = viewEngine.FindPage(context, "details", isMainPage: false);
+            var result = viewEngine.FindPage(context, "details");
 
             // Assert
             Assert.Equal("details", result.Name);
@@ -1127,7 +1090,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
                 isAttributeRouted);
 
             // Act
-            var result = viewEngine.FindPage(context, "foo", isMainPage: false);
+            var result = viewEngine.FindPage(context, "foo");
 
             // Assert
             Assert.Equal("foo", result.Name);
@@ -1168,7 +1131,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
                 isAttributeRouted);
 
             // Act
-            var result = viewEngine.FindPage(context, "foo", isMainPage: false);
+            var result = viewEngine.FindPage(context, "foo");
 
             // Assert
             Assert.Equal("foo", result.Name);
@@ -1200,7 +1163,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
                 isAttributeRouted);
 
             // Act
-            var result = viewEngine.FindPage(context, "bar", isMainPage: false);
+            var result = viewEngine.FindPage(context, "bar");
 
             // Assert
             Assert.Equal("bar", result.Name);
@@ -1214,7 +1177,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         [InlineData("/Home/Test-View.CSHTML")]
         [InlineData("~/Home/Test-View.cshtml")]
         [InlineData("~/SHARED/TEST-VIEW.CSHTML")]
-        public void GetPage_IsMainPage_UsesGivenPath_WithAppRelativePath(string pageName)
+        public void GetPage_UsesGivenPath_WithAppRelativePath(string pageName)
         {
             // Arrange
             var pageFactory = new Mock<IRazorPageFactoryProvider>();
@@ -1228,7 +1191,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
                 GetOptionsAccessor());
 
             // Act
-            var result = viewEngine.GetPage("~/Another/Place.cshtml", pagePath: pageName, isMainPage: true);
+            var result = viewEngine.GetPage("~/Another/Place.cshtml", pagePath: pageName);
 
             // Assert
             Assert.Same(page, result.Page);
@@ -1241,7 +1204,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         [InlineData("Test-View.CSHTML")]
         [InlineData("PATH/TEST-VIEW.CSHTML")]
         [InlineData("Path1/Path2/Test-View.cshtml")]
-        public void GetPage_IsMainPage_ResolvesRelativeToCurrentPage_WithRelativePath(string pageName)
+        public void GetPage_ResolvesRelativeToCurrentPage_WithRelativePath(string pageName)
         {
             // Arrange
             var expectedPageName = $"/Home/{ pageName }";
@@ -1256,7 +1219,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
                 GetOptionsAccessor());
 
             // Act
-            var result = viewEngine.GetPage("/Home/Page.cshtml", pageName, isMainPage: true);
+            var result = viewEngine.GetPage("/Home/Page.cshtml", pageName);
 
             // Assert
             Assert.Same(page, result.Page);
@@ -1269,7 +1232,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         [InlineData("Test-View.CSHTML")]
         [InlineData("PATH/TEST-VIEW.CSHTML")]
         [InlineData("Path1/Path2/Test-View.cshtml")]
-        public void GetPage_IsMainPage_ResolvesRelativeToAppRoot_WithRelativePath_IfNoPageExecuting(string pageName)
+        public void GetPage_ResolvesRelativeToAppRoot_WithRelativePath_IfNoPageExecuting(string pageName)
         {
             // Arrange
             var expectedPageName = $"/{ pageName }";
@@ -1284,7 +1247,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
                 GetOptionsAccessor());
 
             // Act
-            var result = viewEngine.GetPage(executingFilePath: null, pagePath: pageName, isMainPage: true);
+            var result = viewEngine.GetPage(executingFilePath: null, pagePath: pageName);
 
             // Assert
             Assert.Same(page, result.Page);
@@ -1322,7 +1285,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         [InlineData("/Home/Index.cshtml", "~/Page")]
         [InlineData("/Home/Index.cshtml", "/Folder/Page.cshtml")]
         [InlineData("/Home/Index.cshtml", "~/Folder1/Folder2/Page.rzr")]
-        public void GetAbsolutePath_ReturnsPageUnchanged_IfAppRelative(string executingFilePath, string pagePath)
+        public void GetAbsolutePath_ReturnsPagePathUnchanged_IfAppRelative(string executingFilePath, string pagePath)
         {
             // Arrange
             var viewEngine = CreateViewEngine();

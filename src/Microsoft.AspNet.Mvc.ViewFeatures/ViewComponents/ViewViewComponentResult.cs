@@ -77,9 +77,9 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
                 throw new ArgumentNullException(nameof(context));
             }
 
+            var viewEngine = ViewEngine ?? ResolveViewEngine(context);
             var viewContext = context.ViewContext;
             var viewData = ViewData ?? context.ViewData;
-            var viewEngine = ViewEngine ?? ResolveViewEngine(context);
             var isNullOrEmptyViewName = string.IsNullOrEmpty(ViewName);
 
             ViewEngineResult result = null;

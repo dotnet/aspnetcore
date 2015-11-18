@@ -40,9 +40,9 @@ namespace Microsoft.AspNet.Mvc.ViewEngines
             // Do not allocate in the common cases: ViewEngines contains one entry or initial attempt is successful.
             IEnumerable<string> searchedLocations = null;
             List<string> searchedList = null;
-            for (var index = 0; index < ViewEngines.Count; index++)
+            for (var i = 0; i < ViewEngines.Count; i++)
             {
-                var result = ViewEngines[index].FindView(context, viewName, isMainPage);
+                var result = ViewEngines[i].FindView(context, viewName, isMainPage);
                 if (result.Success)
                 {
                     return result;
@@ -80,9 +80,9 @@ namespace Microsoft.AspNet.Mvc.ViewEngines
             // Do not allocate in the common cases: ViewEngines contains one entry or initial attempt is successful.
             IEnumerable<string> searchedLocations = null;
             List<string> searchedList = null;
-            for (var index = 0; index < ViewEngines.Count; index++)
+            for (var i = 0; i < ViewEngines.Count; i++)
             {
-                var result = ViewEngines[index].GetView(executingFilePath, viewPath, isMainPage);
+                var result = ViewEngines[i].GetView(executingFilePath, viewPath, isMainPage);
                 if (result.Success)
                 {
                     return result;

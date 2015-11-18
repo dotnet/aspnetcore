@@ -175,7 +175,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         /// <inheritdoc />
-        public RazorPageResult FindPage(ActionContext context, string pageName, bool isMainPage)
+        public RazorPageResult FindPage(ActionContext context, string pageName)
         {
             if (context == null)
             {
@@ -193,7 +193,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 return new RazorPageResult(pageName, Enumerable.Empty<string>());
             }
 
-            var cacheResult = LocatePageFromViewLocations(context, pageName, isMainPage);
+            var cacheResult = LocatePageFromViewLocations(context, pageName, isMainPage: false);
             if (cacheResult.Success)
             {
                 var razorPage = cacheResult.ViewEntry.PageFactory();
@@ -206,7 +206,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         /// <inheritdoc />
-        public RazorPageResult GetPage(string executingFilePath, string pagePath, bool isMainPage)
+        public RazorPageResult GetPage(string executingFilePath, string pagePath)
         {
             if (string.IsNullOrEmpty(pagePath))
             {
@@ -219,7 +219,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 return new RazorPageResult(pagePath, Enumerable.Empty<string>());
             }
 
-            var cacheResult = LocatePageFromPath(executingFilePath, pagePath, isMainPage);
+            var cacheResult = LocatePageFromPath(executingFilePath, pagePath, isMainPage: false);
             if (cacheResult.Success)
             {
                 var razorPage = cacheResult.ViewEntry.PageFactory();

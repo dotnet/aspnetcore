@@ -257,11 +257,11 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         private IRazorPage GetLayoutPage(ViewContext context, string executingFilePath, string layoutPath)
         {
-            var layoutPageResult = _viewEngine.GetPage(executingFilePath, layoutPath, isMainPage: false);
+            var layoutPageResult = _viewEngine.GetPage(executingFilePath, layoutPath);
             var originalLocations = layoutPageResult.SearchedLocations;
             if (layoutPageResult.Page == null)
             {
-                layoutPageResult = _viewEngine.FindPage(context, layoutPath, isMainPage: false);
+                layoutPageResult = _viewEngine.FindPage(context, layoutPath);
             }
 
             if (layoutPageResult.Page == null)
