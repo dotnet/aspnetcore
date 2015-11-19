@@ -74,7 +74,7 @@ namespace Microsoft.AspNet.Builder
 
                 return context =>
                 {
-                    var serviceProvider = context.RequestServices ?? context.ApplicationServices ?? applicationServices;
+                    var serviceProvider = context.RequestServices ?? applicationServices;
                     if (serviceProvider == null)
                     {
                         throw new InvalidOperationException(Resources.FormatException_UseMiddlewareIServiceProviderNotAvailable(nameof(IServiceProvider)));

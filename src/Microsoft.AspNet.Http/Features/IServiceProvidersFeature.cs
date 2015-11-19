@@ -7,7 +7,6 @@ namespace Microsoft.AspNet.Http.Features.Internal
 {
     public interface IServiceProvidersFeature
     {
-        IServiceProvider ApplicationServices { get; set; }
         IServiceProvider RequestServices { get; set; }
     }
 }

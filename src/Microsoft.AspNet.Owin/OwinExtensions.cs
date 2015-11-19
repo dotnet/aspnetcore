@@ -86,7 +86,7 @@ namespace Microsoft.AspNet.Builder
             return builder;
         }
 
-        private static CreateMiddleware CreateMiddlewareFactory(Func<RequestDelegate, RequestDelegate> middleware, IServiceProvider applicationServices)
+        private static CreateMiddleware CreateMiddlewareFactory(Func<RequestDelegate, RequestDelegate> middleware, IServiceProvider services)
         {
             return next =>
             {
@@ -110,7 +110,7 @@ namespace Microsoft.AspNet.Builder
                         context = new DefaultHttpContext(
                                     new FeatureCollection(
                                         new OwinFeatureCollection(env)));
-                        context.ApplicationServices = applicationServices;
+                        context.RequestServices = services;
                     }
 
                     return app.Invoke(context);

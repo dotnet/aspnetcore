@@ -56,11 +56,6 @@ namespace Microsoft.AspNet.Http
         public abstract IDictionary<object, object> Items { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="IServiceProvider"/> that provides access to the application's service container.
-        /// </summary>
-        public abstract IServiceProvider ApplicationServices { get; set; }
-
-        /// <summary>
         /// Gets or sets the <see cref="IServiceProvider"/> that provides access to the request's service container.
         /// </summary>
         public abstract IServiceProvider RequestServices { get; set; }

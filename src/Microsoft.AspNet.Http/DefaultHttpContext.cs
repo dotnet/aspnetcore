@@ -176,12 +176,6 @@ namespace Microsoft.AspNet.Http.Internal
             set { ItemsFeature.Items = value; }
         }
 
-        public override IServiceProvider ApplicationServices
-        {
-            get { return ServiceProvidersFeature.ApplicationServices; }
-            set { ServiceProvidersFeature.ApplicationServices = value; }
-        }
-
         public override IServiceProvider RequestServices
         {
             get { return ServiceProvidersFeature.RequestServices; }

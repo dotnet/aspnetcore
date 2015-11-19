@@ -38,7 +38,7 @@ namespace Microsoft.AspNet.Owin
                 serviceProvider = applicationBuilder.ApplicationServices;
                 applicationBuilder.Run(async context =>
                 {
-                    fakeService = context.ApplicationServices.GetService<FakeService>();
+                    fakeService = context.RequestServices.GetService<FakeService>();
                 });
             }, new ServiceCollection().AddSingleton(new FakeService()).BuildServiceProvider());
 
@@ -66,7 +66,7 @@ namespace Microsoft.AspNet.Owin
                 applicationBuilder.Run(async context =>
                 {
                     applicationExecuted = true;
-                    fakeService = context.ApplicationServices.GetService<FakeService>();
+                    fakeService = context.RequestServices.GetService<FakeService>();
                 });
             });
 
