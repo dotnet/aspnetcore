@@ -260,7 +260,8 @@ namespace Microsoft.AspNet.Mvc
             {
                 if (_tempData == null)
                 {
-                    _tempData = Resolver?.GetRequiredService<ITempDataDictionary>();
+                    var factory = Resolver?.GetRequiredService<ITempDataDictionaryFactory>();
+                    _tempData = factory?.GetTempData(HttpContext);
                 }
 
                 return _tempData;

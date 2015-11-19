@@ -36,11 +36,13 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         /// <param name="viewOptions">The <see cref="IOptions{MvcViewOptions}"/>.</param>
         /// <param name="writerFactory">The <see cref="IHttpResponseStreamWriterFactory"/>.</param>
         /// <param name="viewEngine">The <see cref="ICompositeViewEngine"/>.</param>
+        /// <param name="tempDataFactory">The <see cref="ITempDataDictionaryFactory"/>.</param>
         /// <param name="diagnosticSource">The <see cref="DiagnosticSource"/>.</param>
         public ViewExecutor(
             IOptions<MvcViewOptions> viewOptions,
             IHttpResponseStreamWriterFactory writerFactory,
             ICompositeViewEngine viewEngine,
+            ITempDataDictionaryFactory tempDataFactory,
             DiagnosticSource diagnosticSource)
         {
             if (viewOptions == null)
@@ -58,6 +60,11 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                 throw new ArgumentNullException(nameof(viewEngine));
             }
 
+            if (tempDataFactory == null)
+            {
+                throw new ArgumentNullException(nameof(tempDataFactory));
+            }
+
             if (diagnosticSource == null)
             {
                 throw new ArgumentNullException(nameof(diagnosticSource));
@@ -66,6 +73,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             ViewOptions = viewOptions.Value;
             WriterFactory = writerFactory;
             ViewEngine = viewEngine;
+            TempDataFactory = tempDataFactory;
             DiagnosticSource = diagnosticSource;
         }
 
@@ -73,6 +81,11 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         /// Gets the <see cref="DiagnosticSource"/>.
         /// </summary>
         protected DiagnosticSource DiagnosticSource { get; }
+
+        /// <summary>
+        /// Gets the <see cref="ITempDataDictionaryFactory"/>.
+        /// </summary>
+        protected ITempDataDictionaryFactory TempDataFactory { get; }
 
         /// <summary>
         /// Gets the default <see cref="IViewEngine"/>.
@@ -131,7 +144,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
 
             if (tempData == null)
             {
-                tempData = services.GetRequiredService<ITempDataDictionary>();
+                tempData = TempDataFactory.GetTempData(actionContext.HttpContext);
             }
 
             var response = actionContext.HttpContext.Response;

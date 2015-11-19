@@ -125,7 +125,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
 
         private static IServiceProvider GetServiceProvider()
         {
-            var httpContext = new HttpContextAccessor() { HttpContext = new DefaultHttpContext() };
+            var httpContext = new DefaultHttpContext();
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddSingleton<IModelMetadataProvider>(new EmptyModelMetadataProvider());
             var tempDataProvider = new SessionStateTempDataProvider();
@@ -357,6 +357,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                 new TestOptionsManager<MvcViewOptions>(),
                 new TestHttpResponseStreamWriterFactory(),
                 new Mock<ICompositeViewEngine>(MockBehavior.Strict).Object,
+                new TempDataDictionaryFactory(new SessionStateTempDataProvider()),
                 diagnosticSource);
         }
     }

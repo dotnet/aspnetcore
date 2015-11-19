@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.Mvc
                 actionContext,
                 view,
                 viewData,
-                new TempDataDictionary(new HttpContextAccessor(), new SessionStateTempDataProvider()),
+                new TempDataDictionary(actionContext.HttpContext, new SessionStateTempDataProvider()),
                 TextWriter.Null,
                 new HtmlHelperOptions());
 

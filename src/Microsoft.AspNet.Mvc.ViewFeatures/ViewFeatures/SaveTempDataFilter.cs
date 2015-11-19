@@ -10,15 +10,15 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
     /// </summary>
     public class SaveTempDataFilter : IResourceFilter, IResultFilter
     {
-        private readonly ITempDataDictionary _tempData;
+        private readonly ITempDataDictionaryFactory _factory;
 
         /// <summary>
         /// Creates a new instance of <see cref="SaveTempDataFilter"/>.
         /// </summary>
-        /// <param name="tempData">The <see cref="ITempDataDictionary"/> for the current request.</param>
-        public SaveTempDataFilter(ITempDataDictionary tempData)
+        /// <param name="factory">The <see cref="ITempDataDictionaryFactory"/>.</param>
+        public SaveTempDataFilter(ITempDataDictionaryFactory factory)
         {
-            _tempData = tempData;
+            _factory = factory;
         }
 
         /// <inheritdoc />
@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         /// <inheritdoc />
         public void OnResourceExecuted(ResourceExecutedContext context)
         {
-            _tempData.Save();
+            _factory.GetTempData(context.HttpContext).Save();
         }
 
         /// <inheritdoc />
@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         {
             if (context.Result is IKeepTempDataResult)
             {
-                _tempData.Keep();
+                _factory.GetTempData(context.HttpContext).Keep();
             }
         }
     }

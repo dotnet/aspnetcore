@@ -968,7 +968,7 @@ namespace Microsoft.AspNet.Mvc.Test
             var controller = new TestableController()
             {
                 ViewData = new ViewDataDictionary(new EmptyModelMetadataProvider()),
-                TempData = new TempDataDictionary(Mock.Of<IHttpContextAccessor>(), Mock.Of<ITempDataProvider>()),
+                TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>()),
             };
 
             // Act
@@ -989,7 +989,7 @@ namespace Microsoft.AspNet.Mvc.Test
             var controller = new TestableController()
             {
                 ViewData = new ViewDataDictionary(new EmptyModelMetadataProvider()),
-                TempData = new TempDataDictionary(Mock.Of<IHttpContextAccessor>(), Mock.Of<ITempDataProvider>()),
+                TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>()),
             };
 
             // Act
@@ -1010,7 +1010,7 @@ namespace Microsoft.AspNet.Mvc.Test
             var controller = new TestableController()
             {
                 ViewData = new ViewDataDictionary(new EmptyModelMetadataProvider()),
-                TempData = new TempDataDictionary(Mock.Of<IHttpContextAccessor>(), Mock.Of<ITempDataProvider>()),
+                TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>()),
             };
             var model = new object();
 
@@ -1032,7 +1032,7 @@ namespace Microsoft.AspNet.Mvc.Test
             var controller = new TestableController()
             {
                 ViewData = new ViewDataDictionary(new EmptyModelMetadataProvider()),
-                TempData = new TempDataDictionary(Mock.Of<IHttpContextAccessor>(), Mock.Of<ITempDataProvider>()),
+                TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>()),
             };
             var model = new object();
 
@@ -1856,7 +1856,7 @@ namespace Microsoft.AspNet.Mvc.Test
             var httpContext = new DefaultHttpContext();
 
             var viewData = new ViewDataDictionary(metadataProvider, new ModelStateDictionary());
-            var tempData = new TempDataDictionary(Mock.Of<IHttpContextAccessor>(), Mock.Of<ITempDataProvider>());
+            var tempData = new TempDataDictionary(httpContext, Mock.Of<ITempDataProvider>());
 
             var controllerContext = new ControllerContext()
             {

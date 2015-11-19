@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         public void ThrowscdException_OnSettingValue_AndWhenSessionIsNotEnabled()
         {
             // Arrange
-            var tempData = new TempDataDictionary(GetHttpContextAccessor(), new SessionStateTempDataProvider());
+            var tempData = new TempDataDictionary(new DefaultHttpContext(), new SessionStateTempDataProvider());
 
             // Act & Assert
             Assert.Throws<InvalidOperationException>(() =>
@@ -28,7 +28,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         public void Keep_DoesNotThrowException_WhenDataIsNotLoaded()
         {
             // Arrange
-            var tempData = new TempDataDictionary(GetHttpContextAccessor(), new SessionStateTempDataProvider());
+            var tempData = new TempDataDictionary(new DefaultHttpContext(), new SessionStateTempDataProvider());
 
             // Act & Assert
             tempData.Keep();
@@ -38,7 +38,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         public void TempData_Load_CreatesEmptyDictionaryIfProviderReturnsNull()
         {
             // Arrange
-            var tempData = new TempDataDictionary(GetHttpContextAccessor(), new NullTempDataProvider());
+            var tempData = new TempDataDictionary(new DefaultHttpContext(), new NullTempDataProvider());
 
             // Act
             tempData.Load();
@@ -51,7 +51,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         public void TempData_Save_RemovesKeysThatWereRead()
         {
             // Arrange
-            var tempData = new TempDataDictionary(GetHttpContextAccessor(), new NullTempDataProvider());
+            var tempData = new TempDataDictionary(new DefaultHttpContext(), new NullTempDataProvider());
             tempData["Foo"] = "Foo";
             tempData["Bar"] = "Bar";
 
@@ -68,7 +68,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         public void TempData_EnumeratingDictionary_MarksKeysForDeletion()
         {
             // Arrange
-            var tempData = new TempDataDictionary(GetHttpContextAccessor(), new NullTempDataProvider());
+            var tempData = new TempDataDictionary(new DefaultHttpContext(), new NullTempDataProvider());
             tempData["Foo"] = "Foo";
             tempData["Bar"] = "Bar";
 
@@ -88,7 +88,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         [Fact]
         public void TempData_TryGetValue_MarksKeyForDeletion()
         {
-            var tempData = new TempDataDictionary(GetHttpContextAccessor(), new NullTempDataProvider());
+            var tempData = new TempDataDictionary(new DefaultHttpContext(), new NullTempDataProvider());
             object value;
             tempData["Foo"] = "Foo";
 
@@ -104,7 +104,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         public void TempData_Keep_RetainsAllKeysWhenSavingDictionary()
         {
             // Arrange
-            var tempData = new TempDataDictionary(GetHttpContextAccessor(), new NullTempDataProvider());
+            var tempData = new TempDataDictionary(new DefaultHttpContext(), new NullTempDataProvider());
             tempData["Foo"] = "Foo";
             tempData["Bar"] = "Bar";
 
@@ -121,7 +121,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         public void TempData_Keep_RetainsSpecificKeysWhenSavingDictionary()
         {
             // Arrange
-            var tempData = new TempDataDictionary(GetHttpContextAccessor(), new NullTempDataProvider());
+            var tempData = new TempDataDictionary(new DefaultHttpContext(), new NullTempDataProvider());
             tempData["Foo"] = "Foo";
             tempData["Bar"] = "Bar";
 
@@ -140,7 +140,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         public void TempData_Peek_DoesNotMarkKeyForDeletion()
         {
             // Arrange
-            var tempData = new TempDataDictionary(GetHttpContextAccessor(), new NullTempDataProvider());
+            var tempData = new TempDataDictionary(new DefaultHttpContext(), new NullTempDataProvider());
             tempData["Bar"] = "barValue";
 
             // Act
@@ -156,7 +156,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         public void TempData_CompareIsOrdinalIgnoreCase()
         {
             // Arrange
-            var tempData = new TempDataDictionary(GetHttpContextAccessor(), new NullTempDataProvider());
+            var tempData = new TempDataDictionary(new DefaultHttpContext(), new NullTempDataProvider());
             var item = new object();
 
             // Act
@@ -175,7 +175,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             data["Foo"] = "Foo";
             data["Bar"] = "Bar";
             var provider = new TestTempDataProvider(data);
-            var tempData = new TempDataDictionary(GetHttpContextAccessor(), provider);
+            var tempData = new TempDataDictionary(new DefaultHttpContext(), provider);
 
             // Act
             tempData.Load();
@@ -190,7 +190,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         [Fact]
         public void TempData_RemovalOfKeysAreCaseInsensitive()
         {
-            var tempData = new TempDataDictionary(GetHttpContextAccessor(), new NullTempDataProvider());
+            var tempData = new TempDataDictionary(new DefaultHttpContext(), new NullTempDataProvider());
             object fooValue;
             tempData["Foo"] = "Foo";
             tempData["Bar"] = "Bar";
@@ -234,11 +234,6 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             public void SaveTempData(HttpContext context, IDictionary<string, object> values)
             {
             }
-        }
-
-        private static IHttpContextAccessor GetHttpContextAccessor()
-        {
-            return new HttpContextAccessor() { HttpContext = new DefaultHttpContext() };
         }
     }
 }

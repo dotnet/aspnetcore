@@ -37,13 +37,14 @@ namespace Microsoft.AspNet.Mvc
 
         private static ViewComponentContext GetViewComponentContext(IView view, Stream stream)
         {
-            var actionContext = new ActionContext(new DefaultHttpContext(), new RouteData(), new ActionDescriptor());
+            var httpContext = new DefaultHttpContext();
+            var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
             var viewData = new ViewDataDictionary(new EmptyModelMetadataProvider());
             var viewContext = new ViewContext(
                 actionContext,
                 view,
-                viewData,
-                new TempDataDictionary(new HttpContextAccessor(), new SessionStateTempDataProvider()),
+                viewData, 
+                new TempDataDictionary(httpContext, new SessionStateTempDataProvider()),
                 TextWriter.Null,
                 new HtmlHelperOptions());
 

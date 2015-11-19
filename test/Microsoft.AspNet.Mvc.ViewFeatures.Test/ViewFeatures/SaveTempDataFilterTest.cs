@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.Abstractions;
 using Microsoft.AspNet.Mvc.Filters;
@@ -21,7 +22,12 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                 .Setup(m => m.Save())
                 .Verifiable();
 
-            var filter = new SaveTempDataFilter(tempData.Object);
+            var tempDataFactory = new Mock<ITempDataDictionaryFactory>(MockBehavior.Strict);
+            tempDataFactory
+                .Setup(f => f.GetTempData(It.IsAny<HttpContext>()))
+                .Returns(tempData.Object);
+
+            var filter = new SaveTempDataFilter(tempDataFactory.Object);
 
             var context = new ResourceExecutedContext(
                 new ActionContext(new DefaultHttpContext(), new RouteData(), new ActionDescriptor()),
@@ -43,7 +49,12 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                 .Setup(m => m.Keep())
                 .Verifiable();
 
-            var filter = new SaveTempDataFilter(tempData.Object);
+            var tempDataFactory = new Mock<ITempDataDictionaryFactory>(MockBehavior.Strict);
+            tempDataFactory
+                .Setup(f => f.GetTempData(It.IsAny<HttpContext>()))
+                .Returns(tempData.Object);
+
+            var filter = new SaveTempDataFilter(tempDataFactory.Object);
 
             var context = new ResultExecutedContext(
                 new ActionContext(new DefaultHttpContext(), new RouteData(), new ActionDescriptor()),
@@ -63,7 +74,13 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         {
             // Arrange
             var tempData = new Mock<ITempDataDictionary>(MockBehavior.Strict);
-            var filter = new SaveTempDataFilter(tempData.Object);
+
+            var tempDataFactory = new Mock<ITempDataDictionaryFactory>(MockBehavior.Strict);
+            tempDataFactory
+                .Setup(f => f.GetTempData(It.IsAny<HttpContext>()))
+                .Returns(tempData.Object);
+
+            var filter = new SaveTempDataFilter(tempDataFactory.Object);
 
             var context = new ResultExecutedContext(
                 new ActionContext(new DefaultHttpContext(), new RouteData(), new ActionDescriptor()),

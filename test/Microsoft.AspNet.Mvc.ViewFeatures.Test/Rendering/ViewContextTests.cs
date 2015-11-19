@@ -20,12 +20,13 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public void SettingViewData_AlsoUpdatesViewBag()
         {
             // Arrange
+            var httpContext = new DefaultHttpContext();
             var originalViewData = new ViewDataDictionary(metadataProvider: new EmptyModelMetadataProvider());
             var context = new ViewContext(
                 new ActionContext(new DefaultHttpContext(), new RouteData(), new ActionDescriptor()),
                 view: Mock.Of<IView>(),
                 viewData: originalViewData,
-                tempData: new TempDataDictionary(new HttpContextAccessor(), Mock.Of<ITempDataProvider>()),
+                tempData: new TempDataDictionary(httpContext, Mock.Of<ITempDataProvider>()),
                 writer: TextWriter.Null,
                 htmlHelperOptions: new HtmlHelperOptions());
             var replacementViewData = new ViewDataDictionary(metadataProvider: new EmptyModelMetadataProvider());
@@ -47,11 +48,12 @@ namespace Microsoft.AspNet.Mvc.Rendering
         public void CopyConstructor_CopiesExpectedProperties()
         {
             // Arrange
+            var httpContext = new DefaultHttpContext();
             var originalContext = new ViewContext(
-                new ActionContext(new DefaultHttpContext(), new RouteData(), new ActionDescriptor()),
+                new ActionContext(httpContext, new RouteData(), new ActionDescriptor()),
                 view: Mock.Of<IView>(),
                 viewData: new ViewDataDictionary(metadataProvider: new EmptyModelMetadataProvider()),
-                tempData: new TempDataDictionary(new HttpContextAccessor(), Mock.Of<ITempDataProvider>()),
+                tempData: new TempDataDictionary(httpContext, Mock.Of<ITempDataProvider>()),
                 writer: TextWriter.Null,
                 htmlHelperOptions: new HtmlHelperOptions());
             var view = Mock.Of<IView>();

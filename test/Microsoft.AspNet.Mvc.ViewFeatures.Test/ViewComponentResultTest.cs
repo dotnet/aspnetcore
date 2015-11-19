@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.Mvc
     public class ViewComponentResultTest
     {
         private readonly ITempDataDictionary _tempDataDictionary =
-            new TempDataDictionary(new HttpContextAccessor(), new SessionStateTempDataProvider());
+            new TempDataDictionary(new DefaultHttpContext(), new SessionStateTempDataProvider());
 
         [Fact]
         public async Task ExecuteAsync_ViewComponentResult_AllowsNullViewDataAndTempData()
@@ -460,8 +460,7 @@ namespace Microsoft.AspNet.Mvc
 
         private IServiceCollection CreateServices(object diagnosticListener, HttpContext context, params ViewComponentDescriptor[] descriptors)
         {
-            var httpContext = new HttpContextAccessor() { HttpContext = context };
-            var tempDataProvider = new SessionStateTempDataProvider();
+            var httpContext = new DefaultHttpContext();
             var diagnosticSource = new DiagnosticListener("Microsoft.AspNet");
             if (diagnosticListener != null)
             {
@@ -480,8 +479,8 @@ namespace Microsoft.AspNet.Mvc
             services.AddSingleton<IViewComponentDescriptorProvider>(new FixedSetViewComponentDescriptorProvider(descriptors));
             services.AddSingleton<IModelMetadataProvider, EmptyModelMetadataProvider>();
             services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
-            services.AddSingleton<ITempDataDictionary>(new TempDataDictionary(httpContext, tempDataProvider));
-            services.AddTransient<IHttpContextAccessor, HttpContextAccessor>();
+            services.AddSingleton<ITempDataDictionaryFactory, TempDataDictionaryFactory>();
+            services.AddSingleton<ITempDataProvider, SessionStateTempDataProvider>();
             services.AddSingleton<HtmlEncoder, HtmlTestEncoder>();
 
             return services;

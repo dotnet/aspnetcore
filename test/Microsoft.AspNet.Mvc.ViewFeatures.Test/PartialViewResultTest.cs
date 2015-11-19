@@ -199,6 +199,7 @@ namespace Microsoft.AspNet.Mvc
                 options,
                 new TestHttpResponseStreamWriterFactory(),
                 new CompositeViewEngine(options),
+                new TempDataDictionaryFactory(new SessionStateTempDataProvider()),
                 new DiagnosticListener("Microsoft.AspNet"),
                 NullLoggerFactory.Instance);
 

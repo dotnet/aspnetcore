@@ -101,10 +101,7 @@ namespace Microsoft.Extensions.DependencyInjection
             //
             services.TryAddTransient<IHtmlHelper, HtmlHelper>();
             services.TryAddTransient(typeof(IHtmlHelper<>), typeof(HtmlHelper<>));
-
-            // DefaultHtmlGenerator is pretty much stateless but depends on IUrlHelper, which is scoped.
-            // Therefore it too is scoped.
-            services.TryAddScoped<IHtmlGenerator, DefaultHtmlGenerator>();
+            services.TryAddSingleton<IHtmlGenerator, DefaultHtmlGenerator>();
 
             //
             // JSON Helper
@@ -133,12 +130,12 @@ namespace Microsoft.Extensions.DependencyInjection
             //
             // Temp Data
             //
-            // Holds per-request data so it should be scoped
-            services.TryAddScoped<ITempDataDictionary, TempDataDictionary>();
-            services.TryAddScoped<SaveTempDataFilter>();
-
             // This does caching so it should stay singleton
             services.TryAddSingleton<ITempDataProvider, SessionStateTempDataProvider>();
+
+            // These are stateless so their lifetime isn't really important.
+            services.TryAddSingleton<ITempDataDictionaryFactory, TempDataDictionaryFactory>();
+            services.TryAddSingleton<SaveTempDataFilter>();
         }
     }
 }

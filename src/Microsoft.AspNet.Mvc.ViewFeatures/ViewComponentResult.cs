@@ -88,7 +88,8 @@ namespace Microsoft.AspNet.Mvc
             var tempData = TempData;
             if (tempData == null)
             {
-                tempData = services.GetRequiredService<ITempDataDictionary>();
+                var factory = services.GetRequiredService<ITempDataDictionaryFactory>();
+                tempData = factory.GetTempData(context.HttpContext);
             }
 
             string resolvedContentType = null;

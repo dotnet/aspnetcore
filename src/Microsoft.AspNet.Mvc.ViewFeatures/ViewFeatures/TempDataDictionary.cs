@@ -14,16 +14,16 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         private Dictionary<string, object> _data;
         private bool _loaded;
         private readonly ITempDataProvider _provider;
-        private readonly IHttpContextAccessor _contextAccessor;
+        private readonly HttpContext _context;
         private HashSet<string> _initialKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         private HashSet<string> _retainedKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TempDataDictionary"/> class.
         /// </summary>
-        /// <param name="context">The <see cref="IHttpContextAccessor"/> that provides the HttpContext.</param>
+        /// <param name="context">The <see cref="HttpContext"/>.</param>
         /// <param name="provider">The <see cref="ITempDataProvider"/> used to Load and Save data.</param>
-        public TempDataDictionary(IHttpContextAccessor context, ITempDataProvider provider)
+        public TempDataDictionary(HttpContext context, ITempDataProvider provider)
         {
             if (context == null)
             {
@@ -37,7 +37,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
 
             _provider = provider;
             _loaded = false;
-            _contextAccessor = context;
+            _context = context;
         }
 
         public int Count
@@ -127,7 +127,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                 return;
             }
 
-            var providerDictionary = _provider.LoadTempData(_contextAccessor.HttpContext);
+            var providerDictionary = _provider.LoadTempData(_context);
             _data = (providerDictionary != null)
                 ? new Dictionary<string, object>(providerDictionary, StringComparer.OrdinalIgnoreCase)
                 : new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
@@ -161,7 +161,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                 _data.Remove(keys[i]);
             }
 
-            _provider.SaveTempData(_contextAccessor.HttpContext, _data);
+            _provider.SaveTempData(_context, _data);
         }
 
         /// <inheritdoc />

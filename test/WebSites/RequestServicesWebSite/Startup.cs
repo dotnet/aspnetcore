@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Internal;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace RequestServicesWebSite
@@ -14,6 +16,7 @@ namespace RequestServicesWebSite
             services.AddMvc();
 
             services.AddScoped<RequestIdService>();
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
         }
 
         public void Configure(IApplicationBuilder app)

@@ -25,15 +25,17 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         /// <param name="viewOptions">The <see cref="IOptions{MvcViewOptions}"/>.</param>
         /// <param name="writerFactory">The <see cref="IHttpResponseStreamWriterFactory"/>.</param>
         /// <param name="viewEngine">The <see cref="ICompositeViewEngine"/>.</param>
+        /// <param name="tempDataFactory">The <see cref="ITempDataDictionaryFactory"/>.</param>
         /// <param name="diagnosticSource">The <see cref="DiagnosticSource"/>.</param>
         /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
         public ViewResultExecutor(
             IOptions<MvcViewOptions> viewOptions,
             IHttpResponseStreamWriterFactory writerFactory,
             ICompositeViewEngine viewEngine,
+            ITempDataDictionaryFactory tempDataFactory,
             DiagnosticSource diagnosticSource,
             ILoggerFactory loggerFactory)
-            : base(viewOptions, writerFactory, viewEngine, diagnosticSource)
+            : base(viewOptions, writerFactory, viewEngine, tempDataFactory, diagnosticSource)
         {
             if (loggerFactory == null)
             {

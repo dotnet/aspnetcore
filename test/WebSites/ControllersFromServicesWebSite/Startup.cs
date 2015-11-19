@@ -5,6 +5,8 @@ using System;
 using System.Reflection;
 using ControllersFromServicesClassLibrary;
 using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Internal;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace ControllersFromServicesWebSite
@@ -21,6 +23,7 @@ namespace ControllersFromServicesWebSite
                 });
 
             services.AddTransient<QueryValueService>();
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
             return services.BuildServiceProvider();
         }
