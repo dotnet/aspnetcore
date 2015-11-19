@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Razor.TagHelpers;
@@ -31,11 +32,12 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 executionContext.AllAttributes,
                 executionContext.Items,
                 executionContext.UniqueId);
-            var orderedTagHelpers = executionContext.TagHelpers.OrderBy(tagHelper => tagHelper.Order);
 
-            foreach (var tagHelper in orderedTagHelpers)
+            OrderTagHelpers(executionContext.TagHelpers);
+
+            for (var i = 0; i < executionContext.TagHelpers.Count; i++)
             {
-                tagHelper.Init(tagHelperContext);
+                executionContext.TagHelpers[i].Init(tagHelperContext);
             }
 
             var tagHelperOutput = new TagHelperOutput(
@@ -46,12 +48,31 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 TagMode = executionContext.TagMode,
             };
 
-            foreach (var tagHelper in orderedTagHelpers)
+            for (var i = 0; i < executionContext.TagHelpers.Count; i++)
             {
-                await tagHelper.ProcessAsync(tagHelperContext, tagHelperOutput);
+                await executionContext.TagHelpers[i].ProcessAsync(tagHelperContext, tagHelperOutput);
             }
 
             return tagHelperOutput;
+        }
+
+        private static void OrderTagHelpers(IList<ITagHelper> tagHelpers)
+        {
+            // Using bubble-sort here due to its simplicity. It'd be an extreme corner case to ever have more than 3 or
+            // 4 tag helpers simultaneously.
+            ITagHelper temp = null;
+            for (var i = 0; i < tagHelpers.Count; i++)
+            {
+                for (var j = i + 1; j < tagHelpers.Count; j++)
+                {
+                    if (tagHelpers[j].Order < tagHelpers[i].Order)
+                    {
+                        temp = tagHelpers[i];
+                        tagHelpers[i] = tagHelpers[j];
+                        tagHelpers[j] = temp;
+                    }
+                }
+            }
         }
     }
 }

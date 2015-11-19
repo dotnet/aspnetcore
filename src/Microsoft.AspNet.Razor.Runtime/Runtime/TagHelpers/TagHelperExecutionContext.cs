@@ -135,7 +135,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// <summary>
         /// <see cref="ITagHelper"/>s that should be run.
         /// </summary>
-        public IEnumerable<ITagHelper> TagHelpers
+        public IList<ITagHelper> TagHelpers
         {
             get
             {
