@@ -43,7 +43,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         private Task _requestProcessingTask;
         private volatile bool _requestProcessingStopping; // volatile, see: https://msdn.microsoft.com/en-us/library/x13ttww7.aspx
         private volatile bool _requestAborted;
-        private CancellationTokenSource _disconnectOrAbortedCts = new CancellationTokenSource();
+        private CancellationTokenSource _abortedCts;
 
         private FrameRequestStream _requestBody;
         private FrameResponseStream _responseBody;
@@ -144,6 +144,9 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             }
 
             _prepareRequest?.Invoke(this);
+
+            _abortedCts?.Dispose();
+            _abortedCts = null;
         }
 
         public void ResetResponseHeaders()
@@ -196,11 +199,16 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 ConnectionControl.End(ProduceEndType.SocketDisconnect);
                 SocketInput.AbortAwaiting();
 
-                _disconnectOrAbortedCts.Cancel();
+                _abortedCts?.Cancel();
             }
             catch (Exception ex)
             {
                 Log.LogError("Abort", ex);
+            }
+            finally
+            {
+                _abortedCts?.Dispose();
+                _abortedCts = null;
             }
         }
 
@@ -245,7 +253,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         ResponseBody = _responseBody;
                         DuplexStream = new FrameDuplexStream(RequestBody, ResponseBody);
 
-                        RequestAborted = _disconnectOrAbortedCts.Token;
+                        _abortedCts = new CancellationTokenSource();
+                        RequestAborted = _abortedCts.Token;
 
                         var httpContext = HttpContextFactory.Create(this);
                         try
@@ -298,7 +307,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             {
                 try
                 {
-                    _disconnectOrAbortedCts.Dispose();
+                    _abortedCts?.Dispose();
+                    _abortedCts = null;
 
                     // If _requestAborted is set, the connection has already been closed.
                     if (!_requestAborted)
