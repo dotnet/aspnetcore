@@ -548,7 +548,6 @@ namespace Microsoft.AspNet.Mvc
             // through the HttpContext.
             var httpContext = new DefaultHttpContext
             {
-                ApplicationServices = serviceProvider,
                 RequestServices = serviceProvider,
             };
 
