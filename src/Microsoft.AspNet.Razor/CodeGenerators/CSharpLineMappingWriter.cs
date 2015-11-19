@@ -79,7 +79,7 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
 
         public void MarkLineMappingEnd()
         {
-            _generatedContentLength = _writer.GenerateCode().Length - _generatedLocation.AbsoluteIndex;
+            _generatedContentLength = _writer.Builder.Length - _generatedLocation.AbsoluteIndex;
         }
 
         public void Dispose()
@@ -89,7 +89,7 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
                 // Verify that the generated length has not already been calculated
                 if (_generatedContentLength == 0)
                 {
-                    _generatedContentLength = _writer.GenerateCode().Length - _generatedLocation.AbsoluteIndex;
+                    _generatedContentLength = _writer.Builder.Length - _generatedLocation.AbsoluteIndex;
                 }
 
                 var generatedLocation = new MappingLocation(_generatedLocation, _generatedContentLength);
@@ -114,7 +114,8 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
             {
                 // Need to add an additional line at the end IF there wasn't one already written.
                 // This is needed to work with the C# editor's handling of #line ...
-                var endsWithNewline = _writer.GenerateCode().EndsWith("\n");
+                var builder = _writer.Builder;
+                var endsWithNewline = builder.Length > 0 && builder[builder.Length - 1] == '\n';
 
                 // Always write at least 1 empty line to potentially separate code from pragmas.
                 _writer.WriteLine();

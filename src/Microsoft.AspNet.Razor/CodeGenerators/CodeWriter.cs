@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.Text;
 
 namespace Microsoft.AspNet.Razor.CodeGenerators
 {
@@ -17,6 +18,8 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
         private int _absoluteIndex;
         private int _currentLineIndex;
         private int _currentLineCharacterIndex;
+
+        public StringBuilder Builder => _writer.GetStringBuilder();
 
         public string LastWrite { get; private set; }
 
