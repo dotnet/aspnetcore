@@ -270,16 +270,17 @@ namespace Microsoft.AspNet.Authentication.Google
                     };
                 }
             });
+            var sendTask = server.SendAsync("https://example.com/signin-google?error=OMG&error_description=SoBad&error_uri=foobar");
             if (redirect)
             {
-                var transaction = await server.SendAsync("https://example.com/signin-google?error=OMG");
+                var transaction = await sendTask;
                 Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
-                Assert.Equal("/error?ErrorMessage=OMG", transaction.Response.Headers.GetValues("Location").First());
+                Assert.Equal("/error?ErrorMessage=OMG"+UrlEncoder.Default.Encode(";Description=SoBad;Uri=foobar"), transaction.Response.Headers.GetValues("Location").First());
             }
             else
             {
-                var error = await Assert.ThrowsAnyAsync<Exception>(() => server.SendAsync("https://example.com/signin-google?error=OMG"));
-                Assert.Equal("OMG", error.GetBaseException().Message);
+                var error = await Assert.ThrowsAnyAsync<Exception>(() => sendTask);
+                Assert.Equal("OMG;Description=SoBad;Uri=foobar", error.GetBaseException().Message);
             }
         }
 

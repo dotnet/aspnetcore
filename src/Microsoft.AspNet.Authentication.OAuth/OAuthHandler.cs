@@ -38,7 +38,20 @@ namespace Microsoft.AspNet.Authentication.OAuth
             var error = query["error"];
             if (!StringValues.IsNullOrEmpty(error))
             {
-                return AuthenticateResult.Failed(error);
+                var errorMessage = new StringBuilder();
+                errorMessage.Append(error);
+                var errorDescription = query["error_description"];
+                if (!StringValues.IsNullOrEmpty(errorDescription))
+                {
+                    errorMessage.Append(";Description=").Append(errorDescription);
+                }
+                var errorUri = query["error_uri"];
+                if (!StringValues.IsNullOrEmpty(errorUri))
+                {
+                    errorMessage.Append(";Uri=").Append(errorUri);
+                }
+
+                return AuthenticateResult.Failed(errorMessage.ToString());
             }
 
             var code = query["code"];
