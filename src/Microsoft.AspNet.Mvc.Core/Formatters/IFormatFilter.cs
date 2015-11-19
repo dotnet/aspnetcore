@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNet.Mvc.Filters;
-using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Mvc.Formatters
 {
@@ -12,18 +11,10 @@ namespace Microsoft.AspNet.Mvc.Formatters
     public interface IFormatFilter : IFilterMetadata
     {
         /// <summary>
-        /// format value in the current request. <c>null</c> if format not present in the current request.
+        /// Gets the format value for the request associated with the provided <see cref="ActionContext"/>. 
         /// </summary>
-        string Format { get; }
-
-        /// <summary>
-        /// <see cref="MediaTypeHeaderValue"/> for the format value in the current request.
-        /// </summary>
-        MediaTypeHeaderValue ContentType { get; }
-
-        /// <summary>
-        /// <c>true</c> if the current <see cref="FormatFilter"/> is active and will execute. 
-        /// </summary>
-        bool IsActive { get; }
+        /// <param name="context">The <see cref="ActionContext"/> associated with the current request.</param>
+        /// <returns>A format value, or <c>null</c> if a format cannot be determined for the request.</returns>
+        string GetFormat(ActionContext context);
     }
 }

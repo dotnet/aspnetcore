@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNet.Mvc.ApiExplorer;
 using Microsoft.AspNet.Mvc.Filters;
-using Microsoft.AspNet.Mvc.Infrastructure;
 using Microsoft.Extensions.OptionsModel;
 using Microsoft.Net.Http.Headers;
 
@@ -18,39 +17,36 @@ namespace Microsoft.AspNet.Mvc.Formatters
     /// </summary>
     public class FormatFilter : IFormatFilter, IResourceFilter, IResultFilter
     {
+        private readonly MvcOptions _options;
+
         /// <summary>
         /// Initializes an instance of <see cref="FormatFilter"/>.
         /// </summary>
         /// <param name="options">The <see cref="IOptions{MvcOptions}"/></param>
-        /// <param name="actionContextAccessor">The <see cref="IActionContextAccessor"/></param>
-        public FormatFilter(IOptions<MvcOptions> options, IActionContextAccessor actionContextAccessor)
+        public FormatFilter(IOptions<MvcOptions> options)
         {
-            IsActive = true;
-            Format = GetFormat(actionContextAccessor.ActionContext);
-
-            if (string.IsNullOrEmpty(Format))
-            {
-                IsActive = false;
-                return;
-            }
-
-            ContentType = options.Value.FormatterMappings.GetMediaTypeMappingForFormat(Format);
+            _options = options.Value;
         }
 
-        /// <summary>
-        /// Format value in the current request. <c>null</c> if format not present in the current request.
-        /// </summary>
-        public string Format { get; }
+        /// <inheritdoc />
+        public string GetFormat(ActionContext context)
+        {
+            object obj;
+            if (context.RouteData.Values.TryGetValue("format", out obj))
+            {
+                // null and string.Empty are equivalent for route values.
+                var routeValue = obj?.ToString();
+                return string.IsNullOrEmpty(routeValue) ? null : routeValue;
+            }
 
-        /// <summary>
-        /// <see cref="MediaTypeHeaderValue"/> for the format value in the current request.
-        /// </summary>
-        public MediaTypeHeaderValue ContentType { get; }
+            var query = context.HttpContext.Request.Query["format"];
+            if (query.Count > 0)
+            {
+                return query.ToString();
+            }
 
-        /// <summary>
-        /// <c>true</c> if the current <see cref="FormatFilter"/> is active and will execute.
-        /// </summary>
-        public bool IsActive { get; }
+            return null;
+        }
 
         /// <summary>
         /// As a <see cref="IResourceFilter"/>, this filter looks at the request and rejects it before going ahead if
@@ -65,13 +61,15 @@ namespace Microsoft.AspNet.Mvc.Formatters
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (!IsActive)
+            var format = GetFormat(context);
+            if (format == null)
             {
                 // no format specified by user, so the filter is muted
                 return;
             }
 
-            if (ContentType == null)
+            var contentType = _options.FormatterMappings.GetMediaTypeMappingForFormat(format);
+            if (contentType == null)
             {
                 // no contentType exists for the format, return 404
                 context.Result = new HttpNotFoundResult();
@@ -93,7 +91,7 @@ namespace Microsoft.AspNet.Mvc.Formatters
                 // request's format and IApiResponseMetadataProvider-provided content types similarly to an Accept
                 // header and an output formatter's SupportedMediaTypes: Confirm action supports a more specific media
                 // type than requested e.g. OK if "text/*" requested and action supports "text/plain".
-                if (!supportedMediaTypes.Any(contentType => contentType.IsSubsetOf(ContentType)))
+                if (!supportedMediaTypes.Any(c => c.IsSubsetOf(contentType)))
                 {
                     context.Result = new HttpNotFoundResult();
                 }
@@ -116,43 +114,25 @@ namespace Microsoft.AspNet.Mvc.Formatters
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (!IsActive)
+            var format = GetFormat(context);
+            if (format == null)
             {
-                return; // no format specified by user, so the filter is muted
+                // no format specified by user, so the filter is muted
+                return;
             }
 
             var objectResult = context.Result as ObjectResult;
             if (objectResult != null)
             {
+                var contentType = _options.FormatterMappings.GetMediaTypeMappingForFormat(format);
                 objectResult.ContentTypes.Clear();
-                objectResult.ContentTypes.Add(ContentType);
+                objectResult.ContentTypes.Add(contentType);
             }
         }
 
         /// <inheritdoc />
         public void OnResultExecuted(ResultExecutedContext context)
         {
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-        }
-
-        private string GetFormat(ActionContext context)
-        {
-            object format = null;
-
-            if (!context.RouteData.Values.TryGetValue("format", out format))
-            {
-                format = context.HttpContext.Request.Query["format"];
-            }
-
-            if (format != null)
-            {
-                return format.ToString();
-            }
-
-            return null;
         }
     }
 }

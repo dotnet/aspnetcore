@@ -62,7 +62,7 @@ namespace Microsoft.Extensions.DependencyInjection
         // Internal for testing.
         internal static void AddFormatterMappingsServices(IServiceCollection services)
         {
-            services.TryAddTransient<FormatFilter, FormatFilter>();
+            services.TryAddSingleton<FormatFilter, FormatFilter>();
         }
 
         public static IMvcCoreBuilder AddAuthorization(this IMvcCoreBuilder builder)

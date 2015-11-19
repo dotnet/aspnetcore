@@ -45,8 +45,9 @@ namespace Microsoft.AspNet.Mvc.Test
             var producesContentAttribute = new ProducesAttribute("application/xml");
 
             var formatFilter = new Mock<IFormatFilter>();
-            formatFilter.Setup(f => f.IsActive)
-                .Returns(false);
+            formatFilter
+                .Setup(f => f.GetFormat(It.IsAny<ActionContext>()))
+                .Returns((string)null);
 
             var filters = new IFilterMetadata[] { producesContentAttribute, formatFilter.Object };
             var resultExecutingContext = CreateResultExecutingContext(filters);
@@ -69,8 +70,9 @@ namespace Microsoft.AspNet.Mvc.Test
             var producesContentAttribute = new ProducesAttribute("application/xml");
 
             var formatFilter = new Mock<IFormatFilter>();
-            formatFilter.Setup(f => f.IsActive)
-                .Returns(true);
+            formatFilter
+                .Setup(f => f.GetFormat(It.IsAny<ActionContext>()))
+                .Returns("xml");
 
             var filters = new IFilterMetadata[] { producesContentAttribute, formatFilter.Object };
             var resultExecutingContext = CreateResultExecutingContext(filters);
