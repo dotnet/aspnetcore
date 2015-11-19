@@ -43,8 +43,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         private Task _requestProcessingTask;
         private volatile bool _requestProcessingStopping; // volatile, see: https://msdn.microsoft.com/en-us/library/x13ttww7.aspx
         private volatile bool _requestAborted;
-        private CancellationTokenSource _disconnectCts = new CancellationTokenSource();
-        private CancellationTokenSource _requestAbortCts;
+        private CancellationTokenSource _disconnectOrAbortedCts = new CancellationTokenSource();
 
         private FrameRequestStream _requestBody;
         private FrameResponseStream _responseBody;
@@ -145,8 +144,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             }
 
             _prepareRequest?.Invoke(this);
-
-            _requestAbortCts?.Dispose();
         }
 
         public void ResetResponseHeaders()
@@ -199,7 +196,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 ConnectionControl.End(ProduceEndType.SocketDisconnect);
                 SocketInput.AbortAwaiting();
 
-                _disconnectCts.Cancel();
+                _disconnectOrAbortedCts.Cancel();
             }
             catch (Exception ex)
             {
@@ -248,8 +245,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         ResponseBody = _responseBody;
                         DuplexStream = new FrameDuplexStream(RequestBody, ResponseBody);
 
-                        _requestAbortCts = CancellationTokenSource.CreateLinkedTokenSource(_disconnectCts.Token);
-                        RequestAborted = _requestAbortCts.Token;
+                        RequestAborted = _disconnectOrAbortedCts.Token;
 
                         var httpContext = HttpContextFactory.Create(this);
                         try
@@ -302,7 +298,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             {
                 try
                 {
-                    _disconnectCts.Dispose();
+                    _disconnectOrAbortedCts.Dispose();
 
                     // If _requestAborted is set, the connection has already been closed.
                     if (!_requestAborted)
