@@ -78,25 +78,33 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                     Address = ServerAddress
                 };
 
-                ConnectionFilter.OnConnection(_filterContext).ContinueWith((task, state) =>
+                try
                 {
-                    var connection = (Connection)state;
+                    ConnectionFilter.OnConnection(_filterContext).ContinueWith((task, state) =>
+                    {
+                        var connection = (Connection)state;
 
-                    if (task.IsFaulted)
-                    {
-                        connection.Log.LogError("ConnectionFilter.OnConnection", task.Exception);
-                        connection.ConnectionControl.End(ProduceEndType.SocketDisconnect);
-                    }
-                    else if (task.IsCanceled)
-                    {
-                        connection.Log.LogError("ConnectionFilter.OnConnection Canceled");
-                        connection.ConnectionControl.End(ProduceEndType.SocketDisconnect);
-                    }
-                    else
-                    {
-                        connection.ApplyConnectionFilter();
-                    }
-                }, this);
+                        if (task.IsFaulted)
+                        {
+                            connection.Log.LogError("ConnectionFilter.OnConnection", task.Exception);
+                            connection.ConnectionControl.End(ProduceEndType.SocketDisconnect);
+                        }
+                        else if (task.IsCanceled)
+                        {
+                            connection.Log.LogError("ConnectionFilter.OnConnection Canceled");
+                            connection.ConnectionControl.End(ProduceEndType.SocketDisconnect);
+                        }
+                        else
+                        {
+                            connection.ApplyConnectionFilter();
+                        }
+                    }, this);
+                }
+                catch (Exception ex)
+                {
+                    Log.LogError("ConnectionFilter.OnConnection", ex);
+                    ConnectionControl.End(ProduceEndType.SocketDisconnect);
+                }
             }
         }
 

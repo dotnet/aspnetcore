@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
@@ -80,7 +81,36 @@ namespace Microsoft.AspNet.Server.KestrelTests
                         "Hello World!");
                 }
             }
-       }
+        }
+
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Test hangs after execution on Mono.")]
+        public async Task ThrowingSynchronousConnectionFilterDoesNotCrashServer()
+        {
+            var serviceContext = new TestServiceContext()
+            {
+                ConnectionFilter = new ThrowingConnectionFilter()
+            };
+
+            using (var server = new TestServer(App, serviceContext))
+            {
+                using (var connection = new TestConnection())
+                {
+                    try
+                    {
+                        await connection.SendEnd(
+                            "POST / HTTP/1.0",
+                            "",
+                            "Hello World?");
+                    }
+                    catch (IOException)
+                    {
+                        // Will throw because the exception in the connection filter will close the connection.
+                        Assert.True(true);
+                    }
+                }
+            }
+        }
 
         private class RewritingConnectionFilter : IConnectionFilter
         {
@@ -109,6 +139,14 @@ namespace Microsoft.AspNet.Server.KestrelTests
                 await Task.Delay(100);
 
                 context.Connection = new RewritingStream(oldConnection);
+            }
+        }
+
+        private class ThrowingConnectionFilter : IConnectionFilter
+        {
+            public Task OnConnection(ConnectionFilterContext context)
+            {
+                throw new Exception();
             }
         }
 
