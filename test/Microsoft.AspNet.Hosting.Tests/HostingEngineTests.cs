@@ -145,6 +145,24 @@ namespace Microsoft.AspNet.Hosting
         }
 
         [Fact]
+        public void FlowsConfig()
+        {
+            var vals = new Dictionary<string, string>
+            {
+                { "Server", "Microsoft.AspNet.Hosting.Tests" }
+            };
+
+            var builder = new ConfigurationBuilder()
+                .AddInMemoryCollection(vals);
+            var config = builder.Build();
+            var host = CreateBuilder(config).Build();
+            var app = host.Start();
+            var hostingEnvironment = host.ApplicationServices.GetRequiredService<IHostingEnvironment>();
+            Assert.NotNull(hostingEnvironment.Configuration);
+            Assert.Equal("Microsoft.AspNet.Hosting.Tests", hostingEnvironment.Configuration["Server"]);
+        }
+
+        [Fact]
         public void HostingEngineCanBeStarted()
         {
             var engine = CreateBuilder()

@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNet.FileProviders;
-using Microsoft.AspNet.Hosting.Internal;
+using Microsoft.Extensions.Configuration;
 
 namespace Microsoft.AspNet.Hosting
 {
@@ -13,5 +13,7 @@ namespace Microsoft.AspNet.Hosting
         public string WebRootPath { get; set; }
 
         public IFileProvider WebRootFileProvider { get; set; }
+
+        public IConfiguration Configuration { get; set; }
     }
 }

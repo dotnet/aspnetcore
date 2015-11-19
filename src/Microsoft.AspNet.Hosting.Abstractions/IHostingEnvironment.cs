@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNet.FileProviders;
+using Microsoft.Extensions.Configuration;
 
 namespace Microsoft.AspNet.Hosting
 {
@@ -28,5 +29,10 @@ namespace Microsoft.AspNet.Hosting
         /// </summary>
         // This must be settable!
         IFileProvider WebRootFileProvider { get; set; }
+
+        /// <summary>
+        /// Gets or sets the configuration object used by hosting environment.
+        /// </summary>
+        IConfiguration Configuration { get; set; }
     }
 }

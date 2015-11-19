@@ -126,7 +126,7 @@ namespace Microsoft.AspNet.Hosting
             var appEnvironment = hostingContainer.GetRequiredService<IApplicationEnvironment>();
             var startupLoader = hostingContainer.GetRequiredService<IStartupLoader>();
 
-            _hostingEnvironment.Initialize(appEnvironment.ApplicationBasePath, _options);
+            _hostingEnvironment.Initialize(appEnvironment.ApplicationBasePath, _options, _config);
             if (!string.IsNullOrEmpty(_environmentName))
             {
                 _hostingEnvironment.EnvironmentName = _environmentName;

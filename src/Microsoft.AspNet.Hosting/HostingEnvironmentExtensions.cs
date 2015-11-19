@@ -10,7 +10,7 @@ namespace Microsoft.AspNet.Hosting
 {
     public static class HostingEnvironmentExtensions
     {
-        public static void Initialize(this IHostingEnvironment hostingEnvironment, string applicationBasePath, WebHostOptions options)
+        public static void Initialize(this IHostingEnvironment hostingEnvironment, string applicationBasePath, WebHostOptions options, IConfiguration configuration)
         {
             if (options == null)
             {
@@ -46,6 +46,8 @@ namespace Microsoft.AspNet.Hosting
 
             var environmentName = options.Environment;
             hostingEnvironment.EnvironmentName = environmentName ?? hostingEnvironment.EnvironmentName;
+
+            hostingEnvironment.Configuration = configuration;
         }
     }
 }
