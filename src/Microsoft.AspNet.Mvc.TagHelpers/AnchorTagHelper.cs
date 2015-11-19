@@ -115,6 +115,13 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             }
         }
 
+        /// <summary>
+        /// Gets or sets the <see cref="Rendering.ViewContext"/> for the current request.
+        /// </summary>
+        [HtmlAttributeNotBound]
+        [ViewContext]
+        public ViewContext ViewContext { get; set; }
+
         /// <inheritdoc />
         /// <remarks>Does nothing if user provides an <c>href</c> attribute.</remarks>
         /// <exception cref="InvalidOperationException">
@@ -177,6 +184,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 if (Route == null)
                 {
                     tagBuilder = Generator.GenerateActionLink(
+                        ViewContext,
                         linkText: string.Empty,
                         actionName: Action,
                         controllerName: Controller,
@@ -200,6 +208,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 else
                 {
                     tagBuilder = Generator.GenerateRouteLink(
+                        ViewContext,
                         linkText: string.Empty,
                         routeName: Route,
                         protocol: Protocol,

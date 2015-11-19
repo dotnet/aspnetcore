@@ -99,10 +99,10 @@ namespace Microsoft.AspNet.Mvc
             return new ActionContext(httpContext, routeData, new ActionDescriptor());
         }
 
-        private static IServiceProvider GetServiceProvider(IUrlHelper urlHelper)
+        private static IServiceProvider GetServiceProvider()
         {
             var serviceCollection = new ServiceCollection();
-            serviceCollection.AddSingleton<IUrlHelper>(urlHelper);
+            serviceCollection.AddSingleton<IUrlHelperFactory, UrlHelperFactory>();
             serviceCollection.AddTransient<ILoggerFactory, LoggerFactory>();
             return serviceCollection.BuildServiceProvider();
         }
@@ -114,10 +114,7 @@ namespace Microsoft.AspNet.Mvc
             HttpResponse response)
         {
             var httpContext = new Mock<HttpContext>();
-            var actionContext = GetActionContext(httpContext.Object);
-            var actionContextAccessor = new ActionContextAccessor() { ActionContext = actionContext };
-            var urlHelper = new UrlHelper(actionContextAccessor);
-            var serviceProvider = GetServiceProvider(urlHelper);
+            var serviceProvider = GetServiceProvider();
 
             httpContext.Setup(o => o.Response)
                        .Returns(response);

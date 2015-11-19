@@ -11,6 +11,7 @@ using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.Abstractions;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
+using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.AspNet.Mvc.ViewEngines;
 using Microsoft.AspNet.Routing;
 using Microsoft.Extensions.OptionsModel;
@@ -656,7 +657,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                 antiforgery,
                 mvcViewOptionsAccessor.Object,
                 metadataProvider,
-                Mock.Of<IUrlHelper>(),
+                new UrlHelperFactory(),
                 htmlEncoder);
         }
 

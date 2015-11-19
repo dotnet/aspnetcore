@@ -14,6 +14,7 @@ using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.Abstractions;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
+using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.AspNet.Mvc.ViewEngines;
 using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.AspNet.Routing;
@@ -232,13 +233,18 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 .SetupGet(o => o.Value)
                 .Returns(options);
 
+            var urlHelperFactory = new Mock<IUrlHelperFactory>();
+            urlHelperFactory
+                .Setup(f => f.GetUrlHelper(It.IsAny<ActionContext>()))
+                .Returns(urlHelper);
+
             var serviceProvider = new Mock<IServiceProvider>();
             serviceProvider
                 .Setup(s => s.GetService(typeof(ICompositeViewEngine)))
                 .Returns(viewEngine);
             serviceProvider
-                .Setup(s => s.GetService(typeof(IUrlHelper)))
-                .Returns(urlHelper);
+                .Setup(s => s.GetService(typeof(IUrlHelperFactory)))
+                .Returns(urlHelperFactory.Object);
             serviceProvider
                 .Setup(s => s.GetService(typeof(IViewComponentHelper)))
                 .Returns(new Mock<IViewComponentHelper>().Object);
@@ -253,7 +259,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                     Mock.Of<IAntiforgery>(),
                     optionsAccessor.Object,
                     provider,
-                    urlHelper,
+                    urlHelperFactory.Object,
                     new HtmlTestEncoder());
             }
 

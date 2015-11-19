@@ -10,7 +10,6 @@ using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.Abstractions;
 using Microsoft.AspNet.Mvc.Infrastructure;
 using Microsoft.AspNet.Routing;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.OptionsModel;
@@ -32,9 +31,9 @@ namespace Microsoft.AspNet.Mvc.Routing
             string expectedPath)
         {
             // Arrange
-            var context = CreateHttpContext(GetServices(), appRoot);
-            var contextAccessor = CreateActionContext(context);
-            var urlHelper = CreateUrlHelper(contextAccessor);
+            var httpContext = CreateHttpContext(GetServices(), appRoot);
+            var actionContext = CreateActionContext(httpContext);
+            var urlHelper = CreateUrlHelper(actionContext);
 
             // Act
             var path = urlHelper.Content(contentPath);
@@ -57,9 +56,9 @@ namespace Microsoft.AspNet.Mvc.Routing
             string expectedPath)
         {
             // Arrange
-            var context = CreateHttpContext(GetServices(), appRoot);
-            var contextAccessor = CreateActionContext(context);
-            var urlHelper = CreateUrlHelper(contextAccessor);
+            var httpContext = CreateHttpContext(GetServices(), appRoot);
+            var actionContext = CreateActionContext(httpContext);
+            var urlHelper = CreateUrlHelper(actionContext);
 
             // Act
             var path = urlHelper.Content(contentPath);
@@ -754,13 +753,21 @@ namespace Microsoft.AspNet.Mvc.Routing
                 "{first}/{controller}/{action}",
                 new { second = "default", controller = "default", action = "default" });
 
-            var actionContext = services.GetService<IActionContextAccessor>().ActionContext;
+            var actionContext = new ActionContext()
+            {
+                HttpContext = new DefaultHttpContext()
+                {
+                    RequestServices = services,
+                },
+            };
+
+            actionContext.RouteData = new RouteData();
             actionContext.RouteData.Values.Add("first", "a");
             actionContext.RouteData.Values.Add("controller", "Store");
             actionContext.RouteData.Values.Add("action", "Buy");
             actionContext.RouteData.Routers.Add(routeBuilder.Build());
 
-            var urlHelper = CreateUrlHelper(services);
+            var urlHelper = CreateUrlHelper(actionContext);
 
             // Act
             //
@@ -791,14 +798,22 @@ namespace Microsoft.AspNet.Mvc.Routing
                 "{first}/{second}/{controller}/{action}",
                 new { second = "default", controller = "default", action = "default" });
 
-            var actionContext = services.GetService<IActionContextAccessor>().ActionContext;
+            var actionContext = new ActionContext()
+            {
+                HttpContext = new DefaultHttpContext()
+                {
+                    RequestServices = services,
+                },
+            };
+
+            actionContext.RouteData = new RouteData();
             actionContext.RouteData.Values.Add("first", "a");
             actionContext.RouteData.Values.Add("second", "x");
             actionContext.RouteData.Values.Add("controller", "Store");
             actionContext.RouteData.Values.Add("action", "Buy");
             actionContext.RouteData.Routers.Add(routeBuilder.Build());
 
-            var urlHelper = CreateUrlHelper(services);
+            var urlHelper = CreateUrlHelper(actionContext);
 
             // Act
             //
@@ -831,13 +846,21 @@ namespace Microsoft.AspNet.Mvc.Routing
                 "{first}/{controller}/{action}",
                 new { second = "default", controller = "default", action = "default" });
 
-            var actionContext = services.GetService<IActionContextAccessor>().ActionContext;
+            var actionContext = new ActionContext()
+            {
+                HttpContext = new DefaultHttpContext()
+                {
+                    RequestServices = services,
+                },
+            };
+
+            actionContext.RouteData = new RouteData();
             actionContext.RouteData.Values.Add("first", "a");
             actionContext.RouteData.Values.Add("controller", "Store");
             actionContext.RouteData.Values.Add("action", "Buy");
             actionContext.RouteData.Routers.Add(routeBuilder.Build());
 
-            var urlHelper = CreateUrlHelper(services);
+            var urlHelper = CreateUrlHelper(actionContext);
 
             // Act
             //
@@ -864,18 +887,17 @@ namespace Microsoft.AspNet.Mvc.Routing
             return context;
         }
 
-        private static IActionContextAccessor CreateActionContext(HttpContext context)
+        private static ActionContext CreateActionContext(HttpContext context)
         {
             return CreateActionContext(context, (new Mock<IRouter>()).Object);
         }
 
-        private static IActionContextAccessor CreateActionContext(HttpContext context, IRouter router)
+        private static ActionContext CreateActionContext(HttpContext context, IRouter router)
         {
             var routeData = new RouteData();
             routeData.Routers.Add(router);
 
-            var actionContext = new ActionContext(context, routeData, new ActionDescriptor());
-            return new ActionContextAccessor() { ActionContext = actionContext };
+            return new ActionContext(context, routeData, new ActionDescriptor());
         }
 
         private static UrlHelper CreateUrlHelper()
@@ -887,9 +909,9 @@ namespace Microsoft.AspNet.Mvc.Routing
             return new UrlHelper(actionContext);
         }
 
-        private static UrlHelper CreateUrlHelper(IServiceProvider services)
+        private static UrlHelper CreateUrlHelper(ActionContext context)
         {
-            return new UrlHelper(services.GetRequiredService<IActionContextAccessor>());
+            return new UrlHelper(context);
         }
 
         private static UrlHelper CreateUrlHelper(string host)
@@ -913,11 +935,6 @@ namespace Microsoft.AspNet.Mvc.Routing
             var actionContext = CreateActionContext(context, router);
             
             return new UrlHelper(actionContext);
-        }
-
-        private static UrlHelper CreateUrlHelper(IActionContextAccessor contextAccessor)
-        {
-            return new UrlHelper(contextAccessor);
         }
 
         private static UrlHelper CreateUrlHelper(string appBase, IRouter router)
@@ -959,20 +976,6 @@ namespace Microsoft.AspNet.Mvc.Routing
             services
                 .Setup(s => s.GetService(typeof(ILoggerFactory)))
                 .Returns(NullLoggerFactory.Instance);
-
-            services
-                .Setup(s => s.GetService(typeof(IActionContextAccessor)))
-                .Returns(new ActionContextAccessor()
-                {
-                    ActionContext = new ActionContext()
-                    {
-                        HttpContext = new DefaultHttpContext()
-                        {
-                            RequestServices = services.Object,
-                        },
-                        RouteData = new RouteData(),
-                    },
-                });
 
             return services.Object;
         }

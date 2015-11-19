@@ -12,6 +12,7 @@ using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.Abstractions;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
+using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.AspNet.Mvc.TestCommon;
 using Microsoft.AspNet.Mvc.ViewEngines;
 using Microsoft.AspNet.Mvc.ViewFeatures;
@@ -555,17 +556,23 @@ namespace Microsoft.AspNet.Mvc.Razor
             // Arrange
             var expected = "urlhelper-url";
             var helper = new Mock<IUrlHelper>();
-            helper.Setup(h => h.Content("url"))
-                  .Returns(expected)
-                  .Verifiable();
+            helper
+                .Setup(h => h.Content("url"))
+                .Returns(expected)
+                .Verifiable();
+            var factory = new Mock<IUrlHelperFactory>();
+            factory
+                .Setup(f => f.GetUrlHelper(It.IsAny<ActionContext>()))
+                .Returns(helper.Object);
+
             var page = CreatePage(v =>
             {
                 v.HtmlEncoder = new HtmlTestEncoder();
                 v.Write(v.Href("url"));
             });
             var services = new Mock<IServiceProvider>();
-            services.Setup(s => s.GetService(typeof(IUrlHelper)))
-                     .Returns(helper.Object);
+            services.Setup(s => s.GetService(typeof(IUrlHelperFactory)))
+                     .Returns(factory.Object);
             page.Context.RequestServices = services.Object;
 
             // Act

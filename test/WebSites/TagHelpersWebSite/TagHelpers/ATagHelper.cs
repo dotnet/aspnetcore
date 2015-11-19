@@ -3,20 +3,26 @@
 
 using System.Linq;
 using Microsoft.AspNet.Mvc;
+using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.Routing;
+using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.AspNet.Razor.TagHelpers;
 
 namespace TagHelpersWebSite.TagHelpers
 {
     public class ATagHelper : TagHelper
     {
-        public ATagHelper(IUrlHelper urlHelper)
+        public ATagHelper(IUrlHelperFactory urlHelperFactory)
         {
-            UrlHelper = urlHelper;
+            UrlHelperFactory = urlHelperFactory;
         }
 
         [HtmlAttributeNotBound]
-        public IUrlHelper UrlHelper { get; }
+        public IUrlHelperFactory UrlHelperFactory { get; }
+
+        [ViewContext]
+        [HtmlAttributeNotBound]
+        public ViewContext ViewContext { get; set; }
 
         public string Controller { get; set; }
 
@@ -33,7 +39,8 @@ namespace TagHelpersWebSite.TagHelpers
                 // be parameters to our final href value.
                 output.Attributes.Clear();
 
-                output.Attributes["href"] = UrlHelper.Action(Action, Controller, methodParameters);
+                var urlHelper = UrlHelperFactory.GetUrlHelper(ViewContext);
+                output.Attributes["href"] = urlHelper.Action(Action, Controller, methodParameters);
 
                 output.PreContent.SetContent("My ");
             }

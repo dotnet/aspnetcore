@@ -241,6 +241,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             }
 
             var tagBuilder = _htmlGenerator.GenerateActionLink(
+                ViewContext,
                 linkText,
                 actionName,
                 controllerName,
@@ -630,6 +631,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             }
 
             var tagBuilder = _htmlGenerator.GenerateRouteLink(
+                ViewContext,
                 linkText,
                 routeName,
                 protocol,

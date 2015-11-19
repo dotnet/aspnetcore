@@ -6,6 +6,7 @@ using System.Text.Encodings.Web;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Mvc.Razor.TagHelpers;
 using Microsoft.AspNet.Mvc.Rendering;
+using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.AspNet.Mvc.TagHelpers.Internal;
 using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.AspNet.Razor.TagHelpers;
@@ -37,13 +38,13 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         /// </summary>
         /// <param name="hostingEnvironment">The <see cref="IHostingEnvironment"/>.</param>
         /// <param name="cache">The <see cref="IMemoryCache"/>.</param>
-        /// <param name="urlHelper">The <see cref="IUrlHelper"/>.</param>
+        /// <param name="urlHelperFactory">The <see cref="IUrlHelperFactory"/>.</param>
         public ImageTagHelper(
             IHostingEnvironment hostingEnvironment,
             IMemoryCache cache,
             HtmlEncoder htmlEncoder,
-            IUrlHelper urlHelper)
-            : base(urlHelper, htmlEncoder)
+            IUrlHelperFactory urlHelperFactory)
+            : base(urlHelperFactory, htmlEncoder)
         {
             HostingEnvironment = hostingEnvironment;
             Cache = cache;
@@ -77,10 +78,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         public bool AppendVersion { get; set; }
 
         protected IHostingEnvironment HostingEnvironment { get; }
-
-        [HtmlAttributeNotBound]
-        [ViewContext]
-        public ViewContext ViewContext { get; set; }
 
         protected IMemoryCache Cache { get; }
 

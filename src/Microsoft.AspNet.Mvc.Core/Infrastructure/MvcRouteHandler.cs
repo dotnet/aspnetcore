@@ -19,6 +19,8 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
 {
     public class MvcRouteHandler : IRouter
     {
+        private bool _servicesRetrieved;
+
         private IActionContextAccessor _actionContextAccessor;
         private IActionInvokerFactory _actionInvokerFactory;
         private IActionSelector _actionSelector;
@@ -109,7 +111,11 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
         private Task InvokeActionAsync(RouteContext context, ActionDescriptor actionDescriptor)
         {
             var actionContext = new ActionContext(context.HttpContext, context.RouteData, actionDescriptor);
-            _actionContextAccessor.ActionContext = actionContext;
+
+            if (_actionContextAccessor != null)
+            {
+                _actionContextAccessor.ActionContext = actionContext;
+            }
 
             var invoker = _actionInvokerFactory.CreateInvoker(actionContext);
             if (invoker == null)
@@ -124,31 +130,23 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
 
         private void EnsureServices(HttpContext context)
         {
-            if (_actionContextAccessor == null)
+            if (_servicesRetrieved)
             {
-                _actionContextAccessor = context.RequestServices.GetRequiredService<IActionContextAccessor>();
+                return;
             }
 
-            if (_actionInvokerFactory == null)
-            {
-                _actionInvokerFactory = context.RequestServices.GetRequiredService<IActionInvokerFactory>();
-            }
+            // The IActionContextAccessor is optional. We want to avoid the overhead of using CallContext
+            // if possible.
+            _actionContextAccessor = context.RequestServices.GetService<IActionContextAccessor>();
 
-            if (_actionSelector == null)
-            {
-                _actionSelector = context.RequestServices.GetRequiredService<IActionSelector>();
-            }
+            _actionInvokerFactory = context.RequestServices.GetRequiredService<IActionInvokerFactory>();
+            _actionSelector = context.RequestServices.GetRequiredService<IActionSelector>();
+            _diagnosticSource = context.RequestServices.GetRequiredService<DiagnosticSource>();
 
-            if (_logger == null)
-            {
-                var factory = context.RequestServices.GetRequiredService<ILoggerFactory>();
-                _logger = factory.CreateLogger<MvcRouteHandler>();
-            }
-            
-            if (_diagnosticSource == null)
-            {
-                _diagnosticSource = context.RequestServices.GetRequiredService<DiagnosticSource>();
-            }
+            var factory = context.RequestServices.GetRequiredService<ILoggerFactory>();
+            _logger = factory.CreateLogger<MvcRouteHandler>();
+
+            _servicesRetrieved = true;
         }
     }
 }

@@ -7,6 +7,7 @@ using System.Reflection;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Razor.Internal;
 using Microsoft.AspNet.Mvc.Rendering;
+using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.AspNet.Mvc.ViewFeatures.Internal;
 using Microsoft.Extensions.DependencyInjection;
@@ -111,20 +112,29 @@ namespace Microsoft.AspNet.Mvc.Razor
             {
                 valueAccessor = context => context.ViewData;
             }
+            else if (typeof(IUrlHelper).IsAssignableFrom(property.PropertyType))
+            {
+                valueAccessor = context =>
+                {
+                    var serviceProvider = context.HttpContext.RequestServices;
+                    var factory = (IUrlHelperFactory)serviceProvider.GetRequiredService(typeof(IUrlHelperFactory));
+                    return factory.GetUrlHelper(context);
+                };
+            }
             else
             {
                 valueAccessor = context =>
-               {
-                   var serviceProvider = context.HttpContext.RequestServices;
-                   var value = serviceProvider.GetRequiredService(property.PropertyType);
-                   var canHasViewContext = value as ICanHasViewContext;
-                   if (canHasViewContext != null)
-                   {
-                       canHasViewContext.Contextualize(context);
-                   }
+                {
+                    var serviceProvider = context.HttpContext.RequestServices;
+                    var value = serviceProvider.GetRequiredService(property.PropertyType);
+                    var canHasViewContext = value as ICanHasViewContext;
+                    if (canHasViewContext != null)
+                    {
+                        canHasViewContext.Contextualize(context);
+                    }
 
-                   return value;
-               };
+                    return value;
+                };
             }
 
             return new PropertyActivator<ViewContext>(property, valueAccessor);

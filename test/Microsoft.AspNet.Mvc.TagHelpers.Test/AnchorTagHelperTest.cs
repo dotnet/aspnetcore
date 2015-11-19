@@ -71,6 +71,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 {
                     {  "name", "value" },
                 },
+                ViewContext = viewContext,
             };
 
             // Act
@@ -109,6 +110,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var generator = new Mock<IHtmlGenerator>(MockBehavior.Strict);
             generator
                 .Setup(mock => mock.GenerateRouteLink(
+                    It.IsAny<ViewContext>(),
                     string.Empty,
                     "Default",
                     "http",
@@ -157,6 +159,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var generator = new Mock<IHtmlGenerator>();
             generator
                 .Setup(mock => mock.GenerateActionLink(
+                    It.IsAny<ViewContext>(),
                     string.Empty,
                     "Index",
                     "Home",

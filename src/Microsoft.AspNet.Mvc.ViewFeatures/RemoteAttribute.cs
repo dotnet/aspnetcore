@@ -199,7 +199,9 @@ namespace Microsoft.AspNet.Mvc
             }
 
             var services = context.ActionContext.HttpContext.RequestServices;
-            var urlHelper = services.GetRequiredService<IUrlHelper>();
+            var factory = services.GetRequiredService<IUrlHelperFactory>();
+            var urlHelper = factory.GetUrlHelper(context.ActionContext);
+
             var url = urlHelper.RouteUrl(new UrlRouteContext()
             {
                 RouteName = this.RouteName,

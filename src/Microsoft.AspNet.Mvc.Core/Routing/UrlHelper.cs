@@ -2,12 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Mvc.Infrastructure;
 using Microsoft.AspNet.Routing;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNet.Mvc.Routing
 {
@@ -17,22 +14,27 @@ namespace Microsoft.AspNet.Mvc.Routing
     /// </summary>
     public class UrlHelper : IUrlHelper
     {
-        private readonly IActionContextAccessor _actionContextAccessor;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UrlHelper"/> class using the specified action context and
         /// action selector.
         /// </summary>
-        /// <param name="actionContextAccessor">The <see cref="IActionContextAccessor"/> to access the action context
-        /// of the current request.</param>
-        public UrlHelper(IActionContextAccessor actionContextAccessor)
+        /// <param name="actionContext">
+        /// The <see cref="Mvc.ActionContext"/> for the current request.
+        /// </param>
+        public UrlHelper(ActionContext actionContext)
         {
-            _actionContextAccessor = actionContextAccessor;
+            if (actionContext == null)
+            {
+                throw new ArgumentNullException(nameof(actionContext));
+            }
+            
+            ActionContext = actionContext;
         }
 
         protected RouteValueDictionary AmbientValues => ActionContext.RouteData.Values;
 
-        protected ActionContext ActionContext => _actionContextAccessor.ActionContext;
+        protected ActionContext ActionContext { get; }
 
         protected HttpContext HttpContext => ActionContext.HttpContext;
 

@@ -7,6 +7,8 @@ using System.ComponentModel;
 using System.Reflection;
 using System.Text.Encodings.Web;
 using Microsoft.AspNet.Mvc.Rendering;
+using Microsoft.AspNet.Mvc.Routing;
+using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.AspNet.Razor.TagHelpers;
 
 namespace Microsoft.AspNet.Mvc.Razor.TagHelpers
@@ -83,11 +85,11 @@ namespace Microsoft.AspNet.Mvc.Razor.TagHelpers
         /// <summary>
         /// Creates a new <see cref="UrlResolutionTagHelper"/>.
         /// </summary>
-        /// <param name="urlHelper">The <see cref="IUrlHelper"/>.</param>
+        /// <param name="urlHelper">The <see cref="IUrlHelperFactory"/>.</param>
         /// <param name="htmlEncoder">The <see cref="HtmlEncoder"/>.</param>
-        public UrlResolutionTagHelper(IUrlHelper urlHelper, HtmlEncoder htmlEncoder)
+        public UrlResolutionTagHelper(IUrlHelperFactory urlHelperFactory, HtmlEncoder htmlEncoder)
         {
-            UrlHelper = urlHelper;
+            UrlHelperFactory = urlHelperFactory;
             HtmlEncoder = htmlEncoder;
         }
 
@@ -100,9 +102,13 @@ namespace Microsoft.AspNet.Mvc.Razor.TagHelpers
             }
         }
 
-        protected IUrlHelper UrlHelper { get; }
+        protected IUrlHelperFactory UrlHelperFactory { get; }
 
         protected HtmlEncoder HtmlEncoder { get; }
+
+        [HtmlAttributeNotBound]
+        [ViewContext]
+        public ViewContext ViewContext { get; set; }
 
         /// <inheritdoc />
         public override void Process(TagHelperContext context, TagHelperOutput output)
@@ -202,7 +208,8 @@ namespace Microsoft.AspNet.Mvc.Razor.TagHelpers
             // Before doing more work, ensure that the URL we're looking at is app relative.
             if (trimmedUrl.Length >= 2 && trimmedUrl[0] == '~' && trimmedUrl[1] == '/')
             {
-                var appRelativeUrl = UrlHelper.Content(trimmedUrl);
+                var urlHelper = UrlHelperFactory.GetUrlHelper(ViewContext);
+                var appRelativeUrl = urlHelper.Content(trimmedUrl);
 
                 if (encodeWebRoot)
                 {

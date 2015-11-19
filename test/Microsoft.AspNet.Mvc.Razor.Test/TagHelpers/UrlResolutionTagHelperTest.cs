@@ -7,6 +7,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Rendering;
+using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.AspNet.Razor.TagHelpers;
 using Microsoft.Extensions.WebEncoders.Testing;
 using Moq;
@@ -58,7 +59,11 @@ namespace Microsoft.AspNet.Mvc.Razor.TagHelpers
             urlHelperMock
                 .Setup(urlHelper => urlHelper.Content(It.IsAny<string>()))
                 .Returns(new Func<string, string>(value => "/approot" + value.Substring(1)));
-            var tagHelper = new UrlResolutionTagHelper(urlHelperMock.Object, new HtmlTestEncoder());
+            var urlHelperFactory = new Mock<IUrlHelperFactory>();
+            urlHelperFactory
+                .Setup(f => f.GetUrlHelper(It.IsAny<ActionContext>()))
+                .Returns(urlHelperMock.Object);
+            var tagHelper = new UrlResolutionTagHelper(urlHelperFactory.Object, new HtmlTestEncoder());
 
             var context = new TagHelperContext(
                 allAttributes: new ReadOnlyTagHelperAttributeList<IReadOnlyTagHelperAttribute>(
@@ -114,7 +119,11 @@ namespace Microsoft.AspNet.Mvc.Razor.TagHelpers
             urlHelperMock
                 .Setup(urlHelper => urlHelper.Content(It.IsAny<string>()))
                 .Returns("approot/home/index.html");
-            var tagHelper = new UrlResolutionTagHelper(urlHelperMock.Object, htmlEncoder: null);
+            var urlHelperFactory = new Mock<IUrlHelperFactory>();
+            urlHelperFactory
+                .Setup(f => f.GetUrlHelper(It.IsAny<ActionContext>()))
+                .Returns(urlHelperMock.Object);
+            var tagHelper = new UrlResolutionTagHelper(urlHelperFactory.Object, htmlEncoder: null);
 
             var context = new TagHelperContext(
                 allAttributes: new ReadOnlyTagHelperAttributeList<IReadOnlyTagHelperAttribute>(
@@ -143,7 +152,7 @@ namespace Microsoft.AspNet.Mvc.Razor.TagHelpers
                     { "href", true }
                 },
                 getChildContentAsync: _ => Task.FromResult<TagHelperContent>(null));
-            var tagHelper = new UrlResolutionTagHelper(urlHelper: null, htmlEncoder: null);
+            var tagHelper = new UrlResolutionTagHelper(urlHelperFactory: null, htmlEncoder: null);
 
             var context = new TagHelperContext(
                 allAttributes: new ReadOnlyTagHelperAttributeList<IReadOnlyTagHelperAttribute>(
@@ -184,7 +193,11 @@ namespace Microsoft.AspNet.Mvc.Razor.TagHelpers
             urlHelperMock
                 .Setup(urlHelper => urlHelper.Content(It.IsAny<string>()))
                 .Returns("UnexpectedResult");
-            var tagHelper = new UrlResolutionTagHelper(urlHelperMock.Object, htmlEncoder: null);
+            var urlHelperFactory = new Mock<IUrlHelperFactory>();
+            urlHelperFactory
+                .Setup(f => f.GetUrlHelper(It.IsAny<ActionContext>()))
+                .Returns(urlHelperMock.Object);
+            var tagHelper = new UrlResolutionTagHelper(urlHelperFactory.Object, htmlEncoder: null);
 
             var context = new TagHelperContext(
                 allAttributes: new ReadOnlyTagHelperAttributeList<IReadOnlyTagHelperAttribute>(

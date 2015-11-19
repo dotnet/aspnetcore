@@ -15,6 +15,7 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Infrastructure;
 using Microsoft.AspNet.Mvc.Razor.Internal;
 using Microsoft.AspNet.Mvc.Rendering;
+using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.AspNet.Razor.TagHelpers;
@@ -629,7 +630,9 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             if (_urlHelper == null)
             {
-                _urlHelper = Context.RequestServices.GetRequiredService<IUrlHelper>();
+                var services = Context.RequestServices;
+                var factory = services.GetRequiredService<IUrlHelperFactory>();
+                _urlHelper = factory.GetUrlHelper(ViewContext);
             }
 
             return _urlHelper.Content(contentPath);

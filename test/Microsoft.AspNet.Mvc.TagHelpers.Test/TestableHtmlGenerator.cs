@@ -43,7 +43,12 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             IOptions<MvcViewOptions> options,
             IUrlHelper urlHelper,
             IDictionary<string, object> validationAttributes)
-            : base(Mock.Of<IAntiforgery>(), options, metadataProvider, urlHelper, new HtmlTestEncoder())
+            : base(
+                  Mock.Of<IAntiforgery>(),
+                  options,
+                  metadataProvider,
+                  CreateUrlHelperFactory(urlHelper),
+                  new HtmlTestEncoder())
         {
             _validationAttributes = validationAttributes;
         }
@@ -106,6 +111,16 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 .Returns(new MvcViewOptions());
 
             return mockOptions.Object;
+        }
+
+        private static IUrlHelperFactory CreateUrlHelperFactory(IUrlHelper urlHelper)
+        {
+            var factory = new Mock<IUrlHelperFactory>();
+            factory
+                .Setup(f => f.GetUrlHelper(It.IsAny<ActionContext>()))
+                .Returns(urlHelper);
+
+            return factory.Object;
         }
     }
 }

@@ -441,8 +441,13 @@ namespace Microsoft.AspNet.Mvc
 
         private static ClientModelValidationContext GetValidationContext(IUrlHelper urlHelper)
         {
+            var factory = new Mock<IUrlHelperFactory>();
+            factory
+                .Setup(f => f.GetUrlHelper(It.IsAny<ActionContext>()))
+                .Returns(urlHelper);
+
             var serviceCollection = GetServiceCollection();
-            serviceCollection.AddSingleton<IUrlHelper>(urlHelper);
+            serviceCollection.AddSingleton<IUrlHelperFactory>(factory.Object);
             var serviceProvider = serviceCollection.BuildServiceProvider();
 
             var actionContext = new ActionContext()
@@ -478,9 +483,15 @@ namespace Microsoft.AspNet.Mvc
                 routeData.Values["area"] = currentArea;
             }
 
-            var contextAccessor = GetContextAccessor(serviceProvider, routeData);
-            var urlHelper = new UrlHelper(contextAccessor);
-            serviceCollection.AddSingleton<IUrlHelper>(urlHelper);
+            var context = GetActionContext(serviceProvider, routeData);
+
+            var urlHelper = new UrlHelper(context);
+            var factory = new Mock<IUrlHelperFactory>();
+            factory
+                .Setup(f => f.GetUrlHelper(It.IsAny<ActionContext>()))
+                .Returns(urlHelper);
+
+            serviceCollection.AddSingleton<IUrlHelperFactory>(factory.Object);
             serviceProvider = serviceCollection.BuildServiceProvider();
 
             var actionContext = new ActionContext()
@@ -507,12 +518,17 @@ namespace Microsoft.AspNet.Mvc
                 },
             };
 
-            var contextAccessor = GetContextAccessor(serviceProvider, routeData);
-            var urlHelper = new UrlHelper(contextAccessor);
-            serviceCollection.AddSingleton<IUrlHelper>(urlHelper);
-            contextAccessor.ActionContext.HttpContext.RequestServices = serviceCollection.BuildServiceProvider();
+            var context = GetActionContext(serviceProvider, routeData);
+            var urlHelper = new UrlHelper(context);
+            var factory = new Mock<IUrlHelperFactory>();
+            factory
+                .Setup(f => f.GetUrlHelper(It.IsAny<ActionContext>()))
+                .Returns(urlHelper);
 
-            return new ClientModelValidationContext(contextAccessor.ActionContext, _metadata, _metadataProvider);
+            serviceCollection.AddSingleton<IUrlHelperFactory>(factory.Object);
+            context.HttpContext.RequestServices = serviceCollection.BuildServiceProvider();
+
+            return new ClientModelValidationContext(context, _metadata, _metadataProvider);
         }
 
         private static IRouter GetRouteCollectionWithArea(IServiceProvider serviceProvider)
@@ -553,7 +569,7 @@ namespace Microsoft.AspNet.Mvc
             return builder;
         }
 
-        private static IActionContextAccessor GetContextAccessor(
+        private static ActionContext GetActionContext(
             IServiceProvider serviceProvider,
             RouteData routeData = null)
         {
@@ -572,13 +588,7 @@ namespace Microsoft.AspNet.Mvc
                 };
             }
 
-            var actionContext = new ActionContext(httpContext, routeData, new ActionDescriptor());
-            var contextAccessor = new ActionContextAccessor()
-            {
-                ActionContext = actionContext,
-            };
-
-            return contextAccessor;
+            return new ActionContext(httpContext, routeData, new ActionDescriptor());
         }
 
         private static ServiceCollection GetServiceCollection()

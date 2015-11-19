@@ -13,6 +13,7 @@ using Microsoft.AspNet.Http.Authentication;
 using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
+using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.AspNet.Routing;
 using Microsoft.Extensions.DependencyInjection;
@@ -166,7 +167,8 @@ namespace Microsoft.AspNet.Mvc
             {
                 if (_url == null)
                 {
-                    _url = Resolver?.GetRequiredService<IUrlHelper>();
+                    var factory = Resolver?.GetRequiredService<IUrlHelperFactory>();
+                    _url = factory?.GetUrlHelper(ControllerContext);
                 }
 
                 return _url;

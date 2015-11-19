@@ -4,6 +4,7 @@
 using System;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.Logging;
+using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -98,7 +99,14 @@ namespace Microsoft.AspNet.Mvc
 
         private IUrlHelper GetUrlHelper(ActionContext context)
         {
-            return UrlHelper ?? context.HttpContext.RequestServices.GetRequiredService<IUrlHelper>();
+            var urlHelper = UrlHelper;
+            if (urlHelper == null)
+            {
+                var services = context.HttpContext.RequestServices;
+                urlHelper = services.GetRequiredService<IUrlHelperFactory>().GetUrlHelper(context);
+            }
+
+            return urlHelper;
         }
     }
 }

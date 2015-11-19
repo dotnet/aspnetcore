@@ -25,6 +25,7 @@ using Microsoft.Extensions.Primitives;
 using Microsoft.Extensions.WebEncoders.Testing;
 using Moq;
 using Xunit;
+using Microsoft.AspNet.Mvc.Routing;
 
 namespace Microsoft.AspNet.Mvc.TagHelpers
 {
@@ -64,6 +65,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             urlHelper
                 .Setup(urlhelper => urlhelper.Content(It.IsAny<string>()))
                 .Returns(new Func<string, string>(url => url.Replace("~/", "virtualRoot/")));
+            var urlHelperFactory = new Mock<IUrlHelperFactory>();
+            urlHelperFactory
+                .Setup(f => f.GetUrlHelper(It.IsAny<ActionContext>()))
+                .Returns(urlHelper.Object);
 
             var helper = new LinkTagHelper(
                 logger.Object,
@@ -71,7 +76,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 MakeCache(),
                 new HtmlTestEncoder(),
                 new JavaScriptTestEncoder(),
-                urlHelper.Object)
+                urlHelperFactory.Object)
             {
                 ViewContext = viewContext,
                 AppendVersion = true,
@@ -170,7 +175,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 MakeCache(),
                 new HtmlTestEncoder(),
                 new JavaScriptTestEncoder(),
-                MakeUrlHelper())
+                MakeUrlHelperFactory())
             {
                 ViewContext = viewContext,
                 FallbackHref = "test.css",
@@ -290,7 +295,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 MakeCache(),
                 new HtmlTestEncoder(),
                 new JavaScriptTestEncoder(),
-                MakeUrlHelper())
+                MakeUrlHelperFactory())
             {
                 ViewContext = viewContext,
                 GlobbingUrlBuilder = globbingUrlBuilder.Object
@@ -386,7 +391,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 MakeCache(),
                 new HtmlTestEncoder(),
                 new JavaScriptTestEncoder(),
-                MakeUrlHelper())
+                MakeUrlHelperFactory())
             {
                 ViewContext = viewContext,
                 GlobbingUrlBuilder = globbingUrlBuilder.Object
@@ -433,7 +438,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 MakeCache(),
                 new HtmlTestEncoder(),
                 new JavaScriptTestEncoder(),
-                MakeUrlHelper())
+                MakeUrlHelperFactory())
             {
                 ViewContext = viewContext,
                 FallbackHref = "test.css",
@@ -543,7 +548,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 MakeCache(),
                 new HtmlTestEncoder(),
                 new JavaScriptTestEncoder(),
-                MakeUrlHelper())
+                MakeUrlHelperFactory())
             {
                 ViewContext = viewContext,
             };
@@ -575,7 +580,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 MakeCache(),
                 new HtmlTestEncoder(),
                 new JavaScriptTestEncoder(),
-                MakeUrlHelper())
+                MakeUrlHelperFactory())
             {
                 ViewContext = viewContext,
             };
@@ -618,7 +623,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 MakeCache(),
                 new HtmlTestEncoder(),
                 new JavaScriptTestEncoder(),
-                MakeUrlHelper())
+                MakeUrlHelperFactory())
             {
                 GlobbingUrlBuilder = globbingUrlBuilder.Object,
                 ViewContext = viewContext,
@@ -663,7 +668,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 MakeCache(),
                 new HtmlTestEncoder(),
                 new JavaScriptTestEncoder(),
-                MakeUrlHelper())
+                MakeUrlHelperFactory())
             {
                 GlobbingUrlBuilder = globbingUrlBuilder.Object,
                 ViewContext = viewContext,
@@ -706,7 +711,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 MakeCache(),
                 new HtmlTestEncoder(),
                 new JavaScriptTestEncoder(),
-                MakeUrlHelper())
+                MakeUrlHelperFactory())
             {
                 ViewContext = viewContext,
                 Href = "/css/site.css",
@@ -746,7 +751,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 MakeCache(),
                 new HtmlTestEncoder(),
                 new JavaScriptTestEncoder(),
-                MakeUrlHelper())
+                MakeUrlHelperFactory())
             {
                 ViewContext = viewContext,
                 Href = "/bar/css/site.css",
@@ -790,7 +795,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 MakeCache(),
                 new HtmlTestEncoder(),
                 new JavaScriptTestEncoder(),
-                MakeUrlHelper())
+                MakeUrlHelperFactory())
             {
                 GlobbingUrlBuilder = globbingUrlBuilder.Object,
                 ViewContext = viewContext,
@@ -897,15 +902,19 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             return cache.Object;
         }
 
-        private static IUrlHelper MakeUrlHelper()
+        private static IUrlHelperFactory MakeUrlHelperFactory()
         {
             var urlHelper = new Mock<IUrlHelper>();
 
             urlHelper
                 .Setup(helper => helper.Content(It.IsAny<string>()))
                 .Returns(new Func<string, string>(url => url));
+            var urlHelperFactory = new Mock<IUrlHelperFactory>();
+            urlHelperFactory
+                .Setup(f => f.GetUrlHelper(It.IsAny<ActionContext>()))
+                .Returns(urlHelper.Object);
 
-            return urlHelper.Object;
+            return urlHelperFactory.Object;
         }
     }
 }

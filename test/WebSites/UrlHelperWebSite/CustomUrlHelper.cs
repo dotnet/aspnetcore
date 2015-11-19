@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.Infrastructure;
 using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.Extensions.OptionsModel;
@@ -16,16 +17,12 @@ namespace UrlHelperWebSite
     /// </summary>
     public class CustomUrlHelper : UrlHelper
     {
-        private readonly IOptions<AppOptions> _appOptions;
-        private readonly HttpContext _httpContext;
+        private readonly AppOptions _options;
 
-        public CustomUrlHelper(
-            IActionContextAccessor contextAccessor,
-            IOptions<AppOptions> appOptions)
-            : base(contextAccessor)
+        public CustomUrlHelper(ActionContext actionContext, AppOptions options)
+            : base(actionContext)
         {
-            _appOptions = appOptions;
-            _httpContext = contextAccessor.ActionContext.HttpContext;
+            _options = options;
         }
 
         /// <summary>
@@ -36,12 +33,12 @@ namespace UrlHelperWebSite
         /// <returns></returns>
         public override string Content(string contentPath)
         {
-            if (_appOptions.Value.ServeCDNContent
+            if (_options.ServeCDNContent
                 && contentPath.StartsWith("~/", StringComparison.Ordinal))
             {
                 var segment = new PathString(contentPath.Substring(1));
 
-                return ConvertToLowercaseUrl(_appOptions.Value.CDNServerBaseUrl + segment);
+                return ConvertToLowercaseUrl(_options.CDNServerBaseUrl + segment);
             }
 
             return ConvertToLowercaseUrl(base.Content(contentPath));
@@ -60,7 +57,7 @@ namespace UrlHelperWebSite
         private string ConvertToLowercaseUrl(string url)
         {
             if (!string.IsNullOrEmpty(url)
-                && _appOptions.Value.GenerateLowercaseUrls)
+                && _options.GenerateLowercaseUrls)
             {
                 return url.ToLowerInvariant();
             }

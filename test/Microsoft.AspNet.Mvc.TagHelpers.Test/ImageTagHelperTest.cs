@@ -13,6 +13,7 @@ using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.Abstractions;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
+using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.AspNet.Mvc.ViewEngines;
 using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.AspNet.Razor.TagHelpers;
@@ -63,12 +64,16 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             urlHelper
                 .Setup(urlhelper => urlhelper.Content(It.IsAny<string>()))
                 .Returns(new Func<string, string>(url => url.Replace("~/", "virtualRoot/")));
+            var urlHelperFactory = new Mock<IUrlHelperFactory>();
+            urlHelperFactory
+                .Setup(f => f.GetUrlHelper(It.IsAny<ActionContext>()))
+                .Returns(urlHelper.Object);
 
             var helper = new ImageTagHelper(
                 hostingEnvironment,
                 MakeCache(),
                 new HtmlTestEncoder(),
-                urlHelper.Object)
+                urlHelperFactory.Object)
             {
                 ViewContext = viewContext,
                 AppendVersion = true,
@@ -118,7 +123,11 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var hostingEnvironment = MakeHostingEnvironment();
             var viewContext = MakeViewContext();
 
-            var helper = new ImageTagHelper(hostingEnvironment, MakeCache(), new HtmlTestEncoder(), MakeUrlHelper())
+            var helper = new ImageTagHelper(
+                hostingEnvironment,
+                MakeCache(),
+                new HtmlTestEncoder(),
+                MakeUrlHelperFactory())
             {
                 ViewContext = viewContext,
                 Src = "testimage.png",
@@ -159,7 +168,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var hostingEnvironment = MakeHostingEnvironment();
             var viewContext = MakeViewContext();
 
-            var helper = new ImageTagHelper(hostingEnvironment, MakeCache(), new HtmlTestEncoder(), MakeUrlHelper())
+            var helper = new ImageTagHelper(hostingEnvironment, MakeCache(), new HtmlTestEncoder(), MakeUrlHelperFactory())
             {
                 ViewContext = viewContext,
                 Src = "/images/test-image.png",
@@ -195,7 +204,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var hostingEnvironment = MakeHostingEnvironment();
             var viewContext = MakeViewContext();
 
-            var helper = new ImageTagHelper(hostingEnvironment, MakeCache(), new HtmlTestEncoder(), MakeUrlHelper())
+            var helper = new ImageTagHelper(hostingEnvironment, MakeCache(), new HtmlTestEncoder(), MakeUrlHelperFactory())
             {
                 ViewContext = viewContext,
                 Src = "/images/test-image.png",
@@ -231,7 +240,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var hostingEnvironment = MakeHostingEnvironment();
             var viewContext = MakeViewContext("/bar");
 
-            var helper = new ImageTagHelper(hostingEnvironment, MakeCache(), new HtmlTestEncoder(), MakeUrlHelper())
+            var helper = new ImageTagHelper(hostingEnvironment, MakeCache(), new HtmlTestEncoder(), MakeUrlHelperFactory())
             {
                 ViewContext = viewContext,
                 Src = "/bar/images/image.jpg",
@@ -332,7 +341,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             return cache.Object;
         }
 
-        private static IUrlHelper MakeUrlHelper()
+        private static IUrlHelperFactory MakeUrlHelperFactory()
         {
             var urlHelper = new Mock<IUrlHelper>();
 
@@ -340,7 +349,12 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 .Setup(helper => helper.Content(It.IsAny<string>()))
                 .Returns(new Func<string, string>(url => url));
 
-            return urlHelper.Object;
+            var urlHelperFactory = new Mock<IUrlHelperFactory>();
+            urlHelperFactory
+                .Setup(f => f.GetUrlHelper(It.IsAny<ActionContext>()))
+                .Returns(urlHelper.Object);
+
+            return urlHelperFactory.Object;
         }
     }
 }

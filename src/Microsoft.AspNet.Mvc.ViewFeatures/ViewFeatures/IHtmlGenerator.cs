@@ -21,7 +21,31 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
 
         string FormatValue(object value, string format);
 
+        /// <summary>
+        /// Generate a &lt;a&gt; element for a link to an action.
+        /// </summary>
+        /// <param name="viewContext">The <see cref="ViewContext"/> instance for the current scope.</param>
+        /// <param name="linkText">The text to insert inside the element.</param>
+        /// <param name="actionName">The name of the action method.</param>
+        /// <param name="controllerName">The name of the controller.</param>
+        /// <param name="protocol">The protocol (scheme) for the generated link.</param>
+        /// <param name="hostname">The hostname for the generated link.</param>
+        /// <param name="fragment">The fragment for the genrated link.</param>
+        /// <param name="routeValues">
+        /// An <see cref="object"/> that contains the parameters for a route. The parameters are retrieved through
+        /// reflection by examining the properties of the <see cref="object"/>. This <see cref="object"/> is typically
+        /// created using <see cref="object"/> initializer syntax. Alternatively, an
+        /// <see cref="IDictionary{string, object}"/> instance containing the route parameters.
+        /// </param>
+        /// <param name="htmlAttributes">
+        /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
+        /// <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
+        /// </param>
+        /// <returns>
+        /// A <see cref="TagBuilder"/> instance for the &lt;a&gt; element.
+        /// </returns>
         TagBuilder GenerateActionLink(
+            ViewContext viewContext,
             string linkText,
             string actionName,
             string controllerName,
@@ -158,7 +182,30 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             bool? isChecked,
             object htmlAttributes);
 
+        /// <summary>
+        /// Generate a &lt;a&gt; element for a link to an action.
+        /// </summary>
+        /// <param name="viewContext">The <see cref="ViewContext"/> instance for the current scope.</param>
+        /// <param name="linkText">The text to insert inside the element.</param>
+        /// <param name="routeName">The name of the route to use for link generation.</param>
+        /// <param name="protocol">The protocol (scheme) for the generated link.</param>
+        /// <param name="hostname">The hostname for the generated link.</param>
+        /// <param name="fragment">The fragment for the genrated link.</param>
+        /// <param name="routeValues">
+        /// An <see cref="object"/> that contains the parameters for a route. The parameters are retrieved through
+        /// reflection by examining the properties of the <see cref="object"/>. This <see cref="object"/> is typically
+        /// created using <see cref="object"/> initializer syntax. Alternatively, an
+        /// <see cref="IDictionary{string, object}"/> instance containing the route parameters.
+        /// </param>
+        /// <param name="htmlAttributes">
+        /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
+        /// <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
+        /// </param>
+        /// <returns>
+        /// A <see cref="TagBuilder"/> instance for the &lt;a&gt; element.
+        /// </returns>
         TagBuilder GenerateRouteLink(
+            ViewContext viewContext,
             string linkText,
             string routeName,
             string protocol,

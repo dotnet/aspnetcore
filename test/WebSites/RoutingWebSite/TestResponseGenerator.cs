@@ -7,7 +7,7 @@ using System.Linq;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.Controllers;
 using Microsoft.AspNet.Mvc.Infrastructure;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNet.Mvc.Routing;
 
 namespace RoutingWebSite
 {
@@ -15,9 +15,12 @@ namespace RoutingWebSite
     public class TestResponseGenerator
     {
         private readonly ActionContext _actionContext;
+        private readonly IUrlHelperFactory _urlHelperFactory;
 
-        public TestResponseGenerator(IActionContextAccessor contextAccessor)
+        public TestResponseGenerator(IActionContextAccessor contextAccessor, IUrlHelperFactory urlHelperFactory)
         {
+            _urlHelperFactory = urlHelperFactory;
+
             _actionContext = contextAccessor.ActionContext;
             if (_actionContext == null)
             {
@@ -35,7 +38,7 @@ namespace RoutingWebSite
                     .Where(kvp => kvp.Key != "link" && kvp.Key != "link_action" && kvp.Key != "link_controller")
                     .ToDictionary(kvp => kvp.Key.Substring("link_".Length), kvp => (object)kvp.Value[0]);
 
-                var urlHelper = _actionContext.HttpContext.RequestServices.GetRequiredService<IUrlHelper>();
+                var urlHelper = _urlHelperFactory.GetUrlHelper(_actionContext);
                 link = urlHelper.Action(query["link_action"], query["link_controller"], values);
             }
 

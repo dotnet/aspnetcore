@@ -14,6 +14,7 @@ using Microsoft.AspNet.Html;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.AspNet.Mvc.Rendering;
+using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.AspNet.Mvc.ViewFeatures.Internal;
 using Microsoft.Extensions.OptionsModel;
 
@@ -28,7 +29,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         private readonly IAntiforgery _antiforgery;
         private readonly IClientModelValidatorProvider _clientModelValidatorProvider;
         private readonly IModelMetadataProvider _metadataProvider;
-        private readonly IUrlHelper _urlHelper;
+        private readonly IUrlHelperFactory _urlHelperFactory;
         private readonly HtmlEncoder _htmlEncoder;
 
         /// <summary>
@@ -44,7 +45,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             IAntiforgery antiforgery,
             IOptions<MvcViewOptions> optionsAccessor,
             IModelMetadataProvider metadataProvider,
-            IUrlHelper urlHelper,
+            IUrlHelperFactory urlHelperFactory,
             HtmlEncoder htmlEncoder)
         {
             if (antiforgery == null)
@@ -62,9 +63,9 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                 throw new ArgumentNullException(nameof(metadataProvider));
             }
 
-            if (urlHelper == null)
+            if (urlHelperFactory == null)
             {
-                throw new ArgumentNullException(nameof(urlHelper));
+                throw new ArgumentNullException(nameof(urlHelperFactory));
             }
 
             if (htmlEncoder == null)
@@ -76,7 +77,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             var clientValidatorProviders = optionsAccessor.Value.ClientModelValidatorProviders;
             _clientModelValidatorProvider = new CompositeClientModelValidatorProvider(clientValidatorProviders);
             _metadataProvider = metadataProvider;
-            _urlHelper = urlHelper;
+            _urlHelperFactory = urlHelperFactory;
             _htmlEncoder = htmlEncoder;
 
             // Underscores are fine characters in id's.
@@ -106,6 +107,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
 
         /// <inheritdoc />
         public virtual TagBuilder GenerateActionLink(
+            ViewContext viewContext,
             string linkText,
             string actionName,
             string controllerName,
@@ -115,12 +117,18 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             object routeValues,
             object htmlAttributes)
         {
+            if (viewContext == null)
+            {
+                throw new ArgumentNullException(nameof(viewContext));
+            }
+
             if (linkText == null)
             {
                 throw new ArgumentNullException(nameof(linkText));
             }
 
-            var url = _urlHelper.Action(actionName, controllerName, routeValues, protocol, hostname, fragment);
+            var urlHelper = _urlHelperFactory.GetUrlHelper(viewContext);
+            var url = urlHelper.Action(actionName, controllerName, routeValues, protocol, hostname, fragment);
             return GenerateLink(linkText, url, htmlAttributes);
         }
 
@@ -242,7 +250,8 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             }
             else
             {
-                action = _urlHelper.Action(action: actionName, controller: controllerName, values: routeValues);
+                var urlHelper = _urlHelperFactory.GetUrlHelper(viewContext);
+                action = urlHelper.Action(action: actionName, controller: controllerName, values: routeValues);
             }
 
             return GenerateFormCore(viewContext, action, method, htmlAttributes);
@@ -261,8 +270,8 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                 throw new ArgumentNullException(nameof(viewContext));
             }
 
-            var action =
-                _urlHelper.RouteUrl(routeName, values: routeValues, protocol: null, host: null, fragment: null);
+            var urlHelper = _urlHelperFactory.GetUrlHelper(viewContext);
+            var action = urlHelper.RouteUrl(routeName, routeValues);
 
             return GenerateFormCore(viewContext, action, method, htmlAttributes);
         }
@@ -444,6 +453,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
 
         /// <inheritdoc />
         public virtual TagBuilder GenerateRouteLink(
+            ViewContext viewContext,
             string linkText,
             string routeName,
             string protocol,
@@ -452,12 +462,18 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             object routeValues,
             object htmlAttributes)
         {
+            if (viewContext == null)
+            {
+                throw new ArgumentNullException(nameof(viewContext));
+            }
+
             if (linkText == null)
             {
                 throw new ArgumentNullException(nameof(linkText));
             }
 
-            var url = _urlHelper.RouteUrl(routeName, routeValues, protocol, hostName, fragment);
+            var urlHelper = _urlHelperFactory.GetUrlHelper(viewContext);
+            var url = urlHelper.RouteUrl(routeName, routeValues, protocol, hostName, fragment);
             return GenerateLink(linkText, url, htmlAttributes);
         }
 

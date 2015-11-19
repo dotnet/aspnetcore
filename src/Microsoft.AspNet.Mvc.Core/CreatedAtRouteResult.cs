@@ -5,6 +5,7 @@ using System;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Routing;
+using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Net.Http.Headers;
 
@@ -69,7 +70,12 @@ namespace Microsoft.AspNet.Mvc
 
             base.OnFormatting(context);
 
-            var urlHelper = UrlHelper ?? context.HttpContext.RequestServices.GetRequiredService<IUrlHelper>();
+            var urlHelper = UrlHelper;
+            if (urlHelper == null)
+            {
+                var services = context.HttpContext.RequestServices;
+                urlHelper = services.GetRequiredService<IUrlHelperFactory>().GetUrlHelper(context);
+            }
 
             var url = urlHelper.Link(RouteName, RouteValues);
 

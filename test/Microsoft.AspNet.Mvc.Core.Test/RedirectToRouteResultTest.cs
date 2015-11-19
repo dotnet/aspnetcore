@@ -90,15 +90,20 @@ namespace Microsoft.AspNet.Mvc
             // Arrange
             var routeName = "orders_api";
             var locationUrl = "/api/orders/10";
+
             var urlHelper = new Mock<IUrlHelper>();
-            urlHelper.Setup(uh => uh.RouteUrl(It.IsAny<UrlRouteContext>()))
+            urlHelper
+                .Setup(uh => uh.RouteUrl(It.IsAny<UrlRouteContext>()))
                 .Returns(locationUrl)
                 .Verifiable();
-
+            var factory = new Mock<IUrlHelperFactory>();
+            factory
+                .Setup(f => f.GetUrlHelper(It.IsAny<ActionContext>()))
+                .Returns(urlHelper.Object);
             var serviceProvider = new Mock<IServiceProvider>();
             serviceProvider
-                .Setup(sp => sp.GetService(typeof(IUrlHelper)))
-                .Returns(urlHelper.Object);
+                .Setup(sp => sp.GetService(typeof(IUrlHelperFactory)))
+                .Returns(factory.Object);
             serviceProvider
                 .Setup(sp => sp.GetService(typeof(ILoggerFactory)))
                 .Returns(NullLoggerFactory.Instance);

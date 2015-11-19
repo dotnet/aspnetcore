@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.Mvc.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace VersioningWebSite
@@ -14,6 +15,7 @@ namespace VersioningWebSite
             services.AddMvc();
 
             services.AddScoped<TestResponseGenerator>();
+            services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
         }
 
         public void Configure(IApplicationBuilder app)

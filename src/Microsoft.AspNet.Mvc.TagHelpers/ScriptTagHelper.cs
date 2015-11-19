@@ -7,6 +7,7 @@ using System.Text.Encodings.Web;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Mvc.Razor.TagHelpers;
 using Microsoft.AspNet.Mvc.Rendering;
+using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.AspNet.Mvc.TagHelpers.Internal;
 using Microsoft.AspNet.Mvc.TagHelpers.Logging;
 using Microsoft.AspNet.Mvc.ViewFeatures;
@@ -79,15 +80,15 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         /// <param name="cache">The <see cref="IMemoryCache"/>.</param>
         /// <param name="htmlEncoder">The <see cref="HtmlEncoder"/>.</param>
         /// <param name="javaScriptEncoder">The <see cref="JavaScriptEncoder"/>.</param>
-        /// <param name="urlHelper">The <see cref="IUrlHelper"/>.</param>
+        /// <param name="urlHelperFactory">The <see cref="IUrlHelperFactory"/>.</param>
         public ScriptTagHelper(
             ILogger<ScriptTagHelper> logger,
             IHostingEnvironment hostingEnvironment,
             IMemoryCache cache,
             HtmlEncoder htmlEncoder,
             JavaScriptEncoder javaScriptEncoder,
-            IUrlHelper urlHelper)
-            : base(urlHelper, htmlEncoder)
+            IUrlHelperFactory urlHelperFactory)
+            : base(urlHelperFactory, htmlEncoder)
         {
             Logger = logger;
             HostingEnvironment = hostingEnvironment;
@@ -169,10 +170,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         protected ILogger<ScriptTagHelper> Logger { get; }
 
         protected IHostingEnvironment HostingEnvironment { get; }
-
-        [HtmlAttributeNotBound]
-        [ViewContext]
-        public ViewContext ViewContext { get; set; }
 
         protected IMemoryCache Cache { get; }
 
