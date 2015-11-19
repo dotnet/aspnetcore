@@ -96,8 +96,6 @@ namespace Microsoft.AspNet.Hosting.Internal
             Server.Start(
                 async httpContext =>
                 {
-                    httpContext.ApplicationServices = _applicationServices;
-
                     if (diagnosticSource.IsEnabled("Microsoft.AspNet.Hosting.BeginRequest"))
                     {
                         diagnosticSource.Write("Microsoft.AspNet.Hosting.BeginRequest", new { httpContext = httpContext });

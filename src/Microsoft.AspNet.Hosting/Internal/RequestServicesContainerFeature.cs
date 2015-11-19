@@ -21,23 +21,7 @@ namespace Microsoft.AspNet.Hosting.Internal
                 throw new ArgumentNullException(nameof(applicationServices));
             }
 
-            ApplicationServices = applicationServices;
-        }
-
-        public IServiceProvider ApplicationServices
-        {
-            get
-            {
-                return _appServices;
-            }
-            set
-            {
-                if (value == null)
-                {
-                    throw new ArgumentNullException(nameof(value));
-                }
-                _appServices = value;
-            }
+            _appServices = applicationServices;
         }
 
         public IServiceProvider RequestServices
@@ -46,7 +30,7 @@ namespace Microsoft.AspNet.Hosting.Internal
             {
                 if (!_requestServicesSet)
                 {
-                    _scope = ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope();
+                    _scope = _appServices.GetRequiredService<IServiceScopeFactory>().CreateScope();
                     _requestServices = _scope.ServiceProvider;
                     _requestServicesSet = true;
                 }

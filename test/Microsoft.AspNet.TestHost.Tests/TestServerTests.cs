@@ -15,7 +15,6 @@ using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Http.Features.Internal;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Testing.xunit;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DiagnosticAdapter;
@@ -59,16 +58,17 @@ namespace Microsoft.AspNet.TestHost
 
             public void Configure(IApplicationBuilder app)
             {
+                var applicationServices = app.ApplicationServices;
                 app.Run(async context =>
                 {
-                    await context.Response.WriteAsync("ApplicationServicesEqual:" + (context.ApplicationServices == Services));
+                    await context.Response.WriteAsync("ApplicationServicesEqual:" + (applicationServices == Services));
                 });
             }
 
         }
 
         [Fact]
-        public async Task CustomServiceProviderReplacesApplicationServices()
+        public async Task CustomServiceProviderSetsApplicationServices()
         {
             var server = new TestServer(TestServer.CreateBuilder().UseStartup<CustomContainerStartup>());
             string result = await server.CreateClient().GetStringAsync("/path");
@@ -125,38 +125,17 @@ namespace Microsoft.AspNet.TestHost
         }
 
         [Fact]
-        public async Task SettingApplicationServicesOnFeatureToNullThrows()
-        {
-            var server = TestServer.Create(app =>
-            {
-                app.Run(context =>
-                {
-                    var feature = context.Features.Get<IServiceProvidersFeature>();
-                    Assert.Throws<ArgumentNullException>(() => feature.ApplicationServices = null);
-                    return context.Response.WriteAsync("Success");
-                });
-            });
-            string result = await server.CreateClient().GetStringAsync("/path");
-            Assert.Equal("Success", result);
-        }
-
-        [Fact]
         public async Task CanSetCustomServiceProvider()
         {
             var server = TestServer.Create(app =>
             {
                 app.Run(context =>
                 {
-                    context.ApplicationServices = new ServiceCollection()
-                    .AddTransient<TestService>()
-                    .BuildServiceProvider();
-
                     context.RequestServices = new ServiceCollection()
                     .AddTransient<TestService>()
                     .BuildServiceProvider();
-
-                    var s1 = context.ApplicationServices.GetRequiredService<TestService>();
-                    var s2 = context.RequestServices.GetRequiredService<TestService>();
+                    
+                    var s = context.RequestServices.GetRequiredService<TestService>();
 
                     return context.Response.WriteAsync("Success");
                 });
@@ -199,7 +178,6 @@ namespace Microsoft.AspNet.TestHost
             {
                 app.Run(context =>
                 {
-                    Assert.Equal(appServices, context.ApplicationServices);
                     Assert.Equal(appServices, context.RequestServices);
                     return context.Response.WriteAsync("Success");
                 });
@@ -236,7 +214,6 @@ namespace Microsoft.AspNet.TestHost
             {
                 app.Run(context =>
                 {
-                    Assert.NotNull(context.ApplicationServices);
                     Assert.NotNull(context.RequestServices);
                     return context.Response.WriteAsync("Success");
                 });
@@ -245,31 +222,6 @@ namespace Microsoft.AspNet.TestHost
             var result = await server.CreateClient().GetStringAsync("/path");
             Assert.Equal("Success", result);
         }
-
-
-        public class EnsureApplicationServicesFilter : IStartupFilter
-        {
-            public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next)
-            {
-                return builder =>
-                {
-                    builder.Run(context => {
-                        Assert.NotNull(context.ApplicationServices);
-                        return context.Response.WriteAsync("Done");
-                    });
-                };
-            }
-        }
-
-        [Fact]
-        public async Task ApplicationServicesShouldSetBeforeStatupFilters()
-        {
-            var server = TestServer.Create(app => { },
-                services => services.AddTransient<IStartupFilter, EnsureApplicationServicesFilter>());
-            string result = await server.CreateClient().GetStringAsync("/path");
-            Assert.Equal("Done", result);
-        }
-
 
         [Fact]
         public async Task CanAccessLogger()
