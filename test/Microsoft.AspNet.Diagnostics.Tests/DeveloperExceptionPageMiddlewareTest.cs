@@ -34,7 +34,7 @@ namespace Microsoft.AspNet.Diagnostics
                     "TestFiles/SourceFile.txt"
                 };
 
-                if (!TestPlatformHelper.IsMono)
+                if (!TestPlatformHelper.IsLinux)
                 {
                     data.Add(@"TestFiles\SourceFile.txt");
                 }
