@@ -8,6 +8,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Reflection;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Testing;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
@@ -34,7 +35,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         {
             get
             {
-                return new TheoryData<string, string>
+                var data = new TheoryData<string, string>
                 {
                     { "Customer", "/Customer/HtmlGeneration_Customer" },
                     { "Index", null },
@@ -62,9 +63,16 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                     { "OrderUsingHtmlHelpers", "/HtmlGeneration_Order/Submit" },
                     // Testing InputTagHelpers invoked in the partial views
                     { "ProductList", null },
-                    // Testing the ScriptTagHelper
-                    { "Script", null },
                 };
+
+                // One path hits aspnet/External#50 with Mono on Mac.
+                if (!TestPlatformHelper.IsMac || !TestPlatformHelper.IsMono)
+                {
+                    // Testing the ScriptTagHelper
+                    data.Add("Script", null);
+                }
+
+                return data;
             }
         }
 

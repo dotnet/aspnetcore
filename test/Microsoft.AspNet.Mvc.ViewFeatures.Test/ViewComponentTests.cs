@@ -5,6 +5,9 @@ using System.Text.Encodings.Web;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.ViewComponents;
 using Microsoft.AspNet.Mvc.ViewFeatures;
+#if !DNXCORE50
+using Microsoft.AspNet.Testing.xunit;
+#endif
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc
@@ -43,7 +46,12 @@ namespace Microsoft.AspNet.Mvc
             Assert.Equal("Bob", viewComponent.ViewBag.B);
         }
 
+#if DNXCORE50
         [Fact]
+#else
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "aspnet/External#50")]
+#endif
         public void ViewComponent_Content_SetsResultContentAndEncodedContent()
         {
             // Arrange

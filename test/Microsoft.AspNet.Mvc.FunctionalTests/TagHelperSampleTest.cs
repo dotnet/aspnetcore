@@ -4,6 +4,7 @@
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Testing;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
@@ -21,10 +22,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         {
             get
             {
-                return new TheoryData<string>
+                var data = new TheoryData<string>
                 {
-                    string.Empty,
-                    "/",
                     "/Home/Create",
                     "/Home/Create?Name=Billy&Blurb=hello&DateOfBirth=2000-11-30&YearsEmployeed=0",
                     "/Home/Create",
@@ -35,8 +34,17 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                     "/Home/Edit/1?Name=Jack&Blurb=goodbye&DateOfBirth=1979-10-20&YearsEmployeed=4",
                     "/Home/Edit/0",
                     "/Home/Edit/0?Name=Bobby&Blurb=howdy&DateOfBirth=1999-11-30&YearsEmployeed=2",
-                    "/Home/Index",
                 };
+
+                // Three paths hit aspnet/External#50 with Mono on Mac.
+                if (!TestPlatformHelper.IsMac || !TestPlatformHelper.IsMono)
+                {
+                    data.Add(string.Empty);
+                    data.Add("/");
+                    data.Add("/Home/Index");
+                }
+
+                return data;
             }
         }
 

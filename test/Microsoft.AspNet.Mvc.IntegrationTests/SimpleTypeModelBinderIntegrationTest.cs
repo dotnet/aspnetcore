@@ -11,6 +11,9 @@ using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.Abstractions;
 using Microsoft.AspNet.Mvc.Controllers;
 using Microsoft.AspNet.Mvc.ModelBinding;
+#if !DNXCORE50
+using Microsoft.AspNet.Testing.xunit;
+#endif
 using Microsoft.Extensions.Primitives;
 using Xunit;
 
@@ -247,7 +250,12 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Equal("The value 'abcd' is not valid for Int32.", error.ErrorMessage);
         }
 
+#if DNXCORE50
         [Theory]
+#else
+        [ConditionalTheory]
+        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "aspnet/External#50")]
+#endif
         [InlineData(typeof(int))]
         [InlineData(typeof(bool))]
         public async Task BindParameter_WithEmptyData_DoesNotBind(Type parameterType)

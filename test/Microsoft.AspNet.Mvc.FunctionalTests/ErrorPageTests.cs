@@ -5,6 +5,9 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
+#if !DNXCORE50
+using Microsoft.AspNet.Testing.xunit;
+#endif
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
@@ -21,7 +24,12 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
         public HttpClient Client { get; }
 
+#if DNXCORE50
         [Theory]
+#else
+        [ConditionalTheory]
+        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "aspnet/Mvc#3587")]
+#endif
         [InlineData("CompilationFailure", "Cannot implicitly convert type &#x27;int&#x27; to &#x27;string&#x27;")]
         [InlineData("ParserError", "The code block is missing a closing &quot;}&quot; character.  Make sure you " +
                                     "have a matching &quot;}&quot; character for all the &quot;{&quot; characters " +

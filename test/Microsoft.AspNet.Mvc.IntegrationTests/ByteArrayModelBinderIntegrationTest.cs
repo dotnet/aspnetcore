@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Abstractions;
 using Microsoft.AspNet.Mvc.ModelBinding;
+#if !DNXCORE50
+using Microsoft.AspNet.Testing.xunit;
+#endif
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.IntegrationTests
@@ -17,7 +20,12 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             public byte[] Token { get; set; }
         }
 
+#if DNXCORE50
         [Theory]
+#else
+        [ConditionalTheory]
+        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "aspnet/External#50")]
+#endif
         [InlineData(true)]
         [InlineData(false)]
         public async Task BindProperty_WithData_GetsBound(bool fallBackScenario)
