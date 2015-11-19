@@ -26,8 +26,7 @@ namespace Microsoft.AspNet.Routing
             var loggerFactory = new TestLoggerFactory(sink, enabled: true);
 
             var httpContext = new DefaultHttpContext();
-            httpContext.ApplicationServices = new ServiceProvider();
-            httpContext.RequestServices = httpContext.ApplicationServices;
+            httpContext.RequestServices = new ServiceProvider();
 
             RequestDelegate next = (c) =>
             {
@@ -58,8 +57,7 @@ namespace Microsoft.AspNet.Routing
             var loggerFactory = new TestLoggerFactory(sink, enabled: true);
 
             var httpContext = new DefaultHttpContext();
-            httpContext.ApplicationServices = new ServiceProvider();
-            httpContext.RequestServices = httpContext.ApplicationServices;
+            httpContext.RequestServices = new ServiceProvider();
 
             RequestDelegate next = (c) =>
             {
