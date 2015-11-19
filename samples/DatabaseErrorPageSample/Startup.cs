@@ -22,7 +22,7 @@ namespace DatabaseErrorPageSample
             app.UseDatabaseErrorPage();
             app.Run(context =>
             {
-                context.ApplicationServices.GetService<MyContext>().Blog.FirstOrDefault();
+                context.RequestServices.GetService<MyContext>().Blog.FirstOrDefault();
                 return Task.FromResult(0);
             });
         }

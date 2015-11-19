@@ -144,7 +144,7 @@ namespace Microsoft.AspNet.Diagnostics.Tests
                     .SetupGet(c => c.Response.Body)
                     .Returns(responseStream);
                 contextMock
-                    .SetupGet(c => c.ApplicationServices)
+                    .SetupGet(c => c.RequestServices)
                     .Returns(() => null);
 
                 // Act
@@ -203,7 +203,7 @@ namespace Microsoft.AspNet.Diagnostics.Tests
                     .SetupGet(c => c.Response.Body)
                     .Returns(responseStream);
                 contextMock
-                    .SetupGet(c => c.ApplicationServices)
+                    .SetupGet(c => c.RequestServices)
                     .Returns(new ServiceCollection()
                                 .AddSingleton<HtmlEncoder>(new HtmlTestEncoder())
                                 .BuildServiceProvider());

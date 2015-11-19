@@ -92,7 +92,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
 
             public virtual Task Invoke(HttpContext context)
             {
-                var db = context.ApplicationServices.GetService<BloggingContext>();
+                var db = context.RequestServices.GetService<BloggingContext>();
                 db.Database.EnsureCreated();
                 db.Database.ExecuteSqlCommand("ALTER TABLE dbo.Blog DROP COLUMN Name");
 
@@ -123,7 +123,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
 
             public virtual Task Invoke(HttpContext context)
             {
-                var db = context.ApplicationServices.GetService<BloggingContext>();
+                var db = context.RequestServices.GetService<BloggingContext>();
                 db.Blogs.Add(new Blog());
                 db.SaveChanges();
                 throw new Exception("SaveChanges should have thrown");
@@ -155,7 +155,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
 
             public virtual Task Invoke(HttpContext context)
             {
-                var db = context.ApplicationServices.GetService<BloggingContextWithMigrations>();
+                var db = context.RequestServices.GetService<BloggingContextWithMigrations>();
                 db.Blogs.Add(new Blog());
                 db.SaveChanges();
                 throw new Exception("SaveChanges should have thrown");
@@ -184,7 +184,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
 
             public virtual Task Invoke(HttpContext context)
             {
-                var db = context.ApplicationServices.GetService<BloggingContextWithPendingModelChanges>();
+                var db = context.RequestServices.GetService<BloggingContextWithPendingModelChanges>();
                     db.Database.Migrate();
 
                     db.Blogs.Add(new Blog());
@@ -237,7 +237,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
 
             public virtual async Task Invoke(HttpContext context)
             {
-                var db = context.ApplicationServices.GetService<BloggingContextWithMigrations>();
+                var db = context.RequestServices.GetService<BloggingContextWithMigrations>();
                 db.Blogs.Add(new Blog());
                 db.SaveChanges();
                 await context.Response.WriteAsync("Saved a Blog");
@@ -325,8 +325,8 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
 
             public virtual Task Invoke(HttpContext context)
             {
-                var options = context.ApplicationServices.GetService<DbContextOptions>();
-                var db = new BloggingContext(context.ApplicationServices, options);
+                var options = context.RequestServices.GetService<DbContextOptions>();
+                var db = new BloggingContext(context.RequestServices, options);
                 db.Blogs.Add(new Blog());
                 db.SaveChanges();
                 throw new Exception("SaveChanges should have thrown");
@@ -358,7 +358,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
 
             public virtual Task Invoke(HttpContext context)
             {
-                var db = context.ApplicationServices.GetService<BloggingContextWithSnapshotThatThrows>();
+                var db = context.RequestServices.GetService<BloggingContextWithSnapshotThatThrows>();
                 db.Blogs.Add(new Blog());
                 db.SaveChanges();
                 throw new Exception("SaveChanges should have thrown");
@@ -385,7 +385,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
 
             public virtual Task Invoke(HttpContext context)
             {
-                var db = context.ApplicationServices.GetService<BloggingContext>();
+                var db = context.RequestServices.GetService<BloggingContext>();
                 db.Blogs.Add(new Blog());
                 try
                 {

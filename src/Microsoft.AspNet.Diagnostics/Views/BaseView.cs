@@ -66,9 +66,9 @@ namespace Microsoft.AspNet.Diagnostics.Views
             Request = Context.Request;
             Response = Context.Response;
             Output = new StreamWriter(Response.Body, Encoding.UTF8, 4096, leaveOpen: true);
-            HtmlEncoder = context.ApplicationServices.GetHtmlEncoder();
-            UrlEncoder = context.ApplicationServices.GetUrlEncoder();
-            JavaScriptEncoder = context.ApplicationServices.GetJavaScriptEncoder();
+            HtmlEncoder = context.RequestServices.GetHtmlEncoder();
+            UrlEncoder = context.RequestServices.GetUrlEncoder();
+            JavaScriptEncoder = context.RequestServices.GetJavaScriptEncoder();
             await ExecuteAsync();
             Output.Dispose();
         }
