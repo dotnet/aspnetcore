@@ -16,7 +16,6 @@ using Microsoft.AspNet.Mvc.Infrastructure;
 using Microsoft.AspNet.Mvc.Razor.Internal;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.ViewFeatures;
-using Microsoft.AspNet.PageExecutionInstrumentation;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.AspNet.Razor.TagHelpers;
 using Microsoft.Extensions.DependencyInjection;
@@ -76,9 +75,6 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// </summary>
         [RazorInject]
         public HtmlEncoder HtmlEncoder { get; set; }
-
-        /// <inheritdoc />
-        public IPageExecutionContext PageExecutionContext { get; set; }
 
         /// <summary>
         /// Gets or sets a <see cref="DiagnosticSource.DiagnosticSource"/> instance used to instrument the page execution.
@@ -937,7 +933,6 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             const string BeginContextEvent = "Microsoft.AspNet.Mvc.Razor.BeginInstrumentationContext";
 
-            PageExecutionContext?.BeginContext(position, length, isLiteral);
             if (DiagnosticSource?.IsEnabled(BeginContextEvent) == true)
             {
                 DiagnosticSource.Write(
@@ -957,7 +952,6 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             const string EndContextEvent = "Microsoft.AspNet.Mvc.Razor.EndInstrumentationContext";
 
-            PageExecutionContext?.EndContext();
             if (DiagnosticSource?.IsEnabled(EndContextEvent) == true)
             {
                 DiagnosticSource.Write(

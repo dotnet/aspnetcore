@@ -22,8 +22,7 @@
             "Microsoft.AspNet.Mvc.Razor.Host": { },
             "Microsoft.AspNet.Mvc.TagHelpers": { },
             "Microsoft.AspNet.Mvc.ViewFeatures": { },
-            "Microsoft.AspNet.Mvc.WebApiCompatShim": { },
-            "Microsoft.AspNet.PageExecutionInstrumentation.Interfaces": { }
+            "Microsoft.AspNet.Mvc.WebApiCompatShim": { }
         }
     },
     "Default": { // Rules to run for packages not listed in any other set.

@@ -1,13 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Threading.Tasks;
+using System.Diagnostics;
+using System.IO;
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Mvc.Razor.Compilation;
-using Microsoft.AspNet.PageExecutionInstrumentation;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace RazorPageExecutionInstrumentationWebSite
@@ -22,24 +19,24 @@ namespace RazorPageExecutionInstrumentationWebSite
 
             // Add MVC services to the services container.
             services.AddMvc();
-
-            // Make instrumentation data available in views.
-            services.AddScoped<TestPageExecutionListenerFeature, TestPageExecutionListenerFeature>();
-            services.AddScoped<IHoldInstrumentationData>(
-                provider => provider.GetRequiredService<TestPageExecutionListenerFeature>().Holder);
         }
 
         public void Configure(IApplicationBuilder app)
         {
+            var listener = new RazorPageDiagnosticListener();
+            var diagnosticSource = app.ApplicationServices.GetRequiredService<DiagnosticListener>();
+            diagnosticSource.SubscribeWithAdapter(listener);
+
             app.UseCultureReplacer();
 
-            // Execute views with instrumentation enabled.
-            app.Use((HttpContext context, Func<Task> next) =>
+            app.Use(async (context, next) =>
             {
-                var listenerFeature = context.RequestServices.GetRequiredService<TestPageExecutionListenerFeature>();
-                context.Features.Set<IPageExecutionListenerFeature>(listenerFeature);
-
-                return next();
+                using (var writer = new StreamWriter(context.Response.Body))
+                {
+                    context.Items[RazorPageDiagnosticListener.WriterKey] = writer;
+                    context.Response.Body = Stream.Null;
+                    await next();
+                }
             });
 
             // Add MVC to the request pipeline

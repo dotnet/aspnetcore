@@ -1,12 +1,4 @@
-﻿@inject RazorPageExecutionInstrumentationWebSite.IHoldInstrumentationData Holder
-<div>
+﻿<div>
 @int.MaxValue
 @RenderBody()
 </div>
-@{
-    Holder.IgnoreFurtherData();
-    foreach (var data in Holder.Values)
-    {
-        <p>@data.ToString()</p>
-    }
-}

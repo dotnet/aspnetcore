@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.23107.0
+VisualStudioVersion = 14.0.24711.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{DAAE4C74-D06F-4874-A166-33305D2643CE}"
 EndProject
@@ -115,8 +115,6 @@ EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ControllersFromServicesWebSite", "test\WebSites\ControllersFromServicesWebSite\ControllersFromServicesWebSite.xproj", "{983741B2-4424-4ED1-9B03-7675A67230C8}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ControllersFromServicesClassLibrary", "test\WebSites\ControllersFromServicesClassLibrary\ControllersFromServicesClassLibrary.xproj", "{551DC89E-2A13-4CF2-83D7-1ADD802443D5}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.PageExecutionInstrumentation.Interfaces", "src\Microsoft.AspNet.PageExecutionInstrumentation.Interfaces\Microsoft.AspNet.PageExecutionInstrumentation.Interfaces.xproj", "{4DA2D7C1-A7B6-4C01-B57D-89E6EA4609DE}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "UserClassLibrary", "test\WebSites\UserClassLibrary\UserClassLibrary.xproj", "{C651F432-4EBE-41A6-BAD2-3E07CCBA209C}"
 EndProject
@@ -720,18 +718,6 @@ Global
 		{551DC89E-2A13-4CF2-83D7-1ADD802443D5}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{551DC89E-2A13-4CF2-83D7-1ADD802443D5}.Release|x86.ActiveCfg = Release|Any CPU
 		{551DC89E-2A13-4CF2-83D7-1ADD802443D5}.Release|x86.Build.0 = Release|Any CPU
-		{4DA2D7C1-A7B6-4C01-B57D-89E6EA4609DE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4DA2D7C1-A7B6-4C01-B57D-89E6EA4609DE}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4DA2D7C1-A7B6-4C01-B57D-89E6EA4609DE}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{4DA2D7C1-A7B6-4C01-B57D-89E6EA4609DE}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{4DA2D7C1-A7B6-4C01-B57D-89E6EA4609DE}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{4DA2D7C1-A7B6-4C01-B57D-89E6EA4609DE}.Debug|x86.Build.0 = Debug|Any CPU
-		{4DA2D7C1-A7B6-4C01-B57D-89E6EA4609DE}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{4DA2D7C1-A7B6-4C01-B57D-89E6EA4609DE}.Release|Any CPU.Build.0 = Release|Any CPU
-		{4DA2D7C1-A7B6-4C01-B57D-89E6EA4609DE}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{4DA2D7C1-A7B6-4C01-B57D-89E6EA4609DE}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{4DA2D7C1-A7B6-4C01-B57D-89E6EA4609DE}.Release|x86.ActiveCfg = Release|Any CPU
-		{4DA2D7C1-A7B6-4C01-B57D-89E6EA4609DE}.Release|x86.Build.0 = Release|Any CPU
 		{C651F432-4EBE-41A6-BAD2-3E07CCBA209C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C651F432-4EBE-41A6-BAD2-3E07CCBA209C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C651F432-4EBE-41A6-BAD2-3E07CCBA209C}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
@@ -1159,7 +1145,6 @@ Global
 		{AC9BE567-540E-4C70-90C2-AAF021307A80} = {16703B76-C9F7-4C75-AE6C-53D92E308E3C}
 		{983741B2-4424-4ED1-9B03-7675A67230C8} = {16703B76-C9F7-4C75-AE6C-53D92E308E3C}
 		{551DC89E-2A13-4CF2-83D7-1ADD802443D5} = {16703B76-C9F7-4C75-AE6C-53D92E308E3C}
-		{4DA2D7C1-A7B6-4C01-B57D-89E6EA4609DE} = {32285FA4-6B46-4D6B-A840-2B13E4C8B58E}
 		{C651F432-4EBE-41A6-BAD2-3E07CCBA209C} = {16703B76-C9F7-4C75-AE6C-53D92E308E3C}
 		{A19022EF-9BA3-4349-94E4-F48E13E1C8AE} = {16703B76-C9F7-4C75-AE6C-53D92E308E3C}
 		{B11C99C9-E577-4CA2-AC53-4F20EA71AD34} = {16703B76-C9F7-4C75-AE6C-53D92E308E3C}

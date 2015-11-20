@@ -12,7 +12,6 @@ using Microsoft.AspNet.Mvc.Abstractions;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.ViewFeatures;
-using Microsoft.AspNet.PageExecutionInstrumentation;
 using Microsoft.AspNet.Routing;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Extensions.WebEncoders.Testing;
@@ -54,7 +53,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             // Assert
             Assert.NotSame(expected, actual);
-            Assert.IsAssignableFrom<IBufferedTextWriter>(actual);
+            Assert.IsType<RazorTextWriter>(actual);
             Assert.Equal("HtmlEncode[[Hello world]]", viewContext.Writer.ToString());
         }
 
@@ -1374,163 +1373,6 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         [Fact]
-        public async Task RenderAsync_UsesPageExecutionFeatureFromRequest_ToWrapWriter()
-        {
-            // Arrange
-            var pageWriter = CreateBufferedWriter();
-            var layoutWriter = CreateBufferedWriter();
-
-            var layoutExecuted = false;
-            var count = -1;
-            var feature = new Mock<IPageExecutionListenerFeature>(MockBehavior.Strict);
-            feature
-                .Setup(f => f.DecorateWriter(It.IsAny<RazorTextWriter>()))
-                .Returns(() =>
-                {
-                    count++;
-                    if (count == 0)
-                    {
-                        return pageWriter;
-                    }
-                    else if (count == 1)
-                    {
-                        return layoutWriter;
-                    }
-                    throw new Exception();
-                })
-                .Verifiable();
-
-            var pageContext = Mock.Of<IPageExecutionContext>();
-            feature
-                .Setup(f => f.GetContext("/MyPage.cshtml", pageWriter))
-                .Returns(pageContext)
-                .Verifiable();
-
-            var layoutContext = Mock.Of<IPageExecutionContext>();
-            feature
-                .Setup(f => f.GetContext("/Layout.cshtml", layoutWriter))
-                .Returns(layoutContext)
-                .Verifiable();
-
-            var page = new TestableRazorPage(v =>
-            {
-                v.HtmlEncoder = new HtmlTestEncoder();
-                v.Layout = "Layout";
-                Assert.Same(pageWriter, v.Output);
-                Assert.Same(pageContext, v.PageExecutionContext);
-            });
-            page.Path = "/MyPage.cshtml";
-
-            var layout = new TestableRazorPage(v =>
-            {
-                v.HtmlEncoder = new HtmlTestEncoder();
-                Assert.Same(layoutWriter, v.Output);
-                Assert.Same(layoutContext, v.PageExecutionContext);
-                v.RenderBodyPublic();
-
-                layoutExecuted = true;
-            });
-            layout.Path = "/Layout.cshtml";
-
-            var viewEngine = new Mock<IRazorViewEngine>(MockBehavior.Strict);
-            viewEngine
-                .Setup(p => p.GetPage("/MyPage.cshtml", "Layout"))
-                .Returns(new RazorPageResult("Layout", Enumerable.Empty<string>()));
-            viewEngine
-                .Setup(p => p.FindPage(It.IsAny<ActionContext>(), "Layout"))
-                .Returns(new RazorPageResult("/Layout.cshtml", layout));
-
-            var view = new RazorView(
-                viewEngine.Object,
-                Mock.Of<IRazorPageActivator>(),
-                new IRazorPage[0],
-                page,
-                new HtmlTestEncoder());
-            var viewContext = CreateViewContext(view);
-            viewContext.HttpContext.Features.Set<IPageExecutionListenerFeature>(feature.Object);
-
-            // Act
-            await view.RenderAsync(viewContext);
-
-            // Assert
-            feature.Verify();
-            Assert.True(layoutExecuted);
-        }
-
-        [Fact]
-        public async Task RenderAsync_UsesPageExecutionFeatureFromRequest_ToGetExecutionContext()
-        {
-            // Arrange
-            var writer = new StringWriter();
-            var executed = false;
-            var feature = new Mock<IPageExecutionListenerFeature>(MockBehavior.Strict);
-
-            var pageContext = Mock.Of<IPageExecutionContext>();
-            feature.Setup(f => f.GetContext("/MyPartialPage.cshtml", It.IsAny<RazorTextWriter>()))
-                    .Returns(pageContext)
-                    .Verifiable();
-
-            feature.Setup(f => f.DecorateWriter(It.IsAny<RazorTextWriter>()))
-                   .Returns((RazorTextWriter r) => r)
-                   .Verifiable();
-
-            var page = new TestableRazorPage(v =>
-            {
-                v.HtmlEncoder = new HtmlTestEncoder();
-                Assert.IsType<RazorTextWriter>(v.Output);
-                Assert.Same(pageContext, v.PageExecutionContext);
-                executed = true;
-
-                v.Write("Hello world");
-            });
-            page.Path = "/MyPartialPage.cshtml";
-
-            var view = new RazorView(
-                Mock.Of<IRazorViewEngine>(),
-                Mock.Of<IRazorPageActivator>(),
-                new IRazorPage[0],
-                page,
-                new HtmlTestEncoder());
-            var viewContext = CreateViewContext(view);
-            viewContext.Writer = writer;
-            viewContext.HttpContext.Features.Set<IPageExecutionListenerFeature>(feature.Object);
-
-            // Act
-            await view.RenderAsync(viewContext);
-
-            // Assert
-            feature.Verify();
-            Assert.True(executed);
-            Assert.Equal("HtmlEncode[[Hello world]]", viewContext.Writer.ToString());
-        }
-
-        [Fact]
-        public async Task RenderAsync_DoesNotSetExecutionContextWhenListenerIsNotRegistered()
-        {
-            // Arrange
-            var executed = false;
-            var page = new TestableRazorPage(v =>
-            {
-                Assert.Null(v.PageExecutionContext);
-                executed = true;
-            });
-
-            var view = new RazorView(
-                Mock.Of<IRazorViewEngine>(),
-                Mock.Of<IRazorPageActivator>(),
-                new IRazorPage[0],
-                page,
-                new HtmlTestEncoder());
-            var viewContext = CreateViewContext(view);
-
-            // Act
-            await view.RenderAsync(viewContext);
-
-            // Assert
-            Assert.True(executed);
-        }
-
-        [Fact]
         public async Task RenderAsync_CopiesLayoutPropertyFromViewStart()
         {
             // Arrange
@@ -1716,15 +1558,6 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             // Assert
             Assert.Equal(expected, viewContext.Writer.ToString());
-        }
-
-        private static TextWriter CreateBufferedWriter()
-        {
-            var mockWriter = new Mock<TextWriter>();
-            var bufferedWriter = mockWriter.As<IBufferedTextWriter>();
-            bufferedWriter.SetupGet(b => b.IsBuffering)
-                          .Returns(true);
-            return mockWriter.Object;
         }
 
         private static ViewContext CreateViewContext(RazorView view)

@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Rendering;
-using Microsoft.AspNet.PageExecutionInstrumentation;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
@@ -44,11 +43,6 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// Gets or sets the path of a layout page.
         /// </summary>
         string Layout { get; set; }
-
-        /// <summary>
-        /// Gets or sets a <see cref="IPageExecutionContext"/> instance used to instrument the page execution.
-        /// </summary>
-        IPageExecutionContext PageExecutionContext { get; set; }
 
         /// <summary>
         /// Gets or sets the sections that can be rendered by this page.
