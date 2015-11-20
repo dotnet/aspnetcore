@@ -43,10 +43,10 @@ function Provision-AutoGenKeys {
         $aspNetKey = $softwareMicrosoftKey.CreateSubKey("ASP.NET")
     }
 
-    $aspNetBaseKey = $softwareMicrosoftKey.OpenSubKey("$expandedVersion", $True);
+    $aspNetBaseKey = $aspNetKey.OpenSubKey("$expandedVersion", $True);
     if ($aspNetBaseKey -eq $null)
     {
-        $aspNetBaseKey = $softwareMicrosoftKey.CreateSubKey("$expandedVersion")
+        $aspNetBaseKey = $aspNetKey.CreateSubKey("$expandedVersion")
     }
 
     # Create AutoGenKeys subkey if it doesn't already exist
