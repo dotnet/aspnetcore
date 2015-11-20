@@ -1756,9 +1756,7 @@ namespace Microsoft.AspNet.Mvc
             {
                 throw new ArgumentNullException(nameof(model));
             }
-
-            var modelExplorer = MetadataProvider.GetModelExplorerForType(model.GetType(), model);
-
+            
             var modelName = prefix ?? string.Empty;
 
             // Clear ModelStateDictionary entries for the model so that it will be re-validated.
