@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -136,6 +136,10 @@ namespace Microsoft.AspNet.Server.Testing
             DeploymentParameters.DnxRuntime = ChosenRuntimeName;
 
             Logger.LogInformation($"Chosen runtime path is {ChosenRuntimePath}");
+
+            // Work around win7 search path issues.
+            var newPath = ChosenRuntimePath + Path.PathSeparator + Environment.GetEnvironmentVariable("PATH");
+            DeploymentParameters.EnvironmentVariables.Add(new KeyValuePair<string, string>("PATH", newPath));
 
             return ChosenRuntimeName;
         }
