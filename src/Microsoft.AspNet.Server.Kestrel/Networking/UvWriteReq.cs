@@ -41,7 +41,9 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
 
         public unsafe void Write(
             UvStreamHandle handle,
-            ArraySegment<ArraySegment<byte>> bufs,
+            MemoryPoolIterator2 start,
+            MemoryPoolIterator2 end,
+            int nBuffers,
             Action<UvWriteReq, int, Exception, object> callback,
             object state)
         {
@@ -51,7 +53,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
                 _pins.Add(GCHandle.Alloc(this, GCHandleType.Normal));
 
                 var pBuffers = (Libuv.uv_buf_t*)_bufs;
-                var nBuffers = bufs.Count;
                 if (nBuffers > BUFFER_COUNT)
                 {
                     // create and pin buffer array when it's larger than the pre-allocated one
@@ -61,16 +62,18 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
                     pBuffers = (Libuv.uv_buf_t*)gcHandle.AddrOfPinnedObject();
                 }
 
+                var block = start.Block;
                 for (var index = 0; index < nBuffers; index++)
                 {
-                    // create and pin each segment being written
-                    var buf = bufs.Array[bufs.Offset + index];
+                    var blockStart = block == start.Block ? start.Index : block.Data.Offset;
+                    var blockEnd = block == end.Block ? end.Index : block.Data.Offset + block.Data.Count;
 
-                    var gcHandle = GCHandle.Alloc(buf.Array, GCHandleType.Pinned);
-                    _pins.Add(gcHandle);
+                    // create and pin each segment being written
                     pBuffers[index] = Libuv.buf_init(
-                        gcHandle.AddrOfPinnedObject() + buf.Offset,
-                        buf.Count);
+                        block.Pin() + blockStart,
+                        blockEnd - blockStart);
+
+                    block = block.Next;
                 }
 
                 _callback = callback;

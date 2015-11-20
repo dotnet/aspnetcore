@@ -98,24 +98,27 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
         }
 
         /// <summary>
-        /// Called to ensure that a block is pinned, and return the pointer to native memory just after
-        /// the range of "active" bytes. This is where arriving data is read into.
+        /// Called to ensure that a block is pinned, and return the pointer to the native address
+        /// of the first byte of this block's Data memory. Arriving data is read into Pin() + End.
+        /// Outgoing data is read from Pin() + Start.
         /// </summary>
         /// <returns></returns>
         public IntPtr Pin()
         {
-            Debug.Assert(!_pinHandle.IsAllocated);
-
             if (_dataArrayPtr != IntPtr.Zero)
             {
                 // this is a slab managed block - use the native address of the slab which is always locked
-                return _dataArrayPtr + End;
+                return _dataArrayPtr;
+            }
+            else if (_pinHandle.IsAllocated)
+            {
+                return _pinHandle.AddrOfPinnedObject();
             }
             else
             {
                 // this is one-time-use memory - lock the managed memory until Unpin is called
                 _pinHandle = GCHandle.Alloc(Data.Array, GCHandleType.Pinned);
-                return _pinHandle.AddrOfPinnedObject() + End;
+                return _pinHandle.AddrOfPinnedObject();
             }
         }
 

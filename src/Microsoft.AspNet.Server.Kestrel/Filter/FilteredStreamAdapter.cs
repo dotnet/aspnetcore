@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Filter
             IKestrelTrace logger)
         {
             SocketInput = new SocketInput(memory);
-            SocketOutput = new StreamSocketOutput(filteredStream);
+            SocketOutput = new StreamSocketOutput(filteredStream, memory);
 
             _log = logger;
             _filteredStream = filteredStream;

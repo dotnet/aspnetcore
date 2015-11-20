@@ -64,7 +64,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 {
                     _pinned = _tail;
                     var data = new ArraySegment<byte>(_pinned.Data.Array, _pinned.End, _pinned.Data.Offset + _pinned.Data.Count - _pinned.End);
-                    var dataPtr = _pinned.Pin();
+                    var dataPtr = _pinned.Pin() + _pinned.End;
                     return new IncomingBuffer
                     {
                         Data = data,
@@ -77,7 +77,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             return new IncomingBuffer
             {
                 Data = _pinned.Data,
-                DataPtr = _pinned.Pin()
+                DataPtr = _pinned.Pin() + _pinned.End
             };
         }
 

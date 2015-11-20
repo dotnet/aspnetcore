@@ -59,7 +59,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
         /// <param name="minimumSize">The block returned must be at least this size. It may be larger than this minimum size, and if so,
         /// the caller may write to the block's entire size rather than being limited to the minumumSize requested.</param>
         /// <returns>The block that is reserved for the called. It must be passed to Return when it is no longer being used.</returns>
-        public MemoryPoolBlock2 Lease(int minimumSize)
+        public MemoryPoolBlock2 Lease(int minimumSize = _blockLength)
         {
             if (minimumSize > _blockLength)
             {

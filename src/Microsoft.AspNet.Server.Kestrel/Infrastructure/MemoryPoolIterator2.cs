@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 
@@ -529,6 +530,47 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
                     index = block.Start;
                 }
             }
+        }
+
+        public MemoryPoolIterator2 CopyFrom(ArraySegment<byte> buffer)
+        {
+            Debug.Assert(_block != null);
+            Debug.Assert(_block.Pool != null);
+            Debug.Assert(_block.Next == null);
+            Debug.Assert(_block.End == _index);
+
+            var pool = _block.Pool;
+            var block = _block;
+            var blockIndex = _index;
+
+            var bufferIndex = buffer.Offset;
+            var remaining = buffer.Count;
+
+            while (remaining > 0)
+            {
+                var bytesLeftInBlock = block.Data.Offset + block.Data.Count - blockIndex;
+
+                if (bytesLeftInBlock == 0)
+                {
+                    var nextBlock = pool.Lease();
+                    block.Next = nextBlock;
+                    block = nextBlock;
+
+                    blockIndex = block.Data.Offset;
+                    bytesLeftInBlock = block.Data.Count;
+                }
+
+                var bytesToCopy = Math.Min(remaining, bytesLeftInBlock);
+
+                Buffer.BlockCopy(buffer.Array, bufferIndex, block.Array, blockIndex, bytesToCopy);
+
+                blockIndex += bytesToCopy;
+                bufferIndex += bytesToCopy;
+                remaining -= bytesToCopy;
+                block.End = blockIndex;
+            }
+
+            return new MemoryPoolIterator2(block, blockIndex);
         }
     }
 }
