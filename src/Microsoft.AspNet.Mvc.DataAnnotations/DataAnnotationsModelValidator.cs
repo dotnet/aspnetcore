@@ -5,30 +5,80 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using Microsoft.AspNet.Mvc.DataAnnotations;
 using Microsoft.Extensions.Localization;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 {
+    /// <summary>
+    /// Validates based on the given <see cref="ValidationAttribute"/>.
+    /// </summary>
     public class DataAnnotationsModelValidator : IModelValidator
     {
-        private IStringLocalizer _stringLocalizer;
+        private readonly IStringLocalizer _stringLocalizer;
+        private readonly IValidationAttributeAdapterProvider _validationAttributeAdapterProvider;
 
-        public DataAnnotationsModelValidator(ValidationAttribute attribute, IStringLocalizer stringLocalizer)
+        /// <summary>
+        ///  Create a new instance of <see cref="DataAnnotationsModelValidator"/>.
+        /// </summary>
+        /// <param name="attribute">The <see cref="ValidationAttribute"/> that defines what we're validating.</param>
+        /// <param name="stringLocalizer">The <see cref="IStringLocalizer"/> used to create messages.</param>
+        /// <param name="validationAttributeAdapterProvider">The <see cref="IValidationAttributeAdapterProvider"/>
+        /// which <see cref="ValidationAttributeAdapter{TAttribute}"/>'s will be created from.</param>
+        public DataAnnotationsModelValidator(
+            IValidationAttributeAdapterProvider validationAttributeAdapterProvider,
+            ValidationAttribute attribute,
+            IStringLocalizer stringLocalizer)
         {
+            if (validationAttributeAdapterProvider == null)
+            {
+                throw new ArgumentNullException(nameof(validationAttributeAdapterProvider));
+            }
+
             if (attribute == null)
             {
                 throw new ArgumentNullException(nameof(attribute));
             }
 
+            _validationAttributeAdapterProvider = validationAttributeAdapterProvider;
             Attribute = attribute;
             _stringLocalizer = stringLocalizer;
         }
 
+        /// <summary>
+        /// The attribute being validated against.
+        /// </summary>
         public ValidationAttribute Attribute { get; }
 
+        /// <summary>
+        /// Validates the context against the <see cref="ValidationAttribute"/>.
+        /// </summary>
+        /// <param name="validationContext">The context being validated.</param>
+        /// <returns>An enumerable of the validation results.</returns>
         public IEnumerable<ModelValidationResult> Validate(ModelValidationContext validationContext)
         {
-            var metadata = validationContext.Metadata;
+            if (validationContext == null)
+            {
+                throw new ArgumentNullException(nameof(validationContext));
+            }
+            if (validationContext.ModelMetadata == null)
+            {
+                throw new ArgumentException(
+                    Resources.FormatPropertyOfTypeCannotBeNull(
+                        nameof(validationContext.ModelMetadata),
+                        typeof(ModelValidationContext)),
+                    nameof(validationContext));
+            }
+            if (validationContext.MetadataProvider == null)
+            {
+                throw new ArgumentException(
+                    Resources.FormatPropertyOfTypeCannotBeNull(
+                        nameof(validationContext.MetadataProvider),
+                        typeof(ModelValidationContext)),
+                    nameof(validationContext));
+            }
+
+            var metadata = validationContext.ModelMetadata;
             var memberName = metadata.PropertyName ?? metadata.ModelType.Name;
             var container = validationContext.Container;
 
@@ -61,8 +111,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
                     string.IsNullOrEmpty(Attribute.ErrorMessageResourceName) &&
                     Attribute.ErrorMessageResourceType == null)
                 {
-                    var displayName = validationContext.Metadata.GetDisplayName();
-                    errorMessage = _stringLocalizer[Attribute.ErrorMessage, displayName];
+                    errorMessage = GetErrorMessage(validationContext);
                 }
 
                 var validationResult = new ModelValidationResult(errorMemberName, errorMessage ?? result.ErrorMessage);
@@ -70,6 +119,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             }
 
             return Enumerable.Empty<ModelValidationResult>();
+        }
+
+        private string GetErrorMessage(ModelValidationContextBase validationContext)
+        {
+            var adapter = _validationAttributeAdapterProvider.GetAttributeAdapter(Attribute, _stringLocalizer);
+            return adapter?.GetErrorMessage(validationContext);
         }
     }
 }

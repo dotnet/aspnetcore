@@ -14,6 +14,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
     public class ValidationVisitor
     {
         private readonly IModelValidatorProvider _validatorProvider;
+        private readonly IModelMetadataProvider _metadataProvider;
         private readonly ActionContext _actionContext;
         private readonly ModelStateDictionary _modelState;
         private readonly ValidationStateDictionary _validationState;
@@ -26,7 +27,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
         private IValidationStrategy _strategy;
 
         private HashSet<object> _currentPath;
-        
+
         /// <summary>
         /// Creates a new <see cref="ValidationVisitor"/>.
         /// </summary>
@@ -36,6 +37,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
         public ValidationVisitor(
             ActionContext actionContext,
             IModelValidatorProvider validatorProvider,
+            IModelMetadataProvider metadataProvider,
             ValidationStateDictionary validationState)
         {
             if (actionContext == null)
@@ -50,6 +52,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 
             _actionContext = actionContext;
             _validatorProvider = validatorProvider;
+            _metadataProvider = metadataProvider;
             _validationState = validationState;
 
             _modelState = actionContext.ModelState;
@@ -92,13 +95,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
                 var count = validators.Count;
                 if (count > 0)
                 {
-                    var context = new ModelValidationContext()
-                    {
-                        ActionContext = _actionContext,
-                        Container = _container,
-                        Model = _model,
-                        Metadata = _metadata,
-                    };
+                    var context = new ModelValidationContext(
+                        _actionContext,
+                        _metadata,
+                        _metadataProvider,
+                        _container,
+                        _model);
 
                     var results = new List<ModelValidationResult>();
                     for (var i = 0; i < count; i++)

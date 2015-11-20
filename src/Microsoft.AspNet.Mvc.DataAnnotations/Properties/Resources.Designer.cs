@@ -58,6 +58,22 @@ namespace Microsoft.AspNet.Mvc.DataAnnotations
             return string.Format(CultureInfo.CurrentCulture, GetString("NumericClientModelValidator_FieldMustBeNumber"), p0);
         }
 
+        /// <summary>
+        /// The '{0}' property of '{1}' must not be null.
+        /// </summary>
+        internal static string PropertyOfTypeCannotBeNull
+        {
+            get { return GetString("PropertyOfTypeCannotBeNull"); }
+        }
+
+        /// <summary>
+        /// The '{0}' property of '{1}' must not be null.
+        /// </summary>
+        internal static string FormatPropertyOfTypeCannotBeNull(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("PropertyOfTypeCannotBeNull"), p0, p1);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

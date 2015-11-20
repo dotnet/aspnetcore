@@ -9,7 +9,7 @@ using Microsoft.Extensions.Localization;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 {
-    public class CompareAttributeAdapter : DataAnnotationsClientModelValidator<CompareAttribute>
+    public class CompareAttributeAdapter : AttributeAdapterBase<CompareAttribute>
     {
         public CompareAttributeAdapter(CompareAttribute attribute, IStringLocalizer stringLocalizer)
             : base(new CompareAttributeWrapper(attribute), stringLocalizer)
@@ -28,19 +28,35 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
                 throw new ArgumentNullException(nameof(context));
             }
 
-            var errorMessage = ((CompareAttributeWrapper)Attribute).FormatErrorMessage(context);
-            var clientRule = new ModelClientValidationEqualToRule(errorMessage,
-                                                            FormatPropertyForClientValidation(Attribute.OtherProperty));
+            var errorMessage = GetErrorMessage(context);
+            var clientRule = new ModelClientValidationEqualToRule(errorMessage, "*." + Attribute.OtherProperty);
             return new[] { clientRule };
         }
 
-        private static string FormatPropertyForClientValidation(string property)
+        /// <inheritdoc />
+        public override string GetErrorMessage(ModelValidationContextBase validationContext)
         {
-            return "*." + property;
+            if (validationContext == null)
+            {
+                throw new ArgumentNullException(nameof(validationContext));
+            }
+
+            var displayName = validationContext.ModelMetadata.GetDisplayName();
+            var otherPropertyDisplayName = CompareAttributeWrapper.GetOtherPropertyDisplayName(
+                validationContext,
+                Attribute);
+
+            ((CompareAttributeWrapper)Attribute).ValidationContext = validationContext;
+
+            return GetErrorMessage(validationContext.ModelMetadata, displayName, otherPropertyDisplayName);
         }
 
+        // TODO: This entire class is needed because System.ComponentModel.DataAnnotations.CompareAttribute doesn't
+        // populate OtherPropertyDisplayName until you call FormatErrorMessage.
         private sealed class CompareAttributeWrapper : CompareAttribute
         {
+            public ModelValidationContextBase ValidationContext { get; set; }
+
             public CompareAttributeWrapper(CompareAttribute attribute)
                 : base(attribute.OtherProperty)
             {
@@ -58,34 +74,35 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
                 }
             }
 
-            public string FormatErrorMessage(ClientModelValidationContext context)
+            public override string FormatErrorMessage(string name)
             {
-                var displayName = context.ModelMetadata.GetDisplayName();
+                var displayName = ValidationContext.ModelMetadata.GetDisplayName();
                 return string.Format(CultureInfo.CurrentCulture,
                                      ErrorMessageString,
                                      displayName,
-                                     GetOtherPropertyDisplayName(context));
+                                     GetOtherPropertyDisplayName(ValidationContext, this));
             }
 
-            private string GetOtherPropertyDisplayName(ClientModelValidationContext context)
+            public static string GetOtherPropertyDisplayName(
+                ModelValidationContextBase validationContext,
+                CompareAttribute attribute)
             {
                 // The System.ComponentModel.DataAnnotations.CompareAttribute doesn't populate the
-                // OtherPropertyDisplayName until after IsValid() is called. Therefore, by the time we get
+                // OtherPropertyDisplayName until after IsValid() is called. Therefore, at the time we get
                 // the error message for client validation, the display name is not populated and won't be used.
-                var metadata = context.ModelMetadata;
-                var otherPropertyDisplayName = OtherPropertyDisplayName;
-                if (otherPropertyDisplayName == null && metadata.ContainerType != null)
+                var otherPropertyDisplayName = attribute.OtherPropertyDisplayName;
+                if (otherPropertyDisplayName == null && validationContext.ModelMetadata.ContainerType != null)
                 {
-                    var otherProperty = context.MetadataProvider.GetMetadataForProperty(
-                        metadata.ContainerType,
-                        OtherProperty);
+                    var otherProperty = validationContext.MetadataProvider.GetMetadataForProperty(
+                        validationContext.ModelMetadata.ContainerType,
+                        attribute.OtherProperty);
                     if (otherProperty != null)
                     {
                         return otherProperty.GetDisplayName();
                     }
                 }
 
-                return OtherProperty;
+                return attribute.OtherProperty;
             }
         }
     }

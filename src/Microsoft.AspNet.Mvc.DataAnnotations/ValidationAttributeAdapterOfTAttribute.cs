@@ -12,16 +12,16 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
     /// An implementation of <see cref="IClientModelValidator"/> which understands data annotation attributes.
     /// </summary>
     /// <typeparam name="TAttribute">The type of the attribute.</typeparam>
-    public abstract class DataAnnotationsClientModelValidator<TAttribute> : IClientModelValidator
+    public abstract class ValidationAttributeAdapter<TAttribute> : IClientModelValidator
         where TAttribute : ValidationAttribute
     {
         private readonly IStringLocalizer _stringLocalizer;
         /// <summary>
-        /// Create a new instance of <see cref="DataAnnotationsClientModelValidator{TAttribute}"/>.
+        /// Create a new instance of <see cref="ValidationAttributeAdapter{TAttribute}"/>.
         /// </summary>
         /// <param name="attribute">The <typeparamref name="TAttribute"/> instance to validate.</param>
         /// <param name="stringLocalizer">The <see cref="IStringLocalizer"/>.</param>
-        public DataAnnotationsClientModelValidator(TAttribute attribute, IStringLocalizer stringLocalizer)
+        public ValidationAttributeAdapter(TAttribute attribute, IStringLocalizer stringLocalizer)
         {
             Attribute = attribute;
             _stringLocalizer = stringLocalizer;
@@ -44,25 +44,24 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
         /// </summary>
         /// <param name="modelMetadata">The <see cref="ModelMetadata"/> associated with the model annotated with
         /// <see cref="Attribute"/>.</param>
+        /// <param name="arguments">The value arguments which will be used in constructing the error message.</param>
         /// <returns>Formatted error string.</returns>
-        protected virtual string GetErrorMessage(ModelMetadata modelMetadata)
+        protected virtual string GetErrorMessage(ModelMetadata modelMetadata, params object[] arguments)
         {
             if (modelMetadata == null)
             {
                 throw new ArgumentNullException(nameof(modelMetadata));
             }
 
-            var displayName = modelMetadata.GetDisplayName();
-
             if (_stringLocalizer != null &&
                 !string.IsNullOrEmpty(Attribute.ErrorMessage) &&
                 string.IsNullOrEmpty(Attribute.ErrorMessageResourceName) &&
                 Attribute.ErrorMessageResourceType == null)
             {
-                return _stringLocalizer[Attribute.ErrorMessage, displayName];
+                return _stringLocalizer[Attribute.ErrorMessage, arguments];
             }
-            
-            return Attribute.FormatErrorMessage(displayName);
+
+            return Attribute.FormatErrorMessage(modelMetadata.GetDisplayName());
         }
     }
 }

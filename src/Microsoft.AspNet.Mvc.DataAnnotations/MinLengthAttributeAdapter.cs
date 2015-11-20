@@ -4,11 +4,12 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNet.Mvc.DataAnnotations;
 using Microsoft.Extensions.Localization;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 {
-    public class MinLengthAttributeAdapter : DataAnnotationsClientModelValidator<MinLengthAttribute>
+    public class MinLengthAttributeAdapter : AttributeAdapterBase<MinLengthAttribute>
     {
         public MinLengthAttributeAdapter(MinLengthAttribute attribute, IStringLocalizer stringLocalizer)
             : base(attribute, stringLocalizer)
@@ -23,8 +24,22 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
                 throw new ArgumentNullException(nameof(context));
             }
 
-            var message = GetErrorMessage(context.ModelMetadata);
+            var message = GetErrorMessage(context);
             return new[] { new ModelClientValidationMinLengthRule(message, Attribute.Length) };
+        }
+
+        /// <inheritdoc />
+        public override string GetErrorMessage(ModelValidationContextBase validationContext)
+        {
+            if (validationContext == null)
+            {
+                throw new ArgumentNullException(nameof(validationContext));
+            }
+
+            return GetErrorMessage(
+                validationContext.ModelMetadata,
+                validationContext.ModelMetadata.GetDisplayName(),
+                Attribute.Length);
         }
     }
 }

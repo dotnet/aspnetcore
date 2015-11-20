@@ -4,7 +4,8 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNet.Testing;
 using Microsoft.AspNet.Testing.xunit;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Localization;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
@@ -13,7 +14,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
     {
         [Fact]
         [ReplaceCulture]
-        public void ClientRulesWithCompareAttribute_ErrorMessageUsesDisplayName()
+        public void ClientRulesWithCompareAttribute_ErrorMessageUsesDisplayName_WithoutLocalizer()
         {
             // Arrange
             var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
@@ -35,6 +36,39 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
                 PlatformNormalizer.NormalizeContent(
                     "'MyPropertyDisplayName' and 'OtherPropertyDisplayName' do not match."),
                 rule.ErrorMessage);
+        }
+
+        [Fact]
+        [ReplaceCulture]
+        public void ClientRulesWithCompareAttribute_ErrorMessageUsesDisplayName()
+        {
+            // Arrange
+            var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            var metadata = metadataProvider.GetMetadataForProperty(typeof(PropertyDisplayNameModel), "MyProperty");
+
+            var attribute = new CompareAttribute("OtherProperty");
+            attribute.ErrorMessage = "CompareAttributeErrorMessage";
+
+            var stringLocalizer = new Mock<IStringLocalizer>();
+            var expectedProperties = new object[] { "MyPropertyDisplayName", "OtherPropertyDisplayName" };
+
+            var expectedMessage = "'MyPropertyDisplayName' and 'OtherPropertyDisplayName' do not match.";
+
+            stringLocalizer.Setup(s => s[attribute.ErrorMessage, expectedProperties])
+                .Returns(new LocalizedString(attribute.ErrorMessage, expectedMessage));
+
+            var adapter = new CompareAttributeAdapter(attribute, stringLocalizer: stringLocalizer.Object);
+
+            var actionContext = new ActionContext();
+            var context = new ClientModelValidationContext(actionContext, metadata, metadataProvider);
+
+            // Act
+            var rules = adapter.GetClientValidationRules(context);
+
+            // Assert
+            var rule = Assert.Single(rules);
+            // Mono issue - https://github.com/aspnet/External/issues/19
+            Assert.Equal(expectedMessage, rule.ErrorMessage);
         }
 
         [Fact]
@@ -67,7 +101,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
         {
             // Arrange
             var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
-            var metadata = metadataProvider.GetMetadataForProperty( typeof(PropertyNameModel), "MyProperty");
+            var metadata = metadataProvider.GetMetadataForProperty(typeof(PropertyNameModel), "MyProperty");
 
             var attribute = new CompareAttribute("OtherProperty")
             {

@@ -3,12 +3,48 @@
 
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNet.Testing;
+using Microsoft.Extensions.Localization;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 {
     public class MinLengthAttributeAdapterTest
     {
+        [Fact]
+        [ReplaceCulture]
+        public void ClientRulesWithMinLengthAttribute_Localize()
+        {
+            // Arrange
+            var provider = TestModelMetadataProvider.CreateDefaultProvider();
+            var metadata = provider.GetMetadataForProperty(typeof(string), "Length");
+
+            var attribute = new MinLengthAttribute(6);
+            attribute.ErrorMessage = "Property must be at least '{1}' characters long.";
+
+            var expectedProperties = new object[] { "Length", 6 };
+            var expectedMessage = "Property must be at least '6' characters long.";
+
+            var stringLocalizer = new Mock<IStringLocalizer>();
+            stringLocalizer.Setup(s => s[attribute.ErrorMessage, expectedProperties])
+                .Returns(new LocalizedString(attribute.ErrorMessage, expectedMessage));
+
+            var adapter = new MinLengthAttributeAdapter(attribute, stringLocalizer: stringLocalizer.Object);
+
+            var actionContext = new ActionContext();
+            var context = new ClientModelValidationContext(actionContext, metadata, provider);
+
+            // Act
+            var rules = adapter.GetClientValidationRules(context);
+
+            // Assert
+            var rule = Assert.Single(rules);
+            Assert.Equal("minlength", rule.ValidationType);
+            Assert.Equal(1, rule.ValidationParameters.Count);
+            Assert.Equal(6, rule.ValidationParameters["min"]);
+            Assert.Equal(attribute.FormatErrorMessage("Length"), rule.ErrorMessage);
+        }
+
         [Fact]
         [ReplaceCulture]
         public void ClientRulesWithMinLengthAttribute()

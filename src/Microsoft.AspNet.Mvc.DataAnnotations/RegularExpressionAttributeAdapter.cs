@@ -4,11 +4,12 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNet.Mvc.DataAnnotations;
 using Microsoft.Extensions.Localization;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 {
-    public class RegularExpressionAttributeAdapter : DataAnnotationsClientModelValidator<RegularExpressionAttribute>
+    public class RegularExpressionAttributeAdapter : AttributeAdapterBase<RegularExpressionAttribute>
     {
         public RegularExpressionAttributeAdapter(RegularExpressionAttribute attribute, IStringLocalizer stringLocalizer)
             : base(attribute, stringLocalizer)
@@ -23,8 +24,22 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
                 throw new ArgumentNullException(nameof(context));
             }
 
-            var errorMessage = GetErrorMessage(context.ModelMetadata);
+            var errorMessage = GetErrorMessage(context);
             return new[] { new ModelClientValidationRegexRule(errorMessage, Attribute.Pattern) };
+        }
+
+        /// <inheritdoc />
+        public override string GetErrorMessage(ModelValidationContextBase validationContext)
+        {
+            if (validationContext == null)
+            {
+                throw new ArgumentNullException(nameof(validationContext));
+            }
+
+            return GetErrorMessage(
+                validationContext.ModelMetadata,
+                validationContext.ModelMetadata.GetDisplayName(),
+                Attribute.Pattern);
         }
     }
 }

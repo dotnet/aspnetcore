@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Internal;
+using Microsoft.AspNet.Mvc.DataAnnotations;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Moq;
 using Xunit;
@@ -230,6 +231,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                     ModelBinder = innerBinder ?? CreateIntBinder(),
                     MetadataProvider = metataProvider,
                     ValidatorProvider = new DataAnnotationsModelValidatorProvider(
+                        new ValidationAttributeAdapterProvider(),
                         new TestOptionsManager<MvcDataAnnotationsLocalizationOptions>(),
                         stringLocalizerFactory: null)
                 }

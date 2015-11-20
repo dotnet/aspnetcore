@@ -3,6 +3,7 @@
 
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using Microsoft.AspNet.Mvc.DataAnnotations;
 using Moq;
 using Xunit;
 
@@ -17,6 +18,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
         {
             // Arrange
             var provider = new DataAnnotationsModelValidatorProvider(
+                new ValidationAttributeAdapterProvider(),
                 new TestOptionsManager<MvcDataAnnotationsLocalizationOptions>(),
                 stringLocalizerFactory: null);
             var mockValidatable = Mock.Of<IValidatableObject>();
@@ -36,6 +38,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
         public void GetValidators_InsertsRequiredValidatorsFirst()
         {
             var provider = new DataAnnotationsModelValidatorProvider(
+                new ValidationAttributeAdapterProvider(),
                 new TestOptionsManager<MvcDataAnnotationsLocalizationOptions>(),
                 stringLocalizerFactory: null);
             var metadata = _metadataProvider.GetMetadataForProperty(
@@ -58,6 +61,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
         {
             // Arrange
             var provider = new DataAnnotationsModelValidatorProvider(
+                new ValidationAttributeAdapterProvider(),
                 new TestOptionsManager<MvcDataAnnotationsLocalizationOptions>(),
                 stringLocalizerFactory: null);
             var metadata = _metadataProvider.GetMetadataForType(typeof(DummyClassWithDummyValidationAttribute));
@@ -88,6 +92,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
         {
             // Arrange
             var provider = new DataAnnotationsModelValidatorProvider(
+                new ValidationAttributeAdapterProvider(),
                 new TestOptionsManager<MvcDataAnnotationsLocalizationOptions>(),
                 stringLocalizerFactory: null);
             var mockValidatable = new Mock<IValidatableObject>();

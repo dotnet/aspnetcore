@@ -4,11 +4,12 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNet.Mvc.DataAnnotations;
 using Microsoft.Extensions.Localization;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 {
-    public class MaxLengthAttributeAdapter : DataAnnotationsClientModelValidator<MaxLengthAttribute>
+    public class MaxLengthAttributeAdapter : AttributeAdapterBase<MaxLengthAttribute>
     {
         public MaxLengthAttributeAdapter(MaxLengthAttribute attribute, IStringLocalizer stringLocalizer)
             : base(attribute, stringLocalizer)
@@ -23,8 +24,22 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
                 throw new ArgumentNullException(nameof(context));
             }
 
-            var message = GetErrorMessage(context.ModelMetadata);
+            var message = GetErrorMessage(context);
             return new[] { new ModelClientValidationMaxLengthRule(message, Attribute.Length) };
+        }
+
+        /// <inheritdoc />
+        public override string GetErrorMessage(ModelValidationContextBase validationContext)
+        {
+            if (validationContext == null)
+            {
+                throw new ArgumentNullException(nameof(validationContext));
+            }
+
+            return GetErrorMessage(
+                validationContext.ModelMetadata,
+                validationContext.ModelMetadata.GetDisplayName(),
+                Attribute.Length);
         }
     }
 }

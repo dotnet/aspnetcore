@@ -1,7 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNet.Mvc.DataAnnotations;
 #if DOTNET5_4
 using System.Reflection;
 #endif
@@ -19,16 +21,30 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
     {
         private readonly IOptions<MvcDataAnnotationsLocalizationOptions> _options;
         private readonly IStringLocalizerFactory _stringLocalizerFactory;
+        private readonly IValidationAttributeAdapterProvider _validationAttributeAdapterProvider;
 
         /// <summary>
         /// Create a new instance of <see cref="DataAnnotationsModelValidatorProvider"/>.
         /// </summary>
         /// <param name="options">The <see cref="IOptions{MvcDataAnnotationsLocalizationOptions}"/>.</param>
         /// <param name="stringLocalizerFactory">The <see cref="IStringLocalizerFactory"/>.</param>
+        /// <remarks><paramref name="options"/> and <paramref name="stringLocalizerFactory"/>
+        /// are nullable only for testing ease.</remarks>
         public DataAnnotationsModelValidatorProvider(
+            IValidationAttributeAdapterProvider validationAttributeAdapterProvider,
             IOptions<MvcDataAnnotationsLocalizationOptions> options,
             IStringLocalizerFactory stringLocalizerFactory)
         {
+            if (validationAttributeAdapterProvider == null)
+            {
+                throw new ArgumentNullException(nameof(validationAttributeAdapterProvider));
+            }
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
+            _validationAttributeAdapterProvider = validationAttributeAdapterProvider;
             _options = options;
             _stringLocalizerFactory = stringLocalizerFactory;
         }
@@ -51,7 +67,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
                     continue;
                 }
 
-                var validator = new DataAnnotationsModelValidator(attribute, stringLocalizer);
+                var validator = new DataAnnotationsModelValidator(
+                    _validationAttributeAdapterProvider,
+                    attribute,
+                    stringLocalizer);
 
                 // Inserts validators based on whether or not they are 'required'. We want to run
                 // 'required' validators first so that we get the best possible error message.

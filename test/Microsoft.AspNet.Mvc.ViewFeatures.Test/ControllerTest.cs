@@ -1863,9 +1863,12 @@ namespace Microsoft.AspNet.Mvc.Test
                 HttpContext = httpContext,
                 ModelBinders = new[] { binder, },
                 ValueProviders = new[] { valueProvider, },
-                ValidatorProviders = new []
+                ValidatorProviders = new[]
                 {
-                    new DataAnnotationsModelValidatorProvider(options: null, stringLocalizerFactory: null),
+                    new DataAnnotationsModelValidatorProvider(
+                        new ValidationAttributeAdapterProvider(),
+                        new TestOptionsManager<MvcDataAnnotationsLocalizationOptions>(),
+                        stringLocalizerFactory: null),
                 },
             };
 

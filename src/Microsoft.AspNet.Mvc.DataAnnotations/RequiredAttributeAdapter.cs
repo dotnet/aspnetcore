@@ -4,11 +4,12 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNet.Mvc.DataAnnotations;
 using Microsoft.Extensions.Localization;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 {
-    public class RequiredAttributeAdapter : DataAnnotationsClientModelValidator<RequiredAttribute>
+    public class RequiredAttributeAdapter : AttributeAdapterBase<RequiredAttribute>
     {
         public RequiredAttributeAdapter(RequiredAttribute attribute, IStringLocalizer stringLocalizer)
             : base(attribute, stringLocalizer)
@@ -23,8 +24,19 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
                 throw new ArgumentNullException(nameof(context));
             }
 
-            var errorMessage = GetErrorMessage(context.ModelMetadata);
+            var errorMessage = GetErrorMessage(context);
             return new[] { new ModelClientValidationRequiredRule(errorMessage) };
+        }
+
+        /// <inheritdoc />
+        public override string GetErrorMessage(ModelValidationContextBase validationContext)
+        {
+            if (validationContext == null)
+            {
+                throw new ArgumentNullException(nameof(validationContext));
+            }
+
+            return GetErrorMessage(validationContext.ModelMetadata, validationContext.ModelMetadata.GetDisplayName());
         }
     }
 }

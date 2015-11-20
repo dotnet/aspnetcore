@@ -3,7 +3,6 @@
 
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNet.Testing;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
 using Moq;
 using Xunit;
@@ -12,6 +11,40 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 {
     public class MaxLengthAttributeAdapterTest
     {
+        [Fact]
+        [ReplaceCulture]
+        public void ClientRulesWithMaxLengthAttribute_Localize()
+        {
+            // Arrange
+            var provider = TestModelMetadataProvider.CreateDefaultProvider();
+            var metadata = provider.GetMetadataForProperty(typeof(string), "Length");
+
+            var attribute = new MaxLengthAttribute(10);
+            attribute.ErrorMessage = "Property must be max '{1}' characters long.";
+
+            var expectedProperties = new object[] { "Length", 10 };
+            var expectedMessage = "Property must be max '10' characters long.";
+
+            var stringLocalizer = new Mock<IStringLocalizer>();
+            stringLocalizer.Setup(s => s[attribute.ErrorMessage, expectedProperties])
+                .Returns(new LocalizedString(attribute.ErrorMessage, expectedMessage));
+
+            var adapter = new MaxLengthAttributeAdapter(attribute, stringLocalizer: stringLocalizer.Object);
+
+            var actionContext = new ActionContext();
+            var context = new ClientModelValidationContext(actionContext, metadata, provider);
+
+            // Act
+            var rules = adapter.GetClientValidationRules(context);
+
+            // Assert
+            var rule = Assert.Single(rules);
+            Assert.Equal("maxlength", rule.ValidationType);
+            Assert.Equal(1, rule.ValidationParameters.Count);
+            Assert.Equal(10, rule.ValidationParameters["max"]);
+            Assert.Equal(attribute.FormatErrorMessage("Length"), rule.ErrorMessage);
+        }
+
         [Fact]
         [ReplaceCulture]
         public void ClientRulesWithMaxLengthAttribute()
@@ -77,7 +110,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             attribute.ErrorMessage = errorKey;
             var localizedString = new LocalizedString(errorKey, "Longueur est invalide");
             var stringLocalizer = new Mock<IStringLocalizer>();
-            stringLocalizer.Setup(s => s[errorKey, It.IsAny<object[]>()]).Returns(localizedString);
+            stringLocalizer.Setup(s => s[errorKey, metadata.GetDisplayName(), attribute.Length]).Returns(localizedString);
 
             var adapter = new MaxLengthAttributeAdapter(attribute, stringLocalizer.Object);
 

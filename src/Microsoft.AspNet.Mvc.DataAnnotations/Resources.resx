@@ -126,4 +126,7 @@
   <data name="NumericClientModelValidator_FieldMustBeNumber" xml:space="preserve">
     <value>The field {0} must be a number.</value>
   </data>
+  <data name="PropertyOfTypeCannotBeNull" xml:space="preserve">
+    <value>The '{0}' property of '{1}' must not be null.</value>
+  </data>
 </root>

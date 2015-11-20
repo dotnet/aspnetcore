@@ -48,6 +48,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             var visitor = new ValidationVisitor(
                 actionContext,
                 validatorProvider,
+                _modelMetadataProvider,
                 validationState);
 
             var metadata = model == null ? null : _modelMetadataProvider.GetMetadataForType(model.GetType());
