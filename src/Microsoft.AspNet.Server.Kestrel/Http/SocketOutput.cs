@@ -305,11 +305,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                     var returnBlock = block;
                     block = block.Next;
 
-                    returnBlock.Unpin();
                     returnBlock.Pool?.Return(returnBlock);
                 }
-
-                _tail.Unpin();
 
                 if (_isProducing)
                 {
@@ -381,6 +378,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
                 var writeReq = new UvWriteReq(Self._log);
                 writeReq.Init(Self._thread.Loop);
+
                 writeReq.Write(Self._socket, _lockedStart, _lockedEnd, _bufferCount, (_writeReq, status, error, state) =>
                 {
                     _writeReq.Dispose();
@@ -453,6 +451,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                     returnBlock.Unpin();
                     returnBlock.Pool?.Return(returnBlock);
                 }
+
+                _lockedEnd.Block.Unpin();
             }
 
             private void LockWrite()

@@ -85,6 +85,14 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
                 _callback = null;
                 _state = null;
                 Unpin(this);
+
+                var block = start.Block;
+                for (var index = 0; index < nBuffers; index++)
+                {
+                    block.Unpin();
+                    block = block.Next;
+                }
+
                 throw;
             }
         }

@@ -105,14 +105,12 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
         /// <returns></returns>
         public IntPtr Pin()
         {
+            Debug.Assert(!_pinHandle.IsAllocated);
+
             if (_dataArrayPtr != IntPtr.Zero)
             {
                 // this is a slab managed block - use the native address of the slab which is always locked
                 return _dataArrayPtr;
-            }
-            else if (_pinHandle.IsAllocated)
-            {
-                return _pinHandle.AddrOfPinnedObject();
             }
             else
             {
