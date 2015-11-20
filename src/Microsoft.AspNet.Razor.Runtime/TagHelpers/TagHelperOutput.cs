@@ -54,7 +54,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
             }
 
             TagName = tagName;
-            Attributes = new TagHelperAttributeList(attributes);
+            Attributes = attributes;
             _getChildContentAsync = getChildContentAsync;
         }
 
@@ -243,8 +243,10 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                 writer.Write('<');
                 writer.Write(TagName);
 
-                foreach (var attribute in Attributes)
+                // Perf: Avoid allocating enumerator
+                for (var i = 0; i < Attributes.Count; i++)
                 {
+                    var attribute = Attributes[i];
                     writer.Write(' ');
                     writer.Write(attribute.Name);
 

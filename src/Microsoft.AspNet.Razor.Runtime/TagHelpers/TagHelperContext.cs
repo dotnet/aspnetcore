@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Microsoft.AspNet.Razor.TagHelpers
 {
@@ -12,6 +11,9 @@ namespace Microsoft.AspNet.Razor.TagHelpers
     /// </summary>
     public class TagHelperContext
     {
+        private ReadOnlyTagHelperAttributeList<IReadOnlyTagHelperAttribute> _allAttributes;
+        private IEnumerable<IReadOnlyTagHelperAttribute> _allAttributesData;
+
         /// <summary>
         /// Instantiates a new <see cref="TagHelperContext"/>.
         /// </summary>
@@ -39,8 +41,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                 throw new ArgumentNullException(nameof(uniqueId));
             }
 
-            AllAttributes = new ReadOnlyTagHelperAttributeList<IReadOnlyTagHelperAttribute>(
-                allAttributes.Select(attribute => new TagHelperAttribute(attribute.Name, attribute.Value)));
+            _allAttributesData = allAttributes;
             Items = items;
             UniqueId = uniqueId;
         }
@@ -48,7 +49,18 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         /// <summary>
         /// Every attribute associated with the current HTML element.
         /// </summary>
-        public ReadOnlyTagHelperAttributeList<IReadOnlyTagHelperAttribute> AllAttributes { get; }
+        public ReadOnlyTagHelperAttributeList<IReadOnlyTagHelperAttribute> AllAttributes
+        {
+            get
+            {
+                if (_allAttributes == null)
+                {
+                    _allAttributes = new ReadOnlyTagHelperAttributeList<IReadOnlyTagHelperAttribute>(_allAttributesData);
+                }
+
+                return _allAttributes;
+            }
+        }
 
         /// <summary>
         /// Gets the collection of items used to communicate with other <see cref="ITagHelper"/>s.

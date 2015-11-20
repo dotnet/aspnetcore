@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.Razor.Runtime;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNet.Razor.TagHelpers
 {
@@ -134,6 +133,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
 
                 var attributeReplaced = false;
 
+                // Perf: Avoid allocating enumerator
                 for (var i = 0; i < Attributes.Count; i++)
                 {
                     if (NameEquals(name, Attributes[i]))
@@ -280,7 +280,18 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                 throw new ArgumentNullException(nameof(name));
             }
 
-            return Attributes.RemoveAll(attribute => NameEquals(name, attribute)) > 0;
+            // Perf: Avoid allocating enumerator
+            var removedAtLeastOne = false;
+            for (var i = Attributes.Count - 1; i >= 0; i--)
+            {
+                if (NameEquals(name, Attributes[i]))
+                {
+                    Attributes.RemoveAt(i);
+                    removedAtLeastOne = true;
+                }
+            }
+
+            return removedAtLeastOne;
         }
 
         /// <inheritdoc />
