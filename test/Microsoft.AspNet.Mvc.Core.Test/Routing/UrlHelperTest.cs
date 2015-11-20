@@ -976,7 +976,6 @@ namespace Microsoft.AspNet.Mvc.Routing
                     {
                         HttpContext = new DefaultHttpContext()
                         {
-                            ApplicationServices = services.Object,
                             RequestServices = services.Object,
                         },
                         RouteData = new RouteData(),
