@@ -54,7 +54,7 @@ __Microsoft_AspNet_Mvc_Razor_InputTestTagHelper.For = CreateModelExpression(__mo
             __tagHelperExecutionContext.AddTagHelperAttribute("for", __Microsoft_AspNet_Mvc_Razor_InputTestTagHelper.For);
             __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             BeginContext(120, 24, false);
-            await WriteTagHelperAsync(__tagHelperExecutionContext);
+            Write(__tagHelperExecutionContext.Output);
             EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
             BeginContext(144, 2, true);
@@ -73,7 +73,7 @@ __Microsoft_AspNet_Mvc_Razor_InputTestTagHelper.For = CreateModelExpression(__mo
             __tagHelperExecutionContext.AddTagHelperAttribute("for", __Microsoft_AspNet_Mvc_Razor_InputTestTagHelper.For);
             __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             BeginContext(146, 27, false);
-            await WriteTagHelperAsync(__tagHelperExecutionContext);
+            Write(__tagHelperExecutionContext.Output);
             EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
         }

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using System.Text;
 using System.Text.Encodings.Web;
 using Microsoft.AspNet.Mvc.Razor;
@@ -23,7 +24,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         /// <param name="value">The <see cref="object"/> to write.</param>
         /// <returns><paramref name="content"/> after the write operation has completed.</returns>
         /// <remarks>
-        /// <paramref name="value"/>s of type <see cref="Html.Abstractions.IHtmlContent"/> are written using 
+        /// <paramref name="value"/>s of type <see cref="Html.Abstractions.IHtmlContent"/> are written using
         /// <see cref="Html.Abstractions.IHtmlContent.WriteTo(System.IO.TextWriter, HtmlEncoder)"/>.
         /// For all other types, the encoded result of <see cref="object.ToString"/>
         /// is written to the <paramref name="content"/>.
@@ -51,7 +52,16 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             using (var writer = new TagHelperContentWrapperTextWriter(encoding, content))
             {
-                RazorPage.WriteTo(writer, encoder, value, escapeQuotes: true);
+                using (var stringWriter = new StringWriter())
+                {
+                    RazorPage.WriteTo(stringWriter, encoder, value);
+
+                    // In this case the text likely came directly from the Razor source. Since the original string is
+                    // an attribute value that may have been quoted with single quotes, must handle any double quotes
+                    // in the value. Writing the value out surrounded by double quotes.
+                    var stringValue = stringWriter.ToString().Replace("\"", "&quot;");
+                    writer.Write(stringValue);
+                }
             }
 
             return content;
