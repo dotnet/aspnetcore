@@ -159,7 +159,8 @@ namespace Microsoft.AspNet.Server.KestrelTests
             using (var pool = new MemoryPool2())
             {
                 var block1 = pool.Lease(128);
-                var iterator = block1.GetIterator();
+                var start = block1.GetIterator();
+                var end = start;
                 var bufferSize = block1.Data.Count * 3;
                 var buffer = new byte[bufferSize];
 
@@ -170,18 +171,18 @@ namespace Microsoft.AspNet.Server.KestrelTests
 
                 Assert.Null(block1.Next);
 
-                var end = iterator.CopyFrom(new ArraySegment<byte>(buffer));
+                end.CopyFrom(new ArraySegment<byte>(buffer));
 
                 Assert.NotNull(block1.Next);
 
                 for (int i = 0; i < bufferSize; i++)
                 {
-                    Assert.Equal(i % 73, iterator.Take());
+                    Assert.Equal(i % 73, start.Take());
                 }
 
-                Assert.Equal(-1, iterator.Take());
-                Assert.Equal(iterator.Block, end.Block);
-                Assert.Equal(iterator.Index, end.Index);
+                Assert.Equal(-1, start.Take());
+                Assert.Equal(start.Block, end.Block);
+                Assert.Equal(start.Index, end.Index);
             }
         }
 

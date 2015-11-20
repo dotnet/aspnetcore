@@ -532,7 +532,17 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
             }
         }
 
-        public MemoryPoolIterator2 CopyFrom(ArraySegment<byte> buffer)
+        public int CopyFrom(byte[] data)
+        {
+            return CopyFrom(new ArraySegment<byte>(data));
+        }
+
+        public int CopyFrom(byte[] data, int offset, int count)
+        {
+            return CopyFrom(new ArraySegment<byte>(data, offset, count));
+        }
+
+        public int CopyFrom(ArraySegment<byte> buffer)
         {
             Debug.Assert(_block != null);
             Debug.Assert(_block.Pool != null);
@@ -545,11 +555,10 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
 
             var bufferIndex = buffer.Offset;
             var remaining = buffer.Count;
+            var bytesLeftInBlock = block.Data.Offset + block.Data.Count - blockIndex;
 
             while (remaining > 0)
             {
-                var bytesLeftInBlock = block.Data.Offset + block.Data.Count - blockIndex;
-
                 if (bytesLeftInBlock == 0)
                 {
                     var nextBlock = pool.Lease();
@@ -560,93 +569,55 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
                     bytesLeftInBlock = block.Data.Count;
                 }
 
-                var bytesToCopy = Math.Min(remaining, bytesLeftInBlock);
+                var bytesToCopy = remaining < bytesLeftInBlock ? remaining : bytesLeftInBlock;
 
                 Buffer.BlockCopy(buffer.Array, bufferIndex, block.Array, blockIndex, bytesToCopy);
 
                 blockIndex += bytesToCopy;
                 bufferIndex += bytesToCopy;
                 remaining -= bytesToCopy;
+                bytesLeftInBlock -= bytesToCopy;
                 block.End = blockIndex;
             }
 
-            return new MemoryPoolIterator2(block, blockIndex);
+            _block = block;
+            _index = blockIndex;
+
+            return buffer.Count;
         }
 
-        public void CopyFrom(byte[] data)
+        public unsafe int CopyFromAscii(string data)
         {
-            CopyFrom(data, 0, data.Length);
-        }
-
-        public void CopyFrom(byte[] data, int offset, int count)
-        {
+            Debug.Assert(_block != null);
+            Debug.Assert(_block.Pool != null);
             Debug.Assert(_block.Next == null);
             Debug.Assert(_block.End == _index);
 
+            var pool = _block.Pool;
             var block = _block;
+            var blockIndex = _index;
+            var length = data.Length;
 
-            var sourceData = data;
-            var sourceStart = offset;
-            var sourceEnd = offset + count;
-
-            var targetData = block.Array;
-            var targetStart = block.End;
-            var targetEnd = block.Data.Offset + block.Data.Count;
-
-            while (true)
-            {
-                // actual count to copy is remaining data, or unused trailing space in the current block, whichever is smaller
-                var copyCount = Math.Min(sourceEnd - sourceStart, targetEnd - targetStart);
-
-                Buffer.BlockCopy(sourceData, sourceStart, targetData, targetStart, copyCount);
-                sourceStart += copyCount;
-                targetStart += copyCount;
-
-                // if this means all source data has been copied
-                if (sourceStart == sourceEnd)
-                {
-                    // increase occupied space in the block, and adjust iterator at start of unused trailing space
-                    block.End = targetStart;
-                    _block = block;
-                    _index = targetStart;
-                    return;
-                }
-
-                // otherwise another block needs to be allocated to follow this one
-                block.Next = block.Pool.Lease();
-                block = block.Next;
-
-                targetData = block.Array;
-                targetStart = block.End;
-                targetEnd = block.Data.Offset + block.Data.Count;
-            }
-        }
-
-        public unsafe void CopyFromAscii(string data)
-        {
-            Debug.Assert(_block.Next == null);
-            Debug.Assert(_block.End == _index);
-
-            var block = _block;
-
-            var inputLength = data.Length;
-            var inputLengthMinusSpan = inputLength - 3;
+            var bytesLeftInBlock = block.Data.Offset + block.Data.Count - blockIndex;
+            var bytesLeftInBlockMinusSpan = bytesLeftInBlock - 3;
 
             fixed (char* pData = data)
             {
                 var input = pData;
-                var inputEnd = pData + data.Length;
-                var blockRemaining = block.Data.Offset + block.Data.Count - block.End;
-                var blockRemainingMinusSpan = blockRemaining - 3;
+                var inputEnd = pData + length;
+                var inputEndMinusSpan = inputEnd - 3;
 
                 while (input < inputEnd)
                 {
-                    if (blockRemaining == 0)
+                    if (bytesLeftInBlock == 0)
                     {
-                        block.Next = block.Pool.Lease();
-                        block = block.Next;
-                        blockRemaining = block.Data.Count;
-                        blockRemainingMinusSpan = blockRemaining - 3;
+                        var nextBlock = pool.Lease();
+                        block.Next = nextBlock;
+                        block = nextBlock;
+
+                        blockIndex = block.Data.Offset;
+                        bytesLeftInBlock = block.Data.Count;
+                        bytesLeftInBlockMinusSpan = bytesLeftInBlock - 3;
                     }
 
                     fixed (byte* pOutput = block.Data.Array)
@@ -654,7 +625,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
                         var output = pOutput + block.End;
 
                         var copied = 0;
-                        for (; copied < inputLengthMinusSpan && copied < blockRemainingMinusSpan; copied += 4)
+                        for (; input < inputEndMinusSpan && copied < bytesLeftInBlockMinusSpan; copied += 4)
                         {
                             *(output) = (byte)*(input);
                             *(output + 1) = (byte)*(input + 1);
@@ -662,19 +633,24 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
                             *(output + 3) = (byte)*(input + 3);
                             output += 4;
                             input += 4;
-                            blockRemainingMinusSpan -= 4;
                         }
-                        for (; copied < inputLength && copied < blockRemaining; copied++)
+                        for (; input < inputEnd && copied < bytesLeftInBlock; copied++)
                         {
                             *(output++) = (byte)*(input++);
-                            blockRemaining--;
                         }
-                        block.End += copied;
-                        _block = block;
-                        _index = block.End;
+
+                        blockIndex += copied;
+                        bytesLeftInBlockMinusSpan -= copied;
+                        bytesLeftInBlock -= copied;
                     }
+                    block.End = blockIndex;
                 }
             }
+
+            _block = block;
+            _index = blockIndex;
+
+            return length;
         }
     }
 }

@@ -623,8 +623,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             bool appCompleted,
             bool immediate)
         {
-            var memoryBlock = Memory2.Lease();
-            var begin = memoryBlock.GetIterator();
+            var begin = SocketOutput.ProducingStart();
+            var count = 0;
             var end = begin;
             if (_keepAlive)
             {
@@ -673,48 +673,20 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 _responseHeaders.SetRawConnection("keep-alive", _bytesConnectionKeepAlive);
             }
 
-            end.CopyFrom(_httpVersion == HttpVersionType.Http1_1 ? _bytesHttpVersion1_1 : _bytesHttpVersion1_0);
-            end.CopyFrom(statusBytes);
-            _responseHeaders.CopyTo(ref end);
-            end.CopyFrom(_bytesEndHeaders, 0, _bytesEndHeaders.Length);
+            count += end.CopyFrom(_httpVersion == HttpVersionType.Http1_1 ? _bytesHttpVersion1_1 : _bytesHttpVersion1_0);
+            count += end.CopyFrom(statusBytes);
+            count += _responseHeaders.CopyTo(ref end);
+            count += end.CopyFrom(_bytesEndHeaders, 0, _bytesEndHeaders.Length);
 
-            // TODO: change this to SocketOutput.ProduceStart/ProduceComplete once that change is made 
-            var scan = begin.Block;
-            while (scan.Next != null)
-            {
-                if (scan.Start != scan.End)
-                {
-                    SocketOutput.WriteAsync(
-                        new ArraySegment<byte>(scan.Array, scan.Start, scan.End - scan.Start),
-                        false);
-                }
-                var next = scan.Next;
-                Memory2.Return(scan);
-                scan = next;
-            }
-            var writeTask = SocketOutput.WriteAsync(
-                new ArraySegment<byte>(scan.Array, scan.Start, scan.End - scan.Start),
-                immediate);
+            SocketOutput.ProducingComplete(end, count);
 
-            if (writeTask.IsCompleted)
+            if (immediate)
             {
-                Memory2.Return(scan);
-                return TaskUtilities.CompletedTask;
+                return SocketOutput.WriteAsync(default(ArraySegment<byte>), immediate: true);
             }
             else
             {
-                return writeTask.ContinueWith(
-                    (t, o) =>
-                    {
-                        var mb = (MemoryPoolBlock2)o;
-                        mb.Pool.Return(mb);
-
-                        if (t.IsFaulted)
-                        {
-                            throw t.Exception;
-                        }
-                    }, 
-                    scan);
+                return TaskUtilities.CompletedTask;
             }
         }
 

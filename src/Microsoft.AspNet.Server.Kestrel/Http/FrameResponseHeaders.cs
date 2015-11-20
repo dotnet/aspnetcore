@@ -10,7 +10,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 {
     public partial class FrameResponseHeaders : FrameHeaders
     {
-        private static byte[] _CRLF = new[] { (byte)'\r', (byte)'\n' };
+        private static byte[] _CrLf = new[] { (byte)'\r', (byte)'\n' };
         private static byte[] _colonSpace = new[] { (byte)':', (byte)' ' };
 
         public bool HasConnection => HeaderConnection.Count != 0;
@@ -30,22 +30,23 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             return GetEnumerator();
         }
 
-        public void CopyTo(ref MemoryPoolIterator2 output)
+        public int CopyTo(ref MemoryPoolIterator2 output)
         {
-            CopyToFast(ref output);
+            var count = CopyToFast(ref output);
             if (MaybeUnknown != null)
             {
                 foreach (var kv in MaybeUnknown)
                 {
                     foreach (var value in kv.Value)
                     {
-                        output.CopyFrom(_CRLF, 0, 2);
-                        output.CopyFromAscii(kv.Key);
-                        output.CopyFrom(_colonSpace, 0, 2);
-                        output.CopyFromAscii(value);
+                        count += output.CopyFrom(_CrLf, 0, 2);
+                        count += output.CopyFromAscii(kv.Key);
+                        count += output.CopyFrom(_colonSpace, 0, 2);
+                        count += output.CopyFromAscii(value);
                     }
                 }
             }
+            return count;
         }
 
         public partial struct Enumerator : IEnumerator<KeyValuePair<string, StringValues>>

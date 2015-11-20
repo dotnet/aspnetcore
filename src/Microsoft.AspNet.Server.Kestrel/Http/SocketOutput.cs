@@ -70,11 +70,13 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             bool socketShutdownSend = false,
             bool socketDisconnect = false)
         {
-            var tail = ProducingStart();
-            tail = tail.CopyFrom(buffer);
-            // We do our own accounting below
-            ProducingComplete(tail, count: 0);
-
+            if (buffer.Count > 0)
+            {
+                var tail = ProducingStart();
+                tail.CopyFrom(buffer);
+                // We do our own accounting below
+                ProducingComplete(tail, count: 0);
+            }
             TaskCompletionSource<object> tcs = null;
 
             lock (_contextLock)

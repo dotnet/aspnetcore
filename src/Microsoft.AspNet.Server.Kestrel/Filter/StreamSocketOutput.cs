@@ -52,7 +52,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Filter
                 returnBlock.Pool?.Return(returnBlock);
             }
 
-            _outputStream.Write(end.Block.Array, end.Block.Data.Offset, end.Index);
+            _outputStream.Write(end.Block.Array, end.Block.Data.Offset, end.Index - end.Block.Data.Offset);
             end.Block.Pool?.Return(end.Block);
         }
     }
