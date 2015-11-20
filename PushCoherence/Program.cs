@@ -129,11 +129,22 @@ namespace PushCoherence
         {
             if (Regex.IsMatch(version, @"(alpha|beta|rc)\d-\d+$"))
             {
+                var timeStampFreeVersion = Environment.GetEnvironmentVariable("TIMESTAMP_FREE_VERSION");
+                if (string.IsNullOrEmpty(timeStampFreeVersion))
+                {
+                    timeStampFreeVersion = "final";
+                }
+
+                if (!timeStampFreeVersion.StartsWith("-"))
+                {
+                    timeStampFreeVersion = "-" + timeStampFreeVersion;
+                }
+
                 // E.g. change version 2.5.0-rc2-123123 to 2.5.0-rc2-final.
                 var index = version.LastIndexOf('-');
                 if (index != -1)
                 {
-                    return version.Substring(0, index) + "-final";
+                    return version.Substring(0, index) + timeStampFreeVersion;
                 }
             }
             else if (Regex.IsMatch(version, @"rtm-\d+$"))
