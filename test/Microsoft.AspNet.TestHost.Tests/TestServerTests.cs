@@ -306,16 +306,6 @@ namespace Microsoft.AspNet.TestHost
         }
 
         [Fact]
-        public void WebRootCanBeResolvedWhenNotInTheConfig()
-        {
-            TestServer server = TestServer.Create(app =>
-            {
-                var env = app.ApplicationServices.GetRequiredService<IHostingEnvironment>();
-                Assert.Equal(Directory.GetCurrentDirectory(), env.WebRootPath);
-            });
-        }
-
-        [Fact]
         public async Task DisposeStreamIgnored()
         {
             TestServer server = TestServer.Create(app =>

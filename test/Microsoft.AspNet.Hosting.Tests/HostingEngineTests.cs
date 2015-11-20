@@ -464,6 +464,9 @@ namespace Microsoft.AspNet.Hosting
             using (engine.Start())
             {
                 var env = engine.ApplicationServices.GetRequiredService<IHostingEnvironment>();
+                // MapPath requires webroot to be set, we don't care
+                // about file provider so  just set it here
+                env.WebRootPath = "";
                 var mappedPath = env.MapPath(virtualPath);
                 expectedSuffix = expectedSuffix.Replace('/', Path.DirectorySeparatorChar);
                 Assert.Equal(Path.Combine(env.WebRootPath, expectedSuffix), mappedPath);

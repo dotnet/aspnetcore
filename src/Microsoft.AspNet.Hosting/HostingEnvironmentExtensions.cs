@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using Microsoft.AspNet.FileProviders;
+using Microsoft.AspNet.Hosting.Internal;
 using Microsoft.Extensions.Configuration;
 
 namespace Microsoft.AspNet.Hosting
@@ -26,24 +27,24 @@ namespace Microsoft.AspNet.Hosting
                 {
                     hostingEnvironment.WebRootPath = wwwroot;
                 }
-                else
-                {
-                    hostingEnvironment.WebRootPath = applicationBasePath;
-                }
             }
             else
             {
                 hostingEnvironment.WebRootPath = Path.Combine(applicationBasePath, webRoot);
             }
-
-            hostingEnvironment.WebRootPath = Path.GetFullPath(hostingEnvironment.WebRootPath);
-
-            if (!Directory.Exists(hostingEnvironment.WebRootPath))
+            if (!string.IsNullOrEmpty(hostingEnvironment.WebRootPath))
             {
-                Directory.CreateDirectory(hostingEnvironment.WebRootPath);
+                hostingEnvironment.WebRootPath = Path.GetFullPath(hostingEnvironment.WebRootPath);
+                if (!Directory.Exists(hostingEnvironment.WebRootPath))
+                {
+                    Directory.CreateDirectory(hostingEnvironment.WebRootPath);
+                }
+                hostingEnvironment.WebRootFileProvider = new PhysicalFileProvider(hostingEnvironment.WebRootPath);
             }
-            hostingEnvironment.WebRootFileProvider = new PhysicalFileProvider(hostingEnvironment.WebRootPath);
-
+            else
+            {
+                hostingEnvironment.WebRootFileProvider = new NullFileProvider();
+            }
             var environmentName = options.Environment;
             hostingEnvironment.EnvironmentName = environmentName ?? hostingEnvironment.EnvironmentName;
 
