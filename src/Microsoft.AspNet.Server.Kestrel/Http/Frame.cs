@@ -279,8 +279,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             {
                                 await ProduceEnd();
 
-                                // Finish reading the request body in case the app did not.
-                                await messageBody.Consume();
+                                if (_keepAlive)
+                                {
+                                    // Finish reading the request body in case the app did not.
+                                    await messageBody.Consume();
+                                }
                             }
 
                             _requestBody.StopAcceptingReads();

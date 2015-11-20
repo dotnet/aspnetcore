@@ -88,6 +88,37 @@ namespace Microsoft.AspNet.Server.Kestrel.FunctionalTests
             return TestRemoteIPAddress("[::1]", "[::1]", "::1", "8792");
         }
 
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Test hangs after execution on Mono.")]
+        public async Task DoesNotHangOnConnectionCloseRequest()
+        {
+            var config = new ConfigurationBuilder().AddInMemoryCollection(
+                new Dictionary<string, string> {
+                    { "server.urls", "http://localhost:8791" }
+                }).Build();
+
+            var builder = new WebHostBuilder(config)
+                .UseServerFactory("Microsoft.AspNet.Server.Kestrel")
+                .UseStartup(app =>
+                {
+                    app.Run(async context =>
+                    {
+                        var connection = context.Connection;
+                        await context.Response.WriteAsync("hello, world");
+                    });
+                });
+
+            using (var app = builder.Build().Start())
+            using (var client = new HttpClient())
+            {
+                client.DefaultRequestHeaders.Connection.Clear();
+                client.DefaultRequestHeaders.Connection.Add("close");
+
+                var response = await client.GetAsync("http://localhost:8791/");
+                response.EnsureSuccessStatusCode();
+            }
+        }
+
         private async Task TestRemoteIPAddress(string registerAddress, string requestAddress, string expectAddress, string port)
         {
             var config = new ConfigurationBuilder().AddInMemoryCollection(
