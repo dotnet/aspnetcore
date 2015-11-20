@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.AspNet.Server.Kestrel;
 using Microsoft.AspNet.Server.Kestrel.Http;
 using Microsoft.Extensions.Primitives;
 using Xunit;
@@ -14,7 +15,12 @@ namespace Microsoft.AspNet.Server.KestrelTests
         [Fact]
         public void InitialDictionaryContainsServerAndDate()
         {
-            var frame = new Frame(new ConnectionContext { DateHeaderValueManager = new DateHeaderValueManager() });
+            var connectionContext = new ConnectionContext
+            {
+                DateHeaderValueManager = new DateHeaderValueManager(),
+                ServerAddress = ServerAddress.FromUrl("http://localhost:5000")
+            };
+            var frame = new Frame(connectionContext);
             IDictionary<string, StringValues> headers = frame.ResponseHeaders;
 
             Assert.Equal(2, headers.Count);
@@ -37,7 +43,12 @@ namespace Microsoft.AspNet.Server.KestrelTests
         [Fact]
         public void InitialEntriesCanBeCleared()
         {
-            var frame = new Frame(new ConnectionContext { DateHeaderValueManager = new DateHeaderValueManager() });
+            var connectionContext = new ConnectionContext
+            {
+                DateHeaderValueManager = new DateHeaderValueManager(),
+                ServerAddress = ServerAddress.FromUrl("http://localhost:5000")
+            };
+            var frame = new Frame(connectionContext);
             
             Assert.True(frame.ResponseHeaders.Count > 0);
 

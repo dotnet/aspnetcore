@@ -11,7 +11,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
-using Microsoft.AspNet.Server.Kestrel.Filter;
 using Microsoft.AspNet.Server.Kestrel.Infrastructure;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
@@ -70,6 +69,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         private readonly IPEndPoint _remoteEndPoint;
         private readonly Action<IFeatureCollection> _prepareRequest;
 
+        private readonly string _pathBase;
+
         public Frame(ConnectionContext context)
             : this(context, remoteEndPoint: null, localEndPoint: null, prepareRequest: null)
         {
@@ -84,6 +85,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             _remoteEndPoint = remoteEndPoint;
             _localEndPoint = localEndPoint;
             _prepareRequest = prepareRequest;
+            _pathBase = context.ServerAddress.PathBase;
 
             FrameControl = this;
             Reset();
@@ -92,6 +94,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         public string Scheme { get; set; }
         public string Method { get; set; }
         public string RequestUri { get; set; }
+        public string PathBase { get; set; }
         public string Path { get; set; }
         public string QueryString { get; set; }
         public string HttpVersion
@@ -198,6 +201,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             Scheme = null;
             Method = null;
             RequestUri = null;
+            PathBase = null;
             Path = null;
             QueryString = null;
             _httpVersion = HttpVersionType.Unknown;
@@ -809,13 +813,49 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 RequestUri = requestUrlPath;
                 QueryString = queryString;
                 HttpVersion = httpVersion;
-                Path = RequestUri;
+
+                bool caseMatches;
+
+                if (!string.IsNullOrEmpty(_pathBase) &&
+                    (requestUrlPath.Length == _pathBase.Length || (requestUrlPath.Length > _pathBase.Length && requestUrlPath[_pathBase.Length] == '/')) &&
+                    RequestUrlStartsWithPathBase(requestUrlPath, out caseMatches))
+                {
+                    PathBase = caseMatches ? _pathBase : requestUrlPath.Substring(0, _pathBase.Length);
+                    Path = requestUrlPath.Substring(_pathBase.Length);
+                }
+                else
+                {
+                    Path = requestUrlPath;
+                }
+
                 return true;
             }
             finally
             {
                 input.ConsumingComplete(consumed, scan);
             }
+        }
+
+        private bool RequestUrlStartsWithPathBase(string requestUrl, out bool caseMatches)
+        {
+            caseMatches = true;
+
+            for (var i = 0; i < _pathBase.Length; i++)
+            {
+                if (requestUrl[i] != _pathBase[i])
+                {
+                    if (char.ToLowerInvariant(requestUrl[i]) == char.ToLowerInvariant(_pathBase[i]))
+                    {
+                        caseMatches = false;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
         }
 
         public static bool TakeMessageHeaders(SocketInput input, FrameRequestHeaders requestHeaders)

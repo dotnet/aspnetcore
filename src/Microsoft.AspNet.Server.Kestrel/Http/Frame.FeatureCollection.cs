@@ -27,7 +27,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         // then the list of `implementedFeatures` in the generated code project MUST also be updated.
         // See also: tools/Microsoft.AspNet.Server.Kestrel.GeneratedCode/FrameFeatureCollection.cs
 
-        private string _pathBase;
         private int _featureRevision;
 
         private List<KeyValuePair<Type, object>> MaybeExtra;
@@ -118,12 +117,12 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             get
             {
-                return _pathBase ?? "";
+                return PathBase ?? "";
             }
 
             set
             {
-                _pathBase = value;
+                PathBase = value;
             }
         }
 

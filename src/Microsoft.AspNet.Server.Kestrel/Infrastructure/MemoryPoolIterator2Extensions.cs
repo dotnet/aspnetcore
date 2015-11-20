@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
 {
-    public static class MemoryPoolIterator2Extenstions
+    public static class MemoryPoolIterator2Extensions
     {
         private const int _maxStackAllocBytes = 16384;
 
