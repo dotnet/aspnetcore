@@ -9,7 +9,7 @@ namespace E2ETests
     /// </summary>
     public class DbUtils
     {
-        public const string CONNECTION_STRING_FORMAT = "Server=(localdb)\\MSSQLLocalDB;Database={0};Trusted_Connection=True;MultipleActiveResultSets=true";
+        public const string CONNECTION_STRING_FORMAT = "Server=(localdb)\\MSSQLLocalDB;Database={0};Trusted_Connection=True;MultipleActiveResultSets=true;Connect Timeout=30;";
 
         public static void DropDatabase(string databaseName, ILogger logger)
         {
