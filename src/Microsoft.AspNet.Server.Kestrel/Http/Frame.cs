@@ -199,7 +199,15 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 ConnectionControl.End(ProduceEndType.SocketDisconnect);
                 SocketInput.AbortAwaiting();
 
-                _abortedCts?.Cancel();
+                try
+                {
+                    _abortedCts?.Cancel();
+                }
+                catch (ObjectDisposedException)
+                {
+                    // Don't log ODEs thrown from _abortedCts.Cancel()
+                    // If _abortedCts is disposed, the app has already completed.
+                }
             }
             catch (Exception ex)
             {
