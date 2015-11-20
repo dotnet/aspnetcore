@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.ComponentModel.DataAnnotations;
+#if DOTNET5_4
 using System.Reflection;
+#endif
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.OptionsModel;
 
@@ -34,7 +36,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
         public void GetValidators(ModelValidatorProviderContext context)
         {
             IStringLocalizer stringLocalizer = null;
-            if (_options.Value.DataAnnotationLocalizerProvider != null && _stringLocalizerFactory != null)
+            if (_stringLocalizerFactory != null && _options.Value.DataAnnotationLocalizerProvider != null)
             {
                 stringLocalizer = _options.Value.DataAnnotationLocalizerProvider(
                     context.ModelMetadata.ContainerType ?? context.ModelMetadata.ModelType,

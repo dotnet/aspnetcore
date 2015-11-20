@@ -1771,6 +1771,22 @@ namespace Microsoft.AspNet.Mvc.Test
         }
 
         [Fact]
+        public void TryValidateModel_Succeeds_WithoutValidatorMetadata()
+        {
+            // Arrange
+            // Do not add a Mock validator provider to this test. Test is intended to demonstrate ease of unit testing
+            // and exercise DataAnnotationsModelValidatorProvider, avoiding #3586 regressions.
+            var model = new TryValidateModelModel();
+            var controller = GetController(binder: null, provider: null);
+
+            // Act
+            var result = controller.TryValidateModel(model);
+
+            // Assert
+            Assert.True(controller.ModelState.IsValid);
+        }
+
+        [Fact]
         public void TryValidateModelEmptyBindingContextThrowsException()
         {
             // Arrange
