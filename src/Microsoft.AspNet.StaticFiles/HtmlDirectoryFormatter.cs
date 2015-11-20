@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.StaticFiles
 
             if (_htmlEncoder == null)
             {
-                _htmlEncoder = context.ApplicationServices.GetHtmlEncoder();
+                _htmlEncoder = context.RequestServices.GetHtmlEncoder();
             }
 
             context.Response.ContentType = TextHtmlUtf8;
