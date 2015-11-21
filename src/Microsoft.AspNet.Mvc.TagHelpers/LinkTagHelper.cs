@@ -34,7 +34,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
     [HtmlTargetElement("link", Attributes = AppendVersionAttributeName, TagStructure = TagStructure.WithoutEndTag)]
     public class LinkTagHelper : UrlResolutionTagHelper
     {
-        private static readonly string Namespace = typeof(LinkTagHelper).Namespace;
+        private static readonly string FallbackJavaScriptResourceName =
+            typeof(LinkTagHelper).Namespace + ".compiler.resources.LinkTagHelper_FallbackJavaScript.js";
 
         private const string HrefIncludeAttributeName = "asp-href-include";
         private const string HrefExcludeAttributeName = "asp-href-exclude";
@@ -44,7 +45,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         private const string FallbackTestClassAttributeName = "asp-fallback-test-class";
         private const string FallbackTestPropertyAttributeName = "asp-fallback-test-property";
         private const string FallbackTestValueAttributeName = "asp-fallback-test-value";
-        private readonly string FallbackJavaScriptResourceName = Namespace + ".compiler.resources.LinkTagHelper_FallbackJavaScript.js";
         private const string AppendVersionAttributeName = "asp-append-version";
         private const string HrefAttributeName = "href";
 
