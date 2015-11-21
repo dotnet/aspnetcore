@@ -65,7 +65,7 @@ namespace MusicStore.Controllers
             httpContext.User = new ClaimsPrincipal(new ClaimsIdentity(claims));
 
             var controller = new ManageController(userManager, signInManager);
-            controller.ActionContext.HttpContext = httpContext;
+            controller.ControllerContext.HttpContext = httpContext;
 
             // Act
             var result = await controller.Index();

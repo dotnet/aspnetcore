@@ -43,7 +43,7 @@ namespace MusicStore.Controllers
             httpContext.Session = new TestSession();
 
             var controller = new ShoppingCartController(_serviceProvider.GetRequiredService<MusicStoreContext>());
-            controller.ActionContext.HttpContext = httpContext;
+            controller.ControllerContext.HttpContext = httpContext;
 
             // Act
             var result = await controller.Index();
@@ -67,7 +67,7 @@ namespace MusicStore.Controllers
             httpContext.Session.SetString("Session", "CartId_A");
 
             var controller = new ShoppingCartController(_serviceProvider.GetRequiredService<MusicStoreContext>());
-            controller.ActionContext.HttpContext = httpContext;
+            controller.ControllerContext.HttpContext = httpContext;
 
             // Act
             var result = await controller.Index();
@@ -101,7 +101,7 @@ namespace MusicStore.Controllers
             dbContext.SaveChanges();
 
             var controller = new ShoppingCartController(dbContext);
-            controller.ActionContext.HttpContext = httpContext;
+            controller.ControllerContext.HttpContext = httpContext;
 
             // Act
             var result = await controller.Index();
@@ -132,7 +132,7 @@ namespace MusicStore.Controllers
             dbContext.SaveChanges();
 
             var controller = new ShoppingCartController(dbContext);
-            controller.ActionContext.HttpContext = httpContext;
+            controller.ControllerContext.HttpContext = httpContext;
 
             // Act
             var result = await controller.AddToCart(albumId, CancellationToken.None);
@@ -185,7 +185,7 @@ namespace MusicStore.Controllers
 
             // Cotroller initialization
             var controller = new ShoppingCartController(dbContext);
-            controller.ActionContext.HttpContext = httpContext;
+            controller.ControllerContext.HttpContext = httpContext;
 
             // Act
             var result = await controller.RemoveFromCart(antiForgery, cartItemId, CancellationToken.None);

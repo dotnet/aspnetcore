@@ -83,7 +83,7 @@ namespace MusicStore.Controllers
             dbContext.SaveChanges();
 
             var controller = new CheckoutController();
-            controller.ActionContext.HttpContext = httpContext;
+            controller.ControllerContext.HttpContext = httpContext;
 
             // Act
             var result = await controller.AddressAndPayment(dbContext, order, CancellationToken.None);
@@ -109,7 +109,7 @@ namespace MusicStore.Controllers
                 new FormCollection(new Dictionary<string, StringValues>());
 
             var controller = new CheckoutController();
-            controller.ActionContext.HttpContext = context;
+            controller.ControllerContext.HttpContext = context;
 
             // Do not need actual data for Order; the Order object will be checked for the reference equality.
             var order = new Order();
@@ -135,7 +135,7 @@ namespace MusicStore.Controllers
             var dbContext = _serviceProvider.GetRequiredService<MusicStoreContext>();
 
             var controller = new CheckoutController();
-            controller.ActionContext.HttpContext = context;
+            controller.ControllerContext.HttpContext = context;
 
             var order = new Order();
 
@@ -194,7 +194,7 @@ namespace MusicStore.Controllers
             dbContext.SaveChanges();
 
             var controller = new CheckoutController();
-            controller.ActionContext.HttpContext = httpContext;
+            controller.ControllerContext.HttpContext = httpContext;
 
             // Act
             var result = await controller.Complete(dbContext, orderId);
@@ -216,7 +216,7 @@ namespace MusicStore.Controllers
                 _serviceProvider.GetRequiredService<MusicStoreContext>();
 
             var controller = new CheckoutController();
-            controller.ActionContext.HttpContext = new DefaultHttpContext();
+            controller.ControllerContext.HttpContext = new DefaultHttpContext();
 
             // Act
             var result = await controller.Complete(dbContext, invalidOrderId);
