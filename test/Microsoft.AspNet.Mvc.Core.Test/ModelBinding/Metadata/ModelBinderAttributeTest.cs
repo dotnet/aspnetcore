@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
@@ -39,8 +38,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public void BinderType_SettingBindingSource_OverridesDefaultCustomBindingSource()
         {
             // Arrange
-            var attribute = new ModelBinderAttribute();
-            attribute.BindingSource = BindingSource.Query;
+            var attribute = new FromQueryModelBinderAttribute();
             attribute.BinderType = typeof(ByteArrayModelBinder);
 
             // Act
@@ -48,6 +46,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             // Assert
             Assert.Equal(BindingSource.Query, source);
+        }
+
+        private class FromQueryModelBinderAttribute : ModelBinderAttribute
+        {
+            public override BindingSource BindingSource => BindingSource.Query;
         }
     }
 }

@@ -108,8 +108,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
             // Arrange
             var attributes = new object[]
             {
-                new ModelBinderAttribute() { BindingSource = BindingSource.Body },
-                new ModelBinderAttribute() { BindingSource = BindingSource.Query },
+                new BindingSourceModelBinderAttribute(BindingSource.Body),
+                new BindingSourceModelBinderAttribute(BindingSource.Query),
             };
 
             var context = new BindingMetadataProviderContext(
@@ -132,8 +132,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
             var attributes = new object[]
             {
                 new ModelBinderAttribute(),
-                new ModelBinderAttribute() { BindingSource = BindingSource.Body },
-                new ModelBinderAttribute() { BindingSource = BindingSource.Query },
+                new BindingSourceModelBinderAttribute(BindingSource.Body),
+                new BindingSourceModelBinderAttribute(BindingSource.Query),
             };
 
             var context = new BindingMetadataProviderContext(
@@ -544,6 +544,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
         [BindRequired]
         private class BindRequiredOverridesInheritedBindNever : BindNeverOnClass
         {
+        }
+
+        private class BindingSourceModelBinderAttribute : ModelBinderAttribute
+        {
+            public BindingSourceModelBinderAttribute(BindingSource bindingSource)
+            {
+                BindingSource = bindingSource;
+            }
         }
     }
 }

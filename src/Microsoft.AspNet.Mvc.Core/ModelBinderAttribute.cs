@@ -32,7 +32,7 @@ namespace Microsoft.AspNet.Mvc
         public Type BinderType { get; set; }
 
         /// <inheritdoc />
-        public BindingSource BindingSource
+        public virtual BindingSource BindingSource
         {
             get
             {
@@ -43,7 +43,7 @@ namespace Microsoft.AspNet.Mvc
 
                 return _bindingSource;
             }
-            set
+            protected set
             {
                 _bindingSource = value;
             }
