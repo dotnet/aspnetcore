@@ -20,13 +20,13 @@ namespace Microsoft.AspNet.StaticFiles
         [Fact]
         public async Task NullArguments()
         {
-            Assert.Throws<ArgumentException>(() => TestServer.Create(app => app.UseStaticFiles(new StaticFileOptions() { ContentTypeProvider = null })));
+            Assert.Throws<ArgumentException>(() => StaticFilesTestServer.Create(app => app.UseStaticFiles(new StaticFileOptions() { ContentTypeProvider = null })));
 
             // No exception, default provided
-            TestServer.Create(app => app.UseStaticFiles(new StaticFileOptions() { FileProvider = null }));
+            StaticFilesTestServer.Create(app => app.UseStaticFiles(new StaticFileOptions() { FileProvider = null }));
 
             // PathString(null) is OK.
-            TestServer server = TestServer.Create(app => app.UseStaticFiles((string)null));
+            TestServer server = StaticFilesTestServer.Create(app => app.UseStaticFiles((string)null));
             var response = await server.CreateClient().GetAsync("/");
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
@@ -38,7 +38,7 @@ namespace Microsoft.AspNet.StaticFiles
         [InlineData("", @"./", "/xunit.xml")]
         public async Task NoMatch_PassesThrough(string baseUrl, string baseDir, string requestUrl)
         {
-            TestServer server = TestServer.Create(app => app.UseStaticFiles(new StaticFileOptions()
+            TestServer server = StaticFilesTestServer.Create(app => app.UseStaticFiles(new StaticFileOptions()
             {
                 RequestPath = new PathString(baseUrl),
                 FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), baseDir))
@@ -72,7 +72,7 @@ namespace Microsoft.AspNet.StaticFiles
 
         public async Task FoundFile_Served(string baseUrl, string baseDir, string requestUrl)
         {
-            TestServer server = TestServer.Create(app => app.UseStaticFiles(new StaticFileOptions()
+            TestServer server = StaticFilesTestServer.Create(app => app.UseStaticFiles(new StaticFileOptions()
             {
                 RequestPath = new PathString(baseUrl),
                 FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), baseDir))
@@ -93,7 +93,7 @@ namespace Microsoft.AspNet.StaticFiles
         [InlineData("/somedir", @"SubFolder", "/somedir/ranges.txt")]
         public async Task PostFile_PassesThrough(string baseUrl, string baseDir, string requestUrl)
         {
-            TestServer server = TestServer.Create(app => app.UseStaticFiles(new StaticFileOptions()
+            TestServer server = StaticFilesTestServer.Create(app => app.UseStaticFiles(new StaticFileOptions()
             {
                 RequestPath = new PathString(baseUrl),
                 FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), baseDir))
@@ -110,7 +110,7 @@ namespace Microsoft.AspNet.StaticFiles
         [InlineData("/somedir", @"SubFolder", "/somedir/ranges.txt")]
         public async Task HeadFile_HeadersButNotBodyServed(string baseUrl, string baseDir, string requestUrl)
         {
-            TestServer server = TestServer.Create(app => app.UseStaticFiles(new StaticFileOptions()
+            TestServer server = StaticFilesTestServer.Create(app => app.UseStaticFiles(new StaticFileOptions()
             {
                 RequestPath = new PathString(baseUrl),
                 FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), baseDir))

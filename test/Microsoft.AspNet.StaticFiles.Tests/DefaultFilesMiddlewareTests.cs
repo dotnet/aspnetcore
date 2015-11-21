@@ -21,10 +21,10 @@ namespace Microsoft.AspNet.StaticFiles
         public async Task NullArguments()
         {
             // No exception, default provided
-            TestServer.Create(app => app.UseDefaultFiles(new DefaultFilesOptions() { FileProvider = null }));
+            StaticFilesTestServer.Create(app => app.UseDefaultFiles(new DefaultFilesOptions() { FileProvider = null }));
 
             // PathString(null) is OK.
-            TestServer server = TestServer.Create(app => app.UseDefaultFiles((string)null));
+            TestServer server = StaticFilesTestServer.Create(app => app.UseDefaultFiles((string)null));
             var response = await server.CreateClient().GetAsync("/");
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
@@ -52,7 +52,7 @@ namespace Microsoft.AspNet.StaticFiles
 
         public async Task NoMatch_PassesThrough(string baseUrl, string baseDir, string requestUrl)
         {
-            TestServer server = TestServer.Create(app =>
+            TestServer server = StaticFilesTestServer.Create(app =>
             {
                 app.UseDefaultFiles(new DefaultFilesOptions()
                 {
@@ -88,7 +88,7 @@ namespace Microsoft.AspNet.StaticFiles
 
         public async Task FoundDirectoryWithDefaultFile_PathModified(string baseUrl, string baseDir, string requestUrl)
         {
-            TestServer server = TestServer.Create(app =>
+            TestServer server = StaticFilesTestServer.Create(app =>
             {
                 app.UseDefaultFiles(new DefaultFilesOptions()
                 {
@@ -124,7 +124,7 @@ namespace Microsoft.AspNet.StaticFiles
 
         public async Task NearMatch_RedirectAddSlash(string baseUrl, string baseDir, string requestUrl, string queryString)
         {
-            TestServer server = TestServer.Create(app => app.UseDefaultFiles(new DefaultFilesOptions()
+            TestServer server = StaticFilesTestServer.Create(app => app.UseDefaultFiles(new DefaultFilesOptions()
             {
                 RequestPath = new PathString(baseUrl),
                 FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), baseDir))
@@ -159,7 +159,7 @@ namespace Microsoft.AspNet.StaticFiles
 
         public async Task PostDirectory_PassesThrough(string baseUrl, string baseDir, string requestUrl)
         {
-            TestServer server = TestServer.Create(app => app.UseDefaultFiles(new DefaultFilesOptions()
+            TestServer server = StaticFilesTestServer.Create(app => app.UseDefaultFiles(new DefaultFilesOptions()
             {
                 RequestPath = new PathString(baseUrl),
                 FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), baseDir))

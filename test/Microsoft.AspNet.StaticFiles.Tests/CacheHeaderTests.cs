@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.StaticFiles
         [Fact]
         public async Task ServerShouldReturnETag()
         {
-            TestServer server = TestServer.Create(app => app.UseFileServer());
+            TestServer server = StaticFilesTestServer.Create(app => app.UseFileServer());
 
             HttpResponseMessage response = await server.CreateClient().GetAsync("http://localhost/SubFolder/extra.xml");
             Assert.NotNull(response.Headers.ETag);
@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.StaticFiles
         [Fact]
         public async Task SameETagShouldBeReturnedAgain()
         {
-            TestServer server = TestServer.Create(app => app.UseFileServer());
+            TestServer server = StaticFilesTestServer.Create(app => app.UseFileServer());
 
             HttpResponseMessage response1 = await server.CreateClient().GetAsync("http://localhost/SubFolder/extra.xml");
             HttpResponseMessage response2 = await server.CreateClient().GetAsync("http://localhost/SubFolder/extra.xml");
@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.StaticFiles
         [Fact]
         public async Task IfMatchShouldReturn412WhenNotListed()
         {
-            TestServer server = TestServer.Create(app => app.UseFileServer());
+            TestServer server = StaticFilesTestServer.Create(app => app.UseFileServer());
             var req = new HttpRequestMessage(HttpMethod.Get, "http://localhost/SubFolder/extra.xml");
             req.Headers.Add("If-Match", "\"fake\"");
             HttpResponseMessage resp = await server.CreateClient().SendAsync(req);
@@ -54,7 +54,7 @@ namespace Microsoft.AspNet.StaticFiles
         [Fact]
         public async Task IfMatchShouldBeServedWhenListed()
         {
-            TestServer server = TestServer.Create(app => app.UseFileServer());
+            TestServer server = StaticFilesTestServer.Create(app => app.UseFileServer());
             HttpResponseMessage original = await server.CreateClient().GetAsync("http://localhost/SubFolder/extra.xml");
 
             var req = new HttpRequestMessage(HttpMethod.Get, "http://localhost/SubFolder/extra.xml");
@@ -66,7 +66,7 @@ namespace Microsoft.AspNet.StaticFiles
         [Fact]
         public async Task IfMatchShouldBeServedForAstrisk()
         {
-            TestServer server = TestServer.Create(app => app.UseFileServer());
+            TestServer server = StaticFilesTestServer.Create(app => app.UseFileServer());
             var req = new HttpRequestMessage(HttpMethod.Get, "http://localhost/SubFolder/extra.xml");
             req.Headers.Add("If-Match", "*");
             HttpResponseMessage resp = await server.CreateClient().SendAsync(req);
@@ -90,7 +90,7 @@ namespace Microsoft.AspNet.StaticFiles
         [Fact]
         public async Task IfNoneMatchShouldReturn304ForMatchingOnGetAndHeadMethod()
         {
-            TestServer server = TestServer.Create(app => app.UseFileServer());
+            TestServer server = StaticFilesTestServer.Create(app => app.UseFileServer());
             HttpResponseMessage resp1 = await server.CreateClient().GetAsync("http://localhost/SubFolder/extra.xml");
 
             var req2 = new HttpRequestMessage(HttpMethod.Get, "http://localhost/SubFolder/extra.xml");
@@ -107,7 +107,7 @@ namespace Microsoft.AspNet.StaticFiles
         [Fact]
         public async Task IfNoneMatchShouldBeIgnoredForNonTwoHundredAnd304Responses()
         {
-            TestServer server = TestServer.Create(app => app.UseFileServer());
+            TestServer server = StaticFilesTestServer.Create(app => app.UseFileServer());
             HttpResponseMessage resp1 = await server.CreateClient().GetAsync("http://localhost/SubFolder/extra.xml");
 
             var req2 = new HttpRequestMessage(HttpMethod.Post, "http://localhost/SubFolder/extra.xml");
@@ -134,7 +134,7 @@ namespace Microsoft.AspNet.StaticFiles
         [Fact]
         public async Task ServerShouldReturnLastModified()
         {
-            TestServer server = TestServer.Create(app => app.UseFileServer());
+            TestServer server = StaticFilesTestServer.Create(app => app.UseFileServer());
 
             HttpResponseMessage response = await server.CreateClient().GetAsync("http://localhost/SubFolder/extra.xml");
             Assert.NotNull(response.Content.Headers.LastModified);
@@ -152,7 +152,7 @@ namespace Microsoft.AspNet.StaticFiles
         [Fact]
         public async Task MatchingBothConditionsReturnsNotModified()
         {
-            TestServer server = TestServer.Create(app => app.UseFileServer());
+            TestServer server = StaticFilesTestServer.Create(app => app.UseFileServer());
             HttpResponseMessage resp1 = await server
                 .CreateRequest("/SubFolder/extra.xml")
                 .GetAsync();
@@ -169,7 +169,7 @@ namespace Microsoft.AspNet.StaticFiles
         [Fact]
         public async Task MissingEitherOrBothConditionsReturnsNormally()
         {
-            TestServer server = TestServer.Create(app => app.UseFileServer());
+            TestServer server = StaticFilesTestServer.Create(app => app.UseFileServer());
             HttpResponseMessage resp1 = await server
                 .CreateRequest("/SubFolder/extra.xml")
                 .GetAsync();
@@ -216,7 +216,7 @@ namespace Microsoft.AspNet.StaticFiles
         [Fact]
         public async Task InvalidIfModifiedSinceDateFormatGivesNormalGet()
         {
-            TestServer server = TestServer.Create(app => app.UseFileServer());
+            TestServer server = StaticFilesTestServer.Create(app => app.UseFileServer());
 
             HttpResponseMessage res = await server
                 .CreateRequest("/SubFolder/extra.xml")
@@ -236,7 +236,7 @@ namespace Microsoft.AspNet.StaticFiles
         [Fact]
         public async Task IfModifiedSinceDateEqualsLastModifiedShouldReturn304()
         {
-            TestServer server = TestServer.Create(app => app.UseFileServer());
+            TestServer server = StaticFilesTestServer.Create(app => app.UseFileServer());
 
             HttpResponseMessage res1 = await server
                 .CreateRequest("/SubFolder/extra.xml")

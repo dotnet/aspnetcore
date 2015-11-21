@@ -22,17 +22,17 @@ namespace Microsoft.AspNet.StaticFiles
         [Fact]
         public async Task NullArguments()
         {
-            Assert.Throws<ArgumentException>(() => TestServer.Create(
+            Assert.Throws<ArgumentException>(() => StaticFilesTestServer.Create(
                 app => app.UseDirectoryBrowser(new DirectoryBrowserOptions() { Formatter = null }),
             services => services.AddDirectoryBrowser()));
 
             // No exception, default provided
-            TestServer.Create(
+            StaticFilesTestServer.Create(
                 app => app.UseDirectoryBrowser(new DirectoryBrowserOptions() { FileProvider = null }),
                 services => services.AddDirectoryBrowser());
 
             // PathString(null) is OK.
-            TestServer server = TestServer.Create(
+            TestServer server = StaticFilesTestServer.Create(
                 app => app.UseDirectoryBrowser((string)null),
                 services => services.AddDirectoryBrowser());
 
@@ -63,7 +63,7 @@ namespace Microsoft.AspNet.StaticFiles
 
         public async Task NoMatch_PassesThrough(string baseUrl, string baseDir, string requestUrl)
         {
-            TestServer server = TestServer.Create(
+            TestServer server = StaticFilesTestServer.Create(
                 app => app.UseDirectoryBrowser(new DirectoryBrowserOptions()
                 {
                     RequestPath = new PathString(baseUrl),
@@ -97,7 +97,7 @@ namespace Microsoft.AspNet.StaticFiles
 
         public async Task FoundDirectory_Served(string baseUrl, string baseDir, string requestUrl)
         {
-            TestServer server = TestServer.Create(
+            TestServer server = StaticFilesTestServer.Create(
                 app => app.UseDirectoryBrowser(new DirectoryBrowserOptions()
                 {
                     RequestPath = new PathString(baseUrl),
@@ -136,7 +136,7 @@ namespace Microsoft.AspNet.StaticFiles
 
         public async Task NearMatch_RedirectAddSlash(string baseUrl, string baseDir, string requestUrl, string queryString)
         {
-            TestServer server = TestServer.Create(
+            TestServer server = StaticFilesTestServer.Create(
                 app => app.UseDirectoryBrowser(new DirectoryBrowserOptions()
                 {
                     RequestPath = new PathString(baseUrl),
@@ -172,7 +172,7 @@ namespace Microsoft.AspNet.StaticFiles
 
         public async Task PostDirectory_PassesThrough(string baseUrl, string baseDir, string requestUrl)
         {
-            TestServer server = TestServer.Create(
+            TestServer server = StaticFilesTestServer.Create(
                 app => app.UseDirectoryBrowser(new DirectoryBrowserOptions()
                 {
                     RequestPath = new PathString(baseUrl),
@@ -205,7 +205,7 @@ namespace Microsoft.AspNet.StaticFiles
 
         public async Task HeadDirectory_HeadersButNotBodyServed(string baseUrl, string baseDir, string requestUrl)
         {
-            TestServer server = TestServer.Create(
+            TestServer server = StaticFilesTestServer.Create(
                 app => app.UseDirectoryBrowser(new DirectoryBrowserOptions()
                 {
                     RequestPath = new PathString(baseUrl),
