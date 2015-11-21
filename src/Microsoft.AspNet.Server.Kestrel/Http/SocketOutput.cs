@@ -16,6 +16,9 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
     {
         private const int _maxPendingWrites = 3;
         private const int _maxBytesPreCompleted = 65536;
+        private const int _initialTaskQueues = 64;
+
+        private static WaitCallback _returnBlocks = (state) => ReturnBlocks((MemoryPoolBlock2)state);
 
         private readonly KestrelThread _thread;
         private readonly UvStreamHandle _socket;
@@ -44,6 +47,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         private Exception _lastWriteError;
         private WriteContext _nextWriteContext;
         private readonly Queue<TaskCompletionSource<object>> _tasksPending;
+        private readonly Queue<TaskCompletionSource<object>> _tasksCompleted;
 
         public SocketOutput(
             KestrelThread thread,
@@ -58,7 +62,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             _connection = connection;
             _connectionId = connectionId;
             _log = log;
-            _tasksPending = new Queue<TaskCompletionSource<object>>();
+            _tasksPending = new Queue<TaskCompletionSource<object>>(_initialTaskQueues);
+            _tasksCompleted = new Queue<TaskCompletionSource<object>>(_initialTaskQueues);
 
             _head = memory.Lease();
             _tail = _head;
@@ -78,6 +83,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 ProducingComplete(tail, count: 0);
             }
             TaskCompletionSource<object> tcs = null;
+
+            var scheduleWrite = false;
 
             lock (_contextLock)
             {
@@ -118,9 +125,14 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
                 if (_writesPending < _maxPendingWrites && immediate)
                 {
-                    ScheduleWrite();
+                    scheduleWrite = true;
                     _writesPending++;
                 }
+            }
+
+            if (scheduleWrite)
+            {
+                ScheduleWrite();
             }
 
             // Return TaskCompletionSource's Task if set, otherwise completed Task 
@@ -164,6 +176,9 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         public void ProducingComplete(MemoryPoolIterator2 end, int count)
         {
+            var decreasePreCompleted = false;
+            MemoryPoolBlock2 blockToReturn = null;
+
             lock (_returnLock)
             {
                 Debug.Assert(_isProducing);
@@ -176,25 +191,39 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
                     if (count != 0)
                     {
-                        lock (_contextLock)
-                        {
-                            _numBytesPreCompleted += count;
-                        }
+                        decreasePreCompleted = true;
                     }
                 }
                 else
                 {
-                    var block = _returnFromOnProducingComplete;
-                    while (block != null)
-                    {
-                        var returnBlock = block;
-                        block = block.Next;
-
-                        returnBlock.Pool?.Return(returnBlock);
-                    }
-
+                    blockToReturn = _returnFromOnProducingComplete;
                     _returnFromOnProducingComplete = null;
                 }
+            }
+
+            if (decreasePreCompleted)
+            {
+                lock (_contextLock)
+                {
+                    _numBytesPreCompleted += count;
+                }
+            }
+
+
+            if (blockToReturn != null)
+            {
+                ThreadPool.QueueUserWorkItem(_returnBlocks, blockToReturn);
+            }
+        }
+
+        private static void ReturnBlocks(MemoryPoolBlock2 block)
+        {
+            while(block != null)
+            {
+                var returningBlock = block;
+                block = returningBlock.Next;
+
+                returningBlock.Pool?.Return(returningBlock);
             }
         }
 
@@ -252,11 +281,13 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 _connection.Abort();
             }
 
+            bool scheduleWrite = false;
+
             lock (_contextLock)
             {
                 if (_nextWriteContext != null)
                 {
-                    ScheduleWrite();
+                    scheduleWrite = true;
                 }
                 else
                 {
@@ -279,21 +310,36 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                     _numBytesPreCompleted += bytesToWrite;
                     bytesLeftToBuffer -= bytesToWrite;
 
-                    if (_lastWriteError == null)
-                    {
-                        ThreadPool.QueueUserWorkItem(
-                            (o) => ((TaskCompletionSource<object>)o).SetResult(null),
-                            tcs);
-                    }
-                    else
-                    {
-                        // error is closure captured 
-                        ThreadPool.QueueUserWorkItem(
-                            (o) => ((TaskCompletionSource<object>)o).SetException(_lastWriteError),
-                            tcs);
-                    }
+                    _tasksCompleted.Enqueue(tcs);
                 }
             }
+
+            while (_tasksCompleted.Count > 0)
+            {
+                var tcs = _tasksCompleted.Dequeue();
+                if (_lastWriteError == null)
+                {
+                    ThreadPool.QueueUserWorkItem(
+                        (o) => ((TaskCompletionSource<object>)o).SetResult(null),
+                        tcs);
+                }
+                else
+                {
+                    // error is closure captured 
+                    ThreadPool.QueueUserWorkItem(
+                        (o) => ((TaskCompletionSource<object>)o).SetException(_lastWriteError),
+                        tcs);
+                }
+            }
+
+            if (scheduleWrite)
+            {
+                // ScheduleWrite();
+                // on right thread, fairness issues?
+                WriteAllPending();
+            }
+
+            _tasksCompleted.Clear();
         }
 
         // This is called on the libuv event loop
@@ -345,6 +391,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         private class WriteContext
         {
+            private static WaitCallback _returnWrittenBlocks = (state) => ReturnWrittenBlocks((MemoryPoolBlock2)state);
+
             private MemoryPoolIterator2 _lockedStart;
             private MemoryPoolIterator2 _lockedEnd;
             private int _bufferCount;
@@ -385,7 +433,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 {
                     _writeReq.Dispose();
                     var _this = (WriteContext)state;
-                    _this.ReturnFullyWrittenBlocks();
+                    _this.ScheduleReturnFullyWrittenBlocks();
                     _this.WriteStatus = status;
                     _this.WriteError = error;
                     _this.DoShutdownIfNeeded();
@@ -441,11 +489,30 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             {
                 Self.OnWriteCompleted(_byteCount, WriteStatus, WriteError);
             }
-
-            private void ReturnFullyWrittenBlocks()
+            
+            private void ScheduleReturnFullyWrittenBlocks()
             {
                 var block = _lockedStart.Block;
-                while (block != _lockedEnd.Block)
+                var end = _lockedEnd.Block;
+                if (block == end)
+                {
+                    end.Unpin();
+                    return;
+                }
+
+                while (block.Next != end)
+                {
+                    block = block.Next;
+                    block.Unpin();
+                }
+                block.Next = null;
+
+                ThreadPool.QueueUserWorkItem(_returnWrittenBlocks, _lockedStart.Block);
+            }
+
+            private static void ReturnWrittenBlocks(MemoryPoolBlock2 block)
+            {
+                while (block != null)
                 {
                     var returnBlock = block;
                     block = block.Next;
@@ -453,8 +520,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                     returnBlock.Unpin();
                     returnBlock.Pool?.Return(returnBlock);
                 }
-
-                _lockedEnd.Block.Unpin();
             }
 
             private void LockWrite()
