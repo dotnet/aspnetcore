@@ -18,7 +18,7 @@
         "Microsoft.Extensions.Logging.Console": "1.0.0-rc1-final"
     },
     "commands": {
-        "web": "Microsoft.AspNet.Server.Kestrel --server.urls http://*:5004"
+        "kestrel": "Microsoft.AspNet.Server.Kestrel --server.urls http://*:5004"
     },
     "frameworks": {
         "dnx451": { },
