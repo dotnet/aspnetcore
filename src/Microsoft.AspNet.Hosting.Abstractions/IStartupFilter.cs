@@ -4,7 +4,7 @@
 using System;
 using Microsoft.AspNet.Builder;
 
-namespace Microsoft.AspNet.Hosting.Startup
+namespace Microsoft.AspNet.Hosting
 {
     public interface IStartupFilter
     {
