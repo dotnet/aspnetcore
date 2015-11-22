@@ -93,6 +93,22 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                     AddressFamily.InterNetwork,
                     SocketType.Stream,
                     ProtocolType.Tcp);
+                if (PlatformApis.IsWindows)
+                {
+                    const int SIO_LOOPBACK_FAST_PATH = (-1744830448);
+                    var optionInValue = BitConverter.GetBytes(1);
+                    try
+                    {
+                        socket.IOControl(SIO_LOOPBACK_FAST_PATH, optionInValue, null);
+                    }
+                    catch
+                    {
+                        // If the operating system version on this machine did
+                        // not support SIO_LOOPBACK_FAST_PATH (i.e. version
+                        // prior to Windows 8 / Windows Server 2012), handle the exception
+                    }
+                }
+                socket.NoDelay = true;
 #if DNX451
                 await Task.Factory.FromAsync(
                     socket.BeginConnect,
@@ -147,6 +163,22 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                     AddressFamily.InterNetwork,
                     SocketType.Stream,
                     ProtocolType.Tcp);
+                if (PlatformApis.IsWindows)
+                {
+                    const int SIO_LOOPBACK_FAST_PATH = (-1744830448);
+                    var optionInValue = BitConverter.GetBytes(1);
+                    try
+                    {
+                        socket.IOControl(SIO_LOOPBACK_FAST_PATH, optionInValue, null);
+                    }
+                    catch
+                    {
+                        // If the operating system version on this machine did
+                        // not support SIO_LOOPBACK_FAST_PATH (i.e. version
+                        // prior to Windows 8 / Windows Server 2012), handle the exception
+                    }
+                }
+                socket.NoDelay = true;
 #if DNX451
                 await Task.Factory.FromAsync(
                     socket.BeginConnect,
@@ -234,6 +266,22 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                     AddressFamily.InterNetwork,
                     SocketType.Stream,
                     ProtocolType.Tcp);
+                if (PlatformApis.IsWindows)
+                {
+                    const int SIO_LOOPBACK_FAST_PATH = (-1744830448);
+                    var optionInValue = BitConverter.GetBytes(1);
+                    try
+                    {
+                        socket.IOControl(SIO_LOOPBACK_FAST_PATH, optionInValue, null);
+                    }
+                    catch
+                    {
+                        // If the operating system version on this machine did
+                        // not support SIO_LOOPBACK_FAST_PATH (i.e. version
+                        // prior to Windows 8 / Windows Server 2012), handle the exception
+                    }
+                }
+                socket.NoDelay = true;
 #if DNX451
                 await Task.Factory.FromAsync(
                     socket.BeginConnect,

@@ -27,6 +27,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Networking
                 _uv_stop = NativeDarwinMonoMethods.uv_stop;
                 _uv_ref = NativeDarwinMonoMethods.uv_ref;
                 _uv_unref = NativeDarwinMonoMethods.uv_unref;
+                _uv_fileno = NativeDarwinMonoMethods.uv_fileno;
                 _uv_close = NativeDarwinMonoMethods.uv_close;
                 _uv_async_init = NativeDarwinMonoMethods.uv_async_init;
                 _uv_async_send = NativeDarwinMonoMethods.uv_async_send;
@@ -68,6 +69,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Networking
                 _uv_stop = NativeMethods.uv_stop;
                 _uv_ref = NativeMethods.uv_ref;
                 _uv_unref = NativeMethods.uv_unref;
+                _uv_fileno = NativeMethods.uv_fileno;
                 _uv_close = NativeMethods.uv_close;
                 _uv_async_init = NativeMethods.uv_async_init;
                 _uv_async_send = NativeMethods.uv_async_send;
@@ -178,6 +180,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Networking
         }
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        protected delegate int uv_fileno_func(UvHandle handle, ref IntPtr socket);
+        protected uv_fileno_func _uv_fileno;
+        public int uv_fileno(UvHandle handle, ref IntPtr socket)
+        {
+            handle.Validate();
+            return Check(_uv_fileno(handle, ref socket));
+        }
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate void uv_close_cb(IntPtr handle);
         protected Action<IntPtr, uv_close_cb> _uv_close;
         public void close(UvHandle handle, uv_close_cb close_cb)
@@ -221,6 +232,40 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Networking
         {
             handle.Validate();
             Check(_uv_tcp_bind(handle, ref addr, flags));
+            if (PlatformApis.IsWindows)
+            {
+                tcp_bind_windows_extras(handle);
+            }
+        }
+
+        private unsafe void tcp_bind_windows_extras(UvTcpHandle handle)
+        {
+            const int SIO_LOOPBACK_FAST_PATH = -1744830448; // IOC_IN | IOC_WS2 | 16;
+            const int WSAEOPNOTSUPP = 10000 + 45; // (WSABASEERR+45)
+            const int SOCKET_ERROR = -1;
+
+            var socket = IntPtr.Zero;
+            Check(_uv_fileno(handle, ref socket));
+
+            // Enable loopback fast-path for lower latency for localhost comms, like HttpPlatformHandler fronting
+            // http://blogs.technet.com/b/wincat/archive/2012/12/05/fast-tcp-loopback-performance-and-low-latency-with-windows-server-2012-tcp-loopback-fast-path.aspx
+            // https://github.com/libuv/libuv/issues/489
+            var optionValue = 1;
+            uint dwBytes = 0u;
+
+            var result = NativeMethods.WSAIoctl(socket, SIO_LOOPBACK_FAST_PATH, &optionValue, sizeof(int), null, 0, out dwBytes, IntPtr.Zero, IntPtr.Zero);
+            if (result == SOCKET_ERROR)
+            {
+                var errorId = NativeMethods.WSAGetLastError();
+                if (errorId == WSAEOPNOTSUPP)
+                {
+                    // This system is not >= Windows Server 2012, and the call is not supported.
+                }
+                else
+                {
+                    Check(errorId);
+                }
+            }
         }
 
         protected Func<UvTcpHandle, IntPtr, int> _uv_tcp_open;
@@ -502,6 +547,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Networking
             public static extern void uv_unref(UvHandle handle);
 
             [DllImport("libuv", CallingConvention = CallingConvention.Cdecl)]
+            public static extern int uv_fileno(UvHandle handle, ref IntPtr socket);
+
+            [DllImport("libuv", CallingConvention = CallingConvention.Cdecl)]
             public static extern void uv_close(IntPtr handle, uv_close_cb close_cb);
 
             [DllImport("libuv", CallingConvention = CallingConvention.Cdecl)]
@@ -587,6 +635,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Networking
 
             [DllImport("libuv", CallingConvention = CallingConvention.Cdecl)]
             unsafe public static extern int uv_walk(UvLoopHandle loop, uv_walk_cb walk_cb, IntPtr arg);
+
+            [DllImport("WS2_32.dll", CallingConvention = CallingConvention.Winapi)]
+            unsafe public static extern int WSAIoctl(
+                IntPtr socket,
+                int dwIoControlCode,
+                int* lpvInBuffer,
+                uint cbInBuffer,
+                int* lpvOutBuffer,
+                int cbOutBuffer,
+                out uint lpcbBytesReturned,
+                IntPtr lpOverlapped,
+                IntPtr lpCompletionRoutine
+            );
+            
+            [DllImport("WS2_32.dll", CallingConvention = CallingConvention.Winapi)]
+            public static extern int WSAGetLastError();
         }
 
         private static class NativeDarwinMonoMethods
@@ -608,6 +672,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Networking
 
             [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
             public static extern void uv_unref(UvHandle handle);
+
+            [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
+            public static extern int uv_fileno(UvHandle handle, ref IntPtr socket);
 
             [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
             public static extern void uv_close(IntPtr handle, uv_close_cb close_cb);
