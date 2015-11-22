@@ -64,16 +64,18 @@ namespace Microsoft.AspNet.Server.Kestrel
                 return;
             }
 
+            var stepTimeout = (int)(timeout.TotalMilliseconds / 3); 
+
             Post(t => t.OnStop());
-            if (!_thread.Join((int)timeout.TotalMilliseconds))
+            if (!_thread.Join(stepTimeout))
             {
                 try
                 {
                     Post(t => t.OnStopRude());
-                    if (!_thread.Join((int)timeout.TotalMilliseconds))
+                    if (!_thread.Join(stepTimeout))
                     {
                         Post(t => t.OnStopImmediate());
-                        if (!_thread.Join((int)timeout.TotalMilliseconds))
+                        if (!_thread.Join(stepTimeout))
                         {
 #if NET451
                             _thread.Abort();
@@ -85,7 +87,7 @@ namespace Microsoft.AspNet.Server.Kestrel
                 {
                     // REVIEW: Should we log something here?
                     // Until we rework this logic, ODEs are bound to happen sometimes.
-                    if (!_thread.Join((int)timeout.TotalMilliseconds))
+                    if (!_thread.Join(stepTimeout))
                     {
 #if NET451
                         _thread.Abort();
