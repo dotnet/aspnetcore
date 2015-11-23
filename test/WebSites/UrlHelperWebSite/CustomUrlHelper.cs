@@ -21,9 +21,8 @@ namespace UrlHelperWebSite
 
         public CustomUrlHelper(
             IActionContextAccessor contextAccessor,
-            IActionSelector actionSelector,
             IOptions<AppOptions> appOptions)
-            : base(contextAccessor, actionSelector)
+            : base(contextAccessor)
         {
             _appOptions = appOptions;
             _httpContext = contextAccessor.ActionContext.HttpContext;

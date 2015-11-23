@@ -472,8 +472,7 @@ namespace Microsoft.AspNet.Mvc
             }
 
             var contextAccessor = GetContextAccessor(serviceProvider, routeData);
-            var actionSelector = new Mock<IActionSelector>(MockBehavior.Strict);
-            var urlHelper = new UrlHelper(contextAccessor, actionSelector.Object);
+            var urlHelper = new UrlHelper(contextAccessor);
             serviceCollection.AddSingleton<IUrlHelper>(urlHelper);
             serviceProvider = serviceCollection.BuildServiceProvider();
 
@@ -494,8 +493,7 @@ namespace Microsoft.AspNet.Mvc
             };
 
             var contextAccessor = GetContextAccessor(serviceProvider, routeData);
-            var actionSelector = new Mock<IActionSelector>(MockBehavior.Strict);
-            var urlHelper = new UrlHelper(contextAccessor, actionSelector.Object);
+            var urlHelper = new UrlHelper(contextAccessor);
             serviceCollection.AddSingleton<IUrlHelper>(urlHelper);
             serviceProvider = serviceCollection.BuildServiceProvider();
 

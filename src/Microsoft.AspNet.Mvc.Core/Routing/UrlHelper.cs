@@ -18,7 +18,6 @@ namespace Microsoft.AspNet.Mvc.Routing
     public class UrlHelper : IUrlHelper
     {
         private readonly IActionContextAccessor _actionContextAccessor;
-        private readonly IActionSelector _actionSelector;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UrlHelper"/> class using the specified action context and
@@ -26,13 +25,9 @@ namespace Microsoft.AspNet.Mvc.Routing
         /// </summary>
         /// <param name="actionContextAccessor">The <see cref="IActionContextAccessor"/> to access the action context
         /// of the current request.</param>
-        /// <param name="actionSelector">The <see cref="IActionSelector"/> to be used for verifying the correctness of
-        /// supplied parameters for a route.
-        /// </param>
-        public UrlHelper(IActionContextAccessor actionContextAccessor, IActionSelector actionSelector)
+        public UrlHelper(IActionContextAccessor actionContextAccessor)
         {
             _actionContextAccessor = actionContextAccessor;
-            _actionSelector = actionSelector;
         }
 
         protected IDictionary<string, object> AmbientValues => ActionContext.RouteData.Values;

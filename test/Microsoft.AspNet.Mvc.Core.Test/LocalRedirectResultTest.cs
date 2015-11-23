@@ -116,8 +116,7 @@ namespace Microsoft.AspNet.Mvc
             var httpContext = new Mock<HttpContext>();
             var actionContext = GetActionContext(httpContext.Object);
             var actionContextAccessor = new ActionContextAccessor() { ActionContext = actionContext };
-            var mockActionSelector = new Mock<IActionSelector>();
-            var urlHelper = new UrlHelper(actionContextAccessor, mockActionSelector.Object);
+            var urlHelper = new UrlHelper(actionContextAccessor);
             var serviceProvider = GetServiceProvider(urlHelper);
 
             httpContext.Setup(o => o.Response)

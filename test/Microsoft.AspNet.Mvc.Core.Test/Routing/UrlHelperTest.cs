@@ -883,17 +883,13 @@ namespace Microsoft.AspNet.Mvc.Routing
             var services = GetServices();
             var context = CreateHttpContext(services, string.Empty);
             var actionContext = CreateActionContext(context);
-
-            var actionSelector = new Mock<IActionSelector>(MockBehavior.Strict);
-            return new UrlHelper(actionContext, actionSelector.Object);
+            
+            return new UrlHelper(actionContext);
         }
 
         private static UrlHelper CreateUrlHelper(IServiceProvider services)
         {
-            var actionSelector = new Mock<IActionSelector>(MockBehavior.Strict);
-            return new UrlHelper(
-                services.GetRequiredService<IActionContextAccessor>(),
-                actionSelector.Object);
+            return new UrlHelper(services.GetRequiredService<IActionContextAccessor>());
         }
 
         private static UrlHelper CreateUrlHelper(string host)
@@ -903,9 +899,8 @@ namespace Microsoft.AspNet.Mvc.Routing
             context.Request.Host = new HostString(host);
 
             var actionContext = CreateActionContext(context);
-
-            var actionSelector = new Mock<IActionSelector>(MockBehavior.Strict);
-            return new UrlHelper(actionContext, actionSelector.Object);
+            
+            return new UrlHelper(actionContext);
         }
 
         private static UrlHelper CreateUrlHelper(string host, string protocol, IRouter router)
@@ -916,15 +911,13 @@ namespace Microsoft.AspNet.Mvc.Routing
             context.Request.Scheme = protocol;
 
             var actionContext = CreateActionContext(context, router);
-
-            var actionSelector = new Mock<IActionSelector>(MockBehavior.Strict);
-            return new UrlHelper(actionContext, actionSelector.Object);
+            
+            return new UrlHelper(actionContext);
         }
 
         private static UrlHelper CreateUrlHelper(IActionContextAccessor contextAccessor)
         {
-            var actionSelector = new Mock<IActionSelector>(MockBehavior.Strict);
-            return new UrlHelper(contextAccessor, actionSelector.Object);
+            return new UrlHelper(contextAccessor);
         }
 
         private static UrlHelper CreateUrlHelper(string appBase, IRouter router)
@@ -932,9 +925,8 @@ namespace Microsoft.AspNet.Mvc.Routing
             var services = GetServices();
             var context = CreateHttpContext(services, appBase);
             var actionContext = CreateActionContext(context, router);
-
-            var actionSelector = new Mock<IActionSelector>(MockBehavior.Strict);
-            return new UrlHelper(actionContext, actionSelector.Object);
+            
+            return new UrlHelper(actionContext);
         }
 
         private static UrlHelper CreateUrlHelperWithRouteCollection(IServiceProvider services, string appPrefix)
