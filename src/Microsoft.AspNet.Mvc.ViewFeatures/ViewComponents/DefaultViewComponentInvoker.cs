@@ -6,10 +6,10 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Html.Abstractions;
 using Microsoft.AspNet.Mvc.Controllers;
 using Microsoft.AspNet.Mvc.Diagnostics;
 using Microsoft.AspNet.Mvc.Infrastructure;
-using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.AspNet.Mvc.ViewFeatures.Logging;
 using Microsoft.Extensions.Logging;
@@ -175,8 +175,6 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
 
             var component = CreateComponent(context);
 
-            object result = null;
-
             using (_logger.ViewComponentScope(context))
             {
                 _diagnosticSource.BeforeViewComponent(context, component);
@@ -185,7 +183,7 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
                 try
                 {
                     var startTime = Environment.TickCount;
-                    result = method.Invoke(component, context.Arguments);
+                    var result = method.Invoke(component, context.Arguments);
 
                     var viewComponentResult = CoerceToViewComponentResult(result);
                     _logger.ViewComponentExecuted(context, startTime, viewComponentResult);
@@ -222,15 +220,15 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
                 return new ContentViewComponentResult(stringResult);
             }
 
-            var htmlStringResult = value as HtmlString;
-            if (htmlStringResult != null)
+            var htmlContent = value as IHtmlContent;
+            if (htmlContent != null)
             {
-                return new ContentViewComponentResult(htmlStringResult);
+                return new HtmlContentViewComponentResult(htmlContent);
             }
 
             throw new InvalidOperationException(Resources.FormatViewComponent_InvalidReturnValue(
                 typeof(string).Name,
-                typeof(HtmlString).Name,
+                typeof(IHtmlContent).Name,
                 typeof(IViewComponentResult).Name));
         }
     }

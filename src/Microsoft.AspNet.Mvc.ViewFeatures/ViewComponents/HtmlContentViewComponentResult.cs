@@ -3,40 +3,40 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Html.Abstractions;
 using Microsoft.AspNet.Mvc.Internal;
 
 namespace Microsoft.AspNet.Mvc.ViewComponents
 {
     /// <summary>
-    /// An <see cref="IViewComponentResult"/> which writes text when executed.
+    /// An <see cref="IViewComponentResult"/> which writes an <see cref="IHtmlContent"/> when executed.
     /// </summary>
     /// <remarks>
-    /// The provided content will be HTML-encoded when written. To write pre-encoded content, use an
-    /// <see cref="HtmlContentViewComponentResult"/>.
+    /// The provided content will be HTML-encoded as specified when the content was created. To encoded and write
+    /// text, use a <see cref="ContentViewComponentResult"/>.
     /// </remarks>
-    public class ContentViewComponentResult : IViewComponentResult
+    public class HtmlContentViewComponentResult : IViewComponentResult
     {
         /// <summary>
-        /// Initializes a new <see cref="ContentViewComponentResult"/>.
+        /// Initializes a new <see cref="HtmlContentViewComponentResult"/>.
         /// </summary>
-        /// <param name="content">Content to write. The content will be HTML encoded when written.</param>
-        public ContentViewComponentResult(string content)
+        public HtmlContentViewComponentResult(IHtmlContent encodedContent)
         {
-            if (content == null)
+            if (encodedContent == null)
             {
-                throw new ArgumentNullException(nameof(content));
+                throw new ArgumentNullException(nameof(encodedContent));
             }
 
-            Content = content;
+            EncodedContent = encodedContent;
         }
 
         /// <summary>
-        /// Gets the content.
+        /// Gets the encoded content.
         /// </summary>
-        public string Content { get; }
+        public IHtmlContent EncodedContent { get; }
 
         /// <summary>
-        /// Encodes and writes the <see cref="Content"/>.
+        /// Writes the <see cref="EncodedContent"/>.
         /// </summary>
         /// <param name="context">The <see cref="ViewComponentContext"/>.</param>
         public void Execute(ViewComponentContext context)
@@ -46,11 +46,19 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
                 throw new ArgumentNullException(nameof(context));
             }
 
-            context.HtmlEncoder.Encode(context.Writer, Content);
+            var htmlWriter = context.Writer as HtmlTextWriter;
+            if (htmlWriter == null)
+            {
+                EncodedContent.WriteTo(context.Writer, context.HtmlEncoder);
+            }
+            else
+            {
+                htmlWriter.Write(EncodedContent);
+            }
         }
 
         /// <summary>
-        /// Encodes and writes the <see cref="Content"/>.
+        /// Writes the <see cref="EncodedContent"/>.
         /// </summary>
         /// <param name="context">The <see cref="ViewComponentContext"/>.</param>
         /// <returns>A completed <see cref="Task"/>.</returns>

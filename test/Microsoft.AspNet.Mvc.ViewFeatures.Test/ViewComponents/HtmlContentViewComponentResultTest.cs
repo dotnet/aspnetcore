@@ -17,23 +17,23 @@ using Xunit;
 
 namespace Microsoft.AspNet.Mvc
 {
-    public class ContentViewComponentResultTest
+    public class HtmlContentViewComponentResultTest
     {
         [Fact]
-        public void Execute_WritesData_Encoded()
+        public void Execute_WritesData_PreEncoded()
         {
             // Arrange
             var buffer = new MemoryStream();
-            var result = new ContentViewComponentResult("<Test />");
-
             var viewComponentContext = GetViewComponentContext(Mock.Of<IView>(), buffer);
+
+            var result = new HtmlContentViewComponentResult(new HtmlString("<Test />"));
 
             // Act
             result.Execute(viewComponentContext);
             buffer.Position = 0;
 
             // Assert
-            Assert.Equal("HtmlEncode[[<Test />]]", new StreamReader(buffer).ReadToEnd());
+            Assert.Equal("<Test />", new StreamReader(buffer).ReadToEnd());
         }
 
         private static ViewComponentContext GetViewComponentContext(IView view, Stream stream)

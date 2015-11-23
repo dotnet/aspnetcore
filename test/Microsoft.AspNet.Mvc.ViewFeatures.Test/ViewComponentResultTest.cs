@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Internal;
@@ -20,6 +21,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.OptionsModel;
+using Microsoft.Extensions.WebEncoders.Testing;
 using Microsoft.Net.Http.Headers;
 using Xunit;
 
@@ -480,6 +482,7 @@ namespace Microsoft.AspNet.Mvc
             services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
             services.AddSingleton<ITempDataDictionary>(new TempDataDictionary(httpContext, tempDataProvider));
             services.AddTransient<IHttpContextAccessor, HttpContextAccessor>();
+            services.AddSingleton<HtmlEncoder, HtmlTestEncoder>();
 
             return services;
         }

@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.Rendering;
@@ -24,6 +25,12 @@ namespace MvcSample.Web.Components
              "non proident, sunt in culpa qui officia deserunt mollit anim id est laborum")
                 .Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)
                 .ToArray();
+        private readonly HtmlEncoder _htmlEncoder;
+
+        public TagCloudViewComponentTagHelper(HtmlEncoder htmlEncoder)
+        {
+            _htmlEncoder = htmlEncoder;
+        }
 
         public int Count { get; set; }
 
@@ -52,6 +59,7 @@ namespace MvcSample.Web.Components
             await result.ExecuteAsync(new ViewComponentContext(
                 viewComponentDescriptor,
                 new object[0],
+                _htmlEncoder,
                 ViewContext,
                 writer));
 

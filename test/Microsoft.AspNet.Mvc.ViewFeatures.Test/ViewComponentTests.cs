@@ -65,7 +65,6 @@ namespace Microsoft.AspNet.Mvc
             // Assert
             Assert.IsType<ContentViewComponentResult>(actualResult);
             Assert.Same(expectedContent, actualResult.Content);
-            Assert.Equal(expectedEncodedContent.ToString(), actualResult.EncodedContent.ToString());
         }
 
         [Fact]

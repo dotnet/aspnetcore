@@ -15,7 +15,6 @@ using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.ViewFeatures.Internal;
-using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.OptionsModel;
 
 namespace Microsoft.AspNet.Mvc.ViewFeatures

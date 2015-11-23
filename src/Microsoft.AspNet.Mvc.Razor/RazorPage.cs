@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Security.Claims;
@@ -379,7 +378,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 }
                 else
                 {
-                    // This special case alows us to keep buffering as IHtmlContent until we get to the 'final'
+                    // This special case allows us to keep buffering as IHtmlContent until we get to the 'final'
                     // TextWriter.
                     htmlTextWriter.Write(htmlContent);
                 }

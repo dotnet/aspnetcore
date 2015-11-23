@@ -15,6 +15,7 @@ using Microsoft.AspNet.Mvc.ViewEngines;
 using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.AspNet.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.WebEncoders.Testing;
 using Moq;
 using Newtonsoft.Json;
 using Xunit;
@@ -83,7 +84,13 @@ namespace Microsoft.AspNet.Mvc
                 Type = typeof(object),
             };
 
-            var viewComponentContext = new ViewComponentContext(viewComponentDescriptor, new object[0], viewContext, writer);
+            var viewComponentContext = new ViewComponentContext(
+                viewComponentDescriptor,
+                new object[0],
+                new HtmlTestEncoder(),
+                viewContext,
+                writer);
+
             return viewComponentContext;
         }
 

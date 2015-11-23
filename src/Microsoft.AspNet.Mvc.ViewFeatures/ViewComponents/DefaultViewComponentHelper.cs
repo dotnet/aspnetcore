@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Html.Abstractions;
 using Microsoft.AspNet.Mvc.Rendering;
@@ -14,18 +15,25 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
     public class DefaultViewComponentHelper : IViewComponentHelper, ICanHasViewContext
     {
         private readonly IViewComponentDescriptorCollectionProvider _descriptorProvider;
+        private readonly HtmlEncoder _htmlEncoder;
         private readonly IViewComponentInvokerFactory _invokerFactory;
         private readonly IViewComponentSelector _selector;
         private ViewContext _viewContext;
 
         public DefaultViewComponentHelper(
             IViewComponentDescriptorCollectionProvider descriptorProvider,
+            HtmlEncoder htmlEncoder,
             IViewComponentSelector selector,
             IViewComponentInvokerFactory invokerFactory)
         {
             if (descriptorProvider == null)
             {
                 throw new ArgumentNullException(nameof(descriptorProvider));
+            }
+
+            if (htmlEncoder == null)
+            {
+                throw new ArgumentNullException(nameof(htmlEncoder));
             }
 
             if (selector == null)
@@ -39,6 +47,7 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
             }
 
             _descriptorProvider = descriptorProvider;
+            _htmlEncoder = htmlEncoder;
             _selector = selector;
             _invokerFactory = invokerFactory;
         }
@@ -202,7 +211,7 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
                 throw new ArgumentNullException(nameof(descriptor));
             }
 
-            var context = new ViewComponentContext(descriptor, arguments, _viewContext, writer);
+            var context = new ViewComponentContext(descriptor, arguments, _htmlEncoder, _viewContext, writer);
 
             var invoker = _invokerFactory.CreateInstance(context);
             if (invoker == null)
@@ -229,7 +238,7 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
                 throw new ArgumentNullException(nameof(descriptor));
             }
 
-            var context = new ViewComponentContext(descriptor, arguments, _viewContext, writer);
+            var context = new ViewComponentContext(descriptor, arguments, _htmlEncoder, _viewContext, writer);
 
             var invoker = _invokerFactory.CreateInstance(context);
             if (invoker == null)

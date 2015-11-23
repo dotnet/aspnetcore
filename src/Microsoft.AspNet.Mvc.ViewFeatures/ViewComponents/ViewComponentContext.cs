@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.Text.Encodings.Web;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.ViewFeatures;
 
@@ -38,6 +39,7 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
         public ViewComponentContext(
             ViewComponentDescriptor viewComponentDescriptor,
             object[] arguments,
+            HtmlEncoder htmlEncoder,
             ViewContext viewContext,
             TextWriter writer)
         {
@@ -49,6 +51,11 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
             if (arguments == null)
             {
                 throw new ArgumentNullException(nameof(arguments));
+            }
+
+            if (htmlEncoder == null)
+            {
+                throw new ArgumentNullException(nameof(htmlEncoder));
             }
 
             if (viewContext == null)
@@ -63,6 +70,7 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
 
             ViewComponentDescriptor = viewComponentDescriptor;
             Arguments = arguments;
+            HtmlEncoder = htmlEncoder;
 
             // We want to create a defensive copy of the VDD here so that changes done in the VC
             // aren't visible in the calling view.
@@ -74,12 +82,20 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
         }
 
         /// <summary>
-        /// Gets or sets the View Component arguments. 
+        /// Gets or sets the View Component arguments.
         /// </summary>
         /// <remarks>
         /// The property setter is provided for unit test purposes only.
         /// </remarks>
         public object[] Arguments { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="HtmlEncoder"/>.
+        /// </summary>
+        /// <remarks>
+        /// The property setter is provided for unit test purposes only.
+        /// </remarks>
+        public HtmlEncoder HtmlEncoder { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="ViewComponentDescriptor"/> for the View Component being invoked.
