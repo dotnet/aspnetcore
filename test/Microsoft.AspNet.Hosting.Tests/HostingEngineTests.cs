@@ -22,7 +22,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.OptionsModel;
 using Microsoft.Extensions.Primitives;
-using Moq;
 using Xunit;
 
 namespace Microsoft.AspNet.Hosting
@@ -382,7 +381,7 @@ namespace Microsoft.AspNet.Hosting
                 httpContext = innerHttpContext;
                 return Task.FromResult(0);
             });
-            var requestIdentifierFeature = new Mock<IHttpRequestIdentifierFeature>().Object;
+            var requestIdentifierFeature = new StubHttpRequestIdentifierFeature();
             _featuresSupportedByThisHost[typeof(IHttpRequestIdentifierFeature)] = requestIdentifierFeature;
             var hostingEngine = CreateHostingEngine(requestDelegate);
 
@@ -665,6 +664,11 @@ namespace Microsoft.AspNet.Hosting
             }
 
             IEnumerator IEnumerable.GetEnumerator() => null;
+        }
+
+        private class StubHttpRequestIdentifierFeature : IHttpRequestIdentifierFeature
+        {
+            public string TraceIdentifier { get; set; }
         }
     }
 }

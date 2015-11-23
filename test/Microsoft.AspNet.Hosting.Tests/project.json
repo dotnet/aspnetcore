@@ -9,11 +9,11 @@
         "Microsoft.AspNet.Testing": "1.0.0-*",
         "Microsoft.Extensions.OptionsModel": "1.0.0-*",
         "Microsoft.Extensions.PlatformAbstractions": "1.0.0-*",
-        "Moq": "4.2.1312.1622",
         "xunit.runner.aspnet": "2.0.0-aspnet-*"
     },
     "frameworks": {
-        "dnx451": {}
+        "dnx451": { },
+        "dnxcore50": { }
     },
     "commands": {
         "test": "xunit.runner.aspnet"
