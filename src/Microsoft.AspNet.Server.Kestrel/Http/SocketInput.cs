@@ -16,6 +16,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         private static readonly Action _awaitableIsNotCompleted = () => { };
 
         private readonly MemoryPool2 _memory;
+        private readonly ThreadPoolActions _threadPoolActions;
         private readonly ManualResetEventSlim _manualResetEvent = new ManualResetEventSlim(false);
 
         private Action _awaitableState;
@@ -26,9 +27,10 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         private MemoryPoolBlock2 _pinned;
         private readonly object _sync = new Object();
 
-        public SocketInput(MemoryPool2 memory)
+        public SocketInput(MemoryPool2 memory, ThreadPoolActions threadPoolActions)
         {
             _memory = memory;
+            _threadPoolActions = threadPoolActions;
             _awaitableState = _awaitableIsNotCompleted;
         }
 
@@ -128,7 +130,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             if (awaitableState != _awaitableIsCompleted &&
                 awaitableState != _awaitableIsNotCompleted)
             {
-                ThreadPool.QueueUserWorkItem((o) => ((Action)o)(), awaitableState);
+                _threadPoolActions.Run(awaitableState);
             }
         }
 
@@ -188,7 +190,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             if (awaitableState != _awaitableIsCompleted &&
                 awaitableState != _awaitableIsNotCompleted)
             {
-                Task.Run(awaitableState);
+                _threadPoolActions.Run(awaitableState);
             }
         }
 
@@ -210,7 +212,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             }
             else if (awaitableState == _awaitableIsCompleted)
             {
-                ThreadPool.QueueUserWorkItem((o) => ((Action)o)(), continuation);
+                _threadPoolActions.Run(continuation);
             }
             else
             {

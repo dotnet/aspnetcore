@@ -33,12 +33,14 @@ namespace Microsoft.AspNet.Server.Kestrel
         private bool _initCompleted = false;
         private ExceptionDispatchInfo _closeError;
         private IKestrelTrace _log;
+        private ThreadPoolActions _threadPoolActions;
 
         public KestrelThread(KestrelEngine engine)
         {
             _engine = engine;
             _appLifetime = engine.AppLifetime;
             _log = engine.Log;
+            _threadPoolActions = engine.ThreadPoolActions;
             _loop = new UvLoopHandle(_log);
             _post = new UvAsyncHandle(_log);
             _thread = new Thread(ThreadStart);
@@ -151,7 +153,7 @@ namespace Microsoft.AspNet.Server.Kestrel
 
         public Task PostAsync<T>(Action<T> callback, T state)
         {
-            var tcs = new TaskCompletionSource<int>();
+            var tcs = new TaskCompletionSource<object>();
             lock (_workSync)
             {
                 _workAdding.Enqueue(new Work
@@ -266,24 +268,14 @@ namespace Microsoft.AspNet.Server.Kestrel
                     work.CallbackAdapter(work.Callback, work.State);
                     if (work.Completion != null)
                     {
-                        ThreadPool.QueueUserWorkItem(
-                            tcs =>
-                            {
-                                ((TaskCompletionSource<int>)tcs).SetResult(0);
-                            },
-                            work.Completion);
+                        _threadPoolActions.Complete(work.Completion);
                     }
                 }
                 catch (Exception ex)
                 {
                     if (work.Completion != null)
                     {
-                        ThreadPool.QueueUserWorkItem(
-                            tcs =>
-                            {
-                                ((TaskCompletionSource<int>)tcs).SetException(ex);
-                            }, 
-                            work.Completion);
+                        _threadPoolActions.Error(work.Completion, ex);
                     }
                     else
                     {
@@ -322,7 +314,7 @@ namespace Microsoft.AspNet.Server.Kestrel
             public Action<object, object> CallbackAdapter;
             public object Callback;
             public object State;
-            public TaskCompletionSource<int> Completion;
+            public TaskCompletionSource<object> Completion;
         }
         private struct CloseHandle
         {

@@ -25,6 +25,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         private readonly Connection _connection;
         private readonly long _connectionId;
         private readonly IKestrelTrace _log;
+        private readonly ThreadPoolActions _threadPoolActions;
 
         // This locks all access to _tail, _isProducing and _returnFromOnProducingComplete.
         // _head does not require a lock, since it is only used in the ctor and uv thread.
@@ -55,13 +56,15 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             MemoryPool2 memory,
             Connection connection,
             long connectionId,
-            IKestrelTrace log)
+            IKestrelTrace log,
+            ThreadPoolActions threadPoolActions)
         {
             _thread = thread;
             _socket = socket;
             _connection = connection;
             _connectionId = connectionId;
             _log = log;
+            _threadPoolActions = threadPoolActions;
             _tasksPending = new Queue<TaskCompletionSource<object>>(_initialTaskQueues);
             _tasksCompleted = new Queue<TaskCompletionSource<object>>(_initialTaskQueues);
 
@@ -218,7 +221,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         private static void ReturnBlocks(MemoryPoolBlock2 block)
         {
-            while(block != null)
+            while (block != null)
             {
                 var returningBlock = block;
                 block = returningBlock.Next;
@@ -319,16 +322,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 var tcs = _tasksCompleted.Dequeue();
                 if (_lastWriteError == null)
                 {
-                    ThreadPool.QueueUserWorkItem(
-                        (o) => ((TaskCompletionSource<object>)o).SetResult(null),
-                        tcs);
+                    _threadPoolActions.Complete(tcs);
                 }
                 else
                 {
-                    // error is closure captured 
-                    ThreadPool.QueueUserWorkItem(
-                        (o) => ((TaskCompletionSource<object>)o).SetException(_lastWriteError),
-                        tcs);
+                    _threadPoolActions.Error(tcs, _lastWriteError);
                 }
             }
 
@@ -462,7 +460,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                     var _this = (WriteContext)state;
                     _this.ShutdownSendStatus = status;
 
-                    _this.Self._log.ConnectionWroteFin(Self._connectionId, status);
+                    _this.Self._log.ConnectionWroteFin(_this.Self._connectionId, status);
 
                     _this.DoDisconnectIfNeeded();
                 }, this);
