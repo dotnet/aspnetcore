@@ -9,7 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.PortableExecutable;
-#if DOTNET5_4
+#if DOTNET5_5
 using System.Runtime.Loader;
 #endif
 using Microsoft.AspNet.FileProviders;
@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
         private readonly Lazy<List<MetadataReference>> _applicationReferences;
         private readonly string _classPrefix;
 
-#if DOTNET5_4
+#if DOTNET5_5
         private readonly RazorLoadContext _razorLoadContext;
 #endif
 
@@ -70,7 +70,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
             _fileProvider = optionsAccessor.Value.FileProvider;
             _classPrefix = host.MainClassNamePrefix;
 
-#if DOTNET5_4
+#if DOTNET5_5
             _razorLoadContext = new RazorLoadContext();
 #endif
         }
@@ -339,7 +339,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
             return null;
         }
 
-#if DOTNET5_4
+#if DOTNET5_5
         private class RazorLoadContext : AssemblyLoadContext
         {
             protected override Assembly Load(AssemblyName assemblyName)
