@@ -1,14 +1,25 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.Extensions.Primitives;
 using System.Collections;
 using System.Collections.Generic;
+using Microsoft.AspNet.Server.Kestrel.Infrastructure;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNet.Server.Kestrel.Http
 {
     public partial class FrameResponseHeaders : FrameHeaders
     {
+        private static byte[] _CrLf = new[] { (byte)'\r', (byte)'\n' };
+        private static byte[] _colonSpace = new[] { (byte)':', (byte)' ' };
+
+        public bool HasConnection => HeaderConnection.Count != 0;
+
+        public bool HasTransferEncoding => HeaderTransferEncoding.Count != 0;
+
+        public bool HasContentLength => HeaderContentLength.Count != 0;
+
+
         public Enumerator GetEnumerator()
         {
             return new Enumerator(this);
@@ -17,6 +28,25 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         protected override IEnumerator<KeyValuePair<string, StringValues>> GetEnumeratorFast()
         {
             return GetEnumerator();
+        }
+
+        public int CopyTo(ref MemoryPoolIterator2 output)
+        {
+            var count = CopyToFast(ref output);
+            if (MaybeUnknown != null)
+            {
+                foreach (var kv in MaybeUnknown)
+                {
+                    foreach (var value in kv.Value)
+                    {
+                        count += output.CopyFrom(_CrLf, 0, 2);
+                        count += output.CopyFromAscii(kv.Key);
+                        count += output.CopyFrom(_colonSpace, 0, 2);
+                        count += output.CopyFromAscii(value);
+                    }
+                }
+            }
+            return count;
         }
 
         public partial struct Enumerator : IEnumerator<KeyValuePair<string, StringValues>>

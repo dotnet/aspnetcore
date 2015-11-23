@@ -29,6 +29,17 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         private static readonly ArraySegment<byte> _emptyData = new ArraySegment<byte>(new byte[0]);
         private static readonly byte[] _hex = Encoding.ASCII.GetBytes("0123456789abcdef");
 
+        private static readonly byte[] _bytesConnectionClose = Encoding.ASCII.GetBytes("\r\nConnection: close");
+        private static readonly byte[] _bytesConnectionKeepAlive = Encoding.ASCII.GetBytes("\r\nConnection: keep-alive");
+        private static readonly byte[] _bytesTransferEncodingChunked = Encoding.ASCII.GetBytes("\r\nTransfer-Encoding: chunked");
+        private static readonly byte[] _bytesHttpVersion1_0 = Encoding.ASCII.GetBytes("HTTP/1.0 ");
+        private static readonly byte[] _bytesHttpVersion1_1 = Encoding.ASCII.GetBytes("HTTP/1.1 ");
+        private static readonly byte[] _bytesContentLengthZero = Encoding.ASCII.GetBytes("\r\nContent-Length: 0");
+        private static readonly byte[] _bytesSpace = Encoding.ASCII.GetBytes(" ");
+        private static readonly byte[] _bytesServer = Encoding.ASCII.GetBytes("\r\nServer: Kestrel");
+        private static readonly byte[] _bytesDate = Encoding.ASCII.GetBytes("Date: ");
+        private static readonly byte[] _bytesEndHeaders = Encoding.ASCII.GetBytes("\r\n\r\n");
+
         private readonly object _onStartingSync = new Object();
         private readonly object _onCompletedSync = new Object();
         private readonly FrameRequestHeaders _requestHeaders = new FrameRequestHeaders();
@@ -52,6 +63,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         private bool _keepAlive;
         private bool _autoChunk;
         private Exception _applicationException;
+
+        private HttpVersionType _httpVersion;
 
         private readonly IPEndPoint _localEndPoint;
         private readonly IPEndPoint _remoteEndPoint;
@@ -81,7 +94,37 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         public string RequestUri { get; set; }
         public string Path { get; set; }
         public string QueryString { get; set; }
-        public string HttpVersion { get; set; }
+        public string HttpVersion
+        {
+            get
+            {
+                if (_httpVersion == HttpVersionType.Http1_1)
+                {
+                    return "HTTP/1.1";
+                }
+                if (_httpVersion == HttpVersionType.Http1_0)
+                {
+                    return "HTTP/1.0";
+                }
+                return "";
+            }
+            set
+            {
+                if (value == "HTTP/1.1")
+                {
+                    _httpVersion = HttpVersionType.Http1_1;
+                }
+                else if (value == "HTTP/1.0")
+                {
+                    _httpVersion = HttpVersionType.Http1_0;
+                }
+                else
+                {
+                    _httpVersion = HttpVersionType.Unknown;
+                }
+            }
+        }
+
         public IHeaderDictionary RequestHeaders { get; set; }
         public Stream RequestBody { get; set; }
 
@@ -118,7 +161,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             RequestUri = null;
             Path = null;
             QueryString = null;
-            HttpVersion = null;
+            _httpVersion = HttpVersionType.Unknown;
             RequestHeaders = _requestHeaders;
             RequestBody = null;
             StatusCode = 200;
@@ -151,8 +194,12 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         public void ResetResponseHeaders()
         {
             _responseHeaders.Reset();
-            _responseHeaders.HeaderServer = "Kestrel";
-            _responseHeaders.HeaderDate = DateHeaderValueManager.GetDateHeaderValue();
+            _responseHeaders.SetRawDate(
+                DateHeaderValueManager.GetDateHeaderValue(),
+                DateHeaderValueManager.GetDateHeaderValueBytes());
+            _responseHeaders.SetRawServer(
+                "Kestrel",
+                _bytesServer);
         }
 
         /// <summary>
@@ -505,7 +552,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             if (_responseStarted) return;
 
             StringValues expect;
-            if (HttpVersion.Equals("HTTP/1.1") &&
+            if (_httpVersion == HttpVersionType.Http1_1 &&
                 RequestHeaders.TryGetValue("Expect", out expect) &&
                 (expect.FirstOrDefault() ?? "").Equals("100-continue", StringComparison.OrdinalIgnoreCase))
             {
@@ -529,19 +576,14 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             await ProduceStart(immediate, appCompleted: false);
         }
 
-        private async Task ProduceStart(bool immediate, bool appCompleted)
+        private Task ProduceStart(bool immediate, bool appCompleted)
         {
-            if (_responseStarted) return;
+            if (_responseStarted) return TaskUtilities.CompletedTask;
             _responseStarted = true;
 
-            var status = ReasonPhrases.ToStatus(StatusCode, ReasonPhrase);
+            var statusBytes = ReasonPhrases.ToStatusBytes(StatusCode, ReasonPhrase);
 
-            var responseHeader = CreateResponseHeader(status, appCompleted);
-
-            using (responseHeader.Item2)
-            {
-                await SocketOutput.WriteAsync(responseHeader.Item1, immediate: immediate);
-            }
+            return CreateResponseHeader(statusBytes, appCompleted, immediate);
         }
 
         private async Task ProduceEnd()
@@ -560,7 +602,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                     ReasonPhrase = null;
 
                     ResetResponseHeaders();
-                    _responseHeaders.HeaderContentLength = "0";
+                    _responseHeaders.SetRawContentLength("0", _bytesContentLengthZero);
                 }
             }
 
@@ -579,58 +621,26 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             }
         }
 
-        private Tuple<ArraySegment<byte>, IDisposable> CreateResponseHeader(
-            string status,
-            bool appCompleted)
+        private Task CreateResponseHeader(
+            byte[] statusBytes,
+            bool appCompleted,
+            bool immediate)
         {
-            var writer = new MemoryPoolTextWriter(Memory);
-            writer.Write(HttpVersion);
-            writer.Write(' ');
-            writer.Write(status);
-            writer.Write('\r');
-            writer.Write('\n');
-
-            var hasConnection = false;
-            var hasTransferEncoding = false;
-            var hasContentLength = false;
-
-            foreach (var header in _responseHeaders)
+            var begin = SocketOutput.ProducingStart();
+            var count = 0;
+            var end = begin;
+            if (_keepAlive)
             {
-                var isConnection = false;
-                if (!hasConnection &&
-                    string.Equals(header.Key, "Connection", StringComparison.OrdinalIgnoreCase))
+                foreach (var connectionValue in _responseHeaders.HeaderConnection)
                 {
-                    hasConnection = isConnection = true;
-                }
-                else if (!hasTransferEncoding &&
-                    string.Equals(header.Key, "Transfer-Encoding", StringComparison.OrdinalIgnoreCase))
-                {
-                    hasTransferEncoding = true;
-                }
-                else if (!hasContentLength &&
-                    string.Equals(header.Key, "Content-Length", StringComparison.OrdinalIgnoreCase))
-                {
-                    hasContentLength = true;
-                }
-
-                foreach (var value in header.Value)
-                {
-                    writer.Write(header.Key);
-                    writer.Write(':');
-                    writer.Write(' ');
-                    writer.Write(value);
-                    writer.Write('\r');
-                    writer.Write('\n');
-
-                    if (isConnection && value.IndexOf("close", StringComparison.OrdinalIgnoreCase) != -1)
+                    if (connectionValue.IndexOf("close", StringComparison.OrdinalIgnoreCase) != -1)
                     {
                         _keepAlive = false;
                     }
                 }
-
             }
 
-            if (_keepAlive && !hasTransferEncoding && !hasContentLength)
+            if (_keepAlive && !_responseHeaders.HasTransferEncoding && !_responseHeaders.HasContentLength)
             {
                 if (appCompleted)
                 {
@@ -640,15 +650,15 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                     {
                         // Since the app has completed and we are only now generating
                         // the headers we can safely set the Content-Length to 0.
-                        writer.Write("Content-Length: 0\r\n");
+                        _responseHeaders.SetRawContentLength("0", _bytesContentLengthZero);
                     }
                 }
                 else
                 {
-                    if (HttpVersion == "HTTP/1.1")
+                    if (_httpVersion == HttpVersionType.Http1_1)
                     {
                         _autoChunk = true;
-                        writer.Write("Transfer-Encoding: chunked\r\n");
+                        _responseHeaders.SetRawTransferEncoding("chunked", _bytesTransferEncodingChunked);
                     }
                     else
                     {
@@ -657,21 +667,30 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 }
             }
 
-            if (_keepAlive == false && hasConnection == false && HttpVersion == "HTTP/1.1")
+            if (_keepAlive == false && _responseHeaders.HasConnection == false && _httpVersion == HttpVersionType.Http1_1)
             {
-                writer.Write("Connection: close\r\n\r\n");
+                _responseHeaders.SetRawConnection("close", _bytesConnectionClose);
             }
-            else if (_keepAlive && hasConnection == false && HttpVersion == "HTTP/1.0")
+            else if (_keepAlive && _responseHeaders.HasConnection == false && _httpVersion == HttpVersionType.Http1_0)
             {
-                writer.Write("Connection: keep-alive\r\n\r\n");
+                _responseHeaders.SetRawConnection("keep-alive", _bytesConnectionKeepAlive);
+            }
+
+            count += end.CopyFrom(_httpVersion == HttpVersionType.Http1_1 ? _bytesHttpVersion1_1 : _bytesHttpVersion1_0);
+            count += end.CopyFrom(statusBytes);
+            count += _responseHeaders.CopyTo(ref end);
+            count += end.CopyFrom(_bytesEndHeaders, 0, _bytesEndHeaders.Length);
+
+            SocketOutput.ProducingComplete(end, count);
+
+            if (immediate)
+            {
+                return SocketOutput.WriteAsync(default(ArraySegment<byte>), immediate: true);
             }
             else
             {
-                writer.Write('\r');
-                writer.Write('\n');
+                return TaskUtilities.CompletedTask;
             }
-            writer.Flush();
-            return new Tuple<ArraySegment<byte>, IDisposable>(writer.Buffer, writer);
         }
 
         private bool TakeStartLine(SocketInput input)
@@ -879,6 +898,13 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             _applicationException = ex;
             Log.ApplicationError(ex);
+        }
+
+        private enum HttpVersionType
+        {
+            Unknown = -1,
+            Http1_0 = 0,
+            Http1_1 = 1
         }
     }
 }

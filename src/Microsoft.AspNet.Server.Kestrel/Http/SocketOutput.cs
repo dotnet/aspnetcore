@@ -16,6 +16,9 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
     {
         private const int _maxPendingWrites = 3;
         private const int _maxBytesPreCompleted = 65536;
+        private const int _initialTaskQueues = 64;
+
+        private static WaitCallback _returnBlocks = (state) => ReturnBlocks((MemoryPoolBlock2)state);
 
         private readonly KestrelThread _thread;
         private readonly UvStreamHandle _socket;
@@ -23,8 +26,18 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         private readonly long _connectionId;
         private readonly IKestrelTrace _log;
 
+        // This locks all access to _tail, _isProducing and _returnFromOnProducingComplete.
+        // _head does not require a lock, since it is only used in the ctor and uv thread.
+        private readonly object _returnLock = new object();
+
+        private MemoryPoolBlock2 _head;
+        private MemoryPoolBlock2 _tail;
+
+        private bool _isProducing;
+        private MemoryPoolBlock2 _returnFromOnProducingComplete;
+
         // This locks access to to all of the below fields
-        private readonly object _lockObj = new object();
+        private readonly object _contextLock = new object();
 
         // The number of write operations that have been scheduled so far
         // but have not completed.
@@ -34,10 +47,12 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         private Exception _lastWriteError;
         private WriteContext _nextWriteContext;
         private readonly Queue<TaskCompletionSource<object>> _tasksPending;
+        private readonly Queue<TaskCompletionSource<object>> _tasksCompleted;
 
         public SocketOutput(
             KestrelThread thread,
             UvStreamHandle socket,
+            MemoryPool2 memory,
             Connection connection,
             long connectionId,
             IKestrelTrace log)
@@ -47,7 +62,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             _connection = connection;
             _connectionId = connectionId;
             _log = log;
-            _tasksPending = new Queue<TaskCompletionSource<object>>();
+            _tasksPending = new Queue<TaskCompletionSource<object>>(_initialTaskQueues);
+            _tasksCompleted = new Queue<TaskCompletionSource<object>>(_initialTaskQueues);
+
+            _head = memory.Lease();
+            _tail = _head;
         }
 
         public Task WriteAsync(
@@ -56,28 +75,24 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             bool socketShutdownSend = false,
             bool socketDisconnect = false)
         {
-            //TODO: need buffering that works
-            if (buffer.Array != null)
+            if (buffer.Count > 0)
             {
-                var copy = new byte[buffer.Count];
-                Array.Copy(buffer.Array, buffer.Offset, copy, 0, buffer.Count);
-                buffer = new ArraySegment<byte>(copy);
-                _log.ConnectionWrite(_connectionId, buffer.Count);
+                var tail = ProducingStart();
+                tail.CopyFrom(buffer);
+                // We do our own accounting below
+                ProducingComplete(tail, count: 0);
             }
-
             TaskCompletionSource<object> tcs = null;
 
-            lock (_lockObj)
+            var scheduleWrite = false;
+
+            lock (_contextLock)
             {
                 if (_nextWriteContext == null)
                 {
                     _nextWriteContext = new WriteContext(this);
                 }
 
-                if (buffer.Array != null)
-                {
-                    _nextWriteContext.Buffers.Enqueue(buffer);
-                }
                 if (socketShutdownSend)
                 {
                     _nextWriteContext.SocketShutdownSend = true;
@@ -110,9 +125,14 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
                 if (_writesPending < _maxPendingWrites && immediate)
                 {
-                    ScheduleWrite();
+                    scheduleWrite = true;
                     _writesPending++;
                 }
+            }
+
+            if (scheduleWrite)
+            {
+                ScheduleWrite();
             }
 
             // Return TaskCompletionSource's Task if set, otherwise completed Task 
@@ -138,6 +158,75 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             }
         }
 
+        public MemoryPoolIterator2 ProducingStart()
+        {
+            lock (_returnLock)
+            {
+                Debug.Assert(!_isProducing);
+                _isProducing = true;
+
+                if (_tail == null)
+                {
+                    throw new IOException("The socket has been closed.");
+                }
+
+                return new MemoryPoolIterator2(_tail, _tail.End);
+            }
+        }
+
+        public void ProducingComplete(MemoryPoolIterator2 end, int count)
+        {
+            var decreasePreCompleted = false;
+            MemoryPoolBlock2 blockToReturn = null;
+
+            lock (_returnLock)
+            {
+                Debug.Assert(_isProducing);
+                _isProducing = false;
+
+                if (_returnFromOnProducingComplete == null)
+                {
+                    _tail = end.Block;
+                    _tail.End = end.Index;
+
+                    if (count != 0)
+                    {
+                        decreasePreCompleted = true;
+                    }
+                }
+                else
+                {
+                    blockToReturn = _returnFromOnProducingComplete;
+                    _returnFromOnProducingComplete = null;
+                }
+            }
+
+            if (decreasePreCompleted)
+            {
+                lock (_contextLock)
+                {
+                    _numBytesPreCompleted += count;
+                }
+            }
+
+
+            if (blockToReturn != null)
+            {
+                ThreadPool.QueueUserWorkItem(_returnBlocks, blockToReturn);
+            }
+        }
+
+        private static void ReturnBlocks(MemoryPoolBlock2 block)
+        {
+            while(block != null)
+            {
+                var returningBlock = block;
+                block = returningBlock.Next;
+
+                returningBlock.Pool?.Return(returningBlock);
+            }
+        }
+
         private void ScheduleWrite()
         {
             _thread.Post(_this => _this.WriteAllPending(), this);
@@ -148,7 +237,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             WriteContext writingContext;
 
-            lock (_lockObj)
+            lock (_contextLock)
             {
                 if (_nextWriteContext != null)
                 {
@@ -168,7 +257,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             }
             catch
             {
-                lock (_lockObj)
+                lock (_contextLock)
                 {
                     // Lock instead of using Interlocked.Decrement so _writesSending
                     // doesn't change in the middle of executing other synchronized code.
@@ -180,7 +269,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         }
 
         // This is called on the libuv event loop
-        private void OnWriteCompleted(Queue<ArraySegment<byte>> writtenBuffers, int status, Exception error)
+        private void OnWriteCompleted(int bytesWritten, int status, Exception error)
         {
             _log.ConnectionWriteCallback(_connectionId, status);
 
@@ -192,24 +281,23 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 _connection.Abort();
             }
 
-            lock (_lockObj)
+            bool scheduleWrite = false;
+
+            lock (_contextLock)
             {
                 if (_nextWriteContext != null)
                 {
-                    ScheduleWrite();
+                    scheduleWrite = true;
                 }
                 else
                 {
                     _writesPending--;
                 }
 
-                foreach (var writeBuffer in writtenBuffers)
-                {
-                    // _numBytesPreCompleted can temporarily go negative in the event there are
-                    // completed writes that we haven't triggered callbacks for yet.
-                    _numBytesPreCompleted -= writeBuffer.Count;
-                }
-                
+                // _numBytesPreCompleted can temporarily go negative in the event there are
+                // completed writes that we haven't triggered callbacks for yet.
+                _numBytesPreCompleted -= bytesWritten;
+
                 // bytesLeftToBuffer can be greater than _maxBytesPreCompleted
                 // This allows large writes to complete once they've actually finished.
                 var bytesLeftToBuffer = _maxBytesPreCompleted - _numBytesPreCompleted;
@@ -222,23 +310,63 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                     _numBytesPreCompleted += bytesToWrite;
                     bytesLeftToBuffer -= bytesToWrite;
 
-                    if (_lastWriteError == null)
-                    {
-                        ThreadPool.QueueUserWorkItem(
-                            (o) => ((TaskCompletionSource<object>)o).SetResult(null), 
-                            tcs);
-                    }
-                    else
-                    {
-                        // error is closure captured 
-                        ThreadPool.QueueUserWorkItem(
-                            (o) => ((TaskCompletionSource<object>)o).SetException(_lastWriteError), 
-                            tcs);
-                    }
+                    _tasksCompleted.Enqueue(tcs);
+                }
+            }
+
+            while (_tasksCompleted.Count > 0)
+            {
+                var tcs = _tasksCompleted.Dequeue();
+                if (_lastWriteError == null)
+                {
+                    ThreadPool.QueueUserWorkItem(
+                        (o) => ((TaskCompletionSource<object>)o).SetResult(null),
+                        tcs);
+                }
+                else
+                {
+                    // error is closure captured 
+                    ThreadPool.QueueUserWorkItem(
+                        (o) => ((TaskCompletionSource<object>)o).SetException(_lastWriteError),
+                        tcs);
+                }
+            }
+
+            if (scheduleWrite)
+            {
+                // ScheduleWrite();
+                // on right thread, fairness issues?
+                WriteAllPending();
+            }
+
+            _tasksCompleted.Clear();
+        }
+
+        // This is called on the libuv event loop
+        private void ReturnAllBlocks()
+        {
+            lock (_returnLock)
+            {
+                var block = _head;
+                while (block != _tail)
+                {
+                    var returnBlock = block;
+                    block = block.Next;
+
+                    returnBlock.Pool?.Return(returnBlock);
                 }
 
-                // Now that the while loop has completed the following invariants should hold true:
-                Debug.Assert(_numBytesPreCompleted >= 0);
+                if (_isProducing)
+                {
+                    _returnFromOnProducingComplete = _tail;
+                }
+                else
+                {
+                    _tail.Pool?.Return(_tail);
+                }
+
+                _head = null;
+                _tail = null;
             }
         }
 
@@ -263,9 +391,15 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         private class WriteContext
         {
+            private static WaitCallback _returnWrittenBlocks = (state) => ReturnWrittenBlocks((MemoryPoolBlock2)state);
+
+            private MemoryPoolIterator2 _lockedStart;
+            private MemoryPoolIterator2 _lockedEnd;
+            private int _bufferCount;
+            private int _byteCount;
+
             public SocketOutput Self;
 
-            public Queue<ArraySegment<byte>> Buffers;
             public bool SocketShutdownSend;
             public bool SocketDisconnect;
 
@@ -277,7 +411,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             public WriteContext(SocketOutput self)
             {
                 Self = self;
-                Buffers = new Queue<ArraySegment<byte>>();
             }
 
             /// <summary>
@@ -285,30 +418,29 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             /// </summary>
             public void DoWriteIfNeeded()
             {
-                if (Buffers.Count == 0 || Self._socket.IsClosed)
+                LockWrite();
+
+                if (_byteCount == 0 || Self._socket.IsClosed)
                 {
                     DoShutdownIfNeeded();
                     return;
                 }
 
-                var buffers = new ArraySegment<byte>[Buffers.Count];
-
-                var i = 0;
-                foreach (var buffer in Buffers)
-                {
-                    buffers[i++] = buffer;
-                }
-
                 var writeReq = new UvWriteReq(Self._log);
                 writeReq.Init(Self._thread.Loop);
-                writeReq.Write(Self._socket, new ArraySegment<ArraySegment<byte>>(buffers), (_writeReq, status, error, state) =>
+
+                writeReq.Write(Self._socket, _lockedStart, _lockedEnd, _bufferCount, (_writeReq, status, error, state) =>
                 {
                     _writeReq.Dispose();
                     var _this = (WriteContext)state;
+                    _this.ScheduleReturnFullyWrittenBlocks();
                     _this.WriteStatus = status;
                     _this.WriteError = error;
                     _this.DoShutdownIfNeeded();
                 }, this);
+
+                Self._head = _lockedEnd.Block;
+                Self._head.Start = _lockedEnd.Index;
             }
 
             /// <summary>
@@ -348,13 +480,81 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 }
 
                 Self._socket.Dispose();
+                Self.ReturnAllBlocks();
                 Self._log.ConnectionStop(Self._connectionId);
                 Complete();
             }
 
             public void Complete()
             {
-                Self.OnWriteCompleted(Buffers, WriteStatus, WriteError);
+                Self.OnWriteCompleted(_byteCount, WriteStatus, WriteError);
+            }
+            
+            private void ScheduleReturnFullyWrittenBlocks()
+            {
+                var block = _lockedStart.Block;
+                var end = _lockedEnd.Block;
+                if (block == end)
+                {
+                    end.Unpin();
+                    return;
+                }
+
+                while (block.Next != end)
+                {
+                    block = block.Next;
+                    block.Unpin();
+                }
+                block.Next = null;
+
+                ThreadPool.QueueUserWorkItem(_returnWrittenBlocks, _lockedStart.Block);
+            }
+
+            private static void ReturnWrittenBlocks(MemoryPoolBlock2 block)
+            {
+                while (block != null)
+                {
+                    var returnBlock = block;
+                    block = block.Next;
+
+                    returnBlock.Unpin();
+                    returnBlock.Pool?.Return(returnBlock);
+                }
+            }
+
+            private void LockWrite()
+            {
+                var head = Self._head;
+                var tail = Self._tail;
+
+                if (head == null || tail == null)
+                {
+                    // ReturnAllBlocks has already bee called. Nothing to do here.
+                    // Write will no-op since _byteCount will remain 0.
+                    return;
+                }
+
+                _lockedStart = new MemoryPoolIterator2(head, head.Start);
+                _lockedEnd = new MemoryPoolIterator2(tail, tail.End);
+
+                if (_lockedStart.Block == _lockedEnd.Block)
+                {
+                    _byteCount = _lockedEnd.Index - _lockedStart.Index;
+                    _bufferCount = 1;
+                    return;
+                }
+
+                _byteCount = _lockedStart.Block.Data.Offset + _lockedStart.Block.Data.Count - _lockedStart.Index;
+                _bufferCount = 1;
+
+                for (var block = _lockedStart.Block.Next; block != _lockedEnd.Block; block = block.Next)
+                {
+                    _byteCount += block.Data.Count;
+                    _bufferCount++;
+                }
+
+                _byteCount += _lockedEnd.Index - _lockedEnd.Block.Data.Offset;
+                _bufferCount++;
             }
         }
     }

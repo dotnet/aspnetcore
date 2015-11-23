@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.Server.KestrelTests.TestHelpers
         private bool _stopLoop;
         private readonly ManualResetEventSlim _loopWh = new ManualResetEventSlim();
 
-        private Func<UvStreamHandle, ArraySegment<ArraySegment<byte>>, Action<int>, int> _onWrite;
+        private Func<UvStreamHandle, int, Action<int>, int> _onWrite;
 
         unsafe public MockLibuv()
         {
@@ -68,7 +68,7 @@ namespace Microsoft.AspNet.Server.KestrelTests.TestHelpers
             _uv_walk = (loop, callback, ignore) => 0;
         }
 
-        public Func<UvStreamHandle, ArraySegment<ArraySegment<byte>>, Action<int>, int> OnWrite
+        public Func<UvStreamHandle, int, Action<int>, int> OnWrite
         {
             get
             {
@@ -82,7 +82,7 @@ namespace Microsoft.AspNet.Server.KestrelTests.TestHelpers
 
         unsafe private int UvWrite(UvRequest req, UvStreamHandle handle, uv_buf_t* bufs, int nbufs, uv_write_cb cb)
         {
-            return _onWrite(handle, new ArraySegment<ArraySegment<byte>>(), status => cb(req.InternalGetHandle(), status));
+            return _onWrite(handle, nbufs, status => cb(req.InternalGetHandle(), status));
         }
     }
 }

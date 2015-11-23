@@ -171,8 +171,8 @@ namespace Microsoft.AspNet.Server.KestrelTests
                         "Content-Length: 0",
                         "",
                         "HTTP/1.1 200 OK",
-                        "Content-Length: 7",
                         "Connection: close",
+                        "Content-Length: 7",
                         "",
                         "Goodbye");
                 }
@@ -241,8 +241,8 @@ namespace Microsoft.AspNet.Server.KestrelTests
                         "Goodbye");
                     await connection.Receive(
                         "HTTP/1.0 200 OK",
-                        "Content-Length: 0",
                         "Connection: keep-alive",
+                        "Content-Length: 0",
                         "\r\n");
                     await connection.ReceiveEnd(
                         "HTTP/1.0 200 OK",
@@ -267,14 +267,14 @@ namespace Microsoft.AspNet.Server.KestrelTests
                         "Connection: keep-alive",
                         "",
                         "POST / HTTP/1.0",
-                        "Connection: keep-alive",
                         "Content-Length: 7",
+                        "Connection: keep-alive",
                         "",
                         "Goodbye");
                     await connection.Receive(
                         "HTTP/1.0 200 OK",
-                        "Content-Length: 0",
                         "Connection: keep-alive",
+                        "Content-Length: 0",
                         "\r\n");
                     await connection.ReceiveEnd(
                         "HTTP/1.0 200 OK",
@@ -295,16 +295,16 @@ namespace Microsoft.AspNet.Server.KestrelTests
                 {
                     await connection.SendEnd(
                         "POST / HTTP/1.0",
-                        "Connection: keep-alive",
                         "Content-Length: 11",
+                        "Connection: keep-alive",
                         "",
                         "Hello WorldPOST / HTTP/1.0",
                         "",
                         "Goodbye");
                     await connection.Receive(
                         "HTTP/1.0 200 OK",
-                        "Content-Length: 11",
                         "Connection: keep-alive",
+                        "Content-Length: 11",
                         "",
                         "Hello World");
                     await connection.ReceiveEnd(
@@ -336,8 +336,8 @@ namespace Microsoft.AspNet.Server.KestrelTests
                         "Goodbye");
                     await connection.Receive(
                         "HTTP/1.0 200 OK",
-                        "Content-Length: 11",
                         "Connection: keep-alive",
+                        "Content-Length: 11",
                         "",
                         "Hello World");
                     await connection.ReceiveEnd(
@@ -361,15 +361,15 @@ namespace Microsoft.AspNet.Server.KestrelTests
                     await connection.Send(
                         "POST / HTTP/1.1",
                         "Expect: 100-continue",
-                        "Content-Length: 11",
                         "Connection: close",
+                        "Content-Length: 11",
                         "\r\n");
                     await connection.Receive("HTTP/1.1 100 Continue", "\r\n");
                     await connection.SendEnd("Hello World");
                     await connection.Receive(
                         "HTTP/1.1 200 OK",
-                        "Content-Length: 11",
                         "Connection: close",
+                        "Content-Length: 11",
                         "",
                         "Hello World");
                 }
@@ -422,8 +422,8 @@ namespace Microsoft.AspNet.Server.KestrelTests
                         "Content-Length: 0",
                         "",
                         "HTTP/1.0 200 OK",
-                        "Content-Length: 0",
                         "Connection: keep-alive",
+                        "Content-Length: 0",
                         "",
                         "");
                 }
@@ -584,11 +584,12 @@ namespace Microsoft.AspNet.Server.KestrelTests
                         "",
                         "HTTP/1.1 500 Internal Server Error",
                         "");
+                    await connection.Receive("Connection: close",
+                        "");
                     await connection.ReceiveStartsWith("Date:");
                     await connection.ReceiveEnd(
                         "Content-Length: 0",
                         "Server: Kestrel",
-                        "Connection: close",
                         "",
                         "");
 
@@ -812,12 +813,12 @@ namespace Microsoft.AspNet.Server.KestrelTests
                         "Server: Kestrel",
                         "",
                         "HTTP/1.1 500 Internal Server Error",
+                        "Connection: close",
                         "");
                     await connection.ReceiveStartsWith("Date:");
                     await connection.ReceiveEnd(
                         "Content-Length: 0",
                         "Server: Kestrel",
-                        "Connection: close",
                         "",
                         "");
 

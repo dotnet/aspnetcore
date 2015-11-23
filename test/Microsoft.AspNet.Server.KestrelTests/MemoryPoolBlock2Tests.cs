@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using Microsoft.AspNet.Server.Kestrel.Infrastructure;
 using Xunit;
 
@@ -149,6 +150,39 @@ namespace Microsoft.AspNet.Server.KestrelTests
 
                 endIterator.CopyTo(array, 0, 256, out actual);
                 Assert.Equal(0, actual);
+            }
+        }
+
+        [Fact]
+        public void CopyFromCorrectlyTraversesBlocks()
+        {
+            using (var pool = new MemoryPool2())
+            {
+                var block1 = pool.Lease(128);
+                var start = block1.GetIterator();
+                var end = start;
+                var bufferSize = block1.Data.Count * 3;
+                var buffer = new byte[bufferSize];
+
+                for (int i = 0; i < bufferSize; i++)
+                {
+                    buffer[i] = (byte)(i % 73);
+                }
+
+                Assert.Null(block1.Next);
+
+                end.CopyFrom(new ArraySegment<byte>(buffer));
+
+                Assert.NotNull(block1.Next);
+
+                for (int i = 0; i < bufferSize; i++)
+                {
+                    Assert.Equal(i % 73, start.Take());
+                }
+
+                Assert.Equal(-1, start.Take());
+                Assert.Equal(start.Block, end.Block);
+                Assert.Equal(start.Index, end.Index);
             }
         }
 

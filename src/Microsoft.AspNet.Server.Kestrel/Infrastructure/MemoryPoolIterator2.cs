@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 
@@ -529,6 +530,127 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
                     index = block.Start;
                 }
             }
+        }
+
+        public int CopyFrom(byte[] data)
+        {
+            return CopyFrom(new ArraySegment<byte>(data));
+        }
+
+        public int CopyFrom(byte[] data, int offset, int count)
+        {
+            return CopyFrom(new ArraySegment<byte>(data, offset, count));
+        }
+
+        public int CopyFrom(ArraySegment<byte> buffer)
+        {
+            Debug.Assert(_block != null);
+            Debug.Assert(_block.Pool != null);
+            Debug.Assert(_block.Next == null);
+            Debug.Assert(_block.End == _index);
+
+            var pool = _block.Pool;
+            var block = _block;
+            var blockIndex = _index;
+
+            var bufferIndex = buffer.Offset;
+            var remaining = buffer.Count;
+            var bytesLeftInBlock = block.Data.Offset + block.Data.Count - blockIndex;
+
+            while (remaining > 0)
+            {
+                if (bytesLeftInBlock == 0)
+                {
+                    var nextBlock = pool.Lease();
+                    block.Next = nextBlock;
+                    block = nextBlock;
+
+                    blockIndex = block.Data.Offset;
+                    bytesLeftInBlock = block.Data.Count;
+                }
+
+                var bytesToCopy = remaining < bytesLeftInBlock ? remaining : bytesLeftInBlock;
+
+                Buffer.BlockCopy(buffer.Array, bufferIndex, block.Array, blockIndex, bytesToCopy);
+
+                blockIndex += bytesToCopy;
+                bufferIndex += bytesToCopy;
+                remaining -= bytesToCopy;
+                bytesLeftInBlock -= bytesToCopy;
+                block.End = blockIndex;
+            }
+
+            _block = block;
+            _index = blockIndex;
+
+            return buffer.Count;
+        }
+
+        public unsafe int CopyFromAscii(string data)
+        {
+            Debug.Assert(_block != null);
+            Debug.Assert(_block.Pool != null);
+            Debug.Assert(_block.Next == null);
+            Debug.Assert(_block.End == _index);
+
+            var pool = _block.Pool;
+            var block = _block;
+            var blockIndex = _index;
+            var length = data.Length;
+
+            var bytesLeftInBlock = block.Data.Offset + block.Data.Count - blockIndex;
+            var bytesLeftInBlockMinusSpan = bytesLeftInBlock - 3;
+
+            fixed (char* pData = data)
+            {
+                var input = pData;
+                var inputEnd = pData + length;
+                var inputEndMinusSpan = inputEnd - 3;
+
+                while (input < inputEnd)
+                {
+                    if (bytesLeftInBlock == 0)
+                    {
+                        var nextBlock = pool.Lease();
+                        block.Next = nextBlock;
+                        block = nextBlock;
+
+                        blockIndex = block.Data.Offset;
+                        bytesLeftInBlock = block.Data.Count;
+                        bytesLeftInBlockMinusSpan = bytesLeftInBlock - 3;
+                    }
+
+                    fixed (byte* pOutput = block.Data.Array)
+                    {
+                        var output = pOutput + block.End;
+
+                        var copied = 0;
+                        for (; input < inputEndMinusSpan && copied < bytesLeftInBlockMinusSpan; copied += 4)
+                        {
+                            *(output) = (byte)*(input);
+                            *(output + 1) = (byte)*(input + 1);
+                            *(output + 2) = (byte)*(input + 2);
+                            *(output + 3) = (byte)*(input + 3);
+                            output += 4;
+                            input += 4;
+                        }
+                        for (; input < inputEnd && copied < bytesLeftInBlock; copied++)
+                        {
+                            *(output++) = (byte)*(input++);
+                        }
+
+                        blockIndex += copied;
+                        bytesLeftInBlockMinusSpan -= copied;
+                        bytesLeftInBlock -= copied;
+                    }
+                    block.End = blockIndex;
+                }
+            }
+
+            _block = block;
+            _index = blockIndex;
+
+            return length;
         }
     }
 }

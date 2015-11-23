@@ -13,13 +13,11 @@ namespace Microsoft.AspNet.Server.Kestrel
     {
         public ServiceContext()
         {
-            Memory = new MemoryPool();
         }
 
         public ServiceContext(ServiceContext context)
         {
             AppLifetime = context.AppLifetime;
-            Memory = context.Memory;
             Log = context.Log;
             HttpContextFactory = context.HttpContextFactory;
             DateHeaderValueManager = context.DateHeaderValueManager;
@@ -28,8 +26,6 @@ namespace Microsoft.AspNet.Server.Kestrel
         }
 
         public IApplicationLifetime AppLifetime { get; set; }
-
-        public IMemoryPool Memory { get; set; }
 
         public IKestrelTrace Log { get; set; }
 
