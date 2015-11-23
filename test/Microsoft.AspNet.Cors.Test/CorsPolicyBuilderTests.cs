@@ -14,16 +14,16 @@ namespace Microsoft.AspNet.Cors.Infrastructure
         public void Constructor_WithPolicy_AddsTheGivenPolicy()
         {
             // Arrange
-            var policy = new CorsPolicy();
-            policy.Origins.Add("http://existing.com");
-            policy.Headers.Add("Existing");
-            policy.Methods.Add("GET");
-            policy.ExposedHeaders.Add("ExistingExposed");
-            policy.SupportsCredentials = true;
-            policy.PreflightMaxAge = TimeSpan.FromSeconds(12);
+            var originalPolicy = new CorsPolicy();
+            originalPolicy.Origins.Add("http://existing.com");
+            originalPolicy.Headers.Add("Existing");
+            originalPolicy.Methods.Add("GET");
+            originalPolicy.ExposedHeaders.Add("ExistingExposed");
+            originalPolicy.SupportsCredentials = true;
+            originalPolicy.PreflightMaxAge = TimeSpan.FromSeconds(12);
 
             // Act
-            var builder = new CorsPolicyBuilder(policy);
+            var builder = new CorsPolicyBuilder(originalPolicy);
 
             // Assert
             var corsPolicy = builder.Build();
@@ -32,11 +32,39 @@ namespace Microsoft.AspNet.Cors.Infrastructure
             Assert.False(corsPolicy.AllowAnyMethod);
             Assert.False(corsPolicy.AllowAnyOrigin);
             Assert.True(corsPolicy.SupportsCredentials);
-            Assert.Equal(policy.Headers, corsPolicy.Headers);
-            Assert.Equal(policy.Methods, corsPolicy.Methods);
-            Assert.Equal(policy.Origins, corsPolicy.Origins);
-            Assert.Equal(policy.ExposedHeaders, corsPolicy.ExposedHeaders);
+            Assert.NotSame(originalPolicy.Headers, corsPolicy.Headers);
+            Assert.Equal(originalPolicy.Headers, corsPolicy.Headers);
+            Assert.NotSame(originalPolicy.Methods, corsPolicy.Methods);
+            Assert.Equal(originalPolicy.Methods, corsPolicy.Methods);
+            Assert.NotSame(originalPolicy.Origins, corsPolicy.Origins);
+            Assert.Equal(originalPolicy.Origins, corsPolicy.Origins);
+            Assert.NotSame(originalPolicy.ExposedHeaders, corsPolicy.ExposedHeaders);
+            Assert.Equal(originalPolicy.ExposedHeaders, corsPolicy.ExposedHeaders);
             Assert.Equal(TimeSpan.FromSeconds(12), corsPolicy.PreflightMaxAge);
+        }
+
+        [Fact]
+        public void ConstructorWithPolicy_HavingNullPreflightMaxAge_AddsTheGivenPolicy()
+        {
+            // Arrange
+            var originalPolicy = new CorsPolicy();
+            originalPolicy.Origins.Add("http://existing.com");
+
+            // Act
+            var builder = new CorsPolicyBuilder(originalPolicy);
+
+            // Assert
+            var corsPolicy = builder.Build();
+
+            Assert.Null(corsPolicy.PreflightMaxAge);
+            Assert.False(corsPolicy.AllowAnyHeader);
+            Assert.False(corsPolicy.AllowAnyMethod);
+            Assert.False(corsPolicy.AllowAnyOrigin);
+            Assert.NotSame(originalPolicy.Origins, corsPolicy.Origins);
+            Assert.Equal(originalPolicy.Origins, corsPolicy.Origins);
+            Assert.Empty(corsPolicy.Headers);
+            Assert.Empty(corsPolicy.Methods);
+            Assert.Empty(corsPolicy.ExposedHeaders);
         }
 
         [Fact]
@@ -111,7 +139,6 @@ namespace Microsoft.AspNet.Cors.Infrastructure
             Assert.True(corsPolicy.AllowAnyOrigin);
             Assert.Equal(new List<string>() { "*" }, corsPolicy.Origins);
         }
-
 
         [Fact]
         public void WithMethods_AddsMethods()

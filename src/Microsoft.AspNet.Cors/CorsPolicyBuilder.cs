@@ -180,7 +180,11 @@ namespace Microsoft.AspNet.Cors.Infrastructure
             WithHeaders(policy.Headers.ToArray());
             WithExposedHeaders(policy.ExposedHeaders.ToArray());
             WithMethods(policy.Methods.ToArray());
-            SetPreflightMaxAge(policy.PreflightMaxAge.Value);
+
+            if (policy.PreflightMaxAge.HasValue)
+            {
+                SetPreflightMaxAge(policy.PreflightMaxAge.Value);
+            }
 
             if (policy.SupportsCredentials)
             {
