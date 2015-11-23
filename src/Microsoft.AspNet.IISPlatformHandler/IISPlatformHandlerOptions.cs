@@ -16,6 +16,12 @@ namespace Microsoft.AspNet.IISPlatformHandler
         public bool AutomaticAuthentication { get; set; } = true;
 
         /// <summary>
+        /// If true authentication middleware will try to authenticate using platform handler windows authentication
+        /// If false authentication middleware won't be added
+        /// </summary>
+        public bool FlowWindowsAuthentication { get; set; } = true;
+
+        /// <summary>
         /// Additional information about the authentication type which is made available to the application.
         /// </summary>
         public IList<AuthenticationDescription> AuthenticationDescriptions { get; } = new List<AuthenticationDescription>()

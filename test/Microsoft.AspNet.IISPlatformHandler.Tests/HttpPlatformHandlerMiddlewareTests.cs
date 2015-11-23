@@ -5,6 +5,9 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.Http.Features.Authentication;
+using Microsoft.AspNet.Http.Internal;
+using Microsoft.AspNet.IISPlatformHandler;
 using Microsoft.AspNet.TestHost;
 using Xunit;
 
@@ -105,6 +108,52 @@ namespace Microsoft.AspNet.IISPlatformHandler
 
             var req = new HttpRequestMessage(HttpMethod.Get, "");
             req.Headers.Add("X-Forwarded-Proto", "TestProtocol");
+            await server.CreateClient().SendAsync(req);
+            Assert.True(assertsExecuted);
+        }
+
+        [Fact]
+        public async Task AddsAuthenticationHandlerByDefault()
+        {
+            var assertsExecuted = false;
+
+            var server = TestServer.Create(app =>
+            {
+                app.UseIISPlatformHandler();
+                app.Run(context =>
+                {
+                    var auth = (IHttpAuthenticationFeature)context.Features[typeof(IHttpAuthenticationFeature)];
+                    Assert.NotNull(auth);
+                    Assert.IsAssignableFrom<AuthenticationHandler>(auth.Handler);
+                    assertsExecuted = true;
+                    return Task.FromResult(0);
+                });
+            });
+
+            var req = new HttpRequestMessage(HttpMethod.Get, "");
+            await server.CreateClient().SendAsync(req);
+            Assert.True(assertsExecuted);
+        }
+
+
+        [Fact]
+        public async Task DoesNotAddAuthenticationHandlerIfWindowsAuthDisabled()
+        {
+            var assertsExecuted = false;
+
+            var server = TestServer.Create(app =>
+            {
+                app.UseIISPlatformHandler(options => options.FlowWindowsAuthentication = false);
+                app.Run(context =>
+                {
+                    var auth = (IHttpAuthenticationFeature)context.Features[typeof(IHttpAuthenticationFeature)];
+                    Assert.Null(auth);
+                    assertsExecuted = true;
+                    return Task.FromResult(0);
+                });
+            });
+
+            var req = new HttpRequestMessage(HttpMethod.Get, "");
             await server.CreateClient().SendAsync(req);
             Assert.True(assertsExecuted);
         }

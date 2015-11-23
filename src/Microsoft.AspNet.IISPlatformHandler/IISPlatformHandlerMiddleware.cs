@@ -49,19 +49,23 @@ namespace Microsoft.AspNet.IISPlatformHandler
             UpdateScheme(httpContext);
 
             UpdateRemoteIp(httpContext);
-
-            var winPrincipal = UpdateUser(httpContext);
-
-            var handler = new AuthenticationHandler(httpContext, _options, winPrincipal);
-            AttachAuthenticationHandler(handler);
-
-            try
+            if (_options.FlowWindowsAuthentication)
+            {
+                var winPrincipal = UpdateUser(httpContext);
+                var handler = new AuthenticationHandler(httpContext, _options, winPrincipal);
+                AttachAuthenticationHandler(handler);
+                try
+                {
+                    await _next(httpContext);
+                }
+                finally
+                {
+                   DetachAuthenticationhandler(handler);
+                }
+            }
+            else
             {
                 await _next(httpContext);
-            }
-            finally
-            {
-                DetachAuthenticationhandler(handler);
             }
         }
 
