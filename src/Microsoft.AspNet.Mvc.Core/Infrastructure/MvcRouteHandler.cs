@@ -32,11 +32,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
                 throw new ArgumentNullException(nameof(context));
             }
 
-            EnsureServices(context.Context);
-
-            // The contract of this method is to check that the values coming in from the route are valid;
-            // that they match an existing action, setting IsBound = true if the values are OK.
-            context.IsBound = _actionSelector.HasValidAction(context);
+            context.IsBound = true;
 
             // We return null here because we're not responsible for generating the url, the route is.
             return null;

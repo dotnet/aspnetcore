@@ -75,7 +75,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                 @"<root data-root=""true""><input class=""form-control"" type=""number"" data-val=""true""" +
                 @" data-val-range=""The field Age must be between 10 and 100."" data-val-range-max=""100"" "+
                 @"data-val-range-min=""10"" data-val-required=""The Age field is required."" " +
-                @"id=""Age"" name=""Age"" value="""" /><a href="""">Back to List</a></root>";
+                @"id=""Age"" name=""Age"" value="""" /><a href=""/TagHelpers"">Back to List</a></root>";
 
             // Act
             var response = await Client.GetStringAsync("http://localhost/TagHelpers/Add");

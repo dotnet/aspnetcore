@@ -408,7 +408,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                         "InlineConstraints_Products",
                         "GetProductById",
                         "id",
-                        "sdsd", ""
+                        "sdsd",
+                        "/area-exists/InlineConstraints_Products/GetProductById?id=sdsd"
                     };
 
                 // Attribute Route, name:alpha constraint
@@ -458,7 +459,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                         "GetProductByCategoryId",
                         "catId",
                         "500",
-                        ""
+                        "/area-exists/InlineConstraints_Products/GetProductByCategoryId?catId=500"
                     };
 
                 // Attribute Route, name:length(1,20)? constraint
@@ -488,7 +489,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                         "GetProductByManufacturerId",
                         "manId",
                         "qwer",
-                        ""
+                        "/area-exists/InlineConstraints_Products/GetProductByManufacturerId?manId=qwer"
                     };
 
                 // Attribute Route, manId:int:min(10)? constraint
@@ -498,7 +499,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                         "GetProductByManufacturerId",
                         "manId",
                         "1",
-                        ""
+                        "/area-exists/InlineConstraints_Products/GetProductByManufacturerId?manId=1"
                     };
 
                 // Attribute Route, dateTime:datetime constraint

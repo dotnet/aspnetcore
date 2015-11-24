@@ -903,7 +903,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async Task ConventionalRoutedAction_InArea_ImplicitLeaveArea()
+        public async Task ConventionalRoutedAction_InArea_StaysInArea()
         {
             // Arrange
             var url = LinkFrom("http://localhost/Travel/Flight").To(new { action = "Contact", controller = "Home", });
@@ -919,7 +919,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal("Flight", result.Controller);
             Assert.Equal("Index", result.Action);
 
-            Assert.Equal("/Home/Contact", result.Link);
+            Assert.Equal("/Travel/Home/Contact", result.Link);
         }
 
         [Fact]
@@ -985,7 +985,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async Task AttributeRoutedAction_InArea_ImplicitLeaveArea()
+        public async Task AttributeRoutedAction_InArea_StaysInArea_ActionDoesntExist()
         {
             // Arrange
             var url = LinkFrom("http://localhost/ContosoCorp/Trains")
@@ -1002,7 +1002,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal("Rail", result.Controller);
             Assert.Equal("Index", result.Action);
 
-            Assert.Equal("/Home/Contact", result.Link);
+            Assert.Equal("/Travel/Home/Contact", result.Link);
         }
 
         [Fact]
@@ -1158,7 +1158,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async Task ControllerWithCatchAll_GenerateLink_FailsWithoutCountry()
+        public async Task ControllerWithCatchAll_GenerateLink_FallsThroughWithoutCountry()
         {
             // Arrange
             var url = LinkFrom("http://localhost/")
@@ -1170,7 +1170,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Assert
             var body = await response.Content.ReadAsStringAsync();
             var result = JsonConvert.DeserializeObject<RoutingResult>(body);
-            Assert.Null(result.Link);
+            Assert.Equal("/Products/GetProducts", result.Link);
         }
 
         [Theory]
