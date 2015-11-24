@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.JsonPatch.Test.Dynamic
         public NestedDTO NestedDTO { get; set; }
         public SimpleDTO SimpleDTO { get; set; }
         public List<SimpleDTO> ListOfSimpleDTO { get; set; }
-        
+
         public SimpleDTOWithNestedDTO()
         {
             NestedDTO = new NestedDTO();

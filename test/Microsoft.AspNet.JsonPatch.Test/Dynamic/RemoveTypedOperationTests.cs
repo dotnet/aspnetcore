@@ -73,7 +73,7 @@ namespace Microsoft.AspNet.JsonPatch.Test.Dynamic
                "For operation 'remove' on array property at path '/IntegerList/3', the index is larger than the array size.",
                 exception.Message);
         }
- 
+
         [Fact]
         public void RemoveFromListInvalidPositionTooSmall()
         {
@@ -135,7 +135,7 @@ namespace Microsoft.AspNet.JsonPatch.Test.Dynamic
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
             var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument>(serialized);
-            
+
             deserialized.ApplyTo(doc);
 
             Assert.Equal(null, doc.SimpleDTO.StringProperty);
@@ -190,7 +190,7 @@ namespace Microsoft.AspNet.JsonPatch.Test.Dynamic
                "For operation 'remove' on array property at path '/SimpleDTO/IntegerList/3', the index is larger than the array size.",
                 exception.Message);
         }
- 
+
         [Fact]
         public void NestedRemoveFromListInvalidPositionTooSmall()
         {
@@ -216,7 +216,7 @@ namespace Microsoft.AspNet.JsonPatch.Test.Dynamic
             Assert.Equal(
                "For operation 'remove' on array property at path '/SimpleDTO/IntegerList/-1', the index is negative.",
                 exception.Message);
-        }         
+        }
 
         [Fact]
         public void NestedRemoveFromEndOfList()

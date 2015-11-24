@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.JsonPatch.Test.Dynamic
         public void RemovePropertyShouldFailIfItDoesntExist()
         {
             dynamic doc = new ExpandoObject();
-            doc.Test = 1; 
+            doc.Test = 1;
 
             // create patch
             JsonPatchDocument patchDoc = new JsonPatchDocument();
@@ -61,7 +61,7 @@ namespace Microsoft.AspNet.JsonPatch.Test.Dynamic
         public void RemovePropertyFromExpandoObject()
         {
             dynamic obj = new ExpandoObject();
-            obj.Test = 1; 
+            obj.Test = 1;
 
             // create patch
             JsonPatchDocument patchDoc = new JsonPatchDocument();
@@ -69,13 +69,13 @@ namespace Microsoft.AspNet.JsonPatch.Test.Dynamic
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
             var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument>(serialized);
-            
+
             deserialized.ApplyTo(obj);
 
             var cont = obj as IDictionary<string, object>;
             object valueFromDictionary;
 
-            cont.TryGetValue("Test", out valueFromDictionary);            
+            cont.TryGetValue("Test", out valueFromDictionary);
             Assert.Null(valueFromDictionary);
         }
 
@@ -91,7 +91,7 @@ namespace Microsoft.AspNet.JsonPatch.Test.Dynamic
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
             var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument>(serialized);
-            
+
             deserialized.ApplyTo(obj);
 
             var cont = obj as IDictionary<string, object>;
@@ -137,7 +137,7 @@ namespace Microsoft.AspNet.JsonPatch.Test.Dynamic
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
             var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument>(serialized);
-            
+
             deserialized.ApplyTo(obj);
             var cont = obj as IDictionary<string, object>;
 
@@ -151,9 +151,9 @@ namespace Microsoft.AspNet.JsonPatch.Test.Dynamic
         {
             dynamic doc = new ExpandoObject();
             doc.SimpleDTO = new SimpleDTO()
-                {
-                    StringProperty = "A"
-                };            
+            {
+                StringProperty = "A"
+            };
 
             // create patch
             JsonPatchDocument patchDoc = new JsonPatchDocument();
@@ -192,10 +192,10 @@ namespace Microsoft.AspNet.JsonPatch.Test.Dynamic
         {
             dynamic doc = new ExpandoObject();
             doc.SimpleDTO = new SimpleDTO()
-                {
-                    IntegerList = new List<int>() { 1, 2, 3 }
-                };     
-            
+            {
+                IntegerList = new List<int>() { 1, 2, 3 }
+            };
+
             // create patch
             JsonPatchDocument patchDoc = new JsonPatchDocument();
             patchDoc.Remove("SimpleDTO/IntegerList/2");
@@ -216,7 +216,7 @@ namespace Microsoft.AspNet.JsonPatch.Test.Dynamic
             {
                 IntegerList = new List<int>() { 1, 2, 3 }
             };
-            
+
             // create patch
             JsonPatchDocument patchDoc = new JsonPatchDocument();
             patchDoc.Remove("SimpleDTO/Integerlist/2");
@@ -234,9 +234,9 @@ namespace Microsoft.AspNet.JsonPatch.Test.Dynamic
         {
             dynamic doc = new ExpandoObject();
             doc.SimpleDTO = new SimpleDTO()
-                {
-                    IntegerList = new List<int>() { 1, 2, 3 }
-                };
+            {
+                IntegerList = new List<int>() { 1, 2, 3 }
+            };
 
             // create patch
             JsonPatchDocument patchDoc = new JsonPatchDocument();
@@ -259,9 +259,9 @@ namespace Microsoft.AspNet.JsonPatch.Test.Dynamic
         {
             dynamic doc = new ExpandoObject();
             doc.SimpleDTO = new SimpleDTO()
-                {
-                    IntegerList = new List<int>() { 1, 2, 3 }
-                };
+            {
+                IntegerList = new List<int>() { 1, 2, 3 }
+            };
 
             // create patch
             JsonPatchDocument patchDoc = new JsonPatchDocument();
@@ -284,9 +284,9 @@ namespace Microsoft.AspNet.JsonPatch.Test.Dynamic
         {
             dynamic doc = new ExpandoObject();
             doc.SimpleDTO = new SimpleDTO()
-                {
-                    IntegerList = new List<int>() { 1, 2, 3 }
-                };
+            {
+                IntegerList = new List<int>() { 1, 2, 3 }
+            };
 
             // create patch
             JsonPatchDocument patchDoc = new JsonPatchDocument();

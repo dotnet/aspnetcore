@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNet.JsonPatch.Test
 {
-    public class TestErrorLogger<T> where T: class
+    public class TestErrorLogger<T> where T : class
     {
         public string ErrorMessage { get; set; }
 

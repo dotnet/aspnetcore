@@ -1,11 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNet.JsonPatch.Exceptions;
-using Newtonsoft.Json;
-using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using Microsoft.AspNet.JsonPatch.Exceptions;
+using Newtonsoft.Json;
 using Xunit;
 
 namespace Microsoft.AspNet.JsonPatch.Test
@@ -388,7 +387,7 @@ namespace Microsoft.AspNet.JsonPatch.Test
             var exception = Assert.Throws<JsonPatchException>(() => { patchDoc.ApplyTo(doc); });
             Assert.Equal(
                 "For operation 'add' on array property at path '/simpledto/integerlist/4', the index is " +
-                    "larger than the array size.", 
+                    "larger than the array size.",
                 exception.Message);
 
         }
@@ -442,7 +441,7 @@ namespace Microsoft.AspNet.JsonPatch.Test
             var logger = new TestErrorLogger<SimpleDTOWithNestedDTO>();
 
             patchDoc.ApplyTo(doc, logger.LogErrorMessage);
-           
+
 
             //Assert
             Assert.Equal(
@@ -524,8 +523,8 @@ namespace Microsoft.AspNet.JsonPatch.Test
 
 
             patchDoc.ApplyTo(doc, logger.LogErrorMessage);
-            
- 
+
+
             //Assert
             Assert.Equal(
                 "For operation 'add' on array property at path '/simpledto/integerlist/-1', the index is negative.",
@@ -750,9 +749,9 @@ namespace Microsoft.AspNet.JsonPatch.Test
             patchDoc.Remove<int>(o => o.SimpleDTO.IntegerList, 3);
 
             var logger = new TestErrorLogger<SimpleDTOWithNestedDTO>();
- 
+
             patchDoc.ApplyTo(doc, logger.LogErrorMessage);
- 
+
             // Assert
             Assert.Equal(
                 "For operation 'remove' on array property at path '/simpledto/integerlist/3', the index is " +
@@ -828,7 +827,7 @@ namespace Microsoft.AspNet.JsonPatch.Test
 
 
             patchDoc.ApplyTo(doc, logger.LogErrorMessage);
-        
+
             // Assert
             Assert.Equal("For operation 'remove' on array property at path '/simpledto/integerlist/-1', the index is negative.", logger.ErrorMessage);
         }
@@ -1293,9 +1292,9 @@ namespace Microsoft.AspNet.JsonPatch.Test
 
             var logger = new TestErrorLogger<SimpleDTOWithNestedDTO>();
 
- 
+
             patchDoc.ApplyTo(doc, logger.LogErrorMessage);
-           
+
 
             // Assert
             Assert.Equal(
@@ -1319,7 +1318,7 @@ namespace Microsoft.AspNet.JsonPatch.Test
             // create patch
             var patchDoc = new JsonPatchDocument<SimpleDTOWithNestedDTO>();
             patchDoc.Replace<int>(o => o.SimpleDTO.IntegerList, 5, -1);
-           
+
             // Act & Assert
             var exception = Assert.Throws<JsonPatchException>(() => { patchDoc.ApplyTo(doc); });
             Assert.Equal("For operation 'replace' on array property at path '/simpledto/integerlist/-1', the index is negative.",
@@ -1371,8 +1370,8 @@ namespace Microsoft.AspNet.JsonPatch.Test
             var logger = new TestErrorLogger<SimpleDTOWithNestedDTO>();
 
 
-           patchDoc.ApplyTo(doc, logger.LogErrorMessage);
-            
+            patchDoc.ApplyTo(doc, logger.LogErrorMessage);
+
 
             // Assert
             Assert.Equal(

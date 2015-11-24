@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.JsonPatch.Test.Dynamic
             dynamic doc = new
             {
                 Test = 1
-            }; 
+            };
 
             // create patch
             JsonPatchDocument patchDoc = new JsonPatchDocument();
@@ -33,14 +33,14 @@ namespace Microsoft.AspNet.JsonPatch.Test.Dynamic
             });
             Assert.Equal(
                 "The property at path '/NewInt' could not be added.",
-                exception.Message); 
+                exception.Message);
         }
 
         [Fact]
         public void AddNewProperty()
         {
             dynamic obj = new ExpandoObject();
-            obj.Test = 1; 
+            obj.Test = 1;
 
             // create patch
             JsonPatchDocument patchDoc = new JsonPatchDocument();
@@ -48,7 +48,7 @@ namespace Microsoft.AspNet.JsonPatch.Test.Dynamic
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
             var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument>(serialized);
-            
+
             deserialized.ApplyTo(obj);
 
             Assert.Equal(1, obj.NewInt);
@@ -104,7 +104,7 @@ namespace Microsoft.AspNet.JsonPatch.Test.Dynamic
                 "The property at path '/Nested/NewInt' could not be added.",
                 exception.Message);
         }
-        
+
         [Fact]
         public void AddToExistingPropertyOnNestedObject()
         {
@@ -120,7 +120,7 @@ namespace Microsoft.AspNet.JsonPatch.Test.Dynamic
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
             var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument>(serialized);
-            
+
             deserialized.ApplyTo(doc);
 
             Assert.Equal("A", doc.nested.StringProperty);
@@ -142,13 +142,13 @@ namespace Microsoft.AspNet.JsonPatch.Test.Dynamic
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
             var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument>(serialized);
-            
+
             deserialized.ApplyTo(doc);
 
             Assert.Equal(1, doc.nested.NewInt);
             Assert.Equal(1, doc.Test);
         }
-        
+
         [Fact]
         public void AddNewPropertyToExpandoOjectInTypedObject()
         {
@@ -156,7 +156,7 @@ namespace Microsoft.AspNet.JsonPatch.Test.Dynamic
             {
                 DynamicProperty = new ExpandoObject()
             };
-            
+
             // create patch
             JsonPatchDocument patchDoc = new JsonPatchDocument();
             patchDoc.Add("DynamicProperty/NewInt", 1);
@@ -168,9 +168,9 @@ namespace Microsoft.AspNet.JsonPatch.Test.Dynamic
 
             Assert.Equal(1, doc.DynamicProperty.NewInt);
         }
-        
+
         [Fact]
-        public void AddNewPropertyToTypedObjectInExpandoObject() 
+        public void AddNewPropertyToTypedObjectInExpandoObject()
         {
             dynamic dynamicProperty = new ExpandoObject();
             dynamicProperty.StringProperty = "A";
@@ -246,7 +246,7 @@ namespace Microsoft.AspNet.JsonPatch.Test.Dynamic
         public void AddResultsShouldReplace()
         {
             dynamic doc = new ExpandoObject();
-            doc.StringProperty = "A"; 
+            doc.StringProperty = "A";
 
             // create patch
             JsonPatchDocument patchDoc = new JsonPatchDocument();
@@ -289,11 +289,11 @@ namespace Microsoft.AspNet.JsonPatch.Test.Dynamic
             doc.Nested.DynamicProperty.InBetweenFirst = new ExpandoObject();
             doc.Nested.DynamicProperty.InBetweenFirst.InBetweenSecond = new ExpandoObject();
             doc.Nested.DynamicProperty.InBetweenFirst.InBetweenSecond.StringProperty = "A";
-           
+
             // create patch
             JsonPatchDocument patchDoc = new JsonPatchDocument();
             patchDoc.Add("/Nested/DynamicProperty/InBetweenFirst/InBetweenSecond/StringProperty", "B");
-            
+
             var serialized = JsonConvert.SerializeObject(patchDoc);
             var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument>(serialized);
 
@@ -301,7 +301,7 @@ namespace Microsoft.AspNet.JsonPatch.Test.Dynamic
 
             Assert.Equal("B", doc.Nested.DynamicProperty.InBetweenFirst.InBetweenSecond.StringProperty);
         }
-        
+
         [Fact]
         public void ShouldNotBeAbleToAddToNonExistingPropertyThatIsNotTheRoot()
         {
@@ -387,7 +387,7 @@ namespace Microsoft.AspNet.JsonPatch.Test.Dynamic
             // create patch
             JsonPatchDocument patchDoc = new JsonPatchDocument();
             patchDoc.Add("stringproperty", "B");
-            
+
             var serialized = JsonConvert.SerializeObject(patchDoc);
             var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument>(serialized);
 
@@ -415,7 +415,7 @@ namespace Microsoft.AspNet.JsonPatch.Test.Dynamic
 
             Assert.Equal(new List<int>() { 4, 1, 2, 3 }, doc.IntegerList);
         }
-        
+
         [Fact]
         public void AddToListNegativePosition()
         {
@@ -452,7 +452,7 @@ namespace Microsoft.AspNet.JsonPatch.Test.Dynamic
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
             var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument>(serialized);
-            
+
             deserialized.ApplyTo(doc);
 
             Assert.Equal(new List<int>() { 4, 1, 2, 3 }, doc.IntegerList);

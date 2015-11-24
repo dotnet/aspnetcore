@@ -202,7 +202,7 @@ namespace Microsoft.AspNet.JsonPatch.Test
             var logger = new TestErrorLogger<SimpleDTO>();
 
             patchDoc.ApplyTo(doc, logger.LogErrorMessage);
-           
+
 
             // Assert
             Assert.Equal(
@@ -356,7 +356,7 @@ namespace Microsoft.AspNet.JsonPatch.Test
             var logger = new TestErrorLogger<SimpleDTO>();
 
             patchDoc.ApplyTo(doc, logger.LogErrorMessage);
-             
+
             // Assert
             Assert.Equal(
                 "For operation 'add' on array property at path '/integerlist/-1', the index is negative.",
@@ -553,7 +553,7 @@ namespace Microsoft.AspNet.JsonPatch.Test
             var logger = new TestErrorLogger<SimpleDTO>();
 
             patchDoc.ApplyTo(doc, logger.LogErrorMessage);
- 
+
 
             // Assert
             Assert.Equal(
@@ -618,7 +618,7 @@ namespace Microsoft.AspNet.JsonPatch.Test
 
 
             patchDoc.ApplyTo(doc, logger.LogErrorMessage);
-           
+
 
             // Assert
             Assert.Equal("For operation 'remove' on array property at path '/integerlist/-1', the index is negative.", logger.ErrorMessage);

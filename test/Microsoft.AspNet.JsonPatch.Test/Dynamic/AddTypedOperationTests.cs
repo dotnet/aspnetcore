@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.JsonPatch.Test.Dynamic
             // create patch
             JsonPatchDocument patchDoc = new JsonPatchDocument();
             patchDoc.Add("IntegerList/-1", 4);
-            
+
             var serialized = JsonConvert.SerializeObject(patchDoc);
             var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument>(serialized);
 
@@ -101,11 +101,11 @@ namespace Microsoft.AspNet.JsonPatch.Test.Dynamic
                         IntegerList = new List<int>() { 1, 2, 3 }
                      }
                 }
-            }; 
+            };
             // create patch
             JsonPatchDocument patchDoc = new JsonPatchDocument();
             patchDoc.Add("ListOfSimpleDTO/20/IntegerList/0", 4);
-            
+
             var serialized = JsonConvert.SerializeObject(patchDoc);
             var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument>(serialized);
 

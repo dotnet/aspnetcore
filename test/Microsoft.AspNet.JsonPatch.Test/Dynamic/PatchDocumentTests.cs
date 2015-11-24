@@ -8,7 +8,7 @@ using Xunit;
 namespace Microsoft.AspNet.JsonPatch.Test.Dynamic
 {
     public class PatchDocumentTests
-    { 
+    {
         [Fact]
         public void InvalidPathAtBeginningShouldThrowException()
         {
@@ -20,11 +20,11 @@ namespace Microsoft.AspNet.JsonPatch.Test.Dynamic
             Assert.Equal(
                "The provided string '//NewInt' is an invalid path.",
                 exception.Message);
-        } 
+        }
 
         [Fact]
         public void InvalidPathAtEndShouldThrowException()
-        {        
+        {
             JsonPatchDocument patchDoc = new JsonPatchDocument();
             var exception = Assert.Throws<JsonPatchException>(() =>
             {
@@ -33,11 +33,11 @@ namespace Microsoft.AspNet.JsonPatch.Test.Dynamic
             Assert.Equal(
                "The provided string 'NewInt//' is an invalid path.",
                 exception.Message);
-        } 
+        }
 
         [Fact]
         public void InvalidPathWithDotShouldThrowException()
-        {         
+        {
             JsonPatchDocument patchDoc = new JsonPatchDocument();
             var exception = Assert.Throws<JsonPatchException>(() =>
             {
@@ -56,7 +56,7 @@ namespace Microsoft.AspNet.JsonPatch.Test.Dynamic
                 StringProperty = "A",
                 AnotherStringProperty = "B"
             };
-                        
+
             JsonPatchDocument patchDoc = new JsonPatchDocument();
             patchDoc.Copy("StringProperty", "AnotherStringProperty");
 
