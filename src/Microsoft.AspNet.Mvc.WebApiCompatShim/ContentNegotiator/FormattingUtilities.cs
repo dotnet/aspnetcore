@@ -183,7 +183,7 @@ namespace System.Net.Http
         /// <returns>Unquoted token.</returns>
         public static string UnquoteToken(string token)
         {
-            if (string.IsNullOrWhiteSpace(token))
+            if (string.IsNullOrEmpty(token))
             {
                 return token;
             }

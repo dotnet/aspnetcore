@@ -123,7 +123,7 @@ namespace Microsoft.AspNet.Mvc.Formatters
             if (contentType != null)
             {
                 var charset = contentType.Charset;
-                if (!string.IsNullOrWhiteSpace(charset))
+                if (!string.IsNullOrEmpty(charset))
                 {
                     foreach (var supportedEncoding in SupportedEncodings)
                     {

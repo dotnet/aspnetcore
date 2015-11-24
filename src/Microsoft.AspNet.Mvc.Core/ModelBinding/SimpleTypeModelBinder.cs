@@ -37,7 +37,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 {
                     var modelAsString = model as string;
                     if (bindingContext.ModelMetadata.ConvertEmptyStringToNull &&
-                        string.IsNullOrWhiteSpace(modelAsString))
+                        string.IsNullOrEmpty(modelAsString))
                     {
                         model = null;
                     }

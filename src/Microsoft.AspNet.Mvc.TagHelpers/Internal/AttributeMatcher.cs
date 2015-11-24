@@ -100,19 +100,24 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
             // Perf: Avoid allocating enumerator
             for (var i = 0; i < requiredAttributes.Length; i++)
             {
-                var attribute = requiredAttributes[i];
-                if (!context.AllAttributes.ContainsName(attribute) ||
-                    context.AllAttributes[attribute] == null ||
-                    (context.AllAttributes[attribute].Value is string &&
-                    string.IsNullOrWhiteSpace(context.AllAttributes[attribute].Value as string)))
+                var requiredAttribute = requiredAttributes[i];
+                IReadOnlyTagHelperAttribute attribute;
+                if (!context.AllAttributes.TryGetAttribute(requiredAttribute, out attribute))
                 {
-                    // Missing attribute!
-                    missingAttributes.Add(attribute);
+                    // Missing attribute.
+                    missingAttributes.Add(requiredAttribute);
+                    continue;
                 }
-                else
+
+                var valueAsString = attribute.Value as string;
+                if (valueAsString != null && string.IsNullOrEmpty(valueAsString))
                 {
-                    presentAttributes.Add(attribute);
+                    // Treat attributes with empty values as missing.
+                    missingAttributes.Add(requiredAttribute);
+                    continue;
                 }
+
+                presentAttributes.Add(requiredAttribute);
             }
 
             return new PresentMissingAttributes { Present = presentAttributes, Missing = missingAttributes };

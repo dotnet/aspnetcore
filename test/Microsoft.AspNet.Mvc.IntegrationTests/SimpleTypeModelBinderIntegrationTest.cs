@@ -271,7 +271,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             };
             var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
             {
-                request.QueryString = QueryString.Create("Parameter1", "  ");
+                request.QueryString = QueryString.Create("Parameter1", "");
             });
             var modelState = operationContext.ActionContext.ModelState;
 
@@ -290,10 +290,10 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.False(modelState.IsValid);
             var key = Assert.Single(modelState.Keys);
             Assert.Equal("Parameter1", key);
-            Assert.Equal("  ", modelState[key].AttemptedValue);
-            Assert.Equal("  ", modelState[key].RawValue);
+            Assert.Equal("", modelState[key].AttemptedValue);
+            Assert.Equal("", modelState[key].RawValue);
             var error = Assert.Single(modelState[key].Errors);
-            Assert.Equal("The value '  ' is invalid.", error.ErrorMessage, StringComparer.Ordinal);
+            Assert.Equal("The value '' is invalid.", error.ErrorMessage, StringComparer.Ordinal);
             Assert.Null(error.Exception);
         }
 

@@ -254,7 +254,7 @@ namespace Microsoft.AspNet.Mvc.Formatters
                 for (var i = 0; i < acceptValues.Count; i++)
                 {
                     var charset = acceptValues[i].Value;
-                    if (!string.IsNullOrWhiteSpace(charset))
+                    if (!string.IsNullOrEmpty(charset))
                     {
                         for (var j = 0; j < SupportedEncodings.Count; j++)
                         {
