@@ -124,7 +124,7 @@ namespace Microsoft.AspNet.IISPlatformHandler
                 {
                     var auth = (IHttpAuthenticationFeature)context.Features[typeof(IHttpAuthenticationFeature)];
                     Assert.NotNull(auth);
-                    Assert.IsAssignableFrom<AuthenticationHandler>(auth.Handler);
+                    Assert.Equal("Microsoft.AspNet.IISPlatformHandler.AuthenticationHandler", auth.Handler.GetType().FullName);
                     assertsExecuted = true;
                     return Task.FromResult(0);
                 });
