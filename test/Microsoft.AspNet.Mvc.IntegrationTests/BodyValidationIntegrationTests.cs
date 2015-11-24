@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Text;
@@ -23,6 +24,287 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
         private class Address
         {
             public string Street { get; set; }
+        }
+
+        [Fact]
+        public async Task ModelMetaDataTypeAttribute_ValidBaseClass_NoModelStateErrors()
+        {
+            // Arrange
+            var input = "{ \"Name\": \"MVC\", \"Contact\":\"4258959019\", \"Category\":\"Technology\"," +
+                "\"CompanyName\":\"Microsoft\", \"Country\":\"USA\",\"Price\": 21, " +
+                "\"ProductDetails\": {\"Detail1\": \"d1\", \"Detail2\": \"d2\", \"Detail3\": \"d3\"}}";
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "Parameter1",
+                ParameterType = typeof(ProductViewModel),
+                BindingInfo = new BindingInfo()
+                {
+                    BindingSource = BindingSource.Body
+                }
+            };
+
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(
+              request =>
+              {
+                  request.Body = new MemoryStream(Encoding.UTF8.GetBytes(input));
+                  request.ContentType = "application/json;charset=utf-8";
+              });
+
+            var modelState = operationContext.ActionContext.ModelState;
+
+            // Act
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext);
+
+            // Assert
+            Assert.True(modelBindingResult.IsModelSet);
+            var boundPerson = Assert.IsType<ProductViewModel>(modelBindingResult.Model);
+            Assert.True(modelState.IsValid);
+            Assert.NotNull(boundPerson);
+        }
+
+        [Fact]
+        public async Task ModelMetaDataTypeAttribute_InvalidPropertiesAndSubPropertiesOnBaseClass_HasModelStateErrors()
+        {
+            // Arrange
+            var input = "{ \"Price\": 2, \"ProductDetails\": {\"Detail1\": \"d1\"}}";
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "Parameter1",
+                BindingInfo = new BindingInfo()
+                {
+                    BindingSource = BindingSource.Body
+                },
+                ParameterType = typeof(ProductViewModel)
+            };
+
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(
+              request =>
+              {
+                  request.Body = new MemoryStream(Encoding.UTF8.GetBytes(input));
+                  request.ContentType = "application/json";
+              });
+
+            var modelState = operationContext.ActionContext.ModelState;
+
+            // Act
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext);
+
+            // Assert
+            Assert.True(modelBindingResult.IsModelSet);
+            var boundPerson = Assert.IsType<ProductViewModel>(modelBindingResult.Model);
+            Assert.NotNull(boundPerson);
+            Assert.False(modelState.IsValid);
+            var modelStateErrors = CreateValidationDictionary(modelState);
+            Assert.Equal("CompanyName cannot be null or empty.", modelStateErrors["CompanyName"]);
+            Assert.Equal("The field Price must be between 20 and 100.", modelStateErrors["Price"]);
+            // Mono issue - https://github.com/aspnet/External/issues/19
+            Assert.Equal(PlatformNormalizer.NormalizeContent("The Category field is required."), modelStateErrors["Category"]);
+            Assert.Equal(PlatformNormalizer.NormalizeContent("The Contact Us field is required."), modelStateErrors["Contact"]);
+            Assert.Equal(
+                PlatformNormalizer.NormalizeContent("The Detail2 field is required."),
+                modelStateErrors["ProductDetails.Detail2"]);
+            Assert.Equal(
+                PlatformNormalizer.NormalizeContent("The Detail3 field is required."),
+                modelStateErrors["ProductDetails.Detail3"]);
+        }
+
+        [Fact]
+        public async Task ModelMetaDataTypeAttribute_InvalidComplexTypePropertyOnBaseClass_HasModelStateErrors()
+        {
+            // Arrange
+            var input = "{ \"Contact\":\"4255678765\", \"Category\":\"Technology\"," +
+                "\"CompanyName\":\"Microsoft\", \"Country\":\"USA\",\"Price\": 21 }";
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "Parameter1",
+                BindingInfo = new BindingInfo()
+                {
+                    BindingSource = BindingSource.Body
+                },
+                ParameterType = typeof(ProductViewModel)
+            };
+
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(
+              request =>
+              {
+                  request.Body = new MemoryStream(Encoding.UTF8.GetBytes(input));
+                  request.ContentType = "application/json";
+              });
+
+            var modelState = operationContext.ActionContext.ModelState;
+
+            // Act
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext);
+
+            // Assert
+            Assert.True(modelBindingResult.IsModelSet);
+            var boundPerson = Assert.IsType<ProductViewModel>(modelBindingResult.Model);
+            Assert.NotNull(boundPerson);
+            Assert.False(modelState.IsValid);
+            var modelStateErrors = CreateValidationDictionary(modelState);
+            Assert.Equal(
+                PlatformNormalizer.NormalizeContent("The ProductDetails field is required."),
+                modelStateErrors["ProductDetails"]);
+        }
+
+        [Fact]
+        public async Task ModelMetaDataTypeAttribute_InvalidClassAttributeOnBaseClass_HasModelStateErrors()
+        {
+            // Arrange
+            var input = "{ \"Contact\":\"4258959019\", \"Category\":\"Technology\"," +
+                "\"CompanyName\":\"Microsoft\", \"Country\":\"UK\",\"Price\": 21, \"ProductDetails\": {\"Detail1\": \"d1\"," +
+                " \"Detail2\": \"d2\", \"Detail3\": \"d3\"}}";
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "Parameter1",
+                BindingInfo = new BindingInfo()
+                {
+                    BindingSource = BindingSource.Body
+                },
+                ParameterType = typeof(ProductViewModel)
+            };
+
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(
+              request =>
+              {
+                  request.Body = new MemoryStream(Encoding.UTF8.GetBytes(input));
+                  request.ContentType = "application/json";
+              });
+
+            var modelState = operationContext.ActionContext.ModelState;
+
+            // Act
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext);
+
+            // Assert
+            Assert.True(modelBindingResult.IsModelSet);
+            var boundPerson = Assert.IsType<ProductViewModel>(modelBindingResult.Model);
+            Assert.NotNull(boundPerson);
+            Assert.False(modelState.IsValid);
+            var modelStateErrors = CreateValidationDictionary(modelState);
+            Assert.Single(modelStateErrors);
+            Assert.Equal("Product must be made in the USA if it is not named.", modelStateErrors[""]);
+        }
+
+        [Fact]
+        public async Task ModelMetaDataTypeAttribute_ValidDerivedClass_NoModelStateErrors()
+        {
+            // Arrange
+            var input = "{ \"Name\": \"MVC\", \"Contact\":\"4258959019\", \"Category\":\"Technology\"," +
+                "\"CompanyName\":\"Microsoft\", \"Country\":\"USA\", \"Version\":\"2\"," +
+                "\"DatePurchased\": \"/Date(1297246301973)/\", \"Price\" : \"110\" }";
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "Parameter1",
+                BindingInfo = new BindingInfo()
+                {
+                    BindingSource = BindingSource.Body
+                },
+                ParameterType = typeof(SoftwareViewModel)
+            };
+
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(
+              request =>
+              {
+                  request.Body = new MemoryStream(Encoding.UTF8.GetBytes(input));
+                  request.ContentType = "application/json";
+              });
+
+            var modelState = operationContext.ActionContext.ModelState;
+
+            // Act
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext);
+
+            // Assert
+            Assert.True(modelBindingResult.IsModelSet);
+            var boundPerson = Assert.IsType<SoftwareViewModel>(modelBindingResult.Model);
+            Assert.NotNull(boundPerson);
+            Assert.True(modelState.IsValid);
+        }
+
+        [Fact]
+        public async Task ModelMetaDataTypeAttribute_InvalidPropertiesOnDerivedClass_HasModelStateErrors()
+        {
+            // Arrange
+            var input = "{ \"Name\": \"MVC\", \"Contact\":\"425-895-9019\", \"Category\":\"Technology\"," +
+                "\"CompanyName\":\"Microsoft\", \"Country\":\"USA\",\"Price\": 2}";
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "Parameter1",
+                BindingInfo = new BindingInfo()
+                {
+                    BindingSource = BindingSource.Body
+                },
+                ParameterType = typeof(SoftwareViewModel)
+            };
+
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(
+              request =>
+              {
+                  request.Body = new MemoryStream(Encoding.UTF8.GetBytes(input));
+                  request.ContentType = "application/json";
+              });
+
+            var modelState = operationContext.ActionContext.ModelState;
+
+            // Act
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext);
+
+            // Assert
+            Assert.True(modelBindingResult.IsModelSet);
+            var boundPerson = Assert.IsType<SoftwareViewModel>(modelBindingResult.Model);
+            Assert.NotNull(boundPerson);
+            Assert.False(modelState.IsValid);
+            var modelStateErrors = CreateValidationDictionary(modelState);
+            Assert.Equal(2, modelStateErrors.Count);
+            Assert.Equal("The field Price must be between 100 and 200.", modelStateErrors["Price"]);
+            Assert.Equal("The field Contact must be a string with a maximum length of 10.", modelStateErrors["Contact"]);
+        }
+
+        [Fact]
+        public async Task ModelMetaDataTypeAttribute_InvalidClassAttributeOnBaseClassProduct_HasModelStateErrors()
+        {
+            // Arrange
+            var input = "{ \"Contact\":\"4258959019\", \"Category\":\"Technology\"," +
+                "\"CompanyName\":\"Microsoft\", \"Country\":\"UK\",\"Version\":\"2\"," +
+                "\"DatePurchased\": \"/Date(1297246301973)/\", \"Price\" : \"110\" }";
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "Parameter1",
+                BindingInfo = new BindingInfo()
+                {
+                    BindingSource = BindingSource.Body
+                },
+                ParameterType = typeof(SoftwareViewModel)
+            };
+
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(
+              request =>
+              {
+                  request.Body = new MemoryStream(Encoding.UTF8.GetBytes(input));
+                  request.ContentType = "application/json";
+              });
+
+            var modelState = operationContext.ActionContext.ModelState;
+
+            // Act
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext);
+
+            // Assert
+            Assert.True(modelBindingResult.IsModelSet);
+            var boundPerson = Assert.IsType<SoftwareViewModel>(modelBindingResult.Model);
+            Assert.NotNull(boundPerson);
+            Assert.False(modelState.IsValid);
+            var modelStateErrors = CreateValidationDictionary(modelState);
+            Assert.Single(modelStateErrors);
+            Assert.Equal("Product must be made in the USA if it is not named.", modelStateErrors[""]);
         }
 
         [Fact]
@@ -375,6 +657,28 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.True(modelState.IsValid);
             var entry = Assert.Single(modelState);
             Assert.Equal("CustomParameter.Address", entry.Key);
+        }
+
+        private Dictionary<string, string> CreateValidationDictionary(ModelStateDictionary modelState)
+        {
+            var result = new Dictionary<string, string>();
+            foreach (var item in modelState)
+            {
+                var errorMessage = string.Empty;
+                foreach (var error in item.Value.Errors)
+                {
+                    if (error != null)
+                    {
+                        errorMessage = errorMessage + error.ErrorMessage;
+                    }
+                }
+                if (!string.IsNullOrEmpty(errorMessage))
+                {
+                    result.Add(item.Key, errorMessage);
+                }
+            }
+
+            return result;
         }
     }
 }

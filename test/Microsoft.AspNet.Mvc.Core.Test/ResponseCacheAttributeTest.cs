@@ -3,8 +3,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using Microsoft.AspNet.Http.Internal;
+using Microsoft.AspNet.Mvc.Abstractions;
 using Microsoft.AspNet.Mvc.Filters;
+using Microsoft.AspNet.Routing;
 using Microsoft.Extensions.OptionsModel;
+using Microsoft.Extensions.Primitives;
 using Moq;
 using Xunit;
 
@@ -181,6 +186,126 @@ namespace Microsoft.AspNet.Mvc
             Assert.NotNull(filter);
         }
 
+        [Fact]
+        public void ResponseCache_SetsAllHeaders()
+        {
+            // Arrange
+            var responseCache = new ResponseCacheAttribute()
+            {
+                Duration = 100,
+                Location = ResponseCacheLocation.Any,
+                VaryByHeader = "Accept"
+            };
+            var filter = (ResponseCacheFilter)responseCache.CreateInstance(GetServiceProvider(cacheProfiles: null));
+            var context = GetActionExecutingContext(filter);
+
+            // Act
+            filter.OnActionExecuting(context);
+
+            // Assert
+            var response = context.HttpContext.Response;
+            StringValues values;
+            Assert.True(response.Headers.TryGetValue("Cache-Control", out values));
+            var data = Assert.Single(values);
+            AssertHeaderEquals("public, max-age=100", data);
+            Assert.True(response.Headers.TryGetValue("Vary", out values));
+            data = Assert.Single(values);
+            Assert.Equal("Accept", data);
+        }
+
+        public static TheoryData<ResponseCacheAttribute, string> CacheControlData
+        {
+            get
+            {
+                return new TheoryData<ResponseCacheAttribute, string>
+                {
+                    {
+                        new ResponseCacheAttribute() { Duration = 100, Location = ResponseCacheLocation.Any },
+                        "public, max-age=100"
+                    },
+                    {
+                         new ResponseCacheAttribute() { Duration = 100, Location = ResponseCacheLocation.Client },
+                        "max-age=100, private"
+                    },
+                    {
+                        new ResponseCacheAttribute() { NoStore = true, Duration = 0 },
+                        "no-store"
+                    },
+                    {
+                        new ResponseCacheAttribute()
+                    {
+                        NoStore = true,
+                        Duration = 0,
+                        Location = ResponseCacheLocation.None
+                    },
+                    "no-store, no-cache"
+                    }
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(CacheControlData))]
+        public void ResponseCache_SetsDifferentCacheControlHeaders(
+            ResponseCacheAttribute responseCacheAttribute,
+            string expected)
+        {
+            // Arrange
+            var filter = (ResponseCacheFilter)responseCacheAttribute.CreateInstance(
+                GetServiceProvider(cacheProfiles: null));
+            var context = GetActionExecutingContext(filter);
+
+            // Act
+            filter.OnActionExecuting(context);
+
+            // Assert
+            StringValues values;
+            Assert.True(context.HttpContext.Response.Headers.TryGetValue("Cache-Control", out values));
+            var data = Assert.Single(values);
+            AssertHeaderEquals(expected, data);
+        }
+
+        [Fact]
+        public void SetsCacheControlPublicByDefault()
+        {
+            // Arrange
+            var responseCacheAttribute = new ResponseCacheAttribute() { Duration = 40 };
+            var filter = (ResponseCacheFilter)responseCacheAttribute.CreateInstance(
+                GetServiceProvider(cacheProfiles: null));
+            var context = GetActionExecutingContext(filter);
+
+            // Act
+            filter.OnActionExecuting(context);
+
+            // Assert
+            StringValues values;
+            Assert.True(context.HttpContext.Response.Headers.TryGetValue("Cache-Control", out values));
+            var data = Assert.Single(values);
+            AssertHeaderEquals("public, max-age=40", data);
+        }
+
+        [Fact]
+        public void ThrowsWhenDurationIsNotSet()
+        {
+            // Arrange
+            var responseCacheAttribute = new ResponseCacheAttribute()
+            {
+                VaryByHeader = "Accept"
+            };
+            var filter = (ResponseCacheFilter)responseCacheAttribute.CreateInstance(
+                GetServiceProvider(cacheProfiles: null));
+            var context = GetActionExecutingContext(filter);
+
+            // Act & Assert
+            var exception = Assert.Throws<InvalidOperationException>(() =>
+            {
+                filter.OnActionExecuting(context);
+            });
+            Assert.Equal(
+                "If the 'NoStore' property is not set to true, 'Duration' property must be specified.",
+                exception.Message);
+        }
+
         private IServiceProvider GetServiceProvider(Dictionary<string, CacheProfile> cacheProfiles)
         {
             var serviceProvider = new Mock<IServiceProvider>();
@@ -198,6 +323,23 @@ namespace Microsoft.AspNet.Mvc
                 .Returns(optionsAccessor);
 
             return serviceProvider.Object;
+        }
+
+        private ActionExecutingContext GetActionExecutingContext(params IFilterMetadata[] filters)
+        {
+            return new ActionExecutingContext(
+                new ActionContext(new DefaultHttpContext(), new RouteData(), new ActionDescriptor()),
+                filters?.ToList() ?? new List<IFilterMetadata>(),
+                new Dictionary<string, object>(),
+                new object());
+        }
+
+        private void AssertHeaderEquals(string expected, string actual)
+        {
+            // OrderBy is used because the order of the results may vary depending on the platform / client.
+            Assert.Equal(
+                expected.Split(',').Select(p => p.Trim()).OrderBy(item => item, StringComparer.Ordinal),
+                actual.Split(',').Select(p => p.Trim()).OrderBy(item => item, StringComparer.Ordinal));
         }
     }
 }

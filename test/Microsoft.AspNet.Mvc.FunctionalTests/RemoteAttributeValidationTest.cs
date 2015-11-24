@@ -10,12 +10,12 @@ using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
-    public class RemoteAttributeValidationTest : IClassFixture<MvcTestFixture<ValidationWebSite.Startup>>
+    public class RemoteAttributeValidationTest : IClassFixture<MvcTestFixture<BasicWebSite.Startup>>
     {
         private static readonly Assembly _resourcesAssembly =
             typeof(RemoteAttributeValidationTest).GetTypeInfo().Assembly;
 
-        public RemoteAttributeValidationTest(MvcTestFixture<ValidationWebSite.Startup> fixture)
+        public RemoteAttributeValidationTest(MvcTestFixture<BasicWebSite.Startup> fixture)
         {
             Client = fixture.Client;
         }
@@ -23,12 +23,12 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public HttpClient Client { get; }
 
         [Theory]
-        [InlineData("Aria", "/Aria")]
+        [InlineData("Area1", "/Area1")]
         [InlineData("Root", "")]
         public async Task RemoteAttribute_LeadsToExpectedValidationAttributes(string areaName, string pathSegment)
         {
             // Arrange
-            var outputFile = "compiler/resources/ValidationWebSite." + areaName + ".RemoteAttribute_Home.Create.html";
+            var outputFile = "compiler/resources/BasicWebSite." + areaName + ".RemoteAttribute_Home.Create.html";
             var expectedContent =
                 await ResourceFile.ReadResourceAsync(_resourcesAssembly, outputFile, sourceFile: false);
             var url = "http://localhost" + pathSegment + "/RemoteAttribute_Home/Create";
@@ -55,9 +55,9 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
         [Theory]
         [InlineData("", "\"/RemoteAttribute_Verify/IsIdAvailable rejects Joe1.\"")]
-        [InlineData("/Aria", "false")]
-        [InlineData("/AnotherAria",
-            "\"/AnotherAria/RemoteAttribute_Verify/IsIdAvailable rejects 'Joe4' with 'Joe1', 'Joe2', and 'Joe3'.\"")]
+        [InlineData("/Area1", "false")]
+        [InlineData("/Area2",
+            "\"/Area2/RemoteAttribute_Verify/IsIdAvailable rejects 'Joe4' with 'Joe1', 'Joe2', and 'Joe3'.\"")]
         public async Task RemoteAttribute_VerificationAction_GetReturnsExpectedJson(
             string pathSegment,
             string expectedContent)
@@ -79,7 +79,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
         [Theory]
         [InlineData("", "\"/RemoteAttribute_Verify/IsIdAvailable rejects Jane1.\"")]
-        [InlineData("/Aria", "false")]
+        [InlineData("/Area1", "false")]
         public async Task RemoteAttribute_VerificationAction_PostReturnsExpectedJson(
             string pathSegment,
             string expectedContent)
