@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNet.Mvc.TagHelpers.Logging;
 using Microsoft.AspNet.Razor.TagHelpers;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -22,7 +23,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
             var viewPath = "Views/Home/Index.cshtml";
 
             // Act
-            modeMatchResult.LogDetails(logger, tagHelper.Object, uniqueId, viewPath);
+            logger.TagHelperModeMatchResult(modeMatchResult, uniqueId, viewPath, tagHelper.Object);
 
             // Assert
             Mock.Get(logger).Verify(l => l.Log(
@@ -48,7 +49,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
             var viewPath = "Views/Home/Index.cshtml";
 
             // Act
-            modeMatchResult.LogDetails(logger, tagHelper.Object, uniqueId, viewPath);
+            logger.TagHelperModeMatchResult(modeMatchResult, uniqueId, viewPath, tagHelper.Object);
 
             // Assert
             Mock.Get(logger).Verify(l => l.Log(
@@ -79,7 +80,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
             var viewPath = "Views/Home/Index.cshtml";
 
             // Act
-            modeMatchResult.LogDetails(logger, tagHelper.Object, uniqueId, viewPath);
+            logger.TagHelperModeMatchResult(modeMatchResult, uniqueId, viewPath, tagHelper.Object);
 
             // Assert
             Mock.Get(logger).Verify(l => l.Log(
@@ -110,7 +111,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
             var viewPath = "Views/Home/Index.cshtml";
 
             // Act
-            modeMatchResult.LogDetails(logger, tagHelper.Object, uniqueId, viewPath);
+            logger.TagHelperModeMatchResult(modeMatchResult, uniqueId, viewPath, tagHelper.Object);
 
             // Assert
             Mock.Get(logger).Verify(l => l.Log(

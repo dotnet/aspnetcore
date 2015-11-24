@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
@@ -247,9 +246,11 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             // Prepare to move attributes from current element to <input type="checkbox"/> generated just below.
             var htmlAttributes = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
 
+            // Perf: Avoid allocating enumerator
             // Construct attributes correctly (first attribute wins).
-            foreach (var attribute in output.Attributes)
+            for (var i = 0; i < output.Attributes.Count; i++)
             {
+                var attribute = output.Attributes[i];
                 if (!htmlAttributes.ContainsKey(attribute.Name))
                 {
                     htmlAttributes.Add(attribute.Name, attribute.Value);
@@ -389,15 +390,14 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         // A variant of TemplateRenderer.GetViewNames(). Main change relates to bool? handling.
         private static IEnumerable<string> GetInputTypeHints(ModelExplorer modelExplorer)
         {
-            var inputTypeHints = new string[]
+            if (!string.IsNullOrEmpty(modelExplorer.Metadata.TemplateHint))
             {
-                modelExplorer.Metadata.TemplateHint,
-                modelExplorer.Metadata.DataTypeName,
-            };
+                yield return modelExplorer.Metadata.TemplateHint;
+            }
 
-            foreach (string inputTypeHint in inputTypeHints.Where(s => !string.IsNullOrEmpty(s)))
+            if (!string.IsNullOrEmpty(modelExplorer.Metadata.DataTypeName))
             {
-                yield return inputTypeHint;
+                yield return modelExplorer.Metadata.DataTypeName;
             }
 
             // In most cases, we don't want to search for Nullable<T>. We want to search for T, which should handle

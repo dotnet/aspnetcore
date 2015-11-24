@@ -57,9 +57,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var formContext = ViewContext.FormContext;
             if (formContext.HasEndOfFormContent)
             {
-                foreach (var content in formContext.EndOfFormContent)
+                // Perf: Avoid allocating enumerator
+                for (var i = 0; i < formContext.EndOfFormContent.Count; i++)
                 {
-                    output.PostContent.Append(content);
+                    output.PostContent.Append(formContext.EndOfFormContent[i]);
                 }
             }
 

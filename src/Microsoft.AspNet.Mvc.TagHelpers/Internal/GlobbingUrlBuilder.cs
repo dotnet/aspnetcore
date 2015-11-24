@@ -73,7 +73,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
         /// <param name="includePattern">The file globbing include pattern.</param>
         /// <param name="excludePattern">The file globbing exclude pattern.</param>
         /// <returns>The list of URLs</returns>
-        public virtual IEnumerable<string> BuildUrlList(string staticUrl, string includePattern, string excludePattern)
+        public virtual ICollection<string> BuildUrlList(string staticUrl, string includePattern, string excludePattern)
         {
             var urls = new HashSet<string>(StringComparer.Ordinal);
 
@@ -112,9 +112,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
                 if (!Cache.TryGetValue(cacheKey, out files))
                 {
                     var options = new MemoryCacheEntryOptions();
-                    foreach (var pattern in includePatterns)
+
+                    for (var i = 0; i < includePatterns.Length; i++)
                     {
-                        var changeToken = FileProvider.Watch(pattern);
+                        var changeToken = FileProvider.Watch(includePatterns[i]);
                         options.AddExpirationToken(changeToken);
                     }
 
@@ -128,15 +129,24 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
             return FindFiles(includePatterns, excludePatterns);
         }
 
-        private IEnumerable<string> FindFiles(IEnumerable<string> includePatterns, IEnumerable<string> excludePatterns)
+        private IEnumerable<string> FindFiles(string[] includePatterns, string[] excludePatterns)
         {
             var matcher = MatcherBuilder != null ? MatcherBuilder() : new Matcher();
-
-            matcher.AddIncludePatterns(includePatterns.Select(pattern => TrimLeadingTildeSlash(pattern)));
+            var trimmedIncludePatterns = new List<string>();
+            for (var i = 0; i < includePatterns.Length; i++)
+            {
+                trimmedIncludePatterns.Add(TrimLeadingTildeSlash(includePatterns[i]));
+            }
+            matcher.AddIncludePatterns(trimmedIncludePatterns);
 
             if (excludePatterns != null)
             {
-                matcher.AddExcludePatterns(excludePatterns.Select(pattern => TrimLeadingTildeSlash(pattern)));
+                var trimmedExcludePatterns = new List<string>();
+                for (var i = 0; i < excludePatterns.Length; i++)
+                {
+                    trimmedExcludePatterns.Add(TrimLeadingTildeSlash(excludePatterns[i]));
+                }
+                matcher.AddExcludePatterns(trimmedExcludePatterns);
             }
 
             var matches = matcher.Execute(_baseGlobbingDirectory);

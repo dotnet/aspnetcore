@@ -19,30 +19,54 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Logging
                 "Skipping processing for tag helper '{TagHelper}' with id '{TagHelperId}'.");
         }
 
-        public static void TagHelperPartialMatches<TMode>(
-                    this ILogger logger,
-                    string uniqueId,
-                    string viewPath,
-                    IEnumerable<ModeMatchAttributes<TMode>> partialMatches)
+        public static void TagHelperModeMatchResult<TMode>(
+            this ILogger logger,
+            ModeMatchResult<TMode> modeMatchResult,
+            string uniqueId,
+            string viewPath,
+            ITagHelper tagHelper)
         {
-            var logValues = new PartialModeMatchLogValues<TMode>(
-                uniqueId,
-                viewPath,
-                partialMatches);
+            if (logger.IsEnabled(LogLevel.Warning) && modeMatchResult.PartiallyMatchedAttributes.Count > 0)
+            {
+                // Build the list of partial matches that contain attributes not appearing in at least one full match
+                var partialOnlyMatches = new List<ModeMatchAttributes<TMode>>();
+                for (var i = 0; i < modeMatchResult.PartialMatches.Count; i++)
+                {
+                    var presentAttributes = modeMatchResult.PartialMatches[i].PresentAttributes;
+                    for (var j = 0; j < presentAttributes.Count; j++)
+                    {
+                        var present = presentAttributes[j];
+                        var presentIsPartialOnlyMatch = false;
+                        for (var k = 0; k < modeMatchResult.PartiallyMatchedAttributes.Count; k++)
+                        {
+                            var partiallyMatched = modeMatchResult.PartiallyMatchedAttributes[k];
+                            if (string.Equals(partiallyMatched, present, StringComparison.OrdinalIgnoreCase))
+                            {
+                                presentIsPartialOnlyMatch = true;
+                                break;
+                            }
+                        }
 
-            logger.LogWarning(logValues);
-        }
+                        if (presentIsPartialOnlyMatch)
+                        {
+                            partialOnlyMatches.Add(modeMatchResult.PartialMatches[i]);
+                            break;
+                        }
+                    }
+                }
 
-        public static void TagHelperSkippingProcessing(
-                    this ILogger logger,
-                    ITagHelper tagHelper,
-                    string uniqueId)
-        {
-            _skippingProcessing(
-                logger,
-                tagHelper,
-                uniqueId,
-                null);
+                var logValues = new PartialModeMatchLogValues<TMode>(
+                    uniqueId,
+                    viewPath,
+                    partialOnlyMatches);
+
+                logger.LogWarning(logValues);
+            }
+
+            if (logger.IsEnabled(LogLevel.Verbose) && modeMatchResult.FullMatches.Count == 0)
+            {
+                _skippingProcessing(logger, tagHelper, uniqueId, null);
+            }
         }
 
         /// <summary>

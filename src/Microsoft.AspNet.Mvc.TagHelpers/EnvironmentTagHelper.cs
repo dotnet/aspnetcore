@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Linq;
+using System.Collections.Generic;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Razor.TagHelpers;
 
@@ -67,28 +67,39 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 return;
             }
 
-            var environments = Names.Split(NameSeparator, StringSplitOptions.RemoveEmptyEntries)
-                                    .Where(name => !string.IsNullOrWhiteSpace(name));
-
-            if (!environments.Any())
-            {
-                // Names contains only commas or empty entries, do nothing
-                return;
-            }
-
             var currentEnvironmentName = HostingEnvironment.EnvironmentName?.Trim();
-
-            if (string.IsNullOrWhiteSpace(currentEnvironmentName))
+            if (string.IsNullOrEmpty(currentEnvironmentName))
             {
                 // No current environment name, do nothing
                 return;
             }
 
-            if (environments.Any(name =>
-                string.Equals(name.Trim(), currentEnvironmentName, StringComparison.OrdinalIgnoreCase)))
+            var values = Names.Split(NameSeparator, StringSplitOptions.RemoveEmptyEntries);
+            var environments = new List<string>();
+
+            for (var i = 0; i < values.Length; i++)
             {
-                // Matching environment name found, do nothing
+                var trimmedValue = values[i].Trim();
+
+                if (trimmedValue.Length > 0)
+                {
+                    environments.Add(trimmedValue);
+                }
+            }
+
+            if (environments.Count == 0)
+            {
+                // Names contains only commas or empty entries, do nothing
                 return;
+            }
+
+            for (var i = 0; i < environments.Count; i++)
+            {
+                if (string.Equals(environments[i], currentEnvironmentName, StringComparison.OrdinalIgnoreCase))
+                {
+                    // Matching environment name found, do nothing
+                    return;
+                }
             }
 
             // No matching environment name found, suppress all output

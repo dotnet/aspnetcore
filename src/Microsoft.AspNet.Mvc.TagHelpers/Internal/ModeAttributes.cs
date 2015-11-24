@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
         /// <summary>
         /// Creates an <see cref="ModeAttributes{TMode}"/>/
         /// </summary>
-        public static ModeAttributes<TMode> Create<TMode>(TMode mode, IEnumerable<string> attributes)
+        public static ModeAttributes<TMode> Create<TMode>(TMode mode, string[] attributes)
         {
             return new ModeAttributes<TMode>
             {

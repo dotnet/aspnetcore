@@ -10,6 +10,7 @@ using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Mvc.Razor.TagHelpers;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.TagHelpers.Internal;
+using Microsoft.AspNet.Mvc.TagHelpers.Logging;
 using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.AspNet.Razor.TagHelpers;
 using Microsoft.Extensions.Caching.Memory;
@@ -241,10 +242,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             Href = output.Attributes[HrefAttributeName]?.Value as string;
 
             var modeResult = AttributeMatcher.DetermineMode(context, ModeDetails);
+            Logger.TagHelperModeMatchResult(modeResult, context.UniqueId, ViewContext.View.Path, this);
 
-            modeResult.LogDetails(Logger, this, context.UniqueId, ViewContext.View.Path);
-
-            if (!modeResult.FullMatches.Any())
+            if (modeResult.FullMatches.Count == 0)
             {
                 // No attributes matched so we have nothing to do
                 return;
@@ -266,7 +266,15 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var builder = new DefaultTagHelperContent();
 
             // Get the highest matched mode
-            var mode = modeResult.FullMatches.Select(match => match.Mode).Max();
+            var mode = modeResult.FullMatches[0].Mode;
+            for (var i = 1; i < modeResult.FullMatches.Count; i++)
+            {
+                var currentMode = modeResult.FullMatches[i].Mode;
+                if (mode < currentMode)
+                {
+                    mode = currentMode;
+                }
+            }
 
             if (mode == Mode.GlobbedHref || mode == Mode.Fallback && !string.IsNullOrEmpty(HrefInclude))
             {
@@ -384,8 +392,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         {
             builder.AppendHtml("<link ");
 
-            foreach (var attribute in attributes)
+            // Perf: Avoid allocating enumerator
+            for (var i = 0; i < attributes.Count; i++)
             {
+                var attribute = attributes[i];
                 var attributeValue = attribute.Value;
                 if (AppendVersion == true &&
                     string.Equals(attribute.Name, HrefAttributeName, StringComparison.OrdinalIgnoreCase))

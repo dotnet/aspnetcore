@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.AspNet.Razor.TagHelpers;
@@ -32,6 +31,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         private const string RouteValuesDictionaryName = "asp-all-route-data";
         private const string RouteValuesPrefix = "asp-route-";
         private const string Href = "href";
+        private IDictionary<string, string> _routeValues;
 
         /// <summary>
         /// Creates a new <see cref="AnchorTagHelper"/>.
@@ -98,8 +98,22 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         /// Additional parameters for the route.
         /// </summary>
         [HtmlAttributeName(RouteValuesDictionaryName, DictionaryAttributePrefix = RouteValuesPrefix)]
-        public IDictionary<string, string> RouteValues { get; set; } =
-            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        public IDictionary<string, string> RouteValues
+        {
+            get
+            {
+                if (_routeValues == null)
+                {
+                    _routeValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                }
+
+                return _routeValues;
+            }
+            set
+            {
+                _routeValues = value;
+            }
+        }
 
         /// <inheritdoc />
         /// <remarks>Does nothing if user provides an <c>href</c> attribute.</remarks>
@@ -148,11 +162,16 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             }
             else
             {
-                // Convert from Dictionary<string, string> to Dictionary<string, object>.
-                var routeValues = RouteValues.ToDictionary(
-                    kvp => kvp.Key,
-                    kvp => (object)kvp.Value,
-                    StringComparer.OrdinalIgnoreCase);
+                IDictionary<string, object> routeValues = null;
+                if (_routeValues != null && _routeValues.Count > 0)
+                {
+                    // Convert from Dictionary<string, string> to Dictionary<string, object>.
+                    routeValues = new Dictionary<string, object>(_routeValues.Count, StringComparer.OrdinalIgnoreCase);
+                    foreach (var routeValue in _routeValues)
+                    {
+                        routeValues.Add(routeValue.Key, routeValue.Value);
+                    }
+                }
 
                 TagBuilder tagBuilder;
                 if (Route == null)
@@ -180,13 +199,14 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 }
                 else
                 {
-                    tagBuilder = Generator.GenerateRouteLink(linkText: string.Empty,
-                                                             routeName: Route,
-                                                             protocol: Protocol,
-                                                             hostName: Host,
-                                                             fragment: Fragment,
-                                                             routeValues: routeValues,
-                                                             htmlAttributes: null);
+                    tagBuilder = Generator.GenerateRouteLink(
+                        linkText: string.Empty,
+                        routeName: Route,
+                        protocol: Protocol,
+                        hostName: Host,
+                        fragment: Fragment,
+                        routeValues: routeValues,
+                        htmlAttributes: null);
                 }
 
                 if (tagBuilder != null)

@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
         /// <summary>
         /// Encodes a .NET string array for safe use as a JavaScript array literal, including inline in an HTML file.
         /// </summary>
-        public static string Encode(JavaScriptEncoder encoder, IEnumerable<string> values)
+        public static string Encode(JavaScriptEncoder encoder, string[] values)
         {
             var writer = new StringWriter();
 
@@ -23,14 +23,15 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
 
             writer.Write('[');
 
-            foreach (var value in values)
+            // Perf: Avoid allocating enumerator
+            for (var i = 0; i < values.Length; i++)
             {
                 if (firstAdded)
                 {
                     writer.Write(',');
                 }
                 writer.Write('"');
-                encoder.Encode(writer, value);
+                encoder.Encode(writer, values[i]);
                 writer.Write('"');
                 firstAdded = true;
             }

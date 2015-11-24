@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Microsoft.AspNet.Razor.TagHelpers;
 
 namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
@@ -23,7 +22,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
         /// <returns>The <see cref="ModeMatchResult{TMode}"/>.</returns>
         public static ModeMatchResult<TMode> DetermineMode<TMode>(
             TagHelperContext context,
-            IEnumerable<ModeAttributes<TMode>> modeInfos)
+            IReadOnlyList<ModeAttributes<TMode>> modeInfos)
         {
             if (context == null)
             {
@@ -39,27 +38,32 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
             var matchedAttributes = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
             var result = new ModeMatchResult<TMode>();
 
-            foreach (var modeInfo in modeInfos)
+            // Perf: Avoid allocating enumerator
+            for (var i = 0; i < modeInfos.Count; i++)
             {
+                var modeInfo = modeInfos[i];
                 var modeAttributes = GetPresentMissingAttributes(context, modeInfo.Attributes);
 
-                if (modeAttributes.Present.Any())
+                if (modeAttributes.Present.Count > 0)
                 {
-                    if (!modeAttributes.Missing.Any())
+                    if (modeAttributes.Missing.Count == 0)
                     {
+                        // Perf: Avoid allocating enumerator
                         // A complete match, mark the attribute as fully matched
-                        foreach (var attribute in modeAttributes.Present)
+                        for (var j = 0; j < modeAttributes.Present.Count; j++)
                         {
-                            matchedAttributes[attribute] = true;
+                            matchedAttributes[modeAttributes.Present[j]] = true;
                         }
 
                         result.FullMatches.Add(ModeMatchAttributes.Create(modeInfo.Mode, modeInfo.Attributes));
                     }
                     else
                     {
+                        // Perf: Avoid allocating enumerator
                         // A partial match, mark the attribute as partially matched if not already fully matched
-                        foreach (var attribute in modeAttributes.Present)
+                        for (var j = 0; j < modeAttributes.Present.Count; j++)
                         {
+                            var attribute = modeAttributes.Present[j];
                             bool attributeMatch;
                             if (!matchedAttributes.TryGetValue(attribute, out attributeMatch))
                             {
@@ -87,14 +91,16 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
 
         private static PresentMissingAttributes GetPresentMissingAttributes(
             TagHelperContext context,
-            IEnumerable<string> requiredAttributes)
+            string[] requiredAttributes)
         {
             // Check for all attribute values
             var presentAttributes = new List<string>();
             var missingAttributes = new List<string>();
 
-            foreach (var attribute in requiredAttributes)
+            // Perf: Avoid allocating enumerator
+            for (var i = 0; i < requiredAttributes.Length; i++)
             {
+                var attribute = requiredAttributes[i];
                 if (!context.AllAttributes.ContainsName(attribute) ||
                     context.AllAttributes[attribute] == null ||
                     (context.AllAttributes[attribute].Value is string &&
@@ -114,9 +120,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
 
         private class PresentMissingAttributes
         {
-            public IEnumerable<string> Present { get; set; }
+            public List<string> Present { get; set; }
 
-            public IEnumerable<string> Missing { get; set; }
+            public List<string> Missing { get; set; }
         }
     }
 }

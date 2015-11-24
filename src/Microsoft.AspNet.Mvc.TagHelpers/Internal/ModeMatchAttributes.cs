@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
         /// </summary>
         public static ModeMatchAttributes<TMode> Create<TMode>(
            TMode mode,
-           IEnumerable<string> presentAttributes)
+           IList<string> presentAttributes)
         {
             return Create(mode, presentAttributes, missingAttributes: null);
         }
@@ -25,8 +25,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
         /// </summary>
         public static ModeMatchAttributes<TMode> Create<TMode>(
             TMode mode,
-            IEnumerable<string> presentAttributes,
-            IEnumerable<string> missingAttributes)
+            IList<string> presentAttributes,
+            IList<string> missingAttributes)
         {
             return new ModeMatchAttributes<TMode>
             {

@@ -3,12 +3,12 @@
 
 using System;
 using System.Diagnostics;
-using System.Linq;
 using System.Text.Encodings.Web;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Mvc.Razor.TagHelpers;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.TagHelpers.Internal;
+using Microsoft.AspNet.Mvc.TagHelpers.Logging;
 using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.AspNet.Razor.TagHelpers;
 using Microsoft.Extensions.Caching.Memory;
@@ -209,10 +209,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             Src = output.Attributes[SrcAttributeName]?.Value as string;
 
             var modeResult = AttributeMatcher.DetermineMode(context, ModeDetails);
+            Logger.TagHelperModeMatchResult(modeResult, context.UniqueId, ViewContext.View.Path, this);
 
-            modeResult.LogDetails(Logger, this, context.UniqueId, ViewContext.View.Path);
-
-            if (!modeResult.FullMatches.Any())
+            if (modeResult.FullMatches.Count == 0)
             {
                 // No attributes matched so we have nothing to do
                 return;
@@ -234,7 +233,15 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var builder = new DefaultTagHelperContent();
 
             // Get the highest matched mode
-            var mode = modeResult.FullMatches.Select(match => match.Mode).Max();
+            var mode = modeResult.FullMatches[0].Mode;
+            for (var i = 1; i < modeResult.FullMatches.Count; i++)
+            {
+                var currentMode = modeResult.FullMatches[i].Mode;
+                if (mode < currentMode)
+                {
+                    mode = currentMode;
+                }
+            }
 
             if (mode == Mode.GlobbedSrc || mode == Mode.Fallback && !string.IsNullOrEmpty(SrcInclude))
             {
@@ -290,7 +297,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             EnsureGlobbingUrlBuilder();
 
             var fallbackSrcs = GlobbingUrlBuilder.BuildUrlList(FallbackSrc, FallbackSrcInclude, FallbackSrcExclude);
-            if (fallbackSrcs.Any())
+            if (fallbackSrcs.Count > 0)
             {
                 // Build the <script> tag that checks the test method and if it fails, renders the extra script.
                 builder.AppendHtml(Environment.NewLine)
@@ -312,8 +319,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
                     builder.AppendHtml("<script");
 
-                    foreach (var attribute in attributes)
+                    // Perf: Avoid allocating enumerator
+                    for (var i = 0; i < attributes.Count; i++)
                     {
+                        var attribute = attributes[i];
                         if (!attribute.Name.Equals(SrcAttributeName, StringComparison.OrdinalIgnoreCase))
                         {
                             var encodedKey = JavaScriptEncoder.Encode(attribute.Name);
@@ -373,8 +382,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         {
             builder.AppendHtml("<script");
 
-            foreach (var attribute in attributes)
+            // Perf: Avoid allocating enumerator
+            for (var i = 0; i < attributes.Count; i++)
             {
+                var attribute = attributes[i];
                 var attributeValue = attribute.Value;
                 if (AppendVersion == true &&
                     string.Equals(attribute.Name, SrcAttributeName, StringComparison.OrdinalIgnoreCase))

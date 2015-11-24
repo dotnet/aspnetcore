@@ -3,11 +3,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.AspNet.Razor.TagHelpers;
@@ -101,7 +99,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
         /// <summary>
         /// Gets or sets a value that determines if the cached result is to be varied by the Identity for the logged in
-        /// <see cref="HttpContext.User"/>.
+        /// <see cref="Http.HttpContext.User"/>.
         /// </summary>
         [HtmlAttributeName(VaryByUserAttributeName)]
         public bool VaryByUser { get; set; }
@@ -261,18 +259,19 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                        .Append(keyName)
                        .Append("(");
 
-                var tokenFound = false;
-                foreach (var item in Tokenize(value))
-                {
-                    tokenFound = true;
+                var values = Tokenize(value);
 
+                // Perf: Avoid allocating enumerator
+                for (var i = 0; i < values.Count; i++)
+                {
+                    var item = values[i];
                     builder.Append(item)
                            .Append(CacheKeyTokenSeparator)
                            .Append(sourceCollection[item])
                            .Append(CacheKeyTokenSeparator);
                 }
 
-                if (tokenFound)
+                if (values.Count > 0)
                 {
                     // Remove the trailing separator
                     builder.Length -= CacheKeyTokenSeparator.Length;
@@ -282,12 +281,12 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             }
         }
 
-        private static void AddStringCollectionKey<T>(
+        private static void AddStringCollectionKey<TSourceCollection>(
             StringBuilder builder,
             string keyName,
             string value,
-            T sourceCollection,
-            Func<T, string, StringValues> accessor)
+            TSourceCollection sourceCollection,
+            Func<TSourceCollection, string, StringValues> accessor)
         {
             if (!string.IsNullOrEmpty(value))
             {
@@ -296,10 +295,12 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                        .Append(keyName)
                        .Append("(");
 
-                var tokenFound = false;
-                foreach (var item in Tokenize(value))
+                var values = Tokenize(value);
+
+                // Perf: Avoid allocating enumerator
+                for (var i = 0; i < values.Count; i++)
                 {
-                    tokenFound = true;
+                    var item = values[i];
 
                     builder.Append(item)
                            .Append(CacheKeyTokenSeparator)
@@ -307,7 +308,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                            .Append(CacheKeyTokenSeparator);
                 }
 
-                if (tokenFound)
+                if (values.Count > 0)
                 {
                     // Remove the trailing separator
                     builder.Length -= CacheKeyTokenSeparator.Length;
@@ -327,8 +328,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                        .Append(nameof(VaryByRoute))
                        .Append("(");
 
-                foreach (var route in Tokenize(VaryByRoute))
+                var varyByRoutes = Tokenize(VaryByRoute);
+                for (var i = 0; i < varyByRoutes.Count; i++)
                 {
+                    var route = varyByRoutes[i];
                     tokenFound = true;
 
                     builder.Append(route)
@@ -346,11 +349,27 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             }
         }
 
-        private static IEnumerable<string> Tokenize(string value)
+        private static IList<string> Tokenize(string value)
         {
-            return value.Split(AttributeSeparator, StringSplitOptions.RemoveEmptyEntries)
-                        .Select(token => token.Trim())
-                        .Where(token => token.Length > 0);
+            var values = value.Split(AttributeSeparator, StringSplitOptions.RemoveEmptyEntries);
+            if (values.Length == 0)
+            {
+                return values;
+            }
+
+            var trimmedValues = new List<string>();
+
+            for (var i = 0; i < values.Length; i++)
+            {
+                var trimmedValue = values[i].Trim();
+
+                if (trimmedValue.Length > 0)
+                {
+                    trimmedValues.Add(trimmedValue);
+                }
+            }
+
+            return trimmedValues;
         }
     }
 }
