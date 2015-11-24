@@ -16,7 +16,7 @@ namespace BasicWebSite
             {
                 options.Conventions.Add(new ApplicationDescription("This is a basic website."));
             });
-
+            services.AddLogging();
             services.AddSingleton<IActionDescriptorProvider, ActionDescriptorCreationCounter>();
         }
 

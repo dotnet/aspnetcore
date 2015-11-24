@@ -9,6 +9,8 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 using Moq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
@@ -33,7 +35,9 @@ namespace Microsoft.AspNet.Mvc.Formatters
         public void CanRead_ReturnsTrueForAnySupportedContentType(string requestContentType, bool expectedCanRead)
         {
             // Arrange
-            var formatter = new JsonInputFormatter();
+            var loggerMock = GetLogger();
+
+            var formatter = new JsonInputFormatter(loggerMock);
             var contentBytes = Encoding.UTF8.GetBytes("content");
 
             var httpContext = GetHttpContext(contentBytes, contentType: requestContentType);
@@ -57,7 +61,8 @@ namespace Microsoft.AspNet.Mvc.Formatters
         public void DefaultMediaType_ReturnsApplicationJson()
         {
             // Arrange
-            var formatter = new JsonInputFormatter();
+            var loggerMock = GetLogger();
+            var formatter = new JsonInputFormatter(loggerMock);
 
             // Act
             var mediaType = formatter.SupportedMediaTypes[0];
@@ -82,7 +87,8 @@ namespace Microsoft.AspNet.Mvc.Formatters
         public async Task JsonFormatterReadsSimpleTypes(string content, Type type, object expected)
         {
             // Arrange
-            var formatter = new JsonInputFormatter();
+            var logger = GetLogger();
+            var formatter = new JsonInputFormatter(logger);
             var contentBytes = Encoding.UTF8.GetBytes(content);
 
             var httpContext = GetHttpContext(contentBytes);
@@ -108,7 +114,8 @@ namespace Microsoft.AspNet.Mvc.Formatters
         {
             // Arrange
             var content = "{name: 'Person Name', Age: '30'}";
-            var formatter = new JsonInputFormatter();
+            var logger = GetLogger();
+            var formatter = new JsonInputFormatter(logger);
             var contentBytes = Encoding.UTF8.GetBytes(content);
 
             var httpContext = GetHttpContext(contentBytes);
@@ -136,7 +143,8 @@ namespace Microsoft.AspNet.Mvc.Formatters
         {
             // Arrange
             var content = "{name: 'Person Name', Age: 'not-an-age'}";
-            var formatter = new JsonInputFormatter();
+            var logger = GetLogger();
+            var formatter = new JsonInputFormatter(logger);
             var contentBytes = Encoding.UTF8.GetBytes(content);
 
             var modelState = new ModelStateDictionary();
@@ -165,7 +173,8 @@ namespace Microsoft.AspNet.Mvc.Formatters
         {
             // Arrange
             var content = "[0, 23, 300]";
-            var formatter = new JsonInputFormatter();
+            var logger = GetLogger();
+            var formatter = new JsonInputFormatter(logger);
             var contentBytes = Encoding.UTF8.GetBytes(content);
 
             var modelState = new ModelStateDictionary();
@@ -193,7 +202,8 @@ namespace Microsoft.AspNet.Mvc.Formatters
         {
             // Arrange
             var content = "[{name: 'Name One', Age: 30}, {name: 'Name Two', Small: 300}]";
-            var formatter = new JsonInputFormatter();
+            var logger = GetLogger();
+            var formatter = new JsonInputFormatter(logger);
             var contentBytes = Encoding.UTF8.GetBytes(content);
 
             var modelState = new ModelStateDictionary();
@@ -222,7 +232,8 @@ namespace Microsoft.AspNet.Mvc.Formatters
         {
             // Arrange
             var content = "{name: 'Person Name', Age: 'not-an-age'}";
-            var formatter = new JsonInputFormatter();
+            var logger = GetLogger();
+            var formatter = new JsonInputFormatter(logger);
             var contentBytes = Encoding.UTF8.GetBytes(content);
 
             var modelState = new ModelStateDictionary();
@@ -254,8 +265,10 @@ namespace Microsoft.AspNet.Mvc.Formatters
         public void Creates_SerializerSettings_ByDefault()
         {
             // Arrange
+            var logger = GetLogger();
+
             // Act
-            var jsonFormatter = new JsonInputFormatter();
+            var jsonFormatter = new JsonInputFormatter(logger);
 
             // Assert
             Assert.NotNull(jsonFormatter.SerializerSettings);
@@ -265,9 +278,11 @@ namespace Microsoft.AspNet.Mvc.Formatters
         public void Constructor_UsesSerializerSettings()
         {
             // Arrange
+            var logger = GetLogger();
+
             // Act
             var serializerSettings = new JsonSerializerSettings();
-            var jsonFormatter = new JsonInputFormatter(serializerSettings);
+            var jsonFormatter = new JsonInputFormatter(logger, serializerSettings);
 
             // Assert
             Assert.Same(serializerSettings, jsonFormatter.SerializerSettings);
@@ -279,8 +294,8 @@ namespace Microsoft.AspNet.Mvc.Formatters
             // Arrange
             // missing password property here
             var contentBytes = Encoding.UTF8.GetBytes("{ \"UserName\" : \"John\"}");
-
-            var jsonFormatter = new JsonInputFormatter();
+            var logger = GetLogger();
+            var jsonFormatter = new JsonInputFormatter(logger);
             // by default we ignore missing members, so here explicitly changing it
             jsonFormatter.SerializerSettings.MissingMemberHandling = MissingMemberHandling.Error;
 
@@ -312,8 +327,8 @@ namespace Microsoft.AspNet.Mvc.Formatters
             // Arrange
             // missing password property here
             var contentBytes = Encoding.UTF8.GetBytes("{ \"UserName\" : \"John\"}");
-
-            var jsonFormatter = new JsonInputFormatter();
+            var logger = GetLogger();
+            var jsonFormatter = new JsonInputFormatter(logger);
             // by default we ignore missing members, so here explicitly changing it
             jsonFormatter.SerializerSettings = new JsonSerializerSettings()
             {
@@ -340,6 +355,11 @@ namespace Microsoft.AspNet.Mvc.Formatters
 
             var modelErrorMessage = modelState.Values.First().Errors[0].Exception.Message;
             Assert.Contains("Required property 'Password' not found in JSON", modelErrorMessage);
+        }
+
+        private static ILogger GetLogger()
+        {
+            return NullLogger.Instance;
         }
 
         private static HttpContext GetHttpContext(

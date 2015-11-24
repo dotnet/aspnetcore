@@ -10,6 +10,7 @@ using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.AspNet.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.OptionsModel;
 
 namespace Microsoft.AspNet.Mvc.IntegrationTests
@@ -70,6 +71,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddMvc();
+            serviceCollection.AddTransient<ILoggerFactory, LoggerFactory>();
 
             if (updateOptions != null)
             {

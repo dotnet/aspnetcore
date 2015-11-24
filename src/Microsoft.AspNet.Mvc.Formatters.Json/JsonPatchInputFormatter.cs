@@ -6,19 +6,20 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNet.JsonPatch;
 using Microsoft.AspNet.Mvc.Internal;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
 namespace Microsoft.AspNet.Mvc.Formatters
 {
     public class JsonPatchInputFormatter : JsonInputFormatter
     {
-        public JsonPatchInputFormatter()
-            : this(SerializerSettingsProvider.CreateSerializerSettings())
+        public JsonPatchInputFormatter(ILogger logger)
+            : this(logger, SerializerSettingsProvider.CreateSerializerSettings())
         {
         }
 
-        public JsonPatchInputFormatter(JsonSerializerSettings serializerSettings)
-            : base(serializerSettings)
+        public JsonPatchInputFormatter(ILogger logger, JsonSerializerSettings serializerSettings)
+            : base(logger, serializerSettings)
         {
             // Clear all values and only include json-patch+json value.
             SupportedMediaTypes.Clear();

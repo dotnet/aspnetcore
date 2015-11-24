@@ -5,6 +5,8 @@ using System;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.AspNet.Mvc.Formatters;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
@@ -61,8 +63,9 @@ namespace BasicWebSite
                 // Instead remove and add new formatters which only effects the controllers this
                 // attribute is decorated on.
                 context.InputFormatters.RemoveType<JsonInputFormatter>();
-                context.InputFormatters.Add(new JsonInputFormatter(_serializerSettings));
-                
+                var loggerFactory = context.HttpContext.RequestServices.GetRequiredService<ILoggerFactory>();
+                var logger = loggerFactory.CreateLogger<JsonInputFormatter>();
+                context.InputFormatters.Add(new JsonInputFormatter(logger ,_serializerSettings));
             }
 
             public void OnResultExecuted(ResultExecutedContext context)

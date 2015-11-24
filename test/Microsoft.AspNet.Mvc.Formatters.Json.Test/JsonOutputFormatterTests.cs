@@ -12,6 +12,8 @@ using Microsoft.AspNet.Mvc.Abstractions;
 using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Testing;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Net.Http.Headers;
 using Moq;
 using Newtonsoft.Json;
@@ -40,7 +42,8 @@ namespace Microsoft.AspNet.Mvc.Formatters
             // Arrange
             // Act
             var serializerSettings = new JsonSerializerSettings();
-            var jsonFormatter = new JsonInputFormatter(serializerSettings);
+            var logger = GetLogger();
+            var jsonFormatter = new JsonInputFormatter(logger, serializerSettings);
 
             // Assert
             Assert.Same(serializerSettings, jsonFormatter.SerializerSettings);
@@ -288,6 +291,11 @@ namespace Microsoft.AspNet.Mvc.Formatters
             }
 
             return encoding;
+        }
+
+        private static ILogger GetLogger()
+        {
+            return NullLogger.Instance;
         }
 
         private static OutputFormatterWriteContext GetOutputFormatterContext(

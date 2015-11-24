@@ -5,6 +5,7 @@ using Microsoft.AspNet.Mvc.DataAnnotations.Internal;
 using Microsoft.AspNet.Mvc.Formatters.Json.Internal;
 using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.OptionsModel;
 
 namespace Microsoft.AspNet.Mvc.IntegrationTests
@@ -19,7 +20,11 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             MvcDataAnnotationsMvcOptionsSetup.ConfigureMvc(
                 Value,
                 collection.BuildServiceProvider());
-            MvcJsonMvcOptionsSetup.ConfigureMvc(Value, SerializerSettingsProvider.CreateSerializerSettings());
+
+            var loggerFactory = new LoggerFactory();
+            var serializerSettings = SerializerSettingsProvider.CreateSerializerSettings();
+
+            MvcJsonMvcOptionsSetup.ConfigureMvc(Value, serializerSettings, loggerFactory);
         }
 
         public MvcOptions Value { get; }

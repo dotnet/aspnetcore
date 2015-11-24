@@ -18,6 +18,7 @@ using Microsoft.Extensions.OptionsModel;
 using Moq;
 using Newtonsoft.Json.Linq;
 using Xunit;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -191,7 +192,10 @@ namespace Microsoft.AspNet.Mvc
         public void Setup_JsonFormattersUseSerializerSettings()
         {
             // Arrange
-            var services = GetServiceProvider();
+            var services = GetServiceProvider(s =>
+            {
+                s.AddTransient<ILoggerFactory, LoggerFactory>();
+            });
 
             // Act
             var options = services.GetRequiredService<IOptions<MvcOptions>>().Value;
@@ -222,7 +226,7 @@ namespace Microsoft.AspNet.Mvc
         {
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddMvc();
-
+            serviceCollection.AddTransient<ILoggerFactory, LoggerFactory>();
             if (action != null)
             {
                 action(serviceCollection);

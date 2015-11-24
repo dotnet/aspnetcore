@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.Formatters;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace ApiExplorerWebSite
 {
@@ -13,6 +13,7 @@ namespace ApiExplorerWebSite
         // Set up application services
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddTransient<ILoggerFactory, LoggerFactory>();
             services.AddMvc(options =>
             {
                 options.Filters.AddService(typeof(ApiExplorerDataFilter));

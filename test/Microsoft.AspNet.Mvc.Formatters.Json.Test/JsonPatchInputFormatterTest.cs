@@ -8,6 +8,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.JsonPatch;
 using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 using Moq;
 using Xunit;
 
@@ -19,7 +21,8 @@ namespace Microsoft.AspNet.Mvc.Formatters
         public async Task JsonPatchInputFormatter_ReadsOneOperation_Successfully()
         {
             // Arrange
-            var formatter = new JsonPatchInputFormatter();
+            var logger = GetLogger();
+            var formatter = new JsonPatchInputFormatter(logger);
             var content = "[{\"op\":\"add\",\"path\":\"Customer/Name\",\"value\":\"John\"}]";
             var contentBytes = Encoding.UTF8.GetBytes(content);
 
@@ -49,7 +52,8 @@ namespace Microsoft.AspNet.Mvc.Formatters
         public async Task JsonPatchInputFormatter_ReadsMultipleOperations_Successfully()
         {
             // Arrange
-            var formatter = new JsonPatchInputFormatter();
+            var logger = GetLogger();
+            var formatter = new JsonPatchInputFormatter(logger);
             var content = "[{\"op\": \"add\", \"path\" : \"Customer/Name\", \"value\":\"John\"}," +
                 "{\"op\": \"remove\", \"path\" : \"Customer/Name\"}]";
             var contentBytes = Encoding.UTF8.GetBytes(content);
@@ -86,7 +90,8 @@ namespace Microsoft.AspNet.Mvc.Formatters
         public void CanRead_ReturnsTrueOnlyForJsonPatchContentType(string requestContentType, bool expectedCanRead)
         {
             // Arrange
-            var formatter = new JsonPatchInputFormatter();
+            var logger = GetLogger();
+            var formatter = new JsonPatchInputFormatter(logger);
             var content = "[{\"op\": \"add\", \"path\" : \"Customer/Name\", \"value\":\"John\"}]";
             var contentBytes = Encoding.UTF8.GetBytes(content);
 
@@ -114,7 +119,8 @@ namespace Microsoft.AspNet.Mvc.Formatters
         public void CanRead_ReturnsFalse_NonJsonPatchContentType(Type modelType)
         {
             // Arrange
-            var formatter = new JsonPatchInputFormatter();
+            var logger = GetLogger();
+            var formatter = new JsonPatchInputFormatter(logger);
             var content = "[{\"op\": \"add\", \"path\" : \"Customer/Name\", \"value\":\"John\"}]";
             var contentBytes = Encoding.UTF8.GetBytes(content);
 
@@ -143,7 +149,8 @@ namespace Microsoft.AspNet.Mvc.Formatters
             var exceptionMessage = "Cannot deserialize the current JSON array (e.g. [1,2,3]) into type " +
                 $"'{typeof(Customer).FullName}' because the type requires a JSON object ";
 
-            var formatter = new JsonPatchInputFormatter();
+            var logger = GetLogger();
+            var formatter = new JsonPatchInputFormatter(logger);
             var content = "[{\"op\": \"add\", \"path\" : \"Customer/Name\", \"value\":\"John\"}]";
             var contentBytes = Encoding.UTF8.GetBytes(content);
 
@@ -164,6 +171,11 @@ namespace Microsoft.AspNet.Mvc.Formatters
             // Assert
             Assert.True(result.HasError);
             Assert.Contains(exceptionMessage, modelState[""].Errors[0].Exception.Message);
+        }
+
+        private static ILogger GetLogger()
+        {
+            return NullLogger.Instance;
         }
 
         private static HttpContext GetHttpContext(
