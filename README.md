@@ -67,10 +67,10 @@ To get started,
 
 **Using dnx on Windows/Mac/Linux**
 
-1. Ensure you are using a suitable .NET runtime. Currently, this project is tested with version `1.0.0-beta8` on `coreclr`:
+1. Ensure you are using a suitable .NET runtime. Currently, this project is tested with version `1.0.0-rc1-final` on `coreclr`:
 
    ```
-   dnvm use 1.0.0-beta8 -r coreclr
+   dnvm use 1.0.0-rc1-final -r coreclr
    ```
 
 2. In the solution root directory (`NodeServices` - i.e., the directory that contains `NodeServices.sln`), restore the .NET dependencies:
