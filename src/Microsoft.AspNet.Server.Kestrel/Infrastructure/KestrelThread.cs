@@ -24,10 +24,10 @@ namespace Microsoft.AspNet.Server.Kestrel
         private Thread _thread;
         private UvLoopHandle _loop;
         private UvAsyncHandle _post;
-        private Queue<Work> _workAdding = new Queue<Work>();
-        private Queue<Work> _workRunning = new Queue<Work>();
-        private Queue<CloseHandle> _closeHandleAdding = new Queue<CloseHandle>();
-        private Queue<CloseHandle> _closeHandleRunning = new Queue<CloseHandle>();
+        private Queue<Work> _workAdding = new Queue<Work>(1024);
+        private Queue<Work> _workRunning = new Queue<Work>(1024);
+        private Queue<CloseHandle> _closeHandleAdding = new Queue<CloseHandle>(256);
+        private Queue<CloseHandle> _closeHandleRunning = new Queue<CloseHandle>(256);
         private object _workSync = new Object();
         private bool _stopImmediate = false;
         private bool _initCompleted = false;
