@@ -65,6 +65,8 @@ To get started,
 3. If you get the error `'reactivex/rxjs' is not in the npm registry`, then your Visual Studio installation's version of the NPM tool is out of date. You will need to restore NPM dependencies manually from a command prompt (e.g., `cd samples\angular\MusicStore` then `npm install`).
 4. Select a sample and run it. For example, right-click on the `MusicStore` project in Solution Explorer and choose `Set as startup project`. Then press `Ctrl+F5` to launch it.
 
+Note that to run the React example, you'll also need to run `webpack` from the `samples\react\ReactGrid` directory (having first installed webpack if you don't yet have it - `npm install -g webpack`).
+
 **Using dnx on Windows/Mac/Linux**
 
 1. Ensure you are using a suitable .NET runtime. Currently, this project is tested with version `1.0.0-rc1-final` on `coreclr`:
@@ -88,11 +90,9 @@ To get started,
    npm install
    ```
 
-4. Build the project
-
-  ```
-  gulp
-  ```
+4. Where applicable, build the project. For example, the Angular example uses Gulp, so you'll need to execute `gulp`, whereas the React example uses Webpack, so you'll need to execute `webpack`. The ES2015 example does not need to be built.
+ 
+   If you don't already have it, install the applicable build tool first (e.g., `npm install -g webpack`).
 
 5. Run the project (and wait until it displays the message `Application started`)
 
