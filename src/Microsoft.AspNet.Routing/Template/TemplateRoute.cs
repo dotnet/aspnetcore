@@ -317,8 +317,8 @@ namespace Microsoft.AspNet.Routing.Template
         }
 
         private static void MergeValues(
-            IDictionary<string, object> destination,
-            IDictionary<string, object> values)
+            RouteValueDictionary destination,
+            RouteValueDictionary values)
         {
             foreach (var kvp in values)
             {

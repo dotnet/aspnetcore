@@ -311,8 +311,8 @@ namespace Microsoft.AspNet.Routing.Tree
         }
 
         private static void MergeValues(
-            IDictionary<string, object> destination,
-            IDictionary<string, object> values)
+            RouteValueDictionary destination,
+            RouteValueDictionary values)
         {
             foreach (var kvp in values)
             {
@@ -328,7 +328,7 @@ namespace Microsoft.AspNet.Routing.Tree
 
         private struct TemplateMatch : IEquatable<TemplateMatch>
         {
-            public TemplateMatch(TreeRouteMatchingEntry entry, IDictionary<string, object> values)
+            public TemplateMatch(TreeRouteMatchingEntry entry, RouteValueDictionary values)
             {
                 Entry = entry;
                 Values = values;
@@ -336,7 +336,7 @@ namespace Microsoft.AspNet.Routing.Tree
 
             public TreeRouteMatchingEntry Entry { get; }
 
-            public IDictionary<string, object> Values { get; }
+            public RouteValueDictionary Values { get; }
 
             public override bool Equals(object obj)
             {
@@ -403,7 +403,7 @@ namespace Microsoft.AspNet.Routing.Tree
             //      required values: { id = "5", action = "Buy", Controller = "CoolProducts" }
             //
             //      result: { id = "5", action = "Buy" }
-            var inputValues = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+            var inputValues = new RouteValueDictionary();
             foreach (var kvp in context.Values)
             {
                 if (entry.RequiredLinkValues.ContainsKey(kvp.Key))

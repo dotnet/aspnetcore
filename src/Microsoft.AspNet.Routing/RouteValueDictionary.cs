@@ -4,8 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNet.Routing
 {
@@ -19,14 +18,11 @@ namespace Microsoft.AspNet.Routing
         /// </summary>
         internal static readonly IReadOnlyDictionary<string, object> Empty = new RouteValueDictionary();
 
-        private readonly Dictionary<string, object> _dictionary;
-
         /// <summary>
         /// Creates an empty <see cref="RouteValueDictionary"/>.
         /// </summary>
         public RouteValueDictionary()
         {
-            _dictionary = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -43,45 +39,62 @@ namespace Microsoft.AspNet.Routing
         /// Only public instance non-index properties are considered.
         /// </remarks>
         public RouteValueDictionary(object values)
-            : this()
         {
-            if (values != null)
+            var otherDictionary = values as RouteValueDictionary;
+            if (otherDictionary != null)
             {
-                var keyValuePairCollection = values as IEnumerable<KeyValuePair<string, object>>;
-                if (keyValuePairCollection != null)
+                if (otherDictionary.InnerDictionary != null)
                 {
-                    foreach (var kvp in keyValuePairCollection)
+                    InnerDictionary = new Dictionary<string, object>(
+                        otherDictionary.InnerDictionary.Count,
+                        StringComparer.OrdinalIgnoreCase);
+
+                    foreach (var kvp in otherDictionary.InnerDictionary)
                     {
-                        Add(kvp.Key, kvp.Value);
+                        InnerDictionary[kvp.Key] = kvp.Value;
                     }
+
                     return;
                 }
-
-                var type = values.GetType();
-                var allProperties = type.GetRuntimeProperties();
-
-                // This is done to support 'new' properties that hide a property on a base class
-                var orderedByDeclaringType = allProperties.OrderBy(p => p.DeclaringType == type ? 0 : 1);
-                foreach (var property in orderedByDeclaringType)
+                else if (otherDictionary.Properties != null)
                 {
-                    if (property.GetMethod != null &&
-                        property.GetMethod.IsPublic &&
-                        !property.GetMethod.IsStatic &&
-                        property.GetIndexParameters().Length == 0)
-                    {
-                        var value = property.GetValue(values);
-                        if (ContainsKey(property.Name) && property.DeclaringType != type)
-                        {
-                            // This is a hidden property, ignore it.
-                        }
-                        else
-                        {
-                            Add(property.Name, value);
-                        }
-                    }
+                    Properties = otherDictionary.Properties;
+                    Value = otherDictionary.Value;
+                    return;
+                }
+                else
+                {
+                    return;
                 }
             }
+
+            var keyValuePairCollection = values as IEnumerable<KeyValuePair<string, object>>;
+            if (keyValuePairCollection != null)
+            {
+                InnerDictionary = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+
+                foreach (var kvp in keyValuePairCollection)
+                {
+                    InnerDictionary[kvp.Key] = kvp.Value;
+                }
+
+                return;
+            }
+
+            if (values != null)
+            {
+                Properties = PropertyHelper.GetVisibleProperties(values);
+                Value = values;
+
+                return;
+            }
         }
+
+        private Dictionary<string, object> InnerDictionary { get; set; }
+
+        private PropertyHelper[] Properties { get; }
+
+        private object Value { get; }
 
         /// <inheritdoc />
         public object this[string key]
@@ -94,7 +107,7 @@ namespace Microsoft.AspNet.Routing
                 }
 
                 object value;
-                _dictionary.TryGetValue(key, out value);
+                TryGetValue(key, out value);
                 return value;
             }
 
@@ -105,7 +118,8 @@ namespace Microsoft.AspNet.Routing
                     throw new ArgumentNullException(nameof(key));
                 }
 
-                _dictionary[key] = value;
+                EnsureWritable();
+                InnerDictionary[key] = value;
             }
         }
 
@@ -115,47 +129,21 @@ namespace Microsoft.AspNet.Routing
         /// <remarks>
         /// This will always be a reference to <see cref="StringComparer.OrdinalIgnoreCase"/>
         /// </remarks>
-        public IEqualityComparer<string> Comparer
-        {
-            get
-            {
-                return _dictionary.Comparer;
-            }
-        }
+        public IEqualityComparer<string> Comparer => StringComparer.OrdinalIgnoreCase;
 
         /// <inheritdoc />
-        public int Count
-        {
-            get
-            {
-                return _dictionary.Count;
-            }
-        }
+        public int Count => InnerDictionary?.Count ?? Properties?.Length ?? 0;
 
         /// <inheritdoc />
-        bool ICollection<KeyValuePair<string, object>>.IsReadOnly
-        {
-            get
-            {
-                return ((ICollection<KeyValuePair<string, object>>)_dictionary).IsReadOnly;
-            }
-        }
+        bool ICollection<KeyValuePair<string, object>>.IsReadOnly => false;
 
         /// <inheritdoc />
-        public Dictionary<string, object>.KeyCollection Keys
+        public ICollection<string> Keys
         {
             get
             {
-                return _dictionary.Keys;
-            }
-        }
-
-        /// <inheritdoc />
-        ICollection<string> IDictionary<string, object>.Keys
-        {
-            get
-            {
-                return _dictionary.Keys;
+                EnsureWritable();
+                return InnerDictionary.Keys;
             }
         }
 
@@ -163,25 +151,18 @@ namespace Microsoft.AspNet.Routing
         {
             get
             {
-                return _dictionary.Keys;
+                EnsureWritable();
+                return InnerDictionary.Keys;
             }
         }
 
         /// <inheritdoc />
-        public Dictionary<string, object>.ValueCollection Values
+        public ICollection<object> Values
         {
             get
             {
-                return _dictionary.Values;
-            }
-        }
-
-        /// <inheritdoc />
-        ICollection<object> IDictionary<string, object>.Values
-        {
-            get
-            {
-                return _dictionary.Values;
+                EnsureWritable();
+                return InnerDictionary.Values;
             }
         }
 
@@ -189,14 +170,16 @@ namespace Microsoft.AspNet.Routing
         {
             get
             {
-                return _dictionary.Values;
+                EnsureWritable();
+                return InnerDictionary.Values;
             }
         }
 
         /// <inheritdoc />
         void ICollection<KeyValuePair<string, object>>.Add(KeyValuePair<string, object> item)
         {
-            ((ICollection<KeyValuePair<string, object>>)_dictionary).Add(item);
+            EnsureWritable();
+            ((ICollection<KeyValuePair<string, object>>)InnerDictionary).Add(item);
         }
 
         /// <inheritdoc />
@@ -207,19 +190,22 @@ namespace Microsoft.AspNet.Routing
                 throw new ArgumentNullException(nameof(key));
             }
 
-            _dictionary.Add(key, value);
+            EnsureWritable();
+            InnerDictionary.Add(key, value);
         }
 
         /// <inheritdoc />
         public void Clear()
         {
-            _dictionary.Clear();
+            EnsureWritable();
+            InnerDictionary.Clear();
         }
 
         /// <inheritdoc />
         bool ICollection<KeyValuePair<string, object>>.Contains(KeyValuePair<string, object> item)
         {
-            return ((ICollection<KeyValuePair<string, object>>)_dictionary).Contains(item);
+            EnsureWritable();
+            return ((ICollection<KeyValuePair<string, object>>)InnerDictionary).Contains(item);
         }
 
         /// <inheritdoc />
@@ -230,7 +216,27 @@ namespace Microsoft.AspNet.Routing
                 throw new ArgumentNullException(nameof(key));
             }
 
-            return _dictionary.ContainsKey(key);
+            if (InnerDictionary != null)
+            {
+                return InnerDictionary.ContainsKey(key);
+            }
+            else if (Properties != null)
+            {
+                for (var i = 0; i < Properties.Length; i++)
+                {
+                    var property = Properties[i];
+                    if (Comparer.Equals(property.Name, key))
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+            else
+            {
+                return false;
+            }
         }
 
         /// <inheritdoc />
@@ -243,31 +249,33 @@ namespace Microsoft.AspNet.Routing
                 throw new ArgumentNullException(nameof(array));
             }
 
-            ((ICollection<KeyValuePair<string, object>>)_dictionary).CopyTo(array, arrayIndex);
+            EnsureWritable();
+            ((ICollection<KeyValuePair<string, object>>)InnerDictionary).CopyTo(array, arrayIndex);
         }
 
         /// <inheritdoc />
-        public Dictionary<string, object>.Enumerator GetEnumerator()
+        public Enumerator GetEnumerator()
         {
-            return _dictionary.GetEnumerator();
+            return new Enumerator(this);
         }
 
         /// <inheritdoc />
         IEnumerator<KeyValuePair<string, object>> IEnumerable<KeyValuePair<string, object>>.GetEnumerator()
         {
-            return _dictionary.GetEnumerator();
+            return GetEnumerator();
         }
 
         /// <inheritdoc />
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return _dictionary.GetEnumerator();
+            return GetEnumerator();
         }
 
         /// <inheritdoc />
         bool ICollection<KeyValuePair<string, object>>.Remove(KeyValuePair<string, object> item)
         {
-            return ((ICollection<KeyValuePair<string, object>>)_dictionary).Remove(item);
+            EnsureWritable();
+            return ((ICollection<KeyValuePair<string, object>>)InnerDictionary).Remove(item);
         }
 
         /// <inheritdoc />
@@ -278,7 +286,8 @@ namespace Microsoft.AspNet.Routing
                 throw new ArgumentNullException(nameof(key));
             }
 
-            return _dictionary.Remove(key);
+            EnsureWritable();
+            return InnerDictionary.Remove(key);
         }
 
         /// <inheritdoc />
@@ -289,7 +298,115 @@ namespace Microsoft.AspNet.Routing
                 throw new ArgumentNullException(nameof(key));
             }
 
-            return _dictionary.TryGetValue(key, out value);
+            if (InnerDictionary != null)
+            {
+                return InnerDictionary.TryGetValue(key, out value);
+            }
+            else if (Properties != null)
+            {
+                for (var i = 0; i < Properties.Length; i++)
+                {
+                    var property = Properties[i];
+                    if (Comparer.Equals(property.Name, key))
+                    {
+                        value = property.ValueGetter(Value);
+                        return true;
+                    }
+                }
+
+                value = null;
+                return false;
+            }
+            else
+            {
+                value = null;
+                return false;
+            }
+        }
+
+        private void EnsureWritable()
+        {
+            if (InnerDictionary == null && Properties == null)
+            {
+                InnerDictionary = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+            }
+            else if (InnerDictionary == null)
+            {
+                InnerDictionary = new Dictionary<string, object>(Properties.Length, StringComparer.OrdinalIgnoreCase);
+
+                for (var i = 0; i < Properties.Length; i++)
+                {
+                    var property = Properties[i];
+                    InnerDictionary.Add(property.Property.Name, property.ValueGetter(Value));
+                }
+            }
+        }
+
+        public struct Enumerator : IEnumerator<KeyValuePair<string, object>>
+        {
+            private readonly RouteValueDictionary _dictionary;
+
+            private int _index;
+            private Dictionary<string, object>.Enumerator _enumerator;
+
+            public Enumerator(RouteValueDictionary dictionary)
+            {
+                if (dictionary == null)
+                {
+                    throw new ArgumentNullException();
+                }
+
+                _dictionary = dictionary;
+
+                Current = default(KeyValuePair<string, object>);
+                _index = -1;
+                _enumerator = _dictionary.InnerDictionary == null ?
+                    default(Dictionary<string, object>.Enumerator) :
+                    _dictionary.InnerDictionary.GetEnumerator();
+            }
+
+            public KeyValuePair<string, object> Current { get; private set; }
+
+            object IEnumerator.Current => Current;
+
+            public void Dispose()
+            {
+            }
+
+            public bool MoveNext()
+            {
+                if (_dictionary?.InnerDictionary != null)
+                {
+                    if (_enumerator.MoveNext())
+                    {
+                        Current = _enumerator.Current;
+                        return true;
+                    }
+                }
+                else if (_dictionary?.Properties != null)
+                {
+                    _index++;
+                    if (_index < _dictionary.Properties.Length)
+                    {
+                        var property = _dictionary.Properties[_index];
+                        var value = property.ValueGetter(_dictionary.Value);
+                        Current = new KeyValuePair<string, object>(property.Name, value);
+                        return true;
+                    }
+                }
+
+                Current = default(KeyValuePair<string, object>);
+                return false;
+            }
+
+            public void Reset()
+            {
+                Current = default(KeyValuePair<string, object>);
+                _index = -1;
+                _enumerator = _dictionary?.InnerDictionary == null ?
+                    default(Dictionary<string, object>.Enumerator) :
+                    _dictionary.InnerDictionary.GetEnumerator();
+            }
         }
     }
 }

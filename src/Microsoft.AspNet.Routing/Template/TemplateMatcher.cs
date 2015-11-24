@@ -33,7 +33,7 @@ namespace Microsoft.AspNet.Routing.Template
 
         public RouteTemplate Template { get; private set; }
 
-        public IDictionary<string, object> Match(PathString path)
+        public RouteValueDictionary Match(PathString path)
         {
             var i = 0;
             var pathTokenizer = new PathTokenizer(path);

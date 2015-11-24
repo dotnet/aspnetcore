@@ -28,10 +28,9 @@ namespace Microsoft.AspNet.Routing.Template
         }
 
         // Step 1: Get the list of values we're going to try to use to match and generate this URI
-        public TemplateValuesResult GetValues(IDictionary<string, object> ambientValues,
-                                                             IDictionary<string, object> values)
+        public TemplateValuesResult GetValues(RouteValueDictionary ambientValues, RouteValueDictionary values)
         {
-            var context = new TemplateBindingContext(_defaults, values);
+            var context = new TemplateBindingContext(_defaults);
 
             // Find out which entries in the URI are valid for the URI we want to generate.
             // If the URI had ordered parameters a="1", b="2", c="3" and the new values
@@ -171,7 +170,7 @@ namespace Microsoft.AspNet.Routing.Template
         }
 
         // Step 2: If the route is a match generate the appropriate URI
-        public string BindValues(IDictionary<string, object> acceptedValues)
+        public string BindValues(RouteValueDictionary acceptedValues)
         {
             var context = new UriBuildingContext();
 
@@ -355,15 +354,8 @@ namespace Microsoft.AspNet.Routing.Template
             private readonly RouteValueDictionary _acceptedValues;
             private readonly RouteValueDictionary _filters;
 
-            public TemplateBindingContext(
-                IReadOnlyDictionary<string, object> defaults,
-                IDictionary<string, object> values)
+            public TemplateBindingContext(IReadOnlyDictionary<string, object> defaults)
             {
-                if (values == null)
-                {
-                    throw new ArgumentNullException(nameof(values));
-                }
-
                 _defaults = defaults;
 
                 _acceptedValues = new RouteValueDictionary();

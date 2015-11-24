@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Collections.Generic;
-
 namespace Microsoft.AspNet.Routing.Template
 {
     /// <summary>
@@ -13,7 +11,7 @@ namespace Microsoft.AspNet.Routing.Template
         /// <summary>
         /// The set of values that will appear in the URL.
         /// </summary>
-        public IDictionary<string, object> AcceptedValues { get; set; }
+        public RouteValueDictionary AcceptedValues { get; set; }
 
         /// <summary>
         /// The set of values that that were supplied for URL generation.
@@ -26,6 +24,6 @@ namespace Microsoft.AspNet.Routing.Template
         /// Implicit (ambient) values which are invalidated due to changes in values lexically earlier in the
         /// route template are excluded from this set.
         /// </remarks>
-        public IDictionary<string, object> CombinedValues { get; set; }
+        public RouteValueDictionary CombinedValues { get; set; }
     }
 }

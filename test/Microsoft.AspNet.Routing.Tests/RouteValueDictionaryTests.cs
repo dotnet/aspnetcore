@@ -165,7 +165,11 @@ namespace Microsoft.AspNet.Routing.Tests
 
             // Act & Assert
             ExceptionAssert.Throws<ArgumentException>(
-                () => new RouteValueDictionary(obj),
+                () =>
+                {
+                    var dictionary = new RouteValueDictionary(obj);
+                    dictionary.Add("Hi", "There");
+                },
                 expected);
         }
 

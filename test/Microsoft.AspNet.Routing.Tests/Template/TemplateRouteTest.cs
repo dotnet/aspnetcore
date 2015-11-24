@@ -1658,8 +1658,8 @@ namespace Microsoft.AspNet.Routing.Template
         }
 
         private static VirtualPathContext CreateVirtualPathContext(
-            IDictionary<string, object> values,
-            IDictionary<string, object> ambientValues)
+            RouteValueDictionary values,
+            RouteValueDictionary ambientValues)
         {
             var context = new Mock<HttpContext>(MockBehavior.Strict);
             context.Setup(m => m.RequestServices.GetService(typeof(ILoggerFactory)))

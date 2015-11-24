@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using Microsoft.AspNet.Http;
 
 namespace Microsoft.AspNet.Routing
@@ -13,7 +12,7 @@ namespace Microsoft.AspNet.Routing
     /// </summary>
     public class VirtualPathData
     {
-        private readonly IDictionary<string, object> _dataTokens;
+        private RouteValueDictionary _dataTokens;
 
         /// <summary>
         ///  Initializes a new instance of the <see cref="VirtualPathData"/> class.
@@ -21,7 +20,7 @@ namespace Microsoft.AspNet.Routing
         /// <param name="router">The object that is used to generate the URL.</param>
         /// <param name="virtualPath">The generated URL.</param>
         public VirtualPathData(IRouter router, string virtualPath)
-            : this(router, virtualPath, dataTokens: new RouteValueDictionary())
+            : this(router, virtualPath, dataTokens: null)
         {
         }
 
@@ -34,7 +33,7 @@ namespace Microsoft.AspNet.Routing
         public VirtualPathData(
             IRouter router,
             string virtualPath,
-            IDictionary<string, object> dataTokens)
+            RouteValueDictionary dataTokens)
             : this(router, CreatePathString(virtualPath), dataTokens)
         {
         }
@@ -48,7 +47,7 @@ namespace Microsoft.AspNet.Routing
         public VirtualPathData(
             IRouter router,
             PathString virtualPath,
-            IDictionary<string, object> dataTokens)
+            RouteValueDictionary dataTokens)
         {
             if (router == null)
             {
@@ -57,23 +56,23 @@ namespace Microsoft.AspNet.Routing
 
             Router = router;
             VirtualPath = virtualPath;
-
-            _dataTokens = new RouteValueDictionary();
-            if (dataTokens != null)
-            {
-                foreach (var dataToken in dataTokens)
-                {
-                    _dataTokens.Add(dataToken.Key, dataToken.Value);
-                }
-            }
+            _dataTokens = dataTokens == null ? null : new RouteValueDictionary(dataTokens);
         }
 
         /// <summary>
         /// Gets the collection of custom values for the <see cref="Router"/>.
         /// </summary>
-        public IDictionary<string, object> DataTokens
+        public RouteValueDictionary DataTokens
         {
-            get { return _dataTokens; }
+            get
+            {
+                if (_dataTokens == null)
+                {
+                    _dataTokens = new RouteValueDictionary();
+                }
+
+                return _dataTokens;
+            }
         }
 
         /// <summary>

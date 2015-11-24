@@ -72,7 +72,7 @@ namespace Microsoft.AspNet.Routing
         /// <summary>
         /// Gets the set of values produced by routes on the current routing path.
         /// </summary>
-        public IDictionary<string, object> Values
+        public RouteValueDictionary Values
         {
             get
             {
