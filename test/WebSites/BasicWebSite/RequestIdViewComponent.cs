@@ -3,7 +3,7 @@
 
 using Microsoft.AspNet.Mvc;
 
-namespace RequestServicesWebSite
+namespace BasicWebSite
 {
     public class RequestIdViewComponent : ViewComponent
     {

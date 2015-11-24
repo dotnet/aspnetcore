@@ -5,7 +5,7 @@ using System;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.Filters;
 
-namespace RequestServicesWebSite
+namespace BasicWebSite
 {
     public class RequestScopedFilter : IActionFilter
     {

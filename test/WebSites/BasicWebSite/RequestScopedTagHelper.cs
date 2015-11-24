@@ -3,7 +3,7 @@
 
 using Microsoft.AspNet.Razor.TagHelpers;
 
-namespace RequestServicesWebSite
+namespace BasicWebSite
 {
     public class RequestScopedTagHelper : TagHelper
     {
@@ -11,7 +11,7 @@ namespace RequestServicesWebSite
         {
             RequestIdService = service;
         }
-        
+
         public RequestIdService RequestIdService { get; }
 
         public override void Process(TagHelperContext context, TagHelperOutput output)

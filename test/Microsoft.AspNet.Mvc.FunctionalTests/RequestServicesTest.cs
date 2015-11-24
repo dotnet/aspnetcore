@@ -11,9 +11,9 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
     // Each of these tests makes two requests, because we want each test to verify that the data is
     // PER-REQUEST and does not linger around to impact the next request.
-    public class RequestServicesTest : IClassFixture<MvcTestFixture<RequestServicesWebSite.Startup>>
+    public class RequestServicesTest : IClassFixture<MvcTestFixture<BasicWebSite.Startup>>
     {
-        public RequestServicesTest(MvcTestFixture<RequestServicesWebSite.Startup> fixture)
+        public RequestServicesTest(MvcTestFixture<BasicWebSite.Startup> fixture)
         {
             Client = fixture.Client;
         }
@@ -21,11 +21,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public HttpClient Client { get; }
 
         [Theory]
-        [InlineData("http://localhost/RequestScoped/FromController")]
-        [InlineData("http://localhost/Other/FromFilter")]
-        [InlineData("http://localhost/Other/FromView")]
-        [InlineData("http://localhost/Other/FromViewComponent")]
-        [InlineData("http://localhost/Other/FromActionArgument")]
+        [InlineData("http://localhost/RequestScopedService/FromFilter")]
+        [InlineData("http://localhost/RequestScopedService/FromView")]
+        [InlineData("http://localhost/RequestScopedService/FromViewComponent")]
+        [InlineData("http://localhost/RequestScopedService/FromActionArgument")]
         public async Task RequestServices(string url)
         {
             for (var i = 0; i < 2; i++)
@@ -49,7 +48,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task RequestServices_TagHelper()
         {
             // Arrange
-            var url = "http://localhost/Other/FromTagHelper";
+            var url = "http://localhost/RequestScopedService/FromTagHelper";
 
             // Act & Assert
             for (var i = 0; i < 2; i++)
@@ -71,7 +70,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task RequestServices_ActionConstraint()
         {
             // Arrange
-            var url = "http://localhost/Other/FromActionConstraint";
+            var url = "http://localhost/RequestScopedService/FromActionConstraint";
 
             // Act & Assert
             var requestId1 = "b40f6ec1-8a6b-41c1-b3fe-928f581ebaf5";

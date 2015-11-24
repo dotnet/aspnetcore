@@ -4,7 +4,7 @@
 using System;
 using Microsoft.AspNet.Http;
 
-namespace RequestServicesWebSite
+namespace BasicWebSite
 {
     public class RequestIdService
     {

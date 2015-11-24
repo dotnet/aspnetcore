@@ -3,10 +3,10 @@
 
 using Microsoft.AspNet.Mvc;
 
-namespace RequestServicesWebSite
+namespace BasicWebSite
 {
-    [Route("Other/[action]")]
-    public class OtherController : Controller
+    [Route("RequestScopedService/[action]")]
+    public class RequestScopedServiceController : Controller
     {
         // This only matches a specific requestId value
         [HttpGet]

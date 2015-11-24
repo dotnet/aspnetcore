@@ -3,11 +3,10 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace RequestServicesWebSite
+namespace BasicWebSite
 {
     // Initializes a scoped-service with a request Id from a header
     public class RequestIdMiddleware
@@ -19,7 +18,7 @@ namespace RequestServicesWebSite
             _next = next;
         }
 
-        public async Task Invoke(HttpContext context)
+        public Task Invoke(HttpContext context)
         {
             var requestIdService = context.RequestServices.GetService<RequestIdService>();
             if (requestIdService.RequestId != null)
@@ -30,7 +29,7 @@ namespace RequestServicesWebSite
             var requestId = context.Request.Headers["RequestId"];
             requestIdService.RequestId = requestId;
 
-            await _next(context);
+            return _next(context);
         }
     }
 }

@@ -18,11 +18,16 @@ namespace BasicWebSite
             });
             services.AddLogging();
             services.AddSingleton<IActionDescriptorProvider, ActionDescriptorCreationCounter>();
+
+            services.AddScoped<RequestIdService>();
         }
 
         public void Configure(IApplicationBuilder app)
         {
             app.UseCultureReplacer();
+
+            // Initializes the RequestId service for each request
+            app.UseMiddleware<RequestIdMiddleware>();
 
             // Add MVC to the request pipeline
             app.UseMvc(routes =>
