@@ -345,7 +345,7 @@ namespace Microsoft.AspNet.Mvc
 
             createdAtRouteResult = Assert.IsType<CreatedAtRouteResult>(result);
             Assert.Null(createdAtRouteResult.RouteName);
-            Assert.Empty(createdAtRouteResult.RouteValues);
+            Assert.Null(createdAtRouteResult.RouteValues);
             Assert.Null(createdAtRouteResult.Value);
         }
 
@@ -385,7 +385,7 @@ namespace Microsoft.AspNet.Mvc
             Assert.Null(createdAtActionResult.ActionName);
             Assert.Null(createdAtActionResult.ControllerName);
             Assert.Null(createdAtActionResult.Value);
-            Assert.Empty(createdAtActionResult.RouteValues);
+            Assert.Null(createdAtActionResult.RouteValues);
         }
 
         [Fact]
@@ -418,7 +418,7 @@ namespace Microsoft.AspNet.Mvc
 
             redirectToRouteResult = Assert.IsType<RedirectToRouteResult>(result);
             Assert.Null(redirectToRouteResult.RouteName);
-            Assert.Empty(redirectToRouteResult.RouteValues);
+            Assert.Null(redirectToRouteResult.RouteValues);
         }
 
         [Fact]
@@ -454,7 +454,7 @@ namespace Microsoft.AspNet.Mvc
             redirectToActionResult = Assert.IsType<RedirectToActionResult>(result);
             Assert.Null(redirectToActionResult.ControllerName);
             Assert.Null(redirectToActionResult.ActionName);
-            Assert.Empty(redirectToActionResult.RouteValues);
+            Assert.Null(redirectToActionResult.RouteValues);
         }
 
         [Fact]

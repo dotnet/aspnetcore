@@ -2,11 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Core;
+using Microsoft.AspNet.Routing;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Internal;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Mvc
@@ -41,7 +40,7 @@ namespace Microsoft.AspNet.Mvc
             : base(value)
         {
             RouteName = routeName;
-            RouteValues = PropertyHelper.ObjectToDictionary(routeValues);
+            RouteValues = routeValues == null ? null : new RouteValueDictionary(routeValues);
             StatusCode = StatusCodes.Status201Created;
         }
 
@@ -58,7 +57,7 @@ namespace Microsoft.AspNet.Mvc
         /// <summary>
         /// Gets or sets the route data to use for generating the URL.
         /// </summary>
-        public IDictionary<string, object> RouteValues { get; set; }
+        public RouteValueDictionary RouteValues { get; set; }
 
         /// <inheritdoc />
         public override void OnFormatting(ActionContext context)

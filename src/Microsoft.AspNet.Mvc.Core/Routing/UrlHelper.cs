@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.Mvc.Routing
             _actionContextAccessor = actionContextAccessor;
         }
 
-        protected IDictionary<string, object> AmbientValues => ActionContext.RouteData.Values;
+        protected RouteValueDictionary AmbientValues => ActionContext.RouteData.Values;
 
         protected ActionContext ActionContext => _actionContextAccessor.ActionContext;
 
@@ -46,7 +46,7 @@ namespace Microsoft.AspNet.Mvc.Routing
                 throw new ArgumentNullException(nameof(actionContext));
             }
 
-            var valuesDictionary = PropertyHelper.ObjectToDictionary(actionContext.Values);
+            var valuesDictionary = new RouteValueDictionary(actionContext.Values);
 
             if (actionContext.Action == null)
             {
@@ -106,7 +106,7 @@ namespace Microsoft.AspNet.Mvc.Routing
                 throw new ArgumentNullException(nameof(routeContext));
             }
 
-            var valuesDictionary = PropertyHelper.ObjectToDictionary(routeContext.Values);
+            var valuesDictionary = new RouteValueDictionary(routeContext.Values);
 
             var path = GeneratePathFromRoute(routeContext.RouteName, valuesDictionary);
             if (path == null)
@@ -117,7 +117,7 @@ namespace Microsoft.AspNet.Mvc.Routing
             return GenerateUrl(routeContext.Protocol, routeContext.Host, path, routeContext.Fragment);
         }
 
-        private string GeneratePathFromRoute(IDictionary<string, object> values)
+        private string GeneratePathFromRoute(RouteValueDictionary values)
         {
             return GeneratePathFromRoute(routeName: null, values: values);
         }
@@ -129,7 +129,7 @@ namespace Microsoft.AspNet.Mvc.Routing
         /// <param name="routeName">The name of the route that is used to generate the URL.</param>
         /// <param name="values">A dictionary that contains the parameters for a route.</param>
         /// <returns>The absolute path of the URL.</returns>
-        protected virtual string GeneratePathFromRoute(string routeName, IDictionary<string, object> values)
+        protected virtual string GeneratePathFromRoute(string routeName, RouteValueDictionary values)
         {
             var context = new VirtualPathContext(HttpContext, AmbientValues, values, routeName);
             var pathData = Router.GetVirtualPath(context);

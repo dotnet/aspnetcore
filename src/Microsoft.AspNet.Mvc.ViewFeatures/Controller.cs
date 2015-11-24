@@ -706,7 +706,7 @@ namespace Microsoft.AspNet.Mvc
             string controllerName,
             object routeValues)
         {
-            return new RedirectToActionResult(actionName, controllerName, PropertyHelper.ObjectToDictionary(routeValues))
+            return new RedirectToActionResult(actionName, controllerName, routeValues)
             {
                 UrlHelper = Url,
             };
@@ -768,7 +768,7 @@ namespace Microsoft.AspNet.Mvc
             return new RedirectToActionResult(
                 actionName,
                 controllerName,
-                PropertyHelper.ObjectToDictionary(routeValues),
+                routeValues,
                 permanent: true)
             {
                 UrlHelper = Url,
@@ -1101,7 +1101,7 @@ namespace Microsoft.AspNet.Mvc
         /// </summary>
         /// <param name="actionName">The name of the action to use for generating the URL.</param>
         /// <param name="value">The content value to format in the entity body.</param>
-        /// <returns>The created <see cref="CreatedAtRouteResult"/> for the response.</returns>
+        /// <returns>The created <see cref="CreatedAtActionResult"/> for the response.</returns>
         [NonAction]
         public virtual CreatedAtActionResult CreatedAtAction(string actionName, object value)
         {
@@ -1114,7 +1114,7 @@ namespace Microsoft.AspNet.Mvc
         /// <param name="actionName">The name of the action to use for generating the URL.</param>
         /// <param name="routeValues">The route data to use for generating the URL.</param>
         /// <param name="value">The content value to format in the entity body.</param>
-        /// <returns>The created <see cref="CreatedAtRouteResult"/> for the response.</returns>
+        /// <returns>The created <see cref="CreatedAtActionResult"/> for the response.</returns>
         [NonAction]
         public virtual CreatedAtActionResult CreatedAtAction(string actionName, object routeValues, object value)
         {
@@ -1128,7 +1128,7 @@ namespace Microsoft.AspNet.Mvc
         /// <param name="controllerName">The name of the controller to use for generating the URL.</param>
         /// <param name="routeValues">The route data to use for generating the URL.</param>
         /// <param name="value">The content value to format in the entity body.</param>
-        /// <returns>The created <see cref="CreatedAtRouteResult"/> for the response.</returns>
+        /// <returns>The created <see cref="CreatedAtActionResult"/> for the response.</returns>
         [NonAction]
         public virtual CreatedAtActionResult CreatedAtAction(
             string actionName,

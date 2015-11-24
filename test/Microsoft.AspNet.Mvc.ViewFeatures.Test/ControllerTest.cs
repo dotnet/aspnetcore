@@ -1192,13 +1192,13 @@ namespace Microsoft.AspNet.Mvc.Test
                 yield return new object[]
                 {
                     null,
-                    Enumerable.Empty<KeyValuePair<string, object>>()
+                    null,
                 };
 
                 yield return new object[]
                 {
                     new Dictionary<string, object> { { "hello", "world" } },
-                    new[] { new KeyValuePair<string, object>("hello", "world") }
+                    new RouteValueDictionary() { { "hello", "world" } },
                 };
 
                 var expected2 = new Dictionary<string, object>
@@ -1210,7 +1210,7 @@ namespace Microsoft.AspNet.Mvc.Test
                 yield return new object[]
                 {
                     new RouteValueDictionary(expected2),
-                    expected2
+                    new RouteValueDictionary(expected2),
                 };
             }
         }
