@@ -4,9 +4,10 @@
 using System;
 using System.Globalization;
 using System.IO;
-using Newtonsoft.Json;
+using Microsoft.AspNet.Html.Abstractions;
 using Microsoft.AspNet.Mvc.Formatters;
 using Microsoft.AspNet.Mvc.Rendering;
+using Newtonsoft.Json;
 
 namespace Microsoft.AspNet.Mvc.ViewFeatures
 {
@@ -32,13 +33,13 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         }
 
         /// <inheritdoc />
-        public HtmlString Serialize(object value)
+        public IHtmlContent Serialize(object value)
         {
             return SerializeInternal(_jsonOutputFormatter, value);
         }
 
         /// <inheritdoc />
-        public HtmlString Serialize(object value, JsonSerializerSettings serializerSettings)
+        public IHtmlContent Serialize(object value, JsonSerializerSettings serializerSettings)
         {
             if (serializerSettings == null)
             {
@@ -50,7 +51,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             return SerializeInternal(jsonOutputFormatter, value);
         }
 
-        private HtmlString SerializeInternal(JsonOutputFormatter jsonOutputFormatter, object value)
+        private IHtmlContent SerializeInternal(JsonOutputFormatter jsonOutputFormatter, object value)
         {
             var stringWriter = new StringWriter(CultureInfo.InvariantCulture);
             jsonOutputFormatter.WriteObject(stringWriter, value);
