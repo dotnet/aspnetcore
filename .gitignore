@@ -26,3 +26,4 @@ project.lock.json
 *.ncrunchsolution
 *.*sdf
 *.ipch
+launchSettings.json
