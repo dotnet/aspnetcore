@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
+using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Mvc.Formatters;
 using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.AspNet.Mvc.ModelBinding;
@@ -237,6 +238,7 @@ namespace Microsoft.AspNet.Mvc
             serviceCollection.AddSingleton(Mock.Of<ILibraryExporter>());
             serviceCollection.AddSingleton(Mock.Of<ICompilerOptionsProvider>());
             serviceCollection.AddSingleton(Mock.Of<IAssemblyLoadContextAccessor>());
+            serviceCollection.AddSingleton(Mock.Of<IHostingEnvironment>());
             var applicationEnvironment = new Mock<IApplicationEnvironment>();
 
             // ApplicationBasePath is used to set up a PhysicalFileProvider which requires

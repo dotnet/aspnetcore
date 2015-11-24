@@ -23,10 +23,14 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
         /// <param name="applicationEnvironment">
         /// The <see cref="IApplicationEnvironment"/> for the executing application.
         /// </param>
+        /// <param name="configuration">
+        /// The configuration name to use for compilation.
+        /// </param>
         /// <returns>The <see cref="CompilationSettings"/> for the current application.</returns>
         public static CompilationSettings GetCompilationSettings(
             this ICompilerOptionsProvider compilerOptionsProvider,
-            IApplicationEnvironment applicationEnvironment)
+            IApplicationEnvironment applicationEnvironment,
+            string configuration)
         {
             if (compilerOptionsProvider == null)
             {
@@ -38,10 +42,16 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
                 throw new ArgumentNullException(nameof(applicationEnvironment));
             }
 
-            return compilerOptionsProvider.GetCompilerOptions(applicationEnvironment.ApplicationName,
-                                                              applicationEnvironment.RuntimeFramework,
-                                                              applicationEnvironment.Configuration)
-                                          .ToCompilationSettings(applicationEnvironment.RuntimeFramework, applicationEnvironment.ApplicationBasePath);
+            if (string.IsNullOrEmpty(configuration))
+            {
+                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(configuration));
+            }
+
+            return compilerOptionsProvider.GetCompilerOptions(
+                    applicationEnvironment.ApplicationName,
+                    applicationEnvironment.RuntimeFramework,
+                    configuration)
+                .ToCompilationSettings(applicationEnvironment.RuntimeFramework, applicationEnvironment.ApplicationBasePath);
         }
     }
 }

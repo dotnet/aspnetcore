@@ -19,6 +19,8 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
 {
     public class RoslynCompilationServiceTest
     {
+        private const string ConfigurationName = "Release";
+
         [Fact]
         public void Compile_ReturnsCompilationResult()
         {
@@ -33,7 +35,7 @@ public class MyTestType  {}";
                 .Setup(p => p.GetCompilerOptions(
                     applicationEnvironment.ApplicationName,
                     applicationEnvironment.RuntimeFramework,
-                    applicationEnvironment.Configuration))
+                    ConfigurationName))
                 .Returns(new CompilerOptions());
             var mvcRazorHost = new Mock<IMvcRazorHost>();
             mvcRazorHost.SetupGet(m => m.MainClassNamePrefix)
@@ -73,7 +75,7 @@ this should fail";
                 .Setup(p => p.GetCompilerOptions(
                     applicationEnvironment.ApplicationName,
                     applicationEnvironment.RuntimeFramework,
-                    applicationEnvironment.Configuration))
+                    ConfigurationName))
                 .Returns(new CompilerOptions());
             var mvcRazorHost = Mock.Of<IMvcRazorHost>();
             var fileProvider = new TestFileProvider();
@@ -112,7 +114,7 @@ this should fail";
                 .Setup(p => p.GetCompilerOptions(
                     applicationEnvironment.ApplicationName,
                     applicationEnvironment.RuntimeFramework,
-                    applicationEnvironment.Configuration))
+                    ConfigurationName))
                 .Returns(new CompilerOptions());
             var mvcRazorHost = Mock.Of<IMvcRazorHost>();
 
@@ -154,7 +156,7 @@ this should fail";
                 .Setup(p => p.GetCompilerOptions(
                     applicationEnvironment.ApplicationName,
                     applicationEnvironment.RuntimeFramework,
-                    applicationEnvironment.Configuration))
+                    ConfigurationName))
                 .Returns(new CompilerOptions());
             var mvcRazorHost = Mock.Of<IMvcRazorHost>();
 
@@ -203,7 +205,7 @@ public class MyNonCustomDefinedClass {}
                 .Setup(p => p.GetCompilerOptions(
                     applicationEnvironment.ApplicationName,
                     applicationEnvironment.RuntimeFramework,
-                    applicationEnvironment.Configuration))
+                    ConfigurationName))
                 .Returns(new CompilerOptions { Defines = new[] { "MY_CUSTOM_DEFINE" } });
             var mvcRazorHost = new Mock<IMvcRazorHost>();
             mvcRazorHost.SetupGet(m => m.MainClassNamePrefix)
@@ -242,7 +244,7 @@ public class NotRazorPrefixType {}";
                 .Setup(p => p.GetCompilerOptions(
                     applicationEnvironment.ApplicationName,
                     applicationEnvironment.RuntimeFramework,
-                    applicationEnvironment.Configuration))
+                    ConfigurationName))
                 .Returns(new CompilerOptions());
             var mvcRazorHost = new Mock<IMvcRazorHost>();
             mvcRazorHost.SetupGet(m => m.MainClassNamePrefix)
@@ -398,9 +400,6 @@ public class NotRazorPrefixType {}";
                 .SetupGet(a => a.RuntimeFramework)
                 .Returns(new FrameworkName("ASPNET", new Version(5, 0)));
             applicationEnvironment
-                .SetupGet(a => a.Configuration)
-                .Returns("Debug");
-            applicationEnvironment
                 .SetupGet(a => a.ApplicationBasePath)
                 .Returns("MyBasePath");
 
@@ -411,7 +410,8 @@ public class NotRazorPrefixType {}";
         {
             var razorViewEngineOptions = new RazorViewEngineOptions
             {
-                FileProvider = fileProvider ?? new TestFileProvider()
+                FileProvider = fileProvider ?? new TestFileProvider(),
+                Configuration = ConfigurationName
             };
             var options = new Mock<IOptions<RazorViewEngineOptions>>();
             options

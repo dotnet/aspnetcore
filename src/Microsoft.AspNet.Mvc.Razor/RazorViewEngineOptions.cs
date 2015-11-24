@@ -14,6 +14,8 @@ namespace Microsoft.AspNet.Mvc.Razor
     {
         private IFileProvider _fileProvider;
 
+        private string _configuration;
+
         /// <summary>
         /// Get a <see cref="IList{IViewLocationExpander}"/> used by the <see cref="RazorViewEngine"/>.
         /// </summary>
@@ -40,6 +42,27 @@ namespace Microsoft.AspNet.Mvc.Razor
                 }
 
                 _fileProvider = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the configuration name used by <see cref="RazorViewEngine"/> to compile razor views.
+        /// </summary>
+        /// <remarks>
+        /// At startup, this is initialized to "Debug" if <see cref="Microsoft.AspNet.Hosting.IHostingEnvironment"/> service is
+        /// registred and environment is development (<see cref="Microsoft.AspNet.Hosting.HostingEnvironmentExtensions.IsDevelopment"/>) else it is set to
+        /// "Release".
+        /// </remarks>
+        public string Configuration
+        {
+            get { return _configuration; }
+            set
+            {
+                if (string.IsNullOrEmpty(value))
+                {
+                    throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(value));
+                }
+                _configuration = value;
             }
         }
     }

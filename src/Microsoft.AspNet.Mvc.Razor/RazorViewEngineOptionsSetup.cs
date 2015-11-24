@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNet.FileProviders;
+using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Mvc.Razor;
 using Microsoft.Extensions.OptionsModel;
 using Microsoft.Extensions.PlatformAbstractions;
@@ -17,16 +18,26 @@ namespace Microsoft.AspNet.Mvc
         /// Initializes a new instance of <see cref="RazorViewEngineOptions"/>.
         /// </summary>
         /// <param name="applicationEnvironment"><see cref="IApplicationEnvironment"/> for the application.</param>
-        public RazorViewEngineOptionsSetup(IApplicationEnvironment applicationEnvironment)
-            : base(options => ConfigureRazor(options, applicationEnvironment))
+        /// <param name="hostingEnvironment"><see cref="IHostingEnvironment"/> for the application.</param>
+        public RazorViewEngineOptionsSetup(IApplicationEnvironment applicationEnvironment, IHostingEnvironment hostingEnvironment)
+            : base(options => ConfigureRazor(options, applicationEnvironment, hostingEnvironment))
         {
         }
 
         private static void ConfigureRazor(
             RazorViewEngineOptions razorOptions,
-            IApplicationEnvironment applicationEnvironment)
+            IApplicationEnvironment applicationEnvironment,
+            IHostingEnvironment hostingEnvironment)
         {
             razorOptions.FileProvider = new PhysicalFileProvider(applicationEnvironment.ApplicationBasePath);
+            if (hostingEnvironment.IsDevelopment())
+            {
+                razorOptions.Configuration = "Debug";
+            }
+            else
+            {
+                razorOptions.Configuration = "Release";
+            }
         }
     }
 }

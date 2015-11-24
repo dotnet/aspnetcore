@@ -39,6 +39,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
         private readonly IFileProvider _fileProvider;
         private readonly Lazy<List<MetadataReference>> _applicationReferences;
         private readonly string _classPrefix;
+        private readonly string _configuration;
 
 #if DOTNET5_5
         private readonly RazorLoadContext _razorLoadContext;
@@ -69,6 +70,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
             _compilerOptionsProvider = compilerOptionsProvider;
             _fileProvider = optionsAccessor.Value.FileProvider;
             _classPrefix = host.MainClassNamePrefix;
+            _configuration = optionsAccessor.Value.Configuration;
 
 #if DOTNET5_5
             _razorLoadContext = new RazorLoadContext();
@@ -89,7 +91,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
             }
 
             var assemblyName = Path.GetRandomFileName();
-            var compilationSettings = _compilerOptionsProvider.GetCompilationSettings(_environment);
+            var compilationSettings = _compilerOptionsProvider.GetCompilationSettings(_environment, _configuration);
             var syntaxTree = SyntaxTreeGenerator.Generate(
                 compilationContent,
                 assemblyName,
