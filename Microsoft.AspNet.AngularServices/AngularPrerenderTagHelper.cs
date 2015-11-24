@@ -1,10 +1,10 @@
 using System;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Extensions;
 using Microsoft.AspNet.NodeServices;
-using Microsoft.Dnx.Runtime;
+using Microsoft.AspNet.Razor.TagHelpers;
+using Microsoft.Extensions.PlatformAbstractions;
 
 namespace Microsoft.AspNet.AngularServices
 {
@@ -48,7 +48,7 @@ namespace Microsoft.AspNet.AngularServices
                 requestUrl: UriHelper.GetEncodedUrl(this.contextAccessor.HttpContext.Request)
             );
             output.SuppressOutput();
-            output.PostElement.AppendEncoded(result);
+            output.PostElement.AppendHtml(result);
         }
     }
 }

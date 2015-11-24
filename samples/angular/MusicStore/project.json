@@ -5,21 +5,19 @@
     "defaultNamespace": "MusicStore"
   },
   "dependencies": {
-    "Microsoft.AspNet.Diagnostics": "1.0.0-beta8",
-    "Microsoft.AspNet.IISPlatformHandler": "1.0.0-beta8",
-    "Microsoft.AspNet.Mvc": "6.0.0-beta8",
-    "Microsoft.AspNet.Mvc.TagHelpers": "6.0.0-beta8",
-    "Microsoft.AspNet.Server.Kestrel": "1.0.0-beta8",
-    "Microsoft.AspNet.StaticFiles": "1.0.0-beta8",
-    "Microsoft.AspNet.Tooling.Razor": "1.0.0-beta8",
-    "Microsoft.Framework.Configuration.Json": "1.0.0-beta8",
-    "Microsoft.Framework.Logging": "1.0.0-beta8",
-    "Microsoft.Framework.Logging.Console": "1.0.0-beta8",
-    "Microsoft.Framework.Logging.Debug": "1.0.0-beta8",
-    "EntityFramework.SQLite": "7.0.0-beta8",
-    "Microsoft.AspNet.Identity.EntityFramework": "3.0.0-beta8",
-    "AutoMapper": "4.0.0-alpha1",
-    "Microsoft.AspNet.AngularServices": "1.0.0-alpha7"
+    "Microsoft.AspNet.Diagnostics": "1.0.0-rc1-*",
+    "Microsoft.AspNet.IISPlatformHandler": "1.0.0-rc1-*",
+    "Microsoft.AspNet.Mvc": "6.0.0-rc1-*",
+    "Microsoft.AspNet.Mvc.TagHelpers": "6.0.0-rc1-*",
+    "Microsoft.AspNet.Server.Kestrel": "1.0.0-rc1-*",
+    "Microsoft.AspNet.StaticFiles": "1.0.0-rc1-*",
+    "Microsoft.AspNet.Tooling.Razor": "1.0.0-rc1-*",
+    "Microsoft.Extensions.Logging.Console": "1.0.0-rc1-*",
+    "Microsoft.Extensions.Logging.Debug": "1.0.0-rc1-*",
+    "EntityFramework.SQLite": "7.0.0-rc1-*",
+    "Microsoft.AspNet.Identity.EntityFramework": "3.0.0-rc1-*",
+    "Microsoft.AspNet.AngularServices": "1.0.0-alpha7",
+    "AutoMapper": "4.1.1"
   },
   "commands": {
     "web": "Microsoft.AspNet.Server.Kestrel"

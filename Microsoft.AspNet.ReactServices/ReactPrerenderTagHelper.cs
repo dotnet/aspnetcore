@@ -1,9 +1,9 @@
 using System;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.NodeServices;
-using Microsoft.Dnx.Runtime;
+using Microsoft.AspNet.Razor.TagHelpers;
+using Microsoft.Extensions.PlatformAbstractions;
 
 namespace Microsoft.AspNet.ReactServices
 {
@@ -45,7 +45,7 @@ namespace Microsoft.AspNet.ReactServices
                 componentModuleName: this.ModuleName,
                 componentExportName: this.ExportName,
                 requestUrl: request.Path + request.QueryString.Value);
-            output.Content.SetContentEncoded(result);
+            output.Content.SetHtmlContent(result);
         }
     }
 }

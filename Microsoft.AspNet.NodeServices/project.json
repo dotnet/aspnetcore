@@ -10,24 +10,23 @@
   "projectUrl": "",
   "licenseUrl": "",
   "dependencies": {
-    "System.Net.Http": "4.0.1-beta-23409",
-    "Newtonsoft.Json": "8.0.1-beta1",
-    "Microsoft.Framework.DependencyInjection": "1.0.0-beta8",
-    "Microsoft.Dnx.Runtime.Abstractions": "1.0.0-beta8"
+    "System.Net.Http": "4.0.1-beta-*",
+    "Newtonsoft.Json": "8.0.1-beta3",
+    "Microsoft.Extensions.DependencyInjection.Abstractions": "1.0.0-rc1-final",
+    "Microsoft.Extensions.PlatformAbstractions": "1.0.0-rc1-final"
   },
   "frameworks": {
     "dnx451": {},
     "dnxcore50": {
       "dependencies": {
-        "Microsoft.CSharp": "4.0.1-beta-23217",
-        "System.Collections": "4.0.11-beta-23217",
-        "System.Linq": "4.0.1-beta-23217",
-        "System.Runtime": "4.0.21-beta-23217",
-        "System.Threading": "4.0.11-beta-23217",
-        "System.Text.RegularExpressions": "4.0.11-beta-23409",
-        "System.Diagnostics.Process": "4.1.0-beta-23409",
-        "System.IO.FileSystem": "4.0.1-beta-23409",
-        "System.Console": "4.0.0-beta-23409"
+        "Microsoft.CSharp": "4.0.1-beta-*",
+        "System.Collections": "4.0.11-beta-*",
+        "System.Linq": "4.0.1-beta-*",
+        "System.Threading": "4.0.11-beta-*",
+        "System.Text.RegularExpressions": "4.0.11-beta-*",
+        "System.Diagnostics.Process": "4.1.0-beta-*",
+        "System.IO.FileSystem": "4.0.1-beta-*",
+        "System.Console": "4.0.0-beta-*"
       }
     }
   },

@@ -1,5 +1,5 @@
-using Microsoft.Dnx.Runtime;
-using Microsoft.Framework.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.PlatformAbstractions;
 
 namespace Microsoft.AspNet.NodeServices {
     public static class Configuration {
