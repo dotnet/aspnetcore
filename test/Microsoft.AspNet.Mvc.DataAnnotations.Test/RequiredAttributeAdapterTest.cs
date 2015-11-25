@@ -3,7 +3,6 @@
 
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNet.Testing;
-using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
@@ -18,11 +17,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             var expected = ValidationAttributeUtil.GetRequiredErrorMessage("Length");
             var provider = TestModelMetadataProvider.CreateDefaultProvider();
             var metadata = provider.GetMetadataForProperty(typeof(string), "Length");
+
             var attribute = new RequiredAttribute();
             var adapter = new RequiredAttributeAdapter(attribute, stringLocalizer: null);
-            var serviceCollection = new ServiceCollection();
-            var requestServices = serviceCollection.BuildServiceProvider();
-            var context = new ClientModelValidationContext(metadata, provider, requestServices);
+
+            var actionContext = new ActionContext();
+            var context = new ClientModelValidationContext(actionContext, metadata, provider);
 
             // Act
             var rules = adapter.GetClientValidationRules(context);

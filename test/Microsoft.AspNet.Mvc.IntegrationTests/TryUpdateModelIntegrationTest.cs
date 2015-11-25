@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                 request.QueryString = QueryString.Create("Street", "SomeStreet");
             });
 
-            var modelState = new ModelStateDictionary();
+            var modelState = operationContext.ActionContext.ModelState;
             var model = new Address
             {
                 Street = "DefaultStreet",
@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var oldModel = model;
 
             // Act
-            var result = await TryUpdateModel(model, string.Empty, operationContext, modelState);
+            var result = await TryUpdateModel(model, string.Empty, operationContext);
 
             // Assert
             Assert.True(result);
@@ -71,11 +71,11 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                 request.QueryString = QueryString.Create("Street", "SomeStreet");
             });
 
-            var modelState = new ModelStateDictionary();
+            var modelState = operationContext.ActionContext.ModelState;
             var model = new Address();
 
             // Act
-            var result = await TryUpdateModel(model, string.Empty, operationContext, modelState);
+            var result = await TryUpdateModel(model, string.Empty, operationContext);
 
             // Assert
             Assert.True(result);
@@ -121,7 +121,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                 });
             });
 
-            var modelState = new ModelStateDictionary();
+            var modelState = operationContext.ActionContext.ModelState;
             var model = new List<Person1>
             {
                 new Person1
@@ -138,7 +138,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             };
 
             // Act
-            var result = await TryUpdateModel(model, string.Empty, operationContext, modelState);
+            var result = await TryUpdateModel(model, string.Empty, operationContext);
 
             // Assert
             Assert.True(result);
@@ -175,7 +175,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                 request.QueryString = QueryString.Create("Address.Street", "SomeStreet");
             });
 
-            var modelState = new ModelStateDictionary();
+            var modelState = operationContext.ActionContext.ModelState;
             var model = new Person1
             {
                 Name = "Joe",
@@ -188,7 +188,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var oldModel = model;
 
             // Act
-            var result = await TryUpdateModel(model, string.Empty, operationContext, modelState);
+            var result = await TryUpdateModel(model, string.Empty, operationContext);
 
             // Assert
             Assert.True(result);
@@ -230,11 +230,11 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                 request.QueryString = QueryString.Create("Address[0].Street", "SomeStreet");
             });
 
-            var modelState = new ModelStateDictionary();
+            var modelState = operationContext.ActionContext.ModelState;
             var model = new Person2();
 
             // Act
-            var result = await TryUpdateModel(model, string.Empty, operationContext, modelState);
+            var result = await TryUpdateModel(model, string.Empty, operationContext);
 
             // Assert
             Assert.True(result);
@@ -271,7 +271,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                 request.QueryString = QueryString.Create("Address[0].Street", "SomeStreet");
             });
 
-            var modelState = new ModelStateDictionary();
+            var modelState = operationContext.ActionContext.ModelState;
             var model = new Person2
             {
                 Address = new List<Address>(),
@@ -279,7 +279,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var collection = model.Address;
 
             // Act
-            var result = await TryUpdateModel(model, string.Empty, operationContext, modelState);
+            var result = await TryUpdateModel(model, string.Empty, operationContext);
 
             // Assert
             Assert.True(result);
@@ -327,7 +327,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                 request.QueryString = QueryString.Create("Address[0].Street", "SomeStreet");
             });
 
-            var modelState = new ModelStateDictionary();
+            var modelState = operationContext.ActionContext.ModelState;
             var model = new Person3
             {
                 Address =
@@ -346,7 +346,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             };
 
             // Act
-            var result = await TryUpdateModel(model, string.Empty, operationContext, modelState);
+            var result = await TryUpdateModel(model, string.Empty, operationContext);
 
             // Assert
             Assert.True(result);
@@ -382,11 +382,11 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                 request.QueryString = QueryString.Create("Address[0].Street", "SomeStreet");
             });
 
-            var modelState = new ModelStateDictionary();
+            var modelState = operationContext.ActionContext.ModelState;
             var model = new Person6();
 
             // Act
-            var result = await TryUpdateModel(model, string.Empty, operationContext, modelState);
+            var result = await TryUpdateModel(model, string.Empty, operationContext);
 
             // Assert
             Assert.True(result);
@@ -426,11 +426,11 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                 request.QueryString = QueryString.Create("Address[0].Street", "SomeStreet");
             });
 
-            var modelState = new ModelStateDictionary();
+            var modelState = operationContext.ActionContext.ModelState;
             var model = new Person4();
 
             // Act
-            var result = await TryUpdateModel(model, string.Empty, operationContext, modelState);
+            var result = await TryUpdateModel(model, string.Empty, operationContext);
 
             // Assert
             Assert.True(result);
@@ -467,7 +467,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                 request.QueryString = QueryString.Create("Address[0].Street", "SomeStreet");
             });
 
-            var modelState = new ModelStateDictionary();
+            var modelState = operationContext.ActionContext.ModelState;
             var model = new Person4
             {
                 Address = new Address[]
@@ -482,7 +482,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var collection = model.Address;
 
             // Act
-            var result = await TryUpdateModel(model, string.Empty, operationContext, modelState);
+            var result = await TryUpdateModel(model, string.Empty, operationContext);
 
             // Assert
             Assert.True(result);
@@ -525,11 +525,11 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                 request.QueryString = QueryString.Create("Address[0].Street", "SomeStreet");
             });
 
-            var modelState = new ModelStateDictionary();
+            var modelState = operationContext.ActionContext.ModelState;
             var model = new Person5();
 
             // Act
-            var result = await TryUpdateModel(model, string.Empty, operationContext, modelState);
+            var result = await TryUpdateModel(model, string.Empty, operationContext);
 
             // Assert
             Assert.True(result);
@@ -555,7 +555,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                 request.QueryString = QueryString.Create("prefix.Street", "SomeStreet");
             });
 
-            var modelState = new ModelStateDictionary();
+            var modelState = operationContext.ActionContext.ModelState;
             var model = new Address
             {
                 Street = "DefaultStreet",
@@ -564,7 +564,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var oldModel = model;
 
             // Act
-            var result = await TryUpdateModel(model, "prefix", operationContext, modelState);
+            var result = await TryUpdateModel(model, "prefix", operationContext);
 
             // Assert
             Assert.True(result);
@@ -595,11 +595,11 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                 request.QueryString = QueryString.Create("prefix.Street", "SomeStreet");
             });
 
-            var modelState = new ModelStateDictionary();
+            var modelState = operationContext.ActionContext.ModelState;
             var model = new Address();
 
             // Act
-            var result = await TryUpdateModel(model, "prefix", operationContext, modelState);
+            var result = await TryUpdateModel(model, "prefix", operationContext);
 
             // Assert
             Assert.True(result);
@@ -638,7 +638,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                 });
             });
 
-            var modelState = new ModelStateDictionary();
+            var modelState = operationContext.ActionContext.ModelState;
             var model = new List<Person1>
             {
                 new Person1
@@ -655,7 +655,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             };
 
             // Act
-            var result = await TryUpdateModel(model, "prefix", operationContext, modelState);
+            var result = await TryUpdateModel(model, "prefix", operationContext);
 
             // Assert
             Assert.True(result);
@@ -692,7 +692,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                 request.QueryString = QueryString.Create("prefix.Address.Street", "SomeStreet");
             });
 
-            var modelState = new ModelStateDictionary();
+            var modelState = operationContext.ActionContext.ModelState;
             var model = new Person1
             {
                 Name = "Joe",
@@ -705,7 +705,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var oldModel = model;
 
             // Act
-            var result = await TryUpdateModel(model, "prefix", operationContext, modelState);
+            var result = await TryUpdateModel(model, "prefix", operationContext);
 
             // Assert
             Assert.True(result);
@@ -742,11 +742,11 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                 request.QueryString = QueryString.Create("prefix.Address[0].Street", "SomeStreet");
             });
 
-            var modelState = new ModelStateDictionary();
+            var modelState = operationContext.ActionContext.ModelState;
             var model = new Person2();
 
             // Act
-            var result = await TryUpdateModel(model, "prefix", operationContext, modelState);
+            var result = await TryUpdateModel(model, "prefix", operationContext);
 
             // Assert
             Assert.True(result);
@@ -783,7 +783,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                 request.QueryString = QueryString.Create("prefix.Address[0].Street", "SomeStreet");
             });
 
-            var modelState = new ModelStateDictionary();
+            var modelState = operationContext.ActionContext.ModelState;
             var model = new Person2
             {
                 Address = new List<Address>(),
@@ -791,7 +791,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var collection = model.Address;
 
             // Act
-            var result = await TryUpdateModel(model, "prefix", operationContext, modelState);
+            var result = await TryUpdateModel(model, "prefix", operationContext);
 
             // Assert
             Assert.True(result);
@@ -829,7 +829,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                 request.QueryString = QueryString.Create("prefix.Address[0].Street", "SomeStreet");
             });
 
-            var modelState = new ModelStateDictionary();
+            var modelState = operationContext.ActionContext.ModelState;
             var model = new Person3
             {
                 Address =
@@ -848,7 +848,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             };
 
             // Act
-            var result = await TryUpdateModel(model, "prefix", operationContext, modelState);
+            var result = await TryUpdateModel(model, "prefix", operationContext);
 
             // Assert
             Assert.True(result);
@@ -879,11 +879,11 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                 request.QueryString = QueryString.Create("prefix.Address[0].Street", "SomeStreet");
             });
 
-            var modelState = new ModelStateDictionary();
+            var modelState = operationContext.ActionContext.ModelState;
             var model = new Person6();
 
             // Act
-            var result = await TryUpdateModel(model, "prefix", operationContext, modelState);
+            var result = await TryUpdateModel(model, "prefix", operationContext);
 
             // Assert
             Assert.True(result);
@@ -918,11 +918,11 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                 request.QueryString = QueryString.Create("prefix.Address[0].Street", "SomeStreet");
             });
 
-            var modelState = new ModelStateDictionary();
+            var modelState = operationContext.ActionContext.ModelState;
             var model = new Person4();
 
             // Act
-            var result = await TryUpdateModel(model, "prefix", operationContext, modelState);
+            var result = await TryUpdateModel(model, "prefix", operationContext);
 
             // Assert
             Assert.True(result);
@@ -959,7 +959,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                 request.QueryString = QueryString.Create("prefix.Address[0].Street", "SomeStreet");
             });
 
-            var modelState = new ModelStateDictionary();
+            var modelState = operationContext.ActionContext.ModelState;
             var model = new Person4
             {
                 Address = new Address[]
@@ -974,7 +974,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var collection = model.Address;
 
             // Act
-            var result = await TryUpdateModel(model, "prefix", operationContext, modelState);
+            var result = await TryUpdateModel(model, "prefix", operationContext);
 
             // Assert
             Assert.True(result);
@@ -1012,11 +1012,11 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                 request.QueryString = QueryString.Create("prefix.Address[0].Street", "SomeStreet");
             });
 
-            var modelState = new ModelStateDictionary();
+            var modelState = operationContext.ActionContext.ModelState;
             var model = new Person5();
 
             // Act
-            var result = await TryUpdateModel(model, "prefix", operationContext, modelState);
+            var result = await TryUpdateModel(model, "prefix", operationContext);
 
             // Assert
             Assert.True(result);
@@ -1098,15 +1098,13 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
         private Task<bool> TryUpdateModel(
             object model,
             string prefix,
-            OperationBindingContext operationContext,
-            ModelStateDictionary modelState)
+            OperationBindingContext operationContext)
         {
            return ModelBindingHelper.TryUpdateModelAsync(
                model,
                model.GetType(),
                prefix,
                operationContext.ActionContext,
-               modelState,
                operationContext.MetadataProvider,
                operationContext.ModelBinder,
                operationContext.ValueProvider,

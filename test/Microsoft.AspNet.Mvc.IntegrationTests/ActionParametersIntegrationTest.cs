@@ -53,11 +53,11 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                 request.QueryString = QueryString.Create("Address[0].Street", "SomeStreet");
             });
 
-            var modelState = new ModelStateDictionary();
+            var modelState = operationContext.ActionContext.ModelState;
             var model = new Person3();
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -104,10 +104,10 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                 request.QueryString = QueryString.Create("Address[0].Street", "SomeStreet");
             });
 
-            var modelState = new ModelStateDictionary();
+            var modelState = operationContext.ActionContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -157,10 +157,10 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                 request.QueryString = QueryString.Create("Address[0].Street", "SomeStreet");
             });
 
-            var modelState = new ModelStateDictionary();
+            var modelState = operationContext.ActionContext.ModelState;
             var model = new Person4();
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -209,9 +209,9 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                 request.QueryString = QueryString.Create("Address[0].Street", "SomeStreet");
             });
 
-            var modelState = new ModelStateDictionary();
+            var modelState = operationContext.ActionContext.ModelState;
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -254,10 +254,10 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                 request.QueryString = QueryString.Create("prefix.Address[0].Street", "SomeStreet");
             });
 
-            var modelState = new ModelStateDictionary();
+            var modelState = operationContext.ActionContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -303,10 +303,10 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                 request.QueryString = QueryString.Create("prefix.Address[0].Street", "SomeStreet");
             });
 
-            var modelState = new ModelStateDictionary();
+            var modelState = operationContext.ActionContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -355,10 +355,10 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                 request.QueryString = QueryString.Create("prefix.Address[0].Street", "SomeStreet");
             });
 
-            var modelState = new ModelStateDictionary();
+            var modelState = operationContext.ActionContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -405,10 +405,10 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                 request.QueryString = QueryString.Create("prefix.Address[0].Street", "SomeStreet");
             });
 
-            var modelState = new ModelStateDictionary();
+            var modelState = operationContext.ActionContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);

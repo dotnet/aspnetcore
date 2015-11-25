@@ -9,6 +9,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
     public class ModelValidationContext
     {
         /// <summary>
+        /// Gets or sets the <see cref="Mvc.ActionContext"/>
+        /// </summary>
+        public ActionContext ActionContext { get; set; }
+
+        /// <summary>
         /// Gets or sets the model object.
         /// </summary>
         public object Model { get; set; }

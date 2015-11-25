@@ -143,8 +143,8 @@ namespace Microsoft.AspNet.Mvc.Controllers
             var mockValidator = new Mock<IObjectModelValidator>(MockBehavior.Strict);
             mockValidator
                 .Setup(o => o.Validate(
+                    It.IsAny<ActionContext>(),
                     It.IsAny<IModelValidatorProvider>(),
-                    It.IsAny<ModelStateDictionary>(),
                     It.IsAny<ValidationStateDictionary>(),
                     It.IsAny<string>(),
                     It.IsAny<object>()));
@@ -157,12 +157,12 @@ namespace Microsoft.AspNet.Mvc.Controllers
             // Assert
             mockValidator
                 .Verify(o => o.Validate(
+                    It.IsAny<ActionContext>(),
                     It.IsAny<IModelValidatorProvider>(),
-                    It.IsAny<ModelStateDictionary>(),
                     It.IsAny<ValidationStateDictionary>(),
                     It.IsAny<string>(),
                     It.IsAny<object>()),
-                Times.Once());
+            Times.Once());
         }
 
         [Fact]
@@ -191,8 +191,8 @@ namespace Microsoft.AspNet.Mvc.Controllers
             var mockValidator = new Mock<IObjectModelValidator>(MockBehavior.Strict);
             mockValidator
                 .Setup(o => o.Validate(
+                    It.IsAny<ActionContext>(),
                     It.IsAny<IModelValidatorProvider>(),
-                    It.IsAny<ModelStateDictionary>(),
                     It.IsAny<ValidationStateDictionary>(),
                     It.IsAny<string>(),
                     It.IsAny<object>()));
@@ -205,8 +205,8 @@ namespace Microsoft.AspNet.Mvc.Controllers
             // Assert
             mockValidator
                 .Verify(o => o.Validate(
+                    It.IsAny<ActionContext>(),
                     It.IsAny<IModelValidatorProvider>(),
-                    It.IsAny<ModelStateDictionary>(),
                     It.IsAny<ValidationStateDictionary>(),
                     It.IsAny<string>(),
                     It.IsAny<object>()),
@@ -230,8 +230,8 @@ namespace Microsoft.AspNet.Mvc.Controllers
             var mockValidator = new Mock<IObjectModelValidator>(MockBehavior.Strict);
             mockValidator
                 .Setup(o => o.Validate(
+                    It.IsAny<ActionContext>(),
                     It.IsAny<IModelValidatorProvider>(),
-                    It.IsAny<ModelStateDictionary>(),
                     It.IsAny<ValidationStateDictionary>(),
                     It.IsAny<string>(),
                     It.IsAny<object>()));
@@ -244,8 +244,8 @@ namespace Microsoft.AspNet.Mvc.Controllers
             // Assert
             mockValidator
                 .Verify(o => o.Validate(
+                    It.IsAny<ActionContext>(),
                     It.IsAny<IModelValidatorProvider>(),
-                    It.IsAny<ModelStateDictionary>(),
                     It.IsAny<ValidationStateDictionary>(),
                     It.IsAny<string>(),
                     It.IsAny<object>()),
@@ -277,8 +277,8 @@ namespace Microsoft.AspNet.Mvc.Controllers
             var mockValidator = new Mock<IObjectModelValidator>(MockBehavior.Strict);
             mockValidator
                 .Setup(o => o.Validate(
+                    It.IsAny<ActionContext>(),
                     It.IsAny<IModelValidatorProvider>(),
-                    It.IsAny<ModelStateDictionary>(),
                     It.IsAny<ValidationStateDictionary>(),
                     It.IsAny<string>(),
                     It.IsAny<object>()));
@@ -291,8 +291,8 @@ namespace Microsoft.AspNet.Mvc.Controllers
             // Assert
             mockValidator
                 .Verify(o => o.Validate(
+                    It.IsAny<ActionContext>(),
                     It.IsAny<IModelValidatorProvider>(),
-                    It.IsAny<ModelStateDictionary>(),
                     It.IsAny<ValidationStateDictionary>(),
                     It.IsAny<string>(),
                     It.IsAny<object>()),
@@ -635,8 +635,8 @@ namespace Microsoft.AspNet.Mvc.Controllers
             var mockValidator = new Mock<IObjectModelValidator>(MockBehavior.Strict);
             mockValidator
                 .Setup(o => o.Validate(
-                    It.IsAny<IModelValidatorProvider>(), 
-                    It.IsAny<ModelStateDictionary>(),
+                    It.IsAny<ActionContext>(),
+                    It.IsAny<IModelValidatorProvider>(),
                     It.IsAny<ValidationStateDictionary>(),
                     It.IsAny<string>(),
                     It.IsAny<object>()));

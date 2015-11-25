@@ -97,7 +97,7 @@ namespace Microsoft.AspNet.Mvc
         {
             get
             {
-                return ViewData?.ModelState;
+                return ControllerContext?.ModelState;
             }
         }
 
@@ -1447,7 +1447,6 @@ namespace Microsoft.AspNet.Mvc
                 model,
                 prefix,
                 ControllerContext,
-                ModelState,
                 MetadataProvider,
                 new CompositeModelBinder(ControllerContext.ModelBinders),
                 valueProvider,
@@ -1488,7 +1487,6 @@ namespace Microsoft.AspNet.Mvc
                 model,
                 prefix,
                 ControllerContext,
-                ModelState,
                 MetadataProvider,
                 new CompositeModelBinder(ControllerContext.ModelBinders),
                 new CompositeValueProvider(ControllerContext.ValueProviders),
@@ -1529,7 +1527,6 @@ namespace Microsoft.AspNet.Mvc
                 model,
                 prefix,
                 ControllerContext,
-                ModelState,
                 MetadataProvider,
                 new CompositeModelBinder(ControllerContext.ModelBinders),
                 new CompositeValueProvider(ControllerContext.ValueProviders),
@@ -1578,7 +1575,6 @@ namespace Microsoft.AspNet.Mvc
                 model,
                 prefix,
                 ControllerContext,
-                ModelState,
                 MetadataProvider,
                 new CompositeModelBinder(ControllerContext.ModelBinders),
                 valueProvider,
@@ -1626,7 +1622,6 @@ namespace Microsoft.AspNet.Mvc
                 model,
                 prefix,
                 ControllerContext,
-                ModelState,
                 MetadataProvider,
                 new CompositeModelBinder(ControllerContext.ModelBinders),
                 valueProvider,
@@ -1666,7 +1661,6 @@ namespace Microsoft.AspNet.Mvc
                 modelType,
                 prefix,
                 ControllerContext,
-                ModelState,
                 MetadataProvider,
                 new CompositeModelBinder(ControllerContext.ModelBinders),
                 new CompositeValueProvider(ControllerContext.ValueProviders),
@@ -1719,7 +1713,6 @@ namespace Microsoft.AspNet.Mvc
                 modelType,
                 prefix,
                 ControllerContext,
-                ModelState,
                 MetadataProvider,
                 new CompositeModelBinder(ControllerContext.ModelBinders),
                 valueProvider,
@@ -1773,8 +1766,8 @@ namespace Microsoft.AspNet.Mvc
                 modelName);
 
             ObjectValidator.Validate(
+                ControllerContext,
                 new CompositeModelValidatorProvider(ControllerContext.ValidatorProviders),
-                ModelState,
                 validationState: null,
                 prefix: prefix,
                 model: model);

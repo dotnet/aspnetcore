@@ -30,10 +30,10 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                 request.QueryString = new QueryString("?parameter.Key=key0&parameter.Value=10");
             });
 
-            var modelState = new ModelStateDictionary();
+            var modelState = operationContext.ActionContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -68,10 +68,10 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             {
                 request.QueryString = new QueryString("?parameter.Value=10");
             });
-            var modelState = new ModelStateDictionary();
+            var modelState = operationContext.ActionContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext);
 
             // Assert
             Assert.False(modelBindingResult.IsModelSet);
@@ -116,10 +116,10 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             {
                 request.QueryString = new QueryString("?parameter.Value=10");
             });
-            var modelState = new ModelStateDictionary();
+            var modelState = operationContext.ActionContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext);
 
             // Assert
             Assert.False(modelBindingResult.IsModelSet);
@@ -153,10 +153,10 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             {
                 request.QueryString = new QueryString("?parameter.Key=10");
             });
-            var modelState = new ModelStateDictionary();
+            var modelState = operationContext.ActionContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext);
 
             // Assert
             Assert.False(modelBindingResult.IsModelSet);
@@ -201,10 +201,10 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             {
                 request.QueryString = new QueryString("?parameter.Key=10");
             });
-            var modelState = new ModelStateDictionary();
+            var modelState = operationContext.ActionContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext);
 
             // Assert
             Assert.False(modelBindingResult.IsModelSet);
@@ -244,10 +244,10 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                 request.QueryString = new QueryString("?prefix.Key=key0&prefix.Value=10");
             });
 
-            var modelState = new ModelStateDictionary();
+            var modelState = operationContext.ActionContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -284,10 +284,10 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                 request.QueryString = new QueryString("?Key=key0&Value=10");
             });
 
-            var modelState = new ModelStateDictionary();
+            var modelState = operationContext.ActionContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -324,10 +324,10 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                 request.QueryString = new QueryString("?");
             });
 
-            var modelState = new ModelStateDictionary();
+            var modelState = operationContext.ActionContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -360,10 +360,10 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                 request.QueryString = new QueryString("?parameter.Key=key0&parameter.Value.Id=10");
             });
 
-            var modelState = new ModelStateDictionary();
+            var modelState = operationContext.ActionContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -405,10 +405,10 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                 request.QueryString = new QueryString("?prefix.Key=key0&prefix.Value.Id=10");
             });
 
-            var modelState = new ModelStateDictionary();
+            var modelState = operationContext.ActionContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -446,10 +446,10 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                 request.QueryString = new QueryString("?Key=key0&Value.Id=10");
             });
 
-            var modelState = new ModelStateDictionary();
+            var modelState = operationContext.ActionContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -487,10 +487,10 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                 request.QueryString = new QueryString("?");
             });
 
-            var modelState = new ModelStateDictionary();
+            var modelState = operationContext.ActionContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);

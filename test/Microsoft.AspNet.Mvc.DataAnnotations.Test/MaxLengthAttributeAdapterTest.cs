@@ -19,11 +19,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             // Arrange
             var provider = TestModelMetadataProvider.CreateDefaultProvider();
             var metadata = provider.GetMetadataForProperty(typeof(string), "Length");
+
             var attribute = new MaxLengthAttribute(10);
             var adapter = new MaxLengthAttributeAdapter(attribute, stringLocalizer: null);
-            var serviceCollection = new ServiceCollection();
-            var requestServices = serviceCollection.BuildServiceProvider();
-            var context = new ClientModelValidationContext(metadata, provider, requestServices);
+
+            var actionContext = new ActionContext();
+            var context = new ClientModelValidationContext(actionContext, metadata, provider);
 
             // Act
             var rules = adapter.GetClientValidationRules(context);
@@ -45,11 +46,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             var message = "{0} must be at most {1}";
             var provider = TestModelMetadataProvider.CreateDefaultProvider();
             var metadata = provider.GetMetadataForProperty(typeof(string), propertyName);
+
             var attribute = new MaxLengthAttribute(5) { ErrorMessage = message };
             var adapter = new MaxLengthAttributeAdapter(attribute, stringLocalizer: null);
-            var serviceCollection = new ServiceCollection();
-            var requestServices = serviceCollection.BuildServiceProvider();
-            var context = new ClientModelValidationContext(metadata, provider, requestServices);
+
+            var actionContext = new ActionContext();
+            var context = new ClientModelValidationContext(actionContext, metadata, provider);
 
             // Act
             var rules = adapter.GetClientValidationRules(context);
@@ -69,18 +71,17 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             // Arrange
             var provider = TestModelMetadataProvider.CreateDefaultProvider();
             var metadata = provider.GetMetadataForProperty(typeof(string), "Length");
+
             var errorKey = metadata.GetDisplayName();
             var attribute = new MaxLengthAttribute(10);
             attribute.ErrorMessage = errorKey;
-
             var localizedString = new LocalizedString(errorKey, "Longueur est invalide");
             var stringLocalizer = new Mock<IStringLocalizer>();
             stringLocalizer.Setup(s => s[errorKey]).Returns(localizedString);
-
             var adapter = new MaxLengthAttributeAdapter(attribute, stringLocalizer.Object);
-            var serviceCollection = new ServiceCollection();
-            var requestServices = serviceCollection.BuildServiceProvider();
-            var context = new ClientModelValidationContext(metadata, provider, requestServices);
+
+            var actionContext = new ActionContext();
+            var context = new ClientModelValidationContext(actionContext, metadata, provider);
 
             // Act
             var rules = adapter.GetClientValidationRules(context);

@@ -47,10 +47,10 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                   request.ContentType = "application/json";
               });
 
-            var modelState = new ModelStateDictionary();
+            var modelState = operationContext.ActionContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -88,10 +88,10 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                 });
 
             var httpContext = operationContext.HttpContext;
-            var modelState = new ModelStateDictionary();
+            var modelState = operationContext.ActionContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -132,10 +132,10 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                     request.ContentType = "application/json";
                 });
 
-            var modelState = new ModelStateDictionary();
+            var modelState = operationContext.ActionContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -191,10 +191,10 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                     request.ContentType = "application/json";
                 });
 
-            var modelState = new ModelStateDictionary();
+            var modelState = operationContext.ActionContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -234,10 +234,10 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                     request.ContentType = "application/json";
                 });
 
-            var modelState = new ModelStateDictionary();
+            var modelState = operationContext.ActionContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -304,10 +304,10 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                     request.ContentType = "application/json";
                 });
             var httpContext = operationContext.HttpContext;
-            var modelState = new ModelStateDictionary();
+            var modelState = operationContext.ActionContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -363,10 +363,10 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                     request.Body = new MemoryStream(Encoding.UTF8.GetBytes(inputText));
                     request.ContentType = "application/json";
                 });
-            var modelState = new ModelStateDictionary();
+            var modelState = operationContext.ActionContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);

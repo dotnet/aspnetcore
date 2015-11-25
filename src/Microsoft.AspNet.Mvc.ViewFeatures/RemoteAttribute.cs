@@ -198,7 +198,8 @@ namespace Microsoft.AspNet.Mvc
                 throw new ArgumentNullException(nameof(context));
             }
 
-            var urlHelper = context.RequestServices.GetRequiredService<IUrlHelper>();
+            var services = context.ActionContext.HttpContext.RequestServices;
+            var urlHelper = services.GetRequiredService<IUrlHelper>();
             var url = urlHelper.RouteUrl(new UrlRouteContext()
             {
                 RouteName = this.RouteName,

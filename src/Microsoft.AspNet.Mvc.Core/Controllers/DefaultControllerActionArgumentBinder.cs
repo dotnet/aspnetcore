@@ -82,7 +82,6 @@ namespace Microsoft.AspNet.Mvc.Controllers
             var controllerProperties = new Dictionary<string, object>(StringComparer.Ordinal);
             await PopulateArgumentsAsync(
                 operationBindingContext,
-                context.ModelState,
                 controllerProperties,
                 actionDescriptor.BoundProperties);
             var controllerType = actionDescriptor.ControllerTypeInfo.AsType();
@@ -91,7 +90,6 @@ namespace Microsoft.AspNet.Mvc.Controllers
             var actionArguments = new Dictionary<string, object>(StringComparer.Ordinal);
             await PopulateArgumentsAsync(
                 operationBindingContext,
-                context.ModelState,
                 actionArguments,
                 actionDescriptor.Parameters);
             return actionArguments;
@@ -99,17 +97,11 @@ namespace Microsoft.AspNet.Mvc.Controllers
 
         public async Task<ModelBindingResult> BindModelAsync(
             ParameterDescriptor parameter,
-            ModelStateDictionary modelState,
             OperationBindingContext operationContext)
         {
             if (parameter == null)
             {
                 throw new ArgumentNullException(nameof(parameter));
-            }
-
-            if (modelState == null)
-            {
-                throw new ArgumentNullException(nameof(modelState));
             }
 
             if (operationContext == null)
@@ -120,7 +112,6 @@ namespace Microsoft.AspNet.Mvc.Controllers
             var metadata = _modelMetadataProvider.GetMetadataForType(parameter.ParameterType);
             var modelBindingContext = ModelBindingContext.CreateBindingContext(
                 operationContext,
-                modelState,
                 metadata,
                 parameter.BindingInfo,
                 parameter.Name);
@@ -129,8 +120,8 @@ namespace Microsoft.AspNet.Mvc.Controllers
             if (modelBindingResult.IsModelSet)
             {
                 _validator.Validate(
+                    operationContext.ActionContext,
                     operationContext.ValidatorProvider,
-                    modelState,
                     modelBindingContext.ValidationState,
                     modelBindingResult.Key,
                     modelBindingResult.Model);
@@ -204,7 +195,6 @@ namespace Microsoft.AspNet.Mvc.Controllers
 
         private async Task PopulateArgumentsAsync(
             OperationBindingContext operationContext,
-            ModelStateDictionary modelState,
             IDictionary<string, object> arguments,
             IList<ParameterDescriptor> parameterMetadata)
         {
@@ -212,7 +202,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
             for (var i = 0; i < parameterMetadata.Count; i++)
             {
                 var parameter = parameterMetadata[i];
-                var modelBindingResult = await BindModelAsync(parameter, modelState, operationContext);
+                var modelBindingResult = await BindModelAsync(parameter, operationContext);
                 if (modelBindingResult.IsModelSet)
                 {
                     arguments[parameter.Name] = modelBindingResult.Model;

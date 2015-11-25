@@ -49,10 +49,10 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                     UpdateRequest(request, data, "Address.File");
                 });
 
-            var modelState = new ModelStateDictionary();
+            var modelState = operationContext.ActionContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext);
 
             // Assert
 
@@ -99,10 +99,10 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                     UpdateRequest(request, data, "CustomParameter");
                 });
 
-            var modelState = new ModelStateDictionary();
+            var modelState = operationContext.ActionContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext);
 
             // Assert
             // ModelBindingResult
@@ -139,10 +139,10 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             // No data is passed.
             var operationContext = ModelBindingTestHelper.GetOperationBindingContext();
 
-            var modelState = new ModelStateDictionary();
+            var modelState = operationContext.ActionContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext);
 
             // Assert
 

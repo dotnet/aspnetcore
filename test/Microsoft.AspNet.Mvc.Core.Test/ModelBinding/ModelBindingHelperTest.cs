@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.Formatters;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
+using Microsoft.AspNet.Routing;
 using Moq;
 using Xunit;
 
@@ -46,7 +47,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 model,
                 string.Empty,
                 new ActionContext() { HttpContext = new DefaultHttpContext() },
-                new ModelStateDictionary(),
                 metadataProvider,
                 GetCompositeBinder(binder.Object),
                 Mock.Of<IValueProvider>(),
@@ -75,7 +75,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 new TestOptionsManager<MvcDataAnnotationsLocalizationOptions>(),
                 stringLocalizerFactory: null);
             var model = new MyModel();
-            var modelStateDictionary = new ModelStateDictionary();
+            
             var values = new Dictionary<string, object>
             {
                 { "", null }
@@ -83,12 +83,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var valueProvider = new TestValueProvider(values);
             var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
 
+            var actionContext = new ActionContext() { HttpContext = new DefaultHttpContext() };
+            var modelState = actionContext.ModelState;
+
             // Act
             var result = await ModelBindingHelper.TryUpdateModelAsync(
                 model,
                 "",
-                new ActionContext() { HttpContext = new DefaultHttpContext() },
-                modelStateDictionary,
+                actionContext,
                 modelMetadataProvider,
                 GetCompositeBinder(binders),
                 valueProvider,
@@ -98,7 +100,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             // Assert
             Assert.False(result);
-            var error = Assert.Single(modelStateDictionary["MyProperty"].Errors);
+            var error = Assert.Single(modelState["MyProperty"].Errors);
             Assert.Equal(expectedMessage, error.ErrorMessage);
         }
 
@@ -116,7 +118,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 new TestOptionsManager<MvcDataAnnotationsLocalizationOptions>(),
                 stringLocalizerFactory: null);
             var model = new MyModel { MyProperty = "Old-Value" };
-            var modelStateDictionary = new ModelStateDictionary();
+
             var values = new Dictionary<string, object>
             {
                 { "", null },
@@ -130,7 +132,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 model,
                 "",
                 new ActionContext() { HttpContext = new DefaultHttpContext() },
-                modelStateDictionary,
                 metadataProvider,
                 GetCompositeBinder(binders),
                 valueProvider,
@@ -162,7 +163,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 model,
                 string.Empty,
                 new ActionContext() { HttpContext = new DefaultHttpContext() },
-                new ModelStateDictionary(),
                 metadataProvider,
                 GetCompositeBinder(binder.Object),
                 Mock.Of<IValueProvider>(),
@@ -196,8 +196,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 IncludedProperty = "Old-IncludedPropertyValue",
                 ExcludedProperty = "Old-ExcludedPropertyValue"
             };
-
-            var modelStateDictionary = new ModelStateDictionary();
+            
             var values = new Dictionary<string, object>
             {
                 { "", null },
@@ -218,7 +217,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 model,
                 "",
                 new ActionContext() { HttpContext = new DefaultHttpContext() },
-                modelStateDictionary,
                 metadataProvider,
                 GetCompositeBinder(binders),
                 valueProvider,
@@ -252,7 +250,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 model,
                 string.Empty,
                 new ActionContext() { HttpContext = new DefaultHttpContext() },
-                new ModelStateDictionary(),
                 metadataProvider,
                 GetCompositeBinder(binder.Object),
                 Mock.Of<IValueProvider>(),
@@ -287,8 +284,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 IncludedProperty = "Old-IncludedPropertyValue",
                 ExcludedProperty = "Old-ExcludedPropertyValue"
             };
-
-            var modelStateDictionary = new ModelStateDictionary();
+            
             var values = new Dictionary<string, object>
             {
                 { "", null },
@@ -305,7 +301,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 model,
                 "",
                 new ActionContext() { HttpContext = new DefaultHttpContext() },
-                modelStateDictionary,
                 TestModelMetadataProvider.CreateDefaultProvider(),
                 GetCompositeBinder(binders),
                 valueProvider,
@@ -341,8 +336,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 IncludedProperty = "Old-IncludedPropertyValue",
                 ExcludedProperty = "Old-ExcludedPropertyValue"
             };
-
-            var modelStateDictionary = new ModelStateDictionary();
+            
             var values = new Dictionary<string, object>
             {
                 { "", null },
@@ -359,7 +353,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 model,
                 "",
                 new ActionContext() { HttpContext = new DefaultHttpContext() },
-                modelStateDictionary,
                 metadataProvider,
                 GetCompositeBinder(binders),
                 valueProvider,
@@ -514,7 +507,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 model.GetType(),
                 prefix: "",
                 actionContext: new ActionContext() { HttpContext = new DefaultHttpContext() },
-                modelState: new ModelStateDictionary(),
                 metadataProvider: metadataProvider,
                 modelBinder: GetCompositeBinder(binder.Object),
                 valueProvider: Mock.Of<IValueProvider>(),
@@ -549,8 +541,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 IncludedProperty = "Old-IncludedPropertyValue",
                 ExcludedProperty = "Old-ExcludedPropertyValue"
             };
-
-            var modelStateDictionary = new ModelStateDictionary();
+            
             var values = new Dictionary<string, object>
             {
                 { "", null },
@@ -573,7 +564,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 model.GetType(),
                 "",
                 new ActionContext() { HttpContext = new DefaultHttpContext() },
-                modelStateDictionary,
                 metadataProvider,
                 GetCompositeBinder(binders),
                 valueProvider,
@@ -610,7 +600,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 modelType: model.GetType(),
                 prefix: "",
                 actionContext: new ActionContext() { HttpContext = new DefaultHttpContext() },
-                modelState: new ModelStateDictionary(),
                 metadataProvider: metadataProvider,
                 modelBinder: GetCompositeBinder(binder.Object),
                 valueProvider: Mock.Of<IValueProvider>(),
@@ -637,7 +626,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 new TestOptionsManager<MvcDataAnnotationsLocalizationOptions>(),
                 stringLocalizerFactory: null);
             var model = new MyModel { MyProperty = "Old-Value" };
-            var modelStateDictionary = new ModelStateDictionary();
+
             var values = new Dictionary<string, object>
             {
                 { "", null },
@@ -652,7 +641,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 model.GetType(),
                 "",
                 new ActionContext() { HttpContext = new DefaultHttpContext() },
-                modelStateDictionary,
                 TestModelMetadataProvider.CreateDefaultProvider(),
                 GetCompositeBinder(binders),
                 valueProvider,
@@ -687,7 +675,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                     typeof(User),
                     "",
                     new ActionContext() { HttpContext = new DefaultHttpContext() },
-                    new ModelStateDictionary(),
                     metadataProvider,
                     GetCompositeBinder(binder.Object),
                     Mock.Of<IValueProvider>(),

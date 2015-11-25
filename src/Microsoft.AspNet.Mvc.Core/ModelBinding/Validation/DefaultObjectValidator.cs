@@ -40,26 +40,26 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 
         /// <inheritdoc />
         public void Validate(
+            ActionContext actionContext,
             IModelValidatorProvider validatorProvider,
-            ModelStateDictionary modelState,
             ValidationStateDictionary validationState,
             string prefix,
             object model)
         {
+            if (actionContext == null)
+            {
+                throw new ArgumentNullException(nameof(actionContext));
+            }
+
             if (validatorProvider == null)
             {
                 throw new ArgumentNullException(nameof(validatorProvider));
             }
 
-            if (modelState == null)
-            {
-                throw new ArgumentNullException(nameof(modelState));
-            }
-
             var visitor = new ValidationVisitor(
+                actionContext,
                 validatorProvider,
                 _excludeFilters,
-                modelState,
                 validationState);
 
             var metadata = model == null ? null : _modelMetadataProvider.GetMetadataForType(model.GetType());

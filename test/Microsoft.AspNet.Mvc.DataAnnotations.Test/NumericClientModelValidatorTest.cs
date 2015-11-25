@@ -3,7 +3,6 @@
 
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNet.Testing;
-using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
@@ -17,10 +16,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             // Arrange
             var provider = TestModelMetadataProvider.CreateDefaultProvider();
             var metadata = provider.GetMetadataForProperty(typeof(TypeWithNumericProperty), "Id");
+
             var adapter = new NumericClientModelValidator();
-            var serviceCollection = new ServiceCollection();
-            var requestServices = serviceCollection.BuildServiceProvider();
-            var context = new ClientModelValidationContext(metadata, provider, requestServices);
+
+            var actionContext = new ActionContext();
+            var context = new ClientModelValidationContext(actionContext, metadata, provider);
+
             var expectedMessage = "The field DisplayId must be a number.";
 
             // Act

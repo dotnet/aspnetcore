@@ -22,10 +22,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             var attribute = new CompareAttribute("OtherProperty");
             var adapter = new CompareAttributeAdapter(attribute, stringLocalizer: null);
 
-            var serviceCollection = new ServiceCollection();
-            var requestServices = serviceCollection.BuildServiceProvider();
-
-            var context = new ClientModelValidationContext(metadata, metadataProvider, requestServices);
+            var actionContext = new ActionContext();
+            var context = new ClientModelValidationContext(actionContext, metadata, metadataProvider);
 
             // Act
             var rules = adapter.GetClientValidationRules(context);
@@ -46,11 +44,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             // Arrange
             var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
             var metadata = metadataProvider.GetMetadataForProperty(typeof(PropertyNameModel), "MyProperty");
+
             var attribute = new CompareAttribute("OtherProperty");
-            var serviceCollection = new ServiceCollection();
-            var requestServices = serviceCollection.BuildServiceProvider();
-            var context = new ClientModelValidationContext(metadata, metadataProvider, requestServices);
             var adapter = new CompareAttributeAdapter(attribute, stringLocalizer: null);
+
+            var actionContext = new ActionContext();
+            var context = new ClientModelValidationContext(actionContext, metadata, metadataProvider);
 
             // Act
             var rules = adapter.GetClientValidationRules(context);
@@ -69,14 +68,15 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             // Arrange
             var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
             var metadata = metadataProvider.GetMetadataForProperty( typeof(PropertyNameModel), "MyProperty");
+
             var attribute = new CompareAttribute("OtherProperty")
             {
                 ErrorMessage = "Hello '{0}', goodbye '{1}'."
             };
-            var serviceCollection = new ServiceCollection();
-            var requestServices = serviceCollection.BuildServiceProvider();
-            var context = new ClientModelValidationContext(metadata, metadataProvider, requestServices);
             var adapter = new CompareAttributeAdapter(attribute, stringLocalizer: null);
+
+            var actionContext = new ActionContext();
+            var context = new ClientModelValidationContext(actionContext, metadata, metadataProvider);
 
             // Act
             var rules = adapter.GetClientValidationRules(context);
@@ -94,15 +94,16 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             // Arrange
             var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
             var metadata = metadataProvider.GetMetadataForProperty(typeof(PropertyNameModel), "MyProperty");
+
             var attribute = new CompareAttribute("OtherProperty")
             {
                 ErrorMessageResourceName = "CompareAttributeTestResource",
                 ErrorMessageResourceType = typeof(DataAnnotations.Test.Resources),
             };
-            var serviceCollection = new ServiceCollection();
-            var requestServices = serviceCollection.BuildServiceProvider();
-            var context = new ClientModelValidationContext(metadata, metadataProvider, requestServices);
             var adapter = new CompareAttributeAdapter(attribute, stringLocalizer: null);
+
+            var actionContext = new ActionContext();
+            var context = new ClientModelValidationContext(actionContext, metadata, metadataProvider);
 
             // Act
             var rules = adapter.GetClientValidationRules(context);

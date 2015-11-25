@@ -858,9 +858,9 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             modelExplorer = modelExplorer ??
                 ExpressionMetadataProvider.FromStringExpression(expression, viewContext.ViewData, _metadataProvider);
             var validationContext = new ClientModelValidationContext(
+                viewContext,
                 modelExplorer.Metadata,
-                _metadataProvider,
-                viewContext.HttpContext.RequestServices);
+                _metadataProvider);
 
             var validatorProviderContext = new ClientValidatorProviderContext(modelExplorer.Metadata);
             _clientModelValidatorProvider.GetValidators(validatorProviderContext);

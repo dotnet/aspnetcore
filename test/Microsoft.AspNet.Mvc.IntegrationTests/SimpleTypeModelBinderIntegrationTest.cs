@@ -42,10 +42,10 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                 request.QueryString = QueryString.Create("CustomParameter.Address.Zip", "1");
             });
 
-            var modelState = new ModelStateDictionary();
+            var modelState = operationContext.ActionContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext);
 
             // Assert
 
@@ -86,10 +86,10 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                 request.QueryString = QueryString.Create("Address.Zip", "1");
             });
 
-            var modelState = new ModelStateDictionary();
+            var modelState = operationContext.ActionContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext);
 
             // Assert
 
@@ -131,10 +131,10 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                 request.QueryString = QueryString.Create("Parameter1", "someValue");
             });
 
-            var modelState = new ModelStateDictionary();
+            var modelState = operationContext.ActionContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext);
 
             // Assert
 
@@ -175,10 +175,10 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                 request.QueryString = new QueryString("?Parameter1=someValue&Parameter1=otherValue");
             });
 
-            var modelState = new ModelStateDictionary();
+            var modelState = operationContext.ActionContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext);
 
             // Assert
 
@@ -219,10 +219,10 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                 request.QueryString = QueryString.Create("Parameter1", "abcd");
             });
 
-            var modelState = new ModelStateDictionary();
+            var modelState = operationContext.ActionContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext);
 
             // Assert
 
@@ -273,10 +273,10 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             {
                 request.QueryString = QueryString.Create("Parameter1", "  ");
             });
-            var modelState = new ModelStateDictionary();
+            var modelState = operationContext.ActionContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext);
 
             // Assert
 
@@ -326,10 +326,10 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             {
                 request.QueryString = QueryString.Create("Parameter1", string.Empty);
             });
-            var modelState = new ModelStateDictionary();
+            var modelState = operationContext.ActionContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext);
 
             // Assert
             // ModelBindingResult
@@ -369,10 +369,10 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             {
                 request.QueryString = QueryString.Create("Parameter1", string.Empty);
             });
-            var modelState = new ModelStateDictionary();
+            var modelState = operationContext.ActionContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext);
 
             // Assert
 
@@ -407,10 +407,10 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             // No Data.
             var operationContext = ModelBindingTestHelper.GetOperationBindingContext();
 
-            var modelState = new ModelStateDictionary();
+            var modelState = operationContext.ActionContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext);
 
             // Assert
 
@@ -461,10 +461,10 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             {
                 request.Form = new FormCollection(personStore);
             });
-            var modelState = new ModelStateDictionary();
+            var modelState = operationContext.ActionContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext);
 
             // Assert
             // ModelBindingResult

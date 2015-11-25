@@ -3,7 +3,6 @@
 
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNet.Testing;
-using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
@@ -17,11 +16,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             // Arrange
             var provider = TestModelMetadataProvider.CreateDefaultProvider();
             var metadata = provider.GetMetadataForProperty(typeof(string), "Length");
+
             var attribute = new StringLengthAttribute(8);
             var adapter = new StringLengthAttributeAdapter(attribute, stringLocalizer: null);
-            var serviceCollection = new ServiceCollection();
-            var requestServices = serviceCollection.BuildServiceProvider();
-            var context = new ClientModelValidationContext(metadata, provider, requestServices);
+
+            var actionContext = new ActionContext();
+            var context = new ClientModelValidationContext(actionContext, metadata, provider);
 
             // Act
             var rules = adapter.GetClientValidationRules(context);
@@ -41,11 +41,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             // Arrange
             var provider = TestModelMetadataProvider.CreateDefaultProvider();
             var metadata = provider.GetMetadataForProperty(typeof(string), "Length");
+
             var attribute = new StringLengthAttribute(10) { MinimumLength = 3 };
             var adapter = new StringLengthAttributeAdapter(attribute, stringLocalizer: null);
-            var serviceCollection = new ServiceCollection();
-            var requestServices = serviceCollection.BuildServiceProvider();
-            var context = new ClientModelValidationContext(metadata, provider, requestServices);
+
+            var actionContext = new ActionContext();
+            var context = new ClientModelValidationContext(actionContext, metadata, provider);
 
             // Act
             var rules = adapter.GetClientValidationRules(context);

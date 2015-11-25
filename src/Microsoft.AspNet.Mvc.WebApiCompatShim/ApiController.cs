@@ -572,8 +572,8 @@ namespace System.Web.Http
         {
             var validatidationState = new ValidationStateDictionary();
             ObjectValidator.Validate(
+                ControllerContext,
                 new CompositeModelValidatorProvider(ControllerContext.ValidatorProviders),
-                ModelState,
                 validatidationState,
                 keyPrefix,
                 entity);

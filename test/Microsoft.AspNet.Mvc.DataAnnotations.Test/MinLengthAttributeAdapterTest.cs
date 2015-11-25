@@ -3,7 +3,6 @@
 
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNet.Testing;
-using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
@@ -17,11 +16,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             // Arrange
             var provider = TestModelMetadataProvider.CreateDefaultProvider();
             var metadata = provider.GetMetadataForProperty(typeof(string), "Length");
+
             var attribute = new MinLengthAttribute(6);
             var adapter = new MinLengthAttributeAdapter(attribute, stringLocalizer: null);
-            var serviceCollection = new ServiceCollection();
-            var requestServices = serviceCollection.BuildServiceProvider();
-            var context = new ClientModelValidationContext(metadata, provider, requestServices);
+
+            var actionContext = new ActionContext();
+            var context = new ClientModelValidationContext(actionContext, metadata, provider);
 
             // Act
             var rules = adapter.GetClientValidationRules(context);
@@ -43,11 +43,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             var message = "Array must have at least {1} items.";
             var provider = TestModelMetadataProvider.CreateDefaultProvider();
             var metadata = provider.GetMetadataForProperty(typeof(string), propertyName);
+
             var attribute = new MinLengthAttribute(2) { ErrorMessage = message };
             var adapter = new MinLengthAttributeAdapter(attribute, stringLocalizer: null);
-            var serviceCollection = new ServiceCollection();
-            var requestServices = serviceCollection.BuildServiceProvider();
-            var context = new ClientModelValidationContext(metadata, provider, requestServices);
+
+            var actionContext = new ActionContext();
+            var context = new ClientModelValidationContext(actionContext, metadata, provider);
 
             // Act
             var rules = adapter.GetClientValidationRules(context);

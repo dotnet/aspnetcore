@@ -37,7 +37,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// <returns>A new instance of <see cref="ModelBindingContext"/>.</returns>
         public static ModelBindingContext CreateBindingContext(
             OperationBindingContext operationBindingContext,
-            ModelStateDictionary modelState,
             ModelMetadata metadata,
             BindingInfo bindingInfo,
             string modelName)
@@ -45,11 +44,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             if (operationBindingContext == null)
             {
                 throw new ArgumentNullException(nameof(operationBindingContext));
-            }
-
-            if (modelState == null)
-            {
-                throw new ArgumentNullException(nameof(modelState));
             }
 
             if (metadata == null)
@@ -83,7 +77,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
                 IsTopLevelObject = true,
                 ModelMetadata = metadata,
-                ModelState = modelState,
+                ModelState = operationBindingContext.ActionContext.ModelState,
                 OperationBindingContext = operationBindingContext,
                 ValueProvider = operationBindingContext.ValueProvider,
 

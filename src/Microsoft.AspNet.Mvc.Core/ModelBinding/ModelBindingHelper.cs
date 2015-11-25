@@ -29,8 +29,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// <param name="prefix">The prefix to use when looking up values in the <paramref name="valueProvider"/>.
         /// </param>
         /// <param name="actionContext">The <see cref="ActionContext"/> for the current executing request.</param>
-        /// <param name="modelState">The <see cref="ModelStateDictionary"/> used for maintaining state and
-        /// results of model-binding validation.</param>
         /// <param name="metadataProvider">The provider used for reading metadata for the model type.</param>
         /// <param name="modelBinder">The <see cref="IModelBinder"/> used for binding.</param>
         /// <param name="valueProvider">The <see cref="IValueProvider"/> used for looking up values.</param>
@@ -46,7 +44,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             TModel model,
             string prefix,
             ActionContext actionContext,
-            ModelStateDictionary modelState,
             IModelMetadataProvider metadataProvider,
             IModelBinder modelBinder,
             IValueProvider valueProvider,
@@ -68,11 +65,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             if (actionContext == null)
             {
                 throw new ArgumentNullException(nameof(actionContext));
-            }
-
-            if (modelState == null)
-            {
-                throw new ArgumentNullException(nameof(modelState));
             }
 
             if (metadataProvider == null)
@@ -110,7 +102,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 model,
                 prefix,
                 actionContext,
-                modelState,
                 metadataProvider,
                 modelBinder,
                 valueProvider,
@@ -130,8 +121,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// <param name="prefix">The prefix to use when looking up values in the <paramref name="valueProvider"/>.
         /// </param>
         /// <param name="actionContext">The <see cref="ActionContext"/> for the current executing request.</param>
-        /// <param name="modelState">The <see cref="ModelStateDictionary"/> used for maintaining state and
-        /// results of model-binding validation.</param>
         /// <param name="metadataProvider">The provider used for reading metadata for the model type.</param>
         /// <param name="modelBinder">The <see cref="IModelBinder"/> used for binding.</param>
         /// <param name="valueProvider">The <see cref="IValueProvider"/> used for looking up values.</param>
@@ -147,17 +136,16 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// which need to be included for the current model.</param>
         /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful</returns>
         public static Task<bool> TryUpdateModelAsync<TModel>(
-               TModel model,
-               string prefix,
-               ActionContext actionContext,
-               ModelStateDictionary modelState,
-               IModelMetadataProvider metadataProvider,
-               IModelBinder modelBinder,
-               IValueProvider valueProvider,
-               IList<IInputFormatter> inputFormatters,
-               IObjectModelValidator objectModelValidator,
-               IModelValidatorProvider validatorProvider,
-               params Expression<Func<TModel, object>>[] includeExpressions)
+            TModel model,
+            string prefix,
+            ActionContext actionContext,
+            IModelMetadataProvider metadataProvider,
+            IModelBinder modelBinder,
+            IValueProvider valueProvider,
+            IList<IInputFormatter> inputFormatters,
+            IObjectModelValidator objectModelValidator,
+            IModelValidatorProvider validatorProvider,
+            params Expression<Func<TModel, object>>[] includeExpressions)
            where TModel : class
         {
             if (model == null)
@@ -173,11 +161,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             if (actionContext == null)
             {
                 throw new ArgumentNullException(nameof(actionContext));
-            }
-
-            if (modelState == null)
-            {
-                throw new ArgumentNullException(nameof(modelState));
             }
 
             if (metadataProvider == null)
@@ -222,7 +205,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                model,
                prefix,
                actionContext,
-               modelState,
                metadataProvider,
                modelBinder,
                valueProvider,
@@ -242,8 +224,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// <param name="prefix">The prefix to use when looking up values in the <paramref name="valueProvider"/>.
         /// </param>
         /// <param name="actionContext">The <see cref="ActionContext"/> for the current executing request.</param>
-        /// <param name="modelState">The <see cref="ModelStateDictionary"/> used for maintaining state and
-        /// results of model-binding validation.</param>
         /// <param name="metadataProvider">The provider used for reading metadata for the model type.</param>
         /// <param name="modelBinder">The <see cref="IModelBinder"/> used for binding.</param>
         /// <param name="valueProvider">The <see cref="IValueProvider"/> used for looking up values.</param>
@@ -258,18 +238,17 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// filter properties(for inclusion/exclusion) at runtime.</param>
         /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful</returns>
         public static Task<bool> TryUpdateModelAsync<TModel>(
-               TModel model,
-               string prefix,
-               ActionContext actionContext,
-               ModelStateDictionary modelState,
-               IModelMetadataProvider metadataProvider,
-               IModelBinder modelBinder,
-               IValueProvider valueProvider,
-               IList<IInputFormatter> inputFormatters,
-               IObjectModelValidator objectModelValidator,
-               IModelValidatorProvider validatorProvider,
-               Func<ModelBindingContext, string, bool> predicate)
-           where TModel : class
+            TModel model,
+            string prefix,
+            ActionContext actionContext,
+            IModelMetadataProvider metadataProvider,
+            IModelBinder modelBinder,
+            IValueProvider valueProvider,
+            IList<IInputFormatter> inputFormatters,
+            IObjectModelValidator objectModelValidator,
+            IModelValidatorProvider validatorProvider,
+            Func<ModelBindingContext, string, bool> predicate)
+            where TModel : class
         {
             if (model == null)
             {
@@ -284,11 +263,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             if (actionContext == null)
             {
                 throw new ArgumentNullException(nameof(actionContext));
-            }
-
-            if (modelState == null)
-            {
-                throw new ArgumentNullException(nameof(modelState));
             }
 
             if (metadataProvider == null)
@@ -331,7 +305,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                typeof(TModel),
                prefix,
                actionContext,
-               modelState,
                metadataProvider,
                modelBinder,
                valueProvider,
@@ -351,8 +324,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// <param name="prefix">The prefix to use when looking up values in the <paramref name="valueProvider"/>.
         /// </param>
         /// <param name="actionContext">The <see cref="ActionContext"/> for the current executing request.</param>
-        /// <param name="modelState">The <see cref="ModelStateDictionary"/> used for maintaining state and
-        /// results of model-binding validation.</param>
         /// <param name="metadataProvider">The provider used for reading metadata for the model type.</param>
         /// <param name="modelBinder">The <see cref="IModelBinder"/> used for binding.</param>
         /// <param name="valueProvider">The <see cref="IValueProvider"/> used for looking up values.</param>
@@ -369,7 +340,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 Type modelType,
                 string prefix,
                 ActionContext actionContext,
-                ModelStateDictionary modelState,
                 IModelMetadataProvider metadataProvider,
                 IModelBinder modelBinder,
                 IValueProvider valueProvider,
@@ -395,11 +365,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             if (actionContext == null)
             {
                 throw new ArgumentNullException(nameof(actionContext));
-            }
-
-            if (modelState == null)
-            {
-                throw new ArgumentNullException(nameof(modelState));
             }
 
             if (metadataProvider == null)
@@ -438,7 +403,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 modelType,
                 prefix,
                 actionContext,
-                modelState,
                 metadataProvider,
                 modelBinder,
                 valueProvider,
@@ -458,8 +422,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// <param name="prefix">The prefix to use when looking up values in the <paramref name="valueProvider"/>.
         /// </param>
         /// <param name="actionContext">The <see cref="ActionContext"/> for the current executing request.</param>
-        /// <param name="modelState">The <see cref="ModelStateDictionary"/> used for maintaining state and
-        /// results of model-binding validation.</param>
         /// <param name="metadataProvider">The provider used for reading metadata for the model type.</param>
         /// <param name="modelBinder">The <see cref="IModelBinder"/> used for binding.</param>
         /// <param name="valueProvider">The <see cref="IValueProvider"/> used for looking up values.</param>
@@ -478,7 +440,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                Type modelType,
                string prefix,
                ActionContext actionContext,
-               ModelStateDictionary modelState,
                IModelMetadataProvider metadataProvider,
                IModelBinder modelBinder,
                IValueProvider valueProvider,
@@ -505,11 +466,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             if (actionContext == null)
             {
                 throw new ArgumentNullException(nameof(actionContext));
-            }
-
-            if (modelState == null)
-            {
-                throw new ArgumentNullException(nameof(modelState));
             }
 
             if (metadataProvider == null)
@@ -558,6 +514,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var modelMetadata = metadataProvider.GetMetadataForType(modelType);
 
             // Clear ModelStateDictionary entries for the model so that it will be re-validated.
+            var modelState = actionContext.ModelState;
             ClearValidationStateForModel(modelType, modelState, metadataProvider, prefix);
 
             var operationBindingContext = new OperationBindingContext
@@ -572,7 +529,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             var modelBindingContext = ModelBindingContext.CreateBindingContext(
                 operationBindingContext,
-                modelState,
                 modelMetadata,
                 bindingInfo: null,
                 modelName: prefix ?? string.Empty);
@@ -583,8 +539,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             if (modelBindingResult.IsModelSet)
             {
                 objectModelValidator.Validate(
+                    operationBindingContext.ActionContext,
                     operationBindingContext.ValidatorProvider,
-                    modelState,
                     modelBindingContext.ValidationState,
                     modelBindingResult.Key,
                     modelBindingResult.Model);

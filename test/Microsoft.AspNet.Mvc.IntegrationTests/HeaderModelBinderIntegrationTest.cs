@@ -43,10 +43,10 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
             // Do not add any headers.
             var operationContext = ModelBindingTestHelper.GetOperationBindingContext();
-            var modelState = new ModelStateDictionary();
+            var modelState = operationContext.ActionContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext);
 
             // Assert
 
@@ -86,10 +86,10 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                 request.Headers.Add("Header", new[] { "someValue" });
             });
 
-            var modelState = new ModelStateDictionary();
+            var modelState = operationContext.ActionContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext);
 
             // Assert
 
@@ -128,10 +128,10 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
             var operationContext = ModelBindingTestHelper.GetOperationBindingContext(
                 request => request.Headers.Add("Header", new[] { "someValue" }));
-            var modelState = new ModelStateDictionary();
+            var modelState = operationContext.ActionContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext);
 
             // Assert
 
@@ -190,10 +190,10 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
             // Do not add any headers.
             var httpContext = operationContext.HttpContext;
-            var modelState = new ModelStateDictionary();
+            var modelState = operationContext.ActionContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, modelState, operationContext);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext);
 
             // Assert
 

@@ -15,6 +15,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
     {
         private readonly IModelValidatorProvider _validatorProvider;
         private readonly IList<IExcludeTypeValidationFilter> _excludeFilters;
+        private readonly ActionContext _actionContext;
         private readonly ModelStateDictionary _modelState;
         private readonly ValidationStateDictionary _validationState;
 
@@ -30,16 +31,21 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
         /// <summary>
         /// Creates a new <see cref="ValidationVisitor"/>.
         /// </summary>
+        /// <param name="actionContext">The <see cref="ActionContext"/> associated with the current request.</param>
         /// <param name="validatorProvider">The <see cref="IModelValidatorProvider"/>.</param>
         /// <param name="excludeFilters">The list of <see cref="IExcludeTypeValidationFilter"/>.</param>
-        /// <param name="modelState">The <see cref="ModelStateDictionary"/>.</param>
         /// <param name="validationState">The <see cref="ValidationStateDictionary"/>.</param>
         public ValidationVisitor(
+            ActionContext actionContext,
             IModelValidatorProvider validatorProvider,
             IList<IExcludeTypeValidationFilter> excludeFilters,
-            ModelStateDictionary modelState,
             ValidationStateDictionary validationState)
         {
+            if (actionContext == null)
+            {
+                throw new ArgumentNullException(nameof(actionContext));
+            }
+
             if (validatorProvider == null)
             {
                 throw new ArgumentNullException(nameof(validatorProvider));
@@ -50,16 +56,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
                 throw new ArgumentNullException(nameof(excludeFilters));
             }
 
-            if (modelState == null)
-            {
-                throw new ArgumentNullException(nameof(modelState));
-            }
-
+            _actionContext = actionContext;
             _validatorProvider = validatorProvider;
             _excludeFilters = excludeFilters;
-            _modelState = modelState;
             _validationState = validationState;
 
+            _modelState = actionContext.ModelState;
             _currentPath = new HashSet<object>(ReferenceEqualityComparer.Instance);
         }
 
@@ -101,6 +103,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
                 {
                     var context = new ModelValidationContext()
                     {
+                        ActionContext = _actionContext,
                         Container = _container,
                         Model = _model,
                         Metadata = _metadata,
