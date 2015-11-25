@@ -256,10 +256,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             var operationBindingContext = new OperationBindingContext
             {
+                ActionContext = new ActionContext()
+                {
+                    HttpContext = httpContext,
+                },
                 InputFormatters = inputFormatters.ToList(),
                 ModelBinder = new BodyModelBinder(new TestHttpRequestStreamReaderFactory()),
                 MetadataProvider = metadataProvider,
-                HttpContext = httpContext,
             };
 
             var bindingContext = new ModelBindingContext

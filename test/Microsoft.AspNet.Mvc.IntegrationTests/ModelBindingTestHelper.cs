@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
             return new OperationBindingContext()
             {
-                HttpContext = httpContext,
+                ActionContext = controllerContext,
                 InputFormatters = controllerContext.InputFormatters,
                 MetadataProvider = TestModelMetadataProvider.CreateDefaultProvider(),
                 ValidatorProvider = new CompositeModelValidatorProvider(controllerContext.ValidatorProviders),

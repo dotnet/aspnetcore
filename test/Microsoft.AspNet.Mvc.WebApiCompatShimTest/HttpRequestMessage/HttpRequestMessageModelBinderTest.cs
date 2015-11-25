@@ -61,7 +61,10 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
                 ModelName = "someName",
                 OperationBindingContext = new OperationBindingContext
                 {
-                    HttpContext = new DefaultHttpContext(),
+                    ActionContext = new ActionContext()
+                    {
+                        HttpContext = new DefaultHttpContext(),
+                    },
                     MetadataProvider = metadataProvider,
                 },
                 ValidationState = new ValidationStateDictionary(),

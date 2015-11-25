@@ -15,9 +15,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     public class OperationBindingContext
     {
         /// <summary>
-        /// Gets or sets the <see cref="HttpContext"/> for the current request.
+        /// Gets or sets the <see cref="Mvc.ActionContext"/> for the current request.
         /// </summary>
-        public HttpContext HttpContext { get; set; }
+        public ActionContext ActionContext { get; set; }
+
+        /// <summary>
+        /// Gets the <see cref="Http.HttpContext"/> for the current request.
+        /// </summary>
+        public HttpContext HttpContext => ActionContext.HttpContext;
 
         /// <summary>
         /// Gets or sets the set of <see cref="IInputFormatter"/> instances associated with this context.

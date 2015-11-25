@@ -11,7 +11,6 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.Formatters;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
@@ -29,7 +28,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// <param name="model">The model instance to update and validate.</param>
         /// <param name="prefix">The prefix to use when looking up values in the <paramref name="valueProvider"/>.
         /// </param>
-        /// <param name="httpContext">The <see cref="HttpContext"/> for the current executing request.</param>
+        /// <param name="actionContext">The <see cref="ActionContext"/> for the current executing request.</param>
         /// <param name="modelState">The <see cref="ModelStateDictionary"/> used for maintaining state and
         /// results of model-binding validation.</param>
         /// <param name="metadataProvider">The provider used for reading metadata for the model type.</param>
@@ -44,16 +43,16 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// on the model instance.</param>
         /// <returns>A <see cref="Task"/> that on completion returns <c>true</c> if the update is successful</returns>
         public static Task<bool> TryUpdateModelAsync<TModel>(
-                TModel model,
-                string prefix,
-                HttpContext httpContext,
-                ModelStateDictionary modelState,
-                IModelMetadataProvider metadataProvider,
-                IModelBinder modelBinder,
-                IValueProvider valueProvider,
-                IList<IInputFormatter> inputFormatters,
-                IObjectModelValidator objectModelValidator,
-                IModelValidatorProvider validatorProvider)
+            TModel model,
+            string prefix,
+            ActionContext actionContext,
+            ModelStateDictionary modelState,
+            IModelMetadataProvider metadataProvider,
+            IModelBinder modelBinder,
+            IValueProvider valueProvider,
+            IList<IInputFormatter> inputFormatters,
+            IObjectModelValidator objectModelValidator,
+            IModelValidatorProvider validatorProvider)
             where TModel : class
         {
             if (model == null)
@@ -66,9 +65,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 throw new ArgumentNullException(nameof(prefix));
             }
 
-            if (httpContext == null)
+            if (actionContext == null)
             {
-                throw new ArgumentNullException(nameof(httpContext));
+                throw new ArgumentNullException(nameof(actionContext));
             }
 
             if (modelState == null)
@@ -110,7 +109,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             return TryUpdateModelAsync(
                 model,
                 prefix,
-                httpContext,
+                actionContext,
                 modelState,
                 metadataProvider,
                 modelBinder,
@@ -130,7 +129,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// <param name="model">The model instance to update and validate.</param>
         /// <param name="prefix">The prefix to use when looking up values in the <paramref name="valueProvider"/>.
         /// </param>
-        /// <param name="httpContext">The <see cref="HttpContext"/> for the current executing request.</param>
+        /// <param name="actionContext">The <see cref="ActionContext"/> for the current executing request.</param>
         /// <param name="modelState">The <see cref="ModelStateDictionary"/> used for maintaining state and
         /// results of model-binding validation.</param>
         /// <param name="metadataProvider">The provider used for reading metadata for the model type.</param>
@@ -150,7 +149,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public static Task<bool> TryUpdateModelAsync<TModel>(
                TModel model,
                string prefix,
-               HttpContext httpContext,
+               ActionContext actionContext,
                ModelStateDictionary modelState,
                IModelMetadataProvider metadataProvider,
                IModelBinder modelBinder,
@@ -171,9 +170,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 throw new ArgumentNullException(nameof(prefix));
             }
 
-            if (httpContext == null)
+            if (actionContext == null)
             {
-                throw new ArgumentNullException(nameof(httpContext));
+                throw new ArgumentNullException(nameof(actionContext));
             }
 
             if (modelState == null)
@@ -222,7 +221,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             return TryUpdateModelAsync(
                model,
                prefix,
-               httpContext,
+               actionContext,
                modelState,
                metadataProvider,
                modelBinder,
@@ -242,7 +241,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// <param name="model">The model instance to update and validate.</param>
         /// <param name="prefix">The prefix to use when looking up values in the <paramref name="valueProvider"/>.
         /// </param>
-        /// <param name="httpContext">The <see cref="HttpContext"/> for the current executing request.</param>
+        /// <param name="actionContext">The <see cref="ActionContext"/> for the current executing request.</param>
         /// <param name="modelState">The <see cref="ModelStateDictionary"/> used for maintaining state and
         /// results of model-binding validation.</param>
         /// <param name="metadataProvider">The provider used for reading metadata for the model type.</param>
@@ -261,7 +260,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public static Task<bool> TryUpdateModelAsync<TModel>(
                TModel model,
                string prefix,
-               HttpContext httpContext,
+               ActionContext actionContext,
                ModelStateDictionary modelState,
                IModelMetadataProvider metadataProvider,
                IModelBinder modelBinder,
@@ -282,9 +281,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 throw new ArgumentNullException(nameof(prefix));
             }
 
-            if (httpContext == null)
+            if (actionContext == null)
             {
-                throw new ArgumentNullException(nameof(httpContext));
+                throw new ArgumentNullException(nameof(actionContext));
             }
 
             if (modelState == null)
@@ -331,7 +330,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                model,
                typeof(TModel),
                prefix,
-               httpContext,
+               actionContext,
                modelState,
                metadataProvider,
                modelBinder,
@@ -351,7 +350,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// <param name="modelType">The type of model instance to update and validate.</param>
         /// <param name="prefix">The prefix to use when looking up values in the <paramref name="valueProvider"/>.
         /// </param>
-        /// <param name="httpContext">The <see cref="HttpContext"/> for the current executing request.</param>
+        /// <param name="actionContext">The <see cref="ActionContext"/> for the current executing request.</param>
         /// <param name="modelState">The <see cref="ModelStateDictionary"/> used for maintaining state and
         /// results of model-binding validation.</param>
         /// <param name="metadataProvider">The provider used for reading metadata for the model type.</param>
@@ -369,7 +368,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 object model,
                 Type modelType,
                 string prefix,
-                HttpContext httpContext,
+                ActionContext actionContext,
                 ModelStateDictionary modelState,
                 IModelMetadataProvider metadataProvider,
                 IModelBinder modelBinder,
@@ -393,9 +392,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 throw new ArgumentNullException(nameof(prefix));
             }
 
-            if (httpContext == null)
+            if (actionContext == null)
             {
-                throw new ArgumentNullException(nameof(httpContext));
+                throw new ArgumentNullException(nameof(actionContext));
             }
 
             if (modelState == null)
@@ -438,7 +437,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 model,
                 modelType,
                 prefix,
-                httpContext,
+                actionContext,
                 modelState,
                 metadataProvider,
                 modelBinder,
@@ -458,7 +457,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// <param name="modelType">The type of model instance to update and validate.</param>
         /// <param name="prefix">The prefix to use when looking up values in the <paramref name="valueProvider"/>.
         /// </param>
-        /// <param name="httpContext">The <see cref="HttpContext"/> for the current executing request.</param>
+        /// <param name="actionContext">The <see cref="ActionContext"/> for the current executing request.</param>
         /// <param name="modelState">The <see cref="ModelStateDictionary"/> used for maintaining state and
         /// results of model-binding validation.</param>
         /// <param name="metadataProvider">The provider used for reading metadata for the model type.</param>
@@ -478,7 +477,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                object model,
                Type modelType,
                string prefix,
-               HttpContext httpContext,
+               ActionContext actionContext,
                ModelStateDictionary modelState,
                IModelMetadataProvider metadataProvider,
                IModelBinder modelBinder,
@@ -503,9 +502,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 throw new ArgumentNullException(nameof(prefix));
             }
 
-            if (httpContext == null)
+            if (actionContext == null)
             {
-                throw new ArgumentNullException(nameof(httpContext));
+                throw new ArgumentNullException(nameof(actionContext));
             }
 
             if (modelState == null)
@@ -567,7 +566,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 ModelBinder = modelBinder,
                 ValidatorProvider = validatorProvider,
                 MetadataProvider = metadataProvider,
-                HttpContext = httpContext,
+                ActionContext = actionContext,
                 ValueProvider = valueProvider,
             };
 

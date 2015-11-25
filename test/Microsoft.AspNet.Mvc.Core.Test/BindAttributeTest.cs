@@ -76,7 +76,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var context = new ModelBindingContext();
             context.OperationBindingContext = new OperationBindingContext()
             {
-                HttpContext = new DefaultHttpContext(),
+                ActionContext = new ActionContext()
+                {
+                    HttpContext = new DefaultHttpContext(),
+                },
             };
             var services = new Mock<IServiceProvider>();
 
@@ -100,7 +103,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var context = new ModelBindingContext();
             context.OperationBindingContext = new OperationBindingContext()
             {
-                HttpContext = new DefaultHttpContext(),
+                ActionContext = new ActionContext()
+                {
+                    HttpContext = new DefaultHttpContext(),
+                },
             };
 
             var services = new Mock<IServiceProvider>(MockBehavior.Strict);

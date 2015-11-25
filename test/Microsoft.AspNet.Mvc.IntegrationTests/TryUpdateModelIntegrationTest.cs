@@ -1105,7 +1105,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                model,
                model.GetType(),
                prefix,
-               operationContext.HttpContext,
+               operationContext.ActionContext,
                modelState,
                operationContext.MetadataProvider,
                operationContext.ModelBinder,

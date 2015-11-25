@@ -8,7 +8,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.Formatters;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Moq;
@@ -46,7 +46,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var result = await ModelBindingHelper.TryUpdateModelAsync(
                 model,
                 string.Empty,
-                Mock.Of<HttpContext>(),
+                new ActionContext() { HttpContext = new DefaultHttpContext() },
                 new ModelStateDictionary(),
                 metadataProvider,
                 GetCompositeBinder(binder.Object),
@@ -88,7 +88,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var result = await ModelBindingHelper.TryUpdateModelAsync(
                 model,
                 "",
-                Mock.Of<HttpContext>(),
+                new ActionContext() { HttpContext = new DefaultHttpContext() },
                 modelStateDictionary,
                 modelMetadataProvider,
                 GetCompositeBinder(binders),
@@ -130,7 +130,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var result = await ModelBindingHelper.TryUpdateModelAsync(
                 model,
                 "",
-                Mock.Of<HttpContext>(),
+                new ActionContext() { HttpContext = new DefaultHttpContext() },
                 modelStateDictionary,
                 metadataProvider,
                 GetCompositeBinder(binders),
@@ -162,7 +162,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var result = await ModelBindingHelper.TryUpdateModelAsync(
                 model,
                 string.Empty,
-                Mock.Of<HttpContext>(),
+                new ActionContext() { HttpContext = new DefaultHttpContext() },
                 new ModelStateDictionary(),
                 metadataProvider,
                 GetCompositeBinder(binder.Object),
@@ -218,7 +218,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var result = await ModelBindingHelper.TryUpdateModelAsync(
                 model,
                 "",
-                Mock.Of<HttpContext>(),
+                new ActionContext() { HttpContext = new DefaultHttpContext() },
                 modelStateDictionary,
                 metadataProvider,
                 GetCompositeBinder(binders),
@@ -252,7 +252,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var result = await ModelBindingHelper.TryUpdateModelAsync(
                 model,
                 string.Empty,
-                Mock.Of<HttpContext>(),
+                new ActionContext() { HttpContext = new DefaultHttpContext() },
                 new ModelStateDictionary(),
                 metadataProvider,
                 GetCompositeBinder(binder.Object),
@@ -305,7 +305,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var result = await ModelBindingHelper.TryUpdateModelAsync(
                 model,
                 "",
-                Mock.Of<HttpContext>(),
+                new ActionContext() { HttpContext = new DefaultHttpContext() },
                 modelStateDictionary,
                 TestModelMetadataProvider.CreateDefaultProvider(),
                 GetCompositeBinder(binders),
@@ -359,7 +359,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             var result = await ModelBindingHelper.TryUpdateModelAsync(
                 model,
                 "",
-                Mock.Of<HttpContext>(),
+                new ActionContext() { HttpContext = new DefaultHttpContext() },
                 modelStateDictionary,
                 metadataProvider,
                 GetCompositeBinder(binders),
@@ -514,7 +514,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 model,
                 model.GetType(),
                 prefix: "",
-                httpContext: Mock.Of<HttpContext>(),
+                actionContext: new ActionContext() { HttpContext = new DefaultHttpContext() },
                 modelState: new ModelStateDictionary(),
                 metadataProvider: metadataProvider,
                 modelBinder: GetCompositeBinder(binder.Object),
@@ -570,20 +570,20 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             // Act
             var result = await ModelBindingHelper.TryUpdateModelAsync(
-                                                    model,
-                                                    model.GetType(),
-                                                    "",
-                                                    Mock.Of<HttpContext>(),
-                                                    modelStateDictionary,
-                                                    metadataProvider,
-                                                    GetCompositeBinder(binders),
-                                                    valueProvider,
-                                                    new List<IInputFormatter>(),
-                                                    new DefaultObjectValidator(
-                                                        new IExcludeTypeValidationFilter[0],
-                                                        metadataProvider),
-                                                    validator,
-                                                    includePredicate);
+                model,
+                model.GetType(),
+                "",
+                new ActionContext() { HttpContext = new DefaultHttpContext() },
+                modelStateDictionary,
+                metadataProvider,
+                GetCompositeBinder(binders),
+                valueProvider,
+                new List<IInputFormatter>(),
+                new DefaultObjectValidator(
+                    new IExcludeTypeValidationFilter[0],
+                    metadataProvider),
+                validator,
+                includePredicate);
 
             // Assert
             Assert.True(result);
@@ -610,7 +610,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 model,
                 modelType: model.GetType(),
                 prefix: "",
-                httpContext: Mock.Of<HttpContext>(),
+                actionContext: new ActionContext() { HttpContext = new DefaultHttpContext() },
                 modelState: new ModelStateDictionary(),
                 metadataProvider: metadataProvider,
                 modelBinder: GetCompositeBinder(binder.Object),
@@ -649,19 +649,19 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             // Act
             var result = await ModelBindingHelper.TryUpdateModelAsync(
-                                                    model,
-                                                    model.GetType(),
-                                                    "",
-                                                    Mock.Of<HttpContext>(),
-                                                    modelStateDictionary,
-                                                    TestModelMetadataProvider.CreateDefaultProvider(),
-                                                    GetCompositeBinder(binders),
-                                                    valueProvider,
-                                                    new List<IInputFormatter>(),
-                                                    new DefaultObjectValidator(
-                                                        new IExcludeTypeValidationFilter[0],
-                                                        metadataProvider),
-                                                    validator);
+                model,
+                model.GetType(),
+                "",
+                new ActionContext() { HttpContext = new DefaultHttpContext() },
+                modelStateDictionary,
+                TestModelMetadataProvider.CreateDefaultProvider(),
+                GetCompositeBinder(binders),
+                valueProvider,
+                new List<IInputFormatter>(),
+                new DefaultObjectValidator(
+                    new IExcludeTypeValidationFilter[0],
+                    metadataProvider),
+                validator);
 
             // Assert
             Assert.True(result);
@@ -687,7 +687,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                     model,
                     typeof(User),
                     "",
-                    Mock.Of<HttpContext>(),
+                    new ActionContext() { HttpContext = new DefaultHttpContext() },
                     new ModelStateDictionary(),
                     metadataProvider,
                     GetCompositeBinder(binder.Object),

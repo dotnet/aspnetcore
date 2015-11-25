@@ -221,9 +221,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 ModelState = new ModelStateDictionary(),
                 OperationBindingContext = new OperationBindingContext
                 {
+                    ActionContext = new ActionContext()
+                    {
+                        HttpContext = httpContext,
+                    },
                     ModelBinder = new FormFileModelBinder(),
                     MetadataProvider = metadataProvider,
-                    HttpContext = httpContext,
                 },
                 ValidationState = new ValidationStateDictionary(),
             };

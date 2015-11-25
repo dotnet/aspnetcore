@@ -54,9 +54,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                 ValueProvider = new SimpleValueProvider(),
                 OperationBindingContext = new OperationBindingContext
                 {
+                    ActionContext = new ActionContext()
+                    {
+                        HttpContext = new DefaultHttpContext(),
+                    },
                     ModelBinder = new CancellationTokenModelBinder(),
                     MetadataProvider = metadataProvider,
-                    HttpContext = new DefaultHttpContext(),
                 }
             };
 

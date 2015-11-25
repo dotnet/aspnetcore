@@ -209,7 +209,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             {
                 OperationBindingContext = new OperationBindingContext()
                 {
-                    HttpContext = new DefaultHttpContext(),
+                    ActionContext = new ActionContext()
+                    {
+                        HttpContext = new DefaultHttpContext(),
+                    },
                     MetadataProvider = new TestModelMetadataProvider(),
                 }
             };

@@ -681,9 +681,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 ModelMetadata = GetMetadataForType(typeof(TypeWithExcludedPropertiesUsingBindAttribute)),
                 OperationBindingContext = new OperationBindingContext
                 {
-                    HttpContext = new DefaultHttpContext
+                    ActionContext = new ActionContext()
                     {
-                        RequestServices = CreateServices()
+                        HttpContext = new DefaultHttpContext()
+                        {
+                            RequestServices = CreateServices(),
+                        },
                     },
                     ValidatorProvider = Mock.Of<IModelValidatorProvider>(),
                     MetadataProvider = TestModelMetadataProvider.CreateDefaultProvider(),

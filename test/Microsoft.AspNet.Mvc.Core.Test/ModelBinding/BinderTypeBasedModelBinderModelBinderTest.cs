@@ -94,8 +94,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
 
             var operationBindingContext = new OperationBindingContext
             {
+                ActionContext = new ActionContext()
+                {
+                    HttpContext = new DefaultHttpContext(),
+                },
                 MetadataProvider = metadataProvider,
-                HttpContext = new DefaultHttpContext(),
                 ValidatorProvider = Mock.Of<IModelValidatorProvider>(),
             };
 

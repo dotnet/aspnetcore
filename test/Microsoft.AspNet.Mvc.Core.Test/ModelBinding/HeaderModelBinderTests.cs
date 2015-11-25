@@ -129,9 +129,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
                 ModelState = new ModelStateDictionary(),
                 OperationBindingContext = new OperationBindingContext
                 {
+                    ActionContext = new ActionContext()
+                    {
+                        HttpContext = new DefaultHttpContext(),
+                    },
                     ModelBinder = new HeaderModelBinder(),
                     MetadataProvider = metadataProvider,
-                    HttpContext = new DefaultHttpContext()
                 },
                 BinderModelName = modelMetadata.BinderModelName,
                 BindingSource = modelMetadata.BindingSource,

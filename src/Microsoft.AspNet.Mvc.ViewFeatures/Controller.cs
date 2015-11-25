@@ -1446,7 +1446,7 @@ namespace Microsoft.AspNet.Mvc
             return ModelBindingHelper.TryUpdateModelAsync(
                 model,
                 prefix,
-                HttpContext,
+                ControllerContext,
                 ModelState,
                 MetadataProvider,
                 new CompositeModelBinder(ControllerContext.ModelBinders),
@@ -1487,7 +1487,7 @@ namespace Microsoft.AspNet.Mvc
             return ModelBindingHelper.TryUpdateModelAsync(
                 model,
                 prefix,
-                HttpContext,
+                ControllerContext,
                 ModelState,
                 MetadataProvider,
                 new CompositeModelBinder(ControllerContext.ModelBinders),
@@ -1528,7 +1528,7 @@ namespace Microsoft.AspNet.Mvc
             return ModelBindingHelper.TryUpdateModelAsync(
                 model,
                 prefix,
-                HttpContext,
+                ControllerContext,
                 ModelState,
                 MetadataProvider,
                 new CompositeModelBinder(ControllerContext.ModelBinders),
@@ -1577,7 +1577,7 @@ namespace Microsoft.AspNet.Mvc
             return ModelBindingHelper.TryUpdateModelAsync(
                 model,
                 prefix,
-                HttpContext,
+                ControllerContext,
                 ModelState,
                 MetadataProvider,
                 new CompositeModelBinder(ControllerContext.ModelBinders),
@@ -1625,7 +1625,7 @@ namespace Microsoft.AspNet.Mvc
             return ModelBindingHelper.TryUpdateModelAsync(
                 model,
                 prefix,
-                HttpContext,
+                ControllerContext,
                 ModelState,
                 MetadataProvider,
                 new CompositeModelBinder(ControllerContext.ModelBinders),
@@ -1665,7 +1665,7 @@ namespace Microsoft.AspNet.Mvc
                 model,
                 modelType,
                 prefix,
-                HttpContext,
+                ControllerContext,
                 ModelState,
                 MetadataProvider,
                 new CompositeModelBinder(ControllerContext.ModelBinders),
@@ -1718,7 +1718,7 @@ namespace Microsoft.AspNet.Mvc
                 model,
                 modelType,
                 prefix,
-                HttpContext,
+                ControllerContext,
                 ModelState,
                 MetadataProvider,
                 new CompositeModelBinder(ControllerContext.ModelBinders),

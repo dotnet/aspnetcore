@@ -224,11 +224,11 @@ namespace Microsoft.AspNet.Mvc.Controllers
         {
             return new OperationBindingContext
             {
+                ActionContext = context,
                 InputFormatters = context.InputFormatters,
                 ModelBinder = new CompositeModelBinder(context.ModelBinders),
                 ValidatorProvider = new CompositeModelValidatorProvider(context.ValidatorProviders),
                 MetadataProvider = _modelMetadataProvider,
-                HttpContext = context.HttpContext,
                 ValueProvider = new CompositeValueProvider(context.ValueProviders),
             };
         }

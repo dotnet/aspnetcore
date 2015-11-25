@@ -88,12 +88,15 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 ModelState = new ModelStateDictionary(),
                 OperationBindingContext = new OperationBindingContext
                 {
+                    ActionContext = new ActionContext()
+                    {
+                        HttpContext = new DefaultHttpContext()
+                        {
+                            RequestServices = services.BuildServiceProvider(),
+                        }
+                    },
                     ModelBinder = new HeaderModelBinder(),
                     MetadataProvider = metadataProvider,
-                    HttpContext = new DefaultHttpContext()
-                    {
-                        RequestServices = services.BuildServiceProvider(),
-                    },
                 },
                 BinderModelName = modelMetadata.BinderModelName,
                 BindingSource = modelMetadata.BindingSource,
