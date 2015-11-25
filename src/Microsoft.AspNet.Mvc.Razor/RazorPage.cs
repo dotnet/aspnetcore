@@ -48,18 +48,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <summary>
         /// An <see cref="HttpContext"/> representing the current request execution.
         /// </summary>
-        public HttpContext Context
-        {
-            get
-            {
-                if (ViewContext == null)
-                {
-                    return null;
-                }
-
-                return ViewContext.HttpContext;
-            }
-        }
+        public HttpContext Context => ViewContext?.HttpContext;
 
         /// <inheritdoc />
         public string Path { get; set; }
@@ -102,41 +91,18 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <summary>
         /// Gets the <see cref="ClaimsPrincipal"/> of the current logged in user.
         /// </summary>
-        public virtual ClaimsPrincipal User
-        {
-            get
-            {
-                if (Context == null)
-                {
-                    return null;
-                }
-
-                return Context.User;
-            }
-        }
+        public virtual ClaimsPrincipal User => Context?.User;
 
         /// <summary>
         /// Gets the dynamic view data dictionary.
         /// </summary>
-        public dynamic ViewBag
-        {
-            get
-            {
-                return ViewContext?.ViewBag;
-            }
-        }
+        public dynamic ViewBag => ViewContext?.ViewBag;
 
         /// <summary>
         /// Gets the <see cref="ITempDataDictionary"/> from the <see cref="ViewContext"/>.
         /// </summary>
         /// <remarks>Returns null if <see cref="ViewContext"/> is null.</remarks>
-        public ITempDataDictionary TempData
-        {
-            get
-            {
-                return ViewContext?.TempData;
-            }
-        }
+        public ITempDataDictionary TempData => ViewContext?.TempData;
 
         /// <inheritdoc />
         public Func<TextWriter, Task> RenderBodyDelegateAsync { get; set; }
