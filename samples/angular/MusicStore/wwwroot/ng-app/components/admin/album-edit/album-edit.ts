@@ -23,14 +23,15 @@ export class AlbumEdit {
     constructor(fb: ng.FormBuilder, http: Http, routeParam: router.RouteParams) {
         this._http = http;
 
-        http.get('/api/albums/' + routeParam.params['albumId']).subscribe(result => {
+        var albumId = parseInt(routeParam.params['albumId']);
+        http.get('/api/albums/' + albumId).subscribe(result => {
             var json = result.json();
             this.originalAlbum = json;
-            (<ng.Control>this.form.controls['title']).updateValue(json.Title);
-            (<ng.Control>this.form.controls['price']).updateValue(json.Price);
-            (<ng.Control>this.form.controls['artist']).updateValue(json.ArtistId);
-            (<ng.Control>this.form.controls['genre']).updateValue(json.GenreId);
-            (<ng.Control>this.form.controls['albumArtUrl']).updateValue(json.AlbumArtUrl);
+            (<ng.Control>this.form.controls['Title']).updateValue(json.Title);
+            (<ng.Control>this.form.controls['Price']).updateValue(json.Price);
+            (<ng.Control>this.form.controls['ArtistId']).updateValue(json.ArtistId);
+            (<ng.Control>this.form.controls['GenreId']).updateValue(json.GenreId);
+            (<ng.Control>this.form.controls['AlbumArtUrl']).updateValue(json.AlbumArtUrl);
         });
 
         http.get('/api/artists/lookup').subscribe(result => {
@@ -42,11 +43,12 @@ export class AlbumEdit {
         });
 
         this.form = fb.group(<any>{
-            artist: fb.control('', ng.Validators.required),
-            genre: fb.control('', ng.Validators.required),
-            title: fb.control('', ng.Validators.required),
-            price: fb.control('', ng.Validators.compose([ng.Validators.required, AlbumEdit._validatePrice])),
-            albumArtUrl: fb.control('', ng.Validators.required)
+            AlbumId: fb.control(albumId),
+            ArtistId: fb.control(0, ng.Validators.required),
+            GenreId: fb.control(0, ng.Validators.required),
+            Title: fb.control('', ng.Validators.required),
+            Price: fb.control('', ng.Validators.compose([ng.Validators.required, AlbumEdit._validatePrice])),
+            AlbumArtUrl: fb.control('', ng.Validators.required)
         });
     }
 
@@ -62,14 +64,7 @@ export class AlbumEdit {
             (<any>window).fetch(`/api/albums/${ albumId }/update`, {
                 method: 'put',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    AlbumArtUrl: controls['albumArtUrl'].value,
-                    AlbumId: albumId,
-                    ArtistId: controls['artist'].value,
-                    GenreId: controls['genre'].value,
-                    Price: controls['price'].value,
-                    Title: controls['title'].value
-                })
+                body: JSON.stringify(this.form.value)
             }).then(response => {
                 console.log(response);
             });
@@ -77,6 +72,6 @@ export class AlbumEdit {
     }
 
     private static _validatePrice(control: ng.Control): { [key: string]: boolean } {
-        return /^\d+\.\d+$/.test(control.value) ? null : { price: true };
+        return /^\d+\.\d+$/.test(control.value) ? null : { Price: true };
     }
 }

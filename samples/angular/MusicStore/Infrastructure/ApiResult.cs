@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Newtonsoft.Json;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -13,16 +12,13 @@ namespace MusicStore.Infrastructure
         public ApiResult(ModelStateDictionary modelState)
             : this()
         {
-            if (modelState.Any(m => m.Value.Errors.Count > 0))
+            if (modelState.Any(m => m.Value.Errors.Any()))
             {
                 StatusCode = 400;
                 Message = "The model submitted was invalid. Please correct the specified errors and try again.";
                 ModelErrors = modelState
-                    .SelectMany(m => m.Value.Errors.Select(me => new ModelError
-                    {
-                        FieldName = m.Key,
-                        ErrorMessage = me.ErrorMessage
-                    }));
+                    .Where(m => m.Value.Errors.Any())
+                    .ToDictionary(m => m.Key, m => m.Value.Errors.Select(me => me.ErrorMessage ));
             }
         }
 
@@ -40,7 +36,7 @@ namespace MusicStore.Infrastructure
         public object Data { get; set; }
 
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-        public IEnumerable<ModelError> ModelErrors { get; set; }
+        public IDictionary<string, IEnumerable<string>> ModelErrors { get; set; }
 
         public override Task ExecuteResultAsync(ActionContext context)
         {
@@ -49,15 +45,7 @@ namespace MusicStore.Infrastructure
                 context.HttpContext.Response.StatusCode = StatusCode.Value;
             }
 
-            var json = new JsonResult(this);
-            return json.ExecuteResultAsync(context);
-        }
-
-        public class ModelError
-        {
-            public string FieldName { get; set; }
-
-            public string ErrorMessage { get; set; }
+            return new ObjectResult(this).ExecuteResultAsync(context);
         }
     }
 }

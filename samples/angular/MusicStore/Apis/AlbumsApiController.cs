@@ -113,8 +113,7 @@ namespace MusicStore.Apis
         }
 
         [HttpPut("{albumId:int}/update")]
-        [Authorize("app-ManageStore")]
-        public async Task<ActionResult> UpdateAlbum(int albumId, [FromBody]AlbumChangeDto album)
+        public async Task<ActionResult> UpdateAlbum(int albumId, [FromBody] AlbumChangeDto album)
         {
             if (!ModelState.IsValid)
             {
