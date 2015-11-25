@@ -5,6 +5,8 @@ import { Http, HTTP_BINDINGS, Headers } from 'angular2/http';
 import { AlbumDeletePrompt } from '../album-delete-prompt/album-delete-prompt';
 import { FormField } from '../form-field/form-field';
 
+const ContentTypeJson = 'application/json';
+
 @ng.Component({
     selector: 'album-edit'
 })
@@ -63,10 +65,29 @@ export class AlbumEdit {
             var albumId = this.originalAlbum.AlbumId;
             (<any>window).fetch(`/api/albums/${ albumId }/update`, {
                 method: 'put',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': ContentTypeJson },
                 body: JSON.stringify(this.form.value)
             }).then(response => {
-                console.log(response);
+                if (response.status >= 200 && response.status < 300) {
+                    // TODO: Display success message
+                } else {
+                    if (response.headers.get('Content-Type').indexOf(ContentTypeJson) === 0) {
+                        return response.json().then((responseJson: ValidationResponse) => {
+                            Object.keys(responseJson.ModelErrors).forEach(key => {
+                                responseJson.ModelErrors[key].forEach(errorMessage => {
+                                    // TODO: There has to be a better API for this
+                                    if (!this.form.controls[key].errors) {
+                                        (<any>this.form.controls[key])._errors = {};
+                                    }
+                                    
+                                    this.form.controls[key].errors[errorMessage] = true;
+                                });
+                            });
+                        });
+                    } else {
+                        // TODO: Display generic 'unknown error'
+                    }
+                }
             });
         }
     }
@@ -74,4 +95,9 @@ export class AlbumEdit {
     private static _validatePrice(control: ng.Control): { [key: string]: boolean } {
         return /^\d+\.\d+$/.test(control.value) ? null : { Price: true };
     }
+}
+
+interface ValidationResponse {
+    Message: string;
+    ModelErrors: { [key: string]: string[] };
 }
