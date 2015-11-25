@@ -189,7 +189,6 @@
             "Microsoft.AspNet.Mvc.ViewFeatures": { },
             "Microsoft.AspNet.Mvc.WebApiCompatShim": { },
             "Microsoft.AspNet.Owin": { },
-            "Microsoft.AspNet.PageExecutionInstrumentation.Interfaces": { },
             "Microsoft.AspNet.Proxy": { },
             "Microsoft.AspNet.Razor": { },
             "Microsoft.AspNet.Razor.Runtime": { },
@@ -323,7 +322,6 @@
             "Microsoft.Dnx.Runtime.Sources": { },
             "Microsoft.Dnx.TestHost.Client.Sources": { },
             "Microsoft.Extensions.ActivatorUtilities.Sources": { },
-            "Microsoft.Extensions.BufferedHtmlContent.Sources": { },
             "Microsoft.Extensions.ClosedGenericMatcher.Sources": { },
             "Microsoft.Extensions.CodeGeneration.Sources": { },
             "Microsoft.Extensions.CommandLineUtils.Sources": { },
@@ -335,7 +333,6 @@
             "Microsoft.Extensions.SecurityHelper.Sources": { },
             "Microsoft.Extensions.TypeNameHelper.Sources": { },
             "PageGenerator": { },
-            "Placeholder": { },
             "xunit.execution.AspNet": { },
             "xunit.runner.aspnet": { },
             "xunit.runner.utility.AspNet": { }
