@@ -41,10 +41,9 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                         {
                             if (input.Attribute("name") != null &&
                                 input.Attribute("type") != null &&
-                                (input.Attribute("name").Value == "__RequestVerificationToken" &&
-                                 input.Attribute("type").Value == "hidden" ||
-                                 input.Attribute("name").Value == "HtmlEncode[[__RequestVerificationToken]]" &&
-                                 input.Attribute("type").Value == "HtmlEncode[[hidden]]"))
+                                input.Attribute("type").Value == "hidden" &&
+                                (input.Attribute("name").Value == "__RequestVerificationToken" ||
+                                 input.Attribute("name").Value == "HtmlEncode[[__RequestVerificationToken]]"))
                             {
                                 yield return input.Attributes("value").First().Value;
                             }

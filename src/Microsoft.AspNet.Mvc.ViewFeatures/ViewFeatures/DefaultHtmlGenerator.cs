@@ -132,8 +132,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                 throw new ArgumentNullException(nameof(viewContext));
             }
 
-            var tag = _antiforgery.GetHtml(viewContext.HttpContext);
-            return new HtmlString(tag);
+            return _antiforgery.GetHtml(viewContext.HttpContext);
         }
 
         /// <inheritdoc />

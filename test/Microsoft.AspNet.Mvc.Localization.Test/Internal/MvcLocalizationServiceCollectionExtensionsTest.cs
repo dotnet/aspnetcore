@@ -56,11 +56,6 @@ namespace Microsoft.AspNet.Mvc.Localization.Internal
                 },
                 service =>
                 {
-                    Assert.Equal(typeof(HtmlEncoder), service.ServiceType);
-                    Assert.Equal(ServiceLifetime.Singleton, service.Lifetime);
-                },
-                service =>
-                {
                     Assert.Equal(typeof(IStringLocalizerFactory), service.ServiceType);
                     Assert.Equal(typeof(ResourceManagerStringLocalizerFactory), service.ImplementationType);
                     Assert.Equal(ServiceLifetime.Singleton, service.Lifetime);
@@ -198,11 +193,6 @@ namespace Microsoft.AspNet.Mvc.Localization.Internal
                 },
                 service =>
                 {
-                    Assert.Equal(typeof(HtmlEncoder), service.ServiceType);
-                    Assert.Equal(ServiceLifetime.Singleton, service.Lifetime);
-                },
-                service =>
-                {
                     Assert.Equal(typeof(IStringLocalizerFactory), service.ServiceType);
                     Assert.Equal(typeof(ResourceManagerStringLocalizerFactory), service.ImplementationType);
                     Assert.Equal(ServiceLifetime.Singleton, service.Lifetime);
@@ -274,11 +264,6 @@ namespace Microsoft.AspNet.Mvc.Localization.Internal
                     Assert.Equal(typeof(IViewLocalizer), service.ServiceType);
                     Assert.Equal(typeof(ViewLocalizer), service.ImplementationType);
                     Assert.Equal(ServiceLifetime.Transient, service.Lifetime);
-                },
-                service =>
-                {
-                    Assert.Equal(typeof(HtmlEncoder), service.ServiceType);
-                    Assert.Equal(ServiceLifetime.Singleton, service.Lifetime);
                 },
                 service =>
                 {

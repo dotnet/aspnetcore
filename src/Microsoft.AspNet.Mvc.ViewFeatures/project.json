@@ -31,7 +31,8 @@
     "Microsoft.Extensions.PropertyHelper.Sources": {
       "version": "1.0.0-*",
       "type": "build"
-    }
+    },
+    "Microsoft.Extensions.WebEncoders": "1.0.0-*"
   },
   "frameworks": {
     "net451": {},

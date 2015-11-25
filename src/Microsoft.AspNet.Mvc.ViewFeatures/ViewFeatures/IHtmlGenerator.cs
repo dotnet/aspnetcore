@@ -3,7 +3,6 @@
 
 using System.Collections.Generic;
 using Microsoft.AspNet.Html.Abstractions;
-using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.AspNet.Mvc.Rendering;
 
@@ -33,14 +32,17 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             object htmlAttributes);
 
         /// <summary>
-        /// Genrate an &lt;input type="hidden".../&gt; element containing an antiforgery token.
+        /// Generate an &lt;input type="hidden".../&gt; element containing an antiforgery token.
         /// </summary>
         /// <param name="viewContext">The <see cref="ViewContext"/> instance for the current scope.</param>
-        /// <returns>An <see cref="IHtmlContent"/> instance for the &lt;input type="hidden".../&gt; element.</returns>
+        /// <returns>
+        /// An <see cref="IHtmlContent"/> instance for the &lt;input type="hidden".../&gt; element. Intended to be used
+        /// inside a &lt;form&gt; element.
+        /// </returns>
         IHtmlContent GenerateAntiforgery(ViewContext viewContext);
 
         /// <summary>
-        /// Generate a &lt;input type="checkbox".../&gt; element. 
+        /// Generate a &lt;input type="checkbox".../&gt; element.
         /// </summary>
         /// <param name="viewContext">The <see cref="ViewContext"/> instance for the current scope.</param>
         /// <param name="modelExplorer">The <see cref="ModelExplorer"/> for the model.</param>
