@@ -3,8 +3,8 @@
 
 using System;
 using System.Diagnostics;
-using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Html.Abstractions;
 using Microsoft.AspNet.Http;
 using Microsoft.Extensions.OptionsModel;
 
@@ -16,7 +16,6 @@ namespace Microsoft.AspNet.Antiforgery
     /// </summary>
     public class DefaultAntiforgery : IAntiforgery
     {
-        private readonly HtmlEncoder _htmlEncoder;
         private readonly AntiforgeryOptions _options;
         private readonly IAntiforgeryTokenGenerator _tokenGenerator;
         private readonly IAntiforgeryTokenSerializer _tokenSerializer;
@@ -26,18 +25,16 @@ namespace Microsoft.AspNet.Antiforgery
             IOptions<AntiforgeryOptions> antiforgeryOptionsAccessor,
             IAntiforgeryTokenGenerator tokenGenerator,
             IAntiforgeryTokenSerializer tokenSerializer,
-            IAntiforgeryTokenStore tokenStore,
-            HtmlEncoder htmlEncoder)
+            IAntiforgeryTokenStore tokenStore)
         {
             _options = antiforgeryOptionsAccessor.Value;
             _tokenGenerator = tokenGenerator;
             _tokenSerializer = tokenSerializer;
             _tokenStore = tokenStore;
-            _htmlEncoder = htmlEncoder;
         }
 
         /// <inheritdoc />
-        public string GetHtml(HttpContext context)
+        public IHtmlContent GetHtml(HttpContext context)
         {
             if (context == null)
             {
@@ -48,12 +45,17 @@ namespace Microsoft.AspNet.Antiforgery
 
             var tokenSet = GetAndStoreTokens(context);
 
-            var inputTag = string.Format(
-                "<input name=\"{0}\" type=\"{1}\" value=\"{2}\" />",
-                _htmlEncoder.Encode(_options.FormFieldName),
-                _htmlEncoder.Encode("hidden"),
-                _htmlEncoder.Encode(tokenSet.FormToken));
-            return inputTag;
+            // Though FormToken normally contains only US-ASCII letters, numbers, '-', and '_', must assume the
+            // IAntiforgeryTokenSerializer implementation has been overridden. Similarly, users may choose a
+            // FormFieldName containing almost any character.
+            var content = new HtmlContentBuilder()
+                .AppendHtml("<input name=\"")
+                .Append(_options.FormFieldName)
+                .AppendHtml("\" type=\"hidden\" value=\"")
+                .Append(tokenSet.FormToken)
+                .AppendHtml("\" />");
+
+            return content;
         }
 
         /// <inheritdoc />
@@ -71,6 +73,7 @@ namespace Microsoft.AspNet.Antiforgery
             {
                 SaveCookieTokenAndHeader(context, tokenSet.CookieToken);
             }
+
             return Serialize(tokenSet);
         }
 

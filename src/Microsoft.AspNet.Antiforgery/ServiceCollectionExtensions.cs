@@ -18,7 +18,6 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             services.AddDataProtection();
-            services.AddWebEncoders();
 
             // Don't overwrite any options setups that a user may have added.
             services.TryAddEnumerable(

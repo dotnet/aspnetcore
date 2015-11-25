@@ -7,6 +7,7 @@
     "Microsoft.AspNet.Antiforgery": "1.0.0-*",
     "Microsoft.AspNet.Http": "1.0.0-*",
     "Microsoft.Extensions.DependencyInjection": "1.0.0-*",
+    "Microsoft.Extensions.WebEncoders": "1.0.0-*",
     "xunit.runner.aspnet": "2.0.0-aspnet-*"
   },
   "commands": {

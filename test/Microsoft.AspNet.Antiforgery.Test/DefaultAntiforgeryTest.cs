@@ -2,8 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Html.Abstractions;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.Extensions.OptionsModel;
@@ -73,8 +75,7 @@ namespace Microsoft.AspNet.Antiforgery
             var antiforgery = GetAntiforgery(options);
 
             // Act & Assert
-            var exception = Assert.Throws<InvalidOperationException>(
-                () => antiforgery.GetHtml(httpContext));
+            var exception = Assert.Throws<InvalidOperationException>(() => antiforgery.GetHtml(httpContext));
             Assert.Equal(
                  @"The antiforgery system has the configuration value AntiforgeryOptions.RequireSsl = true, " +
                  "but the current request is not an SSL request.",
@@ -159,15 +160,22 @@ namespace Microsoft.AspNet.Antiforgery
             // Make sure the existing cookie is invalid.
             var context = CreateMockContext(options, isOldCookieValid: false);
             var antiforgery = GetAntiforgery(context);
+            var encoder = new HtmlTestEncoder();
 
             // Act
             var inputElement = antiforgery.GetHtml(context.HttpContext);
 
             // Assert
-            Assert.Equal(
-                @"<input name=""HtmlEncode[[form-field-name]]"" type=""HtmlEncode[[hidden]]"" " +
-                @"value=""HtmlEncode[[serialized-form-token]]"" />",
-                inputElement);
+            using (var writer = new StringWriter())
+            {
+                inputElement.WriteTo(writer, encoder);
+
+                Assert.Equal(
+                    @"<input name=""HtmlEncode[[form-field-name]]"" type=""hidden"" " +
+                    @"value=""HtmlEncode[[serialized-form-token]]"" />",
+                    writer.ToString());
+            }
+
             context.TokenStore.Verify();
         }
 
@@ -185,21 +193,31 @@ namespace Microsoft.AspNet.Antiforgery
             var antiforgery = GetAntiforgery(context);
 
             // This will cause the cookieToken to be null.
-            context.TokenStore.Setup(o => o.GetCookieToken(context.HttpContext))
-                              .Throws(new Exception("should be swallowed"));
+            context.TokenStore
+                .Setup(o => o.GetCookieToken(context.HttpContext))
+                .Throws(new Exception("should be swallowed"));
 
             // Setup so that the null cookie token returned is treated as invalid.
-            context.TokenGenerator.Setup(o => o.IsCookieTokenValid(null))
-                                 .Returns(false);
+            context.TokenGenerator
+                .Setup(o => o.IsCookieTokenValid(null))
+                .Returns(false);
+
+            var encoder = new HtmlTestEncoder();
 
             // Act
             var inputElement = antiforgery.GetHtml(context.HttpContext);
 
             // Assert
-            Assert.Equal(
-                @"<input name=""HtmlEncode[[form-field-name]]"" type=""HtmlEncode[[hidden]]"" " +
-                @"value=""HtmlEncode[[serialized-form-token]]"" />",
-                inputElement);
+            using (var writer = new StringWriter())
+            {
+                inputElement.WriteTo(writer, encoder);
+
+                Assert.Equal(
+                    @"<input name=""HtmlEncode[[form-field-name]]"" type=""hidden"" " +
+                    @"value=""HtmlEncode[[serialized-form-token]]"" />",
+                    writer.ToString());
+            }
+
             context.TokenStore.Verify();
         }
 
@@ -215,15 +233,21 @@ namespace Microsoft.AspNet.Antiforgery
             // Make sure the existing cookie is valid and use the same cookie for the mock Token Provider.
             var context = CreateMockContext(options, useOldCookie: true, isOldCookieValid: true);
             var antiforgery = GetAntiforgery(context);
+            var encoder = new HtmlTestEncoder();
 
             // Act
             var inputElement = antiforgery.GetHtml(context.HttpContext);
 
             // Assert
-            Assert.Equal(
-                @"<input name=""HtmlEncode[[form-field-name]]"" type=""HtmlEncode[[hidden]]"" " +
-                @"value=""HtmlEncode[[serialized-form-token]]"" />",
-                inputElement);
+            using (var writer = new StringWriter())
+            {
+                inputElement.WriteTo(writer, encoder);
+
+                Assert.Equal(
+                    @"<input name=""HtmlEncode[[form-field-name]]"" type=""hidden"" " +
+                    @"value=""HtmlEncode[[serialized-form-token]]"" />",
+                    writer.ToString());
+            }
         }
 
         [Theory]
@@ -237,12 +261,12 @@ namespace Microsoft.AspNet.Antiforgery
                 SuppressXFrameOptionsHeader = suppressXFrameOptions
             };
 
-            // Genreate a new cookie.
+            // Generate a new cookie.
             var context = CreateMockContext(options, useOldCookie: false, isOldCookieValid: false);
             var antiforgery = GetAntiforgery(context);
 
             // Act
-            var inputElement = antiforgery.GetHtml(context.HttpContext);
+            antiforgery.GetHtml(context.HttpContext);
 
             // Assert
             string xFrameOptions = context.HttpContext.Response.Headers["X-Frame-Options"];
@@ -253,7 +277,7 @@ namespace Microsoft.AspNet.Antiforgery
         public void GetTokens_ExistingInvalidCookieToken_GeneratesANewCookieTokenAndANewFormToken()
         {
             // Arrange
-            // Genreate a new cookie.
+            // Generate a new cookie.
             var context = CreateMockContext(
                 new AntiforgeryOptions(),
                 useOldCookie: false,
@@ -328,8 +352,9 @@ namespace Microsoft.AspNet.Antiforgery
 
             // Assert
             // We shouldn't have saved the cookie because it already existed.
-            context.TokenStore.Verify(t => t.SaveCookieToken(It.IsAny<HttpContext>(), It.IsAny<AntiforgeryToken>()), Times.Never);
-            
+            context.TokenStore.Verify(
+                t => t.SaveCookieToken(It.IsAny<HttpContext>(), It.IsAny<AntiforgeryToken>()), Times.Never);
+
             Assert.Equal("serialized-old-cookie-token", tokenSet.CookieToken);
             Assert.Equal("serialized-form-token", tokenSet.FormToken);
         }
@@ -348,7 +373,8 @@ namespace Microsoft.AspNet.Antiforgery
             var tokenSet = antiforgery.GetAndStoreTokens(context.HttpContext);
 
             // Assert
-            context.TokenStore.Verify(t => t.SaveCookieToken(It.IsAny<HttpContext>(), It.IsAny<AntiforgeryToken>()), Times.Once);
+            context.TokenStore.Verify(
+                t => t.SaveCookieToken(It.IsAny<HttpContext>(), It.IsAny<AntiforgeryToken>()), Times.Once);
 
             Assert.Equal("serialized-new-cookie-token", tokenSet.CookieToken);
             Assert.Equal("serialized-form-token", tokenSet.FormToken);
@@ -360,22 +386,26 @@ namespace Microsoft.AspNet.Antiforgery
             // Arrange
             var context = CreateMockContext(new AntiforgeryOptions());
 
-            context.TokenSerializer.Setup(o => o.Deserialize("cookie-token"))
-                                   .Returns(context.TestTokenSet.OldCookieToken);
-            context.TokenSerializer.Setup(o => o.Deserialize("form-token"))
-                                   .Returns(context.TestTokenSet.FormToken);
+            context.TokenSerializer
+                .Setup(o => o.Deserialize("cookie-token"))
+                .Returns(context.TestTokenSet.OldCookieToken);
+            context.TokenSerializer
+                .Setup(o => o.Deserialize("form-token"))
+                .Returns(context.TestTokenSet.FormToken);
 
-            context.TokenGenerator.Setup(o => o.ValidateTokens(
-                                                context.HttpContext,
-                                                context.TestTokenSet.OldCookieToken, context.TestTokenSet.FormToken))
-                                 .Throws(new InvalidOperationException("my-message"));
+            context.TokenGenerator
+                .Setup(o => o.ValidateTokens(
+                    context.HttpContext,
+                    context.TestTokenSet.OldCookieToken,
+                    context.TestTokenSet.FormToken))
+                .Throws(new InvalidOperationException("my-message"));
             context.TokenStore = null;
             var antiforgery = GetAntiforgery(context);
 
             // Act & assert
             var exception = Assert.Throws<InvalidOperationException>(
                     () => antiforgery.ValidateTokens(
-                        context.HttpContext, 
+                        context.HttpContext,
                         new AntiforgeryTokenSet("form-token", "cookie-token")));
             Assert.Equal("my-message", exception.Message);
         }
@@ -386,15 +416,19 @@ namespace Microsoft.AspNet.Antiforgery
             // Arrange
             var context = CreateMockContext(new AntiforgeryOptions());
 
-            context.TokenSerializer.Setup(o => o.Deserialize("cookie-token"))
-                                   .Returns(context.TestTokenSet.OldCookieToken);
-            context.TokenSerializer.Setup(o => o.Deserialize("form-token"))
-                                   .Returns(context.TestTokenSet.FormToken);
+            context.TokenSerializer
+                .Setup(o => o.Deserialize("cookie-token"))
+                .Returns(context.TestTokenSet.OldCookieToken);
+            context.TokenSerializer
+                .Setup(o => o.Deserialize("form-token"))
+                .Returns(context.TestTokenSet.FormToken);
 
-            context.TokenGenerator.Setup(o => o.ValidateTokens(
-                                                context.HttpContext,
-                                                context.TestTokenSet.OldCookieToken, context.TestTokenSet.FormToken))
-                                 .Verifiable();
+            context.TokenGenerator
+                .Setup(o => o.ValidateTokens(
+                    context.HttpContext,
+                    context.TestTokenSet.OldCookieToken,
+                    context.TestTokenSet.FormToken))
+                .Verifiable();
             context.TokenStore = null;
             var antiforgery = GetAntiforgery(context);
 
@@ -480,7 +514,7 @@ namespace Microsoft.AspNet.Antiforgery
                 SuppressXFrameOptionsHeader = suppressXFrameOptions
             };
 
-            // Genreate a new cookie.
+            // Generate a new cookie.
             var context = CreateMockContext(options, useOldCookie: false, isOldCookieValid: false);
             var antiforgery = GetAntiforgery(context);
 
@@ -508,8 +542,7 @@ namespace Microsoft.AspNet.Antiforgery
                 antiforgeryOptionsAccessor: optionsManager,
                 tokenGenerator: tokenGenerator,
                 tokenSerializer: tokenSerializer,
-                tokenStore: tokenStore,
-                htmlEncoder: new HtmlTestEncoder());
+                tokenStore: tokenStore);
         }
 
         private HttpContext GetHttpContext()
@@ -522,9 +555,9 @@ namespace Microsoft.AspNet.Antiforgery
         private DefaultAntiforgery GetAntiforgery(AntiforgeryMockContext context)
         {
             return GetAntiforgery(
-                context.Options, 
-                context.TokenGenerator?.Object, 
-                context.TokenSerializer?.Object, 
+                context.Options,
+                context.TokenGenerator?.Object,
+                context.TokenSerializer?.Object,
                 context.TokenStore?.Object);
         }
 
@@ -538,7 +571,7 @@ namespace Microsoft.AspNet.Antiforgery
             var mockTokenStore = new Mock<IAntiforgeryTokenStore>(MockBehavior.Strict);
             mockTokenStore.Setup(o => o.GetCookieToken(context))
                           .Returns(oldCookieToken);
-            
+
             mockTokenStore.Setup(o => o.GetRequestTokensAsync(context))
                           .Returns(() => Task.FromResult(new AntiforgeryTokenSet(
                               testTokenSet.FormTokenString,
