@@ -268,7 +268,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 
             var localizedString = new LocalizedString("Length", "Longueur est invalide");
             var stringLocalizer = new Mock<IStringLocalizer>();
-            stringLocalizer.Setup(s => s["Length"]).Returns(localizedString);
+            stringLocalizer.Setup(s => s["Length", It.IsAny<object[]>()]).Returns(localizedString);
 
             var validator = new DataAnnotationsModelValidator(attribute.Object, stringLocalizer.Object);
             var validationContext = new ModelValidationContext()

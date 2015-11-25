@@ -61,7 +61,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
                     string.IsNullOrEmpty(Attribute.ErrorMessageResourceName) &&
                     Attribute.ErrorMessageResourceType == null)
                 {
-                    errorMessage = _stringLocalizer[Attribute.ErrorMessage];
+                    var displayName = validationContext.Metadata.GetDisplayName();
+                    errorMessage = _stringLocalizer[Attribute.ErrorMessage, displayName];
                 }
 
                 var validationResult = new ModelValidationResult(errorMemberName, errorMessage ?? result.ErrorMessage);
