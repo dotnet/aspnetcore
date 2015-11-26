@@ -642,9 +642,9 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
 
             serviceContainer.AddSingleton(typeof(IEnumerable<IActionDescriptorProvider>), list);
 
-            var actionCollectionDescriptorProvider = new DefaultActionDescriptorsCollectionProvider(
+            var actionDescriptorsCollectionProvider = new DefaultActionDescriptorsCollectionProvider(
                 serviceContainer.BuildServiceProvider());
-            var decisionTreeProvider = new ActionSelectorDecisionTreeProvider(actionCollectionDescriptorProvider);
+            var decisionTreeProvider = new ActionSelectorDecisionTreeProvider(actionDescriptorsCollectionProvider);
 
             var actionConstraintProviders = new[]
             {
@@ -652,7 +652,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
             };
 
             var defaultActionSelector = new DefaultActionSelector(
-                actionCollectionDescriptorProvider,
+                actionDescriptorsCollectionProvider,
                 decisionTreeProvider,
                 actionConstraintProviders,
                 NullLoggerFactory.Instance);

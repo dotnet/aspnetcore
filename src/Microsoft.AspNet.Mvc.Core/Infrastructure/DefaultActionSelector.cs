@@ -235,20 +235,6 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
             return matchingRouteConstraints.Count > 0;
         }
 
-        private IReadOnlyList<ActionDescriptor> GetActions()
-        {
-            var descriptors = _actionDescriptorsCollectionProvider.ActionDescriptors;
-
-            if (descriptors == null)
-            {
-                throw new InvalidOperationException(
-                    Resources.FormatPropertyOfTypeCannotBeNull("ActionDescriptors",
-                                                               _actionDescriptorsCollectionProvider.GetType()));
-            }
-
-            return descriptors.Items;
-        }
-
         private IReadOnlyList<IActionConstraint> GetConstraints(HttpContext httpContext, ActionDescriptor action)
         {
             if (action.ActionConstraints == null || action.ActionConstraints.Count == 0)

@@ -101,7 +101,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
             if (objectType == null || objectType == typeof(object))
             {
                 objectType = result.Value?.GetType();
-            };
+            }
 
             var formatterContext = new OutputFormatterWriteContext(
                 context.HttpContext,
