@@ -1,11 +1,9 @@
 import * as ng from 'angular2/angular2';
 import * as router from 'angular2/router';
 import * as models from '../../../models/models';
-import { Http, HTTP_BINDINGS, Headers } from 'angular2/http';
+import { Http, HTTP_BINDINGS, Headers, Response } from 'angular2/http';
 import { AlbumDeletePrompt } from '../album-delete-prompt/album-delete-prompt';
 import { FormField } from '../form-field/form-field';
-
-const ContentTypeJson = 'application/json';
 
 @ng.Component({
     selector: 'album-edit'
@@ -19,6 +17,7 @@ export class AlbumEdit {
     public artists: models.Artist[];
     public genres: models.Genre[];
     public originalAlbum: models.Album;
+    public changesSaved: boolean;
 
     private _http: Http;
 
@@ -52,6 +51,10 @@ export class AlbumEdit {
             Price: fb.control('', ng.Validators.compose([ng.Validators.required, AlbumEdit._validatePrice])),
             AlbumArtUrl: fb.control('', ng.Validators.required)
         });
+        
+        this.form.valueChanges.observer({  
+            next: _ => { this.changesSaved = false; }
+        });
     }
 
     public onSubmitModelBased() {
@@ -63,30 +66,22 @@ export class AlbumEdit {
         if (this.form.valid) {
             var controls = this.form.controls;
             var albumId = this.originalAlbum.AlbumId;
-            (<any>window).fetch(`/api/albums/${ albumId }/update`, {
-                method: 'put',
-                headers: { 'Content-Type': ContentTypeJson },
-                body: JSON.stringify(this.form.value)
-            }).then(response => {
-                if (response.status >= 200 && response.status < 300) {
-                    // TODO: Display success message
+            
+            this._putJson(`/api/albums/${ albumId }/update`, this.form.value).then(response => {
+                if (response.status === 200) {
+                    this.changesSaved = true;
                 } else {
-                    if (response.headers.get('Content-Type').indexOf(ContentTypeJson) === 0) {
-                        return response.json().then((responseJson: ValidationResponse) => {
-                            Object.keys(responseJson.ModelErrors).forEach(key => {
-                                responseJson.ModelErrors[key].forEach(errorMessage => {
-                                    // TODO: There has to be a better API for this
-                                    if (!this.form.controls[key].errors) {
-                                        (<any>this.form.controls[key])._errors = {};
-                                    }
-                                    
-                                    this.form.controls[key].errors[errorMessage] = true;
-                                });
-                            });
+                    var errors = (<ValidationResponse>(response.json())).ModelErrors;
+                    Object.keys(errors).forEach(key => {
+                        errors[key].forEach(errorMessage => {
+                            // TODO: There has to be a better API for this
+                            if (!this.form.controls[key].errors) {
+                                (<any>this.form.controls[key])._errors = {};
+                            }
+                            
+                            this.form.controls[key].errors[errorMessage] = true;
                         });
-                    } else {
-                        // TODO: Display generic 'unknown error'
-                    }
+                    });
                 }
             });
         }
@@ -94,6 +89,14 @@ export class AlbumEdit {
 
     private static _validatePrice(control: ng.Control): { [key: string]: boolean } {
         return /^\d+\.\d+$/.test(control.value) ? null : { Price: true };
+    }
+    
+    private _putJson(url: string, body: any): Promise<Response> {
+        return new Promise((resolve, reject) => {
+            this._http.put(url, JSON.stringify(body), {
+                headers: new Headers({ 'Content-Type': 'application/json' })
+            }).subscribe(resolve);
+        });
     }
 }
 
