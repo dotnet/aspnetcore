@@ -41,16 +41,6 @@ namespace Microsoft.AspNet.Mvc.Cors
                 throw new ArgumentNullException(nameof(serviceProvider));
             }
 
-            if (serviceProvider == null)
-            {
-                throw new ArgumentNullException(nameof(serviceProvider));
-            }
-
-            if (serviceProvider == null)
-            {
-                throw new ArgumentNullException(nameof(serviceProvider));
-            }
-
             var filter = serviceProvider.GetRequiredService<CorsAuthorizationFilter>();
             filter.PolicyName = _policyName;
             return filter;

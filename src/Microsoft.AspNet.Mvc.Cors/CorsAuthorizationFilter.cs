@@ -56,16 +56,6 @@ namespace Microsoft.AspNet.Mvc.Cors
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
             // If this filter is not closest to the action, it is not applicable.
             if (!IsClosestToAction(context.Filters))
             {

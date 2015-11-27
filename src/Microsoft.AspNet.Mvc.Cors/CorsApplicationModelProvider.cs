@@ -18,31 +18,11 @@ namespace Microsoft.AspNet.Mvc.Cors
             {
                 throw new ArgumentNullException(nameof(context));
             }
-
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
             // Intentionally empty.
         }
 
         public void OnProvidersExecuting(ApplicationModelProviderContext context)
         {
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
             if (context == null)
             {
                 throw new ArgumentNullException(nameof(context));

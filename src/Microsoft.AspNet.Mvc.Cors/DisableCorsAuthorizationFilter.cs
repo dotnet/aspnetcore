@@ -34,16 +34,6 @@ namespace Microsoft.AspNet.Mvc.Cors
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
             var accessControlRequestMethod =
                         context.HttpContext.Request.Headers[CorsConstants.AccessControlRequestMethod];
             if (string.Equals(
