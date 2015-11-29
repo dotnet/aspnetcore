@@ -118,7 +118,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
 
             private RewritingStream _rewritingStream;
 
-            public Task OnConnection(ConnectionFilterContext context)
+            public Task OnConnectionAsync(ConnectionFilterContext context)
             {
                 _rewritingStream = new RewritingStream(context.Connection);
                 context.Connection = _rewritingStream;
@@ -130,7 +130,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
 
         private class AsyncConnectionFilter : IConnectionFilter
         {
-            public async Task OnConnection(ConnectionFilterContext context)
+            public async Task OnConnectionAsync(ConnectionFilterContext context)
             {
                 var oldConnection = context.Connection;
 
@@ -144,7 +144,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
 
         private class ThrowingConnectionFilter : IConnectionFilter
         {
-            public Task OnConnection(ConnectionFilterContext context)
+            public Task OnConnectionAsync(ConnectionFilterContext context)
             {
                 throw new Exception();
             }

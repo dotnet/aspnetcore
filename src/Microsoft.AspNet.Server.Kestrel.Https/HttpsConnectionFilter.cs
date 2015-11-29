@@ -36,9 +36,9 @@ namespace Microsoft.AspNet.Server.Kestrel.Https
             _previous = previous;
         }
 
-        public async Task OnConnection(ConnectionFilterContext context)
+        public async Task OnConnectionAsync(ConnectionFilterContext context)
         {
-            await _previous.OnConnection(context);
+            await _previous.OnConnectionAsync(context);
 
             if (string.Equals(context.Address.Scheme, "https", StringComparison.OrdinalIgnoreCase))
             {

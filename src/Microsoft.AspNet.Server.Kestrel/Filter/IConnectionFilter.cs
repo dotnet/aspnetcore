@@ -7,6 +7,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Filter
 {
     public interface IConnectionFilter
     {
-        Task OnConnection(ConnectionFilterContext context);
+        Task OnConnectionAsync(ConnectionFilterContext context);
     }
 }
