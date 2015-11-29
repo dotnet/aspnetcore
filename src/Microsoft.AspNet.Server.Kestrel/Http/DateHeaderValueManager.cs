@@ -22,10 +22,14 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         private readonly byte[] _dateBytes0 = Encoding.ASCII.GetBytes("\r\nDate: DDD, dd mmm yyyy hh:mm:ss GMT");
         private readonly byte[] _dateBytes1 = Encoding.ASCII.GetBytes("\r\nDate: DDD, dd mmm yyyy hh:mm:ss GMT");
         private object _timerLocker = new object();
-        private bool _isDisposed = false;
-        private bool _hadRequestsSinceLastTimerTick = false;
+        private volatile bool _isDisposed = false;
+        private volatile bool _hadRequestsSinceLastTimerTick = false;
         private Timer _dateValueTimer;
-        private DateTimeOffset _lastRequestSeen = DateTimeOffset.MinValue;
+        private long _lastRequestSeenTicks;
+        private long _lastReadDateTimeTicks;
+        private readonly bool _is64BitSystem;
+        private readonly long _ticksInOneSecond;
+        private volatile bool _timerIsRunning;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DateHeaderValueManager"/> class.
@@ -34,9 +38,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             : this(
                   systemClock: new SystemClock(),
                   timeWithoutRequestsUntilIdle: TimeSpan.FromSeconds(10),
-                  timerInterval: TimeSpan.FromSeconds(1))
+                  timerInterval: TimeSpan.FromMilliseconds(200))
         {
-
         }
 
         // Internal for testing
@@ -48,6 +51,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             _systemClock = systemClock;
             _timeWithoutRequestsUntilIdle = timeWithoutRequestsUntilIdle;
             _timerInterval = timerInterval;
+            _dateValueTimer = new Timer(TimerLoop, state: null, dueTime: Timeout.Infinite, period: Timeout.Infinite);
+            _is64BitSystem = IntPtr.Size >= 8;
         }
 
         /// <summary>
@@ -57,103 +62,159 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         /// <returns>The value.</returns>
         public virtual string GetDateHeaderValue()
         {
-            PumpTimer();
-
-            // See https://msdn.microsoft.com/en-us/library/az4se3k1(v=vs.110).aspx#RFC1123 for info on the format
-            // string used here.
-            // The null-coalesce here is to protect against returning null after Dispose() is called, at which
-            // point _dateValue will be null forever after.
-            return _dateValue ?? _systemClock.UtcNow.ToString(Constants.RFC1123DateFormat);
+            _hadRequestsSinceLastTimerTick = true;
+            PrepareDateValues();
+            return _dateValue;
         }
 
         public byte[] GetDateHeaderValueBytes()
         {
-            PumpTimer();
+            _hadRequestsSinceLastTimerTick = true;
+            PrepareDateValues();
             return _activeDateBytes ? _dateBytes0 : _dateBytes1;
         }
+
 
         /// <summary>
         /// Releases all resources used by the current instance of <see cref="DateHeaderValueManager"/>.
         /// </summary>
         public void Dispose()
         {
-            lock (_timerLocker)
+            if (!_isDisposed)
             {
-                DisposeTimer();
-                
                 _isDisposed = true;
+
+                lock (_timerLocker)
+                {
+                    if (_dateValueTimer != null)
+                    {
+                        _timerIsRunning = false;
+                        _dateValueTimer.Dispose();
+                        _dateValueTimer = null;
+                    }
+                }
             }
         }
 
-        private void PumpTimer()
-        {
-            _hadRequestsSinceLastTimerTick = true;
 
-            // If we're already disposed we don't care about starting the timer again. This avoids us having to worry
-            // about requests in flight during dispose (not that that should actually happen) as those will just get
-            // SystemClock.UtcNow (aka "the slow way").
-            if (!_isDisposed && _dateValueTimer == null)
+        /// <summary>
+        /// Starts the timer
+        /// </summary>
+        private void StartTimer()
+        {
+            var now = _systemClock.UtcNow;
+            SetDateValues(now);
+            WriteLongThreadSafe(ref _lastReadDateTimeTicks, now.Ticks);
+
+            if (!_isDisposed)
             {
                 lock (_timerLocker)
                 {
-                    if (!_isDisposed && _dateValueTimer == null)
+                    if (!_timerIsRunning && _dateValueTimer != null)
                     {
-                        // Immediately assign the date value and start the timer again. We assign the value immediately
-                        // here as the timer won't fire until the timer interval has passed and we want a value assigned
-                        // inline now to serve requests that occur in the meantime.
-                        _dateValue = _systemClock.UtcNow.ToString(Constants.RFC1123DateFormat);
-                        Encoding.ASCII.GetBytes(_dateValue, 0, _dateValue.Length, !_activeDateBytes ? _dateBytes0 : _dateBytes1, "\r\nDate: ".Length);
-                        _activeDateBytes = !_activeDateBytes;
-                        _dateValueTimer = new Timer(UpdateDateValue, state: null, dueTime: _timerInterval, period: _timerInterval);
+                        _timerIsRunning = true;
+                        _dateValueTimer.Change(_timerInterval, _timerInterval);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Stops the timer
+        /// </summary>
+        private void StopTimer()
+        {
+            if (!_isDisposed)
+            {
+                lock (_timerLocker)
+                {
+                    if (_dateValueTimer != null)
+                    {
+                        _timerIsRunning = false;
+                        _dateValueTimer.Change(Timeout.Infinite, Timeout.Infinite);
                     }
                 }
             }
         }
 
         // Called by the Timer (background) thread
-        private void UpdateDateValue(object state)
+        private void TimerLoop(object state)
         {
             var now = _systemClock.UtcNow;
+            var lastReadDateTime = new DateTime(ReadLongThreadSafe(ref _lastReadDateTimeTicks));
 
-            // See http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.18 for required format of Date header
-            _dateValue = now.ToString(Constants.RFC1123DateFormat);
-            Encoding.ASCII.GetBytes(_dateValue, 0, _dateValue.Length, !_activeDateBytes ? _dateBytes0 : _dateBytes1, "\r\nDate: ".Length);
-            _activeDateBytes = !_activeDateBytes;
+            //Are we in a new second?
+            if (now - lastReadDateTime >= TimeSpan.FromSeconds(1) || now.Second != lastReadDateTime.Second)
+            {
+                //Yep, Update DateValues
+                SetDateValues(now);
+                WriteLongThreadSafe(ref _lastReadDateTimeTicks, now.Ticks);
+            }
 
             if (_hadRequestsSinceLastTimerTick)
             {
                 // We served requests since the last tick, reset the flag and return as we're still active
                 _hadRequestsSinceLastTimerTick = false;
-                _lastRequestSeen = now;
+                WriteLongThreadSafe(ref _lastRequestSeenTicks, now.Ticks);
                 return;
             }
 
             // No requests since the last timer tick, we need to check if we're beyond the idle threshold
-            var timeSinceLastRequestSeen = now - _lastRequestSeen;
-            if (timeSinceLastRequestSeen >= _timeWithoutRequestsUntilIdle)
+            if ((now.Ticks - ReadLongThreadSafe(ref _lastRequestSeenTicks)) >= _timeWithoutRequestsUntilIdle.Ticks)
             {
                 // No requests since idle threshold so stop the timer if it's still running
-                if (_dateValueTimer != null)
+                StopTimer();
+            }
+        }
+
+        /// <summary>
+        /// Starts the timer if it's turned off, or sets the datevalues to the current time if disposed. 
+        /// </summary>
+        private void PrepareDateValues()
+        {
+            if (_isDisposed)
+            {
+                SetDateValues(_systemClock.UtcNow);
+            }
+            else
+            {
+                if (!_timerIsRunning)
                 {
-                    lock (_timerLocker)
-                    {
-                        if (_dateValueTimer != null)
-                        {
-                            DisposeTimer();
-                        }
-                    }
+                    StartTimer();
                 }
             }
         }
 
-        private void DisposeTimer()
+
+        /// <summary>
+        /// Sets date values from a provided ticks value
+        /// </summary>
+        /// <param name="ticks">A valid ticks value</param>
+        private void SetDateValues(DateTime value)
         {
-            if (_dateValueTimer != null)
+            // See http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.18 for required format of Date header
+            _dateValue = value.ToString(Constants.RFC1123DateFormat);
+            Encoding.ASCII.GetBytes(_dateValue, 0, _dateValue.Length, !_activeDateBytes ? _dateBytes0 : _dateBytes1, "\r\nDate: ".Length);
+            _activeDateBytes = !_activeDateBytes;
+        }
+
+        private void WriteLongThreadSafe(ref long location, long value)
+        {
+            Interlocked.Exchange(ref location, value);
+        }
+
+        private long ReadLongThreadSafe(ref long location)
+        {
+            if (_is64BitSystem)
             {
-                _dateValueTimer.Dispose();
-                _dateValueTimer = null;
-                _dateValue = null;
+                return location;
+            }
+            else
+            {
+                return Interlocked.Read(ref location);
             }
         }
+
     }
 }
+

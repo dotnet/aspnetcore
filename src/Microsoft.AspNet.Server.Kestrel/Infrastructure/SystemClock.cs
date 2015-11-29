@@ -13,11 +13,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
         /// <summary>
         /// Retrieves the current system time in UTC.
         /// </summary>
-        public DateTimeOffset UtcNow
+        public DateTime UtcNow
         {
             get
             {
-                return DateTimeOffset.UtcNow;
+                return DateTime.UtcNow;
             }
         }
     }
