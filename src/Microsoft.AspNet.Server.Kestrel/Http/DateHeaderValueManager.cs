@@ -28,7 +28,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         private long _lastRequestSeenTicks;
         private long _lastReadDateTimeTicks;
         private readonly bool _is64BitSystem;
-        private readonly long _ticksInOneSecond;
         private volatile bool _timerIsRunning;
 
         /// <summary>
@@ -141,7 +140,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         private void TimerLoop(object state)
         {
             var now = _systemClock.UtcNow;
-            var lastReadDateTime = new DateTime(ReadLongThreadSafe(ref _lastReadDateTimeTicks));
+            var lastReadDateTime = new DateTimeOffset(ReadLongThreadSafe(ref _lastReadDateTimeTicks), TimeSpan.Zero);
 
             //Are we in a new second?
             if (now - lastReadDateTime >= TimeSpan.FromSeconds(1) || now.Second != lastReadDateTime.Second)
@@ -189,8 +188,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         /// <summary>
         /// Sets date values from a provided ticks value
         /// </summary>
-        /// <param name="ticks">A valid ticks value</param>
-        private void SetDateValues(DateTime value)
+        /// <param name="value">A DateTimeOffset value</param>
+        private void SetDateValues(DateTimeOffset value)
         {
             // See http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.18 for required format of Date header
             _dateValue = value.ToString(Constants.RFC1123DateFormat);
