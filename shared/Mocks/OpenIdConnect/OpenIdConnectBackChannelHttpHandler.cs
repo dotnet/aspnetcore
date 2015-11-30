@@ -14,8 +14,7 @@ namespace MusicStore.Mocks.OpenIdConnect
 
             var basePath = Path.GetFullPath(Path.Combine(
                     Directory.GetCurrentDirectory(), "..", "..",
-                    "test", "E2ETests", "compiler", "shared", "Mocks",
-                    "OpenIdConnect"));
+                    "shared", "Mocks","OpenIdConnect"));
 
             if (request.RequestUri.AbsoluteUri == "https://login.windows.net/[tenantName].onmicrosoft.com/.well-known/openid-configuration")
             {
@@ -29,5 +28,5 @@ namespace MusicStore.Mocks.OpenIdConnect
             return Task.FromResult(response);
         }
     }
-} 
+}
 #endif
