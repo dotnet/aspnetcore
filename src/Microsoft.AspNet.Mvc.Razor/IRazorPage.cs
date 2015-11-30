@@ -1,10 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Html.Abstractions;
 using Microsoft.AspNet.Mvc.Rendering;
 
 namespace Microsoft.AspNet.Mvc.Razor
@@ -20,9 +19,9 @@ namespace Microsoft.AspNet.Mvc.Razor
         ViewContext ViewContext { get; set; }
 
         /// <summary>
-        /// Gets or sets the action invoked to render the body.
+        /// Gets or sets the body content.
         /// </summary>
-        Func<TextWriter, Task> RenderBodyDelegateAsync { get; set; }
+        IHtmlContent BodyContent { get; set; }
 
         /// <summary>
         /// Gets or sets a flag that determines if the layout of this page is being rendered.
@@ -64,7 +63,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// Verifies that all sections defined in <see cref="PreviousSectionWriters"/> were rendered, or
         /// the body was rendered if no sections were defined.
         /// </summary>
-        /// <exception cref="InvalidOperationException">if one or more sections were not rendered or if no sections were
+        /// <exception cref="System.InvalidOperationException">if one or more sections were not rendered or if no sections were
         /// defined and the body was not rendered.</exception>
         void EnsureRenderedBodyOrSections();
     }

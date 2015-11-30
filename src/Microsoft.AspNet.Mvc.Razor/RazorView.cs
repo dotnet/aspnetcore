@@ -203,7 +203,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 // in the layout.
                 previousPage.IsLayoutBeingRendered = true;
                 layoutPage.PreviousSectionWriters = previousPage.SectionWriters;
-                layoutPage.RenderBodyDelegateAsync = bodyWriter.CopyToAsync;
+                layoutPage.BodyContent = bodyWriter.Buffer;
                 bodyWriter = await RenderPageAsync(layoutPage, context, viewStartPages: null);
 
                 renderedLayouts.Add(layoutPage);
@@ -219,7 +219,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             if (bodyWriter.IsBuffering)
             {
                 // Only copy buffered content to the Output if we're currently buffering.
-                await bodyWriter.CopyToAsync(context.Writer);
+                bodyWriter.Buffer.WriteTo(context.Writer, _htmlEncoder);
             }
         }
 

@@ -28,7 +28,7 @@ namespace Microsoft.AspNet.Mvc.Razor
     public class RazorPageTest
     {
         private readonly RenderAsyncDelegate _nullRenderAsyncDelegate = writer => Task.FromResult(0);
-        private readonly Func<TextWriter, Task> NullAsyncWrite = CreateAsyncWriteDelegate(string.Empty);
+        private readonly Func<TextWriter, Task> NullAsyncWrite = writer => writer.WriteAsync(string.Empty);
 
         [Fact]
         public async Task WritingScopesRedirectContentWrittenToViewContextWriter()
@@ -311,7 +311,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             {
                 { "baz", _nullRenderAsyncDelegate }
             };
-            page.RenderBodyDelegateAsync = CreateAsyncWriteDelegate("body-content");
+            page.BodyContent = new HtmlString("body-content");
 
             // Act
             await page.ExecuteAsync();
@@ -335,7 +335,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             {
                 { "baz", _nullRenderAsyncDelegate }
             };
-            page.RenderBodyDelegateAsync = CreateAsyncWriteDelegate("body-content");
+            page.BodyContent = new HtmlString("body-content");
 
             // Act
             await page.ExecuteAsync();
@@ -444,7 +444,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             {
             });
             page.Path = path;
-            page.RenderBodyDelegateAsync = CreateAsyncWriteDelegate("some content");
+            page.BodyContent = new HtmlString("some content");
 
             // Act
             await page.ExecuteAsync();
@@ -464,7 +464,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             {
             });
             page.Path = path;
-            page.RenderBodyDelegateAsync = CreateAsyncWriteDelegate("some content");
+            page.BodyContent = new HtmlString("some content");
             page.PreviousSectionWriters = new Dictionary<string, RenderAsyncDelegate>
             {
                 { sectionName, _nullRenderAsyncDelegate }
@@ -490,7 +490,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 v.RenderSection(sectionA);
                 v.RenderSection(sectionB);
             });
-            page.RenderBodyDelegateAsync = CreateAsyncWriteDelegate("some content");
+            page.BodyContent = new HtmlString("some content");
             page.PreviousSectionWriters = new Dictionary<string, RenderAsyncDelegate>
             {
                 { sectionA, _nullRenderAsyncDelegate },
@@ -524,7 +524,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 v.Write(v.RenderSection("footer"));
                 v.WriteLiteral("Layout end");
             });
-            page.RenderBodyDelegateAsync = CreateAsyncWriteDelegate("body content" + Environment.NewLine);
+            page.BodyContent = new HtmlString("body content" + Environment.NewLine);
             page.PreviousSectionWriters = new Dictionary<string, RenderAsyncDelegate>
             {
                 {
@@ -1181,11 +1181,6 @@ namespace Microsoft.AspNet.Mvc.Razor
                 new HtmlHelperOptions());
         }
 
-        private static Func<TextWriter, Task> CreateAsyncWriteDelegate(string value)
-        {
-            return async (writer) => await writer.WriteAsync(value);
-        }
-
         public abstract class TestableRazorPage : RazorPage
         {
             public TestableRazorPage()
@@ -1202,7 +1197,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 }
             }
 
-            public HelperResult RenderBodyPublic()
+            public IHtmlContent RenderBodyPublic()
             {
                 return base.RenderBody();
             }

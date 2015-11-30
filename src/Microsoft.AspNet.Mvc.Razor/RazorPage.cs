@@ -105,7 +105,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         public ITempDataDictionary TempData => ViewContext?.TempData;
 
         /// <inheritdoc />
-        public Func<TextWriter, Task> RenderBodyDelegateAsync { get; set; }
+        public IHtmlContent BodyContent { get; set; }
 
         /// <inheritdoc />
         public bool IsLayoutBeingRendered { get; set; }
@@ -249,26 +249,26 @@ namespace Microsoft.AspNet.Mvc.Razor
                 _originalWriter = null;
             }
 
-            var tagHelperContentWrapperTextWriter = new TagHelperContentWrapperTextWriter(Output.Encoding);
+            var tagHelperContent = new DefaultTagHelperContent();
             var razorWriter = writer as RazorTextWriter;
             if (razorWriter != null)
             {
-                razorWriter.CopyTo(tagHelperContentWrapperTextWriter);
+                tagHelperContent.Append(razorWriter.Buffer);
             }
             else
             {
                 var stringCollectionTextWriter = writer as StringCollectionTextWriter;
                 if (stringCollectionTextWriter != null)
                 {
-                    stringCollectionTextWriter.CopyTo(tagHelperContentWrapperTextWriter, HtmlEncoder);
+                    tagHelperContent.Append(stringCollectionTextWriter.Content);
                 }
                 else
                 {
-                    tagHelperContentWrapperTextWriter.Write(writer.ToString());
+                    tagHelperContent.AppendHtml(writer.ToString());
                 }
             }
 
-            return tagHelperContentWrapperTextWriter.Content;
+            return tagHelperContent;
         }
 
         /// <summary>
@@ -669,16 +669,16 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// In a Razor layout page, renders the portion of a content page that is not within a named section.
         /// </summary>
         /// <returns>The HTML content to render.</returns>
-        protected virtual HelperResult RenderBody()
+        protected virtual IHtmlContent RenderBody()
         {
-            if (RenderBodyDelegateAsync == null)
+            if (BodyContent == null)
             {
                 var message = Resources.FormatRazorPage_MethodCannotBeCalled(nameof(RenderBody), Path);
                 throw new InvalidOperationException(message);
             }
 
             _renderedBody = true;
-            return new HelperResult(RenderBodyDelegateAsync);
+            return BodyContent;
         }
 
         /// <summary>
@@ -886,7 +886,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     throw new InvalidOperationException(Resources.FormatSectionsNotRendered(Path, sectionNames));
                 }
             }
-            else if (RenderBodyDelegateAsync != null && !_renderedBody)
+            else if (BodyContent != null && !_renderedBody)
             {
                 // There are no sections defined, but RenderBody was NOT called.
                 // If a body was defined, then RenderBody should have been called.

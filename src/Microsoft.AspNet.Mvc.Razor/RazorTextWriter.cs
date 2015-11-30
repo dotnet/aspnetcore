@@ -48,6 +48,11 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <inheritdoc />
         public bool IsBuffering { get; private set; } = true;
 
+        /// <summary>
+        /// Gets the buffered content.
+        /// </summary>
+        public IHtmlContent Buffer => BufferedWriter.Content;
+
         // Internal for unit testing
         internal StringCollectionTextWriter BufferedWriter { get; }
 
@@ -185,7 +190,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             {
                 IsBuffering = false;
                 TargetWriter = UnbufferedWriter;
-                CopyTo(UnbufferedWriter);
+                Buffer.WriteTo(UnbufferedWriter, HtmlEncoder);
             }
 
             UnbufferedWriter.Flush();
@@ -197,43 +202,16 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// to the unbuffered writer.
         /// </summary>
         /// <returns>A <see cref="Task"/> that represents the asynchronous copy and flush operations.</returns>
-        public override async Task FlushAsync()
+        public override Task FlushAsync()
         {
             if (IsBuffering)
             {
                 IsBuffering = false;
                 TargetWriter = UnbufferedWriter;
-                await CopyToAsync(UnbufferedWriter);
+                Buffer.WriteTo(UnbufferedWriter, HtmlEncoder);
             }
 
-            await UnbufferedWriter.FlushAsync();
-        }
-
-        /// <inheritdoc />
-        public void CopyTo(TextWriter writer)
-        {
-            writer = UnWrapRazorTextWriter(writer);
-            BufferedWriter.CopyTo(writer, HtmlEncoder);
-        }
-
-        /// <inheritdoc />
-        public Task CopyToAsync(TextWriter writer)
-        {
-            writer = UnWrapRazorTextWriter(writer);
-            return BufferedWriter.CopyToAsync(writer, HtmlEncoder);
-        }
-
-        private static TextWriter UnWrapRazorTextWriter(TextWriter writer)
-        {
-            var targetRazorTextWriter = writer as RazorTextWriter;
-            if (targetRazorTextWriter != null)
-            {
-                writer = targetRazorTextWriter.IsBuffering ?
-                    targetRazorTextWriter.BufferedWriter :
-                    targetRazorTextWriter.UnbufferedWriter;
-            }
-
-            return writer;
+            return UnbufferedWriter.FlushAsync();
         }
     }
 }
