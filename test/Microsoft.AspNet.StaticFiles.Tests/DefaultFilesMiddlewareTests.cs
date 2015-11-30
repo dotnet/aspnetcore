@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.StaticFiles
             StaticFilesTestServer.Create(app => app.UseDefaultFiles(new DefaultFilesOptions() { FileProvider = null }));
 
             // PathString(null) is OK.
-            TestServer server = StaticFilesTestServer.Create(app => app.UseDefaultFiles((string)null));
+            var server = StaticFilesTestServer.Create(app => app.UseDefaultFiles((string)null));
             var response = await server.CreateClient().GetAsync("/");
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
@@ -52,19 +52,22 @@ namespace Microsoft.AspNet.StaticFiles
 
         public async Task NoMatch_PassesThrough(string baseUrl, string baseDir, string requestUrl)
         {
-            TestServer server = StaticFilesTestServer.Create(app =>
+            using (var fileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), baseDir)))
             {
-                app.UseDefaultFiles(new DefaultFilesOptions()
+                var server = StaticFilesTestServer.Create(app =>
                 {
-                    RequestPath = new PathString(baseUrl),
-                    FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), baseDir))
+                    app.UseDefaultFiles(new DefaultFilesOptions()
+                    {
+                        RequestPath = new PathString(baseUrl),
+                        FileProvider = fileProvider
+                    });
+                    app.Run(context => context.Response.WriteAsync(context.Request.Path.Value));
                 });
-                app.Run(context => context.Response.WriteAsync(context.Request.Path.Value));
-            });
 
-            var response = await server.CreateClient().GetAsync(requestUrl);
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            Assert.Equal(requestUrl, await response.Content.ReadAsStringAsync()); // Should not be modified
+                var response = await server.CreateClient().GetAsync(requestUrl);
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                Assert.Equal(requestUrl, await response.Content.ReadAsStringAsync()); // Should not be modified
+            }
         }
 
         [Theory]
@@ -88,19 +91,22 @@ namespace Microsoft.AspNet.StaticFiles
 
         public async Task FoundDirectoryWithDefaultFile_PathModified(string baseUrl, string baseDir, string requestUrl)
         {
-            TestServer server = StaticFilesTestServer.Create(app =>
+            using (var fileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), baseDir)))
             {
-                app.UseDefaultFiles(new DefaultFilesOptions()
+                var server = StaticFilesTestServer.Create(app =>
                 {
-                    RequestPath = new PathString(baseUrl),
-                    FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), baseDir))
+                    app.UseDefaultFiles(new DefaultFilesOptions()
+                    {
+                        RequestPath = new PathString(baseUrl),
+                        FileProvider = fileProvider
+                    });
+                    app.Run(context => context.Response.WriteAsync(context.Request.Path.Value));
                 });
-                app.Run(context => context.Response.WriteAsync(context.Request.Path.Value));
-            });
 
-            var response = await server.CreateClient().GetAsync(requestUrl);
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            Assert.Equal(requestUrl + "default.html", await response.Content.ReadAsStringAsync()); // Should be modified
+                var response = await server.CreateClient().GetAsync(requestUrl);
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                Assert.Equal(requestUrl + "default.html", await response.Content.ReadAsStringAsync()); // Should be modified
+            }
         }
 
         [Theory]
@@ -124,16 +130,19 @@ namespace Microsoft.AspNet.StaticFiles
 
         public async Task NearMatch_RedirectAddSlash(string baseUrl, string baseDir, string requestUrl, string queryString)
         {
-            TestServer server = StaticFilesTestServer.Create(app => app.UseDefaultFiles(new DefaultFilesOptions()
+            using (var fileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), baseDir)))
             {
-                RequestPath = new PathString(baseUrl),
-                FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), baseDir))
-            }));
-            HttpResponseMessage response = await server.CreateRequest(requestUrl + queryString).GetAsync();
+                var server = StaticFilesTestServer.Create(app => app.UseDefaultFiles(new DefaultFilesOptions()
+                {
+                    RequestPath = new PathString(baseUrl),
+                    FileProvider = fileProvider
+                }));
+                var response = await server.CreateRequest(requestUrl + queryString).GetAsync();
 
-            Assert.Equal(HttpStatusCode.Moved, response.StatusCode);
-            Assert.Equal(requestUrl + "/" + queryString, response.Headers.GetValues("Location").FirstOrDefault());
-            Assert.Equal(0, (await response.Content.ReadAsByteArrayAsync()).Length);
+                Assert.Equal(HttpStatusCode.Moved, response.StatusCode);
+                Assert.Equal(requestUrl + "/" + queryString, response.Headers.GetValues("Location").FirstOrDefault());
+                Assert.Equal(0, (await response.Content.ReadAsByteArrayAsync()).Length);
+            }
         }
 
         [Theory]
@@ -159,14 +168,17 @@ namespace Microsoft.AspNet.StaticFiles
 
         public async Task PostDirectory_PassesThrough(string baseUrl, string baseDir, string requestUrl)
         {
-            TestServer server = StaticFilesTestServer.Create(app => app.UseDefaultFiles(new DefaultFilesOptions()
+            using (var fileProvder = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), baseDir)))
             {
-                RequestPath = new PathString(baseUrl),
-                FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), baseDir))
-            }));
-            HttpResponseMessage response = await server.CreateRequest(requestUrl).GetAsync();
+                var server = StaticFilesTestServer.Create(app => app.UseDefaultFiles(new DefaultFilesOptions()
+                {
+                    RequestPath = new PathString(baseUrl),
+                    FileProvider = fileProvder
+                }));
+                var response = await server.CreateRequest(requestUrl).GetAsync();
 
-            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode); // Passed through
+                Assert.Equal(HttpStatusCode.NotFound, response.StatusCode); // Passed through
+            }
         }
     }
 }

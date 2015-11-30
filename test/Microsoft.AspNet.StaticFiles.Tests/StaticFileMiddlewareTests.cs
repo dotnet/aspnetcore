@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.StaticFiles
             StaticFilesTestServer.Create(app => app.UseStaticFiles(new StaticFileOptions() { FileProvider = null }));
 
             // PathString(null) is OK.
-            TestServer server = StaticFilesTestServer.Create(app => app.UseStaticFiles((string)null));
+            var server = StaticFilesTestServer.Create(app => app.UseStaticFiles((string)null));
             var response = await server.CreateClient().GetAsync("/");
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
@@ -38,13 +38,16 @@ namespace Microsoft.AspNet.StaticFiles
         [InlineData("", @"./", "/xunit.xml")]
         public async Task NoMatch_PassesThrough(string baseUrl, string baseDir, string requestUrl)
         {
-            TestServer server = StaticFilesTestServer.Create(app => app.UseStaticFiles(new StaticFileOptions()
+            using (var fileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), baseDir)))
             {
-                RequestPath = new PathString(baseUrl),
-                FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), baseDir))
-            }));
-            HttpResponseMessage response = await server.CreateRequest(requestUrl).GetAsync();
-            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+                var server = StaticFilesTestServer.Create(app => app.UseStaticFiles(new StaticFileOptions()
+                {
+                    RequestPath = new PathString(baseUrl),
+                    FileProvider = fileProvider
+                }));
+                var response = await server.CreateRequest(requestUrl).GetAsync();
+                Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+            }
         }
 
         [Theory]
@@ -72,17 +75,20 @@ namespace Microsoft.AspNet.StaticFiles
 
         public async Task FoundFile_Served(string baseUrl, string baseDir, string requestUrl)
         {
-            TestServer server = StaticFilesTestServer.Create(app => app.UseStaticFiles(new StaticFileOptions()
+            using (var fileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), baseDir)))
             {
-                RequestPath = new PathString(baseUrl),
-                FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), baseDir))
-            }));
-            HttpResponseMessage response = await server.CreateRequest(requestUrl).GetAsync();
+                var server = StaticFilesTestServer.Create(app => app.UseStaticFiles(new StaticFileOptions()
+                {
+                    RequestPath = new PathString(baseUrl),
+                    FileProvider = fileProvider
+                }));
+                var response = await server.CreateRequest(requestUrl).GetAsync();
 
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            Assert.Equal("text/plain", response.Content.Headers.ContentType.ToString());
-            Assert.True(response.Content.Headers.ContentLength > 0);
-            Assert.Equal(response.Content.Headers.ContentLength, (await response.Content.ReadAsByteArrayAsync()).Length);
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                Assert.Equal("text/plain", response.Content.Headers.ContentType.ToString());
+                Assert.True(response.Content.Headers.ContentLength > 0);
+                Assert.Equal(response.Content.Headers.ContentLength, (await response.Content.ReadAsByteArrayAsync()).Length);
+            }
         }
 
         [Theory]
@@ -93,13 +99,16 @@ namespace Microsoft.AspNet.StaticFiles
         [InlineData("/somedir", @"SubFolder", "/somedir/ranges.txt")]
         public async Task PostFile_PassesThrough(string baseUrl, string baseDir, string requestUrl)
         {
-            TestServer server = StaticFilesTestServer.Create(app => app.UseStaticFiles(new StaticFileOptions()
+            using (var fileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), baseDir)))
             {
-                RequestPath = new PathString(baseUrl),
-                FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), baseDir))
-            }));
-            HttpResponseMessage response = await server.CreateRequest(requestUrl).PostAsync();
-            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+                var server = StaticFilesTestServer.Create(app => app.UseStaticFiles(new StaticFileOptions()
+                {
+                    RequestPath = new PathString(baseUrl),
+                    FileProvider = fileProvider
+                }));
+                var response = await server.CreateRequest(requestUrl).PostAsync();
+                Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+            }
         }
 
         [Theory]
@@ -110,17 +119,20 @@ namespace Microsoft.AspNet.StaticFiles
         [InlineData("/somedir", @"SubFolder", "/somedir/ranges.txt")]
         public async Task HeadFile_HeadersButNotBodyServed(string baseUrl, string baseDir, string requestUrl)
         {
-            TestServer server = StaticFilesTestServer.Create(app => app.UseStaticFiles(new StaticFileOptions()
+            using (var fileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), baseDir)))
             {
-                RequestPath = new PathString(baseUrl),
-                FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), baseDir))
-            }));
-            HttpResponseMessage response = await server.CreateRequest(requestUrl).SendAsync("HEAD");
+                var server = StaticFilesTestServer.Create(app => app.UseStaticFiles(new StaticFileOptions()
+                {
+                    RequestPath = new PathString(baseUrl),
+                    FileProvider = fileProvider
+                }));
+                var response = await server.CreateRequest(requestUrl).SendAsync("HEAD");
 
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            Assert.Equal("text/plain", response.Content.Headers.ContentType.ToString());
-            Assert.True(response.Content.Headers.ContentLength > 0);
-            Assert.Equal(0, (await response.Content.ReadAsByteArrayAsync()).Length);
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                Assert.Equal("text/plain", response.Content.Headers.ContentType.ToString());
+                Assert.True(response.Content.Headers.ContentLength > 0);
+                Assert.Equal(0, (await response.Content.ReadAsByteArrayAsync()).Length);
+            }
         }
     }
 }

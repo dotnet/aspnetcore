@@ -32,7 +32,7 @@ namespace Microsoft.AspNet.StaticFiles
                 services => services.AddDirectoryBrowser());
 
             // PathString(null) is OK.
-            TestServer server = StaticFilesTestServer.Create(
+            var server = StaticFilesTestServer.Create(
                 app => app.UseDirectoryBrowser((string)null),
                 services => services.AddDirectoryBrowser());
 
@@ -63,15 +63,18 @@ namespace Microsoft.AspNet.StaticFiles
 
         public async Task NoMatch_PassesThrough(string baseUrl, string baseDir, string requestUrl)
         {
-            TestServer server = StaticFilesTestServer.Create(
-                app => app.UseDirectoryBrowser(new DirectoryBrowserOptions()
-                {
-                    RequestPath = new PathString(baseUrl),
-                    FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), baseDir))
-                }),
-                services => services.AddDirectoryBrowser());
-            HttpResponseMessage response = await server.CreateRequest(requestUrl).GetAsync();
-            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+            using (var fileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), baseDir)))
+            {
+                var server = StaticFilesTestServer.Create(
+                    app => app.UseDirectoryBrowser(new DirectoryBrowserOptions()
+                    {
+                        RequestPath = new PathString(baseUrl),
+                        FileProvider = fileProvider
+                    }),
+                    services => services.AddDirectoryBrowser());
+                var response = await server.CreateRequest(requestUrl).GetAsync();
+                Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+            }
         }
 
         [Theory]
@@ -97,19 +100,22 @@ namespace Microsoft.AspNet.StaticFiles
 
         public async Task FoundDirectory_Served(string baseUrl, string baseDir, string requestUrl)
         {
-            TestServer server = StaticFilesTestServer.Create(
-                app => app.UseDirectoryBrowser(new DirectoryBrowserOptions()
-                {
-                    RequestPath = new PathString(baseUrl),
-                    FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), baseDir))
-                }),
-                services => services.AddDirectoryBrowser());
-            HttpResponseMessage response = await server.CreateRequest(requestUrl).GetAsync();
+            using (var fileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), baseDir)))
+            {
+                var server = StaticFilesTestServer.Create(
+                    app => app.UseDirectoryBrowser(new DirectoryBrowserOptions()
+                    {
+                        RequestPath = new PathString(baseUrl),
+                        FileProvider = fileProvider
+                    }),
+                    services => services.AddDirectoryBrowser());
+                var response = await server.CreateRequest(requestUrl).GetAsync();
 
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            Assert.Equal("text/html; charset=utf-8", response.Content.Headers.ContentType.ToString());
-            Assert.True(response.Content.Headers.ContentLength > 0);
-            Assert.Equal(response.Content.Headers.ContentLength, (await response.Content.ReadAsByteArrayAsync()).Length);
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                Assert.Equal("text/html; charset=utf-8", response.Content.Headers.ContentType.ToString());
+                Assert.True(response.Content.Headers.ContentLength > 0);
+                Assert.Equal(response.Content.Headers.ContentLength, (await response.Content.ReadAsByteArrayAsync()).Length);
+            }
         }
 
         [Theory]
@@ -136,19 +142,22 @@ namespace Microsoft.AspNet.StaticFiles
 
         public async Task NearMatch_RedirectAddSlash(string baseUrl, string baseDir, string requestUrl, string queryString)
         {
-            TestServer server = StaticFilesTestServer.Create(
-                app => app.UseDirectoryBrowser(new DirectoryBrowserOptions()
-                {
-                    RequestPath = new PathString(baseUrl),
-                    FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), baseDir))
-                }),
-                services => services.AddDirectoryBrowser());
+            using (var fileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), baseDir)))
+            {
+                var server = StaticFilesTestServer.Create(
+                    app => app.UseDirectoryBrowser(new DirectoryBrowserOptions()
+                    {
+                        RequestPath = new PathString(baseUrl),
+                        FileProvider = fileProvider
+                    }),
+                    services => services.AddDirectoryBrowser());
 
-            HttpResponseMessage response = await server.CreateRequest(requestUrl + queryString).GetAsync();
+                var response = await server.CreateRequest(requestUrl + queryString).GetAsync();
 
-            Assert.Equal(HttpStatusCode.Moved, response.StatusCode);
-            Assert.Equal(requestUrl + "/" + queryString, response.Headers.GetValues("Location").FirstOrDefault());
-            Assert.Equal(0, (await response.Content.ReadAsByteArrayAsync()).Length);
+                Assert.Equal(HttpStatusCode.Moved, response.StatusCode);
+                Assert.Equal(requestUrl + "/" + queryString, response.Headers.GetValues("Location").FirstOrDefault());
+                Assert.Equal(0, (await response.Content.ReadAsByteArrayAsync()).Length);
+            }
         }
 
         [Theory]
@@ -172,16 +181,19 @@ namespace Microsoft.AspNet.StaticFiles
 
         public async Task PostDirectory_PassesThrough(string baseUrl, string baseDir, string requestUrl)
         {
-            TestServer server = StaticFilesTestServer.Create(
-                app => app.UseDirectoryBrowser(new DirectoryBrowserOptions()
-                {
-                    RequestPath = new PathString(baseUrl),
-                    FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), baseDir))
-                }),
-                services => services.AddDirectoryBrowser());
+            using (var fileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), baseDir)))
+            {
+                var server = StaticFilesTestServer.Create(
+                    app => app.UseDirectoryBrowser(new DirectoryBrowserOptions()
+                    {
+                        RequestPath = new PathString(baseUrl),
+                        FileProvider = fileProvider
+                    }),
+                    services => services.AddDirectoryBrowser());
 
-            HttpResponseMessage response = await server.CreateRequest(requestUrl).PostAsync();
-            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+                var response = await server.CreateRequest(requestUrl).PostAsync();
+                Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+            }
         }
 
         [Theory]
@@ -205,20 +217,23 @@ namespace Microsoft.AspNet.StaticFiles
 
         public async Task HeadDirectory_HeadersButNotBodyServed(string baseUrl, string baseDir, string requestUrl)
         {
-            TestServer server = StaticFilesTestServer.Create(
-                app => app.UseDirectoryBrowser(new DirectoryBrowserOptions()
-                {
-                    RequestPath = new PathString(baseUrl),
-                    FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), baseDir))
-                }),
-                services => services.AddDirectoryBrowser());
+            using (var fileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), baseDir)))
+            {
+                var server = StaticFilesTestServer.Create(
+                    app => app.UseDirectoryBrowser(new DirectoryBrowserOptions()
+                    {
+                        RequestPath = new PathString(baseUrl),
+                        FileProvider = fileProvider
+                    }),
+                    services => services.AddDirectoryBrowser());
 
-            HttpResponseMessage response = await server.CreateRequest(requestUrl).SendAsync("HEAD");
+                var response = await server.CreateRequest(requestUrl).SendAsync("HEAD");
 
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            Assert.Equal("text/html; charset=utf-8", response.Content.Headers.ContentType.ToString());
-            Assert.True(response.Content.Headers.ContentLength == 0);
-            Assert.Equal(0, (await response.Content.ReadAsByteArrayAsync()).Length);
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                Assert.Equal("text/html; charset=utf-8", response.Content.Headers.ContentType.ToString());
+                Assert.True(response.Content.Headers.ContentLength == 0);
+                Assert.Equal(0, (await response.Content.ReadAsByteArrayAsync()).Length);
+            }
         }
     }
 }
