@@ -113,6 +113,34 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
         }
 
         [Fact]
+        public async Task UnrecognizedTokenReceived()
+        {
+            var server = CreateServer(options =>
+            {
+                options.AutomaticAuthenticate = true;
+            });
+
+            var response = await SendAsync(server, "http://example.com/oauth", "Bearer someblob");
+            Assert.Equal(HttpStatusCode.Unauthorized, response.Response.StatusCode);
+            Assert.Equal("", response.ResponseText);
+        }
+
+        [Fact]
+        public async Task InvalidTokenReceived()
+        {
+            var server = CreateServer(options =>
+            {
+                options.AutomaticAuthenticate = true;
+                options.SecurityTokenValidators.Clear();
+                options.SecurityTokenValidators.Add(new InvalidTokenValidator());
+            });
+
+            var response = await SendAsync(server, "http://example.com/oauth", "Bearer someblob");
+            Assert.Equal(HttpStatusCode.Unauthorized, response.Response.StatusCode);
+            Assert.Equal("", response.ResponseText);
+        }
+
+        [Fact]
         public async Task CustomTokenReceived()
         {
             var server = CreateServer(options =>
@@ -282,6 +310,28 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
 
             var response = await SendAsync(server, "http://example.com/unauthorized");
             Assert.Equal(HttpStatusCode.Unauthorized, response.Response.StatusCode);
+        }
+
+        class InvalidTokenValidator : ISecurityTokenValidator
+        {
+            public InvalidTokenValidator()
+            {
+            }
+
+            public bool CanValidateToken => true;
+
+            public int MaximumTokenSizeInBytes
+            {
+                get { throw new NotImplementedException(); }
+                set { throw new NotImplementedException(); }
+            }
+
+            public bool CanReadToken(string securityToken) => true;
+
+            public ClaimsPrincipal ValidateToken(string securityToken, TokenValidationParameters validationParameters, out SecurityToken validatedToken)
+            {
+                throw new SecurityTokenException("InvalidToken");
+            }
         }
 
         class BlobTokenValidator : ISecurityTokenValidator

@@ -2,8 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IdentityModel.Tokens;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Authentication;
 using Microsoft.AspNet.Http.Features.Authentication;
@@ -34,7 +36,6 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
                 {
                     return AuthenticateResult.Success(receivingTokenContext.AuthenticationTicket);
                 }
-
                 if (receivingTokenContext.Skipped)
                 {
                     return AuthenticateResult.Success(ticket: null);
@@ -76,7 +77,6 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
                 {
                     return AuthenticateResult.Success(receivedTokenContext.AuthenticationTicket);
                 }
-
                 if (receivedTokenContext.Skipped)
                 {
                     return AuthenticateResult.Success(ticket: null);
@@ -103,12 +103,37 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
                     validationParameters.IssuerSigningKeys = (validationParameters.IssuerSigningKeys == null ? _configuration.SigningKeys : validationParameters.IssuerSigningKeys.Concat(_configuration.SigningKeys));
                 }
 
+                List<Exception> validationFailures = null;
                 SecurityToken validatedToken;
                 foreach (var validator in Options.SecurityTokenValidators)
                 {
                     if (validator.CanReadToken(token))
                     {
-                        var principal = validator.ValidateToken(token, validationParameters, out validatedToken);
+                        ClaimsPrincipal principal;
+                        try
+                        {
+                            principal = validator.ValidateToken(token, validationParameters, out validatedToken);
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger.LogInformation("Failed to validate the token: " + token, ex);
+
+                            // Refresh the configuration for exceptions that may be caused by key rollovers. The user can also request a refresh in the event.
+                            if (Options.RefreshOnIssuerKeyNotFound && ex.GetType().Equals(typeof(SecurityTokenSignatureKeyNotFoundException)))
+                            {
+                                Options.ConfigurationManager.RequestRefresh();
+                            }
+
+                            if (validationFailures == null)
+                            {
+                                validationFailures = new List<Exception>(1);
+                            }
+                            validationFailures.Add(ex);
+                            continue;
+                        }
+
+                        Logger.LogInformation("Successfully validated the token");
+
                         var ticket = new AuthenticationTicket(principal, new AuthenticationProperties(), Options.AuthenticationScheme);
                         var validatedTokenContext = new ValidatedTokenContext(Context, Options)
                         {
@@ -120,7 +145,6 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
                         {
                             return AuthenticateResult.Success(validatedTokenContext.AuthenticationTicket);
                         }
-
                         if (validatedTokenContext.Skipped)
                         {
                             return AuthenticateResult.Success(ticket: null);
@@ -130,18 +154,31 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
                     }
                 }
 
-                // REVIEW: this maybe return an error instead?
-                throw new InvalidOperationException("No SecurityTokenValidator available for token: " + token ?? "null");
+                if (validationFailures != null)
+                {
+                    var authenticationFailedContext = new AuthenticationFailedContext(Context, Options)
+                    {
+                        Exception = (validationFailures.Count == 1) ? validationFailures[0] : new AggregateException(validationFailures)
+                    };
+
+                    await Options.Events.AuthenticationFailed(authenticationFailedContext);
+                    if (authenticationFailedContext.HandledResponse)
+                    {
+                        return AuthenticateResult.Success(authenticationFailedContext.AuthenticationTicket);
+                    }
+                    if (authenticationFailedContext.Skipped)
+                    {
+                        return AuthenticateResult.Success(ticket: null);
+                    }
+
+                    return AuthenticateResult.Failed(authenticationFailedContext.Exception);
+                }
+
+                return AuthenticateResult.Failed("No SecurityTokenValidator available for token: " + token ?? "[null]");
             }
             catch (Exception ex)
             {
                 Logger.LogError("Exception occurred while processing message", ex);
-
-                // Refresh the configuration for exceptions that may be caused by key rollovers. The user can also request a refresh in the event.
-                if (Options.RefreshOnIssuerKeyNotFound && ex.GetType().Equals(typeof(SecurityTokenSignatureKeyNotFoundException)))
-                {
-                    Options.ConfigurationManager.RequestRefresh();
-                }
 
                 var authenticationFailedContext = new AuthenticationFailedContext(Context, Options)
                 {
