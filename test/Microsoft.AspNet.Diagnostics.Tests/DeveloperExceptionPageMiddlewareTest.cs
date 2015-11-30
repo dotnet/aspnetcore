@@ -87,18 +87,19 @@ namespace Microsoft.AspNet.Diagnostics
             // Arrange
             var rootPath = Directory.GetCurrentDirectory();
             // PhysicalFileProvider handles only relative paths but we fall back to work with absolute paths too
-            var provider = new PhysicalFileProvider(rootPath);
+            using (var provider = new PhysicalFileProvider(rootPath))
+            {
+                // Act
+                var middleware = GetErrorPageMiddleware(provider);
+                var stackFrame = middleware.GetStackFrame("func1", absoluteFilePath, lineNumber: 10);
 
-            // Act
-            var middleware = GetErrorPageMiddleware(provider);
-            var stackFrame = middleware.GetStackFrame("func1", absoluteFilePath, lineNumber: 10);
-
-            // Assert
-            // Lines 4-16 (inclusive) is the code block
-            Assert.Equal(4, stackFrame.PreContextLine);
-            Assert.Equal(GetCodeLines(4, 9), stackFrame.PreContextCode);
-            Assert.Equal(GetCodeLines(10, 10), stackFrame.ContextCode);
-            Assert.Equal(GetCodeLines(11, 16), stackFrame.PostContextCode);
+                // Assert
+                // Lines 4-16 (inclusive) is the code block
+                Assert.Equal(4, stackFrame.PreContextLine);
+                Assert.Equal(GetCodeLines(4, 9), stackFrame.PreContextCode);
+                Assert.Equal(GetCodeLines(10, 10), stackFrame.ContextCode);
+                Assert.Equal(GetCodeLines(11, 16), stackFrame.PostContextCode);
+            }
         }
 
         [Theory]
@@ -107,18 +108,19 @@ namespace Microsoft.AspNet.Diagnostics
         {
             // Arrange
             var rootPath = Directory.GetCurrentDirectory();
-            var provider = new PhysicalFileProvider(rootPath);
+            using (var provider = new PhysicalFileProvider(rootPath))
+            {
+                // Act
+                var middleware = GetErrorPageMiddleware(provider);
+                var stackFrame = middleware.GetStackFrame("func1", relativePath, lineNumber: 10);
 
-            // Act
-            var middleware = GetErrorPageMiddleware(provider);
-            var stackFrame = middleware.GetStackFrame("func1", relativePath, lineNumber: 10);
-
-            // Assert
-            // Lines 4-16 (inclusive) is the code block
-            Assert.Equal(4, stackFrame.PreContextLine);
-            Assert.Equal(GetCodeLines(4, 9), stackFrame.PreContextCode);
-            Assert.Equal(GetCodeLines(10, 10), stackFrame.ContextCode);
-            Assert.Equal(GetCodeLines(11, 16), stackFrame.PostContextCode);
+                // Assert
+                // Lines 4-16 (inclusive) is the code block
+                Assert.Equal(4, stackFrame.PreContextLine);
+                Assert.Equal(GetCodeLines(4, 9), stackFrame.PreContextCode);
+                Assert.Equal(GetCodeLines(10, 10), stackFrame.ContextCode);
+                Assert.Equal(GetCodeLines(11, 16), stackFrame.PostContextCode);
+            }
         }
 
         [Theory]
