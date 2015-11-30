@@ -22,6 +22,7 @@ namespace Microsoft.AspNet.Routing.Tree
         [InlineData("template/5", "template/{parameter}")]
         [InlineData("template/5", "template/{*parameter:int}")]
         [InlineData("template/5", "template/{*parameter}")]
+        [InlineData("template/{parameter}", "template/{parameter:alpha}")] // constraint doesn't match
         [InlineData("template/{parameter:int}", "template/{parameter}")]
         [InlineData("template/{parameter:int}", "template/{*parameter:int}")]
         [InlineData("template/{parameter:int}", "template/{*parameter}")]
@@ -203,7 +204,9 @@ namespace Microsoft.AspNet.Routing.Tree
         [InlineData("template/{parameter:int?}", "/template", true)]
         [InlineData("template/{parameter:int?}", "/template/qwer", false)]
         public async Task AttributeRoute_WithOptionalInlineConstraint(
-            string template, string request, bool expectedResult)
+            string template,
+            string request,
+            bool expectedResult)
         {
             // Arrange
             var expectedRouteGroup = string.Format("{0}&&{1}", 0, template);
@@ -365,6 +368,7 @@ namespace Microsoft.AspNet.Routing.Tree
         [InlineData("{id}", "{*url}", "/5?url=dingo")]
         [InlineData("{id}", "{*url:alpha}", "/5?url=dingo")]
         [InlineData("{id:int}", "{id}", "/5?url=dingo")]
+        [InlineData("{id}", "{id:alpha}/{url}", "/5?url=dingo")] // constraint doesn't match
         [InlineData("template/api/{*url}", "template/api", "/template/api/dingo?id=5")]
         [InlineData("template/api", "template/{*url}", "/template/api?url=dingo&id=5")]
         [InlineData("template/api", "template/api{id}location", "/template/api?url=dingo&id=5")]
@@ -581,8 +585,10 @@ namespace Microsoft.AspNet.Routing.Tree
         [InlineData("template/{parameter:int:range(1,20)?}", "/template", null)]
         [InlineData("template/{parameter:int:range(1,20)?}", "/template/5", 5)]
         [InlineData("template/{parameter:int:range(1,20)?}", null, 21)]
-        public void AttributeRoute_GenerateLink_OptionalInlineParameter
-            (string template, string expectedPath, object parameter)
+        public void AttributeRoute_GenerateLink_OptionalInlineParameter(
+            string template,
+            string expectedPath,
+            object parameter)
         {
             // Arrange
             var expectedGroup = CreateRouteGroup(0, template);

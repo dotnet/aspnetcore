@@ -190,7 +190,7 @@ namespace Microsoft.AspNet.Routing.Tree
                             RouteDirection.IncomingRequest,
                             _constraintLogger))
                         {
-                            return;
+                            continue;
                         }
 
                         _logger.MatchedRouteName(match.Entry.RouteName, match.Entry.RouteTemplate.TemplateText);
