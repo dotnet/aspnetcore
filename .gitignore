@@ -28,3 +28,4 @@ nuget.exe
 *.*sdf
 *.ipch
 *.sln.ide
+launchSettings.json
