@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.Routing.Tree
         [InlineData("template/{parameter}", "template/{*parameter:int}")]
         [InlineData("template/{parameter}", "template/{*parameter}")]
         [InlineData("template/{*parameter:int}", "template/{*parameter}")]
-        public async Task AttributeRoute_RouteAsync_RespectsPrecedence(
+        public async Task TreeRouter_RouteAsync_RespectsPrecedence(
             string firstTemplate,
             string secondTemplate)
         {
@@ -77,7 +77,7 @@ namespace Microsoft.AspNet.Routing.Tree
         [InlineData("template/{parameter}", "template/{*parameter:int}")]
         [InlineData("template/{parameter}", "template/{*parameter}")]
         [InlineData("template/{*parameter:int}", "template/{*parameter}")]
-        public async Task AttributeRoute_RouteAsync_RespectsOrderOverPrecedence(
+        public async Task TreeRouter_RouteAsync_RespectsOrderOverPrecedence(
             string firstTemplate,
             string secondTemplate)
         {
@@ -121,7 +121,7 @@ namespace Microsoft.AspNet.Routing.Tree
         [InlineData("template/{parameter}")]
         [InlineData("template/{*parameter:int}")]
         [InlineData("template/{*parameter}")]
-        public async Task AttributeRoute_RouteAsync_RespectsOrder(string template)
+        public async Task TreeRouter_RouteAsync_RespectsOrder(string template)
         {
             // Arrange
             var expectedRouteGroup = string.Format("{0}&&{1}", 0, template);
@@ -161,7 +161,7 @@ namespace Microsoft.AspNet.Routing.Tree
         [InlineData("template/{first}", "template/{second}")]
         [InlineData("template/{*first:int}", "template/{*second:int}")]
         [InlineData("template/{*first}", "template/{*second}")]
-        public async Task AttributeRoute_RouteAsync_EnsuresStableOrdering(string first, string second)
+        public async Task TreeRouter_RouteAsync_EnsuresStableOrdering(string first, string second)
         {
             // Arrange
             var expectedRouteGroup = string.Format("{0}&&{1}", 0, first);
@@ -203,7 +203,7 @@ namespace Microsoft.AspNet.Routing.Tree
         [InlineData("template/{parameter:int?}", "/template/5", true)]
         [InlineData("template/{parameter:int?}", "/template", true)]
         [InlineData("template/{parameter:int?}", "/template/qwer", false)]
-        public async Task AttributeRoute_WithOptionalInlineConstraint(
+        public async Task TreeRouter_WithOptionalInlineConstraint(
             string template,
             string request,
             bool expectedResult)
@@ -267,7 +267,7 @@ namespace Microsoft.AspNet.Routing.Tree
         [InlineData("{p1}.{p2?}/{p3}", "/foo.moo/bar", "foo", "moo", "bar")]
         [InlineData("{p1}.{p2?}/{p3}", "/foo/bar", "foo", null, "bar")]
         [InlineData("{p1}.{p2?}/{p3}", "/.foo/bar", ".foo", null, "bar")]
-        public async Task AttributeRoute_WithOptionalCompositeParameter_Valid(
+        public async Task TreeRouter_WithOptionalCompositeParameter_Valid(
             string template,
             string request,
             string p1,
@@ -328,7 +328,7 @@ namespace Microsoft.AspNet.Routing.Tree
         [InlineData("{p1}.{p2?}/{p3}", "/foo./bar")]
         [InlineData("moo/.{p2?}", "/moo/.")]
         [InlineData("{p1}.{p2}/{p3}", "/.foo/bar")]
-        public async Task AttributeRoute_WithOptionalCompositeParameter_Invalid(
+        public async Task TreeRouter_WithOptionalCompositeParameter_Invalid(
             string template,
             string request)
         {
@@ -373,7 +373,7 @@ namespace Microsoft.AspNet.Routing.Tree
         [InlineData("template/api", "template/{*url}", "/template/api?url=dingo&id=5")]
         [InlineData("template/api", "template/api{id}location", "/template/api?url=dingo&id=5")]
         [InlineData("template/api{id}location", "template/{id:int}", "/template/api5location?url=dingo")]
-        public void AttributeRoute_GenerateLink(string firstTemplate, string secondTemplate, string expectedPath)
+        public void TreeRouter_GenerateLink(string firstTemplate, string secondTemplate, string expectedPath)
         {
             // Arrange
             var expectedGroup = CreateRouteGroup(0, firstTemplate);
@@ -408,7 +408,7 @@ namespace Microsoft.AspNet.Routing.Tree
         }
 
         [Fact]
-        public void AttributeRoute_GenerateLink_LongerTemplateWithDefaultIsMoreSpecific()
+        public void TreeRouter_GenerateLink_LongerTemplateWithDefaultIsMoreSpecific()
         {
             // Arrange
             var firstTemplate = "template";
@@ -445,7 +445,7 @@ namespace Microsoft.AspNet.Routing.Tree
         [InlineData("template/{parameter:int=5}", "template", "/template/5")]
         [InlineData("template/{parameter}", "template", "/template/5")]
         [InlineData("template/{parameter}/{id}", "template/{parameter}", "/template/5/1234")]
-        public void AttributeRoute_GenerateLink_OrderingAgnostic(
+        public void TreeRouter_GenerateLink_OrderingAgnostic(
             string firstTemplate,
             string secondTemplate,
             string expectedPath)
@@ -486,7 +486,7 @@ namespace Microsoft.AspNet.Routing.Tree
         [InlineData("template", "template/{parameter}", "/template/5")]
         [InlineData("template/{parameter}", "template/{parameter}/{id}", "/template/5/1234")]
         [InlineData("template", "template/{parameter:int=5}", "/template/5")]
-        public void AttributeRoute_GenerateLink_UseAvailableVariables(
+        public void TreeRouter_GenerateLink_UseAvailableVariables(
             string firstTemplate,
             string secondTemplate,
             string expectedPath)
@@ -535,7 +535,7 @@ namespace Microsoft.AspNet.Routing.Tree
         [InlineData("template/{parameter}", "template/{*parameter:int}")]
         [InlineData("template/{parameter}", "template/{*parameter}")]
         [InlineData("template/{*parameter:int}", "template/{*parameter}")]
-        public void AttributeRoute_GenerateLink_RespectsPrecedence(string firstTemplate, string secondTemplate)
+        public void TreeRouter_GenerateLink_RespectsPrecedence(string firstTemplate, string secondTemplate)
         {
             // Arrange
             var expectedGroup = CreateRouteGroup(0, firstTemplate);
@@ -585,7 +585,7 @@ namespace Microsoft.AspNet.Routing.Tree
         [InlineData("template/{parameter:int:range(1,20)?}", "/template", null)]
         [InlineData("template/{parameter:int:range(1,20)?}", "/template/5", 5)]
         [InlineData("template/{parameter:int:range(1,20)?}", null, 21)]
-        public void AttributeRoute_GenerateLink_OptionalInlineParameter(
+        public void TreeRouter_GenerateLink_OptionalInlineParameter(
             string template,
             string expectedPath,
             object parameter)
@@ -649,7 +649,7 @@ namespace Microsoft.AspNet.Routing.Tree
         [InlineData("template/{parameter}", "template/{*parameter:int}")]
         [InlineData("template/{parameter}", "template/{*parameter}")]
         [InlineData("template/{*parameter:int}", "template/{*parameter}")]
-        public void AttributeRoute_GenerateLink_RespectsOrderOverPrecedence(string firstTemplate, string secondTemplate)
+        public void TreeRouter_GenerateLink_RespectsOrderOverPrecedence(string firstTemplate, string secondTemplate)
         {
             // Arrange
             var selectedGroup = CreateRouteGroup(0, secondTemplate);
@@ -695,7 +695,7 @@ namespace Microsoft.AspNet.Routing.Tree
         [InlineData("template/{first}", "template/{second}")]
         [InlineData("template/{*first:int}", "template/{*second:int}")]
         [InlineData("template/{*first}", "template/{*second}")]
-        public void AttributeRoute_GenerateLink_RespectsOrder(string firstTemplate, string secondTemplate)
+        public void TreeRouter_GenerateLink_RespectsOrder(string firstTemplate, string secondTemplate)
         {
             // Arrange
             var expectedGroup = CreateRouteGroup(0, secondTemplate);
@@ -740,7 +740,7 @@ namespace Microsoft.AspNet.Routing.Tree
         [InlineData("first/{first}", "second/{second}")]
         [InlineData("first/{*first:int}", "second/{*second:int}")]
         [InlineData("first/{*first}", "second/{*second}")]
-        public void AttributeRoute_GenerateLink_EnsuresStableOrder(string firstTemplate, string secondTemplate)
+        public void TreeRouter_GenerateLink_EnsuresStableOrder(string firstTemplate, string secondTemplate)
         {
             // Arrange
             var expectedGroup = CreateRouteGroup(0, firstTemplate);
@@ -812,7 +812,7 @@ namespace Microsoft.AspNet.Routing.Tree
 
         [Theory]
         [MemberData(nameof(TreeRouterTest.NamedEntriesWithDifferentTemplates))]
-        public void AttributeRoute_CreateAttributeRoute_ThrowsIfDifferentEntriesHaveTheSameName(
+        public void TreeRouter_CreateTreeRouter_ThrowsIfDifferentEntriesHaveTheSameName(
             IEnumerable<TreeRouteLinkGenerationEntry> namedEntries)
         {
             // Arrange
@@ -873,7 +873,7 @@ namespace Microsoft.AspNet.Routing.Tree
 
         [Theory]
         [MemberData(nameof(TreeRouterTest.NamedEntriesWithTheSameTemplate))]
-        public void AttributeRoute_GeneratesLink_ForMultipleNamedEntriesWithTheSameTemplate(
+        public void TreeRouter_GeneratesLink_ForMultipleNamedEntriesWithTheSameTemplate(
             IEnumerable<TreeRouteLinkGenerationEntry> namedEntries)
         {
             // Arrange
@@ -912,7 +912,7 @@ namespace Microsoft.AspNet.Routing.Tree
         }
 
         [Fact]
-        public void AttributeRoute_GenerateLink_WithName()
+        public void TreeRouter_GenerateLink_WithName()
         {
             // Arrange
             string selectedGroup = null;
@@ -951,7 +951,7 @@ namespace Microsoft.AspNet.Routing.Tree
         }
 
         [Fact]
-        public void AttributeRoute_DoesNotGenerateLink_IfThereIsNoRouteForAGivenName()
+        public void TreeRouter_DoesNotGenerateLink_IfThereIsNoRouteForAGivenName()
         {
             // Arrange
             string selectedGroup = null;
@@ -991,7 +991,7 @@ namespace Microsoft.AspNet.Routing.Tree
         [InlineData("template/{parameter}", null)]
         [InlineData("template/{*parameter:int}", null)]
         [InlineData("template/{*parameter:int}", "NaN")]
-        public void AttributeRoute_DoesNotGenerateLink_IfValuesDoNotMatchNamedEntry(string template, string value)
+        public void TreeRouter_DoesNotGenerateLink_IfValuesDoNotMatchNamedEntry(string template, string value)
         {
             // Arrange
             string selectedGroup = null;
@@ -1032,7 +1032,7 @@ namespace Microsoft.AspNet.Routing.Tree
         [InlineData("template/{parameter}", "5")]
         [InlineData("template/{*parameter:int}", "5")]
         [InlineData("template/{*parameter}", "5")]
-        public void AttributeRoute_GeneratesLink_IfValuesMatchNamedEntry(string template, string value)
+        public void TreeRouter_GeneratesLink_IfValuesMatchNamedEntry(string template, string value)
         {
             // Arrange
             string selectedGroup = null;
@@ -1075,7 +1075,7 @@ namespace Microsoft.AspNet.Routing.Tree
         }
 
        [Fact]
-        public void AttributeRoute_GenerateLink_NoRequiredValues()
+        public void TreeRouter_GenerateLink_NoRequiredValues()
         {
             // Arrange
             var entry = CreateGenerationEntry("api/Store", new { });
@@ -1094,7 +1094,7 @@ namespace Microsoft.AspNet.Routing.Tree
         }
 
         [Fact]
-        public void AttributeRoute_GenerateLink_Match()
+        public void TreeRouter_GenerateLink_Match()
         {
             // Arrange
             var entry = CreateGenerationEntry("api/Store", new { action = "Index", controller = "Store" });
@@ -1113,7 +1113,7 @@ namespace Microsoft.AspNet.Routing.Tree
         }
 
         [Fact]
-        public void AttributeRoute_GenerateLink_NoMatch()
+        public void TreeRouter_GenerateLink_NoMatch()
         {
             // Arrange
             var entry = CreateGenerationEntry("api/Store", new { action = "Details", controller = "Store" });
@@ -1129,7 +1129,7 @@ namespace Microsoft.AspNet.Routing.Tree
         }
 
         [Fact]
-        public void AttributeRoute_GenerateLink_Match_WithAmbientValues()
+        public void TreeRouter_GenerateLink_Match_WithAmbientValues()
         {
             // Arrange
             var entry = CreateGenerationEntry("api/Store", new { action = "Index", controller = "Store" });
@@ -1148,7 +1148,7 @@ namespace Microsoft.AspNet.Routing.Tree
         }
 
         [Fact]
-        public void AttributeRoute_GenerateLink_Match_WithParameters()
+        public void TreeRouter_GenerateLink_Match_WithParameters()
         {
             // Arrange
             var entry = CreateGenerationEntry("api/Store/{action}", new { action = "Index", controller = "Store" });
@@ -1167,7 +1167,7 @@ namespace Microsoft.AspNet.Routing.Tree
         }
 
         [Fact]
-        public void AttributeRoute_GenerateLink_Match_WithMoreParameters()
+        public void TreeRouter_GenerateLink_Match_WithMoreParameters()
         {
             // Arrange
             var entry = CreateGenerationEntry(
@@ -1202,7 +1202,7 @@ namespace Microsoft.AspNet.Routing.Tree
         }
 
         [Fact]
-        public void AttributeRoute_GenerateLink_Match_WithDefault()
+        public void TreeRouter_GenerateLink_Match_WithDefault()
         {
             // Arrange
             var entry = CreateGenerationEntry("api/Store/{action=Index}", new { action = "Index", controller = "Store" });
@@ -1221,7 +1221,7 @@ namespace Microsoft.AspNet.Routing.Tree
         }
 
         [Fact]
-        public void AttributeRoute_GenerateLink_Match_WithConstraint()
+        public void TreeRouter_GenerateLink_Match_WithConstraint()
         {
             // Arrange
             var entry = CreateGenerationEntry("api/Store/{action}/{id:int}", new { action = "Index", controller = "Store" });
@@ -1251,7 +1251,7 @@ namespace Microsoft.AspNet.Routing.Tree
         }
 
         [Fact]
-        public void AttributeRoute_GenerateLink_NoMatch_WithConstraint()
+        public void TreeRouter_GenerateLink_NoMatch_WithConstraint()
         {
             // Arrange
             var entry = CreateGenerationEntry("api/Store/{action}/{id:int}", new { action = "Index", controller = "Store" });
@@ -1274,7 +1274,7 @@ namespace Microsoft.AspNet.Routing.Tree
         }
 
         [Fact]
-        public void AttributeRoute_GenerateLink_Match_WithMixedAmbientValues()
+        public void TreeRouter_GenerateLink_Match_WithMixedAmbientValues()
         {
             // Arrange
             var entry = CreateGenerationEntry("api/Store", new { action = "Index", controller = "Store" });
@@ -1293,7 +1293,7 @@ namespace Microsoft.AspNet.Routing.Tree
         }
 
         [Fact]
-        public void AttributeRoute_GenerateLink_Match_WithQueryString()
+        public void TreeRouter_GenerateLink_Match_WithQueryString()
         {
             // Arrange
             var entry = CreateGenerationEntry("api/Store", new { action = "Index", controller = "Store" });
@@ -1312,7 +1312,7 @@ namespace Microsoft.AspNet.Routing.Tree
         }
 
         [Fact]
-        public void AttributeRoute_GenerateLink_ForwardsRouteGroup()
+        public void TreeRouter_GenerateLink_ForwardsRouteGroup()
         {
             // Arrange
             var entry = CreateGenerationEntry("api/Store", new { action = "Index", controller = "Store" });
@@ -1335,7 +1335,7 @@ namespace Microsoft.AspNet.Routing.Tree
         }
 
         [Fact]
-        public void AttributeRoute_GenerateLink_RejectedByFirstRoute()
+        public void TreeRouter_GenerateLink_RejectedByFirstRoute()
         {
             // Arrange
             var entry1 = CreateGenerationEntry("api/Store", new { action = "Index", controller = "Store" });
@@ -1356,7 +1356,7 @@ namespace Microsoft.AspNet.Routing.Tree
         }
 
         [Fact]
-        public void AttributeRoute_GenerateLink_RejectedByHandler()
+        public void TreeRouter_GenerateLink_RejectedByHandler()
         {
             // Arrange
             var entry1 = CreateGenerationEntry("api/Store", new { action = "Edit", controller = "Store" });
@@ -1391,7 +1391,7 @@ namespace Microsoft.AspNet.Routing.Tree
         }
 
         [Fact]
-        public void AttributeRoute_GenerateLink_ToArea()
+        public void TreeRouter_GenerateLink_ToArea()
         {
             // Arrange
             var entry1 = CreateGenerationEntry("Help/Store", new { area = "Help", action = "Edit", controller = "Store" });
@@ -1417,7 +1417,7 @@ namespace Microsoft.AspNet.Routing.Tree
         }
 
         [Fact]
-        public void AttributeRoute_GenerateLink_ToArea_PredecedenceReversed()
+        public void TreeRouter_GenerateLink_ToArea_PredecedenceReversed()
         {
             // Arrange
             var entry1 = CreateGenerationEntry("Help/Store", new { area = "Help", action = "Edit", controller = "Store" });
@@ -1443,7 +1443,7 @@ namespace Microsoft.AspNet.Routing.Tree
         }
 
         [Fact]
-        public void AttributeRoute_GenerateLink_ToArea_WithAmbientValues()
+        public void TreeRouter_GenerateLink_ToArea_WithAmbientValues()
         {
             // Arrange
             var entry1 = CreateGenerationEntry("Help/Store", new { area = "Help", action = "Edit", controller = "Store" });
@@ -1471,7 +1471,7 @@ namespace Microsoft.AspNet.Routing.Tree
         }
 
         [Fact]
-        public void AttributeRoute_GenerateLink_OutOfArea_IgnoresAmbientValue()
+        public void TreeRouter_GenerateLink_OutOfArea_IgnoresAmbientValue()
         {
             // Arrange
             var entry1 = CreateGenerationEntry("Help/Store", new { area = "Help", action = "Edit", controller = "Store" });
@@ -1569,7 +1569,7 @@ namespace Microsoft.AspNet.Routing.Tree
 
         [Theory]
         [MemberData("OptionalParamValues")]
-        public void AttributeRoute_GenerateLink_Match_WithOptionalParameters(
+        public void TreeRouter_GenerateLink_Match_WithOptionalParameters(
             string template,
             object ambientValues,
             object values,
@@ -1592,7 +1592,7 @@ namespace Microsoft.AspNet.Routing.Tree
         }
 
         [Fact]
-        public async Task AttributeRoute_CreatesNewRouteData()
+        public async Task TreeRouter_CreatesNewRouteData()
         {
             // Arrange
             RouteData nestedRouteData = null;
@@ -1631,7 +1631,7 @@ namespace Microsoft.AspNet.Routing.Tree
         }
 
         [Fact]
-        public async Task AttributeRoute_ReplacesExistingRouteValues_IfNotNull()
+        public async Task TreeRouter_ReplacesExistingRouteValues_IfNotNull()
         {
             // Arrange
             var router = new Mock<IRouter>();
@@ -1659,7 +1659,7 @@ namespace Microsoft.AspNet.Routing.Tree
         }
 
         [Fact]
-        public async Task AttributeRoute_DoesNotReplaceExistingRouteValues_IfNull()
+        public async Task TreeRouter_DoesNotReplaceExistingRouteValues_IfNull()
         {
             // Arrange
             var router = new Mock<IRouter>();
@@ -1687,7 +1687,7 @@ namespace Microsoft.AspNet.Routing.Tree
         }
 
         [Fact]
-        public async Task AttributeRoute_CreatesNewRouteData_ResetsWhenNotMatched()
+        public async Task TreeRouter_CreatesNewRouteData_ResetsWhenNotMatched()
         {
             // Arrange
             RouteData nestedRouteData = null;
@@ -1730,7 +1730,7 @@ namespace Microsoft.AspNet.Routing.Tree
         }
 
         [Fact]
-        public async Task AttributeRoute_CreatesNewRouteData_ResetsWhenThrows()
+        public async Task TreeRouter_CreatesNewRouteData_ResetsWhenThrows()
         {
             // Arrange
             RouteData nestedRouteData = null;
