@@ -18,6 +18,16 @@ namespace Microsoft.AspNet.StaticFiles
     public class StaticFileMiddlewareTests
     {
         [Fact]
+        public async Task ReturnsNotFoundWithoutWwwroot()
+        {
+            var server = TestServer.Create(app => app.UseStaticFiles());
+
+            var response = await server.CreateClient().GetAsync("/ranges.txt");
+
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        }
+
+        [Fact]
         public async Task NullArguments()
         {
             Assert.Throws<ArgumentException>(() => StaticFilesTestServer.Create(app => app.UseStaticFiles(new StaticFileOptions() { ContentTypeProvider = null })));
