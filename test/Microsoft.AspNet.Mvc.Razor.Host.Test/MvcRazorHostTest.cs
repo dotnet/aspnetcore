@@ -55,21 +55,23 @@ namespace Microsoft.AspNet.Mvc.Razor
             var rootedAppPath = $"{rootPrefix}SomeComputer/Location/Project/";
             var rootedFilePath = $"{rootPrefix}SomeComputer/Location/Project/src/file.cshtml";
             var chunkTreeCache = new DefaultChunkTreeCache(new TestFileProvider());
-            var host = new MvcRazorHost(
+            using (var host = new MvcRazorHost(
                 chunkTreeCache,
-                pathNormalizer: new DesignTimeRazorPathNormalizer(rootedAppPath));
-            var parser = new RazorParser(
-                host.CodeLanguage.CreateCodeParser(),
-                host.CreateMarkupParser(),
-                tagHelperDescriptorResolver: null);
-            var chunkInheritanceUtility = new PathValidatingChunkInheritanceUtility(host, chunkTreeCache);
-            host.ChunkInheritanceUtility = chunkInheritanceUtility;
+                pathNormalizer: new DesignTimeRazorPathNormalizer(rootedAppPath)))
+            {
+                var parser = new RazorParser(
+                    host.CodeLanguage.CreateCodeParser(),
+                    host.CreateMarkupParser(),
+                    tagHelperDescriptorResolver: null);
+                var chunkInheritanceUtility = new PathValidatingChunkInheritanceUtility(host, chunkTreeCache);
+                host.ChunkInheritanceUtility = chunkInheritanceUtility;
 
-            // Act
-            host.DecorateRazorParser(parser, rootedFilePath);
+                // Act
+                host.DecorateRazorParser(parser, rootedFilePath);
 
-            // Assert
-            Assert.Equal("src/file.cshtml", chunkInheritanceUtility.InheritedChunkTreePagePath, StringComparer.Ordinal);
+                // Assert
+                Assert.Equal("src/file.cshtml", chunkInheritanceUtility.InheritedChunkTreePagePath, StringComparer.Ordinal);
+            }
         }
 
         [Theory]
@@ -81,26 +83,28 @@ namespace Microsoft.AspNet.Mvc.Razor
             var rootedAppPath = $"{rootPrefix}SomeComputer/Location/Project/";
             var rootedFilePath = $"{rootPrefix}SomeComputer/Location/Project/src/file.cshtml";
             var chunkTreeCache = new DefaultChunkTreeCache(new TestFileProvider());
-            var host = new MvcRazorHost(
+            using (var host = new MvcRazorHost(
                 chunkTreeCache,
-                pathNormalizer: new DesignTimeRazorPathNormalizer(rootedAppPath));
-            var chunkInheritanceUtility = new PathValidatingChunkInheritanceUtility(host, chunkTreeCache);
-            var codeGeneratorContext = new CodeGeneratorContext(
-                new ChunkGeneratorContext(
-                    host,
-                    host.DefaultClassName,
-                    host.DefaultNamespace,
-                    rootedFilePath,
-                    shouldGenerateLinePragmas: true),
-                new ErrorSink());
-            var codeGenerator = new CSharpCodeGenerator(codeGeneratorContext);
-            host.ChunkInheritanceUtility = chunkInheritanceUtility;
+                pathNormalizer: new DesignTimeRazorPathNormalizer(rootedAppPath)))
+            {
+                var chunkInheritanceUtility = new PathValidatingChunkInheritanceUtility(host, chunkTreeCache);
+                var codeGeneratorContext = new CodeGeneratorContext(
+                    new ChunkGeneratorContext(
+                        host,
+                        host.DefaultClassName,
+                        host.DefaultNamespace,
+                        rootedFilePath,
+                        shouldGenerateLinePragmas: true),
+                    new ErrorSink());
+                var codeGenerator = new CSharpCodeGenerator(codeGeneratorContext);
+                host.ChunkInheritanceUtility = chunkInheritanceUtility;
 
-            // Act
-            host.DecorateCodeGenerator(codeGenerator, codeGeneratorContext);
+                // Act
+                host.DecorateCodeGenerator(codeGenerator, codeGeneratorContext);
 
-            // Assert
-            Assert.Equal("src/file.cshtml", chunkInheritanceUtility.InheritedChunkTreePagePath, StringComparer.Ordinal);
+                // Assert
+                Assert.Equal("src/file.cshtml", chunkInheritanceUtility.InheritedChunkTreePagePath, StringComparer.Ordinal);
+            }
         }
 
         [Fact]
@@ -108,13 +112,14 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             // Arrange
             var fileProvider = new TestFileProvider();
-            var host = new MvcRazorHost(new DefaultChunkTreeCache(fileProvider));
+            using (var host = new MvcRazorHost(new DefaultChunkTreeCache(fileProvider)))
+            {
+                // Act
+                var instrumented = host.EnableInstrumentation;
 
-            // Act
-            var instrumented = host.EnableInstrumentation;
-
-            // Assert
-            Assert.True(instrumented);
+                // Assert
+                Assert.True(instrumented);
+            }
         }
 
         [Fact]
@@ -122,12 +127,13 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             // Arrange
             var fileProvider = new TestFileProvider();
-            var host = new MvcRazorHostWithNormalizedNewLine(new DefaultChunkTreeCache(fileProvider))
+            using (var host = new MvcRazorHostWithNormalizedNewLine(new DefaultChunkTreeCache(fileProvider))
             {
                 DesignTimeMode = true
-            };
-            var expectedLineMappings = new[]
+            })
             {
+                var expectedLineMappings = new[]
+                {
                 BuildLineMapping(
                     documentAbsoluteIndex: 33,
                     documentLineIndex: 2,
@@ -160,13 +166,14 @@ namespace Microsoft.AspNet.Mvc.Razor
                     generatedLineIndex: 53,
                     generatedCharacterIndex: 87,
                     contentLength: 5),
-            };
+                };
 
-            // Act and Assert
-            RunDesignTimeTest(
-                host,
-                testName: "ModelExpressionTagHelper",
-                expectedLineMappings: expectedLineMappings);
+                // Act and Assert
+                RunDesignTimeTest(
+                    host,
+                    testName: "ModelExpressionTagHelper",
+                    expectedLineMappings: expectedLineMappings);
+            }
         }
 
         [Theory]
@@ -181,10 +188,11 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             // Arrange
             var fileProvider = new TestFileProvider();
-            var host = new TestMvcRazorHost(new DefaultChunkTreeCache(fileProvider));
-
-            // Act and Assert
-            RunRuntimeTest(host, scenarioName);
+            using (var host = new TestMvcRazorHost(new DefaultChunkTreeCache(fileProvider)))
+            {
+                // Act and Assert
+                RunRuntimeTest(host, scenarioName);
+            }
         }
 
         [Fact]
@@ -192,13 +200,14 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             // Arrange
             var fileProvider = new TestFileProvider();
-            var host = new MvcRazorHostWithNormalizedNewLine(new DefaultChunkTreeCache(fileProvider))
+            using (var host = new MvcRazorHostWithNormalizedNewLine(new DefaultChunkTreeCache(fileProvider))
             {
                 DesignTimeMode = true
-            };
-            host.NamespaceImports.Clear();
-            var expectedLineMappings = new[]
+            })
             {
+                host.NamespaceImports.Clear();
+                var expectedLineMappings = new[]
+                {
                 BuildLineMapping(
                     documentAbsoluteIndex: 13,
                     documentLineIndex: 0,
@@ -215,10 +224,11 @@ namespace Microsoft.AspNet.Mvc.Razor
                     generatedLineIndex: 37,
                     generatedCharacterIndex: 6,
                     contentLength: 21),
-            };
+                };
 
-            // Act and Assert
-            RunDesignTimeTest(host, "Basic", expectedLineMappings);
+                // Act and Assert
+                RunDesignTimeTest(host, "Basic", expectedLineMappings);
+            }
         }
 
         [Fact]
@@ -226,13 +236,14 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             // Arrange
             var fileProvider = new TestFileProvider();
-            var host = new MvcRazorHostWithNormalizedNewLine(new DefaultChunkTreeCache(fileProvider))
+            using (var host = new MvcRazorHostWithNormalizedNewLine(new DefaultChunkTreeCache(fileProvider))
             {
                 DesignTimeMode = true
-            };
-            host.NamespaceImports.Clear();
-            var expectedLineMappings = new[]
+            })
             {
+                host.NamespaceImports.Clear();
+                var expectedLineMappings = new[]
+                {
                 BuildLineMapping(
                     documentAbsoluteIndex: 8,
                     documentLineIndex: 0,
@@ -241,10 +252,11 @@ namespace Microsoft.AspNet.Mvc.Razor
                     generatedLineIndex: 21,
                     generatedCharacterIndex: 8,
                     contentLength: 26),
-            };
+                };
 
-            // Act and Assert
-            RunDesignTimeTest(host, "_ViewImports", expectedLineMappings);
+                // Act and Assert
+                RunDesignTimeTest(host, "_ViewImports", expectedLineMappings);
+            }
         }
 
         [Fact]
@@ -252,13 +264,14 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             // Arrange
             var fileProvider = new TestFileProvider();
-            var host = new MvcRazorHostWithNormalizedNewLine(new DefaultChunkTreeCache(fileProvider))
+            using (var host = new MvcRazorHostWithNormalizedNewLine(new DefaultChunkTreeCache(fileProvider))
             {
                 DesignTimeMode = true
-            };
-            host.NamespaceImports.Clear();
-            var expectedLineMappings = new[]
+            })
             {
+                host.NamespaceImports.Clear();
+                var expectedLineMappings = new[]
+                {
                 BuildLineMapping(
                     documentAbsoluteIndex: 1,
                     documentLineIndex: 0,
@@ -275,10 +288,11 @@ namespace Microsoft.AspNet.Mvc.Razor
                     generatedLineIndex: 26,
                     generatedCharacterIndex: 8,
                     contentLength: 20),
-            };
+                };
 
-            // Act and Assert
-            RunDesignTimeTest(host, "Inject", expectedLineMappings);
+                // Act and Assert
+                RunDesignTimeTest(host, "Inject", expectedLineMappings);
+            }
         }
 
         [Fact]
@@ -286,13 +300,14 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             // Arrange
             var fileProvider = new TestFileProvider();
-            var host = new MvcRazorHostWithNormalizedNewLine(new DefaultChunkTreeCache(fileProvider))
+            using (var host = new MvcRazorHostWithNormalizedNewLine(new DefaultChunkTreeCache(fileProvider))
             {
                 DesignTimeMode = true
-            };
-            host.NamespaceImports.Clear();
-            var expectedLineMappings = new[]
+            })
             {
+                host.NamespaceImports.Clear();
+                var expectedLineMappings = new[]
+                {
                 BuildLineMapping(
                     documentAbsoluteIndex: 7,
                     documentLineIndex: 0,
@@ -317,10 +332,11 @@ namespace Microsoft.AspNet.Mvc.Razor
                     generatedLineIndex: 33,
                     generatedCharacterIndex: 8,
                     contentLength: 23),
-            };
+                };
 
-            // Act and Assert
-            RunDesignTimeTest(host, "InjectWithModel", expectedLineMappings);
+                // Act and Assert
+                RunDesignTimeTest(host, "InjectWithModel", expectedLineMappings);
+            }
         }
 
         [Fact]
@@ -328,13 +344,14 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             // Arrange
             var fileProvider = new TestFileProvider();
-            var host = new MvcRazorHostWithNormalizedNewLine(new DefaultChunkTreeCache(fileProvider))
+            using (var host = new MvcRazorHostWithNormalizedNewLine(new DefaultChunkTreeCache(fileProvider))
             {
                 DesignTimeMode = true
-            };
-            host.NamespaceImports.Clear();
-            var expectedLineMappings = new[]
+            })
             {
+                host.NamespaceImports.Clear();
+                var expectedLineMappings = new[]
+                {
                 BuildLineMapping(
                     documentAbsoluteIndex: 7,
                     documentLineIndex: 0,
@@ -375,10 +392,11 @@ namespace Microsoft.AspNet.Mvc.Razor
                     generatedLineIndex: 49,
                     generatedCharacterIndex: 8,
                     contentLength: 24),
-            };
+                };
 
-            // Act and Assert
-            RunDesignTimeTest(host, "InjectWithSemicolon", expectedLineMappings);
+                // Act and Assert
+                RunDesignTimeTest(host, "InjectWithSemicolon", expectedLineMappings);
+            }
         }
 
         [Fact]
@@ -386,13 +404,14 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             // Arrange
             var fileProvider = new TestFileProvider();
-            var host = new MvcRazorHostWithNormalizedNewLine(new DefaultChunkTreeCache(fileProvider))
+            using (var host = new MvcRazorHostWithNormalizedNewLine(new DefaultChunkTreeCache(fileProvider))
             {
                 DesignTimeMode = true
-            };
-            host.NamespaceImports.Clear();
-            var expectedLineMappings = new[]
+            })
             {
+                host.NamespaceImports.Clear();
+                var expectedLineMappings = new[]
+                {
                 BuildLineMapping(
                     documentAbsoluteIndex: 7,
                     documentLineIndex: 0,
@@ -401,10 +420,11 @@ namespace Microsoft.AspNet.Mvc.Razor
                     generatedLineIndex: 11,
                     generatedCharacterIndex: 28,
                     contentLength: 30),
-            };
+                };
 
-            // Act and Assert
-            RunDesignTimeTest(host, "Model", expectedLineMappings);
+                // Act and Assert
+                RunDesignTimeTest(host, "Model", expectedLineMappings);
+            }
         }
 
         [Fact]
@@ -412,31 +432,33 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             // Arrange
             var fileProvider = new TestFileProvider();
-            var host = new MvcRazorHostWithNormalizedNewLine(new DefaultChunkTreeCache(fileProvider))
+            using (var host = new MvcRazorHostWithNormalizedNewLine(new DefaultChunkTreeCache(fileProvider))
             {
                 DesignTimeMode = true
-            };
-            host.NamespaceImports.Clear();
-            var inputFile = "TestFiles/Input/MultipleModels.cshtml";
-            var outputFile = "TestFiles/Output/DesignTime/MultipleModels.cs";
-            var expectedCode = ResourceFile.ReadResource(_assembly, outputFile, sourceFile: false);
-
-            // Act
-            GeneratorResults results;
-            using (var stream = ResourceFile.GetResourceStream(_assembly, inputFile, sourceFile: true))
+            })
             {
-                results = host.GenerateCode(inputFile, stream);
-            }
+                host.NamespaceImports.Clear();
+                var inputFile = "TestFiles/Input/MultipleModels.cshtml";
+                var outputFile = "TestFiles/Output/DesignTime/MultipleModels.cs";
+                var expectedCode = ResourceFile.ReadResource(_assembly, outputFile, sourceFile: false);
 
-            // Assert
-            Assert.False(results.Success);
-            var parserError = Assert.Single(results.ParserErrors);
-            Assert.Equal("Only one 'model' statement is allowed in a file.", parserError.Message);
+                // Act
+                GeneratorResults results;
+                using (var stream = ResourceFile.GetResourceStream(_assembly, inputFile, sourceFile: true))
+                {
+                    results = host.GenerateCode(inputFile, stream);
+                }
+
+                // Assert
+                Assert.False(results.Success);
+                var parserError = Assert.Single(results.ParserErrors);
+                Assert.Equal("Only one 'model' statement is allowed in a file.", parserError.Message);
 #if GENERATE_BASELINES
-            ResourceFile.UpdateFile(_assembly, outputFile, expectedCode, results.GeneratedCode);
+                ResourceFile.UpdateFile(_assembly, outputFile, expectedCode, results.GeneratedCode);
 #else
-            Assert.Equal(expectedCode, results.GeneratedCode, ignoreLineEndingDifferences: true);
+                Assert.Equal(expectedCode, results.GeneratedCode, ignoreLineEndingDifferences: true);
 #endif
+            }
         }
 
         private static void RunRuntimeTest(

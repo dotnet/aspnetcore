@@ -10,7 +10,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
     /// <summary>
     /// A cache for parsed <see cref="ChunkTree"/>s.
     /// </summary>
-    public interface IChunkTreeCache
+    public interface IChunkTreeCache : IDisposable
     {
         /// <summary>
         /// Get an existing <see cref="ChunkTree"/>, or create and add a new one if it is

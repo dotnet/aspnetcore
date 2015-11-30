@@ -73,5 +73,10 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
 
             return chunkTree;
         }
+
+        public void Dispose()
+        {
+            _chunkTreeCache.Dispose();
+        }
     }
 }

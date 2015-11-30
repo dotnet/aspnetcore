@@ -262,21 +262,23 @@ namespace Microsoft.AspNet.Mvc
         {
             // Arrange
             // Point the IFileProvider root to a different subfolder
-            var fileProvider = new PhysicalFileProvider(Path.GetFullPath("./Properties"));
-            var filePathResult = new VirtualFileResult(path, "text/plain")
+            using (var fileProvider = new PhysicalFileProvider(Path.GetFullPath("./Properties")))
             {
-                FileProvider = fileProvider,
-            };
+                var filePathResult = new VirtualFileResult(path, "text/plain")
+                {
+                    FileProvider = fileProvider,
+                };
 
-            var expectedMessage = "Could not find file: " + path;
-            var context = new ActionContext(GetHttpContext(), new RouteData(), new ActionDescriptor());
+                var expectedMessage = "Could not find file: " + path;
+                var context = new ActionContext(GetHttpContext(), new RouteData(), new ActionDescriptor());
 
-            // Act
-            var ex = await Assert.ThrowsAsync<FileNotFoundException>(() => filePathResult.ExecuteResultAsync(context));
+                // Act
+                var ex = await Assert.ThrowsAsync<FileNotFoundException>(() => filePathResult.ExecuteResultAsync(context));
 
-            // Assert
-            Assert.Equal(expectedMessage, ex.Message);
-            Assert.Equal(path, ex.FileName);
+                // Assert
+                Assert.Equal(expectedMessage, ex.Message);
+                Assert.Equal(path, ex.FileName);
+            }
         }
 
         [Theory]
@@ -294,16 +296,18 @@ namespace Microsoft.AspNet.Mvc
         {
             // Arrange
             // Point the IFileProvider root to a different subfolder
-            var fileProvider = new PhysicalFileProvider(Path.GetFullPath("./Properties"));
-            var filePathResult = new VirtualFileResult(path, "text/plain")
+            using (var fileProvider = new PhysicalFileProvider(Path.GetFullPath("./Properties")))
             {
-                FileProvider = fileProvider,
-            };
+                var filePathResult = new VirtualFileResult(path, "text/plain")
+                {
+                    FileProvider = fileProvider,
+                };
 
-            var context = new ActionContext(new DefaultHttpContext(), new RouteData(), new ActionDescriptor());
+                var context = new ActionContext(new DefaultHttpContext(), new RouteData(), new ActionDescriptor());
 
-            // Act & Assert
-            Assert.ThrowsAsync<DirectoryNotFoundException>(() => filePathResult.ExecuteResultAsync(context));
+                // Act & Assert
+                Assert.ThrowsAsync<DirectoryNotFoundException>(() => filePathResult.ExecuteResultAsync(context));
+            }
         }
 
         private static IServiceCollection CreateServices()

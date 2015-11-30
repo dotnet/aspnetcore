@@ -21,17 +21,19 @@ namespace Microsoft.AspNet.Mvc.Razor.Host.Directives
             var mockFileProvider = new Mock<TestFileProvider> { CallBase = true };
             var fileProvider = mockFileProvider.Object;
             fileProvider.AddFile(path, "test content");
-            var chunkTreeCache = new DefaultChunkTreeCache(fileProvider);
-            var expected = new ChunkTree();
+            using (var chunkTreeCache = new DefaultChunkTreeCache(fileProvider))
+            {
+                var expected = new ChunkTree();
 
-            // Act
-            var result1 = chunkTreeCache.GetOrAdd(path, fileInfo => expected);
-            var result2 = chunkTreeCache.GetOrAdd(path, fileInfo => { throw new Exception("Shouldn't be called."); });
+                // Act
+                var result1 = chunkTreeCache.GetOrAdd(path, fileInfo => expected);
+                var result2 = chunkTreeCache.GetOrAdd(path, fileInfo => { throw new Exception("Shouldn't be called."); });
 
-            // Assert
-            Assert.Same(expected, result1);
-            Assert.Same(expected, result2);
-            mockFileProvider.Verify(f => f.GetFileInfo(It.IsAny<string>()), Times.Once());
+                // Assert
+                Assert.Same(expected, result1);
+                Assert.Same(expected, result2);
+                mockFileProvider.Verify(f => f.GetFileInfo(It.IsAny<string>()), Times.Once());
+            }
         }
 
         [Fact]
@@ -41,17 +43,19 @@ namespace Microsoft.AspNet.Mvc.Razor.Host.Directives
             var path = @"Views\_ViewStart.cshtml";
             var mockFileProvider = new Mock<TestFileProvider> { CallBase = true };
             var fileProvider = mockFileProvider.Object;
-            var chunkTreeCache = new DefaultChunkTreeCache(fileProvider);
-            var expected = new ChunkTree();
+            using (var chunkTreeCache = new DefaultChunkTreeCache(fileProvider))
+            {
+                var expected = new ChunkTree();
 
-            // Act
-            var result1 = chunkTreeCache.GetOrAdd(path, fileInfo => expected);
-            var result2 = chunkTreeCache.GetOrAdd(path, fileInfo => { throw new Exception("Shouldn't be called."); });
+                // Act
+                var result1 = chunkTreeCache.GetOrAdd(path, fileInfo => expected);
+                var result2 = chunkTreeCache.GetOrAdd(path, fileInfo => { throw new Exception("Shouldn't be called."); });
 
-            // Assert
-            Assert.Null(result1);
-            Assert.Null(result2);
-            mockFileProvider.Verify(f => f.GetFileInfo(It.IsAny<string>()), Times.Once());
+                // Assert
+                Assert.Null(result1);
+                Assert.Null(result2);
+                mockFileProvider.Verify(f => f.GetFileInfo(It.IsAny<string>()), Times.Once());
+            }
         }
 
         [Fact]
@@ -61,22 +65,24 @@ namespace Microsoft.AspNet.Mvc.Razor.Host.Directives
             var path = @"Views\Home\_ViewStart.cshtml";
             var fileProvider = new TestFileProvider();
             fileProvider.AddFile(path, "test content");
-            var chunkTreeCache = new DefaultChunkTreeCache(fileProvider);
-            var expected1 = new ChunkTree();
-            var expected2 = new ChunkTree();
+            using (var chunkTreeCache = new DefaultChunkTreeCache(fileProvider))
+            {
+                var expected1 = new ChunkTree();
+                var expected2 = new ChunkTree();
 
-            // Act 1
-            var result1 = chunkTreeCache.GetOrAdd(path, fileInfo => expected1);
+                // Act 1
+                var result1 = chunkTreeCache.GetOrAdd(path, fileInfo => expected1);
 
-            // Assert 1
-            Assert.Same(expected1, result1);
+                // Assert 1
+                Assert.Same(expected1, result1);
 
-            // Act 2
-            fileProvider.GetChangeToken(path).HasChanged = true;
-            var result2 = chunkTreeCache.GetOrAdd(path, fileInfo => expected2);
+                // Act 2
+                fileProvider.GetChangeToken(path).HasChanged = true;
+                var result2 = chunkTreeCache.GetOrAdd(path, fileInfo => expected2);
 
-            // Assert 2
-            Assert.Same(expected2, result2);
+                // Assert 2
+                Assert.Same(expected2, result2);
+            }
         }
 
         [Fact]
@@ -86,22 +92,24 @@ namespace Microsoft.AspNet.Mvc.Razor.Host.Directives
             var path = @"Views\Home\_ViewStart.cshtml";
             var fileProvider = new TestFileProvider();
             fileProvider.AddFile(path, "test content");
-            var chunkTreeCache = new DefaultChunkTreeCache(fileProvider);
-            var expected1 = new ChunkTree();
+            using (var chunkTreeCache = new DefaultChunkTreeCache(fileProvider))
+            {
+                var expected1 = new ChunkTree();
 
-            // Act 1
-            var result1 = chunkTreeCache.GetOrAdd(path, fileInfo => expected1);
+                // Act 1
+                var result1 = chunkTreeCache.GetOrAdd(path, fileInfo => expected1);
 
-            // Assert 1
-            Assert.Same(expected1, result1);
+                // Assert 1
+                Assert.Same(expected1, result1);
 
-            // Act 2
-            fileProvider.DeleteFile(path);
-            fileProvider.GetChangeToken(path).HasChanged = true;
-            var result2 = chunkTreeCache.GetOrAdd(path, fileInfo => { throw new Exception("Shouldn't be called."); });
+                // Act 2
+                fileProvider.DeleteFile(path);
+                fileProvider.GetChangeToken(path).HasChanged = true;
+                var result2 = chunkTreeCache.GetOrAdd(path, fileInfo => { throw new Exception("Shouldn't be called."); });
 
-            // Assert 2
-            Assert.Null(result2);
+                // Assert 2
+                Assert.Null(result2);
+            }
         }
 
         [Fact]
@@ -110,22 +118,24 @@ namespace Microsoft.AspNet.Mvc.Razor.Host.Directives
             // Arrange
             var path = @"Views\Home\_ViewStart.cshtml";
             var fileProvider = new TestFileProvider();
-            var chunkTreeCache = new DefaultChunkTreeCache(fileProvider);
-            var expected = new ChunkTree();
+            using (var chunkTreeCache = new DefaultChunkTreeCache(fileProvider))
+            {
+                var expected = new ChunkTree();
 
-            // Act 1
-            var result1 = chunkTreeCache.GetOrAdd(path, fileInfo => { throw new Exception("Shouldn't be called."); });
+                // Act 1
+                var result1 = chunkTreeCache.GetOrAdd(path, fileInfo => { throw new Exception("Shouldn't be called."); });
 
-            // Assert 1
-            Assert.Null(result1);
+                // Assert 1
+                Assert.Null(result1);
 
-            // Act 2
-            fileProvider.AddFile(path, "test content");
-            fileProvider.GetChangeToken(path).HasChanged = true;
-            var result2 = chunkTreeCache.GetOrAdd(path, fileInfo => expected);
+                // Act 2
+                fileProvider.AddFile(path, "test content");
+                fileProvider.GetChangeToken(path).HasChanged = true;
+                var result2 = chunkTreeCache.GetOrAdd(path, fileInfo => expected);
 
-            // Assert 2
-            Assert.Same(expected, result2);
+                // Assert 2
+                Assert.Same(expected, result2);
+            }
         }
 
         [Fact]
@@ -140,29 +150,31 @@ namespace Microsoft.AspNet.Mvc.Razor.Host.Directives
             clock.SetupGet(c => c.UtcNow)
                  .Returns(() => utcNow);
             var options = new MemoryCacheOptions { Clock = clock.Object };
-            var chunkTreeCache = new DefaultChunkTreeCache(fileProvider, options);
-            var chunkTree1 = new ChunkTree();
-            var chunkTree2 = new ChunkTree();
+            using (var chunkTreeCache = new DefaultChunkTreeCache(fileProvider, options))
+            {
+                var chunkTree1 = new ChunkTree();
+                var chunkTree2 = new ChunkTree();
 
-            // Act 1
-            var result1 = chunkTreeCache.GetOrAdd(path, fileInfo => chunkTree1);
+                // Act 1
+                var result1 = chunkTreeCache.GetOrAdd(path, fileInfo => chunkTree1);
 
-            // Assert 1
-            Assert.Same(chunkTree1, result1);
+                // Assert 1
+                Assert.Same(chunkTree1, result1);
 
-            // Act 2
-            utcNow = utcNow.AddSeconds(59);
-            var result2 = chunkTreeCache.GetOrAdd(path, fileInfo => { throw new Exception("Shouldn't be called."); });
+                // Act 2
+                utcNow = utcNow.AddSeconds(59);
+                var result2 = chunkTreeCache.GetOrAdd(path, fileInfo => { throw new Exception("Shouldn't be called."); });
 
-            // Assert 2
-            Assert.Same(chunkTree1, result2);
+                // Assert 2
+                Assert.Same(chunkTree1, result2);
 
-            // Act 3
-            utcNow = utcNow.AddSeconds(65);
-            var result3 = chunkTreeCache.GetOrAdd(path, fileInfo => chunkTree2);
+                // Act 3
+                utcNow = utcNow.AddSeconds(65);
+                var result3 = chunkTreeCache.GetOrAdd(path, fileInfo => chunkTree2);
 
-            // Assert 3
-            Assert.Same(chunkTree2, result3);
+                // Assert 3
+                Assert.Same(chunkTree2, result3);
+            }
         }
     }
 }

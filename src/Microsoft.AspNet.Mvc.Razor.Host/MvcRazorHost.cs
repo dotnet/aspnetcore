@@ -326,6 +326,11 @@ namespace Microsoft.AspNet.Mvc.Razor
                 });
         }
 
+        public void Dispose()
+        {
+            _chunkTreeCache.Dispose();
+        }
+
         private IReadOnlyList<ChunkTree> GetInheritedChunkTrees(string sourceFileName)
         {
             var inheritedChunkTrees = GetInheritedChunkTreeResults(sourceFileName)

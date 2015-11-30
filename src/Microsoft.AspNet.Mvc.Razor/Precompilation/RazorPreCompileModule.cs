@@ -35,8 +35,6 @@ namespace Microsoft.AspNet.Mvc.Razor.Precompilation
                 return;
             }
 
-            var fileProvider = new PhysicalFileProvider(context.ProjectContext.ProjectDirectory);
-
             MemoryCache memoryCache;
             lock (_memoryCacheLookupLock)
             {
@@ -57,15 +55,18 @@ namespace Microsoft.AspNet.Mvc.Razor.Precompilation
                 }
             }
 
-            var viewCompiler = new RazorPreCompiler(
-                context,
-                fileProvider,
-                memoryCache)
+            using (var fileProvider = new PhysicalFileProvider(context.ProjectContext.ProjectDirectory))
             {
-                GenerateSymbols = GenerateSymbols
-            };
+                var viewCompiler = new RazorPreCompiler(
+                    context,
+                    fileProvider,
+                    memoryCache)
+                {
+                    GenerateSymbols = GenerateSymbols
+                };
 
-            viewCompiler.CompileViews();
+                viewCompiler.CompileViews();
+            }
         }
 
         /// <inheritdoc />

@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
 using Microsoft.AspNet.Razor.CodeGenerators;
 
@@ -9,7 +10,7 @@ namespace Microsoft.AspNet.Mvc.Razor
     /// <summary>
     /// Specifies the contracts for a Razor host that parses Razor files and generates C# code.
     /// </summary>
-    public interface IMvcRazorHost
+    public interface IMvcRazorHost : IDisposable
     {
         /// <summary>
         /// Parses and generates the contents of a Razor file represented by <paramref name="inputStream"/>.

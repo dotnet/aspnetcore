@@ -277,36 +277,38 @@ namespace Microsoft.AspNet.Mvc.Razor.Precompilation
 
             using (var stream = fileInfo.FileInfo.CreateReadStream())
             {
-                var host = GetRazorHost();
-                var results = host.GenerateCode(fileInfo.RelativePath, stream);
-
-                if (results.Success)
+                using (var host = GetRazorHost())
                 {
-                    var syntaxTree = SyntaxTreeGenerator.Generate(
-                        results.GeneratedCode,
-                        fileInfo.FileInfo.PhysicalPath,
-                        CompilationSettings);
-                    var fullTypeName = results.GetMainClassName(host, syntaxTree);
+                    var results = host.GenerateCode(fileInfo.RelativePath, stream);
 
-                    if (fullTypeName != null)
+                    if (results.Success)
                     {
-                        var razorFileInfo = new RazorFileInfo
+                        var syntaxTree = SyntaxTreeGenerator.Generate(
+                            results.GeneratedCode,
+                            fileInfo.FileInfo.PhysicalPath,
+                            CompilationSettings);
+                        var fullTypeName = results.GetMainClassName(host, syntaxTree);
+
+                        if (fullTypeName != null)
                         {
-                            RelativePath = fileInfo.RelativePath,
-                            FullTypeName = fullTypeName
-                        };
+                            var razorFileInfo = new RazorFileInfo
+                            {
+                                RelativePath = fileInfo.RelativePath,
+                                FullTypeName = fullTypeName
+                            };
 
-                        return new PrecompilationCacheEntry(razorFileInfo, syntaxTree);
+                            return new PrecompilationCacheEntry(razorFileInfo, syntaxTree);
+                        }
                     }
-                }
-                else
-                {
-                    var diagnostics = results
-                        .ParserErrors
-                        .Select(error => error.ToDiagnostics(fileInfo.FileInfo.PhysicalPath))
-                        .ToList();
+                    else
+                    {
+                        var diagnostics = results
+                            .ParserErrors
+                            .Select(error => error.ToDiagnostics(fileInfo.FileInfo.PhysicalPath))
+                            .ToList();
 
-                    return new PrecompilationCacheEntry(diagnostics);
+                        return new PrecompilationCacheEntry(diagnostics);
+                    }
                 }
             }
 
