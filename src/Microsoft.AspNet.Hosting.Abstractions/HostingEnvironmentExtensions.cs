@@ -93,7 +93,7 @@ namespace Microsoft.AspNet.Hosting
             }
             if (string.IsNullOrEmpty(hostingEnvironment.WebRootPath))
             {
-                throw new InvalidOperationException("Can not map path because webroot path is not set");
+                throw new InvalidOperationException("Cannot map path because webroot path is not set");
             }
             if (virtualPath == null)
             {

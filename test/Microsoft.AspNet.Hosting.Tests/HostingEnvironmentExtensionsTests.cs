@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
 using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Hosting;
@@ -65,6 +66,16 @@ namespace Microsoft.AspNet.Hosting.Tests
             env.Initialize(".", new WebHostOptions() { Environment = "NewName" }, null);
 
             Assert.Equal("NewName", env.EnvironmentName);
+        }
+
+        [Fact]
+        public void MapPathThrowsWithNoWwwroot()
+        {
+            var env = new HostingEnvironment();
+
+            env.Initialize(".", new WebHostOptions(), null);
+
+            Assert.Throws<InvalidOperationException>(() => env.MapPath("file.txt"));
         }
 
     }
