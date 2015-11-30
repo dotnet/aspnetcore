@@ -1,4 +1,12 @@
 {
+  "iisSettings": {
+    "windowsAuthentication": false,
+    "anonymousAuthentication": true,
+    "iisExpress": {
+      "applicationUrl": "http://localhost:1788/",
+      "sslPort": 0
+    }
+  },
   "profiles": {
     "IIS Express": {
       "commandName": "IISExpress",
@@ -10,7 +18,10 @@
     "web": {
       "commandName": "web",
       "launchBrowser": true,
-      "launchUrl": "http://localhost:12345"
+      "launchUrl": "http://localhost:12345",
+      "environmentVariables": {
+        "Hosting:Environment": "Development"
+      }
     },
     "kestrel": {
       "commandName": "kestrel",
