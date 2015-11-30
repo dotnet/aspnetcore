@@ -426,13 +426,33 @@ namespace Microsoft.AspNet.StaticFiles
         /// <returns>True if MIME type could be determined</returns>
         public bool TryGetContentType(string subpath, out string contentType)
         {
-            string extension = Path.GetExtension(subpath);
+            string extension = GetExtension(subpath);
             if (extension == null)
             {
                 contentType = null;
                 return false;
             }
             return Mappings.TryGetValue(extension, out contentType);
+        }
+
+        private static string GetExtension(string path)
+        {
+            // Don't use Path.GetExtension as that may throw an exception if there are
+            // invalid characters in the path. Invalid characters should be handled
+            // by the FileProviders
+
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                return null;
+            }
+
+            int index = path.LastIndexOf('.');
+            if (index < 0)
+            {
+                return null;
+            }
+
+            return path.Substring(index);
         }
     }
 }

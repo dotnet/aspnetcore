@@ -62,5 +62,13 @@ namespace Microsoft.AspNet.StaticFiles
             Assert.True(provider.TryGetContentType(@"\second.css\example.txt", out contentType));
             Assert.Equal("text/plain", contentType);
         }
+
+        [Fact]
+        public void InvalidCharactersAreIgnored()
+        {
+            var provider = new FileExtensionContentTypeProvider();
+            string contentType;
+            Assert.True(provider.TryGetContentType($"{new string(System.IO.Path.GetInvalidPathChars())}.txt", out contentType));
+        }
     }
 }
