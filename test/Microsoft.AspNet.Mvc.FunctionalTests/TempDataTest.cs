@@ -14,9 +14,9 @@ using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
-    public class TempDataTest : IClassFixture<MvcTestFixture<TempDataWebSite.Startup>>
+    public class TempDataTest : IClassFixture<MvcTestFixture<BasicWebSite.Startup>>
     {
-        public TempDataTest(MvcTestFixture<TempDataWebSite.Startup> fixture)
+        public TempDataTest(MvcTestFixture<BasicWebSite.Startup> fixture)
         {
             Client = fixture.Client;
         }
@@ -34,13 +34,13 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var content = new FormUrlEncodedContent(nameValueCollection);
 
             // Act 1
-            var response = await Client.PostAsync("/Home/SetTempData", content);
+            var response = await Client.PostAsync("/TempData/SetTempData", content);
 
             // Assert 1
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
             // Act 2
-            response = await Client.SendAsync(GetRequest("Home/GetTempData", response));
+            response = await Client.SendAsync(GetRequest("TempData/GetTempData", response));
 
             // Assert 2
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -48,7 +48,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal("Foo", body);
 
             // Act 3
-            response = await Client.SendAsync(GetRequest("Home/GetTempData", response));
+            response = await Client.SendAsync(GetRequest("TempData/GetTempData", response));
 
             // Assert 3
             Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
@@ -65,7 +65,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var content = new FormUrlEncodedContent(nameValueCollection);
 
             // Act
-            var response = await Client.PostAsync("http://localhost/Home/DisplayTempData", content);
+            var response = await Client.PostAsync("http://localhost/TempData/DisplayTempData", content);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -86,13 +86,13 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var content = new FormUrlEncodedContent(nameValueCollection);
 
             // Act 1
-            var response = await Client.PostAsync("/Home/SetTempData", content);
+            var response = await Client.PostAsync("/TempData/SetTempData", content);
 
             // Assert 1
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
             // Act 2
-            var redirectResponse = await Client.SendAsync(GetRequest("/Home/GetTempDataAndRedirect", response));
+            var redirectResponse = await Client.SendAsync(GetRequest("/TempData/GetTempDataAndRedirect", response));
 
             // Assert 2
             Assert.Equal(HttpStatusCode.Redirect, redirectResponse.StatusCode);
@@ -117,13 +117,13 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var content = new FormUrlEncodedContent(nameValueCollection);
 
             // Act 1
-            var response = await Client.PostAsync("/Home/SetTempData", content);
+            var response = await Client.PostAsync("/TempData/SetTempData", content);
 
             // Assert 1
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
             // Act 2
-            var peekResponse = await Client.SendAsync(GetRequest("/Home/PeekTempData", response));
+            var peekResponse = await Client.SendAsync(GetRequest("/TempData/PeekTempData", response));
 
             // Assert 2
             Assert.Equal(HttpStatusCode.OK, peekResponse.StatusCode);
@@ -131,7 +131,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal("Foo", body);
 
             // Act 3
-            var getResponse = await Client.SendAsync(GetRequest("/Home/GetTempData", response));
+            var getResponse = await Client.SendAsync(GetRequest("/TempData/GetTempData", response));
 
             // Assert 3
             Assert.Equal(HttpStatusCode.OK, getResponse.StatusCode);
@@ -159,7 +159,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var content = new FormUrlEncodedContent(nameValueCollection);
 
             // Act 1
-            var redirectResponse = await Client.PostAsync("/Home/SetTempDataMultiple", content);
+            var redirectResponse = await Client.PostAsync("/TempData/SetTempDataMultiple", content);
 
             // Assert 1
             Assert.Equal(HttpStatusCode.Redirect, redirectResponse.StatusCode);
@@ -186,10 +186,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Act & Assert
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
             {
-                await Client.PostAsync("/Home/SetTempDataInvalidType", content);
+                await Client.PostAsync("/TempData/SetTempDataInvalidType", content);
             });
             Assert.Equal("The '" + typeof(SessionStateTempDataProvider).FullName + "' cannot serialize an object of type '" +
-                typeof(TempDataWebSite.Controllers.HomeController.NonSerializableType).FullName + "' to session state.", exception.Message);
+                typeof(BasicWebSite.Controllers.TempDataController.NonSerializableType).FullName + "' to session state.", exception.Message);
         }
 
         private HttpRequestMessage GetRequest(string path, HttpResponseMessage response)
