@@ -5,6 +5,7 @@
   "dependencies": {
     "EntityFramework.InMemory": "7.0.0-*",
     "Microsoft.AspNet.Diagnostics.Entity": "7.0.0-*",
+    "Microsoft.AspNet.Testing": "1.0.0-*",
     "xunit.runner.aspnet": "2.0.0-aspnet-*"
   },
   "compile": [ "../Shared/ApiConsistencyTestBase.cs", "../Shared/TestHelpers.cs" ],
