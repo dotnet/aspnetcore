@@ -1,25 +1,23 @@
 {
-    "dependencies": {
-        "Microsoft.AspNet.Authentication.Cookies": "1.0.0-*",
-        "Microsoft.AspNet.Authentication.Facebook": "1.0.0-*",
-        "Microsoft.AspNet.Authentication.Google": "1.0.0-*",
-        "Microsoft.AspNet.Authentication.MicrosoftAccount": "1.0.0-*",
-        "Microsoft.AspNet.Authentication.Twitter": "1.0.0-*",
-        "Microsoft.AspNet.DataProtection": "1.0.0-*",
-        "Microsoft.AspNet.Server.IIS": "1.0.0-*",
-        "Microsoft.AspNet.Server.WebListener": "1.0.0-*",
-        "Microsoft.Extensions.Logging.Console": "1.0.0-*",
-        "Microsoft.AspNet.Server.Kestrel": "1.0.0-*"
-    },
-    "commands": {
-        "web": "Microsoft.AspNet.Hosting server=Microsoft.AspNet.Server.WebListener server.urls=http://localhost:54540",
-        "kestrel": "Microsoft.AspNet.Hosting --server Microsoft.AspNet.Server.Kestrel --server.urls http://localhost:54540"
-    },
-    "frameworks": {
-        "dnx451": {
-        },
-        "dnxcore50": {
-        }
-    },
-    "webroot": "wwwroot"
+  "dependencies": {
+    "Microsoft.AspNet.Authentication.Cookies": "1.0.0-*",
+    "Microsoft.AspNet.Authentication.Facebook": "1.0.0-*",
+    "Microsoft.AspNet.Authentication.Google": "1.0.0-*",
+    "Microsoft.AspNet.Authentication.MicrosoftAccount": "1.0.0-*",
+    "Microsoft.AspNet.Authentication.Twitter": "1.0.0-*",
+    "Microsoft.AspNet.DataProtection": "1.0.0-*",
+    "Microsoft.AspNet.IISPlatformHandler": "1.0.0-*",
+    "Microsoft.AspNet.Server.Kestrel": "1.0.0-*",
+    "Microsoft.AspNet.Server.WebListener": "1.0.0-*",
+    "Microsoft.Extensions.Logging.Console": "1.0.0-*"
+  },
+  "commands": {
+    "web": "Microsoft.AspNet.Server.Kestrel",
+    "kestrel": "Microsoft.AspNet.Server.Kestrel --server.urls http://localhost:54540",
+    "weblistener": "Microsoft.AspNet.Server.WebListener --server.urls=http://localhost:54540"
+  },
+  "frameworks": {
+    "dnx451": { },
+    "dnxcore50": { }
+  }
 }
