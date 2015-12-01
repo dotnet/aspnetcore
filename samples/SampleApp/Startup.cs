@@ -22,8 +22,6 @@ namespace SampleApp
             //ksi.ThreadCount = 4;
             ksi.NoDelay = true;
 
-            loggerFactory.MinimumLevel = LogLevel.Debug;
-
             loggerFactory.AddConsole(LogLevel.Debug);
 
             var testCertPath = Path.Combine(
