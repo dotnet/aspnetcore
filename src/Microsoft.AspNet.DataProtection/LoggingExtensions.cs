@@ -147,43 +147,43 @@ namespace Microsoft.Extensions.Logging
                 formatString: "Policy resolution states that a new key should be added to the key ring, but automatic generation of keys is disabled. Using fallback key {KeyId:B} with expiration {ExpirationDate:u} as default key.");
             _usingKeyAsDefaultKey = LoggerMessage.Define<Guid>(
                 eventId: 2,
-                logLevel: LogLevel.Verbose,
+                logLevel: LogLevel.Debug,
                 formatString: "Using key {KeyId:B} as the default key.");
             _openingCNGAlgorithmFromProviderWithHMAC = LoggerMessage.Define<string, string>(
                 eventId: 3,
-                logLevel: LogLevel.Verbose,
+                logLevel: LogLevel.Debug,
                 formatString: "Opening CNG algorithm '{HashAlgorithm}' from provider '{HashAlgorithmProvider}' with HMAC.");
             _openingCNGAlgorithmFromProviderWithChainingModeCBC = LoggerMessage.Define<string, string>(
                 eventId: 4,
-                logLevel: LogLevel.Verbose,
+                logLevel: LogLevel.Debug,
                 formatString: "Opening CNG algorithm '{EncryptionAlgorithm}' from provider '{EncryptionAlgorithmProvider}' with chaining mode CBC.");
             _performingUnprotectOperationToKeyWithPurposes = LoggerMessage.Define<Guid, string>(
                 eventId: 5,
-                logLevel: LogLevel.Debug,
+                logLevel: LogLevel.Trace,
                 formatString: "Performing unprotect operation to key {KeyId:B} with purposes {Purposes}.");
             _keyWasNotFoundInTheKeyRingUnprotectOperationCannotProceed = LoggerMessage.Define<Guid>(
                 eventId: 6,
-                logLevel: LogLevel.Debug,
+                logLevel: LogLevel.Trace,
                 formatString: "Key {KeyId:B} was not found in the key ring. Unprotect operation cannot proceed.");
             _keyWasRevokedCallerRequestedUnprotectOperationProceedRegardless = LoggerMessage.Define<Guid>(
                 eventId: 7,
-                logLevel: LogLevel.Verbose,
+                logLevel: LogLevel.Debug,
                 formatString: "Key {KeyId:B} was revoked. Caller requested unprotect operation proceed regardless.");
             _keyWasRevokedUnprotectOperationCannotProceed = LoggerMessage.Define<Guid>(
                 eventId: 8,
-                logLevel: LogLevel.Verbose,
+                logLevel: LogLevel.Debug,
                 formatString: "Key {KeyId:B} was revoked. Unprotect operation cannot proceed.");
             _openingCNGAlgorithmFromProviderWithChainingModeGCM = LoggerMessage.Define<string, string>(
                 eventId: 9,
-                logLevel: LogLevel.Verbose,
+                logLevel: LogLevel.Debug,
                 formatString: "Opening CNG algorithm '{EncryptionAlgorithm}' from provider '{EncryptionAlgorithmProvider}' with chaining mode GCM.");
             _usingManagedKeyedHashAlgorithm = LoggerMessage.Define<string>(
                 eventId: 10,
-                logLevel: LogLevel.Verbose,
+                logLevel: LogLevel.Debug,
                 formatString: "Using managed keyed hash algorithm '{FullName}'.");
             _usingManagedSymmetricAlgorithm = LoggerMessage.Define<string>(
                 eventId: 11,
-                logLevel: LogLevel.Verbose,
+                logLevel: LogLevel.Debug,
                 formatString: "Using managed symmetric algorithm '{FullName}'.");
             _keyIsIneligibleToBeTheDefaultKeyBecauseItsMethodFailed = LoggerMessage.Define<Guid, string>(
                 eventId: 12,
@@ -191,11 +191,11 @@ namespace Microsoft.Extensions.Logging
                 formatString: "Key {KeyId:B} is ineligible to be the default key because its {MethodName} method failed.");
             _consideringKeyWithExpirationDateAsDefaultKey = LoggerMessage.Define<Guid, DateTimeOffset>(
                 eventId: 13,
-                logLevel: LogLevel.Verbose,
+                logLevel: LogLevel.Debug,
                 formatString: "Considering key {KeyId:B} with expiration date {ExpirationDate:u} as default key.");
             _keyIsNoLongerUnderConsiderationAsDefault = LoggerMessage.Define<Guid>(
                 eventId: 14,
-                logLevel: LogLevel.Verbose,
+                logLevel: LogLevel.Debug,
                 formatString: "Key {KeyId:B} is no longer under consideration as default key because it is expired, revoked, or cannot be deciphered.");
             _unknownElementWithNameFoundInKeyringSkipping = LoggerMessage.Define<XName>(
                 eventId: 15,
@@ -203,7 +203,7 @@ namespace Microsoft.Extensions.Logging
                 formatString: "Unknown element with name '{Name}' found in keyring, skipping.");
             _markedKeyAsRevokedInTheKeyring = LoggerMessage.Define<Guid>(
                 eventId: 16,
-                logLevel: LogLevel.Verbose,
+                logLevel: LogLevel.Debug,
                 formatString: "Marked key {KeyId:B} as revoked in the keyring.");
             _triedToProcessRevocationOfKeyButNoSuchKeyWasFound = LoggerMessage.Define<Guid>(
                 eventId: 17,
@@ -211,15 +211,15 @@ namespace Microsoft.Extensions.Logging
                 formatString: "Tried to process revocation of key {KeyId:B}, but no such key was found in keyring. Skipping.");
             _foundKey = LoggerMessage.Define<Guid>(
                 eventId: 18,
-                logLevel: LogLevel.Verbose,
+                logLevel: LogLevel.Debug,
                 formatString: "Found key {KeyId:B}.");
             _foundRevocationOfAllKeysCreatedPriorTo = LoggerMessage.Define<DateTimeOffset>(
                 eventId: 19,
-                logLevel: LogLevel.Verbose,
+                logLevel: LogLevel.Debug,
                 formatString: "Found revocation of all keys created prior to {RevocationDate:u}.");
             _foundRevocationOfKey = LoggerMessage.Define<Guid>(
                 eventId: 20,
-                logLevel: LogLevel.Verbose,
+                logLevel: LogLevel.Debug,
                 formatString: "Found revocation of key {KeyId:B}.");
             _exceptionWhileProcessingRevocationElement = LoggerMessage.Define<XElement>(
                 eventId: 21,
@@ -231,7 +231,7 @@ namespace Microsoft.Extensions.Logging
                 formatString: "Revoking all keys as of {RevocationDate:u} for reason '{Reason}'.");
             _keyCacheExpirationTokenTriggeredByOperation = LoggerMessage.Define<string>(
                 eventId: 23,
-                logLevel: LogLevel.Verbose,
+                logLevel: LogLevel.Debug,
                 formatString: "Key cache expiration token triggered by '{OperationName}' operation.");
             _anExceptionOccurredWhileProcessingTheKeyElement = LoggerMessage.Define<XElement>(
                 eventId: 24,
@@ -239,15 +239,15 @@ namespace Microsoft.Extensions.Logging
                 formatString: "An exception occurred while processing the key element '{Element}'.");
             _anExceptionOccurredWhileProcessingTheKeyElementDebug = LoggerMessage.Define<XElement>(
                 eventId: 25,
-                logLevel: LogLevel.Debug,
+                logLevel: LogLevel.Trace,
                 formatString: "An exception occurred while processing the key element '{Element}'.");
             _encryptingToWindowsDPAPIForCurrentUserAccount = LoggerMessage.Define<string>(
                 eventId: 26,
-                logLevel: LogLevel.Verbose,
+                logLevel: LogLevel.Debug,
                 formatString: "Encrypting to Windows DPAPI for current user account ({Name}).");
             _encryptingToWindowsDPAPINGUsingProtectionDescriptorRule = LoggerMessage.Define<string>(
                 eventId: 27,
-                logLevel: LogLevel.Verbose,
+                logLevel: LogLevel.Debug,
                 formatString: "Encrypting to Windows DPAPI-NG using protection descriptor rule '{DescriptorRule}'.");
             _anErrorOccurredWhileEncryptingToX509CertificateWithThumbprint = LoggerMessage.Define<string>(
                 eventId: 28,
@@ -255,7 +255,7 @@ namespace Microsoft.Extensions.Logging
                 formatString: "An error occurred while encrypting to X.509 certificate with thumbprint '{Thumbprint}'.");
             _encryptingToX509CertificateWithThumbprint = LoggerMessage.Define<string>(
                 eventId: 29,
-                logLevel: LogLevel.Verbose,
+                logLevel: LogLevel.Debug,
                 formatString: "Encrypting to X.509 certificate with thumbprint '{Thumbprint}'.");
             _exceptionOccurredWhileTryingToResolveCertificateWithThumbprint = LoggerMessage.Define<string>(
                 eventId: 30,
@@ -263,19 +263,19 @@ namespace Microsoft.Extensions.Logging
                 formatString: "An exception occurred while trying to resolve certificate with thumbprint '{Thumbprint}'.");
             _performingProtectOperationToKeyWithPurposes = LoggerMessage.Define<Guid, string>(
                 eventId: 31,
-                logLevel: LogLevel.Debug,
+                logLevel: LogLevel.Trace,
                 formatString: "Performing protect operation to key {KeyId:B} with purposes {Purposes}.");
             _descriptorDeserializerTypeForKeyIs = LoggerMessage.Define<Guid, string>(
                 eventId: 32,
-                logLevel: LogLevel.Verbose,
+                logLevel: LogLevel.Debug,
                 formatString: "Descriptor deserializer type for key {KeyId:B} is '{AssemblyQualifiedName}'.");
             _keyEscrowSinkFoundWritingKeyToEscrow = LoggerMessage.Define<Guid>(
                 eventId: 33,
-                logLevel: LogLevel.Verbose,
+                logLevel: LogLevel.Debug,
                 formatString: "Key escrow sink found. Writing key {KeyId:B} to escrow.");
             _noKeyEscrowSinkFoundNotWritingKeyToEscrow = LoggerMessage.Define<Guid>(
                 eventId: 34,
-                logLevel: LogLevel.Verbose,
+                logLevel: LogLevel.Debug,
                 formatString: "No key escrow sink found. Not writing key {KeyId:B} to escrow.");
             _noXMLEncryptorConfiguredKeyMayBePersistedToStorageInUnencryptedForm = LoggerMessage.Define<Guid>(
                 eventId: 35,
@@ -287,11 +287,11 @@ namespace Microsoft.Extensions.Logging
                 formatString: "Revoking key {KeyId:B} at {RevocationDate:u} for reason '{Reason}'.");
             _readingDataFromFile = LoggerMessage.Define<string>(
                 eventId: 37,
-                logLevel: LogLevel.Verbose,
+                logLevel: LogLevel.Debug,
                 formatString: "Reading data from file '{FullPath}'.");
             _nameIsNotSafeFileName = LoggerMessage.Define<string, string>(
                 eventId: 38,
-                logLevel: LogLevel.Verbose,
+                logLevel: LogLevel.Debug,
                 formatString: "The name '{FriendlyName}' is not a safe file name, using '{NewFriendlyName}' instead.");
             _writingDataToFile = LoggerMessage.Define<string>(
                 eventId: 39,
@@ -299,15 +299,15 @@ namespace Microsoft.Extensions.Logging
                 formatString: "Writing data to file '{FileName}'.");
             _readingDataFromRegistryKeyValue = LoggerMessage.Define<RegistryKey, string>(
                 eventId: 40,
-                logLevel: LogLevel.Verbose,
+                logLevel: LogLevel.Debug,
                 formatString: "Reading data from registry key '{RegistryKeyName}', value '{Value}'.");
             _nameIsNotSafeRegistryValueName = LoggerMessage.Define<string, string>(
                 eventId: 41,
-                logLevel: LogLevel.Verbose,
+                logLevel: LogLevel.Debug,
                 formatString: "The name '{FriendlyName}' is not a safe registry value name, using '{NewFriendlyName}' instead.");
             _decryptingSecretElementUsingWindowsDPAPING = LoggerMessage.Define<string>(
                 eventId: 42,
-                logLevel: LogLevel.Verbose,
+                logLevel: LogLevel.Debug,
                 formatString: "Decrypting secret element using Windows DPAPI-NG with protection descriptor rule '{DescriptorRule}'.");
             _exceptionOccurredTryingToDecryptElement = LoggerMessage.Define(
                 eventId: 43,
@@ -323,7 +323,7 @@ namespace Microsoft.Extensions.Logging
                 formatString: "Using ephemeral data protection provider. Payloads will be undecipherable upon application shutdown.");
             _existingCachedKeyRingIsExpiredRefreshing = LoggerMessage.Define(
                 eventId: 46,
-                logLevel: LogLevel.Verbose,
+                logLevel: LogLevel.Debug,
                 formatString: "Existing cached key ring is expired. Refreshing.");
             _errorOccurredWhileRefreshingKeyRing = LoggerMessage.Define(
                 eventId: 47,
@@ -343,15 +343,15 @@ namespace Microsoft.Extensions.Logging
                 formatString: "Using an in-memory repository. Keys will not be persisted to storage.");
             _decryptingSecretElementUsingWindowsDPAPI = LoggerMessage.Define(
                 eventId: 51,
-                logLevel: LogLevel.Verbose,
+                logLevel: LogLevel.Debug,
                 formatString: "Decrypting secret element using Windows DPAPI.");
             _defaultKeyExpirationImminentAndRepository = LoggerMessage.Define(
                 eventId: 52,
-                logLevel: LogLevel.Verbose,
+                logLevel: LogLevel.Debug,
                 formatString: "Default key expiration imminent and repository contains no viable successor. Caller should generate a successor.");
             _repositoryContainsNoViableDefaultKey = LoggerMessage.Define(
                 eventId: 53,
-                logLevel: LogLevel.Verbose,
+                logLevel: LogLevel.Debug,
                 formatString: "Repository contains no viable default key. Caller should generate a key with immediate activation.");
             _errorOccurredWhileEncryptingToWindowsDPAPI = LoggerMessage.Define(
                 eventId: 54,
@@ -359,7 +359,7 @@ namespace Microsoft.Extensions.Logging
                 formatString: "An error occurred while encrypting to Windows DPAPI.");
             _encryptingToWindowsDPAPIForLocalMachineAccount = LoggerMessage.Define(
                 eventId: 55,
-                logLevel: LogLevel.Verbose,
+                logLevel: LogLevel.Debug,
                 formatString: "Encrypting to Windows DPAPI for local machine account.");
             _errorOccurredWhileEncryptingToWindowsDPAPING = LoggerMessage.Define(
                 eventId: 56,
@@ -367,7 +367,7 @@ namespace Microsoft.Extensions.Logging
                 formatString: "An error occurred while encrypting to Windows DPAPI-NG.");
             _policyResolutionStatesThatANewKeyShouldBeAddedToTheKeyRing = LoggerMessage.Define(
                 eventId: 57,
-                logLevel: LogLevel.Verbose,
+                logLevel: LogLevel.Debug,
                 formatString: "Policy resolution states that a new key should be added to the key ring.");
             _creatingKey = LoggerMessage.Define<Guid, DateTimeOffset, DateTimeOffset, DateTimeOffset>(
                 eventId: 58,
@@ -421,13 +421,13 @@ namespace Microsoft.Extensions.Logging
         }
 
         /// <summary>
-        /// Returns a value stating whether the 'verbose' log level is enabled.
+        /// Returns a value stating whether the 'trace' log level is enabled.
         /// Returns false if the logger instance is null.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsVerboseLevelEnabled(this ILogger logger)
+        public static bool IsTraceLevelEnabled(this ILogger logger)
         {
-            return IsLogLevelEnabledCore(logger, LogLevel.Verbose);
+            return IsLogLevelEnabledCore(logger, LogLevel.Trace);
         }
 
         /// <summary>

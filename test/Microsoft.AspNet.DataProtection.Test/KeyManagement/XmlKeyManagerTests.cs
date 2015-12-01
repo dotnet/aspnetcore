@@ -514,31 +514,7 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
         }
 
         [Fact]
-        public void GetAllKeys_WithKeyDeserializationError_LogLevelVerbose_DoesNotWriteSensitiveInformation()
-        {
-            // Arrange
-            const string xml = @"
-                <root>
-                  <!-- The below key will throw an exception when deserializing. -->
-                  <key id='78cd498e-9375-4e55-ac0d-d79527ecd09d' version='1'>
-                    <creationDate>2015-01-01T00:00:00Z</creationDate>
-                    <activationDate>2015-02-01T00:00:00Z</activationDate>
-                    <expirationDate>NOT A VALID DATE</expirationDate>
-                    <!-- Secret information: 1A2B3C4D -->
-                  </key>
-                </root>";
-
-            var loggerFactory = new StringLoggerFactory(LogLevel.Verbose);
-
-            // Act
-            RunGetAllKeysCore(xml, new Mock<IActivator>().Object, loggerFactory).ToArray();
-
-            // Assert
-            Assert.False(loggerFactory.ToString().Contains("1A2B3C4D"), "The secret '1A2B3C4D' should not have been logged.");
-        }
-
-        [Fact]
-        public void GetAllKeys_WithKeyDeserializationError_LogLevelDebug_WritesSensitiveInformation()
+        public void GetAllKeys_WithKeyDeserializationError_LogLevelDebug_DoesNotWriteSensitiveInformation()
         {
             // Arrange
             const string xml = @"
@@ -553,6 +529,30 @@ namespace Microsoft.AspNet.DataProtection.KeyManagement
                 </root>";
 
             var loggerFactory = new StringLoggerFactory(LogLevel.Debug);
+
+            // Act
+            RunGetAllKeysCore(xml, new Mock<IActivator>().Object, loggerFactory).ToArray();
+
+            // Assert
+            Assert.False(loggerFactory.ToString().Contains("1A2B3C4D"), "The secret '1A2B3C4D' should not have been logged.");
+        }
+
+        [Fact]
+        public void GetAllKeys_WithKeyDeserializationError_LogLevelTrace_WritesSensitiveInformation()
+        {
+            // Arrange
+            const string xml = @"
+                <root>
+                  <!-- The below key will throw an exception when deserializing. -->
+                  <key id='78cd498e-9375-4e55-ac0d-d79527ecd09d' version='1'>
+                    <creationDate>2015-01-01T00:00:00Z</creationDate>
+                    <activationDate>2015-02-01T00:00:00Z</activationDate>
+                    <expirationDate>NOT A VALID DATE</expirationDate>
+                    <!-- Secret information: 1A2B3C4D -->
+                  </key>
+                </root>";
+
+            var loggerFactory = new StringLoggerFactory(LogLevel.Trace);
 
             // Act
             RunGetAllKeysCore(xml, new Mock<IActivator>().Object, loggerFactory).ToArray();

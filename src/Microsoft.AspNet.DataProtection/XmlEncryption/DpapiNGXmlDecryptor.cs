@@ -60,7 +60,7 @@ namespace Microsoft.AspNet.DataProtection.XmlEncryption
                 // </encryptedKey>
 
                 byte[] protectedSecret = Convert.FromBase64String((string)encryptedElement.Element("value"));
-                if (_logger.IsVerboseLevelEnabled())
+                if (_logger.IsDebugLevelEnabled())
                 {
                     string protectionDescriptorRule;
                     try
