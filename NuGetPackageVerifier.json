@@ -9,7 +9,6 @@
             "StrictSemanticVersionValidationRule"
         ],
         "packages": {
-            "Microsoft.AspNet.Html.Abstractions": { },
             "Microsoft.AspNet.Http": { },
             "Microsoft.AspNet.Http.Abstractions": { },
             "Microsoft.AspNet.Http.Extensions": { },
