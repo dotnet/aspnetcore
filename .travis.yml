@@ -1,0 +1,18 @@
+language: csharp
+sudo: required
+dist: trusty
+addons:
+  apt:
+    packages:
+    - gettext
+    - libcurl4-openssl-dev
+    - libicu-dev
+    - libssl-dev
+    - libunwind8
+    - zlib1g
+env:
+  - KOREBUILD_DNU_RESTORE_CORECLR=true KOREBUILD_TEST_DNXCORE=true
+mono:
+  - 4.0.5
+script:
+  - ./build.sh --quiet verify

@@ -1,0 +1,29 @@
+{
+  "version": "1.0.0-*",
+  "description": "ASP.NET 5 HTML content interface.",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/aspnet/htmlabstractions"
+  },
+  "compilationOptions": {
+    "warningsAsErrors": true,
+    "keyFile": "../../tools/Key.snk"
+  },
+  "dependencies": {
+    "System.Text.Encodings.Web": "4.0.0-*"
+  },
+  "frameworks": {
+    "net451": {
+      "frameworkAssemblies": {
+        "System.IO": "",
+        "System.Runtime": ""
+      }
+    },
+    "dotnet5.4": {
+      "dependencies": {
+        "System.Collections": "4.0.11-*",
+        "System.Resources.ResourceManager": "4.0.1-*"
+      }
+    }
+  }
+}
