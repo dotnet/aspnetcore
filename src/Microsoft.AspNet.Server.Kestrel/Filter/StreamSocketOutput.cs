@@ -12,6 +12,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Filter
 {
     public class StreamSocketOutput : ISocketOutput
     {
+        private static readonly byte[] _nullBuffer = new byte[0];
+
         private readonly Stream _outputStream;
         private readonly MemoryPool2 _memory;
         private MemoryPoolBlock2 _producingBlock;
@@ -24,13 +26,13 @@ namespace Microsoft.AspNet.Server.Kestrel.Filter
 
         void ISocketOutput.Write(ArraySegment<byte> buffer, bool immediate)
         {
-            _outputStream.Write(buffer.Array, buffer.Offset, buffer.Count);
+            _outputStream.Write(buffer.Array ?? _nullBuffer, buffer.Offset, buffer.Count);
         }
 
         Task ISocketOutput.WriteAsync(ArraySegment<byte> buffer, bool immediate, CancellationToken cancellationToken)
         {
             // TODO: Use _outputStream.WriteAsync
-            _outputStream.Write(buffer.Array, buffer.Offset, buffer.Count);
+            _outputStream.Write(buffer.Array ?? _nullBuffer, buffer.Offset, buffer.Count);
             return TaskUtilities.CompletedTask;
         }
 
