@@ -58,7 +58,6 @@
     "ValidationWebSite": "1.0.0",
     "ValueProvidersWebSite": "1.0.0",
     "VersioningWebSite": "1.0.0",
-    "ViewComponentWebSite": "1.0.0",
     "WebApiCompatShimWebSite": "1.0.0",
     "XmlFormattersWebSite": "1.0.0",
     "xunit.runner.aspnet": "2.0.0-aspnet-*"
