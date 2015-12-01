@@ -1,28 +1,28 @@
 {
-    "version": "1.0.0-*",
-    "description": "ASP.NET 5 middleware that enables an application to support the OpenID Connect authentication workflow.",
-    "repository": {
-        "type": "git",
-        "url": "git://github.com/aspnet/security"
+  "version": "1.0.0-*",
+  "description": "ASP.NET 5 middleware that enables an application to support the OpenID Connect authentication workflow.",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/aspnet/security"
+  },
+  "compilationOptions": {
+    "warningsAsErrors": true,
+    "keyFile": "../../tools/Key.snk"
+  },
+  "dependencies": {
+    "Microsoft.AspNet.Authentication": "1.0.0-*",
+    "Microsoft.IdentityModel.Protocols.OpenIdConnect": "2.0.0-*"
+  },
+  "frameworks": {
+    "net451": {
+      "frameworkAssemblies": {
+        "System.Net.Http": ""
+      }
     },
-    "compilationOptions": {
-      "warningsAsErrors": true,
-      "keyFile": "../../tools/Key.snk"
-    },
-    "dependencies": {
-        "Microsoft.AspNet.Authentication": "1.0.0-*",
-        "Microsoft.IdentityModel.Protocols.OpenIdConnect": "2.0.0-rc1-211050742"
-    },
-    "frameworks": {
-        "dnx451": {
-            "frameworkAssemblies": {
-                "System.Net.Http": ""
-            }
-        },
-        "dnxcore50": {
-            "dependencies": {
-                "System.Net.Http": "4.0.1-*"
-            }
-        }
+    "dotnet54": {
+      "dependencies": {
+        "System.Net.Http": "4.0.1-*"
+      }
     }
+  }
 }
