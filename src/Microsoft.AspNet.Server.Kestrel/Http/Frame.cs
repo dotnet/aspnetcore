@@ -701,7 +701,12 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 {
                     return false;
                 }
-                var method = begin.GetAsciiString(scan);
+
+                string method;
+                if (!begin.GetKnownString(scan, out method))
+                {
+                    method = begin.GetAsciiString(scan);
+                }
 
                 scan.Take();
                 begin = scan;
@@ -734,7 +739,12 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 {
                     return false;
                 }
-                var httpVersion = begin.GetAsciiString(scan);
+
+                string httpVersion;
+                if (!begin.GetKnownString(scan, out httpVersion))
+                {
+                    httpVersion = begin.GetAsciiString(scan);
+                }
 
                 scan.Take();
                 if (scan.Take() != '\n')

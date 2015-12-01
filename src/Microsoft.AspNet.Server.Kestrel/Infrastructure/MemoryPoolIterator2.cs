@@ -138,6 +138,49 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
             }
         }
 
+        public unsafe long PeekLong()
+        {
+            if (_block == null)
+            {
+                return -1;
+            }
+            else if (_block.End - _index >= sizeof(long))
+            {
+                fixed (byte* ptr = _block.Array)
+                {
+                    return *(long*)(ptr + _index);
+                }
+            }
+            else if (_block.Next == null)
+            {
+                return -1;
+            }
+            else
+            {
+                var blockBytes = _block.End - _index;
+                var nextBytes = sizeof(long) - blockBytes;
+
+                if (_block.Next.End - _block.Next.Start < nextBytes)
+                {
+                    return -1;
+                }
+
+                long blockLong;
+                fixed (byte* ptr = _block.Array)
+                {
+                    blockLong = *(long*)(ptr + _block.End - sizeof(long));
+                }
+
+                long nextLong;
+                fixed (byte* ptr = _block.Next.Array)
+                {
+                    nextLong = *(long*)(ptr + _block.Next.Start);
+                }
+
+                return (blockLong >> (sizeof(long) - blockBytes) * 8) | (nextLong << (sizeof(long) - nextBytes) * 8);
+            }
+        }
+
         public int Seek(int char0)
         {
             if (IsDefault)
