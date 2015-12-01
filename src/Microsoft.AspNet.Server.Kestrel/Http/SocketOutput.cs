@@ -19,6 +19,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         private const int _initialTaskQueues = 64;
 
         private static WaitCallback _returnBlocks = (state) => ReturnBlocks((MemoryPoolBlock2)state);
+        private static MemoryPoolIterator2 _defaultIterator;
 
         private readonly KestrelThread _thread;
         private readonly UvStreamHandle _socket;
@@ -34,8 +35,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         private MemoryPoolBlock2 _head;
         private MemoryPoolBlock2 _tail;
 
-        private bool _isProducing;
-        private MemoryPoolBlock2 _returnFromOnProducingComplete;
+        private MemoryPoolIterator2 _lastStart;
 
         // This locks access to to all of the below fields
         private readonly object _contextLock = new object();
@@ -83,7 +83,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 var tail = ProducingStart();
                 tail.CopyFrom(buffer);
                 // We do our own accounting below
-                ProducingComplete(tail, count: 0);
+                ProducingCompleteNoPreComplete(tail);
             }
             TaskCompletionSource<object> tcs = null;
 
@@ -165,53 +165,56 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             lock (_returnLock)
             {
-                Debug.Assert(!_isProducing);
-                _isProducing = true;
+                Debug.Assert(_lastStart.IsDefault);
 
                 if (_tail == null)
                 {
                     throw new IOException("The socket has been closed.");
                 }
 
-                return new MemoryPoolIterator2(_tail, _tail.End);
+                _lastStart = new MemoryPoolIterator2(_tail, _tail.End);
+
+                return _lastStart;
             }
         }
 
-        public void ProducingComplete(MemoryPoolIterator2 end, int count)
+        public void ProducingComplete(MemoryPoolIterator2 end)
         {
-            var decreasePreCompleted = false;
+            Debug.Assert(!_lastStart.IsDefault);
+
+            int bytesProduced, buffersIncluded;
+            BytesBetween(_lastStart, end, out bytesProduced, out buffersIncluded);
+
+            lock (_contextLock)
+            {
+                _numBytesPreCompleted += bytesProduced;
+            }
+
+            ProducingCompleteNoPreComplete(end);
+        }
+
+        private void ProducingCompleteNoPreComplete(MemoryPoolIterator2 end)
+        {
             MemoryPoolBlock2 blockToReturn = null;
 
             lock (_returnLock)
             {
-                Debug.Assert(_isProducing);
-                _isProducing = false;
+                Debug.Assert(!_lastStart.IsDefault);
 
-                if (_returnFromOnProducingComplete == null)
+                // If the socket has been closed, return the produced blocks
+                // instead of advancing the now non-existent tail.
+                if (_tail != null)
                 {
                     _tail = end.Block;
                     _tail.End = end.Index;
-
-                    if (count != 0)
-                    {
-                        decreasePreCompleted = true;
-                    }
                 }
                 else
                 {
-                    blockToReturn = _returnFromOnProducingComplete;
-                    _returnFromOnProducingComplete = null;
+                    blockToReturn = _lastStart.Block;
                 }
-            }
 
-            if (decreasePreCompleted)
-            {
-                lock (_contextLock)
-                {
-                    _numBytesPreCompleted += count;
-                }
+                _lastStart = _defaultIterator;
             }
-
 
             if (blockToReturn != null)
             {
@@ -354,11 +357,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                     returnBlock.Pool?.Return(returnBlock);
                 }
 
-                if (_isProducing)
-                {
-                    _returnFromOnProducingComplete = _tail;
-                }
-                else
+                // Only return the _tail if we aren't between ProducingStart/Complete calls
+                if (_lastStart.IsDefault)
                 {
                     _tail.Pool?.Return(_tail);
                 }
@@ -385,6 +385,28 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         Task ISocketOutput.WriteAsync(ArraySegment<byte> buffer, bool immediate, CancellationToken cancellationToken)
         {
             return WriteAsync(buffer, immediate);
+        }
+
+        private static void BytesBetween(MemoryPoolIterator2 start, MemoryPoolIterator2 end, out int bytes, out int buffers)
+        {
+            if (start.Block == end.Block)
+            {
+                bytes = end.Index - start.Index;
+                buffers = 1;
+                return;
+            }
+
+            bytes = start.Block.Data.Offset + start.Block.Data.Count - start.Index;
+            buffers = 1;
+
+            for (var block = start.Block.Next; block != end.Block; block = block.Next)
+            {
+                bytes += block.Data.Count;
+                buffers++;
+            }
+
+            bytes += end.Index - end.Block.Data.Offset;
+            buffers++;
         }
 
         private class WriteContext
@@ -535,24 +557,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 _lockedStart = new MemoryPoolIterator2(head, head.Start);
                 _lockedEnd = new MemoryPoolIterator2(tail, tail.End);
 
-                if (_lockedStart.Block == _lockedEnd.Block)
-                {
-                    _byteCount = _lockedEnd.Index - _lockedStart.Index;
-                    _bufferCount = 1;
-                    return;
-                }
-
-                _byteCount = _lockedStart.Block.Data.Offset + _lockedStart.Block.Data.Count - _lockedStart.Index;
-                _bufferCount = 1;
-
-                for (var block = _lockedStart.Block.Next; block != _lockedEnd.Block; block = block.Next)
-                {
-                    _byteCount += block.Data.Count;
-                    _bufferCount++;
-                }
-
-                _byteCount += _lockedEnd.Index - _lockedEnd.Block.Data.Offset;
-                _bufferCount++;
+                BytesBetween(_lockedStart, _lockedEnd, out _byteCount, out _bufferCount);
             }
         }
     }

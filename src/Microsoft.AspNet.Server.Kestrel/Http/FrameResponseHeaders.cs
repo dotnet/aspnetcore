@@ -30,23 +30,22 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             return GetEnumerator();
         }
 
-        public int CopyTo(ref MemoryPoolIterator2 output)
+        public void CopyTo(ref MemoryPoolIterator2 output)
         {
-            var count = CopyToFast(ref output);
+            CopyToFast(ref output);
             if (MaybeUnknown != null)
             {
                 foreach (var kv in MaybeUnknown)
                 {
                     foreach (var value in kv.Value)
                     {
-                        count += output.CopyFrom(_CrLf, 0, 2);
-                        count += output.CopyFromAscii(kv.Key);
-                        count += output.CopyFrom(_colonSpace, 0, 2);
-                        count += output.CopyFromAscii(value);
+                        output.CopyFrom(_CrLf, 0, 2);
+                        output.CopyFromAscii(kv.Key);
+                        output.CopyFrom(_colonSpace, 0, 2);
+                        output.CopyFromAscii(value);
                     }
                 }
             }
-            return count;
         }
 
         public partial struct Enumerator : IEnumerator<KeyValuePair<string, StringValues>>

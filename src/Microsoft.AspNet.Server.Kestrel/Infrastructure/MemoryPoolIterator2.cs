@@ -532,17 +532,17 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
             }
         }
 
-        public int CopyFrom(byte[] data)
+        public void CopyFrom(byte[] data)
         {
-            return CopyFrom(new ArraySegment<byte>(data));
+            CopyFrom(new ArraySegment<byte>(data));
         }
 
-        public int CopyFrom(byte[] data, int offset, int count)
+        public void CopyFrom(byte[] data, int offset, int count)
         {
-            return CopyFrom(new ArraySegment<byte>(data, offset, count));
+            CopyFrom(new ArraySegment<byte>(data, offset, count));
         }
 
-        public int CopyFrom(ArraySegment<byte> buffer)
+        public void CopyFrom(ArraySegment<byte> buffer)
         {
             Debug.Assert(_block != null);
             Debug.Assert(_block.Pool != null);
@@ -582,11 +582,9 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
 
             _block = block;
             _index = blockIndex;
-
-            return buffer.Count;
         }
 
-        public unsafe int CopyFromAscii(string data)
+        public unsafe void CopyFromAscii(string data)
         {
             Debug.Assert(_block != null);
             Debug.Assert(_block.Pool != null);
@@ -649,8 +647,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
 
             _block = block;
             _index = blockIndex;
-
-            return length;
         }
     }
 }

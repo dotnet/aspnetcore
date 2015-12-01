@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Filter
             return new MemoryPoolIterator2(_producingBlock);
         }
 
-        public void ProducingComplete(MemoryPoolIterator2 end, int count)
+        public void ProducingComplete(MemoryPoolIterator2 end)
         {
             var block = _producingBlock;
             while (block != end.Block)

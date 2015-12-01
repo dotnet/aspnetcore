@@ -380,24 +380,22 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             ((ICollection<KeyValuePair<string, StringValues>>)MaybeUnknown)?.CopyTo(array, arrayIndex);
         }}
         {(loop.ClassName == "FrameResponseHeaders" ? $@"
-        protected int CopyToFast(ref MemoryPoolIterator2 output)
+        protected void CopyToFast(ref MemoryPoolIterator2 output)
         {{
-            var count = 0;
             {Each(loop.Headers, header => $@"
                 if ({header.TestBit()}) 
                 {{ {(header.EnhancedSetter == false ? "" : $@"
                     if (_raw{header.Identifier} != null) 
                     {{
-                        count += output.CopyFrom(_raw{header.Identifier}, 0, _raw{header.Identifier}.Length);
+                        output.CopyFrom(_raw{header.Identifier}, 0, _raw{header.Identifier}.Length);
                     }} else ")}
                     foreach(var value in _{header.Identifier})
                     {{
-                        count += output.CopyFrom(_headerBytes, {header.BytesOffset}, {header.BytesCount});
-                        count += output.CopyFromAscii(value);
+                        output.CopyFrom(_headerBytes, {header.BytesOffset}, {header.BytesCount});
+                        output.CopyFromAscii(value);
                     }}
                 }}
             ")}
-            return count;
         }}" : "")}
         public unsafe void Append(byte[] keyBytes, int keyOffset, int keyLength, string value)
         {{

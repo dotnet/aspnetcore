@@ -30,7 +30,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         /// or <see cref="WriteAsync(ArraySegment{byte}, bool, CancellationToken)"/> is called afterwards.
         /// </summary>
         /// <param name="end">Points to the end of the committed data.</param>
-        /// <param name="count">The number of bytes added to the response.</param>
-        void ProducingComplete(MemoryPoolIterator2 end, int count);
+        void ProducingComplete(MemoryPoolIterator2 end);
     }
 }

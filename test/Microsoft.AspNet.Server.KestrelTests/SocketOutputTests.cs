@@ -309,17 +309,15 @@ namespace Microsoft.AspNet.Server.KestrelTests
                 // block 1
                 var start = socketOutput.ProducingStart();
                 start.Block.End = start.Block.Data.Offset + start.Block.Data.Count;
-                var totalBytes = start.Block.Data.Count;
 
                 // block 2
                 var block2 = memory.Lease();
                 block2.End = block2.Data.Offset + block2.Data.Count;
                 start.Block.Next = block2;
-                totalBytes += block2.Data.Count;
 
                 var end = new MemoryPoolIterator2(block2, block2.End);
 
-                socketOutput.ProducingComplete(end, totalBytes);
+                socketOutput.ProducingComplete(end);
 
                 // A call to Write is required to ensure a write is scheduled
                 socketOutput.WriteAsync(default(ArraySegment<byte>));

@@ -674,12 +674,12 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 _responseHeaders.SetRawConnection("keep-alive", _bytesConnectionKeepAlive);
             }
 
-            count += end.CopyFrom(_httpVersion == HttpVersionType.Http1_1 ? _bytesHttpVersion1_1 : _bytesHttpVersion1_0);
-            count += end.CopyFrom(statusBytes);
-            count += _responseHeaders.CopyTo(ref end);
-            count += end.CopyFrom(_bytesEndHeaders, 0, _bytesEndHeaders.Length);
+            end.CopyFrom(_httpVersion == HttpVersionType.Http1_1 ? _bytesHttpVersion1_1 : _bytesHttpVersion1_0);
+            end.CopyFrom(statusBytes);
+            _responseHeaders.CopyTo(ref end);
+            end.CopyFrom(_bytesEndHeaders, 0, _bytesEndHeaders.Length);
 
-            SocketOutput.ProducingComplete(end, count);
+            SocketOutput.ProducingComplete(end);
 
             if (immediate)
             {
