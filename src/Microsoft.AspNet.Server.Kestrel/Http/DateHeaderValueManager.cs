@@ -37,7 +37,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             : this(
                   systemClock: new SystemClock(),
                   timeWithoutRequestsUntilIdle: TimeSpan.FromSeconds(10),
-                  timerInterval: TimeSpan.FromMilliseconds(200))
+                  timerInterval: TimeSpan.FromSeconds(1))
         {
         }
 
