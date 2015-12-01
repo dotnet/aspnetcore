@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
@@ -353,6 +354,9 @@ namespace Microsoft.AspNet.Diagnostics
 
             // Act
             await server.CreateClient().GetAsync(string.Empty);
+
+            // This ensures that all diagnostics are completely written to the diagnostic listener
+            Thread.Sleep(1000);
 
             // Assert
             Assert.NotNull(listener.EndRequest?.HttpContext);

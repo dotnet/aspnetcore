@@ -9,6 +9,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Versioning;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.FileProviders;
@@ -496,6 +497,9 @@ namespace Microsoft.AspNet.Diagnostics
 
             // Act
             await server.CreateClient().GetAsync("/path");
+
+            // This ensures that all diagnostics are completely written to the diagnostic listener
+            Thread.Sleep(1000);
 
             // Assert
             Assert.NotNull(listener.EndRequest?.HttpContext);
