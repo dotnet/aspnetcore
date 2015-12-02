@@ -300,7 +300,7 @@ namespace Microsoft.AspNet.Authentication.Google
                 {
                     Sender = req =>
                     {
-                        if (req.RequestUri.AbsoluteUri == "https://accounts.google.com/o/oauth2/token")
+                        if (req.RequestUri.AbsoluteUri == "https://www.googleapis.com/oauth2/v3/token")
                         {
                             return ReturnJsonResponse(new
                             {
@@ -332,7 +332,7 @@ namespace Microsoft.AspNet.Authentication.Google
                             });
                         }
 
-                        return null;
+                        throw new NotImplementedException(req.RequestUri.AbsoluteUri);
                     }
                 };
             });
@@ -489,7 +489,7 @@ namespace Microsoft.AspNet.Authentication.Google
                 {
                     Sender = req =>
                     {
-                        if (req.RequestUri.AbsoluteUri == "https://accounts.google.com/o/oauth2/token")
+                        if (req.RequestUri.AbsoluteUri == "https://www.googleapis.com/oauth2/v3/token")
                         {
                             return ReturnJsonResponse(new
                             {
@@ -522,7 +522,7 @@ namespace Microsoft.AspNet.Authentication.Google
                             });
                         }
 
-                        return null;
+                        throw new NotImplementedException(req.RequestUri.AbsoluteUri);
                     }
                 };
                 options.Events = new OAuthEvents
@@ -569,7 +569,7 @@ namespace Microsoft.AspNet.Authentication.Google
                 {
                     Sender = req =>
                     {
-                        if (req.RequestUri.AbsoluteUri == "https://accounts.google.com/o/oauth2/token")
+                        if (req.RequestUri.AbsoluteUri == "https://www.googleapis.com/oauth2/v3/token")
                         {
                             return ReturnJsonResponse(new
                             {
@@ -602,7 +602,7 @@ namespace Microsoft.AspNet.Authentication.Google
                             });
                         }
 
-                        return null;
+                        throw new NotImplementedException(req.RequestUri.AbsoluteUri);
                     }
                 };
                 options.Events = new OAuthEvents
@@ -659,7 +659,7 @@ namespace Microsoft.AspNet.Authentication.Google
                 {
                     Sender = req =>
                     {
-                        if (req.RequestUri.AbsoluteUri == "https://accounts.google.com/o/oauth2/token")
+                        if (req.RequestUri.AbsoluteUri == "https://www.googleapis.com/oauth2/v3/token")
                         {
                             return ReturnJsonResponse(new
                             {
@@ -692,7 +692,7 @@ namespace Microsoft.AspNet.Authentication.Google
                             });
                         }
 
-                        return null;
+                        throw new NotImplementedException(req.RequestUri.AbsoluteUri);
                     }
                 };
             });
