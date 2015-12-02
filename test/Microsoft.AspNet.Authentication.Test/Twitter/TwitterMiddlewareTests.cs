@@ -148,7 +148,7 @@ namespace Microsoft.AspNet.Authentication.Twitter
             var transaction = await server.SendAsync("http://example.com/challenge");
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
             var location = transaction.Response.Headers.Location.AbsoluteUri;
-            Assert.Contains("https://twitter.com/oauth/authenticate?oauth_token=", location);
+            Assert.Contains("https://api.twitter.com/oauth/authenticate?oauth_token=", location);
         }
 
         private static TestServer CreateServer(Action<TwitterOptions> configure, Func<HttpContext, bool> handler = null)
