@@ -5,7 +5,7 @@ using System;
 using System.IO;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Html.Abstractions;
+using Microsoft.AspNet.Html;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.Extensions.OptionsModel;
