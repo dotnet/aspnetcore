@@ -2,11 +2,14 @@
 [Bb]in/
 TestResults/
 .nuget/
-.vs/
+*.sln.ide/
 _ReSharper.*/
 packages/
 artifacts/
 PublishProfiles/
+.vs/
+debugSettings.json
+project.lock.json
 *.user
 *.suo
 *.cache
@@ -25,5 +28,4 @@ nuget.exe
 *.*sdf
 *.ipch
 *.sln.ide
-debugSettings.json
-project.lock.json
+*launchSettings.json
