@@ -3,9 +3,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Html;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.AspNet.Razor.TagHelpers;
@@ -41,9 +44,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         /// Creates a new <see cref="CacheTagHelper"/>.
         /// </summary>
         /// <param name="memoryCache">The <see cref="IMemoryCache"/>.</param>
-        public CacheTagHelper(IMemoryCache memoryCache)
+        public CacheTagHelper(IMemoryCache memoryCache, HtmlEncoder htmlEncoder)
         {
             MemoryCache = memoryCache;
+            HtmlEncoder = htmlEncoder;
         }
 
         /// <inheritdoc />
@@ -59,6 +63,11 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         /// Gets the <see cref="IMemoryCache"/> instance used to cache entries.
         /// </summary>
         protected IMemoryCache MemoryCache { get; }
+
+        /// <summary>
+        /// Gets the <see cref="System.Text.Encodings.Web.HtmlEncoder"/> which encodes the content to be cached.
+        /// </summary>
+        protected HtmlEncoder HtmlEncoder { get; }
 
         /// <summary>
         /// Gets or sets the <see cref="ViewContext"/> for the current executing View.
@@ -147,7 +156,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 throw new ArgumentNullException(nameof(output));
             }
 
-            TagHelperContent result = null;
+            IHtmlContent result = null;
             if (Enabled)
             {
                 var key = GenerateKey(context);
@@ -157,8 +166,15 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     // created within this scope get copied to this scope.
                     using (var link = MemoryCache.CreateLinkingScope())
                     {
-                        result = await output.GetChildContentAsync();
+                        var content = await output.GetChildContentAsync();
 
+                        var stringBuilder = new StringBuilder();
+                        using (var writer = new StringWriter(stringBuilder))
+                        {
+                            content.WriteTo(writer, HtmlEncoder);
+                        }
+
+                        result = new StringBuilderHtmlContent(stringBuilder);
                         MemoryCache.Set(key, result, GetMemoryCacheEntryOptions(link));
                     }
                 }
@@ -370,6 +386,31 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             }
 
             return trimmedValues;
+        }
+
+        private class StringBuilderHtmlContent : IHtmlContent
+        {
+            private readonly StringBuilder _builder;
+
+            public StringBuilderHtmlContent(StringBuilder builder)
+            {
+                _builder = builder;
+            }
+
+            public void WriteTo(TextWriter writer, HtmlEncoder encoder)
+            {
+                var htmlTextWriter = writer as HtmlTextWriter;
+                if (htmlTextWriter != null)
+                {
+                    htmlTextWriter.Write(this);
+                    return;
+                }
+
+                for (var i = 0; i < _builder.Length; i++)
+                {
+                    writer.Write(_builder[i]);
+                }
+            }
         }
     }
 }

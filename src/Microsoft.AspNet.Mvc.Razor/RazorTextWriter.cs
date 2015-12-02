@@ -7,20 +7,15 @@ using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Html;
-using Microsoft.AspNet.Mvc.ViewFeatures;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
     /// <summary>
     /// An <see cref="HtmlTextWriter"/> that is backed by a unbuffered writer (over the Response stream) and a buffered
-    /// <see cref="StringCollectionTextWriter"/>. When <c>Flush</c> or <c>FlushAsync</c> is invoked, the writer
+    /// <see cref="IHtmlContentBuilder"/>. When <c>Flush</c> or <c>FlushAsync</c> is invoked, the writer
     /// copies all content from the buffered writer to the unbuffered one and switches to writing to the unbuffered
     /// writer for all further write operations.
     /// </summary>
-    /// <remarks>
-    /// This type is designed to avoid creating large in-memory strings when buffering and supporting the contract that
-    /// <see cref="RazorPage.FlushAsync"/> expects.
-    /// </remarks>
     public class RazorTextWriter : HtmlTextWriter
     {
         /// <summary>
@@ -28,14 +23,14 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// </summary>
         /// <param name="unbufferedWriter">The <see cref="TextWriter"/> to write output to when this instance
         /// is no longer buffering.</param>
-        /// <param name="encoding">The character <see cref="Encoding"/> in which the output is written.</param>
+        /// <param name="buffer">The <see cref="IHtmlContentBuilder"/> to buffer output to.</param>
         /// <param name="encoder">The HTML encoder.</param>
-        public RazorTextWriter(TextWriter unbufferedWriter, Encoding encoding, HtmlEncoder encoder)
+        public RazorTextWriter(TextWriter unbufferedWriter, IHtmlContentBuilder buffer, HtmlEncoder encoder)
         {
             UnbufferedWriter = unbufferedWriter;
             HtmlEncoder = encoder;
 
-            BufferedWriter = new StringCollectionTextWriter(encoding);
+            BufferedWriter = new HtmlContentWrapperTextWriter(buffer, unbufferedWriter.Encoding);
             TargetWriter = BufferedWriter;
         }
 
@@ -51,10 +46,10 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <summary>
         /// Gets the buffered content.
         /// </summary>
-        public IHtmlContent Buffer => BufferedWriter.Content;
+        public IHtmlContent Buffer => BufferedWriter.ContentBuilder;
 
         // Internal for unit testing
-        internal StringCollectionTextWriter BufferedWriter { get; }
+        internal HtmlContentWrapperTextWriter BufferedWriter { get; }
 
         private TextWriter UnbufferedWriter { get; }
 
@@ -80,7 +75,8 @@ namespace Microsoft.AspNet.Mvc.Razor
             {
                 throw new ArgumentOutOfRangeException(nameof(index));
             }
-            if (count < 0 || (buffer.Length - index < count))
+
+            if (count < 0 || (index + count > buffer.Length))
             {
                 throw new ArgumentOutOfRangeException(nameof(count));
             }

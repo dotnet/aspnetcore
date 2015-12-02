@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.Razor;
+using Microsoft.AspNet.Mvc.Razor.Buffer;
 using Microsoft.AspNet.Mvc.Razor.Compilation;
 using Microsoft.AspNet.Mvc.Razor.Directives;
 using Microsoft.AspNet.Mvc.Razor.Internal;
@@ -14,6 +15,7 @@ using Microsoft.AspNet.Razor.TagHelpers;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.CompilationAbstractions;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.MemoryPool;
 using Microsoft.Extensions.OptionsModel;
 
 namespace Microsoft.Extensions.DependencyInjection
@@ -157,6 +159,9 @@ namespace Microsoft.Extensions.DependencyInjection
 
             // Consumed by the Cache tag helper to cache results across the lifetime of the application.
             services.TryAddSingleton<IMemoryCache, MemoryCache>();
+
+            services.TryAddSingleton<IArraySegmentPool<RazorValue>, DefaultArraySegmentPool<RazorValue>>();
+            services.TryAddScoped<IRazorBufferScope, MemoryPoolRazorBufferScope>();
         }
     }
 }

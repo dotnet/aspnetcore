@@ -4,8 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Mvc.Razor.Buffer;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Testing;
 using Microsoft.Extensions.WebEncoders.Testing;
@@ -21,8 +23,9 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         public void Write_WritesDataTypes_ToBuffer()
         {
             // Arrange
-            var expected = new[] { "True", "3", "18446744073709551615", "Hello world", "3.14", "2.718", "m" };
-            var writer = new RazorTextWriter(TextWriter.Null, Encoding.UTF8, new HtmlTestEncoder());
+            var expected = new object[] { "True", "3", "18446744073709551615", "Hello world", "3.14", "2.718", "m" };
+            var buffer = new RazorBuffer(new TestRazorBufferScope(), "some-name");
+            var writer = new RazorTextWriter(TextWriter.Null, buffer, new HtmlTestEncoder());
 
             // Act
             writer.Write(true);
@@ -34,7 +37,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             writer.Write('m');
 
             // Assert
-            Assert.Equal(expected, writer.BufferedWriter.Entries);
+            Assert.Equal(expected, GetValues(buffer));
         }
 
         [Fact]
@@ -44,7 +47,9 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             // Arrange
             var expected = new[] { "True", "3", "18446744073709551615", "Hello world", "3.14", "2.718" };
             var unbufferedWriter = new Mock<TextWriter>();
-            var writer = new RazorTextWriter(unbufferedWriter.Object, Encoding.UTF8, new HtmlTestEncoder());
+            unbufferedWriter.SetupGet(w => w.Encoding).Returns(Encoding.UTF8);
+            var buffer = new RazorBuffer(new TestRazorBufferScope(), "some-name");
+            var writer = new RazorTextWriter(unbufferedWriter.Object, buffer, new HtmlTestEncoder());
             var testClass = new TestClass();
 
             // Act
@@ -57,7 +62,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             writer.Write(2.718m);
 
             // Assert
-            Assert.Empty(writer.BufferedWriter.Entries);
+            Assert.Null(buffer.BufferSegments);
             foreach (var item in expected)
             {
                 unbufferedWriter.Verify(v => v.Write(item), Times.Once());
@@ -70,7 +75,9 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         {
             // Arrange
             var unbufferedWriter = new Mock<TextWriter> { CallBase = true };
-            var writer = new RazorTextWriter(unbufferedWriter.Object, Encoding.UTF8, new HtmlTestEncoder());
+            unbufferedWriter.SetupGet(w => w.Encoding).Returns(Encoding.UTF8);
+            var buffer = new RazorBuffer(new TestRazorBufferScope(), "some-name");
+            var writer = new RazorTextWriter(unbufferedWriter.Object, buffer, new HtmlTestEncoder());
             var buffer1 = new[] { 'a', 'b', 'c', 'd' };
             var buffer2 = new[] { 'd', 'e', 'f' };
 
@@ -83,7 +90,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             await writer.WriteLineAsync(buffer1);
 
             // Assert
-            Assert.Empty(writer.BufferedWriter.Entries);
+            Assert.Null(buffer.BufferSegments);
             unbufferedWriter.Verify(v => v.Write('x'), Times.Once());
             unbufferedWriter.Verify(v => v.Write(buffer1, 1, 2), Times.Once());
             unbufferedWriter.Verify(v => v.Write(buffer1, 0, 4), Times.Once());
@@ -98,7 +105,9 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         {
             // Arrange
             var unbufferedWriter = new Mock<TextWriter>();
-            var writer = new RazorTextWriter(unbufferedWriter.Object, Encoding.UTF8, new HtmlTestEncoder());
+            unbufferedWriter.SetupGet(w => w.Encoding).Returns(Encoding.UTF8);
+            var buffer = new RazorBuffer(new TestRazorBufferScope(), "some-name");
+            var writer = new RazorTextWriter(unbufferedWriter.Object, buffer, new HtmlTestEncoder());
 
             // Act
             await writer.FlushAsync();
@@ -108,7 +117,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             await writer.WriteLineAsync("gh");
 
             // Assert
-            Assert.Empty(writer.BufferedWriter.Entries);
+            Assert.Null(buffer.BufferSegments);
             unbufferedWriter.Verify(v => v.Write("a"), Times.Once());
             unbufferedWriter.Verify(v => v.WriteLine("ab"), Times.Once());
             unbufferedWriter.Verify(v => v.WriteAsync("ef"), Times.Once());
@@ -122,7 +131,8 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             // Arrange
             var newLine = Environment.NewLine;
             var expected = new List<object> { "False", newLine, "1.1", newLine, "3", newLine };
-            var writer = new RazorTextWriter(TextWriter.Null, Encoding.UTF8, new HtmlTestEncoder());
+            var buffer = new RazorBuffer(new TestRazorBufferScope(), "some-name");
+            var writer = new RazorTextWriter(TextWriter.Null, buffer, new HtmlTestEncoder());
 
             // Act
             writer.WriteLine(false);
@@ -130,7 +140,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             writer.WriteLine(3L);
 
             // Assert
-            Assert.Equal(expected, writer.BufferedWriter.Entries);
+            Assert.Equal(expected, GetValues(buffer));
         }
 
         [Fact]
@@ -139,7 +149,9 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         {
             // Arrange
             var unbufferedWriter = new Mock<TextWriter>();
-            var writer = new RazorTextWriter(unbufferedWriter.Object, Encoding.UTF8, new HtmlTestEncoder());
+            unbufferedWriter.SetupGet(w => w.Encoding).Returns(Encoding.UTF8);
+            var buffer = new RazorBuffer(new TestRazorBufferScope(), "some-name");
+            var writer = new RazorTextWriter(unbufferedWriter.Object, buffer, new HtmlTestEncoder());
 
             // Act
             writer.Flush();
@@ -148,7 +160,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             writer.WriteLine(3L);
 
             // Assert
-            Assert.Empty(writer.BufferedWriter.Entries);
+            Assert.Null(buffer.BufferSegments);
             unbufferedWriter.Verify(v => v.Write("False"), Times.Once());
             unbufferedWriter.Verify(v => v.Write("1.1"), Times.Once());
             unbufferedWriter.Verify(v => v.Write("3"), Times.Once());
@@ -156,41 +168,19 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         }
 
         [Fact]
-        public async Task Write_WritesCharBuffer()
-        {
-            // Arrange
-            var input1 = new ArraySegment<char>(new char[] { 'a', 'b', 'c', 'd' }, 1, 3);
-            var input2 = new ArraySegment<char>(new char[] { 'e', 'f' }, 0, 2);
-            var input3 = new ArraySegment<char>(new char[] { 'g', 'h', 'i', 'j' }, 3, 1);
-            var writer = new RazorTextWriter(TextWriter.Null, Encoding.UTF8, new HtmlTestEncoder());
-
-            // Act
-            writer.Write(input1.Array, input1.Offset, input1.Count);
-            await writer.WriteAsync(input2.Array, input2.Offset, input2.Count);
-            await writer.WriteLineAsync(input3.Array, input3.Offset, input3.Count);
-
-            // Assert
-            var buffer = writer.BufferedWriter.Entries;
-            Assert.Equal(4, buffer.Count);
-            Assert.Equal("bcd", buffer[0]);
-            Assert.Equal("ef", buffer[1]);
-            Assert.Equal("j", buffer[2]);
-            Assert.Equal(Environment.NewLine, buffer[3]);
-        }
-
-        [Fact]
         public async Task WriteLines_WritesCharBuffer()
         {
             // Arrange
             var newLine = Environment.NewLine;
-            var writer = new RazorTextWriter(TextWriter.Null, Encoding.UTF8, new HtmlTestEncoder());
+            var buffer = new RazorBuffer(new TestRazorBufferScope(), "some-name");
+            var writer = new RazorTextWriter(TextWriter.Null, buffer, new HtmlTestEncoder());
 
             // Act
             writer.WriteLine();
             await writer.WriteLineAsync();
 
             // Assert
-            var actual = writer.BufferedWriter.Entries;
+            var actual = GetValues(buffer);
             Assert.Equal<object>(new[] { newLine, newLine }, actual);
         }
 
@@ -203,7 +193,8 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             var input2 = "from";
             var input3 = "ASP";
             var input4 = ".Net";
-            var writer = new RazorTextWriter(TextWriter.Null, Encoding.UTF8, new HtmlTestEncoder());
+            var buffer = new RazorBuffer(new TestRazorBufferScope(), "some-name");
+            var writer = new RazorTextWriter(TextWriter.Null, buffer, new HtmlTestEncoder());
 
             // Act
             writer.Write(input1);
@@ -212,57 +203,8 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
             await writer.WriteLineAsync(input4);
 
             // Assert
-            var actual = writer.BufferedWriter.Entries;
+            var actual = GetValues(buffer);
             Assert.Equal<object>(new[] { input1, input2, newLine, input3, input4, newLine }, actual);
-        }
-
-        [Fact]
-        public void Write_HtmlContent_AddsToEntries()
-        {
-            // Arrange
-            var writer = new RazorTextWriter(TextWriter.Null, Encoding.UTF8, new HtmlTestEncoder());
-            var content = new HtmlString("Hello, world!");
-
-            // Act
-            writer.Write(content);
-
-            // Assert
-            Assert.Collection(
-                writer.BufferedWriter.Entries,
-                item => Assert.Same(content, item));
-        }
-
-        [Fact]
-        public void Write_Object_HtmlContent_AddsToEntries()
-        {
-            // Arrange
-            var writer = new RazorTextWriter(TextWriter.Null, Encoding.UTF8, new HtmlTestEncoder());
-            var content = new HtmlString("Hello, world!");
-
-            // Act
-            writer.Write((object)content);
-
-            // Assert
-            Assert.Collection(
-                writer.BufferedWriter.Entries,
-                item => Assert.Same(content, item));
-        }
-
-        [Fact]
-        public void WriteLine_Object_HtmlContent_AddsToEntries()
-        {
-            // Arrange
-            var writer = new RazorTextWriter(TextWriter.Null, Encoding.UTF8, new HtmlTestEncoder());
-            var content = new HtmlString("Hello, world!");
-
-            // Act
-            writer.WriteLine(content);
-
-            // Assert
-            Assert.Collection(
-                writer.BufferedWriter.Entries,
-                item => Assert.Same(content, item),
-                item => Assert.Equal(Environment.NewLine, item));
         }
 
         [Fact]
@@ -270,8 +212,8 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         {
             // Arrange
             var stringWriter = new StringWriter();
-
-            var writer = new RazorTextWriter(stringWriter, Encoding.UTF8, new HtmlTestEncoder());
+            var buffer = new RazorBuffer(new TestRazorBufferScope(), "some-name");
+            var writer = new RazorTextWriter(stringWriter, buffer, new HtmlTestEncoder());
             writer.Flush();
 
             var content = new HtmlString("Hello, world!");
@@ -281,6 +223,15 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
 
             // Assert
             Assert.Equal("Hello, world!", stringWriter.ToString());
+        }
+
+        private static object[] GetValues(RazorBuffer buffer)
+        {
+            return buffer.BufferSegments
+                .SelectMany(c => c.Data)
+                .Select(d => d.Value)
+                .TakeWhile(d => d != null)
+                .ToArray();
         }
 
         private class TestClass

@@ -10,9 +10,11 @@ using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.Abstractions;
 using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNet.Mvc.Razor.Buffer;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.AspNet.Routing;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Extensions.WebEncoders.Testing;
 using Moq;
@@ -1563,6 +1565,10 @@ namespace Microsoft.AspNet.Mvc.Razor
         private static ViewContext CreateViewContext(RazorView view)
         {
             var httpContext = new DefaultHttpContext();
+            var serviceProvider = new ServiceCollection()
+                .AddScoped<IRazorBufferScope, TestRazorBufferScope>()
+                .BuildServiceProvider();
+            httpContext.RequestServices = serviceProvider;
             var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
             return new ViewContext(
                 actionContext,

@@ -3,11 +3,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Mvc.Razor.Buffer;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.ViewEngines;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
@@ -20,6 +23,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         private readonly IRazorViewEngine _viewEngine;
         private readonly IRazorPageActivator _pageActivator;
         private readonly HtmlEncoder _htmlEncoder;
+        private IRazorBufferScope _bufferScope;
 
         /// <summary>
         /// Initializes a new instance of <see cref="RazorView"/>
@@ -93,6 +97,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 throw new ArgumentNullException(nameof(context));
             }
 
+            _bufferScope = context.HttpContext.RequestServices.GetRequiredService<IRazorBufferScope>();
             var bodyWriter = await RenderPageAsync(RazorPage, context, ViewStartPages);
             await RenderLayoutAsync(context, bodyWriter);
         }
@@ -102,7 +107,9 @@ namespace Microsoft.AspNet.Mvc.Razor
             ViewContext context,
             IReadOnlyList<IRazorPage> viewStartPages)
         {
-            var razorTextWriter = new RazorTextWriter(context.Writer, context.Writer.Encoding, _htmlEncoder);
+            Debug.Assert(_bufferScope != null);
+            var buffer = new RazorBuffer(_bufferScope, page.Path);
+            var razorTextWriter = new RazorTextWriter(context.Writer, buffer, _htmlEncoder);
 
             // The writer for the body is passed through the ViewContext, allowing things like HtmlHelpers
             // and ViewComponents to reference it.
