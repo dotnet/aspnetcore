@@ -1,14 +1,20 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.24711.0
+VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{A5A15F1C-885A-452A-A731-B0173DDBD913}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{F31FF137-390C-49BF-A3BD-7C6ED3597C21}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Html", "src\Microsoft.AspNet.Html.Abstractions\Microsoft.AspNet.Html.xproj", "{68A28E4A-3ADE-4187-9625-4FF185887CB3}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Html.Abstractions", "src\Microsoft.AspNet.Html.Abstractions\Microsoft.AspNet.Html.Abstractions.xproj", "{68A28E4A-3ADE-4187-9625-4FF185887CB3}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Html.Test", "test\Microsoft.AspNet.Html.Abstractions.Test\Microsoft.AspNet.Html.Test.xproj", "{2D187B88-94BD-4A39-AC97-F8F8B9363301}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Html.Abstractions.Test", "test\Microsoft.AspNet.Html.Abstractions.Test\Microsoft.AspNet.Html.Abstractions.Test.xproj", "{2D187B88-94BD-4A39-AC97-F8F8B9363301}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{B4962A29-BE69-4A18-9B4F-B803EEE31EAA}"
+	ProjectSection(SolutionItems) = preProject
+		global.json = global.json
+		NuGetPackageVerifier.json = NuGetPackageVerifier.json
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
