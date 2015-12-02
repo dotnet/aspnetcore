@@ -7,7 +7,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Text.Encodings.Web;
-using Microsoft.AspNet.Html.Abstractions;
+using Microsoft.AspNet.Html;
 
 namespace Microsoft.AspNet.Razor.TagHelpers
 {
