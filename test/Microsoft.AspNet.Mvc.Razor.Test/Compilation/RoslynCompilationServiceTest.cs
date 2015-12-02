@@ -362,6 +362,45 @@ public class NotRazorPrefixType {}";
                 });
         }
 
+        [Fact]
+        public void Compile_RunsCallback()
+        {
+            var content = "public class MyTestType  {}";
+            var applicationEnvironment = PlatformServices.Default.Application;
+            var libraryExporter = CompilationServices.Default.LibraryExporter;
+
+            var compilerOptionsProvider = new Mock<ICompilerOptionsProvider>();
+            compilerOptionsProvider
+                .Setup(p => p.GetCompilerOptions(
+                    applicationEnvironment.ApplicationName,
+                    applicationEnvironment.RuntimeFramework,
+                    ConfigurationName))
+                .Returns(new CompilerOptions());
+
+            RoslynCompilationContext usedCompilation = null;
+            var mvcRazorHost = new Mock<IMvcRazorHost>();
+            mvcRazorHost.SetupGet(m => m.MainClassNamePrefix)
+                        .Returns(string.Empty);
+
+            var compilationService = new RoslynCompilationService(
+                applicationEnvironment,
+                libraryExporter,
+                compilerOptionsProvider.Object,
+                mvcRazorHost.Object,
+                GetOptions(callback: c => usedCompilation = c));
+
+            var relativeFileInfo = new RelativeFileInfo(
+                new TestFileInfo { PhysicalPath = "SomePath" },
+                "some-relative-path");
+
+            // Act
+            var result = compilationService.Compile(relativeFileInfo, content);
+
+            Assert.NotNull(usedCompilation);
+            Assert.NotNull(usedCompilation.Compilation);
+            Assert.Equal(1, usedCompilation.Compilation.SyntaxTrees.Length);
+        }
+
         private static DiagnosticDescriptor GetDiagnosticDescriptor(string messageFormat)
         {
             return new DiagnosticDescriptor(
@@ -373,12 +412,14 @@ public class NotRazorPrefixType {}";
                 isEnabledByDefault: true);
         }
 
-        private static IOptions<RazorViewEngineOptions> GetOptions(IFileProvider fileProvider = null)
+        private static IOptions<RazorViewEngineOptions> GetOptions(IFileProvider fileProvider = null,
+            Action<RoslynCompilationContext> callback = null)
         {
             var razorViewEngineOptions = new RazorViewEngineOptions
             {
                 FileProvider = fileProvider ?? new TestFileProvider(),
-                Configuration = ConfigurationName
+                Configuration = ConfigurationName,
+                CompilationCallback = callback ?? (c => { })
             };
             var options = new Mock<IOptions<RazorViewEngineOptions>>();
             options

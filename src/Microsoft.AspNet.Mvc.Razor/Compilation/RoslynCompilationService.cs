@@ -40,6 +40,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
         private readonly Lazy<List<MetadataReference>> _applicationReferences;
         private readonly string _classPrefix;
         private readonly string _configuration;
+        private Action<RoslynCompilationContext> _compilationCallback;
 
 #if DOTNET5_5
         private readonly RazorLoadContext _razorLoadContext;
@@ -71,6 +72,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
             _fileProvider = optionsAccessor.Value.FileProvider;
             _classPrefix = host.MainClassNamePrefix;
             _configuration = optionsAccessor.Value.Configuration;
+            _compilationCallback = optionsAccessor.Value.CompilationCallback;
 
 #if DOTNET5_5
             _razorLoadContext = new RazorLoadContext();
@@ -110,6 +112,10 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
                 references: references);
 
             compilation = Rewrite(compilation);
+
+            var compilationContext = new RoslynCompilationContext(compilation);
+            _compilationCallback(compilationContext);
+            compilation = compilationContext.Compilation;
 
             using (var ms = new MemoryStream())
             {

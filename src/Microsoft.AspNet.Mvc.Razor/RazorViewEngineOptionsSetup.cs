@@ -4,6 +4,8 @@
 using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Mvc.Razor;
+using Microsoft.AspNet.Mvc.Razor.Compilation;
+using Microsoft.Extensions.CompilationAbstractions;
 using Microsoft.Extensions.OptionsModel;
 using Microsoft.Extensions.PlatformAbstractions;
 
@@ -19,13 +21,13 @@ namespace Microsoft.AspNet.Mvc
         /// </summary>
         /// <param name="applicationEnvironment"><see cref="IApplicationEnvironment"/> for the application.</param>
         /// <param name="hostingEnvironment"><see cref="IHostingEnvironment"/> for the application.</param>
-        public RazorViewEngineOptionsSetup(IApplicationEnvironment applicationEnvironment, IHostingEnvironment hostingEnvironment)
+        public RazorViewEngineOptionsSetup(IApplicationEnvironment applicationEnvironment,
+            IHostingEnvironment hostingEnvironment)
             : base(options => ConfigureRazor(options, applicationEnvironment, hostingEnvironment))
         {
         }
 
-        private static void ConfigureRazor(
-            RazorViewEngineOptions razorOptions,
+        private static void ConfigureRazor(RazorViewEngineOptions razorOptions,
             IApplicationEnvironment applicationEnvironment,
             IHostingEnvironment hostingEnvironment)
         {

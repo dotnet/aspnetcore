@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.FileProviders;
+using Microsoft.AspNet.Mvc.Razor.Compilation;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
@@ -15,6 +16,8 @@ namespace Microsoft.AspNet.Mvc.Razor
         private IFileProvider _fileProvider;
 
         private string _configuration;
+
+        private Action<RoslynCompilationContext> _compilationCallback = c => { };
 
         /// <summary>
         /// Get a <see cref="IList{IViewLocationExpander}"/> used by the <see cref="RazorViewEngine"/>.
@@ -63,6 +66,24 @@ namespace Microsoft.AspNet.Mvc.Razor
                     throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(value));
                 }
                 _configuration = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the callback that is used to customize Razor compilation
+        /// to change compilation settings you can update <see cref="RoslynCompilationContext.Compilation"/> property.
+        /// Customizations made here would not reflect in tooling (Intellisense).
+        /// </summary>
+        public Action<RoslynCompilationContext> CompilationCallback
+        {
+            get { return _compilationCallback; }
+            set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
+                _compilationCallback = value;
             }
         }
     }
