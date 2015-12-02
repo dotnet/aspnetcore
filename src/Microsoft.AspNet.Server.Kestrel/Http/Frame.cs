@@ -254,7 +254,13 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             if (!_requestProcessingStarted)
             {
                 _requestProcessingStarted = true;
-                _requestProcessingTask = Task.Run(RequestProcessingAsync);
+                _requestProcessingTask =
+                    Task.Factory.StartNew(
+                        (o) => ((Frame)o).RequestProcessingAsync(), 
+                        this, 
+                        CancellationToken.None, 
+                        TaskCreationOptions.DenyChildAttach, 
+                        TaskScheduler.Default);
             }
         }
 
