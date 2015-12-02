@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNet.Html.Abstractions;
+using Microsoft.AspNet.Html;
 
 namespace Microsoft.AspNet.Mvc.ViewFeatures
 {

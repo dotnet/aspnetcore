@@ -10,7 +10,7 @@ using System.Security.Claims;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Antiforgery;
-using Microsoft.AspNet.Html.Abstractions;
+using Microsoft.AspNet.Html;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Infrastructure;
 using Microsoft.AspNet.Mvc.Razor.Internal;

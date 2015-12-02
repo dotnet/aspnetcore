@@ -3,7 +3,7 @@
 
 using System.IO;
 using System.Text.Encodings.Web;
-using Microsoft.AspNet.Html.Abstractions;
+using Microsoft.AspNet.Html;
 using Microsoft.Extensions.WebEncoders.Testing;
 
 namespace Microsoft.AspNet.Mvc.TestCommon

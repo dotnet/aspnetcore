@@ -3,7 +3,7 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Html.Abstractions;
+using Microsoft.AspNet.Html;
 using Microsoft.AspNet.Mvc.Internal;
 
 namespace Microsoft.AspNet.Mvc.ViewComponents

@@ -8,7 +8,7 @@ using System.IO;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Html.Abstractions;
+using Microsoft.AspNet.Html;
 
 namespace Microsoft.AspNet.Mvc.ViewFeatures
 {

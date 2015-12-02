@@ -4,7 +4,7 @@
 using System;
 using System.Globalization;
 using System.IO;
-using Microsoft.AspNet.Html.Abstractions;
+using Microsoft.AspNet.Html;
 using Microsoft.AspNet.Mvc.Formatters;
 using Microsoft.AspNet.Mvc.Rendering;
 using Newtonsoft.Json;
