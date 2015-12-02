@@ -1,6 +1,7 @@
 {
     "dependencies": {
-        "Microsoft.Net.Http.Server": "1.0.0-*"
+      "Microsoft.Net.Http.Server": "1.0.0-*",
+      "Microsoft.Net.WebSockets.Server": "1.0.0-*"
     },
     "commands": {
         "sample": "HelloWorld"

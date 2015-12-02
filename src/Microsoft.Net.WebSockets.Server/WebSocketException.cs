@@ -115,7 +115,7 @@ namespace Microsoft.Net.WebSockets
             : base(message, innerException)
         { 
         }
-
+#if !DOTNET5_4
         public override int ErrorCode
         {
             get
@@ -123,7 +123,7 @@ namespace Microsoft.Net.WebSockets
                 return base.NativeErrorCode;
             }
         }
-
+#endif
         public WebSocketError WebSocketErrorCode
         {
             get

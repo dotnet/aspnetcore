@@ -92,7 +92,6 @@ namespace Microsoft.Net.WebSockets
             }
         }
 
-
         public static bool IsValidWebSocketKey(string key)
         {
             if (string.IsNullOrWhiteSpace(key))

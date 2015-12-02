@@ -23,7 +23,7 @@
 
 namespace Microsoft.Net.WebSockets
 {
-    public enum WebSocketError
+    internal enum WebSocketError
     {
         Success = 0,
         InvalidMessageType = 1,

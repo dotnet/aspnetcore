@@ -14,7 +14,7 @@
 // NON-INFRINGEMENT.
 // See the Apache 2 License for the specific language governing
 // permissions and limitations under the License.
-
+#if WEBSOCKETS
 using System;
 using System.Net.Http;
 using System.Net.WebSockets;
@@ -22,7 +22,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
-using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Testing.xunit;
 using Xunit;
 
@@ -166,3 +165,4 @@ namespace Microsoft.AspNet.Server.WebListener
         }
     }
 }
+#endif

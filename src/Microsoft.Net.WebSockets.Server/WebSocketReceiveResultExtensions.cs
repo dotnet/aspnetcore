@@ -27,7 +27,7 @@ using System.Net.WebSockets;
 
 namespace Microsoft.Net.WebSockets
 {
-    public static class WebSocketReceiveResultExtensions
+    internal static class WebSocketReceiveResultExtensions
     {
         internal static WebSocketReceiveResult DecrementAndClone(ref WebSocketReceiveResult original, int count)
         {

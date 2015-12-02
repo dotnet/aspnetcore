@@ -16,7 +16,6 @@
 // permissions and limitations under the License.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.WebSockets;
@@ -27,8 +26,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Http.Features.Authentication;
-using Microsoft.AspNet.Http.Internal;
-using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 using Microsoft.Net.Http.Server;
 
@@ -43,7 +40,9 @@ namespace Microsoft.AspNet.Server.WebListener
         ITlsTokenBindingFeature,
         IHttpBufferingFeature,
         IHttpRequestLifetimeFeature,
+#if WEBSOCKETS
         IHttpWebSocketFeature,
+#endif
         IHttpAuthenticationFeature,
         IHttpUpgradeFeature,
         IHttpRequestIdentifierFeature
@@ -422,12 +421,12 @@ namespace Microsoft.AspNet.Server.WebListener
         {
             return _requestContext.UpgradeAsync();
         }
-
+#if WEBSOCKETS
         bool IHttpWebSocketFeature.IsWebSocketRequest
         {
             get
             {
-                return _requestContext.IsWebSocketRequest;
+                return _requestContext.IsWebSocketRequest();
             }
         }
 
@@ -441,7 +440,7 @@ namespace Microsoft.AspNet.Server.WebListener
             }
             return _requestContext.AcceptWebSocketAsync(subProtocol);
         }
-
+#endif
         ClaimsPrincipal IHttpAuthenticationFeature.User
         {
             get

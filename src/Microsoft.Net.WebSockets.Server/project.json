@@ -1,7 +1,9 @@
 {
   "version": "1.0.0-*",
   "description": "Implementation of WebSocket abstract base class. Used by WebListener.",
-  "dependencies": {},
+  "dependencies": {
+    "Microsoft.Net.Http.Server": "1.0.0-*"
+  },
   "compilationOptions": {
     "allowUnsafe": true,
     "keyFile": "../../tools/Key.snk"
@@ -11,16 +13,11 @@
     "dotnet5.4": {
       "dependencies": {
         "System.Collections": "4.0.11-*",
-        "System.Diagnostics.Contracts": "4.0.1-*",
-        "System.Diagnostics.Tools": "4.0.1-*",
-        "System.IO": "4.0.11-*",
         "System.Linq": "4.0.1-*",
-        "System.Net.Primitives": "4.0.11-*",
         "System.Net.WebSockets": "4.0.0-*",
         "System.Resources.ResourceManager": "4.0.1-*",
         "System.Runtime.Extensions": "4.0.11-*",
         "System.Security.Cryptography.Algorithms": "4.0.0-*",
-        "System.Text.Encoding.Extensions": "4.0.11-*",
         "System.Threading": "4.0.11-*",
         "System.Threading.Tasks": "4.0.11-*",
         "System.Threading.Timer": "4.0.1-*",
