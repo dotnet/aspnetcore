@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -5,6 +6,7 @@ using System.Security.Claims;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Authentication.Cookies;
+using Microsoft.AspNet.Authentication.Facebook;
 using Microsoft.AspNet.Authentication.Google;
 using Microsoft.AspNet.Authentication.MicrosoftAccount;
 using Microsoft.AspNet.Authentication.OAuth;
@@ -30,6 +32,24 @@ namespace CookieSample
         {
             loggerfactory.AddConsole(LogLevel.Information);
 
+            // Simple error page to avoid a repo dependency.
+            app.Use(async (context, next) =>
+            {
+                try
+                {
+                    await next();
+                }
+                catch (Exception ex)
+                {
+                    if (context.Response.HasStarted)
+                    {
+                        throw;
+                    }
+                    context.Response.StatusCode = 500;
+                    await context.Response.WriteAsync(ex.ToString());
+                }
+            });
+
             app.UseCookieAuthentication(options =>
             {
                 options.AutomaticAuthenticate = true;
@@ -38,10 +58,12 @@ namespace CookieSample
             });
 
             // https://developers.facebook.com/apps/
-            app.UseFacebookAuthentication(options =>
+            app.UseFacebookAuthentication(new FacebookOptions()
             {
-                options.AppId = "569522623154478";
-                options.AppSecret = "a124463c4719c94b4228d9a240e5dc1a";
+                AppId = "569522623154478",
+                AppSecret = "a124463c4719c94b4228d9a240e5dc1a",
+                Scope = { "email" },
+                Fields = { "name", "email" },
             });
 
             app.UseOAuthAuthentication(new OAuthOptions
