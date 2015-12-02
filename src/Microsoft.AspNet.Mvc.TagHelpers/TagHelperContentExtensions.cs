@@ -24,8 +24,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         /// <param name="value">The <see cref="object"/> to write.</param>
         /// <returns><paramref name="content"/> after the write operation has completed.</returns>
         /// <remarks>
-        /// <paramref name="value"/>s of type <see cref="Html.Abstractions.IHtmlContent"/> are written using
-        /// <see cref="Html.Abstractions.IHtmlContent.WriteTo(System.IO.TextWriter, HtmlEncoder)"/>.
+        /// <paramref name="value"/>s of type <see cref="Html.IHtmlContent"/> are written using
+        /// <see cref="Html.IHtmlContent.WriteTo(TextWriter, HtmlEncoder)"/>.
         /// For all other types, the encoded result of <see cref="object.ToString"/>
         /// is written to the <paramref name="content"/>.
         /// </remarks>
