@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         private readonly Connection _connection;
         private readonly long _connectionId;
         private readonly IKestrelTrace _log;
-        private readonly ThreadPoolActions _threadPoolActions;
+        private readonly IThreadPool _threadPool;
 
         // This locks all access to _tail, _isProducing and _returnFromOnProducingComplete.
         // _head does not require a lock, since it is only used in the ctor and uv thread.
@@ -57,14 +57,14 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             Connection connection,
             long connectionId,
             IKestrelTrace log,
-            ThreadPoolActions threadPoolActions)
+            IThreadPool threadPool)
         {
             _thread = thread;
             _socket = socket;
             _connection = connection;
             _connectionId = connectionId;
             _log = log;
-            _threadPoolActions = threadPoolActions;
+            _threadPool = threadPool;
             _tasksPending = new Queue<TaskCompletionSource<object>>(_initialTaskQueues);
             _tasksCompleted = new Queue<TaskCompletionSource<object>>(_initialTaskQueues);
 
@@ -322,11 +322,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 var tcs = _tasksCompleted.Dequeue();
                 if (_lastWriteError == null)
                 {
-                    _threadPoolActions.Complete(tcs);
+                    _threadPool.Complete(tcs);
                 }
                 else
                 {
-                    _threadPoolActions.Error(tcs, _lastWriteError);
+                    _threadPool.Error(tcs, _lastWriteError);
                 }
             }
 

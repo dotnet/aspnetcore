@@ -15,11 +15,11 @@ namespace Microsoft.AspNet.Server.KestrelTests
         public TestInput()
         {
             var trace = new KestrelTrace(new TestKestrelTrace());
-            var tpa = new ThreadPoolActions(trace);
+            var ltp = new LoggingThreadPool(trace);
             var memory2 = new MemoryPool2();
             FrameContext = new FrameContext
             {
-                SocketInput = new SocketInput(memory2, tpa),
+                SocketInput = new SocketInput(memory2, ltp),
                 ConnectionControl = this,
                 FrameControl = this
             };

@@ -4,6 +4,7 @@
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Server.Kestrel;
 using Microsoft.AspNet.Server.Kestrel.Http;
+using Microsoft.AspNet.Server.Kestrel.Infrastructure;
 
 namespace Microsoft.AspNet.Server.KestrelTests
 {
@@ -15,6 +16,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
         {
             AppLifetime = new LifetimeNotImplemented();
             Log = new TestKestrelTrace();
+            ThreadPool = new LoggingThreadPool(Log);
             DateHeaderValueManager = new TestDateHeaderValueManager();
         }
 

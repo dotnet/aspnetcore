@@ -4,18 +4,17 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Server.Kestrel.Http;
 
 namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
 {
-    public class ThreadPoolActions
+    public class LoggingThreadPool : IThreadPool
     {
         private readonly IKestrelTrace _log;
 
         private readonly WaitCallback _runAction;
         private readonly WaitCallback _completeTcs;
 
-        public ThreadPoolActions(IKestrelTrace log)
+        public LoggingThreadPool(IKestrelTrace log)
         {
             _log = log;
 

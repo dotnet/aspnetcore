@@ -41,8 +41,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
             _connectionId = Interlocked.Increment(ref _lastConnectionId);
 
-            _rawSocketInput = new SocketInput(Memory2, ThreadPoolActions);
-            _rawSocketOutput = new SocketOutput(Thread, _socket, Memory2, this, _connectionId, Log, ThreadPoolActions);
+            _rawSocketInput = new SocketInput(Memory2, ThreadPool);
+            _rawSocketOutput = new SocketOutput(Thread, _socket, Memory2, this, _connectionId, Log, ThreadPool);
         }
 
         public void Start()
@@ -114,7 +114,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             {
                 // Frame.Abort calls user code while this method is always
                 // called from a libuv thread.
-                ThreadPool.QueueUserWorkItem(state =>
+                System.Threading.ThreadPool.QueueUserWorkItem(state =>
                 {
                     var connection = (Connection)state;
                     connection._frame.Abort();
@@ -124,7 +124,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         private void ApplyConnectionFilter()
         {
-            var filteredStreamAdapter = new FilteredStreamAdapter(_filterContext.Connection, Memory2, Log, ThreadPoolActions);
+            var filteredStreamAdapter = new FilteredStreamAdapter(_filterContext.Connection, Memory2, Log, ThreadPool);
 
             SocketInput = filteredStreamAdapter.SocketInput;
             SocketOutput = filteredStreamAdapter.SocketOutput;

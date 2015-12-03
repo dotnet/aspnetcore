@@ -50,8 +50,8 @@ namespace Microsoft.AspNet.Server.KestrelTests
         public void EmptyHeaderValuesCanBeParsed(string rawHeaders, int numHeaders)
         {
             var trace = new KestrelTrace(new TestKestrelTrace());
-            var tpa = new ThreadPoolActions(trace);
-            var socketInput = new SocketInput(new MemoryPool2(), tpa);
+            var ltp = new LoggingThreadPool(trace);
+            var socketInput = new SocketInput(new MemoryPool2(), ltp);
             var headerCollection = new FrameRequestHeaders();
 
             var headerArray = Encoding.ASCII.GetBytes(rawHeaders);

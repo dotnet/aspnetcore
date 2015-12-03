@@ -64,7 +64,7 @@ namespace Microsoft.AspNet.Server.Kestrel
                     },
                     AppLifetime = _applicationLifetime,
                     Log = trace,
-                    ThreadPoolActions = new ThreadPoolActions(trace),
+                    ThreadPool = new LoggingThreadPool(trace),
                     DateHeaderValueManager = dateHeaderValueManager,
                     ConnectionFilter = information.ConnectionFilter,
                     NoDelay = information.NoDelay

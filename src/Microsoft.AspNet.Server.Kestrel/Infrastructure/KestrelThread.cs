@@ -33,14 +33,14 @@ namespace Microsoft.AspNet.Server.Kestrel
         private bool _initCompleted = false;
         private ExceptionDispatchInfo _closeError;
         private IKestrelTrace _log;
-        private ThreadPoolActions _threadPoolActions;
+        private IThreadPool _threadPool;
 
         public KestrelThread(KestrelEngine engine)
         {
             _engine = engine;
             _appLifetime = engine.AppLifetime;
             _log = engine.Log;
-            _threadPoolActions = engine.ThreadPoolActions;
+            _threadPool = engine.ThreadPool;
             _loop = new UvLoopHandle(_log);
             _post = new UvAsyncHandle(_log);
             _thread = new Thread(ThreadStart);
@@ -268,14 +268,14 @@ namespace Microsoft.AspNet.Server.Kestrel
                     work.CallbackAdapter(work.Callback, work.State);
                     if (work.Completion != null)
                     {
-                        _threadPoolActions.Complete(work.Completion);
+                        _threadPool.Complete(work.Completion);
                     }
                 }
                 catch (Exception ex)
                 {
                     if (work.Completion != null)
                     {
-                        _threadPoolActions.Error(work.Completion, ex);
+                        _threadPool.Error(work.Completion, ex);
                     }
                     else
                     {
