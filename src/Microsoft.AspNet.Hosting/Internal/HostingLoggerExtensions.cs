@@ -57,9 +57,9 @@ namespace Microsoft.AspNet.Hosting.Internal
 
         public static void Starting(this ILogger logger)
         {
-            if (logger.IsEnabled(LogLevel.Verbose))
+            if (logger.IsEnabled(LogLevel.Debug))
             {
-                logger.LogVerbose(
+                logger.LogDebug(
                    eventId: LoggerEventIds.Starting,
                    data: "Hosting starting");
             }
@@ -67,9 +67,9 @@ namespace Microsoft.AspNet.Hosting.Internal
 
         public static void Started(this ILogger logger)
         {
-            if (logger.IsEnabled(LogLevel.Verbose))
+            if (logger.IsEnabled(LogLevel.Debug))
             {
-                logger.LogVerbose(
+                logger.LogDebug(
                     eventId: LoggerEventIds.Started,
                     data: "Hosting started");
             }
@@ -77,9 +77,9 @@ namespace Microsoft.AspNet.Hosting.Internal
 
         public static void Shutdown(this ILogger logger)
         {
-            if (logger.IsEnabled(LogLevel.Verbose))
+            if (logger.IsEnabled(LogLevel.Debug))
             {
-                logger.LogVerbose(
+                logger.LogDebug(
                     eventId: LoggerEventIds.Shutdown,
                     data: "Hosting shutdown");
             }
