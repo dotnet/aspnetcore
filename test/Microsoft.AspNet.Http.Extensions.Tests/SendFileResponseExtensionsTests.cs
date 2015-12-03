@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Features;
@@ -12,20 +13,10 @@ namespace Microsoft.AspNet.Http.Extensions.Tests
     public class SendFileResponseExtensionsTests
     {
         [Fact]
-        public void SendFileSupport()
-        {
-            var context = new DefaultHttpContext();
-            var response = context.Response;
-            Assert.False(response.SupportsSendFile());
-            context.Features.Set<IHttpSendFileFeature>(new FakeSendFileFeature());
-            Assert.True(response.SupportsSendFile());
-        }
-
-        [Fact]
-        public Task SendFileWhenNotSupported()
+        public Task SendFileWhenFileNotFoundThrows()
         {
             var response = new DefaultHttpContext().Response;
-            return Assert.ThrowsAsync<NotSupportedException>(() => response.SendFileAsync("foo"));
+            return Assert.ThrowsAsync<FileNotFoundException>(() => response.SendFileAsync("foo"));
         }
 
         [Fact]
