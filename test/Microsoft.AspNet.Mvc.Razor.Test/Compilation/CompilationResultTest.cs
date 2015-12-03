@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
         public void EnsureSuccessful_ThrowsIfCompilationFailed()
         {
             // Arrange
-            var compilationFailure = new CompilationFailure("test", Enumerable.Empty<Microsoft.Extensions.PlatformAbstractions.DiagnosticMessage>());
+            var compilationFailure = new CompilationFailure("test", Enumerable.Empty<Microsoft.Extensions.CompilationAbstractions.DiagnosticMessage>());
             var failures = new[] { compilationFailure };
             var result = new CompilationResult(failures);
 
