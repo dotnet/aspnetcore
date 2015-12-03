@@ -26,8 +26,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         private volatile bool _hadRequestsSinceLastTimerTick = false;
         private Timer _dateValueTimer;
         private long _lastRequestSeenTicks;
-        private long _lastReadDateTimeTicks;
-        private readonly bool _is64BitSystem;
         private volatile bool _timerIsRunning;
 
         /// <summary>
@@ -51,7 +49,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             _timeWithoutRequestsUntilIdle = timeWithoutRequestsUntilIdle;
             _timerInterval = timerInterval;
             _dateValueTimer = new Timer(TimerLoop, state: null, dueTime: Timeout.Infinite, period: Timeout.Infinite);
-            _is64BitSystem = IntPtr.Size >= 8;
         }
 
         /// <summary>
@@ -72,7 +69,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             PrepareDateValues();
             return _activeDateBytes ? _dateBytes0 : _dateBytes1;
         }
-
 
         /// <summary>
         /// Releases all resources used by the current instance of <see cref="DateHeaderValueManager"/>.
@@ -95,7 +91,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             }
         }
 
-
         /// <summary>
         /// Starts the timer
         /// </summary>
@@ -103,7 +98,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             var now = _systemClock.UtcNow;
             SetDateValues(now);
-            WriteLongThreadSafe(ref _lastReadDateTimeTicks, now.Ticks);
 
             if (!_isDisposed)
             {
@@ -140,26 +134,19 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         private void TimerLoop(object state)
         {
             var now = _systemClock.UtcNow;
-            var lastReadDateTime = new DateTimeOffset(ReadLongThreadSafe(ref _lastReadDateTimeTicks), TimeSpan.Zero);
 
-            //Are we in a new second?
-            if (now - lastReadDateTime >= TimeSpan.FromSeconds(1) || now.Second != lastReadDateTime.Second)
-            {
-                //Yep, Update DateValues
-                SetDateValues(now);
-                WriteLongThreadSafe(ref _lastReadDateTimeTicks, now.Ticks);
-            }
+            SetDateValues(now);
 
             if (_hadRequestsSinceLastTimerTick)
             {
                 // We served requests since the last tick, reset the flag and return as we're still active
                 _hadRequestsSinceLastTimerTick = false;
-                WriteLongThreadSafe(ref _lastRequestSeenTicks, now.Ticks);
+                Interlocked.Exchange(ref _lastRequestSeenTicks, now.Ticks);
                 return;
             }
 
             // No requests since the last timer tick, we need to check if we're beyond the idle threshold
-            if ((now.Ticks - ReadLongThreadSafe(ref _lastRequestSeenTicks)) >= _timeWithoutRequestsUntilIdle.Ticks)
+            if ((now.Ticks - Interlocked.Read(ref _lastRequestSeenTicks)) >= _timeWithoutRequestsUntilIdle.Ticks)
             {
                 // No requests since idle threshold so stop the timer if it's still running
                 StopTimer();
@@ -184,7 +171,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             }
         }
 
-
         /// <summary>
         /// Sets date values from a provided ticks value
         /// </summary>
@@ -196,24 +182,5 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             Encoding.ASCII.GetBytes(_dateValue, 0, _dateValue.Length, !_activeDateBytes ? _dateBytes0 : _dateBytes1, "\r\nDate: ".Length);
             _activeDateBytes = !_activeDateBytes;
         }
-
-        private void WriteLongThreadSafe(ref long location, long value)
-        {
-            Interlocked.Exchange(ref location, value);
-        }
-
-        private long ReadLongThreadSafe(ref long location)
-        {
-            if (_is64BitSystem)
-            {
-                return location;
-            }
-            else
-            {
-                return Interlocked.Read(ref location);
-            }
-        }
-
     }
 }
-
