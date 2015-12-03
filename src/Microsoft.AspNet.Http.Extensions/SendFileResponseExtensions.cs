@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.Http
         /// Sends the given file using the SendFile extension.
         /// </summary>
         /// <param name="response"></param>
-        /// <param name="fileName">The full to the file.</param>
+        /// <param name="fileName">The full path to the file.</param>
         /// <returns></returns>
         public static Task SendFileAsync(this HttpResponse response, string fileName)
         {
@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.Http
         /// Sends the given file using the SendFile extension.
         /// </summary>
         /// <param name="response"></param>
-        /// <param name="fileName">The full to the file.</param>
+        /// <param name="fileName">The full path to the file.</param>
         /// <param name="offset">The offset in the file.</param>
         /// <param name="count">The number of types to send, or null to send the remainder of the file.</param>
         /// <param name="cancellationToken"></param>
