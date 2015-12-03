@@ -8,6 +8,7 @@
     "Microsoft.AspNet.FileProviders.Abstractions": "1.0.0-*",
     "Microsoft.AspNet.FileProviders.Physical": "1.0.0-*",
     "Microsoft.Extensions.PlatformAbstractions": "1.0.0-*",
+    "Microsoft.Extensions.CompilationAbstractions": "1.0.0-*",
     "Microsoft.Extensions.JsonParser.Sources": {
       "type": "build",
       "version": "1.0.0-*"

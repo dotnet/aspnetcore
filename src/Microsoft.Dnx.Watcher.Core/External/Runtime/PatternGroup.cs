@@ -5,9 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Microsoft.Extensions.CompilationAbstractions;
 using Microsoft.Extensions.FileSystemGlobbing;
 using Microsoft.Extensions.JsonParser.Sources;
-using Microsoft.Extensions.PlatformAbstractions;
 
 namespace Microsoft.Dnx.Runtime
 {
