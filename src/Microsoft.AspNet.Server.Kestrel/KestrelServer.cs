@@ -7,6 +7,7 @@ using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Hosting.Server;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Server.Kestrel.Http;
+using Microsoft.AspNet.Server.Kestrel.Infrastructure;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNet.Server.Kestrel
@@ -54,6 +55,7 @@ namespace Microsoft.AspNet.Server.Kestrel
             {
                 var information = (KestrelServerInformation)Features.Get<IKestrelServerInformation>();
                 var dateHeaderValueManager = new DateHeaderValueManager();
+                var trace = new KestrelTrace(_logger);
                 var engine = new KestrelEngine(new ServiceContext
                 {
                     FrameFactory = (context, remoteEP, localEP, prepareRequest) => 
@@ -61,7 +63,8 @@ namespace Microsoft.AspNet.Server.Kestrel
                         return new Frame<TContext>(application, context, remoteEP, localEP, prepareRequest);
                     },
                     AppLifetime = _applicationLifetime,
-                    Log = new KestrelTrace(_logger),
+                    Log = trace,
+                    ThreadPoolActions = new ThreadPoolActions(trace),
                     DateHeaderValueManager = dateHeaderValueManager,
                     ConnectionFilter = information.ConnectionFilter,
                     NoDelay = information.NoDelay

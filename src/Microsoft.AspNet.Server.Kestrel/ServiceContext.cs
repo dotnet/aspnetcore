@@ -13,8 +13,6 @@ namespace Microsoft.AspNet.Server.Kestrel
 {
     public class ServiceContext
     {
-        private IKestrelTrace _log;
-
         public ServiceContext()
         {
         }
@@ -22,7 +20,7 @@ namespace Microsoft.AspNet.Server.Kestrel
         public ServiceContext(ServiceContext context)
         {
             AppLifetime = context.AppLifetime;
-            _log = context.Log;
+            Log = context.Log;
             ThreadPoolActions = context.ThreadPoolActions;
             FrameFactory = context.FrameFactory;
             DateHeaderValueManager = context.DateHeaderValueManager;
@@ -32,20 +30,9 @@ namespace Microsoft.AspNet.Server.Kestrel
 
         public IApplicationLifetime AppLifetime { get; set; }
 
-        public IKestrelTrace Log
-        {
-            get
-            {
-                return _log;
-            }
-            set
-            {
-                _log = value;
-                ThreadPoolActions = new ThreadPoolActions(_log);
-            }
-        }
+        public IKestrelTrace Log { get; set; }
 
-        public ThreadPoolActions ThreadPoolActions { get; private set; }
+        public ThreadPoolActions ThreadPoolActions { get; set; }
 
         public Func<ConnectionContext, IPEndPoint, IPEndPoint, Action<IFeatureCollection>, Frame> FrameFactory { get; set; }
 
