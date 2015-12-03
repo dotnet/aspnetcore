@@ -1357,7 +1357,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             }
         }
 
-        // Reviewers: Is this inconsistency with CanUpdateProperty() an issue we should be tracking?
         [Theory]
         [MemberData(nameof(MyCanUpdateButCannotSetPropertyData))]
         public void SetProperty_ValueProvidedAndCanUpdatePropertyTrue_DoesNothing(

@@ -12,7 +12,7 @@ using Microsoft.Extensions.PlatformAbstractions;
 namespace Microsoft.AspNet.Mvc.Localization
 {
     /// <summary>
-    /// A <see cref="HtmlLocalizer"/> that provides localized strings for views.
+    /// A <see cref="IHtmlLocalizer"/> implementation that provides localized strings for views.
     /// </summary>
     public class ViewLocalizer : IViewLocalizer, ICanHasViewContext
     {
@@ -25,9 +25,7 @@ namespace Microsoft.AspNet.Mvc.Localization
         /// </summary>
         /// <param name="localizerFactory">The <see cref="IHtmlLocalizerFactory"/>.</param>
         /// <param name="applicationEnvironment">The <see cref="IApplicationEnvironment"/>.</param>
-        public ViewLocalizer(
-            IHtmlLocalizerFactory localizerFactory,
-            IApplicationEnvironment applicationEnvironment)
+        public ViewLocalizer(IHtmlLocalizerFactory localizerFactory, IApplicationEnvironment applicationEnvironment)
         {
             if (localizerFactory == null)
             {
@@ -75,15 +73,13 @@ namespace Microsoft.AspNet.Mvc.Localization
         public LocalizedString GetString(string name) => _localizer.GetString(name);
 
         /// <inheritdoc />
-        public LocalizedString GetString(string name, params object[] values) =>
-            _localizer.GetString(name, values);
+        public LocalizedString GetString(string name, params object[] values) => _localizer.GetString(name, values);
 
         /// <inheritdoc />
         public LocalizedHtmlString Html(string key) => _localizer.Html(key);
 
         /// <inheritdoc />
-        public LocalizedHtmlString Html(string key, params object[] arguments) =>
-            _localizer.Html(key, arguments);
+        public LocalizedHtmlString Html(string key, params object[] arguments) => _localizer.Html(key, arguments);
 
         /// <inheritdoc />
         public IStringLocalizer WithCulture(CultureInfo culture) => _localizer.WithCulture(culture);
@@ -103,6 +99,7 @@ namespace Microsoft.AspNet.Mvc.Localization
             {
                 baseName = baseName.Substring(1);
             }
+
             _localizer = _localizerFactory.Create(baseName, _applicationName);
         }
 

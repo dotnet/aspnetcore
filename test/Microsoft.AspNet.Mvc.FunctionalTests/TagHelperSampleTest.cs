@@ -26,14 +26,12 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                 {
                     "/Home/Create",
                     "/Home/Create?Name=Billy&Blurb=hello&DateOfBirth=2000-11-30&YearsEmployeed=0",
-                    "/Home/Create",
                     "/Home/Create?Name=Joe&Blurb=goodbye&DateOfBirth=1980-10-20&YearsEmployeed=1",
                     "/Home/Edit/0",
                     "/Home/Edit/0?Name=Bobby&Blurb=howdy&DateOfBirth=1999-11-30&YearsEmployeed=1",
+                    "/Home/Edit/0?Name=Bobby&Blurb=howdy&DateOfBirth=1999-11-30&YearsEmployeed=2",
                     "/Home/Edit/1",
                     "/Home/Edit/1?Name=Jack&Blurb=goodbye&DateOfBirth=1979-10-20&YearsEmployeed=4",
-                    "/Home/Edit/0",
-                    "/Home/Edit/0?Name=Bobby&Blurb=howdy&DateOfBirth=1999-11-30&YearsEmployeed=2",
                 };
 
                 // Three paths hit aspnet/External#50 with Mono on Mac.

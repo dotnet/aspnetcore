@@ -5,12 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Text.Encodings.Web;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.ViewEngines;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.PlatformAbstractions;
-using Microsoft.Extensions.WebEncoders.Testing;
 using Moq;
 using Xunit;
 
@@ -87,7 +85,7 @@ namespace Microsoft.AspNet.Mvc.Localization.Test
         {
             // Arrange
             var stringLocalizer = new TestStringLocalizer();
-            var htmlLocalizer = new HtmlLocalizer(stringLocalizer, new HtmlTestEncoder());
+            var htmlLocalizer = new HtmlLocalizer(stringLocalizer);
             var applicationEnvironment = new Mock<IApplicationEnvironment>();
             applicationEnvironment.Setup(a => a.ApplicationName).Returns("TestApplication");
             var viewLocalizer = new ViewLocalizer(new TestHtmlLocalizerFactory(), applicationEnvironment.Object);
@@ -112,7 +110,7 @@ namespace Microsoft.AspNet.Mvc.Localization.Test
         {
             // Arrange
             var stringLocalizer = new TestStringLocalizer();
-            var htmlLocalizer = new HtmlLocalizer(stringLocalizer, new HtmlTestEncoder());
+            var htmlLocalizer = new HtmlLocalizer(stringLocalizer);
             var applicationEnvironment = new Mock<IApplicationEnvironment>();
             applicationEnvironment.Setup(a => a.ApplicationName).Returns("TestApplication");
             var viewLocalizer = new ViewLocalizer(new TestHtmlLocalizerFactory(), applicationEnvironment.Object);
@@ -138,7 +136,7 @@ namespace Microsoft.AspNet.Mvc.Localization.Test
         {
             // Arrange
             var stringLocalizer = new TestStringLocalizer();
-            var htmlLocalizer = new HtmlLocalizer(stringLocalizer, new HtmlTestEncoder());
+            var htmlLocalizer = new HtmlLocalizer(stringLocalizer);
             var applicationEnvironment = new Mock<IApplicationEnvironment>();
             applicationEnvironment.Setup(a => a.ApplicationName).Returns("TestApplication");
             var viewLocalizer = new ViewLocalizer(new TestHtmlLocalizerFactory(), applicationEnvironment.Object);
@@ -162,7 +160,7 @@ namespace Microsoft.AspNet.Mvc.Localization.Test
         {
             // Arrange
             var stringLocalizer = new TestStringLocalizer();
-            var htmlLocalizer = new HtmlLocalizer(stringLocalizer, new HtmlTestEncoder());
+            var htmlLocalizer = new HtmlLocalizer(stringLocalizer);
             var applicationEnvironment = new Mock<IApplicationEnvironment>();
             applicationEnvironment.Setup(a => a.ApplicationName).Returns("TestApplication");
             var viewLocalizer = new ViewLocalizer(new TestHtmlLocalizerFactory(), applicationEnvironment.Object);
@@ -186,7 +184,7 @@ namespace Microsoft.AspNet.Mvc.Localization.Test
         {
             // Arrange
             var stringLocalizer = new TestStringLocalizer();
-            var htmlLocalizer = new HtmlLocalizer(stringLocalizer, new HtmlTestEncoder());
+            var htmlLocalizer = new HtmlLocalizer(stringLocalizer);
             var applicationEnvironment = new Mock<IApplicationEnvironment>();
             applicationEnvironment.Setup(a => a.ApplicationName).Returns("TestApplication");
             var viewLocalizer = new ViewLocalizer(new TestHtmlLocalizerFactory(), applicationEnvironment.Object);
@@ -210,7 +208,7 @@ namespace Microsoft.AspNet.Mvc.Localization.Test
         {
             // Arrange
             var stringLocalizer = new TestStringLocalizer();
-            var htmlLocalizer = new HtmlLocalizer(stringLocalizer, new HtmlTestEncoder());
+            var htmlLocalizer = new HtmlLocalizer(stringLocalizer);
             var applicationEnvironment = new Mock<IApplicationEnvironment>();
             applicationEnvironment.Setup(a => a.ApplicationName).Returns("TestApplication");
             var viewLocalizer = new ViewLocalizer(new TestHtmlLocalizerFactory(), applicationEnvironment.Object);
@@ -234,7 +232,7 @@ namespace Microsoft.AspNet.Mvc.Localization.Test
         {
             // Arrange
             var stringLocalizer = new TestStringLocalizer();
-            var htmlLocalizer = new HtmlLocalizer(stringLocalizer, new HtmlTestEncoder());
+            var htmlLocalizer = new HtmlLocalizer(stringLocalizer);
             var applicationEnvironment = new Mock<IApplicationEnvironment>();
             applicationEnvironment.Setup(a => a.ApplicationName).Returns("TestApplication");
             var viewLocalizer = new ViewLocalizer(new TestHtmlLocalizerFactory(), applicationEnvironment.Object);
@@ -257,7 +255,7 @@ namespace Microsoft.AspNet.Mvc.Localization.Test
         {
             private IStringLocalizer _stringLocalizer { get; set; }
 
-            public TestHtmlLocalizer(IStringLocalizer stringLocalizer, HtmlEncoder encoder)
+            public TestHtmlLocalizer(IStringLocalizer stringLocalizer)
             {
                 _stringLocalizer = stringLocalizer;
             }
@@ -285,25 +283,31 @@ namespace Microsoft.AspNet.Mvc.Localization.Test
 
             public IStringLocalizer WithCulture(CultureInfo culture)
             {
-                return new TestStringLocalizer(culture);
+                return new TestHtmlLocalizer(new TestStringLocalizer(culture));
             }
 
             IHtmlLocalizer IHtmlLocalizer.WithCulture(CultureInfo culture)
             {
-                return new TestHtmlLocalizer(new TestStringLocalizer(culture), new HtmlTestEncoder());
+                return new TestHtmlLocalizer(new TestStringLocalizer(culture));
             }
 
             public LocalizedHtmlString Html(string key)
             {
-                var localiziedString = _stringLocalizer.GetString(key);
-                return new LocalizedHtmlString(localiziedString.Name, localiziedString.Value);
+                var localizedString = _stringLocalizer.GetString(key);
+                return new LocalizedHtmlString(
+                    localizedString.Name,
+                    localizedString.Value,
+                    isResourceNotFound: false);
             }
 
             public LocalizedHtmlString Html(string key, params object[] arguments)
             {
                 var localizedString = _stringLocalizer.GetString(key, arguments);
-
-                return new LocalizedHtmlString(localizedString.Name, localizedString.Value);
+                return new LocalizedHtmlString(
+                    localizedString.Name,
+                    localizedString.Value,
+                    isResourceNotFound: false,
+                    arguments: arguments);
             }
 
             IEnumerable<LocalizedString> IStringLocalizer.GetAllStrings(bool includeAncestorCultures)
@@ -316,12 +320,12 @@ namespace Microsoft.AspNet.Mvc.Localization.Test
         {
             public IHtmlLocalizer Create(Type resourceSource)
             {
-                return new TestHtmlLocalizer(new TestStringLocalizer(), new HtmlTestEncoder());
+                return new TestHtmlLocalizer(new TestStringLocalizer());
             }
 
             public IHtmlLocalizer Create(string baseName, string location)
             {
-                return new TestHtmlLocalizer(new TestStringLocalizer(), new HtmlTestEncoder());
+                return new TestHtmlLocalizer(new TestStringLocalizer());
             }
         }
     }

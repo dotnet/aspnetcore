@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Text.Encodings.Web;
 using Microsoft.Extensions.Localization;
 
 namespace Microsoft.AspNet.Mvc.Localization
@@ -13,27 +12,19 @@ namespace Microsoft.AspNet.Mvc.Localization
     public class HtmlLocalizerFactory : IHtmlLocalizerFactory
     {
         private readonly IStringLocalizerFactory _factory;
-        private readonly HtmlEncoder _encoder;
 
         /// <summary>
         /// Creates a new <see cref="HtmlLocalizer"/>.
         /// </summary>
         /// <param name="localizerFactory">The <see cref="IStringLocalizerFactory"/>.</param>
-        /// <param name="encoder">The <see cref="HtmlEncoder"/>.</param>
-        public HtmlLocalizerFactory(IStringLocalizerFactory localizerFactory, HtmlEncoder encoder)
+        public HtmlLocalizerFactory(IStringLocalizerFactory localizerFactory)
         {
             if (localizerFactory == null)
             {
                 throw new ArgumentNullException(nameof(localizerFactory));
             }
 
-            if (encoder == null)
-            {
-                throw new ArgumentNullException(nameof(encoder));
-            }
-
             _factory = localizerFactory;
-            _encoder = encoder;
         }
 
         /// <summary>
@@ -49,7 +40,7 @@ namespace Microsoft.AspNet.Mvc.Localization
                 throw new ArgumentNullException(nameof(resourceSource));
             }
 
-            return new HtmlLocalizer(_factory.Create(resourceSource), _encoder);
+            return new HtmlLocalizer(_factory.Create(resourceSource));
         }
 
         /// <summary>
@@ -71,7 +62,7 @@ namespace Microsoft.AspNet.Mvc.Localization
             }
 
             var localizer = _factory.Create(baseName, location);
-            return new HtmlLocalizer(localizer, _encoder);
+            return new HtmlLocalizer(localizer);
         }
     }
 }

@@ -4,8 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Text;
-using System.Text.Encodings.Web;
 using Microsoft.Extensions.Localization;
 
 namespace Microsoft.AspNet.Mvc.Localization
@@ -17,27 +15,19 @@ namespace Microsoft.AspNet.Mvc.Localization
     public class HtmlLocalizer : IHtmlLocalizer
     {
         private IStringLocalizer _localizer;
-        private readonly HtmlEncoder _encoder;
 
         /// <summary>
         /// Creates a new <see cref="HtmlLocalizer"/>.
         /// </summary>
         /// <param name="localizer">The <see cref="IStringLocalizer"/> to read strings from.</param>
-        /// <param name="encoder">The <see cref="HtmlEncoder"/>.</param>
-        public HtmlLocalizer(IStringLocalizer localizer, HtmlEncoder encoder)
+        public HtmlLocalizer(IStringLocalizer localizer)
         {
             if (localizer == null)
             {
                 throw new ArgumentNullException(nameof(localizer));
             }
 
-            if (encoder == null)
-            {
-                throw new ArgumentNullException(nameof(encoder));
-            }
-
             _localizer = localizer;
-            _encoder = encoder;
         }
 
         /// <inheritdoc />
@@ -80,7 +70,7 @@ namespace Microsoft.AspNet.Mvc.Localization
                 throw new ArgumentNullException(nameof(culture));
             }
 
-            return new HtmlLocalizer(_localizer.WithCulture(culture), _encoder);
+            return new HtmlLocalizer(_localizer.WithCulture(culture));
         }
 
         /// <summary>
@@ -95,7 +85,7 @@ namespace Microsoft.AspNet.Mvc.Localization
                 throw new ArgumentNullException(nameof(culture));
             }
 
-            return new HtmlLocalizer(_localizer.WithCulture(culture), _encoder);
+            return new HtmlLocalizer(_localizer.WithCulture(culture));
         }
 
         /// <inheritdoc />
@@ -143,9 +133,7 @@ namespace Microsoft.AspNet.Mvc.Localization
                 throw new ArgumentNullException(nameof(key));
             }
 
-            var stringValue = _localizer[key].Value;
-
-            return ToHtmlString(new LocalizedString(key, EncodeArguments(stringValue, arguments)));
+            return ToHtmlString(_localizer.GetString(key), arguments);
         }
 
         /// <summary>
@@ -155,118 +143,7 @@ namespace Microsoft.AspNet.Mvc.Localization
         protected virtual LocalizedHtmlString ToHtmlString(LocalizedString result) =>
             new LocalizedHtmlString(result.Name, result.Value, result.ResourceNotFound);
 
-        /// <summary>
-        /// Encodes the arguments based on the object type.
-        /// </summary>
-        /// <param name="resourceString">The resourceString whose arguments need to be encoded.</param>
-        /// <param name="arguments">The array of objects to encode.</param>
-        /// <returns>The string with encoded arguments.</returns>
-        protected virtual string EncodeArguments(string resourceString, object[] arguments)
-        {
-            if (resourceString == null)
-            {
-                throw new ArgumentNullException(nameof(resourceString));
-            }
-
-            if (arguments == null)
-            {
-                throw new ArgumentNullException(nameof(arguments));
-            }
-
-            var position = 0;
-            var length = resourceString.Length;
-            char currentCharacter;
-            StringBuilder tokenBuffer = null;
-            var outputBuffer = new StringBuilder();
-            var isToken = false;
-
-            while (position < length)
-            {
-                currentCharacter = resourceString[position];
-
-                position++;
-                if (currentCharacter == '}')
-                {
-                    if (position < length && resourceString[position] == '}')  // Treat as escape character for }}
-                    {
-                        if (isToken)
-                        {
-                            tokenBuffer.Append("}}");
-                        }
-                        else
-                        {
-                            outputBuffer.Append("}");
-                        }
-
-                        position++;
-                    }
-                    else
-                    {
-                        AppendToBuffer(isToken, '}', tokenBuffer, outputBuffer);
-
-                        if (position == length)
-                        {
-                            break;
-                        }
-                        AppendToOutputBuffer(arguments, tokenBuffer, outputBuffer);
-
-                        isToken = false;
-                        tokenBuffer = null;
-                    }
-                }
-                else if (currentCharacter == '{')
-                {
-                    if (position < length && resourceString[position] == '{')  // Treat as escape character for {{
-                    {
-                        if (isToken)
-                        {
-                            tokenBuffer.Append("{{");
-                        }
-                        else
-                        {
-                            outputBuffer.Append("{");
-                        }
-                        position++;
-                    }
-                    else
-                    {
-                        tokenBuffer = new StringBuilder();
-                        tokenBuffer.Append("{");
-                        isToken = true;
-                    }
-                }
-                else
-                {
-                    AppendToBuffer(isToken, currentCharacter, tokenBuffer, outputBuffer);
-                }
-            }
-            AppendToOutputBuffer(arguments, tokenBuffer, outputBuffer);
-
-            return outputBuffer.ToString();
-        }
-
-        private void AppendToBuffer(
-            bool isToken,
-            char value,
-            StringBuilder tokenBuffer,
-            StringBuilder outputBuffer)
-        {
-            if (isToken)
-            {
-                tokenBuffer.Append(value);
-            }
-            else
-            {
-                outputBuffer.Append(value);
-            }
-        }
-
-        private void AppendToOutputBuffer(object[] arguments, StringBuilder tokenBuffer, StringBuilder outputBuffer)
-        {
-            if (tokenBuffer != null && tokenBuffer.Length > 0)
-            {
-                outputBuffer.Append(_encoder.Encode(string.Format(tokenBuffer.ToString(), arguments)));
-            }
-        }
+        protected virtual LocalizedHtmlString ToHtmlString(LocalizedString result, object[] arguments) =>
+            new LocalizedHtmlString(result.Name, result.Value, result.ResourceNotFound, arguments);
     }
 }
