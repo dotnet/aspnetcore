@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.StaticFiles
         static LoggerExtensions()
         {
             _logMethodNotSupported = LoggerMessage.Define<string>(
-                logLevel: LogLevel.Verbose,
+                logLevel: LogLevel.Debug,
                 eventId: 1,
                 formatString: "{Method} requests are not supported");
             _logFileServed = LoggerMessage.Define<string, string>(
@@ -37,15 +37,15 @@ namespace Microsoft.AspNet.StaticFiles
                eventId: 2,
                formatString: "Sending file. Request path: '{VirtualPath}'. Physical path: '{PhysicalPath}'");
             _logPathMismatch = LoggerMessage.Define<string>(
-                logLevel: LogLevel.Verbose,
+                logLevel: LogLevel.Debug,
                 eventId: 3,
                 formatString: "The request path {Path} does not match the path filter");
             _logFileTypeNotSupported = LoggerMessage.Define<string>(
-                logLevel: LogLevel.Verbose,
+                logLevel: LogLevel.Debug,
                 eventId: 4,
                 formatString: "The request path {Path} does not match a supported file type");
             _logFileNotFound = LoggerMessage.Define<string>(
-                logLevel: LogLevel.Verbose,
+                logLevel: LogLevel.Debug,
                 eventId: 5,
                 formatString: "The request path {Path} does not match an existing file");
             _logPathNotModified = LoggerMessage.Define<string>(
@@ -57,7 +57,7 @@ namespace Microsoft.AspNet.StaticFiles
                 eventId: 7,
                 formatString: "Precondition for {Path} failed");
             _logHandled = LoggerMessage.Define<int, string>(
-                logLevel: LogLevel.Verbose,
+                logLevel: LogLevel.Debug,
                 eventId: 8,
                 formatString: "Handled. Status code: {StatusCode} File: {Path}");
             _logRangeNotSatisfiable = LoggerMessage.Define<string>(
@@ -69,11 +69,11 @@ namespace Microsoft.AspNet.StaticFiles
                 eventId: 10,
                 formatString: "Sending {Range} of file {Path}");
             _logCopyingFileRange = LoggerMessage.Define<StringValues, string>(
-                logLevel: LogLevel.Verbose,
+                logLevel: LogLevel.Debug,
                 eventId: 11,
                 formatString: "Copying {Range} of file {Path} to the response body");
             _logCopyingBytesToResponse = LoggerMessage.Define<long, string, string>(
-                logLevel: LogLevel.Verbose,
+                logLevel: LogLevel.Debug,
                 eventId: 12,
                 formatString: "Copying bytes {Start}-{End} of file {Path} to response body");
             _logMultipleFileRanges = LoggerMessage.Define<string>(

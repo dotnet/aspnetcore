@@ -2,7 +2,6 @@ using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.StaticFiles;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Console;
 
 namespace StaticFilesSample
 {
@@ -16,7 +15,7 @@ namespace StaticFilesSample
         public void Configure(IApplicationBuilder app, ILoggerFactory factory)
         {
             // Displays all log levels
-            factory.AddConsole(LogLevel.Verbose);
+            factory.AddConsole(LogLevel.Debug);
 
             app.UseFileServer(new FileServerOptions()
             {
