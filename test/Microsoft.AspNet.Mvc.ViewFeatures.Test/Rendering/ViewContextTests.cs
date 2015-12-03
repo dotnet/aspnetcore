@@ -3,6 +3,7 @@
 
 using System.IO;
 using System.Text;
+using Microsoft.AspNet.Html;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.Abstractions;
 using Microsoft.AspNet.Mvc.ModelBinding;
@@ -58,7 +59,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 htmlHelperOptions: new HtmlHelperOptions());
             var view = Mock.Of<IView>();
             var viewData = new ViewDataDictionary(originalContext.ViewData);
-            var writer = new StringCollectionTextWriter(Encoding.UTF8);
+            var writer = new HtmlContentWrapperTextWriter(new HtmlContentBuilder(), Encoding.UTF8);
 
             // Act
             var context = new ViewContext(originalContext, view, viewData, writer);

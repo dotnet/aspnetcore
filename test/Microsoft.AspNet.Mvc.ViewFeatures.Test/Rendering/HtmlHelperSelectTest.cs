@@ -10,6 +10,7 @@ using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.TestCommon;
 using Microsoft.AspNet.Mvc.ViewEngines;
 using Microsoft.AspNet.Mvc.ViewFeatures;
+using Microsoft.AspNet.Mvc.ViewFeatures.Buffer;
 using Microsoft.AspNet.Testing;
 using Moq;
 using Xunit;
@@ -1567,6 +1568,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                       new Mock<IHtmlGenerator>(MockBehavior.Strict).Object,
                       new Mock<ICompositeViewEngine>(MockBehavior.Strict).Object,
                       metadataProvider,
+                      new TestViewBufferScope(),
                       new Mock<HtmlEncoder>(MockBehavior.Strict).Object,
                       new Mock<UrlEncoder>(MockBehavior.Strict).Object,
                       new Mock<JavaScriptEncoder>(MockBehavior.Strict).Object)

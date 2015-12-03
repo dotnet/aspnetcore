@@ -9,9 +9,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.Abstractions;
 using Microsoft.AspNet.Mvc.ModelBinding;
-using Microsoft.AspNet.Mvc.Razor.Buffer;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.ViewFeatures;
+using Microsoft.AspNet.Mvc.ViewFeatures.Buffer;
 using Microsoft.AspNet.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Primitives;
@@ -1661,7 +1661,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             var httpContext = new DefaultHttpContext();
             var serviceProvider = new ServiceCollection()
-                .AddScoped<IRazorBufferScope, TestRazorBufferScope>()
+                .AddScoped<IViewBufferScope, TestViewBufferScope>()
                 .BuildServiceProvider();
             httpContext.RequestServices = serviceProvider;
             var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());

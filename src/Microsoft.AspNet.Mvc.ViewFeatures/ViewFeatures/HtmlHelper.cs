@@ -13,6 +13,7 @@ using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.ViewEngines;
+using Microsoft.AspNet.Mvc.ViewFeatures.Buffer;
 using Microsoft.AspNet.Mvc.ViewFeatures.Internal;
 using Microsoft.Extensions.Internal;
 
@@ -33,6 +34,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         private readonly IHtmlGenerator _htmlGenerator;
         private readonly ICompositeViewEngine _viewEngine;
         private readonly HtmlEncoder _htmlEncoder;
+        private readonly IViewBufferScope _bufferScope;
 
         private ViewContext _viewContext;
 
@@ -43,6 +45,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             IHtmlGenerator htmlGenerator,
             ICompositeViewEngine viewEngine,
             IModelMetadataProvider metadataProvider,
+            IViewBufferScope bufferScope,
             HtmlEncoder htmlEncoder,
             UrlEncoder urlEncoder,
             JavaScriptEncoder javaScriptEncoder)
@@ -60,6 +63,11 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             if (metadataProvider == null)
             {
                 throw new ArgumentNullException(nameof(metadataProvider));
+            }
+
+            if (bufferScope == null)
+            {
+                throw new ArgumentNullException(nameof(bufferScope));
             }
 
             if (htmlEncoder == null)
@@ -80,6 +88,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             _viewEngine = viewEngine;
             _htmlGenerator = htmlGenerator;
             _htmlEncoder = htmlEncoder;
+            _bufferScope = bufferScope;
             MetadataProvider = metadataProvider;
             UrlEncoder = urlEncoder;
             JavaScriptEncoder = javaScriptEncoder;
@@ -349,10 +358,11 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         {
             var metadata = ExpressionMetadataProvider.FromStringExpression(expression, ViewData, MetadataProvider);
 
-            return GenerateDisplay(metadata,
-                                   htmlFieldName ?? ExpressionHelper.GetExpressionText(expression),
-                                   templateName,
-                                   additionalViewData);
+            return GenerateDisplay(
+                metadata,
+                htmlFieldName ?? ExpressionHelper.GetExpressionText(expression),
+                templateName,
+                additionalViewData);
         }
 
         /// <inheritdoc />
@@ -493,10 +503,11 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                 throw new ArgumentNullException(nameof(partialViewName));
             }
 
-            using (var writer = new StringCollectionTextWriter(Encoding.UTF8))
+            var viewBuffer = new ViewBuffer(_bufferScope, partialViewName);
+            using (var writer = new HtmlContentWrapperTextWriter(viewBuffer, Encoding.UTF8))
             {
                 await RenderPartialCoreAsync(partialViewName, model, viewData, writer);
-                return writer.Content;
+                return writer.ContentBuilder;
             }
         }
 
@@ -519,6 +530,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         {
             var templateBuilder = new TemplateBuilder(
                 _viewEngine,
+                _bufferScope,
                 ViewContext,
                 ViewData,
                 modelExplorer,
@@ -815,6 +827,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         {
             var templateBuilder = new TemplateBuilder(
                 _viewEngine,
+                _bufferScope,
                 ViewContext,
                 ViewData,
                 modelExplorer,

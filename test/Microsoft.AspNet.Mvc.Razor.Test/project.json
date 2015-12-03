@@ -6,7 +6,8 @@
   "compile": [
     "../Microsoft.AspNet.Mvc.Razor.Host.Test/TestFileProvider.cs",
     "../Microsoft.AspNet.Mvc.Razor.Host.Test/TestFileInfo.cs",
-    "../Microsoft.AspNet.Mvc.Razor.Host.Test/TestFileTrigger.cs"
+    "../Microsoft.AspNet.Mvc.Razor.Host.Test/TestFileTrigger.cs",
+    "../Microsoft.AspNet.Mvc.ViewFeatures.Test/TestViewBufferScope.cs"
   ],
   "dependencies": {
     "Microsoft.AspNet.Http": "1.0.0-*",

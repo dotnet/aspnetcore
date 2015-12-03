@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Html;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.ViewFeatures;
+using Microsoft.AspNet.Mvc.ViewFeatures.Buffer;
 using Microsoft.AspNet.Mvc.ViewFeatures.Internal;
 
 namespace Microsoft.AspNet.Mvc.ViewComponents
@@ -18,13 +19,15 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
         private readonly HtmlEncoder _htmlEncoder;
         private readonly IViewComponentInvokerFactory _invokerFactory;
         private readonly IViewComponentSelector _selector;
+        private readonly IViewBufferScope _viewBufferScope;
         private ViewContext _viewContext;
 
         public DefaultViewComponentHelper(
             IViewComponentDescriptorCollectionProvider descriptorProvider,
             HtmlEncoder htmlEncoder,
             IViewComponentSelector selector,
-            IViewComponentInvokerFactory invokerFactory)
+            IViewComponentInvokerFactory invokerFactory,
+            IViewBufferScope viewBufferScope)
         {
             if (descriptorProvider == null)
             {
@@ -46,10 +49,16 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
                 throw new ArgumentNullException(nameof(invokerFactory));
             }
 
+            if (viewBufferScope == null)
+            {
+                throw new ArgumentNullException(nameof(viewBufferScope));
+            }
+
             _descriptorProvider = descriptorProvider;
             _htmlEncoder = htmlEncoder;
             _selector = selector;
             _invokerFactory = invokerFactory;
+            _viewBufferScope = viewBufferScope;
         }
 
         public void Contextualize(ViewContext viewContext)
@@ -71,10 +80,11 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
 
             var descriptor = SelectComponent(name);
 
-            using (var writer = new StringCollectionTextWriter(_viewContext.Writer.Encoding))
+            var viewBuffer = new ViewBuffer(_viewBufferScope, name);
+            using (var writer = new HtmlContentWrapperTextWriter(viewBuffer, _viewContext.Writer.Encoding))
             {
                 InvokeCore(writer, descriptor, arguments);
-                return writer.Content;
+                return writer.ContentBuilder;
             }
         }
 
@@ -86,11 +96,11 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
             }
 
             var descriptor = SelectComponent(componentType);
-
-            using (var writer = new StringCollectionTextWriter(_viewContext.Writer.Encoding))
+            var viewBuffer = new ViewBuffer(_viewBufferScope, componentType.Name);
+            using (var writer = new HtmlContentWrapperTextWriter(viewBuffer, _viewContext.Writer.Encoding))
             {
                 InvokeCore(writer, descriptor, arguments);
-                return writer.Content;
+                return writer.ContentBuilder;
             }
         }
 
@@ -125,10 +135,11 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
 
             var descriptor = SelectComponent(name);
 
-            using (var writer = new StringCollectionTextWriter(_viewContext.Writer.Encoding))
+            var viewBuffer = new ViewBuffer(_viewBufferScope, name);
+            using (var writer = new HtmlContentWrapperTextWriter(viewBuffer, _viewContext.Writer.Encoding))
             {
                 await InvokeCoreAsync(writer, descriptor, arguments);
-                return writer.Content;
+                return writer.ContentBuilder;
             }
         }
 
@@ -141,10 +152,11 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
 
             var descriptor = SelectComponent(componentType);
 
-            using (var writer = new StringCollectionTextWriter(_viewContext.Writer.Encoding))
+            var viewBuffer = new ViewBuffer(_viewBufferScope, componentType.Name);
+            using (var writer = new HtmlContentWrapperTextWriter(viewBuffer, _viewContext.Writer.Encoding))
             {
                 await InvokeCoreAsync(writer, descriptor, arguments);
-                return writer.Content;
+                return writer.ContentBuilder;
             }
         }
 

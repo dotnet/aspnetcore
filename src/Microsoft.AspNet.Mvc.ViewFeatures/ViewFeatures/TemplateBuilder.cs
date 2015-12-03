@@ -7,24 +7,27 @@ using Microsoft.AspNet.Html;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.ViewEngines;
+using Microsoft.AspNet.Mvc.ViewFeatures.Buffer;
 
 namespace Microsoft.AspNet.Mvc.ViewFeatures.Internal
 {
     public class TemplateBuilder
     {
-        private IViewEngine _viewEngine;
-        private ViewContext _viewContext;
-        private ViewDataDictionary _viewData;
-        private ModelExplorer _modelExplorer;
+        private readonly IViewEngine _viewEngine;
+        private readonly IViewBufferScope _bufferScope;
+        private readonly ViewContext _viewContext;
+        private readonly ViewDataDictionary _viewData;
+        private readonly ModelExplorer _modelExplorer;
         private object _model;
-        private ModelMetadata _metadata;
-        private string _htmlFieldName;
-        private string _templateName;
-        private bool _readOnly;
-        private object _additionalViewData;
+        private readonly ModelMetadata _metadata;
+        private readonly string _htmlFieldName;
+        private readonly string _templateName;
+        private readonly bool _readOnly;
+        private readonly object _additionalViewData;
 
         public TemplateBuilder(
             IViewEngine viewEngine,
+            IViewBufferScope bufferScope,
             ViewContext viewContext,
             ViewDataDictionary viewData,
             ModelExplorer modelExplorer,
@@ -36,6 +39,11 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures.Internal
             if (viewEngine == null)
             {
                 throw new ArgumentNullException(nameof(viewEngine));
+            }
+
+            if (bufferScope == null)
+            {
+                throw new ArgumentNullException(nameof(_bufferScope));
             }
 
             if (viewContext == null)
@@ -54,6 +62,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures.Internal
             }
 
             _viewEngine = viewEngine;
+            _bufferScope = bufferScope;
             _viewContext = viewContext;
             _viewData = viewData;
             _modelExplorer = modelExplorer;
@@ -117,7 +126,13 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures.Internal
             var visitedObjectsKey = _model ?? _modelExplorer.ModelType;
             viewData.TemplateInfo.AddVisited(visitedObjectsKey);
 
-            var templateRenderer = new TemplateRenderer(_viewEngine, _viewContext, viewData, _templateName, _readOnly);
+            var templateRenderer = new TemplateRenderer(
+                _viewEngine,
+                _bufferScope,
+                _viewContext,
+                viewData,
+                _templateName,
+                _readOnly);
 
             return templateRenderer.Render();
         }

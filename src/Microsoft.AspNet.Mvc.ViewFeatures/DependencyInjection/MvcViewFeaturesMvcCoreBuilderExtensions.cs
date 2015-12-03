@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.Controllers;
 using Microsoft.AspNet.Mvc.Formatters;
@@ -9,8 +10,10 @@ using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.ViewComponents;
 using Microsoft.AspNet.Mvc.ViewEngines;
 using Microsoft.AspNet.Mvc.ViewFeatures;
+using Microsoft.AspNet.Mvc.ViewFeatures.Buffer;
 using Microsoft.AspNet.Mvc.ViewFeatures.Internal;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.MemoryPool;
 using Microsoft.Extensions.OptionsModel;
 
 namespace Microsoft.Extensions.DependencyInjection
@@ -136,6 +139,9 @@ namespace Microsoft.Extensions.DependencyInjection
             // These are stateless so their lifetime isn't really important.
             services.TryAddSingleton<ITempDataDictionaryFactory, TempDataDictionaryFactory>();
             services.TryAddSingleton<SaveTempDataFilter>();
+
+            services.TryAddSingleton(ArrayPool<ViewBufferValue>.Shared);
+            services.TryAddScoped<IViewBufferScope, MemoryPoolViewBufferScope>();
         }
     }
 }

@@ -6,7 +6,6 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.Razor;
-using Microsoft.AspNet.Mvc.Razor.Buffer;
 using Microsoft.AspNet.Mvc.Razor.Compilation;
 using Microsoft.AspNet.Mvc.Razor.Directives;
 using Microsoft.AspNet.Mvc.Razor.Internal;
@@ -159,9 +158,6 @@ namespace Microsoft.Extensions.DependencyInjection
 
             // Consumed by the Cache tag helper to cache results across the lifetime of the application.
             services.TryAddSingleton<IMemoryCache, MemoryCache>();
-
-            services.TryAddSingleton<IArraySegmentPool<RazorValue>, DefaultArraySegmentPool<RazorValue>>();
-            services.TryAddScoped<IRazorBufferScope, MemoryPoolRazorBufferScope>();
 
             if (PlatformServices.Default?.AssemblyLoadContextAccessor != null)
             {

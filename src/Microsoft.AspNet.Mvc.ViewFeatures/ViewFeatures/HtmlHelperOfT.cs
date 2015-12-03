@@ -9,6 +9,7 @@ using Microsoft.AspNet.Html;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.ViewEngines;
+using Microsoft.AspNet.Mvc.ViewFeatures.Buffer;
 
 namespace Microsoft.AspNet.Mvc.ViewFeatures
 {
@@ -21,35 +22,19 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             IHtmlGenerator htmlGenerator,
             ICompositeViewEngine viewEngine,
             IModelMetadataProvider metadataProvider,
+            IViewBufferScope bufferScope,
             HtmlEncoder htmlEncoder,
             UrlEncoder urlEncoder,
             JavaScriptEncoder javaScriptEncoder)
-            : base(htmlGenerator, viewEngine, metadataProvider, htmlEncoder, urlEncoder, javaScriptEncoder)
+            : base(
+                htmlGenerator,
+                viewEngine,
+                metadataProvider,
+                bufferScope,
+                htmlEncoder,
+                urlEncoder,
+                javaScriptEncoder)
         {
-            if (htmlGenerator == null)
-            {
-                throw new ArgumentNullException(nameof(htmlGenerator));
-            }
-            if (viewEngine == null)
-            {
-                throw new ArgumentNullException(nameof(viewEngine));
-            }
-            if (metadataProvider == null)
-            {
-                throw new ArgumentNullException(nameof(metadataProvider));
-            }
-            if (htmlEncoder == null)
-            {
-                throw new ArgumentNullException(nameof(htmlEncoder));
-            }
-            if (urlEncoder == null)
-            {
-                throw new ArgumentNullException(nameof(urlEncoder));
-            }
-            if (javaScriptEncoder == null)
-            {
-                throw new ArgumentNullException(nameof(javaScriptEncoder));
-            }
         }
 
         /// <inheritdoc />

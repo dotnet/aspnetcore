@@ -17,6 +17,7 @@ using Microsoft.AspNet.Mvc.Razor.Internal;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.AspNet.Mvc.ViewFeatures;
+using Microsoft.AspNet.Mvc.ViewFeatures.Buffer;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.AspNet.Razor.TagHelpers;
 using Microsoft.Extensions.DependencyInjection;
@@ -37,12 +38,12 @@ namespace Microsoft.AspNet.Mvc.Razor
         private bool _renderedBody;
         private AttributeInfo _attributeInfo;
         private TagHelperAttributeInfo _tagHelperAttributeInfo;
-        private StringCollectionTextWriter _valueBuffer;
+        private HtmlContentWrapperTextWriter _valueBuffer;
+        private IViewBufferScope _bufferScope;
 
         public RazorPage()
         {
             SectionWriters = new Dictionary<string, RenderAsyncDelegate>(StringComparer.OrdinalIgnoreCase);
-
             _writerScopes = new Stack<TextWriter>();
         }
 
@@ -148,6 +149,20 @@ namespace Microsoft.AspNet.Mvc.Razor
             }
         }
 
+        private IViewBufferScope BufferScope
+        {
+            get
+            {
+                if (_bufferScope == null)
+                {
+                    var services = ViewContext.HttpContext.RequestServices;
+                    _bufferScope = services.GetRequiredService<IViewBufferScope>();
+                }
+
+                return _bufferScope;
+            }
+        }
+
         /// <summary>
         /// Format an error message about using an indexer when the tag helper property is <c>null</c>.
         /// </summary>
@@ -194,7 +209,8 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// </remarks>
         public void StartTagHelperWritingScope()
         {
-            StartTagHelperWritingScope(new StringCollectionTextWriter(Output.Encoding));
+            var buffer = new ViewBuffer(BufferScope, Path);
+            StartTagHelperWritingScope(new HtmlContentWrapperTextWriter(buffer, Output.Encoding));
         }
 
         /// <summary>
@@ -221,7 +237,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             // from HTML helpers) is redirected.
             ViewContext.Writer = writer;
 
-            _writerScopes.Push(ViewContext.Writer);
+            _writerScopes.Push(writer);
         }
 
         /// <summary>
@@ -258,10 +274,10 @@ namespace Microsoft.AspNet.Mvc.Razor
             }
             else
             {
-                var stringCollectionTextWriter = writer as StringCollectionTextWriter;
-                if (stringCollectionTextWriter != null)
+                var htmlContentTextWriter = writer as HtmlContentWrapperTextWriter;
+                if (htmlContentTextWriter != null)
                 {
-                    tagHelperContent.Append(stringCollectionTextWriter.Content);
+                    tagHelperContent.Append(htmlContentTextWriter.ContentBuilder);
                 }
                 else
                 {
@@ -586,7 +602,8 @@ namespace Microsoft.AspNet.Mvc.Razor
             {
                 if (_valueBuffer == null)
                 {
-                    _valueBuffer = new StringCollectionTextWriter(Output.Encoding);
+                    var buffer = new ViewBuffer(BufferScope, Path);
+                    _valueBuffer = new HtmlContentWrapperTextWriter(buffer, Output.Encoding);
                 }
 
                 if (!string.IsNullOrEmpty(prefix))
@@ -604,7 +621,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             {
                 executionContext.AddHtmlAttribute(
                     _tagHelperAttributeInfo.Name,
-                    _valueBuffer?.Content ?? HtmlString.Empty);
+                    (IHtmlContent)_valueBuffer?.ContentBuilder ?? HtmlString.Empty);
                 _valueBuffer = null;
             }
         }

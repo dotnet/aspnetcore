@@ -6,27 +6,27 @@ using System.IO;
 using System.Text.Encodings.Web;
 using Microsoft.AspNet.Html;
 
-namespace Microsoft.AspNet.Mvc.Razor.Buffer
+namespace Microsoft.AspNet.Mvc.ViewFeatures.Buffer
 {
     /// <summary>
     /// Encapsulates a string or <see cref="IHtmlContent"/> value.
     /// </summary>
-    public struct RazorValue
+    public struct ViewBufferValue
     {
         /// <summary>
-        /// Initializes a new instance of <see cref="RazorValue"/> with a <c>string</c> value.
+        /// Initializes a new instance of <see cref="ViewBufferValue"/> with a <c>string</c> value.
         /// </summary>
         /// <param name="value">The value.</param>
-        public RazorValue(string value)
+        public ViewBufferValue(string value)
         {
             Value = value;
         }
 
         /// <summary>
-        /// Initializes a new instance of <see cref="RazorValue"/> with a <see cref="IHtmlContent"/> value.
+        /// Initializes a new instance of <see cref="ViewBufferValue"/> with a <see cref="IHtmlContent"/> value.
         /// </summary>
         /// <param name="value">The <see cref="IHtmlContent"/>.</param>
-        public RazorValue(IHtmlContent content)
+        public ViewBufferValue(IHtmlContent content)
         {
             Value = content;
         }

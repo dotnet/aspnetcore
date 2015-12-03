@@ -16,6 +16,7 @@ using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.ViewComponents;
 using Microsoft.AspNet.Mvc.ViewFeatures;
+using Microsoft.AspNet.Mvc.ViewFeatures.Buffer;
 using Microsoft.AspNet.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -482,6 +483,7 @@ namespace Microsoft.AspNet.Mvc
             services.AddSingleton<ITempDataDictionaryFactory, TempDataDictionaryFactory>();
             services.AddSingleton<ITempDataProvider, SessionStateTempDataProvider>();
             services.AddSingleton<HtmlEncoder, HtmlTestEncoder>();
+            services.AddSingleton<IViewBufferScope, TestViewBufferScope>();
 
             return services;
         }

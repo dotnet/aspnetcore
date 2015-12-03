@@ -11,6 +11,7 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.ViewEngines;
+using Microsoft.AspNet.Mvc.ViewFeatures.Buffer;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNet.Mvc.ViewFeatures.Internal
@@ -67,14 +68,16 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures.Internal
                 { IEnumerableOfIFormFileName, DefaultEditorTemplates.FileCollectionInputTemplate },
             };
 
-        private ViewContext _viewContext;
-        private ViewDataDictionary _viewData;
-        private IViewEngine _viewEngine;
-        private string _templateName;
-        private bool _readOnly;
+        private readonly IViewEngine _viewEngine;
+        private readonly IViewBufferScope _bufferScope;
+        private readonly ViewContext _viewContext;
+        private readonly ViewDataDictionary _viewData;
+        private readonly string _templateName;
+        private readonly bool _readOnly;
 
         public TemplateRenderer(
             IViewEngine viewEngine,
+            IViewBufferScope bufferScope,
             ViewContext viewContext,
             ViewDataDictionary viewData,
             string templateName,
@@ -83,6 +86,11 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures.Internal
             if (viewEngine == null)
             {
                 throw new ArgumentNullException(nameof(viewEngine));
+            }
+
+            if (bufferScope == null)
+            {
+                throw new ArgumentNullException(nameof(bufferScope));
             }
 
             if (viewContext == null)
@@ -96,6 +104,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures.Internal
             }
 
             _viewEngine = viewEngine;
+            _bufferScope = bufferScope;
             _viewContext = viewContext;
             _viewData = viewData;
             _templateName = templateName;
@@ -118,7 +127,8 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures.Internal
 
                 if (viewEngineResult.Success)
                 {
-                    using (var writer = new StringCollectionTextWriter(_viewContext.Writer.Encoding))
+                    var viewBuffer = new ViewBuffer(_bufferScope, viewName);
+                    using (var writer = new HtmlContentWrapperTextWriter(viewBuffer, _viewContext.Writer.Encoding))
                     {
                         // Forcing synchronous behavior so users don't have to await templates.
                         var view = viewEngineResult.View;
@@ -127,7 +137,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures.Internal
                             var viewContext = new ViewContext(_viewContext, viewEngineResult.View, _viewData, writer);
                             var renderTask = viewEngineResult.View.RenderAsync(viewContext);
                             renderTask.GetAwaiter().GetResult();
-                            return writer.Content;
+                            return writer.ContentBuilder;
                         }
                     }
                 }

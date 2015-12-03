@@ -9,23 +9,23 @@ using System.Text.Encodings.Web;
 using Microsoft.AspNet.Html;
 using Microsoft.AspNet.Mvc.Rendering;
 
-namespace Microsoft.AspNet.Mvc.Razor.Buffer
+namespace Microsoft.AspNet.Mvc.ViewFeatures.Buffer
 {
     /// <summary>
-    /// An <see cref="IHtmlContentBuilder"/> that is backed by a buffer provided by <see cref="IRazorBufferScope"/>.
+    /// An <see cref="IHtmlContentBuilder"/> that is backed by a buffer provided by <see cref="IViewBufferScope"/>.
     /// </summary>
     [DebuggerDisplay("{DebuggerToString()}")]
-    public class RazorBuffer : IHtmlContentBuilder
+    public class ViewBuffer : IHtmlContentBuilder
     {
-        private readonly IRazorBufferScope _bufferScope;
+        private readonly IViewBufferScope _bufferScope;
         private readonly string _name;
 
         /// <summary>
-        /// Initializes a new instance of <see cref="RazorBuffer"/>.
+        /// Initializes a new instance of <see cref="ViewBuffer"/>.
         /// </summary>
-        /// <param name="bufferScope">The <see cref="IRazorBufferScope"/>.</param>
+        /// <param name="bufferScope">The <see cref="IViewBufferScope"/>.</param>
         /// <param name="name">A name to identify this instance.</param>
-        public RazorBuffer(IRazorBufferScope bufferScope, string name)
+        public ViewBuffer(IViewBufferScope bufferScope, string name)
         {
             if (bufferScope == null)
             {
@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Buffer
         /// <summary>
         /// Gets the backing buffer.
         /// </summary>
-        public IList<RazorBufferSegment> BufferSegments { get; private set; }
+        public IList<ViewBufferValue[]> BufferSegments { get; private set; }
 
         /// <summary>
         /// Gets the count of entries in the last element of <see cref="BufferSegments"/>.
@@ -54,7 +54,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Buffer
                 return this;
             }
 
-            AppendValue(new RazorValue(unencoded));
+            AppendValue(new ViewBufferValue(unencoded));
             return this;
         }
 
@@ -66,7 +66,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Buffer
                 return this;
             }
 
-            AppendValue(new RazorValue(content));
+            AppendValue(new ViewBufferValue(content));
             return this;
         }
 
@@ -79,23 +79,23 @@ namespace Microsoft.AspNet.Mvc.Razor.Buffer
             }
 
             var value = new HtmlString(encoded);
-            AppendValue(new RazorValue(value));
+            AppendValue(new ViewBufferValue(value));
             return this;
         }
 
-        private void AppendValue(RazorValue value)
+        private void AppendValue(ViewBufferValue value)
         {
-            RazorBufferSegment segment;
+            ViewBufferValue[] segment;
             if (BufferSegments == null)
             {
-                BufferSegments = new List<RazorBufferSegment>(1);
+                BufferSegments = new List<ViewBufferValue[]>(1);
                 segment = _bufferScope.GetSegment();
                 BufferSegments.Add(segment);
             }
             else
             {
                 segment = BufferSegments[BufferSegments.Count - 1];
-                if (CurrentCount == segment.Data.Count)
+                if (CurrentCount == segment.Length)
                 {
                     segment = _bufferScope.GetSegment();
                     BufferSegments.Add(segment);
@@ -103,7 +103,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Buffer
                 }
             }
 
-            segment.Data.Array[segment.Data.Offset + CurrentCount] = value;
+            segment[CurrentCount] = value;
             CurrentCount++;
         }
 
@@ -137,11 +137,11 @@ namespace Microsoft.AspNet.Mvc.Razor.Buffer
             for (var i = 0; i < BufferSegments.Count; i++)
             {
                 var segment = BufferSegments[i];
-                var count = i == BufferSegments.Count - 1 ? CurrentCount : segment.Data.Count;
+                var count = i == BufferSegments.Count - 1 ? CurrentCount : segment.Length;
 
                 for (var j = 0; j < count; j++)
                 {
-                    var value = segment.Data.Array[segment.Data.Offset + j];
+                    var value = segment[j];
                     value.WriteTo(writer, encoder);
                 }
             }

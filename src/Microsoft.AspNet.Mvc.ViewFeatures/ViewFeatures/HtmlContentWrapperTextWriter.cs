@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Html;
 using Microsoft.AspNet.Mvc.Internal;
 
-namespace Microsoft.AspNet.Mvc.Razor
+namespace Microsoft.AspNet.Mvc.ViewFeatures
 {
     /// <summary>
     /// <see cref="HtmlTextWriter"/> implementation which writes to an <see cref="IHtmlContentBuilder"/> instance.
@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// Initializes a new instance of the <see cref="HtmlContentWrapperTextWriter"/> class.
         /// </summary>
         /// <param name="contentBuilder">The <see cref="IHtmlContentBuilder"/> to write to.</param>
-        /// <param name="encoding">The <see cref="Encoding"/> in which output is written.</param>
+        /// <param name="encoding">The <see cref="System.Text.Encoding"/> in which output is written.</param>
         public HtmlContentWrapperTextWriter(IHtmlContentBuilder contentBuilder, Encoding encoding)
         {
             if (contentBuilder == null)

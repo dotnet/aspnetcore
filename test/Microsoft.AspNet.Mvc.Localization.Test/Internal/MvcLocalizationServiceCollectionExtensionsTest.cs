@@ -111,6 +111,7 @@ namespace Microsoft.AspNet.Mvc.Localization.Internal
         {
             // Arrange
             var collection = new ServiceCollection();
+            var htmlEncoder = new HtmlTestEncoder();
 
             collection.Configure<RazorViewEngineOptions>(options =>
             {
@@ -123,9 +124,10 @@ namespace Microsoft.AspNet.Mvc.Localization.Internal
                 LanguageViewLocationExpanderFormat.Suffix,
                 setupAction: null);
 
+
             collection.Add(ServiceDescriptor.Transient(typeof(IHtmlLocalizer<>), typeof(TestHtmlLocalizer<>)));
             collection.Add(ServiceDescriptor.Transient(typeof(IHtmlLocalizer), typeof(TestViewLocalizer)));
-            collection.Add(ServiceDescriptor.Singleton(typeof(HtmlEncoder), typeof(HtmlTestEncoder)));
+            collection.Add(ServiceDescriptor.Singleton(typeof(HtmlEncoder), htmlEncoder));
 
             // Assert
             Assert.Collection(collection,
@@ -172,7 +174,7 @@ namespace Microsoft.AspNet.Mvc.Localization.Internal
                 service =>
                 {
                     Assert.Equal(typeof(HtmlEncoder), service.ServiceType);
-                    Assert.Equal(typeof(HtmlTestEncoder), service.ImplementationInstance);
+                    Assert.Same(htmlEncoder, service.ImplementationInstance);
                     Assert.Equal(ServiceLifetime.Singleton, service.Lifetime);
                 });
         }
