@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.Routing.Logging
         static TreeRouterLoggerExtensions()
         {
             _matchedRouteName = LoggerMessage.Define<string, string>(
-                LogLevel.Verbose,
+                LogLevel.Debug,
                 1,
                 "Request successfully matched the route with name '{RouteName}' and template '{RouteTemplate}'.");
         }

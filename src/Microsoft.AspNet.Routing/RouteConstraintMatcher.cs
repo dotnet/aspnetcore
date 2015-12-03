@@ -52,7 +52,7 @@ namespace Microsoft.AspNet.Routing
                         object routeValue;
                         routeValues.TryGetValue(kvp.Key, out routeValue);
 
-                        logger.LogVerbose(
+                        logger.LogDebug(
                             "Route value '{RouteValue}' with key '{RouteKey}' did not match " +
                             "the constraint '{RouteConstraint}'.",
                             routeValue,

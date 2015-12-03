@@ -37,7 +37,7 @@ namespace Microsoft.AspNet.Builder
 
             if (!context.IsHandled)
             {
-                _logger.LogVerbose("Request did not match any routes.");
+                _logger.LogDebug("Request did not match any routes.");
 
                 await _next.Invoke(httpContext);
             }
