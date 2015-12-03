@@ -151,9 +151,9 @@ namespace Microsoft.Net.Http.Server
 
             // TODO: Verbose log parameters
 
-            if (_requestContext.Logger.IsEnabled(LogLevel.Verbose))
+            if (_requestContext.Logger.IsEnabled(LogLevel.Debug))
             {
-                RequestContext.Logger.LogVerbose(new ReceiveRequestLogContext(this));
+                RequestContext.Logger.LogDebug(new ReceiveRequestLogContext(this));
             }
         }
 

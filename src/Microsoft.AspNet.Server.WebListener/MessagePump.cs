@@ -147,7 +147,7 @@ namespace Microsoft.AspNet.Server.WebListener
                     Contract.Assert(_stopping);
                     if (_stopping)
                     {
-                        LogHelper.LogVerbose(_logger, "ListenForNextRequestAsync-Stopping", exception);
+                        LogHelper.LogDebug(_logger, "ListenForNextRequestAsync-Stopping", exception);
                     }
                     else
                     {

@@ -17,7 +17,7 @@ namespace SelfHostServer
             var listener = app.ServerFeatures.Get<WebListener>();
             listener.AuthenticationManager.AuthenticationSchemes = AuthenticationSchemes.AllowAnonymous;
 
-            loggerfactory.AddConsole(LogLevel.Verbose);
+            loggerfactory.AddConsole(LogLevel.Debug);
 
             app.Run(async context =>
             {

@@ -23,7 +23,6 @@
 
 using System;
 using System.Diagnostics;
-using System.Globalization;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNet.Server.WebListener
@@ -52,7 +51,7 @@ namespace Microsoft.AspNet.Server.WebListener
             }
         }
 
-        internal static void LogVerbose(ILogger logger, string data)
+        internal static void LogDebug(ILogger logger, string data)
         {
             if (logger == null)
             {
@@ -60,13 +59,13 @@ namespace Microsoft.AspNet.Server.WebListener
             }
             else
             {
-                logger.LogVerbose(data);
+                logger.LogDebug(data);
             }
         }
 
-        internal static void LogVerbose(ILogger logger, string location, Exception exception)
+        internal static void LogDebug(ILogger logger, string location, Exception exception)
         {
-            LogVerbose(logger, location + "; " + exception.ToString());
+            LogDebug(logger, location + "; " + exception.ToString());
         }
 
         internal static void LogException(ILogger logger, string location, Exception exception)

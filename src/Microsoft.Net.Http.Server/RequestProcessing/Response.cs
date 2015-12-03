@@ -356,9 +356,9 @@ namespace Microsoft.Net.Http.Server
             _responseState = ResponseState.StartedSending;
             var reasonPhrase = GetReasonPhrase(StatusCode);
 
-            if (RequestContext.Logger.IsEnabled(LogLevel.Verbose))
+            if (RequestContext.Logger.IsEnabled(LogLevel.Debug))
             {
-                RequestContext.Logger.LogVerbose(new SendResponseLogContext(this));
+                RequestContext.Logger.LogDebug(new SendResponseLogContext(this));
             }
 
             /*
