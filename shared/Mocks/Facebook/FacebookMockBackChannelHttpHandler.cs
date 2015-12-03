@@ -1,4 +1,6 @@
 ﻿#if TESTING
+using System;
+using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,23 +18,29 @@ namespace MusicStore.Mocks.Facebook
         protected async override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             var response = new HttpResponseMessage();
-            var queryParameters = new QueryCollection(QueryHelpers.ParseQuery(request.RequestUri.Query));
 
-            if (request.RequestUri.AbsoluteUri.StartsWith("https://graph.facebook.com/v2.2/oauth/access_token"))
+            if (request.RequestUri.AbsoluteUri.StartsWith("https://graph.facebook.com/v2.5/oauth/access_token"))
             {
-                if (queryParameters["grant_type"] == "authorization_code")
+                var formData = new FormCollection(await FormReader.ReadFormAsync(await request.Content.ReadAsStreamAsync()));
+                if (formData["grant_type"] == "authorization_code")
                 {
-                    if (queryParameters["code"] == "ValidCode")
+                    if (formData["code"] == "ValidCode")
                     {
-                        Helpers.ThrowIfConditionFailed(() => ((string)queryParameters["redirect_uri"]).EndsWith("signin-facebook"), "Redirect URI is not ending with /signin-facebook");
-                        Helpers.ThrowIfConditionFailed(() => queryParameters["client_id"] == "[AppId]", "Invalid client Id received");
-                        Helpers.ThrowIfConditionFailed(() => queryParameters["client_secret"] == "[AppSecret]", "Invalid client secret received");
-                        response.Content = new StringContent("access_token=ValidAccessToken&expires=100");
+                        Helpers.ThrowIfConditionFailed(() => ((string)formData["redirect_uri"]).EndsWith("signin-facebook"), "Redirect URI is not ending with /signin-facebook");
+                        Helpers.ThrowIfConditionFailed(() => formData["client_id"] == "[AppId]", "Invalid client Id received");
+                        Helpers.ThrowIfConditionFailed(() => formData["client_secret"] == "[AppSecret]", "Invalid client secret received");
+                        response.Content = new StringContent("{ \"access_token\": \"ValidAccessToken\", \"expires_in\": \"100\" }");
                     }
+                    else
+	                {
+                        response.StatusCode = (HttpStatusCode)400;
+	                }
+                    return response;
                 }
             }
-            else if (request.RequestUri.AbsoluteUri.StartsWith("https://graph.facebook.com/v2.2/me"))
+            else if (request.RequestUri.AbsoluteUri.StartsWith("https://graph.facebook.com/v2.5/me"))
             {
+                var queryParameters = new QueryCollection(QueryHelpers.ParseQuery(request.RequestUri.Query));
                 Helpers.ThrowIfConditionFailed(() => queryParameters["appsecret_proof"].Count > 0, "appsecret_proof is empty");
                 if (queryParameters["access_token"] == "ValidAccessToken")
                 {
@@ -42,9 +50,10 @@ namespace MusicStore.Mocks.Facebook
                 {
                     response.Content = new StringContent("{\"error\":{\"message\":\"Invalid OAuth access token.\",\"type\":\"OAuthException\",\"code\":190}}");
                 }
+                return response;
             }
 
-            return await Task.FromResult(response);
+            throw new NotImplementedException(request.RequestUri.AbsoluteUri);
         }
     }
 } 
