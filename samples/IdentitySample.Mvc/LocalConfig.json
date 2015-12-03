@@ -3,7 +3,7 @@
     "DefaultAdminPassword": "YouShouldChangeThisPassword1!",
     "Data": {
         "IdentityConnection": {
-            "Connectionstring": "Server=(localdb)\\mssqllocaldb;Database=IdentityMvc-2-20-15-3;Trusted_Connection=True;MultipleActiveResultSets=true"
+            "Connectionstring": "Server=(localdb)\\mssqllocaldb;Database=Interop11-23;Trusted_Connection=True;MultipleActiveResultSets=true"
         }
     },
     "Identity": {

@@ -168,6 +168,18 @@ namespace Microsoft.AspNet.Identity.Test
 
         [ConditionalFact]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        public async Task CreateUpdatesSecurityStamp()
+        {
+            var manager = CreateManager();
+            var username = "Create" + Guid.NewGuid().ToString();
+            var user = CreateTestUser(username, useNamePrefixAsUserName: true);
+            var stamp = await manager.GetSecurityStampAsync(user);
+            IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
+            Assert.NotNull(await manager.GetSecurityStampAsync(user));
+        }
+
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task CheckSetEmailValidatesUser()
         {
             var manager = CreateManager();

@@ -7,6 +7,7 @@
     "dependencies": {
         "Microsoft.AspNet.Mvc": "6.0.0-*",
         "Microsoft.AspNet.Server.WebListener": "1.0.0-*",
+        "Microsoft.AspNet.DataProtection.Extensions": "1.0.0-*",
         "Microsoft.AspNet.Diagnostics": "1.0.0-*",
         "Microsoft.AspNet.Identity": "3.0.0-*",
         "Microsoft.AspNet.Identity.EntityFramework": "3.0.0-*",
@@ -16,6 +17,7 @@
         "Microsoft.AspNet.Authentication.Twitter": "1.0.0-*",
         "Microsoft.AspNet.Authorization": "1.0.0-*",
         "Microsoft.AspNet.StaticFiles": "1.0.0-*",
+        "EntityFramework.Commands": "7.0.0-*",
         "EntityFramework.MicrosoftSqlServer": "7.0.0-*",
         "Microsoft.Extensions.Configuration.EnvironmentVariables": "1.0.0-*",
         "Microsoft.Extensions.Configuration.Json": "1.0.0-*",
@@ -24,7 +26,8 @@
     },
     "commands": {
         "web": "Microsoft.AspNet.Hosting --server Microsoft.AspNet.Server.WebListener --server.urls http://localhost:41532",
-        "run": "run server.urls=http://localhost:41532"
+        "run": "run server.urls=http://localhost:41532",
+        "ef": "EntityFramework.Commands"
     },
     "webroot": ".",
     "frameworks": {

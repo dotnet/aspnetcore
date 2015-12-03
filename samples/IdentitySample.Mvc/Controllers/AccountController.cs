@@ -42,6 +42,7 @@ namespace IdentitySample.Controllers
         public async Task<IActionResult> Login(LoginViewModel model, string returnUrl = null)
         {
             ViewBag.ReturnUrl = returnUrl;
+            ViewBag.LoginProviders = SignInManager.GetExternalAuthenticationSchemes().ToList();
             if (ModelState.IsValid)
             {
                 var result = await SignInManager.PasswordSignInAsync(model.UserName, model.Password, model.RememberMe, lockoutOnFailure: false);
