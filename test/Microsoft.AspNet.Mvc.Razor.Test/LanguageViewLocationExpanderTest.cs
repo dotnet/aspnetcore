@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using Microsoft.AspNet.Testing.xunit;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.Razor
@@ -173,7 +174,11 @@ namespace Microsoft.AspNet.Mvc.Razor
             Assert.Equal(viewLocations, expandedViewLocations);
         }
 
-        [Theory]
+        [ConditionalTheory]
+        [OSSkipCondition(OperatingSystems.Linux,
+            SkipReason = "Invalid culture detection is OS-specific")]
+        [OSSkipCondition(OperatingSystems.MacOSX,
+            SkipReason = "Invalid culture detection is OS-specific")]
         [MemberData(nameof(ViewLocationExpanderTestData))]
         public void ExpandViewLocations_IncorrectLocaleContextValue(IEnumerable<string> viewLocations)
         {

@@ -34,8 +34,8 @@ namespace Microsoft.AspNet.Mvc.Razor
             {
                 var data = new TheoryData<string> { "//" };
 
-                // The following scenarios are not relevant in Mono.
-                if (!TestPlatformHelper.IsMono)
+                // The following scenarios are only relevant on Windows.
+                if (TestPlatformHelper.IsWindows)
                 {
                     data.Add("C:/");
                     data.Add(@"\\");
