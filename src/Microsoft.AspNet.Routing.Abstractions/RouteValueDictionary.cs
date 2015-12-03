@@ -14,11 +14,6 @@ namespace Microsoft.AspNet.Routing
     public class RouteValueDictionary : IDictionary<string, object>, IReadOnlyDictionary<string, object>
     {
         /// <summary>
-        /// An empty, cached instance of <see cref="RouteValueDictionary"/>.
-        /// </summary>
-        internal static readonly IReadOnlyDictionary<string, object> Empty = new RouteValueDictionary();
-
-        /// <summary>
         /// Creates an empty <see cref="RouteValueDictionary"/>.
         /// </summary>
         public RouteValueDictionary()

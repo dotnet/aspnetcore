@@ -66,7 +66,7 @@ namespace Microsoft.AspNet.Routing.Template
             _routeTemplate = routeTemplate ?? string.Empty;
             Name = routeName;
 
-            _dataTokens = dataTokens == null ? RouteValueDictionary.Empty : new RouteValueDictionary(dataTokens);
+            _dataTokens = dataTokens == null ? new RouteValueDictionary() : new RouteValueDictionary(dataTokens);
 
             // Data we parse from the template will be used to fill in the rest of the constraints or
             // defaults. The parser will throw for invalid routes.

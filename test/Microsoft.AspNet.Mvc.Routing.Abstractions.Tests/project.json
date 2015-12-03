@@ -1,0 +1,25 @@
+﻿{
+  "compilationOptions": {
+    "warningsAsErrors": true
+  },
+  "dependencies": {
+    "Microsoft.AspNet.Routing.Abstractions": "1.0.0-*",
+    "Microsoft.AspNet.Testing": "1.0.0-*",
+    "xunit.runner.aspnet": "2.0.0-aspnet-*"
+  },
+  "frameworks": {
+    "dnxcore50": {
+      "dependencies": {
+        "moq.netcore": "4.4.0-beta8"
+      }
+    },
+    "dnx451": {
+      "dependencies": {
+        "Moq": "4.2.1312.1622"
+      }
+    }
+  },
+  "commands": {
+    "test": "xunit.runner.aspnet"
+  }
+}

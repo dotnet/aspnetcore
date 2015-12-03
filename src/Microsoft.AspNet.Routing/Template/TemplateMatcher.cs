@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.Routing.Template
             }
 
             Template = template;
-            Defaults = defaults ?? RouteValueDictionary.Empty;
+            Defaults = defaults ?? new RouteValueDictionary();
         }
 
         public IReadOnlyDictionary<string, object> Defaults { get; private set; }
