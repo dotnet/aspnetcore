@@ -194,6 +194,7 @@
             "Microsoft.AspNet.Razor.Runtime": { },
             "Microsoft.AspNet.Razor.Runtime.Precompilation": { },
             "Microsoft.AspNet.Routing": { },
+            "Microsoft.AspNet.Routing.Abstractions": { },
             "Microsoft.AspNet.Server.Kestrel": {
                 "SIGN_AUTHENTICODE": {
                     "runtimes\\win10-arm\\native\\libuv.dll": "We don't sign 3rd party DLLs",
