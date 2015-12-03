@@ -9,7 +9,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Filter
 {
     public class NoOpConnectionFilter : IConnectionFilter
     {
-        public Task OnConnection(ConnectionFilterContext context)
+        public Task OnConnectionAsync(ConnectionFilterContext context)
         {
             return TaskUtilities.CompletedTask;
         }

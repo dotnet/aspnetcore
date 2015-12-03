@@ -27,9 +27,9 @@ namespace Microsoft.AspNet.Server.Kestrel.Filter
             _previous = previous;
         }
 
-        public async Task OnConnection(ConnectionFilterContext context)
+        public async Task OnConnectionAsync(ConnectionFilterContext context)
         {
-            await _previous.OnConnection(context);
+            await _previous.OnConnectionAsync(context);
 
             context.Connection = new LoggingStream(context.Connection, _logger);
         }

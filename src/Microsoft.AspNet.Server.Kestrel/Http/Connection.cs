@@ -80,7 +80,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
                 try
                 {
-                    ConnectionFilter.OnConnection(_filterContext).ContinueWith((task, state) =>
+                    ConnectionFilter.OnConnectionAsync(_filterContext).ContinueWith((task, state) =>
                     {
                         var connection = (Connection)state;
 
