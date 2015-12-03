@@ -28,7 +28,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Filter
             _filteredStream = filteredStream;
             _socketInputStream = new SocketInputStream(SocketInput);
 
-            _filteredStream.CopyToAsync(_socketInputStream).ContinueWith((task, state) =>
+            // Don't use 81920 byte buffer
+            _filteredStream.CopyToAsync(_socketInputStream, 4096).ContinueWith((task, state) =>
             {
                 ((FilteredStreamAdapter)state).OnStreamClose(task);
             }, this);
