@@ -68,24 +68,5 @@ namespace BasicWebSite.Controllers
             var value5 = (Guid)TempData["key5"];
             return $"{value1} {value2.ToString()} {value3.Count.ToString()} {value4.ToString()} {value5.ToString()}";
         }
-
-        public string SetTempDataInvalidType()
-        {
-            var exception = "";
-            try
-            {
-                TempData["key"] = new NonSerializableType();
-            }
-            catch (Exception e)
-            {
-                exception = e.Message;
-            }
-
-            return exception;
-        }
-
-        public class NonSerializableType
-        {
-        }
     }
 }

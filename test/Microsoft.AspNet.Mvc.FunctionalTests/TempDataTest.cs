@@ -173,25 +173,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal($"Foo 10 3 10/10/2010 00:00:00 {testGuid.ToString()}", body);
         }
 
-        [Fact]
-        public async Task TempData_InvalidType_Throws()
-        {
-            // Arrange
-            var nameValueCollection = new List<KeyValuePair<string, string>>
-            {
-                new KeyValuePair<string, string>("value", "Foo"),
-            };
-            var content = new FormUrlEncodedContent(nameValueCollection);
-
-            // Act & Assert
-            var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
-            {
-                await Client.PostAsync("/TempData/SetTempDataInvalidType", content);
-            });
-            Assert.Equal("The '" + typeof(SessionStateTempDataProvider).FullName + "' cannot serialize an object of type '" +
-                typeof(BasicWebSite.Controllers.TempDataController.NonSerializableType).FullName + "' to session state.", exception.Message);
-        }
-
         private HttpRequestMessage GetRequest(string path, HttpResponseMessage response)
         {
             var request = new HttpRequestMessage(HttpMethod.Get, path);
