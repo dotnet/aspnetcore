@@ -866,18 +866,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             if (tagBuilder != null)
             {
                 tagBuilder.TagRenderMode = TagRenderMode.StartTag;
-
-                // As a perf optimization, we can buffer this output rather than writing it
-                // out character by character.
-                var htmlWriter = ViewContext.Writer as HtmlTextWriter;
-                if (htmlWriter == null)
-                {
-                    tagBuilder.WriteTo(ViewContext.Writer, _htmlEncoder);
-                }
-                else
-                {
-                    htmlWriter.Write(tagBuilder);
-                }
+                tagBuilder.WriteTo(ViewContext.Writer, _htmlEncoder);
             }
 
             return CreateForm();
@@ -920,18 +909,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             if (tagBuilder != null)
             {
                 tagBuilder.TagRenderMode = TagRenderMode.StartTag;
-
-                // As a perf optimization, we can buffer this output rather than writing it
-                // out character by character.
-                var htmlWriter = ViewContext.Writer as HtmlTextWriter;
-                if (htmlWriter == null)
-                {
-                    tagBuilder.WriteTo(ViewContext.Writer, _htmlEncoder);
-                }
-                else
-                {
-                    htmlWriter.Write(tagBuilder);
-                }
+                tagBuilder.WriteTo(ViewContext.Writer, _htmlEncoder);
             }
 
             return CreateForm();

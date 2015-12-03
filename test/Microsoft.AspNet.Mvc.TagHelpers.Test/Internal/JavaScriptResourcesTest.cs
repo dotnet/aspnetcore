@@ -16,6 +16,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
         {
             // Arrange
             var resource = "window.alert('An alert');";
+            var expected = resource.Substring(0, resource.Length - 2);
             var stream = new MemoryStream(Encoding.UTF8.GetBytes(resource));
             var getManifestResourceStream = new Func<string, Stream>(name => stream);
             var cache = new ConcurrentDictionary<string, string>();
@@ -24,7 +25,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
             var result = JavaScriptResources.GetEmbeddedJavaScript("test.js", getManifestResourceStream, cache);
 
             // Assert
-            Assert.Equal(resource, result);
+            Assert.Equal(expected, result);
         }
 
         [Fact]
@@ -32,6 +33,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
         {
             // Arrange
             var resource = "window.alert('An alert');";
+            var expected = resource.Substring(0, resource.Length - 2);
             var stream = new MemoryStream(Encoding.UTF8.GetBytes(resource));
             var getManifestResourceStream = new Func<string, Stream>(name => stream);
             var cache = new ConcurrentDictionary<string, string>();
@@ -43,7 +45,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
             Assert.Collection(cache, kvp =>
             {
                 Assert.Equal("test.js", kvp.Key);
-                Assert.Equal(resource, kvp.Value);
+                Assert.Equal(expected, kvp.Value);
             });
         }
 
@@ -70,12 +72,13 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
         }
 
         [Theory]
-        [InlineData("window.alert(\"[[[0]]]\")", "window.alert(\"{0}\")")]
-        [InlineData("var test = { a: 1 };", "var test = {{ a: 1 }};")]
-        [InlineData("var test = { a: 1, b: \"[[[0]]]\" };", "var test = {{ a: 1, b: \"{0}\" }};")]
-        public void GetEmbeddedJavaScript_PreparesJavaScriptCorrectly(string resource, string expectedResult)
+        [InlineData("window.alert(\"[[[0]]]\")")]
+        [InlineData("var test = { a: 1 };")]
+        [InlineData("var test = { a: 1, b: \"[[[0]]]\" };")]
+        public void GetEmbeddedJavaScript_PreparesJavaScriptCorrectly(string resource)
         {
             // Arrange
+            var expected = resource.Substring(0, resource.Length - 2);
             var stream = new MemoryStream(Encoding.UTF8.GetBytes(resource));
             var getManifestResourceStream = new Func<string, Stream>(name => stream);
             var cache = new ConcurrentDictionary<string, string>();
@@ -84,7 +87,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
             var result = JavaScriptResources.GetEmbeddedJavaScript("test.js", getManifestResourceStream, cache);
 
             // Assert
-            Assert.Equal(expectedResult, result);
+            Assert.Equal(expected, result);
         }
     }
 }

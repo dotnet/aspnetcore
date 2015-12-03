@@ -961,13 +961,14 @@ namespace Microsoft.AspNet.Mvc.Razor
             // Assert
             var htmlAttribute = Assert.Single(executionContext.HTMLAttributes);
             Assert.Equal("someattr", htmlAttribute.Name, StringComparer.Ordinal);
-            Assert.IsType<HtmlString>(htmlAttribute.Value);
-            Assert.Equal(expectedValue, HtmlContentUtilities.HtmlContentToString((IHtmlContent)htmlAttribute.Value));
+            var htmlContent = Assert.IsAssignableFrom<IHtmlContent>(htmlAttribute.Value);
+            Assert.Equal(expectedValue, HtmlContentUtilities.HtmlContentToString(htmlContent), StringComparer.Ordinal);
             Assert.False(htmlAttribute.Minimized);
+
             var allAttribute = Assert.Single(executionContext.AllAttributes);
             Assert.Equal("someattr", allAttribute.Name, StringComparer.Ordinal);
-            Assert.IsType<HtmlString>(allAttribute.Value);
-            Assert.Equal(expectedValue, allAttribute.Value.ToString(), StringComparer.Ordinal);
+            htmlContent = Assert.IsAssignableFrom<IHtmlContent>(allAttribute.Value);
+            Assert.Equal(expectedValue, HtmlContentUtilities.HtmlContentToString(htmlContent), StringComparer.Ordinal);
             Assert.False(allAttribute.Minimized);
         }
 

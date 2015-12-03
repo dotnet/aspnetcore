@@ -38,7 +38,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
                 // Load the JavaScript from embedded resource
                 using (var resourceStream = getManifestResourceStream(key))
                 {
-                    Debug.Assert(resourceStream != null, "Embedded resource missing. Ensure 'prebuild' script has run.");
+                    Debug.Assert(
+                        resourceStream != null,
+                        "Embedded resource missing. Ensure 'prebuild' script has run.");
 
                     using (var streamReader = new StreamReader(resourceStream))
                     {
@@ -49,14 +51,11 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
                 }
             });
         }
-        
+
         private static string PrepareFormatString(string input)
         {
-            // Replace unescaped/escaped chars with their equivalent
-            return input.Replace("{", "{{")
-                        .Replace("}", "}}")
-                        .Replace("[[[", "{")
-                        .Replace("]]]", "}");
+            // Remove final ");". Those characters are in the file only to allow minification.
+            return input.Substring(0, input.Length - 2);
         }
     }
 }

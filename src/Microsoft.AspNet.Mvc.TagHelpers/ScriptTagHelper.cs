@@ -254,7 +254,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             if (mode == Mode.Fallback)
             {
                 string resolvedUrl;
-                if (TryResolveUrl(FallbackSrc, encodeWebRoot: false, resolvedUrl: out resolvedUrl))
+                if (TryResolveUrl(FallbackSrc, resolvedUrl: out resolvedUrl))
                 {
                     FallbackSrc = resolvedUrl;
                 }
@@ -418,10 +418,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             }
             else
             {
-                // HTML-encoded the given value if necessary.
+                // HTML-encode the given value if necessary.
                 content
                     .AppendHtml("=\"")
-                    .Append(HtmlEncoder, ViewContext.Writer.Encoding, value)
+                    .Append(HtmlEncoder, value)
                     .AppendHtml("\"");
             }
         }

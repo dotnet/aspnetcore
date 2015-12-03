@@ -602,22 +602,10 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             if (!_tagHelperAttributeInfo.Suppressed)
             {
-                HtmlString htmlString;
-
-                if (_valueBuffer != null)
-                {
-                    using (var stringWriter = new StringWriter())
-                    {
-                        _valueBuffer.Content.WriteTo(stringWriter, HtmlEncoder);
-                        htmlString = new HtmlString(stringWriter.ToString());
-                    }
-                }
-                else
-                {
-                    htmlString = HtmlString.Empty;
-                }
-
-                executionContext.AddHtmlAttribute(_tagHelperAttributeInfo.Name, htmlString);
+                executionContext.AddHtmlAttribute(
+                    _tagHelperAttributeInfo.Name,
+                    _valueBuffer?.Content ?? HtmlString.Empty);
+                _valueBuffer = null;
             }
         }
 
@@ -843,7 +831,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// content to the <see cref="HttpResponse.Body"/>.
         /// </summary>
         /// <returns>A <see cref="Task{HtmlString}"/> that represents the asynchronous flush operation and on
-        /// completion returns a <see cref="HtmlString.Empty"/>.</returns>
+        /// completion returns <see cref="HtmlString.Empty"/>.</returns>
         /// <remarks>The value returned is a token value that allows FlushAsync to work directly in an HTML
         /// section. However the value does not represent the rendered content.
         /// This method also writes out headers, so any modifications to headers must be done before
@@ -936,7 +924,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <summary>
         /// Sets antiforgery cookie and X-Frame-Options header on the response.
         /// </summary>
-        /// <returns>A <see cref="HtmlString"/> that returns a <see cref="HtmlString.Empty"/>.</returns>
+        /// <returns><see cref="HtmlString.Empty"/>.</returns>
         /// <remarks> Call this method to send antiforgery cookie token and X-Frame-Options header to client
         /// before <see cref="FlushAsync"/> flushes the headers. </remarks>
         public virtual HtmlString SetAntiforgeryCookieAndHeader()

@@ -498,7 +498,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <param name="model">A model to pass into the partial view.</param>
         /// <param name="viewData">A <see cref="ViewDataDictionary"/> to pass into the partial view.</param>
         /// <returns>
-        /// A <see cref="Task"/> that on completion returns a new <see cref="HtmlString"/> containing
+        /// A <see cref="Task"/> that on completion returns a new <see cref="IHtmlContent"/> instance containing
         /// the created HTML.
         /// </returns>
         Task<IHtmlContent> PartialAsync(string partialViewName, object model, ViewDataDictionary viewData);

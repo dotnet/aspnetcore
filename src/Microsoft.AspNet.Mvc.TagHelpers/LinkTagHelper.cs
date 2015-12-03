@@ -12,7 +12,6 @@ using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.AspNet.Mvc.TagHelpers.Internal;
 using Microsoft.AspNet.Mvc.TagHelpers.Logging;
-using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.AspNet.Razor.TagHelpers;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
@@ -287,7 +286,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             if (mode == Mode.Fallback)
             {
                 string resolvedUrl;
-                if (TryResolveUrl(FallbackHref, encodeWebRoot: false, resolvedUrl: out resolvedUrl))
+                if (TryResolveUrl(FallbackHref, resolvedUrl: out resolvedUrl))
                 {
                     FallbackHref = resolvedUrl;
                 }
@@ -350,16 +349,17 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 // Build the <script /> tag that checks the effective style of <meta /> tag above and renders the extra
                 // <link /> tag to load the fallback stylesheet if the test CSS property value is found to be false,
                 // indicating that the primary stylesheet failed to load.
+                // GetEmbeddedJavaScript returns JavaScript to which we add '"{0}","{1}",{2});'
                 builder
                     .AppendHtml("<script>")
-                    .AppendHtml(
-                        string.Format(
-                            CultureInfo.InvariantCulture,
-                            JavaScriptResources.GetEmbeddedJavaScript(FallbackJavaScriptResourceName),
-                            JavaScriptEncoder.Encode(FallbackTestProperty),
-                            JavaScriptEncoder.Encode(FallbackTestValue),
-                            JavaScriptStringArrayEncoder.Encode(JavaScriptEncoder, fallbackHrefs)))
-                    .AppendHtml("</script>");
+                    .AppendHtml(JavaScriptResources.GetEmbeddedJavaScript(FallbackJavaScriptResourceName))
+                    .AppendHtml("\"")
+                    .AppendHtml(JavaScriptEncoder.Encode(FallbackTestProperty))
+                    .AppendHtml("\",\"")
+                    .AppendHtml(JavaScriptEncoder.Encode(FallbackTestValue))
+                    .AppendHtml("\",")
+                    .AppendHtml(JavaScriptStringArrayEncoder.Encode(JavaScriptEncoder, fallbackHrefs))
+                    .AppendHtml(");</script>");
             }
         }
 
@@ -410,7 +410,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 builder
                     .AppendHtml(attribute.Name)
                     .AppendHtml("=\"")
-                    .Append(HtmlEncoder, ViewContext.Writer.Encoding, attributeValue)
+                    .Append(HtmlEncoder, attributeValue)
                     .AppendHtml("\" ");
             }
 

@@ -10,7 +10,6 @@ using System.Text;
 using System.Text.Encodings.Web;
 using Microsoft.AspNet.Html;
 using Microsoft.AspNet.Mvc.ViewFeatures;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNet.Mvc.Rendering
 {
@@ -252,6 +251,15 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <inheritdoc />
         public void WriteTo(TextWriter writer, HtmlEncoder encoder)
         {
+            var htmlTextWriter = writer as HtmlTextWriter;
+            if (htmlTextWriter != null)
+            {
+                // As a perf optimization, we can buffer this output rather than writing it
+                // out character by character.
+                htmlTextWriter.Write(this);
+                return;
+            }
+
             switch (TagRenderMode)
             {
                 case TagRenderMode.StartTag:

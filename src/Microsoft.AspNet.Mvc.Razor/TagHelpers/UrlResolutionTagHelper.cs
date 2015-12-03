@@ -4,8 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.Reflection;
 using System.Text.Encodings.Web;
+using Microsoft.AspNet.Html;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.AspNet.Mvc.ViewFeatures;
@@ -160,26 +162,45 @@ namespace Microsoft.AspNet.Mvc.Razor.TagHelpers
             {
                 foreach (var attribute in attributes)
                 {
-                    string resolvedUrl;
-
                     var stringValue = attribute.Value as string;
                     if (stringValue != null)
                     {
-                        if (TryResolveUrl(stringValue, encodeWebRoot: false, resolvedUrl: out resolvedUrl))
+                        string resolvedUrl;
+                        if (TryResolveUrl(stringValue, resolvedUrl: out resolvedUrl))
                         {
                             attribute.Value = resolvedUrl;
                         }
                     }
                     else
                     {
-                        var htmlStringValue = attribute.Value as HtmlString;
-                        if (htmlStringValue != null &&
-                            TryResolveUrl(
-                                htmlStringValue.ToString(),
-                                encodeWebRoot: true,
-                                resolvedUrl: out resolvedUrl))
+                        var htmlContent = attribute.Value as IHtmlContent;
+                        if (htmlContent != null)
                         {
-                            attribute.Value = new HtmlString(resolvedUrl);
+                            var htmlString = htmlContent as HtmlString;
+                            if (htmlString != null)
+                            {
+                                // No need for a StringWriter in this case.
+                                stringValue = htmlString.ToString();
+                            }
+                            else
+                            {
+                                using (var writer = new StringWriter())
+                                {
+                                    htmlContent.WriteTo(writer, HtmlEncoder);
+                                    stringValue = writer.ToString();
+                                }
+                            }
+
+                            IHtmlContent resolvedUrl;
+                            if (TryResolveUrl(stringValue, resolvedUrl: out resolvedUrl))
+                            {
+                                attribute.Value = resolvedUrl;
+                            }
+                            else if (htmlString == null)
+                            {
+                                // Not a ~/ URL. Just avoid re-encoding the attribute value later.
+                                attribute.Value = new HtmlString(stringValue);
+                            }
                         }
                     }
                 }
@@ -190,14 +211,12 @@ namespace Microsoft.AspNet.Mvc.Razor.TagHelpers
         /// Tries to resolve the given <paramref name="url"/> value relative to the application's 'webroot' setting.
         /// </summary>
         /// <param name="url">The URL to resolve.</param>
-        /// <param name="encodeWebRoot">If <c>true</c>, will HTML encode the expansion of '~/'.</param>
         /// <param name="resolvedUrl">Absolute URL beginning with the application's virtual root. <c>null</c> if
         /// <paramref name="url"/> could not be resolved.</param>
         /// <returns><c>true</c> if the <paramref name="url"/> could be resolved; <c>false</c> otherwise.</returns>
-        protected bool TryResolveUrl(string url, bool encodeWebRoot, out string resolvedUrl)
+        protected bool TryResolveUrl(string url, out string resolvedUrl)
         {
             resolvedUrl = null;
-
             if (url == null)
             {
                 return false;
@@ -205,42 +224,93 @@ namespace Microsoft.AspNet.Mvc.Razor.TagHelpers
 
             var trimmedUrl = url.Trim(ValidAttributeWhitespaceChars);
 
-            // Before doing more work, ensure that the URL we're looking at is app relative.
+            // Before doing more work, ensure that the URL we're looking at is app-relative.
             if (trimmedUrl.Length >= 2 && trimmedUrl[0] == '~' && trimmedUrl[1] == '/')
             {
                 var urlHelper = UrlHelperFactory.GetUrlHelper(ViewContext);
-                var appRelativeUrl = urlHelper.Content(trimmedUrl);
-
-                if (encodeWebRoot)
-                {
-                    var postTildeSlashUrlValue = trimmedUrl.Substring(2);
-
-                    if (!appRelativeUrl.EndsWith(postTildeSlashUrlValue, StringComparison.Ordinal))
-                    {
-                        throw new InvalidOperationException(
-                            Resources.FormatCouldNotResolveApplicationRelativeUrl_TagHelper(
-                                url,
-                                nameof(IUrlHelper),
-                                nameof(IUrlHelper.Content),
-                                "removeTagHelper",
-                                typeof(UrlResolutionTagHelper).FullName,
-                                typeof(UrlResolutionTagHelper).GetTypeInfo().Assembly.GetName().Name));
-                    }
-
-                    var applicationPath = appRelativeUrl.Substring(0, appRelativeUrl.Length - postTildeSlashUrlValue.Length);
-                    var encodedApplicationPath = HtmlEncoder.Encode(applicationPath);
-
-                    resolvedUrl = string.Concat(encodedApplicationPath, postTildeSlashUrlValue);
-                }
-                else
-                {
-                    resolvedUrl = appRelativeUrl;
-                }
+                resolvedUrl = urlHelper.Content(trimmedUrl);
 
                 return true;
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Tries to resolve the given <paramref name="url"/> value relative to the application's 'webroot' setting.
+        /// </summary>
+        /// <param name="url">The URL to resolve.</param>
+        /// <param name="resolvedUrl">
+        /// Absolute URL beginning with the application's virtual root. <c>null</c> if <paramref name="url"/> could
+        /// not be resolved.
+        /// </param>
+        /// <returns><c>true</c> if the <paramref name="url"/> could be resolved; <c>false</c> otherwise.</returns>
+        protected bool TryResolveUrl(string url, out IHtmlContent resolvedUrl)
+        {
+            resolvedUrl = null;
+            if (url == null)
+            {
+                return false;
+            }
+
+            var trimmedUrl = url.Trim(ValidAttributeWhitespaceChars);
+
+            // Before doing more work, ensure that the URL we're looking at is app-relative.
+            if (trimmedUrl.Length >= 2 && trimmedUrl[0] == '~' && trimmedUrl[1] == '/')
+            {
+                var urlHelper = UrlHelperFactory.GetUrlHelper(ViewContext);
+                var appRelativeUrl = urlHelper.Content(trimmedUrl);
+                var postTildeSlashUrlValue = trimmedUrl.Substring(2);
+
+                if (!appRelativeUrl.EndsWith(postTildeSlashUrlValue, StringComparison.Ordinal))
+                {
+                    throw new InvalidOperationException(
+                        Resources.FormatCouldNotResolveApplicationRelativeUrl_TagHelper(
+                            url,
+                            nameof(IUrlHelper),
+                            nameof(IUrlHelper.Content),
+                            "removeTagHelper",
+                            typeof(UrlResolutionTagHelper).FullName,
+                            typeof(UrlResolutionTagHelper).GetTypeInfo().Assembly.GetName().Name));
+                }
+
+                resolvedUrl = new EncodeFirstSegmentContent(
+                    appRelativeUrl,
+                    appRelativeUrl.Length - postTildeSlashUrlValue.Length,
+                    postTildeSlashUrlValue);
+
+                return true;
+            }
+
+            return false;
+        }
+
+        private class EncodeFirstSegmentContent : IHtmlContent
+        {
+            private readonly string _firstSegment;
+            private readonly int _firstSegmentLength;
+            private readonly string _secondSegment;
+
+            public EncodeFirstSegmentContent(string firstSegment, int firstSegmentLength, string secondSegment)
+            {
+                _firstSegment = firstSegment;
+                _firstSegmentLength = firstSegmentLength;
+                _secondSegment = secondSegment;
+            }
+
+            public void WriteTo(TextWriter writer, HtmlEncoder encoder)
+            {
+                var htmlTextWriter = writer as HtmlTextWriter;
+                if (htmlTextWriter != null)
+                {
+                    htmlTextWriter.Write(this);
+                }
+                else
+                {
+                    encoder.Encode(writer, _firstSegment, 0, _firstSegmentLength);
+                    writer.Write(_secondSegment);
+                }
+            }
         }
     }
 }

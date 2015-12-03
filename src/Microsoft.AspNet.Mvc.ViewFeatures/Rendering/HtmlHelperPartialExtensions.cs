@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// The name of the partial view used to create the HTML markup. Must not be <c>null</c>.
         /// </param>
         /// <returns>
-        /// A <see cref="Task"/> that on completion returns a new <see cref="HtmlString"/> containing
+        /// A <see cref="Task"/> that on completion returns a new <see cref="IHtmlContent"/> instance containing
         /// the created HTML.
         /// </returns>
         public static Task<IHtmlContent> PartialAsync(
@@ -50,7 +50,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </param>
         /// <param name="viewData">A <see cref="ViewDataDictionary"/> to pass into the partial view.</param>
         /// <returns>
-        /// A <see cref="Task"/> that on completion returns a new <see cref="HtmlString"/> containing
+        /// A <see cref="Task"/> that on completion returns a new <see cref="IHtmlContent"/> instance containing
         /// the created HTML.
         /// </returns>
         public static Task<IHtmlContent> PartialAsync(
@@ -80,7 +80,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </param>
         /// <param name="model">A model to pass into the partial view.</param>
         /// <returns>
-        /// A <see cref="Task"/> that on completion returns a new <see cref="HtmlString"/> containing
+        /// A <see cref="Task"/> that on completion returns a new <see cref="IHtmlContent"/> instance containing
         /// the created HTML.
         /// </returns>
         public static Task<IHtmlContent> PartialAsync(
@@ -109,7 +109,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// The name of the partial view used to create the HTML markup. Must not be <c>null</c>.
         /// </param>
         /// <returns>
-        /// Returns a new <see cref="HtmlString"/> containing the created HTML.
+        /// Returns a new <see cref="IHtmlContent"/> instance containing the created HTML.
         /// </returns>
         /// <remarks>
         /// This method synchronously calls and blocks on
@@ -141,7 +141,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </param>
         /// <param name="viewData">A <see cref="ViewDataDictionary"/> to pass into the partial view.</param>
         /// <returns>
-        /// Returns a new <see cref="HtmlString"/> containing the created HTML.
+        /// Returns a new <see cref="IHtmlContent"/> instance containing the created HTML.
         /// </returns>
         /// <remarks>
         /// This method synchronously calls and blocks on
@@ -174,7 +174,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </param>
         /// <param name="model">A model to pass into the partial view.</param>
         /// <returns>
-        /// Returns a new <see cref="HtmlString"/> containing the created HTML.
+        /// Returns a new <see cref="IHtmlContent"/> instance containing the created HTML.
         /// </returns>
         /// <remarks>
         /// This method synchronously calls and blocks on
@@ -208,7 +208,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <param name="model">A model to pass into the partial view.</param>
         /// <param name="viewData">A <see cref="ViewDataDictionary"/> to pass into the partial view.</param>
         /// <returns>
-        /// Returns a new <see cref="HtmlString"/> containing the created HTML.
+        /// Returns a new <see cref="IHtmlContent"/> instance containing the created HTML.
         /// </returns>
         /// <remarks>
         /// This method synchronously calls and blocks on

@@ -3,9 +3,9 @@
 
 using System;
 using System.IO;
-using System.Text;
 using System.Text.Encodings.Web;
 using Microsoft.AspNet.Mvc.Razor;
+using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Razor.TagHelpers;
 
 namespace Microsoft.AspNet.Mvc.TagHelpers
@@ -20,7 +20,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         /// </summary>
         /// <param name="content">The <see cref="TagHelperContent"/> to write to.</param>
         /// <param name="encoder">The <see cref="HtmlEncoder"/> to use when encoding <paramref name="value"/>.</param>
-        /// <param name="encoding">The character encoding in which the <paramref name="value"/> is written.</param>
         /// <param name="value">The <see cref="object"/> to write.</param>
         /// <returns><paramref name="content"/> after the write operation has completed.</returns>
         /// <remarks>
@@ -29,11 +28,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         /// For all other types, the encoded result of <see cref="object.ToString"/>
         /// is written to the <paramref name="content"/>.
         /// </remarks>
-        public static TagHelperContent Append(
-            this TagHelperContent content,
-            HtmlEncoder encoder,
-            Encoding encoding,
-            object value)
+        public static TagHelperContent Append(this TagHelperContent content, HtmlEncoder encoder, object value)
         {
             if (content == null)
             {
@@ -45,24 +40,33 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 throw new ArgumentNullException(nameof(encoder));
             }
 
-            if (encoding == null)
+            if (value == null)
             {
-                throw new ArgumentNullException(nameof(encoding));
+                // No real action but touch content to ensure IsModified is true.
+                content.Append((string)null);
+                return content;
             }
 
-            using (var writer = new TagHelperContentWrapperTextWriter(encoding, content))
+            string stringValue;
+            var htmlString = value as HtmlString;
+            if (htmlString != null)
+            {
+                // No need for a StringWriter in this case.
+                stringValue = htmlString.ToString();
+            }
+            else
             {
                 using (var stringWriter = new StringWriter())
                 {
                     RazorPage.WriteTo(stringWriter, encoder, value);
-
-                    // In this case the text likely came directly from the Razor source. Since the original string is
-                    // an attribute value that may have been quoted with single quotes, must handle any double quotes
-                    // in the value. Writing the value out surrounded by double quotes.
-                    var stringValue = stringWriter.ToString().Replace("\"", "&quot;");
-                    writer.Write(stringValue);
+                    stringValue = stringWriter.ToString();
                 }
             }
+
+            // In this case the text likely came directly from the Razor source. Since the original string is
+            // an attribute value that may have been quoted with single quotes, must handle any double quotes
+            // in the value. Writing the value out surrounded by double quotes.
+            content.AppendHtml(stringValue.Replace("\"", "&quot;"));
 
             return content;
         }

@@ -39,7 +39,17 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                 throw new ArgumentNullException(nameof(encoder));
             }
 
-            encoder.Encode(writer, _input);
+            var htmlTextWriter = writer as HtmlTextWriter;
+            if (htmlTextWriter != null)
+            {
+                // As a perf optimization, we can buffer this output rather than writing it
+                // out character by character.
+                htmlTextWriter.Write(this);
+            }
+            else
+            {
+                encoder.Encode(writer, _input);
+            }
         }
 
         private string DebuggerToString()

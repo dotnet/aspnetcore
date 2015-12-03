@@ -26,4 +26,4 @@
             doc.write('<link rel="stylesheet" href="' + fallbackHref[i] + '"/>');
         }
     }
-})("[[[0]]]", "[[[1]]]", [[[2]]]);
+})();
