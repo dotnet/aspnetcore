@@ -99,7 +99,6 @@ namespace Microsoft.AspNet.Builder
             }
 
             return builder
-                .UseSendFileFallback()
                 .UseStaticFiles(options.StaticFileOptions);
         }
     }
