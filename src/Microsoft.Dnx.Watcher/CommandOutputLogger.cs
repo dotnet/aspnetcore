@@ -50,8 +50,8 @@ namespace Microsoft.Dnx.Watcher
         {
             switch (logLevel)
             {
+                case LogLevel.Trace: return "\x1b[35mtrace\x1b[39m";
                 case LogLevel.Debug: return "\x1b[35mdebug\x1b[39m";
-                case LogLevel.Verbose: return "\x1b[35mverbose\x1b[39m";
                 case LogLevel.Information: return "\x1b[32minfo\x1b[39m";
                 case LogLevel.Warning: return "\x1b[33mwarn\x1b[39m";
                 case LogLevel.Error: return "\x1b[31mfail\x1b[39m";
