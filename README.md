@@ -8,4 +8,7 @@ ASP.NET MVC gives you a powerful, patterns-based way to build dynamic websites t
 
 ASP.NET MVC in ASP.NET 5 includes support for building web pages and HTTP services in a single aligned framework that can be hosted in IIS or self-hosted in your own process.
 
+Related community projects:
+* [AspNet.Mvc.TypedRouting](https://github.com/ivaylokenov/AspNet.Mvc.TypedRouting): A collection of extension methods providing strongly typed routing and link generation for ASP.NET MVC 6 projects.
+
 This project is part of ASP.NET 5. You can find samples, documentation and getting started instructions for ASP.NET 5 at the [Home](https://github.com/aspnet/home) repo.
