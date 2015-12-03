@@ -31,7 +31,8 @@ namespace Microsoft.AspNet.TestHost
             TestServer.Create(app => { });
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Hangs randomly (issue #507)")]
         public async Task RequestServicesAutoCreated()
         {
             var server = TestServer.Create(app =>
@@ -66,7 +67,8 @@ namespace Microsoft.AspNet.TestHost
 
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Hangs randomly (issue #507)")]
         public async Task CustomServiceProviderSetsApplicationServices()
         {
             var server = new TestServer(TestServer.CreateBuilder().UseStartup<CustomContainerStartup>());
@@ -107,7 +109,8 @@ namespace Microsoft.AspNet.TestHost
             }
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Hangs randomly (issue #507)")]
         public async Task ExistingRequestServicesWillNotBeReplaced()
         {
             var server = TestServer.Create(app =>
@@ -123,7 +126,8 @@ namespace Microsoft.AspNet.TestHost
             Assert.Equal("Found:True", result);
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Hangs randomly (issue #507)")]
         public async Task CanSetCustomServiceProvider()
         {
             var server = TestServer.Create(app =>
@@ -169,7 +173,8 @@ namespace Microsoft.AspNet.TestHost
             }
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Hangs randomly (issue #507)")]
         public async Task ExistingServiceProviderFeatureWillNotBeReplaced()
         {
             var appServices = new ServiceCollection().BuildServiceProvider();
@@ -206,7 +211,8 @@ namespace Microsoft.AspNet.TestHost
             }
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Hangs randomly (issue #507)")]
         public async Task WillReplaceServiceProviderFeatureWithNullRequestServices()
         {
             var server = TestServer.Create(app =>
@@ -222,7 +228,8 @@ namespace Microsoft.AspNet.TestHost
             Assert.Equal("Success", result);
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Hangs randomly (issue #507)")]
         public async Task CanAccessLogger()
         {
             var server = TestServer.Create(app =>
@@ -238,7 +245,8 @@ namespace Microsoft.AspNet.TestHost
             Assert.Equal("FoundLogger:True", result);
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Hangs randomly (issue #507)")]
         public async Task CanAccessHttpContext()
         {
             Action<IServiceCollection> configureServices = services =>
@@ -268,7 +276,8 @@ namespace Microsoft.AspNet.TestHost
             public IHttpContextAccessor Accessor { get; set; }
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Hangs randomly (issue #507)")]
         public async Task CanAddNewHostServices()
         {
             Action<IServiceCollection> configureServices = services =>
@@ -289,7 +298,8 @@ namespace Microsoft.AspNet.TestHost
             Assert.Equal("HasContext:True", result);
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Hangs randomly (issue #507)")]
         public async Task CreateInvokesApp()
         {
             TestServer server = TestServer.Create(app =>
@@ -304,7 +314,8 @@ namespace Microsoft.AspNet.TestHost
             Assert.Equal("CreateInvokesApp", result);
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Hangs randomly (issue #507)")]
         public async Task DisposeStreamIgnored()
         {
             TestServer server = TestServer.Create(app =>
@@ -321,7 +332,8 @@ namespace Microsoft.AspNet.TestHost
             Assert.Equal("Response", await result.Content.ReadAsStringAsync());
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Hangs randomly (issue #507)")]
         public async Task DisposedServerThrows()
         {
             TestServer server = TestServer.Create(app =>
@@ -340,7 +352,7 @@ namespace Microsoft.AspNet.TestHost
         }
 
         [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.CoreCLR, SkipReason = "Hangs randomly (issue #422).")]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Hangs randomly (issue #507)")]
         public void CancelAborts()
         {
             TestServer server = TestServer.Create(app =>
@@ -356,7 +368,8 @@ namespace Microsoft.AspNet.TestHost
             Assert.Throws<AggregateException>(() => { string result = server.CreateClient().GetStringAsync("/path").Result; });
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Hangs randomly (issue #507)")]
         public async Task CanCreateViaStartupType()
         {
             TestServer server = new TestServer(TestServer.CreateBuilder().UseStartup<TestStartup>());
@@ -365,7 +378,8 @@ namespace Microsoft.AspNet.TestHost
             Assert.Equal("FoundService:True", await result.Content.ReadAsStringAsync());
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Hangs randomly (issue #507)")]
         public async Task CanCreateViaStartupTypeAndSpecifyEnv()
         {
             TestServer server = new TestServer(TestServer.CreateBuilder()
@@ -375,8 +389,9 @@ namespace Microsoft.AspNet.TestHost
             Assert.Equal(HttpStatusCode.OK, result.StatusCode);
             Assert.Equal("FoundFoo:False", await result.Content.ReadAsStringAsync());
         }
-        
-        [Fact]
+
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Hangs randomly (issue #507)")]
         public async Task BeginEndDiagnosticAvailable()
         {
             DiagnosticListener diagnosticListener = null;
@@ -401,7 +416,8 @@ namespace Microsoft.AspNet.TestHost
             Assert.Null(listener.UnhandledException);
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Hangs randomly (issue #507)")]
         public async Task ExceptionDiagnosticAvailable()
         {
             DiagnosticListener diagnosticListener = null;

@@ -25,7 +25,8 @@ namespace Microsoft.AspNet.TestHost
             _server = TestServer.Create(app => app.Run(ctx => Task.FromResult(0)));
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Hangs randomly (issue #507)")]
         public async Task GetAsyncWorks()
         {
             // Arrange
@@ -42,7 +43,8 @@ namespace Microsoft.AspNet.TestHost
             Assert.Equal(expected, actual);
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Hangs randomly (issue #507)")]
         public async Task NoTrailingSlash_NoPathBase()
         {
             // Arrange
@@ -63,7 +65,8 @@ namespace Microsoft.AspNet.TestHost
             Assert.Equal(expected, actual);
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Hangs randomly (issue #507)")]
         public async Task SingleTrailingSlash_NoPathBase()
         {
             // Arrange
@@ -84,7 +87,8 @@ namespace Microsoft.AspNet.TestHost
             Assert.Equal(expected, actual);
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Hangs randomly (issue #507)")]
         public async Task PutAsyncWorks()
         {
             // Arrange
@@ -101,7 +105,8 @@ namespace Microsoft.AspNet.TestHost
             Assert.Equal("Hello world PUT Response", await response.Content.ReadAsStringAsync());
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Hangs randomly (issue #507)")]
         public async Task PostAsyncWorks()
         {
             // Arrange
@@ -118,7 +123,8 @@ namespace Microsoft.AspNet.TestHost
             Assert.Equal("Hello world POST Response", await response.Content.ReadAsStringAsync());
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Hangs randomly (issue #507)")]
         public async Task WebSocketWorks()
         {
             // Arrange
@@ -179,7 +185,8 @@ namespace Microsoft.AspNet.TestHost
             clientSocket.Dispose();
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Hangs randomly (issue #507)")]
         public async Task WebSocketDisposalThrowsOnPeer()
         {
             // Arrange
@@ -205,7 +212,8 @@ namespace Microsoft.AspNet.TestHost
             clientSocket.Dispose();
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Hangs randomly (issue #507)")]
         public async Task WebSocketTinyReceiveGeneratesEndOfMessage()
         {
             // Arrange
@@ -248,7 +256,8 @@ namespace Microsoft.AspNet.TestHost
             clientSocket.Dispose();
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Hangs randomly (issue #507)")]
         public async Task ClientDisposalAbortsRequest()
         {
             // Arrange
@@ -282,7 +291,7 @@ namespace Microsoft.AspNet.TestHost
         }
 
         [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.CoreCLR, SkipReason = "Hangs randomly (issue #422).")]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Hangs randomly (issue #507)")]
         public async Task ClientCancellationAbortsRequest()
         {
             // Arrange

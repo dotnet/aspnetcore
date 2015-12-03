@@ -59,7 +59,8 @@ namespace Microsoft.AspNet.TestHost
             return httpClient.GetAsync("https://example.com/");
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Hangs randomly (issue #507)")]
         public async Task ResubmitRequestWorks()
         {
             int requestCount = 1;
@@ -83,7 +84,8 @@ namespace Microsoft.AspNet.TestHost
             Assert.Equal("TestValue:2", response.Headers.GetValues("TestHeader").First());
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Hangs randomly (issue #507)")]
         public async Task MiddlewareOnlySetsHeaders()
         {
             var handler = new ClientHandler(PathString.Empty, new DummyApplication(context =>
@@ -96,7 +98,8 @@ namespace Microsoft.AspNet.TestHost
             Assert.Equal("TestValue", response.Headers.GetValues("TestHeader").First());
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Hangs randomly (issue #507)")]
         public async Task BlockingMiddlewareShouldNotBlockClient()
         {
             ManualResetEvent block = new ManualResetEvent(false);
@@ -113,7 +116,8 @@ namespace Microsoft.AspNet.TestHost
             HttpResponseMessage response = await task;
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Hangs randomly (issue #507)")]
         public async Task HeadersAvailableBeforeBodyFinished()
         {
             ManualResetEvent block = new ManualResetEvent(false);
@@ -132,7 +136,8 @@ namespace Microsoft.AspNet.TestHost
             Assert.Equal("BodyStarted,BodyFinished", await response.Content.ReadAsStringAsync());
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Hangs randomly (issue #507)")]
         public async Task FlushSendsHeaders()
         {
             ManualResetEvent block = new ManualResetEvent(false);
@@ -151,7 +156,8 @@ namespace Microsoft.AspNet.TestHost
             Assert.Equal("BodyFinished", await response.Content.ReadAsStringAsync());
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Hangs randomly (issue #507)")]
         public async Task ClientDisposalCloses()
         {
             ManualResetEvent block = new ManualResetEvent(false);
@@ -176,7 +182,8 @@ namespace Microsoft.AspNet.TestHost
             block.Set();
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Hangs randomly (issue #507)")]
         public async Task ClientCancellationAborts()
         {
             ManualResetEvent block = new ManualResetEvent(false);
@@ -215,7 +222,7 @@ namespace Microsoft.AspNet.TestHost
         }
 
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Linux, SkipReason = "Hangs randomly (issue #422).")]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Hangs randomly (issue #507)")]
         public async Task ExceptionAfterFirstWriteIsReported()
         {
             ManualResetEvent block = new ManualResetEvent(false);
