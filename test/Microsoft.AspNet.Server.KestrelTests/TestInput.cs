@@ -4,6 +4,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Server.Kestrel;
 using Microsoft.AspNet.Server.Kestrel.Http;
 using Microsoft.AspNet.Server.Kestrel.Infrastructure;
 
@@ -13,10 +14,12 @@ namespace Microsoft.AspNet.Server.KestrelTests
     {
         public TestInput()
         {
+            var trace = new KestrelTrace(new TestKestrelTrace());
+            var ltp = new LoggingThreadPool(trace);
             var memory2 = new MemoryPool2();
             FrameContext = new FrameContext
             {
-                SocketInput = new SocketInput(memory2),
+                SocketInput = new SocketInput(memory2, ltp),
                 ConnectionControl = this,
                 FrameControl = this
             };

@@ -19,9 +19,10 @@ namespace Microsoft.AspNet.Server.Kestrel.Filter
         public FilteredStreamAdapter(
             Stream filteredStream,
             MemoryPool2 memory,
-            IKestrelTrace logger)
+            IKestrelTrace logger,
+            IThreadPool threadPool)
         {
-            SocketInput = new SocketInput(memory);
+            SocketInput = new SocketInput(memory, threadPool);
             SocketOutput = new StreamSocketOutput(filteredStream, memory);
 
             _log = logger;

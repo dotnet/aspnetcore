@@ -4,6 +4,7 @@
 using System;
 using System.Linq;
 using System.Text;
+using Microsoft.AspNet.Server.Kestrel;
 using Microsoft.AspNet.Server.Kestrel.Http;
 using Microsoft.AspNet.Server.Kestrel.Infrastructure;
 using Xunit;
@@ -48,7 +49,9 @@ namespace Microsoft.AspNet.Server.KestrelTests
         [InlineData("Connection:\r\n \r\nCookie \r\n", 1)]
         public void EmptyHeaderValuesCanBeParsed(string rawHeaders, int numHeaders)
         {
-            var socketInput = new SocketInput(new MemoryPool2());
+            var trace = new KestrelTrace(new TestKestrelTrace());
+            var ltp = new LoggingThreadPool(trace);
+            var socketInput = new SocketInput(new MemoryPool2(), ltp);
             var headerCollection = new FrameRequestHeaders();
 
             var headerArray = Encoding.ASCII.GetBytes(rawHeaders);

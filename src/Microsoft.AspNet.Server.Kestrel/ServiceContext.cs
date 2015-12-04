@@ -21,6 +21,7 @@ namespace Microsoft.AspNet.Server.Kestrel
         {
             AppLifetime = context.AppLifetime;
             Log = context.Log;
+            ThreadPool = context.ThreadPool;
             FrameFactory = context.FrameFactory;
             DateHeaderValueManager = context.DateHeaderValueManager;
             ConnectionFilter = context.ConnectionFilter;
@@ -30,6 +31,8 @@ namespace Microsoft.AspNet.Server.Kestrel
         public IApplicationLifetime AppLifetime { get; set; }
 
         public IKestrelTrace Log { get; set; }
+
+        public IThreadPool ThreadPool { get; set; }
 
         public Func<ConnectionContext, IPEndPoint, IPEndPoint, Action<IFeatureCollection>, Frame> FrameFactory { get; set; }
 
