@@ -131,7 +131,7 @@
   </data>
   <data name="DuplicateRoleName" xml:space="preserve">
     <value>Role name '{0}' is already taken.</value>
-    <comment>Error for duplicate user names</comment>
+    <comment>Error for duplicate roles</comment>
   </data>
   <data name="DuplicateUserName" xml:space="preserve">
     <value>User name '{0}' is already taken.</value>
