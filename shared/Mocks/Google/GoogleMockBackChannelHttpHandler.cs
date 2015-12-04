@@ -1,4 +1,6 @@
 ﻿#if TESTING
+using System;
+using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading;
@@ -17,7 +19,7 @@ namespace MusicStore.Mocks.Google
         {
             var response = new HttpResponseMessage();
 
-            if (request.RequestUri.AbsoluteUri.StartsWith("https://accounts.google.com/o/oauth2/token"))
+            if (request.RequestUri.AbsoluteUri.StartsWith("https://www.googleapis.com/oauth2/v3/token"))
             {
                 var formData = new FormCollection(await FormReader.ReadFormAsync(await request.Content.ReadAsStreamAsync()));
                 if (formData["grant_type"] == "authorization_code")
@@ -28,9 +30,12 @@ namespace MusicStore.Mocks.Google
                            formData["client_id"] == "[ClientId]" && formData["client_secret"] == "[ClientSecret]")
                         {
                             response.Content = new StringContent("{\"access_token\":\"ValidAccessToken\",\"refresh_token\":\"ValidRefreshToken\",\"token_type\":\"Bearer\",\"expires_in\":\"1200\",\"id_token\":\"Token\"}", Encoding.UTF8, "application/json");
+                            return response;
                         }
                     }
                 }
+                response.StatusCode = (HttpStatusCode)400;
+                return response;
             }
             else if (request.RequestUri.AbsoluteUri.StartsWith("https://www.googleapis.com/plus/v1/people/me"))
             {
@@ -42,9 +47,10 @@ namespace MusicStore.Mocks.Google
                 {
                     response.Content = new StringContent("{\"error\":{\"message\":\"Invalid OAuth access token.\",\"type\":\"OAuthException\",\"code\":190}}");
                 }
+                return response;
             }
 
-            return response;
+            throw new NotImplementedException(request.RequestUri.AbsoluteUri);
         }
     }
 } 

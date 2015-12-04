@@ -1,4 +1,6 @@
 ﻿#if TESTING
+using System;
+using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading;
@@ -28,9 +30,13 @@ namespace MusicStore.Mocks.MicrosoftAccount
                            formData["client_id"] == "[ClientId]" && formData["client_secret"] == "[ClientSecret]")
                         {
                             response.Content = new StringContent("{\"token_type\":\"bearer\",\"expires_in\":3600,\"scope\":\"wl.basic\",\"access_token\":\"ValidAccessToken\",\"refresh_token\":\"ValidRefreshToken\",\"authentication_token\":\"ValidAuthenticationToken\"}");
+                            return response;
                         }
                     }
                 }
+
+                response.StatusCode = (HttpStatusCode)400;
+                return response;
             }
             else if (request.RequestUri.AbsoluteUri.StartsWith("https://apis.live.net/v5.0/me"))
             {
@@ -42,9 +48,10 @@ namespace MusicStore.Mocks.MicrosoftAccount
                 {
                     response.Content = new StringContent("{\r   \"error\": {\r      \"code\": \"request_token_invalid\", \r      \"message\": \"The access token isn't valid.\"\r   }\r}", Encoding.UTF8, "text/javascript");
                 }
+                return response;
             }
 
-            return response;
+            throw new NotImplementedException(request.RequestUri.AbsoluteUri);
         }
     }
 } 

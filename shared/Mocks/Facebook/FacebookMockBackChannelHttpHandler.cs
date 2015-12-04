@@ -30,11 +30,9 @@ namespace MusicStore.Mocks.Facebook
                         Helpers.ThrowIfConditionFailed(() => formData["client_id"] == "[AppId]", "Invalid client Id received");
                         Helpers.ThrowIfConditionFailed(() => formData["client_secret"] == "[AppSecret]", "Invalid client secret received");
                         response.Content = new StringContent("{ \"access_token\": \"ValidAccessToken\", \"expires_in\": \"100\" }");
+                        return response;
                     }
-                    else
-	                {
-                        response.StatusCode = (HttpStatusCode)400;
-	                }
+                    response.StatusCode = (HttpStatusCode)400;
                     return response;
                 }
             }

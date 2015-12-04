@@ -1,4 +1,5 @@
 ﻿#if TESTING
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
@@ -42,7 +43,10 @@ namespace MusicStore.Mocks.Twitter
                         response.StatusCode = HttpStatusCode.InternalServerError;
                         response.Content = new StringContent("RequestTokenEndpoint is not invoked");
                     }
+                    return response;
                 }
+                response.StatusCode = (HttpStatusCode)400;
+                return response;
             }
             else if (request.RequestUri.AbsoluteUri.StartsWith("https://api.twitter.com/oauth/request_token"))
             {
@@ -55,9 +59,10 @@ namespace MusicStore.Mocks.Twitter
 
                 _requestTokenEndpointInvoked = true;
                 response.Content = new FormUrlEncodedContent(response_Form_data);
+                return response;
             }
 
-            return response;
+            throw new NotImplementedException(request.RequestUri.AbsoluteUri);
         }
     }
 } 
