@@ -161,14 +161,15 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
         private void UpdateRequest(HttpRequest request, string data, string name)
         {
+            const string fileName = "text.txt";
             var fileCollection = new FormFileCollection();
             var formCollection = new FormCollection(new Dictionary<string, StringValues>(), fileCollection);
             var memoryStream = new MemoryStream(Encoding.UTF8.GetBytes(data));
 
             request.Form = formCollection;
             request.ContentType = "multipart/form-data; boundary=----WebKitFormBoundarymx2fSWqWSd0OxQqq";
-            request.Headers["Content-Disposition"] = "form-data; name=" + name + "; filename=text.txt";
-            fileCollection.Add(new FormFile(memoryStream, 0, data.Length)
+            request.Headers["Content-Disposition"] = $"form-data; name={name}; filename={fileName}";
+            fileCollection.Add(new FormFile(memoryStream, 0, data.Length, name, fileName)
             {
                 Headers = request.Headers
             });

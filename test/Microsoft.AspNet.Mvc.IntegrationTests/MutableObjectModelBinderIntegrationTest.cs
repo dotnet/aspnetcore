@@ -1954,15 +1954,16 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
         private static void SetFormFileBodyContent(HttpRequest request, string content, string name)
         {
+            const string fileName = "text.txt";
             var fileCollection = new FormFileCollection();
             var formCollection = new FormCollection(new Dictionary<string, StringValues>(), fileCollection);
             var memoryStream = new MemoryStream(Encoding.UTF8.GetBytes(content));
 
             request.Form = formCollection;
             request.ContentType = "multipart/form-data; boundary=----WebKitFormBoundarymx2fSWqWSd0OxQqq";
-            request.Headers["Content-Disposition"] = "form-data; name=" + name + "; filename=text.txt";
+            request.Headers["Content-Disposition"] = $"form-data; name={name}; filename={fileName}";
 
-            fileCollection.Add(new FormFile(memoryStream, 0, memoryStream.Length)
+            fileCollection.Add(new FormFile(memoryStream, 0, memoryStream.Length, name, fileName)
             {
                 Headers = request.Headers
             });
