@@ -10,7 +10,7 @@
     "keyFile": "../../tools/Key.snk"
   },
   "dependencies": {
-    "Microsoft.AspNet.Routing": "1.0.0-*",
+    "Microsoft.AspNet.Routing.Abstractions": "1.0.0-*",
     "Microsoft.Extensions.ClosedGenericMatcher.Sources": {
       "version": "1.0.0-*",
       "type": "build"
@@ -26,7 +26,8 @@
     "Microsoft.Extensions.PropertyHelper.Sources": {
       "version": "1.0.0-*",
       "type": "build"
-    }
+    },
+    "Microsoft.Net.Http.Headers": "1.0.0-*"
   },
   "frameworks": {
     "net451": {},

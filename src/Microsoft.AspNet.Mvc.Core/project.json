@@ -15,6 +15,7 @@
     "Microsoft.AspNet.Hosting.Abstractions": "1.0.0-*",
     "Microsoft.AspNet.Mvc.Abstractions": "6.0.0-*",
     "Microsoft.AspNet.Http": "1.0.0-*",
+    "Microsoft.AspNet.Routing": "1.0.0-*",
     "Microsoft.AspNet.Routing.DecisionTree.Sources": {
       "type": "build",
       "version": "1.0.0-*"
