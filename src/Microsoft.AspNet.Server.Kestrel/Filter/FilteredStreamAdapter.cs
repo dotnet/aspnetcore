@@ -29,8 +29,13 @@ namespace Microsoft.AspNet.Server.Kestrel.Filter
             _filteredStream = filteredStream;
             _socketInputStream = new SocketInputStream(SocketInput);
 
-            _filteredStream.CopyToAsync(_socketInputStream).ContinueWith((task, state) =>
+            var block = memory.Lease();
+            // Use pooled block for copy
+            _filteredStream.CopyToAsync(_socketInputStream, block).ContinueWith((task, state) =>
             {
+                var returnedBlock = task.Result;
+                returnedBlock.Pool?.Return(returnedBlock);
+
                 ((FilteredStreamAdapter)state).OnStreamClose(task);
             }, this);
         }
