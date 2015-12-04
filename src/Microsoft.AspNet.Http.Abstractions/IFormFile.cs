@@ -18,6 +18,10 @@ namespace Microsoft.AspNet.Http
 
         long Length { get; }
 
+        string Name { get; }
+
+        string FileName { get; }
+
         Stream OpenReadStream();
     }
 }

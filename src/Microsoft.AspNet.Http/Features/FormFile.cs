@@ -8,15 +8,16 @@ namespace Microsoft.AspNet.Http.Features.Internal
 {
     public class FormFile : IFormFile
     {
-        private Stream _baseStream;
-        private long _baseStreamOffset;
-        private long _length;
+        private readonly Stream _baseStream;
+        private readonly long _baseStreamOffset;
 
-        public FormFile(Stream baseStream, long baseStreamOffset, long length)
+        public FormFile(Stream baseStream, long baseStreamOffset, long length, string name, string fileName)
         {
             _baseStream = baseStream;
             _baseStreamOffset = baseStreamOffset;
-            _length = length;
+            Length = length;
+            Name = name;
+            FileName = fileName;
         }
 
         public string ContentDisposition
@@ -33,14 +34,15 @@ namespace Microsoft.AspNet.Http.Features.Internal
 
         public IHeaderDictionary Headers { get; set; }
 
-        public long Length
-        {
-            get { return _length; }
-        }
+        public long Length { get; }
+
+        public string Name { get; }
+
+        public string FileName { get; }
 
         public Stream OpenReadStream()
         {
-            return new ReferenceReadStream(_baseStream, _baseStreamOffset, _length);
+            return new ReferenceReadStream(_baseStream, _baseStreamOffset, Length);
         }
     }
 }
