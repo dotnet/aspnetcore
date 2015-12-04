@@ -179,21 +179,19 @@ namespace Microsoft.AspNet.Routing.Template
                 return null;
             }
 
-            EnsureLoggers(context.Context);
-            if (!RouteConstraintMatcher.Match(Constraints,
-                                              values.CombinedValues,
-                                              context.Context,
-                                              this,
-                                              RouteDirection.UrlGeneration,
-                                              _constraintLogger))
+            EnsureLoggers(context.HttpContext);
+            if (!RouteConstraintMatcher.Match(
+                Constraints,
+                values.CombinedValues,
+                context.HttpContext,
+                this,
+                RouteDirection.UrlGeneration,
+                _constraintLogger))
             {
                 return null;
             }
 
-            // Validate that the target can accept these values.
-            var childContext = CreateChildVirtualPathContext(context, values.AcceptedValues);
-
-            var pathData = _target.GetVirtualPath(childContext);
+            var pathData = _target.GetVirtualPath(context);
             if (pathData != null)
             {
                 // If the target generates a value then that can short circuit.
@@ -219,41 +217,7 @@ namespace Microsoft.AspNet.Routing.Template
                 }
             }
 
-            context.IsBound = childContext.IsBound;
-
             return pathData;
-        }
-
-        private VirtualPathContext CreateChildVirtualPathContext(
-            VirtualPathContext context,
-            IDictionary<string, object> acceptedValues)
-        {
-            // We want to build the set of values that would be provided if this route were to generated
-            // a link and then immediately match it. This includes all the accepted parameter values, and
-            // the defaults. Accepted values that would go in the query string aren't included.
-            var providedValues = new RouteValueDictionary();
-
-            foreach (var parameter in _parsedTemplate.Parameters)
-            {
-                object value;
-                if (acceptedValues.TryGetValue(parameter.Name, out value))
-                {
-                    providedValues.Add(parameter.Name, value);
-                }
-            }
-
-            foreach (var kvp in _defaults)
-            {
-                if (!providedValues.ContainsKey(kvp.Key))
-                {
-                    providedValues.Add(kvp.Key, kvp.Value);
-                }
-            }
-
-            return new VirtualPathContext(context.Context, context.AmbientValues, context.Values)
-            {
-                ProvidedValues = providedValues,
-            };
         }
 
         private static IReadOnlyDictionary<string, IRouteConstraint> GetConstraints(

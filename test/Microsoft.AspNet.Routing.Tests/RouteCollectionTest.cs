@@ -47,7 +47,6 @@ namespace Microsoft.AspNet.Routing
             var virtualPathContext = CreateVirtualPathContext(
                 options: GetRouteOptions(
                     lowerCaseUrls: lowercaseUrls,
-                    useBestEffortLinkGeneration: true,
                     appendTrailingSlash: appendTrailingSlash));
 
             // Act
@@ -88,7 +87,7 @@ namespace Microsoft.AspNet.Routing
         }
 
         [Theory]
-        [MemberData("DataTokensTestData")]
+        [MemberData(nameof(DataTokensTestData))]
         public void GetVirtualPath_ReturnsDataTokens(RouteValueDictionary dataTokens, string routerName)
         {
             // Arrange
@@ -286,304 +285,11 @@ namespace Microsoft.AspNet.Routing
             innerRouteCollection.Add(namedRoute);
             routeCollection.Add(innerRouteCollection);
 
-            var options = new RouteOptions()
-            {
-                UseBestEffortLinkGeneration = true,
-            };
-
-            var virtualPathContext = CreateVirtualPathContext("Ambiguous", options: options);
+            var virtualPathContext = CreateVirtualPathContext("Ambiguous", options: new RouteOptions());
 
             // Act & Assert
             var ex = Assert.Throws<InvalidOperationException>(() => routeCollection.GetVirtualPath(virtualPathContext));
             Assert.Equal("The supplied route name 'Ambiguous' is ambiguous and matched more than one route.", ex.Message);
-        }
-
-        [Fact]
-        public void GetVirtualPath_NamedRoute_BestEffort_BestInTopCollection()
-        {
-            // Arrange
-            var bestMatch = CreateNamedRoute("Match", accept: true, matchValue: "best");
-            var noMatch = CreateNamedRoute("NoMatch", accept: true, matchValue: "bad");
-
-            var routeCollection = new RouteCollection();
-            routeCollection.Add(bestMatch);
-
-            var innerRouteCollection = new RouteCollection();
-            innerRouteCollection.Add(noMatch);
-            routeCollection.Add(innerRouteCollection);
-
-            var options = new RouteOptions()
-            {
-                UseBestEffortLinkGeneration = true,
-            };
-
-            var virtualPathContext = CreateVirtualPathContext("Match", options: options);
-
-            // Act
-            var pathData = routeCollection.GetVirtualPath(virtualPathContext);
-
-            Assert.Equal(new PathString("/best"), pathData.VirtualPath);
-            var namedRouter = Assert.IsAssignableFrom<INamedRouter>(pathData.Router);
-            Assert.Equal("Match", namedRouter.Name);
-            Assert.Empty(pathData.DataTokens);
-        }
-
-        [Fact]
-        public void GetVirtualPath_NamedRoute_BestEffort_BestMatchInNestedCollection()
-        {
-            // Arrange
-            var bestMatch = CreateNamedRoute("NoMatch", accept: true, matchValue: "bad");
-            var noMatch = CreateNamedRoute("Match", accept: true, matchValue: "best");
-
-            var routeCollection = new RouteCollection();
-            routeCollection.Add(noMatch);
-
-            var innerRouteCollection = new RouteCollection();
-            innerRouteCollection.Add(bestMatch);
-            routeCollection.Add(innerRouteCollection);
-
-            var options = new RouteOptions()
-            {
-                UseBestEffortLinkGeneration = true,
-            };
-
-            var virtualPathContext = CreateVirtualPathContext("Match", options: options);
-
-            // Act
-            var pathData = routeCollection.GetVirtualPath(virtualPathContext);
-
-            Assert.Equal(new PathString("/best"), pathData.VirtualPath);
-            var namedRouter = Assert.IsAssignableFrom<INamedRouter>(pathData.Router);
-            Assert.Equal("Match", namedRouter.Name);
-            Assert.Empty(pathData.DataTokens);
-        }
-
-        [Fact]
-        public void GetVirtualPath_NamedRoute_BestEffort_FirstRouteWins()
-        {
-            // Arrange
-            var bestMatch = CreateNamedRoute("Match", accept: false, matchValue: "best");
-            var noMatch = CreateNamedRoute("NoMatch", accept: false, matchValue: "bad");
-
-            var routeCollection = new RouteCollection();
-            routeCollection.Add(noMatch);
-
-            var innerRouteCollection = new RouteCollection();
-            innerRouteCollection.Add(bestMatch);
-            routeCollection.Add(innerRouteCollection);
-
-            var options = new RouteOptions()
-            {
-                UseBestEffortLinkGeneration = true,
-            };
-
-            var virtualPathContext = CreateVirtualPathContext("Match", options: options);
-
-            // Act
-            var pathData = routeCollection.GetVirtualPath(virtualPathContext);
-
-            Assert.Equal(new PathString("/best"), pathData.VirtualPath);
-            var namedRouter = Assert.IsAssignableFrom<INamedRouter>(pathData.Router);
-            Assert.Equal("Match", namedRouter.Name);
-            Assert.Empty(pathData.DataTokens);
-        }
-
-        [Fact]
-        public void GetVirtualPath_BestEffort_FirstRouteWins()
-        {
-            // Arrange
-            var route1 = CreateRoute(accept: false, match: true, matchValue: "best");
-            var route2 = CreateRoute(accept: false, match: true, matchValue: "bad");
-            var route3 = CreateRoute(accept: false, match: true, matchValue: "bad");
-
-            var routeCollection = new RouteCollection();
-            routeCollection.Add(route1.Object);
-            routeCollection.Add(route2.Object);
-            routeCollection.Add(route3.Object);
-
-            var options = new RouteOptions()
-            {
-                UseBestEffortLinkGeneration = true,
-            };
-
-            var virtualPathContext = CreateVirtualPathContext(options: options);
-
-            // Act
-            var pathData = routeCollection.GetVirtualPath(virtualPathContext);
-
-            Assert.Equal(new PathString("/best"), pathData.VirtualPath);
-            Assert.Same(route1.Object, pathData.Router);
-            Assert.Empty(pathData.DataTokens);
-
-            // All of these should be called
-            route1.Verify(r => r.GetVirtualPath(It.IsAny<VirtualPathContext>()), Times.Once());
-            route2.Verify(r => r.GetVirtualPath(It.IsAny<VirtualPathContext>()), Times.Once());
-            route3.Verify(r => r.GetVirtualPath(It.IsAny<VirtualPathContext>()), Times.Once());
-        }
-
-        [Fact]
-        public void GetVirtualPath_NoBestEffort_NoMatch()
-        {
-            // Arrange
-            var route1 = CreateRoute(accept: false, match: true, matchValue: "best");
-            var route2 = CreateRoute(accept: false, match: true, matchValue: "bad");
-            var route3 = CreateRoute(accept: false, match: true, matchValue: "bad");
-
-            var routeCollection = new RouteCollection();
-            routeCollection.Add(route1.Object);
-            routeCollection.Add(route2.Object);
-            routeCollection.Add(route3.Object);
-
-            var options = new RouteOptions()
-            {
-                UseBestEffortLinkGeneration = false,
-            };
-
-            var virtualPathContext = CreateVirtualPathContext(options: options);
-
-            // Act
-            var path = routeCollection.GetVirtualPath(virtualPathContext);
-
-            Assert.Null(path);
-
-            // All of these should be called
-            route1.Verify(r => r.GetVirtualPath(It.IsAny<VirtualPathContext>()), Times.Once());
-            route2.Verify(r => r.GetVirtualPath(It.IsAny<VirtualPathContext>()), Times.Once());
-            route3.Verify(r => r.GetVirtualPath(It.IsAny<VirtualPathContext>()), Times.Once());
-        }
-
-        [Fact]
-        public void GetVirtualPath_BestEffort_FirstRouteWins_WithNonMatchingRoutes()
-        {
-            // Arrange
-            var route1 = CreateRoute(accept: false, match: false, matchValue: "bad");
-            var route2 = CreateRoute(accept: false, match: true, matchValue: "best");
-            var route3 = CreateRoute(accept: false, match: true, matchValue: "bad");
-
-            var routeCollection = new RouteCollection();
-            routeCollection.Add(route1.Object);
-            routeCollection.Add(route2.Object);
-            routeCollection.Add(route3.Object);
-
-            var options = new RouteOptions()
-            {
-                UseBestEffortLinkGeneration = true,
-            };
-
-            var virtualPathContext = CreateVirtualPathContext(options: options);
-
-            // Act
-            var pathData = routeCollection.GetVirtualPath(virtualPathContext);
-
-            Assert.Equal(new PathString("/best"), pathData.VirtualPath);
-            Assert.Same(route2.Object, pathData.Router);
-            Assert.Empty(pathData.DataTokens);
-
-            // All of these should be called
-            route1.Verify(r => r.GetVirtualPath(It.IsAny<VirtualPathContext>()), Times.Once());
-            route2.Verify(r => r.GetVirtualPath(It.IsAny<VirtualPathContext>()), Times.Once());
-            route3.Verify(r => r.GetVirtualPath(It.IsAny<VirtualPathContext>()), Times.Once());
-        }
-
-        [Fact]
-        public void GetVirtualPath_BestEffort_FirstValidatedValuesWins()
-        {
-            // Arrange
-            var route1 = CreateRoute(accept: false, match: true, matchValue: "bad");
-            var route2 = CreateRoute(accept: false, match: true, matchValue: "bad");
-            var route3 = CreateRoute(accept: true, match: true, matchValue: "best");
-
-            var routeCollection = new RouteCollection();
-            routeCollection.Add(route1.Object);
-            routeCollection.Add(route2.Object);
-            routeCollection.Add(route3.Object);
-
-            var options = new RouteOptions()
-            {
-                UseBestEffortLinkGeneration = true,
-            };
-
-            var virtualPathContext = CreateVirtualPathContext(options: options);
-
-            // Act
-            var pathData = routeCollection.GetVirtualPath(virtualPathContext);
-
-            Assert.Equal(new PathString("/best"), pathData.VirtualPath);
-            Assert.Same(route3.Object, pathData.Router);
-            Assert.Empty(pathData.DataTokens);
-
-            // All of these should be called
-            route1.Verify(r => r.GetVirtualPath(It.IsAny<VirtualPathContext>()), Times.Once());
-            route2.Verify(r => r.GetVirtualPath(It.IsAny<VirtualPathContext>()), Times.Once());
-            route3.Verify(r => r.GetVirtualPath(It.IsAny<VirtualPathContext>()), Times.Once());
-        }
-
-        [Fact]
-        public void GetVirtualPath_BestEffort_FirstValidatedValuesWins_ShortCircuit()
-        {
-            // Arrange
-            var route1 = CreateRoute(accept: false, match: true, matchValue: "bad");
-            var route2 = CreateRoute(accept: true, match: true, matchValue: "best");
-            var route3 = CreateRoute(accept: true, match: true, matchValue: "bad");
-
-            var routeCollection = new RouteCollection();
-            routeCollection.Add(route1.Object);
-            routeCollection.Add(route2.Object);
-            routeCollection.Add(route3.Object);
-
-            var options = new RouteOptions()
-            {
-                UseBestEffortLinkGeneration = true,
-            };
-
-            var virtualPathContext = CreateVirtualPathContext(options: options);
-
-            // Act
-            var pathData = routeCollection.GetVirtualPath(virtualPathContext);
-
-            Assert.Equal(new PathString("/best"), pathData.VirtualPath);
-            Assert.Same(route2.Object, pathData.Router);
-            Assert.Empty(pathData.DataTokens);
-
-            route1.Verify(r => r.GetVirtualPath(It.IsAny<VirtualPathContext>()), Times.Once());
-            route2.Verify(r => r.GetVirtualPath(It.IsAny<VirtualPathContext>()), Times.Once());
-            route3.Verify(r => r.GetVirtualPath(It.IsAny<VirtualPathContext>()), Times.Never());
-        }
-
-        [Fact]
-        public void GetVirtualPath_BestEffort_FirstValidatedValuesWins_Nested()
-        {
-            // Arrange
-            var route1 = CreateRoute(accept: false, match: true, matchValue: "bad");
-            var route2 = CreateRoute(accept: false, match: true, matchValue: "bad");
-            var route3 = CreateRoute(accept: true, match: true, matchValue: "best");
-
-            var routeCollection = new RouteCollection();
-            routeCollection.Add(route1.Object);
-
-            var innerRouteCollection = new RouteCollection();
-            innerRouteCollection.Add(route2.Object);
-            innerRouteCollection.Add(route3.Object);
-            routeCollection.Add(innerRouteCollection);
-
-            var options = new RouteOptions()
-            {
-                UseBestEffortLinkGeneration = true,
-            };
-
-            var virtualPathContext = CreateVirtualPathContext(options: options);
-
-            // Act
-            var pathData = routeCollection.GetVirtualPath(virtualPathContext);
-
-            Assert.Equal(new PathString("/best"), pathData.VirtualPath);
-            Assert.Same(route3.Object, pathData.Router);
-            Assert.Empty(pathData.DataTokens);
-
-            // All of these should be called
-            route1.Verify(r => r.GetVirtualPath(It.IsAny<VirtualPathContext>()), Times.Once());
-            route2.Verify(r => r.GetVirtualPath(It.IsAny<VirtualPathContext>()), Times.Once());
-            route3.Verify(r => r.GetVirtualPath(It.IsAny<VirtualPathContext>()), Times.Once());
         }
 
         // "Integration" tests for RouteCollection
@@ -633,7 +339,7 @@ namespace Microsoft.AspNet.Routing
         }
 
         [Theory]
-        [MemberData("IntegrationTestData")]
+        [MemberData(nameof(IntegrationTestData))]
         public void GetVirtualPath_Success(
             string template,
             RouteValueDictionary values,
@@ -651,10 +357,35 @@ namespace Microsoft.AspNet.Routing
             var pathData = routeCollection.GetVirtualPath(context);
 
             // Assert
-            Assert.True(context.IsBound);
             Assert.Equal(new PathString(expectedUrl), pathData.VirtualPath);
             Assert.Same(route, pathData.Router);
             Assert.Empty(pathData.DataTokens);
+        }
+
+        [Fact]
+        public void GetVirtualPath_NoBestEffort_NoMatch()
+        {
+            // Arrange
+            var route1 = CreateRoute(accept: false, match: false, matchValue: "bad");
+            var route2 = CreateRoute(accept: false, match: false, matchValue: "bad");
+            var route3 = CreateRoute(accept: false, match: false, matchValue: "bad");
+
+            var routeCollection = new RouteCollection();
+            routeCollection.Add(route1.Object);
+            routeCollection.Add(route2.Object);
+            routeCollection.Add(route3.Object);
+
+            var virtualPathContext = CreateVirtualPathContext();
+
+            // Act
+            var path = routeCollection.GetVirtualPath(virtualPathContext);
+
+            Assert.Null(path);
+
+            // All of these should be called
+            route1.Verify(r => r.GetVirtualPath(It.IsAny<VirtualPathContext>()), Times.Once());
+            route2.Verify(r => r.GetVirtualPath(It.IsAny<VirtualPathContext>()), Times.Once());
+            route3.Verify(r => r.GetVirtualPath(It.IsAny<VirtualPathContext>()), Times.Once());
         }
 
         // DataTokens test data for RouterCollection.GetVirtualPath
@@ -744,7 +475,6 @@ namespace Microsoft.AspNet.Routing
             var target = new Mock<INamedRouter>(MockBehavior.Strict);
             target
                 .Setup(e => e.GetVirtualPath(It.IsAny<VirtualPathContext>()))
-                .Callback<VirtualPathContext>(c => c.IsBound = accept && c.RouteName == name)
                 .Returns<VirtualPathContext>(c =>
                     c.RouteName == name ? new VirtualPathData(target.Object, matchValue) : null)
                 .Verifiable();
@@ -770,7 +500,6 @@ namespace Microsoft.AspNet.Routing
             var target = new Mock<IRouter>(MockBehavior.Strict);
             target
                 .Setup(e => e.GetVirtualPath(It.IsAny<VirtualPathContext>()))
-                .Callback<VirtualPathContext>(c => c.IsBound = true)
                 .Returns<VirtualPathContext>(rc => null);
 
             var resolverMock = new Mock<IInlineConstraintResolver>();
@@ -876,7 +605,6 @@ namespace Microsoft.AspNet.Routing
             var target = new Mock<IRouter>(MockBehavior.Strict);
             target
                 .Setup(e => e.GetVirtualPath(It.IsAny<VirtualPathContext>()))
-                .Callback<VirtualPathContext>(c => c.IsBound = accept)
                 .Returns(accept || match ? new VirtualPathData(target.Object, matchValue) : null)
                 .Verifiable();
 
@@ -891,12 +619,10 @@ namespace Microsoft.AspNet.Routing
 
         private static RouteOptions GetRouteOptions(
             bool lowerCaseUrls = false,
-            bool useBestEffortLinkGeneration = true,
             bool appendTrailingSlash = false)
         {
             var routeOptions = new RouteOptions();
             routeOptions.LowercaseUrls = lowerCaseUrls;
-            routeOptions.UseBestEffortLinkGeneration = useBestEffortLinkGeneration;
             routeOptions.AppendTrailingSlash = appendTrailingSlash;
 
             return routeOptions;

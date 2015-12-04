@@ -1,13 +1,21 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Collections.Generic;
 using Microsoft.AspNet.Http;
 
 namespace Microsoft.AspNet.Routing
 {
+    /// <summary>
+    /// A context for virtual path generation operations.
+    /// </summary>
     public class VirtualPathContext
     {
+        /// <summary>
+        /// Creates a new <see cref="VirtualPathContext"/>.
+        /// </summary>
+        /// <param name="httpContext">The <see cref="Http.HttpContext"/> associated with the current request.</param>
+        /// <param name="ambientValues">The set of route values associated with the current request.</param>
+        /// <param name="values">The set of new values provided for virtual path generation.</param>
         public VirtualPathContext(
             HttpContext httpContext,
             RouteValueDictionary ambientValues,
@@ -16,28 +24,43 @@ namespace Microsoft.AspNet.Routing
         {
         }
 
+        /// <summary>
+        /// Creates a new <see cref="VirtualPathContext"/>.
+        /// </summary>
+        /// <param name="httpContext">The <see cref="Http.HttpContext"/> associated with the current request.</param>
+        /// <param name="ambientValues">The set of route values associated with the current request.</param>
+        /// <param name="values">The set of new values provided for virtual path generation.</param>
+        /// <param name="routeName">The name of the route to use for virtual path generation.</param>
         public VirtualPathContext(
-            HttpContext context,
+            HttpContext httpContext,
             RouteValueDictionary ambientValues,
             RouteValueDictionary values,
             string routeName)
         {
-            Context = context;
+            HttpContext = httpContext;
             AmbientValues = ambientValues;
             Values = values;
             RouteName = routeName;
         }
 
-        public string RouteName { get; }
-
-        public IDictionary<string, object> ProvidedValues { get; set; }
-
+        /// <summary>
+        /// Gets the set of route values associated with the current request.
+        /// </summary>
         public RouteValueDictionary AmbientValues { get; }
 
-        public HttpContext Context { get; }
+        /// <summary>
+        /// Gets the <see cref="Http.HttpContext"/> associated with the current request.
+        /// </summary>
+        public HttpContext HttpContext { get; }
 
-        public bool IsBound { get; set; }
+        /// <summary>
+        /// Gets the name of the route to use for virtual path generation.
+        /// </summary>
+        public string RouteName { get; }
 
+        /// <summary>
+        /// Gets the set of new values provided for virtual path generation.
+        /// </summary>
         public RouteValueDictionary Values { get; }
     }
 }

@@ -69,13 +69,5 @@ namespace Microsoft.AspNet.Routing
                 {"required", typeof(RequiredRouteConstraint) },
             };
         }
-
-        /// <summary>
-        /// Gets or sets the value that enables best-effort link generation.
-        ///
-        /// If enabled, link generation will use allow link generation to succeed when the set of values provided
-        /// cannot be validated.
-        /// </summary>
-        public bool UseBestEffortLinkGeneration { get; set; }
     }
 }

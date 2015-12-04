@@ -376,22 +376,13 @@ namespace Microsoft.AspNet.Routing.Tree
         public void TreeRouter_GenerateLink(string firstTemplate, string secondTemplate, string expectedPath)
         {
             // Arrange
-            var expectedGroup = CreateRouteGroup(0, firstTemplate);
-
-            string selectedGroup = null;
-            Action<VirtualPathContext> callback = ctx =>
-            {
-                selectedGroup = (string)ctx.ProvidedValues[TreeRouter.RouteGroupKey];
-                ctx.IsBound = true;
-            };
-
             var values = new Dictionary<string, object>
             {
                 {"url", "dingo" },
                 {"id", 5 }
             };
 
-            var route = CreateAttributeRoute(callback, firstTemplate, secondTemplate);
+            var route = CreateAttributeRoute(firstTemplate, secondTemplate);
             var context = CreateVirtualPathContext(
                 values: values,
                 ambientValues: null);
@@ -404,7 +395,6 @@ namespace Microsoft.AspNet.Routing.Tree
             Assert.Equal(new PathString(expectedPath), result.VirtualPath);
             Assert.Same(route, result.Router);
             Assert.Empty(result.DataTokens);
-            Assert.Equal(expectedGroup, selectedGroup);
         }
 
         [Fact]
@@ -414,16 +404,7 @@ namespace Microsoft.AspNet.Routing.Tree
             var firstTemplate = "template";
             var secondTemplate = "template/{parameter:int=1003}";
 
-            var expectedGroup = CreateRouteGroup(0, secondTemplate);
-
-            string selectedGroup = null;
-            Action<VirtualPathContext> callback = ctx =>
-            {
-                selectedGroup = (string)ctx.ProvidedValues[TreeRouter.RouteGroupKey];
-                ctx.IsBound = true;
-            };
-
-            var route = CreateAttributeRoute(callback, firstTemplate, secondTemplate);
+            var route = CreateAttributeRoute(firstTemplate, secondTemplate);
             var context = CreateVirtualPathContext(
                 values: null,
                 ambientValues: null);
@@ -437,10 +418,8 @@ namespace Microsoft.AspNet.Routing.Tree
             Assert.Equal(new PathString($"/template"), result.VirtualPath);
             Assert.Same(route, result.Router);
             Assert.Empty(result.DataTokens);
-            // Even though the path was /template, the group generated from was /template/{paramter:int=1003}
-            Assert.Equal(expectedGroup, selectedGroup);
         }
-        
+
         [Theory]
         [InlineData("template/{parameter:int=5}", "template", "/template/5")]
         [InlineData("template/{parameter}", "template", "/template/5")]
@@ -450,16 +429,8 @@ namespace Microsoft.AspNet.Routing.Tree
             string secondTemplate,
             string expectedPath)
         {
-            var expectedGroup = CreateRouteGroup(0, firstTemplate);
-
-            string selectedGroup = null;
-            Action<VirtualPathContext> callback = ctx =>
-            {
-                selectedGroup = (string)ctx.ProvidedValues[TreeRouter.RouteGroupKey];
-                ctx.IsBound = true;
-            };
-
-            var route = CreateAttributeRoute(callback, firstTemplate, secondTemplate);
+            // Arrange
+            var route = CreateAttributeRoute(firstTemplate, secondTemplate);
             var parameter = 5;
             var id = 1234;
             var values = new Dictionary<string, object>
@@ -479,7 +450,6 @@ namespace Microsoft.AspNet.Routing.Tree
             Assert.Equal(new PathString(expectedPath), result.VirtualPath);
             Assert.Same(route, result.Router);
             Assert.Empty(result.DataTokens);
-            Assert.Equal(expectedGroup, selectedGroup);
         }
 
         [Theory]
@@ -492,16 +462,7 @@ namespace Microsoft.AspNet.Routing.Tree
             string expectedPath)
         {
             // Arrange
-            var expectedGroup = CreateRouteGroup(0, secondTemplate);
-
-            string selectedGroup = null;
-            Action<VirtualPathContext> callback = ctx =>
-            {
-                selectedGroup = (string)ctx.ProvidedValues[TreeRouter.RouteGroupKey];
-                ctx.IsBound = true;
-            };
-
-            var route = CreateAttributeRoute(callback, firstTemplate, secondTemplate);
+            var route = CreateAttributeRoute(firstTemplate, secondTemplate);
             var parameter = 5;
             var id = 1234;
             var values = new Dictionary<string, object>
@@ -510,7 +471,7 @@ namespace Microsoft.AspNet.Routing.Tree
                 { nameof(id), id }
             };
             var context = CreateVirtualPathContext(
-                values: null, 
+                values: null,
                 ambientValues: values);
 
             // Act
@@ -521,7 +482,6 @@ namespace Microsoft.AspNet.Routing.Tree
             Assert.Equal(new PathString(expectedPath), result.VirtualPath);
             Assert.Same(route, result.Router);
             Assert.Empty(result.DataTokens);
-            Assert.Equal(expectedGroup, selectedGroup);
         }
 
         [Theory]
@@ -538,18 +498,6 @@ namespace Microsoft.AspNet.Routing.Tree
         public void TreeRouter_GenerateLink_RespectsPrecedence(string firstTemplate, string secondTemplate)
         {
             // Arrange
-            var expectedGroup = CreateRouteGroup(0, firstTemplate);
-
-            string selectedGroup = null;
-
-            var next = new Mock<IRouter>();
-            next.Setup(n => n.GetVirtualPath(It.IsAny<VirtualPathContext>())).Callback<VirtualPathContext>(ctx =>
-            {
-                selectedGroup = (string)ctx.ProvidedValues[TreeRouter.RouteGroupKey];
-                ctx.IsBound = true;
-            })
-            .Returns((VirtualPathData)null);
-
             var matchingRoutes = Enumerable.Empty<TreeRouteMatchingEntry>();
 
             var firstEntry = CreateGenerationEntry(firstTemplate, requiredValues: null);
@@ -559,7 +507,7 @@ namespace Microsoft.AspNet.Routing.Tree
             // try to generate a link, the route with a higher precedence gets tried first.
             var linkGenerationEntries = new[] { secondEntry, firstEntry };
 
-            var route = CreateAttributeRoute(next.Object, matchingRoutes, linkGenerationEntries);
+            var route = CreateAttributeRoute(matchingRoutes, linkGenerationEntries);
 
             var context = CreateVirtualPathContext(values: null, ambientValues: new { parameter = 5 });
 
@@ -571,8 +519,6 @@ namespace Microsoft.AspNet.Routing.Tree
             Assert.Equal(new PathString("/template/5"), result.VirtualPath);
             Assert.Same(route, result.Router);
             Assert.Empty(result.DataTokens);
-
-            Assert.Equal(expectedGroup, selectedGroup);
         }
 
         [Theory]
@@ -591,25 +537,13 @@ namespace Microsoft.AspNet.Routing.Tree
             object parameter)
         {
             // Arrange
-            var expectedGroup = CreateRouteGroup(0, template);
-
-            string selectedGroup = null;
-
-            var next = new Mock<IRouter>();
-            next.Setup(n => n.GetVirtualPath(It.IsAny<VirtualPathContext>())).Callback<VirtualPathContext>(ctx =>
-            {
-                selectedGroup = (string)ctx.ProvidedValues[TreeRouter.RouteGroupKey];
-                ctx.IsBound = true;
-            })
-            .Returns((VirtualPathData)null);
-
             var matchingRoutes = Enumerable.Empty<TreeRouteMatchingEntry>();
 
             var entry = CreateGenerationEntry(template, requiredValues: null);
 
             var linkGenerationEntries = new[] { entry };
 
-            var route = CreateAttributeRoute(next.Object, matchingRoutes, linkGenerationEntries);
+            var route = CreateAttributeRoute(matchingRoutes, linkGenerationEntries);
 
             VirtualPathContext context;
             if (parameter != null)
@@ -652,17 +586,6 @@ namespace Microsoft.AspNet.Routing.Tree
         public void TreeRouter_GenerateLink_RespectsOrderOverPrecedence(string firstTemplate, string secondTemplate)
         {
             // Arrange
-            var selectedGroup = CreateRouteGroup(0, secondTemplate);
-
-            string firstRouteGroupSelected = null;
-            var next = new Mock<IRouter>();
-            next.Setup(n => n.GetVirtualPath(It.IsAny<VirtualPathContext>())).Callback<VirtualPathContext>(ctx =>
-            {
-                firstRouteGroupSelected = (string)ctx.ProvidedValues[TreeRouter.RouteGroupKey];
-                ctx.IsBound = true;
-            })
-            .Returns((VirtualPathData)null);
-
             var matchingRoutes = Enumerable.Empty<TreeRouteMatchingEntry>();
 
             var firstRoute = CreateGenerationEntry(firstTemplate, requiredValues: null, order: 1);
@@ -673,7 +596,7 @@ namespace Microsoft.AspNet.Routing.Tree
             // relative order gets tried first.
             var linkGenerationEntries = new[] { firstRoute, secondRoute };
 
-            var route = CreateAttributeRoute(next.Object, matchingRoutes, linkGenerationEntries);
+            var route = CreateAttributeRoute(matchingRoutes, linkGenerationEntries);
 
             var context = CreateVirtualPathContext(null, ambientValues: new { parameter = 5 });
 
@@ -685,8 +608,6 @@ namespace Microsoft.AspNet.Routing.Tree
             Assert.Equal(new PathString("/template/5"), result.VirtualPath);
             Assert.Same(route, result.Router);
             Assert.Empty(result.DataTokens);
-
-            Assert.Equal(selectedGroup, firstRouteGroupSelected);
         }
 
         [Theory]
@@ -698,17 +619,6 @@ namespace Microsoft.AspNet.Routing.Tree
         public void TreeRouter_GenerateLink_RespectsOrder(string firstTemplate, string secondTemplate)
         {
             // Arrange
-            var expectedGroup = CreateRouteGroup(0, secondTemplate);
-
-            var next = new Mock<IRouter>();
-            string selectedGroup = null;
-            next.Setup(n => n.GetVirtualPath(It.IsAny<VirtualPathContext>())).Callback<VirtualPathContext>(ctx =>
-            {
-                selectedGroup = (string)ctx.ProvidedValues[TreeRouter.RouteGroupKey];
-                ctx.IsBound = true;
-            })
-            .Returns((VirtualPathData)null);
-
             var matchingRoutes = Enumerable.Empty<TreeRouteMatchingEntry>();
 
             var firstRoute = CreateGenerationEntry(firstTemplate, requiredValues: null, order: 1);
@@ -718,7 +628,7 @@ namespace Microsoft.AspNet.Routing.Tree
             // we try to generate a link, the route with the higher relative order gets tried first.
             var linkGenerationEntries = new[] { firstRoute, secondRoute };
 
-            var route = CreateAttributeRoute(next.Object, matchingRoutes, linkGenerationEntries);
+            var route = CreateAttributeRoute(matchingRoutes, linkGenerationEntries);
 
             var context = CreateVirtualPathContext(values: null, ambientValues: new { first = 5, second = 5 });
 
@@ -730,8 +640,6 @@ namespace Microsoft.AspNet.Routing.Tree
             Assert.Equal(new PathString("/template/5"), result.VirtualPath);
             Assert.Same(route, result.Router);
             Assert.Empty(result.DataTokens);
-
-            Assert.Equal(expectedGroup, selectedGroup);
         }
 
         [Theory]
@@ -743,17 +651,6 @@ namespace Microsoft.AspNet.Routing.Tree
         public void TreeRouter_GenerateLink_EnsuresStableOrder(string firstTemplate, string secondTemplate)
         {
             // Arrange
-            var expectedGroup = CreateRouteGroup(0, firstTemplate);
-
-            var next = new Mock<IRouter>();
-            string selectedGroup = null;
-            next.Setup(n => n.GetVirtualPath(It.IsAny<VirtualPathContext>())).Callback<VirtualPathContext>(ctx =>
-            {
-                selectedGroup = (string)ctx.ProvidedValues[TreeRouter.RouteGroupKey];
-                ctx.IsBound = true;
-            })
-            .Returns((VirtualPathData)null);
-
             var matchingRoutes = Enumerable.Empty<TreeRouteMatchingEntry>();
 
             var firstRoute = CreateGenerationEntry(firstTemplate, requiredValues: null, order: 0);
@@ -763,7 +660,7 @@ namespace Microsoft.AspNet.Routing.Tree
             // we try to generate a link, the route with the higher template order gets tried first.
             var linkGenerationEntries = new[] { secondRoute, firstRoute };
 
-            var route = CreateAttributeRoute(next.Object, matchingRoutes, linkGenerationEntries);
+            var route = CreateAttributeRoute(matchingRoutes, linkGenerationEntries);
 
             var context = CreateVirtualPathContext(values: null, ambientValues: new { first = 5, second = 5 });
 
@@ -775,8 +672,6 @@ namespace Microsoft.AspNet.Routing.Tree
             Assert.Equal(new PathString("/first/5"), result.VirtualPath);
             Assert.Same(route, result.Router);
             Assert.Empty(result.DataTokens);
-
-            Assert.Equal(expectedGroup, selectedGroup);
         }
 
         public static IEnumerable<object[]> NamedEntriesWithDifferentTemplates
@@ -880,20 +775,9 @@ namespace Microsoft.AspNet.Routing.Tree
             var expectedLink = new PathString(
                 namedEntries.First().Template.Parameters.Any() ? "/template/5" : "/template");
 
-            var expectedGroup = "0&" + namedEntries.First().Template.TemplateText;
-            string selectedGroup = null;
-            var next = new Mock<IRouter>();
-            next.Setup(s => s.GetVirtualPath(It.IsAny<VirtualPathContext>()))
-                .Callback<VirtualPathContext>(vpc =>
-                {
-                    vpc.IsBound = true;
-                    selectedGroup = (string)vpc.ProvidedValues[TreeRouter.RouteGroupKey];
-                })
-                .Returns((VirtualPathData)null);
-
             var matchingEntries = Enumerable.Empty<TreeRouteMatchingEntry>();
 
-            var route = CreateAttributeRoute(next.Object, matchingEntries, namedEntries);
+            var route = CreateAttributeRoute(matchingEntries, namedEntries);
 
             var ambientValues = namedEntries.First().Template.Parameters.Any() ? new { parameter = 5 } : null;
 
@@ -907,24 +791,12 @@ namespace Microsoft.AspNet.Routing.Tree
             Assert.Equal(expectedLink, result.VirtualPath);
             Assert.Same(route, result.Router);
             Assert.Empty(result.DataTokens);
-
-            Assert.Equal(expectedGroup, selectedGroup);
         }
 
         [Fact]
         public void TreeRouter_GenerateLink_WithName()
         {
             // Arrange
-            string selectedGroup = null;
-            var next = new Mock<IRouter>();
-            next.Setup(s => s.GetVirtualPath(It.IsAny<VirtualPathContext>()))
-                .Callback<VirtualPathContext>(vpc =>
-                {
-                    vpc.IsBound = true;
-                    selectedGroup = (string)vpc.ProvidedValues[TreeRouter.RouteGroupKey];
-                })
-                .Returns((VirtualPathData)null);
-
             var namedEntry = CreateGenerationEntry("named", requiredValues: null, order: 1, name: "NamedRoute");
             var unnamedEntry = CreateGenerationEntry("unnamed", requiredValues: null, order: 0);
 
@@ -934,7 +806,7 @@ namespace Microsoft.AspNet.Routing.Tree
 
             var matchingEntries = Enumerable.Empty<TreeRouteMatchingEntry>();
 
-            var route = CreateAttributeRoute(next.Object, matchingEntries, linkGenerationEntries);
+            var route = CreateAttributeRoute(matchingEntries, linkGenerationEntries);
 
             var context = CreateVirtualPathContext(values: null, ambientValues: null, name: "NamedRoute");
 
@@ -946,23 +818,12 @@ namespace Microsoft.AspNet.Routing.Tree
             Assert.Equal(new PathString("/named"), result.VirtualPath);
             Assert.Same(route, result.Router);
             Assert.Empty(result.DataTokens);
-
-            Assert.Equal("1&named", selectedGroup);
         }
 
         [Fact]
         public void TreeRouter_DoesNotGenerateLink_IfThereIsNoRouteForAGivenName()
         {
             // Arrange
-            string selectedGroup = null;
-            var next = new Mock<IRouter>();
-            next.Setup(s => s.GetVirtualPath(It.IsAny<VirtualPathContext>()))
-                .Callback<VirtualPathContext>(vpc =>
-                {
-                    vpc.IsBound = true;
-                    selectedGroup = (string)vpc.ProvidedValues[TreeRouter.RouteGroupKey];
-                });
-
             var namedEntry = CreateGenerationEntry("named", requiredValues: null, order: 1, name: "NamedRoute");
 
             // Add an unnamed entry to ensure we don't fall back to generating a link for an unnamed route.
@@ -974,7 +835,7 @@ namespace Microsoft.AspNet.Routing.Tree
 
             var matchingEntries = Enumerable.Empty<TreeRouteMatchingEntry>();
 
-            var route = CreateAttributeRoute(next.Object, matchingEntries, linkGenerationEntries);
+            var route = CreateAttributeRoute(matchingEntries, linkGenerationEntries);
 
             var context = CreateVirtualPathContext(values: null, ambientValues: null, name: "NonExistingNamedRoute");
 
@@ -994,15 +855,6 @@ namespace Microsoft.AspNet.Routing.Tree
         public void TreeRouter_DoesNotGenerateLink_IfValuesDoNotMatchNamedEntry(string template, string value)
         {
             // Arrange
-            string selectedGroup = null;
-            var next = new Mock<IRouter>();
-            next.Setup(s => s.GetVirtualPath(It.IsAny<VirtualPathContext>()))
-                .Callback<VirtualPathContext>(vpc =>
-                {
-                    vpc.IsBound = true;
-                    selectedGroup = (string)vpc.ProvidedValues[TreeRouter.RouteGroupKey];
-                });
-
             var namedEntry = CreateGenerationEntry(template, requiredValues: null, order: 1, name: "NamedRoute");
 
             // Add an unnamed entry to ensure we don't fall back to generating a link for an unnamed route.
@@ -1014,7 +866,7 @@ namespace Microsoft.AspNet.Routing.Tree
 
             var matchingEntries = Enumerable.Empty<TreeRouteMatchingEntry>();
 
-            var route = CreateAttributeRoute(next.Object, matchingEntries, linkGenerationEntries);
+            var route = CreateAttributeRoute(matchingEntries, linkGenerationEntries);
 
             var ambientValues = value == null ? null : new { parameter = value };
 
@@ -1035,14 +887,9 @@ namespace Microsoft.AspNet.Routing.Tree
         public void TreeRouter_GeneratesLink_IfValuesMatchNamedEntry(string template, string value)
         {
             // Arrange
-            string selectedGroup = null;
             var next = new Mock<IRouter>();
-            next.Setup(s => s.GetVirtualPath(It.IsAny<VirtualPathContext>()))
-                .Callback<VirtualPathContext>(vpc =>
-                {
-                    vpc.IsBound = true;
-                    selectedGroup = (string)vpc.ProvidedValues[TreeRouter.RouteGroupKey];
-                })
+            next
+                .Setup(s => s.GetVirtualPath(It.IsAny<VirtualPathContext>()))
                 .Returns((VirtualPathData)null);
 
             var namedEntry = CreateGenerationEntry(template, requiredValues: null, order: 1, name: "NamedRoute");
@@ -1070,11 +917,9 @@ namespace Microsoft.AspNet.Routing.Tree
             Assert.Equal(new PathString("/template/5"), result.VirtualPath);
             Assert.Same(route, result.Router);
             Assert.Empty(result.DataTokens);
-
-            Assert.Equal(string.Format("1&{0}", template), selectedGroup);
         }
 
-       [Fact]
+        [Fact]
         public void TreeRouter_GenerateLink_NoRequiredValues()
         {
             // Arrange
@@ -1174,14 +1019,6 @@ namespace Microsoft.AspNet.Routing.Tree
                 "api/{area}/dosomething/{controller}/{action}",
                 new { action = "Index", controller = "Store", area = "AwesomeCo" });
 
-            var expectedValues = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
-            {
-                { "area", "AwesomeCo" },
-                { "controller", "Store" },
-                { "action", "Index" },
-                { TreeRouter.RouteGroupKey, entry.RouteGroup },
-            };
-
             var next = new StubRouter();
             var route = CreateAttributeRoute(next, entry);
 
@@ -1197,8 +1034,6 @@ namespace Microsoft.AspNet.Routing.Tree
             Assert.Equal(new PathString("/api/AwesomeCo/dosomething/Store/Index"), pathData.VirtualPath);
             Assert.Same(route, pathData.Router);
             Assert.Empty(pathData.DataTokens);
-
-            Assert.Equal(expectedValues, next.GenerationContext.ProvidedValues);
         }
 
         [Fact]
@@ -1226,13 +1061,6 @@ namespace Microsoft.AspNet.Routing.Tree
             // Arrange
             var entry = CreateGenerationEntry("api/Store/{action}/{id:int}", new { action = "Index", controller = "Store" });
 
-            var expectedValues = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
-            {
-                { "action", "Index" },
-                { "id", 5 },
-                { TreeRouter.RouteGroupKey, entry.RouteGroup  },
-            };
-
             var next = new StubRouter();
             var route = CreateAttributeRoute(next, entry);
 
@@ -1246,8 +1074,6 @@ namespace Microsoft.AspNet.Routing.Tree
             Assert.Equal(new PathString("/api/Store/Index/5"), pathData.VirtualPath);
             Assert.Same(route, pathData.Router);
             Assert.Empty(pathData.DataTokens);
-
-            Assert.Equal(expectedValues, next.GenerationContext.ProvidedValues);
         }
 
         [Fact]
@@ -1256,12 +1082,6 @@ namespace Microsoft.AspNet.Routing.Tree
             // Arrange
             var entry = CreateGenerationEntry("api/Store/{action}/{id:int}", new { action = "Index", controller = "Store" });
             var route = CreateAttributeRoute(entry);
-
-            var expectedValues = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
-            {
-                { "id", "5" },
-                { TreeRouter.RouteGroupKey, entry.RouteGroup  },
-            };
 
             var next = new StubRouter();
             var context = CreateVirtualPathContext(new { action = "Index", controller = "Store", id = "heyyyy" });
@@ -1312,29 +1132,6 @@ namespace Microsoft.AspNet.Routing.Tree
         }
 
         [Fact]
-        public void TreeRouter_GenerateLink_ForwardsRouteGroup()
-        {
-            // Arrange
-            var entry = CreateGenerationEntry("api/Store", new { action = "Index", controller = "Store" });
-
-            var expectedValues = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
-            {
-                { TreeRouter.RouteGroupKey, entry.RouteGroup },
-            };
-
-            var next = new StubRouter();
-            var route = CreateAttributeRoute(next, entry);
-
-            var context = CreateVirtualPathContext(new { action = "Index", controller = "Store" });
-
-            // Act
-            var path = route.GetVirtualPath(context);
-
-            // Assert
-            Assert.Equal(expectedValues, next.GenerationContext.ProvidedValues);
-        }
-
-        [Fact]
         public void TreeRouter_GenerateLink_RejectedByFirstRoute()
         {
             // Arrange
@@ -1353,41 +1150,6 @@ namespace Microsoft.AspNet.Routing.Tree
             Assert.Equal(new PathString("/api2/Blog"), pathData.VirtualPath);
             Assert.Same(route, pathData.Router);
             Assert.Empty(pathData.DataTokens);
-        }
-
-        [Fact]
-        public void TreeRouter_GenerateLink_RejectedByHandler()
-        {
-            // Arrange
-            var entry1 = CreateGenerationEntry("api/Store", new { action = "Edit", controller = "Store" });
-            var entry2 = CreateGenerationEntry("api2/{controller}", new { action = "Edit", controller = "Store" });
-
-            var next = new StubRouter();
-
-            var callCount = 0;
-            next.GenerationDelegate = (VirtualPathContext c) =>
-            {
-                // Reject entry 1.
-                callCount++;
-                return !c.ProvidedValues.Contains(new KeyValuePair<string, object>(
-                    TreeRouter.RouteGroupKey,
-                    entry1.RouteGroup));
-            };
-
-            var route = CreateAttributeRoute(next, entry1, entry2);
-
-            var context = CreateVirtualPathContext(new { action = "Edit", controller = "Store" });
-
-            // Act
-            var pathData = route.GetVirtualPath(context);
-
-            // Assert
-            Assert.NotNull(pathData);
-            Assert.Equal(new PathString("/api2/Store"), pathData.VirtualPath);
-            Assert.Same(route, pathData.Router);
-            Assert.Empty(pathData.DataTokens);
-
-            Assert.Equal(2, callCount);
         }
 
         [Fact]
@@ -1509,7 +1271,7 @@ namespace Microsoft.AspNet.Routing.Tree
                     // values
                     new object[]
                     {
-                        "Test/{val1}/{val2}.{val3?}",                        
+                        "Test/{val1}/{val2}.{val3?}",
                         new {val1 = "someval1", val2 = "someval2", val3 = "someval3a"},
                         new {val3 = "someval3v"},
                         "/Test/someval1/someval2.someval3v",
@@ -1527,18 +1289,18 @@ namespace Microsoft.AspNet.Routing.Tree
                         null,
                         new {val1 = "someval1", val2 = "someval2" },
                         "/Test/someval1/someval2",
-                    },                    
+                    },
                     new object[]
                     {
                         "Test/{val1}.{val2}.{val3}.{val4?}",
-                        new {val1 = "someval1", val2 = "someval2" },                        
+                        new {val1 = "someval1", val2 = "someval2" },
                         new {val4 = "someval4", val3 = "someval3" },
                         "/Test/someval1.someval2.someval3.someval4",
                     },
                     new object[]
                     {
                         "Test/{val1}.{val2}.{val3}.{val4?}",
-                        new {val1 = "someval1", val2 = "someval2" },                        
+                        new {val1 = "someval1", val2 = "someval2" },
                         new {val3 = "someval3" },
                         "/Test/someval1.someval2.someval3",
                     },
@@ -1932,6 +1694,13 @@ namespace Microsoft.AspNet.Routing.Tree
         }
 
         private static TreeRouter CreateAttributeRoute(
+            IEnumerable<TreeRouteMatchingEntry> matchingEntries,
+            IEnumerable<TreeRouteLinkGenerationEntry> generationEntries)
+        {
+            return CreateAttributeRoute(new StubRouter(), matchingEntries, generationEntries);
+        }
+
+        private static TreeRouter CreateAttributeRoute(
             IRouter next,
             IEnumerable<TreeRouteMatchingEntry> matchingEntries,
             IEnumerable<TreeRouteLinkGenerationEntry> generationEntries)
@@ -1952,13 +1721,13 @@ namespace Microsoft.AspNet.Routing.Tree
         }
 
         private static TreeRouter CreateAttributeRoute(
-            Action<VirtualPathContext> virtualPathCallback,
             string firstTemplate,
             string secondTemplate)
         {
             var next = new Mock<IRouter>();
-            next.Setup(n => n.GetVirtualPath(It.IsAny<VirtualPathContext>())).Callback<VirtualPathContext>(virtualPathCallback)
-            .Returns((VirtualPathData)null);
+            next
+                .Setup(n => n.GetVirtualPath(It.IsAny<VirtualPathContext>()))
+                .Returns((VirtualPathData)null);
 
             var matchingRoutes = Enumerable.Empty<TreeRouteMatchingEntry>();
             var firstEntry = CreateGenerationEntry(firstTemplate, requiredValues: null);
@@ -2014,8 +1783,6 @@ namespace Microsoft.AspNet.Routing.Tree
         {
             public VirtualPathContext GenerationContext { get; set; }
 
-            public Func<VirtualPathContext, bool> GenerationDelegate { get; set; }
-
             public RouteContext MatchingContext { get; set; }
 
             public Func<RouteContext, bool> MatchingDelegate { get; set; }
@@ -2023,16 +1790,6 @@ namespace Microsoft.AspNet.Routing.Tree
             public VirtualPathData GetVirtualPath(VirtualPathContext context)
             {
                 GenerationContext = context;
-
-                if (GenerationDelegate == null)
-                {
-                    context.IsBound = true;
-                }
-                else
-                {
-                    context.IsBound = GenerationDelegate(context);
-                }
-
                 return null;
             }
 

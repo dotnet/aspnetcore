@@ -143,7 +143,6 @@ namespace Microsoft.AspNet.Routing.Tree
                 var path = GenerateVirtualPath(context, match.Entry);
                 if (path != null)
                 {
-                    context.IsBound = true;
                     return path;
                 }
             }
@@ -382,7 +381,6 @@ namespace Microsoft.AspNet.Routing.Tree
                 var path = GenerateVirtualPath(context, entry);
                 if (path != null)
                 {
-                    context.IsBound = true;
                     return path;
                 }
             }
@@ -430,7 +428,7 @@ namespace Microsoft.AspNet.Routing.Tree
             var matched = RouteConstraintMatcher.Match(
                 entry.Constraints,
                 bindingResult.CombinedValues,
-                context.Context,
+                context.HttpContext,
                 this,
                 RouteDirection.UrlGeneration,
                 _constraintLogger);
@@ -441,29 +439,12 @@ namespace Microsoft.AspNet.Routing.Tree
                 return null;
             }
 
-            // These values are used to signal to the next route what we would produce if we round-tripped
-            // (generate a link and then parse). In MVC the 'next route' is typically the MvcRouteHandler.
-            var providedValues = new Dictionary<string, object>(
-                bindingResult.AcceptedValues,
-                StringComparer.OrdinalIgnoreCase);
-            providedValues.Add(RouteGroupKey, entry.RouteGroup);
-
-            var childContext = new VirtualPathContext(context.Context, context.AmbientValues, context.Values)
-            {
-                ProvidedValues = providedValues,
-            };
-
-            var pathData = _next.GetVirtualPath(childContext);
+            var pathData = _next.GetVirtualPath(context);
             if (pathData != null)
             {
                 // If path is non-null then the target router short-circuited, we don't expect this
                 // in typical MVC scenarios.
                 return pathData;
-            }
-            else if (!childContext.IsBound)
-            {
-                // The target router has rejected these values. We don't expect this in typical MVC scenarios.
-                return null;
             }
 
             var path = entry.Binder.BindValues(bindingResult.AcceptedValues);

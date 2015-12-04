@@ -881,7 +881,6 @@ namespace Microsoft.AspNet.Routing.Template
             var pathData = route.GetVirtualPath(context);
 
             // Assert
-            Assert.True(context.IsBound);
             Assert.Equal(new PathString("/Home"), pathData.VirtualPath);
             Assert.Same(route, pathData.Router);
             Assert.Empty(pathData.DataTokens);
@@ -898,7 +897,6 @@ namespace Microsoft.AspNet.Routing.Template
             var path = route.GetVirtualPath(context);
 
             // Assert
-            Assert.False(context.IsBound);
             Assert.Null(path);
         }
 
@@ -913,7 +911,6 @@ namespace Microsoft.AspNet.Routing.Template
             var target = new Mock<IRouter>(MockBehavior.Strict);
             target
                 .Setup(r => r.GetVirtualPath(It.IsAny<VirtualPathContext>()))
-                .Callback<VirtualPathContext>(c => c.IsBound = true)
                 .Returns(() => new VirtualPathData(target.Object, path, dataTokens));
 
             var routeDataTokens =
@@ -958,7 +955,6 @@ namespace Microsoft.AspNet.Routing.Template
             var target = new Mock<IRouter>(MockBehavior.Strict);
             target
                 .Setup(r => r.GetVirtualPath(It.IsAny<VirtualPathContext>()))
-                .Callback<VirtualPathContext>(c => c.IsBound = true)
                 .Returns(() => null);
 
             var route = CreateRoute(
@@ -998,7 +994,6 @@ namespace Microsoft.AspNet.Routing.Template
             var pathData = route.GetVirtualPath(context);
 
             // Assert
-            Assert.False(context.IsBound);
             Assert.Equal(new PathString("/Home"), pathData.VirtualPath);
             Assert.Same(route, pathData.Router);
             Assert.Empty(pathData.DataTokens);
@@ -1015,7 +1010,6 @@ namespace Microsoft.AspNet.Routing.Template
             var pathData = route.GetVirtualPath(context);
 
             // Assert
-            Assert.True(context.IsBound);
             Assert.Equal(new PathString("/Home/Index"), pathData.VirtualPath);
             Assert.Same(route, pathData.Router);
             Assert.Empty(pathData.DataTokens);
@@ -1037,7 +1031,6 @@ namespace Microsoft.AspNet.Routing.Template
             var virtualPath = r.GetVirtualPath(context);
 
             // Assert
-            Assert.False(context.IsBound);
             Assert.Null(virtualPath);
         }
 
@@ -1057,7 +1050,6 @@ namespace Microsoft.AspNet.Routing.Template
             var pathData = route.GetVirtualPath(context);
 
             // Assert
-            Assert.True(context.IsBound);
             Assert.NotNull(pathData);
             Assert.Equal(new PathString("/hello/1234"), pathData.VirtualPath);
             Assert.Same(route, pathData.Router);
@@ -1080,7 +1072,6 @@ namespace Microsoft.AspNet.Routing.Template
             var virtualPath = r.GetVirtualPath(context);
 
             // Assert
-            Assert.False(context.IsBound);
             Assert.Null(virtualPath);
         }
 
@@ -1100,7 +1091,6 @@ namespace Microsoft.AspNet.Routing.Template
             var pathData = route.GetVirtualPath(context);
 
             // Assert
-            Assert.True(context.IsBound);
             Assert.NotNull(pathData);
             Assert.Equal(new PathString("/hello/1234"), pathData.VirtualPath);
             Assert.Same(route, pathData.Router);
@@ -1132,99 +1122,12 @@ namespace Microsoft.AspNet.Routing.Template
             var pathData = route.GetVirtualPath(context);
 
             // Assert
-            Assert.True(context.IsBound);
             Assert.NotNull(pathData);
             Assert.Equal(new PathString("/hello/1234"), pathData.VirtualPath);
             Assert.Same(route, pathData.Router);
             Assert.Empty(pathData.DataTokens);
 
             target.VerifyAll();
-        }
-
-        [Fact]
-        public void GetVirtualPath_Sends_ProvidedValues()
-        {
-            // Arrange
-            VirtualPathContext childContext = null;
-            var target = new Mock<IRouter>(MockBehavior.Strict);
-            target
-                .Setup(r => r.GetVirtualPath(It.IsAny<VirtualPathContext>()))
-                .Callback<VirtualPathContext>(c => { childContext = c; c.IsBound = true; })
-                .Returns<string>(null);
-
-            var route = CreateRoute(target.Object, "{controller}/{action}");
-            var context = CreateVirtualPathContext(
-                new { action = "Store" },
-                new { Controller = "Home", action = "Blog" });
-
-            var expectedValues = new RouteValueDictionary(new { controller = "Home", action = "Store" });
-
-            // Act
-            var pathData = route.GetVirtualPath(context);
-
-            // Assert
-            Assert.Equal(new PathString("/Home/Store"), pathData.VirtualPath);
-            Assert.Same(route, pathData.Router);
-            Assert.Empty(pathData.DataTokens);
-
-            Assert.Equal(expectedValues, childContext.ProvidedValues);
-        }
-
-        [Fact]
-        public void GetVirtualPath_Sends_ProvidedValues_IncludingDefaults()
-        {
-            // Arrange
-            VirtualPathContext childContext = null;
-            var target = new Mock<IRouter>(MockBehavior.Strict);
-            target
-                .Setup(r => r.GetVirtualPath(It.IsAny<VirtualPathContext>()))
-                .Callback<VirtualPathContext>(c => { childContext = c; c.IsBound = true; })
-                .Returns<string>(null);
-
-            var route = CreateRoute(target.Object, "Admin/{controller}/{action}", new { area = "Admin" });
-            var context = CreateVirtualPathContext(
-                new { action = "Store" }, new { Controller = "Home", action = "Blog" });
-
-            var expectedValues = new RouteValueDictionary(
-                new { controller = "Home", action = "Store", area = "Admin" });
-
-            // Act
-            var pathData = route.GetVirtualPath(context);
-
-            // Assert
-            Assert.Equal(new PathString("/Admin/Home/Store"), pathData.VirtualPath);
-            Assert.Same(route, pathData.Router);
-            Assert.Empty(pathData.DataTokens);
-
-            Assert.Equal(expectedValues, childContext.ProvidedValues);
-        }
-
-        [Fact]
-        public void GetVirtualPath_Sends_ProvidedValues_ButNotQueryStringValues()
-        {
-            // Arrange
-            VirtualPathContext childContext = null;
-            var target = new Mock<IRouter>(MockBehavior.Strict);
-            target
-                .Setup(r => r.GetVirtualPath(It.IsAny<VirtualPathContext>()))
-                .Callback<VirtualPathContext>(c => { childContext = c; c.IsBound = true; })
-                .Returns<string>(null);
-
-            var route = CreateRoute(target.Object, "{controller}/{action}");
-            var context = CreateVirtualPathContext(
-                new { action = "Store", id = 5 }, new { Controller = "Home", action = "Blog" });
-
-            var expectedValues = new RouteValueDictionary(new { controller = "Home", action = "Store" });
-
-            // Act
-            var pathData = route.GetVirtualPath(context);
-
-            // Assert
-            Assert.Equal(new PathString("/Home/Store?id=5"), pathData.VirtualPath);
-            Assert.Same(route, pathData.Router);
-            Assert.Empty(pathData.DataTokens);
-
-            Assert.Equal(expectedValues, childContext.ProvidedValues);
         }
 
         // Any ambient values from the current request should be visible to constraint, even
@@ -1930,7 +1833,6 @@ namespace Microsoft.AspNet.Routing.Template
             var target = new Mock<IRouter>(MockBehavior.Strict);
             target
                 .Setup(e => e.GetVirtualPath(It.IsAny<VirtualPathContext>()))
-                .Callback<VirtualPathContext>(c => c.IsBound = handleRequest)
                 .Returns<VirtualPathContext>(rc => null);
 
             target
