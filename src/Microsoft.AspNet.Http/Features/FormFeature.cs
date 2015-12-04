@@ -149,7 +149,10 @@ namespace Microsoft.AspNet.Http.Features.Internal
                             // Find the end
                             await section.Body.DrainAsync(cancellationToken);
 
-                            var file = new FormFile(_request.Body, section.BaseStreamOffset.Value, section.Body.Length)
+                            var name = HeaderUtilities.RemoveQuotes(contentDisposition.Name) ?? string.Empty;
+                            var fileName = HeaderUtilities.RemoveQuotes(contentDisposition.FileName) ?? string.Empty;
+
+                            var file = new FormFile(_request.Body, section.BaseStreamOffset.Value, section.Body.Length, name, fileName)
                             {
                                 Headers = new HeaderDictionary(section.Headers),
                             };

@@ -215,6 +215,8 @@ namespace Microsoft.AspNet.Http.Features.Internal
             Assert.Equal(1, formCollection.Files.Count);
 
             var file = formCollection.Files["myfile1"];
+            Assert.Equal("myfile1", file.Name);
+            Assert.Equal("temp.html", file.FileName);
             Assert.Equal("text/html", file.ContentType);
             Assert.Equal(@"form-data; name=""myfile1""; filename=""temp.html""", file.ContentDisposition);
             var body = file.OpenReadStream();
