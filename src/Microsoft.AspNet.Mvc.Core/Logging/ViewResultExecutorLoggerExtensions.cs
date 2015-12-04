@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.Mvc.Logging
         static ViewResultExecutorLoggerExtensions()
         {
             _viewFound = LoggerMessage.Define<string>(
-                LogLevel.Verbose,
+                LogLevel.Debug,
                 1,
                 "The view '{ViewName}' was found.");
             _viewNotFound = LoggerMessage.Define<string, IEnumerable<string>>(

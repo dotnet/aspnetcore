@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Logging
         static ModeMatchResultLoggerExtensions()
         {
             _skippingProcessing = LoggerMessage.Define<ITagHelper, string>(
-                LogLevel.Verbose,
+                LogLevel.Debug,
                 1,
                 "Skipping processing for tag helper '{TagHelper}' with id '{TagHelperId}'.");
         }
@@ -63,7 +63,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Logging
                 logger.LogWarning(logValues);
             }
 
-            if (logger.IsEnabled(LogLevel.Verbose) && modeMatchResult.FullMatches.Count == 0)
+            if (logger.IsEnabled(LogLevel.Debug) && modeMatchResult.FullMatches.Count == 0)
             {
                 _skippingProcessing(logger, tagHelper, uniqueId, null);
             }

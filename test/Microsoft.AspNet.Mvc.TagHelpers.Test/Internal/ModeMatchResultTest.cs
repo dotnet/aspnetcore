@@ -13,11 +13,11 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
     public class ModeMatchResultTest
     {
         [Fact]
-        public void LogDetails_LogsVerboseWhenNoFullMatchesFound()
+        public void LogDetails_LogsDebugWhenNoFullMatchesFound()
         {
             // Arrange
             var modeMatchResult = new ModeMatchResult<string>();
-            var logger = MakeLogger(LogLevel.Verbose);
+            var logger = MakeLogger(LogLevel.Debug);
             var tagHelper = new Mock<ITagHelper>();
             var uniqueId = "id";
             var viewPath = "Views/Home/Index.cshtml";
@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
 
             // Assert
             Mock.Get(logger).Verify(l => l.Log(
-                LogLevel.Verbose,
+                LogLevel.Debug,
                 It.IsAny<int>(),
                 It.IsAny<object>(),
                 It.IsAny<Exception>(),
@@ -43,7 +43,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
                 ModeMatchAttributes.Create("mode0", new[] { "first-attr" }));
             modeMatchResult.PartialMatches.Add(
                 ModeMatchAttributes.Create("mode1", new[] { "first-attr" }, new[] { "second-attr" }));
-            var logger = MakeLogger(LogLevel.Verbose);
+            var logger = MakeLogger(LogLevel.Debug);
             var tagHelper = new Mock<ITagHelper>();
             var uniqueId = "id";
             var viewPath = "Views/Home/Index.cshtml";
@@ -59,7 +59,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
                 It.IsAny<Exception>(),
                 It.IsAny<Func<object, Exception, string>>()), Times.Never);
             Mock.Get(logger).Verify(l => l.Log(
-                LogLevel.Verbose,
+                LogLevel.Debug,
                 It.IsAny<int>(),
                 It.IsAny<object>(),
                 It.IsAny<Exception>(),
@@ -74,7 +74,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
             modeMatchResult.PartialMatches.Add(
                 ModeMatchAttributes.Create("mode0", new[] { "first-attr" }, new[] { "second-attr" }));
             modeMatchResult.PartiallyMatchedAttributes.Add("first-attr");
-            var logger = MakeLogger(LogLevel.Verbose);
+            var logger = MakeLogger(LogLevel.Debug);
             var tagHelper = new Mock<ITagHelper>();
             var uniqueId = "id";
             var viewPath = "Views/Home/Index.cshtml";
@@ -90,7 +90,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
                 It.IsAny<Exception>(),
                 It.IsAny<Func<object, Exception, string>>()), Times.Once);
             Mock.Get(logger).Verify(l => l.Log(
-                LogLevel.Verbose,
+                LogLevel.Debug,
                 It.IsAny<int>(),
                 It.IsAny<object>(),
                 It.IsAny<Exception>(),
@@ -121,7 +121,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
                 It.IsAny<Exception>(),
                 It.IsAny<Func<object, Exception, string>>()), Times.Never);
             Mock.Get(logger).Verify(l => l.Log(
-                LogLevel.Verbose,
+                LogLevel.Debug,
                 It.IsAny<int>(),
                 It.IsAny<object>(),
                 It.IsAny<Exception>(),

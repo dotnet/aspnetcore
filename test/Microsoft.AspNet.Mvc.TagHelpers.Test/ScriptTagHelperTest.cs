@@ -536,7 +536,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             var loggerData0 = (ILogValues)logger.Logged[0].State;
 
-            Assert.Equal(LogLevel.Verbose, logger.Logged[1].LogLevel);
+            Assert.Equal(LogLevel.Debug, logger.Logged[1].LogLevel);
             Assert.IsAssignableFrom<ILogValues>(logger.Logged[1].State);
             Assert.StartsWith("Skipping processing for tag helper 'Microsoft.AspNet.Mvc.TagHelpers.ScriptTagHelper'" +
                 " with id",
@@ -602,7 +602,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             Assert.Single(logger.Logged);
 
-            Assert.Equal(LogLevel.Verbose, logger.Logged[0].LogLevel);
+            Assert.Equal(LogLevel.Debug, logger.Logged[0].LogLevel);
             Assert.IsAssignableFrom<ILogValues>(logger.Logged[0].State);
             Assert.StartsWith("Skipping processing for tag helper 'Microsoft.AspNet.Mvc.TagHelpers.ScriptTagHelper'",
                 ((ILogValues)logger.Logged[0].State).ToString());

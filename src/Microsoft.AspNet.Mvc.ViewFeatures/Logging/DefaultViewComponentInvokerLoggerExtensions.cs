@@ -16,12 +16,12 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures.Logging
         static DefaultViewComponentInvokerLoggerExtensions()
         {
             _viewComponentExecuting = LoggerMessage.Define<string>(
-                LogLevel.Verbose,
+                LogLevel.Debug,
                 1,
                 "Executing view component {ViewComponentName}");
 
             _viewComponentExecuted = LoggerMessage.Define<string, double, string>(
-                LogLevel.Verbose,
+                LogLevel.Debug,
                 2,
                 "Executed view component {ViewComponentName} in {ElapsedMilliseconds}ms and returned " +
                 "{ViewComponentResult}");

@@ -21,15 +21,15 @@ namespace Microsoft.AspNet.Mvc.Logging
                 1,
                 "Authorization failed for the request at filter '{AuthorizationFilter}'.");
             _resourceFilterShortCircuit = LoggerMessage.Define<object>(
-                LogLevel.Verbose,
+                LogLevel.Debug,
                 2,
                 "Request was short circuited at resource filter '{ResourceFilter}'.");
             _actionFilterShortCircuit = LoggerMessage.Define<object>(
-                LogLevel.Verbose,
+                LogLevel.Debug,
                 3,
                 "Request was short circuited at action filter '{ActionFilter}'.");
             _exceptionFilterShortCircuit = LoggerMessage.Define<object>(
-                LogLevel.Verbose,
+                LogLevel.Debug,
                 4,
                 "Request was short circuited at exception filter '{ExceptionFilter}'.");
         }

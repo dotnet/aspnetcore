@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Mvc.Logging
                 1,
                 "Request matched multiple actions resulting in ambiguity. Matching actions: {AmbiguousActions}");
             _constraintMismatch = LoggerMessage.Define<string, string, IActionConstraint>(
-                LogLevel.Verbose,
+                LogLevel.Debug,
                 2,
                 "Action '{ActionName}' with id '{ActionId}' did not match the constraint '{ActionConstraint}'");
         }

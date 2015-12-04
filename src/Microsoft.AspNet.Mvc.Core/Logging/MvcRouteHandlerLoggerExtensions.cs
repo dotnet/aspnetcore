@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Mvc.Logging
         static MvcRouteHandlerLoggerExtensions()
         {
             _actionExecuting = LoggerMessage.Define<string>(
-                LogLevel.Verbose,
+                LogLevel.Debug,
                 1,
                 "Executing action {ActionName}");
 
@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.Mvc.Logging
 
         public static void NoActionsMatched(this ILogger logger)
         {
-            logger.LogVerbose(3, "No actions matched the current request");
+            logger.LogDebug(3, "No actions matched the current request");
         }
 
         private class ActionLogScope : ILogValues

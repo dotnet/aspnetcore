@@ -10,7 +10,7 @@ namespace Microsoft.AspNet.Mvc.Formatters.Json.Logging
         static JsonInputFormatterLoggerExtensions()
         {
             _jsonInputFormatterCrashed = LoggerMessage.Define<string>(
-                LogLevel.Verbose,
+                LogLevel.Debug,
                 1,
                 "JSON input formatter threw an exception.");
         }

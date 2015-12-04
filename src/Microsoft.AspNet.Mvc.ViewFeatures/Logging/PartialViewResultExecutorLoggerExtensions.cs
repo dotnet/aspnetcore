@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures.Logging
                 1,
                 "Executing PartialViewResult, running view at path {Path}.");
             _partialViewFound = LoggerMessage.Define<string>(
-                LogLevel.Verbose,
+                LogLevel.Debug,
                 2,
                 "The partial view '{PartialViewName}' was found.");
             _partialViewNotFound = LoggerMessage.Define<string, IEnumerable<string>>(

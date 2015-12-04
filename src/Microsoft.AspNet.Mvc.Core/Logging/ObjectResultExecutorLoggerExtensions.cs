@@ -29,19 +29,19 @@ namespace Microsoft.AspNet.Mvc.Logging
                 1,
                 "Executing ObjectResult, writing value {Value}.");
             _formatterSelected = LoggerMessage.Define<IOutputFormatter, string>(
-                LogLevel.Verbose,
+                LogLevel.Debug,
                 2,
                 "Selected output formatter '{OutputFormatter}' and content type '{ContentType}' to write the response.");
             _skippedContentNegotiation = LoggerMessage.Define<string>(
-                LogLevel.Verbose,
+                LogLevel.Debug,
                 3,
                 "Skipped content negotiation as content type '{ContentType}' is explicitly set for the response.");
             _noAcceptForNegotiation = LoggerMessage.Define<string>(
-                LogLevel.Verbose,
+                LogLevel.Debug,
                 4,
                 "No information found on request to perform content negotiation.");
             _noFormatterFromNegotiation = LoggerMessage.Define<IEnumerable<MediaTypeHeaderValue>>(
-                LogLevel.Verbose,
+                LogLevel.Debug,
                 5,
                 "Could not find an output formatter based on content negotiation. Accepted types were ({AcceptTypes})");
         }

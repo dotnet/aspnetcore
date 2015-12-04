@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.Mvc.Logging
                 1,
                 "Executing ViewResult, running view at path {Path}.");
             _viewFound = LoggerMessage.Define<string>(
-                LogLevel.Verbose,
+                LogLevel.Debug,
                 2,
                 "The view '{ViewName}' was found.");
             _viewNotFound = LoggerMessage.Define<string, IEnumerable<string>>(
