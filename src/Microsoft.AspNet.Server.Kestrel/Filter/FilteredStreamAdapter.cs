@@ -34,7 +34,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Filter
             _filteredStream.CopyToAsync(_socketInputStream, block).ContinueWith((task, state) =>
             {
                 var returnedBlock = task.Result;
-                returnedBlock.Pool?.Return(returnedBlock);
+                returnedBlock.Pool.Return(returnedBlock);
 
                 ((FilteredStreamAdapter)state).OnStreamClose(task);
             }, this);
