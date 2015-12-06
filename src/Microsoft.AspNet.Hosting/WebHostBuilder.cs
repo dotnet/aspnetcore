@@ -98,21 +98,6 @@ namespace Microsoft.AspNet.Hosting
                 services.TryAdd(ServiceDescriptor.Instance(PlatformServices.Default.Runtime));
             }
 
-            if (PlatformServices.Default?.AssemblyLoadContextAccessor != null)
-            {
-                services.TryAdd(ServiceDescriptor.Instance(PlatformServices.Default.AssemblyLoadContextAccessor));
-            }
-
-            if (PlatformServices.Default?.AssemblyLoaderContainer != null)
-            {
-                services.TryAdd(ServiceDescriptor.Instance(PlatformServices.Default.AssemblyLoaderContainer));
-            }
-
-            if (PlatformServices.Default?.LibraryManager != null)
-            {
-                services.TryAdd(ServiceDescriptor.Instance(PlatformServices.Default.LibraryManager));
-            }
-
             return services;
         }
 
