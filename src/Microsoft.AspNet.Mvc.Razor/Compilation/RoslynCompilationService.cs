@@ -35,12 +35,12 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
 
         private readonly ILibraryExporter _libraryExporter;
         private readonly IApplicationEnvironment _environment;
-        private readonly ICompilerOptionsProvider _compilerOptionsProvider;
         private readonly IFileProvider _fileProvider;
         private readonly Lazy<List<MetadataReference>> _applicationReferences;
         private readonly string _classPrefix;
-        private readonly string _configuration;
-        private Action<RoslynCompilationContext> _compilationCallback;
+        private readonly Action<RoslynCompilationContext> _compilationCallback;
+        private readonly CSharpParseOptions _parseOptions;
+        private readonly CSharpCompilationOptions _compilationOptions;
 
 #if DOTNET5_5
         private readonly RazorLoadContext _razorLoadContext;
@@ -61,18 +61,18 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
         public RoslynCompilationService(
             IApplicationEnvironment environment,
             ILibraryExporter libraryExporter,
-            ICompilerOptionsProvider compilerOptionsProvider,
             IMvcRazorHost host,
             IOptions<RazorViewEngineOptions> optionsAccessor)
         {
             _environment = environment;
             _libraryExporter = libraryExporter;
             _applicationReferences = new Lazy<List<MetadataReference>>(GetApplicationReferences);
-            _compilerOptionsProvider = compilerOptionsProvider;
             _fileProvider = optionsAccessor.Value.FileProvider;
             _classPrefix = host.MainClassNamePrefix;
-            _configuration = optionsAccessor.Value.Configuration;
             _compilationCallback = optionsAccessor.Value.CompilationCallback;
+            _parseOptions = optionsAccessor.Value.ParseOptions;
+            _compilationOptions = optionsAccessor.Value.CompilationOptions;
+
 
 #if DOTNET5_5
             _razorLoadContext = new RazorLoadContext();
@@ -93,21 +93,17 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
             }
 
             var assemblyName = Path.GetRandomFileName();
-            var compilationSettings = _compilerOptionsProvider.GetCompilationSettings(_environment, _configuration);
+
             var syntaxTree = SyntaxTreeGenerator.Generate(
                 compilationContent,
                 assemblyName,
-                compilationSettings);
+                _parseOptions);
 
             var references = _applicationReferences.Value;
 
-            var compilationOptions = compilationSettings
-                .CompilationOptions
-                .WithOutputKind(OutputKind.DynamicallyLinkedLibrary);
-
             var compilation = CSharpCompilation.Create(
                 assemblyName,
-                options: compilationOptions,
+                options: _compilationOptions,
                 syntaxTrees: new[] { syntaxTree },
                 references: references);
 
@@ -258,13 +254,16 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
             }
 
             var export = _libraryExporter.GetAllExports(_environment.ApplicationName);
-            foreach (var metadataReference in export.MetadataReferences)
+            if (export != null)
             {
-                // Taken from https://github.com/aspnet/KRuntime/blob/757ba9bfdf80bd6277e715d6375969a7f44370ee/src/...
-                // Microsoft.Extensions.Runtime.Roslyn/RoslynCompiler.cs#L164
-                // We don't want to take a dependency on the Roslyn bit directly since it pulls in more dependencies
-                // than the view engine needs (Microsoft.Extensions.Runtime) for example
-                references.Add(ConvertMetadataReference(metadataReference));
+                foreach (var metadataReference in export.MetadataReferences)
+                {
+                    // Taken from https://github.com/aspnet/KRuntime/blob/757ba9bfdf80bd6277e715d6375969a7f44370ee/src/...
+                    // Microsoft.Extensions.Runtime.Roslyn/RoslynCompiler.cs#L164
+                    // We don't want to take a dependency on the Roslyn bit directly since it pulls in more dependencies
+                    // than the view engine needs (Microsoft.Extensions.Runtime) for example
+                    references.Add(ConvertMetadataReference(metadataReference));
+                }
             }
 
             return references;

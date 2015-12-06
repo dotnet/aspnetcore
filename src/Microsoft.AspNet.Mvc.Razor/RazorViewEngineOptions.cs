@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Mvc.Razor.Compilation;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
@@ -15,7 +16,9 @@ namespace Microsoft.AspNet.Mvc.Razor
     {
         private IFileProvider _fileProvider;
 
-        private string _configuration;
+        private CSharpParseOptions _parseOptions = new CSharpParseOptions(LanguageVersion.CSharp6);
+
+        private CSharpCompilationOptions _compilationOptions = new CSharpCompilationOptions(CodeAnalysis.OutputKind.DynamicallyLinkedLibrary);
 
         private Action<RoslynCompilationContext> _compilationCallback = c => { };
 
@@ -49,27 +52,6 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         /// <summary>
-        /// Gets or sets the configuration name used by <see cref="RazorViewEngine"/> to compile razor views.
-        /// </summary>
-        /// <remarks>
-        /// At startup, this is initialized to "Debug" if <see cref="Microsoft.AspNet.Hosting.IHostingEnvironment"/> service is
-        /// registred and environment is development (<see cref="Microsoft.AspNet.Hosting.HostingEnvironmentExtensions.IsDevelopment"/>) else it is set to
-        /// "Release".
-        /// </remarks>
-        public string Configuration
-        {
-            get { return _configuration; }
-            set
-            {
-                if (string.IsNullOrEmpty(value))
-                {
-                    throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(value));
-                }
-                _configuration = value;
-            }
-        }
-
-        /// <summary>
         /// Gets or sets the callback that is used to customize Razor compilation
         /// to change compilation settings you can update <see cref="RoslynCompilationContext.Compilation"/> property.
         /// Customizations made here would not reflect in tooling (Intellisense).
@@ -86,5 +68,38 @@ namespace Microsoft.AspNet.Mvc.Razor
                 _compilationCallback = value;
             }
         }
+
+        /// <summary>
+        /// Gets or sets the <see cref="CSharpParseOptions"/> options used by Razor view compilation.
+        /// </summary>
+        public CSharpParseOptions ParseOptions
+        {
+            get { return _parseOptions; }
+            set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
+                _parseOptions = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the <see cref="CSharpCompilationOptions"/> used by Razor view compilation.
+        /// </summary>
+        public CSharpCompilationOptions CompilationOptions
+        {
+            get { return _compilationOptions; }
+            set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
+                _compilationOptions = value;
+            }
+        }
+
     }
 }

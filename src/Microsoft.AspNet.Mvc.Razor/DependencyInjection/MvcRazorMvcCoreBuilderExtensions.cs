@@ -123,7 +123,6 @@ namespace Microsoft.Extensions.DependencyInjection
             if (CompilationServices.Default != null)
             {
                 services.TryAdd(ServiceDescriptor.Instance(CompilationServices.Default.LibraryExporter));
-                services.TryAdd(ServiceDescriptor.Instance(CompilationServices.Default.CompilerOptionsProvider));
             }
 
             services.TryAddEnumerable(

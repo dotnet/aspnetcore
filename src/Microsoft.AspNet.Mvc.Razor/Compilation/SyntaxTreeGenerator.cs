@@ -17,6 +17,19 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
             string path,
             CompilationSettings compilationSettings)
         {
+            if (compilationSettings == null)
+            {
+                throw new ArgumentNullException(nameof(compilationSettings));
+            }
+
+            return Generate(text, path, GetParseOptions(compilationSettings));
+        }
+
+        public static SyntaxTree Generate(
+            string text,
+            string path,
+            CSharpParseOptions parseOptions)
+        {
             if (text == null)
             {
                 throw new ArgumentNullException(nameof(text));
@@ -27,15 +40,15 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
                 throw new ArgumentNullException(nameof(path));
             }
 
-            if (compilationSettings == null)
+            if (parseOptions == null)
             {
-                throw new ArgumentNullException(nameof(compilationSettings));
+                throw new ArgumentNullException(nameof(parseOptions));
             }
 
             var sourceText = SourceText.From(text, Encoding.UTF8);
             var syntaxTree = CSharpSyntaxTree.ParseText(sourceText,
                 path: path,
-                options: GetParseOptions(compilationSettings));
+                options: parseOptions);
 
             return syntaxTree;
         }

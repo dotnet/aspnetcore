@@ -4,8 +4,8 @@
 using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Mvc.Razor;
-using Microsoft.AspNet.Mvc.Razor.Compilation;
-using Microsoft.Extensions.CompilationAbstractions;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.OptionsModel;
 using Microsoft.Extensions.PlatformAbstractions;
 
@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Mvc
         /// <param name="applicationEnvironment"><see cref="IApplicationEnvironment"/> for the application.</param>
         /// <param name="hostingEnvironment"><see cref="IHostingEnvironment"/> for the application.</param>
         public RazorViewEngineOptionsSetup(IApplicationEnvironment applicationEnvironment,
-            IHostingEnvironment hostingEnvironment)
+                                           IHostingEnvironment hostingEnvironment)
             : base(options => ConfigureRazor(options, applicationEnvironment, hostingEnvironment))
         {
         }
@@ -32,13 +32,19 @@ namespace Microsoft.AspNet.Mvc
             IHostingEnvironment hostingEnvironment)
         {
             razorOptions.FileProvider = new PhysicalFileProvider(applicationEnvironment.ApplicationBasePath);
+
+            var parseOptions = new CSharpParseOptions(LanguageVersion.CSharp6);
+            var compilationOptions = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary);
+
             if (hostingEnvironment.IsDevelopment())
             {
-                razorOptions.Configuration = "Debug";
+                razorOptions.ParseOptions = parseOptions.WithPreprocessorSymbols("DEBUG");
+                razorOptions.CompilationOptions = compilationOptions.WithOptimizationLevel(OptimizationLevel.Debug);
             }
             else
             {
-                razorOptions.Configuration = "Release";
+                razorOptions.ParseOptions = parseOptions.WithPreprocessorSymbols("RELEASE");
+                razorOptions.CompilationOptions = compilationOptions.WithOptimizationLevel(OptimizationLevel.Release);
             }
         }
     }

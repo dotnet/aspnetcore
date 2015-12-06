@@ -19,6 +19,11 @@ namespace RazorWebSite
                 .AddRazorOptions(options =>
                 {
                     options.ViewLocationExpanders.Add(new NonMainPageViewLocationExpander());
+#if DNX451
+                    options.ParseOptions = options.ParseOptions.WithPreprocessorSymbols("DNX451", "DNX451_CUSTOM_DEFINE");
+#else
+                    options.ParseOptions = options.ParseOptions.WithPreprocessorSymbols("DNXCORE50", "DNXCORE50_CUSTOM_DEFINE");
+#endif
                 })
                 .AddViewOptions(options =>
                 {
