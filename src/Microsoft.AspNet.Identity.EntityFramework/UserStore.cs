@@ -314,7 +314,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework
         /// <returns>An <see cref="string"/> representation of the provided <paramref name="id"/>.</returns>
         public virtual string ConvertIdToString(TKey id)
         {
-            if (id.Equals(default(TKey)))
+            if (Object.Equals(id, default(TKey)))
             {
                 return null;
             }
