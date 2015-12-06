@@ -37,6 +37,7 @@ namespace Microsoft.AspNet.Http.Features.Internal
             }
 
             _features = features;
+            ((IFeatureCache)this).SetFeaturesRevision();
         }
 
         void IFeatureCache.CheckFeaturesRevision()
@@ -44,8 +45,13 @@ namespace Microsoft.AspNet.Http.Features.Internal
             if (_cachedFeaturesRevision != _features.Revision)
             {
                 _request = null;
-                _cachedFeaturesRevision = _features.Revision;
+                ((IFeatureCache)this).SetFeaturesRevision();
             }
+        }
+
+        void IFeatureCache.SetFeaturesRevision()
+        {
+            _cachedFeaturesRevision = _features.Revision;
         }
 
         private IHttpRequestFeature HttpRequestFeature

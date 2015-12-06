@@ -16,6 +16,7 @@ namespace Microsoft.AspNet.Http.Features.Internal
         public ResponseCookiesFeature(IFeatureCollection features)
         {
             _features = features;
+            ((IFeatureCache)this).SetFeaturesRevision();
         }
 
         void IFeatureCache.CheckFeaturesRevision()
@@ -23,8 +24,13 @@ namespace Microsoft.AspNet.Http.Features.Internal
             if (_cachedFeaturesRevision != _features.Revision)
             {
                 _response = null;
-                _cachedFeaturesRevision = _features.Revision;
+                ((IFeatureCache)this).SetFeaturesRevision();
             }
+        }
+
+        void IFeatureCache.SetFeaturesRevision()
+        {
+            _cachedFeaturesRevision = _features.Revision;
         }
 
         private IHttpResponseFeature HttpResponseFeature

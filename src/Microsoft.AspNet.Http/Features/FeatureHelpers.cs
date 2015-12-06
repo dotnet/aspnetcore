@@ -56,9 +56,10 @@ namespace Microsoft.AspNet.Http.Features
                 if (obj == null)
                 {
                     obj = factory();
-                    cachedObject = obj;
-                    features.Set(obj);
                 }
+                cachedObject = obj;
+                features.Set(obj);
+                cache.SetFeaturesRevision();
             }
             return obj;
         }
@@ -79,9 +80,10 @@ namespace Microsoft.AspNet.Http.Features
                 if (obj == null)
                 {
                     obj = factory(features);
-                    cachedObject = obj;
-                    features.Set(obj);
                 }
+                cachedObject = obj;
+                features.Set(obj);
+                cache.SetFeaturesRevision();
             }
             return obj;
         }
@@ -103,9 +105,10 @@ namespace Microsoft.AspNet.Http.Features
                 if (obj == null)
                 {
                     obj = factory(request);
-                    cachedObject = obj;
-                    features.Set(obj);
                 }
+                cachedObject = obj;
+                features.Set(obj);
+                cache.SetFeaturesRevision();
             }
             return obj;
         }

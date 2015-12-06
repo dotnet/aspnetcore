@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.Http.Internal
 {
     public class DefaultConnectionInfo : ConnectionInfo, IFeatureCache
     {
-        private readonly IFeatureCollection _features;
+        private IFeatureCollection _features;
         private int _cachedFeaturesRevision = -1;
 
         private IHttpConnectionFeature _connection;
@@ -21,16 +21,34 @@ namespace Microsoft.AspNet.Http.Internal
         public DefaultConnectionInfo(IFeatureCollection features)
         {
             _features = features;
+            ((IFeatureCache)this).SetFeaturesRevision();
         }
 
         void IFeatureCache.CheckFeaturesRevision()
         {
             if (_cachedFeaturesRevision != _features.Revision)
             {
-                _connection = null;
-                _tlsConnection = null;
-                _cachedFeaturesRevision = _features.Revision;
+                ResetFeatures();
             }
+        }
+
+        void IFeatureCache.SetFeaturesRevision()
+        {
+            _cachedFeaturesRevision = _features.Revision;
+        }
+
+        public void UpdateFeatures(IFeatureCollection features)
+        {
+            _features = features;
+            ResetFeatures();
+        }
+
+        private void ResetFeatures()
+        {
+            _connection = null;
+            _tlsConnection = null;
+
+            ((IFeatureCache)this).SetFeaturesRevision();
         }
 
         private IHttpConnectionFeature HttpConnectionFeature

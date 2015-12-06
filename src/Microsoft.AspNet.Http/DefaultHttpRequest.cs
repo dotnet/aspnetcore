@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.Http.Internal
     public class DefaultHttpRequest : HttpRequest, IFeatureCache
     {
         private readonly DefaultHttpContext _context;
-        private readonly IFeatureCollection _features;
+        private IFeatureCollection _features;
         private int _cachedFeaturesRevision = -1;
 
         private IHttpRequestFeature _request;
@@ -26,18 +26,36 @@ namespace Microsoft.AspNet.Http.Internal
         {
             _context = context;
             _features = features;
+            ((IFeatureCache)this).SetFeaturesRevision();
         }
 
         void IFeatureCache.CheckFeaturesRevision()
         {
             if (_cachedFeaturesRevision != _features.Revision)
             {
-                _request = null;
-                _query = null;
-                _form = null;
-                _cookies = null;
-                _cachedFeaturesRevision = _features.Revision;
+                ResetFeatures();
             }
+        }
+
+        void IFeatureCache.SetFeaturesRevision()
+        {
+            _cachedFeaturesRevision = _features.Revision;
+        }
+
+        public void UpdateFeatures(IFeatureCollection features)
+        {
+            _features = features;
+            ResetFeatures();
+        }
+
+        private void ResetFeatures()
+        {
+            _request = null;
+            _query = null;
+            _form = null;
+            _cookies = null;
+
+            ((IFeatureCache)this).SetFeaturesRevision();
         }
 
         private IHttpRequestFeature HttpRequestFeature

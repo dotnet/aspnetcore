@@ -21,16 +21,34 @@ namespace Microsoft.AspNet.Http.Internal
         public DefaultWebSocketManager(IFeatureCollection features)
         {
             _features = features;
+            ((IFeatureCache)this).SetFeaturesRevision();
         }
 
         void IFeatureCache.CheckFeaturesRevision()
         {
             if (_cachedFeaturesRevision != _features.Revision)
             {
-                _request = null;
-                _webSockets = null;
-                _cachedFeaturesRevision = _features.Revision;
+                ResetFeatures();
             }
+        }
+
+        void IFeatureCache.SetFeaturesRevision()
+        {
+            _cachedFeaturesRevision = _features.Revision;
+        }
+
+        public void UpdateFeatures(IFeatureCollection features)
+        {
+            _features = features;
+            ResetFeatures();
+        }
+
+        private void ResetFeatures()
+        {
+            _request = null;
+            _webSockets = null;
+
+            ((IFeatureCache)this).SetFeaturesRevision();
         }
 
         private IHttpRequestFeature HttpRequestFeature

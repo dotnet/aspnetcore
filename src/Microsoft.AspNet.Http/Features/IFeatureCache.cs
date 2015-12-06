@@ -6,5 +6,6 @@ namespace Microsoft.AspNet.Http.Features
     internal interface IFeatureCache
     {
         void CheckFeaturesRevision();
+        void SetFeaturesRevision();
     }
 }

@@ -14,25 +14,41 @@ namespace Microsoft.AspNet.Http.Authentication.Internal
 {
     public class DefaultAuthenticationManager : AuthenticationManager, IFeatureCache
     {
-        private readonly IFeatureCollection _features;
+        private IFeatureCollection _features;
         private int _cachedFeaturesRevision = -1;
 
         private IHttpAuthenticationFeature _authentication;
-        private IHttpResponseFeature _response;
 
         public DefaultAuthenticationManager(IFeatureCollection features)
         {
             _features = features;
+            ((IFeatureCache)this).SetFeaturesRevision();
         }
 
         void IFeatureCache.CheckFeaturesRevision()
         {
             if (_cachedFeaturesRevision != _features.Revision)
             {
-                _authentication = null;
-                _response = null;
-                _cachedFeaturesRevision = _features.Revision;
+                ResetFeatures();
             }
+        }
+
+        void IFeatureCache.SetFeaturesRevision()
+        {
+            _cachedFeaturesRevision = _features.Revision;
+        }
+
+        public void UpdateFeatures(IFeatureCollection features)
+        {
+            _features = features;
+            ResetFeatures();
+        }
+
+        private void ResetFeatures()
+        {
+            _authentication = null;
+
+            ((IFeatureCache)this).SetFeaturesRevision();
         }
 
         private IHttpAuthenticationFeature HttpAuthenticationFeature
@@ -45,11 +61,6 @@ namespace Microsoft.AspNet.Http.Authentication.Internal
                     () => new HttpAuthenticationFeature(), 
                     ref _authentication);
             }
-        }
-
-        private IHttpResponseFeature HttpResponseFeature
-        {
-            get { return FeatureHelpers.GetAndCache(this, _features, ref _response); }
         }
 
         public override IEnumerable<AuthenticationDescription> GetAuthenticationSchemes()

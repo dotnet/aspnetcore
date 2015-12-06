@@ -16,17 +16,18 @@ namespace Microsoft.AspNet.Http.Internal
 {
     public class DefaultHttpContext : HttpContext, IFeatureCache
     {
-        private readonly HttpRequest _request;
-        private readonly HttpResponse _response;
-        private ConnectionInfo _connection;
-        private AuthenticationManager _authenticationManager;
+        private readonly DefaultHttpRequest _request;
+        private readonly DefaultHttpResponse _response;
+
+        private DefaultAuthenticationManager _authenticationManager;
+        private DefaultConnectionInfo _connection;
+        private DefaultWebSocketManager _websockets;
 
         private IItemsFeature _items;
         private IServiceProvidersFeature _serviceProviders;
         private IHttpAuthenticationFeature _authentication;
         private IHttpRequestLifetimeFeature _lifetime;
         private ISessionFeature _session;
-        private WebSocketManager _websockets;
 
         private IFeatureCollection _features;
         private int _cachedFeaturesRevision = -1;
@@ -36,6 +37,7 @@ namespace Microsoft.AspNet.Http.Internal
         {
             _features.Set<IHttpRequestFeature>(new HttpRequestFeature());
             _features.Set<IHttpResponseFeature>(new HttpResponseFeature());
+            ((IFeatureCache)this).SetFeaturesRevision();
         }
 
         public DefaultHttpContext(IFeatureCollection features)
@@ -43,19 +45,44 @@ namespace Microsoft.AspNet.Http.Internal
             _features = features;
             _request = new DefaultHttpRequest(this, features);
             _response = new DefaultHttpResponse(this, features);
+            ((IFeatureCache)this).SetFeaturesRevision();
         }
 
         void IFeatureCache.CheckFeaturesRevision()
         {
             if (_cachedFeaturesRevision !=_features.Revision)
             {
-                _items = null;
-                _serviceProviders = null;
-                _authentication = null;
-                _lifetime = null;
-                _session = null;
-                _cachedFeaturesRevision = _features.Revision;
+                ResetFeatures();
             }
+        }
+
+        void IFeatureCache.SetFeaturesRevision()
+        {
+            _cachedFeaturesRevision = _features.Revision;
+        }
+
+        public void UpdateFeatures(IFeatureCollection features)
+        {
+            _features = features;
+            ResetFeatures();
+
+            _request.UpdateFeatures(features);
+            _response.UpdateFeatures(features);
+
+            _authenticationManager?.UpdateFeatures(features);
+            _connection?.UpdateFeatures(features);
+            _websockets?.UpdateFeatures(features);
+        }
+
+        private void ResetFeatures()
+        {
+            _items = null;
+            _serviceProviders = null;
+            _authentication = null;
+            _lifetime = null;
+            _session = null;
+
+            ((IFeatureCache)this).SetFeaturesRevision();
         }
 
         IItemsFeature ItemsFeature
