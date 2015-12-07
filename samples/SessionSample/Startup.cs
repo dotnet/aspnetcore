@@ -13,7 +13,7 @@ namespace SessionSample
     {
         public Startup(ILoggerFactory loggerFactory)
         {
-            loggerFactory.AddConsole(LogLevel.Verbose);
+            loggerFactory.AddConsole(LogLevel.Debug);
         }
 
         public void ConfigureServices(IServiceCollection services)
