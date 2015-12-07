@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using Microsoft.AspNet.Server.Features;
 using Microsoft.AspNet.Server.Kestrel.Filter;
 using Microsoft.Extensions.Configuration;
@@ -26,6 +27,32 @@ namespace Microsoft.AspNet.Server.Kestrel
 
         public IConnectionFilter ConnectionFilter { get; set; }
 
+        private static int ProcessorThreadCount
+        {
+            get
+            {
+                // Actual core count would be a better number
+                // rather than logical cores which includes hyper-threaded cores.
+                // Divide by 2 for hyper-threading, and good defaults (still need threads to do webserving).
+                var threadCount = Environment.ProcessorCount >> 1;
+
+                if (threadCount < 1)
+                {
+                    // Ensure shifted value is at least one
+                    return 1;
+                }
+
+                if (threadCount > 16)
+                {
+                    // Receive Side Scaling RSS Processor count currently maxes out at 16
+                    // would be better to check the NIC's current hardware queues; but xplat...
+                    return 16;
+                }
+
+                return threadCount;
+            }
+        }
+
         private static ICollection<string> GetAddresses(IConfiguration configuration)
         {
             var addresses = new List<string>();
@@ -44,29 +71,18 @@ namespace Microsoft.AspNet.Server.Kestrel
         {
             var threadCountString = configuration["kestrel.threadCount"];
 
-            int threadCount;
-            if (string.IsNullOrEmpty(threadCountString) || !int.TryParse(threadCountString, out threadCount))
+            if (string.IsNullOrEmpty(threadCountString))
             {
-                // Actual core count would be a better number
-                // rather than logical cores which includes hyper-threaded cores.
-                // Divide by 2 for hyper-threading, and good defaults (still need threads to do webserving).
-                threadCount = Environment.ProcessorCount >> 1;
-
-                if (threadCount < 1)
-                {
-                    // Ensure shifted value is at least one
-                    return 1;
-                }
-
-                if (threadCount > 16)
-                {
-                    // Receive Side Scaling RSS Processor count currently maxes out at 16
-                    // would be better to check the NIC's current hardware queues; but xplat...
-                    return 16;
-                }
+                return ProcessorThreadCount;
             }
 
-            return threadCount;
+            int threadCount;
+            if (int.TryParse(threadCountString, NumberStyles.Integer, CultureInfo.InvariantCulture, out threadCount))
+            {
+                return threadCount;
+            }
+
+            return ProcessorThreadCount;
         }
 
         private static bool GetNoDelay(IConfiguration configuration)
