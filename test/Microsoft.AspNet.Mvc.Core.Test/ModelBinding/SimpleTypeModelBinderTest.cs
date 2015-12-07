@@ -189,6 +189,32 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
             Assert.True(bindingContext.ModelState.ContainsKey("theModelName"));
         }
 
+        [Theory]
+        [InlineData("0", 0)]
+        [InlineData("1", 1)]
+        [InlineData("13", 13)]
+        [InlineData("Value1", 1)]
+        [InlineData("Value8, Value4", 12)]
+        public async Task BindModel_BindsFlagsEnumModels(string flagsEnumValue, int expected)
+        {
+            // Arrange
+            var bindingContext = GetBindingContext(typeof(FlagsEnum));
+            bindingContext.ValueProvider = new SimpleValueProvider
+            {
+                { "theModelName", flagsEnumValue }
+            };
+
+            var binder = new SimpleTypeModelBinder();
+
+            // Act
+            var result = await binder.BindModelAsync(bindingContext);
+
+            // Assert
+            Assert.True(result.IsModelSet);
+            var boundModel = Assert.IsType<FlagsEnum>(result.Model);
+            Assert.Equal((FlagsEnum)expected, boundModel);
+        }
+
         private static ModelBindingContext GetBindingContext(Type modelType)
         {
             return new ModelBindingContext
@@ -202,6 +228,15 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Test
 
         private sealed class TestClass
         {
+        }
+
+        [Flags]
+        private enum FlagsEnum
+        {
+            Value1 = 1,
+            Value2 = 2,
+            Value4 = 4,
+            Value8 = 8
         }
     }
 }
