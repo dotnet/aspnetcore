@@ -12,7 +12,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Diagnostics.Views;
 using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Http;
-using Microsoft.Extensions.CompilationAbstractions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.PlatformAbstractions;
 using StackFrame = Microsoft.AspNet.Diagnostics.Views.StackFrame;
@@ -116,7 +115,8 @@ namespace Microsoft.AspNet.Diagnostics
             return DisplayRuntimeException(context, ex);
         }
 
-        private Task DisplayCompilationException(HttpContext context,
+        private Task DisplayCompilationException(
+            HttpContext context,
                                                  ICompilationException compilationException)
         {
             var model = new CompilationErrorPageModel
@@ -131,7 +131,8 @@ namespace Microsoft.AspNet.Diagnostics
                 {
                     StackFrames = stackFrames
                 };
-                var fileContent = compilationFailure.SourceFileContent
+                var fileContent = compilationFailure
+                    .SourceFileContent
                                                     .Split(new[] { Environment.NewLine }, StringSplitOptions.None);
 
                 foreach (var item in compilationFailure.Messages)
