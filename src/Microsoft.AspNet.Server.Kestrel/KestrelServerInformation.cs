@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.Server.Kestrel
 
         private static int GetThreadCount(IConfiguration configuration)
         {
-            var threadCountString = configuration["server.threadCount"];
+            var threadCountString = configuration["kestrel.threadCount"];
 
             int threadCount;
             if (string.IsNullOrEmpty(threadCountString) || !int.TryParse(threadCountString, out threadCount))

@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
 
             var values = new Dictionary<string, string>
             {
-                { "server.threadCount", expected.ToString() }
+                { "kestrel.threadCount", expected.ToString() }
             };
 
             var configuration = new ConfigurationBuilder()
