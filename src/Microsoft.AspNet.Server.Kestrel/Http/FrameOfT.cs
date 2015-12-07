@@ -40,28 +40,27 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             try
             {
-                var terminated = false;
-                while (!terminated && !_requestProcessingStopping)
+                while (!_requestProcessingStopping)
                 {
-                    while (!terminated && !_requestProcessingStopping && !TakeStartLine(SocketInput))
+                    while (!_requestProcessingStopping && !TakeStartLine(SocketInput))
                     {
-                        terminated = SocketInput.RemoteIntakeFin;
-                        if (!terminated)
+                        if (SocketInput.RemoteIntakeFin)
                         {
-                            await SocketInput;
+                            return;
                         }
+                        await SocketInput;
                     }
 
-                    while (!terminated && !_requestProcessingStopping && !TakeMessageHeaders(SocketInput, _requestHeaders))
+                    while (!_requestProcessingStopping && !TakeMessageHeaders(SocketInput, _requestHeaders))
                     {
-                        terminated = SocketInput.RemoteIntakeFin;
-                        if (!terminated)
+                        if (SocketInput.RemoteIntakeFin)
                         {
-                            await SocketInput;
+                            return;
                         }
+                        await SocketInput;
                     }
 
-                    if (!terminated && !_requestProcessingStopping)
+                    if (!_requestProcessingStopping)
                     {
                         var messageBody = MessageBody.For(HttpVersion, _requestHeaders, this);
                         _keepAlive = messageBody.RequestKeepAlive;
@@ -89,12 +88,15 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             // already failed. If an OnStarting callback throws we can go through
                             // our normal error handling in ProduceEnd.
                             // https://github.com/aspnet/KestrelHttpServer/issues/43
-                            if (!_responseStarted && _applicationException == null)
+                            if (!_responseStarted && _applicationException == null && _onStarting != null)
                             {
                                 await FireOnStarting();
                             }
 
-                            await FireOnCompleted();
+                            if (_onCompleted != null)
+                            {
+                                await FireOnCompleted();
+                            }
 
                             _application.DisposeContext(context, _applicationException);
 
@@ -114,7 +116,10 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             _responseBody.StopAcceptingWrites();
                         }
 
-                        terminated = !_keepAlive;
+                        if (!_keepAlive)
+                        {
+                            return;
+                        }
                     }
 
                     Reset();

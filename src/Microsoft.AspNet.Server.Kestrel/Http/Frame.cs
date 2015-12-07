@@ -44,9 +44,9 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         protected readonly FrameRequestHeaders _requestHeaders = new FrameRequestHeaders();
         private readonly FrameResponseHeaders _responseHeaders = new FrameResponseHeaders();
 
-        private List<KeyValuePair<Func<object, Task>, object>> _onStarting;
+        protected List<KeyValuePair<Func<object, Task>, object>> _onStarting;
 
-        private List<KeyValuePair<Func<object, Task>, object>> _onCompleted;
+        protected List<KeyValuePair<Func<object, Task>, object>> _onCompleted;
 
         private bool _requestProcessingStarted;
         private Task _requestProcessingTask;
@@ -144,8 +144,9 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             {
                 // If a request abort token was previously explicitly set, return it.
                 if (_manuallySetRequestAbortToken.HasValue)
+                {
                     return _manuallySetRequestAbortToken.Value;
-
+                }
                 // Otherwise, get the abort CTS.  If we have one, which would mean that someone previously
                 // asked for the RequestAborted token, simply return its token.  If we don't,
                 // check to see whether we've already aborted, in which case just return an
@@ -416,7 +417,28 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             }
         }
 
-        public async Task WriteAsync(ArraySegment<byte> data, CancellationToken cancellationToken)
+        public Task WriteAsync(ArraySegment<byte> data, CancellationToken cancellationToken)
+        {
+            if (!_responseStarted)
+            {
+                return WriteAsyncAwaited(data, cancellationToken);
+            }
+
+            if (_autoChunk)
+            {
+                if (data.Count == 0)
+                {
+                    return TaskUtilities.CompletedTask;
+                }
+                return WriteChunkedAsync(data, cancellationToken);
+            }
+            else
+            {
+                return SocketOutput.WriteAsync(data, immediate: true, cancellationToken: cancellationToken);
+            }
+        }
+
+        public async Task WriteAsyncAwaited(ArraySegment<byte> data, CancellationToken cancellationToken)
         {
             await ProduceStartAndFireOnStarting(immediate: false);
 
@@ -501,10 +523,27 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             }
         }
 
-        public async Task ProduceStartAndFireOnStarting(bool immediate = true)
+        public Task ProduceStartAndFireOnStarting(bool immediate = true)
         {
-            if (_responseStarted) return;
+            if (_responseStarted) return TaskUtilities.CompletedTask;
 
+            if (_onStarting != null)
+            {
+                return FireOnStartingProduceStart(immediate: immediate);
+            }
+
+            if (_applicationException != null)
+            {
+                throw new ObjectDisposedException(
+                    "The response has been aborted due to an unhandled application exception.",
+                    _applicationException);
+            }
+
+            return ProduceStart(immediate, appCompleted: false);
+        }
+
+        private async Task FireOnStartingProduceStart(bool immediate)
+        {
             await FireOnStarting();
 
             if (_applicationException != null)
@@ -527,7 +566,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             return CreateResponseHeader(statusBytes, appCompleted, immediate);
         }
 
-        protected async Task ProduceEnd()
+        protected Task ProduceEnd()
         {
             if (_applicationException != null)
             {
@@ -535,7 +574,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 {
                     // We can no longer respond with a 500, so we simply close the connection.
                     _requestProcessingStopping = true;
-                    return;
+                    return TaskUtilities.CompletedTask;
                 }
                 else
                 {
@@ -547,8 +586,26 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 }
             }
 
+
+            if (!_responseStarted)
+            {
+                return ProduceEndAwaited();
+            }
+
+            WriteSuffix();
+
+            return TaskUtilities.CompletedTask;
+        }
+
+        private async Task ProduceEndAwaited()
+        {
             await ProduceStart(immediate: true, appCompleted: true);
 
+            WriteSuffix();
+        }
+
+        private void WriteSuffix()
+        {
             // _autoChunk should be checked after we are sure ProduceStart() has been called
             // since ProduceStart() may set _autoChunk to true.
             if (_autoChunk)
