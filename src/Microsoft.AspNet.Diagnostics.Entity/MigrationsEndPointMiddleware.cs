@@ -58,14 +58,14 @@ namespace Microsoft.AspNet.Diagnostics.Entity
 
             if (context.Request.Path.Equals(_options.Path))
             {
-                _logger.LogVerbose(Strings.FormatMigrationsEndPointMiddleware_RequestPathMatched(context.Request.Path));
+                _logger.LogDebug(Strings.FormatMigrationsEndPointMiddleware_RequestPathMatched(context.Request.Path));
 
                 var db = await GetDbContext(context, _logger);
                 if (db != null)
                 {
                     try
                     {
-                        _logger.LogVerbose(Strings.FormatMigrationsEndPointMiddleware_ApplyingMigrations(db.GetType().FullName));
+                        _logger.LogDebug(Strings.FormatMigrationsEndPointMiddleware_ApplyingMigrations(db.GetType().FullName));
 
                         db.Database.Migrate();
 
@@ -73,7 +73,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity
                         context.Response.Headers.Add("Pragma", new[] { "no-cache" });
                         context.Response.Headers.Add("Cache-Control", new[] { "no-cache" });
 
-                        _logger.LogVerbose(Strings.FormatMigrationsEndPointMiddleware_Applied(db.GetType().FullName));
+                        _logger.LogDebug(Strings.FormatMigrationsEndPointMiddleware_Applied(db.GetType().FullName));
                     }
                     catch (Exception ex)
                     {

@@ -67,14 +67,15 @@ namespace Microsoft.AspNet.Diagnostics.Tests
             var store = t.Item2;
 
             // Act
-            logger.Log(LogLevel.Verbose, 0, _state, null, null);
+            logger.Log(LogLevel.Trace, 0, _state, null, null);
+            logger.Log(LogLevel.Debug, 0, _state, null, null);
             logger.Log(LogLevel.Information, 0, _state, null, null);
             logger.Log(LogLevel.Warning, 0, _state, null, null);
             logger.Log(LogLevel.Error, 0, _state, null, null);
             logger.Log(LogLevel.Critical, 0, _state, null, null);
 
             // Assert
-            Assert.Equal(5, (store.GetActivities().SelectMany(a => NodeLogs(a.Root, new List<LogInfo>()))).ToList().Count);
+            Assert.Equal(6, (store.GetActivities().SelectMany(a => NodeLogs(a.Root, new List<LogInfo>()))).ToList().Count);
         }
 
         [Theory]
@@ -83,7 +84,7 @@ namespace Microsoft.AspNet.Diagnostics.Tests
         [InlineData(LogLevel.Warning, "bad", 0)]
         [InlineData(LogLevel.Critical, "", 1)]
         [InlineData(LogLevel.Critical, "test", 1)]
-        [InlineData(LogLevel.Verbose, "t", 5)]
+        [InlineData(LogLevel.Trace, "t", 6)]
         public void Filter_LogsWhenAppropriate(LogLevel minLevel, string prefix, int count)
         {
             // Arrange
@@ -92,7 +93,8 @@ namespace Microsoft.AspNet.Diagnostics.Tests
             var store = t.Item2;
 
             // Act
-            logger.Log(LogLevel.Verbose, 0, _state, null, null);
+            logger.Log(LogLevel.Trace, 0, _state, null, null);
+            logger.Log(LogLevel.Debug, 0, _state, null, null);
             logger.Log(LogLevel.Information, 0, _state, null, null);
             logger.Log(LogLevel.Warning, 0, _state, null, null);
             logger.Log(LogLevel.Error, 0, _state, null, null);
@@ -248,7 +250,7 @@ namespace Microsoft.AspNet.Diagnostics.Tests
             {
                 using (logger.BeginScope("test7"))
                 {
-                    logger.LogVerbose("hi");
+                    logger.LogTrace("hi");
                 }
             }
 
@@ -267,7 +269,7 @@ namespace Microsoft.AspNet.Diagnostics.Tests
             // Act
             using (logger.BeginScope("test8"))
             {
-                logger.LogVerbose("hi");
+                logger.LogDebug("hi");
                 using (logger.BeginScope("test9"))
                 {
                 }
@@ -331,20 +333,20 @@ namespace Microsoft.AspNet.Diagnostics.Tests
                 {
                     for (var i = 0; i < 5; i++)
                     {
-                        _logger.LogVerbose(string.Format("xxx {0}", i));
+                        _logger.LogDebug(string.Format("xxx {0}", i));
                         Thread.Sleep(5);
                     }
                     using (_logger.BeginScope("test13"))
                     {
                         for (var i = 0; i < 3; i++)
                         {
-                            _logger.LogVerbose(string.Format("yyy {0}", i));
+                            _logger.LogDebug(string.Format("yyy {0}", i));
                             Thread.Sleep(200);
                         }
                     }
                     for (var i = 0; i < 7; i++)
                     {
-                        _logger.LogVerbose(string.Format("zzz {0}", i));
+                        _logger.LogDebug(string.Format("zzz {0}", i));
                         Thread.Sleep(40);
                     }
                 }

@@ -93,7 +93,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity
                             var creator = dbContext.GetService<IDatabaseCreator>() as IRelationalDatabaseCreator;
                             if (creator == null)
                             {
-                                _logger.LogVerbose(Strings.DatabaseErrorPage_NotRelationalDatabase);
+                                _logger.LogDebug(Strings.DatabaseErrorPage_NotRelationalDatabase);
                             }
                             else
                             {
@@ -140,11 +140,11 @@ namespace Microsoft.AspNet.Diagnostics.Entity
 
         private static bool ShouldDisplayErrorPage(DataStoreErrorLogger.DataStoreErrorLog lastError, Exception exception, ILogger logger)
         {
-            logger.LogVerbose(Strings.FormatDatabaseErrorPage_AttemptingToMatchException(exception.GetType()));
+            logger.LogDebug(Strings.FormatDatabaseErrorPage_AttemptingToMatchException(exception.GetType()));
 
             if (!lastError.IsErrorLogged)
             {
-                logger.LogVerbose(Strings.DatabaseErrorPage_NoRecordedException);
+                logger.LogDebug(Strings.DatabaseErrorPage_NoRecordedException);
                 return false;
             }
 
@@ -156,11 +156,11 @@ namespace Microsoft.AspNet.Diagnostics.Entity
 
             if (!match)
             {
-                logger.LogVerbose(Strings.DatabaseErrorPage_NoMatch);
+                logger.LogDebug(Strings.DatabaseErrorPage_NoMatch);
                 return false;
             }
 
-            logger.LogVerbose(Strings.DatabaseErrorPage_Matched);
+            logger.LogDebug(Strings.DatabaseErrorPage_Matched);
             return true;
         }
     }

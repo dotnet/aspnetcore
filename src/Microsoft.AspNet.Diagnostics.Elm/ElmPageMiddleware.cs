@@ -89,7 +89,7 @@ namespace Microsoft.AspNet.Diagnostics.Elm
         {
             var options = new ViewOptions()
             {
-                MinLevel = LogLevel.Verbose,
+                MinLevel = LogLevel.Debug,
                 NamePrefix = string.Empty
             };
             var isRedirect = false;

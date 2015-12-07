@@ -18,7 +18,7 @@ namespace MiddlewareAnaysisSample
         public void Configure(IApplicationBuilder app, ILoggerFactory factory, DiagnosticListener diagnosticListener)
         {
             // Displays all log levels
-            factory.AddConsole(LogLevel.Verbose);
+            factory.AddConsole(LogLevel.Debug);
 
             // Listen for middleware events and log them to the console.
             var listener = new TestDiagnosticListener();

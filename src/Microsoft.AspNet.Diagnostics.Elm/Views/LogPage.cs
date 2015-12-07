@@ -109,7 +109,7 @@ using Microsoft.Extensions.Logging
             {
                 Name = node.Name,
                 Time = node.StartTime,
-                Severity = LogLevel.Verbose,
+                Severity = LogLevel.Debug,
                 Message = "Beginning " + node.State,
             }, level));
 
@@ -150,7 +150,7 @@ using Microsoft.Extensions.Logging
             {
                 Name = node.Name,
                 Time = node.EndTime,
-                Severity = LogLevel.Verbose,
+                Severity = LogLevel.Debug,
                 Message = string.Format("Completed {0} in {1}ms", node.State, node.EndTime - node.StartTime)
             }, level));
         });
@@ -183,7 +183,7 @@ using Microsoft.Extensions.Logging
     <script src=""//ajax.aspnetcdn.com/ajax/jquery/jquery-2.1.1.min.js""></script>
     <style>
         body {\r\n    font-size: .813em;\r\n    white-space: nowrap;\r\n    margin: 20px;\r\n}\r\n\r\ncol:nth-child(2n) {\r\n    background-color: #FAFAFA;\r\n}\r\n\r\nform { \r\n    display: inline-block; \r\n}\r\n\r\nh1 {\r\n    margin-left: 25px;\r\n}\r\n\r\ntable {\r\n    margin: 0px auto;\r\n    border-collapse: collapse;\r\n    border-spacing: 0px;\r\n    table-layout: fixed;\r\n    width: 100%;\r\n}\r\n\r\ntd, th {\r\n    padding: 4px;\r\n}\r\n\r\nthead {\r\n    font-size: 1em;\r\n    font-family: Arial;\r\n}\r\n\r\ntr {\r\n    height: 23px;\r\n}\r\n\r\n#requestHeader {\r\n    border-bottom: solid 1px gray;\r\n    border-top: solid 1px gray;\r\n    margin-bottom: 2px;\r\n    font-size: 1em;\r\n    line-height: 2em;\r\n}\r\n\r\n.collapse {\r\n    color: black;\r\n    float: right;\r\n    font-weight: normal;\r\n    width: 1em;\r\n}\r\n\r\n.date, .time {\r\n    width: 70px; \r\n}\r\n\r\n.logHeader {\r\n    border-bottom: 1px solid lightgray;\r\n    color: gray;\r\n    text-align: left;\r\n}\r\n\r\n.logState {\r\n    text-overflow: ellipsis;\r\n    overflow: hidden;\r\n}\r\n\r\n.logTd {\r\n    border-left: 1px solid gray;\r\n    padding: 0px;\r\n}\r\n\r\n.logs {\r\n    width: 80%;\r\n}\r\n\r\n.logRow:hover {\r\n    background-color: #D6F5FF;\r\n}\r\n\r\n.requestRow>td {\r\n    border-bottom: solid 1px gray;\r\n}\r\n\r\n.severity {\r\n    width: 80px;\r\n}\r\n\r\n.summary {\r\n    color: black;\r\n    line-height: 1.8em;\r\n}\r\n\r\n.summary>th {\r\n    font-weight: normal;\r\n}\r\n\r\n.tab {\r\n    margin-left: 30px;\r\n}\r\n\r\n#viewOptions {\r\n    margin: 20px;\r\n}\r\n\r\n#viewOptions > * {\r\n    margin: 5px;\r\n}
-        body {\r\n    font-family: 'Segoe UI', Tahoma, Arial, Helvtica, sans-serif;\r\n    line-height: 1.4em;\r\n}\r\n\r\nh1 {\r\n    font-family: 'Segoe UI', Helvetica, sans-serif;\r\n    font-size: 2.5em;\r\n}\r\n\r\ntd {\r\n    text-overflow: ellipsis;\r\n    overflow: hidden;\r\n}\r\n\r\ntr:nth-child(2n) {\r\n    background-color: #F6F6F6;\r\n}\r\n\r\n.critical {\r\n    background-color: red;\r\n    color: white;\r\n}\r\n\r\n.error {\r\n    color: red;\r\n}\r\n\r\n.information {\r\n    color: blue;\r\n}\r\n\r\n.verbose {\r\n    color: black;\r\n}\r\n\r\n.warning {\r\n    color: orange;\r\n}
+        body {\r\n    font-family: 'Segoe UI', Tahoma, Arial, Helvtica, sans-serif;\r\n    line-height: 1.4em;\r\n}\r\n\r\nh1 {\r\n    font-family: 'Segoe UI', Helvetica, sans-serif;\r\n    font-size: 2.5em;\r\n}\r\n\r\ntd {\r\n    text-overflow: ellipsis;\r\n    overflow: hidden;\r\n}\r\n\r\ntr:nth-child(2n) {\r\n    background-color: #F6F6F6;\r\n}\r\n\r\n.critical {\r\n    background-color: red;\r\n    color: white;\r\n}\r\n\r\n.error {\r\n    color: red;\r\n}\r\n\r\n.information {\r\n    color: blue;\r\n}\r\n\r\n.debug {\r\n    color: black;\r\n}\r\n\r\n.warning {\r\n    color: orange;\r\n}
     </style>
 </head>
 <body>
@@ -208,9 +208,9 @@ using Microsoft.Extensions.Logging
 #line hidden
 
             WriteLiteral("                    <option");
-            BeginWriteAttribute("value", " value=\"", 4908, "\"", 4928, 1);
+            BeginWriteAttribute("value", " value=\"", 4904, "\"", 4924, 1);
 #line 138 "LogPage.cshtml"
-WriteAttributeValue("", 4916, severityInt, 4916, 12, false);
+WriteAttributeValue("", 4912, severityInt, 4912, 12, false);
 
 #line default
 #line hidden
@@ -231,9 +231,9 @@ WriteAttributeValue("", 4916, severityInt, 4916, 12, false);
 #line hidden
 
             WriteLiteral("                    <option");
-            BeginWriteAttribute("value", " value=\"", 5057, "\"", 5077, 1);
+            BeginWriteAttribute("value", " value=\"", 5053, "\"", 5073, 1);
 #line 142 "LogPage.cshtml"
-WriteAttributeValue("", 5065, severityInt, 5065, 12, false);
+WriteAttributeValue("", 5061, severityInt, 5061, 12, false);
 
 #line default
 #line hidden
@@ -253,9 +253,9 @@ WriteAttributeValue("", 5065, severityInt, 5065, 12, false);
 #line hidden
 
             WriteLiteral("        </select>\r\n        <input type=\"text\" name=\"name\"");
-            BeginWriteAttribute("value", " value=\"", 5190, "\"", 5223, 1);
+            BeginWriteAttribute("value", " value=\"", 5186, "\"", 5219, 1);
 #line 146 "LogPage.cshtml"
-WriteAttributeValue("", 5198, Model.Options.NamePrefix, 5198, 25, false);
+WriteAttributeValue("", 5194, Model.Options.NamePrefix, 5194, 25, false);
 
 #line default
 #line hidden
@@ -315,16 +315,16 @@ WriteAttributeValue("", 5198, Model.Options.NamePrefix, 5198, 25, false);
 #line hidden
 
             WriteLiteral("                        \t<td><a");
-            BeginWriteAttribute("href", " href=\"", 6287, "\"", 6307, 1);
+            BeginWriteAttribute("href", " href=\"", 6283, "\"", 6303, 1);
 #line 178 "LogPage.cshtml"
-WriteAttributeValue("", 6294, activityPath, 6294, 13, false);
+WriteAttributeValue("", 6290, activityPath, 6290, 13, false);
 
 #line default
 #line hidden
             EndWriteAttribute();
-            BeginWriteAttribute("title", " title=\"", 6308, "\"", 6339, 1);
+            BeginWriteAttribute("title", " title=\"", 6304, "\"", 6335, 1);
 #line 178 "LogPage.cshtml"
-WriteAttributeValue("", 6316, activity.HttpInfo.Path, 6316, 23, false);
+WriteAttributeValue("", 6312, activity.HttpInfo.Path, 6312, 23, false);
 
 #line default
 #line hidden
@@ -363,16 +363,16 @@ WriteAttributeValue("", 6316, activity.HttpInfo.Path, 6316, 23, false);
 #line hidden
 
             WriteLiteral("                            <td colspan=\"4\"><a");
-            BeginWriteAttribute("href", " href=\"", 6729, "\"", 6749, 1);
+            BeginWriteAttribute("href", " href=\"", 6725, "\"", 6745, 1);
 #line 185 "LogPage.cshtml"
-WriteAttributeValue("", 6736, activityPath, 6736, 13, false);
+WriteAttributeValue("", 6732, activityPath, 6732, 13, false);
 
 #line default
 #line hidden
             EndWriteAttribute();
-            BeginWriteAttribute("title", " title=\"", 6750, "\"", 6778, 1);
+            BeginWriteAttribute("title", " title=\"", 6746, "\"", 6774, 1);
 #line 185 "LogPage.cshtml"
-WriteAttributeValue("", 6758, activity.Root.State, 6758, 20, false);
+WriteAttributeValue("", 6754, activity.Root.State, 6754, 20, false);
 
 #line default
 #line hidden
@@ -393,9 +393,9 @@ WriteAttributeValue("", 6758, activity.Root.State, 6758, 20, false);
 #line hidden
 
             WriteLiteral("                            <td colspan=\"4\"><a");
-            BeginWriteAttribute("href", " href=\"", 6941, "\"", 6961, 1);
+            BeginWriteAttribute("href", " href=\"", 6937, "\"", 6957, 1);
 #line 189 "LogPage.cshtml"
-WriteAttributeValue("", 6948, activityPath, 6948, 13, false);
+WriteAttributeValue("", 6944, activityPath, 6944, 13, false);
 
 #line default
 #line hidden
@@ -434,7 +434,7 @@ WriteAttributeValue("", 6948, activityPath, 6948, 13, false);
                                 counts["Error"] = 0;
                                 counts["Warning"] = 0;                                
                                 counts["Information"] = 0;
-                                counts["Verbose"] = 0;
+                                counts["Debug"] = 0;
                             
 
 #line default
@@ -503,7 +503,7 @@ WriteAttributeValue("", 6948, activityPath, 6948, 13, false);
 #line 228 "LogPage.cshtml"
                                      foreach (var kvp in counts)
                                     {
-                                        if (string.Equals("Verbose", kvp.Key)) {
+                                        if (string.Equals("Debug", kvp.Key)) {
 
 #line default
 #line hidden

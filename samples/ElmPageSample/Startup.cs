@@ -15,7 +15,7 @@ namespace ElmPageSample
 
             services.ConfigureElm(elmOptions =>
             {
-                elmOptions.Filter = (loggerName, loglevel) => loglevel == LogLevel.Verbose;
+                elmOptions.Filter = (loggerName, loglevel) => loglevel == LogLevel.Debug;
             });
         }
 

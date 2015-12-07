@@ -23,7 +23,7 @@ namespace ElmPageSample
         {
             using (_logger.BeginScope("Scope1"))
             {
-                _logger.LogVerbose("Getting message");
+                _logger.LogDebug("Getting message");
 
                 httpContext.Response.ContentType = "text/html; charset=utf-8";
                 await httpContext.Response.WriteAsync(

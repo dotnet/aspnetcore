@@ -64,7 +64,7 @@
             {
                 Name = node.Name,
                 Time = node.StartTime,
-                Severity = LogLevel.Verbose,
+                Severity = LogLevel.Debug,
                 Message = "Beginning " + node.State,
             }, level));
 
@@ -105,7 +105,7 @@
             {
                 Name = node.Name,
                 Time = node.EndTime,
-                Severity = LogLevel.Verbose,
+                Severity = LogLevel.Debug,
                 Message = string.Format("Completed {0} in {1}ms", node.State, node.EndTime - node.StartTime)
             }, level));
         });
@@ -207,7 +207,7 @@
                                 counts["Error"] = 0;
                                 counts["Warning"] = 0;                                
                                 counts["Information"] = 0;
-                                counts["Verbose"] = 0;
+                                counts["Debug"] = 0;
                             }
                             <tbody class="logBody">
                                 @if (!activity.RepresentsScope)
@@ -227,7 +227,7 @@
                                     <td>@activity.Time.ToString("MM-dd-yyyy HH:mm:ss")</td>
                                     @foreach (var kvp in counts)
                                     {
-                                        if (string.Equals("Verbose", kvp.Key)) {
+                                        if (string.Equals("Debug", kvp.Key)) {
                                             <td>@kvp.Value @kvp.Key<span class="collapse">v</span></td>
                                         }
                                         else

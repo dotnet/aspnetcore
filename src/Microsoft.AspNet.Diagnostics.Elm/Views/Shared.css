@@ -30,7 +30,7 @@ tr:nth-child(2n) {
     color: blue;
 }
 
-.verbose {
+.debug {
     color: black;
 }
 
