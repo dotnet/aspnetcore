@@ -18,18 +18,15 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
 {
     public class DefaultActionSelector : IActionSelector
     {
-        private readonly IActionDescriptorsCollectionProvider _actionDescriptorsCollectionProvider;
         private readonly IActionSelectorDecisionTreeProvider _decisionTreeProvider;
         private readonly IActionConstraintProvider[] _actionConstraintProviders;
         private ILogger _logger;
 
         public DefaultActionSelector(
-            IActionDescriptorsCollectionProvider actionDescriptorsCollectionProvider,
             IActionSelectorDecisionTreeProvider decisionTreeProvider,
             IEnumerable<IActionConstraintProvider> actionConstraintProviders,
             ILoggerFactory loggerFactory)
         {
-            _actionDescriptorsCollectionProvider = actionDescriptorsCollectionProvider;
             _decisionTreeProvider = decisionTreeProvider;
             _actionConstraintProviders = actionConstraintProviders.OrderBy(item => item.Order).ToArray();
             _logger = loggerFactory.CreateLogger<DefaultActionSelector>();
@@ -209,30 +206,6 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
             {
                 return EvaluateActionConstraints(context, actionsWithoutConstraint, order);
             }
-        }
-
-        // This method attempts to ensure that the route that's about to generate a link will generate a link
-        // to an existing action. This method is called by a route (through MvcApplication) prior to generating
-        // any link - this gives WebFX a chance to 'veto' the values provided by a route.
-        //
-        // This method does not take httpmethod or dynamic action constraints into account.
-        public virtual bool HasValidAction(VirtualPathContext context)
-        {
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            if (context.ProvidedValues == null)
-            {
-                // We need the route's values to be able to double check our work.
-                return false;
-            }
-
-            var tree = _decisionTreeProvider.DecisionTree;
-            var matchingRouteConstraints = tree.Select(context.ProvidedValues);
-
-            return matchingRouteConstraints.Count > 0;
         }
 
         private IReadOnlyList<IActionConstraint> GetConstraints(HttpContext httpContext, ActionDescriptor action)

@@ -991,7 +991,6 @@ namespace Microsoft.AspNet.Mvc.Routing
             var target = new Mock<IRouter>(MockBehavior.Strict);
             target
                 .Setup(router => router.GetVirtualPath(It.IsAny<VirtualPathContext>()))
-                .Callback<VirtualPathContext>(context => context.IsBound = true)
                 .Returns<VirtualPathContext>(context => null);
             routeBuilder.DefaultHandler = target.Object;
 
@@ -1006,7 +1005,6 @@ namespace Microsoft.AspNet.Mvc.Routing
             var mockHttpRoute = new Mock<IRouter>();
             mockHttpRoute
                 .Setup(mock => mock.GetVirtualPath(It.Is<VirtualPathContext>(c => string.Equals(c.RouteName, mockRouteName))))
-                .Callback<VirtualPathContext>(c => c.IsBound = true)
                 .Returns(new VirtualPathData(mockHttpRoute.Object, mockTemplateValue));
 
             routeBuilder.Routes.Add(mockHttpRoute.Object);
@@ -1017,7 +1015,6 @@ namespace Microsoft.AspNet.Mvc.Routing
         {
             public VirtualPathData GetVirtualPath(VirtualPathContext context)
             {
-                context.IsBound = true;
                 return null;
             }
 

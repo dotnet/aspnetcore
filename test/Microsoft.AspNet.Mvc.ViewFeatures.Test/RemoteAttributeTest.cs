@@ -195,18 +195,6 @@ namespace Microsoft.AspNet.Mvc
         }
 
         [Fact]
-        public void GetClientValidationRules_WithActionController_NoController_Throws()
-        {
-            // Arrange
-            var attribute = new RemoteAttribute("Action", "Controller");
-            var context = GetValidationContextWithNoController();
-
-            // Act & Assert
-            var exception = Assert.Throws<InvalidOperationException>(() => attribute.GetClientValidationRules(context));
-            Assert.Equal("No URL for remote validation could be found.", exception.Message);
-        }
-
-        [Fact]
         public void GetClientValidationRules_WithRoute_CallsUrlHelperWithExpectedValues()
         {
             // Arrange
@@ -505,35 +493,9 @@ namespace Microsoft.AspNet.Mvc
             return new ClientModelValidationContext(actionContext, _metadata, _metadataProvider);
         }
 
-        private static ClientModelValidationContext GetValidationContextWithNoController()
-        {
-            var serviceCollection = GetServiceCollection();
-            var serviceProvider = serviceCollection.BuildServiceProvider();
-            var routeCollection = GetRouteCollectionWithNoController(serviceProvider);
-            var routeData = new RouteData
-            {
-                Routers =
-                {
-                    routeCollection,
-                },
-            };
-
-            var context = GetActionContext(serviceProvider, routeData);
-            var urlHelper = new UrlHelper(context);
-            var factory = new Mock<IUrlHelperFactory>();
-            factory
-                .Setup(f => f.GetUrlHelper(It.IsAny<ActionContext>()))
-                .Returns(urlHelper);
-
-            serviceCollection.AddSingleton<IUrlHelperFactory>(factory.Object);
-            context.HttpContext.RequestServices = serviceCollection.BuildServiceProvider();
-
-            return new ClientModelValidationContext(context, _metadata, _metadataProvider);
-        }
-
         private static IRouter GetRouteCollectionWithArea(IServiceProvider serviceProvider)
         {
-            var builder = GetRouteBuilder(serviceProvider, isBound: true);
+            var builder = GetRouteBuilder(serviceProvider);
 
             // Setting IsBound to true makes order more important than usual. First try the route that requires the
             // area value. Skip usual "area:exists" constraint because that isn't relevant for link generation and it
@@ -546,13 +508,13 @@ namespace Microsoft.AspNet.Mvc
 
         private static IRouter GetRouteCollectionWithNoController(IServiceProvider serviceProvider)
         {
-            var builder = GetRouteBuilder(serviceProvider, isBound: false);
+            var builder = GetRouteBuilder(serviceProvider);
             builder.MapRoute("default", "static/route");
 
             return builder.Build();
         }
 
-        private static RouteBuilder GetRouteBuilder(IServiceProvider serviceProvider, bool isBound)
+        private static RouteBuilder GetRouteBuilder(IServiceProvider serviceProvider)
         {
             var builder = new RouteBuilder
             {
@@ -562,7 +524,6 @@ namespace Microsoft.AspNet.Mvc
             var handler = new Mock<IRouter>(MockBehavior.Strict);
             handler
                 .Setup(router => router.GetVirtualPath(It.IsAny<VirtualPathContext>()))
-                .Callback<VirtualPathContext>(context => context.IsBound = isBound)
                 .Returns((VirtualPathData)null);
             builder.DefaultHandler = handler.Object;
 

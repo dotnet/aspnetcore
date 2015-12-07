@@ -10,7 +10,5 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
     public interface IActionSelector
     {
         Task<ActionDescriptor> SelectAsync(RouteContext context);
-
-        bool HasValidAction(VirtualPathContext context);
     }
 }

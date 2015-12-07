@@ -34,8 +34,6 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
                 throw new ArgumentNullException(nameof(context));
             }
 
-            context.IsBound = true;
-
             // We return null here because we're not responsible for generating the url, the route is.
             return null;
         }

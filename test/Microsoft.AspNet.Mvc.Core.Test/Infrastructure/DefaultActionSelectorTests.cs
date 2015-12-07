@@ -56,40 +56,6 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
         }
 
         [Fact]
-        public void HasValidAction_Match()
-        {
-            // Arrange
-            var actions = GetActions();
-
-            var selector = CreateSelector(actions);
-            var context = CreateContext(new { });
-            context.ProvidedValues = new RouteValueDictionary(new { controller = "Home", action = "Index" });
-
-            // Act
-            var isValid = selector.HasValidAction(context);
-
-            // Assert
-            Assert.True(isValid);
-        }
-
-        [Fact]
-        public void HasValidAction_NoMatch()
-        {
-            // Arrange
-            var actions = GetActions();
-
-            var selector = CreateSelector(actions);
-            var context = CreateContext(new { });
-            context.ProvidedValues = new RouteValueDictionary(new { controller = "Home", action = "FakeAction" });
-
-            // Act
-            var isValid = selector.HasValidAction(context);
-
-            // Assert
-            Assert.False(isValid);
-        }
-
-        [Fact]
         public async Task SelectAsync_PrefersActionWithConstraints()
         {
             // Arrange
@@ -652,7 +618,6 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
             };
 
             var defaultActionSelector = new DefaultActionSelector(
-                actionDescriptorsCollectionProvider,
                 decisionTreeProvider,
                 actionConstraintProviders,
                 NullLoggerFactory.Instance);
@@ -737,7 +702,6 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
                 };
 
             return new DefaultActionSelector(
-                actionProvider.Object,
                 decisionTreeProvider,
                 actionConstraintProviders,
                 loggerFactory);
