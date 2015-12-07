@@ -149,7 +149,7 @@ namespace Microsoft.AspNet.Routing.Template
                 return;
             }
 
-            _logger.LogVerbose(
+            _logger.LogDebug(
                 "Request successfully matched the route with name '{RouteName}' and template '{RouteTemplate}'.",
                 Name,
                 RouteTemplate);

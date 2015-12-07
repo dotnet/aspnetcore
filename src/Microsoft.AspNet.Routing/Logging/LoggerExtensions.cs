@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Routing.Logging.Internal
             }
 
             logger.Log(
-                logLevel: LogLevel.Verbose,
+                logLevel: LogLevel.Debug,
                 eventId: 0,
                 state: values,
                 exception: null,
