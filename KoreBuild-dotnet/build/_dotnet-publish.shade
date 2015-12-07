@@ -1,7 +1,7 @@
 @{/*
 
-kpm-publish
-    Builds project. Downloads and executes k sdk tools.
+dotnet-publish
+    Builds project. Downloads and executes dotnet sdk tools.
 
 sourcePackagesDir=''
     Required. Path to packages to install (skips symbol packages)
@@ -17,4 +17,4 @@ default targetPackagesDir=''
                            .Where(p => !p.EndsWith(".symbols.nupkg"));
 }
 
-dnu command='packages add ${package} ${targetPackagesDir}' each='var package in packages'
+dotnet command='packages add ${package} ${targetPackagesDir}' each='var package in packages'

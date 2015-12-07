@@ -1,0 +1,30 @@
+@{/*
+
+dotnet-pack
+    Builds package from project.
+
+projectFile=''
+    Required. Path to the project.json to build.
+
+dotnetPackOutputDir=''
+    Required. Base output directory.
+
+configuration=''
+    Optional. The configuration to build in. Defaults to 'Debug'.
+*/}
+
+default configuration = 'Debug'
+default pack_options=' ${E("KOREBUILD_DOTNET_PACK_OPTIONS")}'
+
+@{
+    var projectFolder=Path.GetDirectoryName(projectFile);
+    var projectName=Path.GetFileName(projectFolder);
+    var projectBin=Path.Combine(projectFolder, "bin", configuration);
+
+    DeleteFolder(projectBin);
+
+    var dotnetArgs=string.Format("pack{0} {1} --configuration {2}", pack_options, projectFolder, configuration);
+    Dotnet(dotnetArgs);
+
+    CopyFolder(projectBin, Path.Combine(dotnetPackOutputDir, projectName), true);
+}

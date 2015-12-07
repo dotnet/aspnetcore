@@ -25,12 +25,4 @@ functions
             return "t" + DateTime.UtcNow.ToString("yyMMddHHmmss");
         }
     }
-
-    bool IsBuildV2
-    {
-        get
-        {
-            return Environment.GetEnvironmentVariable("KOREBUILD_BUILD_V2") == "1";
-        }
-    }
   }

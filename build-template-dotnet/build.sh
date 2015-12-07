@@ -1,5 +1,15 @@
 #!/usr/bin/env bash
 
+SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
+  DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+  SOURCE="$(readlink "$SOURCE")"
+  [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
+done
+REPO_FOLDER="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+
+export DOTNET_INSTALL_DIR=$REPO_FOLDER/packages/cli
+
 if test `uname` = Darwin; then
     cachedir=~/Library/Caches/KBuild
 else
@@ -25,19 +35,13 @@ if test ! -e .nuget; then
 fi
 
 if test ! -d packages/Sake; then
-    mono .nuget/nuget.exe install KoreBuild -ExcludeVersion -o packages -nocache -pre
     mono .nuget/nuget.exe install Sake -ExcludeVersion -Source https://www.nuget.org/api/v2/ -Out packages
 fi
 
-if ! type dnvm > /dev/null 2>&1; then
-    source packages/KoreBuild/build/dnvm.sh
+if test ! -d packages/KoreBuild-dotnet; then
+    mono .nuget/nuget.exe install KoreBuild-dotnet -ExcludeVersion -o packages -nocache -pre
 fi
 
-if ! type dnx > /dev/null 2>&1 || [ -z "$SKIP_DNX_INSTALL" ]; then
-    dnvm install latest -runtime coreclr -alias default
-    dnvm install default -runtime mono -alias default
-else
-    dnvm use default -runtime mono
-fi
-
-mono packages/Sake/tools/Sake.exe -I packages/KoreBuild/build -f makefile.shade "$@"
+packages/KoreBuild-dotnet/build/install.sh
+export PATH=$DOTNET_INSTALL_DIR/bin/:$PATH
+mono packages/Sake/tools/Sake.exe -I packages/KoreBuild-dotnet/build -f makefile.shade "$@"

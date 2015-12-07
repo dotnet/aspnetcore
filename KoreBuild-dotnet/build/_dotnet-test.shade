@@ -6,7 +6,7 @@ default KOREBUILD_TEST_DNXCORE='${E("KOREBUILD_TEST_DNXCORE")}'
 
 @{/*
 
-k-test
+dotnet-test
     Run unit tests in your project.
 
 projectFile=''
@@ -50,6 +50,7 @@ projectFile=''
         {
             var testArgs = noParallelTestProjects.Contains(projectName) ? " -parallel none" : "";
 
+            Console.WriteLine("!!! Tests skipped for " + projectName);
             if (!framework.StartsWith("dnxcore", StringComparison.OrdinalIgnoreCase))
             {
                 if (IsLinux)
@@ -58,11 +59,11 @@ projectFile=''
                     testArgs = " -parallel none";
                 }
 
-                Dnx("test" + testArgs, projectFolder);
+                // Dotnet("test" + testArgs, projectFolder);
             }
             else if (!IsLinux || !string.IsNullOrEmpty(KOREBUILD_TEST_DNXCORE))
             {
-                Dnx("test" + testArgs, projectFolder, "default -runtime coreclr");
+                // Dotnet("test" + testArgs, projectFolder, "default -runtime coreclr");
             }
         }
     }

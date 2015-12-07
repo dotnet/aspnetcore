@@ -1,0 +1,15 @@
+@{/*
+
+dotnet-restore
+    Restores nuget packages required for dotnet projects. Downloads and executes dotnet sdk tools.
+
+restoreDir=''
+    Optional. The directory in which to execute the dnu restore command.
+*/}
+
+default currentDir = '${ Directory.GetCurrentDirectory() }'
+default restoreDir = '${ currentDir }'
+
+default restore_options=' ${ E("KOREBUILD_DOTNET_RESTORE_OPTIONS") } ${ IsLinux ? string.Empty : "--parallel" }'
+
+dotnet command='restore${ restore_options }' workingDir='${ restoreDir }'

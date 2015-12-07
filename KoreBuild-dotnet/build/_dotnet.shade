@@ -1,0 +1,15 @@
+@{/*
+
+dotnet
+    Run dotnet commands in your project. Executes `dotnet` command.
+
+command=''
+    The `dotnet` subcommand to execute.
+dotnetDir=''
+    Optional. The directory in which to execute the `dotnet` command.
+*/}
+
+default currentDir = '${Directory.GetCurrentDirectory()}'
+default dotnetDir = '${ currentDir }'
+
+exec program='dotnet' commandline='${command}' workingdir='${dotnetDir}'
