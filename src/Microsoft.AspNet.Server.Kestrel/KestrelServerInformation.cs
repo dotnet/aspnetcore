@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.Server.Kestrel
         {
             Addresses = GetAddresses(configuration);
             ThreadCount = GetThreadCount(configuration);
-            NoDelay = true;
+            NoDelay = GetNoDelay(configuration);
         }
 
         public ICollection<string> Addresses { get; }
@@ -67,6 +67,24 @@ namespace Microsoft.AspNet.Server.Kestrel
             }
 
             return threadCount;
+        }
+
+        private static bool GetNoDelay(IConfiguration configuration)
+        {
+            var noDelayString = configuration["kestrel.noDelay"];
+
+            if (string.IsNullOrEmpty(noDelayString))
+            {
+                return true;
+            }
+
+            bool noDelay;
+            if (bool.TryParse(noDelayString, out noDelay))
+            {
+                return noDelay;
+            }
+
+            return true;
         }
     }
 }

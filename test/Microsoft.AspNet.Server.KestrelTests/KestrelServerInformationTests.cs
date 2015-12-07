@@ -62,6 +62,23 @@ namespace Microsoft.AspNet.Server.KestrelTests
             Assert.Equal(expected, information.Addresses);
         }
 
+        [Fact]
+        public void SetNoDelayUsingConfiguration()
+        {
+            var values = new Dictionary<string, string>
+            {
+                { "kestrel.noDelay", "false" }
+            };
+
+            var configuration = new ConfigurationBuilder()
+                .AddInMemoryCollection(values)
+                .Build();
+
+            var information = new KestrelServerInformation(configuration);
+
+            Assert.False(information.NoDelay);
+        }
+
         private static int Clamp(int value, int min, int max)
         {
             return value < min ? min : value > max ? max : value;
