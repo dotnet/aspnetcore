@@ -11,8 +11,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
     public class FrameRequestStream : Stream
     {
         private readonly MessageBody _body;
-        private bool _stopped;
-        private bool _aborted;
+        private StreamState _state;
 
         public FrameRequestStream(MessageBody body)
         {
@@ -52,14 +51,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         public override int Read(byte[] buffer, int offset, int count)
         {
-            if (_stopped)
-            {
-                throw new ObjectDisposedException(nameof(FrameRequestStream));
-            }
-            if (_aborted)
-            {
-                throw new IOException("The request has been aborted.");
-            }
+            ValidateState();
 
             return ReadAsync(buffer, offset, count).GetAwaiter().GetResult();
         }
@@ -67,14 +59,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 #if NET451
         public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
         {
-            if (_stopped)
-            {
-                throw new ObjectDisposedException(nameof(FrameRequestStream));
-            }
-            if (_aborted)
-            {
-                throw new IOException("The request has been aborted.");
-            }
+            ValidateState();
 
             var task = ReadAsync(buffer, offset, count, CancellationToken.None, state);
             if (callback != null)
@@ -91,14 +76,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         private Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken, object state)
         {
-            if (_stopped)
-            {
-                throw new ObjectDisposedException(nameof(FrameRequestStream));
-            }
-            if (_aborted)
-            {
-                throw new IOException("The request has been aborted.");
-            }
+            ValidateState();
 
             var tcs = new TaskCompletionSource<int>(state);
             var task = _body.ReadAsync(new ArraySegment<byte>(buffer, offset, count), cancellationToken);
@@ -124,14 +102,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
-            if (_stopped)
-            {
-                throw new ObjectDisposedException(nameof(FrameRequestStream));
-            }
-            if (_aborted)
-            {
-                throw new IOException("The request has been aborted.");
-            }
+            ValidateState();
 
             return _body.ReadAsync(new ArraySegment<byte>(buffer, offset, count), cancellationToken);
         }
@@ -145,14 +116,37 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             // Can't use dispose (or close) as can be disposed too early by user code
             // As exampled in EngineTests.ZeroContentLengthNotSetAutomaticallyForCertainStatusCodes
-            _stopped = true;
+            _state = StreamState.Disposed;
         }
 
         public void Abort()
         {
             // We don't want to throw an ODE until the app func actually completes.
             // If the request is aborted, we throw an IOException instead.
-            _aborted = true;
+            if (_state != StreamState.Disposed)
+            {
+                _state = StreamState.Aborted;
+            }
+        }
+
+        private void ValidateState()
+        {
+            switch (_state)
+            {
+                case StreamState.Open:
+                    return;
+                case StreamState.Disposed:
+                    throw new ObjectDisposedException(nameof(FrameRequestStream));
+                case StreamState.Aborted:
+                    throw new IOException("The request has been aborted.");
+            }
+        }
+
+        private enum StreamState
+        {
+            Open,
+            Disposed,
+            Aborted
         }
     }
 }
