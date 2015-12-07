@@ -216,7 +216,7 @@ namespace Microsoft.AspNet.Authentication
                     else
                     {
                         context.NotAuthenticated();
-                        Logger.LogVerbose(2, "AuthenticationScheme: {scheme} was not authenticated.", Options.AuthenticationScheme);
+                        Logger.LogDebug(2, "AuthenticationScheme: {scheme} was not authenticated.", Options.AuthenticationScheme);
                     }
                 }
             }

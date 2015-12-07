@@ -52,12 +52,12 @@ namespace Microsoft.AspNet.Authentication
 
             if (context.HandledResponse)
             {
-                Logger.LogVerbose("The SigningIn event returned Handled.");
+                Logger.LogDebug("The SigningIn event returned Handled.");
                 return true;
             }
             else if (context.Skipped)
             {
-                Logger.LogVerbose("The SigningIn event returned Skipped.");
+                Logger.LogDebug("The SigningIn event returned Skipped.");
                 return false;
             }
 
