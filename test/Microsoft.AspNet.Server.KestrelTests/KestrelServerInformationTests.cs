@@ -43,6 +43,25 @@ namespace Microsoft.AspNet.Server.KestrelTests
             Assert.Equal(expected, information.ThreadCount);
         }
 
+        [Fact]
+        public void SetAddressesUsingConfiguration()
+        {
+            var expected = new List<string> { "http://localhost:1337", "https://localhost:42" };
+
+            var values = new Dictionary<string, string>
+            {
+                { "server.urls", string.Join(";", expected) }
+            };
+
+            var configuration = new ConfigurationBuilder()
+                .AddInMemoryCollection(values)
+                .Build();
+
+            var information = new KestrelServerInformation(configuration);
+
+            Assert.Equal(expected, information.Addresses);
+        }
+
         private static int Clamp(int value, int min, int max)
         {
             return value < min ? min : value > max ? max : value;
