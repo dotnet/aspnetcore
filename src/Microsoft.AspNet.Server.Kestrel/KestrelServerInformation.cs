@@ -11,21 +11,33 @@ namespace Microsoft.AspNet.Server.Kestrel
 {
     public class KestrelServerInformation : IKestrelServerInformation, IServerAddressesFeature
     {
-        public ICollection<string> Addresses { get; } = new List<string>();
+        public KestrelServerInformation(IConfiguration configuration, int threadCount)
+        {
+            Addresses = GetAddresses(configuration);
+            ThreadCount = threadCount;
+            NoDelay = true;
+        }
+
+        public ICollection<string> Addresses { get; }
 
         public int ThreadCount { get; set; }
 
-        public bool NoDelay { get; set; } = true;
+        public bool NoDelay { get; set; }
 
         public IConnectionFilter ConnectionFilter { get; set; }
 
-        public void Initialize(IConfiguration configuration)
+        private static ICollection<string> GetAddresses(IConfiguration configuration)
         {
-            var urls = configuration["server.urls"] ?? string.Empty;
-            foreach (var url in urls.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries))
+            var addresses = new List<string>();
+
+            var urls = configuration["server.urls"];
+
+            if (!string.IsNullOrEmpty(urls))
             {
-                Addresses.Add(url);
+                addresses.AddRange(urls.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries));
             }
+
+            return addresses;
         }
     }
 }
