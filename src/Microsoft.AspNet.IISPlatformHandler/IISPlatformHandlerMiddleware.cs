@@ -3,29 +3,20 @@
 
 using System;
 using System.Globalization;
-using System.Linq;
-using System.Net;
 using System.Security.Principal;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Http.Features.Authentication;
 using Microsoft.AspNet.Http.Features.Authentication.Internal;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Primitives;
-using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.IISPlatformHandler
 {
     public class IISPlatformHandlerMiddleware
     {
-        private const string XForwardedForHeaderName = "X-Forwarded-For";
-        private const string XForwardedProtoHeaderName = "X-Forwarded-Proto";
         private const string XIISWindowsAuthToken = "X-IIS-WindowsAuthToken";
-        private const string XOriginalPortName = "X-Original-Port";
-        private const string XOriginalProtoName = "X-Original-Proto";
-        private const string XOriginalIPName = "X-Original-IP";
 
         private readonly RequestDelegate _next;
         private readonly IISPlatformHandlerOptions _options;
@@ -46,9 +37,6 @@ namespace Microsoft.AspNet.IISPlatformHandler
 
         public async Task Invoke(HttpContext httpContext)
         {
-            UpdateScheme(httpContext);
-
-            UpdateRemoteIp(httpContext);
             if (_options.FlowWindowsAuthentication)
             {
                 var winPrincipal = UpdateUser(httpContext);
@@ -66,47 +54,6 @@ namespace Microsoft.AspNet.IISPlatformHandler
             else
             {
                 await _next(httpContext);
-            }
-        }
-
-        private static void UpdateScheme(HttpContext httpContext)
-        {
-            var xForwardProtoHeaderValue = httpContext.Request.Headers[XForwardedProtoHeaderName];
-            if (!string.IsNullOrEmpty(xForwardProtoHeaderValue))
-            {
-                if (!string.IsNullOrEmpty(httpContext.Request.Scheme))
-                {
-                    httpContext.Request.Headers[XOriginalProtoName] = httpContext.Request.Scheme;
-                }
-                httpContext.Request.Scheme = xForwardProtoHeaderValue;
-            }
-        }
-
-        private static void UpdateRemoteIp(HttpContext httpContext)
-        {
-            var xForwardedForHeaderValue = httpContext.Request.Headers.GetCommaSeparatedValues(XForwardedForHeaderName);
-            if (xForwardedForHeaderValue != null && xForwardedForHeaderValue.Length > 0)
-            {
-                IPAddress ipFromHeader;
-                int? port;
-                if (IPAddressWithPortParser.TryParse(xForwardedForHeaderValue[0], out ipFromHeader, out port))
-                {
-                    var connection = httpContext.Connection;
-                    var remoteIPString = connection.RemoteIpAddress?.ToString();
-                    if (!string.IsNullOrEmpty(remoteIPString))
-                    {
-                        httpContext.Request.Headers[XOriginalIPName] = remoteIPString;
-                    }
-                    if (port.HasValue)
-                    {
-                        if (connection.RemotePort != 0)
-                        {
-                            httpContext.Request.Headers[XOriginalPortName] = connection.RemotePort.ToString(CultureInfo.InvariantCulture);
-                        }
-                        connection.RemotePort = port.Value;
-                    }
-                    connection.RemoteIpAddress = ipFromHeader;
-                }
             }
         }
 

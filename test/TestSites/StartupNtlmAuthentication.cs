@@ -15,6 +15,7 @@ namespace TestSites
         {
             loggerFactory.AddConsole();
 
+            // Simple error page without depending on Diagnostics.
             app.Use(async (context, next) =>
             {
                 try
@@ -66,7 +67,7 @@ namespace TestSites
 
                 if (context.Request.Path.Equals("/RestrictedNegotiate"))
                 {
-                    if (string.Equals("Negotiate", context.User.Identity.AuthenticationType, System.StringComparison.Ordinal))
+                    if (string.Equals("Negotiate", context.User.Identity.AuthenticationType, StringComparison.Ordinal))
                     {
                         return context.Response.WriteAsync("Negotiate");
                     }
@@ -78,7 +79,7 @@ namespace TestSites
 
                 if (context.Request.Path.Equals("/RestrictedNTLM"))
                 {
-                    if (string.Equals("NTLM", context.User.Identity.AuthenticationType, System.StringComparison.Ordinal))
+                    if (string.Equals("NTLM", context.User.Identity.AuthenticationType, StringComparison.Ordinal))
                     {
                         return context.Response.WriteAsync("NTLM");
                     }

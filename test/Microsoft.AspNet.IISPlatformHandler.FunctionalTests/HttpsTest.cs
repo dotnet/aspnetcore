@@ -64,7 +64,7 @@ namespace Microsoft.AspNet.IISPlatformHandler.FunctionalTests
                     var responseText = await response.Content.ReadAsStringAsync();
                     try
                     {
-                        Assert.Equal("https Hello World", responseText);
+                        Assert.Equal("Scheme:http; Forwarded:https", responseText);
                     }
                     catch (XunitException)
                     {
@@ -138,11 +138,11 @@ namespace Microsoft.AspNet.IISPlatformHandler.FunctionalTests
                     {
                         if (sendClientCert)
                         {
-                            Assert.Equal("https Hello World, has cert? True", responseText);
+                            Assert.Equal("Scheme:http; Forwarded:https; has cert? True", responseText);
                         }
                         else
                         {
-                            Assert.Equal("https Hello World, has cert? False", responseText);
+                            Assert.Equal("Scheme:http; Forwarded:https; has cert? False", responseText);
                         }
                     }
                     catch (XunitException)
