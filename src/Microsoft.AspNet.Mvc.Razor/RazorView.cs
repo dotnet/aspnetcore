@@ -98,14 +98,14 @@ namespace Microsoft.AspNet.Mvc.Razor
             }
 
             _bufferScope = context.HttpContext.RequestServices.GetRequiredService<IRazorBufferScope>();
-            var bodyWriter = await RenderPageAsync(RazorPage, context, ViewStartPages);
+            var bodyWriter = await RenderPageAsync(RazorPage, context, invokeViewStarts: true);
             await RenderLayoutAsync(context, bodyWriter);
         }
 
         private async Task<RazorTextWriter> RenderPageAsync(
             IRazorPage page,
             ViewContext context,
-            IReadOnlyList<IRazorPage> viewStartPages)
+            bool invokeViewStarts)
         {
             Debug.Assert(_bufferScope != null);
             var buffer = new RazorBuffer(_bufferScope, page.Path);
@@ -120,10 +120,10 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             try
             {
-                if (viewStartPages != null)
+                if (invokeViewStarts)
                 {
                     // Execute view starts using the same context + writer as the page to render.
-                    await RenderViewStartsAsync(context, viewStartPages);
+                    await RenderViewStartsAsync(context);
                 }
 
                 await RenderPageCoreAsync(page, context);
@@ -144,13 +144,13 @@ namespace Microsoft.AspNet.Mvc.Razor
             return page.ExecuteAsync();
         }
 
-        private async Task RenderViewStartsAsync(ViewContext context, IReadOnlyList<IRazorPage> viewStartPages)
+        private async Task RenderViewStartsAsync(ViewContext context)
         {
             string layout = null;
             var oldFilePath = context.ExecutingFilePath;
             try
             {
-                for (var i = 0; i < viewStartPages.Count; i++)
+                for (var i = 0; i < ViewStartPages.Count; i++)
                 {
                     var viewStart = ViewStartPages[i];
                     context.ExecutingFilePath = viewStart.Path;
@@ -211,7 +211,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 previousPage.IsLayoutBeingRendered = true;
                 layoutPage.PreviousSectionWriters = previousPage.SectionWriters;
                 layoutPage.BodyContent = bodyWriter.Buffer;
-                bodyWriter = await RenderPageAsync(layoutPage, context, viewStartPages: null);
+                bodyWriter = await RenderPageAsync(layoutPage, context, invokeViewStarts: false);
 
                 renderedLayouts.Add(layoutPage);
                 previousPage = layoutPage;
