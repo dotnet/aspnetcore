@@ -1,0 +1,23 @@
+@{/*
+
+dnu
+    Run dnu commands in your project. Executes `dnu` command.
+
+command=''
+    The `dnu` subcommand to execute.
+dnvmUse=''
+    Optional. The DNX framework to use. Suitable for a `dnvm exec` or `dnvm use` command.
+*/}
+
+default dnvmUse=''
+var dnvmPath = '${ Path.Combine(Directory.GetCurrentDirectory(), "packages", "KoreBuild", "build", "dnvm") }'
+
+exec program='cmd' commandline='/C dnu ${command}' if='!IsLinux && string.IsNullOrEmpty(dnvmUse)'
+
+var cmdCommand = '/S /C ""${dnvmPath}.cmd" use ${dnvmUse} && dnu ${command}"'
+exec program='cmd' commandline='${ cmdCommand }' if='!IsLinux && !string.IsNullOrEmpty(dnvmUse)'
+
+exec program='dnu' commandline='${command}' if='IsLinux && string.IsNullOrEmpty(dnvmUse)'
+
+var envCommand = 'bash -c "source \"${dnvmPath}.sh\" && dnvm use ${dnvmUse} && dnu ${command}"'
+exec program='/usr/bin/env' commandline='${ envCommand }' if='IsLinux && !string.IsNullOrEmpty(dnvmUse)'

@@ -1,0 +1,13 @@
+@{/*
+
+k-clean 
+    Cleans project. Downloads and executes k sdk tools.
+
+projectFile='' 
+    Required. Path to the project.json to build.
+
+*/}
+
+var projectFolder='${Path.GetDirectoryName(projectFile)}'
+
+directory delete='${Path.Combine(projectFolder, "bin")}'

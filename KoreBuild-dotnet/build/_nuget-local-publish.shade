@@ -1,0 +1,20 @@
+@{/*
+
+nuget-local-publish
+    Publishing nuget packages in the source directory to %USERPROFILE%\.nuget
+
+sourcePackagesDir='' 
+    Directory of packages to publish to the local nuget feed
+
+*/}
+
+@{
+    var HOME_DIR = Environment.GetEnvironmentVariable("HOME");
+    if (string.IsNullOrEmpty(HOME_DIR))
+    {
+      HOME_DIR = Environment.GetEnvironmentVariable("HOMEDRIVE") + 
+                 Environment.GetEnvironmentVariable("HOMEPATH");
+    }
+}
+
+copy sourceDir='${sourcePackagesDir}' include='*.nupkg' outputDir='${Path.Combine(HOME_DIR, ".nuget")}' overwrite='${true}'

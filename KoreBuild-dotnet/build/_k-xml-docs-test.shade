@@ -1,0 +1,55 @@
+
+use namespace="System"
+use namespace="System.Collections.Generic"
+use namespace="System.IO"
+use import="Files"
+
+default BASE_DIR='${Directory.GetCurrentDirectory()}'
+
+@{
+    var srcDir = Path.Combine(BASE_DIR, "src");
+    foreach (var projectFile in Files.Include(Path.Combine(srcDir, "**", "project.json")))
+    {
+        var binDirectory = Path.Combine(Path.GetDirectoryName(projectFile), "bin");
+        if (Directory.Exists(binDirectory))
+        {
+            foreach (var xmlFilePath in Files.Include(Path.Combine(binDirectory, "**", "*.xml")))
+            {
+                var errors = 0;
+                var xmlLines = File.ReadAllLines(xmlFilePath);
+                for (var linesIndex = 0; linesIndex < xmlLines.Length; linesIndex++)
+                {
+                    var xmlLine = xmlLines[linesIndex].Trim();
+                    if (xmlLine.StartsWith("<!--"))
+                    {
+                        // Compiler only emits comments for syntax errors.
+                        if (errors == 0)
+                        {
+                            Log.Warn(string.Format("Invalid documentation syntax in {0}:", xmlFilePath));
+                        }
+
+                        errors++;
+                        Log.Warn(string.Format("  {0}: {1}", linesIndex + 1, xmlLine));
+                    }
+                    else if (xmlLine.Contains("\"!:"))
+                    {
+                        // '!' is reference string error token.
+                        if (errors == 0)
+                        {
+                            Log.Warn(string.Format("Invalid documentation syntax in {0}:", xmlFilePath));
+                        }
+
+                        errors++;
+                        Log.Warn(string.Format("  {0}: {1}", linesIndex + 1, xmlLine));
+                    }
+                }
+
+                if (errors != 0)
+                {
+                    Environment.Exit(errors);
+                    return;
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,883 @@
+use namespace='System'
+use namespace='System.Collections.Generic'
+use namespace='System.Globalization'
+use namespace='System.IO'
+use namespace='System.Text'
+
+functions @{
+    public class JsonArray : JsonValue
+    {
+        private readonly JsonValue[] _array;
+
+        public JsonArray(JsonValue[] array, int line, int column)
+            : base(line, column)
+        {
+            if (array == null)
+            {
+                throw new ArgumentNullException("array");
+            }
+
+            _array = array;
+        }
+
+        public int Length { get { return _array.Length; } }
+        public IEnumerable<JsonValue> Values { get { return _array; }}
+        public JsonValue this[int index] { get { return _array[index]; }}
+    }
+
+    public class JsonBoolean : JsonValue
+    {
+        public JsonBoolean(JsonToken token)
+            : base(token.Line, token.Column)
+        {
+            if (token.Type == JsonTokenType.True)
+            {
+                Value = true;
+            }
+            else if (token.Type == JsonTokenType.False)
+            {
+                Value = false;
+            }
+            else
+            {
+                throw new ArgumentException("Token value should be either True or False.", "token");
+            }
+        }
+
+        public bool Value { get; private set; }
+
+        public static implicit operator bool (JsonBoolean jsonBoolean)
+        {
+            return jsonBoolean.Value;
+        }
+    }
+
+    public class JsonString : JsonValue
+    {
+        private readonly string _value;
+
+        public JsonString(string value, int line, int column)
+            : base(line, column)
+        {
+            if (value == null)
+            {
+                throw new ArgumentNullException("value");
+            }
+
+            _value = value;
+        }
+
+        public string Value
+        {
+            get { return _value; }
+        }
+
+        public override string ToString()
+        {
+            return _value;
+        }
+
+        public static implicit operator string (JsonString instance)
+        {
+            if (instance == null)
+            {
+                return null;
+            }
+            else
+            {
+                return instance.Value;
+            }
+        }
+    }
+
+    public class JsonNull : JsonValue
+    {
+        public JsonNull(int line, int column)
+            : base(line, column)
+        {
+        }
+    }
+
+    public class JsonValue
+    {
+        public JsonValue(int line, int column)
+        {
+            Line = line;
+            Column = column;
+        }
+
+        public int Line { get; private set; }
+
+        public int Column { get; private set;  }
+    }
+
+    public class JsonObject : JsonValue
+    {
+        private readonly IDictionary<string, JsonValue> _data;
+
+        public JsonObject(IDictionary<string, JsonValue> data, int line, int column)
+            : base(line, column)
+        {
+            if (data == null)
+            {
+                throw new ArgumentNullException("data");
+            }
+
+            _data = data;
+        }
+
+        public ICollection<string> Keys
+        {
+            get { return _data.Keys; }
+        }
+
+        public JsonValue Value(string key)
+        {
+            JsonValue result;
+            if (!_data.TryGetValue(key, out result))
+            {
+                result = null;
+            }
+
+            return result;
+        }
+
+        public JsonObject ValueAsJsonObject(string key)
+        {
+            return Value(key) as JsonObject;
+        }
+
+        public JsonString ValueAsString(string key)
+        {
+            return Value(key) as JsonString;
+        }
+
+        public int ValueAsInt(string key)
+        {
+            var number = Value(key) as JsonNumber;
+            if (number == null)
+            {
+                throw new FormatException();
+            }
+            return Convert.ToInt32(number.Raw);
+        }
+
+        public bool ValueAsBoolean(string key, bool defaultValue = false)
+        {
+            var boolVal = Value(key) as JsonBoolean;
+            if (boolVal != null)
+            {
+                return boolVal.Value;
+            }
+
+            return defaultValue;
+        }
+
+        public bool? ValueAsNullableBoolean(string key)
+        {
+            var boolVal = Value(key) as JsonBoolean;
+            if (boolVal != null)
+            {
+                return boolVal.Value;
+            }
+
+            return null;
+        }
+
+        public string[] ValueAsStringArray(string key)
+        {
+            var list = Value(key) as JsonArray;
+            if (list == null)
+            {
+                return null;
+            }
+
+            var result = new string[list.Length];
+
+            for (int i = 0; i < list.Length; ++i)
+            {
+                var jsonString = list[i] as JsonString;
+                if (jsonString != null)
+                {
+                    result[i] = jsonString.ToString();
+                }
+            }
+
+            return result;
+        }
+
+        internal object ValueAsJsonObject(object packIncludePropertyName)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public class JsonNumber : JsonValue
+    {
+        private readonly string _raw;
+        private readonly double _double;
+
+        public JsonNumber(JsonToken token)
+            : base(token.Line, token.Column)
+        {
+            try
+            {
+                _raw = token.Value;
+                _double = double.Parse(_raw, NumberStyles.Float);
+            }
+            catch (FormatException ex)
+            {
+                throw new JsonDeserializerException(
+                    JsonDeserializerResource.Format_InvalidFloatNumberFormat(_raw),
+                    ex,
+                    token.Line,
+                    token.Column);
+            }
+            catch (OverflowException ex)
+            {
+                throw new JsonDeserializerException(
+                    JsonDeserializerResource.Format_FloatNumberOverflow(_raw),
+                    ex,
+                    token.Line,
+                    token.Column);
+            }
+        }
+
+        public double Double
+        {
+            get { return _double; }
+        }
+
+        public string Raw
+        {
+            get { return _raw; }
+        }
+    }
+
+    public static class Json
+    {
+        public static JsonValue Deserialize(string content)
+        {
+            using (var reader = new StringReader(content))
+            {
+                return Deserialize(reader);
+            }
+        }
+
+        public static JsonValue Deserialize(TextReader reader)
+        {
+            if (reader == null)
+            {
+                throw new ArgumentNullException("reader");
+            }
+
+            var buffer = new JsonBuffer(reader);
+
+            var result = DeserializeInternal(buffer.Read(), buffer);
+
+            // There are still unprocessed char. The parsing is not finished. Error happened.
+            var nextToken = buffer.Read();
+            if (nextToken.Type != JsonTokenType.EOF)
+            {
+                throw new JsonDeserializerException(
+                    JsonDeserializerResource.Format_UnfinishedJSON(nextToken.Value),
+                    nextToken);
+            }
+
+            return result;
+        }
+
+        private static JsonValue DeserializeInternal(JsonToken next, JsonBuffer buffer)
+        {
+            if (next.Type == JsonTokenType.EOF)
+            {
+                return null;
+            }
+
+            if (next.Type == JsonTokenType.LeftSquareBracket)
+            {
+                return DeserializeArray(next, buffer);
+            }
+
+            if (next.Type == JsonTokenType.LeftCurlyBracket)
+            {
+                return DeserializeObject(next, buffer);
+            }
+
+            if (next.Type == JsonTokenType.String)
+            {
+                return new JsonString(next.Value, next.Line, next.Column);
+            }
+
+            if (next.Type == JsonTokenType.True || next.Type == JsonTokenType.False)
+            {
+                return new JsonBoolean(next);
+            }
+
+            if (next.Type == JsonTokenType.Null)
+            {
+                return new JsonNull(next.Line, next.Column);
+            }
+
+            if (next.Type == JsonTokenType.Number)
+            {
+                return new JsonNumber(next);
+            }
+
+            throw new JsonDeserializerException(JsonDeserializerResource.Format_InvalidTokenExpectation(
+                next.Value, "'{', (char)'[', true, false, null, JSON string, JSON number, or the end of the file"),
+                next);
+        }
+
+        private static JsonArray DeserializeArray(JsonToken head, JsonBuffer buffer)
+        {
+            var list = new List<JsonValue>();
+            while (true)
+            {
+                var next = buffer.Read();
+                if (next.Type == JsonTokenType.RightSquareBracket)
+                {
+                    break;
+                }
+
+                list.Add(DeserializeInternal(next, buffer));
+
+                next = buffer.Read();
+                if (next.Type == JsonTokenType.EOF)
+                {
+                    throw new JsonDeserializerException(
+                        JsonDeserializerResource.Format_InvalidSyntaxExpectation("JSON array", (char)']', (char)','),
+                        next);
+                }
+                else if (next.Type == JsonTokenType.RightSquareBracket)
+                {
+                    break;
+                }
+                else if (next.Type != JsonTokenType.Comma)
+                {
+                    throw new JsonDeserializerException(
+                        JsonDeserializerResource.Format_InvalidSyntaxExpectation("JSON array", (char)','),
+                        next);
+                }
+            }
+
+            return new JsonArray(list.ToArray(), head.Line, head.Column);
+        }
+
+        private static JsonObject DeserializeObject(JsonToken head, JsonBuffer buffer)
+        {
+            var dictionary = new Dictionary<string, JsonValue>();
+
+            // Loop through each JSON entry in the input object
+            while (true)
+            {
+                var next = buffer.Read();
+                if (next.Type == JsonTokenType.EOF)
+                {
+                    throw new JsonDeserializerException(
+                        JsonDeserializerResource.Format_InvalidSyntaxExpectation("JSON object", (char)'}'),
+                        next);
+                }
+
+                if (next.Type == JsonTokenType.Colon)
+                {
+                    throw new JsonDeserializerException(
+                        JsonDeserializerResource.Format_InvalidSyntaxNotExpected("JSON object", (char)':'),
+                        next);
+                }
+                else if (next.Type == JsonTokenType.RightCurlyBracket)
+                {
+                    break;
+                }
+                else
+                {
+                    if (next.Type != JsonTokenType.String)
+                    {
+                        throw new JsonDeserializerException(
+                            JsonDeserializerResource.Format_InvalidSyntaxExpectation("JSON object member name", "JSON string"),
+                            next);
+                    }
+
+                    var memberName = next.Value;
+                    if (dictionary.ContainsKey(memberName))
+                    {
+                        throw new JsonDeserializerException(
+                            JsonDeserializerResource.Format_DuplicateObjectMemberName(memberName),
+                            next);
+                    }
+
+                    next = buffer.Read();
+                    if (next.Type != JsonTokenType.Colon)
+                    {
+                        throw new JsonDeserializerException(
+                            JsonDeserializerResource.Format_InvalidSyntaxExpectation("JSON object", (char)':'),
+                            next);
+                    }
+
+                    dictionary[memberName] = DeserializeInternal(buffer.Read(), buffer);
+
+                    next = buffer.Read();
+                    if (next.Type == JsonTokenType.RightCurlyBracket)
+                    {
+                        break;
+                    }
+                    else if (next.Type != JsonTokenType.Comma)
+                    {
+                        throw new JsonDeserializerException(
+                            JsonDeserializerResource.Format_InvalidSyntaxExpectation("JSON object", (char)',', (char)'}'),
+                            next);
+                    }
+                }
+            }
+
+            return new JsonObject(dictionary, head.Line, head.Column);
+        }
+    }
+
+    internal class JsonBuffer
+    {
+        public const string ValueNull = "null";
+        public const string ValueTrue = "true";
+        public const string ValueFalse = "false";
+
+        private readonly StringBuilder _buffer = new StringBuilder();
+        private readonly StringBuilder _codePointBuffer = new StringBuilder(4);
+        private readonly TextReader _reader;
+        private JsonToken _token;
+        private int _line;
+        private int _column;
+
+        public JsonBuffer(TextReader reader)
+        {
+            _reader = reader;
+            _line = 1;
+        }
+
+        public JsonToken Read()
+        {
+            int first;
+            while (true)
+            {
+                first = ReadNextChar();
+
+                if (first == -1)
+                {
+                    _token.Type = JsonTokenType.EOF;
+                    return _token;
+                }
+                else if (!IsWhitespace(first))
+                {
+                    break;
+                }
+            }
+
+            _token.Value = ((char)first).ToString();
+            _token.Line = _line;
+            _token.Column = _column;
+
+            if (first == (char)'{')
+            {
+                _token.Type = JsonTokenType.LeftCurlyBracket;
+            }
+            else if (first == (char)'}')
+            {
+                _token.Type = JsonTokenType.RightCurlyBracket;
+            }
+            else if (first == (char)'[')
+            {
+                _token.Type = JsonTokenType.LeftSquareBracket;
+            }
+            else if (first == (char)']')
+            {
+                _token.Type = JsonTokenType.RightSquareBracket;
+            }
+            else if (first == (char)':')
+            {
+                _token.Type = JsonTokenType.Colon;
+            }
+            else if (first == (char)',')
+            {
+                _token.Type = JsonTokenType.Comma;
+            }
+            else if (first == (char)'"')
+            {
+                _token.Type = JsonTokenType.String;
+                _token.Value = ReadString();
+            }
+            else if (first == (char)'t')
+            {
+                ReadLiteral(ValueTrue);
+                _token.Type = JsonTokenType.True;
+            }
+            else if (first == (char)'f')
+            {
+                ReadLiteral(ValueFalse);
+                _token.Type = JsonTokenType.False;
+            }
+            else if (first == (char)'n')
+            {
+                ReadLiteral(ValueNull);
+                _token.Type = JsonTokenType.Null;
+            }
+            else if ((first >= (char)'0' && first <= (char)'9') || first == (char)'-')
+            {
+                _token.Type = JsonTokenType.Number;
+                _token.Value = ReadNumber(first);
+            }
+            else
+            {
+                throw new JsonDeserializerException(
+                    JsonDeserializerResource.Format_IllegalCharacter(first),
+                    _token);
+            }
+
+            // JsonToken is a value type
+            return _token;
+        }
+
+        private int ReadNextChar()
+        {
+            while (true)
+            {
+                var value = _reader.Read();
+                _column++;
+
+                if (value == -1)
+                {
+                    // This is the end of file
+                    return -1;
+                }
+                else if (value == (char)'\n')
+                {
+                    // This is a new line. Let the next loop read the first charactor of the following line.
+                    // Set position ahead of next line
+                    _column = 0;
+                    _line++;
+
+                    continue;
+                }
+                else if (value == (char)'\r')
+                {
+                    // Skip the carriage return.
+                    // Let the next loop read the following char
+                }
+                else
+                {
+                    // Returns the normal value
+                    return value;
+                }
+            }
+        }
+
+        private string ReadNumber(int firstRead)
+        {
+            _buffer.Clear();
+            _buffer.Append((char)firstRead);
+
+            while (true)
+            {
+                var next = _reader.Peek();
+
+                if ((next >= (char)'0' && next <= (char)'9') ||
+                    next == (char)'.' ||
+                    next == (char)'e' ||
+                    next == (char)'E')
+                {
+                    _buffer.Append((char)ReadNextChar());
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            return _buffer.ToString();
+        }
+
+        private void ReadLiteral(string literal)
+        {
+            for (int i = 1; i < literal.Length; ++i)
+            {
+                var next = _reader.Peek();
+                if (next != literal[i])
+                {
+                    throw new JsonDeserializerException(
+                        JsonDeserializerResource.Format_UnrecognizedLiteral(literal),
+                        _line, _column);
+                }
+                else
+                {
+                    ReadNextChar();
+                }
+            }
+
+            var tail = _reader.Peek();
+            if (tail != (char)'}' &&
+                tail != (char)']' &&
+                tail != (char)',' &&
+                tail != (char)'\n' &&
+                tail != -1 &&
+                !IsWhitespace(tail))
+            {
+                throw new JsonDeserializerException(
+                    JsonDeserializerResource.Format_IllegalTrailingCharacterAfterLiteral(tail, literal),
+                    _line, _column);
+            }
+        }
+
+        private string ReadString()
+        {
+            _buffer.Clear();
+            var escaped = false;
+
+            while (true)
+            {
+                var next = ReadNextChar();
+
+                if (next == -1 || next == (char)'\n')
+                {
+                    throw new JsonDeserializerException(
+                        JsonDeserializerResource.JSON_OpenString,
+                        _line, _column);
+                }
+                else if (escaped)
+                {
+                    if ((next == (char)'"') || (next == (char)'\\') || (next == (char)'/'))
+                    {
+                        _buffer.Append((char)next);
+                    }
+                    else if (next == (char)'b')
+                    {
+                        // (char)'\b' backspace
+                        _buffer.Append('\b');
+                    }
+                    else if (next == (char)'f')
+                    {
+                        // (char)'\f' form feed
+                        _buffer.Append('\f');
+                    }
+                    else if (next == (char)'n')
+                    {
+                        // (char)'\n' line feed
+                        _buffer.Append('\n');
+                    }
+                    else if (next == (char)'r')
+                    {
+                        // (char)'\r' carriage return
+                        _buffer.Append('\r');
+                    }
+                    else if (next == (char)'t')
+                    {
+                        // (char)'\t' tab
+                        _buffer.Append('\t');
+                    }
+                    else if (next == (char)'u')
+                    {
+                        // (char)'\uXXXX' unicode
+                        var unicodeLine = _line;
+                        var unicodeColumn = _column;
+
+                        _codePointBuffer.Clear();
+                        for (int i = 0; i < 4; ++i)
+                        {
+                            next = ReadNextChar();
+                            if (next == -1)
+                            {
+                                throw new JsonDeserializerException(
+                                    JsonDeserializerResource.JSON_InvalidEnd,
+                                    unicodeLine,
+                                    unicodeColumn);
+                            }
+                            else
+                            {
+                                _codePointBuffer[i] = (char)next;
+                            }
+                        }
+
+                        try
+                        {
+                            var unicodeValue = int.Parse(_codePointBuffer.ToString(), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+                            _buffer.Append((char)unicodeValue);
+                        }
+                        catch (FormatException ex)
+                        {
+                            throw new JsonDeserializerException(
+                                JsonDeserializerResource.Format_InvalidUnicode(_codePointBuffer.ToString()),
+                                ex,
+                                unicodeLine,
+                                unicodeColumn);
+                        }
+                    }
+                    else
+                    {
+                        throw new JsonDeserializerException(
+                            JsonDeserializerResource.Format_InvalidSyntaxNotExpected("charactor escape", "\\" + next),
+                            _line,
+                            _column);
+                    }
+
+                    escaped = false;
+                }
+                else if (next == (char)'\\')
+                {
+                    escaped = true;
+                }
+                else if (next == (char)'"')
+                {
+                    break;
+                }
+                else
+                {
+                    _buffer.Append((char)next);
+                }
+            }
+
+            return _buffer.ToString();
+        }
+
+        private static bool IsWhitespace(int value)
+        {
+            return value == (char)' ' || value == (char)'\t' || value == (char)'\r';
+        }
+    }
+
+    public enum JsonTokenType
+    {
+        LeftCurlyBracket,   // [
+        LeftSquareBracket,  // {
+        RightCurlyBracket,  // ]
+        RightSquareBracket, // }
+        Colon,              // :
+        Comma,              // ,
+        Null,
+        True,
+        False,
+        Number,
+        String,
+        EOF
+    }
+
+    public struct JsonToken
+    {
+        public JsonTokenType Type;
+        public string Value;
+        public int Line;
+        public int Column;
+    }
+
+    public class JsonDeserializerException : Exception
+    {
+        public JsonDeserializerException(string message, Exception innerException, int line, int column)
+            : base(message, innerException)
+        {
+            Line = line;
+            Column = column;
+        }
+
+        public JsonDeserializerException(string message, int line, int column)
+            : base(message)
+        {
+            Line = line;
+            Column = column;
+        }
+
+        public JsonDeserializerException(string message, JsonToken nextToken)
+            : base(message)
+        {
+            Line = nextToken.Line;
+            Column = nextToken.Column;
+        }
+
+        public int Line { get; private set; }
+
+        public int Column { get; private set; }
+    }
+
+    internal class JsonDeserializerResource
+    {
+        internal static string Format_IllegalCharacter(int value)
+        {
+            return string.Format("Illegal character (char)'{0}' (Unicode hexadecimal {0:X4}).", value);
+        }
+
+        internal static string Format_IllegalTrailingCharacterAfterLiteral(int value, string literal)
+        {
+            return string.Format("Illegal character(char)'{0}'(Unicode hexadecimal { 0:X4}) after the literal name (char)'{1}'.", value, literal);
+        }
+
+        internal static string Format_UnrecognizedLiteral(string literal)
+        {
+            return string.Format("Invalid JSON literal.Expected literal(char)'{0}'.", literal);
+        }
+
+        internal static string Format_DuplicateObjectMemberName(string memberName)
+        {
+            return Format_InvalidSyntax("JSON object", string.Format("Duplicate member name(char)'{0}'", memberName));
+        }
+
+        internal static string Format_InvalidFloatNumberFormat(string raw)
+        {
+            return string.Format("Invalid float number format: {0}", raw);
+        }
+
+        internal static string Format_FloatNumberOverflow(string raw)
+        {
+            return string.Format("Float number overflow: {0}", raw);
+        }
+
+        internal static string Format_InvalidSyntax(string syntaxName, string issue)
+        {
+            return string.Format("Invalid {0}syntax. {1}.", syntaxName, issue);
+        }
+
+        internal static string Format_InvalidSyntaxNotExpected(string syntaxName, char unexpected)
+        {
+            return string.Format("Invalid {0} syntax.Unexpected(char)'{1}'.", syntaxName, unexpected);
+        }
+
+        internal static string Format_InvalidSyntaxNotExpected(string syntaxName, string unexpected)
+        {
+            return string.Format("Invalid {0} syntax.Unexpected { 1}.", syntaxName, unexpected);
+        }
+
+        internal static string Format_InvalidSyntaxExpectation(string syntaxName, char expectation)
+        {
+            return string.Format("Invalid {0} syntax.Expected(char)'{1}'.", syntaxName, expectation);
+        }
+
+        internal static string Format_InvalidSyntaxExpectation(string syntaxName, string expectation)
+        {
+            return string.Format("Invalid {0} syntax.Expected {1}.", syntaxName, expectation);
+        }
+
+        internal static string Format_InvalidSyntaxExpectation(string syntaxName, char expectation1, char expectation2)
+        {
+            return string.Format("Invalid {0} syntax.Expected(char)'{1}' or(char)'{2}'.", syntaxName, expectation1, expectation2);
+        }
+
+        internal static string Format_InvalidTokenExpectation(string tokenValue, string expectation)
+        {
+            return string.Format("Unexpected token(char)'{0}'.Expected {1}.", tokenValue, expectation);
+        }
+
+        internal static string Format_InvalidUnicode(string unicode)
+        {
+            return string.Format("Invalid Unicode[{0}]", unicode);
+        }
+
+        internal static string Format_UnfinishedJSON(string nextTokenValue)
+        {
+            return string.Format("Invalid JSON end.Unprocessed token {0}.", nextTokenValue);
+        }
+
+        internal static string JSON_OpenString
+        {
+            get { return Format_InvalidSyntaxExpectation("JSON string", (char)'\"'); }
+        }
+
+        internal static string JSON_InvalidEnd
+        {
+            get { return "Invalid JSON. Unexpected end of file."; }
+        }
+    }
+}

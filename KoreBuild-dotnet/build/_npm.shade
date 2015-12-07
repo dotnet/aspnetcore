@@ -1,0 +1,16 @@
+default currentDir = '${Directory.GetCurrentDirectory()}'
+default nodeDir = '${Path.Combine(currentDir, "bin", "nodejs")}'
+default npmDir = '${currentDir}'
+
+node-install once='installNode'
+
+var npmFile = '${ Path.Combine(nodeDir, "npm.cmd") }'
+var npmCmd = '${ File.Exists(npmFile) ? ("\"" + npmFile + "\"") : "npm" }'
+
+- // Ensure nodeDir exists. npmCommand is likely a package installation targeting that directory.
+@{
+  Directory.CreateDirectory(nodeDir);
+}
+
+exec program='cmd' commandline='/S /C "${npmCmd} ${npmCommand}"' workingdir='${npmDir}' if='!IsLinux'
+exec program='${npmCmd}' commandline='${npmCommand}' workingdir='${npmDir}' if='IsLinux'

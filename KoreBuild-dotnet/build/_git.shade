@@ -1,0 +1,7 @@
+
+default gitFolder=''
+
+-// Use cmd to invoke git so that people who have git as a 'cmd'
+exec program='cmd' commandline='/C git ${gitCommand}' workingdir='${gitFolder}' if='!IsLinux'
+exec program='git' commandline='${gitCommand}' workingdir='${gitFolder}' if='IsLinux'
+

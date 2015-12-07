@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<package>
+  <metadata>
+    <id>KoreBuild-dotnet</id>
+    <title>The ProjectK build tools</title>
+    <version>0.0</version>
+    <authors>.NET Foundation</authors>
+    <owners>.NET Foundation</owners>
+    <description>ProjectK build tooling</description>
+    <language>en-US</language>
+  </metadata>
+  <files>
+    <file src="build\*.*" target="build" /> 
+  </files> 
+</package>

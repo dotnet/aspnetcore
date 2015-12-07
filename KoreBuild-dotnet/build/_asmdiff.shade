@@ -1,0 +1,25 @@
+default ASM_DIFF='${Environment.GetEnvironmentVariable("ASM_DIFF")}'
+default outFile = "artifacts\default.html"
+@{
+    if (String.IsNullOrEmpty(ASM_DIFF)) 
+    {
+      Log.Warn("ASM_DIFF environment variable not set.");
+      Environment.Exit(-1);
+      return;
+    }
+}
+
+exec program='${ASM_DIFF}' commandline='${oldBinariesDir} ${newBinariesDir} -adm -out:${outFile}'
+
+@{
+  if (!String.IsNullOrEmpty(Environment.GetEnvironmentVariable("TEAMCITY_VERSION")))
+  {
+    var message = File.ReadAllText(outFile)
+                         .Replace("|", "||")
+                         .Replace("'", "|'")
+                         .Replace("\r", "|r")
+                         .Replace("\n", "|n")
+                         .Replace("]", "|]");
+    Log.Info("##teamcity[message text='" + message + "' status='WARNING']");
+  }
+}

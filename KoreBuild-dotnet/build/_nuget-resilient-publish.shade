@@ -1,0 +1,56 @@
+use namespace="System.Threading.Tasks"
+
+@{/*
+
+nuget-resilient-publish
+    Publishes NuGet packages with retries
+
+sourcePackagesDir=''
+    Required. Path to packages to push
+
+nugetFeed=''
+    Required. Feed to publish to.
+*/}
+
+default apiKey='${Environment.GetEnvironmentVariable("APIKEY")}'
+default extra=''
+
+var nugetArgs=''
+set nugetArgs='${nugetArgs} -ApiKey ${apiKey}' if='!string.IsNullOrEmpty(apiKey)'
+set nugetArgs='${nugetArgs} -Source ${nugetFeed}' if='!string.IsNullOrEmpty(nugetFeed)'
+set nugetArgs='${nugetArgs} ${extra}' if='!string.IsNullOrEmpty(extra)'
+
+@{
+   var packages = Directory.EnumerateFiles(sourcePackagesDir, "*.nupkg")
+                           .Where(p => !p.EndsWith(".symbols.nupkg"))
+                           .ToArray();
+
+    var nugetExePath = Environment.GetEnvironmentVariable("PUSH_NUGET_EXE");
+    if (string.IsNullOrEmpty(nugetExePath))
+    {
+        nugetExePath = ".nuget/NuGet.exe";
+    }
+
+    Parallel.ForEach(packages, package =>
+    {
+        var retries = 0;
+        var packagePath = Path.Combine(sourcePackagesDir, package);
+        start:
+        try
+        {
+            ExecClr(nugetExePath, "push " + package + " " + nugetArgs);
+        }
+        catch
+        {
+            if (++retries == 3)
+            {
+                throw;
+            }
+
+            goto start;
+        }
+    });
+}
+
+macro name='ExecClr' program='string' commandline='string'
+    exec-clr

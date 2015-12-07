@@ -1,0 +1,51 @@
+use namespace="System.Diagnostics"
+use namespace="System.IO"
+
+default workingdir='${Directory.GetCurrentDirectory()}'
+default expectedHash = ''
+
+@{
+    Log.Info(string.Format("Verifying Authenticode signature of {0}", verifyFilePath));
+
+    var signToolExePaths = new [] { "C:\\Program Files (x86)\\Windows Kits\\8.1\\bin\\x86\\signtool.exe", "C:\\Program Files\\Windows Kits\\8.1\\bin\\x86\\signtool.exe" };
+    var signToolExe = signToolExePaths.FirstOrDefault(File.Exists);
+
+    if (string.IsNullOrEmpty(signToolExe))
+    {
+        throw new Exception("Could not find signtool.exe on this machine. Ensure Visual Studio is installed.");
+    }
+
+    var processStartInfo = new ProcessStartInfo {
+        UseShellExecute = false,
+        WorkingDirectory = workingdir,
+        FileName = signToolExe,
+        RedirectStandardOutput = true,
+        Arguments = "verify /pa /v \"" + verifyFilePath + "\"",
+    };
+
+    var signTool = Process.Start(processStartInfo);
+    var stdout = signTool.StandardOutput.ReadToEnd();
+    signTool.WaitForExit();
+
+    if (signTool.ExitCode != 0)
+    {
+        File.Delete(verifyFilePath);
+        throw new Exception(string.Format("The signature verification for {0} failed:{1}{2}", verifyFilePath, Environment.NewLine, stdout));
+    }
+
+    if (!string.IsNullOrEmpty(expectedHash))
+    {
+        // SHA1 of the file is on 4th line and looks like: Hash of file (sha1): 628FFD6C3577068C00CEC9F6F897F0EC8F5212D9
+        var lines = stdout.Split(new [] { Environment.NewLine }, StringSplitOptions.None);
+        var hashLine = lines[3];
+        var actualHash = hashLine.Substring(hashLine.IndexOf(":") + 1).Trim();
+
+        if (!string.Equals(expectedHash, actualHash, StringComparison.Ordinal))
+        {
+            File.Delete(verifyFilePath);
+            throw new Exception(string.Format("The hash comparison for {0} failed: expected hash '{1}', actual hash '{2}'", verifyFilePath, expectedHash, actualHash));
+        }
+    }
+
+    Log.Info("Authenticode signature verified!");
+}
