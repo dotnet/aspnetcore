@@ -189,12 +189,5 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         /// This is disabled by default.
         /// </summary>
         public bool UseTokenLifetime { get; set; }
-
-        /// <summary>
-        /// Defines whether access and refresh tokens should be stored in the
-        /// <see cref="ClaimsPrincipal"/> after a successful authentication.
-        /// You can set this property to <c>false</c> to reduce the size of the final authentication cookie.
-        /// </summary>
-        public bool SaveTokensAsClaims { get; set; } = true;
     }
 }

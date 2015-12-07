@@ -24,7 +24,6 @@ namespace Microsoft.AspNet.Authentication.Facebook
             AuthorizationEndpoint = FacebookDefaults.AuthorizationEndpoint;
             TokenEndpoint = FacebookDefaults.TokenEndpoint;
             UserInformationEndpoint = FacebookDefaults.UserInformationEndpoint;
-            SaveTokensAsClaims = false;
             Fields = new List<string>();
         }
 

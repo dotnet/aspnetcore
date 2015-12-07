@@ -49,13 +49,5 @@ namespace Microsoft.AspNet.Authentication.Twitter
             get { return (ITwitterEvents)base.Events; }
             set { base.Events = value; }
         }
-
-        /// <summary>
-        /// Defines whether access tokens should be stored in the
-        /// <see cref="ClaimsPrincipal"/> after a successful authentication.
-        /// This property is set to <c>false</c> by default to reduce
-        /// the size of the final authentication cookie.
-        /// </summary>
-        public bool SaveTokensAsClaims { get; set; }
     }
 }

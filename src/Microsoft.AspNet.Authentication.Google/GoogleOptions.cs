@@ -22,7 +22,6 @@ namespace Microsoft.AspNet.Authentication.Google
             AuthorizationEndpoint = GoogleDefaults.AuthorizationEndpoint;
             TokenEndpoint = GoogleDefaults.TokenEndpoint;
             UserInformationEndpoint = GoogleDefaults.UserInformationEndpoint;
-            SaveTokensAsClaims = false;
         }
 
         /// <summary>

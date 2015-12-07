@@ -64,13 +64,5 @@ namespace Microsoft.AspNet.Authentication.OAuth
         /// Gets or sets the type used to secure data handled by the middleware.
         /// </summary>
         public ISecureDataFormat<AuthenticationProperties> StateDataFormat { get; set; }
-
-        /// <summary>
-        /// Defines whether access and refresh tokens should be stored in the
-        /// <see cref="ClaimsPrincipal"/> after a successful authentication.
-        /// You can set this property to <c>false</c> to reduce the size of the final
-        /// authentication cookie. Note that social providers set this property to <c>false</c> by default.
-        /// </summary>
-        public bool SaveTokensAsClaims { get; set; } = true;
     }
 }

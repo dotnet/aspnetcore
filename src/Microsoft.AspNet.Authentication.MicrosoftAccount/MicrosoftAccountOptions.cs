@@ -22,7 +22,6 @@ namespace Microsoft.AspNet.Authentication.MicrosoftAccount
             AuthorizationEndpoint = MicrosoftAccountDefaults.AuthorizationEndpoint;
             TokenEndpoint = MicrosoftAccountDefaults.TokenEndpoint;
             UserInformationEndpoint = MicrosoftAccountDefaults.UserInformationEndpoint;
-            SaveTokensAsClaims = false;
         }
     }
 }
