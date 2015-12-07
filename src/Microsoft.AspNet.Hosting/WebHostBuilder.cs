@@ -88,14 +88,18 @@ namespace Microsoft.AspNet.Hosting
                 _configureServices(services);
             }
 
-            if (PlatformServices.Default?.Application != null)
+            var defaultPlatformServices = PlatformServices.Default;
+            if (defaultPlatformServices != null)
             {
-                services.TryAdd(ServiceDescriptor.Instance(PlatformServices.Default.Application));
-            }
+                if (defaultPlatformServices.Application != null)
+                {
+                    services.TryAdd(ServiceDescriptor.Instance(defaultPlatformServices.Application));
+                }
 
-            if (PlatformServices.Default?.Runtime != null)
-            {
-                services.TryAdd(ServiceDescriptor.Instance(PlatformServices.Default.Runtime));
+                if (defaultPlatformServices.Runtime != null)
+                {
+                    services.TryAdd(ServiceDescriptor.Instance(defaultPlatformServices.Runtime));
+                }
             }
 
             return services;
