@@ -17,7 +17,7 @@ namespace IISSample
             
             app.Run(async (context) =>
             {
-                logger.Debug("Received request: " + context.Request.Method + " " + context.Request.Path);
+                logger.LogDebug("Received request: " + context.Request.Method + " " + context.Request.Path);
 
                 context.Response.ContentType = "text/plain";
                 await context.Response.WriteAsync("Hello World - " + DateTimeOffset.Now + Environment.NewLine);
