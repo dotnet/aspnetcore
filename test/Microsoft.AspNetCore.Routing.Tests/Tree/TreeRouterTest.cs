@@ -1343,18 +1343,18 @@ namespace Microsoft.AspNetCore.Routing.Tree
         }
 
         [Fact]
-        public async Task TreeRouter_CreatesNewRouteData()
+        public async Task TreeRouter_SnapshotsRouteData()
         {
             // Arrange
-            RouteData nestedRouteData = null;
+            RouteValueDictionary nestedValues = null;
 
             var next = new Mock<IRouter>();
             next
                 .Setup(r => r.RouteAsync(It.IsAny<RouteContext>()))
                 .Callback<RouteContext>(c =>
                 {
-                    nestedRouteData = c.RouteData;
-                    c.Handler = NullHandler;
+                    nestedValues = new RouteValueDictionary(c.RouteData.Values);
+                    c.Handler = null; // Not a match
                 })
                 .Returns(Task.FromResult(true))
                 .Verifiable();
@@ -1364,23 +1364,17 @@ namespace Microsoft.AspNetCore.Routing.Tree
 
             var context = CreateRouteContext("/api/Store");
 
-            var originalRouteData = context.RouteData;
-            originalRouteData.Values.Add("action", "Index");
+            var routeData = context.RouteData;
+            routeData.Values.Add("action", "Index");
+
+            var originalValues = new RouteValueDictionary(context.RouteData.Values);
 
             // Act
             await route.RouteAsync(context);
 
             // Assert
-            Assert.NotSame(originalRouteData, context.RouteData);
-            Assert.NotSame(originalRouteData, nestedRouteData);
-            Assert.Same(nestedRouteData, context.RouteData);
-
-            // The new routedata is a copy
-            Assert.Equal("Index", context.RouteData.Values["action"]);
-            Assert.Single(context.RouteData.Values, kvp => kvp.Key == "test_route_group");
-
-            Assert.Equal(1, context.RouteData.Routers.Count);
-            Assert.Equal(next.Object.GetType(), context.RouteData.Routers[0].GetType());
+            Assert.Equal(originalValues, context.RouteData.Values);
+            Assert.NotEqual(nestedValues, context.RouteData.Values);
         }
 
         [Fact]
@@ -1436,16 +1430,19 @@ namespace Microsoft.AspNetCore.Routing.Tree
         }
 
         [Fact]
-        public async Task TreeRouter_CreatesNewRouteData_ResetsWhenNotMatched()
+        public async Task TreeRouter_SnapshotsRouteData_ResetsWhenNotMatched()
         {
             // Arrange
-            RouteData nestedRouteData = null;
+            RouteValueDictionary nestedValues = null;
+            List<IRouter> nestedRouters = null;
+
             var next = new Mock<IRouter>();
             next
                 .Setup(r => r.RouteAsync(It.IsAny<RouteContext>()))
                 .Callback<RouteContext>(c =>
                 {
-                    nestedRouteData = c.RouteData;
+                    nestedValues = new RouteValueDictionary(c.RouteData.Values);
+                    nestedRouters = new List<IRouter>(c.RouteData.Routers);
                 })
                 .Returns(Task.FromResult(true))
                 .Verifiable();
@@ -1455,40 +1452,39 @@ namespace Microsoft.AspNetCore.Routing.Tree
 
             var context = CreateRouteContext("/api/Store");
 
-            var originalRouteData = context.RouteData;
-            originalRouteData.Values.Add("action", "Index");
+            context.RouteData.Values.Add("action", "Index");
 
             // Act
             await route.RouteAsync(context);
 
             // Assert
-            Assert.Same(originalRouteData, context.RouteData);
-            Assert.NotSame(originalRouteData, nestedRouteData);
-            Assert.NotSame(nestedRouteData, context.RouteData);
+            Assert.NotEqual(nestedValues, context.RouteData.Values);
 
             // The new routedata is a copy
             Assert.Equal("Index", context.RouteData.Values["action"]);
-            Assert.Equal("Index", nestedRouteData.Values["action"]);
+            Assert.Equal("Index", nestedValues["action"]);
             Assert.DoesNotContain(context.RouteData.Values, kvp => kvp.Key == "test_route_group");
-            Assert.Single(nestedRouteData.Values, kvp => kvp.Key == "test_route_group");
+            Assert.Single(nestedValues, kvp => kvp.Key == "test_route_group");
 
             Assert.Empty(context.RouteData.Routers);
 
-            Assert.Equal(1, nestedRouteData.Routers.Count);
-            Assert.Equal(next.Object.GetType(), nestedRouteData.Routers[0].GetType());
+            Assert.Equal(1, nestedRouters.Count);
+            Assert.Equal(next.Object.GetType(), nestedRouters[0].GetType());
         }
 
         [Fact]
         public async Task TreeRouter_CreatesNewRouteData_ResetsWhenThrows()
         {
             // Arrange
-            RouteData nestedRouteData = null;
+            RouteValueDictionary nestedValues = null;
+            List<IRouter> nestedRouters = null;
             var next = new Mock<IRouter>();
             next
                 .Setup(r => r.RouteAsync(It.IsAny<RouteContext>()))
                 .Callback<RouteContext>(c =>
                 {
-                    nestedRouteData = c.RouteData;
+                    nestedValues = new RouteValueDictionary(c.RouteData.Values);
+                    nestedRouters = new List<IRouter>(c.RouteData.Routers);
                 })
                 .Throws(new Exception());
 
@@ -1496,28 +1492,24 @@ namespace Microsoft.AspNetCore.Routing.Tree
             var route = CreateAttributeRoute(next.Object, entry);
 
             var context = CreateRouteContext("/api/Store");
-
-            var originalRouteData = context.RouteData;
-            originalRouteData.Values.Add("action", "Index");
+            context.RouteData.Values.Add("action", "Index");
 
             // Act
             await Assert.ThrowsAsync<Exception>(() => route.RouteAsync(context));
 
             // Assert
-            Assert.Same(originalRouteData, context.RouteData);
-            Assert.NotSame(originalRouteData, nestedRouteData);
-            Assert.NotSame(nestedRouteData, context.RouteData);
+            Assert.NotEqual(nestedValues, context.RouteData.Values);
 
             // The new routedata is a copy
             Assert.Equal("Index", context.RouteData.Values["action"]);
-            Assert.Equal("Index", nestedRouteData.Values["action"]);
+            Assert.Equal("Index", nestedValues["action"]);
             Assert.DoesNotContain(context.RouteData.Values, kvp => kvp.Key == "test_route_group");
-            Assert.Single(nestedRouteData.Values, kvp => kvp.Key == "test_route_group");
+            Assert.Single(nestedValues, kvp => kvp.Key == "test_route_group");
 
             Assert.Empty(context.RouteData.Routers);
 
-            Assert.Equal(1, nestedRouteData.Routers.Count);
-            Assert.Equal(next.Object.GetType(), nestedRouteData.Routers[0].GetType());
+            Assert.Equal(1, nestedRouters.Count);
+            Assert.Equal(next.Object.GetType(), nestedRouters[0].GetType());
         }
 
         private static RouteContext CreateRouteContext(string requestPath)

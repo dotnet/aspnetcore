@@ -19,6 +19,12 @@ namespace Microsoft.AspNetCore.Routing
     {
         private TemplateMatcher _matcher;
         private TemplateBinder _binder;
+        private readonly IReadOnlyDictionary<string, IRouteConstraint> _constraints;
+        private readonly RouteValueDictionary _dataTokens;
+        private readonly RouteValueDictionary _defaults;
+        private readonly IRouter _target;
+        private readonly RouteTemplate _parsedTemplate;
+        private readonly string _routeTemplate;
         private ILogger _logger;
         private ILogger _constraintLogger;
 

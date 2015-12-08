@@ -173,31 +173,23 @@ namespace Microsoft.AspNetCore.Routing.Tree
                         }
 
                         var match = new TemplateMatch(item, values);
-
-                        var oldRouteData = context.RouteData;
-
-                        var newRouteData = new RouteData(oldRouteData);
-
-                        newRouteData.Routers.Add(match.Entry.Target);
-                        MergeValues(newRouteData.Values, match.Values);
-
-                        if (!RouteConstraintMatcher.Match(
-                            match.Entry.Constraints,
-                            newRouteData.Values,
-                            context.HttpContext,
-                            this,
-                            RouteDirection.IncomingRequest,
-                            _constraintLogger))
-                        {
-                            continue;
-                        }
-
-                        _logger.MatchedRoute(match.Entry.RouteName, match.Entry.RouteTemplate.TemplateText);
-
-                        context.RouteData = newRouteData;
+                        var snapshot = context.RouteData.PushState(match.Entry.Target, match.Values, dataTokens: null);
 
                         try
                         {
+                            if (!RouteConstraintMatcher.Match(
+                                    match.Entry.Constraints,
+                                    context.RouteData.Values,
+                                    context.HttpContext,
+                                    this,
+                                    RouteDirection.IncomingRequest,
+                                    _constraintLogger))
+                            {
+                                continue;
+                            }
+
+                            _logger.MatchedRoute(match.Entry.RouteName, match.Entry.RouteTemplate.TemplateText);
+
                             await match.Entry.Target.RouteAsync(context);
                             if (context.Handler != null)
                             {
@@ -209,7 +201,7 @@ namespace Microsoft.AspNetCore.Routing.Tree
                             if (context.Handler == null)
                             {
                                 // Restore the original values to prevent polluting the route data.
-                                context.RouteData = oldRouteData;
+                                snapshot.Restore();
                             }
                         }
                     }
@@ -305,22 +297,6 @@ namespace Microsoft.AspNetCore.Routing.Tree
                 _stack.Clear();
                 Current = null;
                 _segmentIndex = -1;
-            }
-        }
-
-        private static void MergeValues(
-            RouteValueDictionary destination,
-            RouteValueDictionary values)
-        {
-            foreach (var kvp in values)
-            {
-                if (kvp.Value != null)
-                {
-                    // This will replace the original value for the specified key.
-                    // Values from the matched route will take preference over previous
-                    // data in the route context.
-                    destination[kvp.Key] = kvp.Value;
-                }
             }
         }
 

@@ -54,19 +54,18 @@ namespace Microsoft.AspNetCore.Routing
 
         public async virtual Task RouteAsync(RouteContext context)
         {
+            // Perf: We want to avoid allocating a new RouteData for each route we need to process.
+            // We can do this by snapshotting the state at the beginning and then restoring it
+            // for each router we execute.
+            var snapshot = context.RouteData.PushState(null, values: null, dataTokens: null);
+
             for (var i = 0; i < Count; i++)
             {
                 var route = this[i];
-
-                var oldRouteData = context.RouteData;
-
-                var newRouteData = new RouteData(oldRouteData);
-                newRouteData.Routers.Add(route);
+                context.RouteData.Routers.Add(route);
 
                 try
                 {
-                    context.RouteData = newRouteData;
-
                     await route.RouteAsync(context);
 
                     if (context.Handler != null)
@@ -78,7 +77,7 @@ namespace Microsoft.AspNetCore.Routing
                 {
                     if (context.Handler == null)
                     {
-                        context.RouteData = oldRouteData;
+                        snapshot.Restore();
                     }
                 }
             }

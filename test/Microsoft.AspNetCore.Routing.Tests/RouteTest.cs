@@ -155,11 +155,9 @@ namespace Microsoft.AspNetCore.Routing
             Assert.Equal("USA", context.RouteData.Values["country"]);
             Assert.True(context.RouteData.Values.ContainsKey("id"));
             Assert.Equal("5", context.RouteData.Values["id"]);
-            Assert.Same(originalRouteDataValues, context.RouteData.Values);
 
             Assert.Equal("Contoso", context.RouteData.DataTokens["company"]);
             Assert.Equal("Friday", context.RouteData.DataTokens["today"]);
-            Assert.Same(originalDataTokens, context.RouteData.DataTokens);
         }
 
         [Fact]
