@@ -4,10 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using Microsoft.AspNet.Razor.Editor;
 using Microsoft.AspNet.Razor.Chunks.Generators;
+using Microsoft.AspNet.Razor.Editor;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Tokenizer;
 using Microsoft.AspNet.Razor.Tokenizer.Symbols;
@@ -21,7 +20,6 @@ namespace Microsoft.AspNet.Razor.Parser
         where TSymbol : SymbolBase<TSymbolType>
     {
         // Helpers
-        [SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic", Justification = "This only occurs in Release builds, where this method is empty by design")]
         [Conditional("DEBUG")]
         internal void Assert(TSymbolType expectedType)
         {
@@ -280,7 +278,6 @@ namespace Microsoft.AspNet.Razor.Parser
             return PushSpanConfig(newConfig == null ? (Action<SpanBuilder, Action<SpanBuilder>>)null : (span, _) => newConfig(span));
         }
 
-        [SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures", Justification = "The Action<T> parameters are preferred over custom delegates")]
         protected IDisposable PushSpanConfig(Action<SpanBuilder, Action<SpanBuilder>> newConfig)
         {
             Action<SpanBuilder> old = SpanConfig;
@@ -294,7 +291,6 @@ namespace Microsoft.AspNet.Razor.Parser
             Initialize(Span);
         }
 
-        [SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures", Justification = "The Action<T> parameters are preferred over custom delegates")]
         protected void ConfigureSpan(Action<SpanBuilder, Action<SpanBuilder>> config)
         {
             Action<SpanBuilder> prev = SpanConfig;
@@ -314,7 +310,6 @@ namespace Microsoft.AspNet.Razor.Parser
             Expected(Language.GetKnownSymbolType(type));
         }
 
-        [SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "types", Justification = "It is used in debug builds")]
         protected internal void Expected(params TSymbolType[] types)
         {
             Debug.Assert(!EndOfFile && CurrentSymbol != null && types.Contains(CurrentSymbol.Type));

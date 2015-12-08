@@ -3,7 +3,6 @@
 
 using System;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using Microsoft.AspNet.Razor.Editor;
@@ -99,7 +98,6 @@ namespace Microsoft.AspNet.Razor
             get { return _currentParseTree; }
         }
 
-        [SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate", Justification = "Since this method is heavily affected by side-effects, particularly calls to CheckForStructureChanges, it should not be made into a property")]
         public virtual string GetAutoCompleteString()
         {
             if (_lastAutoCompleteSpan != null)
@@ -187,8 +185,6 @@ namespace Microsoft.AspNet.Razor
             GC.SuppressFinalize(this);
         }
 
-        [SuppressMessage("Microsoft.Usage", "CA2213:DisposableFieldsShouldBeDisposed", MessageId = "_cancelTokenSource", Justification = "The cancellation token is owned by the worker thread, so it is disposed there")]
-        [SuppressMessage("Microsoft.Usage", "CA2213:DisposableFieldsShouldBeDisposed", MessageId = "_changeReceived", Justification = "The change received event is owned by the worker thread, so it is disposed there")]
         protected virtual void Dispose(bool disposing)
         {
             if (disposing)
@@ -242,7 +238,6 @@ namespace Microsoft.AspNet.Razor
             return result;
         }
 
-        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Exceptions are being caught here intentionally")]
         private void OnDocumentParseComplete(DocumentParseCompleteEventArgs args)
         {
             using (_parser.SynchronizeMainThreadState())

@@ -3,11 +3,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNet.Razor.Chunks.Generators;
 using Microsoft.AspNet.Razor.CodeGenerators;
-using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Compilation.TagHelpers;
+using Microsoft.AspNet.Razor.Parser;
 
 namespace Microsoft.AspNet.Razor
 {
@@ -35,10 +34,6 @@ namespace Microsoft.AspNet.Razor
 
         private int _tabSize = 4;
 
-        [SuppressMessage(
-            "Microsoft.Usage",
-            "CA2214:DoNotCallOverridableMethodsInConstructors",
-            Justification = "The code path is safe, it is a property setter and not dependent on other state")]
         protected RazorEngineHost()
         {
             GeneratedClassContext = GeneratedClassContext.Default;
@@ -62,7 +57,6 @@ namespace Microsoft.AspNet.Razor
             }
         }
 
-        [SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors", Justification = "The code path is safe, it is a property setter and not dependent on other state")]
         public RazorEngineHost(
             RazorCodeLanguage codeLanguage,
             Func<ParserBase> markupParserFactory)

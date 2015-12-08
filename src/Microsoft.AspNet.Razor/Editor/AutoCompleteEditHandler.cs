@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNet.Razor.Editor;
 using Microsoft.AspNet.Razor.Text;
 using Microsoft.AspNet.Razor.Tokenizer.Symbols;
@@ -15,7 +14,6 @@ namespace Microsoft.AspNet.Razor.Parser.SyntaxTree
     {
         private static readonly int TypeHashCode = typeof(AutoCompleteEditHandler).GetHashCode();
 
-        [SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures", Justification = "Func<T> is the recommended delegate type and requires this level of nesting.")]
         public AutoCompleteEditHandler(Func<string, IEnumerable<ISymbol>> tokenizer)
             : base(tokenizer)
         {
@@ -27,7 +25,6 @@ namespace Microsoft.AspNet.Razor.Parser.SyntaxTree
             AutoCompleteAtEndOfSpan = autoCompleteAtEndOfSpan;
         }
 
-        [SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures", Justification = "Func<T> is the recommended delegate type and requires this level of nesting.")]
         public AutoCompleteEditHandler(Func<string, IEnumerable<ISymbol>> tokenizer, AcceptedCharacters accepted)
             : base(tokenizer, accepted)
         {

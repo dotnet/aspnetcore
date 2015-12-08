@@ -3,13 +3,11 @@
 
 using System;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNet.Razor.Text;
 using Microsoft.AspNet.Razor.Tokenizer.Symbols;
 
 namespace Microsoft.AspNet.Razor.Tokenizer
 {
-    [SuppressMessage("Microsoft.Design", "CA1005:AvoidExcessiveParametersOnGenericTypes", Justification = "All generic parameters are required")]
     public class TokenizerView<TTokenizer, TSymbol, TSymbolType>
         where TSymbolType : struct
         where TTokenizer : Tokenizer<TSymbol, TSymbolType>

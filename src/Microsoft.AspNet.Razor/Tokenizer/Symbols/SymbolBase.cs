@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Microsoft.Extensions.Internal;
 
@@ -35,7 +34,6 @@ namespace Microsoft.AspNet.Razor.Tokenizer.Symbols
 
         public IEnumerable<RazorError> Errors { get; }
 
-        [SuppressMessage("Microsoft.Naming", "CA1721:PropertyNamesShouldNotMatchGetMethods", Justification = "This is the most appropriate name for this property and conflicts are unlikely")]
         public TType Type { get; }
 
         public override bool Equals(object obj)

@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -21,7 +20,6 @@ namespace Microsoft.AspNet.Razor.Editor
         private readonly ISet<string> _keywords;
         private readonly IReadOnlyCollection<string> _readOnlyKeywords;
 
-        [SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures", Justification = "Func<T> is the recommended delegate type and requires this level of nesting.")]
         public ImplicitExpressionEditHandler(Func<string, IEnumerable<ISymbol>> tokenizer, ISet<string> keywords, bool acceptTrailingDot)
             : base(tokenizer)
         {
@@ -181,7 +179,6 @@ namespace Microsoft.AspNet.Razor.Editor
 
         // Accepts '.' insertions in the middle of spans. Ex: '@foo.baz.bar' -> '@foo..baz.bar'
         // This is meant to allow intellisense when editing a span.
-        [SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "target", Justification = "The 'target' parameter is used in Debug to validate that the function is called in the correct context.")]
         private static bool IsAcceptableInnerInsertion(Span target, TextChange change)
         {
             Debug.Assert(change.IsInsert);

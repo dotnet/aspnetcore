@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.AspNet.Razor.Text;
 using Microsoft.AspNet.Razor.Tokenizer;
@@ -11,7 +10,6 @@ using Microsoft.AspNet.Razor.Tokenizer.Symbols;
 
 namespace Microsoft.AspNet.Razor.Parser
 {
-    [SuppressMessage("Microsoft.Design", "CA1005:AvoidExcessiveParametersOnGenericTypes", Justification = "All generic type parameters are required")]
     public abstract class LanguageCharacteristics<TTokenizer, TSymbol, TSymbolType>
         where TSymbolType : struct
         where TTokenizer : Tokenizer<TSymbol, TSymbolType>

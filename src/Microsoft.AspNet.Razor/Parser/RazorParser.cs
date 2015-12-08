@@ -3,15 +3,14 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Razor.Compilation.TagHelpers;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Parser.TagHelpers;
 using Microsoft.AspNet.Razor.Parser.TagHelpers.Internal;
-using Microsoft.AspNet.Razor.Compilation.TagHelpers;
 using Microsoft.AspNet.Razor.Text;
 
 namespace Microsoft.AspNet.Razor.Parser
@@ -142,7 +141,6 @@ namespace Microsoft.AspNet.Razor.Parser
             });
         }
 
-        [SuppressMessage("Microsoft.Web.FxCop", "MW1200:DoNotConstructTaskInstances", Justification = "This rule is not applicable to this assembly.")]
         public virtual Task CreateParseTask(TextReader input,
                                             ParserVisitor consumer)
         {

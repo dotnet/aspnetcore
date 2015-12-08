@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 #if DEBUG
 using System.Globalization;
 #endif
@@ -19,7 +18,6 @@ namespace Microsoft.AspNet.Razor.Tokenizer
         where TSymbolType : struct
         where TSymbol : SymbolBase<TSymbolType>
     {
-        [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "TextDocumentReader does not require disposal")]
         protected Tokenizer(ITextDocument source)
         {
             if (source == null)
@@ -277,7 +275,6 @@ namespace Microsoft.AspNet.Razor.Tokenizer
             return true;
         }
 
-        [SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic", Justification = "This only occurs in Release builds, where this method is empty by design")]
         [Conditional("DEBUG")]
         internal void AssertCurrent(char current)
         {

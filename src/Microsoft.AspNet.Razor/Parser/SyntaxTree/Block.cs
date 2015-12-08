@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using Microsoft.AspNet.Razor.Chunks.Generators;
@@ -45,11 +44,6 @@ namespace Microsoft.AspNet.Razor.Parser.SyntaxTree
             Children = contents;
         }
 
-        [SuppressMessage(
-            "Microsoft.Naming",
-            "CA1721:PropertyNamesShouldNotMatchGetMethods",
-            Justification = "Type is the most appropriate name for this property and there is little chance of " +
-            "confusion with GetType")]
         public BlockType Type { get; }
 
         public IEnumerable<SyntaxTreeNode> Children { get; }

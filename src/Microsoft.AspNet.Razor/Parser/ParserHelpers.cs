@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 
@@ -27,7 +26,6 @@ namespace Microsoft.AspNet.Razor.Parser
         }
 
         // Returns true if the character is Whitespace and NOT a newline
-        [SuppressMessage("Microsoft.Naming", "CA1702:CompoundWordsShouldBeCasedCorrectly", MessageId = "Whitespace", Justification = "This would be a breaking change in a shipping API")]
         public static bool IsWhitespace(char value)
         {
             return value == ' ' ||
@@ -37,7 +35,6 @@ namespace Microsoft.AspNet.Razor.Parser
                    CharUnicodeInfo.GetUnicodeCategory(value) == UnicodeCategory.SpaceSeparator;
         }
 
-        [SuppressMessage("Microsoft.Naming", "CA1702:CompoundWordsShouldBeCasedCorrectly", MessageId = "Whitespace", Justification = "This would be a breaking change in a shipping API")]
         public static bool IsWhitespaceOrNewLine(char value)
         {
             return IsWhitespace(value) || IsNewLine(value);

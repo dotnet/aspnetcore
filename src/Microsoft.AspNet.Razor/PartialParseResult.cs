@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.AspNet.Razor
 {
@@ -23,7 +22,6 @@ namespace Microsoft.AspNet.Razor
     /// Provisional may NOT be set with Rejected and SpanContextChanged may NOT be set with Accepted.
     /// </remarks>
     [Flags]
-    [SuppressMessage("Microsoft.Naming", "CA1714:FlagsEnumsShouldHavePluralNames", Justification = "The singular name is more appropriate here")]
     public enum PartialParseResult
     {
         /// <summary>

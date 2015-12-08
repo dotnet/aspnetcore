@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Diagnostics.CodeAnalysis;
-
 namespace Microsoft.AspNet.Razor.Parser
 {
     public static class SyntaxConstants
@@ -13,8 +11,6 @@ namespace Microsoft.AspNet.Razor.Parser
         public static readonly string StartCommentSequence = "@*";
         public static readonly string EndCommentSequence = "*@";
 
-        [SuppressMessage("Microsoft.Design", "CA1034:NestedTypesShouldNotBeVisible", Justification = "Class is nested to provide better organization")]
-        [SuppressMessage("Microsoft.Naming", "CA1724:TypeNamesShouldNotMatchNamespaces", Justification = "This type name should not cause a conflict")]
         public static class CSharp
         {
             public static readonly int UsingKeywordLength = 5;

@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -54,7 +53,6 @@ namespace Microsoft.AspNet.Razor.Editor
             _main.QueueChange(change);
         }
 
-        [SuppressMessage("Microsoft.Usage", "CA2213:DisposableFieldsShouldBeDisposed", MessageId = "_main", Justification = "MainThreadState is disposed when the background thread shuts down")]
         public void Dispose()
         {
             _main.Cancel();
@@ -112,7 +110,6 @@ namespace Microsoft.AspNet.Razor.Editor
             {
             }
 
-            [SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic", Justification = "This method is only empty in Release builds. In Debug builds it contains references to instance variables")]
             [Conditional("DEBUG")]
             protected void SetThreadId(int id)
             {
@@ -121,7 +118,6 @@ namespace Microsoft.AspNet.Razor.Editor
 #endif
             }
 
-            [SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic", Justification = "This method is only empty in Release builds. In Debug builds it contains references to instance variables")]
             [Conditional("DEBUG")]
             protected void EnsureOnThread()
             {
@@ -131,7 +127,6 @@ namespace Microsoft.AspNet.Razor.Editor
 #endif
             }
 
-            [SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic", Justification = "This method is only empty in Release builds. In Debug builds it contains references to instance variables")]
             [Conditional("DEBUG")]
             protected void EnsureNotOnThread()
             {
@@ -148,7 +143,6 @@ namespace Microsoft.AspNet.Razor.Editor
             private readonly ManualResetEventSlim _hasParcel = new ManualResetEventSlim(false);
             private CancellationTokenSource _currentParcelCancelSource;
 
-            [SuppressMessage("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields", Justification = "Field is used in debug code and may be used later")]
             private string _fileName;
             private readonly object _stateLock = new object();
             private IList<TextChange> _changes = new List<TextChange>();

@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Text;
@@ -16,13 +15,11 @@ namespace Microsoft.AspNet.Razor.Editor
     {
         private static readonly int TypeHashCode = typeof(SpanEditHandler).GetHashCode();
 
-        [SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures", Justification = "Func<T> is the recommended delegate type and requires this level of nesting.")]
         public SpanEditHandler(Func<string, IEnumerable<ISymbol>> tokenizer)
             : this(tokenizer, AcceptedCharacters.Any)
         {
         }
 
-        [SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures", Justification = "Func<T> is the recommended delegate type and requires this level of nesting.")]
         public SpanEditHandler(Func<string, IEnumerable<ISymbol>> tokenizer, AcceptedCharacters accepted)
         {
             AcceptedCharacters = accepted;
@@ -36,7 +33,6 @@ namespace Microsoft.AspNet.Razor.Editor
         /// </summary>
         public EditorHints EditorHints { get; set; }
 
-        [SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures", Justification = "Func<T> is the recommended delegate type and requires this level of nesting.")]
         public Func<string, IEnumerable<ISymbol>> Tokenizer { get; set; }
 
         public static SpanEditHandler CreateDefault()
@@ -44,7 +40,6 @@ namespace Microsoft.AspNet.Razor.Editor
             return CreateDefault(s => Enumerable.Empty<ISymbol>());
         }
 
-        [SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures", Justification = "Func<T> is the recommended delegate type and requires this level of nesting.")]
         public static SpanEditHandler CreateDefault(Func<string, IEnumerable<ISymbol>> tokenizer)
         {
             return new SpanEditHandler(tokenizer);
@@ -133,7 +128,6 @@ namespace Microsoft.AspNet.Razor.Editor
             return change.IsReplace && IsAtEndOfSpan(target, change);
         }
 
-        [SuppressMessage("Microsoft.Design", "CA1011:ConsiderPassingBaseTypesAsParameters", Justification = "This method should only be used on Spans")]
         protected internal static bool IsAtEndOfSpan(Span target, TextChange change)
         {
             return (change.OldPosition + change.OldLength) == (target.Start.AbsoluteIndex + target.Length);

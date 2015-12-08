@@ -3,7 +3,6 @@
 
 using System;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
@@ -73,10 +72,6 @@ namespace Microsoft.AspNet.Razor
         /// <param name="input">The input text to parse.</param>
         /// <param name="cancelToken">A token used to cancel the parser.</param>
         /// <returns>The resulting parse tree.</returns>
-        [SuppressMessage(
-            "Microsoft.Reliability", "CA2000:Dispose objects before losing scope",
-            Justification = "Input object would be disposed if we dispose the wrapper.  We don't own the input so " +
-            "we don't want to dispose it")]
         public ParserResults ParseTemplate(ITextBuffer input, CancellationToken? cancelToken)
         {
             if (input == null)
@@ -99,11 +94,6 @@ namespace Microsoft.AspNet.Razor
             return ParseTemplateCore(new SeekableTextReader(input), sourceFileName, cancelToken: null);
         }
 
-        [SuppressMessage(
-            "Microsoft.Reliability",
-            "CA2000:Dispose objects before losing scope",
-            Justification = "Input object would be disposed if we dispose the wrapper. We don't own the input so " +
-            "we don't want to dispose it")]
         public ParserResults ParseTemplate(TextReader input, CancellationToken? cancelToken)
         {
             if (input == null)
@@ -202,11 +192,6 @@ namespace Microsoft.AspNet.Razor
         /// the Host.  The default value (defined in the Host) can be used by providing null for this argument.
         /// </param>
         /// <returns>The resulting parse tree AND generated code.</returns>
-        [SuppressMessage(
-            "Microsoft.Reliability",
-            "CA2000:Dispose objects before losing scope",
-            Justification = "Input object would be disposed if we dispose the wrapper. We don't own the input so " +
-            "we don't want to dispose it")]
         public GeneratorResults GenerateCode(
             ITextBuffer input,
             string className,
@@ -344,11 +329,6 @@ namespace Microsoft.AspNet.Razor
             }
         }
 
-        [SuppressMessage(
-            "Microsoft.Reliability",
-            "CA2000:Dispose objects before losing scope",
-            Justification = "Input object would be disposed if we dispose the wrapper. We don't own the input so " +
-            "we don't want to dispose it")]
         public GeneratorResults GenerateCode(
             TextReader input,
             string className,

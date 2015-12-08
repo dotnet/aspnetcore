@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 namespace Microsoft.AspNet.Razor.Text
@@ -13,7 +12,6 @@ namespace Microsoft.AspNet.Razor.Text
             self.Position += characters;
         }
 
-        [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The consumer is expected to dispose this object")]
         public static ITextDocument ToDocument(this ITextBuffer self)
         {
             var ret = self as ITextDocument;
