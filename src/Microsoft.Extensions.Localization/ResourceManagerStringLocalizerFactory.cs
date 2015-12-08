@@ -2,11 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
 
 using System;
+using System.Collections.Concurrent;
 using System.IO;
 using System.Reflection;
 using System.Resources;
-using Microsoft.Extensions.PlatformAbstractions;
 using Microsoft.Extensions.OptionsModel;
+using Microsoft.Extensions.PlatformAbstractions;
 
 namespace Microsoft.Extensions.Localization
 {
@@ -16,7 +17,8 @@ namespace Microsoft.Extensions.Localization
     public class ResourceManagerStringLocalizerFactory : IStringLocalizerFactory
     {
         private readonly IResourceNamesCache _resourceNamesCache = new ResourceNamesCache();
-
+        private readonly ConcurrentDictionary<string, ResourceManagerStringLocalizer> _localizerCache =
+            new ConcurrentDictionary<string, ResourceManagerStringLocalizer>();
         private readonly IApplicationEnvironment _applicationEnvironment;
 
         private readonly string _resourcesRelativePath;
@@ -67,11 +69,13 @@ namespace Microsoft.Extensions.Localization
 
             var baseName = _applicationEnvironment.ApplicationName + "." + _resourcesRelativePath + typeInfo.FullName;
 
-            return new ResourceManagerStringLocalizer(
-                new ResourceManager(baseName, assembly),
-                assembly,
-                baseName,
-                _resourceNamesCache);
+            return _localizerCache.GetOrAdd(baseName, _ =>
+                new ResourceManagerStringLocalizer(
+                    new ResourceManager(baseName, assembly),
+                    assembly,
+                    baseName,
+                    _resourceNamesCache)
+            );
         }
 
         /// <summary>
@@ -91,11 +95,13 @@ namespace Microsoft.Extensions.Localization
             var assembly = Assembly.Load(new AssemblyName(rootPath));
             baseName = rootPath + "." + _resourcesRelativePath + baseName;
 
-            return new ResourceManagerStringLocalizer(
-                new ResourceManager(baseName, assembly),
-                assembly,
-                baseName,
-                _resourceNamesCache);
+            return _localizerCache.GetOrAdd(baseName, _ =>
+                new ResourceManagerStringLocalizer(
+                    new ResourceManager(baseName, assembly),
+                    assembly,
+                    baseName,
+                    _resourceNamesCache)
+            );
         }
     }
 }

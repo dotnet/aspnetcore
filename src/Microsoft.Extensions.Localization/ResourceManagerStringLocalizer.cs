@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Reflection;
@@ -18,9 +17,7 @@ namespace Microsoft.Extensions.Localization
     /// </summary>
     public class ResourceManagerStringLocalizer : IStringLocalizer
     {
-        private readonly ConcurrentDictionary<string, object> _missingManifestCache =
-            new ConcurrentDictionary<string, object>();
-
+        private readonly Dictionary<string, object> _missingManifestCache = new Dictionary<string, object>();
         private readonly IResourceNamesCache _resourceNamesCache;
         private readonly ResourceManager _resourceManager;
         private readonly AssemblyWrapper _resourceAssemblyWrapper;
@@ -188,7 +185,7 @@ namespace Microsoft.Extensions.Localization
             }
             catch (MissingManifestResourceException)
             {
-                _missingManifestCache.TryAdd(cacheKey, null);
+                _missingManifestCache.Add(cacheKey, null);
                 return null;
             }
         }
