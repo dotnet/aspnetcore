@@ -9,7 +9,7 @@ namespace IISSample
     {
         public void Configure(IApplicationBuilder app, ILoggerFactory loggerfactory)
         {
-            loggerfactory.AddConsole(LogLevel.Verbose);
+            loggerfactory.AddConsole(LogLevel.Debug);
 
             var logger = loggerfactory.CreateLogger("Requests");
 
@@ -17,7 +17,7 @@ namespace IISSample
             
             app.Run(async (context) =>
             {
-                logger.LogVerbose("Received request: " + context.Request.Method + " " + context.Request.Path);
+                logger.Debug("Received request: " + context.Request.Method + " " + context.Request.Path);
 
                 context.Response.ContentType = "text/plain";
                 await context.Response.WriteAsync("Hello World - " + DateTimeOffset.Now + Environment.NewLine);
