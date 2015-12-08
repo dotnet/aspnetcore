@@ -3,8 +3,8 @@
   "version": "1.0.0-*",
 
   "compilationOptions": {
-        "warningsAsErrors": true
-    },
+    "warningsAsErrors": true
+  },
 
   "dependencies": {
     "Microsoft.AspNet.Localization": "1.0.0-*",

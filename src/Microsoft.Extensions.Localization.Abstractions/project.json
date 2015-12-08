@@ -14,10 +14,7 @@
     "dotnet5.4": {
       "dependencies": {
         "Microsoft.CSharp": "4.0.1-*",
-        "System.Collections": "4.0.11-*",
-        "System.Globalization": "4.0.11-*",
-        "System.Reflection": "4.0.11-*",
-        "System.Runtime": "4.0.21-*"
+        "System.Globalization": "4.0.11-*"
       }
     }
   }
