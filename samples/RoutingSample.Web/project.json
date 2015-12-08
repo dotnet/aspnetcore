@@ -1,7 +1,6 @@
 {
     "dependencies": {
         "Microsoft.AspNet.Server.Kestrel": "1.0.0-*",
-        "Microsoft.AspNet.Server.IIS": "1.0.0-*",
         "Microsoft.AspNet.Server.WebListener": "1.0.0-*",
         "Microsoft.AspNet.Routing": "1.0.0-*"
     },
