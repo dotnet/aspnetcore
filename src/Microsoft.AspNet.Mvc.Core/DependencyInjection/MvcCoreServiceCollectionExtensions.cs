@@ -20,6 +20,7 @@ using Microsoft.AspNet.Routing;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.MemoryPool;
 using Microsoft.Extensions.OptionsModel;
+using Microsoft.Extensions.PlatformAbstractions;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -59,6 +60,14 @@ namespace Microsoft.Extensions.DependencyInjection
         // To enable unit testing
         internal static void AddMvcCoreServices(IServiceCollection services)
         {
+            //
+            // RuntimeServices
+            //
+            if (PlatformServices.Default?.LibraryManager != null)
+            {
+                services.TryAdd(ServiceDescriptor.Instance(PlatformServices.Default.LibraryManager));
+            }
+
             //
             // Options
             //
