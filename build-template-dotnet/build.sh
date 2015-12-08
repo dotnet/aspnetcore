@@ -42,6 +42,6 @@ if test ! -d packages/KoreBuild-dotnet; then
     mono .nuget/nuget.exe install KoreBuild-dotnet -ExcludeVersion -o packages -nocache -pre
 fi
 
-packages/KoreBuild-dotnet/build/install.sh
+source packages/KoreBuild-dotnet/build/install.sh
 export PATH=$DOTNET_INSTALL_DIR/bin/:$PATH
 mono packages/Sake/tools/Sake.exe -I packages/KoreBuild-dotnet/build -f makefile.shade "$@"
