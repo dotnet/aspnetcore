@@ -1,5 +1,4 @@
 {
-  "webroot": "wwwroot",
   "version": "1.0.0-*",
   "dependencies": {
     "Microsoft.AspNet.IISPlatformHandler": "1.0.0-*",

@@ -12,19 +12,14 @@
       "commandName": "IISExpress",
       "launchBrowser": true,
       "environmentVariables": {
-        "ASPNET_ENVIRONMENT": "Development"
-      },
-      "weblistener": {
-        "commandName": "weblistener",
-        "environmentVariables": {
-          "ASPNET_ENVIRONMENT": "Development"
-        }
-      },
-      "web": {
-        "commandName": "web",
-        "environmentVariables": {
-          "ASPNET_ENVIRONMENT": "Development"
-        }
+        "Hosting:Environment": "Development"
+      }
+    },
+    "web": {
+      "commandName": "web",
+      "environmentVariables": {
+        "Hosting:Environment": "Development"
       }
     }
   }
+}
