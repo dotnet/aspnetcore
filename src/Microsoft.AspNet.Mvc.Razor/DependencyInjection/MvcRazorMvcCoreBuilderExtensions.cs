@@ -17,6 +17,7 @@ using Microsoft.Extensions.CompilationAbstractions;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.MemoryPool;
 using Microsoft.Extensions.OptionsModel;
+using Microsoft.Extensions.PlatformAbstractions;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -161,6 +162,11 @@ namespace Microsoft.Extensions.DependencyInjection
 
             services.TryAddSingleton<IArraySegmentPool<RazorValue>, DefaultArraySegmentPool<RazorValue>>();
             services.TryAddScoped<IRazorBufferScope, MemoryPoolRazorBufferScope>();
+
+            if (PlatformServices.Default?.AssemblyLoadContextAccessor != null)
+            {
+                services.TryAdd(ServiceDescriptor.Instance(PlatformServices.Default.AssemblyLoadContextAccessor));
+            }
         }
     }
 }
