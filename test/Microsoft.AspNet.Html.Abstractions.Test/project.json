@@ -14,6 +14,10 @@
   },
   "frameworks": {
     "dnx451": { },
-    "dnxcore50": { }
+    "dnxcore50": {
+      "dependencies": {
+        "System.Runtime": "4.0.21-*"
+      }
+    }
   }
 }
