@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
@@ -37,7 +36,7 @@ namespace Microsoft.AspNet.TestHost
             {
                 throw new ArgumentNullException(nameof(application));
             }
-            
+
             _application = application;
 
             // PathString.StartsWithSegments that we use below requires the base path to not end in a slash.
@@ -204,8 +203,6 @@ namespace Microsoft.AspNet.TestHost
                 }
             }
 
-            [SuppressMessage("Microsoft.Reliability", "CA2000:DisposeObjectsBeforeLosingScope",
-                Justification = "HttpResposneMessage must be returned to the caller.")]
             private HttpResponseMessage GenerateResponse()
             {
                 _responseFeature.FireOnSendingHeaders();

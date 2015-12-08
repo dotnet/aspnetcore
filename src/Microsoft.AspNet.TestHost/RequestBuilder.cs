@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -12,8 +11,6 @@ namespace Microsoft.AspNet.TestHost
     /// <summary>
     /// Used to construct a HttpRequestMessage object.
     /// </summary>
-    [SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable",
-        Justification = "HttpRequestMessage is disposed by HttpClient in SendAsync")]
     public class RequestBuilder
     {
         private readonly TestServer _server;
@@ -24,7 +21,6 @@ namespace Microsoft.AspNet.TestHost
         /// </summary>
         /// <param name="server"></param>
         /// <param name="path"></param>
-        [SuppressMessage("Microsoft.Usage", "CA2234:PassSystemUriObjectsInsteadOfStrings", Justification = "Not a full URI")]
         public RequestBuilder(TestServer server, string path)
         {
             if (server == null)
@@ -90,7 +86,6 @@ namespace Microsoft.AspNet.TestHost
         /// Set the request method to GET and start processing the request.
         /// </summary>
         /// <returns></returns>
-        [SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate", Justification = "GET is an HTTP verb.")]
         public Task<HttpResponseMessage> GetAsync()
         {
             _req.Method = HttpMethod.Get;
