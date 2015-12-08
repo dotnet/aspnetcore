@@ -93,7 +93,7 @@ namespace E2ETests
             //Check for a non existing item
             response = await _httpClient.GetAsync(string.Format("Admin/StoreManager/GetAlbumIdFromName?albumName={0}", "123"));
             //This action requires admin permissions. If events are fired this permission is granted
-            _logger.LogVerbose(await response.Content.ReadAsStringAsync());
+            _logger.LogDebug(await response.Content.ReadAsStringAsync());
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
             _logger.LogInformation("Middleware events were fired successfully");
         }
