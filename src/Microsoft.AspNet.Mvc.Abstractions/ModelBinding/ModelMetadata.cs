@@ -18,8 +18,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
     [DebuggerDisplay("{DebuggerToString(),nq}")]
     public abstract class ModelMetadata
     {
-        private bool? _isComplexType;
-
         /// <summary>
         /// The default value of <see cref="ModelMetadata.Order"/>.
         /// </summary>
@@ -32,6 +30,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         protected ModelMetadata(ModelMetadataIdentity identity)
         {
             Identity = identity;
+
+            InitializeTypeInformation();
         }
 
         /// <summary>
@@ -295,35 +295,24 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public abstract IReadOnlyList<object> ValidatorMetadata { get; }
 
         /// <summary>
+        /// Gets the <see cref="Type"/> for elements of <see cref="ModelType"/> if that <see cref="Type"/>
+        /// implements <see cref="IEnumerable"/>.
+        /// </summary>
+        public Type ElementType { get; private set; }
+
+        /// <summary>
         /// Gets a value indicating whether <see cref="ModelType"/> is a simple type.
         /// </summary>
         /// <remarks>
         /// A simple type is defined as a <see cref="Type"/> which has a
         /// <see cref="System.ComponentModel.TypeConverter"/> that can convert from <see cref="string"/>.
         /// </remarks>
-        public bool IsComplexType
-        {
-            get
-            {
-                if (_isComplexType == null)
-                {
-                    _isComplexType = !TypeDescriptor.GetConverter(ModelType).CanConvertFrom(typeof(string));
-                }
-
-                return _isComplexType.Value;
-            }
-        }
+        public bool IsComplexType { get; private set; }
 
         /// <summary>
         /// Gets a value indicating whether or not <see cref="ModelType"/> is a <see cref="Nullable{T}"/>.
         /// </summary>
-        public bool IsNullableValueType
-        {
-            get
-            {
-                return Nullable.GetUnderlyingType(ModelType) != null;
-            }
-        }
+        public bool IsNullableValueType { get; private set; }
 
         /// <summary>
         /// Gets a value indicating whether or not <see cref="ModelType"/> is a collection type.
@@ -331,17 +320,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// <remarks>
         /// A collection type is defined as a <see cref="Type"/> which is assignable to <see cref="ICollection{T}"/>.
         /// </remarks>
-        public bool IsCollectionType
-        {
-            get
-            {
-                // Ignore non-generic ICollection type. Would require an additional check and that interface is not
-                // used in MVC.
-                var collectionType = ClosedGenericMatcher.ExtractGenericInterface(ModelType, typeof(ICollection<>));
-
-                return collectionType != null;
-            }
-        }
+        public bool IsCollectionType { get; private set; }
 
         /// <summary>
         /// Gets a value indicating whether or not <see cref="ModelType"/> is an enumerable type.
@@ -350,32 +329,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// An enumerable type is defined as a <see cref="Type"/> which is assignable to
         /// <see cref="IEnumerable"/>, and is not a <see cref="string"/>.
         /// </remarks>
-        public bool IsEnumerableType
-        {
-            get
-            {
-                if (ModelType == typeof(string))
-                {
-                    // Even though string implements IEnumerable, we don't really think of it
-                    // as a collection for the purposes of model binding.
-                    return false;
-                }
-
-                // We only need to look for IEnumerable, because IEnumerable<T> extends it.
-                return typeof(IEnumerable).IsAssignableFrom(ModelType);
-            }
-        }
+        public bool IsEnumerableType { get; private set; }
 
         /// <summary>
         /// Gets a value indicating whether or not <see cref="ModelType"/> allows <c>null</c> values.
         /// </summary>
-        public bool IsReferenceOrNullableType
-        {
-            get
-            {
-                return !ModelType.GetTypeInfo().IsValueType || IsNullableValueType;
-            }
-        }
+        public bool IsReferenceOrNullableType { get; private set; }
 
         /// <summary>
         /// Gets the underlying type argument if <see cref="ModelType"/> inherits from <see cref="Nullable{T}"/>.
@@ -384,13 +343,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         /// <remarks>
         /// Identical to <see cref="ModelType"/> unless <see cref="IsNullableValueType"/> is <c>true</c>.
         /// </remarks>
-        public Type UnderlyingOrModelType
-        {
-            get
-            {
-                return Nullable.GetUnderlyingType(ModelType) ?? ModelType;
-            }
-        }
+        public Type UnderlyingOrModelType { get; private set; }
 
         /// <summary>
         /// Gets a property getter delegate to get the property value from a model object.
@@ -413,6 +366,46 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public string GetDisplayName()
         {
             return DisplayName ?? PropertyName ?? ModelType.Name;
+        }
+
+        private void InitializeTypeInformation()
+        {
+            Debug.Assert(ModelType != null);
+
+            IsComplexType = !TypeDescriptor.GetConverter(ModelType).CanConvertFrom(typeof(string));
+            IsNullableValueType = Nullable.GetUnderlyingType(ModelType) != null;
+            IsReferenceOrNullableType = !ModelType.GetTypeInfo().IsValueType || IsNullableValueType;
+            UnderlyingOrModelType = Nullable.GetUnderlyingType(ModelType) ?? ModelType;
+
+            var collectionType = ClosedGenericMatcher.ExtractGenericInterface(ModelType, typeof(ICollection<>));
+            IsCollectionType = collectionType != null;
+
+            if (ModelType == typeof(string) || !typeof(IEnumerable).IsAssignableFrom(ModelType))
+            {
+                // Do nothing, not Enumerable.
+            }
+            else if (ModelType.IsArray)
+            {
+                IsEnumerableType = true;
+                ElementType = ModelType.GetElementType();
+            }
+            else
+            {
+                IsEnumerableType = true;
+
+                var enumerableType = ClosedGenericMatcher.ExtractGenericInterface(ModelType, typeof(IEnumerable<>));
+                ElementType = enumerableType?.GenericTypeArguments[0];
+
+                if (ElementType == null && typeof(IEnumerable).IsAssignableFrom(ModelType))
+                {
+                    // ModelType implements IEnumerable but not IEnumerable<T>.
+                    ElementType = typeof(object);
+                }
+
+                Debug.Assert(
+                    ElementType != null,
+                    $"Unable to find element type for '{ModelType.FullName}' though IsEnumerableType is true.");
+            }
         }
 
         private string DebuggerToString()

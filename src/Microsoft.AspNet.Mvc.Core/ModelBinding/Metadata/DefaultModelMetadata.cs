@@ -25,7 +25,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
 
         private ReadOnlyDictionary<object, object> _additionalValues;
         private ModelMetadata _elementMetadata;
-        private bool _haveCalculatedElementMetadata;
         private bool? _isBindingRequired;
         private bool? _isReadOnly;
         private bool? _isRequired;
@@ -248,38 +247,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
         {
             get
             {
-                if (!_haveCalculatedElementMetadata)
+                if (_elementMetadata == null && ElementType != null)
                 {
-                    _haveCalculatedElementMetadata = true;
-                    if (!IsEnumerableType)
-                    {
-                        // Short-circuit checks below. If not IsEnumerableType, ElementMetadata is null.
-                        // For example, as in IsEnumerableType, do not consider strings collections.
-                        return null;
-                    }
-
-                    Type elementType = null;
-                    if (ModelType.IsArray)
-                    {
-                        elementType = ModelType.GetElementType();
-                    }
-                    else
-                    {
-                        elementType = ClosedGenericMatcher.ExtractGenericInterface(ModelType, typeof(IEnumerable<>))
-                            ?.GenericTypeArguments[0];
-                        if (elementType == null && typeof(IEnumerable).IsAssignableFrom(ModelType))
-                        {
-                            // ModelType implements IEnumerable but not IEnumerable<T>.
-                            elementType = typeof(object);
-                        }
-                    }
-
-                    Debug.Assert(
-                        elementType != null,
-                        $"Unable to find element type for '{ ModelType.FullName }' though IsEnumerableType is true.");
-
-                    // Success
-                    _elementMetadata = _provider.GetMetadataForType(elementType);
+                    _elementMetadata = _provider.GetMetadataForType(ElementType);
                 }
 
                 return _elementMetadata;

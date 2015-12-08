@@ -217,6 +217,45 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             Assert.Equal(expected, modelMetadata.UnderlyingOrModelType);
         }
 
+        [Theory]
+        [InlineData(typeof(object))]
+        [InlineData(typeof(int))]
+        [InlineData(typeof(NonCollectionType))]
+        [InlineData(typeof(string))]
+        public void ElementType_ReturnsNull_ForNonCollections(Type modelType)
+        {
+            // Arrange
+            var metadata = new TestModelMetadata(modelType);
+
+            // Act
+            var elementType = metadata.ElementType;
+
+            // Assert
+            Assert.Null(elementType);
+        }
+
+        [Theory]
+        [InlineData(typeof(int[]), typeof(int))]
+        [InlineData(typeof(List<string>), typeof(string))]
+        [InlineData(typeof(DerivedList), typeof(int))]
+        [InlineData(typeof(IEnumerable), typeof(object))]
+        [InlineData(typeof(IEnumerable<string>), typeof(string))]
+        [InlineData(typeof(Collection<int>), typeof(int))]
+        [InlineData(typeof(Dictionary<object, object>), typeof(KeyValuePair<object, object>))]
+        [InlineData(typeof(DerivedDictionary), typeof(KeyValuePair<string, int>))]
+        public void ElementType_ReturnsExpectedMetadata(Type modelType, Type expected)
+        {
+            // Arrange
+            var metadata = new TestModelMetadata(modelType);
+
+            // Act
+            var elementType = metadata.ElementType;
+
+            // Assert
+            Assert.NotNull(elementType);
+            Assert.Equal(expected, elementType);
+        }
+
         // GetDisplayName()
 
         [Fact]
@@ -606,6 +645,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             {
                 throw new NotImplementedException();
             }
+        }
+
+        private class DerivedDictionary : Dictionary<string, int>
+        {
         }
     }
 }
