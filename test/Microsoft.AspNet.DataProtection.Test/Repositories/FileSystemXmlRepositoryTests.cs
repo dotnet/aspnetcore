@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.DataProtection.Repositories
 
             // Assert
             Assert.Equal(defaultDirInfo.FullName,
-                new DirectoryInfo(Path.Combine(Environment.ExpandEnvironmentVariables("%LOCALAPPDATA%"), "ASP.NET", "DataProtection-Keys")).FullName);
+                new DirectoryInfo(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "ASP.NET", "DataProtection-Keys")).FullName);
         }
 
         [Fact]
@@ -158,7 +158,7 @@ namespace Microsoft.AspNet.DataProtection.Repositories
 
         private class ConditionalRunTestOnlyIfLocalAppDataAvailable : Attribute, ITestCondition
         {
-            public bool IsMet => Environment.ExpandEnvironmentVariables("%LOCALAPPDATA%") != null;
+            public bool IsMet => Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) != null;
 
             public string SkipReason { get; } = "%LOCALAPPDATA% couldn't be located.";
         }
