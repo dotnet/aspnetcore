@@ -3,6 +3,7 @@ use import="Environment"
 
 default NO_PARALLEL_TEST_PROJECTS='${E("NO_PARALLEL_TEST_PROJECTS")}'
 default KOREBUILD_TEST_DNXCORE='${E("KOREBUILD_TEST_DNXCORE")}'
+default KOREBUILD_TEST_SKIPMONO='${E("KOREBUILD_TEST_SKIPMONO")}'
 
 @{/*
 
@@ -58,9 +59,16 @@ projectFile=''
                     testArgs = " -parallel none";
                 }
 
-                Dnx("test" + testArgs, projectFolder);
+                if (!IsLinux ||
+                    (!string.Equals(KOREBUILD_TEST_SKIPMONO, "1") &&
+                     !string.Equals(KOREBUILD_TEST_SKIPMONO, "true")))
+                {
+                    Dnx("test" + testArgs, projectFolder);
+                }
             }
-            else if (!IsLinux || !string.IsNullOrEmpty(KOREBUILD_TEST_DNXCORE))
+            else if (!IsLinux ||
+                     string.Equals(KOREBUILD_TEST_DNXCORE, "1") ||
+                     string.Equals(KOREBUILD_TEST_DNXCORE, "true"))
             {
                 Dnx("test" + testArgs, projectFolder, "default -runtime coreclr");
             }
