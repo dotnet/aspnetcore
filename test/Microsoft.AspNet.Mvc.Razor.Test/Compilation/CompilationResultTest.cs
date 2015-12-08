@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Linq;
-using Microsoft.Extensions.CompilationAbstractions;
+using Microsoft.AspNet.Diagnostics;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.Razor.Compilation
@@ -13,7 +13,11 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
         public void EnsureSuccessful_ThrowsIfCompilationFailed()
         {
             // Arrange
-            var compilationFailure = new CompilationFailure("test", Enumerable.Empty<Microsoft.Extensions.CompilationAbstractions.DiagnosticMessage>());
+            var compilationFailure = new CompilationFailure(
+                "test",
+                sourceFileContent: string.Empty,
+                compiledContent: string.Empty,
+                messages: Enumerable.Empty<AspNet.Diagnostics.DiagnosticMessage>());
             var failures = new[] { compilationFailure };
             var result = new CompilationResult(failures);
 

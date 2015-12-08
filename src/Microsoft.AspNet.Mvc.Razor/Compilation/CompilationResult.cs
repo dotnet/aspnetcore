@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.Extensions.CompilationAbstractions;
+using Microsoft.AspNet.Diagnostics;
 
 namespace Microsoft.AspNet.Mvc.Razor.Compilation
 {

@@ -5,11 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Microsoft.AspNet.Diagnostics;
 using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Razor;
 using Microsoft.AspNet.Razor.CodeGenerators;
-using Microsoft.Extensions.CompilationAbstractions;
-using Microsoft.Extensions.PlatformAbstractions;
 using Microsoft.Extensions.OptionsModel;
 
 namespace Microsoft.AspNet.Mvc.Razor.Compilation
@@ -96,7 +95,8 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
                 var compilationFailure = new CompilationFailure(
                     filePath,
                     fileContent,
-                    group.Select(parserError => CreateDiagnosticMessage(parserError, filePath)));
+                    compiledContent: string.Empty,
+                    messages: group.Select(parserError => CreateDiagnosticMessage(parserError, filePath)));
                 failures.Add(compilationFailure);
             }
 
@@ -106,11 +106,9 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
         private DiagnosticMessage CreateDiagnosticMessage(RazorError error, string filePath)
         {
             return new DiagnosticMessage(
-                errorCode: null,
                 message: error.Message,
                 formattedMessage: $"{error} ({error.Location.LineIndex},{error.Location.CharacterIndex}) {error.Message}",
                 filePath: filePath,
-                severity: DiagnosticMessageSeverity.Error,
                 startLine: error.Location.LineIndex + 1,
                 startColumn: error.Location.CharacterIndex,
                 endLine: error.Location.LineIndex + 1,

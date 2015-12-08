@@ -12,15 +12,16 @@ using System.Reflection.PortableExecutable;
 #if DOTNET5_5
 using System.Runtime.Loader;
 #endif
+using System.Runtime.Versioning;
 using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Mvc.Razor.Internal;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Emit;
 using Microsoft.Dnx.Compilation.CSharp;
-using Microsoft.Extensions.CompilationAbstractions;
 using Microsoft.Extensions.PlatformAbstractions;
 using Microsoft.Extensions.OptionsModel;
+using Microsoft.AspNet.Diagnostics;
 
 namespace Microsoft.AspNet.Mvc.Razor.Compilation
 {
@@ -33,7 +34,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
         private readonly ConcurrentDictionary<string, AssemblyMetadata> _metadataFileCache =
             new ConcurrentDictionary<string, AssemblyMetadata>(StringComparer.OrdinalIgnoreCase);
 
-        private readonly ILibraryExporter _libraryExporter;
+        private readonly Extensions.CompilationAbstractions.ILibraryExporter _libraryExporter;
         private readonly IApplicationEnvironment _environment;
         private readonly IFileProvider _fileProvider;
         private readonly Lazy<List<MetadataReference>> _applicationReferences;
@@ -53,14 +54,14 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
         /// <param name="loaderAccessor">
         /// The accessor for the <see cref="IAssemblyLoadContext"/> used to load compiled assemblies.
         /// </param>
-        /// <param name="libraryManager">The library manager that provides export and reference information.</param>
+        /// <param name="libraryExporter">The library manager that provides export and reference information.</param>
         /// <param name="compilerOptionsProvider">
         /// The <see cref="ICompilerOptionsProvider"/> that provides Roslyn compilation settings.
         /// </param>
         /// <param name="host">The <see cref="IMvcRazorHost"/> that was used to generate the code.</param>
         public RoslynCompilationService(
             IApplicationEnvironment environment,
-            ILibraryExporter libraryExporter,
+            Extensions.CompilationAbstractions.ILibraryExporter libraryExporter,
             IMvcRazorHost host,
             IOptions<RazorViewEngineOptions> optionsAccessor)
         {
@@ -72,7 +73,6 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
             _compilationCallback = optionsAccessor.Value.CompilationCallback;
             _parseOptions = optionsAccessor.Value.ParseOptions;
             _compilationOptions = optionsAccessor.Value.CompilationOptions;
-
 
 #if DOTNET5_5
             _razorLoadContext = new RazorLoadContext();
@@ -213,7 +213,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
                     sourceFilePath,
                     sourceFileContent,
                     compilationContent,
-                    group.Select(d => d.ToDiagnosticMessage(_environment.RuntimeFramework)));
+                    group.Select(diagnostic => GetDiagnosticMessage(diagnostic, _environment.RuntimeFramework)));
 
                 failures.Add(compilationFailure);
             }
@@ -269,7 +269,8 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
             return references;
         }
 
-        private MetadataReference ConvertMetadataReference(IMetadataReference metadataReference)
+        private MetadataReference ConvertMetadataReference(
+            Extensions.CompilationAbstractions.IMetadataReference metadataReference)
         {
             var roslynReference = metadataReference as IRoslynMetadataReference;
 
@@ -278,21 +279,21 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
                 return roslynReference.MetadataReference;
             }
 
-            var embeddedReference = metadataReference as IMetadataEmbeddedReference;
+            var embeddedReference = metadataReference as Extensions.CompilationAbstractions.IMetadataEmbeddedReference;
 
             if (embeddedReference != null)
             {
                 return MetadataReference.CreateFromImage(embeddedReference.Contents);
             }
 
-            var fileMetadataReference = metadataReference as IMetadataFileReference;
+            var fileMetadataReference = metadataReference as Extensions.CompilationAbstractions.IMetadataFileReference;
 
             if (fileMetadataReference != null)
             {
                 return CreateMetadataFileReference(fileMetadataReference.Path);
             }
 
-            var projectReference = metadataReference as IMetadataProjectReference;
+            var projectReference = metadataReference as Extensions.CompilationAbstractions.IMetadataProjectReference;
             if (projectReference != null)
             {
                 using (var ms = new MemoryStream())
@@ -344,6 +345,19 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
             }
 
             return null;
+        }
+
+        private static DiagnosticMessage GetDiagnosticMessage(Diagnostic diagnostic, FrameworkName targetFramework)
+        {
+            var mappedLineSpan = diagnostic.Location.GetMappedLineSpan();
+            return new DiagnosticMessage(
+                diagnostic.GetMessage(),
+                RoslynDiagnosticFormatter.Format(diagnostic, targetFramework),
+                mappedLineSpan.Path,
+                mappedLineSpan.StartLinePosition.Line + 1,
+                mappedLineSpan.StartLinePosition.Character + 1,
+                mappedLineSpan.EndLinePosition.Line + 1,
+                mappedLineSpan.EndLinePosition.Character + 1);
         }
 
 #if DOTNET5_5
