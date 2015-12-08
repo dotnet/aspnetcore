@@ -1,8 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved. 
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
 namespace Microsoft.AspNet.Localization
@@ -31,7 +30,6 @@ namespace Microsoft.AspNet.Localization
         /// list. A value of <c>null</c> means all cultures are supported.
         /// Defaults to <c>null</c>.
         /// </summary>
-        [SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly", Justification = "Improves usability")]
         public IList<CultureInfo> SupportedCultures { get; set; }
 
         /// <summary>
@@ -40,7 +38,6 @@ namespace Microsoft.AspNet.Localization
         /// list. A value of <c>null</c> means all cultures are supported.
         /// Defaults to <c>null</c>.
         /// </summary>
-        [SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly", Justification = "Improves usability")]
         public IList<CultureInfo> SupportedUICultures { get; set; }
 
         /// <summary>
@@ -53,7 +50,6 @@ namespace Microsoft.AspNet.Localization
         ///     <item><description><see cref="AcceptLanguageHeaderRequestCultureProvider"/></description></item>
         /// </list>
         /// </summary>
-        [SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly", Justification = "Improves usability")]
         public IList<IRequestCultureProvider> RequestCultureProviders { get; set; }
     }
 }
