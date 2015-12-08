@@ -123,7 +123,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Filter
                 builder.Append((char)buffer[i]);
             }
 
-            _logger.LogVerbose(builder.ToString());
+            _logger.LogDebug(builder.ToString());
         }
     }
 }

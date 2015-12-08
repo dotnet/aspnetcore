@@ -22,7 +22,7 @@ namespace SampleApp
             //ksi.ThreadCount = 4;
             ksi.NoDelay = true;
 
-            loggerFactory.AddConsole(LogLevel.Debug);
+            loggerFactory.AddConsole(LogLevel.Trace);
 
             var testCertPath = Path.Combine(
                 env.ApplicationBasePath,
