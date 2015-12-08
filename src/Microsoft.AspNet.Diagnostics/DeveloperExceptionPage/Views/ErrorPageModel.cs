@@ -26,19 +26,16 @@ namespace Microsoft.AspNet.Diagnostics.Views
         /// <summary>
         /// Parsed query data.
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly", Justification = "Model class contains collection")]
         public IQueryCollection Query { get; set; }
-        
+
         /// <summary>
         /// Request cookies.
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly", Justification = "Model class contains collection")]
         public IRequestCookieCollection Cookies { get; set; }
-        
+
         /// <summary>
         /// Request headers.
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly", Justification = "Model class contains collection")]
         public IDictionary<string, StringValues> Headers { get; set; }
     }
 }

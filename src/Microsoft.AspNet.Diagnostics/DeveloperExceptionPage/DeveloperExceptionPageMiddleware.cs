@@ -4,19 +4,17 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Diagnostics.Views;
 using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Http;
 using Microsoft.Extensions.CompilationAbstractions;
-using Microsoft.Extensions.PlatformAbstractions;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.PlatformAbstractions;
 using StackFrame = Microsoft.AspNet.Diagnostics.Views.StackFrame;
 
 namespace Microsoft.AspNet.Diagnostics
@@ -67,7 +65,6 @@ namespace Microsoft.AspNet.Diagnostics
         /// </summary>
         /// <param name="context"></param>
         /// <returns></returns>
-        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "For diagnostics")]
         public async Task Invoke(HttpContext context)
         {
             try
