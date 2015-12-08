@@ -73,7 +73,6 @@ namespace Microsoft.AspNet.Http.Internal
         #endregion
     }
 
-    [System.CodeDom.Compiler.GeneratedCode("App_Packages", "")]
     internal struct HeaderSegmentCollection : IEnumerable<HeaderSegment>, IEquatable<HeaderSegmentCollection>
     {
         private readonly StringValues _headers;

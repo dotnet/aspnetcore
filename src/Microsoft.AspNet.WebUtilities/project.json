@@ -22,11 +22,8 @@
     "dotnet5.4": {
       "dependencies": {
         "System.Collections": "4.0.11-*",
-        "System.Diagnostics.Debug": "4.0.11-*",
         "System.IO": "4.0.11-*",
-        "System.IO.FileSystem": "4.0.1-*",
-        "System.Runtime": "4.0.21-*",
-        "System.Runtime.Extensions": "4.0.11-*"
+        "System.IO.FileSystem": "4.0.1-*"
       }
     }
   }

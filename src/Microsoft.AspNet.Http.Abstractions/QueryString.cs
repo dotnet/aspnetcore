@@ -68,7 +68,6 @@ namespace Microsoft.AspNet.Http
         /// dangerous are escaped.
         /// </summary>
         /// <returns>The query string value</returns>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1055:UriReturnValuesShouldNotBeStrings", Justification = "Purpose of the method is to return a string")]
         public string ToUriComponent()
         {
             // Escape things properly so System.Uri doesn't mis-interpret the data.
@@ -81,7 +80,6 @@ namespace Microsoft.AspNet.Http
         /// </summary>
         /// <param name="uriComponent">The escaped query as it appears in the URI format.</param>
         /// <returns>The resulting QueryString</returns>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1057:StringUriOverloadsCallSystemUriOverloads", Justification = "Delimiter characters ? and # must be escaped by this method instead of truncating the value")]
         public static QueryString FromUriComponent(string uriComponent)
         {
             if (string.IsNullOrEmpty(uriComponent))

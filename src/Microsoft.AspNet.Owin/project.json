@@ -14,23 +14,6 @@
   },
   "frameworks": {
     "net451": {},
-    "dotnet5.4": {
-      "dependencies": {
-        "System.Collections": "4.0.11-*",
-        "System.ComponentModel": "4.0.1-*",
-        "System.Diagnostics.Tools": "4.0.1-*",
-        "System.Globalization": "4.0.11-*",
-        "System.IO": "4.0.11-*",
-        "System.Linq": "4.0.1-*",
-        "System.Net.Primitives": "4.0.11-*",
-        "System.Runtime": "4.0.21-*",
-        "System.Runtime.Extensions": "4.0.11-*",
-        "System.Runtime.InteropServices": "4.0.21-*",
-        "System.Security.Claims": "4.0.1-*",
-        "System.Security.Cryptography.X509Certificates": "4.0.0-*",
-        "System.Security.Principal": "4.0.1-*",
-        "System.Threading.Tasks": "4.0.11-*"
-      }
-    }
+    "dotnet5.4": {}
   }
 }

@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
 namespace Microsoft.AspNet.Http
@@ -52,7 +51,6 @@ namespace Microsoft.AspNet.Http
         /// Any Unicode is converted to punycode. IPv6 addresses will have brackets added if they are missing.
         /// </summary>
         /// <returns></returns>
-        [SuppressMessage("Microsoft.Design", "CA1055:UriReturnValuesShouldNotBeStrings", Justification = "Only the host segment of a URI is returned.")]
         public string ToUriComponent()
         {
             int index;
@@ -92,7 +90,6 @@ namespace Microsoft.AspNet.Http
         /// </summary>
         /// <param name="uriComponent"></param>
         /// <returns></returns>
-        [SuppressMessage("Microsoft.Design", "CA1057:StringUriOverloadsCallSystemUriOverloads", Justification = "Only the host segment of a URI is provided.")]
         public static HostString FromUriComponent(string uriComponent)
         {
             if (!string.IsNullOrEmpty(uriComponent))
