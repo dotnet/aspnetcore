@@ -11,8 +11,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
     class FrameResponseStream : Stream
     {
         private readonly FrameContext _context;
-        private bool _stopped;
-        private bool _aborted;
+        private StreamState _state;
 
         public FrameResponseStream(FrameContext context)
         {
@@ -37,28 +36,14 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         public override void Flush()
         {
-            if (_stopped)
-            {
-                throw new ObjectDisposedException(nameof(FrameResponseStream));
-            }
-            if (_aborted)
-            {
-                throw new IOException("The request has been aborted.");
-            }
+            ValidateState();
 
             _context.FrameControl.Flush();
         }
 
         public override Task FlushAsync(CancellationToken cancellationToken)
         {
-            if (_stopped)
-            {
-                throw new ObjectDisposedException(nameof(FrameResponseStream));
-            }
-            if (_aborted)
-            {
-                throw new IOException("The request has been aborted.");
-            }
+            ValidateState();
 
             return _context.FrameControl.FlushAsync(cancellationToken);
         }
@@ -80,28 +65,14 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         public override void Write(byte[] buffer, int offset, int count)
         {
-            if (_stopped)
-            {
-                throw new ObjectDisposedException(nameof(FrameResponseStream));
-            }
-            if (_aborted)
-            {
-                throw new IOException("The request has been aborted.");
-            }
+            ValidateState();
 
             _context.FrameControl.Write(new ArraySegment<byte>(buffer, offset, count));
         }
 
         public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
-            if (_stopped)
-            {
-                throw new ObjectDisposedException(nameof(FrameResponseStream));
-            }
-            if (_aborted)
-            {
-                throw new IOException("The request has been aborted.");
-            }
+            ValidateState();
 
             return _context.FrameControl.WriteAsync(new ArraySegment<byte>(buffer, offset, count), cancellationToken);
         }
@@ -110,14 +81,37 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             // Can't use dispose (or close) as can be disposed too early by user code
             // As exampled in EngineTests.ZeroContentLengthNotSetAutomaticallyForCertainStatusCodes
-            _stopped = true;
+            _state = StreamState.Disposed;
         }
 
         public void Abort()
         {
             // We don't want to throw an ODE until the app func actually completes.
             // If the request is aborted, we throw an IOException instead.
-            _aborted = true;
+            if (_state != StreamState.Disposed)
+            {
+                _state = StreamState.Aborted;
+            }
+        }
+
+        private void ValidateState()
+        {
+            switch (_state)
+            {
+                case StreamState.Open:
+                    return;
+                case StreamState.Disposed:
+                    throw new ObjectDisposedException(nameof(FrameResponseStream));
+                case StreamState.Aborted:
+                    throw new IOException("The request has been aborted.");
+            }
+        }
+
+        private enum StreamState
+        {
+            Open,
+            Disposed,
+            Aborted
         }
     }
 }
