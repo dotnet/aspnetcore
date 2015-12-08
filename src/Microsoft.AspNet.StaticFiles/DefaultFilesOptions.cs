@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNet.StaticFiles.Infrastructure;
 
 namespace Microsoft.AspNet.StaticFiles
@@ -40,7 +39,6 @@ namespace Microsoft.AspNet.StaticFiles
         /// <summary>
         /// An ordered list of file names to select by default. List length and ordering may affect performance.
         /// </summary>
-        [SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly", Justification = "Improves usability")]
         public IList<string> DefaultFileNames { get; set; }
     }
 }
