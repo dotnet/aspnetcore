@@ -102,7 +102,7 @@ namespace Microsoft.AspNet.Http.Features
 
             public int GetHashCode(KeyValuePair<Type, object> obj)
             {
-                throw new NotImplementedException();
+                return obj.Key.GetHashCode();
             }
         }
     }
