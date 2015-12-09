@@ -288,7 +288,7 @@
             "Microsoft.Extensions.WebEncoders": { },
             "Microsoft.Net.Http.Headers": { },
             "Microsoft.Net.Http.Server": { },
-            "Microsoft.Net.WebSockets": { },
+            "Microsoft.Net.WebSockets.Server": { },
             "Microsoft.NETCore.ConsoleHost-x64": { },
             "Microsoft.NETCore.Runtime.CoreCLR-arm": { },
             "Microsoft.NETCore.Runtime.CoreCLR-x86": { },
@@ -334,9 +334,7 @@
             "Microsoft.Extensions.SecurityHelper.Sources": { },
             "Microsoft.Extensions.TypeNameHelper.Sources": { },
             "PageGenerator": { },
-            "xunit.execution.AspNet": { },
-            "xunit.runner.aspnet": { },
-            "xunit.runner.utility.AspNet": { }
+            "xunit.runner.aspnet": { }
         }
     },
     "non-adx": { // Packages NOT written by the ADX team, but we still do a minimal scan on them
