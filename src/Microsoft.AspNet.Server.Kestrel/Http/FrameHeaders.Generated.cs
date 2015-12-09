@@ -7828,8 +7828,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 { 
                     foreach(var value in _CacheControl)
                     {
-                        output.CopyFrom(_headerBytes, 0, 17);
-                        output.CopyFromAscii(value);
+                        if (value != null)
+                        {
+                            output.CopyFrom(_headerBytes, 0, 17);
+                            output.CopyFromAscii(value);
+                        }
                     }
                 }
             
@@ -7841,8 +7844,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                     } else 
                     foreach(var value in _Connection)
                     {
-                        output.CopyFrom(_headerBytes, 17, 14);
-                        output.CopyFromAscii(value);
+                        if (value != null)
+                        {
+                            output.CopyFrom(_headerBytes, 17, 14);
+                            output.CopyFromAscii(value);
+                        }
                     }
                 }
             
@@ -7854,8 +7860,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                     } else 
                     foreach(var value in _Date)
                     {
-                        output.CopyFrom(_headerBytes, 31, 8);
-                        output.CopyFromAscii(value);
+                        if (value != null)
+                        {
+                            output.CopyFrom(_headerBytes, 31, 8);
+                            output.CopyFromAscii(value);
+                        }
                     }
                 }
             
@@ -7863,8 +7872,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 { 
                     foreach(var value in _KeepAlive)
                     {
-                        output.CopyFrom(_headerBytes, 39, 14);
-                        output.CopyFromAscii(value);
+                        if (value != null)
+                        {
+                            output.CopyFrom(_headerBytes, 39, 14);
+                            output.CopyFromAscii(value);
+                        }
                     }
                 }
             
@@ -7872,8 +7884,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 { 
                     foreach(var value in _Pragma)
                     {
-                        output.CopyFrom(_headerBytes, 53, 10);
-                        output.CopyFromAscii(value);
+                        if (value != null)
+                        {
+                            output.CopyFrom(_headerBytes, 53, 10);
+                            output.CopyFromAscii(value);
+                        }
                     }
                 }
             
@@ -7881,8 +7896,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 { 
                     foreach(var value in _Trailer)
                     {
-                        output.CopyFrom(_headerBytes, 63, 11);
-                        output.CopyFromAscii(value);
+                        if (value != null)
+                        {
+                            output.CopyFrom(_headerBytes, 63, 11);
+                            output.CopyFromAscii(value);
+                        }
                     }
                 }
             
@@ -7894,8 +7912,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                     } else 
                     foreach(var value in _TransferEncoding)
                     {
-                        output.CopyFrom(_headerBytes, 74, 21);
-                        output.CopyFromAscii(value);
+                        if (value != null)
+                        {
+                            output.CopyFrom(_headerBytes, 74, 21);
+                            output.CopyFromAscii(value);
+                        }
                     }
                 }
             
@@ -7903,8 +7924,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 { 
                     foreach(var value in _Upgrade)
                     {
-                        output.CopyFrom(_headerBytes, 95, 11);
-                        output.CopyFromAscii(value);
+                        if (value != null)
+                        {
+                            output.CopyFrom(_headerBytes, 95, 11);
+                            output.CopyFromAscii(value);
+                        }
                     }
                 }
             
@@ -7912,8 +7936,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 { 
                     foreach(var value in _Via)
                     {
-                        output.CopyFrom(_headerBytes, 106, 7);
-                        output.CopyFromAscii(value);
+                        if (value != null)
+                        {
+                            output.CopyFrom(_headerBytes, 106, 7);
+                            output.CopyFromAscii(value);
+                        }
                     }
                 }
             
@@ -7921,8 +7948,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 { 
                     foreach(var value in _Warning)
                     {
-                        output.CopyFrom(_headerBytes, 113, 11);
-                        output.CopyFromAscii(value);
+                        if (value != null)
+                        {
+                            output.CopyFrom(_headerBytes, 113, 11);
+                            output.CopyFromAscii(value);
+                        }
                     }
                 }
             
@@ -7930,8 +7960,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 { 
                     foreach(var value in _Allow)
                     {
-                        output.CopyFrom(_headerBytes, 124, 9);
-                        output.CopyFromAscii(value);
+                        if (value != null)
+                        {
+                            output.CopyFrom(_headerBytes, 124, 9);
+                            output.CopyFromAscii(value);
+                        }
                     }
                 }
             
@@ -7943,8 +7976,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                     } else 
                     foreach(var value in _ContentLength)
                     {
-                        output.CopyFrom(_headerBytes, 133, 18);
-                        output.CopyFromAscii(value);
+                        if (value != null)
+                        {
+                            output.CopyFrom(_headerBytes, 133, 18);
+                            output.CopyFromAscii(value);
+                        }
                     }
                 }
             
@@ -7952,8 +7988,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 { 
                     foreach(var value in _ContentType)
                     {
-                        output.CopyFrom(_headerBytes, 151, 16);
-                        output.CopyFromAscii(value);
+                        if (value != null)
+                        {
+                            output.CopyFrom(_headerBytes, 151, 16);
+                            output.CopyFromAscii(value);
+                        }
                     }
                 }
             
@@ -7961,8 +8000,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 { 
                     foreach(var value in _ContentEncoding)
                     {
-                        output.CopyFrom(_headerBytes, 167, 20);
-                        output.CopyFromAscii(value);
+                        if (value != null)
+                        {
+                            output.CopyFrom(_headerBytes, 167, 20);
+                            output.CopyFromAscii(value);
+                        }
                     }
                 }
             
@@ -7970,8 +8012,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 { 
                     foreach(var value in _ContentLanguage)
                     {
-                        output.CopyFrom(_headerBytes, 187, 20);
-                        output.CopyFromAscii(value);
+                        if (value != null)
+                        {
+                            output.CopyFrom(_headerBytes, 187, 20);
+                            output.CopyFromAscii(value);
+                        }
                     }
                 }
             
@@ -7979,8 +8024,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 { 
                     foreach(var value in _ContentLocation)
                     {
-                        output.CopyFrom(_headerBytes, 207, 20);
-                        output.CopyFromAscii(value);
+                        if (value != null)
+                        {
+                            output.CopyFrom(_headerBytes, 207, 20);
+                            output.CopyFromAscii(value);
+                        }
                     }
                 }
             
@@ -7988,8 +8036,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 { 
                     foreach(var value in _ContentMD5)
                     {
-                        output.CopyFrom(_headerBytes, 227, 15);
-                        output.CopyFromAscii(value);
+                        if (value != null)
+                        {
+                            output.CopyFrom(_headerBytes, 227, 15);
+                            output.CopyFromAscii(value);
+                        }
                     }
                 }
             
@@ -7997,8 +8048,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 { 
                     foreach(var value in _ContentRange)
                     {
-                        output.CopyFrom(_headerBytes, 242, 17);
-                        output.CopyFromAscii(value);
+                        if (value != null)
+                        {
+                            output.CopyFrom(_headerBytes, 242, 17);
+                            output.CopyFromAscii(value);
+                        }
                     }
                 }
             
@@ -8006,8 +8060,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 { 
                     foreach(var value in _Expires)
                     {
-                        output.CopyFrom(_headerBytes, 259, 11);
-                        output.CopyFromAscii(value);
+                        if (value != null)
+                        {
+                            output.CopyFrom(_headerBytes, 259, 11);
+                            output.CopyFromAscii(value);
+                        }
                     }
                 }
             
@@ -8015,8 +8072,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 { 
                     foreach(var value in _LastModified)
                     {
-                        output.CopyFrom(_headerBytes, 270, 17);
-                        output.CopyFromAscii(value);
+                        if (value != null)
+                        {
+                            output.CopyFrom(_headerBytes, 270, 17);
+                            output.CopyFromAscii(value);
+                        }
                     }
                 }
             
@@ -8024,8 +8084,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 { 
                     foreach(var value in _AcceptRanges)
                     {
-                        output.CopyFrom(_headerBytes, 287, 17);
-                        output.CopyFromAscii(value);
+                        if (value != null)
+                        {
+                            output.CopyFrom(_headerBytes, 287, 17);
+                            output.CopyFromAscii(value);
+                        }
                     }
                 }
             
@@ -8033,8 +8096,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 { 
                     foreach(var value in _Age)
                     {
-                        output.CopyFrom(_headerBytes, 304, 7);
-                        output.CopyFromAscii(value);
+                        if (value != null)
+                        {
+                            output.CopyFrom(_headerBytes, 304, 7);
+                            output.CopyFromAscii(value);
+                        }
                     }
                 }
             
@@ -8042,8 +8108,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 { 
                     foreach(var value in _ETag)
                     {
-                        output.CopyFrom(_headerBytes, 311, 8);
-                        output.CopyFromAscii(value);
+                        if (value != null)
+                        {
+                            output.CopyFrom(_headerBytes, 311, 8);
+                            output.CopyFromAscii(value);
+                        }
                     }
                 }
             
@@ -8051,8 +8120,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 { 
                     foreach(var value in _Location)
                     {
-                        output.CopyFrom(_headerBytes, 319, 12);
-                        output.CopyFromAscii(value);
+                        if (value != null)
+                        {
+                            output.CopyFrom(_headerBytes, 319, 12);
+                            output.CopyFromAscii(value);
+                        }
                     }
                 }
             
@@ -8060,8 +8132,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 { 
                     foreach(var value in _ProxyAutheticate)
                     {
-                        output.CopyFrom(_headerBytes, 331, 21);
-                        output.CopyFromAscii(value);
+                        if (value != null)
+                        {
+                            output.CopyFrom(_headerBytes, 331, 21);
+                            output.CopyFromAscii(value);
+                        }
                     }
                 }
             
@@ -8069,8 +8144,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 { 
                     foreach(var value in _RetryAfter)
                     {
-                        output.CopyFrom(_headerBytes, 352, 15);
-                        output.CopyFromAscii(value);
+                        if (value != null)
+                        {
+                            output.CopyFrom(_headerBytes, 352, 15);
+                            output.CopyFromAscii(value);
+                        }
                     }
                 }
             
@@ -8082,8 +8160,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                     } else 
                     foreach(var value in _Server)
                     {
-                        output.CopyFrom(_headerBytes, 367, 10);
-                        output.CopyFromAscii(value);
+                        if (value != null)
+                        {
+                            output.CopyFrom(_headerBytes, 367, 10);
+                            output.CopyFromAscii(value);
+                        }
                     }
                 }
             
@@ -8091,8 +8172,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 { 
                     foreach(var value in _SetCookie)
                     {
-                        output.CopyFrom(_headerBytes, 377, 14);
-                        output.CopyFromAscii(value);
+                        if (value != null)
+                        {
+                            output.CopyFrom(_headerBytes, 377, 14);
+                            output.CopyFromAscii(value);
+                        }
                     }
                 }
             
@@ -8100,8 +8184,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 { 
                     foreach(var value in _Vary)
                     {
-                        output.CopyFrom(_headerBytes, 391, 8);
-                        output.CopyFromAscii(value);
+                        if (value != null)
+                        {
+                            output.CopyFrom(_headerBytes, 391, 8);
+                            output.CopyFromAscii(value);
+                        }
                     }
                 }
             
@@ -8109,8 +8196,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 { 
                     foreach(var value in _WWWAuthenticate)
                     {
-                        output.CopyFrom(_headerBytes, 399, 20);
-                        output.CopyFromAscii(value);
+                        if (value != null)
+                        {
+                            output.CopyFrom(_headerBytes, 399, 20);
+                            output.CopyFromAscii(value);
+                        }
                     }
                 }
             

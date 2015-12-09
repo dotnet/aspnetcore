@@ -391,8 +391,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                     }} else ")}
                     foreach(var value in _{header.Identifier})
                     {{
-                        output.CopyFrom(_headerBytes, {header.BytesOffset}, {header.BytesCount});
-                        output.CopyFromAscii(value);
+                        if (value != null)
+                        {{
+                            output.CopyFrom(_headerBytes, {header.BytesOffset}, {header.BytesCount});
+                            output.CopyFromAscii(value);
+                        }}
                     }}
                 }}
             ")}

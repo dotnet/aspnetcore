@@ -39,10 +39,13 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 {
                     foreach (var value in kv.Value)
                     {
-                        output.CopyFrom(_CrLf, 0, 2);
-                        output.CopyFromAscii(kv.Key);
-                        output.CopyFrom(_colonSpace, 0, 2);
-                        output.CopyFromAscii(value);
+                        if (value != null)
+                        {
+                            output.CopyFrom(_CrLf, 0, 2);
+                            output.CopyFromAscii(kv.Key);
+                            output.CopyFrom(_colonSpace, 0, 2);
+                            output.CopyFromAscii(value);
+                        }
                     }
                 }
             }
