@@ -29,7 +29,7 @@
     },
     "dotnet5.4": {
       "dependencies": {
-        "System.ComponentModel.Annotations": "4.0.11-*"
+        "System.ComponentModel.Annotations": "4.1.0-*"
       }
     }
   }
