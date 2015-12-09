@@ -12,6 +12,12 @@ namespace Microsoft.AspNet.Server.KestrelTests
     public class KestrelServerInformationTests
     {
         [Fact]
+        public void NullConfigurationThrows()
+        {
+            Assert.Throws<ArgumentNullException>(() => new KestrelServerInformation(null));
+        }
+
+        [Fact]
         public void SetThreadCountUsingConfiguration()
         {
             const int expected = 42;

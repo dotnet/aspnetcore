@@ -14,6 +14,11 @@ namespace Microsoft.AspNet.Server.Kestrel
     {
         public KestrelServerInformation(IConfiguration configuration)
         {
+            if (configuration == null)
+            {
+                throw new ArgumentNullException(nameof(configuration));
+            }
+
             Addresses = GetAddresses(configuration);
             ThreadCount = GetThreadCount(configuration);
             NoDelay = GetNoDelay(configuration);
