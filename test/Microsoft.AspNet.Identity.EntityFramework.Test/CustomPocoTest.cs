@@ -46,7 +46,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
 
         [TestPriority(-1000)]
         [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)][OSSkipCondition(OperatingSystems.Linux)][OSSkipCondition(OperatingSystems.MacOSX)]
         public void DropDatabaseStart()
         {
             DropDb();
@@ -54,7 +54,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
 
         [TestPriority(10000)]
         [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)][OSSkipCondition(OperatingSystems.Linux)][OSSkipCondition(OperatingSystems.MacOSX)]
         public void DropDatabaseDone()
         {
             DropDb();
@@ -67,7 +67,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
         }
 
         [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)][OSSkipCondition(OperatingSystems.Linux)][OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task CanUpdateNameGuid()
         {
             using (var db = CreateContext<Guid>(true))
@@ -85,7 +85,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
         }
 
         [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)][OSSkipCondition(OperatingSystems.Linux)][OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task CanUpdateNameString()
         {
             using (var db = CreateContext<string>(true))
@@ -103,7 +103,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
         }
 
         [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)][OSSkipCondition(OperatingSystems.Linux)][OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task CanCreateUserInt()
         {
             using (var db = CreateContext<int>(true))
@@ -119,7 +119,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
         }
 
         [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)][OSSkipCondition(OperatingSystems.Linux)][OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task CanCreateUserIntViaSet()
         {
             using (var db = CreateContext<int>(true))
@@ -136,7 +136,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
         }
 
         [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)][OSSkipCondition(OperatingSystems.Linux)][OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task CanUpdateNameInt()
         {
             using (var db = CreateContext<int>(true))
@@ -154,7 +154,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
         }
 
         [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)][OSSkipCondition(OperatingSystems.Linux)][OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task CanUpdateNameIntWithSet()
         {
             using (var db = CreateContext<int>(true))
