@@ -575,7 +575,6 @@ namespace Microsoft.Net.Http.Server
             {
                 if (headerPair.Value.Count == 0)
                 {
-                    // TODO: Have the collection exclude empty headers.
                     continue;
                 }
                 // See if this is an unknown header
@@ -602,7 +601,6 @@ namespace Microsoft.Net.Http.Server
                     {
                         if (headerPair.Value.Count == 0)
                         {
-                            // TODO: Have the collection exclude empty headers.
                             continue;
                         }
                         headerName = headerPair.Key;
@@ -632,7 +630,7 @@ namespace Microsoft.Net.Http.Server
                                 unknownHeaders[_nativeResponse.Response_V1.Headers.UnknownHeaderCount].pName = (sbyte*)gcHandle.AddrOfPinnedObject();
 
                                 // Add Value
-                                headerValue = headerValues[headerValueIndex];
+                                headerValue = headerValues[headerValueIndex] ?? string.Empty;
                                 bytes = new byte[HeaderEncoding.GetByteCount(headerValue)];
                                 unknownHeaders[_nativeResponse.Response_V1.Headers.UnknownHeaderCount].RawValueLength = (ushort)bytes.Length;
                                 HeaderEncoding.GetBytes(headerValue, 0, bytes.Length, bytes, 0);
@@ -644,16 +642,13 @@ namespace Microsoft.Net.Http.Server
                         }
                         else if (headerPair.Value.Count == 1)
                         {
-                            headerValue = headerValues[0];
-                            if (headerValue != null)
-                            {
-                                bytes = new byte[HeaderEncoding.GetByteCount(headerValue)];
-                                pKnownHeaders[lookup].RawValueLength = (ushort)bytes.Length;
-                                HeaderEncoding.GetBytes(headerValue, 0, bytes.Length, bytes, 0);
-                                gcHandle = GCHandle.Alloc(bytes, GCHandleType.Pinned);
-                                pinnedHeaders.Add(gcHandle);
-                                pKnownHeaders[lookup].pRawValue = (sbyte*)gcHandle.AddrOfPinnedObject();
-                            }
+                            headerValue = headerValues[0] ?? string.Empty;
+                            bytes = new byte[HeaderEncoding.GetByteCount(headerValue)];
+                            pKnownHeaders[lookup].RawValueLength = (ushort)bytes.Length;
+                            HeaderEncoding.GetBytes(headerValue, 0, bytes.Length, bytes, 0);
+                            gcHandle = GCHandle.Alloc(bytes, GCHandleType.Pinned);
+                            pinnedHeaders.Add(gcHandle);
+                            pKnownHeaders[lookup].pRawValue = (sbyte*)gcHandle.AddrOfPinnedObject();
                         }
                         else
                         {
@@ -681,7 +676,7 @@ namespace Microsoft.Net.Http.Server
                             for (int headerValueIndex = 0; headerValueIndex < headerValues.Count; headerValueIndex++)
                             {
                                 // Add Value
-                                headerValue = headerValues[headerValueIndex];
+                                headerValue = headerValues[headerValueIndex] ?? string.Empty;
                                 bytes = new byte[HeaderEncoding.GetByteCount(headerValue)];
                                 nativeHeaderValues[header.KnownHeaderCount].RawValueLength = (ushort)bytes.Length;
                                 HeaderEncoding.GetBytes(headerValue, 0, bytes.Length, bytes, 0);

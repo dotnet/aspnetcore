@@ -23,7 +23,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Features;
-using Microsoft.AspNet.Http.Internal;
+using Microsoft.Extensions.Primitives;
 using Xunit;
 
 namespace Microsoft.AspNet.Server.WebListener
@@ -256,6 +256,58 @@ namespace Microsoft.AspNet.Server.WebListener
                 Assert.Equal("value1b", response.Headers.GetValues("Custom1").Skip(1).First());
                 Assert.Equal(1, response.Headers.GetValues("Custom2").Count());
                 Assert.Equal("value2a, value2b", response.Headers.GetValues("Custom2").First());
+            }
+        }
+
+        [Theory, MemberData(nameof(NullHeaderData))]
+        public async Task Headers_IgnoreNullHeaders(string headerName, StringValues headerValue, StringValues expectedValue)
+        {
+            string address;
+            using (Utilities.CreateHttpServer(out address, httpContext =>
+            {
+                var responseHeaders = httpContext.Response.Headers;
+                responseHeaders.Add(headerName, headerValue);
+                return Task.FromResult(0);
+            }))
+            {
+                HttpResponseMessage response = await SendRequestAsync(address);
+                response.EnsureSuccessStatusCode();
+                var headers = response.Headers;
+
+                if (expectedValue.Count == 0)
+                {
+                    Assert.False(headers.Contains(headerName));
+                }
+                else
+                {
+                    Assert.True(headers.Contains(headerName));
+                    Assert.Equal(headers.GetValues(headerName), expectedValue);
+                }
+            }
+        }
+
+        public static TheoryData<string, StringValues, StringValues> NullHeaderData
+        {
+            get
+            {
+                var dataset = new TheoryData<string, StringValues, StringValues>();
+
+                // Unknown headers
+                dataset.Add("NullString", (string)null, (string)null);
+                dataset.Add("EmptyString", "", "");
+                dataset.Add("NullStringArray", new string[] { null }, "");
+                dataset.Add("EmptyStringArray", new string[] { "" }, "");
+                dataset.Add("MixedStringArray", new string[] { null, "" }, new string[] { "", "" });
+                // Known headers
+                dataset.Add("Location", (string)null, (string)null);
+                dataset.Add("Location", "", (string)null);
+                dataset.Add("Location", new string[] { null }, (string)null);
+                dataset.Add("Location", new string[] { "" }, (string)null);
+                dataset.Add("Location", new string[] { "a" }, "a");
+                dataset.Add("Location", new string[] { null, "" }, (string)null);
+                dataset.Add("Location", new string[] { null, "", "a", "b" }, new string[] { "a", "b" });
+
+                return dataset;
             }
         }
 
