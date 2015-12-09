@@ -1,0 +1,22 @@
+{
+  "version": "1.0.0-alpha7",
+  "description": "Microsoft.AspNet.SpaServices",
+  "authors": [
+    "Microsoft"
+  ],
+  "tags": [
+    ""
+  ],
+  "projectUrl": "",
+  "licenseUrl": "",
+  "dependencies": {
+      "Microsoft.AspNet.Routing": "1.0.0-rc1-*"
+  },
+  "frameworks": {
+    "dnx451": {},
+    "dnxcore50": {
+      "dependencies": {
+      }
+    }
+  }
+}
