@@ -1,4 +1,4 @@
-<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <UsingTask AssemblyFile="tools\Microsoft.Web.MsBuildTasks2.dll" TaskName="Microsoft.Web.MsBuildTasks.SubmitCodeSignJob" />
     <UsingTask AssemblyFile="tools\Microsoft.Web.MsBuildTasks2.dll" TaskName="Microsoft.Web.MsBuildTasks.WaitForCodeSignJobs" />
     <UsingTask AssemblyFile="tools\Microsoft.Web.MsBuildTasks2.dll" TaskName="Microsoft.Web.MsBuildTasks.PoliCheck" />
@@ -425,6 +425,7 @@
                 <Justification>Northwind database sample values</Justification>
             </SrcExclusions>
             <SrcExclusions Include="$(PoliCheckPath)**\src\Microsoft.Net.WebSockets\WebSocketBuffer.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.Net.WebSockets.Server\WebSocketBuffer.cs;
                                     $(PoliCheckPath)**\src\Microsoft.AspNet.Mvc.Razor\Compilation\CompilerCache.cs;
                                     $(PoliCheckPath)**\src\EntityFramework.Core.FunctionalTests\TestModels\ConcurrencyModel\ConcurrencyModelInitializer.cs;
                                     $(PoliCheckPath)**\src\EntityFramework.Core.FunctionalTests\TestModels\ConcurrencyModel\Driver.cs;
