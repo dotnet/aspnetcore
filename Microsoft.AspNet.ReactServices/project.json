@@ -26,7 +26,8 @@
   },
   "dependencies": {
     "Microsoft.AspNet.NodeServices": "1.0.0-alpha7",
-    "Microsoft.AspNet.Mvc.TagHelpers": "6.0.0-rc1-*"
+    "Microsoft.AspNet.Mvc.TagHelpers": "6.0.0-rc1-*",
+    "Microsoft.AspNet.SpaServices": "1.0.0-alpha7"
   },
   "resource": [
     "Content/**/*"

@@ -58,9 +58,8 @@ namespace ReactExample
             // Add MVC to the request pipeline.
             app.UseMvc(routes =>
             {
-                routes.MapRoute(
+                routes.MapSpaFallbackRoute(
                     name: "default",
-                    template: "{pageIndex?}",
                     defaults: new { controller="Home", action = "Index" });
             });
         }

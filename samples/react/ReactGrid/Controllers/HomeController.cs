@@ -1,11 +1,10 @@
-using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc;
 
 namespace ReactExample.Controllers
 {
     public class HomeController : Controller
     {
-        public IActionResult Index(int pageIndex)
+        public IActionResult Index()
         {
             return View();
         }
