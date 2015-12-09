@@ -1,7 +1,11 @@
+using System;
+using System.Collections.Generic;
 using Microsoft.AspNet.Authorization;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting;
+using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Identity.EntityFramework;
+using Microsoft.AspNet.Routing;
 using Microsoft.Data.Entity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -108,15 +112,74 @@ namespace MusicStore
             // Add MVC to the request pipeline.
             app.UseMvc(routes =>
             {
-                routes.MapRoute(
-                    name: "default",
-                    template: "{controller=Home}/{action=Index}/{id?}");
-
-                routes.MapRoute("spa-fallback", "{*anything}", new { controller = "Home", action = "Index" });
+                // Matches any request that doesn't appear to have a filename extension (defined as 'having a dot in the last URI segment').
+                // This means you'll correctly get 404s for /some/dir/non-existent-image.png instead of returning the SPA HTML.
+                // However, it means requests like /customers/isaac.newton will *not* be mapped into the SPA, so if you need to accept
+                // URIs like that you'll need to match all URIs, e.g.:
+                //    routes.MapbackRoute("spa-fallback", "{*anything}", new { controller = "Home", action = "Index" });
+                // (which of course will match /customers/isaac.png too - maybe that is a real customer name, not a PNG image).
+                routes.MapSpaFallbackRoute("spa-fallback", new { controller = "Home", action = "Index" });
 
                 // Uncomment the following line to add a route for porting Web API 2 controllers.
                 // routes.MapWebApiRoute("DefaultApi", "api/{controller}/{id?}");
             });
+        }
+    }
+    internal static class SpaRouteExtensions {
+        private const string ClientRouteTokenName = "clientRoute";
+
+        public static void MapSpaFallbackRoute(this IRouteBuilder routeBuilder, string name, object defaults, object constraints = null, object dataTokens = null) {
+            MapSpaFallbackRoute(routeBuilder, name, /* templatePrefix */ (string)null, defaults, constraints, dataTokens);
+        }
+
+        public static void MapSpaFallbackRoute(this IRouteBuilder routeBuilder, string name, string templatePrefix, object defaults, object constraints = null, object dataTokens = null)
+        {
+            var template = CreateRouteTemplate(templatePrefix);
+
+            var constraintsDict = ObjectToDictionary(constraints);
+            constraintsDict.Add(ClientRouteTokenName, new SpaRouteConstraint());
+
+            routeBuilder.MapRoute(name, template, defaults, constraintsDict, dataTokens);
+        }
+
+        private static string CreateRouteTemplate(string templatePrefix)
+        {
+            templatePrefix = templatePrefix ?? string.Empty;
+
+            if (templatePrefix.Contains("?")) {
+                // TODO: Consider supporting this. The {*clientRoute} part should be added immediately before the '?'
+                throw new ArgumentException("SPA fallback route templates don't support querystrings");
+            }
+            
+            if (templatePrefix.Contains("#")) {
+                throw new ArgumentException("SPA fallback route templates should not include # characters. The hash part of a URI does not get sent to the server.");
+            }
+            
+            if (templatePrefix != string.Empty && !templatePrefix.EndsWith("/")) {
+                templatePrefix += "/";
+            }
+
+            return templatePrefix + $"{{*{ ClientRouteTokenName }}}";
+        }
+        
+        private static IDictionary<string, object> ObjectToDictionary(object value)
+        {
+            return value as IDictionary<string, object> ?? new RouteValueDictionary(value);
+        }
+
+        private class SpaRouteConstraint : IRouteConstraint
+        {
+            public bool Match(HttpContext httpContext, IRouter route, string routeKey, IDictionary<string, object> values, RouteDirection routeDirection)
+            {
+                var clientRouteValue = (values[ClientRouteTokenName] as string) ?? string.Empty;
+                return !HasDotInLastSegment(clientRouteValue);
+            }
+
+            private bool HasDotInLastSegment(string uri)
+            {
+                var lastSegmentStartPos = uri.LastIndexOf('/');
+                return uri.IndexOf('.', lastSegmentStartPos + 1) >= 0;
+            }
         }
     }
 }
