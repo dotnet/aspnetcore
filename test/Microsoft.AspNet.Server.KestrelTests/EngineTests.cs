@@ -931,8 +931,9 @@ namespace Microsoft.AspNet.Server.KestrelTests
             }
         }
 
-        [Theory]
+        [ConditionalTheory]
         [MemberData(nameof(ConnectionFilterData))]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Test hangs after execution on Mono.")]
         public async Task RequestsCanBeAbortedMidRead(ServiceContext testContext)
         {
             var readTcs = new TaskCompletionSource<object>();
@@ -1003,8 +1004,9 @@ namespace Microsoft.AspNet.Server.KestrelTests
             Assert.Equal(2, abortedRequestId);
         }
 
-        [Theory]
+        [ConditionalTheory]
         [MemberData(nameof(ConnectionFilterData))]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Test hangs after execution on Mono.")]
         public async Task FailedWritesResultInAbortedRequest(ServiceContext testContext)
         {
             var writeTcs = new TaskCompletionSource<object>();
