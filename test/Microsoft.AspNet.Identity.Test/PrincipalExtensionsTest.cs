@@ -15,17 +15,7 @@ namespace Microsoft.AspNet.Identity.Test
         public void IdentityNullCheckTest()
         {
             ClaimsPrincipal p = null;
-            Assert.Throws<ArgumentNullException>("principal", () => p.GetUserId());
-            Assert.Throws<ArgumentNullException>("principal", () => p.GetUserName());
             Assert.Throws<ArgumentNullException>("principal", () => p.FindFirstValue(null));
-        }
-
-        [Fact]
-        public void UserNameAndIdTest()
-        {
-            var p = CreateTestExternalIdentity();
-            Assert.Equal("NameIdentifier", p.GetUserId());
-            Assert.Equal("Name", p.GetUserName());
         }
 
         [Fact]

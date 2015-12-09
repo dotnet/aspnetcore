@@ -17,7 +17,6 @@ namespace Microsoft.AspNet.Identity
         /// Creates a <see cref="ClaimsPrincipal"/> from an user asynchronously.
         /// </summary>
         /// <param name="user">The user to create a <see cref="ClaimsPrincipal"/> from.</param>
-        /// <param name="authenticationType">The name of the authentication method the <paramref name="user"/> was sourced from.</param>
         /// <returns>The <see cref="Task"/> that represents the asynchronous creation operation, containing the created <see cref="ClaimsPrincipal"/>.</returns>
         Task<ClaimsPrincipal> CreateAsync(TUser user);
     }

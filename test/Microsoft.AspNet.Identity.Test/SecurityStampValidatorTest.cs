@@ -40,13 +40,14 @@ namespace Microsoft.AspNet.Identity.Test
             var userManager = MockHelpers.MockUserManager<TestUser>();
             var claimsManager = new Mock<IUserClaimsPrincipalFactory<TestUser>>();
             var identityOptions = new IdentityOptions { SecurityStampValidationInterval = TimeSpan.Zero };
+            identityOptions.ClaimsIdentity.UserIdClaimType = "IdClaim";
             var options = new Mock<IOptions<IdentityOptions>>();
             options.Setup(a => a.Value).Returns(identityOptions);
             var httpContext = new Mock<HttpContext>();
             var contextAccessor = new Mock<IHttpContextAccessor>();
             contextAccessor.Setup(a => a.HttpContext).Returns(httpContext.Object);
             var id = new ClaimsIdentity(identityOptions.Cookies.ApplicationCookieAuthenticationScheme);
-            id.AddClaim(new Claim(ClaimTypes.NameIdentifier, user.Id));
+            id.AddClaim(new Claim(identityOptions.ClaimsIdentity.UserIdClaimType, user.Id));
             var principal = new ClaimsPrincipal(id);
 
             var properties = new AuthenticationProperties { IssuedUtc = DateTimeOffset.UtcNow, IsPersistent = isPersistent };
