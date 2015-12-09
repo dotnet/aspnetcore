@@ -625,7 +625,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             bool immediate)
         {
             var begin = SocketOutput.ProducingStart();
-            var count = 0;
             var end = begin;
             if (_keepAlive)
             {

@@ -19,7 +19,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         private const int _initialTaskQueues = 64;
 
         private static WaitCallback _returnBlocks = (state) => ReturnBlocks((MemoryPoolBlock2)state);
-        private static MemoryPoolIterator2 _defaultIterator;
 
         private readonly KestrelThread _thread;
         private readonly UvStreamHandle _socket;
@@ -213,7 +212,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                     blockToReturn = _lastStart.Block;
                 }
 
-                _lastStart = _defaultIterator;
+                _lastStart = default(MemoryPoolIterator2);
             }
 
             if (blockToReturn != null)
