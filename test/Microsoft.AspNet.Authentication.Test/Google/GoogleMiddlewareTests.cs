@@ -261,9 +261,9 @@ namespace Microsoft.AspNet.Authentication.Google
                 {
                     options.Events = new OAuthEvents()
                     {
-                        OnRemoteError = ctx =>
+                        OnRemoteFailure = ctx =>
                         {
-                            ctx.Response.Redirect("/error?ErrorMessage=" + UrlEncoder.Default.Encode(ctx.Error.Message));
+                            ctx.Response.Redirect("/error?FailureMessage=" + UrlEncoder.Default.Encode(ctx.Failure.Message));
                             ctx.HandleResponse();
                             return Task.FromResult(0);
                         }
@@ -275,7 +275,7 @@ namespace Microsoft.AspNet.Authentication.Google
             {
                 var transaction = await sendTask;
                 Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
-                Assert.Equal("/error?ErrorMessage=OMG"+UrlEncoder.Default.Encode(";Description=SoBad;Uri=foobar"), transaction.Response.Headers.GetValues("Location").First());
+                Assert.Equal("/error?FailureMessage=OMG"+UrlEncoder.Default.Encode(";Description=SoBad;Uri=foobar"), transaction.Response.Headers.GetValues("Location").First());
             }
             else
             {
@@ -389,9 +389,9 @@ namespace Microsoft.AspNet.Authentication.Google
                 {
                     options.Events = new OAuthEvents()
                     {
-                        OnRemoteError = ctx =>
+                        OnRemoteFailure = ctx =>
                         {
-                            ctx.Response.Redirect("/error?ErrorMessage=" + UrlEncoder.Default.Encode(ctx.Error.Message));
+                            ctx.Response.Redirect("/error?FailureMessage=" + UrlEncoder.Default.Encode(ctx.Failure.Message));
                             ctx.HandleResponse();
                             return Task.FromResult(0);
                         }
@@ -412,7 +412,7 @@ namespace Microsoft.AspNet.Authentication.Google
             {
                 var transaction = await sendTask;
                 Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
-                Assert.Equal("/error?ErrorMessage=" + UrlEncoder.Default.Encode("OAuth token endpoint failure: Status: BadRequest;Headers: ;Body: {\"Error\":\"Error\"};"),
+                Assert.Equal("/error?FailureMessage=" + UrlEncoder.Default.Encode("OAuth token endpoint failure: Status: BadRequest;Headers: ;Body: {\"Error\":\"Error\"};"),
                     transaction.Response.Headers.GetValues("Location").First());
             }
             else
@@ -444,9 +444,9 @@ namespace Microsoft.AspNet.Authentication.Google
                 {
                     options.Events = new OAuthEvents()
                     {
-                        OnRemoteError = ctx =>
+                        OnRemoteFailure = ctx =>
                         {
-                            ctx.Response.Redirect("/error?ErrorMessage=" + UrlEncoder.Default.Encode(ctx.Error.Message));
+                            ctx.Response.Redirect("/error?FailureMessage=" + UrlEncoder.Default.Encode(ctx.Failure.Message));
                             ctx.HandleResponse();
                             return Task.FromResult(0);
                         }
@@ -466,7 +466,7 @@ namespace Microsoft.AspNet.Authentication.Google
             {
                 var transaction = await sendTask;
                 Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
-                Assert.Equal("/error?ErrorMessage=" + UrlEncoder.Default.Encode("Failed to retrieve access token."),
+                Assert.Equal("/error?FailureMessage=" + UrlEncoder.Default.Encode("Failed to retrieve access token."),
                     transaction.Response.Headers.GetValues("Location").First());
             }
             else
@@ -737,9 +737,9 @@ namespace Microsoft.AspNet.Authentication.Google
                 options.ClientSecret = "Test Secret";
                 options.Events = new OAuthEvents()
                 {
-                    OnRemoteError = ctx =>
+                    OnRemoteFailure = ctx =>
                     {
-                        ctx.Response.Redirect("/error?ErrorMessage=" + UrlEncoder.Default.Encode(ctx.Error.Message));
+                        ctx.Response.Redirect("/error?FailureMessage=" + UrlEncoder.Default.Encode(ctx.Failure.Message));
                         ctx.HandleResponse();
                         return Task.FromResult(0);
                     }
@@ -751,7 +751,7 @@ namespace Microsoft.AspNet.Authentication.Google
                 "https://example.com/signin-google?code=TestCode");
 
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
-            Assert.Equal("/error?ErrorMessage=" + UrlEncoder.Default.Encode("The oauth state was missing or invalid."),
+            Assert.Equal("/error?FailureMessage=" + UrlEncoder.Default.Encode("The oauth state was missing or invalid."),
                 transaction.Response.Headers.GetValues("Location").First());
         }
 

@@ -2,8 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Security.Claims;
-using Microsoft.AspNet.Http.Authentication;
 
 namespace Microsoft.AspNet.Authentication
 {
@@ -31,9 +29,14 @@ namespace Microsoft.AspNet.Authentication
         public AuthenticationTicket Ticket { get; private set; }
 
         /// <summary>
-        /// Holds error information caused by authentication.
+        /// Holds failure information from the authentication.
         /// </summary>
-        public Exception Error { get; private set; }
+        public Exception Failure { get; private set; }
+
+        /// <summary>
+        /// Indicates that this stage of authentication was skipped by user intervention.
+        /// </summary>
+        public bool Skipped { get; private set; }
 
         public static AuthenticateResult Success(AuthenticationTicket ticket)
         {
@@ -44,14 +47,19 @@ namespace Microsoft.AspNet.Authentication
             return new AuthenticateResult() { Ticket = ticket };
         }
 
-        public static AuthenticateResult Failed(Exception error)
+        public static AuthenticateResult Skip()
         {
-            return new AuthenticateResult() { Error = error };
+            return new AuthenticateResult() { Skipped = true };
         }
 
-        public static AuthenticateResult Failed(string errorMessage)
+        public static AuthenticateResult Fail(Exception failure)
         {
-            return new AuthenticateResult() { Error = new Exception(errorMessage) };
+            return new AuthenticateResult() { Failure = failure };
+        }
+
+        public static AuthenticateResult Fail(string failureMessage)
+        {
+            return new AuthenticateResult() { Failure = new Exception(failureMessage) };
         }
 
     }

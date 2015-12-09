@@ -7,10 +7,12 @@ using System.IdentityModel.Tokens;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Authentication;
 using Microsoft.AspNet.Http.Features.Authentication;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Authentication.JwtBearer
 {
@@ -38,7 +40,7 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
                 }
                 if (receivingTokenContext.Skipped)
                 {
-                    return AuthenticateResult.Success(ticket: null);
+                    return AuthenticateResult.Skip();
                 }
 
                 // If application retrieved token from somewhere else, use that.
@@ -51,7 +53,7 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
                     // If no authorization header found, nothing to process further
                     if (string.IsNullOrEmpty(authorization))
                     {
-                        return AuthenticateResult.Failed("No authorization header.");
+                        return AuthenticateResult.Skip();
                     }
 
                     if (authorization.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
@@ -62,7 +64,7 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
                     // If no token found, no further work possible
                     if (string.IsNullOrEmpty(token))
                     {
-                        return AuthenticateResult.Failed("No bearer token.");
+                        return AuthenticateResult.Skip();
                     }
                 }
 
@@ -79,7 +81,7 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
                 }
                 if (receivedTokenContext.Skipped)
                 {
-                    return AuthenticateResult.Success(ticket: null);
+                    return AuthenticateResult.Skip();
                 }
 
                 if (_configuration == null && Options.ConfigurationManager != null)
@@ -147,7 +149,7 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
                         }
                         if (validatedTokenContext.Skipped)
                         {
-                            return AuthenticateResult.Success(ticket: null);
+                            return AuthenticateResult.Skip();
                         }
 
                         return AuthenticateResult.Success(ticket);
@@ -168,13 +170,13 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
                     }
                     if (authenticationFailedContext.Skipped)
                     {
-                        return AuthenticateResult.Success(ticket: null);
+                        return AuthenticateResult.Skip();
                     }
 
-                    return AuthenticateResult.Failed(authenticationFailedContext.Exception);
+                    return AuthenticateResult.Fail(authenticationFailedContext.Exception);
                 }
 
-                return AuthenticateResult.Failed("No SecurityTokenValidator available for token: " + token ?? "[null]");
+                return AuthenticateResult.Fail("No SecurityTokenValidator available for token: " + token ?? "[null]");
             }
             catch (Exception ex)
             {
@@ -192,7 +194,7 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
                 }
                 if (authenticationFailedContext.Skipped)
                 {
-                    return AuthenticateResult.Success(ticket: null);
+                    return AuthenticateResult.Skip();
                 }
 
                 throw;
@@ -201,8 +203,20 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
 
         protected override async Task<bool> HandleUnauthorizedAsync(ChallengeContext context)
         {
+            var eventContext = new JwtBearerChallengeContext(Context, Options);
+            await Options.Events.Challenge(eventContext);
+            if (eventContext.HandledResponse)
+            {
+                return true;
+            }
+            if (eventContext.Skipped)
+            {
+                return false;
+            }
+
             Response.StatusCode = 401;
-            await Options.Events.Challenge(new JwtBearerChallengeContext(Context, Options));
+            Response.Headers.Append(HeaderNames.WWWAuthenticate, Options.Challenge);
+
             return false;
         }
 

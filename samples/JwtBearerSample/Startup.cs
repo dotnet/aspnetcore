@@ -5,6 +5,7 @@ using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json.Linq;
 
 namespace JwtBearerSample
@@ -91,6 +92,7 @@ namespace JwtBearerSample
                     else
                     {
                         response.ContentType = "application/json";
+                        response.Headers[HeaderNames.CacheControl] = "no-cache";
                         var json = JToken.FromObject(Todos);
                         await response.WriteAsync(json.ToString());
                     }

@@ -10,7 +10,6 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Authentication;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Http.Features.Authentication;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
@@ -26,31 +25,30 @@ namespace Microsoft.AspNet.Authentication.Cookies
         private DateTimeOffset? _renewIssuedUtc;
         private DateTimeOffset? _renewExpiresUtc;
         private string _sessionKey;
-        private Task<AuthenticationTicket> _cookieTicketTask;
+        private Task<AuthenticateResult> _readCookieTask;
 
-        private Task<AuthenticationTicket> EnsureCookieTicket()
+        private Task<AuthenticateResult> EnsureCookieTicket()
         {
             // We only need to read the ticket once
-            if (_cookieTicketTask == null)
+            if (_readCookieTask == null)
             {
-                _cookieTicketTask = ReadCookieTicket();
+                _readCookieTask = ReadCookieTicket();
             }
-            return _cookieTicketTask;
+            return _readCookieTask;
         }
 
-        private async Task<AuthenticationTicket> ReadCookieTicket()
+        private async Task<AuthenticateResult> ReadCookieTicket()
         {
             var cookie = Options.CookieManager.GetRequestCookie(Context, Options.CookieName);
             if (string.IsNullOrEmpty(cookie))
             {
-                return null;
+                return AuthenticateResult.Skip();
             }
 
             var ticket = Options.TicketDataFormat.Unprotect(cookie, GetTlsTokenBinding());
             if (ticket == null)
             {
-                Logger.LogWarning(@"Unprotect ticket failed");
-                return null;
+                return AuthenticateResult.Fail("Unprotect ticket failed");
             }
 
             if (Options.SessionStore != null)
@@ -58,15 +56,13 @@ namespace Microsoft.AspNet.Authentication.Cookies
                 var claim = ticket.Principal.Claims.FirstOrDefault(c => c.Type.Equals(SessionIdClaim));
                 if (claim == null)
                 {
-                    Logger.LogWarning(@"SessionId missing");
-                    return null;
+                    return AuthenticateResult.Fail("SessionId missing");
                 }
                 _sessionKey = claim.Value;
                 ticket = await Options.SessionStore.RetrieveAsync(_sessionKey);
                 if (ticket == null)
                 {
-                    Logger.LogWarning(@"Identity missing in session store");
-                    return null;
+                    return AuthenticateResult.Fail("Identity missing in session store");
                 }
             }
 
@@ -80,7 +76,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
                 {
                     await Options.SessionStore.RemoveAsync(_sessionKey);
                 }
-                return null;
+                return AuthenticateResult.Fail("Ticket expired");
             }
 
             var allowRefresh = ticket.Properties.AllowRefresh ?? true;
@@ -99,23 +95,23 @@ namespace Microsoft.AspNet.Authentication.Cookies
             }
 
             // Finally we have a valid ticket
-            return ticket;
+            return AuthenticateResult.Success(ticket);
         }
 
         protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
         {
-            var ticket = await EnsureCookieTicket();
-            if (ticket == null)
+            var result = await EnsureCookieTicket();
+            if (!result.Succeeded)
             {
-                return AuthenticateResult.Failed("No ticket.");
+                return result;
             }
 
-            var context = new CookieValidatePrincipalContext(Context, ticket, Options);
+            var context = new CookieValidatePrincipalContext(Context, result.Ticket, Options);
             await Options.Events.ValidatePrincipal(context);
 
             if (context.Principal == null)
             {
-                return AuthenticateResult.Failed("No principal.");
+                return AuthenticateResult.Fail("No principal.");
             }
 
             if (context.ShouldRenew)
@@ -196,7 +192,8 @@ namespace Microsoft.AspNet.Authentication.Cookies
 
         protected override async Task HandleSignInAsync(SignInContext signin)
         {
-            var ticket = await EnsureCookieTicket();
+            // Process the request cookie to initialize members like _sessionKey.
+            var result = await EnsureCookieTicket();
             var cookieOptions = BuildCookieOptions();
 
             var signInContext = new CookieSigningInContext(
@@ -231,7 +228,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
                 signInContext.CookieOptions.Expires = expiresUtc.ToUniversalTime().DateTime;
             }
 
-            ticket = new AuthenticationTicket(signInContext.Principal, signInContext.Properties, signInContext.AuthenticationScheme);
+            var ticket = new AuthenticationTicket(signInContext.Principal, signInContext.Properties, signInContext.AuthenticationScheme);
             if (Options.SessionStore != null)
             {
                 if (_sessionKey != null)
@@ -269,6 +266,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
 
         protected override async Task HandleSignOutAsync(SignOutContext signOutContext)
         {
+            // Process the request cookie to initialize members like _sessionKey.
             var ticket = await EnsureCookieTicket();
             var cookieOptions = BuildCookieOptions();
             if (Options.SessionStore != null && _sessionKey != null)

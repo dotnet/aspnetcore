@@ -22,11 +22,15 @@ namespace Microsoft.AspNet.Authentication
         protected virtual async Task<bool> HandleRemoteCallbackAsync()
         {
             var authResult = await HandleRemoteAuthenticateAsync();
+            if (authResult != null && authResult.Skipped)
+            {
+                return false;
+            }
             if (authResult == null || !authResult.Succeeded)
             {
-                var errorContext = new ErrorContext(Context, authResult?.Error ?? new Exception("Invalid return state, unable to redirect."));
-                Logger.LogInformation("Error from RemoteAuthentication: " + errorContext.Error.Message);
-                await Options.Events.RemoteError(errorContext);
+                var errorContext = new FailureContext(Context, authResult?.Failure ?? new Exception("Invalid return state, unable to redirect."));
+                Logger.LogInformation("Error from RemoteAuthentication: " + errorContext.Failure.Message);
+                await Options.Events.RemoteFailure(errorContext);
                 if (errorContext.HandledResponse)
                 {
                     return true;
@@ -36,7 +40,7 @@ namespace Microsoft.AspNet.Authentication
                     return false;
                 }
 
-                throw new AggregateException("Unhandled remote error.", errorContext.Error);
+                throw new AggregateException("Unhandled remote failure.", errorContext.Failure);
             }
 
             // We have a ticket if we get here
@@ -77,7 +81,7 @@ namespace Microsoft.AspNet.Authentication
 
         protected override Task<AuthenticateResult> HandleAuthenticateAsync()
         {
-            return Task.FromResult(AuthenticateResult.Failed("Remote authentication does not support authenticate"));
+            return Task.FromResult(AuthenticateResult.Fail("Remote authentication does not support authenticate"));
         }
 
         protected override Task HandleSignOutAsync(SignOutContext context)

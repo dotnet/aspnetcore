@@ -38,20 +38,20 @@ namespace Microsoft.AspNet.Authentication.OAuth
             var error = query["error"];
             if (!StringValues.IsNullOrEmpty(error))
             {
-                var errorMessage = new StringBuilder();
-                errorMessage.Append(error);
+                var failureMessage = new StringBuilder();
+                failureMessage.Append(error);
                 var errorDescription = query["error_description"];
                 if (!StringValues.IsNullOrEmpty(errorDescription))
                 {
-                    errorMessage.Append(";Description=").Append(errorDescription);
+                    failureMessage.Append(";Description=").Append(errorDescription);
                 }
                 var errorUri = query["error_uri"];
                 if (!StringValues.IsNullOrEmpty(errorUri))
                 {
-                    errorMessage.Append(";Uri=").Append(errorUri);
+                    failureMessage.Append(";Uri=").Append(errorUri);
                 }
 
-                return AuthenticateResult.Failed(errorMessage.ToString());
+                return AuthenticateResult.Fail(failureMessage.ToString());
             }
 
             var code = query["code"];
@@ -60,30 +60,30 @@ namespace Microsoft.AspNet.Authentication.OAuth
             properties = Options.StateDataFormat.Unprotect(state);
             if (properties == null)
             {
-                return AuthenticateResult.Failed("The oauth state was missing or invalid.");
+                return AuthenticateResult.Fail("The oauth state was missing or invalid.");
             }
 
             // OAuth2 10.12 CSRF
             if (!ValidateCorrelationId(properties))
             {
-                return AuthenticateResult.Failed("Correlation failed.");
+                return AuthenticateResult.Fail("Correlation failed.");
             }
 
             if (StringValues.IsNullOrEmpty(code))
             {
-                return AuthenticateResult.Failed("Code was not found.");
+                return AuthenticateResult.Fail("Code was not found.");
             }
 
             var tokens = await ExchangeCodeAsync(code, BuildRedirectUri(Options.CallbackPath));
 
             if (tokens.Error != null)
             {
-                return AuthenticateResult.Failed(tokens.Error);
+                return AuthenticateResult.Fail(tokens.Error);
             }
 
             if (string.IsNullOrEmpty(tokens.AccessToken))
             {
-                return AuthenticateResult.Failed("Failed to retrieve access token.");
+                return AuthenticateResult.Fail("Failed to retrieve access token.");
             }
 
             var identity = new ClaimsIdentity(Options.ClaimsIssuer);

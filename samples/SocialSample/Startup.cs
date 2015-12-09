@@ -85,10 +85,10 @@ namespace CookieSample
                 options.ClientSecret = "n2Q-GEw9RQjzcRbU3qhfTj8f";
                 options.Events = new OAuthEvents()
                 {
-                    OnRemoteError = ctx =>
+                    OnRemoteFailure = ctx =>
 
                     {
-                        ctx.Response.Redirect("/error?ErrorMessage=" + UrlEncoder.Default.Encode(ctx.Error.Message));
+                        ctx.Response.Redirect("/error?FailureMessage=" + UrlEncoder.Default.Encode(ctx.Failure.Message));
                         ctx.HandleResponse();
                         return Task.FromResult(0);
                     }
@@ -103,9 +103,9 @@ namespace CookieSample
                 options.ConsumerSecret = "Il2eFzGIrYhz6BWjYhVXBPQSfZuS4xoHpSSyD9PI";
                 options.Events = new TwitterEvents()
                 {
-                    OnRemoteError = ctx =>
+                    OnRemoteFailure = ctx =>
                     {
-                        ctx.Response.Redirect("/error?ErrorMessage=" + UrlEncoder.Default.Encode(ctx.Error.Message));
+                        ctx.Response.Redirect("/error?FailureMessage=" + UrlEncoder.Default.Encode(ctx.Failure.Message));
                         ctx.HandleResponse();
                         return Task.FromResult(0);
                     }
@@ -269,7 +269,7 @@ namespace CookieSample
                 {
                     context.Response.ContentType = "text/html";
                     await context.Response.WriteAsync("<html><body>");
-                    await context.Response.WriteAsync("An remote error has occured: " + context.Request.Query["ErrorMessage"] + "<br>");
+                    await context.Response.WriteAsync("An remote failure has occurred: " + context.Request.Query["FailureMessage"] + "<br>");
                     await context.Response.WriteAsync("<a href=\"/\">Home</a>");
                     await context.Response.WriteAsync("</body></html>");
                 });

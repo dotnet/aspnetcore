@@ -307,7 +307,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
                 // See http://openid.net/specs/oauth-v2-multiple-response-types-1_0.html#Security
                 if (!string.IsNullOrEmpty(message.IdToken) || !string.IsNullOrEmpty(message.AccessToken))
                 {
-                    return AuthenticateResult.Failed("An OpenID Connect response cannot contain an " +
+                    return AuthenticateResult.Fail("An OpenID Connect response cannot contain an " +
                             "identity token or an access token when using response_mode=query");
                 }
             }
@@ -324,7 +324,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
 
             if (message == null)
             {
-                return AuthenticateResult.Failed("No message.");
+                return AuthenticateResult.Fail("No message.");
             }
 
             try
@@ -336,7 +336,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
                 }
                 else if (messageReceivedContext.Skipped)
                 {
-                    return AuthenticateResult.Success(ticket: null);
+                    return AuthenticateResult.Skip();
                 }
                 message = messageReceivedContext.ProtocolMessage;
 
@@ -345,7 +345,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
                 {
                     // This wasn't a valid ODIC message, it may not have been intended for us.
                     Logger.LogDebug(11, "message.State is null or empty.");
-                    return AuthenticateResult.Failed(Resources.MessageStateIsNullOrEmpty);
+                    return AuthenticateResult.Fail(Resources.MessageStateIsNullOrEmpty);
                 }
 
                 // if state exists and we failed to 'unprotect' this is not a message we should process.
@@ -353,14 +353,14 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
                 if (properties == null)
                 {
                     Logger.LogError(12, "Unable to unprotect the message.State.");
-                    return AuthenticateResult.Failed(Resources.MessageStateIsInvalid);
+                    return AuthenticateResult.Fail(Resources.MessageStateIsInvalid);
                 }
 
                 // if any of the error fields are set, throw error null
                 if (!string.IsNullOrEmpty(message.Error))
                 {
                     Logger.LogError(13, "Message contains error: '{0}', error_description: '{1}', error_uri: '{2}'.", message.Error, message.ErrorDescription ?? "ErrorDecription null", message.ErrorUri ?? "ErrorUri null");
-                    return AuthenticateResult.Failed(new OpenIdConnectProtocolException(string.Format(CultureInfo.InvariantCulture, Resources.MessageContainsError, message.Error, message.ErrorDescription ?? "ErrorDecription null", message.ErrorUri ?? "ErrorUri null")));
+                    return AuthenticateResult.Fail(new OpenIdConnectProtocolException(string.Format(CultureInfo.InvariantCulture, Resources.MessageContainsError, message.Error, message.ErrorDescription ?? "ErrorDecription null", message.ErrorUri ?? "ErrorUri null")));
                 }
 
                 string userstate = null;
@@ -369,7 +369,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
 
                 if (!ValidateCorrelationId(properties))
                 {
-                    return AuthenticateResult.Failed("Correlation failed.");
+                    return AuthenticateResult.Fail("Correlation failed.");
                 }
 
                 if (_configuration == null && Options.ConfigurationManager != null)
@@ -393,7 +393,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
                 else if (authorizationResponseReceivedContext.Skipped)
                 {
                     Logger.LogDebug(17, "AuthorizationResponseReceived.Skipped");
-                    return AuthenticateResult.Success(ticket: null);
+                    return AuthenticateResult.Skip();
                 }
                 message = authorizationResponseReceivedContext.ProtocolMessage;
                 properties = authorizationResponseReceivedContext.Properties;
@@ -409,7 +409,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
                 else
                 {
                     Logger.LogTrace(18, "Cannot process the message. Both id_token and code are missing.");
-                    return AuthenticateResult.Failed(Resources.IdTokenCodeMissing);
+                    return AuthenticateResult.Fail(Resources.IdTokenCodeMissing);
                 }
             }
             catch (Exception exception)
@@ -433,7 +433,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
                 }
                 else if (authenticationFailedContext.Skipped)
                 {
-                    return AuthenticateResult.Success(ticket: null);
+                    return AuthenticateResult.Skip();
                 }
 
                 throw;
@@ -459,7 +459,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
             }
             else if (authorizationCodeReceivedContext.Skipped)
             {
-                return AuthenticateResult.Success(ticket: null);
+                return AuthenticateResult.Skip();
             }
             message = authorizationCodeReceivedContext.ProtocolMessage;
             var code = authorizationCodeReceivedContext.Code;
@@ -476,7 +476,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
             }
             else if (authorizationCodeRedeemedContext.Skipped)
             {
-                return AuthenticateResult.Success(ticket: null);
+                return AuthenticateResult.Skip();
             }
 
             message = authorizationCodeRedeemedContext.ProtocolMessage;
@@ -509,7 +509,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
             }
             else if (authenticationValidatedContext.Skipped)
             {
-                return AuthenticateResult.Success(ticket: null);
+                return AuthenticateResult.Skip();
             }
             ticket = authenticationValidatedContext.AuthenticationTicket;
 
@@ -558,7 +558,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
             }
             else if (authenticationValidatedContext.Skipped)
             {
-                return AuthenticateResult.Success(ticket: null);
+                return AuthenticateResult.Skip();
             }
             message = authenticationValidatedContext.ProtocolMessage;
             ticket = authenticationValidatedContext.AuthenticationTicket;
@@ -573,7 +573,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
                 }
                 else if (authorizationCodeReceivedContext.Skipped)
                 {
-                    return AuthenticateResult.Success(ticket: null);
+                    return AuthenticateResult.Skip();
                 }
                 message = authorizationCodeReceivedContext.ProtocolMessage;
                 ticket = authorizationCodeReceivedContext.AuthenticationTicket;
@@ -671,7 +671,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
             }
             else if (userInformationReceivedContext.Skipped)
             {
-                return null;
+                return ticket;
             }
             ticket = userInformationReceivedContext.AuthenticationTicket;
             user = userInformationReceivedContext.User;

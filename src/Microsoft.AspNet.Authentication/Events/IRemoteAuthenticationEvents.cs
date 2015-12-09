@@ -10,7 +10,7 @@ namespace Microsoft.AspNet.Authentication
         /// <summary>
         /// Invoked when the remote authentication process has an error.
         /// </summary>
-        Task RemoteError(ErrorContext context);
+        Task RemoteFailure(FailureContext context);
 
         /// <summary>
         /// Invoked before sign in.

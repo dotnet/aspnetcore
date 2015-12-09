@@ -36,13 +36,9 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
         public Func<ValidatedTokenContext, Task> OnValidatedToken { get; set; } = context => Task.FromResult(0);
 
         /// <summary>
-        /// Invoked to apply a challenge sent back to the caller.
+        /// Invoked before a challenge is sent back to the caller.
         /// </summary>
-        public Func<JwtBearerChallengeContext, Task> OnChallenge { get; set; } = context =>
-        {
-            context.HttpContext.Response.Headers.Append("WWW-Authenticate", context.Options.Challenge);
-            return Task.FromResult(0);
-        };
+        public Func<JwtBearerChallengeContext, Task> OnChallenge { get; set; } = context => Task.FromResult(0);
 
         public virtual Task AuthenticationFailed(AuthenticationFailedContext context) => OnAuthenticationFailed(context);
 

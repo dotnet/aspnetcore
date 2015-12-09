@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.Authentication.Twitter
 
             if (requestToken == null)
             {
-                return AuthenticateResult.Failed("Invalid state cookie.");
+                return AuthenticateResult.Fail("Invalid state cookie.");
             }
 
             properties = requestToken.Properties;
@@ -54,18 +54,18 @@ namespace Microsoft.AspNet.Authentication.Twitter
             var returnedToken = query["oauth_token"];
             if (StringValues.IsNullOrEmpty(returnedToken))
             {
-                return AuthenticateResult.Failed("Missing oauth_token");
+                return AuthenticateResult.Fail("Missing oauth_token");
             }
 
             if (!string.Equals(returnedToken, requestToken.Token, StringComparison.Ordinal))
             {
-                return AuthenticateResult.Failed("Unmatched token");
+                return AuthenticateResult.Fail("Unmatched token");
             }
 
             var oauthVerifier = query["oauth_verifier"];
             if (StringValues.IsNullOrEmpty(oauthVerifier))
             {
-                return AuthenticateResult.Failed("Missing or blank oauth_verifier");
+                return AuthenticateResult.Fail("Missing or blank oauth_verifier");
             }
 
             var cookieOptions = new CookieOptions

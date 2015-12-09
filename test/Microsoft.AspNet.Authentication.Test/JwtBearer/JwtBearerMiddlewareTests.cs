@@ -11,6 +11,7 @@ using System.Xml.Linq;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Authentication;
+using Microsoft.AspNet.Http.Features.Authentication;
 using Microsoft.AspNet.TestHost;
 using Microsoft.AspNet.Testing.xunit;
 using Microsoft.Extensions.DependencyInjection;
@@ -312,6 +313,163 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
             Assert.Equal(HttpStatusCode.Unauthorized, response.Response.StatusCode);
         }
 
+        [Fact]
+        public async Task EventOnReceivingTokenSkipped_NoMoreEventsExecuted()
+        {
+            var server = CreateServer(options =>
+            {
+                options.AutomaticAuthenticate = true;
+
+                options.Events = new JwtBearerEvents()
+                {
+                    OnReceivingToken = context =>
+                    {
+                        context.SkipToNextMiddleware();
+                        return Task.FromResult(0);
+                    },
+                    OnReceivedToken = context =>
+                    {
+                        throw new NotImplementedException();
+                    },
+                    OnValidatedToken = context =>
+                    {
+                        throw new NotImplementedException();
+                    },
+                    OnAuthenticationFailed = context =>
+                    {
+                        throw new NotImplementedException(context.Exception.ToString());
+                    },
+                    OnChallenge = context =>
+                    {
+                        throw new NotImplementedException();
+                    },
+                };
+            });
+
+            var response = await SendAsync(server, "http://example.com/checkforerrors", "Bearer Token");
+            Assert.Equal(HttpStatusCode.OK, response.Response.StatusCode);
+            Assert.Equal(string.Empty, response.ResponseText);
+        }
+
+        [Fact]
+        public async Task EventOnReceivedTokenSkipped_NoMoreEventsExecuted()
+        {
+            var server = CreateServer(options =>
+            {
+                options.AutomaticAuthenticate = true;
+
+                options.Events = new JwtBearerEvents()
+                {
+                    OnReceivedToken = context =>
+                    {
+                        context.SkipToNextMiddleware();
+                        return Task.FromResult(0);
+                    },
+                    OnValidatedToken = context =>
+                    {
+                        throw new NotImplementedException();
+                    },
+                    OnAuthenticationFailed = context =>
+                    {
+                        throw new NotImplementedException(context.Exception.ToString());
+                    },
+                    OnChallenge = context =>
+                    {
+                        throw new NotImplementedException();
+                    },
+                };
+            });
+
+            var response = await SendAsync(server, "http://example.com/checkforerrors", "Bearer Token");
+            Assert.Equal(HttpStatusCode.OK, response.Response.StatusCode);
+            Assert.Equal(string.Empty, response.ResponseText);
+        }
+
+        [Fact]
+        public async Task EventOnValidatedTokenSkipped_NoMoreEventsExecuted()
+        {
+            var server = CreateServer(options =>
+            {
+                options.AutomaticAuthenticate = true;
+                options.SecurityTokenValidators.Clear();
+                options.SecurityTokenValidators.Add(new BlobTokenValidator("JWT"));
+                options.Events = new JwtBearerEvents()
+                {
+                    OnValidatedToken = context =>
+                    {
+                        context.SkipToNextMiddleware();
+                        return Task.FromResult(0);
+                    },
+                    OnAuthenticationFailed = context =>
+                    {
+                        throw new NotImplementedException(context.Exception.ToString());
+                    },
+                    OnChallenge = context =>
+                    {
+                        throw new NotImplementedException();
+                    },
+                };
+            });
+
+            var response = await SendAsync(server, "http://example.com/checkforerrors", "Bearer Token");
+            Assert.Equal(HttpStatusCode.OK, response.Response.StatusCode);
+            Assert.Equal(string.Empty, response.ResponseText);
+        }
+
+        [Fact]
+        public async Task EventOnAuthenticationFailedSkipped_NoMoreEventsExecuted()
+        {
+            var server = CreateServer(options =>
+            {
+                options.AutomaticAuthenticate = true;
+                options.SecurityTokenValidators.Clear();
+                options.SecurityTokenValidators.Add(new BlobTokenValidator("JWT"));
+                options.Events = new JwtBearerEvents()
+                {
+                    OnValidatedToken = context =>
+                    {
+                        throw new Exception("Test Exception");
+                    },
+                    OnAuthenticationFailed = context =>
+                    {
+                        context.SkipToNextMiddleware();
+                        return Task.FromResult(0);
+                    },
+                    OnChallenge = context =>
+                    {
+                        throw new NotImplementedException();
+                    },
+                };
+            });
+
+            var response = await SendAsync(server, "http://example.com/checkforerrors", "Bearer Token");
+            Assert.Equal(HttpStatusCode.OK, response.Response.StatusCode);
+            Assert.Equal(string.Empty, response.ResponseText);
+        }
+
+        [Fact]
+        public async Task EventOnChallengeSkipped_ResponseNotModified()
+        {
+            var server = CreateServer(options =>
+            {
+                options.AutomaticAuthenticate = true;
+                options.AutomaticChallenge = true;
+                options.Events = new JwtBearerEvents()
+                {
+                    OnChallenge = context =>
+                    {
+                        context.SkipToNextMiddleware();
+                        return Task.FromResult(0);
+                    },
+                };
+            });
+
+            var response = await SendAsync(server, "http://example.com/unauthorized", "Bearer Token");
+            Assert.Equal(HttpStatusCode.OK, response.Response.StatusCode);
+            Assert.Empty(response.Response.Headers.WwwAuthenticate);
+            Assert.Equal(string.Empty, response.ResponseText);
+        }
+
         class InvalidTokenValidator : ISecurityTokenValidator
         {
             public InvalidTokenValidator()
@@ -387,7 +545,17 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
 
                 app.Use(async (context, next) =>
                 {
-                    if (context.Request.Path == new PathString("/oauth"))
+                    if (context.Request.Path == new PathString("/checkforerrors"))
+                    {
+                        var authContext = new AuthenticateContext(Http.Authentication.AuthenticationManager.AutomaticScheme);
+                        await context.Authentication.AuthenticateAsync(authContext);
+                        if (authContext.Error != null)
+                        {
+                            throw new Exception("Failed to authenticate", authContext.Error);
+                        }
+                        return;
+                    }
+                    else if (context.Request.Path == new PathString("/oauth"))
                     {
                         if (context.User == null ||
                             context.User.Identity == null ||
@@ -408,14 +576,12 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
 
                         await context.Response.WriteAsync(identifier.Value);
                     }
-
                     else if (context.Request.Path == new PathString("/unauthorized"))
                     {
                         // Simulate Authorization failure 
                         var result = await context.Authentication.AuthenticateAsync(JwtBearerDefaults.AuthenticationScheme);
                         await context.Authentication.ChallengeAsync(JwtBearerDefaults.AuthenticationScheme);
                     }
-
                     else if (context.Request.Path == new PathString("/signIn"))
                     {
                         await Assert.ThrowsAsync<NotSupportedException>(() => context.Authentication.SignInAsync(JwtBearerDefaults.AuthenticationScheme, new ClaimsPrincipal()));

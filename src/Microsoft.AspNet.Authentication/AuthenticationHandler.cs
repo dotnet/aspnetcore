@@ -100,6 +100,10 @@ namespace Microsoft.AspNet.Authentication
             if (ShouldHandleScheme(AuthenticationManager.AutomaticScheme, Options.AutomaticAuthenticate))
             {
                 var result = await HandleAuthenticateOnceAsync();
+                if (result.Failure != null)
+                {
+                    Logger.LogInformation(0, $"{Options.AuthenticationScheme} not authenticated: " + result.Failure.Message);
+                }
                 var ticket = result?.Ticket;
                 if (ticket?.Principal != null)
                 {
@@ -200,9 +204,9 @@ namespace Microsoft.AspNet.Authentication
                 // Calling Authenticate more than once should always return the original value. 
                 var result = await HandleAuthenticateOnceAsync();
 
-                if (result?.Error != null)
+                if (result?.Failure != null)
                 {
-                    context.Failed(result.Error);
+                    context.Failed(result.Failure);
                 }
                 else
                 {

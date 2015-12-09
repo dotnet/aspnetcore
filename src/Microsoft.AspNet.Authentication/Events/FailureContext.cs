@@ -2,25 +2,24 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNet.Http;
 
 namespace Microsoft.AspNet.Authentication
 {
     /// <summary>
-    /// Provides error context information to middleware providers.
+    /// Provides failure context information to middleware providers.
     /// </summary>
-    public class ErrorContext : BaseControlContext
+    public class FailureContext : BaseControlContext
     {
-        public ErrorContext(HttpContext context, Exception error)
+        public FailureContext(HttpContext context, Exception failure)
             : base(context)
         {
-            Error = error;
+            Failure = failure;
         }
 
         /// <summary>
         /// User friendly error message for the error.
         /// </summary>
-        public Exception Error { get; set; }
+        public Exception Failure { get; set; }
     }
 }
