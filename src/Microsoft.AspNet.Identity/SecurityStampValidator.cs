@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.Identity
         public virtual async Task ValidateAsync(CookieValidatePrincipalContext context)
         {
             var manager = context.HttpContext.RequestServices.GetRequiredService<SignInManager<TUser>>();
-            var userId = context.Principal.FindFirstValue(manager.Options.ClaimsIdentity.UserIdClaimType);
+            var userId = context.Principal.GetUserId();
             var user = await manager.ValidateSecurityStampAsync(context.Principal, userId);
             if (user != null)
             {
