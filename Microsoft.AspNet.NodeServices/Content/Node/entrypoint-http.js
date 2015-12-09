@@ -20,7 +20,8 @@ var server = http.createServer(function(req, res) {
             if (!hasSentResult) {
                 hasSentResult = true;
                 if (errorValue) {
-                    res.status(500).send(errorValue);
+                    res.statusCode = 500;
+                    res.end(errorValue.toString());
                 } else if (typeof successValue !== 'string') {
                     // Arbitrary object/number/etc - JSON-serialize it
                     res.setHeader('Content-Type', 'application/json');
