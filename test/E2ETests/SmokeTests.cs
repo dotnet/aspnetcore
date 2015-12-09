@@ -107,7 +107,7 @@ namespace E2ETests
             bool noSource = false)
         {
             var logger = new LoggerFactory()
-                           .AddConsole(LogLevel.Warning)
+                           .AddConsole(LogLevel.Information)
                            .CreateLogger($"Smoke:{serverType}:{donetFlavor}:{architecture}");
 
             using (logger.BeginScope("SmokeTestSuite"))
