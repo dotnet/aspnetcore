@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
     /// <summary>
     /// Factory for <see cref="TagHelperDescriptor"/>s from <see cref="ITypeInfo"/>s.
     /// </summary>
-    public static class TagHelperDescriptorFactory
+    public class TagHelperDescriptorFactory
     {
         private const string DataDashPrefix = "data-";
         private const string TagHelperNameEnding = "TagHelper";
@@ -33,6 +33,11 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
         private static readonly ITypeInfo StringTypeInfo = new RuntimeTypeInfo(typeof(string).GetTypeInfo());
 
+#if !DOTNET5_4
+        private readonly TagHelperDesignTimeDescriptorFactory _designTimeDescriptorFactory;
+#endif
+        private readonly bool _designTime;
+
         // TODO: Investigate if we should cache TagHelperDescriptors for types:
         // https://github.com/aspnet/Razor/issues/165
 
@@ -40,22 +45,37 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             new[] { '@', '!', '<', '/', '?', '[', '>', ']', '=', '"', '\'', '*' });
 
         /// <summary>
+        /// Instantiates a new <see cref="TagHelperDescriptorFactory"/>.
+        /// </summary>
+        /// <param name="designTime">
+        /// Indicates if <see cref="TagHelperDescriptor"/>s should be created for design time.
+        /// </param>
+        public TagHelperDescriptorFactory(bool designTime)
+        {
+#if !DOTNET5_4
+            if (designTime)
+            {
+                _designTimeDescriptorFactory = new TagHelperDesignTimeDescriptorFactory();
+            }
+#endif
+
+            _designTime = designTime;
+        }
+
+        /// <summary>
         /// Creates a <see cref="TagHelperDescriptor"/> from the given <paramref name="typeInfo"/>.
         /// </summary>
         /// <param name="assemblyName">The assembly name that contains <paramref name="type"/>.</param>
         /// <param name="typeInfo">The <see cref="ITypeInfo"/> to create a <see cref="TagHelperDescriptor"/> from.
         /// </param>
-        /// <param name="designTime">Indicates if the returned <see cref="TagHelperDescriptor"/>s should include
-        /// design time specific information.</param>
         /// <param name="errorSink">The <see cref="ErrorSink"/> used to collect <see cref="RazorError"/>s encountered
         /// when creating <see cref="TagHelperDescriptor"/>s for the given <paramref name="typeInfo"/>.</param>
         /// <returns>
         /// A collection of <see cref="TagHelperDescriptor"/>s that describe the given <paramref name="typeInfo"/>.
         /// </returns>
-        public static IEnumerable<TagHelperDescriptor> CreateDescriptors(
+        public virtual IEnumerable<TagHelperDescriptor> CreateDescriptors(
             string assemblyName,
             ITypeInfo typeInfo,
-            bool designTime,
             ErrorSink errorSink)
         {
             if (typeInfo == null)
@@ -68,12 +88,12 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 throw new ArgumentNullException(nameof(errorSink));
             }
 
-            if (ShouldSkipDescriptorCreation(designTime, typeInfo))
+            if (ShouldSkipDescriptorCreation(typeInfo))
             {
                 return Enumerable.Empty<TagHelperDescriptor>();
             }
 
-            var attributeDescriptors = GetAttributeDescriptors(typeInfo, designTime, errorSink);
+            var attributeDescriptors = GetAttributeDescriptors(typeInfo, errorSink);
             var targetElementAttributes = GetValidHtmlTargetElementAttributes(typeInfo, errorSink);
             var allowedChildren = GetAllowedChildren(typeInfo, errorSink);
 
@@ -83,8 +103,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                     assemblyName,
                     attributeDescriptors,
                     targetElementAttributes,
-                    allowedChildren,
-                    designTime);
+                    allowedChildren);
 
             return tagHelperDescriptors.Distinct(TagHelperDescriptorComparer.Default);
         }
@@ -99,24 +118,23 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 attribute => ValidHtmlTargetElementAttributeNames(attribute, errorSink));
         }
 
-        private static IEnumerable<TagHelperDescriptor> BuildTagHelperDescriptors(
+        private IEnumerable<TagHelperDescriptor> BuildTagHelperDescriptors(
             ITypeInfo typeInfo,
             string assemblyName,
             IEnumerable<TagHelperAttributeDescriptor> attributeDescriptors,
             IEnumerable<HtmlTargetElementAttribute> targetElementAttributes,
-            IEnumerable<string> allowedChildren,
-            bool designTime)
+            IEnumerable<string> allowedChildren)
         {
             TagHelperDesignTimeDescriptor typeDesignTimeDescriptor = null;
 
 #if !DOTNET5_4
-            if (designTime)
+            if (_designTime)
             {
                 var runtimeTypeInfo = typeInfo as RuntimeTypeInfo;
                 if (runtimeTypeInfo != null)
                 {
                     typeDesignTimeDescriptor =
-                        TagHelperDesignTimeDescriptorFactory.CreateDescriptor(runtimeTypeInfo.TypeInfo.AsType());
+                        _designTimeDescriptorFactory.CreateDescriptor(runtimeTypeInfo.TypeInfo.AsType());
                 }
             }
 #endif
@@ -387,10 +405,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             return validName;
         }
 
-        private static IEnumerable<TagHelperAttributeDescriptor> GetAttributeDescriptors(
-            ITypeInfo type,
-            bool designTime,
-            ErrorSink errorSink)
+        private IEnumerable<TagHelperAttributeDescriptor> GetAttributeDescriptors(ITypeInfo type, ErrorSink errorSink)
         {
             var attributeDescriptors = new List<TagHelperAttributeDescriptor>();
 
@@ -400,7 +415,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             var accessibleProperties = type.Properties.Where(IsAccessibleProperty);
             foreach (var property in accessibleProperties)
             {
-                if (ShouldSkipDescriptorCreation(designTime, property))
+                if (ShouldSkipDescriptorCreation(property))
                 {
                     continue;
                 }
@@ -415,7 +430,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 TagHelperAttributeDescriptor mainDescriptor = null;
                 if (property.HasPublicSetter)
                 {
-                    mainDescriptor = ToAttributeDescriptor(property, attributeName, designTime);
+                    mainDescriptor = ToAttributeDescriptor(property, attributeName);
                     if (!ValidateTagHelperAttributeDescriptor(mainDescriptor, type, errorSink))
                     {
                         // HtmlAttributeNameAttribute.Name is invalid. Ignore this property completely.
@@ -443,7 +458,6 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                     parentType: type,
                     errorSink: errorSink,
                     defaultPrefix: attributeName + "-",
-                    designTime: designTime,
                     isInvalid: out isInvalid);
                 if (indexerDescriptor != null &&
                     !ValidateTagHelperAttributeDescriptor(indexerDescriptor, type, errorSink))
@@ -509,9 +523,9 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 nameOrPrefix);
         }
 
-        private static bool ShouldSkipDescriptorCreation(bool designTime, IMemberInfo memberInfo)
+        private bool ShouldSkipDescriptorCreation(IMemberInfo memberInfo)
         {
-            if (designTime)
+            if (_designTime)
             {
                 var editorBrowsableAttribute = memberInfo
                     .GetCustomAttributes<EditorBrowsableAttribute>()
@@ -594,27 +608,22 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             return isValid;
         }
 
-        private static TagHelperAttributeDescriptor ToAttributeDescriptor(
-            IPropertyInfo property,
-            string attributeName,
-            bool designTime)
+        private TagHelperAttributeDescriptor ToAttributeDescriptor(IPropertyInfo property, string attributeName)
         {
             return ToAttributeDescriptor(
                 property,
                 attributeName,
                 property.PropertyType.FullName,
                 isIndexer: false,
-                isStringProperty: StringTypeInfo.Equals(property.PropertyType),
-                designTime: designTime);
+                isStringProperty: StringTypeInfo.Equals(property.PropertyType));
         }
 
-        private static TagHelperAttributeDescriptor ToIndexerAttributeDescriptor(
+        private TagHelperAttributeDescriptor ToIndexerAttributeDescriptor(
             IPropertyInfo property,
             HtmlAttributeNameAttribute attributeNameAttribute,
             ITypeInfo parentType,
             ErrorSink errorSink,
             string defaultPrefix,
-            bool designTime,
             out bool isInvalid)
         {
             isInvalid = false;
@@ -689,28 +698,26 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 attributeName: prefix,
                 typeName: dictionaryTypeArguments[1].FullName,
                 isIndexer: true,
-                isStringProperty: StringTypeInfo.Equals(dictionaryTypeArguments[1]),
-                designTime: designTime);
+                isStringProperty: StringTypeInfo.Equals(dictionaryTypeArguments[1]));
         }
 
-        private static TagHelperAttributeDescriptor ToAttributeDescriptor(
+        private TagHelperAttributeDescriptor ToAttributeDescriptor(
             IPropertyInfo property,
             string attributeName,
             string typeName,
             bool isIndexer,
-            bool isStringProperty,
-            bool designTime)
+            bool isStringProperty)
         {
             TagHelperAttributeDesignTimeDescriptor propertyDesignTimeDescriptor = null;
 
 #if !DOTNET5_4
-            if (designTime)
+            if (_designTime)
             {
                 var runtimeProperty = property as RuntimePropertyInfo;
                 if (runtimeProperty != null)
                 {
                     propertyDesignTimeDescriptor =
-                        TagHelperDesignTimeDescriptorFactory.CreateAttributeDescriptor(runtimeProperty.Property);
+                        _designTimeDescriptorFactory.CreateAttributeDescriptor(runtimeProperty.Property);
                 }
             }
 #endif

@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             };
 
         private readonly TagHelperTypeResolver _typeResolver;
-        private readonly bool _designTime;
+        private readonly TagHelperDescriptorFactory _descriptorFactory;
 
         /// <summary>
         /// Instantiates a new instance of the <see cref="TagHelperDescriptorResolver"/> class.
@@ -32,7 +32,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// <param name="designTime">Indicates whether resolved <see cref="TagHelperDescriptor"/>s should include
         /// design time specific information.</param>
         public TagHelperDescriptorResolver(bool designTime)
-            : this(new TagHelperTypeResolver(), designTime)
+            : this(new TagHelperTypeResolver(), new TagHelperDescriptorFactory(designTime))
         {
         }
 
@@ -41,12 +41,13 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// specified <paramref name="typeResolver"/>.
         /// </summary>
         /// <param name="typeResolver">The <see cref="TagHelperTypeResolver"/>.</param>
-        /// <param name="designTime">Indicates whether resolved <see cref="TagHelperDescriptor"/>s should include
-        /// design time specific information.</param>
-        public TagHelperDescriptorResolver(TagHelperTypeResolver typeResolver, bool designTime)
+        /// <param name="descriptorFactory">The <see cref="TagHelperDescriptorFactory"/>.</param>
+        public TagHelperDescriptorResolver(
+            TagHelperTypeResolver typeResolver,
+            TagHelperDescriptorFactory descriptorFactory)
         {
             _typeResolver = typeResolver;
-            _designTime = designTime;
+            _descriptorFactory = descriptorFactory;
         }
 
         /// <inheritdoc />
@@ -137,7 +138,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
             // Convert types to TagHelperDescriptors
             var descriptors = tagHelperTypes.SelectMany(
-                type => TagHelperDescriptorFactory.CreateDescriptors(assemblyName, type, _designTime, errorSink));
+                type => _descriptorFactory.CreateDescriptors(assemblyName, type, errorSink));
 
             return descriptors;
         }

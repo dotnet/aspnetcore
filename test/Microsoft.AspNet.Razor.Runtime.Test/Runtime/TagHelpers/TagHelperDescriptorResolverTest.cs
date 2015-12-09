@@ -1381,7 +1381,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         private class TestTagHelperDescriptorResolver : TagHelperDescriptorResolver
         {
             public TestTagHelperDescriptorResolver(TagHelperTypeResolver typeResolver)
-                : base(typeResolver, designTime: false)
+                : base(typeResolver, new TagHelperDescriptorFactory(designTime: false))
             {
             }
 

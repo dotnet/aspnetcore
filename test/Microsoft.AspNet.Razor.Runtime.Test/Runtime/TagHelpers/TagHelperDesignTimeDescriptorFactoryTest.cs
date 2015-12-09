@@ -74,8 +74,11 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             Type tagHelperType,
             TagHelperDesignTimeDescriptor expectedDescriptor)
         {
+            // Arrange
+            var factory = new TagHelperDesignTimeDescriptorFactory();
+
             // Act
-            var descriptors = TagHelperDesignTimeDescriptorFactory.CreateDescriptor(tagHelperType);
+            var descriptors = factory.CreateDescriptor(tagHelperType);
 
             // Assert
             Assert.Equal(expectedDescriptor, descriptors, TagHelperDesignTimeDescriptorComparer.Default);
@@ -142,8 +145,11 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             Type tagHelperType,
             TagHelperDesignTimeDescriptor expectedDesignTimeDescriptor)
         {
+            // Arrange
+            var factory = new TagHelperDesignTimeDescriptorFactory();
+
             // Act
-            var designTimeDescriptor = TagHelperDesignTimeDescriptorFactory.CreateDescriptor(tagHelperType);
+            var designTimeDescriptor = factory.CreateDescriptor(tagHelperType);
 
             // Assert
             Assert.Equal(expectedDesignTimeDescriptor, designTimeDescriptor, TagHelperDesignTimeDescriptorComparer.Default);
@@ -219,15 +225,57 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         {
             // Arrange
             TagHelperDesignTimeDescriptor designTimeDescriptor;
+            var factory = new TagHelperDesignTimeDescriptorFactory();
 
             // Act
             using (new CultureReplacer(culture))
             {
-                designTimeDescriptor = TagHelperDesignTimeDescriptorFactory.CreateDescriptor(tagHelperType);
+                designTimeDescriptor = factory.CreateDescriptor(tagHelperType);
             }
 
             // Assert
             Assert.Equal(expectedDesignTimeDescriptor, designTimeDescriptor, TagHelperDesignTimeDescriptorComparer.Default);
+        }
+
+        [Fact]
+        public void CreateDescriptor_WithLocalizedType_CachesBasedOnCulture()
+        {
+            // Arrange
+            var factory = new TagHelperDesignTimeDescriptorFactory();
+            var expectedFRDesignTimeDescriptor = new TagHelperDesignTimeDescriptor
+            {
+                Summary = "fr-FR: " + TypeSummary,
+                Remarks = "fr-FR: " + TypeRemarks,
+                OutputElementHint = "p",
+            };
+            var expectedNLBEDesignTimeDescriptor = new TagHelperDesignTimeDescriptor
+            {
+                Summary = "nl-BE: " + TypeSummary,
+                Remarks = "nl-BE: " + TypeRemarks,
+                OutputElementHint = "p",
+            };
+            var tagHelperType = CreateDocumentationTagHelperType(LocalizedDocumentedAssemblyLocation, codeBase: null);
+            TagHelperDesignTimeDescriptor frDesignTimeDescriptor, nlBEDesignTimeDescriptor;
+
+            // Act
+            using (new CultureReplacer("fr-FR"))
+            {
+                frDesignTimeDescriptor = factory.CreateDescriptor(tagHelperType);
+            }
+            using (new CultureReplacer("nl-BE"))
+            {
+                nlBEDesignTimeDescriptor = factory.CreateDescriptor(tagHelperType);
+            }
+
+            // Assert
+            Assert.Equal(
+                expectedFRDesignTimeDescriptor,
+                frDesignTimeDescriptor,
+                TagHelperDesignTimeDescriptorComparer.Default);
+            Assert.Equal(
+                expectedNLBEDesignTimeDescriptor,
+                nlBEDesignTimeDescriptor,
+                TagHelperDesignTimeDescriptorComparer.Default);
         }
 
         public static TheoryData CreateAttributeDescriptor_PropertyDocumentationData
@@ -374,9 +422,10 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             var mockPropertyInfo = new Mock<PropertyInfo>();
             mockPropertyInfo.Setup(propertyInfo => propertyInfo.DeclaringType).Returns(tagHelperType);
             mockPropertyInfo.Setup(propertyInfo => propertyInfo.Name).Returns(propertyName);
+            var factory = new TagHelperDesignTimeDescriptorFactory();
 
             // Act
-            var designTimeDescriptor = TagHelperDesignTimeDescriptorFactory.CreateAttributeDescriptor(
+            var designTimeDescriptor = factory.CreateAttributeDescriptor(
                 mockPropertyInfo.Object);
 
             // Assert
@@ -456,11 +505,12 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 .Setup(propertyInfo => propertyInfo.Name)
                 .Returns(nameof(DocumentedTagHelper.RemarksAndSummaryProperty));
             TagHelperAttributeDesignTimeDescriptor designTimeDescriptor;
+            var factory = new TagHelperDesignTimeDescriptorFactory();
 
             // Act
             using (new CultureReplacer(culture))
             {
-                designTimeDescriptor = TagHelperDesignTimeDescriptorFactory.CreateAttributeDescriptor(
+                designTimeDescriptor = factory.CreateAttributeDescriptor(
                     mockPropertyInfo.Object);
             }
 
@@ -468,6 +518,50 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             Assert.Equal(
                 expectedDesignTimeDescriptor,
                 designTimeDescriptor,
+                TagHelperAttributeDesignTimeDescriptorComparer.Default);
+        }
+
+        [Fact]
+        public void CreateDescriptor_WithLocalizedProperty_CachesBasedOnCulture()
+        {
+            // Arrange
+            var tagHelperType = CreateDocumentationTagHelperType(LocalizedDocumentedAssemblyLocation, codeBase: null);
+            var mockPropertyInfo = new Mock<PropertyInfo>();
+            mockPropertyInfo.Setup(propertyInfo => propertyInfo.DeclaringType).Returns(tagHelperType);
+            mockPropertyInfo
+                .Setup(propertyInfo => propertyInfo.Name)
+                .Returns(nameof(DocumentedTagHelper.RemarksAndSummaryProperty));
+            var factory = new TagHelperDesignTimeDescriptorFactory();
+            var expectedFRDesignTimeDescriptor = new TagHelperAttributeDesignTimeDescriptor
+            {
+                Summary = "fr-FR: " + PropertyWithSummaryAndRemarks_Summary,
+                Remarks = "fr-FR: " + PropertyWithSummaryAndRemarks_Remarks
+            };
+            var expectedNLBEDesignTimeDescriptor = new TagHelperAttributeDesignTimeDescriptor
+            {
+                Summary = "nl-BE: " + PropertyWithSummaryAndRemarks_Summary,
+                Remarks = "nl-BE: " + PropertyWithSummaryAndRemarks_Remarks
+            };
+            TagHelperAttributeDesignTimeDescriptor frDesignTimeDescriptor, nlBEDesignTimeDescriptor;
+
+            // Act
+            using (new CultureReplacer("fr-FR"))
+            {
+                frDesignTimeDescriptor = factory.CreateAttributeDescriptor(mockPropertyInfo.Object);
+            }
+            using (new CultureReplacer("nl-BE"))
+            {
+                nlBEDesignTimeDescriptor = factory.CreateAttributeDescriptor(mockPropertyInfo.Object);
+            }
+
+            // Assert
+            Assert.Equal(
+                expectedFRDesignTimeDescriptor,
+                frDesignTimeDescriptor,
+                TagHelperAttributeDesignTimeDescriptorComparer.Default);
+            Assert.Equal(
+                expectedNLBEDesignTimeDescriptor,
+                nlBEDesignTimeDescriptor,
                 TagHelperAttributeDesignTimeDescriptorComparer.Default);
         }
 

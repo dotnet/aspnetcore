@@ -25,12 +25,12 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             var objectAssemblyName = typeof(object).GetTypeInfo().Assembly.GetName().Name;
             var expectedDescriptor =
                 CreateTagHelperDescriptor("object", "System.Object", objectAssemblyName);
+            var factory = new TagHelperDescriptorFactory(designTime: false);
 
             // Act
-            var descriptors = TagHelperDescriptorFactory.CreateDescriptors(
+            var descriptors = factory.CreateDescriptors(
                 objectAssemblyName,
                 GetTypeInfo(typeof(object)),
-                designTime: false,
                 errorSink: errorSink);
 
             // Assert
@@ -48,12 +48,12 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         {
             // Arrange
             var errorSink = new ErrorSink();
+            var factory = new TagHelperDescriptorFactory(designTime: false);
 
             // Act
-            var descriptors = TagHelperDescriptorFactory.CreateDescriptors(
+            var descriptors = factory.CreateDescriptors(
                 AssemblyName,
                 GetTypeInfo(tagHelperType),
-                designTime: false,
                 errorSink: errorSink);
 
             // Assert
@@ -137,12 +137,12 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         {
             // Arrange
             var errorSink = new ErrorSink();
+            var factory = new TagHelperDescriptorFactory(designTime: true);
 
             // Act
-            var descriptors = TagHelperDescriptorFactory.CreateDescriptors(
+            var descriptors = factory.CreateDescriptors(
                 AssemblyName,
                 GetTypeInfo(tagHelperType),
-                designTime: true,
                 errorSink: errorSink);
 
             // Assert

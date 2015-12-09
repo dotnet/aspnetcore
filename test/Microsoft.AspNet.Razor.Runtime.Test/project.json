@@ -11,10 +11,6 @@
       "type": "build"
     },
     "Microsoft.AspNet.Testing": "1.0.0-*",
-    "Microsoft.Extensions.HashCodeCombiner.Sources": {
-      "type": "build",
-      "version": "1.0.0-*"
-    },
     "Microsoft.Extensions.WebEncoders": "1.0.0-*",
     "xunit.runner.aspnet": "2.0.0-aspnet-*"
   },
@@ -27,6 +23,13 @@
         "Moq": "4.2.1312.1622"
       }
     },
-    "dnxcore50": {}
+    "dnxcore50": {
+      "dependencies": {
+        "Microsoft.Extensions.HashCodeCombiner.Sources": {
+          "type": "build",
+          "version": "1.0.0-*"
+        }
+      }
+    }
   }
 }

@@ -26,6 +26,12 @@
       "frameworkAssemblies": {
         "System.Xml": "4.0.0.0",
         "System.Xml.Linq": "4.0.0.0"
+      },
+      "dependencies": {
+        "Microsoft.Extensions.HashCodeCombiner.Sources": {
+          "type": "build",
+          "version": "1.0.0-*"
+        }
       }
     },
     "dotnet5.4": {

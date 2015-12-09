@@ -3,6 +3,7 @@
 
 #if !DOTNET5_4 // Cannot accurately resolve the location of the documentation XML file in coreclr.
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -10,6 +11,7 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.AspNet.Razor.Compilation.TagHelpers;
 using Microsoft.AspNet.Razor.TagHelpers;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 {
@@ -17,8 +19,11 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
     /// Factory for providing <see cref="TagHelperDesignTimeDescriptor"/>s from <see cref="Type"/>s and
     /// <see cref="TagHelperAttributeDesignTimeDescriptor"/>s from <see cref="PropertyInfo"/>s.
     /// </summary>
-    public static class TagHelperDesignTimeDescriptorFactory
+    public class TagHelperDesignTimeDescriptorFactory
     {
+        private readonly ConcurrentDictionary<int, XmlDocumentationProvider> _documentationProviderCache =
+            new ConcurrentDictionary<int, XmlDocumentationProvider>();
+
         /// <summary>
         /// Creates a <see cref="TagHelperDesignTimeDescriptor"/> from the given <paramref name="type"/>.
         /// </summary>
@@ -27,7 +32,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// </param>
         /// <returns>A <see cref="TagHelperDesignTimeDescriptor"/> that describes design time specific information
         /// for the given <paramref name="type"/>.</returns>
-        public static TagHelperDesignTimeDescriptor CreateDescriptor(Type type)
+        public TagHelperDesignTimeDescriptor CreateDescriptor(Type type)
         {
             if (type == null)
             {
@@ -66,8 +71,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// </param>
         /// <returns>A <see cref="TagHelperAttributeDesignTimeDescriptor"/> that describes design time specific
         /// information for the given <paramref name="propertyInfo"/>.</returns>
-        public static TagHelperAttributeDesignTimeDescriptor CreateAttributeDescriptor(
-            PropertyInfo propertyInfo)
+        public TagHelperAttributeDesignTimeDescriptor CreateAttributeDescriptor(PropertyInfo propertyInfo)
         {
             if (propertyInfo == null)
             {
@@ -77,7 +81,6 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             var id = XmlDocumentationProvider.GetId(propertyInfo);
             var declaringAssembly = propertyInfo.DeclaringType.Assembly;
             var documentationDescriptor = CreateDocumentationDescriptor(declaringAssembly, id);
-
             if (documentationDescriptor != null)
             {
                 return new TagHelperAttributeDesignTimeDescriptor
@@ -90,31 +93,51 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             return null;
         }
 
-        private static DocumentationDescriptor CreateDocumentationDescriptor(Assembly assembly, string id)
+        private XmlDocumentationProvider GetXmlDocumentationProvider(Assembly assembly)
         {
-            var assemblyLocation = assembly.Location;
+            var hashCodeCombiner = HashCodeCombiner.Start();
+            hashCodeCombiner.Add(assembly);
+            hashCodeCombiner.Add(CultureInfo.CurrentCulture);
+            var cacheKey = hashCodeCombiner.CombinedHash;
 
-            if (string.IsNullOrEmpty(assemblyLocation) && !string.IsNullOrEmpty(assembly.CodeBase))
+            var documentationProvider = _documentationProviderCache.GetOrAdd(cacheKey, valueFactory: _ =>
             {
-                var uri = new UriBuilder(assembly.CodeBase);
+                var assemblyLocation = assembly.Location;
 
-                // Normalize the path to a UNC path. This will remove things like file:// from start of the uri.Path.
-                assemblyLocation = Uri.UnescapeDataString(uri.Path);
-            }
+                if (string.IsNullOrEmpty(assemblyLocation) && !string.IsNullOrEmpty(assembly.CodeBase))
+                {
+                    var uri = new UriBuilder(assembly.CodeBase);
 
-            // Couldn't resolve a valid assemblyLocation.
-            if (string.IsNullOrEmpty(assemblyLocation))
-            {
+                    // Normalize the path to UNC path. This will remove things like file:// from start of uri.Path.
+                    assemblyLocation = Uri.UnescapeDataString(uri.Path);
+                }
+
+                // Couldn't resolve a valid assemblyLocation.
+                if (string.IsNullOrEmpty(assemblyLocation))
+                {
+                    return null;
+                }
+
+                var xmlDocumentationFile = GetXmlDocumentationFile(assembly, assemblyLocation);
+
+                // Only want to process the file if it exists.
+                if (xmlDocumentationFile != null)
+                {
+                    return new XmlDocumentationProvider(xmlDocumentationFile.FullName);
+                }
+
                 return null;
-            }
+            });
 
-            var xmlDocumentationFile = GetXmlDocumentationFile(assembly, assemblyLocation);
+            return documentationProvider;
+        }
 
-            // Only want to process the file if it exists.
-            if (xmlDocumentationFile != null)
+        private DocumentationDescriptor CreateDocumentationDescriptor(Assembly assembly, string id)
+        {
+            var documentationProvider = GetXmlDocumentationProvider(assembly);
+
+            if (documentationProvider != null)
             {
-                var documentationProvider = new XmlDocumentationProvider(xmlDocumentationFile.FullName);
-
                 var summary = documentationProvider.GetSummary(id);
                 var remarks = documentationProvider.GetRemarks(id);
 

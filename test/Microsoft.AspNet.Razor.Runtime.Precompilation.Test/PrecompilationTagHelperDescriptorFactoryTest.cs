@@ -37,12 +37,12 @@ namespace Microsoft.AspNet.Razor.Runtime.Precompilation
         {
             // Arrange
             var errorSink = new ErrorSink();
+            var factory = new TagHelperDescriptorFactory(designTime: false);
 
             // Act
-            var descriptors = TagHelperDescriptorFactory.CreateDescriptors(
+            var descriptors = factory.CreateDescriptors(
                 AssemblyName,
                 GetTypeInfo(tagHelperType),
-                designTime: false,
                 errorSink: errorSink);
 
             // Assert
