@@ -4,6 +4,7 @@ import * as models from '../../../models/models';
 import { Http, HTTP_BINDINGS, Headers, Response } from 'angular2/http';
 import { AlbumDeletePrompt } from '../album-delete-prompt/album-delete-prompt';
 import { FormField } from '../form-field/form-field';
+import * as AspNet from './AspNetUtil';
 
 @ng.Component({
     selector: 'album-edit'
@@ -67,21 +68,11 @@ export class AlbumEdit {
             var controls = this.form.controls;
             var albumId = this.originalAlbum.AlbumId;
             
-            this._putJson(`/api/albums/${ albumId }/update`, this.form.value).then(response => {
+            this._putJson(`/api/albums/${ albumId }/update`, this.form.value).subscribe(response => {
                 if (response.status === 200) {
                     this.changesSaved = true;
                 } else {
-                    var errors = <ValidationResponse>(response.json());
-                    Object.keys(errors).forEach(key => {
-                        errors[key].forEach(errorMessage => {
-                            // TODO: There has to be a better API for this
-                            if (!this.form.controls[key].errors) {
-                                (<any>this.form.controls[key])._errors = {};
-                            }
-                            
-                            this.form.controls[key].errors[errorMessage] = true;
-                        });
-                    });
+                    AspNet.Validation.showValidationErrors(response, this.form);
                 }
             });
         }
@@ -91,15 +82,15 @@ export class AlbumEdit {
         return /^\d+\.\d+$/.test(control.value) ? null : { Price: true };
     }
     
-    private _putJson(url: string, body: any): Promise<Response> {
-        return new Promise((resolve, reject) => {
-            this._http.put(url, JSON.stringify(body), {
-                headers: new Headers({ 'Content-Type': 'application/json' })
-            }).subscribe(resolve);
+    // Need feedback on whether this really is the easiest way to PUT some JSON
+    private _putJson(url: string, body: any): Subscribable<Response> {
+        return this._http.put(url, JSON.stringify(body), {
+            headers: new Headers({ 'Content-Type': 'application/json' })
         });
     }
 }
 
-interface ValidationResponse {
-    [propertyName: string]: string[];
+// TODO: Figure out what type declaration is provided by Angular/RxJs and use that instead
+interface Subscribable<T> {
+    subscribe(callback: (response: Response) => void): void;
 }
