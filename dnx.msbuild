@@ -62,25 +62,14 @@
                          $(DropSource)**\NuGet.*.nupkg;
                          $(DropSource)**\StyleCop.KRules*.nupkg"
             />
-            <SymbolPackages
-                Include="$(SymbolPackagePath)**\EntityFramework*.nupkg;
-                         $(SymbolPackagePath)**\Microsoft.Data.Sqlite*.nupkg;
-                         $(SymbolPackagePath)**\Microsoft.VisualStudio.Web.BrowserLink*.nupkg;
-                         $(SymbolPackagePath)**\KoreBuild*.nupkg;
-                         $(SymbolPackagePath)**\dnx*.nupkg;
-                         $(SymbolPackagePath)**\Microsoft.AspNet*.nupkg;
-                         $(SymbolPackagePath)**\Microsoft.Dnx*.nupkg;
-                         $(SymbolPackagePath)**\Microsoft.Extensions*.nupkg;
-                         $(SymbolPackagePath)**\Microsoft.Net*.nupkg;
-                         $(SymbolPackagePath)**\Microsoft.Owin.Security*.nupkg;
-                         $(DropSource)**\NuGet.*.nupkg"
-            />
+
+            <UnsignedSymbolPackages Include="$(SymbolPackagePath)**\Microsoft.Data.Sqlite*.nupkg" />
         </ItemGroup>
 
         <Message Text="%(UnsignedPackages.Identity)" Importance="high" />
 
         <Exec Command="$(DNXToolsPath)7za.exe x -y -scsUTF-8 -o@(UnsignedPackages->'$(UnsignedPackagesPath)%(Filename)') %(UnsignedPackages.Identity)" />
-        <Exec Command="$(DNXToolsPath)7za.exe x -y -scsUTF-8 -o@(SymbolPackages->'$(UnsignedSymbolPackagesPath)%(Filename)') %(SymbolPackages.Identity)" />
+        <Exec Command="$(DNXToolsPath)7za.exe x -y -scsUTF-8 -o@(UnsignedSymbolPackages->'$(UnsignedSymbolPackagesPath)%(Filename)') %(UnsignedSymbolPackages.Identity)" />
 
         <RenameEncodedFolders RootDirectory="$(UnsignedPackagesPath)" />
 
@@ -92,7 +81,7 @@
     <Target Name="PrepareFilesForSigning" DependsOnTargets="CopyAndExtractUnsignedPackages">
         <!-- Flatten the file names -->
         <ItemGroup>
-            <_UnsignedPackageBinaries
+            <_UnsignedBinaries
                 Include="$(UnsignedPackagesPath)**\AspNet.Loader*.dll;
                          $(UnsignedPackagesPath)**\EntityFramework*.dll;
                          $(UnsignedPackagesPath)**\EntityFramework.psd1;
@@ -113,18 +102,20 @@
                          $(UnsignedPackagesPath)**\dnx*.exe"
             />
 
-            <UnsignedPackageBinaries Include="@(_UnsignedPackageBinaries)">
+            <UnsignedBinaries Include="@(_UnsignedBinaries)">
                 <!-- Flattened file for signing -->
                 <UnsignedFlatFileName>$(UnsignedBinariesPath)$([System.String]::new('%(RecursiveDir)%(FileName)%(Extension)').Replace('\', '__'))</UnsignedFlatFileName>
                 <SignedFlatFileName>$(SignedBinariesPath)$([System.String]::new('%(RecursiveDir)%(FileName)%(Extension)').Replace('\', '__'))</SignedFlatFileName>
-            </UnsignedPackageBinaries>
+                <!-- Replaces "PackageName\lib\tfm" with "PackageName.symbols\lib\tfm" -->
+                <SymbolsBinaryFullName>$(UnsignedSymbolPackagesPath)$([System.String]::new('%(RecursiveDir)').Substring(0, $([System.String]::new('%(RecursiveDir)').IndexOf('\')))).symbols$([System.String]::new('%(RecursiveDir)').Substring($([System.String]::new('%(RecursiveDir)').IndexOf('\'))))%(Filename)%(Extension)</SymbolsBinaryFullName>
+            </UnsignedBinaries>
 
-            <PackageBinariesToSign Include="%(UnsignedPackageBinaries.UnsignedFlatFileName)" />
+            <PackageBinariesToSign Include="%(UnsignedBinaries.UnsignedFlatFileName)" />
 
             <dnvmBinariesToSign Include="$(OutputPath)dnvm\dnvm.ps1" />
         </ItemGroup>
 
-        <Copy SourceFiles="@(UnsignedPackageBinaries)" DestinationFiles="@(UnsignedPackageBinaries->'%(UnsignedFlatFileName)')" SkipUnchangedFiles="true" />
+        <Copy SourceFiles="@(UnsignedBinaries)" DestinationFiles="@(UnsignedBinaries->'%(UnsignedFlatFileName)')" SkipUnchangedFiles="true" />
     </Target>
 
     <Target Name="SignFiles" DependsOnTargets="PrepareFilesForSigning">
@@ -169,7 +160,12 @@
     </Target>
 
     <Target Name="ReplaceUnsignedFiles" DependsOnTargets="SignFiles">
-        <Copy SourceFiles="@(UnsignedPackageBinaries->'%(SignedFlatFileName)')" DestinationFiles="@(UnsignedPackageBinaries->'%(FullPath)')" />
+        <Copy SourceFiles="@(UnsignedBinaries->'%(SignedFlatFileName)')" DestinationFiles="@(UnsignedBinaries->'%(FullPath)')" />
+        <ItemGroup>
+            <!-- only overwrite existing unsigned binaries in the symbols packages. We don't create symbols-packages for all packages. -->
+            <_SignedSymbolsBinaries Include="@(UnsignedBinaries)" Condition="Exists('%(SymbolsBinaryFullName)')" />
+        </ItemGroup>
+        <Copy SourceFiles="@(_SignedSymbolsBinaries->'%(SignedFlatFileName)')" DestinationFiles="@(_SignedSymbolsBinaries->'%(SymbolsBinaryFullName)')" />
     </Target>
 
     <Target Name="UpdateLicenseURLs" DependsOnTargets="SignFiles">
@@ -187,6 +183,20 @@
                                  $(UnsignedPackagesPath)**\Microsoft.Owin.Security.*.nuspec;
                                  $(UnsignedPackagesPath)**\NuGet.*.nuspec;
                                  $(UnsignedPackagesPath)**\StyleCop.KRules*.nuspec"/>
+
+            <NuSpecEULA Include="$(UnsignedSymbolPackagesPath)**\EntityFramework*.nuspec;
+                                 $(UnsignedSymbolPackagesPath)**\Microsoft.Data.Sqlite*.nuspec;
+                                 $(UnsignedSymbolPackagesPath)**\Microsoft.VisualStudio.Web.BrowserLink*.nuspec;
+                                 $(UnsignedSymbolPackagesPath)**\dnvm.*.nuspec;
+                                 $(UnsignedSymbolPackagesPath)**\KoreBuild*.nuspec;
+                                 $(UnsignedSymbolPackagesPath)**\dnx*.nuspec;
+                                 $(UnsignedSymbolPackagesPath)**\Microsoft.AspNet*.nuspec;
+                                 $(UnsignedSymbolPackagesPath)**\Microsoft.Dnx.*.nuspec;
+                                 $(UnsignedSymbolPackagesPath)**\Microsoft.Extensions.*.nuspec;
+                                 $(UnsignedSymbolPackagesPath)**\Microsoft.Net.*.nuspec;
+                                 $(UnsignedSymbolPackagesPath)**\Microsoft.Owin.Security.*.nuspec;
+                                 $(UnsignedSymbolPackagesPath)**\NuGet.*.nuspec;
+                                 $(UnsignedSymbolPackagesPath)**\StyleCop.KRules*.nuspec"/>
         </ItemGroup>
 
         <MSBuild Projects="dnx.msbuild" Properties="NuSpecFileToUpdate=%(NuSpecEULA.Identity);Sign=$(Sign);TestCodeSign=$(TestCodeSign);Configuration=$(Configuration)"
@@ -204,18 +214,25 @@
 
     <Target Name="RebuildPackages" DependsOnTargets="ReplaceUnsignedFiles;UpdateLicenseURLs">
         <MakeDir Directories="$(PackagesOutputPath)" />
+        <MakeDir Directories="$(SymbolsOutputPath)" />
 
         <ItemGroup>
             <NuSpec Include="$(UnsignedPackagesPath)**\*.nuspec" />
+            <SymbolsNuSpec Include="$(UnsignedSymbolPackagesPath)**\*.nuspec" />
         </ItemGroup>
 
         <MSBuild Projects="dnx.msbuild"
-                 Properties="Configuration=$(Configuration);Sign=$(Sign);TestCodeSign=$(TestCodeSign);NuSpecFile=%(NuSpec.Identity);"
+                 Properties="Configuration=$(Configuration);Sign=$(Sign);TestCodeSign=$(TestCodeSign);NuSpecFile=%(NuSpec.Identity);OutDir=$(PackagesOutputPath)"
+                 Targets="RebuildPackage"/>
+
+        <MSBuild Projects="dnx.msbuild"
+                 Properties="Configuration=$(Configuration);Sign=$(Sign);TestCodeSign=$(TestCodeSign);NuSpecFile=%(SymbolsNuSpec.Identity);OutDir=$(SymbolsOutputPath)"
                  Targets="RebuildPackage"/>
 
         <!-- Capture packages that contain content we signed since that will become the list of items we will submit to BinScope -->
         <ItemGroup>
             <SignedPackages Include="$(PackagesOutputPath)**\*.nupkg" />
+            <SignedSymbolsPackages Include="$(SymbolsOutputPath)**\*.nupkg" />
         </ItemGroup>
     </Target>
 
@@ -224,8 +241,8 @@
             <WorkingDir>$([System.IO.Path]::GetDirectoryName($(NuSpecFile)))</WorkingDir>
             <PackageName>$([System.IO.Path]::GetFileName($(WorkingDir)))</PackageName>
         </PropertyGroup>
-
-        <Exec Command="$(DNXToolsPath)7za.exe a -tzip -mx9 -r -y $(PackagesOutputPath)$(PackageName).nupkg *" WorkingDirectory="$(WorkingDir)" />
+        <Error Condition="'$(OutDir)'==''" Text="Output dir not specified" />
+        <Exec Command="$(DNXToolsPath)7za.exe a -tzip -mx9 -r -y $(OutDir)$(PackageName).nupkg *" WorkingDirectory="$(WorkingDir)" />
     </Target>
 
     <Target Name="CopyUnsignedPackages" DependsOnTargets="RebuildPackages">
