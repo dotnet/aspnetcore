@@ -1109,7 +1109,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                operationContext.ModelBinder,
                operationContext.ValueProvider,
                operationContext.InputFormatters,
-               ModelBindingTestHelper.GetObjectValidator(),
+               ModelBindingTestHelper.GetObjectValidator(operationContext.MetadataProvider),
                operationContext.ValidatorProvider);
         }
     }

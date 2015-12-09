@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.Extensions.DependencyInjection;
 using ModelBindingWebSite.Models;
 using ModelBindingWebSite.Services;
@@ -20,7 +21,7 @@ namespace ModelBindingWebSite
                     m.MaxModelValidationErrors = 8;
                     m.ModelBinders.Insert(0, new TestBindingSourceModelBinder());
 
-                    m.ValidationExcludeFilters.Add(typeof(Address));
+                    m.ModelMetadataDetailsProviders.Add(new ValidationExcludeFilter(typeof(Address)));
 
                     // ModelMetadataController relies on additional values AdditionalValuesMetadataProvider provides.
                     m.ModelMetadataDetailsProviders.Add(new AdditionalValuesMetadataProvider());

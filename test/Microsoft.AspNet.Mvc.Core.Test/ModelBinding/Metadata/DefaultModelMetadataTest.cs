@@ -6,6 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Xml;
 using Moq;
 using Xunit;
 
@@ -603,6 +604,103 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
 
             // Assert
             Assert.False(isReadOnly);
+        }
+
+        [Theory]
+        [InlineData(typeof(int))] // Primitive
+        [InlineData(typeof(int?))] // Nullable
+        [InlineData(typeof(Guid))] // TypeConverter
+        [InlineData(typeof(Guid?))] // Nullable + TypeConverter
+        [InlineData(typeof(string))]
+        public void ValidateChildren_SimpleTypes(Type modelType)
+        {
+            // Arrange
+            var detailsProvider = new EmptyCompositeMetadataDetailsProvider();
+            var provider = new DefaultModelMetadataProvider(detailsProvider);
+
+            var key = ModelMetadataIdentity.ForType(modelType);
+            var cache = new DefaultMetadataDetails(key, new ModelAttributes(new object[0]));
+
+            var metadata = new DefaultModelMetadata(provider, detailsProvider, cache);
+
+            // Act
+            var validateChildren = metadata.ValidateChildren;
+
+            // Assert
+            Assert.False(validateChildren);
+        }
+
+        [Theory]
+        [InlineData(typeof(int[]))]
+        [InlineData(typeof(List<decimal>))]
+        [InlineData(typeof(IEnumerable))]
+        [InlineData(typeof(Dictionary<string, string>))]
+        [InlineData(typeof(KeyValuePair<string, string>))]
+        [InlineData(typeof(KeyValuePair<string, string>?))]
+        [InlineData(typeof(TypeWithProperties))]
+        [InlineData(typeof(List<TypeWithProperties>))]
+        public void ValidateChildren_ComplexAndEnumerableTypes(Type modelType)
+        {
+            // Arrange
+            var detailsProvider = new EmptyCompositeMetadataDetailsProvider();
+            var provider = new DefaultModelMetadataProvider(detailsProvider);
+
+            var key = ModelMetadataIdentity.ForType(typeof(TypeWithProperties));
+            var cache = new DefaultMetadataDetails(key, new ModelAttributes(new object[0]));
+
+            var metadata = new DefaultModelMetadata(provider, detailsProvider, cache);
+
+            // Act
+            var validateChildren = metadata.ValidateChildren;
+
+            // Assert
+            Assert.True(validateChildren);
+        }
+
+        [Fact]
+        public void ValidateChildren_OverrideTrue()
+        {
+            // Arrange
+            var detailsProvider = new EmptyCompositeMetadataDetailsProvider();
+            var provider = new DefaultModelMetadataProvider(detailsProvider);
+
+            var key = ModelMetadataIdentity.ForType(typeof(int));
+            var cache = new DefaultMetadataDetails(key, new ModelAttributes(new object[0]));
+            cache.ValidationMetadata = new ValidationMetadata()
+            {
+                ValidateChildren = true,
+            };
+
+            var metadata = new DefaultModelMetadata(provider, detailsProvider, cache);
+
+            // Act
+            var validateChildren = metadata.ValidateChildren;
+
+            // Assert
+            Assert.True(validateChildren);
+        }
+
+        [Fact]
+        public void ValidateChildren_OverrideFalse()
+        {
+            // Arrange
+            var detailsProvider = new EmptyCompositeMetadataDetailsProvider();
+            var provider = new DefaultModelMetadataProvider(detailsProvider);
+
+            var key = ModelMetadataIdentity.ForType(typeof(XmlDocument));
+            var cache = new DefaultMetadataDetails(key, new ModelAttributes(new object[0]));
+            cache.ValidationMetadata = new ValidationMetadata()
+            {
+                ValidateChildren = false,
+            };
+
+            var metadata = new DefaultModelMetadata(provider, detailsProvider, cache);
+
+            // Act
+            var validateChildren = metadata.ValidateChildren;
+
+            // Assert
+            Assert.False(validateChildren);
         }
 
         private void ActionMethod(string input)

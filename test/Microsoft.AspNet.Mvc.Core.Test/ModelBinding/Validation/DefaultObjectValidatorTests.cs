@@ -8,6 +8,7 @@ using System.Linq;
 #if DNXCORE50
 using System.Reflection;
 #endif
+using Microsoft.AspNet.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNet.Testing;
 using Moq;
 using Xunit;
@@ -655,13 +656,40 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             Assert.Equal(ValidationAttributeUtil.GetRequiredErrorMessage("Profession"), error.ErrorMessage);
         }
 
+        public static TheoryData<object, Type> ValidCollectionData
+        {
+            get
+            {
+                return new TheoryData<object, Type>()
+                {
+                    { new int[] { 1, 2, 3 }, typeof(int[]) },
+                    { new string[] { "Foo", "Bar", "Baz" }, typeof(string[]) },
+                    { new List<string> { "Foo", "Bar", "Baz" }, typeof(IList<string>)},
+                    { new HashSet<string> { "Foo", "Bar", "Baz" }, typeof(string[]) },
+                    {
+                        new List<DateTime>
+                        {
+                            DateTime.Parse("1/1/14"),
+                            DateTime.Parse("2/1/14"),
+                            DateTime.Parse("3/1/14"),
+                        },
+                        typeof(ICollection<DateTime>)
+                    },
+                    {
+                        new HashSet<Uri>
+                        {
+                            new Uri("http://example.com/1"),
+                            new Uri("http://example.com/2"),
+                            new Uri("http://example.com/3"),
+                        },
+                        typeof(HashSet<Uri>)
+                    },
+                };
+            }
+        }
+
         [Theory]
-        [InlineData(new[] { "Foo", "Bar", "Baz" }, typeof(string[]))]
-        [InlineData(new[] { 1, 2, 3 }, typeof(int[]))]
-        [InlineData(new[] { "Foo", "Bar", "Baz" }, typeof(IList<string>))]
-        [InlineData(new[] { "Foo", "Bar", "Baz" }, typeof(HashSet<string>))]
-        [InlineData(new[] { "1/1/14", "2/2/14", "3/3/14" }, typeof(ICollection<DateTime>))]
-        [InlineData(new[] { "Foo", "Bar", "Baz" }, typeof(HashSet<Uri>))]
+        [MemberData(nameof(ValidCollectionData))]
         public void Validate_IndexedCollectionTypes_Valid(object model, Type type)
         {
             // Arrange
@@ -670,7 +698,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             var modelState = actionContext.ModelState;
             var validationState = new ValidationStateDictionary();
 
-            var validator = CreateValidator(new SimpleTypesExcludeFilter());
+            var validator = CreateValidator();
 
             modelState.Add("items[0]", new ModelStateEntry());
             modelState.Add("items[1]", new ModelStateEntry());
@@ -712,7 +740,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             var modelState = actionContext.ModelState;
             var validationState = new ValidationStateDictionary();
 
-            var validator = CreateValidator(new SimpleTypesExcludeFilter());
+            var validator = CreateValidator();
 
             var model = new Dictionary<string, string>()
             {
@@ -734,19 +762,19 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             AssertKeysEqual(modelState, "items[0].Key", "items[0].Value", "items[1].Key", "items[1].Value");
 
             var entry = modelState["items[0].Key"];
-            Assert.Equal(ModelValidationState.Skipped, entry.ValidationState);
+            Assert.Equal(ModelValidationState.Valid, entry.ValidationState);
             Assert.Empty(entry.Errors);
 
             entry = modelState["items[0].Value"];
-            Assert.Equal(ModelValidationState.Skipped, entry.ValidationState);
+            Assert.Equal(ModelValidationState.Valid, entry.ValidationState);
             Assert.Empty(entry.Errors);
 
             entry = modelState["items[1].Key"];
-            Assert.Equal(ModelValidationState.Skipped, entry.ValidationState);
+            Assert.Equal(ModelValidationState.Valid, entry.ValidationState);
             Assert.Empty(entry.Errors);
 
             entry = modelState["items[1].Value"];
-            Assert.Equal(ModelValidationState.Skipped, entry.ValidationState);
+            Assert.Equal(ModelValidationState.Valid, entry.ValidationState);
             Assert.Empty(entry.Errors);
         }
 
@@ -857,7 +885,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
         }
 
         [Fact]
-        public void Validate_ForExcludedType_PropertiesMarkedAsSkipped()
+        public void Validate_ForExcludedComplexType_PropertiesMarkedAsSkipped()
         {
             // Arrange
             var validatorProvider = CreateValidatorProvider();
@@ -890,6 +918,37 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             Assert.Empty(entry.Errors);
         }
 
+        [Fact]
+        public void Validate_ForExcludedCollectionType_PropertiesMarkedAsSkipped()
+        {
+            // Arrange
+            var validatorProvider = CreateValidatorProvider();
+            var actionContext = new ActionContext();
+            var modelState = actionContext.ModelState;
+            var validationState = new ValidationStateDictionary();
+
+            var validator = CreateValidator(typeof(List<string>));
+
+            var model = new List<string>()
+            {
+                "15",
+            };
+
+            modelState.SetModelValue("userIds[0]", "15", "15");
+            validationState.Add(model, new ValidationStateEntry() { Key = "userIds", });
+
+            // Act
+            validator.Validate(actionContext, validatorProvider, validationState, "userIds", model);
+
+            // Assert
+            Assert.Equal(ModelValidationState.Valid, modelState.ValidationState);
+            AssertKeysEqual(modelState, "userIds[0]");
+
+            var entry = modelState["userIds[0]"];
+            Assert.Equal(ModelValidationState.Skipped, entry.ValidationState);
+            Assert.Empty(entry.Errors);
+        }
+
         private static IModelValidatorProvider CreateValidatorProvider()
         {
             return TestModelValidatorProvider.CreateDefaultProvider();
@@ -897,23 +956,20 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 
         private static DefaultObjectValidator CreateValidator(Type excludedType)
         {
-            var excludeFilters = new List<IExcludeTypeValidationFilter>();
+            var excludeFilters = new List<ValidationExcludeFilter>();
             if (excludedType != null)
             {
-                var excludeFilter = new Mock<IExcludeTypeValidationFilter>();
-                excludeFilter
-                    .Setup(o => o.IsTypeExcluded(It.IsAny<Type>()))
-                    .Returns<Type>(t => t.IsAssignableFrom(excludedType));
-
-                excludeFilters.Add(excludeFilter.Object);
+                excludeFilters.Add(new ValidationExcludeFilter(excludedType));
             }
 
-            return new DefaultObjectValidator(excludeFilters, TestModelMetadataProvider.CreateDefaultProvider());
+            var provider = TestModelMetadataProvider.CreateDefaultProvider(excludeFilters.ToArray());
+            return new DefaultObjectValidator(provider);
         }
 
-        private static DefaultObjectValidator CreateValidator(params IExcludeTypeValidationFilter[] excludeFilters)
+        private static DefaultObjectValidator CreateValidator(params IMetadataDetailsProvider[] providers)
         {
-            return new DefaultObjectValidator(excludeFilters, TestModelMetadataProvider.CreateDefaultProvider());
+            var provider = TestModelMetadataProvider.CreateDefaultProvider(providers);
+            return new DefaultObjectValidator(provider);
         }
 
         private static void AssertKeysEqual(ModelStateDictionary modelState, params string[] keys)

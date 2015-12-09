@@ -104,9 +104,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                     binding.ModelBindingMessageProvider.MissingKeyOrValueAccessor = () => $"Hurts when nothing is provided.";
                 }));
 
-            var argumentBinder = new DefaultControllerActionArgumentBinder(
-                metadataProvider,
-                ModelBindingTestHelper.GetObjectValidator());
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder(metadataProvider);
             var parameter = new ParameterDescriptor
             {
                 Name = "parameter",
@@ -188,9 +186,8 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                     // A real details provider could customize message based on BindingMetadataProviderContext.
                     binding.ModelBindingMessageProvider.MissingKeyOrValueAccessor = () => $"Hurts when nothing is provided.";
                 }));
-            var argumentBinder = new DefaultControllerActionArgumentBinder(
-                metadataProvider,
-                ModelBindingTestHelper.GetObjectValidator());
+
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder(metadataProvider);
 
             var parameter = new ParameterDescriptor
             {

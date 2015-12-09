@@ -14,7 +14,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
     public class ValidationVisitor
     {
         private readonly IModelValidatorProvider _validatorProvider;
-        private readonly IList<IExcludeTypeValidationFilter> _excludeFilters;
         private readonly ActionContext _actionContext;
         private readonly ModelStateDictionary _modelState;
         private readonly ValidationStateDictionary _validationState;
@@ -33,12 +32,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
         /// </summary>
         /// <param name="actionContext">The <see cref="ActionContext"/> associated with the current request.</param>
         /// <param name="validatorProvider">The <see cref="IModelValidatorProvider"/>.</param>
-        /// <param name="excludeFilters">The list of <see cref="IExcludeTypeValidationFilter"/>.</param>
         /// <param name="validationState">The <see cref="ValidationStateDictionary"/>.</param>
         public ValidationVisitor(
             ActionContext actionContext,
             IModelValidatorProvider validatorProvider,
-            IList<IExcludeTypeValidationFilter> excludeFilters,
             ValidationStateDictionary validationState)
         {
             if (actionContext == null)
@@ -51,14 +48,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
                 throw new ArgumentNullException(nameof(validatorProvider));
             }
 
-            if (excludeFilters == null)
-            {
-                throw new ArgumentNullException(nameof(excludeFilters));
-            }
-
             _actionContext = actionContext;
             _validatorProvider = validatorProvider;
-            _excludeFilters = excludeFilters;
             _validationState = validationState;
 
             _modelState = actionContext.ModelState;
@@ -191,10 +182,17 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
         {
             var isValid = true;
 
-            if (_model != null)
+            if (_model != null && _metadata.ValidateChildren)
             {
                 var strategy = _strategy ?? DefaultCollectionValidationStrategy.Instance;
                 isValid = VisitChildren(strategy);
+            }
+            else if (_model != null)
+            {
+                // Suppress validation for the entries matching this prefix. This will temporarily set
+                // the current node to 'skipped' but we're going to visit it right away, so subsequent
+                // code will set it to 'valid' or 'invalid'
+                SuppressValidation(_key);
             }
 
             // Double-checking HasReachedMaxErrors just in case this model has no elements.
@@ -210,14 +208,16 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
         {
             var isValid = true;
 
-            if (_model != null && ShouldValidateProperties(_metadata))
+            if (_model != null && _metadata.ValidateChildren)
             {
                 var strategy = _strategy ?? DefaultComplexObjectValidationStrategy.Instance;
                 isValid = VisitChildren(strategy);
             }
             else if (_model != null)
             {
-                // Suppress validation for the prefix, but we still want to validate the object.
+                // Suppress validation for the entries matching this prefix. This will temporarily set
+                // the current node to 'skipped' but we're going to visit it right away, so subsequent
+                // code will set it to 'valid' or 'invalid'
                 SuppressValidation(_key);
             }
 
@@ -284,20 +284,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             {
                 entry.Value.ValidationState = ModelValidationState.Skipped;
             }
-        }
-
-        private bool ShouldValidateProperties(ModelMetadata metadata)
-        {
-            var count = _excludeFilters.Count;
-            for (var i = 0; i < _excludeFilters.Count; i++)
-            {
-                if (_excludeFilters[i].IsTypeExcluded(metadata.UnderlyingOrModelType))
-                {
-                    return false;
-                }
-            }
-
-            return true;
         }
 
         private ValidationStateEntry GetValidationEntry(object model)

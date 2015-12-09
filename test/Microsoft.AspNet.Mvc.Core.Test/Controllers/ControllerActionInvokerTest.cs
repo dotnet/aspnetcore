@@ -2112,7 +2112,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
                 new IInputFormatter[0],
                 new DefaultControllerActionArgumentBinder(
                     metadataProvider,
-                    new DefaultObjectValidator(new IExcludeTypeValidationFilter[0], metadataProvider)),
+                    new DefaultObjectValidator(metadataProvider)),
                 new IModelBinder[] { binder.Object },
                 new IModelValidatorProvider[0],
                 new IValueProviderFactory[0],

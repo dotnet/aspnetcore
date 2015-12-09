@@ -129,14 +129,12 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var entry = Assert.Single(modelState, kvp => kvp.Key == "parameter[low].Key").Value;
             Assert.Equal("key0", entry.AttemptedValue);
             Assert.Equal("key0", entry.RawValue);
-
-            // Key and Value are skipped if they have simple types.
-            Assert.Equal(ModelValidationState.Skipped, entry.ValidationState);
+            Assert.Equal(ModelValidationState.Valid, entry.ValidationState);
 
             entry = Assert.Single(modelState, kvp => kvp.Key == "parameter[low].Value").Value;
             Assert.Equal("10", entry.AttemptedValue);
             Assert.Equal("10", entry.RawValue);
-            Assert.Equal(ModelValidationState.Skipped, entry.ValidationState);
+            Assert.Equal(ModelValidationState.Valid, entry.ValidationState);
         }
 
         [Theory]

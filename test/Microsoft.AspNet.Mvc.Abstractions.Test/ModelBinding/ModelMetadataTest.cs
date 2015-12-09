@@ -568,6 +568,14 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 }
             }
 
+            public override bool ValidateChildren
+            {
+                get
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
             public override IReadOnlyList<object> ValidatorMetadata
             {
                 get

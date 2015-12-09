@@ -26,6 +26,34 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             return new DefaultModelMetadataProvider(compositeDetailsProvider);
         }
 
+        public static IModelMetadataProvider CreateDefaultProvider(IList<IMetadataDetailsProvider> providers)
+        {
+            var detailsProviders = new List<IMetadataDetailsProvider>()
+            {
+                new DefaultBindingMetadataProvider(CreateMessageProvider()),
+                new DefaultValidationMetadataProvider(),
+                new DataAnnotationsMetadataProvider(),
+                new DataMemberRequiredBindingMetadataProvider(),
+            };
+
+            detailsProviders.AddRange(providers);
+
+            var compositeDetailsProvider = new DefaultCompositeMetadataDetailsProvider(detailsProviders);
+            return new DefaultModelMetadataProvider(compositeDetailsProvider);
+        }
+
+        public static IModelMetadataProvider CreateProvider(IList<IMetadataDetailsProvider> providers)
+        {
+            var detailsProviders = new List<IMetadataDetailsProvider>();
+            if (providers != null)
+            {
+                detailsProviders.AddRange(providers);
+            }
+
+            var compositeDetailsProvider = new DefaultCompositeMetadataDetailsProvider(detailsProviders);
+            return new DefaultModelMetadataProvider(compositeDetailsProvider);
+        }
+
         private readonly TestModelMetadataDetailsProvider _detailsProvider;
 
         public TestModelMetadataProvider()

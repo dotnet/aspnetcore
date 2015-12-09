@@ -19,6 +19,9 @@ using Moq;
 using Newtonsoft.Json.Linq;
 using Xunit;
 using Microsoft.Extensions.Logging;
+using System.Threading;
+using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Mvc.ModelBinding.Metadata;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -134,7 +137,7 @@ namespace Microsoft.AspNet.Mvc
         }
 
         [Fact]
-        public void Setup_SetsUpExcludeFromValidationDelegates()
+        public void Setup_SetsUpMetadataDetailsProviders()
         {
             // Arrange & Act
             var options = GetOptions<MvcOptions>(services =>
@@ -144,48 +147,40 @@ namespace Microsoft.AspNet.Mvc
             });
 
             // Assert
-            Assert.Equal(8, options.ValidationExcludeFilters.Count);
+            var providers = options.ModelMetadataDetailsProviders;
+            Assert.Equal(12, providers.Count);
             var i = 0;
 
-            // Verify if the delegates registered by default exclude the given types.
-            Assert.IsType(typeof(SimpleTypesExcludeFilter), options.ValidationExcludeFilters[i++]);
+            Assert.IsType<DefaultBindingMetadataProvider>(providers[i++]);
+            Assert.IsType<DefaultValidationMetadataProvider>(providers[i++]);
 
-            Assert.IsType(typeof(DefaultTypeBasedExcludeFilter), options.ValidationExcludeFilters[i]);
-            var typeFilter
-                = Assert.IsType<DefaultTypeBasedExcludeFilter>(options.ValidationExcludeFilters[i++]);
-            Assert.Equal(typeFilter.ExcludedType, typeof(Type));
+            var excludeFilter = Assert.IsType<ValidationExcludeFilter>(providers[i++]);
+            Assert.Equal(typeof(Type), excludeFilter.Type);
 
-            Assert.IsType(typeof(DefaultTypeBasedExcludeFilter), options.ValidationExcludeFilters[i]);
-            var cancellationTokenFilter
-                = Assert.IsType<DefaultTypeBasedExcludeFilter>(options.ValidationExcludeFilters[i++]);
-            Assert.Equal(cancellationTokenFilter.ExcludedType, typeof(System.Threading.CancellationToken));
+            excludeFilter = Assert.IsType<ValidationExcludeFilter>(providers[i++]);
+            Assert.Equal(typeof(Uri), excludeFilter.Type);
 
-            Assert.IsType(typeof(DefaultTypeBasedExcludeFilter), options.ValidationExcludeFilters[i]);
-            var formFileFilter
-                = Assert.IsType<DefaultTypeBasedExcludeFilter>(options.ValidationExcludeFilters[i++]);
-            Assert.Equal(formFileFilter.ExcludedType, typeof(Http.IFormFile));
+            excludeFilter = Assert.IsType<ValidationExcludeFilter>(providers[i++]);
+            Assert.Equal(typeof(CancellationToken), excludeFilter.Type);
 
-            Assert.IsType(
-                typeof(DefaultTypeBasedExcludeFilter),
-                options.ValidationExcludeFilters[i]);
-            var formCollectionFilter
-                = Assert.IsType<DefaultTypeBasedExcludeFilter>(options.ValidationExcludeFilters[i++]);
-            Assert.Equal(formCollectionFilter.ExcludedType, typeof(Http.IFormCollection));
+            excludeFilter = Assert.IsType<ValidationExcludeFilter>(providers[i++]);
+            Assert.Equal(typeof(IFormFile), excludeFilter.Type);
 
-            Assert.IsType(typeof(DefaultTypeBasedExcludeFilter), options.ValidationExcludeFilters[i]);
-            var jTokenFilter
-                = Assert.IsType<DefaultTypeBasedExcludeFilter>(options.ValidationExcludeFilters[i++]);
-            Assert.Equal(jTokenFilter.ExcludedType, typeof(JToken));
+            excludeFilter = Assert.IsType<ValidationExcludeFilter>(providers[i++]);
+            Assert.Equal(typeof(IFormCollection), excludeFilter.Type);
 
-            Assert.IsType(typeof(DefaultTypeNameBasedExcludeFilter), options.ValidationExcludeFilters[i]);
-            var xObjectFilter
-                = Assert.IsType<DefaultTypeNameBasedExcludeFilter>(options.ValidationExcludeFilters[i++]);
-            Assert.Equal(xObjectFilter.ExcludedTypeName, typeof(XObject).FullName);
+            Assert.IsType<DataAnnotationsMetadataProvider>(providers[i++]);
 
-            Assert.IsType(typeof(DefaultTypeNameBasedExcludeFilter), options.ValidationExcludeFilters[i]);
-            var xmlNodeFilter =
-                     Assert.IsType<DefaultTypeNameBasedExcludeFilter>(options.ValidationExcludeFilters[i++]);
-            Assert.Equal(xmlNodeFilter.ExcludedTypeName, "System.Xml.XmlNode");
+            excludeFilter = Assert.IsType<ValidationExcludeFilter>(providers[i++]);
+            Assert.Equal(typeof(JToken), excludeFilter.Type);
+
+            Assert.IsType<DataMemberRequiredBindingMetadataProvider>(providers[i++]);
+
+            excludeFilter = Assert.IsType<ValidationExcludeFilter>(providers[i++]);
+            Assert.Equal(typeof(XObject).FullName, excludeFilter.FullTypeName);
+
+            excludeFilter = Assert.IsType<ValidationExcludeFilter>(providers[i++]);
+            Assert.Equal("System.Xml.XmlNode", excludeFilter.FullTypeName);
         }
 
         [Fact]

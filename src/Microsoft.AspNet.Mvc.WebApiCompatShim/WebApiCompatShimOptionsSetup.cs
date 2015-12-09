@@ -3,6 +3,7 @@
 
 using System.Net.Http;
 using System.Net.Http.Formatting;
+using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.OptionsModel;
 
@@ -32,8 +33,8 @@ namespace Microsoft.AspNet.Mvc.WebApiCompatShim
             // Add a formatter to write out an HttpResponseMessage to the response
             options.OutputFormatters.Insert(0, new HttpResponseMessageOutputFormatter());
 
-            options.ValidationExcludeFilters.Add(typeof(HttpRequestMessage));
-            options.ValidationExcludeFilters.Add(typeof(HttpResponseMessage));
+            options.ModelMetadataDetailsProviders.Add(new ValidationExcludeFilter(typeof(HttpRequestMessage)));
+            options.ModelMetadataDetailsProviders.Add(new ValidationExcludeFilter(typeof(HttpResponseMessage)));
         }
 
         public void Configure(WebApiCompatShimOptions options)

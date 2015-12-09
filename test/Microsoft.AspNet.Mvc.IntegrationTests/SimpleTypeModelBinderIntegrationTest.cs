@@ -312,9 +312,8 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                     binding.ModelBindingMessageProvider.ValueMustNotBeNullAccessor =
                         value => $"Hurts when '{ value }' is provided.";
                 }));
-            var argumentBinder = new DefaultControllerActionArgumentBinder(
-                metadataProvider,
-                ModelBindingTestHelper.GetObjectValidator());
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder(metadataProvider);
+
             var parameter = new ParameterDescriptor
             {
                 Name = "Parameter1",

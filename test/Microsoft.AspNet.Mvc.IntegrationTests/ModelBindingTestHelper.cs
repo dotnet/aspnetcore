@@ -42,20 +42,28 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
         public static DefaultControllerActionArgumentBinder GetArgumentBinder(MvcOptions options = null)
         {
-            var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
-            return new DefaultControllerActionArgumentBinder(
-                metadataProvider,
-                GetObjectValidator(options));
+            if (options == null)
+            {
+                var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+                return GetArgumentBinder(metadataProvider);
+            }
+            else
+            {
+                var metadataProvider = TestModelMetadataProvider.CreateProvider(options.ModelMetadataDetailsProviders);
+                return GetArgumentBinder(metadataProvider);
+            }
         }
 
-        public static IObjectModelValidator GetObjectValidator(MvcOptions options = null)
+        public static DefaultControllerActionArgumentBinder GetArgumentBinder(IModelMetadataProvider metadataProvider)
         {
-            options = options ?? new TestMvcOptions().Value;
-            options.MaxModelValidationErrors = 5;
-            var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
-            return new DefaultObjectValidator(
-                    options.ValidationExcludeFilters,
-                    metadataProvider);
+            return new DefaultControllerActionArgumentBinder(
+                metadataProvider,
+                GetObjectValidator(metadataProvider));
+        }
+
+        public static IObjectModelValidator GetObjectValidator(IModelMetadataProvider metadataProvider)
+        {
+            return new DefaultObjectValidator(metadataProvider);
         }
 
         private static HttpContext GetHttpContext(

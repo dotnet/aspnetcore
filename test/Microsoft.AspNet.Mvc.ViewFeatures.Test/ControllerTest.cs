@@ -1873,7 +1873,7 @@ namespace Microsoft.AspNet.Mvc.Test
             {
                 ControllerContext = controllerContext,
                 MetadataProvider = metadataProvider,
-                ObjectValidator = new DefaultObjectValidator(new IExcludeTypeValidationFilter[0], metadataProvider),
+                ObjectValidator = new DefaultObjectValidator(metadataProvider),
                 TempData = tempData,
                 ViewData = viewData,
             };

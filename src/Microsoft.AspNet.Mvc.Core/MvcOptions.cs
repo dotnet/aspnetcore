@@ -31,7 +31,6 @@ namespace Microsoft.AspNet.Mvc
             ModelBindingMessageProvider = new ModelBindingMessageProvider();
             ModelMetadataDetailsProviders = new List<IMetadataDetailsProvider>();
             ModelValidatorProviders = new List<IModelValidatorProvider>();
-            ValidationExcludeFilters = new ExcludeTypeValidationFilterCollection();
             ValueProviderFactories = new List<IValueProviderFactory>();
         }
 
@@ -124,11 +123,6 @@ namespace Microsoft.AspNet.Mvc
         /// when it contains the media type */*. <see langword="false"/> by default.
         /// </summary>
         public bool RespectBrowserAcceptHeader { get; set; }
-
-        /// <summary>
-        /// Gets a collection of <see cref="IExcludeTypeValidationFilter"/>s that are used by this application.
-        /// </summary>
-        public ExcludeTypeValidationFilterCollection ValidationExcludeFilters { get; }
 
         /// <summary>
         /// Gets a list of <see cref="IValueProviderFactory"/> used by this application.

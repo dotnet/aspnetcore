@@ -29,6 +29,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
         private bool? _isReadOnly;
         private bool? _isRequired;
         private ModelPropertyCollection _properties;
+        private bool? _validateChildren;
         private ReadOnlyCollection<object> _validatorMetadata;
 
         /// <summary>
@@ -488,6 +489,31 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
             get
             {
                 return DisplayMetadata.TemplateHint;
+            }
+        }
+
+        /// <inheritdoc />
+        public override bool ValidateChildren
+        {
+            get
+            {
+                if (!_validateChildren.HasValue)
+                {
+                    if (ValidationMetadata.ValidateChildren.HasValue)
+                    {
+                        _validateChildren = ValidationMetadata.ValidateChildren.Value;
+                    }
+                    else if (IsComplexType || IsEnumerableType)
+                    {
+                        _validateChildren = true;
+                    }
+                    else
+                    {
+                        _validateChildren = false;
+                    }
+                }
+
+                return _validateChildren.Value;
             }
         }
 

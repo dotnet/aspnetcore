@@ -134,12 +134,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 var options = serviceProvider.GetRequiredService<IOptions<MvcOptions>>().Value;
                 return new DefaultCompositeMetadataDetailsProvider(options.ModelMetadataDetailsProviders);
             }));
-            services.TryAdd(ServiceDescriptor.Singleton<IObjectModelValidator>(serviceProvider =>
-            {
-                var options = serviceProvider.GetRequiredService<IOptions<MvcOptions>>().Value;
-                var modelMetadataProvider = serviceProvider.GetRequiredService<IModelMetadataProvider>();
-                return new DefaultObjectValidator(options.ValidationExcludeFilters, modelMetadataProvider);
-            }));
+            services.TryAddSingleton<IObjectModelValidator, DefaultObjectValidator>();
 
             //
             // Random Infrastructure

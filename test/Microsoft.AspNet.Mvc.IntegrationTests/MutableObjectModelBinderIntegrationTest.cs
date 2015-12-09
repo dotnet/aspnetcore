@@ -1424,9 +1424,8 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                     binding.ModelBindingMessageProvider.MissingBindRequiredValueAccessor =
                         name => $"Hurts when '{ name }' is not provided.";
                 }));
-            var argumentBinder = new DefaultControllerActionArgumentBinder(
-                metadataProvider,
-                ModelBindingTestHelper.GetObjectValidator());
+
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder(metadataProvider);
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",

@@ -95,7 +95,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 GetCompositeBinder(binders),
                 valueProvider,
                 new List<IInputFormatter>(),
-                new DefaultObjectValidator(new IExcludeTypeValidationFilter[0], modelMetadataProvider),
+                new DefaultObjectValidator(modelMetadataProvider),
                 validator);
 
             // Assert
@@ -136,7 +136,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 GetCompositeBinder(binders),
                 valueProvider,
                 new List<IInputFormatter>(),
-                new DefaultObjectValidator(new IExcludeTypeValidationFilter[0], metadataProvider),
+                new DefaultObjectValidator(metadataProvider),
                 validator);
 
             // Assert
@@ -221,7 +221,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 GetCompositeBinder(binders),
                 valueProvider,
                 new List<IInputFormatter>(),
-                new DefaultObjectValidator(new IExcludeTypeValidationFilter[0], metadataProvider),
+                new DefaultObjectValidator(metadataProvider),
                 validator,
                 includePredicate);
 
@@ -305,7 +305,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 GetCompositeBinder(binders),
                 valueProvider,
                 new List<IInputFormatter>(),
-                new DefaultObjectValidator(new IExcludeTypeValidationFilter[0], metadataProvider),
+                new DefaultObjectValidator(metadataProvider),
                 validator,
                 m => m.IncludedProperty,
                 m => m.MyProperty);
@@ -357,7 +357,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 GetCompositeBinder(binders),
                 valueProvider,
                 new List<IInputFormatter>(),
-                new DefaultObjectValidator(new IExcludeTypeValidationFilter[0], metadataProvider),
+                new DefaultObjectValidator(metadataProvider),
                 validator);
 
             // Assert
@@ -568,9 +568,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 GetCompositeBinder(binders),
                 valueProvider,
                 new List<IInputFormatter>(),
-                new DefaultObjectValidator(
-                    new IExcludeTypeValidationFilter[0],
-                    metadataProvider),
+                new DefaultObjectValidator(metadataProvider),
                 validator,
                 includePredicate);
 
@@ -645,9 +643,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 GetCompositeBinder(binders),
                 valueProvider,
                 new List<IInputFormatter>(),
-                new DefaultObjectValidator(
-                    new IExcludeTypeValidationFilter[0],
-                    metadataProvider),
+                new DefaultObjectValidator(metadataProvider),
                 validator);
 
             // Assert
@@ -679,9 +675,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                     GetCompositeBinder(binder.Object),
                     Mock.Of<IValueProvider>(),
                     new List<IInputFormatter>(),
-                    new DefaultObjectValidator(
-                        new IExcludeTypeValidationFilter[0],
-                        metadataProvider),
+                    new DefaultObjectValidator(metadataProvider),
                     Mock.Of<IModelValidatorProvider>(),
                     includePredicate));
 

@@ -3,6 +3,7 @@
 
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Mvc;
+using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace FormatterWebSite
@@ -13,8 +14,8 @@ namespace FormatterWebSite
         {
             services.AddMvc(options =>
             {
-                options.ValidationExcludeFilters.Add(typeof(Developer));
-                options.ValidationExcludeFilters.Add(typeof(Supplier));
+                options.ModelMetadataDetailsProviders.Add(new ValidationExcludeFilter(typeof(Developer)));
+                options.ModelMetadataDetailsProviders.Add(new ValidationExcludeFilter(typeof(Supplier)));
                 
                 options.InputFormatters.Add(new StringInputFormatter());
             })

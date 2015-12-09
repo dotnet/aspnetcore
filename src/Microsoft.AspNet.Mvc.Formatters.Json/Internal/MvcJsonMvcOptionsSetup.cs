@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.OptionsModel;
 using Microsoft.Net.Http.Headers;
@@ -30,7 +31,7 @@ namespace Microsoft.AspNet.Mvc.Formatters.Json.Internal
             
             options.FormatterMappings.SetMediaTypeMappingForFormat("json", MediaTypeHeaderValue.Parse("application/json"));
 
-            options.ValidationExcludeFilters.Add(typeof(JToken));
+            options.ModelMetadataDetailsProviders.Add(new ValidationExcludeFilter(typeof(JToken)));
         }
     }
 }

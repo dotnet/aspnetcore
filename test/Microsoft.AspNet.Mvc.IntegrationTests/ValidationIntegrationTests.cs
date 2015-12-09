@@ -9,6 +9,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Abstractions;
 using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNet.Mvc.ModelBinding.Validation;
+using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.IntegrationTests
@@ -1129,7 +1131,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
                 },
                 options =>
                 {
-                    options.ValidationExcludeFilters.Add(typeof(Address));
+                    options.ModelMetadataDetailsProviders.Add(new ValidationExcludeFilter(typeof(Address)));
                     testOptions = options;
                 });
 
@@ -1165,6 +1167,55 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
 
             // Address itself is not excluded from validation.
             Assert.Equal(ModelValidationState.Valid, entry.ValidationState);
+        }
+
+        [Fact]
+        public async Task FromBody_JToken_ExcludedFromValidation()
+        {
+            // Arrange
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder(new TestMvcOptions().Value);
+            var parameter = new ParameterDescriptor
+            {
+                Name = "Parameter1",
+                BindingInfo = new BindingInfo
+                {
+                    BinderModelName = "CustomParameter",
+                    BindingSource = BindingSource.Body
+                },
+                ParameterType = typeof(JToken)
+            };
+
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(
+                request =>
+                {
+                    request.Body = new MemoryStream(Encoding.UTF8.GetBytes("{ message: \"Hello\" }"));
+                    request.ContentType = "application/json";
+                });
+
+            var httpContext = operationContext.HttpContext;
+            var modelState = operationContext.ActionContext.ModelState;
+
+            // We need to add another model state entry which should get marked as skipped so 
+            // we can prove that the JObject was skipped.
+            modelState.SetModelValue("message", "Hello", "Hello");
+
+            // Act
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext);
+
+            // Assert
+            Assert.True(modelBindingResult.IsModelSet);
+            Assert.NotNull(modelBindingResult.Model);
+            var message = Assert.IsType<JObject>(modelBindingResult.Model).GetValue("message").Value<string>();
+            Assert.Equal("Hello", message);
+
+            Assert.True(modelState.IsValid);
+            Assert.Equal(2, modelState.Count);
+
+            var entry = Assert.Single(modelState, kvp => kvp.Key == string.Empty);
+            Assert.Equal(ModelValidationState.Valid, entry.Value.ValidationState);
+
+            entry = Assert.Single(modelState, kvp => kvp.Key == "message");
+            Assert.Equal(ModelValidationState.Skipped, entry.Value.ValidationState);
         }
 
         private static void AssertRequiredError(string key, ModelError error)

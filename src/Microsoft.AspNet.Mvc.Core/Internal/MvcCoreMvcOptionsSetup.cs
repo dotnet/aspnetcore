@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Threading;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.Formatters;
@@ -63,13 +64,11 @@ namespace Microsoft.AspNet.Mvc.Internal
             options.ModelValidatorProviders.Add(new DefaultModelValidatorProvider());
 
             // Add types to be excluded from Validation
-            options.ValidationExcludeFilters.Add(new SimpleTypesExcludeFilter());
-            options.ValidationExcludeFilters.Add(typeof(Type));
-
-            // Any 'known' types that we bind should be marked as excluded from validation.
-            options.ValidationExcludeFilters.Add(typeof(System.Threading.CancellationToken));
-            options.ValidationExcludeFilters.Add(typeof(IFormFile));
-            options.ValidationExcludeFilters.Add(typeof(IFormCollection));
+            options.ModelMetadataDetailsProviders.Add(new ValidationExcludeFilter(typeof(Type)));
+            options.ModelMetadataDetailsProviders.Add(new ValidationExcludeFilter(typeof(Uri)));
+            options.ModelMetadataDetailsProviders.Add(new ValidationExcludeFilter(typeof(CancellationToken)));
+            options.ModelMetadataDetailsProviders.Add(new ValidationExcludeFilter(typeof(IFormFile)));
+            options.ModelMetadataDetailsProviders.Add(new ValidationExcludeFilter(typeof(IFormCollection)));
         }
     }
 }

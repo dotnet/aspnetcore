@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNet.Mvc.ModelBinding.Metadata;
+using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.Extensions.OptionsModel;
 
 namespace Microsoft.AspNet.Mvc.Formatters.Xml.Internal
@@ -31,8 +32,8 @@ namespace Microsoft.AspNet.Mvc.Formatters.Xml.Internal
             options.OutputFormatters.Add(new XmlDataContractSerializerOutputFormatter());
             options.InputFormatters.Add(new XmlDataContractSerializerInputFormatter());
 
-            options.ValidationExcludeFilters.Add(typeFullName: "System.Xml.Linq.XObject");
-            options.ValidationExcludeFilters.Add(typeFullName: "System.Xml.XmlNode");
+            options.ModelMetadataDetailsProviders.Add(new ValidationExcludeFilter("System.Xml.Linq.XObject"));
+            options.ModelMetadataDetailsProviders.Add(new ValidationExcludeFilter("System.Xml.XmlNode"));
         }
     }
 }
