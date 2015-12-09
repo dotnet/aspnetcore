@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
     [TestCaseOrderer("Microsoft.AspNet.Identity.Test.PriorityOrderer", "Microsoft.AspNet.Identity.EntityFramework.Test")]
     public class DefaultPocoTest
     {
-        private readonly string ConnectionString = @"Server=(localdb)\mssqllocaldb;Database=DefaultSchemaTest" + DateTime.Now.Month + "-" + DateTime.Now.Day + "-" + DateTime.Now.Year + ";Trusted_Connection=True;MultipleActiveResultSets=true";
+        private readonly string ConnectionString = @"Server=(localdb)\mssqllocaldb;Database=DefaultSchemaTest" + DateTime.Now.Month + "-" + DateTime.Now.Day + "-" + DateTime.Now.Year + ";Trusted_Connection=True;MultipleActiveResultSets=true;Connection Timeout=30";
         public IdentityDbContext CreateContext(bool ensureCreated = false)
         {
             var db = DbUtil.Create(ConnectionString);

@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
     {
         public class ApplicationDbContext : IdentityDbContext<ApplicationUser> { }
 
-        private readonly string ConnectionString = @"Server=(localdb)\mssqllocaldb;Database=SqlUserStoreTest" + DateTime.Now.Month + "-" + DateTime.Now.Day + "-" + DateTime.Now.Year + ";Trusted_Connection=True;";
+        private readonly string ConnectionString = @"Server=(localdb)\mssqllocaldb;Database=SqlUserStoreTest" + DateTime.Now.Month + "-" + DateTime.Now.Day + "-" + DateTime.Now.Year + ";Trusted_Connection=True;Connection Timeout=30";
 
         [TestPriority(-1000)]
         [ConditionalFact]
