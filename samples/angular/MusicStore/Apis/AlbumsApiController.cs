@@ -6,6 +6,7 @@ using Microsoft.Data.Entity;
 using AutoMapper;
 using MusicStore.Models;
 using MusicStore.Infrastructure;
+using Microsoft.AspNet.SpaServices;
 
 namespace MusicStore.Apis
 {
@@ -95,7 +96,7 @@ namespace MusicStore.Apis
             if (!ModelState.IsValid)
             {
                 // Return the model errors
-                return new ApiResult(ModelState);
+                return new ValidationErrorResult(ModelState);
             }
 
             // Save the changes to the DB
@@ -105,11 +106,10 @@ namespace MusicStore.Apis
 
             // TODO: Handle missing record, key violations, concurrency issues, etc.
 
-            return new ApiResult
-            {
+            return new ObjectResult(new {
                 Data = dbAlbum.AlbumId,
                 Message = "Album created successfully."
-            };
+            });
         }
 
         [HttpPut("{albumId:int}/update")]
@@ -118,18 +118,16 @@ namespace MusicStore.Apis
             if (!ModelState.IsValid)
             {
                 // Return the model errors
-                return new ApiResult(ModelState);
+                return new ValidationErrorResult(ModelState);
             }
 
             var dbAlbum = await _storeContext.Albums.SingleOrDefaultAsync(a => a.AlbumId == albumId);
 
             if (dbAlbum == null)
             {
-                return new ApiResult
-                {
-                    StatusCode = 404,
+                return new ObjectResult(new {
                     Message = string.Format("The album with ID {0} was not found.", albumId)
-                };
+                }) { StatusCode = 404 };
             }
 
             // Save the changes to the DB
@@ -138,10 +136,9 @@ namespace MusicStore.Apis
 
             // TODO: Handle missing record, key violations, concurrency issues, etc.
 
-            return new ApiResult
-            {
+            return new ObjectResult (new {
                 Message = "Album updated successfully."
-            };
+            });
         }
 
         [HttpDelete("{albumId:int}")]
@@ -161,10 +158,9 @@ namespace MusicStore.Apis
                 // TODO: Handle missing record, key violations, concurrency issues, etc.
             }
 
-            return new ApiResult
-            {
+            return new ObjectResult (new {
                 Message = "Album deleted successfully."
-            };
+            });
         }
     }
 

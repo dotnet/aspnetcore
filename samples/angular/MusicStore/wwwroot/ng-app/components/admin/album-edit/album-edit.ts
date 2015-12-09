@@ -71,7 +71,7 @@ export class AlbumEdit {
                 if (response.status === 200) {
                     this.changesSaved = true;
                 } else {
-                    var errors = (<ValidationResponse>(response.json())).ModelErrors;
+                    var errors = <ValidationResponse>(response.json());
                     Object.keys(errors).forEach(key => {
                         errors[key].forEach(errorMessage => {
                             // TODO: There has to be a better API for this
@@ -101,6 +101,5 @@ export class AlbumEdit {
 }
 
 interface ValidationResponse {
-    Message: string;
-    ModelErrors: { [key: string]: string[] };
+    [propertyName: string]: string[];
 }

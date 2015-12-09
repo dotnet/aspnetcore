@@ -10,6 +10,7 @@
   "projectUrl": "",
   "licenseUrl": "",
   "dependencies": {
+      "Microsoft.AspNet.Mvc": "6.0.0-rc1-*",
       "Microsoft.AspNet.Routing": "1.0.0-rc1-*"
   },
   "frameworks": {
