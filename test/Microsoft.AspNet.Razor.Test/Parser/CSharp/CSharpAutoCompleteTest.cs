@@ -46,8 +46,8 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                            .Accepts(AcceptedCharacters.Any),
                     new MarkupBlock()),
                 new RazorError(
-                    RazorResources.FormatParseError_Expected_X("}"),
-                    new SourceLocation(17, 0, 17),
+                    RazorResources.FormatParseError_Expected_EndOfBlock_Before_EOF("section", "}", "{"),
+                    new SourceLocation(16, 0, 16),
                     length: 1));
         }
 
@@ -109,8 +109,8 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                         new MarkupTagBlock(
                             Factory.Markup("</p>")))),
                 new RazorError(
-                    RazorResources.FormatParseError_Expected_X("}"),
-                    new SourceLocation(27 + Environment.NewLine.Length, 1, 10),
+                    RazorResources.FormatParseError_Expected_EndOfBlock_Before_EOF("section", "}", "{"),
+                    new SourceLocation(16, 0, 16),
                     length: 1));
         }
 

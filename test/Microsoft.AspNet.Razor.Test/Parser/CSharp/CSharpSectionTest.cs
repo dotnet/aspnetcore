@@ -170,8 +170,30 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                                .AutoCompleteWith("}", atEndOfSpan: true),
                         new MarkupBlock())),
                 new RazorError(
-                    RazorResources.FormatParseError_Expected_X("}"),
-                    new SourceLocation(14, 0, 14),
+                    RazorResources.FormatParseError_Expected_EndOfBlock_Before_EOF("section", "}", "{"),
+                    new SourceLocation(13, 0, 13),
+                    length: 1));
+        }
+
+        [Theory]
+        [InlineData(" ")]
+        [InlineData("\n")]
+        [InlineData(" abc")]
+        [InlineData(" \n abc")]
+        public void ParseSectionBlockHandlesEOFAfterOpenContent(string postStartBrace)
+        {
+            ParseDocumentTest("@section foo {" + postStartBrace,
+                new MarkupBlock(
+                    Factory.EmptyHtml(),
+                    new SectionBlock(new SectionChunkGenerator("foo"),
+                        Factory.CodeTransition(),
+                        Factory.MetaCode("section foo {")
+                               .AutoCompleteWith("}", atEndOfSpan: true),
+                        new MarkupBlock(
+                            Factory.Markup(postStartBrace)))),
+                new RazorError(
+                    RazorResources.FormatParseError_Expected_EndOfBlock_Before_EOF("section", "}", "{"),
+                    new SourceLocation(13, 0, 13),
                     length: 1));
         }
 
@@ -194,8 +216,43 @@ namespace Microsoft.AspNet.Razor.Test.Parser.CSharp
                             new MarkupTagBlock(
                                 Factory.Markup("</p>"))))),
                 new RazorError(
-                    RazorResources.FormatParseError_Expected_X("}"),
-                    new SourceLocation(27, 0, 27),
+                    RazorResources.FormatParseError_Expected_EndOfBlock_Before_EOF("section", "}", "{"),
+                    new SourceLocation(13, 0, 13),
+                    length: 1));
+        }
+
+        [Fact]
+        public void ParseSectionBlockHandlesUnterminatedSectionWithNestedIf()
+        {
+            var newLine = Environment.NewLine;
+            var spaces = "    ";
+            ParseDocumentTest(
+                string.Format(
+                    "@section Test{0}{{{0}{1}@if(true){0}{1}{{{0}{1}{1}<p>Hello World</p>{0}{1}}}",
+                    newLine,
+                    spaces),
+                new MarkupBlock(
+                    Factory.EmptyHtml(),
+                    new SectionBlock(new SectionChunkGenerator("Test"),
+                        Factory.CodeTransition(),
+                        Factory.MetaCode($"section Test{newLine}{{")
+                            .AutoCompleteWith("}", atEndOfSpan: true),
+                        new MarkupBlock(
+                            Factory.Markup(newLine),
+                            new StatementBlock(
+                                Factory.Code(spaces).AsStatement(),
+                                Factory.CodeTransition(),
+                                Factory.Code($"if(true){newLine}{spaces}{{{newLine}").AsStatement(),
+                                new MarkupBlock(
+                                    Factory.Markup($"{spaces}{spaces}"),
+                                    BlockFactory.MarkupTagBlock("<p>", AcceptedCharacters.None),
+                                    Factory.Markup("Hello World"),
+                                    BlockFactory.MarkupTagBlock("</p>", AcceptedCharacters.None),
+                                    Factory.Markup(newLine).Accepts(AcceptedCharacters.None)),
+                                Factory.Code($"{spaces}}}").AsStatement())))),
+                new RazorError(
+                    RazorResources.FormatParseError_Expected_EndOfBlock_Before_EOF("section", "}", "{"),
+                    new SourceLocation(13 + newLine.Length, 1, 0),
                     length: 1));
         }
 

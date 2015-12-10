@@ -114,6 +114,8 @@ namespace Microsoft.AspNet.Razor.Parser
                 Accept(whitespace);
             }
 
+            var startingBraceLocation = CurrentLocation;
+
             // Set up edit handler
             var editHandler = new AutoCompleteEditHandler(Language.TokenizeString, autoCompleteAtEndOfSpan: true);
 
@@ -130,8 +132,11 @@ namespace Microsoft.AspNet.Razor.Parser
             {
                 editHandler.AutoCompleteString = "}";
                 Context.OnError(
-                    CurrentLocation,
-                    RazorResources.FormatParseError_Expected_X(Language.GetSample(CSharpSymbolType.RightBrace)),
+                    startingBraceLocation,
+                    RazorResources.FormatParseError_Expected_EndOfBlock_Before_EOF(
+                        SyntaxConstants.CSharp.SectionKeyword,
+                        Language.GetSample(CSharpSymbolType.RightBrace),
+                        Language.GetSample(CSharpSymbolType.LeftBrace)),
                     length: 1 /* } */);
             }
             else
