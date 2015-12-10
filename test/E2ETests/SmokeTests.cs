@@ -145,7 +145,8 @@ namespace E2ETests
                     var httpClientHandler = new HttpClientHandler();
                     var httpClient = new HttpClient(httpClientHandler)
                     {
-                        BaseAddress = new Uri(deploymentResult.ApplicationBaseUri)
+                        BaseAddress = new Uri(deploymentResult.ApplicationBaseUri),
+                        Timeout = TimeSpan.FromSeconds(5)
                     };
 
                     // Request to base address and check if various parts of the body are rendered
