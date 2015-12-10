@@ -9,6 +9,9 @@
 </cache>
 
 @section scripts {
+    @await Html.PrimeCache(Url.Action("GenreMenuList", "GenresApi"))
+    @await Html.PrimeCache(Url.Action("MostPopular", "AlbumsApi"))
+
     <script src="~/lib/traceur/bin/traceur-runtime.js"></script>
     <script src="~/lib/es6-module-loader/dist/es6-module-loader-sans-promises.js"></script>
     <script src="~/lib/reflect-metadata/Reflect.js"></script>
