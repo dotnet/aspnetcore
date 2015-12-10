@@ -66,7 +66,7 @@ namespace Microsoft.AspNet.NodeServices {
                     }
 
                     var nodePathValue = existingNodePath + Path.Combine(this._projectPath, "node_modules");
-                    #if DNX451
+                    #if NET451
                     startInfo.EnvironmentVariables.Add("NODE_PATH", nodePathValue);
                     #else
                     startInfo.Environment.Add("NODE_PATH", nodePathValue);

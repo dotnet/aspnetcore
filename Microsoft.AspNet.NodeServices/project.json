@@ -1,32 +1,28 @@
 {
   "version": "1.0.0-alpha7",
-  "description": "Microsoft.AspNet.NodeServices",
-  "authors": [
-    "Microsoft"
-  ],
-  "tags": [
-    ""
-  ],
-  "projectUrl": "",
-  "licenseUrl": "",
+  "description": "ASP.NET 5 Node.js services.",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/aspnet/nodeservices"
+  },
   "dependencies": {
-    "System.Net.Http": "4.0.1-beta-*",
-    "Newtonsoft.Json": "8.0.1-beta3",
     "Microsoft.Extensions.DependencyInjection.Abstractions": "1.0.0-rc1-final",
-    "Microsoft.Extensions.PlatformAbstractions": "1.0.0-rc1-final"
+    "Microsoft.Extensions.PlatformAbstractions": "1.0.0-rc1-final",
+    "Newtonsoft.Json": "8.0.1-beta3",
+    "System.Net.Http": "4.0.1-beta-*"
   },
   "frameworks": {
-    "dnx451": {},
-    "dnxcore50": {
+    "net451": { },
+    "dotnet5.4": {
       "dependencies": {
         "Microsoft.CSharp": "4.0.1-beta-*",
         "System.Collections": "4.0.11-beta-*",
-        "System.Linq": "4.0.1-beta-*",
-        "System.Threading": "4.0.11-beta-*",
-        "System.Text.RegularExpressions": "4.0.11-beta-*",
+        "System.Console": "4.0.0-beta-*",
         "System.Diagnostics.Process": "4.1.0-beta-*",
         "System.IO.FileSystem": "4.0.1-beta-*",
-        "System.Console": "4.0.0-beta-*"
+        "System.Linq": "4.0.1-beta-*",
+        "System.Text.RegularExpressions": "4.0.11-beta-*",
+        "System.Threading": "4.0.11-beta-*"
       }
     }
   },
