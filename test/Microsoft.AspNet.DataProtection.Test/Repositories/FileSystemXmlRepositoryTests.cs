@@ -16,12 +16,13 @@ namespace Microsoft.AspNet.DataProtection.Repositories
         [ConditionalRunTestOnlyIfLocalAppDataAvailable]
         public void DefaultKeyStorageDirectory_Property()
         {
+
             // Act
             var defaultDirInfo = FileSystemXmlRepository.DefaultKeyStorageDirectory;
 
             // Assert
             Assert.Equal(defaultDirInfo.FullName,
-                new DirectoryInfo(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "ASP.NET", "DataProtection-Keys")).FullName);
+                new DirectoryInfo(Path.Combine(GetLocalApplicationData(), "ASP.NET", "DataProtection-Keys")).FullName);
         }
 
         [Fact]
@@ -156,9 +157,18 @@ namespace Microsoft.AspNet.DataProtection.Repositories
             }
         }
 
+        private static string GetLocalApplicationData()
+        {
+#if DNXCORE50
+            return Environment.ExpandEnvironmentVariables("%LOCALAPPDATA%");
+#else
+            return Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+#endif
+        }
+
         private class ConditionalRunTestOnlyIfLocalAppDataAvailable : Attribute, ITestCondition
         {
-            public bool IsMet => Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) != null;
+            public bool IsMet => GetLocalApplicationData() != null;
 
             public string SkipReason { get; } = "%LOCALAPPDATA% couldn't be located.";
         }
