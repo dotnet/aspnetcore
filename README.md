@@ -25,7 +25,7 @@ How to run Coherence-Signed
 4. Run the build file with TestCodeSign=true (because you can't do the
    real signing):
    ```
-   msbuild dnx.msbuild /P:TestCodeSign=true
+   msbuild dnx.msbuild /P:TestCodeSign=true;CodeSignCreateTestJob=true
    ```
 
 5. The output files will end up in `.\bin\Release\Packages`
