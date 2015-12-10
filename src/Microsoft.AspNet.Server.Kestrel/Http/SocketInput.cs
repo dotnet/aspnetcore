@@ -216,8 +216,16 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             }
             else
             {
-                // THIS IS AN ERROR STATE - ONLY ONE WAITER CAN WAIT
-                throw new InvalidOperationException("Concurrent reads are not supported.");
+                _awaitableError = new InvalidOperationException("Concurrent reads are not supported.");
+
+                awaitableState = Interlocked.Exchange(
+                    ref _awaitableState,
+                    _awaitableIsCompleted);
+
+                _manualResetEvent.Set();
+
+                _threadPool.Run(continuation);
+                _threadPool.Run(awaitableState);
             }
         }
 
