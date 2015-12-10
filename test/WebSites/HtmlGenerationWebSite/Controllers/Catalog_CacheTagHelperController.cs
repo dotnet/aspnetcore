@@ -1,7 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using System.Security.Claims;
+using HtmlGenerationWebSite.Models;
 using Microsoft.AspNet.Mvc;
 
 namespace HtmlGenerationWebSite.Controllers
@@ -71,10 +73,14 @@ namespace HtmlGenerationWebSite.Controllers
             return View();
         }
 
-        [HttpPost("/categories/update-products")]
-        public void UpdateCategories([FromServices] ProductsService productsService)
+        [HttpPost("/categories/{category}")]
+        public IActionResult UpdateProducts(
+            [FromServices] ProductsService productService,
+            string category,
+            [FromBody] List<Product> products)
         {
-            productsService.UpdateProducts();
+            productService.UpdateProducts(category, products);
+            return Ok();
         }
 
         [HttpGet("/catalog/GetDealPercentage/{dealPercentage}")]

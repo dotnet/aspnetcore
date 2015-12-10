@@ -7,6 +7,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Reflection;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Testing;
 using Xunit;
@@ -445,17 +446,19 @@ Products: Book1, Book2 (1)";
             Assert.Equal(expected2, response2.Trim(), ignoreLineEndingDifferences: true);
 
             // Act - 3
-            // Trigger an expiration
-            var response3 = await Client.PostAsync("/categories/update-products", new StringContent(string.Empty));
-            response3.EnsureSuccessStatusCode();
+            // Trigger an expiration of the nested content.
+            var content = @"[{ productName: ""Music Systems"" },{ productName: ""Televisions"" }]";
+            var requestMessage = new HttpRequestMessage(HttpMethod.Post, "/categories/Electronics");
+            requestMessage.Content = new StringContent(content, Encoding.UTF8, "application/json");
+            (await Client.SendAsync(requestMessage)).EnsureSuccessStatusCode();
 
-            var response4 = await Client.GetStringAsync("/categories/Electronics?correlationId=3");
+            var response3 = await Client.GetStringAsync("/categories/Electronics?correlationId=3");
 
             // Assert - 3
             var expected3 =
 @"Category: Electronics
-Products: Laptops (3)";
-            Assert.Equal(expected3, response4.Trim(), ignoreLineEndingDifferences: true);
+Products: Music Systems, Televisions (3)";
+            Assert.Equal(expected3, response3.Trim(), ignoreLineEndingDifferences: true);
         }
 
         [Fact]
