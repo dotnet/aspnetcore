@@ -12,6 +12,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
 using System.Text;
 using System.Text.Encodings.Web;
+using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.PlatformAbstractions;
 
 namespace Microsoft.AspNet.Hosting.Startup
@@ -139,7 +140,7 @@ namespace Microsoft.AspNet.Hosting.Startup
         {
             return "(" + string.Join(", ", method.GetParameters().Select(p =>
             {
-                Type parameterType = p.ParameterType;
+                var parameterType = p.ParameterType;
                 return ((parameterType != null) ? PrettyPrintTypeName(parameterType) : "?") + " " + p.Name;
             })) + ")";
         }
@@ -215,50 +216,8 @@ namespace Microsoft.AspNet.Hosting.Startup
             return (didReadFailingLine) ? errorSubContents : null;
         }
 
-        private static string PrettyPrintTypeName(Type t)
-        {
-            try
-            {
-                RuntimeHelpers.EnsureSufficientExecutionStack();
+        private static string PrettyPrintTypeName(Type type) => TypeNameHelper.GetTypeDisplayName(type, fullName: false);
 
-                var name = t.Name;
-
-                // Degenerate case
-                if (string.IsNullOrEmpty(name))
-                {
-                    name = "?";
-                }
-
-                // Handle generic types
-                if (t.GetTypeInfo().IsGenericType)
-                {
-                    // strip off the CLR generic type marker if it exists
-                    var indexOfGenericTypeMarker = name.LastIndexOf('`');
-                    if (indexOfGenericTypeMarker >= 0)
-                    {
-                        name = name.Substring(0, indexOfGenericTypeMarker);
-                        name += "<" + string.Join(", ", t.GetGenericArguments().Select(PrettyPrintTypeName)) + ">";
-                    }
-                }
-
-                // Handle nested types
-                if (!t.IsGenericParameter)
-                {
-                    var containerType = t.DeclaringType;
-                    if (containerType != null)
-                    {
-                        name = PrettyPrintTypeName(containerType) + "." + name;
-                    }
-                }
-
-                return name;
-            }
-            catch
-            {
-                // If anything at all goes wrong, fall back to the full type name so that we don't crash the server.
-                return t.FullName;
-            }
-        }
 
         private static void SplitTypeIntoPrefixAndFriendlyName(Type type, out string prefix, out string friendlyName)
         {
