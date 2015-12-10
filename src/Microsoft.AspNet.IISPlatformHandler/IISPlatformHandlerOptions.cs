@@ -28,13 +28,11 @@ namespace Microsoft.AspNet.IISPlatformHandler
         {
             new AuthenticationDescription()
             {
-                AuthenticationScheme = IISPlatformHandlerDefaults.Negotiate,
-                DisplayName = IISPlatformHandlerDefaults.Negotiate
+                AuthenticationScheme = IISPlatformHandlerDefaults.Negotiate
             },
             new AuthenticationDescription()
             {
-                AuthenticationScheme = IISPlatformHandlerDefaults.Ntlm,
-                DisplayName = IISPlatformHandlerDefaults.Ntlm
+                AuthenticationScheme = IISPlatformHandlerDefaults.Ntlm
             }
         };
     }
