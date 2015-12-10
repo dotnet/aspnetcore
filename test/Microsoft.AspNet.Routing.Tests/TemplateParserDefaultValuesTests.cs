@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Routing.Tests
                 constraints: null);
 
             // Assert
-            var defaults = ((Template.TemplateRoute)routeBuilder.Routes[0]).Defaults;
+            var defaults = ((Route)routeBuilder.Routes[0]).Defaults;
             Assert.Equal("12", defaults["id"]);
         }
 
@@ -46,7 +46,7 @@ namespace Microsoft.AspNet.Routing.Tests
                 constraints: null);
 
             // Assert
-            var defaults = ((Template.TemplateRoute)routeBuilder.Routes[0]).Defaults;
+            var defaults = ((Route)routeBuilder.Routes[0]).Defaults;
             Assert.Equal(value, defaults["p1"]);
         }
 

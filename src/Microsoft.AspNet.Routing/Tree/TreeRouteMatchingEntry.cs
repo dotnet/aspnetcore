@@ -45,6 +45,6 @@ namespace Microsoft.AspNet.Routing.Tree
         /// <summary>
         /// The route constraints.
         /// </summary>
-        public IReadOnlyDictionary<string, IRouteConstraint> Constraints { get; set; }
+        public IDictionary<string, IRouteConstraint> Constraints { get; set; }
     }
 }

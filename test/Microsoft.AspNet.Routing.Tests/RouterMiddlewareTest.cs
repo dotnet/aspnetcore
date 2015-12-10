@@ -91,7 +91,7 @@ namespace Microsoft.AspNet.Routing
 
             public Task RouteAsync(RouteContext context)
             {
-                context.IsHandled = _isHandled;
+                context.Handler = _isHandled ? (RequestDelegate)((c) => Task.FromResult(0)) : null;
                 return Task.FromResult<object>(null);
             }
         }

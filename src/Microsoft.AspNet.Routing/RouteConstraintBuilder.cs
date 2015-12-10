@@ -50,8 +50,8 @@ namespace Microsoft.AspNet.Routing
         /// <summary>
         /// Builds a mapping of constraints.
         /// </summary>
-        /// <returns>An <see cref="IReadOnlyDictionary{string, IRouteConstraint}"/> of the constraints.</returns>
-        public IReadOnlyDictionary<string, IRouteConstraint> Build()
+        /// <returns>An <see cref="IDictionary{string, IRouteConstraint}"/> of the constraints.</returns>
+        public IDictionary<string, IRouteConstraint> Build()
         {
             var constraints = new Dictionary<string, IRouteConstraint>(StringComparer.OrdinalIgnoreCase);
             foreach (var kvp in _constraints)

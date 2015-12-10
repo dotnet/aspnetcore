@@ -5,8 +5,6 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Routing;
-using Microsoft.AspNet.Routing.Logging;
-using Microsoft.AspNet.Routing.Logging.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNet.Builder
@@ -35,12 +33,26 @@ namespace Microsoft.AspNet.Builder
 
             await _router.RouteAsync(context);
 
-            if (!context.IsHandled)
+            if (context.Handler == null)
             {
                 _logger.LogDebug("Request did not match any routes.");
 
+                httpContext.Features[typeof(IRoutingFeature)] = new RoutingFeature()
+                {
+                    RouteData = context.RouteData,
+                };
+
                 await _next.Invoke(httpContext);
             }
+            else
+            {
+                await context.Handler(context.HttpContext);
+            }
+        }
+
+        private class RoutingFeature : IRoutingFeature
+        {
+            public RouteData RouteData { get; set; }
         }
     }
 }

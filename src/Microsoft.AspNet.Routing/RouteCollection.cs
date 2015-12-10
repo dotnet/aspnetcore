@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -69,14 +68,15 @@ namespace Microsoft.AspNet.Routing
                     context.RouteData = newRouteData;
 
                     await route.RouteAsync(context);
-                    if (context.IsHandled)
+
+                    if (context.Handler != null)
                     {
                         break;
                     }
                 }
                 finally
                 {
-                    if (!context.IsHandled)
+                    if (context.Handler == null)
                     {
                         context.RouteData = oldRouteData;
                     }

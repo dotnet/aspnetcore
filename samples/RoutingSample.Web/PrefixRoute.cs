@@ -7,12 +7,12 @@ using Microsoft.AspNet.Routing;
 
 namespace RoutingSample.Web
 {
-    internal class PrefixRoute : IRouter
+    public class PrefixRoute : IRouter
     {
-        private readonly IRouter _target;
+        private readonly IRouteHandler _target;
         private readonly string _prefix;
 
-        public PrefixRoute(IRouter target, string prefix)
+        public PrefixRoute(IRouteHandler target, string prefix)
         {
             _target = target;
 
@@ -34,7 +34,7 @@ namespace RoutingSample.Web
             _prefix = prefix;
         }
 
-        public async Task RouteAsync(RouteContext context)
+        public Task RouteAsync(RouteContext context)
         {
             var requestPath = context.HttpContext.Request.Path.Value ?? string.Empty;
             if (requestPath.StartsWith(_prefix, StringComparison.OrdinalIgnoreCase))
@@ -44,12 +44,14 @@ namespace RoutingSample.Web
                     var lastCharacter = requestPath[_prefix.Length];
                     if (lastCharacter != '/' && lastCharacter != '#' && lastCharacter != '?')
                     {
-                        return;
+                        return Task.FromResult(0);
                     }
                 }
 
-                await _target.RouteAsync(context);
+                context.Handler = _target.GetRequestHandler(context.HttpContext, context.RouteData);
             }
+
+            return Task.FromResult(0);
         }
 
         public VirtualPathData GetVirtualPath(VirtualPathContext context)

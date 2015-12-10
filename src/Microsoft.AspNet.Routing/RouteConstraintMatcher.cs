@@ -10,12 +10,13 @@ namespace Microsoft.AspNet.Routing
 {
     public static class RouteConstraintMatcher
     {
-        public static bool Match(IReadOnlyDictionary<string, IRouteConstraint> constraints,
-                                 IDictionary<string, object> routeValues,
-                                 HttpContext httpContext,
-                                 IRouter route,
-                                 RouteDirection routeDirection,
-                                 ILogger logger)
+        public static bool Match(
+            IDictionary<string, IRouteConstraint> constraints,
+            IDictionary<string, object> routeValues,
+            HttpContext httpContext,
+            IRouter route,
+            RouteDirection routeDirection,
+            ILogger logger)
         {
             if (routeValues == null)
             {

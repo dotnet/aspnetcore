@@ -59,8 +59,8 @@ namespace Microsoft.AspNet.Routing
         public string RouteName { get; }
 
         /// <summary>
-        /// Gets the set of new values provided for virtual path generation.
+        /// Gets or sets the set of new values provided for virtual path generation.
         /// </summary>
-        public RouteValueDictionary Values { get; }
+        public RouteValueDictionary Values { get; set; }
     }
 }

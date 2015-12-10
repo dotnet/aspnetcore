@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.Routing
     /// </summary>
     public class RouteData
     {
-        private Dictionary<string, object> _dataTokens;
+        private RouteValueDictionary _dataTokens;
         private RouteValueDictionary _values;
 
         /// <summary>
@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.Routing
             // Perf: Avoid allocating DataTokens and RouteValues unless we need to make a copy.
             if (other._dataTokens != null)
             {
-                _dataTokens = new Dictionary<string, object>(other._dataTokens, StringComparer.OrdinalIgnoreCase);
+                _dataTokens = new RouteValueDictionary(other._dataTokens);
             }
 
             if (other._values != null)
@@ -51,13 +51,13 @@ namespace Microsoft.AspNet.Routing
         /// <summary>
         /// Gets the data tokens produced by routes on the current routing path.
         /// </summary>
-        public IDictionary<string, object> DataTokens
+        public RouteValueDictionary DataTokens
         {
             get
             {
                 if (_dataTokens == null)
                 {
-                    _dataTokens = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+                    _dataTokens = new RouteValueDictionary();
                 }
 
                 return _dataTokens;

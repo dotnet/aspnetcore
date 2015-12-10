@@ -6,10 +6,17 @@ using Microsoft.AspNet.Http;
 
 namespace Microsoft.AspNet.Routing
 {
+    /// <summary>
+    /// A context object for <see cref="IRouter.RouteAsync(RouteContext)"/>.
+    /// </summary>
     public class RouteContext
     {
         private RouteData _routeData;
 
+        /// <summary>
+        /// Creates a new <see cref="RouteContext"/> for the provided <paramref name="httpContext"/>.
+        /// </summary>
+        /// <param name="httpContext">The <see cref="Http.HttpContext"/> associated with the current request.</param>
         public RouteContext(HttpContext httpContext)
         {
             HttpContext = httpContext;
@@ -17,10 +24,20 @@ namespace Microsoft.AspNet.Routing
             RouteData = new RouteData();
         }
 
-        public HttpContext HttpContext { get; private set; }
+        /// <summary>
+        /// Gets or sets the handler for the request. An <see cref="IRouter"/> should set <see cref="Handler"/>
+        /// when it matches.
+        /// </summary>
+        public RequestDelegate Handler { get; set; }
 
-        public bool IsHandled { get; set; }
+        /// <summary>
+        /// Gets the <see cref="Http.HttpContext"/> associated with the current request.
+        /// </summary>
+        public HttpContext HttpContext { get; }
 
+        /// <summary>
+        /// Gets or sets the <see cref="Routing.RouteData"/> associated with the current context.
+        /// </summary>
         public RouteData RouteData
         {
             get

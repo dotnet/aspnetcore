@@ -1,118 +1,75 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Routing.Internal;
+using Microsoft.AspNet.Routing.Template;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNet.Routing.Template
+namespace Microsoft.AspNet.Routing
 {
-    public class TemplateRoute : INamedRouter
+    public abstract class RouteBase : IRouter, INamedRouter
     {
-        private readonly IReadOnlyDictionary<string, IRouteConstraint> _constraints;
-        private readonly IReadOnlyDictionary<string, object> _dataTokens;
-        private readonly IReadOnlyDictionary<string, object> _defaults;
-        private readonly IRouter _target;
-        private readonly RouteTemplate _parsedTemplate;
-        private readonly string _routeTemplate;
-        private readonly TemplateMatcher _matcher;
-        private readonly TemplateBinder _binder;
+        private TemplateMatcher _matcher;
+        private TemplateBinder _binder;
         private ILogger _logger;
         private ILogger _constraintLogger;
 
-        public TemplateRoute(
-            IRouter target,
-            string routeTemplate,
-            IInlineConstraintResolver inlineConstraintResolver)
-            : this(
-                target,
-                routeTemplate,
-                defaults: null,
-                constraints: null,
-                dataTokens: null,
-                inlineConstraintResolver: inlineConstraintResolver)
-        {
-        }
-
-        public TemplateRoute(
-            IRouter target,
-            string routeTemplate,
-            IDictionary<string, object> defaults,
+        public RouteBase(
+            string template,
+            string name,
+            IInlineConstraintResolver constraintResolver,
+            RouteValueDictionary defaults,
             IDictionary<string, object> constraints,
-            IDictionary<string, object> dataTokens,
-            IInlineConstraintResolver inlineConstraintResolver)
-            : this(target, null, routeTemplate, defaults, constraints, dataTokens, inlineConstraintResolver)
+            RouteValueDictionary dataTokens)
         {
-        }
-
-        public TemplateRoute(
-            IRouter target,
-            string routeName,
-            string routeTemplate,
-            IDictionary<string, object> defaults,
-            IDictionary<string, object> constraints,
-            IDictionary<string, object> dataTokens,
-            IInlineConstraintResolver inlineConstraintResolver)
-        {
-            if (target == null)
+            if (constraintResolver == null)
             {
-                throw new ArgumentNullException(nameof(target));
+                throw new ArgumentNullException(nameof(constraintResolver));
             }
 
-            _target = target;
-            _routeTemplate = routeTemplate ?? string.Empty;
-            Name = routeName;
-
-            _dataTokens = dataTokens == null ? new RouteValueDictionary() : new RouteValueDictionary(dataTokens);
+            template = template ?? string.Empty;
+            Name = name;
+            ConstraintResolver = constraintResolver;
+            DataTokens = dataTokens ?? new RouteValueDictionary();
 
             // Data we parse from the template will be used to fill in the rest of the constraints or
             // defaults. The parser will throw for invalid routes.
-            _parsedTemplate = TemplateParser.Parse(RouteTemplate);
+            ParsedTemplate = TemplateParser.Parse(template);
 
-            _constraints = GetConstraints(inlineConstraintResolver, RouteTemplate, _parsedTemplate, constraints);
-            _defaults = GetDefaults(_parsedTemplate, defaults);
-
-            _matcher = new TemplateMatcher(_parsedTemplate, Defaults);
-            _binder = new TemplateBinder(_parsedTemplate, Defaults);
+            Constraints = GetConstraints(constraintResolver, ParsedTemplate, constraints);
+            Defaults = GetDefaults(ParsedTemplate, defaults);
         }
 
-        public string Name { get; private set; }
+        public virtual IDictionary<string, IRouteConstraint> Constraints { get; protected set; }
 
-        public IReadOnlyDictionary<string, object> Defaults
-        {
-            get { return _defaults; }
-        }
+        protected virtual IInlineConstraintResolver ConstraintResolver { get; set; }
 
-        public IReadOnlyDictionary<string, object> DataTokens
-        {
-            get { return _dataTokens; }
-        }
+        public virtual RouteValueDictionary DataTokens { get; protected set; }
 
-        public RouteTemplate ParsedTemplate
-        {
-            get { return _parsedTemplate; }
-        }
+        public virtual RouteValueDictionary Defaults { get; protected set; }
 
-        public string RouteTemplate
-        {
-            get { return _routeTemplate; }
-        }
+        public virtual string Name { get; protected set; }
 
-        public IReadOnlyDictionary<string, IRouteConstraint> Constraints
-        {
-            get { return _constraints; }
-        }
+        public virtual RouteTemplate ParsedTemplate { get; protected set; }
 
-        public async virtual Task RouteAsync(RouteContext context)
+        protected abstract Task OnRouteMatched(RouteContext context);
+
+        protected abstract VirtualPathData OnVirtualPathGenerated(VirtualPathContext context);
+
+        /// <inheritdoc />
+        public virtual Task RouteAsync(RouteContext context)
         {
             if (context == null)
             {
                 throw new ArgumentNullException(nameof(context));
             }
 
+            EnsureMatcher();
             EnsureLoggers(context.HttpContext);
 
             var requestPath = context.HttpContext.Request.Path;
@@ -121,57 +78,46 @@ namespace Microsoft.AspNet.Routing.Template
             if (values == null)
             {
                 // If we got back a null value set, that means the URI did not match
-                return;
+                return TaskCache.CompletedTask;
             }
 
-            var oldRouteData = context.RouteData;
-
-            var newRouteData = new RouteData(oldRouteData);
-
-            // Perf: Avoid accessing data tokens if you don't need to write to it, these dictionaries are all
+            // Perf: Avoid accessing dictionaries if you don't need to write to them, these dictionaries are all
             // created lazily.
-            if (_dataTokens.Count > 0)
+            if (DataTokens.Count > 0)
             {
-                MergeValues(newRouteData.DataTokens, _dataTokens);
+                MergeValues(context.RouteData.DataTokens, DataTokens);
             }
 
-            newRouteData.Routers.Add(_target);
-            MergeValues(newRouteData.Values, values);
+            if (values.Count > 0)
+            {
+                MergeValues(context.RouteData.Values, values);
+            }
 
             if (!RouteConstraintMatcher.Match(
                 Constraints,
-                newRouteData.Values,
+                context.RouteData.Values,
                 context.HttpContext,
                 this,
                 RouteDirection.IncomingRequest,
                 _constraintLogger))
             {
-                return;
+                return TaskCache.CompletedTask;
             }
 
             _logger.LogDebug(
                 "Request successfully matched the route with name '{RouteName}' and template '{RouteTemplate}'.",
                 Name,
-                RouteTemplate);
+                ParsedTemplate.TemplateText);
 
-            try
-            {
-                context.RouteData = newRouteData;
-
-                await _target.RouteAsync(context);
-            }
-            finally
-            {
-                // Restore the original values to prevent polluting the route data.
-                if (!context.IsHandled)
-                {
-                    context.RouteData = oldRouteData;
-                }
-            }
+           return OnRouteMatched(context);
         }
 
+        /// <inheritdoc />
         public virtual VirtualPathData GetVirtualPath(VirtualPathContext context)
         {
+            EnsureBinder();
+            EnsureLoggers(context.HttpContext);
+
             var values = _binder.GetValues(context.AmbientValues, context.Values);
             if (values == null)
             {
@@ -179,7 +125,6 @@ namespace Microsoft.AspNet.Routing.Template
                 return null;
             }
 
-            EnsureLoggers(context.HttpContext);
             if (!RouteConstraintMatcher.Match(
                 Constraints,
                 values.CombinedValues,
@@ -191,7 +136,9 @@ namespace Microsoft.AspNet.Routing.Template
                 return null;
             }
 
-            var pathData = _target.GetVirtualPath(context);
+            context.Values = values.CombinedValues;
+
+            var pathData = OnVirtualPathGenerated(context);
             if (pathData != null)
             {
                 // If the target generates a value then that can short circuit.
@@ -202,13 +149,13 @@ namespace Microsoft.AspNet.Routing.Template
             // to see if the values were validated.
 
             // When we still cannot produce a value, this should return null.
-            var tempPath = _binder.BindValues(values.AcceptedValues);
-            if (tempPath == null)
+            var virtualPath = _binder.BindValues(values.AcceptedValues);
+            if (virtualPath == null)
             {
                 return null;
             }
 
-            pathData = new VirtualPathData(this, tempPath);
+            pathData = new VirtualPathData(this, virtualPath);
             if (DataTokens != null)
             {
                 foreach (var dataToken in DataTokens)
@@ -220,13 +167,12 @@ namespace Microsoft.AspNet.Routing.Template
             return pathData;
         }
 
-        private static IReadOnlyDictionary<string, IRouteConstraint> GetConstraints(
+        protected static IDictionary<string, IRouteConstraint> GetConstraints(
             IInlineConstraintResolver inlineConstraintResolver,
-            string template,
             RouteTemplate parsedTemplate,
             IDictionary<string, object> constraints)
         {
-            var constraintBuilder = new RouteConstraintBuilder(inlineConstraintResolver, template);
+            var constraintBuilder = new RouteConstraintBuilder(inlineConstraintResolver, parsedTemplate.TemplateText);
 
             if (constraints != null)
             {
@@ -252,12 +198,10 @@ namespace Microsoft.AspNet.Routing.Template
             return constraintBuilder.Build();
         }
 
-        private static RouteValueDictionary GetDefaults(
+        protected static RouteValueDictionary GetDefaults(
             RouteTemplate parsedTemplate,
-            IDictionary<string, object> defaults)
+            RouteValueDictionary defaults)
         {
-            // Do not use RouteValueDictionary.Empty for defaults, it might be modified inside
-            // UpdateInlineDefaultValuesAndConstraints()
             var result = defaults == null ? new RouteValueDictionary() : new RouteValueDictionary(defaults);
 
             foreach (var parameter in parsedTemplate.Parameters)
@@ -293,17 +237,11 @@ namespace Microsoft.AspNet.Routing.Template
             }
         }
 
-        // Needed because IDictionary<> is not an IReadOnlyDictionary<>
-        private static void MergeValues(
-            IDictionary<string, object> destination,
-            IReadOnlyDictionary<string, object> values)
+        private void EnsureBinder()
         {
-            foreach (var kvp in values)
+            if (_binder == null)
             {
-                // This will replace the original value for the specified key.
-                // Values from the matched route will take preference over previous
-                // data in the route context.
-                destination[kvp.Key] = kvp.Value;
+                _binder = new TemplateBinder(ParsedTemplate, Defaults);
             }
         }
 
@@ -312,14 +250,22 @@ namespace Microsoft.AspNet.Routing.Template
             if (_logger == null)
             {
                 var factory = context.RequestServices.GetRequiredService<ILoggerFactory>();
-                _logger = factory.CreateLogger<TemplateRoute>();
+                _logger = factory.CreateLogger(typeof(RouteBase).FullName);
                 _constraintLogger = factory.CreateLogger(typeof(RouteConstraintMatcher).FullName);
+            }
+        }
+
+        private void EnsureMatcher()
+        {
+            if (_matcher == null)
+            {
+                _matcher = new TemplateMatcher(ParsedTemplate, Defaults);
             }
         }
 
         public override string ToString()
         {
-            return _routeTemplate;
+            return ParsedTemplate.TemplateText;
         }
     }
 }

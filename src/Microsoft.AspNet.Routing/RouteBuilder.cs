@@ -17,11 +17,7 @@ namespace Microsoft.AspNet.Routing
 
         public IServiceProvider ServiceProvider { get; set; }
 
-        public IList<IRouter> Routes
-        {
-            get;
-            private set;
-        }
+        public IList<IRouter> Routes { get; }
 
         public IRouter Build()
         {

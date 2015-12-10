@@ -8,53 +8,18 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Routing.Constraints;
-using Microsoft.AspNet.Routing.Logging;
 using Microsoft.AspNet.Testing;
-using Microsoft.Extensions.Logging.Internal;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.Routing.Template
+namespace Microsoft.AspNet.Routing
 {
-    public class TemplateRouteTest
+    public class RouteTest
     {
+        private static readonly RequestDelegate NullHandler = (c) => Task.FromResult(0);
         private static IInlineConstraintResolver _inlineConstraintResolver = GetInlineConstraintResolver();
-
-        private async Task<Tuple<TestSink, RouteContext>> SetUp(
-            bool loggerEnabled,
-            string routeName,
-            string template,
-            string requestPath,
-            TestSink testSink = null)
-        {
-            if (testSink == null)
-            {
-                testSink = new TestSink(
-                    TestSink.EnableWithTypeName<TemplateRoute>,
-                    TestSink.EnableWithTypeName<TemplateRoute>);
-            }
-
-            var loggerFactory = new TestLoggerFactory(testSink, loggerEnabled);
-
-            TemplateRoute route;
-            if (!string.IsNullOrEmpty(routeName))
-            {
-                route = CreateRoute(routeName, template);
-            }
-            else
-            {
-                route = CreateRoute(template);
-            }
-
-            var context = CreateRouteContext(requestPath, loggerFactory);
-
-            // Act
-            await route.RouteAsync(context);
-
-            return Tuple.Create(testSink, context);
-        }
 
         [Fact]
         public void CreateTemplate_InlineConstraint_Regex_Malformed()
@@ -67,7 +32,7 @@ namespace Microsoft.AspNet.Routing.Template
                 "'IInlineConstraintResolverProxy'.";
 
             var exception = Assert.Throws<InvalidOperationException>(
-                () => new TemplateRoute(
+                () => new Route(
                     mockTarget.Object,
                     template,
                     defaults: null,
@@ -76,67 +41,6 @@ namespace Microsoft.AspNet.Routing.Template
                     inlineConstraintResolver: _inlineConstraintResolver));
 
             Assert.Equal(expected, exception.Message);
-        }
-
-        [Fact]
-        public async Task RouteAsync_MatchSuccess_LogsCorrectValues()
-        {
-            // Arrange & Act
-            var routeName = "Default";
-            var template = "{controller}/{action}";
-            var result = await SetUp(
-                routeName: routeName,
-                template: template,
-                requestPath: "/Home/Index",
-                loggerEnabled: true);
-            var sink = result.Item1;
-            var expected = "Request successfully matched the route with " +
-                $"name '{routeName}' and template '{template}'.";
-
-            // Assert
-            Assert.Empty(sink.Scopes);
-            Assert.Single(sink.Writes);
-            Assert.Equal(expected, sink.Writes[0].State?.ToString());
-        }
-
-        [Fact]
-        public async Task RouteAsync_MatchFailOnConstraints_LogsCorrectValues()
-        {
-            // Arrange & Act
-            var sink = new TestSink((writeEnabled) => true, (scopeEnabled) => true);
-            var template = "{controller}/{action}/{id:int}";
-            var result = await SetUp(
-                routeName: "Default",
-                template: template,
-                requestPath: "/Home/Index/Failure",
-                loggerEnabled: true,
-                testSink: sink);
-            var expectedMessage = "Route value 'Failure' with key 'id' did not match the " +
-                $"constraint '{typeof(IntRouteConstraint).FullName}'.";
-            var expectedLogValues = new[]
-            {
-                new KeyValuePair<string, object>("RouteValue", "Failure"),
-                new KeyValuePair<string, object>("RouteKey", "id"),
-                new KeyValuePair<string, object>("RouteConstraint", typeof(IntRouteConstraint).FullName)
-            };
-
-            // Assert
-            Assert.Empty(sink.Scopes);
-            Assert.Single(sink.Writes);
-            var sinkWrite = sink.Writes[0];
-            var formattedLogValues = Assert.IsType<FormattedLogValues>(sinkWrite.State);
-            Assert.Equal(expectedMessage, formattedLogValues.ToString());
-            var actualLogValues = formattedLogValues.GetValues();
-            foreach(var expectedPair in expectedLogValues)
-            {
-                Assert.Contains(
-                    actualLogValues, 
-                    (kvp) =>
-                    {
-                        return string.Equals(expectedPair.Key, kvp.Key)
-                        && string.Equals(expectedPair.Value?.ToString(), kvp.Value?.ToString());
-                    });
-            }
         }
 
         [Fact]
@@ -160,11 +64,11 @@ namespace Microsoft.AspNet.Routing.Template
                 .Callback<RouteContext>(ctx =>
                 {
                     routeValues = ctx.RouteData.Values;
-                    ctx.IsHandled = true;
+                    ctx.Handler = NullHandler;
                 })
                 .Returns(Task.FromResult(true));
 
-            var route = new TemplateRoute(
+            var route = new Route(
                 mockTarget.Object,
                 template,
                 defaults: null,
@@ -187,12 +91,11 @@ namespace Microsoft.AspNet.Routing.Template
             Assert.Equal("USA", context.RouteData.Values["country"]);
             Assert.True(context.RouteData.Values.ContainsKey("id"));
             Assert.Equal("5", context.RouteData.Values["id"]);
-            Assert.NotSame(originalRouteDataValues, context.RouteData.Values);
+            Assert.Same(originalRouteDataValues, context.RouteData.Values);
 
             Assert.Equal("Contoso", context.RouteData.DataTokens["company"]);
             Assert.Equal("Friday", context.RouteData.DataTokens["today"]);
-            Assert.NotSame(originalDataTokens, context.RouteData.DataTokens);
-            Assert.NotSame(route.DataTokens, context.RouteData.DataTokens);
+            Assert.Same(originalDataTokens, context.RouteData.DataTokens);
         }
 
         [Fact]
@@ -215,13 +118,13 @@ namespace Microsoft.AspNet.Routing.Template
                 .Callback<RouteContext>(ctx =>
                 {
                     routeValues = ctx.RouteData.Values;
-                    ctx.IsHandled = true;
+                    ctx.Handler = NullHandler;
                 })
                 .Returns(Task.FromResult(true));
 
             var constraint = new CapturingConstraint();
 
-            var route = new TemplateRoute(
+            var route = new Route(
                 mockTarget.Object,
                 template,
                 defaults: null,
@@ -249,171 +152,10 @@ namespace Microsoft.AspNet.Routing.Template
             Assert.Equal("USA", context.RouteData.Values["country"]);
             Assert.True(context.RouteData.Values.ContainsKey("id"));
             Assert.Equal("5", context.RouteData.Values["id"]);
-            Assert.NotSame(originalRouteDataValues, context.RouteData.Values);
+            Assert.Same(originalRouteDataValues, context.RouteData.Values);
 
             Assert.Equal("Contoso", context.RouteData.DataTokens["company"]);
             Assert.Equal("Friday", context.RouteData.DataTokens["today"]);
-            Assert.NotSame(originalDataTokens, context.RouteData.DataTokens);
-            Assert.NotSame(route.DataTokens, context.RouteData.DataTokens);
-        }
-
-        [Fact]
-        public async Task RouteAsync_CleansUpMergedRouteData_IfRouteDoesNotMatch()
-        {
-            // Arrange
-            var template = "{controller}/{action}/{id:int}";
-
-            var context = CreateRouteContext("/Home/Index/5");
-            var originalRouteDataValues = context.RouteData.Values;
-            originalRouteDataValues.Add("country", "USA");
-
-            var originalDataTokens = context.RouteData.DataTokens;
-            originalDataTokens.Add("company", "Contoso");
-
-            IDictionary<string, object> routeValues = null;
-            var mockTarget = new Mock<IRouter>(MockBehavior.Strict);
-            mockTarget
-                .Setup(s => s.RouteAsync(It.IsAny<RouteContext>()))
-                .Callback<RouteContext>(ctx =>
-                {
-                    routeValues = ctx.RouteData.Values;
-                    ctx.IsHandled = false;
-                })
-                .Returns(Task.FromResult(true));
-
-            var route = new TemplateRoute(
-                mockTarget.Object,
-                template,
-                defaults: null,
-                constraints: null,
-                dataTokens: new RouteValueDictionary(new { today = "Friday" }),
-                inlineConstraintResolver: _inlineConstraintResolver);
-
-            // Act
-            await route.RouteAsync(context);
-
-            // Assert
-            Assert.NotNull(routeValues);
-
-            Assert.True(routeValues.ContainsKey("country"));
-            Assert.Equal("USA", routeValues["country"]);
-            Assert.True(routeValues.ContainsKey("id"));
-            Assert.Equal("5", routeValues["id"]);
-
-            Assert.True(context.RouteData.Values.ContainsKey("country"));
-            Assert.Equal("USA", context.RouteData.Values["country"]);
-            Assert.False(context.RouteData.Values.ContainsKey("id"));
-            Assert.Same(originalRouteDataValues, context.RouteData.Values);
-
-            Assert.Equal("Contoso", context.RouteData.DataTokens["company"]);
-            Assert.False(context.RouteData.DataTokens.ContainsKey("today"));
-            Assert.Same(originalDataTokens, context.RouteData.DataTokens);
-        }
-
-        [Fact]
-        public async Task RouteAsync_CleansUpMergedRouteData_IfHandlerThrows()
-        {
-            // Arrange
-            var template = "{controller}/{action}/{id:int}";
-
-            var context = CreateRouteContext("/Home/Index/5");
-            var originalRouteDataValues = context.RouteData.Values;
-            originalRouteDataValues.Add("country", "USA");
-
-            var originalDataTokens = context.RouteData.DataTokens;
-            originalDataTokens.Add("company", "Contoso");
-
-            IDictionary<string, object> routeValues = null;
-            var mockTarget = new Mock<IRouter>(MockBehavior.Strict);
-            mockTarget
-                .Setup(s => s.RouteAsync(It.IsAny<RouteContext>()))
-                .Callback<RouteContext>(ctx =>
-                {
-                    routeValues = ctx.RouteData.Values;
-                    ctx.IsHandled = false;
-                })
-                .Throws(new Exception());
-
-            var route = new TemplateRoute(
-                mockTarget.Object,
-                template,
-                defaults: null,
-                constraints: null,
-                dataTokens: new RouteValueDictionary(new { today = "Friday" }),
-                inlineConstraintResolver: _inlineConstraintResolver);
-
-            // Act
-            var ex = await Assert.ThrowsAsync<Exception>(() => route.RouteAsync(context));
-
-            // Assert
-            Assert.NotNull(routeValues);
-
-            Assert.True(routeValues.ContainsKey("country"));
-            Assert.Equal("USA", routeValues["country"]);
-            Assert.True(routeValues.ContainsKey("id"));
-            Assert.Equal("5", routeValues["id"]);
-
-            Assert.True(context.RouteData.Values.ContainsKey("country"));
-            Assert.Equal("USA", context.RouteData.Values["country"]);
-            Assert.False(context.RouteData.Values.ContainsKey("id"));
-            Assert.Same(originalRouteDataValues, context.RouteData.Values);
-
-            Assert.Equal("Contoso", context.RouteData.DataTokens["company"]);
-            Assert.False(context.RouteData.DataTokens.ContainsKey("today"));
-            Assert.Same(originalDataTokens, context.RouteData.DataTokens);
-        }
-
-        [Fact]
-        public async Task RouteAsync_CleansUpMergedRouteData_IfConstraintThrows()
-        {
-            // Arrange
-            var template = "{controller}/{action}/{id:int}";
-
-            var context = CreateRouteContext("/Home/Index/5");
-            var originalRouteDataValues = context.RouteData.Values;
-            originalRouteDataValues.Add("country", "USA");
-
-            var originalDataTokens = context.RouteData.DataTokens;
-            originalDataTokens.Add("company", "Contoso");
-
-            var mockTarget = new Mock<IRouter>(MockBehavior.Strict);
-            mockTarget
-                .Setup(s => s.RouteAsync(It.IsAny<RouteContext>()))
-                .Callback<RouteContext>(ctx =>
-                {
-                    ctx.IsHandled = true;
-                })
-                .Returns(Task.FromResult(true));
-
-            var constraint = new Mock<IRouteConstraint>(MockBehavior.Strict);
-            constraint
-                .Setup(c => c.Match(
-                    It.IsAny<HttpContext>(),
-                    It.IsAny<IRouter>(),
-                    It.IsAny<string>(),
-                    It.IsAny<IDictionary<string, object>>(),
-                    It.IsAny<RouteDirection>()))
-                .Callback(() => { throw new Exception(); });
-
-            var route = new TemplateRoute(
-                mockTarget.Object,
-                template,
-                defaults: null,
-                constraints: new RouteValueDictionary(new { action = constraint.Object }),
-                dataTokens: new RouteValueDictionary(new { today = "Friday" }),
-                inlineConstraintResolver: _inlineConstraintResolver);
-
-            // Act
-            var ex = await Assert.ThrowsAsync<Exception>(() => route.RouteAsync(context));
-
-            // Assert
-            Assert.True(context.RouteData.Values.ContainsKey("country"));
-            Assert.Equal("USA", context.RouteData.Values["country"]);
-            Assert.False(context.RouteData.Values.ContainsKey("id"));
-            Assert.Same(originalRouteDataValues, context.RouteData.Values);
-
-            Assert.Equal("Contoso", context.RouteData.DataTokens["company"]);
-            Assert.False(context.RouteData.DataTokens.ContainsKey("today"));
             Assert.Same(originalDataTokens, context.RouteData.DataTokens);
         }
 
@@ -432,11 +174,11 @@ namespace Microsoft.AspNet.Routing.Template
                 .Callback<RouteContext>(ctx =>
                 {
                     routeValues = ctx.RouteData.Values;
-                    ctx.IsHandled = true;
+                    ctx.Handler = NullHandler;
                 })
                 .Returns(Task.FromResult(true));
 
-            var route = new TemplateRoute(
+            var route = new Route(
                 mockTarget.Object,
                 template,
                 defaults: null,
@@ -451,7 +193,7 @@ namespace Microsoft.AspNet.Routing.Template
             await route.RouteAsync(context);
 
             // Assert
-            Assert.True(context.IsHandled);
+            Assert.NotNull(context.Handler);
             Assert.True(routeValues.ContainsKey("id"));
             Assert.Equal("5", routeValues["id"]);
 
@@ -474,11 +216,11 @@ namespace Microsoft.AspNet.Routing.Template
                 .Callback<RouteContext>(ctx =>
                 {
                     routeValues = ctx.RouteData.Values;
-                    ctx.IsHandled = true;
+                    ctx.Handler = NullHandler;
                 })
                 .Returns(Task.FromResult(true));
 
-            var route = new TemplateRoute(
+            var route = new Route(
                 mockTarget.Object,
                 template,
                 defaults: null,
@@ -493,7 +235,7 @@ namespace Microsoft.AspNet.Routing.Template
             await route.RouteAsync(context);
 
             // Assert
-            Assert.True(context.IsHandled);
+            Assert.NotNull(context.Handler);
             Assert.True(routeValues.ContainsKey("ssn"));
             Assert.Equal("123-456-7890", routeValues["ssn"]);
 
@@ -516,11 +258,11 @@ namespace Microsoft.AspNet.Routing.Template
                 .Callback<RouteContext>(ctx =>
                 {
                     routeValues = ctx.RouteData.Values;
-                    ctx.IsHandled = true;
+                    ctx.Handler = NullHandler;
                 })
                 .Returns(Task.FromResult(true));
 
-            var route = new TemplateRoute(
+            var route = new Route(
                 mockTarget.Object,
                 template,
                 defaults: null,
@@ -535,7 +277,7 @@ namespace Microsoft.AspNet.Routing.Template
             await route.RouteAsync(context);
 
             // Assert
-            Assert.True(context.IsHandled);
+            Assert.NotNull(context.Handler);
             Assert.NotNull(routeValues);
             Assert.False(routeValues.ContainsKey("id"));
             Assert.False(context.RouteData.Values.ContainsKey("id"));
@@ -556,14 +298,14 @@ namespace Microsoft.AspNet.Routing.Template
                 .Callback<RouteContext>(ctx =>
                 {
                     routeValues = ctx.RouteData.Values;
-                    ctx.IsHandled = true;
+                    ctx.Handler = NullHandler;
                 })
                 .Returns(Task.FromResult(true));
 
             var constraints = new Dictionary<string, object>();
             constraints.Add("id", new RangeRouteConstraint(1, 20));
 
-            var route = new TemplateRoute(
+            var route = new Route(
                 mockTarget.Object,
                 template,
                 defaults: null,
@@ -585,7 +327,7 @@ namespace Microsoft.AspNet.Routing.Template
             await route.RouteAsync(context);
 
             // Assert
-            Assert.True(context.IsHandled);
+            Assert.NotNull(context.Handler);
             Assert.True(routeValues.ContainsKey("id"));
             Assert.Equal("5", routeValues["id"]);
 
@@ -608,11 +350,11 @@ namespace Microsoft.AspNet.Routing.Template
                 .Callback<RouteContext>(ctx =>
                 {
                     routeValues = ctx.RouteData.Values;
-                    ctx.IsHandled = true;
+                    ctx.Handler = NullHandler;
                 })
                 .Returns(Task.FromResult(true));
 
-            var route = new TemplateRoute(
+            var route = new Route(
                 mockTarget.Object,
                 template,
                 defaults: null,
@@ -627,7 +369,7 @@ namespace Microsoft.AspNet.Routing.Template
             await route.RouteAsync(context);
 
             // Assert
-            Assert.False(context.IsHandled);
+            Assert.Null(context.Handler);
         }
 
 #region Route Matching
@@ -644,7 +386,7 @@ namespace Microsoft.AspNet.Routing.Template
             await route.RouteAsync(context);
 
             // Assert
-            Assert.True(context.IsHandled);
+            Assert.NotNull(context.Handler);
             Assert.Equal(2, context.RouteData.Values.Count);
             Assert.Equal("Home", context.RouteData.Values["controller"]);
             Assert.Equal("Index", context.RouteData.Values["action"]);
@@ -661,7 +403,7 @@ namespace Microsoft.AspNet.Routing.Template
             await route.RouteAsync(context);
 
             // Assert
-            Assert.True(context.IsHandled);
+            Assert.NotNull(context.Handler);
             Assert.Equal(0, context.RouteData.Values.Count);
         }
 
@@ -676,7 +418,7 @@ namespace Microsoft.AspNet.Routing.Template
             await route.RouteAsync(context);
 
             // Assert
-            Assert.True(context.IsHandled);
+            Assert.NotNull(context.Handler);
             Assert.Equal(2, context.RouteData.Values.Count);
             Assert.Equal("Home", context.RouteData.Values["controller"]);
             Assert.Equal("Index", context.RouteData.Values["action"]);
@@ -695,7 +437,7 @@ namespace Microsoft.AspNet.Routing.Template
 
             // Act
             await route.RouteAsync(context);
-            Assert.True(context.IsHandled);
+            Assert.NotNull(context.Handler);
 
             // This should not affect the route - RouteData.DataTokens is a copy
             context.RouteData.DataTokens.Add("company", "contoso");
@@ -716,7 +458,7 @@ namespace Microsoft.AspNet.Routing.Template
             await route.RouteAsync(context);
 
             // Assert
-            Assert.False(context.IsHandled);
+            Assert.Null(context.Handler);
         }
 
         [Fact]
@@ -730,25 +472,11 @@ namespace Microsoft.AspNet.Routing.Template
             await route.RouteAsync(context);
 
             // Assert
-            Assert.False(context.IsHandled);
+            Assert.Null(context.Handler);
 
-            // Issue #16 tracks this.
-            Assert.Empty(context.RouteData.Values);
-        }
-
-        [Fact]
-        public async Task Match_RejectedByHandler_ClearsRouters()
-        {
-            // Arrange
-            var route = CreateRoute("{controller}", handleRequest: false);
-            var context = CreateRouteContext("/Home");
-
-            // Act
-            await route.RouteAsync(context);
-
-            // Assert
-            Assert.False(context.IsHandled);
-            Assert.Empty(context.RouteData.Routers);
+            var value = Assert.Single(context.RouteData.Values);
+            Assert.Equal("controller", value.Key);
+            Assert.Equal("Home", Assert.IsType<string>(value.Value));
         }
 
         [Fact]
@@ -763,7 +491,7 @@ namespace Microsoft.AspNet.Routing.Template
             await route.RouteAsync(context);
 
             // Assert
-            Assert.True(context.IsHandled);
+            Assert.NotNull(context.Handler);
             Assert.Equal(1, context.RouteData.Routers.Count);
             Assert.Same(target, context.RouteData.Routers[0]);
         }
@@ -793,7 +521,7 @@ namespace Microsoft.AspNet.Routing.Template
             await route.RouteAsync(context);
 
             // Assert
-            Assert.True(context.IsHandled);
+            Assert.NotNull(context.Handler);
             Assert.Equal(3, context.RouteData.Values.Count);
             Assert.Equal("Home", context.RouteData.Values["controller"]);
             Assert.Equal("Create", context.RouteData.Values["action"]);
@@ -811,7 +539,7 @@ namespace Microsoft.AspNet.Routing.Template
             await route.RouteAsync(context);
 
             // Assert
-            Assert.True(context.IsHandled);
+            Assert.NotNull(context.Handler);
             Assert.Equal(2, context.RouteData.Values.Count);
             Assert.Equal("Home", context.RouteData.Values["controller"]);
             Assert.Equal("Create", context.RouteData.Values["action"]);
@@ -828,7 +556,7 @@ namespace Microsoft.AspNet.Routing.Template
             await route.RouteAsync(context);
 
             // Assert
-            Assert.True(context.IsHandled);
+            Assert.NotNull(context.Handler);
             Assert.Equal(3, context.RouteData.Values.Count);
             Assert.Equal("Home", context.RouteData.Values["controller"]);
             Assert.Equal("Create", context.RouteData.Values["action"]);
@@ -846,7 +574,7 @@ namespace Microsoft.AspNet.Routing.Template
             await route.RouteAsync(context);
 
             // Assert
-            Assert.False(context.IsHandled);
+            Assert.Null(context.Handler);
         }
 
         private static RouteContext CreateRouteContext(string requestPath, ILoggerFactory factory = null)
@@ -1021,14 +749,14 @@ namespace Microsoft.AspNet.Routing.Template
             // Arrange
             var context = CreateVirtualPathContext(new { p1 = "abcd" });
 
-            TemplateRoute r = CreateRoute(
+            var route = CreateRoute(
                 "{p1}/{p2}",
                 new { p2 = "catchall" },
                 true,
                 new RouteValueDictionary(new { p2 = "\\d{4}" }));
 
             // Act
-            var virtualPath = r.GetVirtualPath(context);
+            var virtualPath = route.GetVirtualPath(context);
 
             // Assert
             Assert.Null(virtualPath);
@@ -1062,14 +790,14 @@ namespace Microsoft.AspNet.Routing.Template
             // Arrange
             var context = CreateVirtualPathContext(new { p1 = "abcd" });
 
-            TemplateRoute r = CreateRoute(
+            var route = CreateRoute(
                 "{p1}/{*p2}",
                 new { p2 = "catchall" },
                 true,
                 new RouteValueDictionary(new { p2 = "\\d{4}" }));
 
             // Act
-            var virtualPath = r.GetVirtualPath(context);
+            var virtualPath = route.GetVirtualPath(context);
 
             // Assert
             Assert.Null(virtualPath);
@@ -1081,7 +809,7 @@ namespace Microsoft.AspNet.Routing.Template
             // Arrange
             var context = CreateVirtualPathContext(new { p1 = "hello", p2 = "1234" });
 
-            TemplateRoute route = CreateRoute(
+            var route = CreateRoute(
                 "{p1}/{*p2}",
                 new { p2 = "catchall" },
                 true,
@@ -1112,7 +840,7 @@ namespace Microsoft.AspNet.Routing.Template
                 .Returns(true)
                 .Verifiable();
 
-            TemplateRoute route = CreateRoute(
+            var route = CreateRoute(
                 "{p1}/{p2}",
                 new { p2 = "catchall" },
                 true,
@@ -1623,7 +1351,7 @@ namespace Microsoft.AspNet.Routing.Template
                                   dataTokens: dataToken);
 
             // Assert
-            var templateRoute = (TemplateRoute)routeBuilder.Routes[0];
+            var templateRoute = (Route)routeBuilder.Routes[0];
 
             // Assert
             Assert.Equal(expectedDictionary.Count, templateRoute.DataTokens.Count);
@@ -1664,7 +1392,7 @@ namespace Microsoft.AspNet.Routing.Template
                 defaults: null,
                 constraints: new { controller = "a.*", action = mockConstraint });
 
-            var constraints = ((TemplateRoute)routeBuilder.Routes[0]).Constraints;
+            var constraints = ((Route)routeBuilder.Routes[0]).Constraints;
 
             // Assert
             Assert.Equal(2, constraints.Count);
@@ -1685,7 +1413,7 @@ namespace Microsoft.AspNet.Routing.Template
                 constraints: new { id = "1*" });
 
             // Assert
-            var constraints = ((TemplateRoute)routeBuilder.Routes[0]).Constraints;
+            var constraints = ((Route)routeBuilder.Routes[0]).Constraints;
             Assert.Equal(1, constraints.Count);
             var constraint = (CompositeRouteConstraint)constraints["id"];
             Assert.IsType<CompositeRouteConstraint>(constraint);
@@ -1706,7 +1434,7 @@ namespace Microsoft.AspNet.Routing.Template
                 constraints: null);
 
             // Assert
-            var constraints = ((TemplateRoute)routeBuilder.Routes[0]).Constraints;
+            var constraints = ((Route)routeBuilder.Routes[0]).Constraints;
             Assert.Equal(1, constraints.Count);
             Assert.IsType<IntRouteConstraint>(constraints["id"]);
         }
@@ -1720,7 +1448,7 @@ namespace Microsoft.AspNet.Routing.Template
             routeBuilder.MapRoute(name: "RouteName", template: "{controller}/{action}", defaults: null);
 
             // Act
-            var name = ((TemplateRoute)routeBuilder.Routes[0]).Name;
+            var name = ((Route)routeBuilder.Routes[0]).Name;
 
             // Assert
             Assert.Equal("RouteName", name);
@@ -1738,7 +1466,7 @@ namespace Microsoft.AspNet.Routing.Template
                                 constraints: null);
 
             // Act
-            var name = ((TemplateRoute)routeBuilder.Routes[0]).Name;
+            var name = ((Route)routeBuilder.Routes[0]).Name;
 
             // Assert
             Assert.Equal("RouteName", name);
@@ -1761,7 +1489,7 @@ namespace Microsoft.AspNet.Routing.Template
         {
             var routeBuilder = new RouteBuilder();
 
-            routeBuilder.DefaultHandler = new Mock<IRouter>().Object;
+            routeBuilder.DefaultHandler = new RouteHandler(NullHandler);
 
             var serviceProviderMock = new Mock<IServiceProvider>();
             serviceProviderMock.Setup(o => o.GetService(typeof(IInlineConstraintResolver)))
@@ -1771,9 +1499,9 @@ namespace Microsoft.AspNet.Routing.Template
             return routeBuilder;
         }
 
-        private static TemplateRoute CreateRoute(string routeName, string template, bool handleRequest = true)
+        private static Route CreateRoute(string routeName, string template, bool handleRequest = true)
         {
-            return new TemplateRoute(
+            return new Route(
                 CreateTarget(handleRequest),
                 routeName,
                 template,
@@ -1783,49 +1511,51 @@ namespace Microsoft.AspNet.Routing.Template
                 inlineConstraintResolver: _inlineConstraintResolver);
         }
 
-        private static TemplateRoute CreateRoute(string template, bool handleRequest = true)
+        private static Route CreateRoute(string template, bool handleRequest = true)
         {
-            return new TemplateRoute(CreateTarget(handleRequest), template, _inlineConstraintResolver);
+            return new Route(CreateTarget(handleRequest), template, _inlineConstraintResolver);
         }
 
-        private static TemplateRoute CreateRoute(string template,
-                                                 object defaults,
-                                                 bool handleRequest = true,
-                                                 object constraints = null,
-                                                 object dataTokens = null)
+        private static Route CreateRoute(
+            string template,
+            object defaults,
+            bool handleRequest = true,
+            object constraints = null,
+            object dataTokens = null)
         {
-            return new TemplateRoute(CreateTarget(handleRequest),
-                                     template,
-                                     new RouteValueDictionary(defaults),
-                                     (constraints as IDictionary<string, object>) ??
-                                            new RouteValueDictionary(constraints),
-                                     (dataTokens as IDictionary<string, object>) ??
-                                            new RouteValueDictionary(dataTokens),
-                                     _inlineConstraintResolver);
+            return new Route(
+                CreateTarget(handleRequest),
+                template,
+                new RouteValueDictionary(defaults),
+                new RouteValueDictionary(constraints),
+                new RouteValueDictionary(dataTokens),
+                _inlineConstraintResolver);
         }
 
-        private static TemplateRoute CreateRoute(IRouter target, string template)
+        private static Route CreateRoute(IRouter target, string template)
         {
-            return new TemplateRoute(target,
-                                     template,
-                                     new RouteValueDictionary(),
-                                     constraints: null,
-                                     dataTokens: null,
-                                     inlineConstraintResolver: _inlineConstraintResolver);
+            return new Route(
+                target,
+                template,
+                new RouteValueDictionary(),
+                constraints: null,
+                dataTokens: null,
+                inlineConstraintResolver: _inlineConstraintResolver);
         }
 
-        private static TemplateRoute CreateRoute(
+        private static Route CreateRoute(
             IRouter target,
             string template,
             object defaults,
             RouteValueDictionary dataTokens = null)
         {
-            return new TemplateRoute(target,
-                                     template,
-                                     new RouteValueDictionary(defaults),
-                                     constraints: null,
-                                     dataTokens: dataTokens,
-                                     inlineConstraintResolver: _inlineConstraintResolver);
+            return new Route(
+                target,
+                template,
+                new RouteValueDictionary(defaults),
+                constraints: null,
+                dataTokens: dataTokens,
+                inlineConstraintResolver: _inlineConstraintResolver);
         }
 
         private static IRouter CreateTarget(bool handleRequest = true)
@@ -1837,7 +1567,7 @@ namespace Microsoft.AspNet.Routing.Template
 
             target
                 .Setup(e => e.RouteAsync(It.IsAny<RouteContext>()))
-                .Callback<RouteContext>((c) => c.IsHandled = handleRequest)
+                .Callback<RouteContext>((c) => c.Handler = handleRequest ? NullHandler : null)
                 .Returns(Task.FromResult<object>(null));
 
             return target.Object;

@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Routing.Logging;
 using Microsoft.AspNet.Routing.Template;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Logging;
@@ -18,6 +17,8 @@ namespace Microsoft.AspNet.Routing
 {
     public class RouteCollectionTest
     {
+        private static readonly RequestDelegate NullHandler = (c) => Task.FromResult(0);
+
         [Theory]
         [InlineData(@"Home/Index/23", "/home/index/23", true, false)]
         [InlineData(@"Home/Index/23", "/Home/Index/23", false, false)]
@@ -143,7 +144,7 @@ namespace Microsoft.AspNet.Routing
             // Assert
             route1.Verify(e => e.RouteAsync(It.IsAny<RouteContext>()), Times.Exactly(1));
             route2.Verify(e => e.RouteAsync(It.IsAny<RouteContext>()), Times.Exactly(0));
-            Assert.True(context.IsHandled);
+            Assert.NotNull(context.Handler);
 
             Assert.Equal(1, context.RouteData.Routers.Count);
             Assert.Same(route1.Object, context.RouteData.Routers[0]);
@@ -169,7 +170,7 @@ namespace Microsoft.AspNet.Routing
             // Assert
             route1.Verify(e => e.RouteAsync(It.IsAny<RouteContext>()), Times.Exactly(1));
             route2.Verify(e => e.RouteAsync(It.IsAny<RouteContext>()), Times.Exactly(1));
-            Assert.True(context.IsHandled);
+            Assert.NotNull(context.Handler);
 
             Assert.Equal(1, context.RouteData.Routers.Count);
             Assert.Same(route2.Object, context.RouteData.Routers[0]);
@@ -194,7 +195,7 @@ namespace Microsoft.AspNet.Routing
             // Assert
             route1.Verify(e => e.RouteAsync(It.IsAny<RouteContext>()), Times.Exactly(1));
             route2.Verify(e => e.RouteAsync(It.IsAny<RouteContext>()), Times.Exactly(1));
-            Assert.False(context.IsHandled);
+            Assert.Null(context.Handler);
 
             Assert.Empty(context.RouteData.Routers);
         }
@@ -485,14 +486,14 @@ namespace Microsoft.AspNet.Routing
 
             target
                 .Setup(e => e.RouteAsync(It.IsAny<RouteContext>()))
-                .Callback<RouteContext>((c) => c.IsHandled = accept)
+                .Callback<RouteContext>((c) => c.Handler = accept ? NullHandler : null)
                 .Returns(Task.FromResult<object>(null))
                 .Verifiable();
 
             return target.Object;
         }
 
-        private static TemplateRoute CreateTemplateRoute(
+        private static Route CreateTemplateRoute(
             string template,
             string routerName = null,
             RouteValueDictionary dataTokens = null)
@@ -504,7 +505,7 @@ namespace Microsoft.AspNet.Routing
 
             var resolverMock = new Mock<IInlineConstraintResolver>();
 
-            return new TemplateRoute(
+            return new Route(
                 target.Object,
                 routerName,
                 template,
@@ -610,7 +611,7 @@ namespace Microsoft.AspNet.Routing
 
             target
                 .Setup(e => e.RouteAsync(It.IsAny<RouteContext>()))
-                .Callback<RouteContext>((c) => c.IsHandled = accept)
+                .Callback<RouteContext>((c) => c.Handler = accept ? NullHandler : null)
                 .Returns(Task.FromResult<object>(null))
                 .Verifiable();
 

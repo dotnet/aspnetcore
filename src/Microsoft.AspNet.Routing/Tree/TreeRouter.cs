@@ -199,19 +199,18 @@ namespace Microsoft.AspNet.Routing.Tree
                         try
                         {
                             await match.Entry.Target.RouteAsync(context);
+                            if (context.Handler != null)
+                            {
+                                return;
+                            }
                         }
                         finally
                         {
-                            if (!context.IsHandled)
+                            if (context.Handler == null)
                             {
                                 // Restore the original values to prevent polluting the route data.
                                 context.RouteData = oldRouteData;
                             }
-                        }
-
-                        if (context.IsHandled)
-                        {
-                            return;
                         }
                     }
                 }

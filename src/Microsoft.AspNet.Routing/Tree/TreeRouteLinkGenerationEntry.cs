@@ -13,47 +13,48 @@ namespace Microsoft.AspNet.Routing.Tree
     public class TreeRouteLinkGenerationEntry
     {
         /// <summary>
-        /// The <see cref="TemplateBinder"/>.
+        /// Gets or sets the <see cref="TemplateBinder"/>.
         /// </summary>
         public TemplateBinder Binder { get; set; }
 
         /// <summary>
-        /// The route constraints.
+        /// Gets or sets the route constraints.
         /// </summary>
-        public IReadOnlyDictionary<string, IRouteConstraint> Constraints { get; set; }
+        public IDictionary<string, IRouteConstraint> Constraints { get; set; }
 
         /// <summary>
-        /// The route defaults.
+        /// Gets or sets the route defaults.
         /// </summary>
-        public IReadOnlyDictionary<string, object> Defaults { get; set; }
+        public IDictionary<string, object> Defaults { get; set; }
 
         /// <summary>
-        /// The order of the template.
+        /// Gets or sets the order of the template.
         /// </summary>
         public int Order { get; set; }
 
         /// <summary>
-        /// The precedence of the template for link generation. Greater number means higher precedence.
+        /// Gets or sets the precedence of the template for link generation. A greater value of
+        /// <see cref="GenerationPrecedence"/> means that an entry is considered first.
         /// </summary>
         public decimal GenerationPrecedence { get; set; }
 
         /// <summary>
-        /// The name of the route.
+        /// Gets or sets the name of the route.
         /// </summary>
         public string Name { get; set; }
 
         /// <summary>
-        /// The route group.
+        /// Gets or sets the route group.
         /// </summary>
         public string RouteGroup { get; set; }
 
         /// <summary>
-        /// The set of values that must be present for link genration.
+        /// Gets or sets the set of values that must be present for link genration.
         /// </summary>
         public IDictionary<string, object> RequiredLinkValues { get; set; }
 
         /// <summary>
-        /// The <see cref="Template"/>.
+        /// Gets or sets the <see cref="Template"/>.
         /// </summary>
         public RouteTemplate Template { get; set; }
     }

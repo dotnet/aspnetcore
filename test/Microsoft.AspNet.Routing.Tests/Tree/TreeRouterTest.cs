@@ -17,6 +17,8 @@ namespace Microsoft.AspNet.Routing.Tree
 {
     public class TreeRouterTest
     {
+        private static readonly RequestDelegate NullHandler = (c) => Task.FromResult(0);
+
         [Theory]
         [InlineData("template/5", "template/{parameter:int}")]
         [InlineData("template/5", "template/{parameter}")]
@@ -36,15 +38,12 @@ namespace Microsoft.AspNet.Routing.Tree
             // Arrange
             var expectedRouteGroup = string.Format("{0}&&{1}", 0, firstTemplate);
 
-            // We need to force the creation of a closure in order to avoid an issue with Moq and Roslyn.
-            var numberOfCalls = 0;
-            Action<RouteContext> callBack = ctx => { ctx.IsHandled = true; numberOfCalls++; };
-
             var next = new Mock<IRouter>();
-            next.Setup(r => r.RouteAsync(It.IsAny<RouteContext>()))
-                            .Callback(callBack)
-                            .Returns(Task.FromResult(true))
-                            .Verifiable();
+            next
+                .Setup(r => r.RouteAsync(It.IsAny<RouteContext>()))
+                .Callback<RouteContext>(c => c.Handler = NullHandler)
+                .Returns(Task.FromResult(true))
+                .Verifiable();
 
             var firstRoute = CreateMatchingEntry(next.Object, firstTemplate, order: 0);
             var secondRoute = CreateMatchingEntry(next.Object, secondTemplate, order: 0);
@@ -84,15 +83,12 @@ namespace Microsoft.AspNet.Routing.Tree
             // Arrange
             var expectedRouteGroup = string.Format("{0}&&{1}", 0, secondTemplate);
 
-            // We need to force the creation of a closure in order to avoid an issue with Moq and Roslyn.
-            var numberOfCalls = 0;
-            Action<RouteContext> callBack = ctx => { ctx.IsHandled = true; numberOfCalls++; };
-
             var next = new Mock<IRouter>();
-            next.Setup(r => r.RouteAsync(It.IsAny<RouteContext>()))
-                            .Callback(callBack)
-                            .Returns(Task.FromResult(true))
-                            .Verifiable();
+            next
+                .Setup(r => r.RouteAsync(It.IsAny<RouteContext>()))
+                .Callback<RouteContext>(c => c.Handler = NullHandler)
+                .Returns(Task.FromResult(true))
+                .Verifiable();
 
             var firstRoute = CreateMatchingEntry(next.Object, firstTemplate, order: 1);
             var secondRoute = CreateMatchingEntry(next.Object, secondTemplate, order: 0);
@@ -126,15 +122,12 @@ namespace Microsoft.AspNet.Routing.Tree
             // Arrange
             var expectedRouteGroup = string.Format("{0}&&{1}", 0, template);
 
-            // We need to force the creation of a closure in order to avoid an issue with Moq and Roslyn.
-            var numberOfCalls = 0;
-            Action<RouteContext> callBack = ctx => { ctx.IsHandled = true; numberOfCalls++; };
-
             var next = new Mock<IRouter>();
-            next.Setup(r => r.RouteAsync(It.IsAny<RouteContext>()))
-                            .Callback(callBack)
-                            .Returns(Task.FromResult(true))
-                            .Verifiable();
+            next
+                .Setup(r => r.RouteAsync(It.IsAny<RouteContext>()))
+                .Callback<RouteContext>(c => c.Handler = NullHandler)
+                .Returns(Task.FromResult(true))
+                .Verifiable();
 
             var firstRoute = CreateMatchingEntry(next.Object, template, order: 1);
             var secondRoute = CreateMatchingEntry(next.Object, template, order: 0);
@@ -166,15 +159,12 @@ namespace Microsoft.AspNet.Routing.Tree
             // Arrange
             var expectedRouteGroup = string.Format("{0}&&{1}", 0, first);
 
-            // We need to force the creation of a closure in order to avoid an issue with Moq and Roslyn.
-            var numberOfCalls = 0;
-            Action<RouteContext> callBack = ctx => { ctx.IsHandled = true; numberOfCalls++; };
-
             var next = new Mock<IRouter>();
-            next.Setup(r => r.RouteAsync(It.IsAny<RouteContext>()))
-                            .Callback(callBack)
-                            .Returns(Task.FromResult(true))
-                            .Verifiable();
+            next
+                .Setup(r => r.RouteAsync(It.IsAny<RouteContext>()))
+                .Callback<RouteContext>(c => c.Handler = NullHandler)
+                .Returns(Task.FromResult(true))
+                .Verifiable();
 
             var secondRouter = new Mock<IRouter>(MockBehavior.Strict);
 
@@ -211,15 +201,12 @@ namespace Microsoft.AspNet.Routing.Tree
             // Arrange
             var expectedRouteGroup = string.Format("{0}&&{1}", 0, template);
 
-            // We need to force the creation of a closure in order to avoid an issue with Moq and Roslyn.
-            var numberOfCalls = 0;
-            Action<RouteContext> callBack = ctx => { ctx.IsHandled = true; numberOfCalls++; };
-
             var next = new Mock<IRouter>();
-            next.Setup(r => r.RouteAsync(It.IsAny<RouteContext>()))
-                            .Callback(callBack)
-                            .Returns(Task.FromResult(true))
-                            .Verifiable();
+            next
+                .Setup(r => r.RouteAsync(It.IsAny<RouteContext>()))
+                .Callback<RouteContext>(c => c.Handler = NullHandler)
+                .Returns(Task.FromResult(true))
+                .Verifiable();
 
             var firstRoute = CreateMatchingEntry(next.Object, template, order: 0);
 
@@ -239,12 +226,12 @@ namespace Microsoft.AspNet.Routing.Tree
             // Assert
             if (expectedResult)
             {
-                Assert.True(context.IsHandled);
+                Assert.NotNull(context.Handler);
                 Assert.Equal(expectedRouteGroup, context.RouteData.Values["test_route_group"]);
             }
             else
             {
-                Assert.False(context.IsHandled);
+                Assert.Null(context.Handler);
             }
         }
 
@@ -277,15 +264,12 @@ namespace Microsoft.AspNet.Routing.Tree
             // Arrange
             var expectedRouteGroup = string.Format("{0}&&{1}", 0, template);
 
-            // We need to force the creation of a closure in order to avoid an issue with Moq and Roslyn.
-            var numberOfCalls = 0;
-            Action<RouteContext> callBack = ctx => { ctx.IsHandled = true; numberOfCalls++; };
-
             var next = new Mock<IRouter>();
-            next.Setup(r => r.RouteAsync(It.IsAny<RouteContext>()))
-                            .Callback(callBack)
-                            .Returns(Task.FromResult(true))
-                            .Verifiable();
+            next
+                .Setup(r => r.RouteAsync(It.IsAny<RouteContext>()))
+                .Callback<RouteContext>(c => c.Handler = NullHandler)
+                .Returns(Task.FromResult(true))
+                .Verifiable();
 
             var firstRoute = CreateMatchingEntry(next.Object, template, order: 0);
 
@@ -300,7 +284,7 @@ namespace Microsoft.AspNet.Routing.Tree
             await route.RouteAsync(context);
 
             // Assert
-            Assert.True(context.IsHandled);
+            Assert.NotNull(context.Handler);
             if (p1 != null)
             {
                 Assert.Equal(p1, context.RouteData.Values["p1"]);
@@ -335,15 +319,12 @@ namespace Microsoft.AspNet.Routing.Tree
             // Arrange
             var expectedRouteGroup = string.Format("{0}&&{1}", 0, template);
 
-            // We need to force the creation of a closure in order to avoid an issue with Moq and Roslyn.
-            var numberOfCalls = 0;
-            Action<RouteContext> callBack = ctx => { ctx.IsHandled = true; numberOfCalls++; };
-
             var next = new Mock<IRouter>();
-            next.Setup(r => r.RouteAsync(It.IsAny<RouteContext>()))
-                            .Callback(callBack)
-                            .Returns(Task.FromResult(true))
-                            .Verifiable();
+            next
+                .Setup(r => r.RouteAsync(It.IsAny<RouteContext>()))
+                .Callback<RouteContext>(c => c.Handler = NullHandler)
+                .Returns(Task.FromResult(true))
+                .Verifiable();
 
             var firstRoute = CreateMatchingEntry(next.Object, template, order: 0);
 
@@ -359,7 +340,7 @@ namespace Microsoft.AspNet.Routing.Tree
             await route.RouteAsync(context);
 
             // Assert
-            Assert.False(context.IsHandled);
+            Assert.Null(context.Handler);
         }
 
         [Theory]
@@ -1358,15 +1339,17 @@ namespace Microsoft.AspNet.Routing.Tree
         {
             // Arrange
             RouteData nestedRouteData = null;
+
             var next = new Mock<IRouter>();
             next
                 .Setup(r => r.RouteAsync(It.IsAny<RouteContext>()))
-                .Callback<RouteContext>((c) =>
+                .Callback<RouteContext>(c =>
                 {
                     nestedRouteData = c.RouteData;
-                    c.IsHandled = true;
+                    c.Handler = NullHandler;
                 })
-                .Returns(Task.FromResult(true));
+                .Returns(Task.FromResult(true))
+                .Verifiable();
 
             var entry = CreateMatchingEntry(next.Object, "api/Store", order: 0);
             var route = CreateAttributeRoute(next.Object, entry);
@@ -1399,11 +1382,9 @@ namespace Microsoft.AspNet.Routing.Tree
             var router = new Mock<IRouter>();
             router
                 .Setup(r => r.RouteAsync(It.IsAny<RouteContext>()))
-                .Callback<RouteContext>((c) =>
-                {
-                    c.IsHandled = true;
-                })
-                .Returns(Task.FromResult(true));
+                .Callback<RouteContext>(c => c.Handler = NullHandler)
+                .Returns(Task.FromResult(true))
+                .Verifiable();
 
             var entry = CreateMatchingEntry(router.Object, "Foo/{*path}", order: 0);
             var route = CreateAttributeRoute(router.Object, entry);
@@ -1427,11 +1408,9 @@ namespace Microsoft.AspNet.Routing.Tree
             var router = new Mock<IRouter>();
             router
                 .Setup(r => r.RouteAsync(It.IsAny<RouteContext>()))
-                .Callback<RouteContext>((c) =>
-                {
-                    c.IsHandled = true;
-                })
-                .Returns(Task.FromResult(true));
+                .Callback<RouteContext>(c => c.Handler = NullHandler)
+                .Returns(Task.FromResult(true))
+                .Verifiable();
 
             var entry = CreateMatchingEntry(router.Object, "Foo/{*path}", order: 0);
             var route = CreateAttributeRoute(router.Object, entry);
@@ -1456,12 +1435,12 @@ namespace Microsoft.AspNet.Routing.Tree
             var next = new Mock<IRouter>();
             next
                 .Setup(r => r.RouteAsync(It.IsAny<RouteContext>()))
-                .Callback<RouteContext>((c) =>
+                .Callback<RouteContext>(c =>
                 {
                     nestedRouteData = c.RouteData;
-                    c.IsHandled = false;
                 })
-                .Returns(Task.FromResult(true));
+                .Returns(Task.FromResult(true))
+                .Verifiable();
 
             var entry = CreateMatchingEntry(next.Object, "api/Store", order: 0);
             var route = CreateAttributeRoute(next.Object, entry);
@@ -1499,10 +1478,9 @@ namespace Microsoft.AspNet.Routing.Tree
             var next = new Mock<IRouter>();
             next
                 .Setup(r => r.RouteAsync(It.IsAny<RouteContext>()))
-                .Callback<RouteContext>((c) =>
+                .Callback<RouteContext>(c =>
                 {
                     nestedRouteData = c.RouteData;
-                    c.IsHandled = false;
                 })
                 .Throws(new Exception());
 
@@ -1755,7 +1733,7 @@ namespace Microsoft.AspNet.Routing.Tree
             return builder.Build(version: 1);
         }
 
-        private static IReadOnlyDictionary<string, IRouteConstraint> GetRouteConstriants(
+        private static IDictionary<string, IRouteConstraint> GetRouteConstriants(
             IInlineConstraintResolver inlineConstraintResolver,
             string template,
             RouteTemplate parsedRouteTemplate)
@@ -1797,11 +1775,11 @@ namespace Microsoft.AspNet.Routing.Tree
             {
                 if (MatchingDelegate == null)
                 {
-                    context.IsHandled = true;
+                    context.Handler = NullHandler;
                 }
                 else
                 {
-                    context.IsHandled = MatchingDelegate(context);
+                    context.Handler = MatchingDelegate(context) ? NullHandler : null;
                 }
 
                 return Task.FromResult(true);

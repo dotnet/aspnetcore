@@ -1,34 +1,17 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using Microsoft.AspNet.Routing;
-using Microsoft.AspNet.Routing.Template;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace RoutingSample.Web
 {
     public static class RouteBuilderExtensions
     {
-        public static IRouteBuilder AddPrefixRoute(this IRouteBuilder routeBuilder,
-                                                   string prefix)
-        {
-            if (routeBuilder.DefaultHandler == null)
-            {
-                throw new InvalidOperationException("DefaultHandler must be set.");
-            }
-
-            if (routeBuilder.ServiceProvider == null)
-            {
-                throw new InvalidOperationException("ServiceProvider must be set.");
-            }
-
-            return AddPrefixRoute(routeBuilder, prefix, routeBuilder.DefaultHandler);
-        }
-
-        public static IRouteBuilder AddPrefixRoute(this IRouteBuilder routeBuilder,
-                                                   string prefix,
-                                                   IRouter handler)
+        public static IRouteBuilder AddPrefixRoute(
+            this IRouteBuilder routeBuilder,
+            string prefix,
+            IRouteHandler handler)
         {
             routeBuilder.Routes.Add(new PrefixRoute(handler, prefix));
             return routeBuilder;
@@ -45,7 +28,7 @@ namespace RoutingSample.Web
 
             var constraintResolver = routeBuilder.ServiceProvider.GetService<IInlineConstraintResolver>();
 
-            var route = new TemplateRoute(
+            var route = new Route(
                 target: routeBuilder.DefaultHandler,
                 routeTemplate: routeTemplate,
                 defaults: defaultsDictionary,
