@@ -180,11 +180,12 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         public void AbortAwaiting()
         {
+            _awaitableError = new ObjectDisposedException(nameof(SocketInput), "The request was aborted");
+
             var awaitableState = Interlocked.Exchange(
                 ref _awaitableState,
                 _awaitableIsCompleted);
 
-            _awaitableError = new ObjectDisposedException(nameof(SocketInput), "The request was aborted");
             _manualResetEvent.Set();
 
             if (awaitableState != _awaitableIsCompleted &&
