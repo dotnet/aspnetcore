@@ -25,6 +25,7 @@ var config = {
         require.resolve('angular2/bundles/angular2.dev.js'),
         require.resolve('angular2/bundles/router.dev.js'),
         require.resolve('angular2/bundles/http.dev.js'),
+        require.resolve('angular2-aspnet/bundles/angular2-aspnet.js'),
         require.resolve('jquery/dist/jquery.js'),
         require.resolve('bootstrap/dist/js/bootstrap.js')
     ]

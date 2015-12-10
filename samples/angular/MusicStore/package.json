@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "dependencies": {
     "angular2": "2.0.0-alpha.44",
+    "angular2-aspnet": "0.0.1",
     "angular2-universal-patched": "^0.5.4",
     "bootstrap": "^3.3.5",
     "es6-module-loader": "^0.15.0",

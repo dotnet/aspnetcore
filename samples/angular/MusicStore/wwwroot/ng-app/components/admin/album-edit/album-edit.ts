@@ -4,7 +4,7 @@ import * as models from '../../../models/models';
 import { Http, HTTP_BINDINGS, Headers, Response } from 'angular2/http';
 import { AlbumDeletePrompt } from '../album-delete-prompt/album-delete-prompt';
 import { FormField } from '../form-field/form-field';
-import * as AspNet from './AspNetUtil';
+import * as AspNet from 'angular2-aspnet';
 
 @ng.Component({
     selector: 'album-edit'
