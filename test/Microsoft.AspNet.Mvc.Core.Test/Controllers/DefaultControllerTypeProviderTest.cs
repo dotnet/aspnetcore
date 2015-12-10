@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
         };
 
         [Fact]
-        public void IsController_UserDefinedClass()
+        public void IsController_UserDefinedClass_DerivedFromController()
         {
             // Arrange
             var typeInfo = typeof(StoreController).GetTypeInfo();
@@ -32,7 +32,49 @@ namespace Microsoft.AspNet.Mvc.Controllers
         }
 
         [Fact]
+        public void IsController_UserDefinedClass_DerivedFromControllerBase()
+        {
+            // Arrange
+            var typeInfo = typeof(ProductsController).GetTypeInfo();
+            var provider = GetControllerTypeProvider();
+
+            // Act
+            var isController = provider.IsController(typeInfo, CandidateAssemblies);
+
+            // Assert
+            Assert.True(isController);
+        }
+
+        [Fact]
+        public void IsController_UserDefinedClass_DerivedFromControllerBase_WithoutSuffix()
+        {
+            // Arrange
+            var typeInfo = typeof(Products).GetTypeInfo();
+            var provider = GetControllerTypeProvider();
+
+            // Act
+            var isController = provider.IsController(typeInfo, CandidateAssemblies);
+
+            // Assert
+            Assert.False(isController);
+        }
+
+        [Fact]
         public void IsController_FrameworkControllerClass()
+        {
+            // Arrange
+            var typeInfo = typeof(Controller).GetTypeInfo();
+            var provider = GetControllerTypeProvider();
+
+            // Act
+            var isController = provider.IsController(typeInfo, CandidateAssemblies);
+
+            // Assert
+            Assert.False(isController);
+        }
+
+        [Fact]
+        public void IsController_FrameworkBaseControllerClass()
         {
             // Arrange
             var typeInfo = typeof(Controller).GetTypeInfo();
@@ -246,6 +288,15 @@ namespace Microsoft.AspNet.Mvc.DefaultControllerTypeProviderControllers
     public class StoreController : Controller
     {
     }
+
+    public class ProductsController : ControllerBase
+    {
+    }
+
+    public class Products : ControllerBase
+    {
+    }
+
 
     public abstract class Controller
     {
