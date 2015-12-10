@@ -21,7 +21,6 @@
     "Microsoft.Extensions.Configuration.Json": "1.0.0-*",
     "Microsoft.Extensions.DependencyInjection": "1.0.0-*",
     "Microsoft.Extensions.Logging": "1.0.0-*",
-    "Microsoft.Extensions.CompilationAbstractions": "1.0.0-*",
     "Microsoft.Extensions.PlatformAbstractions": "1.0.0-*",
     "System.Diagnostics.DiagnosticSource": "4.0.0-*"
   },

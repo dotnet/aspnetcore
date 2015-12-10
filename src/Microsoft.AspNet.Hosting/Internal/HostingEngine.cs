@@ -168,13 +168,8 @@ namespace Microsoft.AspNet.Hosting.Internal
 
                 return builder.Build();
             }
-            catch (Exception ex)
+            catch (Exception ex) when (_captureStartupErrors)
             {
-                if (!_captureStartupErrors)
-                {
-                    throw;
-                }
-
                 // EnsureApplicationServices may have failed due to a missing or throwing Startup class.
                 if (_applicationServices == null)
                 {
