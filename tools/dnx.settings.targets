@@ -36,6 +36,7 @@
         <CodeSignDisplayName>Microsoft ASP.NET</CodeSignDisplayName>
         <CodeSignUrl>http://www.asp.net/</CodeSignUrl>
         <VerifySignatures Condition="'$(VerifySignatures)' == ''">true</VerifySignatures>
+        <CodeSignCreateTestJob Condition="'$(CodeSignCreateTestJob)' == ''">false</CodeSignCreateTestJob>
     </PropertyGroup>
 
     <ItemDefinitionGroup>

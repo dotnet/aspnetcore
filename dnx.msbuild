@@ -158,6 +158,7 @@
             GenerateCopyScript="true"
             Poll="false"
             SSL="true"
+            CreateTestJob="$(CodeSignCreateTestJob)"
             Test="$(TestCodeSign)">
             <Output TaskParameter="JobNumber" ItemName="CodeSignJobNumbers" />
         </SubmitCodeSignJob>
