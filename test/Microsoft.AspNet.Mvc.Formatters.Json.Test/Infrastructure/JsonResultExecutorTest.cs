@@ -50,7 +50,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
             var context = GetActionContext();
 
             var result = new JsonResult(new { foo = "abcd" });
-            result.ContentType = new MediaTypeHeaderValue("text/json");
+            result.ContentType = "text/json";
             var executor = CreateExcutor();
 
             // Act
@@ -74,7 +74,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
             result.ContentType = new MediaTypeHeaderValue("text/json")
             {
                 Encoding = Encoding.ASCII
-            };
+            }.ToString();
             var executor = CreateExcutor();
 
             // Act

@@ -12,6 +12,7 @@ using System.Xml;
 using Microsoft.AspNet.Mvc.Formatters.Xml;
 using Microsoft.AspNet.Mvc.Formatters.Xml.Internal;
 using Microsoft.AspNet.Mvc.Internal;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Mvc.Formatters
 {
@@ -187,7 +188,7 @@ namespace Microsoft.AspNet.Mvc.Formatters
             }
 
             var writerSettings = WriterSettings.Clone();
-            writerSettings.Encoding = context.ContentType?.Encoding ?? Encoding.UTF8;
+            writerSettings.Encoding = MediaTypeEncoding.GetEncoding(context.ContentType) ?? Encoding.UTF8;
 
             // Wrap the object only if there is a wrapping type.
             var value = context.Object;

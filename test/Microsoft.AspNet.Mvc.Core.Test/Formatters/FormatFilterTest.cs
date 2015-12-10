@@ -4,9 +4,10 @@
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Abstractions;
 using Microsoft.AspNet.Mvc.Filters;
-using Microsoft.AspNet.Mvc.Infrastructure;
+using Microsoft.AspNet.Mvc.TestCommon;
 using Microsoft.AspNet.Routing;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit;
@@ -32,7 +33,7 @@ namespace Microsoft.AspNet.Mvc.Formatters
             string contentType)
         {
             // Arrange
-            var mediaType = MediaTypeHeaderValue.Parse("application/json");
+            var mediaType = new StringSegment("application/json");
             var mockObjects = new MockObjects(format, place);
 
             var resultExecutingContext = mockObjects.CreateResultExecutingContext();
@@ -52,7 +53,7 @@ namespace Microsoft.AspNet.Mvc.Formatters
             // Assert
             var objectResult = Assert.IsType<ObjectResult>(resultExecutingContext.Result);
             Assert.Equal(1, objectResult.ContentTypes.Count);
-            AssertMediaTypesEqual(mediaType, objectResult.ContentTypes[0]);
+            MediaTypeAssert.Equal(mediaType, objectResult.ContentTypes[0]);
         }
 
         [Fact]
@@ -61,7 +62,7 @@ namespace Microsoft.AspNet.Mvc.Formatters
             // If the format is present in both route and query data, the one in route data wins
 
             // Arrange
-            var mediaType = MediaTypeHeaderValue.Parse("application/json");
+            var mediaType = new StringSegment("application/json");
             var mockObjects = new MockObjects("json", FormatSource.RouteData);
             var httpContext = new Mock<HttpContext>();
             httpContext.Setup(c => c.Response).Returns(new Mock<HttpResponse>().Object);
@@ -95,7 +96,7 @@ namespace Microsoft.AspNet.Mvc.Formatters
             // Assert
             var objectResult = Assert.IsType<ObjectResult>(resultExecutingContext.Result);
             Assert.Equal(1, objectResult.ContentTypes.Count);
-            AssertMediaTypesEqual(mediaType, objectResult.ContentTypes[0]);
+            MediaTypeAssert.Equal(mediaType, objectResult.ContentTypes[0]);
         }
 
         [Theory]
@@ -108,7 +109,7 @@ namespace Microsoft.AspNet.Mvc.Formatters
             string contentType)
         {
             // Arrange
-            var mediaType = MediaTypeHeaderValue.Parse(contentType);
+            var mediaType = new StringSegment(contentType);
 
             var mockObjects = new MockObjects(format, place);
             var resultExecutingContext = mockObjects.CreateResultExecutingContext();
@@ -127,7 +128,7 @@ namespace Microsoft.AspNet.Mvc.Formatters
             // Assert
             var objectResult = Assert.IsType<ObjectResult>(resultExecutingContext.Result);
             Assert.Equal(1, objectResult.ContentTypes.Count);
-            AssertMediaTypesEqual(mediaType, objectResult.ContentTypes[0]);
+            MediaTypeAssert.Equal(mediaType, objectResult.ContentTypes[0]);
         }
 
         [Theory]
@@ -303,7 +304,7 @@ namespace Microsoft.AspNet.Mvc.Formatters
         public void FormatFilter_ExplicitContentType_SetOnObjectResult_TakesPrecedence()
         {
             // Arrange
-            var mediaType = MediaTypeHeaderValue.Parse("application/foo");
+            var mediaType = new StringSegment("application/foo");
             var mockObjects = new MockObjects("json", FormatSource.QueryData);
             var httpContext = new Mock<HttpContext>();
             httpContext.Setup(c => c.Response).Returns(new Mock<HttpResponse>().Object);
@@ -330,7 +331,7 @@ namespace Microsoft.AspNet.Mvc.Formatters
             // Assert
             var result = Assert.IsType<ObjectResult>(resultExecutingContext.Result);
             Assert.Equal(1, result.ContentTypes.Count);
-            AssertMediaTypesEqual(mediaType, result.ContentTypes[0]);
+            MediaTypeAssert.Equal(mediaType, result.ContentTypes[0]);
         }
 
         [Fact]
@@ -366,21 +367,6 @@ namespace Microsoft.AspNet.Mvc.Formatters
             Assert.Equal(0, result.ContentTypes.Count);
         }
 
-        private static void AssertMediaTypesEqual(
-            MediaTypeHeaderValue expectedMediaType,
-            MediaTypeHeaderValue actualMediaType)
-        {
-            Assert.Equal(expectedMediaType.MediaType, actualMediaType.MediaType);
-            Assert.Equal(expectedMediaType.SubType, actualMediaType.SubType);
-            Assert.Equal(expectedMediaType.Charset, actualMediaType.Charset);
-            Assert.Equal(expectedMediaType.MatchesAllTypes, actualMediaType.MatchesAllTypes);
-            Assert.Equal(expectedMediaType.MatchesAllSubTypes, actualMediaType.MatchesAllSubTypes);
-            Assert.Equal(expectedMediaType.Parameters.Count, actualMediaType.Parameters.Count);
-            foreach (var item in expectedMediaType.Parameters)
-            {
-                Assert.Equal(item.Value, NameValueHeaderValue.Find(actualMediaType.Parameters, item.Name).Value);
-            }
-        }
 
         private class MockObjects
         {

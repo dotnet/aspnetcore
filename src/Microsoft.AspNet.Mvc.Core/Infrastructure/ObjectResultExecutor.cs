@@ -13,6 +13,7 @@ using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.AspNet.Mvc.Logging;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Mvc.Infrastructure
@@ -98,10 +99,10 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
                 {
                     if (result.ContentTypes == null)
                     {
-                        result.ContentTypes = new List<MediaTypeHeaderValue>();
+                        result.ContentTypes = new MediaTypeCollection();
                     }
 
-                    result.ContentTypes.Add(MediaTypeHeaderValue.Parse(responseContentType));
+                    result.ContentTypes.Add(responseContentType);
                 }
             }
 
@@ -157,7 +158,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
         /// </returns>
         protected virtual IOutputFormatter SelectFormatter(
             OutputFormatterWriteContext formatterContext,
-            IList<MediaTypeHeaderValue> contentTypes,
+            MediaTypeCollection contentTypes,
             IList<IOutputFormatter> formatters)
         {
             if (formatterContext == null)
@@ -185,14 +186,14 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
             }
 
             var request = formatterContext.HttpContext.Request;
-            var acceptValues = PrepareAcceptValues(request.GetTypedHeaders().Accept);
 
+            var mediaTypes = GetMediaTypes(contentTypes, request);
             IOutputFormatter selectedFormatter = null;
-            if (contentTypes == null || contentTypes.Count == 0)
+            if (contentTypes.Count == 0)
             {
                 // Check if we have enough information to do content-negotiation, otherwise get the first formatter
                 // which can write the type. Let the formatter choose the Content-Type.
-                if (acceptValues == null || acceptValues.Count == 0)
+                if (!(mediaTypes.Count > 0))
                 {
                     Logger.NoAcceptForNegotiation();
 
@@ -207,13 +208,13 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
                 selectedFormatter = SelectFormatterUsingSortedAcceptHeaders(
                     formatterContext,
                     formatters,
-                    acceptValues);
+                    mediaTypes);
 
                 // 2. No formatter was found based on Accept header. Fallback to the first formatter which can write
                 // the type. Let the formatter choose the Content-Type.
                 if (selectedFormatter == null)
                 {
-                    Logger.NoFormatterFromNegotiation(acceptValues);
+                    Logger.NoFormatterFromNegotiation(mediaTypes);
 
                     // Set this flag to indicate that content-negotiation has failed to let formatters decide
                     // if they want to write the response or not.
@@ -224,32 +225,12 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
             }
             else
             {
-                if (acceptValues != null && acceptValues.Count > 0)
+                if (mediaTypes.Count > 0)
                 {
-                    // Filter and remove accept headers which cannot support any of the user specified content types.
-                    // That is, confirm this result supports a more specific media type than requested e.g. OK if
-                    // "text/*" requested and result supports "text/plain".
-                    for (var i = acceptValues.Count - 1; i >= 0; i--)
-                    {
-                        var isCompatible = false;
-                        for (var j = 0; j < contentTypes.Count; j++)
-                        {
-                            if (contentTypes[j].IsSubsetOf(acceptValues[i]))
-                            {
-                                isCompatible = true;
-                            }
-                        }
-
-                        if (!isCompatible)
-                        {
-                            acceptValues.RemoveAt(i);
-                        }
-                    }
-
                     selectedFormatter = SelectFormatterUsingSortedAcceptHeaders(
                         formatterContext,
                         formatters,
-                        acceptValues);
+                        mediaTypes);
                 }
 
                 if (selectedFormatter == null)
@@ -268,6 +249,58 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
             }
 
             return selectedFormatter;
+        }
+
+        private List<MediaTypeSegmentWithQuality> GetMediaTypes(
+            MediaTypeCollection contentTypes,
+            HttpRequest request)
+        {
+            var result = new List<MediaTypeSegmentWithQuality>();
+            var parsedHeaders = request.GetTypedHeaders().Accept;
+            for (var i = 0; i < parsedHeaders?.Count; i++)
+            {
+                result.Add(new MediaTypeSegmentWithQuality(
+                    new StringSegment(parsedHeaders[i].ToString()),
+                    parsedHeaders[i].Quality ?? 1.0));
+            }
+
+            for (var i = 0; i < result.Count; i++)
+            {
+                if (!RespectBrowserAcceptHeader &&
+                    MediaTypeComparisons.MatchesAllTypes(result[i].MediaType) &&
+                    MediaTypeComparisons.MatchesAllSubtypes(result[i].MediaType))
+                {
+                    result.Clear();
+                    return result;
+                }
+
+                if (!InAcceptableMediaTypes(result[i].MediaType, contentTypes))
+                {
+                    result.RemoveAt(i);
+                }
+            }
+
+            result.Sort((left, right) => left.Quality > right.Quality ? -1 : (left.Quality == right.Quality ? 0 : 1));
+
+            return result;
+        }
+
+        private static bool InAcceptableMediaTypes(StringSegment mediaType, MediaTypeCollection acceptableMediaTypes)
+        {
+            if (acceptableMediaTypes.Count == 0)
+            {
+                return true;
+            }
+
+            for (int i = 0; i < acceptableMediaTypes.Count; i++)
+            {
+                if (MediaTypeComparisons.IsSubsetOf(mediaType, acceptableMediaTypes[i]))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -297,7 +330,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
 
             foreach (var formatter in formatters)
             {
-                formatterContext.ContentType = null;
+                formatterContext.ContentType = new StringSegment();
                 if (formatter.CanWriteResult(formatterContext))
                 {
                     return formatter;
@@ -324,7 +357,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
         protected virtual IOutputFormatter SelectFormatterUsingSortedAcceptHeaders(
             OutputFormatterWriteContext formatterContext,
             IList<IOutputFormatter> formatters,
-            IList<MediaTypeHeaderValue> sortedAcceptHeaders)
+            IList<MediaTypeSegmentWithQuality> sortedAcceptHeaders)
         {
             if (formatterContext == null)
             {
@@ -341,11 +374,13 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
                 throw new ArgumentNullException(nameof(sortedAcceptHeaders));
             }
 
-            foreach (var contentType in sortedAcceptHeaders)
+            for (var i = 0; i < sortedAcceptHeaders.Count; i++)
             {
-                foreach (var formatter in formatters)
+                var mediaType = sortedAcceptHeaders[i];
+                formatterContext.ContentType = mediaType.MediaType;
+                for(var j = 0;j < formatters.Count;j++)
                 {
-                    formatterContext.ContentType = contentType;
+                    var formatter = formatters[j];
                     if (formatter.CanWriteResult(formatterContext))
                     {
                         return formatter;
@@ -373,7 +408,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
         protected virtual IOutputFormatter SelectFormatterUsingAnyAcceptableContentType(
             OutputFormatterWriteContext formatterContext,
             IList<IOutputFormatter> formatters,
-            IList<MediaTypeHeaderValue> acceptableContentTypes)
+            MediaTypeCollection acceptableContentTypes)
         {
             if (formatterContext == null)
             {
@@ -394,7 +429,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
             {
                 foreach (var contentType in acceptableContentTypes)
                 {
-                    formatterContext.ContentType = contentType;
+                    formatterContext.ContentType = new StringSegment(contentType);
                     if (formatter.CanWriteResult(formatterContext))
                     {
                         return formatter;
@@ -405,90 +440,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
             return null;
         }
 
-        // There's no allocation-free way to sort an IList so we're going to have to live with the
-        // copy + insertion sort.
-        private IList<MediaTypeHeaderValue> PrepareAcceptValues(IList<MediaTypeHeaderValue> values)
-        {
-            if (values == null || values.Count == 0)
-            {
-                return null;
-            }
-
-            // By default we want to ignore considering accept headers for content negotiation when
-            // they have a media type like */* in them. Browsers typically have these media types.
-            // In these cases we would want the first formatter in the list of output formatters to
-            // write the response. This default behavior can be changed through options, so checking here.
-            if (!RespectBrowserAcceptHeader)
-            {
-                for (var i = 0; i < values.Count; i++)
-                {
-                    if (values[i].MatchesAllTypes)
-                    {
-                        return null;
-                    }
-                }
-            }
-
-            // Degenerate case, we can avoid copying anything.
-            if (values.Count == 1)
-            {
-                return values;
-            }
-
-            var sortNeeded = false;
-            var count = 0;
-
-            for (var i = 0; i < values.Count; i++)
-            {
-                var value = values[i];
-                if (value.Quality == HeaderQuality.NoMatch)
-                {
-                    // Exclude this one
-                }
-                else if (value.Quality != null)
-                {
-                    count++;
-                    sortNeeded = true;
-                }
-                else
-                {
-                    count++;
-                }
-            }
-
-            if (!sortNeeded)
-            {
-                return values;
-            }
-
-            var sorted = new List<MediaTypeHeaderValue>(count);
-            for (var i = 0; i < values.Count; i++)
-            {
-                var value = values[i];
-                if (value.Quality == HeaderQuality.NoMatch)
-                {
-                    // Exclude this one
-                }
-                else
-                {
-                    var position = sorted.BinarySearch(value, MediaTypeHeaderValueComparer.QualityComparer);
-                    if (position >= 0)
-                    {
-                        sorted.Insert(position + 1, value);
-                    }
-                    else
-                    {
-                        sorted.Insert(~position, value);
-                    }
-                }
-            }
-
-            // We want a descending sort, but BinarySearch does ascending
-            sorted.Reverse();
-            return sorted;
-        }
-
-        private void ValidateContentTypes(IList<MediaTypeHeaderValue> contentTypes)
+        private void ValidateContentTypes(MediaTypeCollection contentTypes)
         {
             if (contentTypes == null)
             {
@@ -498,7 +450,8 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
             for (var i = 0; i < contentTypes.Count; i++)
             {
                 var contentType = contentTypes[i];
-                if (contentType.MatchesAllTypes || contentType.MatchesAllSubTypes)
+                if (MediaTypeComparisons.MatchesAllTypes(contentType) ||
+                    MediaTypeComparisons.MatchesAllSubtypes(contentType))
                 {
                     var message = Resources.FormatObjectResult_MatchAllContentType(
                         contentType,

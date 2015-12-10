@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Internal;
+using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Mvc.Formatters
@@ -19,7 +20,7 @@ namespace Microsoft.AspNet.Mvc.Formatters
         {
             SupportedEncodings.Add(Encoding.UTF8);
             SupportedEncodings.Add(Encoding.Unicode);
-            SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("text/plain").CopyAsReadOnly());
+            SupportedMediaTypes.Add("text/plain");
         }
 
         public override bool CanWriteResult(OutputFormatterCanWriteContext context)
@@ -33,7 +34,7 @@ namespace Microsoft.AspNet.Mvc.Formatters
             // always return it as a text/plain format.
             if (context.ObjectType == typeof(string) || context.Object is string)
             {
-                context.ContentType = SupportedMediaTypes[0];
+                context.ContentType = new StringSegment(SupportedMediaTypes[0]);
                 return true;
             }
 
@@ -55,7 +56,9 @@ namespace Microsoft.AspNet.Mvc.Formatters
 
             var response = context.HttpContext.Response;
 
-            return response.WriteAsync(valueAsString, context.ContentType?.Encoding ?? Encoding.UTF8);
+            return response.WriteAsync(
+                valueAsString,
+                MediaTypeEncoding.GetEncoding(context.ContentType) ?? Encoding.UTF8);
         }
     }
 }

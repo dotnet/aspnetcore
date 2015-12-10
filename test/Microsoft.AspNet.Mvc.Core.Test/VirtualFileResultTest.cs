@@ -11,11 +11,11 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.Abstractions;
+using Microsoft.AspNet.Mvc.TestCommon;
 using Microsoft.AspNet.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
-using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit;
 
@@ -42,14 +42,14 @@ namespace Microsoft.AspNet.Mvc
             // Arrange
             var path = Path.GetFullPath("helllo.txt");
             var contentType = "text/plain; charset=us-ascii; p1=p1-value";
-            var expectedMediaType = MediaTypeHeaderValue.Parse(contentType);
+            var expectedMediaType = contentType;
 
             // Act
             var result = new VirtualFileResult(path, contentType);
 
             // Assert
             Assert.Equal(path, result.FileName);
-            Assert.Equal(expectedMediaType, result.ContentType);
+            MediaTypeAssert.Equal(expectedMediaType, result.ContentType);
 
         }
         [Fact]
@@ -137,7 +137,7 @@ namespace Microsoft.AspNet.Mvc
             // Arrange
             var expectedContentType = "text/foo; charset=us-ascii";
             var result = new TestVirtualFileResult(
-                "FilePathResultTestFile_ASCII.txt", MediaTypeHeaderValue.Parse(expectedContentType))
+                "FilePathResultTestFile_ASCII.txt", expectedContentType)
             {
                 FileProvider = GetFileProvider("FilePathResultTestFile_ASCII.txt"),
                 IsAscii = true,
@@ -343,11 +343,6 @@ namespace Microsoft.AspNet.Mvc
         private class TestVirtualFileResult : VirtualFileResult
         {
             public TestVirtualFileResult(string filePath, string contentType)
-                : base(filePath, contentType)
-            {
-            }
-
-            public TestVirtualFileResult(string filePath, MediaTypeHeaderValue contentType)
                 : base(filePath, contentType)
             {
             }

@@ -7,11 +7,11 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.Abstractions;
+using Microsoft.AspNet.Mvc.TestCommon;
 using Microsoft.AspNet.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
-using Microsoft.Net.Http.Headers;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc
@@ -37,14 +37,14 @@ namespace Microsoft.AspNet.Mvc
             // Arrange
             var fileContents = new byte[0];
             var contentType = "text/plain; charset=us-ascii; p1=p1-value";
-            var expectedMediaType = MediaTypeHeaderValue.Parse(contentType);
+            var expectedMediaType = contentType;
 
             // Act
             var result = new FileContentResult(fileContents, contentType);
 
             // Assert
             Assert.Same(fileContents, result.FileContents);
-            Assert.Equal(expectedMediaType, result.ContentType);
+            MediaTypeAssert.Equal(expectedMediaType, result.ContentType);
         }
 
         [Fact]
@@ -83,7 +83,7 @@ namespace Microsoft.AspNet.Mvc
 
             var context = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
 
-            var result = new FileContentResult(buffer, MediaTypeHeaderValue.Parse(expectedContentType));
+            var result = new FileContentResult(buffer, expectedContentType);
 
             // Act
             await result.ExecuteResultAsync(context);
@@ -108,7 +108,7 @@ namespace Microsoft.AspNet.Mvc
 
             var context = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
 
-            var result = new FileContentResult(buffer, MediaTypeHeaderValue.Parse(expectedContentType));
+            var result = new FileContentResult(buffer, expectedContentType);
 
             // Act
             await result.ExecuteResultAsync(context);

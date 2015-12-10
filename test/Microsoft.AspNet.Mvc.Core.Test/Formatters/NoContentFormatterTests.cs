@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Internal;
+using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 using Xunit;
 
@@ -41,7 +42,7 @@ namespace Microsoft.AspNet.Mvc.Formatters
         {
             // Arrange
             var type = declaredTypeAsString ? typeof(string) : typeof(object);
-            var contentType = useNonNullContentType ? MediaTypeHeaderValue.Parse("text/plain") : null;
+            var contentType = useNonNullContentType ? new StringSegment("text/plain") : new StringSegment();
 
             var context = new OutputFormatterWriteContext(
                 new DefaultHttpContext(),
@@ -73,7 +74,7 @@ namespace Microsoft.AspNet.Mvc.Formatters
                 declaredType,
                 "Something non null.")
             {
-                ContentType = MediaTypeHeaderValue.Parse("text/plain"),
+                ContentType = new StringSegment("text/plain"),
             };
 
             var formatter = new HttpNoContentOutputFormatter();
@@ -101,7 +102,7 @@ namespace Microsoft.AspNet.Mvc.Formatters
                 typeof(string),
                 value)
             {
-                ContentType = MediaTypeHeaderValue.Parse("text/plain"),
+                ContentType = new StringSegment("text/plain"),
             };
 
             var formatter = new HttpNoContentOutputFormatter()

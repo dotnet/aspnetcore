@@ -20,7 +20,7 @@ namespace BasicWebSite.Controllers
         public JsonResult CustomContentType()
         {
             var result = new JsonResult(new { Message = "hello" });
-            result.ContentType = MediaTypeHeaderValue.Parse("application/message+json");
+            result.ContentType = "application/message+json";
             return result;
         }
 

@@ -3,8 +3,7 @@
 
 using System.Diagnostics;
 using System.Text;
-using Microsoft.Net.Http.Headers;
-using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Mvc.Formatters;
 
 namespace Microsoft.AspNet.Mvc.Internal
 {
@@ -30,44 +29,47 @@ namespace Microsoft.AspNet.Mvc.Internal
         /// <param name="resolvedContentType">The content type to be used for the response content type header</param>
         /// <param name="resolvedContentTypeEncoding">Encoding to be used for writing the response</param>
         public static void ResolveContentTypeAndEncoding(
-            MediaTypeHeaderValue actionResultContentType,
+            string actionResultContentType,
             string httpResponseContentType,
-            MediaTypeHeaderValue defaultContentType,
+            string defaultContentType,
             out string resolvedContentType,
             out Encoding resolvedContentTypeEncoding)
         {
             Debug.Assert(defaultContentType != null);
-            Debug.Assert(defaultContentType.Encoding != null);
+
+            var defaultContentTypeEncoding = MediaTypeEncoding.GetEncoding(defaultContentType);
+            Debug.Assert(defaultContentTypeEncoding != null);
 
             // 1. User sets the ContentType property on the action result
             if (actionResultContentType != null)
             {
-                resolvedContentType = actionResultContentType.ToString();
-                resolvedContentTypeEncoding = actionResultContentType.Encoding ?? defaultContentType.Encoding;
+                resolvedContentType = actionResultContentType;
+                var actionResultEncoding = MediaTypeEncoding.GetEncoding(actionResultContentType);
+                resolvedContentTypeEncoding = actionResultEncoding ?? defaultContentTypeEncoding;
                 return;
             }
 
             // 2. User sets the ContentType property on the http response directly
             if (!string.IsNullOrEmpty(httpResponseContentType))
             {
-                MediaTypeHeaderValue mediaType;
-                if (MediaTypeHeaderValue.TryParse(httpResponseContentType, out mediaType))
+                var mediaTypeEncoding = MediaTypeEncoding.GetEncoding(httpResponseContentType);
+                if (mediaTypeEncoding != null)
                 {
                     resolvedContentType = httpResponseContentType;
-                    resolvedContentTypeEncoding = mediaType.Encoding ?? defaultContentType.Encoding;
+                    resolvedContentTypeEncoding = mediaTypeEncoding;
                 }
                 else
                 {
                     resolvedContentType = httpResponseContentType;
-                    resolvedContentTypeEncoding = defaultContentType.Encoding;
+                    resolvedContentTypeEncoding = defaultContentTypeEncoding;
                 }
 
                 return;
             }
 
             // 3. Fall-back to the default content type
-            resolvedContentType = defaultContentType.ToString();
-            resolvedContentTypeEncoding = defaultContentType.Encoding;
+            resolvedContentType = defaultContentType;
+            resolvedContentTypeEncoding = defaultContentTypeEncoding;
         }
     }
 }

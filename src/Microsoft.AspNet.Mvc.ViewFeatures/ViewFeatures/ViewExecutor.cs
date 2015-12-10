@@ -23,12 +23,9 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
     public class ViewExecutor
     {
         /// <summary>
-        /// The default content-type header value for views, <c>text/html; charset=utf8</c>.
+        /// The default content-type header value for views, <c>text/html; charset=utf-8</c>.
         /// </summary>
-        public static readonly MediaTypeHeaderValue DefaultContentType = new MediaTypeHeaderValue("text/html")
-        {
-            Encoding = Encoding.UTF8
-        }.CopyAsReadOnly();
+        public static readonly string DefaultContentType = "text/html; charset=utf-8";
 
         /// <summary>
         /// Creates a new <see cref="ViewExecutor"/>.
@@ -122,7 +119,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             IView view,
             ViewDataDictionary viewData,
             ITempDataDictionary tempData,
-            MediaTypeHeaderValue contentType,
+            string contentType,
             int? statusCode)
         {
             if (actionContext == null)

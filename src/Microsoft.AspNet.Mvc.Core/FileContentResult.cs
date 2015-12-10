@@ -31,10 +31,6 @@ namespace Microsoft.AspNet.Mvc
             {
                 throw new ArgumentNullException(nameof(fileContents));
             }
-            if (contentType == null)
-            {
-                throw new ArgumentNullException(nameof(contentType));
-            }
         }
 
         /// <summary>
@@ -45,16 +41,11 @@ namespace Microsoft.AspNet.Mvc
         /// <param name="fileContents">The bytes that represent the file contents.</param>
         /// <param name="contentType">The Content-Type header of the response.</param>
         public FileContentResult(byte[] fileContents, MediaTypeHeaderValue contentType)
-            : base(contentType)
+            : base(contentType?.ToString())
         {
             if (fileContents == null)
             {
                 throw new ArgumentNullException(nameof(fileContents));
-            }
-
-            if (contentType == null)
-            {
-                throw new ArgumentNullException(nameof(contentType));
             }
 
             FileContents = fileContents;

@@ -140,7 +140,7 @@ namespace Microsoft.AspNet.Mvc.Formatters
             }
 
             var response = context.HttpContext.Response;
-            var selectedEncoding = context.ContentType?.Encoding ?? Encoding.UTF8;
+            var selectedEncoding = MediaTypeEncoding.GetEncoding(context.ContentType) ?? Encoding.UTF8;
 
             using (var writer = context.WriterFactory(response.Body, selectedEncoding))
             {

@@ -12,6 +12,7 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.Formatters.Xml.Internal;
 using Microsoft.AspNet.Testing.xunit;
+using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit;
@@ -123,7 +124,7 @@ namespace Microsoft.AspNet.Mvc.Formatters.Xml
             var formatter = new TestXmlDataContractSerializerOutputFormatter();
 
             var context = GetOutputFormatterContext(input, typeof(DummyClass));
-            context.ContentType = MediaTypeHeaderValue.Parse("application/xml");
+            context.ContentType = new StringSegment("application/xml");
 
             // Act
             formatter.CanWriteResult(context);
@@ -382,7 +383,7 @@ namespace Microsoft.AspNet.Mvc.Formatters.Xml
             // Arrange
             var formatter = new XmlDataContractSerializerOutputFormatter();
             var outputFormatterContext = GetOutputFormatterContext(input, declaredType);
-            outputFormatterContext.ContentType = MediaTypeHeaderValue.Parse("application/xml");
+            outputFormatterContext.ContentType = new StringSegment("application/xml");
 
             // Act
             var result = formatter.CanWriteResult(outputFormatterContext);
@@ -412,7 +413,7 @@ namespace Microsoft.AspNet.Mvc.Formatters.Xml
 
             // Act
             var result = formatter.GetSupportedContentTypes(
-                MediaTypeHeaderValue.Parse("application/xml"),
+                "application/xml",
                 type);
 
             // Assert

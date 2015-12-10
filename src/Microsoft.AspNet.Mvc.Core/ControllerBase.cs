@@ -271,7 +271,7 @@ namespace Microsoft.AspNet.Mvc
             var result = new ContentResult
             {
                 Content = content,
-                ContentType = contentType
+                ContentType = contentType?.ToString()
             };
 
             return result;

@@ -8,6 +8,8 @@ using Microsoft.AspNet.Mvc.Abstractions;
 using Microsoft.AspNet.Mvc.ActionConstraints;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.Filters;
+using Microsoft.AspNet.Mvc.Formatters;
+using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Mvc
@@ -30,6 +32,15 @@ namespace Microsoft.AspNet.Mvc
                 throw new ArgumentNullException(nameof(contentType));
             }
 
+            // We want to ensure that the given provided content types are valid values, so
+            // we validate them using the semantics of MediaTypeHeaderValue.
+            MediaTypeHeaderValue.Parse(contentType);
+
+            for (var i = 0; i < otherContentTypes.Length; i++)
+            {
+                MediaTypeHeaderValue.Parse(otherContentTypes[i]);
+            }
+
             ContentTypes = GetContentTypes(contentType, otherContentTypes);
         }
 
@@ -39,7 +50,7 @@ namespace Microsoft.AspNet.Mvc
         int IActionConstraint.Order { get; } = ConsumesActionConstraintOrder;
 
         /// <inheritdoc />
-        public IList<MediaTypeHeaderValue> ContentTypes { get; set; }
+        public MediaTypeCollection ContentTypes { get; set; }
 
         /// <inheritdoc />
         public void OnResourceExecuting(ResourceExecutingContext context)
@@ -53,13 +64,12 @@ namespace Microsoft.AspNet.Mvc
             // Ignore all other filters. This is to ensure we have a overriding behavior.
             if (IsApplicable(context.ActionDescriptor))
             {
-                MediaTypeHeaderValue requestContentType = null;
-                MediaTypeHeaderValue.TryParse(context.HttpContext.Request.ContentType, out requestContentType);
+                var requestContentType = context.HttpContext.Request.ContentType;
 
                 // Confirm the request's content type is more specific than a media type this action supports e.g. OK
                 // if client sent "text/plain" data and this action supports "text/*".
                 if (requestContentType != null &&
-                    !ContentTypes.Any(contentType => requestContentType.IsSubsetOf(contentType)))
+                    !ContentTypes.Any(contentType => MediaTypeComparisons.IsSubsetOf(contentType, requestContentType)))
                 {
                     context.Result = new UnsupportedMediaTypeResult();
                 }
@@ -86,8 +96,7 @@ namespace Microsoft.AspNet.Mvc
                 return true;
             }
 
-            MediaTypeHeaderValue requestContentType = null;
-            MediaTypeHeaderValue.TryParse(context.RouteContext.HttpContext.Request.ContentType, out requestContentType);
+            var requestContentType = context.RouteContext.HttpContext.Request.ContentType;
 
             // If the request content type is null we need to act like pass through.
             // In case there is a single candidate with a constraint it should be selected.
@@ -104,7 +113,7 @@ namespace Microsoft.AspNet.Mvc
 
             // Confirm the request's content type is more specific than a media type this action supports e.g. OK
             // if client sent "text/plain" data and this action supports "text/*".
-            if (ContentTypes.Any(contentType => requestContentType.IsSubsetOf(contentType)))
+            if (ContentTypes.Any(contentType => MediaTypeComparisons.IsSubsetOf(contentType, requestContentType)))
             {
                 return true;
             }
@@ -164,22 +173,22 @@ namespace Microsoft.AspNet.Mvc
 
         }
 
-        private List<MediaTypeHeaderValue> GetContentTypes(string firstArg, string[] args)
+        private MediaTypeCollection GetContentTypes(string firstArg, string[] args)
         {
             var completeArgs = new List<string>();
             completeArgs.Add(firstArg);
             completeArgs.AddRange(args);
-            var contentTypes = new List<MediaTypeHeaderValue>();
+            var contentTypes = new MediaTypeCollection();
             foreach (var arg in completeArgs)
             {
-                var contentType = MediaTypeHeaderValue.Parse(arg);
-                if (contentType.MatchesAllSubTypes || contentType.MatchesAllTypes)
+                if (MediaTypeComparisons.MatchesAllSubtypes(arg) ||
+                    MediaTypeComparisons.MatchesAllTypes(arg))
                 {
                     throw new InvalidOperationException(
                         Resources.FormatMatchAllContentTypeIsNotAllowed(arg));
                 }
 
-                contentTypes.Add(contentType);
+                contentTypes.Add(arg);
             }
 
             return contentTypes;

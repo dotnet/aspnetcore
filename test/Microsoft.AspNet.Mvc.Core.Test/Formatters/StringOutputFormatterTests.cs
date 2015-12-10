@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Internal;
-using Microsoft.Net.Http.Headers;
+using Microsoft.Extensions.Primitives;
 using Moq;
 using Xunit;
 
@@ -35,9 +35,9 @@ namespace Microsoft.AspNet.Mvc.Formatters
             bool expectedCanWriteResult)
         {
             // Arrange
-            var expectedContentType = expectedCanWriteResult ? 
-                MediaTypeHeaderValue.Parse("text/plain") :
-                MediaTypeHeaderValue.Parse("application/json");
+            var expectedContentType = expectedCanWriteResult ?
+                new StringSegment("text/plain") :
+                new StringSegment("application/json");
 
             var formatter = new StringOutputFormatter();
             var type = useDeclaredTypeAsString ? typeof(string) : typeof(object);
@@ -47,7 +47,7 @@ namespace Microsoft.AspNet.Mvc.Formatters
                 new TestHttpResponseStreamWriterFactory().CreateWriter,
                 type,
                 value);
-            context.ContentType = MediaTypeHeaderValue.Parse("application/json");
+            context.ContentType = new StringSegment("application/json");
 
             // Act
             var result = formatter.CanWriteResult(context);

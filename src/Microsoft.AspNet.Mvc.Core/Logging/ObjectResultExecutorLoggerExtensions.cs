@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.Mvc.Formatters;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Mvc.Logging
@@ -16,7 +17,7 @@ namespace Microsoft.AspNet.Mvc.Logging
         private static readonly Action<ILogger, IOutputFormatter, string, Exception> _formatterSelected;
         private static readonly Action<ILogger, string, Exception> _skippedContentNegotiation;
         private static readonly Action<ILogger, string, Exception> _noAcceptForNegotiation;
-        private static readonly Action<ILogger, IEnumerable<MediaTypeHeaderValue>, Exception> _noFormatterFromNegotiation;
+        private static readonly Action<ILogger, IEnumerable<MediaTypeSegmentWithQuality>, Exception> _noFormatterFromNegotiation;
 
         static ObjectResultExecutorLoggerExtensions()
         {
@@ -40,7 +41,7 @@ namespace Microsoft.AspNet.Mvc.Logging
                 LogLevel.Debug,
                 4,
                 "No information found on request to perform content negotiation.");
-            _noFormatterFromNegotiation = LoggerMessage.Define<IEnumerable<MediaTypeHeaderValue>>(
+            _noFormatterFromNegotiation = LoggerMessage.Define<IEnumerable<MediaTypeSegmentWithQuality>>(
                 LogLevel.Debug,
                 5,
                 "Could not find an output formatter based on content negotiation. Accepted types were ({AcceptTypes})");
@@ -67,9 +68,9 @@ namespace Microsoft.AspNet.Mvc.Logging
             _formatterSelected(logger, outputFormatter, contentType, null);
         }
 
-        public static void SkippedContentNegotiation(this ILogger logger, MediaTypeHeaderValue contentType)
+        public static void SkippedContentNegotiation(this ILogger logger, string contentType)
         {
-            _skippedContentNegotiation(logger, Convert.ToString(contentType), null);
+            _skippedContentNegotiation(logger, contentType, null);
         }
 
         public static void NoAcceptForNegotiation(this ILogger logger)
@@ -77,7 +78,7 @@ namespace Microsoft.AspNet.Mvc.Logging
             _noAcceptForNegotiation(logger, null, null);
         }
 
-        public static void NoFormatterFromNegotiation(this ILogger logger, IEnumerable<MediaTypeHeaderValue> acceptTypes)
+        public static void NoFormatterFromNegotiation(this ILogger logger, IList<MediaTypeSegmentWithQuality> acceptTypes)
         {
             _noFormatterFromNegotiation(logger, acceptTypes, null);
         }

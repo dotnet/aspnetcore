@@ -18,10 +18,10 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
     /// </summary>
     public class JsonResultExecutor
     {
-        private static readonly MediaTypeHeaderValue DefaultContentType = new MediaTypeHeaderValue("application/json")
+        private static readonly string DefaultContentType = new MediaTypeHeaderValue("application/json")
         {
             Encoding = Encoding.UTF8
-        }.CopyAsReadOnly();
+        }.ToString();
 
         /// <summary>
         /// Creates a new <see cref="JsonResultExecutor"/>.

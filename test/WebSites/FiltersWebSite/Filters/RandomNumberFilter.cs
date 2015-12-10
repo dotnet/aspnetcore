@@ -14,7 +14,7 @@ namespace FiltersWebSite
             context.Result = new ContentResult()
             {
                 Content = "4",
-                ContentType = new MediaTypeHeaderValue("text/plain")
+                ContentType = "text/plain"
             };
         }
 

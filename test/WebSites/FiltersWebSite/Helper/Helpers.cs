@@ -21,7 +21,7 @@ namespace FiltersWebSite
             return new ContentResult()
             {
                 Content = content,
-                ContentType = new MediaTypeHeaderValue("text/plain"),
+                ContentType = "text/plain",
             };
         }
     }

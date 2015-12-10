@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Http.Internal;
+using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 using Xunit;
 
@@ -21,7 +22,7 @@ namespace Microsoft.AspNet.Mvc.Formatters
         {
             // Arrange
             var formatter = new StreamOutputFormatter();
-            var contentTypeHeader = contentType == null ? null : new MediaTypeHeaderValue(contentType);
+            var contentTypeHeader = new StringSegment(contentType);
 
             var context = new OutputFormatterWriteContext(
                 new DefaultHttpContext(),
@@ -46,7 +47,7 @@ namespace Microsoft.AspNet.Mvc.Formatters
         {
             // Arrange
             var formatter = new StreamOutputFormatter();
-            var contentTypeHeader = contentType == null ? null : new MediaTypeHeaderValue(contentType);
+            var contentTypeHeader = contentType == null ? new StringSegment() : new StringSegment(contentType);
 
             var context = new OutputFormatterWriteContext(
                 new DefaultHttpContext(),

@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.Mvc
         /// <summary>
         /// Gets or sets the <see cref="MediaTypeHeaderValue"/> representing the Content-Type header of the response.
         /// </summary>
-        public MediaTypeHeaderValue ContentType { get; set; }
+        public string ContentType { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="JsonSerializerSettings"/>.

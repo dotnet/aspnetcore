@@ -42,16 +42,11 @@ namespace Microsoft.AspNet.Mvc
         /// <param name="fileStream">The stream with the file.</param>
         /// <param name="contentType">The Content-Type header of the response.</param>
         public FileStreamResult(Stream fileStream, MediaTypeHeaderValue contentType)
-            : base(contentType)
+            : base(contentType?.ToString())
         {
             if (fileStream == null)
             {
                 throw new ArgumentNullException(nameof(fileStream));
-            }
-
-            if (contentType == null)
-            {
-                throw new ArgumentNullException(nameof(contentType));
             }
 
             FileStream = fileStream;

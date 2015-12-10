@@ -14,6 +14,7 @@ using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
+using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 using Moq;
 using Newtonsoft.Json;
@@ -262,7 +263,7 @@ namespace Microsoft.AspNet.Mvc.Formatters
                 typeof(string),
                 content)
             {
-                ContentType = mediaType,
+                ContentType = new StringSegment(mediaType.ToString()),
             };
 
             // Act
@@ -313,7 +314,7 @@ namespace Microsoft.AspNet.Mvc.Formatters
                 outputType,
                 outputValue)
             {
-                ContentType = mediaTypeHeaderValue,
+                ContentType = new StringSegment(contentType),
             };
         }
 

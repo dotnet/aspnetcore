@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Core;
+using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Mvc.Formatters
@@ -37,10 +38,10 @@ namespace Microsoft.AspNet.Mvc.Formatters
         public IList<Encoding> SupportedEncodings { get; } = new List<Encoding>();
 
         /// <summary>
-        /// Gets the mutable collection of <see cref="MediaTypeHeaderValue"/> elements supported by
+        /// Gets the mutable collection of media type elements supported by
         /// this <see cref="InputFormatter"/>.
         /// </summary>
-        public IList<MediaTypeHeaderValue> SupportedMediaTypes { get; } = new List<MediaTypeHeaderValue>();
+        public MediaTypeCollection SupportedMediaTypes { get; } = new MediaTypeCollection();
 
         protected object GetDefaultValueForType(Type modelType)
         {
@@ -61,8 +62,7 @@ namespace Microsoft.AspNet.Mvc.Formatters
             }
 
             var contentType = context.HttpContext.Request.ContentType;
-            MediaTypeHeaderValue requestContentType;
-            if (!MediaTypeHeaderValue.TryParse(contentType, out requestContentType))
+            if (string.IsNullOrEmpty(contentType))
             {
                 return false;
             }
@@ -71,7 +71,7 @@ namespace Microsoft.AspNet.Mvc.Formatters
             // client sent "text/plain" data and this formatter supports "text/*".
             return SupportedMediaTypes.Any(supportedMediaType =>
             {
-                return requestContentType.IsSubsetOf(supportedMediaType);
+                return MediaTypeComparisons.IsSubsetOf(supportedMediaType, contentType);
             });
         }
 
@@ -107,27 +107,28 @@ namespace Microsoft.AspNet.Mvc.Formatters
 
         /// <summary>
         /// Returns an <see cref="Encoding"/> based on <paramref name="context"/>'s
-        /// <see cref="MediaTypeHeaderValue.Charset"/>.
+        /// character set.
         /// </summary>
         /// <param name="context">The <see cref="InputFormatterContext"/>.</param>
         /// <returns>
         /// An <see cref="Encoding"/> based on <paramref name="context"/>'s
-        /// <see cref="MediaTypeHeaderValue.Charset"/>. <c>null</c> if no supported encoding was found.
+        /// character set. <c>null</c> if no supported encoding was found.
         /// </returns>
         protected Encoding SelectCharacterEncoding(InputFormatterContext context)
         {
             var request = context.HttpContext.Request;
 
-            MediaTypeHeaderValue contentType;
-            MediaTypeHeaderValue.TryParse(request.ContentType, out contentType);
-            if (contentType != null)
+            if (request.ContentType != null)
             {
-                var charset = contentType.Charset;
-                if (!string.IsNullOrEmpty(charset))
+                var encoding = MediaTypeEncoding.GetEncoding(request.ContentType);
+                if (encoding != null)
                 {
                     foreach (var supportedEncoding in SupportedEncodings)
                     {
-                        if (string.Equals(charset, supportedEncoding.WebName, StringComparison.OrdinalIgnoreCase))
+                        if (string.Equals(
+                            encoding.WebName,
+                            supportedEncoding.WebName,
+                            StringComparison.OrdinalIgnoreCase))
                         {
                             return supportedEncoding;
                         }

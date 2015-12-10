@@ -1034,6 +1034,22 @@ namespace Microsoft.AspNet.Mvc.Core
             return GetString("HttpResponseStreamWriter_StreamNotWritable");
         }
 
+        /// <summary>
+        /// The argument '{0}' is invalid. Empty or null formats are not supported.
+        /// </summary>
+        internal static string FormatFormatterMappings_GetMediaTypeMappingForFormat_InvalidFormat
+        {
+            get { return GetString("FormatFormatterMappings_GetMediaTypeMappingForFormat_InvalidFormat"); }
+        }
+
+        /// <summary>
+        /// The argument '{0}' is invalid. Empty or null formats are not supported.
+        /// </summary>
+        internal static string FormatFormatFormatterMappings_GetMediaTypeMappingForFormat_InvalidFormat(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("FormatFormatterMappings_GetMediaTypeMappingForFormat_InvalidFormat"), p0);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

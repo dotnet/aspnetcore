@@ -8,7 +8,9 @@ using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.Abstractions;
 using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.AspNet.Mvc.Formatters;
+using Microsoft.AspNet.Mvc.TestCommon;
 using Microsoft.AspNet.Routing;
+using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit;
@@ -21,8 +23,8 @@ namespace Microsoft.AspNet.Mvc.Test
         public async Task ProducesAttribute_SetsContentType()
         {
             // Arrange
-            var mediaType1 = MediaTypeHeaderValue.Parse("application/json");
-            var mediaType2 = MediaTypeHeaderValue.Parse("text/json;charset=utf-8");
+            var mediaType1 = new StringSegment("application/json");
+            var mediaType2 = new StringSegment("text/json;charset=utf-8");
             var producesContentAttribute = new ProducesAttribute("application/json", "text/json;charset=utf-8");
             var resultExecutingContext = CreateResultExecutingContext(new IFilterMetadata[] { producesContentAttribute });
             var next = new ResultExecutionDelegate(
@@ -34,8 +36,8 @@ namespace Microsoft.AspNet.Mvc.Test
             // Assert
             var objectResult = resultExecutingContext.Result as ObjectResult;
             Assert.Equal(2, objectResult.ContentTypes.Count);
-            ValidateMediaType(mediaType1, objectResult.ContentTypes[0]);
-            ValidateMediaType(mediaType2, objectResult.ContentTypes[1]);
+            MediaTypeAssert.Equal(mediaType1, objectResult.ContentTypes[0]);
+            MediaTypeAssert.Equal(mediaType2, objectResult.ContentTypes[1]);
         }
 
         [Fact]
@@ -151,20 +153,6 @@ namespace Microsoft.AspNet.Mvc.Test
             // Act and Assert
             Assert.NotNull(producesAttribute.ContentTypes);
             Assert.Empty(producesAttribute.ContentTypes);
-        }
-
-        private static void ValidateMediaType(MediaTypeHeaderValue expectedMediaType, MediaTypeHeaderValue actualMediaType)
-        {
-            Assert.Equal(expectedMediaType.MediaType, actualMediaType.MediaType);
-            Assert.Equal(expectedMediaType.SubType, actualMediaType.SubType);
-            Assert.Equal(expectedMediaType.Charset, actualMediaType.Charset);
-            Assert.Equal(expectedMediaType.MatchesAllTypes, actualMediaType.MatchesAllTypes);
-            Assert.Equal(expectedMediaType.MatchesAllSubTypes, actualMediaType.MatchesAllSubTypes);
-            Assert.Equal(expectedMediaType.Parameters.Count, actualMediaType.Parameters.Count);
-            foreach (var item in expectedMediaType.Parameters)
-            {
-                Assert.Equal(item.Value, NameValueHeaderValue.Find(actualMediaType.Parameters, item.Name).Value);
-            }
         }
 
         private static ResultExecutedContext CreateResultExecutedContext(ResultExecutingContext context)

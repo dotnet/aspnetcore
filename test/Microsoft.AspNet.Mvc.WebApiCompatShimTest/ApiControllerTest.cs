@@ -10,6 +10,7 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.Controllers;
+using Microsoft.AspNet.Mvc.Formatters;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Routing;
 using Newtonsoft.Json;
@@ -264,7 +265,7 @@ namespace System.Web.Http
             var jsonResult = Assert.IsType<JsonResult>(result);
             Assert.Same(product, jsonResult.Value);
 
-            Assert.Same(Encoding.UTF8, jsonResult.ContentType.Encoding);
+            Assert.Same(Encoding.UTF8, MediaTypeEncoding.GetEncoding(jsonResult.ContentType));
         }
 
         [Fact]

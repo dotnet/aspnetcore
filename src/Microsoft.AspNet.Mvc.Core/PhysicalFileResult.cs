@@ -34,10 +34,6 @@ namespace Microsoft.AspNet.Mvc
             {
                 throw new ArgumentNullException(nameof(fileName));
             }
-            if (contentType == null)
-            {
-                throw new ArgumentNullException(nameof(contentType));
-            }
         }
 
         /// <summary>
@@ -47,16 +43,11 @@ namespace Microsoft.AspNet.Mvc
         /// <param name="fileName">The path to the file. The path must be an absolute path.</param>
         /// <param name="contentType">The Content-Type header of the response.</param>
         public PhysicalFileResult(string fileName, MediaTypeHeaderValue contentType)
-            : base(contentType)
+            : base(contentType?.ToString())
         {
             if (fileName == null)
             {
                 throw new ArgumentNullException(nameof(fileName));
-            }
-
-            if (contentType == null)
-            {
-                throw new ArgumentNullException(nameof(contentType));
             }
 
             FileName = fileName;

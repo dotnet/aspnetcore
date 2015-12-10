@@ -10,8 +10,10 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Internal;
+using Microsoft.AspNet.Mvc.Formatters;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
+using Microsoft.AspNet.Mvc.TestCommon;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Testing;
 using Microsoft.Net.Http.Headers;
@@ -975,7 +977,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             // Assert
             Assert.IsType<ContentResult>(actualContentResult);
             Assert.Equal("TestContent", actualContentResult.Content);
-            Assert.Null(actualContentResult.ContentType.Encoding);
+            Assert.Null(MediaTypeEncoding.GetEncoding(actualContentResult.ContentType));
             Assert.Equal("text/plain", actualContentResult.ContentType.ToString());
         }
 
@@ -991,7 +993,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             // Assert
             Assert.IsType<ContentResult>(actualContentResult);
             Assert.Equal("TestContent", actualContentResult.Content);
-            Assert.Same(Encoding.UTF8, actualContentResult.ContentType.Encoding);
+            Assert.Same(Encoding.UTF8, MediaTypeEncoding.GetEncoding(actualContentResult.ContentType));
             Assert.Equal("text/plain; charset=utf-8", actualContentResult.ContentType.ToString());
         }
 
@@ -1024,7 +1026,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             Assert.NotNull(contentResult.ContentType);
             Assert.Equal(contentType, contentResult.ContentType.ToString());
             // The default encoding of ContentResult is used when this result is executed.
-            Assert.Null(contentResult.ContentType.Encoding);
+            Assert.Null(MediaTypeEncoding.GetEncoding(contentResult.ContentType));
         }
 
         [Fact]
@@ -1032,13 +1034,13 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         {
             // Arrange
             var contentController = new ContentController();
-            var contentType = MediaTypeHeaderValue.Parse("text/xml; charset=us-ascii; p1=p1-value");
+            var contentType = "text/xml; charset=us-ascii; p1=p1-value";
 
             // Act
             var contentResult = (ContentResult)contentController.Content_WithEncodingInCharset_AndEncodingParameter();
 
             // Assert
-            Assert.Equal(contentType, contentResult.ContentType);
+            MediaTypeAssert.Equal(contentType, contentResult.ContentType);
         }
 
         [Fact]
@@ -1046,7 +1048,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         {
             // Arrange
             var contentController = new ContentController();
-            var contentType = MediaTypeHeaderValue.Parse("text/xml; charset=us-ascii; p1=p1-value");
+            var contentType = "text/xml; charset=us-ascii; p1=p1-value";
 
             // Act
             var contentResult = (ContentResult)contentController.Content_WithEncodingInCharset();

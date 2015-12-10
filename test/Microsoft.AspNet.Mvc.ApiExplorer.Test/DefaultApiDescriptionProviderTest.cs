@@ -18,6 +18,7 @@ using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Routing.Constraints;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit;
@@ -1385,14 +1386,14 @@ namespace Microsoft.AspNet.Mvc.Description
         {
             public ContentTypeAttribute(string mediaType)
             {
-                ContentTypes.Add(MediaTypeHeaderValue.Parse(mediaType));
+                ContentTypes.Add(mediaType);
             }
 
-            public List<MediaTypeHeaderValue> ContentTypes { get; } = new List<MediaTypeHeaderValue>();
+            public MediaTypeCollection ContentTypes { get; } = new MediaTypeCollection();
 
             public Type Type { get; set; }
 
-            public void SetContentTypes(IList<MediaTypeHeaderValue> contentTypes)
+            public void SetContentTypes(MediaTypeCollection contentTypes)
             {
                 contentTypes.Clear();
                 foreach (var contentType in ContentTypes)

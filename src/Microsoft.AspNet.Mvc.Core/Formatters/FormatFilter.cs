@@ -2,12 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNet.Mvc.ApiExplorer;
 using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.Extensions.Options;
-using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Mvc.Formatters
 {
@@ -78,7 +76,7 @@ namespace Microsoft.AspNet.Mvc.Formatters
 
             // Determine media types this action supports.
             var responseTypeFilters = context.Filters.OfType<IApiResponseMetadataProvider>();
-            var supportedMediaTypes = new List<MediaTypeHeaderValue>();
+            var supportedMediaTypes = new MediaTypeCollection();
             foreach (var filter in responseTypeFilters)
             {
                 filter.SetContentTypes(supportedMediaTypes);
@@ -91,7 +89,7 @@ namespace Microsoft.AspNet.Mvc.Formatters
                 // request's format and IApiResponseMetadataProvider-provided content types similarly to an Accept
                 // header and an output formatter's SupportedMediaTypes: Confirm action supports a more specific media
                 // type than requested e.g. OK if "text/*" requested and action supports "text/plain".
-                if (!supportedMediaTypes.Any(c => c.IsSubsetOf(contentType)))
+                if (!supportedMediaTypes.Any(c => MediaTypeComparisons.IsSubsetOf(contentType, c)))
                 {
                     context.Result = new HttpNotFoundResult();
                 }

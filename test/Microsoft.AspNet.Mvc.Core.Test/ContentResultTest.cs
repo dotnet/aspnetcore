@@ -9,6 +9,8 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.Abstractions;
+using Microsoft.AspNet.Mvc.Formatters;
+using Microsoft.AspNet.Mvc.TestCommon;
 using Microsoft.AspNet.Mvc.ViewComponents;
 using Microsoft.AspNet.Routing;
 using Microsoft.Extensions.DependencyInjection;
@@ -32,7 +34,7 @@ namespace Microsoft.AspNet.Mvc
                 ContentType = new MediaTypeHeaderValue("text/plain")
                 {
                     Encoding = Encoding.UTF7
-                }
+                }.ToString()
             };
             var httpContext = GetHttpContext();
             var actionContext = GetActionContext(httpContext);
@@ -41,7 +43,7 @@ namespace Microsoft.AspNet.Mvc
             await contentResult.ExecuteResultAsync(actionContext);
 
             // Assert
-            Assert.Equal("text/plain; charset=utf-7", httpContext.Response.ContentType);
+            MediaTypeAssert.Equal("text/plain; charset=utf-7", httpContext.Response.ContentType);
         }
 
         [Fact]
@@ -55,7 +57,7 @@ namespace Microsoft.AspNet.Mvc
                 ContentType = new MediaTypeHeaderValue("text/plain")
                 {
                     Encoding = Encoding.ASCII
-                }
+                }.ToString()
             };
             var httpContext = GetHttpContext();
             httpContext.Features.Set<IHttpBufferingFeature>(new TestBufferingFeature());
@@ -153,7 +155,7 @@ namespace Microsoft.AspNet.Mvc
             var contentResult = new ContentResult
             {
                 Content = content,
-                ContentType = contentType
+                ContentType = contentType?.ToString()
             };
             var httpContext = GetHttpContext();
             var memoryStream = new MemoryStream();
@@ -165,7 +167,8 @@ namespace Microsoft.AspNet.Mvc
             await contentResult.ExecuteResultAsync(actionContext);
 
             // Assert
-            Assert.Equal(expectedContentType, httpContext.Response.ContentType);
+            var finalResponseContentType = httpContext.Response.ContentType;
+            Assert.Equal(expectedContentType, finalResponseContentType);
             Assert.Equal(expectedContentData, memoryStream.ToArray());
         }
 

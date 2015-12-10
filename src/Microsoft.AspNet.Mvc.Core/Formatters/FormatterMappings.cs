@@ -4,24 +4,46 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.Mvc.Core;
+using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Mvc.Formatters
 {
     /// <summary>
-    /// Used to specify mapping between the URL Format and corresponding <see cref="MediaTypeHeaderValue"/>.
+    /// Used to specify mapping between the URL Format and corresponding media type.
     /// </summary>
     public class FormatterMappings
     {
-        private readonly Dictionary<string, MediaTypeHeaderValue> _map =
-            new Dictionary<string, MediaTypeHeaderValue>(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, string> _map =
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
-        /// Sets mapping for the format to specified <see cref="MediaTypeHeaderValue"/>. 
-        /// If the format already exists, the <see cref="MediaTypeHeaderValue"/> will be overwritten with the new value.
+        /// Sets mapping for the format to specified media type. 
+        /// If the format already exists, the media type will be overwritten with the new value.
         /// </summary>
         /// <param name="format">The format value.</param>
-        /// <param name="contentType">The <see cref="MediaTypeHeaderValue"/> for the format value.</param>
+        /// <param name="contentType">The media type for the format value.</param>
+        public void SetMediaTypeMappingForFormat(string format, string contentType)
+        {
+            if (format == null)
+            {
+                throw new ArgumentNullException(nameof(format));
+            }
+
+            if (contentType == null)
+            {
+                throw new ArgumentNullException(nameof(contentType));
+            }
+
+            SetMediaTypeMappingForFormat(format, MediaTypeHeaderValue.Parse(contentType));
+        }
+
+        /// <summary>
+        /// Sets mapping for the format to specified media type. 
+        /// If the format already exists, the media type will be overwritten with the new value.
+        /// </summary>
+        /// <param name="format">The format value.</param>
+        /// <param name="contentType">The media type for the format value.</param>
         public void SetMediaTypeMappingForFormat(string format, MediaTypeHeaderValue contentType)
         {
             if (format == null)
@@ -36,31 +58,34 @@ namespace Microsoft.AspNet.Mvc.Formatters
 
             ValidateContentType(contentType);
             format = RemovePeriodIfPresent(format);
-            _map[format] = contentType.CopyAsReadOnly();
+            _map[format] = contentType.ToString();
         }
 
         /// <summary>
-        /// Gets <see cref="MediaTypeHeaderValue"/> for the specified format.
+        /// Gets the media type for the specified format.
         /// </summary>
         /// <param name="format">The format value.</param>
-        /// <returns>The <see cref="MediaTypeHeaderValue"/> for input format.</returns>
-        public MediaTypeHeaderValue GetMediaTypeMappingForFormat(string format)
+        /// <returns>The media type for input format.</returns>
+        public string GetMediaTypeMappingForFormat(string format)
         {
-            if (format == null)
+            if (string.IsNullOrEmpty(format))
             {
-                throw new ArgumentNullException(nameof(format));
+                var message = Resources.FormatFormatFormatterMappings_GetMediaTypeMappingForFormat_InvalidFormat(
+                    nameof(format));
+
+                throw new ArgumentException(message, nameof(format));
             }
 
             format = RemovePeriodIfPresent(format);
 
-            MediaTypeHeaderValue value = null;
+            string value = null;
             _map.TryGetValue(format, out value);
 
             return value;
         }
 
         /// <summary>
-        /// Clears the <see cref="MediaTypeHeaderValue"/> mapping for the format.
+        /// Clears the media type mapping for the format.
         /// </summary>
         /// <param name="format">The format value.</param>
         /// <returns><c>true</c> if the format is successfully found and cleared; otherwise, <c>false</c>.</returns>

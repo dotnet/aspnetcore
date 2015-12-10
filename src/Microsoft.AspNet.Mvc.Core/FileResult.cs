@@ -7,6 +7,7 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Mvc
@@ -24,7 +25,7 @@ namespace Microsoft.AspNet.Mvc
         /// the provided <paramref name="contentType"/>.
         /// </summary>
         /// <param name="contentType">The Content-Type header of the response.</param>
-        protected FileResult(MediaTypeHeaderValue contentType)
+        protected FileResult(string contentType)
         {
             if (contentType == null)
             {
@@ -35,9 +36,9 @@ namespace Microsoft.AspNet.Mvc
         }
 
         /// <summary>
-        /// Gets the <see cref="MediaTypeHeaderValue"/> representing the Content-Type header of the response.
+        /// Gets the Content-Type header for the response.
         /// </summary>
-        public MediaTypeHeaderValue ContentType { get; }
+        public string ContentType { get; }
 
         /// <summary>
         /// Gets the file name that will be used in the Content-Disposition header of the response.

@@ -2,12 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Formatters;
 using Microsoft.AspNet.Mvc.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -17,14 +15,14 @@ namespace Microsoft.AspNet.Mvc
         {
             Value = value;
             Formatters = new FormatterCollection<IOutputFormatter>();
-            ContentTypes = new List<MediaTypeHeaderValue>();
+            ContentTypes = new MediaTypeCollection();
         }
 
         public object Value { get; set; }
 
         public FormatterCollection<IOutputFormatter> Formatters { get; set; }
 
-        public IList<MediaTypeHeaderValue> ContentTypes { get; set; }
+        public MediaTypeCollection ContentTypes { get; set; }
 
         public Type DeclaredType { get; set; }
 

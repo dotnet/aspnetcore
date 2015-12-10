@@ -51,9 +51,9 @@ namespace Microsoft.AspNet.Mvc
         public IViewEngine ViewEngine { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="MediaTypeHeaderValue"/> representing the Content-Type header of the response.
+        /// Gets or sets the Content-Type header for the response.
         /// </summary>
-        public MediaTypeHeaderValue ContentType { get; set; }
+        public string ContentType { get; set; }
 
         /// <inheritdoc />
         public override async Task ExecuteResultAsync(ActionContext context)

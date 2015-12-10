@@ -12,9 +12,11 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.Abstractions;
+using Microsoft.AspNet.Mvc.Formatters;
 using Microsoft.AspNet.Mvc.Infrastructure;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
+using Microsoft.AspNet.Mvc.TestCommon;
 using Microsoft.AspNet.Mvc.ViewComponents;
 using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.AspNet.Mvc.ViewFeatures.Buffer;
@@ -367,26 +369,26 @@ namespace Microsoft.AspNet.Mvc
             Assert.Equal(404, actionContext.HttpContext.Response.StatusCode);
         }
 
-        public static TheoryData<MediaTypeHeaderValue, string> ViewComponentResultContentTypeData
+        public static TheoryData<string, string> ViewComponentResultContentTypeData
         {
             get
             {
-                return new TheoryData<MediaTypeHeaderValue, string>
+                return new TheoryData<string, string>
                 {
                     {
                         null,
                         "text/html; charset=utf-8"
                     },
                     {
-                        new MediaTypeHeaderValue("text/foo"),
+                        "text/foo",
                         "text/foo"
                     },
                     {
-                        MediaTypeHeaderValue.Parse("text/foo;p1=p1-value"),
+                        "text/foo;p1=p1-value",
                         "text/foo; p1=p1-value"
                     },
                     {
-                        new MediaTypeHeaderValue("text/foo") { Encoding = Encoding.ASCII },
+                        new MediaTypeHeaderValue("text/foo") { Encoding = Encoding.ASCII }.ToString(),
                         "text/foo; charset=us-ascii"
                     }
                 };
@@ -396,8 +398,8 @@ namespace Microsoft.AspNet.Mvc
         [Theory]
         [MemberData(nameof(ViewComponentResultContentTypeData))]
         public async Task ViewComponentResult_SetsContentTypeHeader(
-            MediaTypeHeaderValue contentType,
-            string expectedContentTypeHeaderValue)
+            string contentType,
+            string expectedContentType)
         {
             // Arrange
             var descriptor = new ViewComponentDescriptor()
@@ -424,13 +426,14 @@ namespace Microsoft.AspNet.Mvc
             await viewComponentResult.ExecuteResultAsync(actionContext);
 
             // Assert
-            Assert.Equal(expectedContentTypeHeaderValue, actionContext.HttpContext.Response.ContentType);
+            var resultContentType = actionContext.HttpContext.Response.ContentType;
+            MediaTypeAssert.Equal(expectedContentType, resultContentType);
 
             // Check if the original instance provided by the user has not changed.
             // Since we do not have access to the new instance created within the view executor,
             // check if at least the content is the same.
             var contentTypeAfterViewResultExecution = contentType?.ToString();
-            Assert.Equal(contentTypeBeforeViewResultExecution, contentTypeAfterViewResultExecution);
+            MediaTypeAssert.Equal(contentTypeBeforeViewResultExecution, contentTypeAfterViewResultExecution);
         }
 
         [Fact]
@@ -454,7 +457,7 @@ namespace Microsoft.AspNet.Mvc
             {
                 Arguments = new { name = "World!" },
                 ViewComponentName = "Text",
-                ContentType = new MediaTypeHeaderValue("text/html") { Encoding = Encoding.UTF8 },
+                ContentType = new MediaTypeHeaderValue("text/html") { Encoding = Encoding.UTF8 }.ToString(),
                 TempData = _tempDataDictionary,
             };
 

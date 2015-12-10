@@ -14,7 +14,7 @@ namespace FiltersWebSite
             context.Result = new ContentResult
             {
                 Content = "The Action was never executed",
-                ContentType = new MediaTypeHeaderValue("text/plain")
+                ContentType = "text/plain"
             };
         }
     }

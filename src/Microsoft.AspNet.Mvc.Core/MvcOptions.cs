@@ -53,8 +53,7 @@ namespace Microsoft.AspNet.Mvc
         public FilterCollection Filters { get; }
 
         /// <summary>
-        /// Used to specify mapping between the URL Format and corresponding
-        /// <see cref="Net.Http.Headers.MediaTypeHeaderValue"/>.
+        /// Used to specify mapping between the URL Format and corresponding media type.
         /// </summary>
         public FormatterMappings FormatterMappings { get; }
 

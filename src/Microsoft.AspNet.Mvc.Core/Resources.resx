@@ -319,4 +319,7 @@
   <data name="HttpResponseStreamWriter_StreamNotWritable" xml:space="preserve">
     <value>The stream must support writing.</value>
   </data>
+  <data name="FormatFormatterMappings_GetMediaTypeMappingForFormat_InvalidFormat" xml:space="preserve">
+    <value>The argument '{0}' is invalid. Empty or null formats are not supported.</value>
+  </data>
 </root>

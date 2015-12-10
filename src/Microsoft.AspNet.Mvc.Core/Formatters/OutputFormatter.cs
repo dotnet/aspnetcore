@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.ApiExplorer;
 using Microsoft.AspNet.Mvc.Core;
+using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Mvc.Formatters
@@ -17,16 +18,13 @@ namespace Microsoft.AspNet.Mvc.Formatters
     /// </summary>
     public abstract class OutputFormatter : IOutputFormatter, IApiResponseFormatMetadataProvider
     {
-        // using a field so we can return it as both IList and IReadOnlyList
-        private readonly List<MediaTypeHeaderValue> _supportedMediaTypes;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="OutputFormatter"/> class.
         /// </summary>
         protected OutputFormatter()
         {
             SupportedEncodings = new List<Encoding>();
-            _supportedMediaTypes = new List<MediaTypeHeaderValue>();
+            SupportedMediaTypes = new MediaTypeCollection();
         }
 
         /// <summary>
@@ -37,13 +35,10 @@ namespace Microsoft.AspNet.Mvc.Formatters
         public IList<Encoding> SupportedEncodings { get; }
 
         /// <summary>
-        /// Gets the mutable collection of <see cref="MediaTypeHeaderValue"/> elements supported by
+        /// Gets the mutable collection of media type elements supported by
         /// this <see cref="OutputFormatter"/>.
         /// </summary>
-        public IList<MediaTypeHeaderValue> SupportedMediaTypes
-        {
-            get { return _supportedMediaTypes; }
-        }
+        public MediaTypeCollection SupportedMediaTypes { get; }
 
         /// <summary>
         /// Returns a value indicating whether or not the given type can be written by this serializer.
@@ -56,8 +51,8 @@ namespace Microsoft.AspNet.Mvc.Formatters
         }
 
         /// <inheritdoc />
-        public virtual IReadOnlyList<MediaTypeHeaderValue> GetSupportedContentTypes(
-            MediaTypeHeaderValue contentType,
+        public virtual IReadOnlyList<string> GetSupportedContentTypes(
+            string contentType,
             Type objectType)
         {
             if (!CanWriteType(objectType))
@@ -68,21 +63,21 @@ namespace Microsoft.AspNet.Mvc.Formatters
             if (contentType == null)
             {
                 // If contentType is null, then any type we support is valid.
-                return _supportedMediaTypes.Count > 0 ? _supportedMediaTypes : null;
+                return SupportedMediaTypes.Count > 0 ? SupportedMediaTypes : null;
             }
             else
             {
-                List<MediaTypeHeaderValue> mediaTypes = null;
+                List<string> mediaTypes = null;
 
                 // Confirm this formatter supports a more specific media type than requested e.g. OK if "text/*"
                 // requested and formatter supports "text/plain". Treat contentType like it came from an Accept header.
-                foreach (var mediaType in _supportedMediaTypes)
+                foreach (var mediaType in SupportedMediaTypes)
                 {
-                    if (mediaType.IsSubsetOf(contentType))
+                    if (MediaTypeComparisons.IsSubsetOf(new StringSegment(contentType), mediaType))
                     {
                         if (mediaTypes == null)
                         {
-                            mediaTypes = new List<MediaTypeHeaderValue>();
+                            mediaTypes = new List<string>();
                         }
 
                         mediaTypes.Add(mediaType);
@@ -114,15 +109,19 @@ namespace Microsoft.AspNet.Mvc.Formatters
                 return encoding;
             }
 
-            var charset = context.ContentType?.Charset;
-            if (charset != null)
+            if (context.ContentType.HasValue)
             {
-                for (var i = 0; i < SupportedEncodings.Count; i++)
+                var contentTypeEncoding = MediaTypeEncoding.GetCharsetParameter(context.ContentType);
+                if (contentTypeEncoding.HasValue)
                 {
-                    if (string.Equals(charset, SupportedEncodings[i].WebName, StringComparison.OrdinalIgnoreCase))
+                    for (var i = 0; i < SupportedEncodings.Count; i++)
                     {
-                        // This is supported.
-                        return context.ContentType.Encoding;
+                        var supportedEncoding = SupportedEncodings[i];
+                        if (contentTypeEncoding.Equals(supportedEncoding.WebName, StringComparison.OrdinalIgnoreCase))
+                        {
+                            // This is supported.
+                            return SupportedEncodings[i];
+                        }
                     }
                 }
             }
@@ -138,19 +137,19 @@ namespace Microsoft.AspNet.Mvc.Formatters
             {
                 throw new ArgumentNullException(nameof(context));
             }
-            
+
             if (!CanWriteType(context.ObjectType))
             {
                 return false;
             }
-            
-            if (context.ContentType == null)
+
+            if (!context.ContentType.HasValue)
             {
                 // If the desired content type is set to null, then the current formatter can write anything
                 // it wants.
                 if (SupportedMediaTypes.Count > 0)
                 {
-                    context.ContentType = SupportedMediaTypes[0];
+                    context.ContentType = new StringSegment(SupportedMediaTypes[0]);
                     return true;
                 }
                 else
@@ -163,12 +162,13 @@ namespace Microsoft.AspNet.Mvc.Formatters
                 // Confirm this formatter supports a more specific media type than requested e.g. OK if "text/*"
                 // requested and formatter supports "text/plain". contentType is typically what we got in an Accept
                 // header.
+                var contentType = context.ContentType;
                 for (var i = 0; i < SupportedMediaTypes.Count; i++)
                 {
-                    var mediaType = SupportedMediaTypes[i];
-                    if (mediaType.IsSubsetOf(context.ContentType))
+                    var supportedMediaType = SupportedMediaTypes[i];
+                    if (MediaTypeComparisons.IsSubsetOf(contentType, supportedMediaType))
                     {
-                        context.ContentType = mediaType;
+                        context.ContentType = new StringSegment(SupportedMediaTypes[i]);
                         return true;
                     }
                 }
@@ -186,21 +186,18 @@ namespace Microsoft.AspNet.Mvc.Formatters
             }
 
             var selectedMediaType = context.ContentType;
-            if (selectedMediaType == null)
+            if (!selectedMediaType.HasValue)
             {
                 // If content type is not set then set it based on supported media types.
                 if (SupportedEncodings.Count > 0)
                 {
-                    selectedMediaType = SupportedMediaTypes[0];
+                    selectedMediaType = new StringSegment(SupportedMediaTypes[0]);
                 }
                 else
                 {
                     throw new InvalidOperationException(Resources.FormatOutputFormatterNoMediaType(GetType().FullName));
                 }
             }
-
-            // Copy the media type as it may be a 'frozen' instance.
-            selectedMediaType = selectedMediaType.Copy();
 
             // Note: Text-based media types will use an encoding/charset - binary formats just ignore it. We want to
             // make this class work with media types that use encodings, and those that don't.
@@ -215,7 +212,8 @@ namespace Microsoft.AspNet.Mvc.Formatters
             if (selectedEncoding != null)
             {
                 // Override the content type value even if one already existed.
-                selectedMediaType.Encoding = selectedEncoding;
+                var mediaTypeWithCharset = GetMediaTypeWithCharset(selectedMediaType.Value, selectedEncoding);
+                selectedMediaType = new StringSegment(mediaTypeWithCharset);
             }
 
             context.ContentType = selectedMediaType;
@@ -236,7 +234,7 @@ namespace Microsoft.AspNet.Mvc.Formatters
             }
 
             var response = context.HttpContext.Response;
-            response.ContentType = context.ContentType?.ToString();
+            response.ContentType = context.ContentType.Value;
         }
 
         /// <summary>
@@ -245,6 +243,33 @@ namespace Microsoft.AspNet.Mvc.Formatters
         /// <param name="context">The formatter context associated with the call.</param>
         /// <returns>A task which can write the response body.</returns>
         public abstract Task WriteResponseBodyAsync(OutputFormatterWriteContext context);
+
+        /// <summary>
+        /// Adds or replaces the charset parameter in a given <paramref name="mediaType"/> with the
+        /// given <paramref name="encoding"/>.
+        /// </summary>
+        /// <param name="mediaType">The <see cref="StringSegment"/> with the media type.</param>
+        /// <param name="encoding">
+        /// The <see cref="Encoding"/> to add or replace in the <paramref name="mediaType"/>.
+        /// </param>
+        /// <returns>The mediaType with the given encoding.</returns>
+        protected string GetMediaTypeWithCharset(string mediaType, Encoding encoding)
+        {
+            var mediaTypeEncoding = MediaTypeEncoding.GetEncoding(mediaType);
+            if (mediaTypeEncoding == encoding)
+            {
+                return mediaType;
+            }
+            else if (mediaTypeEncoding == null)
+            {
+                return CreateMediaTypeWithEncoding(mediaType, encoding);
+            }
+            else
+            {
+                // This can happen if the user has overriden SelectCharacterEncoding
+                return MediaTypeEncoding.ReplaceEncoding(mediaType, encoding);
+            }
+        }
 
         private Encoding MatchAcceptCharacterEncoding(IList<StringWithQualityHeaderValue> acceptCharsetHeaders)
         {
@@ -328,6 +353,16 @@ namespace Microsoft.AspNet.Mvc.Formatters
             // We want a descending sort, but BinarySearch does ascending
             sorted.Reverse();
             return sorted;
+        }
+
+        private static string CreateMediaTypeWithEncoding(string mediaType, Encoding encoding)
+        {
+            return CreateMediaTypeWithEncoding(new StringSegment(mediaType), encoding);
+        }
+
+        private static string CreateMediaTypeWithEncoding(StringSegment mediaType, Encoding encoding)
+        {
+            return $"{mediaType.Value}; charset={encoding.WebName}";
         }
     }
 }

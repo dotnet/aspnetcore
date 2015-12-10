@@ -16,7 +16,6 @@ using Microsoft.AspNet.Mvc.ViewFeatures.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -31,9 +30,9 @@ namespace Microsoft.AspNet.Mvc
         public object Arguments { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="MediaTypeHeaderValue"/> representing the Content-Type header of the response.
+        /// Gets or sets the Content-Type header for the response.
         /// </summary>
-        public MediaTypeHeaderValue ContentType { get; set; }
+        public string ContentType { get; set; }
 
         /// <summary>
         /// Gets or sets the HTTP status code.

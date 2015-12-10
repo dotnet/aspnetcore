@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Mvc.ApiExplorer
 {
@@ -28,8 +27,8 @@ namespace Microsoft.AspNet.Mvc.ApiExplorer
         /// The <see cref="Type"/> for which the supported content types are desired.
         /// </param>
         /// <returns>Content types which are supported by the <see cref="Formatters.IOutputFormatter"/>.</returns>
-        IReadOnlyList<MediaTypeHeaderValue> GetSupportedContentTypes(
-            MediaTypeHeaderValue contentType,
+        IReadOnlyList<string> GetSupportedContentTypes(
+            string contentType,
             Type objectType);
     }
 }

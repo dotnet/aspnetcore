@@ -10,8 +10,10 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.Abstractions;
+using Microsoft.AspNet.Mvc.Formatters;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
+using Microsoft.AspNet.Mvc.TestCommon;
 using Microsoft.AspNet.Mvc.ViewEngines;
 using Microsoft.AspNet.Routing;
 using Microsoft.Extensions.DependencyInjection;
@@ -115,11 +117,11 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                 view,
                 viewData,
                 Mock.Of<ITempDataDictionary>(),
-                contentType,
+                contentType?.ToString(),
                 statusCode: null);
 
             // Assert
-            Assert.Equal(expectedContentType, context.Response.ContentType);
+            MediaTypeAssert.Equal(expectedContentType, context.Response.ContentType);
             Assert.Equal("abcd", Encoding.UTF8.GetString(memoryStream.ToArray()));
         }
 

@@ -274,12 +274,12 @@ namespace Microsoft.AspNet.Mvc
             public bool WasWriteFileCalled;
 
             public EmptyFileResult()
-                : base(MediaTypeHeaderValue.Parse("application/octet"))
+                : base("application/octet")
             {
             }
 
             public EmptyFileResult(string contentType)
-                : base(MediaTypeHeaderValue.Parse(contentType))
+                : base(contentType)
             {
             }
 

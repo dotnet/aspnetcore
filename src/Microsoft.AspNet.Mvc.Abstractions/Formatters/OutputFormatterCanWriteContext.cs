@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.Net.Http.Headers;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNet.Mvc.Formatters
 {
@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.Mvc.Formatters
         /// and expect to see the same value provided in
         /// <see cref="IOutputFormatter.WriteAsync(OutputFormatterWriteContext)"/>
         /// </remarks>
-        public virtual MediaTypeHeaderValue ContentType { get; set; }
+        public virtual StringSegment ContentType { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating that content-negotiation could not find a formatter based on the 

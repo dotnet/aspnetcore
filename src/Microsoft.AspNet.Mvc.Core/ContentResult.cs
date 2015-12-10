@@ -16,10 +16,10 @@ namespace Microsoft.AspNet.Mvc
 {
     public class ContentResult : ActionResult
     {
-        private readonly MediaTypeHeaderValue DefaultContentType = new MediaTypeHeaderValue("text/plain")
+        private readonly string DefaultContentType = new MediaTypeHeaderValue("text/plain")
         {
             Encoding = Encoding.UTF8
-        };
+        }.ToString();
 
         /// <summary>
         /// Gets or set the content representing the body of the response.
@@ -27,9 +27,9 @@ namespace Microsoft.AspNet.Mvc
         public string Content { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="MediaTypeHeaderValue"/> representing the Content-Type header of the response.
+        /// Gets or sets the Content-Type header for the response.
         /// </summary>
-        public MediaTypeHeaderValue ContentType { get; set; }
+        public string ContentType { get; set; }
 
         /// <summary>
         /// Gets or sets the HTTP status code.

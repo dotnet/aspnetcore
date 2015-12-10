@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.Abstractions;
+using Microsoft.AspNet.Mvc.Formatters;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.ViewEngines;
 using Microsoft.AspNet.Routing;
@@ -258,7 +259,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             var context = GetActionContext();
             var executor = GetViewExecutor();
 
-            var contentType = MediaTypeHeaderValue.Parse("application/x-my-content-type");
+            var contentType = "application/x-my-content-type";
 
             var viewResult = new ViewResult
             {
@@ -273,11 +274,6 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
 
             // Assert
             Assert.Equal("application/x-my-content-type", context.HttpContext.Response.ContentType);
-
-            // Check if the original instance provided by the user has not changed.
-            // Since we do not have access to the new instance created within the view executor,
-            // check if at least the content is the same.
-            Assert.Null(contentType.Encoding);
         }
 
         [Fact]

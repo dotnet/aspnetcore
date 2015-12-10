@@ -409,10 +409,7 @@ namespace System.Web.Http
             }
 
             var result = new JsonResult(content, serializerSettings);
-            result.ContentType = new MediaTypeHeaderValue("application/json")
-            {
-                Encoding = encoding
-            };
+            result.ContentType = $"application/json; charset={encoding.WebName}";
 
             return result;
         }

@@ -8,6 +8,7 @@ using System.Text;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.Controllers;
+using Microsoft.AspNet.Mvc.Formatters;
 using Microsoft.AspNet.Routing;
 using Moq;
 using Newtonsoft.Json;
@@ -90,7 +91,7 @@ namespace Microsoft.AspNet.Mvc
             var contentResult = Assert.IsType<ContentResult>(result);
             Assert.Equal(content, contentResult.Content);
             Assert.Equal("text/asp; charset=us-ascii", contentResult.ContentType.ToString());
-            Assert.Equal(encoding, contentResult.ContentType.Encoding);
+            Assert.Equal(encoding, MediaTypeEncoding.GetEncoding(contentResult.ContentType));
         }
 
         [Theory]
