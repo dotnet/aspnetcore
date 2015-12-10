@@ -14,6 +14,7 @@ using Microsoft.AspNet.Authentication.Twitter;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Authentication;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
@@ -23,6 +24,17 @@ namespace CookieSample
     /* Note all servers must use the same address and port because these are pre-registered with the various providers. */
     public class Startup
     {
+        public Startup()
+        {
+            Configuration = new ConfigurationBuilder()
+                .AddEnvironmentVariables()
+                .AddJsonFile("config.json")
+                .AddUserSecrets()
+                .Build();
+        }
+
+        public IConfiguration Configuration { get; set; }
+
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddAuthentication(options => options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme);
@@ -57,32 +69,36 @@ namespace CookieSample
                 options.LoginPath = new PathString("/login");
             });
 
+            // You must first create an app with facebook and add it's ID and Secret to your config.json or user-secrets.
             // https://developers.facebook.com/apps/
             app.UseFacebookAuthentication(new FacebookOptions()
             {
-                AppId = "569522623154478",
-                AppSecret = "a124463c4719c94b4228d9a240e5dc1a",
+                AppId = Configuration["facebook:appid"],
+                AppSecret = Configuration["facebook:appsecret"],
                 Scope = { "email" },
                 Fields = { "name", "email" },
             });
 
+            // See config.json
             app.UseOAuthAuthentication(new OAuthOptions
             {
                 AuthenticationScheme = "Google-AccessToken",
                 DisplayName = "Google-AccessToken",
-                ClientId = "560027070069-37ldt4kfuohhu3m495hk2j4pjp92d382.apps.googleusercontent.com",
-                ClientSecret = "n2Q-GEw9RQjzcRbU3qhfTj8f",
+                ClientId = Configuration["google:clientid"],
+                ClientSecret = Configuration["google:clientsecret"],
                 CallbackPath = new PathString("/signin-google-token"),
                 AuthorizationEndpoint = GoogleDefaults.AuthorizationEndpoint,
                 TokenEndpoint = GoogleDefaults.TokenEndpoint,
-                Scope = { "openid", "profile", "email" }
+                Scope = { "openid", "profile", "email" },
+                SaveTokensAsClaims = true
             });
 
+            // See config.json
             // https://console.developers.google.com/project
             app.UseGoogleAuthentication(options =>
             {
-                options.ClientId = "560027070069-37ldt4kfuohhu3m495hk2j4pjp92d382.apps.googleusercontent.com";
-                options.ClientSecret = "n2Q-GEw9RQjzcRbU3qhfTj8f";
+                options.ClientId = Configuration["google:clientid"];
+                options.ClientSecret = Configuration["google:clientsecret"];
                 options.Events = new OAuthEvents()
                 {
                     OnRemoteFailure = ctx =>
@@ -96,11 +112,12 @@ namespace CookieSample
 
             });
 
+            // See config.json
             // https://apps.twitter.com/
             app.UseTwitterAuthentication(options =>
             {
-                options.ConsumerKey = "6XaCTaLbMqfj6ww3zvZ5g";
-                options.ConsumerSecret = "Il2eFzGIrYhz6BWjYhVXBPQSfZuS4xoHpSSyD9PI";
+                options.ConsumerKey = Configuration["twitter:consumerkey"];
+                options.ConsumerSecret = Configuration["twitter:consumersecret"];
                 options.Events = new TwitterEvents()
                 {
                     OnRemoteFailure = ctx =>
@@ -112,6 +129,7 @@ namespace CookieSample
                 };
             });
 
+            // You must first create an app with live.com and add it's ID and Secret to your config.json or user-secrets.
             /* https://account.live.com/developers/applications
             The MicrosoftAccount service has restrictions that prevent the use of http://localhost:54540/ for test applications.
             As such, here is how to change this sample to uses http://mssecsample.localhost.this:54540/ instead.
@@ -133,46 +151,50 @@ namespace CookieSample
             {
                 AuthenticationScheme = "Microsoft-AccessToken",
                 DisplayName = "MicrosoftAccount-AccessToken - Requires project changes",
-                ClientId = "00000000480FF62E",
-                ClientSecret = "bLw2JIvf8Y1TaToipPEqxTVlOeJwCUsr",
+                ClientId = Configuration["msa:clientid"],
+                ClientSecret = Configuration["msa:clientsecret"],
                 CallbackPath = new PathString("/signin-microsoft-token"),
                 AuthorizationEndpoint = MicrosoftAccountDefaults.AuthorizationEndpoint,
                 TokenEndpoint = MicrosoftAccountDefaults.TokenEndpoint,
-                Scope = { "wl.basic" }
+                Scope = { "wl.basic" },
+                SaveTokensAsClaims = true
             });
 
+            // You must first create an app with live.com and add it's ID and Secret to your config.json or user-secrets.
             app.UseMicrosoftAccountAuthentication(options =>
             {
                 options.DisplayName = "MicrosoftAccount - Requires project changes";
-                options.ClientId = "00000000480FF62E";
-                options.ClientSecret = "bLw2JIvf8Y1TaToipPEqxTVlOeJwCUsr";
+                options.ClientId = Configuration["msa:clientid"];
+                options.ClientSecret = Configuration["msa:clientsecret"];
                 options.Scope.Add("wl.emails");
             });
 
+            // See config.json
             // https://github.com/settings/applications/
             app.UseOAuthAuthentication(new OAuthOptions
             {
                 AuthenticationScheme = "GitHub-AccessToken",
                 DisplayName = "Github-AccessToken",
-                ClientId = "8c0c5a572abe8fe89588",
-                ClientSecret = "e1d95eaf03461d27acd6f49d4fc7bf19d6ac8cda",
+                ClientId = Configuration["github-token:clientid"],
+                ClientSecret = Configuration["github-token:clientsecret"],
                 CallbackPath = new PathString("/signin-github-token"),
                 AuthorizationEndpoint = "https://github.com/login/oauth/authorize",
-                TokenEndpoint = "https://github.com/login/oauth/access_token"
+                TokenEndpoint = "https://github.com/login/oauth/access_token",
+                SaveTokensAsClaims = true
             });
 
+            // See config.json
             app.UseOAuthAuthentication(new OAuthOptions
             {
                 AuthenticationScheme = "GitHub",
                 DisplayName = "Github",
-                ClientId = "49e302895d8b09ea5656",
-                ClientSecret = "98f1bf028608901e9df91d64ee61536fe562064b",
+                ClientId = Configuration["github:clientid"],
+                ClientSecret = Configuration["github:clientsecret"],
                 CallbackPath = new PathString("/signin-github"),
                 AuthorizationEndpoint = "https://github.com/login/oauth/authorize",
                 TokenEndpoint = "https://github.com/login/oauth/access_token",
                 UserInformationEndpoint = "https://api.github.com/user",
                 ClaimsIssuer = "OAuth2-Github",
-                SaveTokensAsClaims = false,
                 // Retrieving user information is unique to each provider.
                 Events = new OAuthEvents
                 {

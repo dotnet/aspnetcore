@@ -9,6 +9,7 @@
     "Microsoft.AspNet.IISPlatformHandler": "1.0.0-*",
     "Microsoft.AspNet.Server.Kestrel": "1.0.0-*",
     "Microsoft.AspNet.Server.WebListener": "1.0.0-*",
+    "Microsoft.Extensions.Configuration.UserSecrets": "1.0.0-*",
     "Microsoft.Extensions.Logging.Console": "1.0.0-*"
   },
   "commands": {
@@ -19,5 +20,6 @@
   "frameworks": {
     "dnx451": { },
     "dnxcore50": { }
-  }
+  },
+  "userSecretsId": "aspnet5-SocialSample-20151210111056"
 }

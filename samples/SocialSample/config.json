@@ -1,0 +1,10 @@
+﻿{
+  "google:clientid": "560027070069-37ldt4kfuohhu3m495hk2j4pjp92d382.apps.googleusercontent.com",
+  "google:clientsecret": "n2Q-GEw9RQjzcRbU3qhfTj8f",
+  "twitter:consumerkey": "6XaCTaLbMqfj6ww3zvZ5g",
+  "twitter:consumersecret": "Il2eFzGIrYhz6BWjYhVXBPQSfZuS4xoHpSSyD9PI",
+  "github:clientid": "49e302895d8b09ea5656",
+  "github:clientsecret": "98f1bf028608901e9df91d64ee61536fe562064b",
+  "github-token:clientid": "8c0c5a572abe8fe89588",
+  "github-token:clientsecret": "e1d95eaf03461d27acd6f49d4fc7bf19d6ac8cda"
+}

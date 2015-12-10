@@ -4,6 +4,7 @@ using System.IO;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json.Linq;
@@ -12,6 +13,16 @@ namespace JwtBearerSample
 {
     public class Startup
     {
+        public Startup()
+        {
+            Configuration = new ConfigurationBuilder()
+                .AddEnvironmentVariables()
+                .AddUserSecrets()
+                .Build();
+        }
+
+        public IConfiguration Configuration { get; set; }
+
         // Shared between users in memory
         public IList<Todo> Todos { get; } = new List<Todo>();
 
@@ -53,8 +64,8 @@ namespace JwtBearerSample
                 options.AutomaticAuthenticate = true;
                 options.AutomaticChallenge = true;
                 // You also need to update /wwwroot/app/scripts/app.js
-                options.Authority = "https://login.windows.net/tratcheroutlook.onmicrosoft.com";
-                options.Audience = "63a87a83-64b9-4ac1-b2c5-092126f8474f";
+                options.Authority = Configuration["jwt:authority"];
+                options.Audience = Configuration["jwt:audience"];
             });
 
             // [Authorize] would usually handle this

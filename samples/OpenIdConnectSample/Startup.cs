@@ -4,6 +4,7 @@ using Microsoft.AspNet.Authentication.OpenIdConnect;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Authentication;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
@@ -12,6 +13,16 @@ namespace OpenIdConnectSample
 {
     public class Startup
     {
+        public Startup()
+        {
+            Configuration = new ConfigurationBuilder()
+                .AddEnvironmentVariables()
+                .AddUserSecrets()
+                .Build();
+        }
+
+        public IConfiguration Configuration { get; set; }
+
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddAuthentication(sharedOptions => sharedOptions.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme);
@@ -30,9 +41,9 @@ namespace OpenIdConnectSample
 
             app.UseOpenIdConnectAuthentication(options =>
             {
-                options.ClientId = "63a87a83-64b9-4ac1-b2c5-092126f8474f";
-                options.ClientSecret = "Yse2iP7tO1Azq0iDajNisMaTSnIDv+FXmAsFuXr+Cy8="; // for code flow
-                options.Authority = "https://login.windows.net/tratcheroutlook.onmicrosoft.com";
+                options.ClientId = Configuration["oidc:clientid"];
+                options.ClientSecret = Configuration["oidc:clientsecret"]; // for code flow
+                options.Authority = Configuration["oidc:authority"];
                 options.ResponseType = OpenIdConnectResponseTypes.Code;
                 options.GetClaimsFromUserInfoEndpoint = true;
             });
