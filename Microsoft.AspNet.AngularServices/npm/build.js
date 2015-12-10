@@ -12,7 +12,8 @@ builder.config({
         'angular2-aspnet/*': 'dist/*'
     },
     meta: {
-        'angular2/*': { build: false }
+        'angular2/*': { build: false },
+        '@reactivex/*': { build: false }
     }
 });
 

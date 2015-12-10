@@ -19,6 +19,7 @@
         "Microsoft.CSharp": "4.0.1-beta-*",
         "System.Collections": "4.0.11-beta-*",
         "System.Linq": "4.0.1-beta-*",
+        "System.Net.Http": "4.0.1-beta-*",
         "System.Runtime": "4.0.21-beta-*",
         "System.Threading": "4.0.11-beta-*"
       }
