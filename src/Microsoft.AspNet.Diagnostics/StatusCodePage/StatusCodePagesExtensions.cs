@@ -71,7 +71,7 @@ namespace Microsoft.AspNet.Builder
         }
 
         /// <summary>
-        /// Adds a StatusCodePages middleware to the pipeine. Specifies that responses should be handled by redirecting 
+        /// Adds a StatusCodePages middleware to the pipeline. Specifies that responses should be handled by redirecting 
         /// with the given location URL template. This may include a '{0}' placeholder for the status code. URLs starting 
         /// with '~' will have PathBase prepended, where any other URL will be used as is.
         /// </summary>
