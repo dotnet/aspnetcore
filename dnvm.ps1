@@ -67,7 +67,7 @@ function _WriteOut {
 
 ### Constants
 $ProductVersion="1.0.0"
-$BuildVersion="rc1-15540"
+$BuildVersion="rc1-15547"
 $Authors="Microsoft Open Technologies, Inc."
 
 # If the Version hasn't been replaced...
@@ -1466,13 +1466,21 @@ function dnvm-install {
         else {
             _WriteOut "Installing to $RuntimeFolder"
             _WriteDebug "Moving package contents to $RuntimeFolder"
-            try {
-                Move-Item $UnpackFolder $RuntimeFolder
-            } catch {
-                if(Test-Path $RuntimeFolder) {
-                    #Attempt to cleanup the runtime folder if it is there after a fail.
-                    Remove-Item $RuntimeFolder -Recurse -Force
-                    throw
+            $retry=0
+            while($retry -ne 2) {
+                try {
+                    Move-Item $UnpackFolder $RuntimeFolder -Force
+                    break
+                } catch {
+                    $retry=$retry+1
+                    if($retry -eq 2) {
+                        if(Test-Path $RuntimeFolder) {
+                            #Attempt to cleanup the runtime folder if it is there after a fail.
+                            _WriteDebug "Deleting $RuntimeFolder"
+                            Remove-Item $RuntimeFolder -Recurse -Force
+                            throw
+                        }
+                    }
                 }
             }
             #If there is nothing left in the temp folder remove it. There could be other installs happening at the same time as this.
