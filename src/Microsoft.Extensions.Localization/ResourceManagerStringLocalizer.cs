@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Reflection;
@@ -15,9 +16,10 @@ namespace Microsoft.Extensions.Localization
     /// An <see cref="IStringLocalizer"/> that uses the <see cref="System.Resources.ResourceManager"/> and
     /// <see cref="System.Resources.ResourceReader"/> to provide localized strings.
     /// </summary>
+    /// <remarks>This type is thread-safe.</remarks>
     public class ResourceManagerStringLocalizer : IStringLocalizer
     {
-        private readonly Dictionary<string, object> _missingManifestCache = new Dictionary<string, object>();
+        private readonly ConcurrentDictionary<string, object> _missingManifestCache = new ConcurrentDictionary<string, object>();
         private readonly IResourceNamesCache _resourceNamesCache;
         private readonly ResourceManager _resourceManager;
         private readonly AssemblyWrapper _resourceAssemblyWrapper;
@@ -185,7 +187,7 @@ namespace Microsoft.Extensions.Localization
             }
             catch (MissingManifestResourceException)
             {
-                _missingManifestCache.Add(cacheKey, null);
+                _missingManifestCache.TryAdd(cacheKey, null);
                 return null;
             }
         }
