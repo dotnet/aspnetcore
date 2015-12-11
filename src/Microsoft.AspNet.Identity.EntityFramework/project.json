@@ -21,6 +21,9 @@
       }
     },
     "dotnet5.4": {
+      "dependencies": {
+        "System.ComponentModel.TypeConverter": "4.0.1-*"
+      }
     }
   }
 }
