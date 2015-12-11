@@ -21,7 +21,7 @@ namespace Microsoft.Extensions.Localization.Test
 
             // Assert
             var services = collection.ToList();
-            Assert.Equal(3, services.Count);
+            Assert.Equal(4, services.Count);
 
             Assert.Equal(typeof(IStringLocalizerFactory), services[0].ServiceType);
             Assert.Equal(typeof(ResourceManagerStringLocalizerFactory), services[0].ImplementationType);
@@ -33,6 +33,9 @@ namespace Microsoft.Extensions.Localization.Test
 
             Assert.Equal(typeof(IOptions<>), services[2].ServiceType);
             Assert.Equal(ServiceLifetime.Singleton, services[2].Lifetime);
+
+            Assert.Equal(typeof(IOptionsMonitor<>), services[3].ServiceType);
+            Assert.Equal(ServiceLifetime.Singleton, services[3].Lifetime);
         }
 
         [Fact]
@@ -46,7 +49,7 @@ namespace Microsoft.Extensions.Localization.Test
 
             // Assert
             var services = collection.ToList();
-            Assert.Equal(4, services.Count);
+            Assert.Equal(5, services.Count);
 
             Assert.Equal(typeof(IStringLocalizerFactory), services[0].ServiceType);
             Assert.Equal(typeof(ResourceManagerStringLocalizerFactory), services[0].ImplementationType);
@@ -61,6 +64,9 @@ namespace Microsoft.Extensions.Localization.Test
 
             Assert.Equal(typeof(IOptions<>), services[3].ServiceType);
             Assert.Equal(ServiceLifetime.Singleton, services[3].Lifetime);
+
+            Assert.Equal(typeof(IOptionsMonitor<>), services[4].ServiceType);
+            Assert.Equal(ServiceLifetime.Singleton, services[4].Lifetime);
         }
     }
 }
