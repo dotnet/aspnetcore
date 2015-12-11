@@ -36,16 +36,15 @@ namespace Microsoft.AspNet.Builder
             if (context.Handler == null)
             {
                 _logger.LogDebug("Request did not match any routes.");
-
+                await _next.Invoke(httpContext);
+            }
+            else
+            {
                 httpContext.Features[typeof(IRoutingFeature)] = new RoutingFeature()
                 {
                     RouteData = context.RouteData,
                 };
 
-                await _next.Invoke(httpContext);
-            }
-            else
-            {
                 await context.Handler(context.HttpContext);
             }
         }
