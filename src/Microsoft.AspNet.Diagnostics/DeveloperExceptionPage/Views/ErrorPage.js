@@ -142,7 +142,7 @@
 
     function tab(el) {
         var unselected = ns("#header .selected").removeClass("selected").attr("id");
-        var selected = ns(el).addClass("selected").attr("id");
+        var selected = ns("#" + el.id).addClass("selected").attr("id");
 
         ns("#" + unselected + "page").hide();
         ns("#" + selected + "page").show();
