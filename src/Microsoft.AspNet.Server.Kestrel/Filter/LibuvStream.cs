@@ -11,8 +11,12 @@ namespace Microsoft.AspNet.Server.Kestrel.Filter
 {
     public class LibuvStream : Stream
     {
+        private readonly static Task<int> _initialCachedTask = Task.FromResult(0);
+
         private readonly SocketInput _input;
         private readonly ISocketOutput _output;
+
+        private Task<int> _cachedTask = _initialCachedTask;
 
         public LibuvStream(SocketInput input, ISocketOutput output)
         {
@@ -58,12 +62,30 @@ namespace Microsoft.AspNet.Server.Kestrel.Filter
 
         public override int Read(byte[] buffer, int offset, int count)
         {
-            return ReadAsync(new ArraySegment<byte>(buffer, offset, count)).GetAwaiter().GetResult();
+            // ValueTask uses .GetAwaiter().GetResult() if necessary
+            // https://github.com/dotnet/corefx/blob/f9da3b4af08214764a51b2331f3595ffaf162abe/src/System.Threading.Tasks.Extensions/src/System/Threading/Tasks/ValueTask.cs#L156
+            return ReadAsync(new ArraySegment<byte>(buffer, offset, count)).Result;
         }
 
         public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
-            return ReadAsync(new ArraySegment<byte>(buffer, offset, count));
+            var task = ReadAsync(new ArraySegment<byte>(buffer, offset, count));
+
+            if (task.IsCompletedSuccessfully)
+            {
+                if (_cachedTask.Result != task.Result)
+                {
+                    // Needs .AsTask to match Stream's Async method return types
+                    _cachedTask = task.AsTask();
+                }
+            }
+            else
+            {
+                // Needs .AsTask to match Stream's Async method return types
+                _cachedTask = task.AsTask();
+            }
+
+            return _cachedTask;
         }
 
         public override void Write(byte[] buffer, int offset, int count)
@@ -99,7 +121,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Filter
             // No-op since writes are immediate.
         }
 
-        private Task<int> ReadAsync(ArraySegment<byte> buffer)
+        private ValueTask<int> ReadAsync(ArraySegment<byte> buffer)
         {
             return _input.ReadAsync(buffer.Array, buffer.Offset, buffer.Count);
         }
