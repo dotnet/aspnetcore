@@ -20,6 +20,11 @@ namespace PushCoherence
 {
     class Program
     {
+        static IEnumerable<string> excludedExternalDependencies = new string[] { 
+            "Microsoft.IdentityModel",
+            "System.IdentityModel"
+        };
+
         public static void Main(string[] args)
         {
             var nugetFeed = Environment.GetEnvironmentVariable("NUGET_FEED");
@@ -102,7 +107,9 @@ namespace PushCoherence
                     var version = xdoc.Descendants(XName.Get("version", ns)).First();
                     version.Value = StripBuildVersion(version.Value);
 
-                    var dependencies = xdoc.Descendants(XName.Get("dependency", ns));
+                    var dependencies = xdoc.Descendants(XName.Get("dependency", ns)).Where(
+                        dep => excludedExternalDependencies.All(
+                            excl => !dep.Attribute("id").Value.StartsWith(excl)));
                     foreach (var dependency in dependencies)
                     {
                         var attr = dependency.Attribute("version");
@@ -122,11 +129,22 @@ namespace PushCoherence
         {
             if (Regex.IsMatch(version, @"(alpha|beta|rc)\d-\d+$"))
             {
+                var timeStampFreeVersion = Environment.GetEnvironmentVariable("TIMESTAMP_FREE_VERSION");
+                if (string.IsNullOrEmpty(timeStampFreeVersion))
+                {
+                    timeStampFreeVersion = "final";
+                }
+
+                if (!timeStampFreeVersion.StartsWith("-"))
+                {
+                    timeStampFreeVersion = "-" + timeStampFreeVersion;
+                }
+
                 // E.g. change version 2.5.0-rc2-123123 to 2.5.0-rc2-final.
                 var index = version.LastIndexOf('-');
                 if (index != -1)
                 {
-                    return version.Substring(0, index) + "-final";
+                    return version.Substring(0, index) + timeStampFreeVersion;
                 }
             }
             else if (Regex.IsMatch(version, @"rtm-\d+$"))
