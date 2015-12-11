@@ -1,0 +1,23 @@
+@{/*
+
+nuget-packages-add
+    Installs packages to a NuGet v3 directory structure
+
+sourcePackagesDir=''
+    Required. Path to packages to install (skips symbol packages)
+
+targetPackagesDir=''
+    Optional. Path to publish packages.
+*/}
+
+default targetPackagesDir=''
+
+@{
+   var packages = Directory.EnumerateFiles(sourcePackagesDir, "*.nupkg")
+                           .Where(p => !p.EndsWith(".symbols.nupkg"));
+
+}
+
+-// Temporarily use dnu until we have a nuget command
+exec program='cmd' commandline='/c dnu packages add ${package} ${targetPackagesDir}' each='var package in packages' if='!IsLinux'
+exec program='dnu' commandline='packages add ${package} ${targetPackagesDir}' each='var package in packages' if='IsLinux'

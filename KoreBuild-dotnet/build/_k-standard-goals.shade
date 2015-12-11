@@ -162,7 +162,7 @@ default NUGET_FEED = 'https://api.nuget.org/v3/index.json'
   }
 
 #nuget-install target='install' if='Directory.Exists("src")' description='Install NuGet packages to local repo'
-  dotnet-publish sourcePackagesDir='${BUILD_DIR}' targetPackagesDir='${E("PACKAGES_PUBLISH_DIR")}'
+  nuget-packages-add sourcePackagesDir='${BUILD_DIR}' targetPackagesDir='${E("PACKAGES_PUBLISH_DIR")}'
   nuget-resilient-publish sourcePackagesDir='${BUILD_DIR}' nugetFeed='${E("NUGET_PUBLISH_FEED")}' if='!string.IsNullOrEmpty(E("NUGET_PUBLISH_FEED"))'
 
 #xunit-test target='test' if='Directory.Exists("test")'
