@@ -5,12 +5,12 @@ using Microsoft.AspNet.Mvc;
 
 namespace ApplicationModelWebSite.Controllers
 {
-    public class LisenceController : Controller
+    public class LicenseController : Controller
     {
-        [HttpGet("Lisence/GetLisence")]
-        public string GetLisence()
+        [HttpGet("License/GetLicense")]
+        public string GetLicense()
         {
-            return ControllerContext.ActionDescriptor.Properties["lisence"].ToString();
+            return ControllerContext.ActionDescriptor.Properties["license"].ToString();
         }
     }
 }

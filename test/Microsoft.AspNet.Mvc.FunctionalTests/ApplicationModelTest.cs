@@ -99,7 +99,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApplicationModelExtensions_AddsConventionToAllControllers()
         {
             // Arrange & Act
-            var response = await Client.GetAsync("http://localhost/Lisence/GetLisence");
+            var response = await Client.GetAsync("http://localhost/License/GetLicense");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);

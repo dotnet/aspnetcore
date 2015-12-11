@@ -1,0 +1,13 @@
+﻿<html>
+    <head><title>Home page</title></head>
+    <body>
+        <ul>
+            <li>@Html.ActionLink(
+               linkText: "Administrator login",
+               actionName: "Login",
+               controllerName: "Admin",
+               routeValues: new { area = "Restricted" })</li>
+            <li>@Html.ActionLink(linkText: "Echo action", actionName: "EchoActionUrl")</li>
+        </ul>
+    </body>
+</html>

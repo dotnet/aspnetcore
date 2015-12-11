@@ -1,0 +1,8 @@
+﻿@model LocalizationSample.Web.Models.User
+
+@Html.ValidationMessage("Name")
+@Html.ValidationMessage("Product.ProductName")
+@Html.EditorForModel()
+@Html.EditorFor(model => model.Product)
+
+
