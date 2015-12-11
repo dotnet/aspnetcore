@@ -640,12 +640,12 @@
                 }
             },
             "runtime.unix.System.Net.Sockets": {
-              "SIGN_AUTHENTICODE": {
+              "SIGN_STRONGNAME": {
                 "runtimes\\unix\\lib\\dotnet5.4\\System.Net.Sockets.dll": "Need to follow up, not from ADX team"
               }
             },
             "runtime.unix.System.Net.Utilities": {
-              "SIGN_AUTHENTICODE": {
+              "SIGN_STRONGNAME": {
                 "runtimes\\unix\\lib\\dnxcore50\\System.Net.Utilities.dll": "Need to follow up, not from ADX team"
               }
             },
@@ -660,7 +660,7 @@
                 }
             },
             "runtime.unix.System.Security.Cryptography.Algorithms": {
-              "SIGN_AUTHENTICODE": {
+              "SIGN_STRONGNAME": {
                 "runtimes\\unix\\lib\\dotnet5.4\\System.Security.Cryptography.Algorithms.dll": "Need to follow up, not from ADX team"
               }
             },
