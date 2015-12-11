@@ -16,6 +16,17 @@ namespace Microsoft.AspNet.Mvc.Localization.Internal
             LanguageViewLocationExpanderFormat format,
             Action<LocalizationOptions> setupAction)
         {
+            AddMvcLocalizationServices(services, format, setupAction);
+
+            services.AddLocalization(setupAction);
+        }
+
+        // To enable unit testing only 'MVC' specific services
+        public static void AddMvcLocalizationServices(
+            IServiceCollection services,
+            LanguageViewLocationExpanderFormat format,
+            Action<LocalizationOptions> setupAction)
+        {
             services.Configure<RazorViewEngineOptions>(
                 options =>
                 {
@@ -25,8 +36,6 @@ namespace Microsoft.AspNet.Mvc.Localization.Internal
             services.TryAdd(ServiceDescriptor.Singleton<IHtmlLocalizerFactory, HtmlLocalizerFactory>());
             services.TryAdd(ServiceDescriptor.Transient(typeof(IHtmlLocalizer<>), typeof(HtmlLocalizer<>)));
             services.TryAdd(ServiceDescriptor.Transient<IViewLocalizer, ViewLocalizer>());
-
-            services.AddLocalization(setupAction);
         }
     }
 }
