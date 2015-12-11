@@ -25,6 +25,15 @@ IF EXIST packages\Sake goto skipgetsake
 .nuget\NuGet.exe install Sake -ExcludeVersion -Source https://www.nuget.org/api/v2/ -Out packages
 :skipgetsake
 
+:getkorebuild
+IF EXIST packages\KoreBuild-dotnet goto skipgetkorebuild
+IF "%BUILDCMD_KOREBUILD_VERSION%"=="" (
+    .nuget\nuget.exe install KoreBuild-dotnet -ExcludeVersion -o packages -nocache -pre
+) ELSE (
+    .nuget\nuget.exe install KoreBuild-dotnet -version %BUILDCMD_KOREBUILD_VERSION% -ExcludeVersion -o packages -nocache -pre
+)
+:skipgetkorebuild
+
 REM Temporary because we need 'dnu packages add'
 :getdnx
 IF "%BUILDCMD_DNX_VERSION%"=="" (
@@ -36,15 +45,6 @@ IF "%SKIP_DNX_INSTALL%"=="" (
 ) ELSE (
     CALL packages\KoreBuild-dotnet\build\dnvm use default -runtime CLR -arch x86
 )
-
-:getkorebuild
-IF EXIST packages\KoreBuild-dotnet goto skipgetkorebuild
-IF "%BUILDCMD_KOREBUILD_VERSION%"=="" (
-    .nuget\nuget.exe install KoreBuild-dotnet -ExcludeVersion -o packages -nocache -pre
-) ELSE (
-    .nuget\nuget.exe install KoreBuild-dotnet -version %BUILDCMD_KOREBUILD_VERSION% -ExcludeVersion -o packages -nocache -pre
-)
-:skipgetkorebuild
 
 :getdotnet
 SET DOTNET_INSTALL_DIR=packages
