@@ -53,7 +53,7 @@ namespace E2ETests
                 using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, logger))
                 {
                     var deploymentResult = deployer.Deploy();
-                    var httpClientHandler = new HttpClientHandler() { UseDefaultCredentials = true };
+                    var httpClientHandler = new HttpClientHandler() { UseDefaultCredentials = true, AllowAutoRedirect = false };
                     var httpClient = new HttpClient(httpClientHandler) { BaseAddress = new Uri(deploymentResult.ApplicationBaseUri) };
 
                     // Request to base address and check if various parts of the body are rendered & measure the cold startup time.

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Server.Testing;
+using Microsoft.AspNet.Testing;
 using Microsoft.AspNet.Testing.xunit;
 using Microsoft.Extensions.Logging;
 using Xunit;
@@ -123,6 +124,7 @@ namespace E2ETests
                     UserAdditionalCleanup = parameters =>
                     {
                         if (!Helpers.RunningOnMono
+                            && TestPlatformHelper.IsWindows
                             && parameters.ServerType != ServerType.IIS)
                         {
                             // Mono uses InMemoryStore
@@ -142,7 +144,11 @@ namespace E2ETests
                     var deploymentResult = deployer.Deploy();
                     Helpers.SetInMemoryStoreForIIS(deploymentParameters, logger);
 
-                    var httpClientHandler = new HttpClientHandler();
+                    var httpClientHandler = new HttpClientHandler()
+                    {
+                        // Temporary workaround for issue https://github.com/dotnet/corefx/issues/4960
+                        AllowAutoRedirect = false
+                    };
                     var httpClient = new HttpClient(httpClientHandler)
                     {
                         BaseAddress = new Uri(deploymentResult.ApplicationBaseUri),

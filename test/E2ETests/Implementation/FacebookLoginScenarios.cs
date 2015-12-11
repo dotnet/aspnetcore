@@ -42,7 +42,7 @@ namespace E2ETests
             Assert.NotNull(_httpClientHandler.CookieContainer.GetCookies(new Uri(_deploymentResult.ApplicationBaseUri)).GetCookieWithName(".AspNet.Correlation.Facebook"));
 
             //This is just to generate a correlation cookie. Previous step would generate this cookie, but we have reset the handler now.
-            _httpClientHandler = new HttpClientHandler() { AllowAutoRedirect = true };
+            _httpClientHandler = new HttpClientHandler() { AllowAutoRedirect = false };
             _httpClient = new HttpClient(_httpClientHandler) { BaseAddress = new Uri(_deploymentResult.ApplicationBaseUri) };
 
             response = await _httpClient.GetAsync("Account/Login");
@@ -56,9 +56,10 @@ namespace E2ETests
 
             content = new FormUrlEncodedContent(formParameters.ToArray());
             response = await _httpClient.PostAsync("Account/ExternalLogin", content);
-
+            response = await _httpClient.GetAsync(response.Headers.Location);
             //Post a message to the Facebook middleware
             response = await _httpClient.GetAsync("signin-facebook?code=ValidCode&state=ValidStateData");
+            response = await _httpClient.GetAsync(response.Headers.Location);
             await ThrowIfResponseStatusNotOk(response);
             responseContent = await response.Content.ReadAsStringAsync();
 
@@ -78,6 +79,7 @@ namespace E2ETests
 
             content = new FormUrlEncodedContent(formParameters.ToArray());
             response = await _httpClient.PostAsync("Account/ExternalLoginConfirmation", content);
+            response = await _httpClient.GetAsync(response.Headers.Location);
             await ThrowIfResponseStatusNotOk(response);
             responseContent = await response.Content.ReadAsStringAsync();
 
