@@ -1,54 +1,52 @@
 {
-    "authors": [
-        "Microsoft"
-    ],
-    "description": "Music store application on ASP.NET 5",
-    "version": "1.0.0-*",
-    "compilationOptions": { "warningsAsErrors": true, "define": [ "DEMO", "TESTING" ] },
-    "compile": [
-        "../../shared/**/*.cs"
-    ],
-    "publishExclude": "*.cmd",
-    "webroot": "wwwroot",
-    "dependencies": {
-        "EntityFramework.InMemory": "7.0.0-*",
-        "EntityFramework.MicrosoftSqlServer": "7.0.0-*",
-        "Microsoft.AspNet.Antiforgery": "1.0.0-*",
-        "Microsoft.AspNet.Authentication.Cookies": "1.0.0-*",
-        "Microsoft.AspNet.Authentication.Facebook": "1.0.0-*",
-        "Microsoft.AspNet.Authentication.Google": "1.0.0-*",
-        "Microsoft.AspNet.Authentication.MicrosoftAccount": "1.0.0-*",
-        "Microsoft.AspNet.Authentication.OpenIdConnect": "1.0.0-*",
-        "Microsoft.AspNet.Authentication.Twitter": "1.0.0-*",
-        "Microsoft.AspNet.Diagnostics.Entity": "7.0.0-*",
-        "Microsoft.AspNet.Identity.EntityFramework": "3.0.0-*",
-        "Microsoft.AspNet.Mvc": "6.0.0-*",
-        "Microsoft.AspNet.Mvc.TagHelpers": "6.0.0-*",
-        "Microsoft.AspNet.Server.IIS": "1.0.0-*",
-        "Microsoft.AspNet.Server.Kestrel": "1.0.0-*",
-        "Microsoft.AspNet.Server.WebListener": "1.0.0-*",
-        "Microsoft.AspNet.Session": "1.0.0-*",
-        "Microsoft.AspNet.StaticFiles": "1.0.0-*",
-        "Microsoft.AspNet.Tooling.Razor": "1.0.0-*",
-        "Microsoft.Extensions.CodeGenerators.Mvc": "1.0.0-*",
-        "Microsoft.Extensions.Configuration.CommandLine": "1.0.0-*",
-        "Microsoft.Extensions.Configuration.EnvironmentVariables": "1.0.0-*",
-        "Microsoft.Extensions.Configuration.Json": "1.0.0-*",
-        "Microsoft.Extensions.Logging.Console": "1.0.0-*"
-    },
-    "commands": {
-        "gen": "Microsoft.Extensions.CodeGeneration",
-        "run": "run server.urls=http://localhost:5003",
-        "web": "Microsoft.AspNet.Server.Kestrel",
-        "kestrel": "Microsoft.AspNet.Hosting --server Microsoft.AspNet.Server.Kestrel --server.urls http://localhost:5004",
-        "weblistener": "Microsoft.AspNet.Hosting --server Microsoft.AspNet.Server.WebListener --server.urls http://localhost:5002"
-    },
-    "frameworks": {
-        "dnx451": { },
-        "dnxcore50": {
-            "dependencies": {
-                "System.Runtime.Serialization.Primitives": "4.0.10-*"
-            }
-        }
-    }
+  "authors": [
+    "Microsoft"
+  ],
+  "description": "Music store application on ASP.NET 5",
+  "version": "1.0.0-*",
+  "compilationOptions": {
+    "warningsAsErrors": true,
+    "define": [ "DEMO", "TESTING" ]
+  },
+  "compile": [
+    "../../shared/**/*.cs"
+  ],
+  "publishExclude": "*.cmd",
+  "webroot": "wwwroot",
+  "dependencies": {
+    "EntityFramework.InMemory": "7.0.0-*",
+    "EntityFramework.MicrosoftSqlServer": "7.0.0-*",
+    "Microsoft.AspNet.Authentication.Cookies": "1.0.0-*",
+    "Microsoft.AspNet.Authentication.Facebook": "1.0.0-*",
+    "Microsoft.AspNet.Authentication.Google": "1.0.0-*",
+    "Microsoft.AspNet.Authentication.MicrosoftAccount": "1.0.0-*",
+    "Microsoft.AspNet.Authentication.OpenIdConnect": "1.0.0-*",
+    "Microsoft.AspNet.Authentication.Twitter": "1.0.0-*",
+    "Microsoft.AspNet.Diagnostics.Entity": "7.0.0-*",
+    "Microsoft.AspNet.Identity.EntityFramework": "3.0.0-*",
+    "Microsoft.AspNet.Mvc": "6.0.0-*",
+    "Microsoft.AspNet.Mvc.TagHelpers": "6.0.0-*",
+    "Microsoft.AspNet.Server.Kestrel": "1.0.0-*",
+    "Microsoft.AspNet.Server.WebListener": "1.0.0-*",
+    "Microsoft.AspNet.Session": "1.0.0-*",
+    "Microsoft.AspNet.StaticFiles": "1.0.0-*",
+    "Microsoft.AspNet.Tooling.Razor": "1.0.0-*",
+    "Microsoft.Extensions.CodeGenerators.Mvc": "1.0.0-*",
+    "Microsoft.Extensions.Configuration.CommandLine": "1.0.0-*",
+    "Microsoft.Extensions.Configuration.EnvironmentVariables": "1.0.0-*",
+    "Microsoft.Extensions.Configuration.Json": "1.0.0-*",
+    "Microsoft.Extensions.Logging.Console": "1.0.0-*",
+    "Microsoft.Extensions.Options.ConfigurationExtensions": "1.0.0-*"
+  },
+  "commands": {
+    "gen": "Microsoft.Extensions.CodeGeneration",
+    "run": "run server.urls=http://localhost:5003",
+    "web": "Microsoft.AspNet.Server.Kestrel",
+    "kestrel": "Microsoft.AspNet.Hosting --server Microsoft.AspNet.Server.Kestrel --server.urls http://localhost:5004",
+    "weblistener": "Microsoft.AspNet.Hosting --server Microsoft.AspNet.Server.WebListener --server.urls http://localhost:5002"
+  },
+  "frameworks": {
+    "dnx451": { },
+    "dnxcore50": {}
+  }
 }
