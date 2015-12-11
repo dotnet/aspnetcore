@@ -25,6 +25,18 @@ IF EXIST packages\Sake goto skipgetsake
 .nuget\NuGet.exe install Sake -ExcludeVersion -Source https://www.nuget.org/api/v2/ -Out packages
 :skipgetsake
 
+REM Temporary because we need 'dnu packages add'
+:getdnx
+IF "%BUILDCMD_DNX_VERSION%"=="" (
+    SET BUILDCMD_DNX_VERSION=latest
+)
+IF "%SKIP_DNX_INSTALL%"=="" (
+    CALL packages\KoreBuild-dotnet\build\dnvm install %BUILDCMD_DNX_VERSION% -runtime CoreCLR -arch x86 -alias default
+    CALL packages\KoreBuild-dotnet\build\dnvm install default -runtime CLR -arch x86 -alias default
+) ELSE (
+    CALL packages\KoreBuild-dotnet\build\dnvm use default -runtime CLR -arch x86
+)
+
 :getkorebuild
 IF EXIST packages\KoreBuild-dotnet goto skipgetkorebuild
 IF "%BUILDCMD_KOREBUILD_VERSION%"=="" (

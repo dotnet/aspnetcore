@@ -42,6 +42,18 @@ if test ! -d packages/KoreBuild-dotnet; then
     mono .nuget/nuget.exe install KoreBuild-dotnet -ExcludeVersion -o packages -nocache -pre
 fi
 
+# Temporary because we need 'dnu packages add'
+if ! type dnvm > /dev/null 2>&1; then
+    source packages/KoreBuild/build/dnvm.sh
+fi
+
+if ! type dnx > /dev/null 2>&1 || [ -z "$SKIP_DNX_INSTALL" ]; then
+    dnvm install latest -runtime coreclr -alias default
+    dnvm install default -runtime mono -alias default
+else
+    dnvm use default -runtime mono
+fi
+
 source packages/KoreBuild-dotnet/build/install.sh
 export PATH=$DOTNET_INSTALL_DIR/bin/:$PATH
 mono packages/Sake/tools/Sake.exe -I packages/KoreBuild-dotnet/build -f makefile.shade "$@"
