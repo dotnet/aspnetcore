@@ -1,6 +1,8 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Xunit;
@@ -86,6 +88,41 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
         }
 
         [Fact]
+        public void EnumerateElements_TwoEnumerableImplemenations()
+        {
+            // Arrange
+            var model = new TwiceEnumerable(new int[] { 2, 3, 5 });
+
+            var metadata = TestModelMetadataProvider.CreateDefaultProvider().GetMetadataForType(typeof(TwiceEnumerable));
+            var strategy = new ExplicitIndexCollectionValidationStrategy(new string[] { "zero", "one", "two" });
+
+            // Act
+            var enumerator = strategy.GetChildren(metadata, "prefix", model);
+
+            // Assert
+            Assert.Collection(
+                BufferEntries(enumerator).OrderBy(e => e.Key),
+                e =>
+                {
+                    Assert.Equal("prefix[one]", e.Key);
+                    Assert.Equal(3, e.Model);
+                    Assert.Same(metadata.ElementMetadata, e.Metadata);
+                },
+                e =>
+                {
+                    Assert.Equal("prefix[two]", e.Key);
+                    Assert.Equal(5, e.Model);
+                    Assert.Same(metadata.ElementMetadata, e.Metadata);
+                },
+                e =>
+                {
+                    Assert.Equal("prefix[zero]", e.Key);
+                    Assert.Equal(2, e.Model);
+                    Assert.Same(metadata.ElementMetadata, e.Metadata);
+                });
+        }
+
+        [Fact]
         public void EnumerateElements_RunOutOfIndices()
         {
             // Arrange
@@ -143,6 +180,27 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
                     Assert.Equal(2, e.Model);
                     Assert.Same(metadata.ElementMetadata, e.Metadata);
                 });
+        }
+
+        // 'int' is chosen by validation because it's declared on the more derived type.
+        private class TwiceEnumerable : List<string>, IEnumerable<int>
+        {
+            private readonly IEnumerable<int> _enumerable;
+
+            public TwiceEnumerable(IEnumerable<int> enumerable)
+            {
+                _enumerable = enumerable;
+            }
+
+            IEnumerator<int> IEnumerable<int>.GetEnumerator()
+            {
+                return _enumerable.GetEnumerator();
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                throw new InvalidOperationException();
+            }
         }
 
         private List<ValidationEntry> BufferEntries(IEnumerator<ValidationEntry> enumerator)

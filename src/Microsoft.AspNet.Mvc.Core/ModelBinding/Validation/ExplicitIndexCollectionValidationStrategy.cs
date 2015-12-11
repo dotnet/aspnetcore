@@ -54,7 +54,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             string key,
             object model)
         {
-            return new Enumerator(metadata.ElementMetadata, key, ElementKeys, (IEnumerable)model);
+            var enumerator = DefaultCollectionValidationStrategy.GetEnumeratorForElementType(metadata, model);
+            return new Enumerator(metadata.ElementMetadata, key, ElementKeys, enumerator);
         }
 
         private class Enumerator : IEnumerator<ValidationEntry>
@@ -70,13 +71,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
                 ModelMetadata metadata,
                 string key,
                 IEnumerable<string> elementKeys,
-                IEnumerable model)
+                IEnumerator enumerator)
             {
                 _metadata = metadata;
                 _key = key;
 
                 _keyEnumerator = elementKeys.GetEnumerator();
-                _enumerator = model.GetEnumerator();
+                _enumerator = enumerator;
             }
 
             public ValidationEntry Current

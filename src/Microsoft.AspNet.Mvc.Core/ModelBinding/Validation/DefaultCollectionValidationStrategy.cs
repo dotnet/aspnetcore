@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Reflection;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 {
@@ -36,6 +37,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
     /// </remarks>
     public class DefaultCollectionValidationStrategy : IValidationStrategy
     {
+        private static readonly MethodInfo _getEnumerator = typeof(DefaultCollectionValidationStrategy)
+            .GetMethod(nameof(GetEnumerator), BindingFlags.Static | BindingFlags.NonPublic);
+
         /// <summary>
         /// Gets an instance of <see cref="DefaultCollectionValidationStrategy"/>.
         /// </summary>
@@ -51,14 +55,26 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             string key,
             object model)
         {
-            return new Enumerator(metadata.ElementMetadata, key, (IEnumerable)model);
+            var enumerator = GetEnumeratorForElementType(metadata, model);
+            return new Enumerator(metadata.ElementMetadata, key, enumerator);
+        }
+
+        public static IEnumerator GetEnumeratorForElementType(ModelMetadata metadata, object model)
+        {
+            var getEnumeratorMethod = _getEnumerator.MakeGenericMethod(metadata.ElementType);
+            return (IEnumerator)getEnumeratorMethod.Invoke(null, new object[] { model });
+        }
+
+        // Called via reflection.
+        private static IEnumerator GetEnumerator<T>(object model)
+        {
+            return (model as IEnumerable<T>)?.GetEnumerator() ?? ((IEnumerable)model).GetEnumerator();
         }
 
         private class Enumerator : IEnumerator<ValidationEntry>
         {
             private readonly string _key;
             private readonly ModelMetadata _metadata;
-            private readonly IEnumerable _model;
             private readonly IEnumerator _enumerator;
 
             private ValidationEntry _entry;
@@ -67,13 +83,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             public Enumerator(
                 ModelMetadata metadata,
                 string key,
-                IEnumerable model)
+                IEnumerator enumerator)
             {
                 _metadata = metadata;
                 _key = key;
-                _model = model;
-
-                _enumerator = _model.GetEnumerator();
+                _enumerator = enumerator;
 
                 _index = -1;
             }
@@ -116,7 +130,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 
             public void Reset()
             {
-                throw new NotImplementedException();
+                _enumerator.Reset();
             }
         }
     }
