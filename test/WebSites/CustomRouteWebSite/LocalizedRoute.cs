@@ -32,32 +32,12 @@ namespace CustomRouteWebSite
 
         public async Task RouteAsync(RouteContext context)
         {
-            // Saving and restoring the original route data ensures that any values we
-            // add won't 'leak' if action selection doesn't match.
-            var oldRouteData = context.RouteData;
-
-            // For diagnostics and link-generation purposes, routing should include
-            // a list of IRoute instances that lead to the ultimate destination.
-            // It's the responsibility of each IRouter to add the 'next' before 
-            // calling it.
-            var newRouteData = new RouteData(oldRouteData);
-            newRouteData.Routers.Add(_next);
+            context.RouteData.Routers.Add(_next);
 
             var locale = GetLocale(context.HttpContext) ?? "en-US";
-            newRouteData.Values.Add("locale", locale);
+            context.RouteData.Values.Add("locale", locale);
 
-            try
-            {
-                context.RouteData = newRouteData;
-                await _next.RouteAsync(context);
-            }
-            finally
-            {
-                if (!context.IsHandled)
-                {
-                    context.RouteData = oldRouteData;
-                }
-            }
+            await _next.RouteAsync(context);
         }
 
         private string GetLocale(HttpContext context)

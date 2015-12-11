@@ -2,11 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Routing.Constraints;
-using Microsoft.AspNet.Routing.Template;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit;
@@ -29,7 +27,7 @@ namespace Microsoft.AspNet.Builder
             builder.MapAreaRoute(name: null, areaName: "admin", template: "site/Admin/");
 
             // Assert
-            var route = Assert.IsType<TemplateRoute>((Assert.Single(builder.Routes)));
+            var route = Assert.IsType<Route>((Assert.Single(builder.Routes)));
 
             Assert.Null(route.Name);
             Assert.Equal("site/Admin/", route.RouteTemplate);
@@ -68,7 +66,7 @@ namespace Microsoft.AspNet.Builder
                 defaults: new { action = "Home" });
 
             // Assert
-            var route = Assert.IsType<TemplateRoute>((Assert.Single(builder.Routes)));
+            var route = Assert.IsType<Route>((Assert.Single(builder.Routes)));
 
             Assert.Equal("admin_area", route.Name);
             Assert.Equal("site/Admin/", route.RouteTemplate);
@@ -113,7 +111,7 @@ namespace Microsoft.AspNet.Builder
                 constraints: new { id = new IntRouteConstraint() });
 
             // Assert
-            var route = Assert.IsType<TemplateRoute>((Assert.Single(builder.Routes)));
+            var route = Assert.IsType<Route>((Assert.Single(builder.Routes)));
 
             Assert.Equal("admin_area", route.Name);
             Assert.Equal("site/Admin/", route.RouteTemplate);
@@ -164,7 +162,7 @@ namespace Microsoft.AspNet.Builder
                 dataTokens: new { some_token = "hello" });
 
             // Assert
-            var route = Assert.IsType<TemplateRoute>((Assert.Single(builder.Routes)));
+            var route = Assert.IsType<Route>((Assert.Single(builder.Routes)));
 
             Assert.Equal("admin_area", route.Name);
             Assert.Equal("site/Admin/", route.RouteTemplate);
@@ -221,7 +219,7 @@ namespace Microsoft.AspNet.Builder
                 dataTokens: new { some_token = "hello" });
 
             // Assert
-            var route = Assert.IsType<TemplateRoute>((Assert.Single(builder.Routes)));
+            var route = Assert.IsType<Route>((Assert.Single(builder.Routes)));
 
             Assert.Equal("admin_area", route.Name);
             Assert.Equal("site/Admin/", route.RouteTemplate);

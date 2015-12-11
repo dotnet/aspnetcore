@@ -282,9 +282,14 @@ namespace Microsoft.AspNet.Mvc.Routing
 
             routeInfo.Constraints = constraintBuilder.Build();
 
-            routeInfo.Defaults = routeInfo.ParsedTemplate.Parameters
-                .Where(p => p.DefaultValue != null)
-                .ToDictionary(p => p.Name, p => p.DefaultValue, StringComparer.OrdinalIgnoreCase);
+            routeInfo.Defaults = new RouteValueDictionary();
+            foreach (var parameter in routeInfo.ParsedTemplate.Parameters)
+            {
+                if (parameter.DefaultValue != null)
+                {
+                    routeInfo.Defaults.Add(parameter.Name, parameter.DefaultValue);
+                }
+            }
 
             return routeInfo;
         }
@@ -293,9 +298,9 @@ namespace Microsoft.AspNet.Mvc.Routing
         {
             public ActionDescriptor ActionDescriptor { get; set; }
 
-            public IReadOnlyDictionary<string, IRouteConstraint> Constraints { get; set; }
+            public IDictionary<string, IRouteConstraint> Constraints { get; set; }
 
-            public IReadOnlyDictionary<string, object> Defaults { get; set; }
+            public RouteValueDictionary Defaults { get; set; }
 
             public string ErrorMessage { get; set; }
 

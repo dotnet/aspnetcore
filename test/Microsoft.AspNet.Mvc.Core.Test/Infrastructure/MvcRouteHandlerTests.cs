@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
     public class MvcRouteHandlerTests
     {
         [Fact]
-        public async Task RouteAsync_Success_LogsCorrectValues()
+        public async Task RouteHandler_Success_LogsCorrectValues()
         {
             // Arrange
             var sink = new TestSink();
@@ -35,9 +35,10 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
             var context = CreateRouteContext(actionDescriptor: actionDescriptor.Object, loggerFactory: loggerFactory);
 
             var handler = new MvcRouteHandler();
+            await handler.RouteAsync(context);
 
             // Act
-            await handler.RouteAsync(context);
+            await context.Handler(context.HttpContext);
 
             // Assert
             Assert.Single(sink.Scopes);
@@ -77,10 +78,9 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
         }
 
         [Fact]
-        public async Task RouteAsync_CreatesNewRouteData()
+        public async Task RouteHandler_RemovesRouteGroupFromRouteValues()
         {
             // Arrange
-            RouteData actionRouteData = null;
             var invoker = new Mock<IActionInvoker>();
             invoker
                 .Setup(i => i.InvokeAsync())
@@ -91,49 +91,6 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
                 .Setup(f => f.CreateInvoker(It.IsAny<ActionContext>()))
                 .Returns<ActionContext>((c) =>
                 {
-                    actionRouteData = c.RouteData;
-                    return invoker.Object;
-                });
-
-            var initialRouter = Mock.Of<IRouter>();
-
-            var context = CreateRouteContext(invokerFactory: invokerFactory.Object);
-            var handler = new MvcRouteHandler();
-
-            var originalRouteData = context.RouteData;
-            originalRouteData.Routers.Add(initialRouter);
-            originalRouteData.Values.Add("action", "Index");
-
-            // Act
-            await handler.RouteAsync(context);
-
-            // Assert
-            Assert.NotSame(originalRouteData, context.RouteData);
-            Assert.NotSame(originalRouteData, actionRouteData);
-            Assert.Same(actionRouteData, context.RouteData);
-
-            // The new routedata is a copy
-            Assert.Equal("Index", context.RouteData.Values["action"]);
-
-            Assert.Equal(initialRouter, Assert.Single(context.RouteData.Routers));
-        }
-
-        [Fact]
-        public async Task RouteAsync_RemovesRouteGroupFromRouteValues()
-        {
-            // Arrange
-            RouteData actionRouteData = null;
-            var invoker = new Mock<IActionInvoker>();
-            invoker
-                .Setup(i => i.InvokeAsync())
-                .Returns(Task.FromResult(true));
-
-            var invokerFactory = new Mock<IActionInvokerFactory>();
-            invokerFactory
-                .Setup(f => f.CreateInvoker(It.IsAny<ActionContext>()))
-                .Returns<ActionContext>((c) =>
-                {
-                    actionRouteData = c.RouteData;
                     return invoker.Object;
                 });
 
@@ -147,59 +104,14 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
             await handler.RouteAsync(context);
 
             // Assert
-            Assert.NotSame(originalRouteData, context.RouteData);
-            Assert.NotSame(originalRouteData, actionRouteData);
-            Assert.Same(actionRouteData, context.RouteData);
+            Assert.Same(originalRouteData, context.RouteData);
 
-            // The new routedata is a copy
+
             Assert.False(context.RouteData.Values.ContainsKey(TreeRouter.RouteGroupKey));
         }
 
         [Fact]
-        public async Task RouteAsync_ResetsRouteDataOnException()
-        {
-            // Arrange
-            RouteData actionRouteData = null;
-            var invoker = new Mock<IActionInvoker>();
-            invoker
-                .Setup(i => i.InvokeAsync())
-                .Throws(new Exception());
-
-            var invokerFactory = new Mock<IActionInvokerFactory>();
-            invokerFactory
-                .Setup(f => f.CreateInvoker(It.IsAny<ActionContext>()))
-                .Returns<ActionContext>((c) =>
-                {
-                    actionRouteData = c.RouteData;
-                    c.RouteData.Values.Add("action", "Index");
-                    return invoker.Object;
-                });
-
-            var context = CreateRouteContext(invokerFactory: invokerFactory.Object);
-            var handler = new MvcRouteHandler();
-
-            var initialRouter = Mock.Of<IRouter>();
-
-            var originalRouteData = context.RouteData;
-            originalRouteData.Routers.Add(initialRouter);
-
-            // Act
-            await Assert.ThrowsAsync<Exception>(() => handler.RouteAsync(context));
-
-            // Assert
-            Assert.Same(originalRouteData, context.RouteData);
-            Assert.NotSame(originalRouteData, actionRouteData);
-            Assert.NotSame(actionRouteData, context.RouteData);
-
-            // The new routedata is a copy
-            Assert.Null(context.RouteData.Values["action"]);
-            Assert.Equal("Index", actionRouteData.Values["action"]);
-
-            Assert.Equal(initialRouter, Assert.Single(actionRouteData.Routers));
-        }
-
-        [Fact]
-        public async Task RouteAsync_WritesDiagnostic_ActionSelected()
+        public async Task RouteHandler_WritesDiagnostic_ActionSelected()
         {
             // Arrange
             var listener = new TestDiagnosticListener();
@@ -208,9 +120,10 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
             context.RouteData.Values.Add("tag", "value");
 
             var handler = new MvcRouteHandler();
+            await handler.RouteAsync(context);
 
             // Act
-            await handler.RouteAsync(context);
+            await context.Handler(context.HttpContext);
 
             // Assert
             Assert.NotNull(listener.BeforeAction?.ActionDescriptor);
@@ -224,7 +137,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
         }
 
         [Fact]
-        public async Task RouteAsync_WritesDiagnostic_ActionInvoked()
+        public async Task RouteHandler_WritesDiagnostic_ActionInvoked()
         {
             // Arrange
             var listener = new TestDiagnosticListener();
@@ -232,9 +145,10 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
             var context = CreateRouteContext(diagnosticListener: listener);
 
             var handler = new MvcRouteHandler();
+            await handler.RouteAsync(context);
 
             // Act
-            await handler.RouteAsync(context);
+            await context.Handler(context.HttpContext);
 
             // Assert
             Assert.NotNull(listener.AfterAction?.ActionDescriptor);
@@ -293,22 +207,42 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
                 diagnosticSource.SubscribeWithAdapter(diagnosticListener);
             }
 
+            var routingFeature = new RoutingFeature();
+
             var httpContext = new Mock<HttpContext>();
-            httpContext.Setup(h => h.RequestServices.GetService(typeof(IActionContextAccessor)))
+            httpContext
+                .Setup(h => h.RequestServices.GetService(typeof(IActionContextAccessor)))
                 .Returns(new ActionContextAccessor());
-            httpContext.Setup(h => h.RequestServices.GetService(typeof(IActionSelector)))
+            httpContext
+                .Setup(h => h.RequestServices.GetService(typeof(IActionSelector)))
                 .Returns(actionSelector);
-            httpContext.Setup(h => h.RequestServices.GetService(typeof(IActionInvokerFactory)))
+            httpContext
+                .Setup(h => h.RequestServices.GetService(typeof(IActionInvokerFactory)))
                 .Returns(invokerFactory);
-            httpContext.Setup(h => h.RequestServices.GetService(typeof(ILoggerFactory)))
+            httpContext
+                .Setup(h => h.RequestServices.GetService(typeof(ILoggerFactory)))
                 .Returns(loggerFactory);
-            httpContext.Setup(h => h.RequestServices.GetService(typeof(MvcMarkerService)))
-                 .Returns(new MvcMarkerService());
-            httpContext.Setup(h => h.RequestServices.GetService(typeof(IOptions<MvcOptions>)))
-                 .Returns(optionsAccessor);
-            httpContext.Setup(h => h.RequestServices.GetService(typeof(DiagnosticSource)))
+            httpContext
+                .Setup(h => h.RequestServices.GetService(typeof(MvcMarkerService)))
+                .Returns(new MvcMarkerService());
+            httpContext
+                .Setup(h => h.RequestServices.GetService(typeof(IOptions<MvcOptions>)))
+                .Returns(optionsAccessor);
+            httpContext
+                .Setup(h => h.RequestServices.GetService(typeof(DiagnosticSource)))
                 .Returns(diagnosticSource);
-            return new RouteContext(httpContext.Object);
+            httpContext
+                .Setup(h => h.Features[typeof(IRoutingFeature)])
+                .Returns(routingFeature);
+
+            var routeContext = new RouteContext(httpContext.Object);
+            routingFeature.RouteData = routeContext.RouteData;
+            return routeContext;
+        }
+
+        private class RoutingFeature : IRoutingFeature
+        {
+            public RouteData RouteData { get; set; }
         }
     }
 }

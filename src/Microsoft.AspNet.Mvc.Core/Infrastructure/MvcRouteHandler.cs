@@ -59,71 +59,59 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
                 return;
             }
 
-            // Replacing the route data allows any code running here to dirty the route values or data-tokens
-            // without affecting something upstream.
-            var oldRouteData = context.RouteData;
-            var newRouteData = new RouteData(oldRouteData);
-
             if (actionDescriptor.RouteValueDefaults != null)
             {
                 foreach (var kvp in actionDescriptor.RouteValueDefaults)
                 {
-                    if (!newRouteData.Values.ContainsKey(kvp.Key))
+                    if (!context.RouteData.Values.ContainsKey(kvp.Key))
                     {
-                        newRouteData.Values.Add(kvp.Key, kvp.Value);
+                        context.RouteData.Values.Add(kvp.Key, kvp.Value);
                     }
                 }
             }
 
             // Removing RouteGroup from RouteValues to simulate the result of conventional routing
-            newRouteData.Values.Remove(TreeRouter.RouteGroupKey);
+            context.RouteData.Values.Remove(TreeRouter.RouteGroupKey);
 
+            context.Handler = (c) => InvokeActionAsync(c, actionDescriptor);
+        }
+
+        private async Task InvokeActionAsync(HttpContext httpContext, ActionDescriptor actionDescriptor)
+        {
+            var routeData = httpContext.GetRouteData();
             try
             {
-                context.RouteData = newRouteData;
-
-                _diagnosticSource.BeforeAction(actionDescriptor, context.HttpContext, context.RouteData);
+                _diagnosticSource.BeforeAction(actionDescriptor, httpContext, routeData);
 
                 using (_logger.ActionScope(actionDescriptor))
                 {
                     _logger.ExecutingAction(actionDescriptor);
 
                     var startTime = Environment.TickCount;
-                    await InvokeActionAsync(context, actionDescriptor);
-                    context.IsHandled = true;
+
+                    var actionContext = new ActionContext(httpContext, routeData, actionDescriptor);
+                    if (_actionContextAccessor != null)
+                    {
+                        _actionContextAccessor.ActionContext = actionContext;
+                    }
+
+                    var invoker = _actionInvokerFactory.CreateInvoker(actionContext);
+                    if (invoker == null)
+                    {
+                        throw new InvalidOperationException(
+                            Resources.FormatActionInvokerFactory_CouldNotCreateInvoker(
+                                actionDescriptor.DisplayName));
+                    }
+
+                    await invoker.InvokeAsync();
 
                     _logger.ExecutedAction(actionDescriptor, startTime);
                 }
             }
             finally
             {
-                _diagnosticSource.AfterAction(actionDescriptor, context.HttpContext, context.RouteData);
-
-                if (!context.IsHandled)
-                {
-                    context.RouteData = oldRouteData;
-                }
+                _diagnosticSource.AfterAction(actionDescriptor, httpContext, routeData);
             }
-        }
-
-        private Task InvokeActionAsync(RouteContext context, ActionDescriptor actionDescriptor)
-        {
-            var actionContext = new ActionContext(context.HttpContext, context.RouteData, actionDescriptor);
-
-            if (_actionContextAccessor != null)
-            {
-                _actionContextAccessor.ActionContext = actionContext;
-            }
-
-            var invoker = _actionInvokerFactory.CreateInvoker(actionContext);
-            if (invoker == null)
-            {
-                throw new InvalidOperationException(
-                    Resources.FormatActionInvokerFactory_CouldNotCreateInvoker(
-                        actionDescriptor.DisplayName));
-            }
-
-            return invoker.InvokeAsync();
         }
 
         private void EnsureServices(HttpContext context)

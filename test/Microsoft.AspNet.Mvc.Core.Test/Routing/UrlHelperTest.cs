@@ -1020,7 +1020,7 @@ namespace Microsoft.AspNet.Mvc.Routing
 
             public Task RouteAsync(RouteContext context)
             {
-                context.IsHandled = true;
+                context.Handler = (c) => Task.FromResult(0);
                 return Task.FromResult(false);
             }
         }

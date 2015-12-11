@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                 new string[]
                 {
                     typeof(RouteCollection).FullName,
-                    typeof(TemplateRoute).FullName,
+                    typeof(Route).FullName,
                     typeof(MvcRouteHandler).FullName,
                 },
                 result.Routers);
