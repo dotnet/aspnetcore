@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using Microsoft.Extensions.CompilationAbstractions;
 
 namespace Microsoft.Dnx.Watcher.Core
@@ -12,19 +13,28 @@ namespace Microsoft.Dnx.Watcher.Core
     {
         public bool TryReadProject(string projectFile, out IProject project, out string errors)
         {
+            errors = null;
+            project = null;
+
             Runtime.Project runtimeProject;
             if (!TryGetProject(projectFile, out runtimeProject, out errors))
             {
-                project = null;
                 return false;
             }
 
-            errors = null;
-            project = new Project(runtimeProject);
+            try
+            {
+                project = new Project(runtimeProject);
+            }
+            catch (Exception ex)
+            {
+                errors = CollectMessages(ex);
+                return false;
+            }
 
             return true;
         }
-        
+
         // Same as TryGetProject but it doesn't throw
         private bool TryGetProject(string projectFile, out Runtime.Project project, out string errorMessage)
         {
@@ -43,11 +53,33 @@ namespace Microsoft.Dnx.Watcher.Core
             }
             catch (Exception ex)
             {
-                errorMessage = ex.Message;
+                errorMessage = CollectMessages(ex);
             }
 
             project = null;
             return false;
+        }
+
+        private string CollectMessages(Exception exception)
+        {
+            var builder = new StringBuilder();
+            builder.AppendLine(exception.Message);
+
+            var aggregateException = exception as AggregateException;
+            if (aggregateException != null)
+            {
+                foreach (var message in aggregateException.Flatten().InnerExceptions.Select(CollectMessages))
+                {
+                    builder.AppendLine(message);
+                }
+            }
+
+            while (exception.InnerException != null)
+            {
+                builder.AppendLine(CollectMessages(exception.InnerException));
+                exception = exception.InnerException;
+            }
+            return builder.ToString();
         }
     }
 }
