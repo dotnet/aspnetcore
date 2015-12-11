@@ -67,7 +67,9 @@ namespace Microsoft.Extensions.Localization
             var typeInfo = resourceSource.GetTypeInfo();
             var assembly = typeInfo.Assembly;
 
-            var baseName = _applicationEnvironment.ApplicationName + "." + _resourcesRelativePath + typeInfo.FullName;
+            var baseName = string.IsNullOrEmpty(_resourcesRelativePath)
+                ? typeInfo.FullName
+                : _applicationEnvironment.ApplicationName + "." + _resourcesRelativePath + typeInfo.FullName;
 
             return _localizerCache.GetOrAdd(baseName, _ =>
                 new ResourceManagerStringLocalizer(
