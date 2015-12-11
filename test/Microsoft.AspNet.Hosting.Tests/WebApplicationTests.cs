@@ -9,7 +9,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting.Fakes;
-using Microsoft.AspNet.Hosting.Internal;
 using Microsoft.AspNet.Hosting.Server;
 using Microsoft.AspNet.Hosting.Startup;
 using Microsoft.AspNet.Http;
@@ -25,7 +24,7 @@ using Xunit;
 
 namespace Microsoft.AspNet.Hosting
 {
-    public class HostingEngineTests : IServerFactory, IServer
+    public class WebApplicationTests : IServerFactory, IServer
     {
         private readonly IList<StartInstance> _startInstances = new List<StartInstance>();
         private IFeatureCollection _featuresSupportedByThisHost = NewFeatureCollection();
@@ -63,7 +62,7 @@ namespace Microsoft.AspNet.Hosting
         }
 
         [Fact]
-        public void HostingEngineThrowsWithNoServer()
+        public void WebApplicationThrowsWithNoServer()
         {
             var ex = Assert.Throws<InvalidOperationException>(() => CreateBuilder().Build().Start());
             Assert.True(ex.Message.Contains("UseServer()"));
@@ -86,9 +85,9 @@ namespace Microsoft.AspNet.Hosting
             var builder = new ConfigurationBuilder()
                 .AddInMemoryCollection(vals);
             var config = builder.Build();
-            var host = CreateBuilder(config).Build();
-            host.Start();
-            Assert.NotNull(host.ApplicationServices.GetRequiredService<IHostingEnvironment>());
+            var application = CreateBuilder(config).Build();
+            application.Start();
+            Assert.NotNull(application.Services.GetService<IHostingEnvironment>());
         }
 
         [Fact]
@@ -102,9 +101,9 @@ namespace Microsoft.AspNet.Hosting
             var builder = new ConfigurationBuilder()
                 .AddInMemoryCollection(vals);
             var config = builder.Build();
-            var host = CreateBuilder(config).Build();
-            host.Start();
-            Assert.NotNull(host.ApplicationServices.GetRequiredService<IHostingEnvironment>());
+            var application = CreateBuilder(config).Build();
+            application.Start();
+            Assert.NotNull(application.Services.GetService<IHostingEnvironment>());
         }
 
         [Fact]
@@ -119,10 +118,10 @@ namespace Microsoft.AspNet.Hosting
             var builder = new ConfigurationBuilder()
                 .AddInMemoryCollection(vals);
             var config = builder.Build();
-            var host = CreateBuilder(config).Build();
-            var app = host.Start();
-            Assert.NotNull(host.ApplicationServices.GetRequiredService<IHostingEnvironment>());
-            Assert.Equal("http://localhost:abc123", app.ServerFeatures.Get<IServerAddressesFeature>().Addresses.First());
+            var application = CreateBuilder(config).Build();
+            var app = application.Start();
+            Assert.NotNull(application.Services.GetService<IHostingEnvironment>());
+            Assert.Equal("http://localhost:abc123", application.ServerFeatures.Get<IServerAddressesFeature>().Addresses.First());
         }
 
         [Fact]
@@ -136,10 +135,10 @@ namespace Microsoft.AspNet.Hosting
             var builder = new ConfigurationBuilder()
                 .AddInMemoryCollection(vals);
             var config = builder.Build();
-            var host = CreateBuilder(config).Build();
-            var app = host.Start();
-            Assert.NotNull(host.ApplicationServices.GetRequiredService<IHostingEnvironment>());
-            Assert.Equal("http://localhost:5000", app.ServerFeatures.Get<IServerAddressesFeature>().Addresses.First());
+            var application = CreateBuilder(config).Build();
+            var app = application.Start();
+            Assert.NotNull(application.Services.GetService<IHostingEnvironment>());
+            Assert.Equal("http://localhost:5000", application.GetAddresses().First());
         }
 
         [Fact]
@@ -153,84 +152,85 @@ namespace Microsoft.AspNet.Hosting
             var builder = new ConfigurationBuilder()
                 .AddInMemoryCollection(vals);
             var config = builder.Build();
-            var host = CreateBuilder(config).Build();
-            var app = host.Start();
-            var hostingEnvironment = host.ApplicationServices.GetRequiredService<IHostingEnvironment>();
+            var application = CreateBuilder(config).Build();
+            var app = application.Start();
+            var hostingEnvironment = application.Services.GetService<IHostingEnvironment>();
             Assert.NotNull(hostingEnvironment.Configuration);
             Assert.Equal("Microsoft.AspNet.Hosting.Tests", hostingEnvironment.Configuration["Server"]);
         }
 
         [Fact]
-        public void HostingEngineCanBeStarted()
+        public void WebApplicationCanBeStarted()
         {
-            var engine = CreateBuilder()
+            var app = CreateBuilder()
                 .UseServer(this)
                 .UseStartup("Microsoft.AspNet.Hosting.Tests")
                 .Build()
                 .Start();
 
-            Assert.NotNull(engine);
+            Assert.NotNull(app);
             Assert.Equal(1, _startInstances.Count);
             Assert.Equal(0, _startInstances[0].DisposeCalls);
 
-            engine.Dispose();
+            app.Dispose();
 
             Assert.Equal(1, _startInstances[0].DisposeCalls);
         }
 
         [Fact]
-        public void HostingEngineDisposesServiceProvider()
+        public void WebApplicationDisposesServiceProvider()
         {
-            var engine = CreateBuilder()
+            var application = CreateBuilder()
                 .UseServer(this)
-                .UseServices(s =>
+                .ConfigureServices(s =>
                 {
                     s.AddTransient<IFakeService, FakeService>();
                     s.AddSingleton<IFakeSingletonService, FakeService>();
                 })
                 .UseStartup("Microsoft.AspNet.Hosting.Tests")
-                .Build()
-                .Start();
+                .Build();
 
-            var singleton = (FakeService)engine.Services.GetService<IFakeSingletonService>();
-            var transient = (FakeService)engine.Services.GetService<IFakeService>();
+            var app = application.Start();
+
+            var singleton = (FakeService)application.Services.GetService<IFakeSingletonService>();
+            var transient = (FakeService)application.Services.GetService<IFakeService>();
 
             Assert.False(singleton.Disposed);
             Assert.False(transient.Disposed);
 
-            engine.Dispose();
+            app.Dispose();
 
             Assert.True(singleton.Disposed);
             Assert.True(transient.Disposed);
         }
 
         [Fact]
-        public void HostingEngineNotifiesApplicationStarted()
+        public void WebApplicationNotifiesApplicationStarted()
         {
-            var host = CreateBuilder()
+            var application = CreateBuilder()
                 .UseServer(this)
                 .Build();
-            var applicationLifetime = host.ApplicationServices.GetRequiredService<IApplicationLifetime>();
+            var applicationLifetime = application.Services.GetService<IApplicationLifetime>();
 
             Assert.False(applicationLifetime.ApplicationStarted.IsCancellationRequested);
-            using (host.Start())
+            using (application.Start())
             {
                 Assert.True(applicationLifetime.ApplicationStarted.IsCancellationRequested);
             }
         }
 
         [Fact]
-        public void HostingEngineInjectsHostingEnvironment()
+        public void WebApplicationInjectsHostingEnvironment()
         {
-            var engine = CreateBuilder()
+            var application = CreateBuilder()
                 .UseServer(this)
                 .UseStartup("Microsoft.AspNet.Hosting.Tests")
                 .UseEnvironment("WithHostingEnvironment")
                 .Build();
 
-            using (var server = engine.Start())
+            using (application.Start())
             {
-                var env = engine.ApplicationServices.GetRequiredService<IHostingEnvironment>();
+                var env = application.Services.GetService<IHostingEnvironment>();
                 Assert.Equal("Changed", env.EnvironmentName);
             }
         }
@@ -238,26 +238,29 @@ namespace Microsoft.AspNet.Hosting
         [Fact]
         public void CanReplaceStartupLoader()
         {
-            var engine = CreateBuilder().UseServices(services => services.AddTransient<IStartupLoader, TestLoader>())
+            var builder = CreateBuilder()
+                .ConfigureServices(services =>
+                {
+                    services.AddTransient<IStartupLoader, TestLoader>();
+                })
                 .UseServer(this)
-                .UseStartup("Microsoft.AspNet.Hosting.Tests")
-                .Build();
+                .UseStartup("Microsoft.AspNet.Hosting.Tests");
 
-            Assert.Throws<NotImplementedException>(() => engine.Start());
+            Assert.Throws<NotImplementedException>(() => builder.Build());
         }
 
         [Fact]
         public void CanCreateApplicationServicesWithAddedServices()
         {
-            var host = CreateBuilder().UseServices(services => services.AddOptions()).Build();
-            Assert.NotNull(host.ApplicationServices.GetRequiredService<IOptions<object>>());
+            var application = CreateBuilder().UseServer(this).ConfigureServices(services => services.AddOptions()).Build();
+            Assert.NotNull(application.Services.GetRequiredService<IOptions<object>>());
         }
 
         [Fact]
         public void EnvDefaultsToProductionIfNoConfig()
         {
-            var engine = CreateBuilder().Build();
-            var env = engine.ApplicationServices.GetRequiredService<IHostingEnvironment>();
+            var application = CreateBuilder().UseServer(this).Build();
+            var env = application.Services.GetService<IHostingEnvironment>();
             Assert.Equal(EnvironmentName.Production, env.EnvironmentName);
         }
 
@@ -266,7 +269,7 @@ namespace Microsoft.AspNet.Hosting
         {
             var vals = new Dictionary<string, string>
             {
-                // Old key is actualy ASPNET_ENV but WebHostConfiguration expects environment
+                // Old key is actualy ASPNET_ENV but WebApplicationConfiguration expects environment
                 // variable names stripped from ASPNET_ prefix so using just ENV here
                 { "ENV", "Staging" }
             };
@@ -275,8 +278,8 @@ namespace Microsoft.AspNet.Hosting
                 .AddInMemoryCollection(vals);
             var config = builder.Build();
 
-            var engine = CreateBuilder(config).Build();
-            var env = engine.ApplicationServices.GetRequiredService<IHostingEnvironment>();
+            var application = CreateBuilder(config).UseServer(this).Build();
+            var env = application.Services.GetService<IHostingEnvironment>();
             Assert.Equal("Staging", env.EnvironmentName);
         }
 
@@ -292,8 +295,8 @@ namespace Microsoft.AspNet.Hosting
                 .AddInMemoryCollection(vals);
             var config = builder.Build();
 
-            var engine = CreateBuilder(config).Build();
-            var env = engine.ApplicationServices.GetRequiredService<IHostingEnvironment>();
+            var application = CreateBuilder(config).UseServer(this).Build();
+            var env = application.Services.GetService<IHostingEnvironment>();
             Assert.Equal("Staging", env.EnvironmentName);
         }
 
@@ -309,8 +312,8 @@ namespace Microsoft.AspNet.Hosting
                 .AddInMemoryCollection(vals);
             var config = builder.Build();
 
-            var engine = CreateBuilder(config).UseServer(this).Build();
-            var env = engine.ApplicationServices.GetRequiredService<IHostingEnvironment>();
+            var application = CreateBuilder(config).UseServer(this).Build();
+            var env = application.Services.GetService<IHostingEnvironment>();
             Assert.Equal(Path.GetFullPath("testroot"), env.WebRootPath);
             Assert.True(env.WebRootFileProvider.GetFileInfo("TextFile.txt").Exists);
         }
@@ -318,10 +321,10 @@ namespace Microsoft.AspNet.Hosting
         [Fact]
         public void IsEnvironment_Extension_Is_Case_Insensitive()
         {
-            var engine = CreateBuilder().UseServer(this).Build();
-            using (engine.Start())
+            var application = CreateBuilder().UseServer(this).Build();
+            using (application.Start())
             {
-                var env = engine.ApplicationServices.GetRequiredService<IHostingEnvironment>();
+                var env = application.Services.GetRequiredService<IHostingEnvironment>();
                 Assert.True(env.IsEnvironment(EnvironmentName.Production));
                 Assert.True(env.IsEnvironment("producTion"));
             }
@@ -349,7 +352,7 @@ namespace Microsoft.AspNet.Hosting
         }
 
         [Fact]
-        public void HostingEngine_CreatesDefaultRequestIdentifierFeature_IfNotPresent()
+        public void WebApplication_CreatesDefaultRequestIdentifierFeature_IfNotPresent()
         {
             // Arrange
             HttpContext httpContext = null;
@@ -358,10 +361,10 @@ namespace Microsoft.AspNet.Hosting
                     httpContext = innerHttpContext;
                     return Task.FromResult(0);
                 });
-            var hostingEngine = CreateHostingEngine(requestDelegate);
+            var application = CreateApplication(requestDelegate);
 
             // Act
-            var disposable = hostingEngine.Start();
+            var disposable = application.Start();
 
             // Assert
             Assert.NotNull(httpContext);
@@ -371,7 +374,7 @@ namespace Microsoft.AspNet.Hosting
         }
 
         [Fact]
-        public void HostingEngine_DoesNot_CreateDefaultRequestIdentifierFeature_IfPresent()
+        public void WebApplication_DoesNot_CreateDefaultRequestIdentifierFeature_IfPresent()
         {
             // Arrange
             HttpContext httpContext = null;
@@ -382,10 +385,10 @@ namespace Microsoft.AspNet.Hosting
             });
             var requestIdentifierFeature = new StubHttpRequestIdentifierFeature();
             _featuresSupportedByThisHost[typeof(IHttpRequestIdentifierFeature)] = requestIdentifierFeature;
-            var hostingEngine = CreateHostingEngine(requestDelegate);
+            var application = CreateApplication(requestDelegate);
 
             // Act
-            var disposable = hostingEngine.Start();
+            var disposable = application.Start();
 
             // Assert
             Assert.NotNull(httpContext);
@@ -393,16 +396,16 @@ namespace Microsoft.AspNet.Hosting
         }
 
         [Fact]
-        public void HostingEngine_InvokesConfigureMethodsOnlyOnce()
+        public void WebApplication_InvokesConfigureMethodsOnlyOnce()
         {
-            var engine = CreateBuilder()
+            var application = CreateBuilder()
                 .UseServer(this)
                 .UseStartup<CountStartup>()
                 .Build();
-            using (engine.Start())
+            using (application.Start())
             {
-                var services = engine.ApplicationServices;
-                var services2 = engine.ApplicationServices;
+                var services = application.Services;
+                var services2 = application.Services;
                 Assert.Equal(1, CountStartup.ConfigureCount);
                 Assert.Equal(1, CountStartup.ConfigureServicesCount);
             }
@@ -425,13 +428,13 @@ namespace Microsoft.AspNet.Hosting
         }
 
         [Fact]
-        public void HostingEngine_ThrowsForBadConfigureServiceSignature()
+        public void WebApplication_ThrowsForBadConfigureServiceSignature()
         {
-            var engine = CreateBuilder()
+            var builder = CreateBuilder()
                 .UseServer(this)
-                .UseStartup<BadConfigureServicesStartup>()
-                .Build();
-            var ex = Assert.Throws<InvalidOperationException>(() => engine.Start());
+                .UseStartup<BadConfigureServicesStartup>();
+
+            var ex = Assert.Throws<InvalidOperationException>(() => builder.Build());
             Assert.True(ex.Message.Contains("ConfigureServices"));
         }
 
@@ -441,27 +444,26 @@ namespace Microsoft.AspNet.Hosting
             public void Configure(IApplicationBuilder app) { }
         }
 
-        private IHostingEngine CreateHostingEngine(RequestDelegate requestDelegate)
+        private IWebApplication CreateApplication(RequestDelegate requestDelegate)
         {
-            var host = CreateBuilder()
+            var builder = CreateBuilder()
                 .UseServer(this)
-                .UseStartup(
+                .Configure(
                     appBuilder =>
                     {
                         appBuilder.ApplicationServices.GetRequiredService<ILoggerFactory>().AddProvider(new AllMessagesAreNeeded());
                         appBuilder.Run(requestDelegate);
-                    },
-                    configureServices => configureServices.BuildServiceProvider());
-            return host.Build();
+                    });
+            return builder.Build();
         }
 
         private void RunMapPath(string virtualPath, string expectedSuffix)
         {
-            var engine = CreateBuilder().UseServer(this).Build();
+            var application = CreateBuilder().UseServer(this).Build();
 
-            using (engine.Start())
+            using (application.Start())
             {
-                var env = engine.ApplicationServices.GetRequiredService<IHostingEnvironment>();
+                var env = application.Services.GetRequiredService<IHostingEnvironment>();
                 // MapPath requires webroot to be set, we don't care
                 // about file provider so  just set it here
                 env.WebRootPath = ".";
@@ -471,9 +473,9 @@ namespace Microsoft.AspNet.Hosting
             }
         }
 
-        private WebHostBuilder CreateBuilder(IConfiguration config = null)
+        private WebApplicationBuilder CreateBuilder(IConfiguration config = null)
         {
-            return new WebHostBuilder(config ?? new ConfigurationBuilder().Build());
+            return new WebApplicationBuilder().UseConfiguration(config ?? new ConfigurationBuilder().Build()).UseStartup("Microsoft.AspNet.Hosting.Tests");
         }
 
         public void Start<TContext>(IHttpApplication<TContext> application)

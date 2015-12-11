@@ -7,11 +7,11 @@ using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Hosting.Internal;
 using Microsoft.Extensions.Configuration;
 
-namespace Microsoft.AspNet.Hosting
+namespace Microsoft.AspNet.Hosting.Internal
 {
     public static class HostingEnvironmentExtensions
     {
-        public static void Initialize(this IHostingEnvironment hostingEnvironment, string applicationBasePath, WebHostOptions options, IConfiguration configuration)
+        public static void Initialize(this IHostingEnvironment hostingEnvironment, string applicationBasePath, WebApplicationOptions options, IConfiguration configuration)
         {
             if (options == null)
             {

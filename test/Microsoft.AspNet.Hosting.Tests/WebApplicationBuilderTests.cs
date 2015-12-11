@@ -17,35 +17,25 @@ using Xunit;
 
 namespace Microsoft.AspNet.Hosting
 {
-    public class WebHostBuilderTests
+    public class WebApplicationBuilderTests
     {
-        [Fact]
-        public void Build_uses_application_for_startup_assembly_by_default()
-        {
-            var builder = CreateWebHostBuilder();
-
-            var engine = (HostingEngine)builder.Build();
-
-            Assert.Equal("Microsoft.AspNet.Hosting.Tests", engine.StartupAssemblyName);
-        }
-
         [Fact]
         public void Build_honors_UseStartup_with_string()
         {
-            var builder = CreateWebHostBuilder();
+            var builder = CreateWebApplicationBuilder().UseServer(new TestServer());
 
-            var engine = (HostingEngine)builder.UseStartup("MyStartupAssembly").Build();
+            var application = (WebApplication)builder.UseStartup("MyStartupAssembly").Build();
 
-            Assert.Equal("MyStartupAssembly", engine.StartupAssemblyName);
+            Assert.Equal("MyStartupAssembly", application.StartupAssemblyName);
         }
 
         [Fact]
         public async Task StartupMissing_Fallback()
         {
-            var builder = CreateWebHostBuilder();
+            var builder = CreateWebApplicationBuilder();
             var server = new TestServer();
-            var engine = builder.UseServer(server).UseStartup("MissingStartupAssembly").Build();
-            using (engine.Start())
+            var application = builder.UseServer(server).UseStartup("MissingStartupAssembly").Build();
+            using (application.Start())
             {
                 await AssertResponseContains(server.RequestDelegate, "MissingStartupAssembly");
             }
@@ -54,10 +44,10 @@ namespace Microsoft.AspNet.Hosting
         [Fact]
         public async Task StartupStaticCtorThrows_Fallback()
         {
-            var builder = CreateWebHostBuilder();
+            var builder = CreateWebApplicationBuilder();
             var server = new TestServer();
-            var engine = builder.UseServer(server).UseStartup<StartupStaticCtorThrows>().Build();
-            using (engine.Start())
+            var application = builder.UseServer(server).UseStartup<StartupStaticCtorThrows>().Build();
+            using (application.Start())
             {
                 await AssertResponseContains(server.RequestDelegate, "Exception from static constructor");
             }
@@ -66,10 +56,10 @@ namespace Microsoft.AspNet.Hosting
         [Fact]
         public async Task StartupCtorThrows_Fallback()
         {
-            var builder = CreateWebHostBuilder();
+            var builder = CreateWebApplicationBuilder();
             var server = new TestServer();
-            var engine = builder.UseServer(server).UseStartup<StartupCtorThrows>().Build();
-            using (engine.Start())
+            var application = builder.UseServer(server).UseStartup<StartupCtorThrows>().Build();
+            using (application.Start())
             {
                 await AssertResponseContains(server.RequestDelegate, "Exception from constructor");
             }
@@ -78,10 +68,10 @@ namespace Microsoft.AspNet.Hosting
         [Fact]
         public async Task StartupCtorThrows_TypeLoadException()
         {
-            var builder = CreateWebHostBuilder();
+            var builder = CreateWebApplicationBuilder();
             var server = new TestServer();
-            var engine = builder.UseServer(server).UseStartup<StartupThrowTypeLoadException>().Build();
-            using (engine.Start())
+            var application = builder.UseServer(server).UseStartup<StartupThrowTypeLoadException>().Build();
+            using (application.Start())
             {
                 await AssertResponseContains(server.RequestDelegate, "Message from the LoaderException</span>");
             }
@@ -90,12 +80,12 @@ namespace Microsoft.AspNet.Hosting
         [Fact]
         public async Task IApplicationLifetimeRegisteredEvenWhenStartupCtorThrows_Fallback()
         {
-            var builder = CreateWebHostBuilder();
+            var builder = CreateWebApplicationBuilder();
             var server = new TestServer();
-            var engine = builder.UseServer(server).UseStartup<StartupCtorThrows>().Build();
-            using (engine.Start())
+            var application = builder.UseServer(server).UseStartup<StartupCtorThrows>().Build();
+            using (application.Start())
             {
-                var service = engine.ApplicationServices.GetServices<IApplicationLifetime>();
+                var service = application.Services.GetServices<IApplicationLifetime>();
                 Assert.NotNull(service);
                 await AssertResponseContains(server.RequestDelegate, "Exception from constructor");
             }
@@ -104,10 +94,10 @@ namespace Microsoft.AspNet.Hosting
         [Fact]
         public async Task StartupConfigureServicesThrows_Fallback()
         {
-            var builder = CreateWebHostBuilder();
+            var builder = CreateWebApplicationBuilder();
             var server = new TestServer();
-            var engine = builder.UseServer(server).UseStartup<StartupConfigureServicesThrows>().Build();
-            using (engine.Start())
+            var application = builder.UseServer(server).UseStartup<StartupConfigureServicesThrows>().Build();
+            using (application.Start())
             {
                 await AssertResponseContains(server.RequestDelegate, "Exception from ConfigureServices");
             }
@@ -116,10 +106,10 @@ namespace Microsoft.AspNet.Hosting
         [Fact]
         public async Task StartupConfigureThrows_Fallback()
         {
-            var builder = CreateWebHostBuilder();
+            var builder = CreateWebApplicationBuilder();
             var server = new TestServer();
-            var engine = builder.UseServer(server).UseStartup<StartupConfigureServicesThrows>().Build();
-            using (engine.Start())
+            var application = builder.UseServer(server).UseStartup<StartupConfigureServicesThrows>().Build();
+            using (application.Start())
             {
                 await AssertResponseContains(server.RequestDelegate, "Exception from Configure");
             }
@@ -137,22 +127,27 @@ namespace Microsoft.AspNet.Hosting
             var config = builder.Build();
 
             var expected = "MY_TEST_ENVIRONMENT";
-            var webHost = new WebHostBuilder(config, captureStartupErrors: true).UseEnvironment(expected).Build();
+            var application = new WebApplicationBuilder()
+                .UseConfiguration(config)
+                .UseEnvironment(expected)
+                .UseServer(new TestServer())
+                .UseStartup("Microsoft.AspNet.Hosting.Tests")
+                .Build();
 
-            Assert.Equal(expected, webHost.ApplicationServices.GetService<IHostingEnvironment>().EnvironmentName);
+            Assert.Equal(expected, application.Services.GetService<IHostingEnvironment>().EnvironmentName);
         }
 
-        private WebHostBuilder CreateWebHostBuilder()
+        private WebApplicationBuilder CreateWebApplicationBuilder()
         {
             var vals = new Dictionary<string, string>
             {
-                { "server", "Microsoft.AspNet.Hosting.Tests" },
                 { "DetailedErrors", "true" },
+                { "captureStartupErrors", "true" }
             };
             var builder = new ConfigurationBuilder()
                 .AddInMemoryCollection(vals);
             var config = builder.Build();
-            return new WebHostBuilder(config, captureStartupErrors: true);
+            return new WebApplicationBuilder().UseConfiguration(config);
         }
 
         private async Task AssertResponseContains(RequestDelegate app, string expectedText)

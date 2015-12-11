@@ -19,7 +19,7 @@ using Microsoft.Extensions.PlatformAbstractions;
 
 namespace Microsoft.AspNet.Hosting.Internal
 {
-    public class HostingEngine : IHostingEngine
+    public class WebApplication : IWebApplication
     {
         // This is defined by IIS's HttpPlatformHandler.
         private static readonly string ServerPort = "HTTP_PLATFORM_PORT";
@@ -27,11 +27,11 @@ namespace Microsoft.AspNet.Hosting.Internal
         private readonly IServiceCollection _applicationServiceCollection;
         private readonly IStartupLoader _startupLoader;
         private readonly ApplicationLifetime _applicationLifetime;
-        private readonly WebHostOptions _options;
+        private readonly WebApplicationOptions _options;
         private readonly IConfiguration _config;
-        private readonly bool _captureStartupErrors;
 
         private IServiceProvider _applicationServices;
+        private RequestDelegate _application;
 
         // Only one of these should be set
         internal string StartupAssemblyName { get; set; }
@@ -43,12 +43,11 @@ namespace Microsoft.AspNet.Hosting.Internal
         internal string ServerFactoryLocation { get; set; }
         internal IServer Server { get; set; }
 
-        public HostingEngine(
+        public WebApplication(
             IServiceCollection appServices,
             IStartupLoader startupLoader,
-            WebHostOptions options,
-            IConfiguration config,
-            bool captureStartupErrors)
+            WebApplicationOptions options,
+            IConfiguration config)
         {
             if (appServices == null)
             {
@@ -69,12 +68,11 @@ namespace Microsoft.AspNet.Hosting.Internal
             _options = options;
             _applicationServiceCollection = appServices;
             _startupLoader = startupLoader;
-            _captureStartupErrors = captureStartupErrors;
             _applicationLifetime = new ApplicationLifetime();
             _applicationServiceCollection.AddSingleton<IApplicationLifetime>(_applicationLifetime);
         }
 
-        public IServiceProvider ApplicationServices
+        public IServiceProvider Services
         {
             get
             {
@@ -83,29 +81,45 @@ namespace Microsoft.AspNet.Hosting.Internal
             }
         }
 
-        public virtual IApplication Start()
+        public IFeatureCollection ServerFeatures
         {
-            var application = BuildApplication();
+            get
+            {
+                return Server?.Features;
+            }
+        }
 
-            var logger = _applicationServices.GetRequiredService<ILogger<HostingEngine>>();
+        public void Initialize()
+        {
+            if (_application == null)
+            {
+                _application = BuildApplication();
+            }
+        }
+
+        public virtual IDisposable Start()
+        {
+            Initialize();
+
+            var logger = _applicationServices.GetRequiredService<ILogger<WebApplication>>();
             var diagnosticSource = _applicationServices.GetRequiredService<DiagnosticSource>();
             var httpContextFactory = _applicationServices.GetRequiredService<IHttpContextFactory>();
 
             logger.Starting();
 
-            Server.Start(new HostingApplication(application, logger, diagnosticSource, httpContextFactory));
+            Server.Start(new HostingApplication(_application, logger, diagnosticSource, httpContextFactory));
 
             _applicationLifetime.NotifyStarted();
             logger.Started();
 
-            return new Application(ApplicationServices, Server.Features, new Disposable(() =>
-            {
-                logger.Shutdown();
-                _applicationLifetime.StopApplication();
-                Server.Dispose();
-                _applicationLifetime.NotifyStopped();
-                (_applicationServices as IDisposable)?.Dispose();
-            }));
+            return new Disposable(() =>
+           {
+               logger.Shutdown();
+               _applicationLifetime.StopApplication();
+               Server.Dispose();
+               _applicationLifetime.NotifyStopped();
+               (_applicationServices as IDisposable)?.Dispose();
+           });
         }
 
         private void EnsureApplicationServices()
@@ -168,7 +182,7 @@ namespace Microsoft.AspNet.Hosting.Internal
 
                 return builder.Build();
             }
-            catch (Exception ex) when (_captureStartupErrors)
+            catch (Exception ex) when (_options.CaptureStartupErrors)
             {
                 // EnsureApplicationServices may have failed due to a missing or throwing Startup class.
                 if (_applicationServices == null)
@@ -180,7 +194,7 @@ namespace Microsoft.AspNet.Hosting.Internal
 
                 // Write errors to standard out so they can be retrieved when not in development mode.
                 Console.Out.WriteLine("Application startup exception: " + ex.ToString());
-                var logger = _applicationServices.GetRequiredService<ILogger<HostingEngine>>();
+                var logger = _applicationServices.GetRequiredService<ILogger<WebApplication>>();
                 logger.ApplicationError(ex);
 
                 // Generate an HTML error page.

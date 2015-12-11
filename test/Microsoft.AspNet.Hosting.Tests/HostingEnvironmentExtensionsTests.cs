@@ -4,7 +4,6 @@
 using System;
 using System.IO;
 using Microsoft.AspNet.FileProviders;
-using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Hosting.Internal;
 using Microsoft.Extensions.Configuration;
 using Xunit;
@@ -18,7 +17,7 @@ namespace Microsoft.AspNet.Hosting.Tests
         {
             var env = new HostingEnvironment();
 
-            env.Initialize(".", new WebHostOptions() {WebRoot = "testroot"}, null);
+            env.Initialize(".", new WebApplicationOptions() {WebRoot = "testroot"}, null);
 
             Assert.Equal(Path.GetFullPath("testroot"), env.WebRootPath);
             Assert.IsAssignableFrom<PhysicalFileProvider>(env.WebRootFileProvider);
@@ -29,7 +28,7 @@ namespace Microsoft.AspNet.Hosting.Tests
         {
             var env = new HostingEnvironment();
 
-            env.Initialize("testroot", new WebHostOptions(), null);
+            env.Initialize("testroot", new WebApplicationOptions(), null);
 
             Assert.Equal(Path.GetFullPath(Path.Combine("testroot","wwwroot")), env.WebRootPath);
             Assert.IsAssignableFrom<PhysicalFileProvider>(env.WebRootFileProvider);
@@ -40,7 +39,7 @@ namespace Microsoft.AspNet.Hosting.Tests
         {
             var env = new HostingEnvironment();
 
-            env.Initialize(Path.Combine("testroot", "wwwroot"), new WebHostOptions(), null);
+            env.Initialize(Path.Combine("testroot", "wwwroot"), new WebApplicationOptions(), null);
 
             Assert.Null(env.WebRootPath);
             Assert.IsAssignableFrom<NullFileProvider>(env.WebRootFileProvider);
@@ -52,7 +51,7 @@ namespace Microsoft.AspNet.Hosting.Tests
             var config = new ConfigurationBuilder().Build();
             var env = new HostingEnvironment();
 
-            env.Initialize(".", new WebHostOptions(), config);
+            env.Initialize(".", new WebApplicationOptions(), config);
 
             Assert.Same(config, env.Configuration);
         }
@@ -63,7 +62,7 @@ namespace Microsoft.AspNet.Hosting.Tests
             var env = new HostingEnvironment();
             env.EnvironmentName = "SomeName";
 
-            env.Initialize(".", new WebHostOptions() { Environment = "NewName" }, null);
+            env.Initialize(".", new WebApplicationOptions() { Environment = "NewName" }, null);
 
             Assert.Equal("NewName", env.EnvironmentName);
         }
@@ -73,7 +72,7 @@ namespace Microsoft.AspNet.Hosting.Tests
         {
             var env = new HostingEnvironment();
 
-            env.Initialize(".", new WebHostOptions(), null);
+            env.Initialize(".", new WebApplicationOptions(), null);
 
             Assert.Throws<InvalidOperationException>(() => env.MapPath("file.txt"));
         }
