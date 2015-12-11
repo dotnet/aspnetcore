@@ -31,6 +31,7 @@ namespace LocalizationWebsite
 
             var options = new RequestLocalizationOptions
             {
+                DefaultRequestCulture = new RequestCulture("en-US"),
                 SupportedCultures = new List<CultureInfo>()
                 {
                     new CultureInfo("fr-FR")
@@ -41,7 +42,7 @@ namespace LocalizationWebsite
                 }
             };
 
-            app.UseRequestLocalization(options, defaultRequestCulture: new RequestCulture("en-US"));
+            app.UseRequestLocalization(options);
 
             var stringLocalizer = stringLocalizerFactory.Create("Test", location: null);
 

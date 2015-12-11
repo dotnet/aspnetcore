@@ -24,6 +24,7 @@ namespace Microsoft.Extensions.Localization.Tests
             {
                 var options = new RequestLocalizationOptions()
                 {
+                    DefaultRequestCulture = new RequestCulture("en-US"),
                     SupportedCultures = new List<CultureInfo>
                     {
                         new CultureInfo("ar")
@@ -39,7 +40,7 @@ namespace Microsoft.Extensions.Localization.Tests
                     var requestCulture = new ProviderCultureResult(culture);
                     return Task.FromResult(requestCulture);
                 }));
-                app.UseRequestLocalization(options, defaultRequestCulture: new RequestCulture("en-US"));
+                app.UseRequestLocalization(options);
                 app.Run(context =>
                 {
                     var requestCultureFeature = context.Features.Get<IRequestCultureFeature>();

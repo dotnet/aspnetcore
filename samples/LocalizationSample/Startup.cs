@@ -24,6 +24,8 @@ namespace LocalizationSample
         {
             var options = new RequestLocalizationOptions
             {
+                DefaultRequestCulture = new RequestCulture("en-US"),
+
                 // Set options here to change middleware behavior
                 SupportedCultures = new List<CultureInfo>
                 {
@@ -58,7 +60,7 @@ namespace LocalizationSample
                 
             //}));
 
-            app.UseRequestLocalization(options, defaultRequestCulture: new RequestCulture("en-US"));
+            app.UseRequestLocalization(options);
 
             app.Use(async (context, next) =>
             {

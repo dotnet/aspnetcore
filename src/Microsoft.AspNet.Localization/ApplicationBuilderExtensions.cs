@@ -14,44 +14,14 @@ namespace Microsoft.AspNet.Builder
     {
         /// <summary>
         /// Adds the <see cref="RequestLocalizationMiddleware"/> to automatically set culture information for
-        /// requests based on information provided by the client using the default options.
-        /// </summary>
-        /// <param name="app">The <see cref="IApplicationBuilder"/>.</param>
-        /// <param name="defaultRequestCulture">The default <see cref="RequestCulture"/> to use if none of the
-        /// requested cultures match supported cultures.</param>
-        /// <returns>The <see cref="IApplicationBuilder"/>.</returns>
-        public static IApplicationBuilder UseRequestLocalization(
-            this IApplicationBuilder app,
-            RequestCulture defaultRequestCulture)
-        {
-            if (app == null)
-            {
-                throw new ArgumentNullException(nameof(app));
-            }
-
-            if (defaultRequestCulture == null)
-            {
-                throw new ArgumentNullException(nameof(defaultRequestCulture));
-            }
-
-            var options = new RequestLocalizationOptions();
-
-            return UseRequestLocalization(app, options, defaultRequestCulture);
-        }
-
-        /// <summary>
-        /// Adds the <see cref="RequestLocalizationMiddleware"/> to automatically set culture information for
         /// requests based on information provided by the client.
         /// </summary>
         /// <param name="app">The <see cref="IApplicationBuilder"/>.</param>
         /// <param name="options">The options to configure the middleware with.</param>
-        /// <param name="defaultRequestCulture">The default <see cref="RequestCulture"/> to use if none of the
-        /// requested cultures match supported cultures.</param>
         /// <returns>The <see cref="IApplicationBuilder"/>.</returns>
         public static IApplicationBuilder UseRequestLocalization(
             this IApplicationBuilder app,
-            RequestLocalizationOptions options,
-            RequestCulture defaultRequestCulture)
+            RequestLocalizationOptions options)
         {
             if (app == null)
             {
@@ -63,12 +33,7 @@ namespace Microsoft.AspNet.Builder
                 throw new ArgumentNullException(nameof(options));
             }
 
-            if (defaultRequestCulture == null)
-            {
-                throw new ArgumentNullException(nameof(defaultRequestCulture));
-            }
-
-            return app.UseMiddleware<RequestLocalizationMiddleware>(options, defaultRequestCulture);
+            return app.UseMiddleware<RequestLocalizationMiddleware>(options);
         }
     }
 }

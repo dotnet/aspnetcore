@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 
@@ -11,6 +12,9 @@ namespace Microsoft.AspNet.Localization
     /// </summary>
     public class RequestLocalizationOptions
     {
+        private RequestCulture _defaultRequestCulture =
+            new RequestCulture(CultureInfo.CurrentCulture, CultureInfo.CurrentUICulture);
+
         /// <summary>
         /// Creates a new <see cref="RequestLocalizationOptions"/> with default values.
         /// </summary>
@@ -25,20 +29,40 @@ namespace Microsoft.AspNet.Localization
         }
 
         /// <summary>
-        /// The cultures supported by the application. If this value is non-<c>null</c>, the
-        /// <see cref="RequestLocalizationMiddleware"/> will only set the current request culture to an entry in this
-        /// list. A value of <c>null</c> means all cultures are supported.
-        /// Defaults to <c>null</c>.
+        /// Gets or sets the default culture to use for requests when a supported culture could not be determined by
+        /// one of the configured <see cref="IRequestCultureProvider"/>s.
+        /// Defaults to <see cref="CultureInfo.CurrentCulture"/> and <see cref="CultureInfo.CurrentUICulture"/>.
         /// </summary>
-        public IList<CultureInfo> SupportedCultures { get; set; }
+        public RequestCulture DefaultRequestCulture
+        {
+            get
+            {
+                return _defaultRequestCulture;
+            }
+            set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
+
+                _defaultRequestCulture = value;
+            }
+        }
 
         /// <summary>
-        /// The UI cultures supported by the application. If this value is non-<c>null</c>, the
-        /// <see cref="RequestLocalizationMiddleware"/> will only set the current request culture to an entry in this
-        /// list. A value of <c>null</c> means all cultures are supported.
-        /// Defaults to <c>null</c>.
+        /// The cultures supported by the application. The <see cref="RequestLocalizationMiddleware"/> will only set
+        /// the current request culture to an entry in this list.
+        /// Defaults to <see cref="CultureInfo.CurrentCulture"/>.
         /// </summary>
-        public IList<CultureInfo> SupportedUICultures { get; set; }
+        public IList<CultureInfo> SupportedCultures { get; set; } = new List<CultureInfo> { CultureInfo.CurrentCulture };
+
+        /// <summary>
+        /// The UI cultures supported by the application. The <see cref="RequestLocalizationMiddleware"/> will only set
+        /// the current request culture to an entry in this list.
+        /// Defaults to <see cref="CultureInfo.CurrentUICulture"/>.
+        /// </summary>
+        public IList<CultureInfo> SupportedUICultures { get; set; } = new List<CultureInfo> { CultureInfo.CurrentUICulture };
 
         /// <summary>
         /// An ordered list of providers used to determine a request's culture information. The first provider that

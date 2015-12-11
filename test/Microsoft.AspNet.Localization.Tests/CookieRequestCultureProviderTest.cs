@@ -22,6 +22,7 @@ namespace Microsoft.Extensions.Localization.Tests
             {
                 var options = new RequestLocalizationOptions()
                 {
+                    DefaultRequestCulture = new RequestCulture("en-US"),
                     SupportedCultures = new List<CultureInfo>
                     {
                         new CultureInfo("ar-SA")
@@ -34,7 +35,7 @@ namespace Microsoft.Extensions.Localization.Tests
                 var provider = new CookieRequestCultureProvider();
                 provider.CookieName = "Preferences";
                 options.RequestCultureProviders.Insert(0, provider);
-                app.UseRequestLocalization(options, defaultRequestCulture: new RequestCulture("en-US"));
+                app.UseRequestLocalization(options);
                 app.Run(context =>
                 {
                     var requestCultureFeature = context.Features.Get<IRequestCultureFeature>();
@@ -61,6 +62,7 @@ namespace Microsoft.Extensions.Localization.Tests
             {
                 var options = new RequestLocalizationOptions()
                 {
+                    DefaultRequestCulture = new RequestCulture("en-US"),
                     SupportedCultures = new List<CultureInfo>
                     {
                         new CultureInfo("ar-SA")
@@ -73,7 +75,7 @@ namespace Microsoft.Extensions.Localization.Tests
                 var provider = new CookieRequestCultureProvider();
                 provider.CookieName = "Preferences";
                 options.RequestCultureProviders.Insert(0, provider);
-                app.UseRequestLocalization(options, defaultRequestCulture: new RequestCulture("en-US"));
+                app.UseRequestLocalization(options);
                 app.Run(context =>
                 {
                     var requestCultureFeature = context.Features.Get<IRequestCultureFeature>();
@@ -96,6 +98,7 @@ namespace Microsoft.Extensions.Localization.Tests
             {
                 var options = new RequestLocalizationOptions()
                 {
+                    DefaultRequestCulture = new RequestCulture("en-US"),
                     SupportedCultures = new List<CultureInfo>
                     {
                         new CultureInfo("ar-SA")
@@ -108,7 +111,7 @@ namespace Microsoft.Extensions.Localization.Tests
                 var provider = new CookieRequestCultureProvider();
                 provider.CookieName = "Preferences";
                 options.RequestCultureProviders.Insert(0, provider);
-                app.UseRequestLocalization(options, defaultRequestCulture: new RequestCulture("en-US"));
+                app.UseRequestLocalization(options);
                 app.Run(context =>
                 {
                     var requestCultureFeature = context.Features.Get<IRequestCultureFeature>();
