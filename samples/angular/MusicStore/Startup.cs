@@ -110,12 +110,16 @@ namespace MusicStore
             // Add MVC to the request pipeline.
             app.UseMvc(routes =>
             {
-                // Matches any request that doesn't appear to have a filename extension (defined as 'having a dot in the last URI segment').
+                // Matches requests that correspond to an existent controller/action pair
+                routes.MapRoute("default", "{controller}/{action}/{id:int?}");
+                
+                // Matches any other request that doesn't appear to have a filename extension (defined as 'having a dot in the last URI segment').
                 // This means you'll correctly get 404s for /some/dir/non-existent-image.png instead of returning the SPA HTML.
                 // However, it means requests like /customers/isaac.newton will *not* be mapped into the SPA, so if you need to accept
                 // URIs like that you'll need to match all URIs, e.g.:
-                //    routes.MapbackRoute("spa-fallback", "{*anything}", new { controller = "Home", action = "Index" });
-                // (which of course will match /customers/isaac.png too - maybe that is a real customer name, not a PNG image).
+                //    routes.MapRoute("spa-fallback", "{*anything}", new { controller = "Home", action = "Index" });
+                // (which of course will match /customers/isaac.png too, so in that case it would serve the PNG image at that URL if one is on disk,
+                // or the SPA HTML if not).
                 routes.MapSpaFallbackRoute("spa-fallback", new { controller = "Home", action = "Index" });
 
                 // Uncomment the following line to add a route for porting Web API 2 controllers.
