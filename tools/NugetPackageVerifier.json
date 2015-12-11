@@ -663,7 +663,7 @@
               "SIGN_AUTHENTICODE": {
                 "runtimes\\unix\\lib\\dotnet5.4\\System.Security.Cryptography.Algorithms.dll": "Need to follow up, not from ADX team"
               }
-            }
+            },
             "runtime.unix.System.Security.Cryptography.Encoding": {
                 "SIGN_STRONGNAME": {
                     "runtimes\\unix\\lib\\dotnet5.4\\System.Security.Cryptography.Encoding.dll": "Need to follow up, not from ADX team"
