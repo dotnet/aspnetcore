@@ -1,8 +1,10 @@
-﻿{
+{
   "version": "1.0.0-*",
   "dependencies": {
+    "CorsMiddlewareWebSite": "1.0.0-*",
     "Microsoft.AspNet.Cors": "6.0.0-*",
     "Microsoft.AspNet.TestHost": "1.0.0-*",
+    "Microsoft.Extensions.Logging.Testing": "1.0.0-*",
     "xunit.runner.aspnet": "2.0.0-aspnet-*"
   },
   "commands": {

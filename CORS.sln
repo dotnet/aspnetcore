@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.23107.0
+VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{84FE6872-A610-4CEC-855F-A84CBF1F40FC}"
 EndProject
@@ -15,6 +15,10 @@ EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Cors", "src\Microsoft.AspNet.Cors\Microsoft.AspNet.Cors.xproj", "{41349FCD-D1C4-47A6-82D0-D16D00A8D59D}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Cors.Test", "test\Microsoft.AspNet.Cors.Test\Microsoft.AspNet.Cors.Test.xproj", "{F05BE96F-F869-4408-A480-96935B4835EE}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WebSites", "WebSites", "{538380BF-0D4C-4E30-8F41-E75C4B1C01FA}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "CorsMiddlewareWebSite", "test\WebSites\CorsMiddlewareWebSite\CorsMiddlewareWebSite.xproj", "{B42D4844-FFF8-4EC2-88D1-3AE95234D9EB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -30,6 +34,10 @@ Global
 		{F05BE96F-F869-4408-A480-96935B4835EE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F05BE96F-F869-4408-A480-96935B4835EE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F05BE96F-F869-4408-A480-96935B4835EE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B42D4844-FFF8-4EC2-88D1-3AE95234D9EB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B42D4844-FFF8-4EC2-88D1-3AE95234D9EB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B42D4844-FFF8-4EC2-88D1-3AE95234D9EB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B42D4844-FFF8-4EC2-88D1-3AE95234D9EB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -37,5 +45,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{41349FCD-D1C4-47A6-82D0-D16D00A8D59D} = {84FE6872-A610-4CEC-855F-A84CBF1F40FC}
 		{F05BE96F-F869-4408-A480-96935B4835EE} = {F32074C7-087C-46CC-A913-422BFD2D6E0A}
+		{538380BF-0D4C-4E30-8F41-E75C4B1C01FA} = {F32074C7-087C-46CC-A913-422BFD2D6E0A}
+		{B42D4844-FFF8-4EC2-88D1-3AE95234D9EB} = {538380BF-0D4C-4E30-8F41-E75C4B1C01FA}
 	EndGlobalSection
 EndGlobal
