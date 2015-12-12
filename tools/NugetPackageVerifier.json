@@ -301,15 +301,13 @@
             // don't run any rules for packages the ADX team creates but doesn't ship
         ],
         "packages": {
+            "Benchmarks.Framework": { },
+            "Benchmarks.Utility": { },
             "EntityFramework.Core.FunctionalTests": { },
             "EntityFramework.Relational.FunctionalTests": { },
             "EntityFramework.Relational.Design.FunctionalTests": { },
             "KoreBuild": { },
-            "KoreBuild-dotnet": {
-              "SIGN_POWERSHELL": {
-                "build\\install.ps1": "Build scripts"
-              }
-            },
+            "KoreBuild-dotnet": { },
             "Microsoft.AspNet.DataProtection.Sources": { },
             "Microsoft.AspNet.FileProviders.Sources": { },
             "Microsoft.AspNet.Internal.libuv-Darwin": { },
