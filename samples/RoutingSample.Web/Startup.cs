@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Globalization;
+using System.Threading;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Routing;
@@ -15,7 +17,7 @@ namespace RoutingSample.Web
             services.AddRouting();
         }
 
-        public void Configure(IApplicationBuilder builder)
+        public void Configure(IApplicationBuilder app)
         {
             var endpoint1 = new RouteHandler((c) =>
             {
@@ -24,11 +26,29 @@ namespace RoutingSample.Web
 
             var endpoint2 = new RouteHandler((c) => c.Response.WriteAsync("Hello, World!"));
 
-            var routeBuilder = new RouteBuilder()
+            var routeBuilder = new RouteBuilder(app)
             {
                 DefaultHandler = endpoint1,
-                ServiceProvider = builder.ApplicationServices,
             };
+
+            routeBuilder.MapRoute("api/status/{item}", c => c.Response.WriteAsync($"{c.GetRouteValue("item")} is just fine."));
+            routeBuilder.MapRoute("localized/{lang=en-US}", b =>
+            {
+                b.Use(next => async (c) =>
+                {
+                    var culture = new CultureInfo((string)c.GetRouteValue("lang"));
+#if DNX451
+                    Thread.CurrentThread.CurrentCulture = culture;
+                    Thread.CurrentThread.CurrentUICulture = culture;
+#else
+                    CultureInfo.CurrentCulture = culture;
+                    CultureInfo.CurrentUICulture = culture;
+#endif
+                    await next(c);
+                });
+
+                b.Run(c => c.Response.WriteAsync($"What would you do with {1000000m:C}?"));
+            });
 
             routeBuilder.AddPrefixRoute("api/store", endpoint1);
             routeBuilder.AddPrefixRoute("hello/world", endpoint2);
@@ -38,7 +58,7 @@ namespace RoutingSample.Web
 
             routeBuilder.AddPrefixRoute("", endpoint2);
 
-            builder.UseRouter(routeBuilder.Build());
+            app.UseRouter(routeBuilder.Build());
         }
     }
 }

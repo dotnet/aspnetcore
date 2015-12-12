@@ -96,26 +96,28 @@ namespace Microsoft.AspNet.Routing.Tests
             var routeBuilder = CreateRouteBuilder();
 
             // Act & Assert
-            var ex = Assert.Throws<ArgumentException>(
-                                () => routeBuilder.MapRoute("mockName",
-                                                            "{controller}/{action}/{id:int=12?}",
-                                                            defaults: new { id = 13 },
-                                                            constraints: null));
+            var ex = Assert.Throws<ArgumentException>(() =>
+            {
+                routeBuilder.MapRoute(
+                    "mockName",
+                    "{controller}/{action}/{id:int=12?}",
+                    defaults: new { id = 13 },
+                    constraints: null);
+            });
 
             Assert.Equal(message, ex.Message);
         }
 
         private static IRouteBuilder CreateRouteBuilder()
         {
-            var routeBuilder = new RouteBuilder();
+            var services = new ServiceCollection();
+            services.AddSingleton<IInlineConstraintResolver>(_inlineConstraintResolver);
 
-            routeBuilder.DefaultHandler = new Mock<IRouter>().Object;
+            var applicationBuilder = Mock.Of<IApplicationBuilder>();
+            applicationBuilder.ApplicationServices = services.BuildServiceProvider();
 
-            var serviceProviderMock = new Mock<IServiceProvider>();
-            serviceProviderMock.Setup(o => o.GetService(typeof(IInlineConstraintResolver)))
-                               .Returns(_inlineConstraintResolver);
-            routeBuilder.ServiceProvider = serviceProviderMock.Object;
-
+            var routeBuilder = new RouteBuilder(applicationBuilder);
+            routeBuilder.DefaultHandler = Mock.Of<IRouter>();
             return routeBuilder;
         }
 

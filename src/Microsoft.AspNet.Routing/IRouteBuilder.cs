@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.AspNet.Builder;
 
 namespace Microsoft.AspNet.Routing
 {
@@ -12,6 +13,11 @@ namespace Microsoft.AspNet.Routing
     /// </summary>
     public interface IRouteBuilder
     {
+        /// <summary>
+        /// Gets the <see cref="IApplicationBuilder"/>.
+        /// </summary>
+        IApplicationBuilder ApplicationBuilder { get; }
+
         /// <summary>
         /// Gets or sets the default <see cref="IRouter"/> that is used as a handler if an <see cref="IRouter"/>
         /// is added to the list of routes but does not specify its own.

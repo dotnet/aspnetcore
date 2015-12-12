@@ -1,16 +1,15 @@
 {
-    "dependencies": {
-        "Microsoft.AspNet.Server.Kestrel": "1.0.0-*",
-        "Microsoft.AspNet.Server.WebListener": "1.0.0-*",
-        "Microsoft.AspNet.Routing": "1.0.0-*"
-    },
-    "commands": {
-        "web": "Microsoft.AspNet.Hosting server=Microsoft.AspNet.Server.WebListener server.urls=http://localhost:5001",
-        "kestrel": "Microsoft.AspNet.Hosting --server Microsoft.AspNet.Server.Kestrel --server.urls http://localhost:5000"
-    },
-    "frameworks": {
-        "dnx451": { },
-        "dnxcore50": { }
-    },
-    "webroot": "wwwroot"
+  "dependencies": {
+    "Microsoft.AspNet.Server.Kestrel": "1.0.0-*",
+    "Microsoft.AspNet.Server.WebListener": "1.0.0-*",
+    "Microsoft.AspNet.Routing.Extensions": "1.0.0-*"
+  },
+  "commands": {
+    "web": "Microsoft.AspNet.Hosting server=Microsoft.AspNet.Server.WebListener server.urls=http://localhost:5001",
+    "kestrel": "Microsoft.AspNet.Hosting --server Microsoft.AspNet.Server.Kestrel --server.urls http://localhost:5000"
+  },
+  "frameworks": {
+    "dnx451": { },
+    "dnxcore50": { }
+  }
 }

@@ -1,0 +1,19 @@
+﻿{
+  "description": "ASP.NET 5 extension methods for routing requests to application logic and for generating links.",
+  "version": "1.0.0-*",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/aspnet/routing"
+  },
+  "compilationOptions": {
+    "warningsAsErrors": true,
+    "keyFile": "../../tools/Key.snk"
+  },
+  "dependencies": {
+    "Microsoft.AspNet.Routing": "1.0.0-*"
+  },
+  "frameworks": {
+    "net451": { },
+    "dotnet5.4": { }
+  }
+}

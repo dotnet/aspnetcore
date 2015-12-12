@@ -2,9 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using Microsoft.AspNet.Routing;
-using Microsoft.AspNet.Routing.Template;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNet.Builder
@@ -12,7 +10,7 @@ namespace Microsoft.AspNet.Builder
     /// <summary>
     /// Provides extension methods for <see cref="IRouteBuilder"/> to add routes.
     /// </summary>
-    public static class RouteBuilderExtensions
+    public static class MapRouteRouteBuilderExtensions
     {
         /// <summary>
         /// Adds a route to the <see cref="IRouteBuilder"/> with the specified name and template.

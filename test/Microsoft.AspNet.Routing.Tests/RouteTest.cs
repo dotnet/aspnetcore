@@ -9,8 +9,9 @@ using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Routing.Constraints;
 using Microsoft.AspNet.Testing;
-using Microsoft.Extensions.Logging.Testing;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 using Moq;
 using Xunit;
 
@@ -1490,15 +1491,14 @@ namespace Microsoft.AspNet.Routing
 
         private static IRouteBuilder CreateRouteBuilder()
         {
-            var routeBuilder = new RouteBuilder();
+            var services = new ServiceCollection();
+            services.AddSingleton<IInlineConstraintResolver>(_inlineConstraintResolver);
 
+            var applicationBuilder = Mock.Of<IApplicationBuilder>();
+            applicationBuilder.ApplicationServices = services.BuildServiceProvider();
+
+            var routeBuilder = new RouteBuilder(applicationBuilder);
             routeBuilder.DefaultHandler = new RouteHandler(NullHandler);
-
-            var serviceProviderMock = new Mock<IServiceProvider>();
-            serviceProviderMock.Setup(o => o.GetService(typeof(IInlineConstraintResolver)))
-                               .Returns(_inlineConstraintResolver);
-            routeBuilder.ServiceProvider = serviceProviderMock.Object;
-
             return routeBuilder;
         }
 
