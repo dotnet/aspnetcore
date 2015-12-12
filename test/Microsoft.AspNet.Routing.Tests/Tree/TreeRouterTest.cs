@@ -1610,7 +1610,7 @@ namespace Microsoft.AspNet.Routing.Tree
                 It.IsAny<HttpContext>(),
                 It.IsAny<IRouter>(),
                 It.IsAny<string>(),
-                It.IsAny<IDictionary<string, object>>(),
+                It.IsAny<RouteValueDictionary>(),
                 It.IsAny<RouteDirection>()))
             .Returns(true);
 

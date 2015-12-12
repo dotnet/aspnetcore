@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using Microsoft.AspNet.Http;
 
@@ -18,7 +17,7 @@ namespace Microsoft.AspNet.Routing.Constraints
             HttpContext httpContext,
             IRouter route,
             string routeKey,
-            IDictionary<string, object> values,
+            RouteValueDictionary values,
             RouteDirection routeDirection)
         {
             if (httpContext == null)
@@ -51,11 +50,13 @@ namespace Microsoft.AspNet.Routing.Constraints
 
                 double result;
                 var valueString = Convert.ToString(value, CultureInfo.InvariantCulture);
-                return Double.TryParse(valueString,
-                                       NumberStyles.Float | NumberStyles.AllowThousands,
-                                       CultureInfo.InvariantCulture,
-                                       out result);
+                return double.TryParse(
+                    valueString,
+                    NumberStyles.Float | NumberStyles.AllowThousands,
+                    CultureInfo.InvariantCulture,
+                    out result);
             }
+
             return false;
         }
     }

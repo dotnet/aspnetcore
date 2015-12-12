@@ -220,11 +220,12 @@ namespace Microsoft.AspNet.Routing
                 _expectedKey = expectedKey;
             }
 
-            public bool Match(HttpContext httpContext,
-                              IRouter route,
-                              string routeKey,
-                              IDictionary<string, object> values,
-                              RouteDirection routeDirection)
+            public bool Match(
+                HttpContext httpContext,
+                IRouter route,
+                string routeKey,
+                RouteValueDictionary values,
+                RouteDirection routeDirection)
             {
                 if (_expectedKey != null)
                 {
@@ -237,11 +238,12 @@ namespace Microsoft.AspNet.Routing
 
         private class FailConstraint : IRouteConstraint
         {
-            public bool Match(HttpContext httpContext,
-                              IRouter route,
-                              string routeKey,
-                              IDictionary<string, object> values,
-                              RouteDirection routeDirection)
+            public bool Match(
+                HttpContext httpContext,
+                IRouter route,
+                string routeKey,
+                RouteValueDictionary values,
+                RouteDirection routeDirection)
             {
                 return false;
             }

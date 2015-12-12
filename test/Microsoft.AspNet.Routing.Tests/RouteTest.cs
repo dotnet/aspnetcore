@@ -832,11 +832,14 @@ namespace Microsoft.AspNet.Routing
             var context = CreateVirtualPathContext(new { p1 = "hello", p2 = "1234" });
 
             var target = new Mock<IRouteConstraint>();
-            target.Setup(e => e.Match(It.IsAny<HttpContext>(),
-                                      It.IsAny<IRouter>(),
-                                      It.IsAny<string>(),
-                                      It.IsAny<IDictionary<string, object>>(),
-                                      It.IsAny<RouteDirection>()))
+            target
+                .Setup(
+                    e => e.Match(
+                        It.IsAny<HttpContext>(),
+                        It.IsAny<IRouter>(),
+                        It.IsAny<string>(),
+                        It.IsAny<RouteValueDictionary>(),
+                        It.IsAny<RouteDirection>()))
                 .Returns(true)
                 .Verifiable();
 
@@ -1594,7 +1597,7 @@ namespace Microsoft.AspNet.Routing
                 HttpContext httpContext,
                 IRouter route,
                 string routeKey,
-                IDictionary<string, object> values,
+                RouteValueDictionary values,
                 RouteDirection routeDirection)
             {
                 Values = new RouteValueDictionary(values);

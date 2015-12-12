@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.Http;
 
-namespace Microsoft.AspNet.Routing
+namespace Microsoft.AspNet.Routing.Constraints
 {
     /// <summary>
     /// Constrains a route by several child constraints.
@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.Routing
             HttpContext httpContext,
             IRouter route,
             string routeKey,
-            IDictionary<string, object> values,
+            RouteValueDictionary values,
             RouteDirection routeDirection)
         {
             if (httpContext == null)

@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.Routing.Tests
                 HttpContext httpContext,
                 IRouter route,
                 string routeKey,
-                IDictionary<string, object> values,
+                RouteValueDictionary values,
                 RouteDirection routeDirection)
             {
                 throw new NotImplementedException();

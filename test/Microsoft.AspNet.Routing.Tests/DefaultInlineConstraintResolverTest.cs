@@ -343,7 +343,7 @@ namespace Microsoft.AspNet.Routing.Tests
             public bool Match(HttpContext httpContext,
                               IRouter route,
                               string routeKey,
-                              IDictionary<string, object> values,
+                              RouteValueDictionary values,
                               RouteDirection routeDirection)
             {
                 return true;
@@ -361,7 +361,7 @@ namespace Microsoft.AspNet.Routing.Tests
             public bool Match(HttpContext httpContext,
                               IRouter route,
                               string routeKey,
-                              IDictionary<string, object> values,
+                              RouteValueDictionary values,
                               RouteDirection routeDirection)
             {
                 return true;

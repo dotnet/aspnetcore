@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Routing.Tests
             }
 
             var parameterName = "fake";
-            var values = new Dictionary<string, object>() { { parameterName, value } };
+            var values = new RouteValueDictionary() { { parameterName, value } };
             var routeDirection = RouteDirection.IncomingRequest;
             return constraint.Match(context.Object, route, parameterName, values, routeDirection);
         }

@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.Routing
     {
         public static bool Match(
             IDictionary<string, IRouteConstraint> constraints,
-            IDictionary<string, object> routeValues,
+            RouteValueDictionary routeValues,
             HttpContext httpContext,
             IRouter route,
             RouteDirection routeDirection,

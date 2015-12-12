@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Linq.Expressions;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Routing.Constraints;
 using Moq;
 using Xunit;
 
@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.Routing.Tests
                 It.IsAny<HttpContext>(),
                 It.IsAny<IRouter>(),
                 It.IsAny<string>(),
-                It.IsAny<Dictionary<string, object>>(),
+                It.IsAny<RouteValueDictionary>(),
                 It.IsAny<RouteDirection>());
 
         private static Mock<IRouteConstraint> MockConstraintWithResult(bool result)

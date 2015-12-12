@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using Microsoft.AspNet.Http;
 
@@ -63,19 +62,19 @@ namespace Microsoft.AspNet.Routing.Constraints
         /// <summary>
         /// Gets the minimum length allowed for the route parameter.
         /// </summary>
-        public int MinLength { get; private set; }
+        public int MinLength { get; }
 
         /// <summary>
         /// Gets the maximum length allowed for the route parameter.
         /// </summary>
-        public int MaxLength { get; private set; }
+        public int MaxLength { get; }
 
         /// <inheritdoc />
         public bool Match(
             HttpContext httpContext,
             IRouter route,
             string routeKey,
-            IDictionary<string, object> values,
+            RouteValueDictionary values,
             RouteDirection routeDirection)
         {
             if (httpContext == null)
