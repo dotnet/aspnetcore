@@ -51,6 +51,33 @@ namespace Microsoft.AspNet.Localization
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether to set a request culture to an ancestor culture in the case the
+        /// culture determined by the configured <see cref="IRequestCultureProvider"/>s is not in the
+        /// <see cref="SupportedCultures"/> list but an ancestor culture is.
+        /// Defaults to <c>true</c>;
+        /// </summary>
+        /// <example>
+        /// If this property is <c>true</c> and the application is configured to support the culture "fr", but not the
+        /// culture "fr-FR", and a configured <see cref="IRequestCultureProvider"/> determines a request's culture is
+        /// "fr-FR", then the request's culture will be set to the culture "fr", as it is an ancestor of "fr-FR".
+        /// </example>
+        public bool FallbackToAncestorCulture { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to set a request UI culture to an ancestor culture in the case the
+        /// UI culture determined by the configured <see cref="IRequestCultureProvider"/>s is not in the
+        /// <see cref="SupportedUICultures"/> list but an ancestor culture is.
+        /// Defaults to <c>true</c>;
+        /// </summary>
+        /// <example>
+        /// If this property is <c>true</c> and the application is configured to support the UI culture "fr", but not
+        /// the UI culture "fr-FR", and a configured <see cref="IRequestCultureProvider"/> determines a request's UI
+        /// culture is "fr-FR", then the request's UI culture will be set to the culture "fr", as it is an ancestor of
+        /// "fr-FR".
+        /// </example>
+        public bool FallbackToAncestorUICulture { get; set; } = true;
+
+        /// <summary>
         /// The cultures supported by the application. The <see cref="RequestLocalizationMiddleware"/> will only set
         /// the current request culture to an entry in this list.
         /// Defaults to <see cref="CultureInfo.CurrentCulture"/>.

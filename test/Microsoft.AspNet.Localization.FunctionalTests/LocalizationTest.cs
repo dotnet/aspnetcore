@@ -30,6 +30,46 @@ namespace Microsoft.AspNet.Localization.FunctionalTests
                 "Bonjour from StartupResourcesInFolder Bonjour from Test in resources folder Bonjour from Customer in resources folder");
         }
 
+        [ConditionalTheory]
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
+        [InlineData(RuntimeFlavor.Clr, "http://localhost:5070/", RuntimeArchitecture.x86)]
+        [InlineData(RuntimeFlavor.CoreClr, "http://localhost:5071/", RuntimeArchitecture.x86)]
+        public Task Localization_ResourcesInFolder_ReturnLocalizedValue_WithCultureFallback_Windows(
+            RuntimeFlavor runtimeFlavor,
+            string applicationBaseUrl,
+            RuntimeArchitecture runtimeArchitechture)
+        {
+            var testRunner = new TestRunner();
+            return testRunner.RunTestAndVerifyResponse(
+                runtimeFlavor,
+                runtimeArchitechture,
+                applicationBaseUrl,
+                "ResourcesInFolder",
+                "fr-FR-test",
+                "Bonjour from StartupResourcesInFolder Bonjour from Test in resources folder Bonjour from Customer in resources folder");
+        }
+
+        [ConditionalTheory]
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
+        [InlineData(RuntimeFlavor.Clr, "http://localhost:5070/", RuntimeArchitecture.x86)]
+        [InlineData(RuntimeFlavor.CoreClr, "http://localhost:5071/", RuntimeArchitecture.x86)]
+        public Task Localization_ResourcesInFolder_ReturnNonLocalizedValue_CultureHierarchyTooDeep_Windows(
+            RuntimeFlavor runtimeFlavor,
+            string applicationBaseUrl,
+            RuntimeArchitecture runtimeArchitechture)
+        {
+            var testRunner = new TestRunner();
+            return testRunner.RunTestAndVerifyResponse(
+                runtimeFlavor,
+                runtimeArchitechture,
+                applicationBaseUrl,
+                "ResourcesInFolder",
+                "fr-FR-test-again-too-deep-to-work",
+                "Hello Hello Hello");
+        }
+
         [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Windows)]
         [FrameworkSkipCondition(RuntimeFrameworks.CoreCLR)]
@@ -47,6 +87,21 @@ namespace Microsoft.AspNet.Localization.FunctionalTests
 
         [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Windows)]
+        [FrameworkSkipCondition(RuntimeFrameworks.CoreCLR)]
+        public Task Localization_ResourcesInFolder_ReturnLocalizedValue_WithCultureFallback_Mono()
+        {
+            var testRunner = new TestRunner();
+            return testRunner.RunTestAndVerifyResponse(
+                RuntimeFlavor.Mono,
+                RuntimeArchitecture.x86,
+                "http://localhost:5072",
+                "ResourcesInFolder",
+                "fr-FR-test",
+                "Bonjour from StartupResourcesInFolder Bonjour from Test in resources folder Bonjour from Customer in resources folder");
+        }
+
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Windows)]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public Task Localization_ResourcesInFolder_ReturnLocalizedValue_CoreCLR_NonWindows()
         {
@@ -57,6 +112,21 @@ namespace Microsoft.AspNet.Localization.FunctionalTests
                 "http://localhost:5073/",
                 "ResourcesInFolder",
                 "fr-FR",
+                "Bonjour from StartupResourcesInFolder Bonjour from Test in resources folder Bonjour from Customer in resources folder");
+        }
+
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Windows)]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        public Task Localization_ResourcesInFolder_ReturnLocalizedValue_WithCultureFallback_CoreCLR_NonWindows()
+        {
+            var testRunner = new TestRunner();
+            return testRunner.RunTestAndVerifyResponse(
+                RuntimeFlavor.CoreClr,
+                RuntimeArchitecture.x64,
+                "http://localhost:5073/",
+                "ResourcesInFolder",
+                "fr-FR-test",
                 "Bonjour from StartupResourcesInFolder Bonjour from Test in resources folder Bonjour from Customer in resources folder");
         }
 

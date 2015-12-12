@@ -18,6 +18,8 @@ namespace Microsoft.AspNet.Localization
     /// </summary>
     public class RequestLocalizationMiddleware
     {
+        private static readonly int MaxCultureFallbackDepth = 5;
+
         private readonly RequestDelegate _next;
         private readonly RequestLocalizationOptions _options;
 
@@ -27,9 +29,7 @@ namespace Microsoft.AspNet.Localization
         /// <param name="next">The <see cref="RequestDelegate"/> representing the next middleware in the pipeline.</param>
         /// <param name="options">The <see cref="RequestLocalizationOptions"/> representing the options for the
         /// <see cref="RequestLocalizationMiddleware"/>.</param>
-        public RequestLocalizationMiddleware(
-            RequestDelegate next,
-            RequestLocalizationOptions options)
+        public RequestLocalizationMiddleware(RequestDelegate next, RequestLocalizationOptions options)
         {
             if (next == null)
             {
@@ -75,22 +75,32 @@ namespace Microsoft.AspNet.Localization
                         CultureInfo uiCultureInfo = null;
                         if (_options.SupportedCultures != null)
                         {
-                            cultureInfo = GetCultureInfo(cultures, _options.SupportedCultures);
+                            cultureInfo = GetCultureInfo(
+                                cultures,
+                                _options.SupportedCultures,
+                                _options.FallbackToAncestorCulture,
+                                currentDepth: 0);
                         }
 
                         if (_options.SupportedUICultures != null)
                         {
-                            uiCultureInfo = GetCultureInfo(uiCultures, _options.SupportedUICultures);
+                            uiCultureInfo = GetCultureInfo(
+                                uiCultures,
+                                _options.SupportedUICultures,
+                                _options.FallbackToAncestorUICulture,
+                                currentDepth: 0);
                         }
 
                         if (cultureInfo == null && uiCultureInfo == null)
                         {
                             continue;
                         }
+
                         if (cultureInfo == null && uiCultureInfo != null)
                         {
                             cultureInfo = _options.DefaultRequestCulture.Culture;
                         }
+
                         if (cultureInfo != null && uiCultureInfo == null)
                         {
                             uiCultureInfo = _options.DefaultRequestCulture.UICulture;
@@ -126,19 +136,56 @@ namespace Microsoft.AspNet.Localization
 #endif
         }
 
-        private CultureInfo GetCultureInfo(IList<string> cultures, IList<CultureInfo> supportedCultures)
+        private static CultureInfo GetCultureInfo(
+            IList<string> cultureNames,
+            IList<CultureInfo> supportedCultures,
+            bool fallbackToAncestorCulture,
+            int currentDepth)
         {
-            foreach (var culture in cultures)
+            foreach (var cultureName in cultureNames)
             {
                 // Allow empty string values as they map to InvariantCulture, whereas null culture values will throw in
                 // the CultureInfo ctor
-                if (culture != null)
+                if (cultureName != null)
                 {
-                    var cultureInfo = CultureInfoCache.GetCultureInfo(culture, supportedCultures);
+                    var cultureInfo = CultureInfoCache.GetCultureInfo(cultureName, supportedCultures);
                     if (cultureInfo != null)
                     {
                         return cultureInfo;
                     }
+                }
+            }
+
+            if (fallbackToAncestorCulture & currentDepth < MaxCultureFallbackDepth)
+            {
+                // Walk backwards through the culture list and remove any root cultures (those with no parent)
+                for (var i = cultureNames.Count - 1; i >= 0; i--)
+                {
+                    var cultureName = cultureNames[i];
+                    if (cultureName != null)
+                    {
+                        var lastIndexOfHyphen = cultureName.LastIndexOf('-');
+                        if (lastIndexOfHyphen > 0)
+                        {
+                            // Trim the trailing section from the culture name, e.g. "fr-FR" becomes "fr"
+                            cultureNames[i] = cultureName.Substring(0, lastIndexOfHyphen);
+                        }
+                        else
+                        {
+                            // The culture had no sections left to trim so remove it from the list of candidates
+                            cultureNames.RemoveAt(i);
+                        }
+                    }
+                    else
+                    {
+                        // Culture name was null so just remove it
+                        cultureNames.RemoveAt(i);
+                    }
+                }
+
+                if (cultureNames.Count > 0)
+                {
+                    return GetCultureInfo(cultureNames, supportedCultures, fallbackToAncestorCulture, currentDepth + 1);
                 }
             }
 
