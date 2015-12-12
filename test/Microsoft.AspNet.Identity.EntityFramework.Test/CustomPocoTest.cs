@@ -4,17 +4,20 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Identity.Test;
 using Microsoft.AspNet.Testing.xunit;
 using Microsoft.Data.Entity;
 using Xunit;
 
 namespace Microsoft.AspNet.Identity.EntityFramework.Test
 {
-    [TestCaseOrderer("Microsoft.AspNet.Identity.Test.PriorityOrderer", "Microsoft.AspNet.Identity.EntityFramework.Test")]
-    public class CustomPocoTest
+    public class CustomPocoTest : IClassFixture<ScratchDatabaseFixture>
     {
-        private readonly string ConnectionString = @"Server=(localdb)\mssqllocaldb;Database=CustomUserContextTest" + DateTime.Now.Month + "-" + DateTime.Now.Day + "-" + DateTime.Now.Year + ";Trusted_Connection=True;Connection Timeout=30";
+        private readonly ScratchDatabaseFixture _fixture;
+
+        public CustomPocoTest(ScratchDatabaseFixture fixture)
+        {
+            _fixture = fixture;
+        }
 
         public class User<TKey> where TKey : IEquatable<TKey>
         {
@@ -30,7 +33,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
 
         public CustomDbContext<TKey> GetContext<TKey>() where TKey : IEquatable<TKey>
         {
-            return DbUtil.Create<CustomDbContext<TKey>>(ConnectionString);
+            return DbUtil.Create<CustomDbContext<TKey>>(_fixture.ConnectionString);
         }
 
         public CustomDbContext<TKey> CreateContext<TKey>(bool delete = false) where TKey : IEquatable<TKey>
@@ -44,30 +47,10 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
             return db;
         }
 
-        [TestPriority(-1000)]
         [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)][OSSkipCondition(OperatingSystems.Linux)][OSSkipCondition(OperatingSystems.MacOSX)]
-        public void DropDatabaseStart()
-        {
-            DropDb();
-        }
-
-        [TestPriority(10000)]
-        [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)][OSSkipCondition(OperatingSystems.Linux)][OSSkipCondition(OperatingSystems.MacOSX)]
-        public void DropDatabaseDone()
-        {
-            DropDb();
-        }
-
-        public void DropDb()
-        {
-            var db = GetContext<string>();
-            db.Database.EnsureDeleted();
-        }
-
-        [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)][OSSkipCondition(OperatingSystems.Linux)][OSSkipCondition(OperatingSystems.MacOSX)]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task CanUpdateNameGuid()
         {
             using (var db = CreateContext<Guid>(true))
@@ -85,7 +68,9 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
         }
 
         [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)][OSSkipCondition(OperatingSystems.Linux)][OSSkipCondition(OperatingSystems.MacOSX)]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task CanUpdateNameString()
         {
             using (var db = CreateContext<string>(true))
@@ -103,7 +88,9 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
         }
 
         [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)][OSSkipCondition(OperatingSystems.Linux)][OSSkipCondition(OperatingSystems.MacOSX)]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task CanCreateUserInt()
         {
             using (var db = CreateContext<int>(true))
@@ -119,7 +106,9 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
         }
 
         [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)][OSSkipCondition(OperatingSystems.Linux)][OSSkipCondition(OperatingSystems.MacOSX)]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task CanCreateUserIntViaSet()
         {
             using (var db = CreateContext<int>(true))
@@ -136,13 +125,15 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
         }
 
         [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)][OSSkipCondition(OperatingSystems.Linux)][OSSkipCondition(OperatingSystems.MacOSX)]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task CanUpdateNameInt()
         {
             using (var db = CreateContext<int>(true))
             {
                 var oldName = Guid.NewGuid().ToString();
-                var user = new User<int> { UserName = oldName};
+                var user = new User<int> { UserName = oldName };
                 db.Users.Add(user);
                 await db.SaveChangesAsync();
                 var newName = Guid.NewGuid().ToString();
@@ -154,13 +145,15 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
         }
 
         [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)][OSSkipCondition(OperatingSystems.Linux)][OSSkipCondition(OperatingSystems.MacOSX)]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task CanUpdateNameIntWithSet()
         {
             using (var db = CreateContext<int>(true))
             {
                 var oldName = Guid.NewGuid().ToString();
-                var user = new User<int> { UserName = oldName};
+                var user = new User<int> { UserName = oldName };
                 db.Set<User<int>>().Add(user);
                 await db.SaveChangesAsync();
                 var newName = Guid.NewGuid().ToString();

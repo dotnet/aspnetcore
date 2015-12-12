@@ -7,56 +7,39 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder.Internal;
 using Microsoft.AspNet.Identity.Test;
+using Microsoft.AspNet.Testing.xunit;
 using Microsoft.Data.Entity;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
-using Microsoft.AspNet.Testing.xunit;
 
 namespace Microsoft.AspNet.Identity.EntityFramework.Test
 {
-    [TestCaseOrderer("Microsoft.AspNet.Identity.Test.PriorityOrderer", "Microsoft.AspNet.Identity.EntityFramework.Test")]
-    public class DefaultPocoTest
+    public class DefaultPocoTest : IClassFixture<ScratchDatabaseFixture>
     {
-        private readonly string ConnectionString = @"Server=(localdb)\mssqllocaldb;Database=DefaultSchemaTest" + DateTime.Now.Month + "-" + DateTime.Now.Day + "-" + DateTime.Now.Year + ";Trusted_Connection=True;MultipleActiveResultSets=true;Connection Timeout=30";
-        public IdentityDbContext CreateContext(bool ensureCreated = false)
+        private readonly ApplicationBuilder _builder;
+        private const string DatabaseName = nameof(DefaultPocoTest);
+
+        public DefaultPocoTest(ScratchDatabaseFixture fixture)
         {
-            var db = DbUtil.Create(ConnectionString);
-            if (ensureCreated)
+            var services = new ServiceCollection();
+
+            services
+                .AddLogging()
+                .AddEntityFramework()
+                .AddSqlServer()
+                .AddDbContext<IdentityDbContext>(o => o.UseSqlServer(fixture.ConnectionString))
+                .ServiceCollection()
+                .AddIdentity<IdentityUser, IdentityRole>()
+                .AddEntityFrameworkStores<IdentityDbContext>();
+
+            var provider = services.BuildServiceProvider();
+            _builder = new ApplicationBuilder(provider);
+
+            using(var scoped = provider.GetRequiredService<IServiceScopeFactory>().CreateScope())
+            using (var db = scoped.ServiceProvider.GetRequiredService<IdentityDbContext>())
             {
                 db.Database.EnsureCreated();
             }
-            return db;
-        }
-
-        public void DropDb()
-        {
-            var db = CreateContext();
-            db.Database.EnsureDeleted();
-        }
-
-        [TestPriority(-1000)]
-        [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
-        public void DropDatabaseStart()
-        {
-            DropDb();
-        }
-
-        private IServiceProvider ConfigureServices()
-        {
-            var services = new ServiceCollection();
-            DbUtil.ConfigureDbServices<IdentityDbContext>(ConnectionString, services);
-            services.AddLogging();
-            services.AddIdentity<IdentityUser, IdentityRole>().AddEntityFrameworkStores<IdentityDbContext>();
-            return services.BuildServiceProvider();
-        }
-
-        private ApplicationBuilder CreateBuilder()
-        {
-            var builder = new ApplicationBuilder(ConfigureServices());
-            return builder;
         }
 
         [ConditionalFact]
@@ -65,11 +48,8 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
         [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task EnsureStartupUsageWorks()
         {
-            var context = CreateContext(true);
-            var builder = CreateBuilder();
-
-            var userStore = builder.ApplicationServices.GetRequiredService<IUserStore<IdentityUser>>();
-            var userManager = builder.ApplicationServices.GetRequiredService<UserManager<IdentityUser>>();
+            var userStore = _builder.ApplicationServices.GetRequiredService<IUserStore<IdentityUser>>();
+            var userManager = _builder.ApplicationServices.GetRequiredService<UserManager<IdentityUser>>();
 
             Assert.NotNull(userStore);
             Assert.NotNull(userManager);
@@ -88,11 +68,8 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
         public async Task CanIncludeUserClaimsTest()
         {
             // Arrange
-            CreateContext(true);
-            var builder = CreateBuilder();
-
-            var userManager = builder.ApplicationServices.GetRequiredService<UserManager<IdentityUser>>();
-            var dbContext = builder.ApplicationServices.GetRequiredService<IdentityDbContext>();
+            var userManager = _builder.ApplicationServices.GetRequiredService<UserManager<IdentityUser>>();
+            var dbContext = _builder.ApplicationServices.GetRequiredService<IdentityDbContext>();
 
             var username = "user" + new Random().Next();
             var user = new IdentityUser() { UserName = username };
@@ -118,11 +95,8 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
         public async Task CanIncludeUserLoginsTest()
         {
             // Arrange
-            CreateContext(true);
-            var builder = CreateBuilder();
-
-            var userManager = builder.ApplicationServices.GetRequiredService<UserManager<IdentityUser>>();
-            var dbContext = builder.ApplicationServices.GetRequiredService<IdentityDbContext>();
+            var userManager = _builder.ApplicationServices.GetRequiredService<UserManager<IdentityUser>>();
+            var dbContext = _builder.ApplicationServices.GetRequiredService<IdentityDbContext>();
 
             var username = "user" + new Random().Next();
             var user = new IdentityUser() { UserName = username };
@@ -148,12 +122,9 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
         public async Task CanIncludeUserRolesTest()
         {
             // Arrange
-            CreateContext(true);
-            var builder = CreateBuilder();
-
-            var userManager = builder.ApplicationServices.GetRequiredService<UserManager<IdentityUser>>();
-            var roleManager = builder.ApplicationServices.GetRequiredService<RoleManager<IdentityRole>>();
-            var dbContext = builder.ApplicationServices.GetRequiredService<IdentityDbContext>();
+            var userManager = _builder.ApplicationServices.GetRequiredService<UserManager<IdentityUser>>();
+            var roleManager = _builder.ApplicationServices.GetRequiredService<RoleManager<IdentityRole>>();
+            var dbContext = _builder.ApplicationServices.GetRequiredService<IdentityDbContext>();
 
             const string roleName = "Admin";
             for (var i = 0; i < 10; i++)
@@ -192,11 +163,8 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
         public async Task CanIncludeRoleClaimsTest()
         {
             // Arrange
-            CreateContext(true);
-            var builder = CreateBuilder();
-
-            var roleManager = builder.ApplicationServices.GetRequiredService<RoleManager<IdentityRole>>();
-            var dbContext = builder.ApplicationServices.GetRequiredService<IdentityDbContext>();
+            var roleManager = _builder.ApplicationServices.GetRequiredService<RoleManager<IdentityRole>>();
+            var dbContext = _builder.ApplicationServices.GetRequiredService<IdentityDbContext>();
 
             var role = new IdentityRole("Admin");
 
@@ -213,16 +181,6 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
             Assert.NotNull(role);
             Assert.NotNull(role.Claims);
             Assert.Equal(10, role.Claims.Count());
-        }
-
-        [TestPriority(10000)]
-        [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
-        public void DropDatabaseDone()
-        {
-            DropDb();
         }
     }
 }

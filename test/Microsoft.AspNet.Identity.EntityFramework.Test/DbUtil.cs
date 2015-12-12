@@ -9,7 +9,6 @@ using Xunit;
 
 namespace Microsoft.AspNet.Identity.EntityFramework.Test
 {
-    [TestCaseOrderer("Microsoft.AspNet.Identity.Test.PriorityOrderer", "Microsoft.AspNet.Identity.EntityFramework.Test")]
     public static class DbUtil
     {
         public static IServiceCollection ConfigureDbServices(string connectionString, IServiceCollection services = null)
@@ -28,16 +27,10 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
             return services;
         }
 
-        public static IdentityDbContext Create(string connectionString)
-        {
-            return Create<IdentityDbContext>(connectionString);
-        }
-
         public static TContext Create<TContext>(string connectionString) where TContext : DbContext, new()
         {
             var serviceProvider = ConfigureDbServices<TContext>(connectionString).BuildServiceProvider();
             return serviceProvider.GetRequiredService<TContext>();
         }
-
     }
 }

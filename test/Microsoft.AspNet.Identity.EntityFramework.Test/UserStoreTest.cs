@@ -6,60 +6,33 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Identity.Test;
-using Microsoft.AspNet.Testing;
 using Microsoft.AspNet.Testing.xunit;
+using Microsoft.AspNet.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.AspNet.Identity.EntityFramework.Test
 {
-    [TestCaseOrderer("Microsoft.AspNet.Identity.Test.PriorityOrderer", "Microsoft.AspNet.Identity.EntityFramework.Test")]
-    public class UserStoreTest : UserManagerTestBase<IdentityUser, IdentityRole>
+    public class UserStoreTest : UserManagerTestBase<IdentityUser, IdentityRole>, IClassFixture<ScratchDatabaseFixture>
     {
-        public class ApplicationDbContext : IdentityDbContext<ApplicationUser> { }
+        private readonly ScratchDatabaseFixture _fixture;
 
-        private readonly string ConnectionString = @"Server=(localdb)\mssqllocaldb;Database=SqlUserStoreTest" + DateTime.Now.Month + "-" + DateTime.Now.Day + "-" + DateTime.Now.Year + ";Trusted_Connection=True;Connection Timeout=30";
+        public UserStoreTest(ScratchDatabaseFixture fixture)
+        {
+            _fixture = fixture;
+        }
 
         protected override bool ShouldSkipDbTests()
-        {
-            return TestPlatformHelper.IsMono || !TestPlatformHelper.IsWindows;
-        }
+            => TestPlatformHelper.IsMono || !TestPlatformHelper.IsWindows;
 
-        [TestPriority(-1000)]
-        [Fact]
-        public void DropDatabaseStart()
-        {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
-            DropDb();
-        }
+        public class ApplicationDbContext : IdentityDbContext<ApplicationUser> { }
 
-        [TestPriority(10000)]
-        [Fact]
-        public void DropDatabaseDone()
-        {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
-            DropDb();
-        }
-
-        public void DropDb()
-        {
-            var db = DbUtil.Create<ApplicationDbContext>(ConnectionString);
-            db.Database.EnsureDeleted();
-        }
-
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
         public void CanCreateUserUsingEF()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             using (var db = CreateContext())
             {
                 var guid = Guid.NewGuid().ToString();
@@ -72,7 +45,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
 
         public IdentityDbContext CreateContext(bool delete = false)
         {
-            var db = DbUtil.Create<IdentityDbContext>(ConnectionString);
+            var db = DbUtil.Create<IdentityDbContext>(_fixture.ConnectionString);
             if (delete)
             {
                 db.Database.EnsureDeleted();
@@ -93,7 +66,7 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
 
         public ApplicationDbContext CreateAppContext()
         {
-            var db = DbUtil.Create<ApplicationDbContext>(ConnectionString);
+            var db = DbUtil.Create<ApplicationDbContext>(_fixture.ConnectionString);
             db.Database.EnsureCreated();
             return db;
         }
@@ -207,13 +180,12 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
             await Assert.ThrowsAsync<ArgumentException>("roleName", async () => await store.IsInRoleAsync(new IdentityUser("fake"), ""));
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task CanCreateUsingManager()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateManager();
             var guid = Guid.NewGuid().ToString();
             var user = new IdentityUser { UserName = "New" + guid };
@@ -221,13 +193,12 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
             IdentityResultAssert.IsSuccess(await manager.DeleteAsync(user));
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task TwoUsersSamePasswordDifferentHash()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateManager();
             var userA = new IdentityUser(Guid.NewGuid().ToString());
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(userA, "password"));
@@ -237,13 +208,12 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
             Assert.NotEqual(userA.PasswordHash, userB.PasswordHash);
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task AddUserToUnknownRoleFails()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateManager();
             var u = CreateTestUser();
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(u));
@@ -251,13 +221,12 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
                 async () => await manager.AddToRoleAsync(u, "bogus"));
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task ConcurrentUpdatesWillFail()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var user = CreateTestUser();
             using (var db = CreateContext())
             {
@@ -281,13 +250,12 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
             }
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task ConcurrentUpdatesWillFailWithDetachedUser()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var user = CreateTestUser();
             using (var db = CreateContext())
             {
@@ -309,13 +277,12 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
             }
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task DeleteAModifiedUserWillFail()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var user = CreateTestUser();
             using (var db = CreateContext())
             {
@@ -338,13 +305,12 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
             }
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task ConcurrentRoleUpdatesWillFail()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var role = new IdentityRole(Guid.NewGuid().ToString());
             using (var db = CreateContext())
             {
@@ -368,13 +334,12 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
             }
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task ConcurrentRoleUpdatesWillFailWithDetachedRole()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var role = new IdentityRole(Guid.NewGuid().ToString());
             using (var db = CreateContext())
             {
@@ -397,13 +362,12 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
             }
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task DeleteAModifiedRoleWillFail()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var role = new IdentityRole(Guid.NewGuid().ToString());
             using (var db = CreateContext())
             {

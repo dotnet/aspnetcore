@@ -11,18 +11,22 @@ using Microsoft.AspNet.Identity.Test;
 using Microsoft.AspNet.Testing;
 using Microsoft.AspNet.Testing.xunit;
 using Microsoft.Data.Entity;
-using Microsoft.Data.Entity.Storage;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.AspNet.Identity.EntityFramework.Test
 {
-    public abstract class SqlStoreTestBase<TUser, TRole, TKey> : UserManagerTestBase<TUser, TRole, TKey>
+    public abstract class SqlStoreTestBase<TUser, TRole, TKey> : UserManagerTestBase<TUser, TRole, TKey>, IClassFixture<ScratchDatabaseFixture>
         where TUser : IdentityUser<TKey>, new()
         where TRole : IdentityRole<TKey>, new()
         where TKey : IEquatable<TKey>
     {
-        public abstract string ConnectionString { get; }
+        private readonly ScratchDatabaseFixture _fixture;
+
+        protected SqlStoreTestBase(ScratchDatabaseFixture fixture)
+        {
+            _fixture = fixture;
+        }
 
         protected override bool ShouldSkipDbTests()
         {
@@ -58,40 +62,9 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
 
         protected override Expression<Func<TUser, bool>> UserNameStartsWithPredicate(string userName) => u => u.UserName.StartsWith(userName);
 
-
-        [TestPriority(-1000)]
-        [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
-        public void DropDatabaseStart()
+        public TestDbContext CreateContext()
         {
-            DropDb();
-        }
-
-        [TestPriority(10000)]
-        [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
-        public void DropDatabaseDone()
-        {
-            DropDb();
-        }
-
-        public void DropDb()
-        {
-            var db = DbUtil.Create<TestDbContext>(ConnectionString);
-            db.Database.EnsureDeleted();
-        }
-
-        public TestDbContext CreateContext(bool delete = false)
-        {
-            var db = DbUtil.Create<TestDbContext>(ConnectionString);
-            if (delete)
-            {
-                db.Database.EnsureDeleted();
-            }
+            var db = DbUtil.Create<TestDbContext>(_fixture.ConnectionString);
             db.Database.EnsureCreated();
             return db;
         }
@@ -114,11 +87,6 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
         protected override void SetUserPasswordHash(TUser user, string hashedPassword)
         {
             user.PasswordHash = hashedPassword;
-        }
-
-        public void EnsureDatabase()
-        {
-            CreateContext();
         }
 
         [ConditionalFact]

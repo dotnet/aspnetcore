@@ -25,17 +25,11 @@ namespace Microsoft.AspNet.Identity.EntityFramework.Test
         }
     }
 
-    [TestCaseOrderer("Microsoft.AspNet.Identity.Test.PriorityOrderer", "Microsoft.AspNet.Identity.EntityFramework.Test")]
     public class UserStoreGuidTest : SqlStoreTestBase<GuidUser, GuidRole, Guid>
     {
-        private readonly string _connectionString = @"Server=(localdb)\mssqllocaldb;Database=SqlUserStoreGuidTest" + DateTime.Now.Month + "-" + DateTime.Now.Day + "-" + DateTime.Now.Year + ";Trusted_Connection=True;Connection Timeout=30";
-
-        public override string ConnectionString
+        public UserStoreGuidTest(ScratchDatabaseFixture fixture)
+            : base(fixture)
         {
-            get
-            {
-                return _connectionString;
-            }
         }
 
         public class ApplicationUserStore : UserStore<GuidUser, GuidRole, TestDbContext, Guid>
