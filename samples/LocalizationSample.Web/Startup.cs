@@ -23,18 +23,19 @@ namespace LocalizationSample.Web
         {
             var options = new RequestLocalizationOptions
             {
+                DefaultRequestCulture = new RequestCulture("en-US"),
                 SupportedCultures = new List<CultureInfo>
                 {
                     new CultureInfo("fr"),
-                    new CultureInfo("en-GB")
+                    new CultureInfo("en-GB"),
                 },
                 SupportedUICultures = new List<CultureInfo>
                 {
                     new CultureInfo("fr"),
-                    new CultureInfo("en-GB")
-                }
+                    new CultureInfo("en-GB"),
+                },
             };
-            app.UseRequestLocalization(options, new RequestCulture("en-US"));
+            app.UseRequestLocalization(options);
 
             app.UseMvcWithDefaultRoute();
         }

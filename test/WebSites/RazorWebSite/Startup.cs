@@ -44,20 +44,21 @@ namespace RazorWebSite
         {
             var options = new RequestLocalizationOptions
             {
+                DefaultRequestCulture = new RequestCulture("en-GB", "en-US"),
                 SupportedCultures = new List<CultureInfo>
                 {
                     new CultureInfo("fr"),
                     new CultureInfo("en-GB"),
-                    new CultureInfo("en-US")
+                    new CultureInfo("en-US"),
                 },
                 SupportedUICultures = new List<CultureInfo>
                 {
                     new CultureInfo("fr"),
                     new CultureInfo("en-GB"),
-                    new CultureInfo("en-US")
-                }
+                    new CultureInfo("en-US"),
+                },
             };
-            app.UseRequestLocalization(options, new RequestCulture("en-GB", "en-US"));
+            app.UseRequestLocalization(options);
 
             app.UseMvcWithDefaultRoute();
         }
