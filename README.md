@@ -12,7 +12,7 @@ In order to be able to get new builds of the DNX, and switch between them, you n
 
 ## Getting Started on Windows
 
-The easiest way to get started on Windows is to grab the latest preview of Visual Studio 2015, which can be found [here](http://go.microsoft.com/fwlink/?LinkId=521794).
+The easiest way to get started on Windows is to grab Visual Studio 2015 Community, which can be found [here](https://www.visualstudio.com/en-us/products/visual-studio-community-vs.aspx).
 
 Visual Studio will install DNVM for you, so if you open a developer command prompt and type `dnvm` you should get some help text.
 
