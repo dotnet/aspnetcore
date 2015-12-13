@@ -29,11 +29,6 @@ namespace Microsoft.AspNet.Server.Testing
                 throw new ArgumentNullException(nameof(logger));
             }
 
-            if (deploymentParameters.RuntimeFlavor == RuntimeFlavor.Mono)
-            {
-                return new MonoDeployer(deploymentParameters, logger);
-            }
-
             switch (deploymentParameters.ServerType)
             {
                 case ServerType.IISExpress:

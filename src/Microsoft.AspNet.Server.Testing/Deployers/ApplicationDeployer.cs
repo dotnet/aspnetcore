@@ -103,27 +103,26 @@ namespace Microsoft.AspNet.Server.Testing
             string currentRuntimeBinPath = PlatformServices.Default.Runtime.RuntimePath;
             Logger.LogInformation($"Current runtime path is : {currentRuntimeBinPath}");
 
-            var targetRuntimeName = new StringBuilder()
+            string targetRuntimeName;
+            if (DeploymentParameters.RuntimeFlavor == RuntimeFlavor.Mono)
+            {
+                targetRuntimeName = "dnx-mono";
+            }
+            else
+            {
+                targetRuntimeName = new StringBuilder()
                     .Append("dnx")
                     .Append((DeploymentParameters.RuntimeFlavor == RuntimeFlavor.CoreClr) ? "-coreclr" : "-clr")
                     .Append($"-{OSPrefix}")
                     .Append((DeploymentParameters.RuntimeArchitecture == RuntimeArchitecture.x86) ? "-x86" : "-x64")
                     .ToString();
-
-            string targetRuntimeBinPath;
-            // Ex: When current runtime is Mono and the tests are being run for CoreClr
-            if (currentRuntimeBinPath.Contains("dnx-mono"))
-            {
-                targetRuntimeBinPath = currentRuntimeBinPath.Replace("dnx-mono", targetRuntimeName);
             }
-            else
-            {
-                targetRuntimeBinPath = Regex.Replace(
+
+            var targetRuntimeBinPath = Regex.Replace(
                     currentRuntimeBinPath,
-                    "dnx-(clr|coreclr)-(win|linux|darwin)-(x86|x64)",
+                    "dnx-(mono|((clr|coreclr)-(win|linux|darwin)-(x86|x64)))",
                     targetRuntimeName,
                     RegexOptions.IgnoreCase);
-            }
 
             var targetRuntimeBinDir = new DirectoryInfo(targetRuntimeBinPath);
             if (targetRuntimeBinDir == null || !targetRuntimeBinDir.Exists)
