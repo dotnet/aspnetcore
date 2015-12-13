@@ -41,10 +41,10 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         private static readonly byte[] _bytesStatus410 = Encoding.ASCII.GetBytes("410 Gone");
         private static readonly byte[] _bytesStatus411 = Encoding.ASCII.GetBytes("411 Length Required");
         private static readonly byte[] _bytesStatus412 = Encoding.ASCII.GetBytes("412 Precondition Failed");
-        private static readonly byte[] _bytesStatus413 = Encoding.ASCII.GetBytes("413 Request Entity Too Large");
-        private static readonly byte[] _bytesStatus414 = Encoding.ASCII.GetBytes("414 Request-URI Too Long");
+        private static readonly byte[] _bytesStatus413 = Encoding.ASCII.GetBytes("413 Payload Too Large");
+        private static readonly byte[] _bytesStatus414 = Encoding.ASCII.GetBytes("414 URI Too Long");
         private static readonly byte[] _bytesStatus415 = Encoding.ASCII.GetBytes("415 Unsupported Media Type");
-        private static readonly byte[] _bytesStatus416 = Encoding.ASCII.GetBytes("416 Requested Range Not Satisfiable");
+        private static readonly byte[] _bytesStatus416 = Encoding.ASCII.GetBytes("416 Range Not Satisfiable");
         private static readonly byte[] _bytesStatus417 = Encoding.ASCII.GetBytes("417 Expectation Failed");
         private static readonly byte[] _bytesStatus418 = Encoding.ASCII.GetBytes("418 I'm a Teapot");
         private static readonly byte[] _bytesStatus422 = Encoding.ASCII.GetBytes("422 Unprocessable Entity");
@@ -258,13 +258,13 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 case 412:
                     return "Precondition Failed";
                 case 413:
-                    return "Request Entity Too Large";
+                    return "Payload Too Large";
                 case 414:
-                    return "Request-URI Too Long";
+                    return "URI Too Long";
                 case 415:
                     return "Unsupported Media Type";
                 case 416:
-                    return "Requested Range Not Satisfiable";
+                    return "Range Not Satisfiable";
                 case 417:
                     return "Expectation Failed";
                 case 418:
