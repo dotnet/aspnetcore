@@ -94,6 +94,13 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         {
                             var socket = (Listener)tcs2.Task.AsyncState;
                             socket.ListenSocket.Dispose();
+
+                            var writeReqPool = socket.WriteReqPool;
+                            while (writeReqPool.Count > 0)
+                            {
+                                writeReqPool.Dequeue().Dispose();
+                            }
+
                             tcs2.SetResult(0);
                         }
                         catch (Exception ex)

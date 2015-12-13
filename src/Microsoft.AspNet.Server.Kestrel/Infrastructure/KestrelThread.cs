@@ -18,16 +18,21 @@ namespace Microsoft.AspNet.Server.Kestrel
     /// </summary>
     public class KestrelThread
     {
+        // maximum times the work queues swapped and are processed in a single pass
+        // as completing a task may immediately have write data to put on the network
+        // otherwise it needs to wait till the next pass of the libuv loop
+        private const int _maxLoops = 8;
+
         private static Action<object, object> _threadCallbackAdapter = (callback, state) => ((Action<KestrelThread>)callback).Invoke((KestrelThread)state);
         private KestrelEngine _engine;
         private readonly IApplicationLifetime _appLifetime;
         private Thread _thread;
         private UvLoopHandle _loop;
         private UvAsyncHandle _post;
-        private Queue<Work> _workAdding = new Queue<Work>();
-        private Queue<Work> _workRunning = new Queue<Work>();
-        private Queue<CloseHandle> _closeHandleAdding = new Queue<CloseHandle>();
-        private Queue<CloseHandle> _closeHandleRunning = new Queue<CloseHandle>();
+        private Queue<Work> _workAdding = new Queue<Work>(1024);
+        private Queue<Work> _workRunning = new Queue<Work>(1024);
+        private Queue<CloseHandle> _closeHandleAdding = new Queue<CloseHandle>(256);
+        private Queue<CloseHandle> _closeHandleRunning = new Queue<CloseHandle>(256);
         private object _workSync = new Object();
         private bool _stopImmediate = false;
         private bool _initCompleted = false;
@@ -249,11 +254,17 @@ namespace Microsoft.AspNet.Server.Kestrel
 
         private void OnPost()
         {
-            DoPostWork();
-            DoPostCloseHandle();
+            var loopsRemaining = _maxLoops;
+            bool wasWork;
+            do
+            {
+                wasWork = DoPostWork();
+                wasWork = DoPostCloseHandle() || wasWork;
+                loopsRemaining--;
+            } while (wasWork && loopsRemaining > 0);
         }
 
-        private void DoPostWork()
+        private bool DoPostWork()
         {
             Queue<Work> queue;
             lock (_workSync)
@@ -262,6 +273,9 @@ namespace Microsoft.AspNet.Server.Kestrel
                 _workAdding = _workRunning;
                 _workRunning = queue;
             }
+
+            bool wasWork = queue.Count > 0;
+
             while (queue.Count != 0)
             {
                 var work = queue.Dequeue();
@@ -286,8 +300,10 @@ namespace Microsoft.AspNet.Server.Kestrel
                     }
                 }
             }
+
+            return wasWork;
         }
-        private void DoPostCloseHandle()
+        private bool DoPostCloseHandle()
         {
             Queue<CloseHandle> queue;
             lock (_workSync)
@@ -296,6 +312,9 @@ namespace Microsoft.AspNet.Server.Kestrel
                 _closeHandleAdding = _closeHandleRunning;
                 _closeHandleRunning = queue;
             }
+
+            bool wasWork = queue.Count > 0;
+
             while (queue.Count != 0)
             {
                 var closeHandle = queue.Dequeue();
@@ -309,6 +328,8 @@ namespace Microsoft.AspNet.Server.Kestrel
                     throw;
                 }
             }
+
+            return wasWork; 
         }
 
         private struct Work
