@@ -37,7 +37,7 @@ namespace FormatterWebSite
 
         [HttpGet]
         [Produces("text/plain")]
-        public Stream MemoryStreamOverridesContentTypeWithProduces()
+        public Stream MemoryStreamOverridesProducesContentTypeWithResponseContentType()
         {
             // Produces will set a ContentType on the implicit ObjectResult and
             // ContentType on response are overriden by content types from ObjectResult.

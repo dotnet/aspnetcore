@@ -48,7 +48,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
             Logger = loggerFactory.CreateLogger<ObjectResultExecutor>();
             WriterFactory = writerFactory.CreateWriter;
         }
-        
+
         /// <summary>
         /// Gets the <see cref="ILogger"/>.
         /// </summary>
@@ -89,6 +89,22 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
                 throw new ArgumentNullException(nameof(result));
             }
 
+            // If the user sets the content type both on the ObjectResult (example: by Produces) and Response object,
+            // then the one set on ObjectResult takes precedence over the Response object
+            if (result.ContentTypes == null || result.ContentTypes.Count == 0)
+            {
+                var responseContentType = context.HttpContext.Response.ContentType;
+                if (!string.IsNullOrEmpty(responseContentType))
+                {
+                    if (result.ContentTypes == null)
+                    {
+                        result.ContentTypes = new List<MediaTypeHeaderValue>();
+                    }
+
+                    result.ContentTypes.Add(MediaTypeHeaderValue.Parse(responseContentType));
+                }
+            }
+
             ValidateContentTypes(result.ContentTypes);
 
             var formatters = result.Formatters;
@@ -108,7 +124,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
                 WriterFactory,
                 objectType,
                 result.Value);
-            
+
             var selectedFormatter = SelectFormatter(formatterContext, result.ContentTypes, formatters);
             if (selectedFormatter == null)
             {
@@ -121,7 +137,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
 
             Logger.FormatterSelected(selectedFormatter, formatterContext);
             Logger.ObjectResultExecuting(context);
-            
+
             result.OnFormatting(context);
             return selectedFormatter.WriteAsync(formatterContext);
         }
@@ -324,7 +340,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
             {
                 throw new ArgumentNullException(nameof(sortedAcceptHeaders));
             }
-            
+
             foreach (var contentType in sortedAcceptHeaders)
             {
                 foreach (var formatter in formatters)
@@ -466,7 +482,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
                     }
                 }
             }
-            
+
             // We want a descending sort, but BinarySearch does ascending
             sorted.Reverse();
             return sorted;

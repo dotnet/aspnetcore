@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         [InlineData("MemoryStreamWithContentType", "text/html")]
         [InlineData("MemoryStreamWithContentTypeFromProduces", "text/plain")]
         [InlineData("MemoryStreamWithContentTypeFromProducesWithMultipleValues", "text/html")]
-        [InlineData("MemoryStreamOverridesContentTypeWithProduces", "text/plain")]
+        [InlineData("MemoryStreamOverridesProducesContentTypeWithResponseContentType", "text/plain")]
         public async Task StreamOutputFormatter_ReturnsAppropriateContentAndContentType(string actionName, string contentType)
         {
             // Arrange & Act

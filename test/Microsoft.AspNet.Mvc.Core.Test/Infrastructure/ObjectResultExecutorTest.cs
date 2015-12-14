@@ -51,6 +51,30 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
             Assert.Equal(new MediaTypeHeaderValue("application/json"), context.ContentType);
         }
 
+        // For this test case probably the most common use case is when there is a format mapping based
+        // content type selected but the developer had set the content type on the Response.ContentType
+        [Fact]
+        public async Task ExecuteAsync_ContentTypeProvidedFromResponseAndObjectResult_UsesResponseContentType()
+        {
+            // Arrange
+            var executor = CreateCustomObjectResultExecutor();
+            var httpContext = new DefaultHttpContext();
+            var actionContext = new ActionContext() { HttpContext = httpContext };
+            httpContext.Request.Headers[HeaderNames.Accept] = "application/xml"; // This will not be used
+            httpContext.Response.ContentType = "text/plain";
+            var result = new ObjectResult("input");
+            result.Formatters.Add(new TestXmlOutputFormatter());
+            result.Formatters.Add(new TestJsonOutputFormatter());
+            result.Formatters.Add(new TestStringOutputFormatter()); // This will be chosen based on the content type
+
+            // Act
+            await executor.ExecuteAsync(actionContext, result);
+
+            // Assert
+            Assert.IsType<TestStringOutputFormatter>(executor.SelectedOutputFormatter);
+            Assert.Equal("text/plain; charset=utf-8", httpContext.Response.ContentType);
+        }
+
         [Fact]
         public void SelectFormatter_WithOneProvidedContentType_IgnoresAcceptHeader()
         {
@@ -83,6 +107,27 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
         }
 
         [Fact]
+        public async Task ExecuteAsync_WithOneProvidedContentType_FromResponseContentType_IgnoresAcceptHeader()
+        {
+            // Arrange
+            var executor = CreateCustomObjectResultExecutor();
+            var httpContext = new DefaultHttpContext();
+            var actionContext = new ActionContext() { HttpContext = httpContext };
+            httpContext.Request.Headers[HeaderNames.Accept] = "application/xml"; // This will not be used
+            httpContext.Response.ContentType = "application/json";
+            var result = new ObjectResult("input");
+            result.Formatters.Add(new TestXmlOutputFormatter());
+            result.Formatters.Add(new TestJsonOutputFormatter()); // This will be chosen based on the content type
+
+            // Act
+            await executor.ExecuteAsync(actionContext, result);
+
+            // Assert
+            Assert.IsType<TestJsonOutputFormatter>(executor.SelectedOutputFormatter);
+            Assert.Equal("application/json; charset=utf-8", httpContext.Response.ContentType);
+        }
+
+        [Fact]
         public void SelectFormatter_WithOneProvidedContentType_NoFallback()
         {
             // Arrange
@@ -109,6 +154,25 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
 
             // Assert
             Assert.Null(formatter);
+        }
+
+        [Fact]
+        public async Task ExecuteAsync_WithOneProvidedContentType_FromResponseContentType_NoFallback()
+        {
+            // Arrange
+            var executor = CreateCustomObjectResultExecutor();
+            var httpContext = new DefaultHttpContext();
+            var actionContext = new ActionContext() { HttpContext = httpContext };
+            httpContext.Request.Headers[HeaderNames.Accept] = "application/xml"; // This will not be used
+            httpContext.Response.ContentType = "application/json";
+            var result = new ObjectResult("input");
+            result.Formatters.Add(new TestXmlOutputFormatter());
+
+            // Act
+            await executor.ExecuteAsync(actionContext, result);
+
+            // Assert
+            Assert.Null(executor.SelectedOutputFormatter);
         }
 
         // ObjectResult.ContentTypes, Accept header, expected content type
@@ -158,7 +222,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
         {
             // Arrange
             var executor = CreateExecutor();
-            
+
             var formatters = new List<IOutputFormatter>
             {
                 new CannotWriteFormatter(),
@@ -229,7 +293,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
 
             var context = new OutputFormatterWriteContext(
                 new DefaultHttpContext(),
-                new TestHttpResponseStreamWriterFactory().CreateWriter, 
+                new TestHttpResponseStreamWriterFactory().CreateWriter,
                 objectType: null,
                 @object: null);
 
@@ -315,7 +379,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
 
             var executor = CreateExecutor();
 
-            var actionContext = new ActionContext();
+            var actionContext = new ActionContext() { HttpContext = new DefaultHttpContext() };
 
             // Act & Assert
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(
@@ -331,7 +395,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
         // Chrome & Opera
         [InlineData("text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8", "application/json; charset=utf-8")]
         // IE
-        [InlineData("text/html, application/xhtml+xml, */*", "application/json; charset=utf-8")] 
+        [InlineData("text/html, application/xhtml+xml, */*", "application/json; charset=utf-8")]
         // Firefox & Safari
         [InlineData("text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8", "application/json; charset=utf-8")]
         // Misc
@@ -428,6 +492,14 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
                 NullLoggerFactory.Instance);
         }
 
+        private static CustomObjectResultExecutor CreateCustomObjectResultExecutor()
+        {
+            return new CustomObjectResultExecutor(
+                new TestOptionsManager<MvcOptions>(),
+                new TestHttpResponseStreamWriterFactory(),
+                NullLoggerFactory.Instance);
+        }
+
         private class CannotWriteFormatter : IOutputFormatter
         {
             public virtual bool CanWriteResult(OutputFormatterCanWriteContext context)
@@ -473,22 +545,59 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
             }
         }
 
+        private class TestStringOutputFormatter : OutputFormatter
+        {
+            public TestStringOutputFormatter()
+            {
+                SupportedMediaTypes.Add(new MediaTypeHeaderValue("text/plain"));
+
+                SupportedEncodings.Add(Encoding.UTF8);
+            }
+
+            public override Task WriteResponseBodyAsync(OutputFormatterWriteContext context)
+            {
+                return Task.FromResult(0);
+            }
+        }
+
         private class TestObjectResultExecutor : ObjectResultExecutor
         {
             public TestObjectResultExecutor(
-                IOptions<MvcOptions> options, 
+                IOptions<MvcOptions> options,
                 IHttpResponseStreamWriterFactory writerFactory,
-                ILoggerFactory loggerFactory) 
+                ILoggerFactory loggerFactory)
                 : base(options, writerFactory, loggerFactory)
             {
             }
 
-            public new IOutputFormatter SelectFormatter(
+            new public IOutputFormatter SelectFormatter(
                 OutputFormatterWriteContext formatterContext,
                 IList<MediaTypeHeaderValue> contentTypes,
                 IList<IOutputFormatter> formatters)
             {
                 return base.SelectFormatter(formatterContext, contentTypes, formatters);
+            }
+        }
+
+        private class CustomObjectResultExecutor : ObjectResultExecutor
+        {
+            public CustomObjectResultExecutor(
+                IOptions<MvcOptions> options,
+                IHttpResponseStreamWriterFactory writerFactory,
+                ILoggerFactory loggerFactory)
+                : base(options, writerFactory, loggerFactory)
+            {
+            }
+
+            public IOutputFormatter SelectedOutputFormatter { get; private set; }
+
+            protected override IOutputFormatter SelectFormatter(
+                OutputFormatterWriteContext formatterContext,
+                IList<MediaTypeHeaderValue> contentTypes,
+                IList<IOutputFormatter> formatters)
+            {
+                SelectedOutputFormatter = base.SelectFormatter(formatterContext, contentTypes, formatters);
+                return SelectedOutputFormatter;
             }
         }
     }
