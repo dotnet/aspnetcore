@@ -1,20 +1,22 @@
 {
   "version": "1.0.0-alpha7",
-  "description": "Microsoft.AspNet.ReactServices Class Library",
-  "authors": [
-    "Microsoft"
-  ],
-  "tags": [
-    ""
-  ],
-  "projectUrl": "",
-  "licenseUrl": "",
+  "description": "Helpers for building React applications on ASP.NET 5.",
+  "authors": [ "Microsoft" ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/aspnet/nodeservices"
+  },
   "tooling": {
     "defaultNamespace": "Microsoft.AspNet.ReactServices"
   },
+  "dependencies": {
+    "Microsoft.AspNet.Mvc.TagHelpers": "6.0.0-rc1-final",
+    "Microsoft.AspNet.NodeServices": "1.0.0-alpha7",
+    "Microsoft.AspNet.SpaServices": "1.0.0-alpha7"
+  },
   "frameworks": {
-    "dnx451": {},
-    "dnxcore50": {
+    "net451": { },
+    "dotnet5.4": {
       "dependencies": {
         "Microsoft.CSharp": "4.0.1-beta-*",
         "System.Collections": "4.0.11-beta-*",
@@ -23,11 +25,6 @@
         "System.Threading": "4.0.11-beta-*"
       }
     }
-  },
-  "dependencies": {
-    "Microsoft.AspNet.NodeServices": "1.0.0-alpha7",
-    "Microsoft.AspNet.Mvc.TagHelpers": "6.0.0-rc1-*",
-    "Microsoft.AspNet.SpaServices": "1.0.0-alpha7"
   },
   "resource": [
     "Content/**/*"

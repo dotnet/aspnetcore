@@ -10,12 +10,12 @@
   "projectUrl": "",
   "licenseUrl": "",
   "dependencies": {
-      "Microsoft.AspNet.Mvc": "6.0.0-rc1-*",
-      "Microsoft.AspNet.Routing": "1.0.0-rc1-*"
+    "Microsoft.AspNet.Mvc": "6.0.0-rc1-final",
+    "Microsoft.AspNet.Routing": "1.0.0-rc1-final"
   },
   "frameworks": {
-    "dnx451": {},
-    "dnxcore50": {
+    "net451": { },
+    "dotnet5.4": {
       "dependencies": {
       }
     }

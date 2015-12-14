@@ -1,4 +1,10 @@
-.vs
-*.xproj.user
+[Oo]bj/
+[Bb]in/
+packages/
+artifacts/
+*.user
+*.suo
+node_modules
 project.lock.json
+.vs/
 npm-debug.log
