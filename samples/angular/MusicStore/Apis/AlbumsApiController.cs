@@ -8,7 +8,6 @@ using Microsoft.Data.Entity;
 using AutoMapper;
 using MusicStore.Models;
 using MusicStore.Infrastructure;
-using Microsoft.AspNet.SpaServices;
 
 namespace MusicStore.Apis
 {
