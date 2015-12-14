@@ -1,6 +1,7 @@
 {
   "version": "1.0.0-alpha7",
-  "description": "ASP.NET 5 server-side React services,",
+  "description": "Helpers for building React applications on ASP.NET 5.",
+  "authors": [ "Microsoft" ],
   "repository": {
     "type": "git",
     "url": "git://github.com/aspnet/nodeservices"

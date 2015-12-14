@@ -1,6 +1,7 @@
 {
   "version": "1.0.0-alpha7",
-  "description": "ASP.NET 5 server-side Angular services.",
+  "description": "Helpers for building Angular 2 applications on ASP.NET 5.",
+  "authors": [ "Microsoft" ],
   "repository": {
     "type": "git",
     "url": "git://github.com/aspnet/nodeservices"

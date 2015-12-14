@@ -1,6 +1,7 @@
 {
   "version": "1.0.0-alpha7",
-  "description": "ASP.NET 5 Node.js services.",
+  "description": "Invoke Node.js modules at runtime in ASP.NET 5 applications.",
+  "authors": [ "Microsoft" ],
   "repository": {
     "type": "git",
     "url": "git://github.com/aspnet/nodeservices"
