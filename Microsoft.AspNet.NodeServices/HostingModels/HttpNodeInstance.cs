@@ -1,3 +1,5 @@
+using System;
+using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -29,6 +31,11 @@ namespace Microsoft.AspNet.NodeServices {
                 var payload = new StringContent(payloadJson, Encoding.UTF8, "application/json");
                 var response = await client.PostAsync("http://localhost:" + this._portNumber, payload);
                 var responseString = await response.Content.ReadAsStringAsync();
+                
+                if (response.StatusCode != HttpStatusCode.OK) {
+                    throw new Exception("Node module responded with error: " + responseString);   
+                }
+                
                 var responseIsJson = response.Content.Headers.ContentType.MediaType == "application/json";
                 if (responseIsJson) {
                     return JsonConvert.DeserializeObject<T>(responseString);
