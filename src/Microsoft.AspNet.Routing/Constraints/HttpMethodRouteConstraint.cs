@@ -11,14 +11,14 @@ namespace Microsoft.AspNet.Routing.Constraints
     /// <summary>
     /// Constrains the HTTP method of request or a route.
     /// </summary>
-    public class HttpMethodConstraint : IRouteConstraint
+    public class HttpRouteMethodConstraint : IRouteConstraint
     {
         /// <summary>
-        /// Creates a new <see cref="HttpMethodConstraint"/> that accepts the HTTP methods specified
+        /// Creates a new <see cref="HttpRouteMethodConstraint"/> that accepts the HTTP methods specified
         /// by <paramref name="allowedMethods"/>.
         /// </summary>
         /// <param name="allowedMethods">The allowed HTTP methods.</param>
-        public HttpMethodConstraint(params string[] allowedMethods)
+        public HttpRouteMethodConstraint(params string[] allowedMethods)
         {
             if (allowedMethods == null)
             {
@@ -69,8 +69,8 @@ namespace Microsoft.AspNet.Routing.Constraints
                 case RouteDirection.UrlGeneration:
                     // We need to see if the user specified the HTTP method explicitly.  Consider these two routes:
                     //
-                    // a) Route: template = "/{foo}", Constraints = { httpMethod = new HttpMethodConstraint("GET") }
-                    // b) Route: template = "/{foo}", Constraints = { httpMethod = new HttpMethodConstraint("POST") }
+                    // a) Route: template = "/{foo}", Constraints = { httpMethod = new HttpRouteMethodConstraint("GET") }
+                    // b) Route: template = "/{foo}", Constraints = { httpMethod = new HttpRouteMethodConstraint("POST") }
                     //
                     // A user might know ahead of time that a URI he/she is generating might be used with a particular HTTP
                     // method.  If a URI will be used for an HTTP POST but we match on (a) while generating the URI, then

@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.Routing.Constraints
         public void HttpMethodRouteConstraint_IncomingRequest_AcceptsAllowedMethods(string httpMethod)
         {
             // Arrange
-            var constraint = new HttpMethodConstraint("GET", "post");
+            var constraint = new HttpRouteMethodConstraint("GET", "post");
 
             var httpContext = new DefaultHttpContext();
             httpContext.Request.Method = httpMethod;
@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.Routing.Constraints
         public void HttpMethodRouteConstraint_IncomingRequest_RejectsOtherMethods(string httpMethod)
         {
             // Arrange
-            var constraint = new HttpMethodConstraint("GET", "post");
+            var constraint = new HttpRouteMethodConstraint("GET", "post");
 
             var httpContext = new DefaultHttpContext();
             httpContext.Request.Method = httpMethod;
@@ -57,7 +57,7 @@ namespace Microsoft.AspNet.Routing.Constraints
         public void HttpMethodRouteConstraint_UrlGeneration_AcceptsAllowedMethods(string httpMethod)
         {
             // Arrange
-            var constraint = new HttpMethodConstraint("GET", "post");
+            var constraint = new HttpRouteMethodConstraint("GET", "post");
 
             var httpContext = new DefaultHttpContext();
             var route = Mock.Of<IRouter>();
@@ -77,7 +77,7 @@ namespace Microsoft.AspNet.Routing.Constraints
         public void HttpMethodRouteConstraint_UrlGeneration_RejectsOtherMethods(string httpMethod)
         {
             // Arrange
-            var constraint = new HttpMethodConstraint("GET", "post");
+            var constraint = new HttpRouteMethodConstraint("GET", "post");
 
             var httpContext = new DefaultHttpContext();
             var route = Mock.Of<IRouter>();
