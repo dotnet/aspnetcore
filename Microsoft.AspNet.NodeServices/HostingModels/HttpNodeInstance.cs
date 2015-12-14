@@ -32,8 +32,8 @@ namespace Microsoft.AspNet.NodeServices {
                 var response = await client.PostAsync("http://localhost:" + this._portNumber, payload);
                 var responseString = await response.Content.ReadAsStringAsync();
                 
-                if (response.StatusCode != HttpStatusCode.OK) {
-                    throw new Exception("Node module responded with error: " + responseString);   
+                if (!response.IsSuccessStatusCode) {
+                    throw new Exception("Call to Node module failed with error: " + responseString);
                 }
                 
                 var responseIsJson = response.Content.Headers.ContentType.MediaType == "application/json";

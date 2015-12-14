@@ -31,17 +31,21 @@ function findAngularComponent(options) {
 
 module.exports = {
     renderToString: function(callback, options) {
-        var component = findAngularComponent(options);
-        var serverBindings = [
-            ngRouter.ROUTER_BINDINGS,
-            ngUniversal.HTTP_PROVIDERS,
-            ng.provide(ngUniversal.BASE_URL, { useValue: options.requestUrl }),
-            ngUniversal.SERVER_LOCATION_PROVIDERS
-        ];
+        try {
+            var component = findAngularComponent(options);
+            var serverBindings = [
+                ngRouter.ROUTER_BINDINGS,
+                ngUniversal.HTTP_PROVIDERS,
+                ng.provide(ngUniversal.BASE_URL, { useValue: options.requestUrl }),
+                ngUniversal.SERVER_LOCATION_PROVIDERS
+            ];
 
-        return ngUniversal.renderToString(component, serverBindings).then(
-            function(successValue) { callback(null, successValue); },
-            function(errorValue) { callback(errorValue); }
-        );
+            return ngUniversal.renderToString(component, serverBindings).then(
+                function(successValue) { callback(null, successValue); },
+                function(errorValue) { callback(errorValue); }
+            );
+        } catch (synchronousException) {
+            callback(synchronousException);
+        }
     }
 };

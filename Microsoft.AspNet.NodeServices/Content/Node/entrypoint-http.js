@@ -39,7 +39,11 @@ var server = http.createServer(function(req, res) {
             }
         };
         
-        func.apply(null, [callback].concat(bodyJson.args));        
+        try {
+            func.apply(null, [callback].concat(bodyJson.args));
+        } catch (synchronousException) {
+            callback(synchronousException, null);
+        }     
     });
 });
 

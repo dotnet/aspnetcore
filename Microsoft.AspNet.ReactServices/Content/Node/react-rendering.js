@@ -45,10 +45,14 @@ function loadViaBabel(module, filename) {
 
 module.exports = {
     renderToString: function(callback, options) {
-        var component = findReactComponent(options);
-        var history = createMemoryHistory(options.requestUrl);
-        var reactElement = React.createElement(component, { history: history });
-        var html = ReactDOMServer.renderToString(reactElement);
-        callback(null, html);
+        try {
+            var component = findReactComponent(options);
+            var history = createMemoryHistory(options.requestUrl);
+            var reactElement = React.createElement(component, { history: history });
+            var html = ReactDOMServer.renderToString(reactElement);
+            callback(null, html);
+        } catch (synchronousException) {
+            callback(synchronousException);
+        }
     }
 };
