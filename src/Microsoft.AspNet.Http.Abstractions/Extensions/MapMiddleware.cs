@@ -57,10 +57,15 @@ namespace Microsoft.AspNet.Builder.Extensions
                 context.Request.PathBase = pathBase + _options.PathMatch;
                 context.Request.Path = remainingPath;
 
-                await _options.Branch(context);
-
-                context.Request.PathBase = pathBase;
-                context.Request.Path = path;
+                try
+                {
+                    await _options.Branch(context);
+                }
+                finally
+                {
+                    context.Request.PathBase = pathBase;
+                    context.Request.Path = path;
+                }
             }
             else
             {
