@@ -29,6 +29,11 @@ namespace Microsoft.AspNet.Mvc
         public string ViewName { get; set; }
 
         /// <summary>
+        /// Gets the view data model.
+        /// </summary>
+        public object Model => ViewData?.Model;
+
+        /// <summary>
         /// Gets or sets the <see cref="ViewDataDictionary"/> for this result.
         /// </summary>
         public ViewDataDictionary ViewData { get; set; }

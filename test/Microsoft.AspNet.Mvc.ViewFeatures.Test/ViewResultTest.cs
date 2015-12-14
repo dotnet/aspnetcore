@@ -25,6 +25,33 @@ namespace Microsoft.AspNet.Mvc
     public class ViewResultTest
     {
         [Fact]
+        public void Model_NullWhenViewDataIsNull()
+        {
+            // Arrange
+            var viewResult = new ViewResult();
+
+            // Act & Assert
+            Assert.Null(viewResult.Model);
+        }
+
+        [Fact]
+        public void Model_ExposesViewDataModel()
+        {
+            // Arrange
+            var customModel = new object();
+            var viewResult = new ViewResult
+            {
+                ViewData = new ViewDataDictionary(new EmptyModelMetadataProvider())
+                {
+                    Model = customModel
+                },
+            };
+
+            // Act & Assert
+            Assert.Same(customModel, viewResult.Model);
+        }
+
+        [Fact]
         public async Task ExecuteResultAsync_Throws_IfViewCouldNotBeFound_MessageUsesGetViewLocations()
         {
             // Arrange
