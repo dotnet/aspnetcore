@@ -139,7 +139,7 @@ namespace Microsoft.AspNet.Session
                 }
                 else if (!_isNewSessionKey)
                 {
-                    _logger.LogWarning("Accessing expired session {0}", _sessionId);
+                    _logger.AccessingExpiredSession(_sessionId);
                 }
                 _loaded = true;
             }
@@ -152,7 +152,7 @@ namespace Microsoft.AspNet.Session
                 var data = await _cache.GetAsync(_sessionId);
                 if (_logger.IsEnabled(LogLevel.Information) && data == null)
                 {
-                    _logger.LogInformation("Session {0} started", _sessionId);
+                    _logger.SessionStarted(_sessionId);
                 }
                 _isModified = false;
 

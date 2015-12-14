@@ -106,7 +106,7 @@ namespace Microsoft.AspNet.Session
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError("Error closing the session.", ex);
+                        _logger.ErrorClosingTheSession(ex);
                     }
                 }
             }
