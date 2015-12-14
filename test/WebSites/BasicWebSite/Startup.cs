@@ -14,10 +14,11 @@ namespace BasicWebSite
         // Set up application services
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc(options =>
-            {
-                options.Conventions.Add(new ApplicationDescription("This is a basic website."));
-            });
+            services
+                .AddMvc(
+                    options => { options.Conventions.Add(new ApplicationDescription("This is a basic website.")); })
+                .AddXmlDataContractSerializerFormatters();
+
             services.AddLogging();
             services.AddSingleton<IActionDescriptorProvider, ActionDescriptorCreationCounter>();
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();

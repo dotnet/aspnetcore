@@ -5,7 +5,7 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-using ActionConstraintsWebSite;
+using BasicWebSite.Models;
 using Microsoft.AspNet.Mvc.Infrastructure;
 using Microsoft.AspNet.Testing.xunit;
 using Newtonsoft.Json;
@@ -13,9 +13,9 @@ using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
-    public class ConsumesAttributeTests : IClassFixture<MvcTestFixture<ActionConstraintsWebSite.Startup>>
+    public class ConsumesAttributeTests : IClassFixture<MvcTestFixture<BasicWebSite.Startup>>
     {
-        public ConsumesAttributeTests(MvcTestFixture<ActionConstraintsWebSite.Startup> fixture)
+        public ConsumesAttributeTests(MvcTestFixture<BasicWebSite.Startup> fixture)
         {
             Client = fixture.Client;
         }
@@ -37,31 +37,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Assert
             Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
             Assert.Null(product);
-        }
-
-        [Fact]
-        public async Task NoRequestContentType_Throws_IfMultipleActionsWithConstraints()
-        {
-            // Arrange
-            var request = new HttpRequestMessage(
-                HttpMethod.Post,
-                "http://localhost/ConsumesAttribute_AmbiguousActions/CreateProduct");
-
-            // Act
-            var response = await Client.SendAsync(request);
-            var exception = response.GetServerException();
-
-            // Assert
-            Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
-            Assert.Equal(typeof(AmbiguousActionException).FullName, exception.ExceptionType);
-            // Mono issue - https://github.com/aspnet/External/issues/19
-            Assert.Equal(
-                "Multiple actions matched. The following actions matched route data and had all constraints " +
-                "satisfied:" + PlatformNormalizer.GetNewLinesAsUnderscores(2) + "ActionConstraintsWebSite." +
-                    "ConsumesAttribute_NoFallBackActionController." +
-                "CreateProduct" + PlatformNormalizer.GetNewLinesAsUnderscores(1) + "ActionConstraintsWebSite." +
-                    "ConsumesAttribute_NoFallBackActionController.CreateProduct",
-                exception.ExceptionMessage);
         }
 
         [Fact]
@@ -131,7 +106,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         {
             // Arrange
             var input = "<Product xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\" " +
-                "xmlns=\"http://schemas.datacontract.org/2004/07/ActionConstraintsWebSite\">" +
+                "xmlns=\"http://schemas.datacontract.org/2004/07/BasicWebSite.Models\">" +
                 "<SampleString>application/xml</SampleString></Product>";
             var request = new HttpRequestMessage(
                 HttpMethod.Post,

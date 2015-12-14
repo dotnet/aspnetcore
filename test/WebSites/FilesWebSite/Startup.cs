@@ -18,8 +18,6 @@ namespace FilesWebSite
         {
             app.UseCultureReplacer();
 
-            app.UseMiddleware<SendFileMiddleware>();
-
             app.UseMvc(routes =>
             {
                 routes.MapRoute(name: null, template: "{controller}/{action}", defaults: null);

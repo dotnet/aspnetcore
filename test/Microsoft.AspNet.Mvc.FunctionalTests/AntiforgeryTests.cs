@@ -10,9 +10,9 @@ using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
-    public class AntiforgeryTests : IClassFixture<MvcTestFixture<AntiforgeryTokenWebSite.Startup>>
+    public class AntiforgeryTests : IClassFixture<MvcTestFixture<BasicWebSite.Startup>>
     {
-        public AntiforgeryTests(MvcTestFixture<AntiforgeryTokenWebSite.Startup> fixture)
+        public AntiforgeryTests(MvcTestFixture<BasicWebSite.Startup> fixture)
         {
             Client = fixture.Client;
         }
@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task MultipleAFTokensWithinTheSamePage_GeneratesASingleCookieToken()
         {
             // Arrange & Act
-            var response = await Client.GetAsync("http://localhost/Account/Login");
+            var response = await Client.GetAsync("http://localhost/Antiforgery/Login");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -42,15 +42,17 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         {
             // Arrange
             // Do a get request.
-            var getResponse = await Client.GetAsync("http://localhost/Account/Login");
+            var getResponse = await Client.GetAsync("http://localhost/Antiforgery/Login");
             var responseBody = await getResponse.Content.ReadAsStringAsync();
 
             // Get the AF token for the second login. If the cookies are generated twice(i.e are different),
             // this AF token will not work with the first cookie.
-            var formToken = AntiforgeryTestHelper.RetrieveAntiforgeryToken(responseBody, "Account/UseFacebookLogin");
+            var formToken = AntiforgeryTestHelper.RetrieveAntiforgeryToken(
+                responseBody,
+                "/Antiforgery/UseFacebookLogin");
             var cookieToken = AntiforgeryTestHelper.RetrieveAntiforgeryCookie(getResponse);
 
-            var request = new HttpRequestMessage(HttpMethod.Post, "http://localhost/Account/Login");
+            var request = new HttpRequestMessage(HttpMethod.Post, "http://localhost/Antiforgery/Login");
             request.Headers.Add("Cookie", cookieToken.Key + "=" + cookieToken.Value);
             var nameValueCollection = new List<KeyValuePair<string, string>>
             {
@@ -70,158 +72,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async Task InvalidCookieToken_Throws()
-        {
-            // Arrange
-            var getResponse = await Client.GetAsync("http://localhost/Account/Login");
-            var responseBody = await getResponse.Content.ReadAsStringAsync();
-            var formToken = AntiforgeryTestHelper.RetrieveAntiforgeryToken(responseBody, "Account/Login");
-
-            var cookieToken = AntiforgeryTestHelper.RetrieveAntiforgeryCookie(getResponse);
-            var request = new HttpRequestMessage(HttpMethod.Post, "http://localhost/Account/Login");
-            request.Headers.Add("Cookie", cookieToken.Key + "=invalidCookie");
-
-            var nameValueCollection = new List<KeyValuePair<string, string>>
-            {
-                new KeyValuePair<string,string>("__RequestVerificationToken", formToken),
-                new KeyValuePair<string,string>("UserName", "abra"),
-                new KeyValuePair<string,string>("Password", "cadabra"),
-            };
-
-            request.Content = new FormUrlEncodedContent(nameValueCollection);
-
-            // Act
-            var response = await Client.SendAsync(request);
-
-            // Assert
-            var exception = response.GetServerException();
-            Assert.Equal("The antiforgery token could not be decrypted.", exception.ExceptionMessage);
-        }
-
-        [Fact]
-        public async Task InvalidFormToken_Throws()
-        {
-            // Arrange
-            var getResponse = await Client.GetAsync("http://localhost/Account/Login");
-            var responseBody = await getResponse.Content.ReadAsStringAsync();
-            var cookieToken = AntiforgeryTestHelper.RetrieveAntiforgeryCookie(getResponse);
-            var request = new HttpRequestMessage(HttpMethod.Post, "http://localhost/Account/Login");
-            var formToken = "adsad";
-            request.Headers.Add("Cookie", cookieToken.Key + "=" + cookieToken.Value);
-            var nameValueCollection = new List<KeyValuePair<string, string>>
-            {
-                new KeyValuePair<string,string>("__RequestVerificationToken", formToken),
-                new KeyValuePair<string,string>("UserName", "abra"),
-                new KeyValuePair<string,string>("Password", "cadabra"),
-            };
-
-            request.Content = new FormUrlEncodedContent(nameValueCollection);
-
-            // Act
-            var response = await Client.SendAsync(request);
-
-            // Assert
-            var exception = response.GetServerException();
-            Assert.Equal("The antiforgery token could not be decrypted.", exception.ExceptionMessage);
-        }
-
-        [Fact]
-        public async Task IncompatibleCookieToken_Throws()
-        {
-            // Arrange
-            // do a get response.
-            // We do two requests to get two different sets of antiforgery cookie and token values.
-            var getResponse1 = await Client.GetAsync("http://localhost/Account/Login");
-            var responseBody1 = await getResponse1.Content.ReadAsStringAsync();
-            var formToken1 = AntiforgeryTestHelper.RetrieveAntiforgeryToken(responseBody1, "Account/Login");
-
-            var getResponse2 = await Client.GetAsync("http://localhost/Account/Login");
-            var responseBody2 = await getResponse2.Content.ReadAsStringAsync();
-            var cookieToken2 = AntiforgeryTestHelper.RetrieveAntiforgeryCookie(getResponse2);
-
-            var cookieToken = cookieToken2.Value;
-            var request = new HttpRequestMessage(HttpMethod.Post, "http://localhost/Account/Login");
-            request.Headers.Add("Cookie", string.Format("{0}={1}", cookieToken2.Key, cookieToken2.Value));
-            var formToken = formToken1;
-            var nameValueCollection = new List<KeyValuePair<string, string>>
-            {
-                new KeyValuePair<string,string>("__RequestVerificationToken", formToken),
-                new KeyValuePair<string,string>("UserName", "abra"),
-                new KeyValuePair<string,string>("Password", "cadabra"),
-            };
-
-            request.Content = new FormUrlEncodedContent(nameValueCollection);
-
-            // Act
-            var response = await Client.SendAsync(request);
-
-            // Assert
-            var exception = response.GetServerException();
-            Assert.Equal("The antiforgery cookie token and form field token do not match.", exception.ExceptionMessage);
-        }
-
-        [Fact]
-        public async Task MissingCookieToken_Throws()
-        {
-            // Arrange
-            // do a get response.
-            var getResponse = await Client.GetAsync("http://localhost/Account/Login");
-            var responseBody = await getResponse.Content.ReadAsStringAsync();
-            var formToken = AntiforgeryTestHelper.RetrieveAntiforgeryToken(responseBody, "Account/Login");
-            var cookieTokenKey = AntiforgeryTestHelper.RetrieveAntiforgeryCookie(getResponse).Key;
-
-            var request = new HttpRequestMessage(HttpMethod.Post, "http://localhost/Account/Login");
-            var nameValueCollection = new List<KeyValuePair<string, string>>
-            {
-                new KeyValuePair<string,string>("__RequestVerificationToken", formToken),
-                new KeyValuePair<string,string>("UserName", "abra"),
-                new KeyValuePair<string,string>("Password", "cadabra"),
-            };
-
-            request.Content = new FormUrlEncodedContent(nameValueCollection);
-
-            // Act
-            var response = await Client.SendAsync(request);
-
-            // Assert
-            var exception = response.GetServerException();
-            Assert.Equal(
-                "The required antiforgery cookie \"" + cookieTokenKey + "\" is not present.",
-                exception.ExceptionMessage);
-        }
-
-        [Fact]
-        public async Task MissingAFToken_Throws()
-        {
-            // Arrange
-            var getResponse = await Client.GetAsync("http://localhost/Account/Login");
-            var responseBody = await getResponse.Content.ReadAsStringAsync();
-            var cookieToken = AntiforgeryTestHelper.RetrieveAntiforgeryCookie(getResponse);
-
-            var request = new HttpRequestMessage(HttpMethod.Post, "http://localhost/Account/Login");
-            request.Headers.Add("Cookie", cookieToken.Key + "=" + cookieToken.Value);
-            var nameValueCollection = new List<KeyValuePair<string, string>>
-            {
-                new KeyValuePair<string,string>("UserName", "abra"),
-                new KeyValuePair<string,string>("Password", "cadabra"),
-            };
-
-            request.Content = new FormUrlEncodedContent(nameValueCollection);
-
-            // Act
-            var response = await Client.SendAsync(request);
-
-            // Assert
-            var exception = response.GetServerException();
-            Assert.Equal("The required antiforgery form field \"__RequestVerificationToken\" is not present.",
-                         exception.ExceptionMessage);
-        }
-
-        [Fact]
         public async Task SetCookieAndHeaderBeforeFlushAsync_GeneratesCookieTokenAndHeader()
         {
             // Arrange & Act
-            var response = await Client.GetAsync("http://localhost/Account/FlushAsyncLogin");
+            var response = await Client.GetAsync("http://localhost/Antiforgery/FlushAsyncLogin");
 
             // Assert
             var header = Assert.Single(response.Headers.GetValues("X-Frame-Options"));
@@ -236,13 +90,15 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         {
             // Arrange
             // do a get response.
-            var getResponse = await Client.GetAsync("http://localhost/Account/FlushAsyncLogin");
+            var getResponse = await Client.GetAsync("http://localhost/Antiforgery/FlushAsyncLogin");
             var responseBody = await getResponse.Content.ReadAsStringAsync();
 
-            var formToken = AntiforgeryTestHelper.RetrieveAntiforgeryToken(responseBody, "Account/FlushAsyncLogin");
+            var formToken = AntiforgeryTestHelper.RetrieveAntiforgeryToken(
+                responseBody,
+                "Antiforgery/FlushAsyncLogin");
             var cookieToken = AntiforgeryTestHelper.RetrieveAntiforgeryCookie(getResponse);
 
-            var request = new HttpRequestMessage(HttpMethod.Post, "http://localhost/Account/FlushAsyncLogin");
+            var request = new HttpRequestMessage(HttpMethod.Post, "http://localhost/Antiforgery/FlushAsyncLogin");
             request.Headers.Add("Cookie", cookieToken.Key + "=" + cookieToken.Value);
             var nameValueCollection = new List<KeyValuePair<string, string>>
             {

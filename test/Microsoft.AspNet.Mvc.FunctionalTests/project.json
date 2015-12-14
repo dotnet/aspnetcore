@@ -7,15 +7,10 @@
     "warningsAsErrors": true
   },
   "dependencies": {
-    "ActionConstraintsWebSite": "1.0.0",
-    "AntiforgeryTokenWebSite": "1.0.0",
     "ApiExplorerWebSite": "1.0.0",
     "ApplicationModelWebSite": "1.0.0",
     "BasicWebSite": "1.0.0",
-    "CompositeViewEngineWebSite": "1.0.0",
-    "ContentNegotiationWebSite": "1.0.0",
     "ControllersFromServicesWebSite": "1.0.0",
-    "CorsMiddlewareWebSite": "1.0.0",
     "CorsWebSite": "1.0.0",
     "CustomRouteSample.Web": "1.0.0",
     "EmbeddedViewSample.Web": "1.0.0",

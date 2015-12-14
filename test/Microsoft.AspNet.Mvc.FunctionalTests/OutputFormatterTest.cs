@@ -9,9 +9,9 @@ using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
-    public class OutputFormatterTest : IClassFixture<MvcTestFixture<ContentNegotiationWebSite.Startup>>
+    public class OutputFormatterTest : IClassFixture<MvcTestFixture<BasicWebSite.Startup>>
     {
-        public OutputFormatterTest(MvcTestFixture<ContentNegotiationWebSite.Startup> fixture)
+        public OutputFormatterTest(MvcTestFixture<BasicWebSite.Startup> fixture)
         {
             Client = fixture.Client;
         }

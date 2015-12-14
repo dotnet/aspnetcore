@@ -13,9 +13,9 @@ using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
-    public class ContentNegotiationTest : IClassFixture<MvcTestFixture<ContentNegotiationWebSite.Startup>>
+    public class ContentNegotiationTest : IClassFixture<MvcTestFixture<BasicWebSite.Startup>>
     {
-        public ContentNegotiationTest(MvcTestFixture<ContentNegotiationWebSite.Startup> fixture)
+        public ContentNegotiationTest(MvcTestFixture<BasicWebSite.Startup> fixture)
         {
             Client = fixture.Client;
         }
@@ -91,7 +91,9 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Arrange
             var expectedContentType = MediaTypeHeaderValue.Parse("application/json;charset=utf-8");
             var expectedOutput = "{\"Name\":\"John\",\"Address\":\"One Microsoft Way\"}";
-            var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/Home/UserInfo_ProducesWithTypeOnly");
+            var request = new HttpRequestMessage(
+                HttpMethod.Get,
+                "http://localhost/ContentNegotiation/UserInfo_ProducesWithTypeOnly");
             request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
             // Act
@@ -112,11 +114,11 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Arrange
             var expectedContentType = MediaTypeHeaderValue.Parse("application/xml;charset=utf-8");
             var expectedOutput = "<User xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\" " +
-                                "xmlns=\"http://schemas.datacontract.org/2004/07/ContentNegotiationWebSite\">" +
-                                "<Address>One Microsoft Way</Address><Name>John</Name></User>";
+                "xmlns=\"http://schemas.datacontract.org/2004/07/BasicWebSite.Models\">" +
+                "<Address>One Microsoft Way</Address><Name>John</Name></User>";
             var request = new HttpRequestMessage(
                 HttpMethod.Get,
-                "http://localhost/Home/UserInfo_ProducesWithTypeAndContentType");
+                "http://localhost/ContentNegotiation/UserInfo_ProducesWithTypeAndContentType");
             request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/xml"));
 
             // Act
@@ -271,7 +273,8 @@ END:VCARD
             var expectedBody = "ProducesContentOnClassController";
 
             // Act
-            var response = await Client.GetAsync("http://localhost/ProducesContentOnClass/ReturnClassNameContentTypeOnDerivedAction");
+            var response = await Client.GetAsync(
+                "http://localhost/ProducesContentOnClass/ReturnClassNameContentTypeOnDerivedAction");
 
             // Assert
             Assert.Equal(expectedContentType, response.Content.Headers.ContentType);
@@ -287,7 +290,7 @@ END:VCARD
             var expectedBody = "{\"MethodName\":\"Produces_WithNonObjectResult\"}";
 
             // Act
-            var response = await Client.GetAsync("http://localhost/JsonResult/Produces_WithNonObjectResult");
+            var response = await Client.GetAsync("http://localhost/ProducesJson/Produces_WithNonObjectResult");
 
             // Assert
             Assert.Equal(expectedContentType, response.Content.Headers.ContentType);
@@ -303,12 +306,12 @@ END:VCARD
             // Arrange
             var expectedContentType = MediaTypeHeaderValue.Parse("application/xml;charset=utf-8");
             var expectedBody = @"<User xmlns:i=""http://www.w3.org/2001/XMLSchema-instance"" " +
-                                @"xmlns=""http://schemas.datacontract.org/2004/07/ContentNegotiationWebSite""><Address>"
-                                + @"One Microsoft Way</Address><Name>John</Name></User>";
+                @"xmlns=""http://schemas.datacontract.org/2004/07/BasicWebSite.Models""><Address>" +
+                @"One Microsoft Way</Address><Name>John</Name></User>";
 
             for (int i = 0; i < 5; i++)
             {
-                var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/Home/UserInfo");
+                var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/ContentNegotiation/UserInfo");
                 request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/xml"));
                 request.Headers.AcceptCharset.Add(new StringWithQualityHeaderValue("utf-8"));
 
