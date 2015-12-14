@@ -170,14 +170,17 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             Assert.Equal("value", stringVal);
         }
 
-        [Fact]
-        public void SaveAndLoad_IntCanBeStoredAndLoaded()
+        [Theory]
+        [InlineData(10)]
+        [InlineData(int.MaxValue)]
+        [InlineData(int.MinValue)]
+        public void SaveAndLoad_IntCanBeStoredAndLoaded(int expected)
         {
             // Arrange
             var testProvider = new SessionStateTempDataProvider();
             var input = new Dictionary<string, object>
             {
-                { "int", 10 }
+                { "int", expected }
             };
             var context = GetHttpContext();
 
@@ -187,7 +190,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
 
             // Assert
             var intVal = Assert.IsType<int>(TempData["int"]);
-            Assert.Equal(10, intVal);
+            Assert.Equal(expected, intVal);
         }
 
         [Theory]
@@ -277,13 +280,14 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             Assert.Equal(expected, actual);
         }
 
-        [Fact]
-        public void SaveAndLoad_LongCanBeSavedAndLoaded()
+        [Theory]
+        [InlineData(3100000000L)]
+        [InlineData(-3100000000L)]
+        public void SaveAndLoad_LongCanBeSavedAndLoaded(long expected)
         {
             // Arrange
             var key = "LongValue";
             var testProvider = new SessionStateTempDataProvider();
-            var expected = 3100000000L;
             var input = new Dictionary<string, object>
             {
                 { key, expected }

@@ -132,7 +132,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                     else if (item.Value is long)
                     {
                         var longValue = (long)item.Value;
-                        if (longValue < int.MaxValue)
+                        if (longValue >= int.MinValue && longValue <= int.MaxValue)
                         {
                             // BsonReader casts all ints to longs. We'll attempt to work around this by force converting
                             // longs to ints when there's no loss of precision.
