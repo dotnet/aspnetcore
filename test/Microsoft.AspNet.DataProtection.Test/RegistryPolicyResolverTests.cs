@@ -13,6 +13,7 @@ using Microsoft.AspNet.Testing.xunit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.OptionsModel;
+using Microsoft.Extensions.PlatformAbstractions;
 using Microsoft.Win32;
 using Xunit;
 
@@ -259,7 +260,7 @@ namespace Microsoft.AspNet.DataProtection
 
         private class ConditionalRunTestOnlyIfHkcuRegistryAvailable : Attribute, ITestCondition
         {
-            public bool IsMet => (LazyHkcuTempKey.Value != null);
+            public bool IsMet => (PlatformServices.Default.Runtime.OperatingSystem == "Windows" && LazyHkcuTempKey.Value != null);
 
             public string SkipReason { get; } = "HKCU registry couldn't be opened.";
         }

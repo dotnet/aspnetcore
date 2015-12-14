@@ -16,7 +16,6 @@ namespace Microsoft.AspNet.DataProtection.Repositories
         [ConditionalRunTestOnlyIfLocalAppDataAvailable]
         public void DefaultKeyStorageDirectory_Property()
         {
-
             // Act
             var defaultDirInfo = FileSystemXmlRepository.DefaultKeyStorageDirectory;
 
@@ -160,7 +159,7 @@ namespace Microsoft.AspNet.DataProtection.Repositories
         private static string GetLocalApplicationData()
         {
 #if DNXCORE50
-            return Environment.ExpandEnvironmentVariables("%LOCALAPPDATA%");
+            return Environment.GetEnvironmentVariable("LOCALAPPDATA");
 #else
             return Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
 #endif
