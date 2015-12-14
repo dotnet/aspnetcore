@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Core;
@@ -20,7 +19,7 @@ namespace Microsoft.AspNet.Mvc.Routing
             HttpContext httpContext,
             IRouter route,
             string routeKey,
-            IDictionary<string, object> values,
+            RouteValueDictionary values,
             RouteDirection routeDirection)
         {
             if (httpContext == null)
@@ -43,20 +42,20 @@ namespace Microsoft.AspNet.Mvc.Routing
                 throw new ArgumentNullException(nameof(values));
             }
 
-            object value;
-            if (values.TryGetValue(routeKey, out value))
+            object obj;
+            if (values.TryGetValue(routeKey, out obj))
             {
-                var valueAsString = value as string;
-
-                if (valueAsString != null)
+                var value = obj as string;
+                if (value != null)
                 {
                     var allValues = GetAndCacheAllMatchingValues(routeKey, httpContext);
-                    var match = allValues.Any(existingRouteValue =>
-                                                existingRouteValue.Equals(
-                                                                    valueAsString,
-                                                                    StringComparison.OrdinalIgnoreCase));
-
-                    return match;
+                    foreach (var existingValue in allValues)
+                    {
+                        if (string.Equals(value, existingValue, StringComparison.OrdinalIgnoreCase))
+                        {
+                            return true;
+                        }
+                    }
                 }
             }
 

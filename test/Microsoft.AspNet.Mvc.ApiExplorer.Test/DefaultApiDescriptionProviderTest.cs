@@ -104,8 +104,8 @@ namespace Microsoft.AspNet.Mvc.Description
             var action = CreateActionDescriptor();
             action.ActionConstraints = new List<IActionConstraintMetadata>()
             {
-                new HttpMethodConstraint(new string[] { "PUT", "POST" }),
-                new HttpMethodConstraint(new string[] { "GET" }),
+                new ActionConstraints.HttpMethodConstraint(new string[] { "PUT", "POST" }),
+                new ActionConstraints.HttpMethodConstraint(new string[] { "GET" }),
             };
 
             // Act

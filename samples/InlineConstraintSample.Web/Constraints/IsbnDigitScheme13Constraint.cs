@@ -17,7 +17,7 @@ namespace InlineConstraintSample.Web.Constraints
             HttpContext httpContext,
             IRouter route,
             string routeKey,
-            IDictionary<string, object> values,
+            RouteValueDictionary values,
             RouteDirection routeDirection)
         {
             object value;

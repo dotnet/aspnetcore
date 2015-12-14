@@ -28,7 +28,7 @@ namespace Microsoft.AspNet.Mvc.Routing
         public void RouteKey_DoesNotExist_MatchFails(string keyName, RouteDirection direction)
         {
             // Arrange
-            var values = new Dictionary<string, object>();
+            var values = new RouteValueDictionary();
             var httpContext = GetHttpContext(new ActionDescriptor());
             var route = Mock.Of<IRouter>();
 
@@ -57,13 +57,13 @@ namespace Microsoft.AspNet.Mvc.Routing
             actionDescriptor.RouteConstraints.Add(new RouteDataActionConstraint("randomKey", "testRandom"));
             var httpContext = GetHttpContext(actionDescriptor);
             var route = Mock.Of<IRouter>();
-            var values = new Dictionary<string, object>()
-                         {
-                            { "area", "testArea" },
-                            { "controller", "testController" },
-                            { "action", "testAction" },
-                            { "randomKey", "testRandom" }
-                         };
+            var values = new RouteValueDictionary()
+            {
+                { "area", "testArea" },
+                { "controller", "testController" },
+                { "action", "testAction" },
+                { "randomKey", "testRandom" }
+            };
 
             // Act
             var match = _constraint.Match(httpContext, route, keyName, values, direction);
@@ -90,13 +90,13 @@ namespace Microsoft.AspNet.Mvc.Routing
             actionDescriptor.RouteConstraints.Add(new RouteDataActionConstraint("randomKey", "testRandom"));
             var httpContext = GetHttpContext(actionDescriptor);
             var route = Mock.Of<IRouter>();
-            var values = new Dictionary<string, object>()
-                         {
-                            { "area", "invalidTestArea" },
-                            { "controller", "invalidTestController" },
-                            { "action", "invalidTestAction" },
-                            { "randomKey", "invalidTestRandom" }
-                         };
+            var values = new RouteValueDictionary()
+            {
+                { "area", "invalidTestArea" },
+                { "controller", "invalidTestController" },
+                { "action", "invalidTestAction" },
+                { "randomKey", "invalidTestRandom" }
+            };
 
             // Act
             var match = _constraint.Match(httpContext, route, keyName, values, direction);
@@ -115,10 +115,10 @@ namespace Microsoft.AspNet.Mvc.Routing
                                                           action: null);
             var httpContext = GetHttpContext(actionDescriptor);
             var route = Mock.Of<IRouter>();
-            var values = new Dictionary<string, object>()
-                         {
-                            { "area", 12 },
-                         };
+            var values = new RouteValueDictionary()
+            {
+                { "area", 12 },
+            };
 
             // Act
             var match = _constraint.Match(httpContext, route, "area", values, direction);
@@ -145,7 +145,7 @@ namespace Microsoft.AspNet.Mvc.Routing
                     httpContext.Object,
                     Mock.Of<IRouter>(),
                     "area",
-                    new Dictionary<string, object> { { "area", "area" } },
+                    new RouteValueDictionary { { "area", "area" } },
                     direction));
             var providerName = actionDescriptorCollectionProvider.GetType().FullName;
             Assert.Equal(
