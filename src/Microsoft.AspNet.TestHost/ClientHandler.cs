@@ -94,7 +94,7 @@ namespace Microsoft.AspNet.TestHost
                     }
                 });
 
-            return await state.ResponseTask;
+            return await state.ResponseTask.ConfigureAwait(false);
         }
 
         private class RequestState

@@ -353,7 +353,7 @@ namespace Microsoft.AspNet.TestHost
 
         [ConditionalFact]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Hangs randomly (issue #507)")]
-        public void CancelAborts()
+        public async Task CancelAborts()
         {
             TestServer server = TestServer.Create(app =>
             {
@@ -365,7 +365,7 @@ namespace Microsoft.AspNet.TestHost
                 });
             });
 
-            Assert.Throws<AggregateException>(() => { string result = server.CreateClient().GetStringAsync("/path").Result; });
+            await Assert.ThrowsAsync<TaskCanceledException>(async () => { string result = await server.CreateClient().GetStringAsync("/path"); });
         }
 
         [ConditionalFact]
