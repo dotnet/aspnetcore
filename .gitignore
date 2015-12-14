@@ -1,16 +1,10 @@
 [Oo]bj/
 [Bb]in/
-.nuget/
 packages/
 artifacts/
-PublishProfiles/
 *.user
 *.suo
-nuget.exe
-*.userprefs
-*DS_Store
 node_modules
-*.sln.ide
 project.lock.json
 .vs/
 npm-debug.log
