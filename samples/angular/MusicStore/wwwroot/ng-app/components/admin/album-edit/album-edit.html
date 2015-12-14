@@ -37,6 +37,7 @@
 
     <form-field>
         <div *ng-if="changesSaved" class="alert alert-success"><b>Done!</b> Your changes were saved.</div>
+        <div *ng-for="#errorMessage of formErrors" class="alert alert-danger">{{ errorMessage }}</div>
         <button type="submit" class="btn btn-primary">Submit</button>
         <button type="button" class="btn btn-danger" (click)="deleteprompt.show(originalAlbum)">Delete</button>
         <a class="btn btn-default" [router-link]="['/Admin/Albums']">Back to List</a>

@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using System.ComponentModel.DataAnnotations;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Authorization;
 using Microsoft.AspNet.Mvc;
@@ -118,7 +120,7 @@ namespace MusicStore.Apis
             if (!ModelState.IsValid)
             {
                 // Return the model errors
-                return new ValidationErrorResult(ModelState);
+                return HttpBadRequest(ModelState);
             }
 
             var dbAlbum = await _storeContext.Albums.SingleOrDefaultAsync(a => a.AlbumId == albumId);
@@ -165,7 +167,7 @@ namespace MusicStore.Apis
     }
 
     [ModelMetadataType(typeof(Album))]
-    public class AlbumChangeDto
+    public class AlbumChangeDto : IValidatableObject
     {
         public int GenreId { get; set; }
 
@@ -176,6 +178,21 @@ namespace MusicStore.Apis
         public decimal Price { get; set; }
 
         public string AlbumArtUrl { get; set; }
+
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            // An example of object-level (i.e., multi-property) validation
+            if (this.GenreId == 13 /* Indie */) {
+                switch (SentimentAnalysis.GetSentiment(Title)) {
+                    case SentimentAnalysis.SentimentResult.Positive:
+                        yield return new ValidationResult("Sounds too positive. Indie music requires more ambiguity.");
+                        break;
+                    case SentimentAnalysis.SentimentResult.Negative:
+                        yield return new ValidationResult("Sounds too negative. Indie music requires more ambiguity.");
+                        break;
+                }
+            }
+        }
     }
 
     public class AlbumResultDto : AlbumChangeDto

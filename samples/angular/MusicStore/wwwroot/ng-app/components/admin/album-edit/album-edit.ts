@@ -69,7 +69,7 @@ export class AlbumEdit {
             var albumId = this.originalAlbum.AlbumId;
             
             this._putJson(`/api/albums/${ albumId }/update`, this.form.value).subscribe(response => {
-                if (response.ok) {
+                if (response.status === 200) {
                     this.changesSaved = true;
                 } else {
                     AspNet.Validation.showValidationErrors(response, this.form);
@@ -87,6 +87,10 @@ export class AlbumEdit {
         return this._http.put(url, JSON.stringify(body), {
             headers: new Headers({ 'Content-Type': 'application/json' })
         });
+    }
+    
+    public get formErrors() {
+        return Object.keys(this.form.errors || {});
     }
 }
 

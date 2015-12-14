@@ -14,16 +14,19 @@ export class Validation {
         var errors = <ValidationErrorResult>response;
         Object.keys(errors || {}).forEach(key => {
             errors[key].forEach(errorMessage => {
-                // This in particular is rough
-                if (!controlGroup.controls[key].errors) {
-                    (<any>controlGroup.controls[key])._errors = {};
+                // If there's a specific control for this key, then use it. Otherwise associate the error
+                // with the whole control group.
+                var control = controlGroup.controls[key] || controlGroup;
+                
+                // This is rough. Need to find out if there's a better way, or if this is even supported.
+                if (!control.errors) {
+                    (<any>control)._errors = {};
                 }
                 
-                controlGroup.controls[key].errors[errorMessage] = true;
+                control.errors[errorMessage] = true;
             });
         });
     }
-
 }
 
 export interface ValidationErrorResult {
