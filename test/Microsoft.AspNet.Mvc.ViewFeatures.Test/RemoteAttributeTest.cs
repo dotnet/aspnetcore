@@ -516,10 +516,12 @@ namespace Microsoft.AspNet.Mvc
 
         private static RouteBuilder GetRouteBuilder(IServiceProvider serviceProvider)
         {
-            var builder = new RouteBuilder
-            {
-                ServiceProvider = serviceProvider,
-            };
+            var app = new Mock<IApplicationBuilder>();
+            app
+                .SetupGet(a => a.ApplicationServices)
+                .Returns(serviceProvider);
+
+            var builder = new RouteBuilder(app.Object);
 
             var handler = new Mock<IRouter>(MockBehavior.Strict);
             handler

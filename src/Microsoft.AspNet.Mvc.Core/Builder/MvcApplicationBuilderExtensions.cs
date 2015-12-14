@@ -79,10 +79,9 @@ namespace Microsoft.AspNet.Builder
             // We use the MvcMarkerService to make sure if all the services were added.
             MvcServicesHelper.ThrowIfMvcNotRegistered(app.ApplicationServices);
 
-            var routes = new RouteBuilder
+            var routes = new RouteBuilder(app)
             {
                 DefaultHandler = new MvcRouteHandler(),
-                ServiceProvider = app.ApplicationServices
             };
 
             configureRoutes(routes);
