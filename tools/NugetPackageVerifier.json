@@ -301,8 +301,6 @@
             // don't run any rules for packages the ADX team creates but doesn't ship
         ],
         "packages": {
-            "Benchmarks.Framework": { },
-            "Benchmarks.Utility": { },
             "EntityFramework.Core.FunctionalTests": { },
             "EntityFramework.Relational.FunctionalTests": { },
             "EntityFramework.Relational.Design.FunctionalTests": { },
