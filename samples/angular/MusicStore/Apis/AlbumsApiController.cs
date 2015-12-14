@@ -98,7 +98,7 @@ namespace MusicStore.Apis
             if (!ModelState.IsValid)
             {
                 // Return the model errors
-                return new ValidationErrorResult(ModelState);
+                return HttpBadRequest(ModelState);
             }
 
             // Save the changes to the DB

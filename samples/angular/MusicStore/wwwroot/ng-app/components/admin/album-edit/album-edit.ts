@@ -89,8 +89,8 @@ export class AlbumEdit {
         });
     }
     
-    public get formErrors() {
-        return Object.keys(this.form.errors || {});
+    public get formErrors(): string[] {
+        return this.form.dirty ? Object.keys(this.form.errors || {}) : [];
     }
 }
 

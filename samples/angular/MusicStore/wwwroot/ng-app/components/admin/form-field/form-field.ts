@@ -12,7 +12,7 @@ export class FormField {
     private validate: ng.AbstractControl;
 
     public get errorMessages() {
-        var errors = (this.validate && this.validate.touched && this.validate.errors) || {};
+        var errors = (this.validate && this.validate.dirty && this.validate.errors) || {};
         return Object.keys(errors).map(key => {
             return 'Error: ' + key;
         });
