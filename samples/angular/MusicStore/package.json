@@ -16,7 +16,6 @@
   },
   "devDependencies": {
     "del": "^2.0.2",
-    "event-stream": "^3.3.1",
     "gulp": "^3.9.0",
     "gulp-inline-ng2-template": "0.0.7",
     "gulp-sourcemaps": "^1.6.0",

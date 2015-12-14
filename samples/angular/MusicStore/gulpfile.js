@@ -5,7 +5,6 @@
 var path = require('path');
 var gulp = require('gulp');
 var del = require('del');
-var eventStream = require('event-stream');
 var typescript = require('gulp-typescript');
 var inlineNg2Template = require('gulp-inline-ng2-template');
 var sourcemaps = require('gulp-sourcemaps');
@@ -40,7 +39,7 @@ gulp.task('build', ['build.lib'], function () {
     var tsProject = typescript.createProject('./tsconfig.json', { typescript: require('typescript') });
     var tsSrcInlined = gulp.src([webroot + '**/*.ts'], { base: webroot })
         .pipe(inlineNg2Template({ base: webroot }));
-    return eventStream.merge(tsSrcInlined, gulp.src('Typings/**/*.ts'))
+    return tsSrcInlined
         .pipe(sourcemaps.init())
         .pipe(typescript(tsProject))
         .pipe(sourcemaps.write())
