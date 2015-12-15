@@ -30,11 +30,11 @@ namespace Microsoft.AspNet.Builder
         /// Captures synchronous and asynchronous <see cref="Exception"/> instances from the pipeline and generates HTML error responses.
         /// </summary>
         /// <param name="builder">The <see cref="IApplicationBuilder"/>.</param>
-        /// <param name="configureOptions">A callback to configure <see cref="ErrorPageOptions"/>.</param>
+        /// <param name="configureOptions">A callback to configure <see cref="DeveloperExceptionPageOptions"/>.</param>
         /// <returns>A reference to the <paramref name="builder"/> after the operation has completed.</returns>
         public static IApplicationBuilder UseDeveloperExceptionPage(
             this IApplicationBuilder builder,
-            Action<ErrorPageOptions> configureOptions)
+            Action<DeveloperExceptionPageOptions> configureOptions)
         {
             if (builder == null)
             {
@@ -46,7 +46,7 @@ namespace Microsoft.AspNet.Builder
                 throw new ArgumentNullException(nameof(configureOptions));
             }
 
-            var options = new ErrorPageOptions();
+            var options = new DeveloperExceptionPageOptions();
             configureOptions(options);
             return builder.UseMiddleware<DeveloperExceptionPageMiddleware>(options);
         }

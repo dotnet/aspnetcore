@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Diagnostics.Views
         /// <summary>
         /// Options for what output to display.
         /// </summary>
-        public ErrorPageOptions Options { get; set; }
+        public DeveloperExceptionPageOptions Options { get; set; }
 
         /// <summary>
         /// Detailed information about each exception in the stack.

@@ -293,17 +293,17 @@ namespace Microsoft.AspNet.Diagnostics
         private DeveloperExceptionPageMiddleware GetErrorPageMiddleware(
             IFileProvider fileProvider = null, int sourceCodeLineCount = 6)
         {
-            var errorPageOptions = new ErrorPageOptions();
-            errorPageOptions.SourceCodeLineCount = sourceCodeLineCount;
+            var options = new DeveloperExceptionPageOptions();
+            options.SourceCodeLineCount = sourceCodeLineCount;
 
             if (fileProvider != null)
             {
-                errorPageOptions.FileProvider = fileProvider;
+                options.FileProvider = fileProvider;
             }
 
             var middleware = new DeveloperExceptionPageMiddleware(
                 (httpContext) => { return Task.FromResult(0); },
-                errorPageOptions,
+                options,
                 new LoggerFactory(),
                 new TestApplicationEnvironment(),
                 new DiagnosticListener("Microsoft.Aspnet"));

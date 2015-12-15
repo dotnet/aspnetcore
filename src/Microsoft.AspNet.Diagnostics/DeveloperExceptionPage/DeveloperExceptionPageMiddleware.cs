@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.Diagnostics
     public class DeveloperExceptionPageMiddleware
     {
         private readonly RequestDelegate _next;
-        private readonly ErrorPageOptions _options;
+        private readonly DeveloperExceptionPageOptions _options;
         private static readonly bool IsMono = Type.GetType("Mono.Runtime") != null;
         private readonly ILogger _logger;
         private readonly IFileProvider _fileProvider;
@@ -37,7 +37,7 @@ namespace Microsoft.AspNet.Diagnostics
         /// <param name="options"></param>
         public DeveloperExceptionPageMiddleware(
             RequestDelegate next,
-            ErrorPageOptions options,
+            DeveloperExceptionPageOptions options,
             ILoggerFactory loggerFactory,
             IApplicationEnvironment appEnvironment,
             DiagnosticSource diagnosticSource)
