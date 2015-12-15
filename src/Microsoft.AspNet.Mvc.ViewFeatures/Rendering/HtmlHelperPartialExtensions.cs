@@ -241,6 +241,94 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <param name="partialViewName">
         /// The name of the partial view used to create the HTML markup. Must not be <c>null</c>.
         /// </param>
+        /// <remarks>
+        /// In this context, "renders" means the method writes its output using <see cref="ViewContext.Writer"/>.
+        /// </remarks>
+        public static void RenderPartial(
+            this IHtmlHelper htmlHelper,
+            string partialViewName)
+        {
+            if (htmlHelper == null)
+            {
+                throw new ArgumentNullException(nameof(htmlHelper));
+            }
+
+            if (partialViewName == null)
+            {
+                throw new ArgumentNullException(nameof(partialViewName));
+            }
+
+            var result = htmlHelper.RenderPartialAsync(partialViewName, htmlHelper.ViewData.Model, viewData: null);
+            result.GetAwaiter().GetResult();
+        }
+
+        /// <summary>
+        /// Renders HTML markup for the specified partial view.
+        /// </summary>
+        /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
+        /// <param name="partialViewName">
+        /// The name of the partial view used to create the HTML markup. Must not be <c>null</c>.
+        /// </param>
+        /// <param name="viewData">A <see cref="ViewDataDictionary"/> to pass into the partial view.</param>
+        /// <remarks>
+        /// In this context, "renders" means the method writes its output using <see cref="ViewContext.Writer"/>.
+        /// </remarks>
+        public static void RenderPartial(
+            this IHtmlHelper htmlHelper,
+            string partialViewName,
+            ViewDataDictionary viewData)
+        {
+            if (htmlHelper == null)
+            {
+                throw new ArgumentNullException(nameof(htmlHelper));
+            }
+
+            if (partialViewName == null)
+            {
+                throw new ArgumentNullException(nameof(partialViewName));
+            }
+
+            var result = htmlHelper.RenderPartialAsync(partialViewName, htmlHelper.ViewData.Model, viewData);
+            result.GetAwaiter().GetResult();
+        }
+
+        /// <summary>
+        /// Renders HTML markup for the specified partial view.
+        /// </summary>
+        /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
+        /// <param name="partialViewName">
+        /// The name of the partial view used to create the HTML markup. Must not be <c>null</c>.
+        /// </param>
+        /// <param name="model">A model to pass into the partial view.</param>
+        /// <remarks>
+        /// In this context, "renders" means the method writes its output using <see cref="ViewContext.Writer"/>.
+        /// </remarks>
+        public static void RenderPartial(
+            this IHtmlHelper htmlHelper,
+            string partialViewName,
+            object model)
+        {
+            if (htmlHelper == null)
+            {
+                throw new ArgumentNullException(nameof(htmlHelper));
+            }
+
+            if (partialViewName == null)
+            {
+                throw new ArgumentNullException(nameof(partialViewName));
+            }
+
+            var result = htmlHelper.RenderPartialAsync(partialViewName, model, viewData: null);
+            result.GetAwaiter().GetResult();
+        }
+
+        /// <summary>
+        /// Renders HTML markup for the specified partial view.
+        /// </summary>
+        /// <param name="htmlHelper">The <see cref="IHtmlHelper"/> instance this method extends.</param>
+        /// <param name="partialViewName">
+        /// The name of the partial view used to create the HTML markup. Must not be <c>null</c>.
+        /// </param>
         /// <returns>A <see cref="Task"/> that renders the created HTML when it executes.</returns>
         /// <remarks>
         /// In this context, "renders" means the method writes its output using <see cref="ViewContext.Writer"/>.

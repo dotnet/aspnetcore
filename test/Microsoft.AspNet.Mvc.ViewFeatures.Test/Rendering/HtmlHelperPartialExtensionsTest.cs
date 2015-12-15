@@ -141,6 +141,79 @@ namespace Microsoft.AspNet.Mvc.Rendering
         }
 
         // Func<IHtmlHelper, IHtmlContent>, expected Model, expected ViewDataDictionary
+        public static TheoryData<Action<IHtmlHelper>, object, ViewDataDictionary> RenderPartialExtensionMethods
+        {
+            get
+            {
+                var viewData = new ViewDataDictionary(new EmptyModelMetadataProvider());
+                var model = new object();
+                return new TheoryData<Action<IHtmlHelper>, object, ViewDataDictionary>
+                {
+                    { helper => helper.RenderPartial("test"), null, null },
+                    { helper => helper.RenderPartial("test", model), model, null },
+                    { helper => helper.RenderPartial("test", viewData), null, viewData },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(RenderPartialExtensionMethods))]
+        public void RenderPartialMethods_DoesNotWrapThrownException(
+            Action<IHtmlHelper> partialMethod,
+            object unusedModel,
+            ViewDataDictionary unusedViewData)
+        {
+            // Arrange
+            var expected = new InvalidOperationException();
+            var helper = new Mock<IHtmlHelper>();
+            helper.Setup(h => h.RenderPartialAsync("test", It.IsAny<object>(), It.IsAny<ViewDataDictionary>()))
+                  .Callback(() =>
+                  {
+                      // Workaround for compilation issue with Moq.
+                      helper.ToString();
+                      throw expected;
+                  });
+            helper.SetupGet(h => h.ViewData)
+                  .Returns(new ViewDataDictionary(new EmptyModelMetadataProvider()));
+
+            // Act and Assert
+            var actual = Assert.Throws<InvalidOperationException>(() => partialMethod(helper.Object));
+            Assert.Same(expected, actual);
+        }
+
+        [Theory]
+        [MemberData(nameof(RenderPartialAsyncExtensionMethods))]
+        public async Task RenderPartialMethods_CallHtmlHelperWithExpectedArguments(
+            Func<IHtmlHelper, Task> renderPartialAsyncMethod,
+            object expectedModel,
+            ViewDataDictionary expectedViewData)
+        {
+            // Arrange
+            var htmlContent = Mock.Of<IHtmlContent>();
+            var helper = new Mock<IHtmlHelper>(MockBehavior.Strict);
+            if (expectedModel == null)
+            {
+                // Extension methods without model parameter use ViewData.Model to get Model.
+                var viewData = expectedViewData ?? new ViewDataDictionary(new EmptyModelMetadataProvider());
+                helper
+                    .SetupGet(h => h.ViewData)
+                    .Returns(viewData)
+                    .Verifiable();
+            }
+
+            helper
+                .Setup(h => h.RenderPartialAsync("test", expectedModel, expectedViewData))
+                .Returns(Task.FromResult(true))
+                .Verifiable();
+
+            // Act
+            await renderPartialAsyncMethod(helper.Object);
+
+            // Assert
+            helper.VerifyAll();
+        }
+
+        // Func<IHtmlHelper, IHtmlContent>, expected Model, expected ViewDataDictionary
         public static TheoryData<Func<IHtmlHelper, Task>, object, ViewDataDictionary> RenderPartialAsyncExtensionMethods
         {
             get
