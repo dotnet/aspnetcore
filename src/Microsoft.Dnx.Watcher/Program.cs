@@ -72,13 +72,6 @@ namespace Microsoft.Dnx.Watcher
 
             app.HelpOption("-?|-h|--help");
 
-            // Show help information if no subcommand/option was specified
-            app.OnExecute(() =>
-            {
-                app.ShowHelp();
-                return 2;
-            });
-
             var projectArg = app.Option(
                 "--project <PATH>",
                 "Path to the project.json file or the application folder. Defaults to the current folder if not provided. Will be passed to DNX.",
