@@ -8,8 +8,10 @@ using System.Linq;
 #if DNXCORE50
 using System.Reflection;
 #endif
+using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNet.Testing;
+using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit;
 
@@ -429,6 +431,49 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             Assert.Equal(ModelValidationState.Invalid, entry.ValidationState);
             error = Assert.Single(entry.Errors);
             Assert.Equal("Error3", error.ErrorMessage);
+        }
+
+        [Fact]
+        public void Validate_ComplexType_IValidatableObject_CanUseRequestServices()
+        {
+            // Arrange
+            var service = new Mock<IExampleService>();
+            service.Setup(x => x.DoSomething()).Verifiable();
+
+            var provider = new ServiceCollection().AddSingleton(service.Object).BuildServiceProvider();
+
+            var httpContext = new Mock<HttpContext>();
+            httpContext.SetupGet(x => x.RequestServices).Returns(provider);
+
+            var actionContext = new ActionContext { HttpContext = httpContext.Object };
+
+            var validatorProvider = CreateValidatorProvider();
+            var modelState = actionContext.ModelState;
+            var validationState = new ValidationStateDictionary();
+
+            var validator = CreateValidator();
+
+            var model = new Mock<IValidatableObject>();
+            model
+                .Setup(x => x.Validate(It.IsAny<ValidationContext>()))
+                .Callback((ValidationContext context) =>
+                {
+                    var receivedService = context.GetService<IExampleService>();
+                    Assert.Equal(service.Object, receivedService);
+                    receivedService.DoSomething();
+                })
+                .Returns(new List<ValidationResult>());
+
+            // Act
+            validator.Validate(
+                actionContext, 
+                validatorProvider, 
+                validationState, 
+                null, 
+                model.Object);
+
+            // Assert
+            service.Verify();
         }
 
         [Fact]
@@ -1070,6 +1115,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
                     yield return new ValidationResult("Password does not meet complexity requirements.");
                 }
             }
+        }
+
+        public interface IExampleService
+        {
+            void DoSomething();
         }
     }
 }

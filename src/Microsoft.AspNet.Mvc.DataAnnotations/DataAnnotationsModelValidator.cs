@@ -82,7 +82,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             var memberName = metadata.PropertyName ?? metadata.ModelType.Name;
             var container = validationContext.Container;
 
-            var context = new ValidationContext(container ?? validationContext.Model)
+            var context = new ValidationContext(
+                instance: container ?? validationContext.Model,
+                serviceProvider: validationContext.ActionContext?.HttpContext?.RequestServices,
+                items: null)
             {
                 DisplayName = metadata.GetDisplayName(),
                 MemberName = memberName

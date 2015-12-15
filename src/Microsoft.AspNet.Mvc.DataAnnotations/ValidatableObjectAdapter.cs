@@ -29,7 +29,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
                 throw new InvalidOperationException(message);
             }
 
-            var validationContext = new ValidationContext(validatable, serviceProvider: null, items: null);
+            var validationContext = new ValidationContext(
+                instance: validatable, 
+                serviceProvider: context.ActionContext?.HttpContext?.RequestServices, 
+                items: null);
+
             return ConvertResults(validatable.Validate(validationContext));
         }
 

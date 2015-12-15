@@ -5,7 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.DataAnnotations;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
 using Moq;
 using Xunit;
@@ -152,7 +154,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
         }
 
         [Fact]
-        public void Validatate_ValidationResultSuccess()
+        public void Validate_ValidationResultSuccess()
         {
             // Arrange
             var metadata = _metadataProvider.GetMetadataForType(typeof(string));
@@ -315,6 +317,50 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
             Assert.Equal("Longueur est invalide : 4", validationResult.Message);
         }
 
+        [Fact]
+        public void Validate_CanUseRequestServices_WithinValidationAttribute()
+        {
+            // Arrange
+            var service = new Mock<IExampleService>();
+            service.Setup(x => x.DoSomething()).Verifiable();
+
+            var provider = new ServiceCollection().AddSingleton(service.Object).BuildServiceProvider();
+
+            var httpContext = new Mock<HttpContext>();
+            httpContext.SetupGet(x => x.RequestServices).Returns(provider);
+
+            var attribute = new Mock<TestableValidationAttribute> { CallBase = true };
+            attribute
+                .Setup(p => p.IsValidPublic(It.IsAny<object>(), It.IsAny<ValidationContext>()))
+                .Callback((object o, ValidationContext context) =>
+                {
+                    var receivedService = context.GetService<IExampleService>();
+                    Assert.Equal(service.Object, receivedService);
+                    receivedService.DoSomething();
+                });
+
+            var validator = new DataAnnotationsModelValidator(
+                new ValidationAttributeAdapterProvider(),
+                attribute.Object,
+                stringLocalizer: null);
+
+            var validationContext = new ModelValidationContext(
+                actionContext: new ActionContext
+                {
+                    HttpContext = httpContext.Object
+                },
+                modelMetadata: _metadataProvider.GetMetadataForType(typeof(object)),
+                metadataProvider: _metadataProvider,
+                container: null,
+                model: new object());
+
+            // Act
+            var results = validator.Validate(validationContext);
+
+            // Assert
+            service.Verify();
+        }
+
         private const string LocalizationKey = "LocalizeIt";
 
         public static TheoryData Validate_AttributesIncludeValues
@@ -429,6 +475,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
         private class SampleModel
         {
             public string Name { get; set; }
+        }
+
+        public interface IExampleService
+        {
+            void DoSomething();
         }
     }
 }
