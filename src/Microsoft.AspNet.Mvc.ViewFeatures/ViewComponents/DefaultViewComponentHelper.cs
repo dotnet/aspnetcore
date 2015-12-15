@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Html;
@@ -10,9 +9,13 @@ using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.AspNet.Mvc.ViewFeatures.Buffer;
 using Microsoft.AspNet.Mvc.ViewFeatures.Internal;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNet.Mvc.ViewComponents
 {
+    /// <summary>
+    /// Default implementation for <see cref="IViewComponentHelper"/>.
+    /// </summary>
     public class DefaultViewComponentHelper : IViewComponentHelper, ICanHasViewContext
     {
         private readonly IViewComponentDescriptorCollectionProvider _descriptorProvider;
@@ -22,6 +25,16 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
         private readonly IViewBufferScope _viewBufferScope;
         private ViewContext _viewContext;
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="DefaultViewComponentHelper"/>.
+        /// </summary>
+        /// <param name="descriptorProvider">The <see cref="IViewComponentDescriptorCollectionProvider"/>
+        /// used to locate view components.</param>
+        /// <param name="htmlEncoder">The <see cref="HtmlEncoder"/>.</param>
+        /// <param name="selector">The <see cref="IViewComponentSelector"/>.</param>
+        /// <param name="invokerFactory">The <see cref="IViewComponentInvokerFactory"/>.</param>
+        /// <param name="viewBufferScope">The <see cref="IViewBufferScope"/> that manages the lifetime of
+        /// <see cref="ViewBuffer"/> instances.</param>
         public DefaultViewComponentHelper(
             IViewComponentDescriptorCollectionProvider descriptorProvider,
             HtmlEncoder htmlEncoder,
@@ -61,6 +74,7 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
             _viewBufferScope = viewBufferScope;
         }
 
+        /// <inheritdoc />
         public void Contextualize(ViewContext viewContext)
         {
             if (viewContext == null)
@@ -71,133 +85,41 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
             _viewContext = viewContext;
         }
 
-        public IHtmlContent Invoke(string name, params object[] arguments)
+        /// <inheritdoc />
+        public Task<IHtmlContent> InvokeAsync(string name, object arguments)
         {
             if (name == null)
             {
                 throw new ArgumentNullException(nameof(name));
             }
 
-            var descriptor = SelectComponent(name);
-
-            var viewBuffer = new ViewBuffer(_viewBufferScope, name);
-            using (var writer = new HtmlContentWrapperTextWriter(viewBuffer, _viewContext.Writer.Encoding))
-            {
-                InvokeCore(writer, descriptor, arguments);
-                return writer.ContentBuilder;
-            }
-        }
-
-        public IHtmlContent Invoke(Type componentType, params object[] arguments)
-        {
-            if (componentType == null)
-            {
-                throw new ArgumentNullException(nameof(componentType));
-            }
-
-            var descriptor = SelectComponent(componentType);
-            var viewBuffer = new ViewBuffer(_viewBufferScope, componentType.Name);
-            using (var writer = new HtmlContentWrapperTextWriter(viewBuffer, _viewContext.Writer.Encoding))
-            {
-                InvokeCore(writer, descriptor, arguments);
-                return writer.ContentBuilder;
-            }
-        }
-
-        public void RenderInvoke(string name, params object[] arguments)
-        {
-            if (name == null)
-            {
-                throw new ArgumentNullException(nameof(name));
-            }
-
-            var descriptor = SelectComponent(name);
-            InvokeCore(_viewContext.Writer, descriptor, arguments);
-        }
-
-        public void RenderInvoke(Type componentType, params object[] arguments)
-        {
-            if (componentType == null)
-            {
-                throw new ArgumentNullException(nameof(componentType));
-            }
-
-            var descriptor = SelectComponent(componentType);
-            InvokeCore(_viewContext.Writer, descriptor, arguments);
-        }
-
-        public async Task<IHtmlContent> InvokeAsync(string name, params object[] arguments)
-        {
-            if (name == null)
-            {
-                throw new ArgumentNullException(nameof(name));
-            }
-
-            var descriptor = SelectComponent(name);
-
-            var viewBuffer = new ViewBuffer(_viewBufferScope, name);
-            using (var writer = new HtmlContentWrapperTextWriter(viewBuffer, _viewContext.Writer.Encoding))
-            {
-                await InvokeCoreAsync(writer, descriptor, arguments);
-                return writer.ContentBuilder;
-            }
-        }
-
-        public async Task<IHtmlContent> InvokeAsync(Type componentType, params object[] arguments)
-        {
-            if (componentType == null)
-            {
-                throw new ArgumentNullException(nameof(componentType));
-            }
-
-            var descriptor = SelectComponent(componentType);
-
-            var viewBuffer = new ViewBuffer(_viewBufferScope, componentType.Name);
-            using (var writer = new HtmlContentWrapperTextWriter(viewBuffer, _viewContext.Writer.Encoding))
-            {
-                await InvokeCoreAsync(writer, descriptor, arguments);
-                return writer.ContentBuilder;
-            }
-        }
-
-        public Task RenderInvokeAsync(string name, params object[] arguments)
-        {
-            if (name == null)
-            {
-                throw new ArgumentNullException(nameof(name));
-            }
-
-            var descriptor = SelectComponent(name);
-            return InvokeCoreAsync(_viewContext.Writer, descriptor, arguments);
-        }
-
-        public Task RenderInvokeAsync(Type componentType, params object[] arguments)
-        {
-            if (componentType == null)
-            {
-                throw new ArgumentNullException(nameof(componentType));
-            }
-
-            var descriptor = SelectComponent(componentType);
-            return InvokeCoreAsync(_viewContext.Writer, descriptor, arguments);
-        }
-
-        private ViewComponentDescriptor SelectComponent(string name)
-        {
             var descriptor = _selector.SelectComponent(name);
             if (descriptor == null)
             {
                 throw new InvalidOperationException(Resources.FormatViewComponent_CannotFindComponent(name));
             }
 
-            return descriptor;
+            return InvokeCoreAsync(descriptor, arguments);
+        }
+
+        /// <inheritdoc />
+        public Task<IHtmlContent> InvokeAsync(Type componentType, object arguments)
+        {
+            if (componentType == null)
+            {
+                throw new ArgumentNullException(nameof(componentType));
+            }
+
+            var descriptor = SelectComponent(componentType);
+            return InvokeCoreAsync(descriptor, arguments);
         }
 
         private ViewComponentDescriptor SelectComponent(Type componentType)
         {
             var descriptors = _descriptorProvider.ViewComponents;
-            foreach (var descriptor in descriptors.Items)
+            for (var i = 0; i < descriptors.Items.Count; i++)
             {
+                var descriptor = descriptors.Items[i];
                 if (descriptor.Type == componentType)
                 {
                     return descriptor;
@@ -208,58 +130,30 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
                 componentType.FullName));
         }
 
-        private Task InvokeCoreAsync(
-            TextWriter writer,
+        private async Task<IHtmlContent> InvokeCoreAsync(
             ViewComponentDescriptor descriptor,
-            object[] arguments)
+            object arguments)
         {
-            if (writer == null)
+            var viewBuffer = new ViewBuffer(_viewBufferScope, descriptor.FullName);
+            using (var writer = new HtmlContentWrapperTextWriter(viewBuffer, _viewContext.Writer.Encoding))
             {
-                throw new ArgumentNullException(nameof(writer));
+                var context = new ViewComponentContext(
+                    descriptor,
+                    PropertyHelper.ObjectToDictionary(arguments),
+                    _htmlEncoder,
+                    _viewContext,
+                    writer);
+
+                var invoker = _invokerFactory.CreateInstance(context);
+                if (invoker == null)
+                {
+                    throw new InvalidOperationException(
+                        Resources.FormatViewComponent_IViewComponentFactory_ReturnedNull(descriptor.FullName));
+                }
+
+                await invoker.InvokeAsync(context);
+                return writer.ContentBuilder;
             }
-
-            if (descriptor == null)
-            {
-                throw new ArgumentNullException(nameof(descriptor));
-            }
-
-            var context = new ViewComponentContext(descriptor, arguments, _htmlEncoder, _viewContext, writer);
-
-            var invoker = _invokerFactory.CreateInstance(context);
-            if (invoker == null)
-            {
-                throw new InvalidOperationException(
-                    Resources.FormatViewComponent_IViewComponentFactory_ReturnedNull(descriptor.Type.FullName));
-            }
-
-            return invoker.InvokeAsync(context);
-        }
-
-        private void InvokeCore(
-            TextWriter writer,
-            ViewComponentDescriptor descriptor,
-            object[] arguments)
-        {
-            if (writer == null)
-            {
-                throw new ArgumentNullException(nameof(writer));
-            }
-
-            if (descriptor == null)
-            {
-                throw new ArgumentNullException(nameof(descriptor));
-            }
-
-            var context = new ViewComponentContext(descriptor, arguments, _htmlEncoder, _viewContext, writer);
-
-            var invoker = _invokerFactory.CreateInstance(context);
-            if (invoker == null)
-            {
-                throw new InvalidOperationException(
-                    Resources.FormatViewComponent_IViewComponentFactory_ReturnedNull(descriptor.Type.FullName));
-            }
-
-            invoker.Invoke(context);
         }
     }
 }

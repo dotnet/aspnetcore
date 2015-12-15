@@ -6,7 +6,7 @@ using System.Collections.Generic;
 namespace Microsoft.AspNet.Mvc.ViewComponents
 {
     /// <summary>
-    /// Discovers the View Components in the application.
+    /// Discovers the view components in the application.
     /// </summary>
     public interface IViewComponentDescriptorProvider
     {

@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         }
 
         /// <summary>
-        /// The async view component method '{0}' should be declared to return Task&lt;T&gt;.
+        /// Method '{0}' of view component '{1}' should be declared to return {2}&lt;T&gt;.
         /// </summary>
         internal static string ViewComponent_AsyncMethod_ShouldReturnTask
         {
@@ -35,11 +35,11 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         }
 
         /// <summary>
-        /// The async view component method '{0}' should be declared to return Task&lt;T&gt;.
+        /// Method '{0}' of view component '{1}' should be declared to return {2}&lt;T&gt;.
         /// </summary>
-        internal static string FormatViewComponent_AsyncMethod_ShouldReturnTask(object p0)
+        internal static string FormatViewComponent_AsyncMethod_ShouldReturnTask(object p0, object p1, object p2)
         {
-            return string.Format(CultureInfo.CurrentCulture, GetString("ViewComponent_AsyncMethod_ShouldReturnTask"), p0);
+            return string.Format(CultureInfo.CurrentCulture, GetString("ViewComponent_AsyncMethod_ShouldReturnTask"), p0, p1, p2);
         }
 
         /// <summary>
@@ -59,7 +59,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         }
 
         /// <summary>
-        /// The view component method '{0}' should be declared to return a value.
+        /// Method '{0}' of view component '{1}' should be declared to return a value.
         /// </summary>
         internal static string ViewComponent_SyncMethod_ShouldReturnValue
         {
@@ -67,11 +67,11 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         }
 
         /// <summary>
-        /// The view component method '{0}' should be declared to return a value.
+        /// Method '{0}' of view component '{1}' should be declared to return a value.
         /// </summary>
-        internal static string FormatViewComponent_SyncMethod_ShouldReturnValue(object p0)
+        internal static string FormatViewComponent_SyncMethod_ShouldReturnValue(object p0, object p1)
         {
-            return string.Format(CultureInfo.CurrentCulture, GetString("ViewComponent_SyncMethod_ShouldReturnValue"), p0);
+            return string.Format(CultureInfo.CurrentCulture, GetString("ViewComponent_SyncMethod_ShouldReturnValue"), p0, p1);
         }
 
         /// <summary>
@@ -107,7 +107,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         }
 
         /// <summary>
-        /// Could not find an '{0}' method matching the parameters.
+        /// Could not find an '{0}' or '{1}' method for the view component '{2}'.
         /// </summary>
         internal static string ViewComponent_CannotFindMethod
         {
@@ -115,27 +115,11 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         }
 
         /// <summary>
-        /// Could not find an '{0}' method matching the parameters.
+        /// Could not find an '{0}' or '{1}' method for the view component '{2}'.
         /// </summary>
-        internal static string FormatViewComponent_CannotFindMethod(object p0)
+        internal static string FormatViewComponent_CannotFindMethod(object p0, object p1, object p2)
         {
-            return string.Format(CultureInfo.CurrentCulture, GetString("ViewComponent_CannotFindMethod"), p0);
-        }
-
-        /// <summary>
-        /// Could not find an '{0}' or '{1}' method matching the parameters.
-        /// </summary>
-        internal static string ViewComponent_CannotFindMethod_WithFallback
-        {
-            get { return GetString("ViewComponent_CannotFindMethod_WithFallback"); }
-        }
-
-        /// <summary>
-        /// Could not find an '{0}' or '{1}' method matching the parameters.
-        /// </summary>
-        internal static string FormatViewComponent_CannotFindMethod_WithFallback(object p0, object p1)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("ViewComponent_CannotFindMethod_WithFallback"), p0, p1);
+            return string.Format(CultureInfo.CurrentCulture, GetString("ViewComponent_CannotFindMethod"), p0, p1, p2);
         }
 
         /// <summary>
@@ -859,7 +843,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         }
 
         /// <summary>
-        /// The view component method '{0}' cannot return a {1}.
+        /// Method '{0}' of view component '{1}' cannot return a {2}.
         /// </summary>
         internal static string ViewComponent_SyncMethod_CannotReturnTask
         {
@@ -867,11 +851,27 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         }
 
         /// <summary>
-        /// The view component method '{0}' cannot return a {1}.
+        /// Method '{0}' of view component '{1}' cannot return a {2}.
         /// </summary>
-        internal static string FormatViewComponent_SyncMethod_CannotReturnTask(object p0, object p1)
+        internal static string FormatViewComponent_SyncMethod_CannotReturnTask(object p0, object p1, object p2)
         {
-            return string.Format(CultureInfo.CurrentCulture, GetString("ViewComponent_SyncMethod_CannotReturnTask"), p0, p1);
+            return string.Format(CultureInfo.CurrentCulture, GetString("ViewComponent_SyncMethod_CannotReturnTask"), p0, p1, p2);
+        }
+
+        /// <summary>
+        /// View component '{0}' must have exactly one public method named '{1}' or '{2}'.
+        /// </summary>
+        internal static string ViewComponent_AmbiguousMethods
+        {
+            get { return GetString("ViewComponent_AmbiguousMethods"); }
+        }
+
+        /// <summary>
+        /// View component '{0}' must have exactly one public method named '{1}' or '{2}'.
+        /// </summary>
+        internal static string FormatViewComponent_AmbiguousMethods(object p0, object p1, object p2)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("ViewComponent_AmbiguousMethods"), p0, p1, p2);
         }
 
         private static string GetString(string name, params string[] formatterNames)

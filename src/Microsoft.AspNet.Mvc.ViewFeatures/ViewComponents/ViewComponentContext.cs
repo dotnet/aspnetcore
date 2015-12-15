@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text.Encodings.Web;
 using Microsoft.AspNet.Mvc.Rendering;
@@ -10,7 +11,7 @@ using Microsoft.AspNet.Mvc.ViewFeatures;
 namespace Microsoft.AspNet.Mvc.ViewComponents
 {
     /// <summary>
-    /// A context for View Components.
+    /// A context for view components.
     /// </summary>
     public class ViewComponentContext
     {
@@ -23,7 +24,6 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
         public ViewComponentContext()
         {
             ViewComponentDescriptor = new ViewComponentDescriptor();
-            Arguments = new object[0];
             ViewContext = new ViewContext();
         }
 
@@ -31,14 +31,14 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
         /// Creates a new <see cref="ViewComponentContext"/>.
         /// </summary>
         /// <param name="viewComponentDescriptor">
-        /// The <see cref="ViewComponentContext"/> for the View Component being invoked.
+        /// The <see cref="ViewComponentContext"/> for the view component being invoked.
         /// </param>
-        /// <param name="arguments">The View Component arguments.</param>
+        /// <param name="arguments">The view component arguments.</param>
         /// <param name="viewContext">The <see cref="ViewContext"/>.</param>
         /// <param name="writer">The <see cref="TextWriter"/> for writing output.</param>
         public ViewComponentContext(
             ViewComponentDescriptor viewComponentDescriptor,
-            object[] arguments,
+            IDictionary<string, object> arguments,
             HtmlEncoder htmlEncoder,
             ViewContext viewContext,
             TextWriter writer)
@@ -82,15 +82,15 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
         }
 
         /// <summary>
-        /// Gets or sets the View Component arguments.
+        /// Gets or sets the view component arguments.
         /// </summary>
         /// <remarks>
         /// The property setter is provided for unit test purposes only.
         /// </remarks>
-        public object[] Arguments { get; set; }
+        public IDictionary<string, object> Arguments { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="HtmlEncoder"/>.
+        /// Gets or sets the <see cref="System.Text.Encodings.Web.HtmlEncoder"/>.
         /// </summary>
         /// <remarks>
         /// The property setter is provided for unit test purposes only.
@@ -98,7 +98,7 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
         public HtmlEncoder HtmlEncoder { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="ViewComponentDescriptor"/> for the View Component being invoked.
+        /// Gets or sets the <see cref="ViewComponents.ViewComponentDescriptor"/> for the view component being invoked.
         /// </summary>
         /// <remarks>
         /// The property setter is provided for unit test purposes only.
@@ -106,7 +106,7 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
         public ViewComponentDescriptor ViewComponentDescriptor { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="ViewContext"/>.
+        /// Gets or sets the <see cref="Rendering.ViewContext"/>.
         /// </summary>
         /// <remarks>
         /// The property setter is provided for unit test purposes only.

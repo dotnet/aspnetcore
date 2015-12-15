@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Reflection;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
@@ -42,13 +43,14 @@ namespace Microsoft.AspNet.Mvc
                 FullName = "Full.Name.Text",
                 ShortName = "Text",
                 Type = typeof(TextViewComponent),
+                MethodInfo = typeof(TextViewComponent).GetMethod(nameof(TextViewComponent.Invoke)),
             };
 
             var actionContext = CreateActionContext(descriptor);
 
             var viewComponentResult = new ViewComponentResult
             {
-                Arguments = new object[] { "World!" },
+                Arguments = new { name = "World!" },
                 ViewData = null,
                 TempData = null,
                 ViewComponentName = "Text"
@@ -132,13 +134,43 @@ namespace Microsoft.AspNet.Mvc
                 FullName = "Full.Name.Text",
                 ShortName = "Text",
                 Type = typeof(TextViewComponent),
+                MethodInfo = typeof(TextViewComponent).GetMethod(nameof(TextViewComponent.Invoke)),
             };
 
             var actionContext = CreateActionContext(descriptor);
 
             var viewComponentResult = new ViewComponentResult()
             {
-                Arguments = new object[] { "World!" },
+                Arguments = new { name = "World!" },
+                ViewComponentName = "Text",
+                TempData = _tempDataDictionary,
+            };
+
+            // Act
+            await viewComponentResult.ExecuteResultAsync(actionContext);
+
+            // Assert
+            var body = ReadBody(actionContext.HttpContext.Response);
+            Assert.Equal("Hello, World!", body);
+        }
+
+        [Fact]
+        public async Task ExecuteResultAsync_UsesDictionaryArguments()
+        {
+            // Arrange
+            var descriptor = new ViewComponentDescriptor()
+            {
+                FullName = "Full.Name.Text",
+                ShortName = "Text",
+                Type = typeof(TextViewComponent),
+                MethodInfo = typeof(TextViewComponent).GetMethod(nameof(TextViewComponent.Invoke)),
+            };
+
+            var actionContext = CreateActionContext(descriptor);
+
+            var viewComponentResult = new ViewComponentResult()
+            {
+                Arguments = new Dictionary<string, object> { ["name"] = "World!" },
                 ViewComponentName = "Text",
                 TempData = _tempDataDictionary,
             };
@@ -160,13 +192,14 @@ namespace Microsoft.AspNet.Mvc
                 FullName = "Full.Name.AsyncText",
                 ShortName = "AsyncText",
                 Type = typeof(AsyncTextViewComponent),
+                MethodInfo = typeof(AsyncTextViewComponent).GetMethod(nameof(AsyncTextViewComponent.InvokeAsync)),
             };
 
             var actionContext = CreateActionContext(descriptor);
 
             var viewComponentResult = new ViewComponentResult()
             {
-                Arguments = new object[] { "World!" },
+                Arguments = new { name = "World!" },
                 ViewComponentName = "AsyncText",
                 TempData = _tempDataDictionary,
             };
@@ -188,6 +221,7 @@ namespace Microsoft.AspNet.Mvc
                 FullName = "Full.Name.Text",
                 ShortName = "Text",
                 Type = typeof(TextViewComponent),
+                MethodInfo = typeof(TextViewComponent).GetMethod(nameof(TextViewComponent.Invoke)),
             };
 
             var adapter = new TestDiagnosticListener();
@@ -196,7 +230,7 @@ namespace Microsoft.AspNet.Mvc
 
             var viewComponentResult = new ViewComponentResult()
             {
-                Arguments = new object[] { "World!" },
+                Arguments = new { name = "World!" },
                 ViewComponentName = "Text",
                 TempData = _tempDataDictionary,
             };
@@ -226,13 +260,14 @@ namespace Microsoft.AspNet.Mvc
                 FullName = "Full.Name.Text",
                 ShortName = "Text",
                 Type = typeof(TextViewComponent),
+                MethodInfo = typeof(TextViewComponent).GetMethod(nameof(TextViewComponent.Invoke)),
             };
 
             var actionContext = CreateActionContext(descriptor);
 
             var viewComponentResult = new ViewComponentResult()
             {
-                Arguments = new object[] { "World!" },
+                Arguments = new { name = "World!" },
                 ViewComponentName = "Text",
                 TempData = _tempDataDictionary,
             };
@@ -254,13 +289,14 @@ namespace Microsoft.AspNet.Mvc
                 FullName = "Full.Name.Text",
                 ShortName = "Text",
                 Type = typeof(TextViewComponent),
+                MethodInfo = typeof(TextViewComponent).GetMethod(nameof(TextViewComponent.Invoke)),
             };
 
             var actionContext = CreateActionContext(descriptor);
 
             var viewComponentResult = new ViewComponentResult()
             {
-                Arguments = new object[] { "World!" },
+                Arguments = new { name = "World!" },
                 ViewComponentName = "Full.Name.Text",
                 TempData = _tempDataDictionary,
             };
@@ -282,13 +318,14 @@ namespace Microsoft.AspNet.Mvc
                 FullName = "Full.Name.Text",
                 ShortName = "Text",
                 Type = typeof(TextViewComponent),
+                MethodInfo = typeof(TextViewComponent).GetMethod(nameof(TextViewComponent.Invoke)),
             };
 
             var actionContext = CreateActionContext(descriptor);
 
             var viewComponentResult = new ViewComponentResult()
             {
-                Arguments = new object[] { "World!" },
+                Arguments = new { name = "World!" },
                 ViewComponentType = typeof(TextViewComponent),
                 TempData = _tempDataDictionary,
             };
@@ -310,13 +347,14 @@ namespace Microsoft.AspNet.Mvc
                 FullName = "Full.Name.Text",
                 ShortName = "Text",
                 Type = typeof(TextViewComponent),
+                MethodInfo = typeof(TextViewComponent).GetMethod(nameof(TextViewComponent.Invoke))
             };
 
             var actionContext = CreateActionContext(descriptor);
 
             var viewComponentResult = new ViewComponentResult()
             {
-                Arguments = new object[] { "World!" },
+                Arguments = new { name = "World!" },
                 ViewComponentType = typeof(TextViewComponent),
                 StatusCode = 404,
                 TempData = _tempDataDictionary,
@@ -367,6 +405,7 @@ namespace Microsoft.AspNet.Mvc
                 FullName = "Full.Name.Text",
                 ShortName = "Text",
                 Type = typeof(TextViewComponent),
+                MethodInfo = typeof(TextViewComponent).GetMethod(nameof(TextViewComponent.Invoke)),
             };
 
             var actionContext = CreateActionContext(descriptor);
@@ -375,7 +414,7 @@ namespace Microsoft.AspNet.Mvc
 
             var viewComponentResult = new ViewComponentResult()
             {
-                Arguments = new object[] { "World!" },
+                Arguments = new { name = "World!" },
                 ViewComponentName = "Text",
                 ContentType = contentType,
                 TempData = _tempDataDictionary,
@@ -403,6 +442,7 @@ namespace Microsoft.AspNet.Mvc
                 FullName = "Full.Name.Text",
                 ShortName = "Text",
                 Type = typeof(TextViewComponent),
+                MethodInfo = typeof(TextViewComponent).GetMethod(nameof(TextViewComponent.Invoke)),
             };
 
             var actionContext = CreateActionContext(descriptor);
@@ -412,7 +452,7 @@ namespace Microsoft.AspNet.Mvc
 
             var viewComponentResult = new ViewComponentResult()
             {
-                Arguments = new object[] { "World!" },
+                Arguments = new { name = "World!" },
                 ViewComponentName = "Text",
                 ContentType = new MediaTypeHeaderValue("text/html") { Encoding = Encoding.UTF8 },
                 TempData = _tempDataDictionary,
@@ -439,6 +479,7 @@ namespace Microsoft.AspNet.Mvc
                 FullName = "Full.Name.Text",
                 ShortName = "Text",
                 Type = typeof(TextViewComponent),
+                MethodInfo = typeof(TextViewComponent).GetMethod(nameof(TextViewComponent.Invoke)),
             };
 
             var actionContext = CreateActionContext(descriptor);
@@ -447,7 +488,7 @@ namespace Microsoft.AspNet.Mvc
 
             var viewComponentResult = new ViewComponentResult()
             {
-                Arguments = new object[] { "World!" },
+                Arguments = new { name = "World!" },
                 ViewComponentName = "Text",
                 TempData = _tempDataDictionary,
             };
@@ -459,7 +500,10 @@ namespace Microsoft.AspNet.Mvc
             Assert.Equal(expectedContentType, actionContext.HttpContext.Response.ContentType);
         }
 
-        private IServiceCollection CreateServices(object diagnosticListener, HttpContext context, params ViewComponentDescriptor[] descriptors)
+        private IServiceCollection CreateServices(
+            object diagnosticListener,
+            HttpContext context,
+            params ViewComponentDescriptor[] descriptors)
         {
             var httpContext = new DefaultHttpContext();
             var diagnosticSource = new DiagnosticListener("Microsoft.AspNet");
@@ -535,12 +579,6 @@ namespace Microsoft.AspNet.Mvc
 
         private class AsyncTextViewComponent : ViewComponent
         {
-            public HtmlString Invoke()
-            {
-                // Should never run.
-                throw null;
-            }
-
             public Task<HtmlString> InvokeAsync(string name)
             {
                 return Task.FromResult(new HtmlString("Hello-Async, " + name));

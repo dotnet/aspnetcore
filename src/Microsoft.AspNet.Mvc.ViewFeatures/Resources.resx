@@ -1,17 +1,17 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
-  <!--
-    Microsoft ResX Schema
-
+  <!-- 
+    Microsoft ResX Schema 
+    
     Version 2.0
-
-    The primary goals of this format is to allow a simple XML format
-    that is mostly human readable. The generation and parsing of the
-    various data types are done through the TypeConverter classes
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
     associated with the data types.
-
+    
     Example:
-
+    
     ... ado.net/XML headers & schema ...
     <resheader name="resmimetype">text/microsoft-resx</resheader>
     <resheader name="version">2.0</resheader>
@@ -26,36 +26,36 @@
         <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
         <comment>This is a comment</comment>
     </data>
-
-    There are any number of "resheader" rows that contain simple
+                
+    There are any number of "resheader" rows that contain simple 
     name/value pairs.
-
-    Each data row contains a name, and value. The row also contains a
-    type or mimetype. Type corresponds to a .NET class that support
-    text/value conversion through the TypeConverter architecture.
-    Classes that don't support this are serialized and stored with the
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
     mimetype set.
-
-    The mimetype is used for serialized objects, and tells the
-    ResXResourceReader how to depersist the object. This is currently not
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
     extensible. For a given mimetype the value must be set accordingly:
-
-    Note - application/x-microsoft.net.object.binary.base64 is the format
-    that the ResXResourceWriter will generate, however the reader can
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
     read any of the formats listed below.
-
+    
     mimetype: application/x-microsoft.net.object.binary.base64
-    value   : The object must be serialized with
+    value   : The object must be serialized with 
             : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
             : and then encoded with base64 encoding.
-
+    
     mimetype: application/x-microsoft.net.object.soap.base64
-    value   : The object must be serialized with
+    value   : The object must be serialized with 
             : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
             : and then encoded with base64 encoding.
 
     mimetype: application/x-microsoft.net.object.bytearray.base64
-    value   : The object must be serialized into a byte array
+    value   : The object must be serialized into a byte array 
             : using a System.ComponentModel.TypeConverter
             : and then encoded with base64 encoding.
     -->
@@ -122,13 +122,13 @@
     <comment>{1} is the newline character</comment>
   </data>
   <data name="ViewComponent_AsyncMethod_ShouldReturnTask" xml:space="preserve">
-    <value>The async view component method '{0}' should be declared to return Task&lt;T&gt;.</value>
+    <value>Method '{0}' of view component '{1}' should be declared to return {2}&lt;T&gt;.</value>
   </data>
   <data name="ViewComponent_MustReturnValue" xml:space="preserve">
     <value>A view component must return a non-null value.</value>
   </data>
   <data name="ViewComponent_SyncMethod_ShouldReturnValue" xml:space="preserve">
-    <value>The view component method '{0}' should be declared to return a value.</value>
+    <value>Method '{0}' of view component '{1}' should be declared to return a value.</value>
   </data>
   <data name="ViewComponent_CannotFindComponent" xml:space="preserve">
     <value>A view component named '{0}' could not be found.</value>
@@ -137,10 +137,7 @@
     <value>An invoker could not be created for the view component '{0}'.</value>
   </data>
   <data name="ViewComponent_CannotFindMethod" xml:space="preserve">
-    <value>Could not find an '{0}' method matching the parameters.</value>
-  </data>
-  <data name="ViewComponent_CannotFindMethod_WithFallback" xml:space="preserve">
-    <value>Could not find an '{0}' or '{1}' method matching the parameters.</value>
+    <value>Could not find an '{0}' or '{1}' method for the view component '{2}'.</value>
   </data>
   <data name="ViewComponent_InvalidReturnValue" xml:space="preserve">
     <value>View components only support returning {0}, {1} or {2}.</value>
@@ -278,6 +275,9 @@
     <value>The collection already contains an entry with key '{0}'.</value>
   </data>
   <data name="ViewComponent_SyncMethod_CannotReturnTask" xml:space="preserve">
-    <value>The view component method '{0}' cannot return a {1}.</value>
+    <value>Method '{0}' of view component '{1}' cannot return a {2}.</value>
+  </data>
+  <data name="ViewComponent_AmbiguousMethods" xml:space="preserve">
+    <value>View component '{0}' must have exactly one public method named '{1}' or '{2}'.</value>
   </data>
 </root>

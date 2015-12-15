@@ -38,18 +38,5 @@ namespace TagHelperSample.Web.Components
 
             return View(movies);
         }
-
-        public IViewComponentResult Invoke(string movieName)
-        {
-            string quote;
-            if (!_cache.TryGetValue(movieName, out quote))
-            {
-                IChangeToken expirationToken;
-                quote = _moviesService.GetCriticsQuote(out expirationToken);
-                _cache.Set(movieName, quote, new MemoryCacheEntryOptions().AddExpirationToken(expirationToken));
-            }
-
-            return Content(quote);
-        }
     }
 }

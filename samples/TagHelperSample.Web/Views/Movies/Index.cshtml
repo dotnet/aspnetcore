@@ -35,7 +35,7 @@
     </div>
     <div class="sidebar">
         <cache expires-after="TimeSpan.FromMinutes(20)">
-            @Component.Invoke("FeaturedMovies")
+            @await Component.InvokeAsync("FeaturedMovies")
         </cache>
     </div>
     <div style="clear: left"></div>

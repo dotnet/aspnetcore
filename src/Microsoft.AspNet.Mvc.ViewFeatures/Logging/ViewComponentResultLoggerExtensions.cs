@@ -8,41 +8,29 @@ namespace Microsoft.AspNet.Mvc.Logging
 {
     public static class ViewComponentResultLoggerExtensions
     {
-        private static readonly Action<ILogger, string, string[], Exception> _viewComponentResultExecuting;
+        private static readonly Action<ILogger, string, Exception> _viewComponentResultExecuting;
 
         static ViewComponentResultLoggerExtensions()
         {
-            _viewComponentResultExecuting = LoggerMessage.Define<string, string[]>(
+            _viewComponentResultExecuting = LoggerMessage.Define<string>(
                 LogLevel.Information,
                 1,
-                "Executing ViewComponentResult, running {ViewComponentName} with arguments ({Arguments}).");
+                "Executing ViewComponentResult, running {ViewComponentName}.");
         }
 
-        public static void ViewComponentResultExecuting(this ILogger logger, string viewComponentName, object[] arguments)
+        public static void ViewComponentResultExecuting(this ILogger logger, string viewComponentName)
         {
             if (logger.IsEnabled(LogLevel.Information))
             {
-                var formattedArguments = new string[arguments.Length];
-                for (var i = 0; i < arguments.Length; i++)
-                {
-                    formattedArguments[i] = Convert.ToString(arguments[i]);
-                }
-
-                _viewComponentResultExecuting(logger, viewComponentName, formattedArguments, null);
+                _viewComponentResultExecuting(logger, viewComponentName, null);
             }
         }
 
-        public static void ViewComponentResultExecuting(this ILogger logger, Type viewComponentType, object[] arguments)
+        public static void ViewComponentResultExecuting(this ILogger logger, Type viewComponentType)
         {
             if (logger.IsEnabled(LogLevel.Information))
             {
-                var formattedArguments = new string[arguments.Length];
-                for (var i = 0; i < arguments.Length; i++)
-                {
-                    formattedArguments[i] = Convert.ToString(arguments[i]);
-                }
-
-                _viewComponentResultExecuting(logger, viewComponentType.Name, formattedArguments, null);
+                _viewComponentResultExecuting(logger, viewComponentType.Name, null);
             }
         }
     }

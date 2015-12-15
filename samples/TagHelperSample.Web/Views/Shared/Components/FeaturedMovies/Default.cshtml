@@ -10,7 +10,7 @@
             </div>
             <em>Critics say:</em>
             <cache vary-by="@movie.Name">
-                @Component.Invoke("FeaturedMovies", movie.Name)
+                @await Component.InvokeAsync("Movies", new { movieName = movie.Name })
             </cache>
         </dd>
     }

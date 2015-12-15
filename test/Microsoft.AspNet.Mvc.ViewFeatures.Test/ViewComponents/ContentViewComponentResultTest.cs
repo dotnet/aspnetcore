@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using System.IO;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.Abstractions;
@@ -43,7 +44,7 @@ namespace Microsoft.AspNet.Mvc
             var viewContext = new ViewContext(
                 actionContext,
                 view,
-                viewData, 
+                viewData,
                 new TempDataDictionary(httpContext, new SessionStateTempDataProvider()),
                 TextWriter.Null,
                 new HtmlHelperOptions());
@@ -57,7 +58,7 @@ namespace Microsoft.AspNet.Mvc
 
             var viewComponentContext = new ViewComponentContext(
                 viewComponentDescriptor,
-                new object[0],
+                new Dictionary<string, object>(),
                 new HtmlTestEncoder(),
                 viewContext,
                 writer);

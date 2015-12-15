@@ -2,6 +2,6 @@
     ViewData["Title"] = "Page title";
     // The invoked partial sets a title, but this shouldn't override the current page's ViewData \ ViewBag.
     await Html.RenderPartialAsync("_PartialThatSetsTitle");
-    await Component.RenderInvokeAsync("ComponentThatSetsTitle");
+    @await Component.InvokeAsync("ComponentThatSetsTitle")
     Layout = "/Views/Shared/_LayoutWithTitle.cshtml";
 }

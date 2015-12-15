@@ -12,6 +12,8 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
 {
     public class DefaultViewComponentSelectorTest
     {
+        private static readonly string Namespace = typeof(DefaultViewComponentSelectorTest).Namespace;
+
         [Fact]
         public void SelectComponent_ByShortNameWithSuffix()
         {
@@ -22,7 +24,7 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
             var result = selector.SelectComponent("Suffix");
 
             // Assert
-            Assert.Equal(typeof(SuffixViewComponent), result.Type);
+            Assert.Same(typeof(ViewComponentContainer.SuffixViewComponent), result.Type);
         }
 
         [Fact]
@@ -32,10 +34,10 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
             var selector = CreateSelector();
 
             // Act
-            var result = selector.SelectComponent("Microsoft.AspNet.Mvc.ViewComponents.Suffix");
+            var result = selector.SelectComponent($"{Namespace}.Suffix");
 
             // Assert
-            Assert.Equal(typeof(SuffixViewComponent), result.Type);
+            Assert.Same(typeof(ViewComponentContainer.SuffixViewComponent), result.Type);
         }
 
         [Fact]
@@ -48,7 +50,7 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
             var result = selector.SelectComponent("WithoutSuffix");
 
             // Assert
-            Assert.Equal(typeof(WithoutSuffix), result.Type);
+            Assert.Same(typeof(ViewComponentContainer.WithoutSuffix), result.Type);
         }
 
         [Fact]
@@ -58,10 +60,10 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
             var selector = CreateSelector();
 
             // Act
-            var result = selector.SelectComponent("Microsoft.AspNet.Mvc.ViewComponents.WithoutSuffix");
+            var result = selector.SelectComponent($"{Namespace}.WithoutSuffix");
 
             // Assert
-            Assert.Equal(typeof(WithoutSuffix), result.Type);
+            Assert.Same(typeof(ViewComponentContainer.WithoutSuffix), result.Type);
         }
 
         [Fact]
@@ -74,7 +76,7 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
             var result = selector.SelectComponent("ByAttribute");
 
             // Assert
-            Assert.Equal(typeof(ByAttribute), result.Type);
+            Assert.Same(typeof(ViewComponentContainer.ByAttribute), result.Type);
         }
 
         [Fact]
@@ -87,7 +89,7 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
             var result = selector.SelectComponent("ByNamingConvention");
 
             // Assert
-            Assert.Equal(typeof(ByNamingConventionViewComponent), result.Type);
+            Assert.Same(typeof(ViewComponentContainer.ByNamingConventionViewComponent), result.Type);
         }
 
         [Fact]
@@ -98,9 +100,9 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
 
             var expected =
                 "The view component name 'Ambiguous' matched multiple types:" + Environment.NewLine +
-                "Type: 'Microsoft.AspNet.Mvc.ViewComponents.DefaultViewComponentSelectorTest+Ambiguous1' - " +
+                $"Type: '{typeof(ViewComponentContainer.Ambiguous1)}' - " +
                 "Name: 'Namespace1.Ambiguous'" + Environment.NewLine +
-                "Type: 'Microsoft.AspNet.Mvc.ViewComponents.DefaultViewComponentSelectorTest+Ambiguous2' - " +
+                $"Type: '{typeof(ViewComponentContainer.Ambiguous2)}' - " +
                 "Name: 'Namespace2.Ambiguous'";
 
             // Act
@@ -120,7 +122,7 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
             var result = selector.SelectComponent("Namespace1.Ambiguous");
 
             // Assert
-            Assert.Equal(typeof(Ambiguous1), result.Type);
+            Assert.Same(typeof(ViewComponentContainer.Ambiguous1), result.Type);
         }
 
         [Theory]
@@ -135,44 +137,56 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
             var result = selector.SelectComponent(name);
 
             // Assert
-            Assert.Equal(typeof(FullNameInAttribute), result.Type);
+            Assert.Same(typeof(ViewComponentContainer.FullNameInAttribute), result.Type);
         }
 
         private IViewComponentSelector CreateSelector()
         {
-            return new FilteredViewComponentSelector();
+            var provider = new DefaultViewComponentDescriptorCollectionProvider(
+                    new FilteredViewComponentDescriptorProvider());
+            return new DefaultViewComponentSelector(provider);
         }
 
-        private class SuffixViewComponent : ViewComponent
+        private class ViewComponentContainer
         {
-        }
+            public class SuffixViewComponent : ViewComponent
+            {
+                public string Invoke() => "Hello";
+            }
 
-        private class WithoutSuffix : ViewComponent
-        {
-        }
+            public class WithoutSuffix : ViewComponent
+            {
+                public string Invoke() => "Hello";
+            }
 
-        private class ByNamingConventionViewComponent
-        {
-        }
+            public class ByNamingConventionViewComponent
+            {
+                public string Invoke() => "Hello";
+            }
 
-        [ViewComponent]
-        private class ByAttribute
-        {
-        }
+            [ViewComponent]
+            public class ByAttribute
+            {
+                public string Invoke() => "Hello";
+            }
 
-        [ViewComponent(Name = "Namespace1.Ambiguous")]
-        private class Ambiguous1
-        {
-        }
+            [ViewComponent(Name = "Namespace1.Ambiguous")]
+            public class Ambiguous1
+            {
+                public string Invoke() => "Hello";
+            }
 
-        [ViewComponent(Name = "Namespace2.Ambiguous")]
-        private class Ambiguous2
-        {
-        }
+            [ViewComponent(Name = "Namespace2.Ambiguous")]
+            public class Ambiguous2
+            {
+                public string Invoke() => "Hello";
+            }
 
-        [ViewComponent(Name = "CoolNameSpace.FullNameInAttribute")]
-        private class FullNameInAttribute
-        {
+            [ViewComponent(Name = "CoolNameSpace.FullNameInAttribute")]
+            public class FullNameInAttribute
+            {
+                public string Invoke() => "Hello";
+            }
         }
 
         // This will only consider types nested inside this class as ViewComponent classes
@@ -181,10 +195,10 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
             public FilteredViewComponentDescriptorProvider()
                 : base(GetAssemblyProvider())
             {
-                AllowedTypes = typeof(DefaultViewComponentSelectorTest).GetNestedTypes(BindingFlags.NonPublic);
+                AllowedTypes = typeof(ViewComponentContainer).GetNestedTypes(bindingAttr: BindingFlags.Public);
             }
 
-            public Type[] AllowedTypes { get; private set; }
+            public Type[] AllowedTypes { get; }
 
             protected override bool IsViewComponentType(TypeInfo typeInfo)
             {
@@ -208,18 +222,9 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
             {
                 var assemblyProvider = new StaticAssemblyProvider();
                 assemblyProvider.CandidateAssemblies.Add(
-                    typeof(FilteredViewComponentSelector).GetTypeInfo().Assembly);
+                    typeof(ViewComponentContainer).GetTypeInfo().Assembly);
 
                 return assemblyProvider;
-            }
-        }
-
-        // This will only consider types nested inside this class as ViewComponent classes
-        private class FilteredViewComponentSelector : DefaultViewComponentSelector
-        {
-            public FilteredViewComponentSelector()
-                : base(new DefaultViewComponentDescriptorCollectionProvider(new FilteredViewComponentDescriptorProvider()))
-            {
             }
         }
     }

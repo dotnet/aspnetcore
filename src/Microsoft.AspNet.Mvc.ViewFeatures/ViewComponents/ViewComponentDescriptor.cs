@@ -3,11 +3,12 @@
 
 using System;
 using System.Diagnostics;
+using System.Reflection;
 
 namespace Microsoft.AspNet.Mvc.ViewComponents
 {
     /// <summary>
-    /// A descriptor for a View Component.
+    /// A descriptor for a view component.
     /// </summary>
     [DebuggerDisplay("{DisplayName}")]
     public class ViewComponentDescriptor
@@ -23,7 +24,7 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
         }
 
         /// <summary>
-        /// Gets or sets the display name of the View Component.
+        /// Gets or sets the display name of the view component.
         /// </summary>
         public string DisplayName
         {
@@ -53,8 +54,8 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
         /// </summary>
         /// <remarks>
         /// <para>
-        /// The full name is defaulted to the full namespace of the View Component class, prepended to
-        /// the the class name with a '.' character as the separator. If the View Component class uses
+        /// The full name is defaulted to the full namespace of the view component class, prepended to
+        /// the the class name with a '.' character as the separator. If the view component class uses
         /// <code>ViewComponent</code> as a suffix, the suffix will be omitted from the <see cref="FullName"/>.
         /// </para>
         /// <example>
@@ -89,7 +90,7 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
         /// </summary>
         /// <remarks>
         /// <para>
-        /// The short name is defaulted to the name of the View Component class. If the View Component class uses
+        /// The short name is defaulted to the name of the view component class. If the view component class uses
         /// <code>ViewComponent</code> as a suffix, the suffix will be omitted from the <see cref="ShortName"/>.
         /// </para>
         /// <example>
@@ -115,8 +116,13 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
         public string ShortName { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="Type"/>.
+        /// Gets or sets the <see cref="System.Type"/>.
         /// </summary>
         public Type Type { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="System.Reflection.MethodInfo"/> to invoke.
+        /// </summary>
+        public MethodInfo MethodInfo { get; set; }
     }
 }

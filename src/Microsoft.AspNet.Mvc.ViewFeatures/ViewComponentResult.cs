@@ -3,7 +3,9 @@
 
 using System;
 using System.Text;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Html;
 using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.AspNet.Mvc.Logging;
 using Microsoft.AspNet.Mvc.ModelBinding;
@@ -26,7 +28,7 @@ namespace Microsoft.AspNet.Mvc
         /// <summary>
         /// Gets or sets the arguments provided to the view component.
         /// </summary>
-        public object[] Arguments { get; set; }
+        public object Arguments { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="MediaTypeHeaderValue"/> representing the Content-Type header of the response.
@@ -77,6 +79,7 @@ namespace Microsoft.AspNet.Mvc
 
             var loggerFactory = services.GetRequiredService<ILoggerFactory>();
             var logger = loggerFactory.CreateLogger<ViewComponentResult>();
+            var htmlEncoder = services.GetRequiredService<HtmlEncoder>();
 
             var viewData = ViewData;
             if (viewData == null)
@@ -119,23 +122,29 @@ namespace Microsoft.AspNet.Mvc
                     htmlHelperOptions);
 
                 (viewComponentHelper as ICanHasViewContext)?.Contextualize(viewContext);
+                var result = await GetViewComponentResult(viewComponentHelper, logger);
 
-                if (ViewComponentType == null && ViewComponentName == null)
-                {
-                    throw new InvalidOperationException(Resources.FormatViewComponentResult_NameOrTypeMustBeSet(
-                        nameof(ViewComponentName),
-                        nameof(ViewComponentType)));
-                }
-                else if (ViewComponentType == null)
-                {
-                    logger.ViewComponentResultExecuting(ViewComponentName, Arguments);
-                    await viewComponentHelper.RenderInvokeAsync(ViewComponentName, Arguments);
-                }
-                else
-                {
-                    logger.ViewComponentResultExecuting(ViewComponentType, Arguments);
-                    await viewComponentHelper.RenderInvokeAsync(ViewComponentType, Arguments);
-                }
+                result.WriteTo(writer, htmlEncoder);
+            }
+        }
+
+        private Task<IHtmlContent> GetViewComponentResult(IViewComponentHelper viewComponentHelper, ILogger logger)
+        {
+            if (ViewComponentType == null && ViewComponentName == null)
+            {
+                throw new InvalidOperationException(Resources.FormatViewComponentResult_NameOrTypeMustBeSet(
+                    nameof(ViewComponentName),
+                    nameof(ViewComponentType)));
+            }
+            else if (ViewComponentType == null)
+            {
+                logger.ViewComponentResultExecuting(ViewComponentName);
+                return viewComponentHelper.InvokeAsync(ViewComponentName, Arguments);
+            }
+            else
+            {
+                logger.ViewComponentResultExecuting(ViewComponentType);
+                return viewComponentHelper.InvokeAsync(ViewComponentType, Arguments);
             }
         }
     }

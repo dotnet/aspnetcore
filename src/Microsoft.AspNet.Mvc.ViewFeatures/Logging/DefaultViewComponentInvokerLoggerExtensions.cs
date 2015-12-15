@@ -10,15 +10,21 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures.Logging
 {
     public static class DefaultViewComponentInvokerLoggerExtensions
     {
-        private static readonly Action<ILogger, string, Exception> _viewComponentExecuting;
+        private static readonly string[] EmptyArguments =
+#if NET451
+            new string[0];
+#else
+            Array.Empty<string>();
+#endif
+        private static readonly Action<ILogger, string, string[], Exception> _viewComponentExecuting;
         private static readonly Action<ILogger, string, double, string, Exception> _viewComponentExecuted;
 
         static DefaultViewComponentInvokerLoggerExtensions()
         {
-            _viewComponentExecuting = LoggerMessage.Define<string>(
+            _viewComponentExecuting = LoggerMessage.Define<string, string[]>(
                 LogLevel.Debug,
                 1,
-                "Executing view component {ViewComponentName}");
+                "Executing view component {ViewComponentName} with arguments ({Arguments}).");
 
             _viewComponentExecuted = LoggerMessage.Define<string, double, string>(
                 LogLevel.Debug,
@@ -32,9 +38,29 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures.Logging
             return logger.BeginScopeImpl(new ViewComponentLogScope(context.ViewComponentDescriptor));
         }
 
-        public static void ViewComponentExecuting(this ILogger logger, ViewComponentContext context)
+        public static void ViewComponentExecuting(
+            this ILogger logger,
+            ViewComponentContext context,
+            object[] arguments)
         {
-            _viewComponentExecuting(logger, context.ViewComponentDescriptor.DisplayName, null);
+            var formattedArguments = GetFormattedArguments(arguments);
+            _viewComponentExecuting(logger, context.ViewComponentDescriptor.DisplayName, formattedArguments, null);
+        }
+
+        private static string[] GetFormattedArguments(object[] arguments)
+        {
+            if (arguments == null || arguments.Length == 0)
+            {
+                return EmptyArguments;
+            }
+
+            var formattedArguments = new string[arguments.Length];
+            for (var i = 0; i < formattedArguments.Length; i++)
+            {
+                formattedArguments[i] = Convert.ToString(arguments[i]);
+            }
+
+            return formattedArguments;
         }
 
         public static void ViewComponentExecuted(

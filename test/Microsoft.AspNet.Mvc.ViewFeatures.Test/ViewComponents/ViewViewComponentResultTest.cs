@@ -2,9 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.Abstractions;
@@ -147,9 +149,9 @@ namespace Microsoft.AspNet.Mvc
         {
             // Arrange
             var expected = string.Join(Environment.NewLine,
-                        "The view 'Components/Invoke/some-view' was not found. The following locations were searched:",
-                        "location1",
-                        "location2");
+                "The view 'Components/Invoke/some-view' was not found. The following locations were searched:",
+                "location1",
+                "location2");
 
             var view = Mock.Of<IView>();
 
@@ -185,9 +187,9 @@ namespace Microsoft.AspNet.Mvc
         {
             // Arrange
             var expected = string.Join(Environment.NewLine,
-                        "The view 'Components/Invoke/some-view' was not found. The following locations were searched:",
-                        "location1",
-                        "location2");
+                "The view 'Components/Invoke/some-view' was not found. The following locations were searched:",
+                "location1",
+                "location2");
 
             var view = Mock.Of<IView>();
 
@@ -223,11 +225,11 @@ namespace Microsoft.AspNet.Mvc
         {
             // Arrange
             var expected = string.Join(Environment.NewLine,
-                        "The view 'Components/Invoke/some-view' was not found. The following locations were searched:",
-                        "location1",
-                        "location2",
-                        "location3",
-                        "location4");
+                "The view 'Components/Invoke/some-view' was not found. The following locations were searched:",
+                "location1",
+                "location2",
+                "location3",
+                "location4");
 
             var view = Mock.Of<IView>();
 
@@ -535,11 +537,12 @@ namespace Microsoft.AspNet.Mvc
             {
                 ShortName = "Invoke",
                 Type = typeof(object),
+                MethodInfo = typeof(object).GetTypeInfo().DeclaredMethods.First()
             };
 
             var viewComponentContext = new ViewComponentContext(
                 viewComponentDescriptor,
-                new object[0],
+                new Dictionary<string, object>(),
                 new HtmlTestEncoder(),
                 viewContext,
                 TextWriter.Null);

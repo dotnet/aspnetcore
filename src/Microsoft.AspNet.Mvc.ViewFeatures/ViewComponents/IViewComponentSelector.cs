@@ -4,14 +4,14 @@
 namespace Microsoft.AspNet.Mvc.ViewComponents
 {
     /// <summary>
-    /// Selects a View Component based on a View Component name.
+    /// Selects a view component based on a view component name.
     /// </summary>
     public interface IViewComponentSelector
     {
         /// <summary>
-        /// Selects a View Component based on <paramref name="componentName"/>.
+        /// Selects a view component based on <paramref name="componentName"/>.
         /// </summary>
-        /// <param name="componentName">The View Component name.</param>
+        /// <param name="componentName">The view component name.</param>
         /// <returns>A <see cref="ViewComponentDescriptor"/>, or <c>null</c> if no match is found.</returns>
         ViewComponentDescriptor SelectComponent(string componentName);
     }
