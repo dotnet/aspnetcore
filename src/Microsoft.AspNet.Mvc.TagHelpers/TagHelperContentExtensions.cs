@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Text.Encodings.Web;
+using Microsoft.AspNet.Html;
 using Microsoft.AspNet.Mvc.Razor;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Razor.TagHelpers;
@@ -48,7 +49,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             }
 
             string stringValue;
-            var htmlString = value as HtmlString;
+            var htmlString = value as HtmlEncodedString;
             if (htmlString != null)
             {
                 // No need for a StringWriter in this case.

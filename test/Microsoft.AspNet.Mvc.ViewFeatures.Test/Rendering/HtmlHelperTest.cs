@@ -125,7 +125,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             {
                 return new TheoryData<string, string>
                 {
-                    { null, null },
+                    { null, string.Empty },
                     { string.Empty, string.Empty },
                     { "<\">", "<\">" },
                     { "<br />", "<br />" },

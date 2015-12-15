@@ -176,7 +176,7 @@ namespace Microsoft.AspNet.Mvc.Razor.TagHelpers
                         var htmlContent = attribute.Value as IHtmlContent;
                         if (htmlContent != null)
                         {
-                            var htmlString = htmlContent as HtmlString;
+                            var htmlString = htmlContent as HtmlEncodedString;
                             if (htmlString != null)
                             {
                                 // No need for a StringWriter in this case.
