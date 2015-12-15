@@ -131,10 +131,10 @@
     <value>The antiforgery token could not be decrypted.</value>
   </data>
   <data name="AntiforgeryToken_SecurityTokenMismatch" xml:space="preserve">
-    <value>The antiforgery cookie token and form field token do not match.</value>
+    <value>The antiforgery cookie token and request token do not match.</value>
   </data>
   <data name="AntiforgeryToken_TokensSwapped" xml:space="preserve">
-    <value>Validation of the provided antiforgery token failed. The cookie token and the form token were swapped.</value>
+    <value>Validation of the provided antiforgery token failed. The cookie token and the request token were swapped.</value>
   </data>
   <data name="AntiforgeryToken_UsernameMismatch" xml:space="preserve">
     <value>The provided antiforgery token was meant for user "{0}", but the current user is "{1}".</value>
@@ -147,13 +147,19 @@
     <value>The required antiforgery cookie "{0}" is not present.</value>
   </data>
   <data name="Antiforgery_CookieToken_MustBeProvided_Generic" xml:space="preserve">
-    <value>The cookie token must be provided.</value>
+    <value>The required antiforgery cookie token must be provided.</value>
   </data>
   <data name="Antiforgery_FormToken_MustBeProvided" xml:space="preserve">
     <value>The required antiforgery form field "{0}" is not present.</value>
   </data>
-  <data name="Antiforgery_FormToken_MustBeProvided_Generic" xml:space="preserve">
-    <value>The form token must be provided.</value>
+  <data name="Antiforgery_HeaderToken_MustBeProvided" xml:space="preserve">
+    <value>The required antiforgery header value "{0}" is not present.</value>
+  </data>
+  <data name="Antiforgery_RequestToken_MustBeProvided" xml:space="preserve">
+    <value>The required antiforgery request token was not provided in either form field "{0}" or header value "{1}".</value>
+  </data>
+  <data name="Antiforgery_RequestToken_MustBeProvided_Generic" xml:space="preserve">
+    <value>The required antiforgery request token must be provided.</value>
   </data>
   <data name="ArgumentCannotBeNullOrEmpty" xml:space="preserve">
     <value>Value cannot be null or empty.</value>

@@ -45,14 +45,14 @@ namespace Microsoft.AspNet.Antiforgery
 
             var tokenSet = GetAndStoreTokens(context);
 
-            // Though FormToken normally contains only US-ASCII letters, numbers, '-', and '_', must assume the
+            // Though RequestToken normally contains only US-ASCII letters, numbers, '-', and '_', must assume the
             // IAntiforgeryTokenSerializer implementation has been overridden. Similarly, users may choose a
             // FormFieldName containing almost any character.
             var content = new HtmlContentBuilder()
                 .AppendHtml("<input name=\"")
                 .Append(_options.FormFieldName)
                 .AppendHtml("\" type=\"hidden\" value=\"")
-                .Append(tokenSet.FormToken)
+                .Append(tokenSet.RequestToken)
                 .AppendHtml("\" />");
 
             return content;
@@ -122,22 +122,22 @@ namespace Microsoft.AspNet.Antiforgery
                     nameof(antiforgeryTokenSet));
             }
 
-            if (string.IsNullOrEmpty(antiforgeryTokenSet.FormToken))
+            if (string.IsNullOrEmpty(antiforgeryTokenSet.RequestToken))
             {
                 throw new ArgumentException(
-                    Resources.Antiforgery_FormToken_MustBeProvided_Generic,
+                    Resources.Antiforgery_RequestToken_MustBeProvided_Generic,
                     nameof(antiforgeryTokenSet));
             }
 
-            // Extract cookie & form tokens
+            // Extract cookie & request tokens
             var deserializedCookieToken = _tokenSerializer.Deserialize(antiforgeryTokenSet.CookieToken);
-            var deserializedFormToken = _tokenSerializer.Deserialize(antiforgeryTokenSet.FormToken);
+            var deserializedRequestToken = _tokenSerializer.Deserialize(antiforgeryTokenSet.RequestToken);
 
             // Validate
             _tokenGenerator.ValidateTokens(
                 context,
                 deserializedCookieToken,
-                deserializedFormToken);
+                deserializedRequestToken);
         }
 
         /// <inheritdoc />
@@ -225,7 +225,7 @@ namespace Microsoft.AspNet.Antiforgery
             {
                 cookieToken = newCookieToken;
             }
-            var formToken = _tokenGenerator.GenerateFormToken(
+            var requestToken = _tokenGenerator.GenerateRequestToken(
                 context,
                 cookieToken);
 
@@ -233,7 +233,7 @@ namespace Microsoft.AspNet.Antiforgery
             {
                 // Note : The new cookie would be null if the old cookie is valid.
                 CookieToken = cookieToken,
-                FormToken = formToken,
+                RequestToken = requestToken,
                 IsNewCookieToken = newCookieToken != null
             };
         }
@@ -241,13 +241,13 @@ namespace Microsoft.AspNet.Antiforgery
         private AntiforgeryTokenSet Serialize(AntiforgeryTokenSetInternal tokenSet)
         {
             return new AntiforgeryTokenSet(
-                tokenSet.FormToken != null ? _tokenSerializer.Serialize(tokenSet.FormToken) : null,
+                tokenSet.RequestToken != null ? _tokenSerializer.Serialize(tokenSet.RequestToken) : null,
                 tokenSet.CookieToken != null ? _tokenSerializer.Serialize(tokenSet.CookieToken) : null);
         }
 
         private class AntiforgeryTokenSetInternal
         {
-            public AntiforgeryToken FormToken { get; set; }
+            public AntiforgeryToken RequestToken { get; set; }
 
             public AntiforgeryToken CookieToken { get; set; }
 

@@ -56,8 +56,8 @@ namespace Microsoft.AspNet.Antiforgery
         /* The serialized format of the anti-XSRF token is as follows:
          * Version: 1 byte integer
          * SecurityToken: 16 byte binary blob
-         * IsSessionToken: 1 byte Boolean
-         * [if IsSessionToken != true]
+         * IsCookieToken: 1 byte Boolean
+         * [if IsCookieToken != true]
          *   +- IsClaimsBased: 1 byte Boolean
          *   |  [if IsClaimsBased = true]
          *   |    `- ClaimUid: 32 byte binary blob
@@ -78,9 +78,9 @@ namespace Microsoft.AspNet.Antiforgery
             var securityTokenBytes = reader.ReadBytes(AntiforgeryToken.SecurityTokenBitLength / 8);
             deserializedToken.SecurityToken =
                 new BinaryBlob(AntiforgeryToken.SecurityTokenBitLength, securityTokenBytes);
-            deserializedToken.IsSessionToken = reader.ReadBoolean();
+            deserializedToken.IsCookieToken = reader.ReadBoolean();
 
-            if (!deserializedToken.IsSessionToken)
+            if (!deserializedToken.IsCookieToken)
             {
                 var isClaimsBased = reader.ReadBoolean();
                 if (isClaimsBased)
@@ -119,9 +119,9 @@ namespace Microsoft.AspNet.Antiforgery
                 {
                     writer.Write(TokenVersion);
                     writer.Write(token.SecurityToken.GetData());
-                    writer.Write(token.IsSessionToken);
+                    writer.Write(token.IsCookieToken);
 
-                    if (!token.IsSessionToken)
+                    if (!token.IsCookieToken)
                     {
                         if (token.ClaimUid != null)
                         {

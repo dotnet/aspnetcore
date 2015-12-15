@@ -45,21 +45,21 @@ namespace Microsoft.AspNet.Antiforgery
         }
 
         [Fact]
-        public void IsSessionTokenProperty()
+        public void IsCookieTokenProperty()
         {
             // Arrange
             var token = new AntiforgeryToken();
 
             // Act & assert - 1
-            Assert.False(token.IsSessionToken);
+            Assert.False(token.IsCookieToken);
 
             // Act & assert - 2
-            token.IsSessionToken = true;
-            Assert.True(token.IsSessionToken);
+            token.IsCookieToken = true;
+            Assert.True(token.IsCookieToken);
 
             // Act & assert - 3
-            token.IsSessionToken = false;
-            Assert.False(token.IsSessionToken);
+            token.IsCookieToken = false;
+            Assert.False(token.IsCookieToken);
         }
 
         [Fact]

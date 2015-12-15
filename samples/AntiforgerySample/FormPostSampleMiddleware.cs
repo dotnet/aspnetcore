@@ -40,7 +40,7 @@ namespace AntiforgerySample
 </html>";
 
                 var tokenSet = _antiforgery.GetAndStoreTokens(context);
-                await context.Response.WriteAsync(string.Format(page, _options.FormFieldName, tokenSet.FormToken));
+                await context.Response.WriteAsync(string.Format(page, _options.FormFieldName, tokenSet.RequestToken));
             }
             else if (context.Request.Method == "POST")
             {

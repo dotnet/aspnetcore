@@ -61,7 +61,7 @@ namespace Microsoft.AspNet.Antiforgery
         /// </summary>
         /// <param name="context">The <see cref="HttpContext"/> associated with the current request.</param>
         /// <param name="antiforgeryTokenSet">
-        /// The <see cref="AntiforgeryTokenSet"/> (cookie and form token) for this request.
+        /// The <see cref="AntiforgeryTokenSet"/> (cookie and request token) for this request.
         /// </param>
         void ValidateTokens(HttpContext context, AntiforgeryTokenSet antiforgeryTokenSet);
 

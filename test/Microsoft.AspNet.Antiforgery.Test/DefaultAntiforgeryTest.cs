@@ -289,7 +289,7 @@ namespace Microsoft.AspNet.Antiforgery
 
             // Assert
             Assert.Equal("serialized-new-cookie-token", tokenset.CookieToken);
-            Assert.Equal("serialized-form-token", tokenset.FormToken);
+            Assert.Equal("serialized-form-token", tokenset.RequestToken);
         }
 
         [Fact]
@@ -316,7 +316,7 @@ namespace Microsoft.AspNet.Antiforgery
 
             // Assert
             Assert.Equal("serialized-new-cookie-token", tokenset.CookieToken);
-            Assert.Equal("serialized-form-token", tokenset.FormToken);
+            Assert.Equal("serialized-form-token", tokenset.RequestToken);
         }
 
         [Fact]
@@ -334,7 +334,7 @@ namespace Microsoft.AspNet.Antiforgery
 
             // Assert
             Assert.Equal("serialized-old-cookie-token", tokenset.CookieToken);
-            Assert.Equal("serialized-form-token", tokenset.FormToken);
+            Assert.Equal("serialized-form-token", tokenset.RequestToken);
         }
 
         [Fact]
@@ -356,7 +356,7 @@ namespace Microsoft.AspNet.Antiforgery
                 t => t.SaveCookieToken(It.IsAny<HttpContext>(), It.IsAny<AntiforgeryToken>()), Times.Never);
 
             Assert.Equal("serialized-old-cookie-token", tokenSet.CookieToken);
-            Assert.Equal("serialized-form-token", tokenSet.FormToken);
+            Assert.Equal("serialized-form-token", tokenSet.RequestToken);
         }
 
         [Fact]
@@ -377,7 +377,7 @@ namespace Microsoft.AspNet.Antiforgery
                 t => t.SaveCookieToken(It.IsAny<HttpContext>(), It.IsAny<AntiforgeryToken>()), Times.Once);
 
             Assert.Equal("serialized-new-cookie-token", tokenSet.CookieToken);
-            Assert.Equal("serialized-form-token", tokenSet.FormToken);
+            Assert.Equal("serialized-form-token", tokenSet.RequestToken);
         }
 
         [Fact]
@@ -391,13 +391,13 @@ namespace Microsoft.AspNet.Antiforgery
                 .Returns(context.TestTokenSet.OldCookieToken);
             context.TokenSerializer
                 .Setup(o => o.Deserialize("form-token"))
-                .Returns(context.TestTokenSet.FormToken);
+                .Returns(context.TestTokenSet.RequestToken);
 
             context.TokenGenerator
                 .Setup(o => o.ValidateTokens(
                     context.HttpContext,
                     context.TestTokenSet.OldCookieToken,
-                    context.TestTokenSet.FormToken))
+                    context.TestTokenSet.RequestToken))
                 .Throws(new InvalidOperationException("my-message"));
             context.TokenStore = null;
             var antiforgery = GetAntiforgery(context);
@@ -421,13 +421,13 @@ namespace Microsoft.AspNet.Antiforgery
                 .Returns(context.TestTokenSet.OldCookieToken);
             context.TokenSerializer
                 .Setup(o => o.Deserialize("form-token"))
-                .Returns(context.TestTokenSet.FormToken);
+                .Returns(context.TestTokenSet.RequestToken);
 
             context.TokenGenerator
                 .Setup(o => o.ValidateTokens(
                     context.HttpContext,
                     context.TestTokenSet.OldCookieToken,
-                    context.TestTokenSet.FormToken))
+                    context.TestTokenSet.RequestToken))
                 .Verifiable();
             context.TokenStore = null;
             var antiforgery = GetAntiforgery(context);
@@ -455,7 +455,7 @@ namespace Microsoft.AspNet.Antiforgery
 
             // Assert
             var trimmed = exception.Message.Substring(0, exception.Message.IndexOf(Environment.NewLine));
-            Assert.Equal("The cookie token must be provided.", trimmed);
+            Assert.Equal("The required antiforgery cookie token must be provided.", trimmed);
         }
 
         [Fact]
@@ -468,7 +468,7 @@ namespace Microsoft.AspNet.Antiforgery
                 .Setup(o => o.ValidateTokens(
                     context.HttpContext,
                     context.TestTokenSet.OldCookieToken,
-                    context.TestTokenSet.FormToken))
+                    context.TestTokenSet.RequestToken))
                 .Throws(new InvalidOperationException("my-message"));
 
             var antiforgery = GetAntiforgery(context);
@@ -489,7 +489,7 @@ namespace Microsoft.AspNet.Antiforgery
                 .Setup(o => o.ValidateTokens(
                     context.HttpContext,
                     context.TestTokenSet.OldCookieToken,
-                    context.TestTokenSet.FormToken))
+                    context.TestTokenSet.RequestToken))
                 .Verifiable();
 
             var antiforgery = GetAntiforgery(context);
@@ -567,7 +567,7 @@ namespace Microsoft.AspNet.Antiforgery
             bool saveNewCookie = true)
         {
             var oldCookieToken = testTokenSet.OldCookieToken;
-            var formToken = testTokenSet.FormToken;
+            var formToken = testTokenSet.RequestToken;
             var mockTokenStore = new Mock<IAntiforgeryTokenStore>(MockBehavior.Strict);
             mockTokenStore.Setup(o => o.GetCookieToken(context))
                           .Returns(oldCookieToken);
@@ -591,7 +591,7 @@ namespace Microsoft.AspNet.Antiforgery
         {
             var oldCookieToken = testTokenSet.OldCookieToken;
             var newCookieToken = testTokenSet.NewCookieToken;
-            var formToken = testTokenSet.FormToken;
+            var formToken = testTokenSet.RequestToken;
             var mockSerializer = new Mock<IAntiforgeryTokenSerializer>(MockBehavior.Strict);
             mockSerializer.Setup(o => o.Serialize(formToken))
                           .Returns(testTokenSet.FormTokenString);
@@ -613,7 +613,7 @@ namespace Microsoft.AspNet.Antiforgery
         {
             // Arrange
             var httpContext = GetHttpContext();
-            var testTokenSet = GetTokenSet(isOldCookieTokenSessionToken: true, isNewCookieSessionToken: true);
+            var testTokenSet = GetTokenSet();
 
             var mockSerializer = GetTokenSerializer(testTokenSet);
 
@@ -621,10 +621,10 @@ namespace Microsoft.AspNet.Antiforgery
 
             var mockGenerator = new Mock<IAntiforgeryTokenGenerator>(MockBehavior.Strict);
             mockGenerator
-                .Setup(o => o.GenerateFormToken(
+                .Setup(o => o.GenerateRequestToken(
                     httpContext,
                     useOldCookie ? testTokenSet.OldCookieToken : testTokenSet.NewCookieToken))
-                .Returns(testTokenSet.FormToken);
+                .Returns(testTokenSet.RequestToken);
 
             mockGenerator
                 .Setup(o => o.GenerateCookieToken())
@@ -649,22 +649,22 @@ namespace Microsoft.AspNet.Antiforgery
             };
         }
 
-        private TestTokenSet GetTokenSet(bool isOldCookieTokenSessionToken = true, bool isNewCookieSessionToken = true)
+        private TestTokenSet GetTokenSet()
         {
             return new TestTokenSet()
             {
-                FormToken = new AntiforgeryToken() { IsSessionToken = false },
+                RequestToken = new AntiforgeryToken() { IsCookieToken = false },
                 FormTokenString = "serialized-form-token",
-                OldCookieToken = new AntiforgeryToken() { IsSessionToken = isOldCookieTokenSessionToken },
+                OldCookieToken = new AntiforgeryToken() { IsCookieToken = true },
                 OldCookieTokenString = "serialized-old-cookie-token",
-                NewCookieToken = new AntiforgeryToken() { IsSessionToken = isNewCookieSessionToken },
+                NewCookieToken = new AntiforgeryToken() { IsCookieToken = true },
                 NewCookieTokenString = "serialized-new-cookie-token",
             };
         }
 
         private class TestTokenSet
         {
-            public AntiforgeryToken FormToken { get; set; }
+            public AntiforgeryToken RequestToken { get; set; }
 
             public string FormTokenString { get; set; }
 

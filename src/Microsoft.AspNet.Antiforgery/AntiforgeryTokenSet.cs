@@ -6,23 +6,23 @@ using System;
 namespace Microsoft.AspNet.Antiforgery
 {
     /// <summary>
-    /// The antiforgery token pair (cookie and form token) for a request.
+    /// The antiforgery token pair (cookie and request token) for a request.
     /// </summary>
     public class AntiforgeryTokenSet
     {
         /// <summary>
-        /// Creates the antiforgery token pair (cookie and form token) for a request.
+        /// Creates the antiforgery token pair (cookie and request token) for a request.
         /// </summary>
-        /// <param name="formToken">The token that is supplied in the request form body.</param>
+        /// <param name="requestToken">The token that is supplied in the request.</param>
         /// <param name="cookieToken">The token that is supplied in the request cookie.</param>
-        public AntiforgeryTokenSet(string formToken, string cookieToken)
+        public AntiforgeryTokenSet(string requestToken, string cookieToken)
         {
-            if (string.IsNullOrEmpty(formToken))
+            if (string.IsNullOrEmpty(requestToken))
             {
-                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(formToken));
+                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(requestToken));
             }
 
-            FormToken = formToken;
+            RequestToken = requestToken;
 
             // Cookie Token is allowed to be null in the case when the old cookie is valid
             // and there is no new cookieToken generated.
@@ -30,9 +30,9 @@ namespace Microsoft.AspNet.Antiforgery
         }
 
         /// <summary>
-        /// The token that is supplied in the request form body.
+        /// The token that is supplied in the request.
         /// </summary>
-        public string FormToken { get; private set; }
+        public string RequestToken { get; private set; }
 
         /// The cookie token is allowed to be null.
         /// This would be the case when the old cookie token is still valid.

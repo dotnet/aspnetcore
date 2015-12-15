@@ -7,10 +7,10 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.OptionsModel;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNet.Antiforgery
 {
-    // Saves anti-XSRF tokens split between HttpRequest.Cookies and HttpRequest.Form
     public class DefaultAntiforgeryTokenStore : IAntiforgeryTokenStore
     {
         private readonly AntiforgeryOptions _options;
@@ -72,23 +72,43 @@ namespace Microsoft.AspNet.Antiforgery
                     Resources.FormatAntiforgery_CookieToken_MustBeProvided(_options.CookieName));
             }
 
-            if (!httpContext.Request.HasFormContentType)
+            StringValues requestToken;
+            if (httpContext.Request.HasFormContentType)
             {
                 // Check the content-type before accessing the form collection to make sure
                 // we throw gracefully.
-                throw new InvalidOperationException(
-                    Resources.FormatAntiforgery_FormToken_MustBeProvided(_options.FormFieldName));
+                var form = await httpContext.Request.ReadFormAsync();
+                requestToken = form[_options.FormFieldName];
             }
 
-            var form = await httpContext.Request.ReadFormAsync();
-            var formField = form[_options.FormFieldName];
-            if (string.IsNullOrEmpty(formField))
+            // Fall back to header if the form value was not provided.
+            if (requestToken.Count == 0 && _options.HeaderName != null)
             {
-                throw new InvalidOperationException(
-                    Resources.FormatAntiforgery_FormToken_MustBeProvided(_options.FormFieldName));
+                requestToken = httpContext.Request.Headers[_options.HeaderName];
             }
 
-            return new AntiforgeryTokenSet(formField, requestCookie);
+            if (requestToken.Count == 0)
+            {
+                if (_options.HeaderName == null)
+                {
+                    var message = Resources.FormatAntiforgery_FormToken_MustBeProvided(_options.FormFieldName);
+                    throw new InvalidOperationException(message);
+                }
+                else if (!httpContext.Request.HasFormContentType)
+                {
+                    var message = Resources.FormatAntiforgery_HeaderToken_MustBeProvided(_options.HeaderName);
+                    throw new InvalidOperationException(message);
+                }
+                else
+                {
+                    var message = Resources.FormatAntiforgery_RequestToken_MustBeProvided(
+                        _options.FormFieldName,
+                        _options.HeaderName);
+                    throw new InvalidOperationException(message);
+                }
+            }
+
+            return new AntiforgeryTokenSet(requestToken, requestCookie);
         }
 
         public void SaveCookieToken(HttpContext httpContext, AntiforgeryToken token)

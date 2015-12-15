@@ -27,11 +27,11 @@ namespace Microsoft.AspNet.Antiforgery
             return new AntiforgeryToken()
             {
                 // SecurityToken will be populated automatically.
-                IsSessionToken = true
+                IsCookieToken = true
             };
         }
 
-        public AntiforgeryToken GenerateFormToken(
+        public AntiforgeryToken GenerateRequestToken(
             HttpContext httpContext,
             AntiforgeryToken cookieToken)
         {
@@ -42,10 +42,10 @@ namespace Microsoft.AspNet.Antiforgery
 
             Debug.Assert(IsCookieTokenValid(cookieToken));
 
-            var formToken = new AntiforgeryToken()
+            var requestToken = new AntiforgeryToken()
             {
                 SecurityToken = cookieToken.SecurityToken,
-                IsSessionToken = false
+                IsCookieToken = false
             };
 
             var isIdentityAuthenticated = false;
@@ -55,23 +55,23 @@ namespace Microsoft.AspNet.Antiforgery
             if (identity != null && identity.IsAuthenticated)
             {
                 isIdentityAuthenticated = true;
-                formToken.ClaimUid = GetClaimUidBlob(_claimUidExtractor.ExtractClaimUid(identity));
-                if (formToken.ClaimUid == null)
+                requestToken.ClaimUid = GetClaimUidBlob(_claimUidExtractor.ExtractClaimUid(identity));
+                if (requestToken.ClaimUid == null)
                 {
-                    formToken.Username = identity.Name;
+                    requestToken.Username = identity.Name;
                 }
             }
 
             // populate AdditionalData
             if (_additionalDataProvider != null)
             {
-                formToken.AdditionalData = _additionalDataProvider.GetAdditionalData(httpContext);
+                requestToken.AdditionalData = _additionalDataProvider.GetAdditionalData(httpContext);
             }
 
             if (isIdentityAuthenticated
-                && string.IsNullOrEmpty(formToken.Username)
-                && formToken.ClaimUid == null
-                && string.IsNullOrEmpty(formToken.AdditionalData))
+                && string.IsNullOrEmpty(requestToken.Username)
+                && requestToken.ClaimUid == null
+                && string.IsNullOrEmpty(requestToken.AdditionalData))
             {
                 // Application says user is authenticated, but we have no identifier for the user.
                 throw new InvalidOperationException(
@@ -84,46 +84,46 @@ namespace Microsoft.AspNet.Antiforgery
                         nameof(DefaultAntiforgeryAdditionalDataProvider)));
             }
 
-            return formToken;
+            return requestToken;
         }
 
         public bool IsCookieTokenValid(AntiforgeryToken cookieToken)
         {
-            return (cookieToken != null && cookieToken.IsSessionToken);
+            return (cookieToken != null && cookieToken.IsCookieToken);
         }
 
         public void ValidateTokens(
             HttpContext httpContext,
-            AntiforgeryToken sessionToken,
-            AntiforgeryToken fieldToken)
+            AntiforgeryToken cookieToken,
+            AntiforgeryToken requestToken)
         {
             if (httpContext == null)
             {
                 throw new ArgumentNullException(nameof(httpContext));
             }
 
-            if (sessionToken == null)
+            if (cookieToken == null)
             {
                 throw new ArgumentNullException(
-                    nameof(sessionToken),
+                    nameof(cookieToken),
                     Resources.Antiforgery_CookieToken_MustBeProvided_Generic);
             }
 
-            if (fieldToken == null)
+            if (requestToken == null)
             {
                 throw new ArgumentNullException(
-                    nameof(fieldToken),
-                    Resources.Antiforgery_FormToken_MustBeProvided_Generic);
+                    nameof(requestToken),
+                    Resources.Antiforgery_RequestToken_MustBeProvided_Generic);
             }
 
             // Do the tokens have the correct format?
-            if (!sessionToken.IsSessionToken || fieldToken.IsSessionToken)
+            if (!cookieToken.IsCookieToken || requestToken.IsCookieToken)
             {
                 throw new InvalidOperationException(Resources.AntiforgeryToken_TokensSwapped);
             }
 
             // Are the security tokens embedded in each incoming token identical?
-            if (!Equals(sessionToken.SecurityToken, fieldToken.SecurityToken))
+            if (!Equals(cookieToken.SecurityToken, requestToken.SecurityToken))
             {
                 throw new InvalidOperationException(Resources.AntiforgeryToken_SecurityTokenMismatch);
             }
@@ -148,24 +148,24 @@ namespace Microsoft.AspNet.Antiforgery
                 currentUsername.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
                 currentUsername.StartsWith("https://", StringComparison.OrdinalIgnoreCase);
 
-            if (!string.Equals(fieldToken.Username,
+            if (!string.Equals(requestToken.Username,
                                 currentUsername,
                                 (useCaseSensitiveUsernameComparison) ?
                                                  StringComparison.Ordinal :
                                                  StringComparison.OrdinalIgnoreCase))
             {
                 throw new InvalidOperationException(
-                    Resources.FormatAntiforgeryToken_UsernameMismatch(fieldToken.Username, currentUsername));
+                    Resources.FormatAntiforgeryToken_UsernameMismatch(requestToken.Username, currentUsername));
             }
 
-            if (!Equals(fieldToken.ClaimUid, currentClaimUid))
+            if (!Equals(requestToken.ClaimUid, currentClaimUid))
             {
                 throw new InvalidOperationException(Resources.AntiforgeryToken_ClaimUidMismatch);
             }
 
             // Is the AdditionalData valid?
             if (_additionalDataProvider != null &&
-                !_additionalDataProvider.ValidateAdditionalData(httpContext, fieldToken.AdditionalData))
+                !_additionalDataProvider.ValidateAdditionalData(httpContext, requestToken.AdditionalData))
             {
                 throw new InvalidOperationException(Resources.AntiforgeryToken_AdditionalDataCheckFailed);
             }

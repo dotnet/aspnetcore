@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.Antiforgery
 
         public BinaryBlob ClaimUid { get; set; }
 
-        public bool IsSessionToken { get; set; }
+        public bool IsCookieToken { get; set; }
 
         public BinaryBlob SecurityToken
         {

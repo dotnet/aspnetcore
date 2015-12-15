@@ -26,18 +26,18 @@ namespace Microsoft.AspNet.Antiforgery
         [InlineData(
             "01" // Version
             + "705EEDCC7D42F1D6B3B98A593625BB4C" // SecurityToken
-            + "01" // IsSessionToken
+            + "01" // IsCookieToken
             + "00" // (WRONG!) Too much data in stream
             )]
         [InlineData(
             "02" // (WRONG! - must be 0x01) Version
             + "705EEDCC7D42F1D6B3B98A593625BB4C" // SecurityToken
-            + "01" // IsSessionToken
+            + "01" // IsCookieToken
             )]
         [InlineData(
             "01" // Version
             + "705EEDCC7D42F1D6B3B98A593625BB4C" // SecurityToken
-            + "00" // IsSessionToken
+            + "00" // IsCookieToken
             + "00" // IsClaimsBased
             + "05" // Username length header
             + "0000" // (WRONG!) Too little data in stream
@@ -60,7 +60,7 @@ namespace Microsoft.AspNet.Antiforgery
 
             //"01" // Version
             //+ "705EEDCC7D42F1D6B3B98A593625BB4C" // SecurityToken
-            //+ "00" // IsSessionToken
+            //+ "00" // IsCookieToken
             //+ "01" // IsClaimsBased
             //+ "6F1648E97249AA58754036A67E248CF044F07ECFB0ED387556CE029A4F9A40E0" // ClaimUid
             //+ "05" // AdditionalData length header
@@ -68,7 +68,7 @@ namespace Microsoft.AspNet.Antiforgery
             var token = new AntiforgeryToken()
             {
                 SecurityToken = _securityToken,
-                IsSessionToken = false,
+                IsCookieToken = false,
                 ClaimUid = _claimUid,
                 AdditionalData = "€47"
             };
@@ -90,7 +90,7 @@ namespace Microsoft.AspNet.Antiforgery
 
             //"01" // Version
             //+ "705EEDCC7D42F1D6B3B98A593625BB4C" // SecurityToken
-            //+ "00" // IsSessionToken
+            //+ "00" // IsCookieToken
             //+ "00" // IsClaimsBased
             //+ "08" // Username length header
             //+ "4AC3A972C3B46D65" // Username ("Jérôme") as UTF8
@@ -99,7 +99,7 @@ namespace Microsoft.AspNet.Antiforgery
             var token = new AntiforgeryToken()
             {
                 SecurityToken = _securityToken,
-                IsSessionToken = false,
+                IsCookieToken = false,
                 Username = "Jérôme",
                 AdditionalData = "€47"
             };
@@ -114,18 +114,18 @@ namespace Microsoft.AspNet.Antiforgery
         }
 
         [Fact]
-        public void Serialize_SessionToken_TokenRoundTripSuccessful()
+        public void Serialize_CookieToken_TokenRoundTripSuccessful()
         {
             // Arrange
             var testSerializer = new DefaultAntiforgeryTokenSerializer(_dataProtector.Object);
 
             //"01" // Version
             //+ "705EEDCC7D42F1D6B3B98A593625BB4C" // SecurityToken
-            //+ "01"; // IsSessionToken
+            //+ "01"; // IsCookieToken
             var token = new AntiforgeryToken()
             {
                 SecurityToken = _securityToken,
-                IsSessionToken = true
+                IsCookieToken = true
             };
 
             // Act
@@ -178,7 +178,7 @@ namespace Microsoft.AspNet.Antiforgery
             Assert.NotNull(actual);
             Assert.Equal(expected.AdditionalData, actual.AdditionalData);
             Assert.Equal(expected.ClaimUid, actual.ClaimUid);
-            Assert.Equal(expected.IsSessionToken, actual.IsSessionToken);
+            Assert.Equal(expected.IsCookieToken, actual.IsCookieToken);
             Assert.Equal(expected.SecurityToken, actual.SecurityToken);
             Assert.Equal(expected.Username, actual.Username);
         }

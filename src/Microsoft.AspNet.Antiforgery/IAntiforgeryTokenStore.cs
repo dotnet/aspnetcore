@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.Antiforgery
         AntiforgeryToken GetCookieToken(HttpContext httpContext);
 
         /// <summary>
-        /// Gets the cookie and form tokens from the request. Will throw an exception if either token is
+        /// Gets the cookie and request tokens from the request. Will throw an exception if either token is
         /// not present.
         /// </summary>
         /// <param name="httpContext">The <see cref="HttpContext"/> for the current request.</param>

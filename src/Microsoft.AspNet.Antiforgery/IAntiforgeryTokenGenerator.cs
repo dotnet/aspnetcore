@@ -13,9 +13,9 @@ namespace Microsoft.AspNet.Antiforgery
         // Generates a new random cookie token.
         AntiforgeryToken GenerateCookieToken();
 
-        // Given a cookie token, generates a corresponding form token.
+        // Given a cookie token, generates a corresponding request token.
         // The incoming cookie token must be valid.
-        AntiforgeryToken GenerateFormToken(
+        AntiforgeryToken GenerateRequestToken(
             HttpContext httpContext,
             AntiforgeryToken cookieToken);
 
@@ -23,10 +23,10 @@ namespace Microsoft.AspNet.Antiforgery
         // If it is not, the caller must call GenerateCookieToken() before calling GenerateFormToken().
         bool IsCookieTokenValid(AntiforgeryToken cookieToken);
 
-        // Validates a (cookie, form) token pair.
+        // Validates a (cookie, request) token pair.
         void ValidateTokens(
             HttpContext httpContext,
             AntiforgeryToken cookieToken,
-            AntiforgeryToken formToken);
+            AntiforgeryToken requestToken);
     }
 }

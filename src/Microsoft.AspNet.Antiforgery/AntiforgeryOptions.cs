@@ -11,16 +11,17 @@ namespace Microsoft.AspNet.Antiforgery
     public class AntiforgeryOptions
     {
         private const string AntiforgeryTokenFieldName = "__RequestVerificationToken";
+        private const string AntiforgertyTokenHeaderName = "RequestVerificationToken";
+
         private string _cookieName;
+        private string _headerName = AntiforgertyTokenHeaderName;
         private string _formFieldName = AntiforgeryTokenFieldName;
 
         /// <summary>
-        /// Specifies the name of the cookie that is used by the antiforgery
-        /// system.
+        /// Specifies the name of the cookie that is used by the antiforgery system.
         /// </summary>
         /// <remarks>
-        /// If an explicit name is not provided, the system will automatically
-        /// generate a name.
+        /// If an explicit name is not provided, the system will automatically generate a name.
         /// </remarks>
         public string CookieName
         {
@@ -57,6 +58,16 @@ namespace Microsoft.AspNet.Antiforgery
 
                 _formFieldName = value;
             }
+        }
+
+        /// <summary>
+        /// Specifies the name of the header value that is used by the antiforgery system. If <c>null</c> then
+        /// antiforgery validation will only consider form data.
+        /// </summary>
+        public string HeaderName
+        {
+            get { return _headerName; }
+            set { _headerName = value; }
         }
 
         /// <summary>

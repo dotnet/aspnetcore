@@ -187,7 +187,7 @@ namespace Microsoft.AspNet.Antiforgery
         }
 
         [Fact]
-        public async Task GetRequestTokens_NonFormContentType_Throws()
+        public async Task GetRequestTokens_NonFormContentType_HeaderDisabled_Throws()
         {
             // Arrange
             var httpContext = new DefaultHttpContext();
@@ -204,6 +204,7 @@ namespace Microsoft.AspNet.Antiforgery
             {
                 CookieName = "cookie-name",
                 FormFieldName = "form-field-name",
+                HeaderName = null,
             };
 
             var tokenStore = new DefaultAntiforgeryTokenStore(
@@ -219,7 +220,110 @@ namespace Microsoft.AspNet.Antiforgery
         }
 
         [Fact]
-        public async Task GetRequestTokens_FormFieldIsEmpty_Throws()
+        public async Task GetRequestTokens_FormContentType_FallbackHeaderToken()
+        {
+            // Arrange
+            var httpContext = new DefaultHttpContext();
+            httpContext.Request.ContentType = "application/json";
+
+            // Will not be accessed
+            httpContext.Request.ContentType = "application/x-www-form-urlencoded";
+            httpContext.Request.Form = new FormCollection(new Dictionary<string, StringValues>());
+            httpContext.Request.Cookies = new RequestCookieCollection(new Dictionary<string, string>()
+            {
+                { "cookie-name", "cookie-value" },
+            });
+            httpContext.Request.Headers.Add("header-name", "header-value");
+
+            var options = new AntiforgeryOptions()
+            {
+                CookieName = "cookie-name",
+                FormFieldName = "form-field-name",
+                HeaderName = "header-name",
+            };
+
+            var tokenStore = new DefaultAntiforgeryTokenStore(
+                optionsAccessor: new TestOptionsManager(options),
+                tokenSerializer: new DefaultAntiforgeryTokenSerializer(new EphemeralDataProtectionProvider()));
+
+            // Act
+            var tokens = await tokenStore.GetRequestTokensAsync(httpContext);
+
+            // Assert
+            Assert.Equal("cookie-value", tokens.CookieToken);
+            Assert.Equal("header-value", tokens.RequestToken);
+        }
+
+        [Fact]
+        public async Task GetRequestTokens_NonFormContentType_UsesHeaderToken()
+        {
+            // Arrange
+            var httpContext = new DefaultHttpContext();
+            httpContext.Request.ContentType = "application/json";
+
+            // Will not be accessed
+            httpContext.Request.Form = null;
+            httpContext.Request.Cookies = new RequestCookieCollection(new Dictionary<string, string>()
+            {
+                { "cookie-name", "cookie-value" },
+            });
+
+            httpContext.Request.Headers.Add("header-name", "header-value");
+
+            var options = new AntiforgeryOptions()
+            {
+                CookieName = "cookie-name",
+                FormFieldName = "form-field-name",
+                HeaderName = "header-name",
+            };
+
+            var tokenStore = new DefaultAntiforgeryTokenStore(
+                optionsAccessor: new TestOptionsManager(options),
+                tokenSerializer: new DefaultAntiforgeryTokenSerializer(new EphemeralDataProtectionProvider()));
+
+            // Act
+            var tokens = await tokenStore.GetRequestTokensAsync(httpContext);
+
+            // Assert
+            Assert.Equal("cookie-value", tokens.CookieToken);
+            Assert.Equal("header-value", tokens.RequestToken);
+        }
+
+        [Fact]
+        public async Task GetRequestTokens_NonFormContentType_UsesHeaderToken_ThrowsOnMissingValue()
+        {
+            // Arrange
+            var httpContext = new DefaultHttpContext();
+            httpContext.Request.ContentType = "application/json";
+
+            // Will not be accessed
+            httpContext.Request.Form = null;
+            httpContext.Request.Cookies = new RequestCookieCollection(new Dictionary<string, string>()
+            {
+                { "cookie-name", "cookie-value" },
+            });
+
+            var options = new AntiforgeryOptions()
+            {
+                CookieName = "cookie-name",
+                FormFieldName = "form-field-name",
+                HeaderName = "header-name",
+            };
+
+            var tokenStore = new DefaultAntiforgeryTokenStore(
+                optionsAccessor: new TestOptionsManager(options),
+                tokenSerializer: new DefaultAntiforgeryTokenSerializer(new EphemeralDataProtectionProvider()));
+
+            // Act
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+                async () => await tokenStore.GetRequestTokensAsync(httpContext));
+
+            // Assert
+            Assert.Equal("The required antiforgery header value \"header-name\" is not present.", exception.Message);
+        }
+
+        [Fact]
+        public async Task GetRequestTokens_BothFieldsEmpty_Throws()
         {
             // Arrange
             var httpContext = new DefaultHttpContext();
@@ -234,6 +338,7 @@ namespace Microsoft.AspNet.Antiforgery
             {
                 CookieName = "cookie-name",
                 FormFieldName = "form-field-name",
+                HeaderName = "header-name",
             };
 
             var tokenStore = new DefaultAntiforgeryTokenStore(
@@ -245,7 +350,10 @@ namespace Microsoft.AspNet.Antiforgery
                 async () => await tokenStore.GetRequestTokensAsync(httpContext));
 
             // Assert         
-            Assert.Equal("The required antiforgery form field \"form-field-name\" is not present.", exception.Message);
+            Assert.Equal(
+                "The required antiforgery request token was not provided in either form field \"form-field-name\" " +
+                "or header value \"header-name\".",
+                exception.Message);
         }
 
         [Fact]
@@ -262,11 +370,13 @@ namespace Microsoft.AspNet.Antiforgery
             {
                 { "cookie-name", "cookie-value" },
             });
+            httpContext.Request.Headers.Add("header-name", "header-value"); // form value has priority.
 
             var options = new AntiforgeryOptions()
             {
                 CookieName = "cookie-name",
                 FormFieldName = "form-field-name",
+                HeaderName = "header-name",
             };
 
             var tokenStore = new DefaultAntiforgeryTokenStore(
@@ -278,7 +388,7 @@ namespace Microsoft.AspNet.Antiforgery
 
             // Assert
             Assert.Equal("cookie-value", tokens.CookieToken);
-            Assert.Equal("form-value", tokens.FormToken);
+            Assert.Equal("form-value", tokens.RequestToken);
         }
 
         [Theory]
