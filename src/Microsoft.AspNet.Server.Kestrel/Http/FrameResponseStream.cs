@@ -11,12 +11,12 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
     class FrameResponseStream : Stream
     {
         private readonly FrameContext _context;
-        private StreamState _state;
+        private FrameStreamState _state;
 
         public FrameResponseStream(FrameContext context)
         {
             _context = context;
-            _state = StreamState.Closed;
+            _state = FrameStreamState.Closed;
         }
 
         public override bool CanRead => false;
@@ -81,9 +81,9 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         public Stream StartAcceptingWrites()
         {
             // Only start if not aborted
-            if (_state == StreamState.Closed)
+            if (_state == FrameStreamState.Closed)
             {
-                _state = StreamState.Open;
+                _state = FrameStreamState.Open;
             }
 
             return this;
@@ -91,14 +91,14 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         public void PauseAcceptingWrites()
         {
-            _state = StreamState.Closed;
+            _state = FrameStreamState.Closed;
         }
 
         public void ResumeAcceptingWrites()
         {
-            if (_state == StreamState.Closed)
+            if (_state == FrameStreamState.Closed)
             {
-                _state = StreamState.Open;
+                _state = FrameStreamState.Open;
             }
         }
 
@@ -106,16 +106,16 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             // Can't use dispose (or close) as can be disposed too early by user code
             // As exampled in EngineTests.ZeroContentLengthNotSetAutomaticallyForCertainStatusCodes
-            _state = StreamState.Closed;
+            _state = FrameStreamState.Closed;
         }
 
         public void Abort()
         {
             // We don't want to throw an ODE until the app func actually completes.
             // If the request is aborted, we throw an IOException instead.
-            if (_state != StreamState.Closed)
+            if (_state != FrameStreamState.Closed)
             {
-                _state = StreamState.Aborted;
+                _state = FrameStreamState.Aborted;
             }
         }
 
@@ -123,20 +123,13 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             switch (_state)
             {
-                case StreamState.Open:
+                case FrameStreamState.Open:
                     return;
-                case StreamState.Closed:
+                case FrameStreamState.Closed:
                     throw new ObjectDisposedException(nameof(FrameResponseStream));
-                case StreamState.Aborted:
+                case FrameStreamState.Aborted:
                     throw new IOException("The request has been aborted.");
             }
-        }
-
-        private enum StreamState
-        {
-            Open,
-            Closed,
-            Aborted
         }
     }
 }

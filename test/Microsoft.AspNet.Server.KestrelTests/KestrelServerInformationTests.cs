@@ -85,6 +85,31 @@ namespace Microsoft.AspNet.Server.KestrelTests
             Assert.False(information.NoDelay);
         }
 
+        [Theory]
+        [InlineData(null, false)]
+        [InlineData("", false)]
+        [InlineData("false", false)]
+        [InlineData("False", false)]
+        [InlineData("true", true)]
+        [InlineData("True", true)]
+        [InlineData("Foo", false)]
+        [InlineData("FooBar", false)]
+        public void SetReuseStreamsUsingConfiguration(string input, bool expected)
+        {
+            var values = new Dictionary<string, string>
+            {
+                { "kestrel.reuseStreams", input }
+            };
+
+            var configuration = new ConfigurationBuilder()
+                .AddInMemoryCollection(values)
+                .Build();
+
+            var information = new KestrelServerInformation(configuration);
+
+            Assert.Equal(expected, information.ReuseStreams);
+        }
+
         private static int Clamp(int value, int min, int max)
         {
             return value < min ? min : value > max ? max : value;

@@ -22,6 +22,7 @@ namespace Microsoft.AspNet.Server.Kestrel
             Addresses = GetAddresses(configuration);
             ThreadCount = GetThreadCount(configuration);
             NoDelay = GetNoDelay(configuration);
+            ReuseStreams = GetReuseStreams(configuration);
         }
 
         public ICollection<string> Addresses { get; }
@@ -29,6 +30,8 @@ namespace Microsoft.AspNet.Server.Kestrel
         public int ThreadCount { get; set; }
 
         public bool NoDelay { get; set; }
+
+        public bool ReuseStreams { get; set; }
 
         public IConnectionFilter ConnectionFilter { get; set; }
 
@@ -106,6 +109,19 @@ namespace Microsoft.AspNet.Server.Kestrel
             }
 
             return true;
+        }
+
+        private static bool GetReuseStreams(IConfiguration configuration)
+        {
+            var reuseStreamsString = configuration["kestrel.reuseStreams"];
+
+            bool reuseStreams;
+            if (bool.TryParse(reuseStreamsString, out reuseStreams))
+            {
+                return reuseStreams;
+            }
+
+            return false;
         }
     }
 }

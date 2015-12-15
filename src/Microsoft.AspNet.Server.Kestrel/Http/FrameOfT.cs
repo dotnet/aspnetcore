@@ -64,6 +64,15 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                     {
                         var messageBody = MessageBody.For(HttpVersion, _requestHeaders, this);
                         _keepAlive = messageBody.RequestKeepAlive;
+
+                        // _duplexStream may be null if flag switched while running
+                        if (!ReuseStreams || _duplexStream == null)
+                        {
+                            _requestBody = new FrameRequestStream();
+                            _responseBody = new FrameResponseStream(this);
+                            _duplexStream = new FrameDuplexStream(_requestBody, _responseBody);
+                        }
+
                         RequestBody = _requestBody.StartAcceptingReads(messageBody);
                         ResponseBody = _responseBody.StartAcceptingWrites();
                         DuplexStream = _duplexStream;

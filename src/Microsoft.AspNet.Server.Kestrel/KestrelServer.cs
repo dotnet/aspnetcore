@@ -67,7 +67,8 @@ namespace Microsoft.AspNet.Server.Kestrel
                     ThreadPool = new LoggingThreadPool(trace),
                     DateHeaderValueManager = dateHeaderValueManager,
                     ConnectionFilter = information.ConnectionFilter,
-                    NoDelay = information.NoDelay
+                    NoDelay = information.NoDelay,
+                    ReuseStreams = information.ReuseStreams
                 });
 
                 _disposables.Push(engine);

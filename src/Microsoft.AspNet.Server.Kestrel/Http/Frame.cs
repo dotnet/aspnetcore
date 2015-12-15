@@ -87,9 +87,12 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             _localEndPoint = localEndPoint;
             _prepareRequest = prepareRequest;
             _pathBase = context.ServerAddress.PathBase;
-            _requestBody = new FrameRequestStream();
-            _responseBody = new FrameResponseStream(this);
-            _duplexStream = new FrameDuplexStream(_requestBody, _responseBody);
+            if (ReuseStreams)
+            {
+                _requestBody = new FrameRequestStream();
+                _responseBody = new FrameResponseStream(this);
+                _duplexStream = new FrameDuplexStream(_requestBody, _responseBody);
+            }
 
             FrameControl = this;
             Reset();
