@@ -6,10 +6,7 @@
 ###############################################################################
 # Make sh files under the build directory always have LF as line endings
 ###############################################################################
-build/*.sh eol=lf
-KoreBuild-dotnet/build/*.sh eol=lf
-build-template-dotnet/*.sh eol=lf
-
+*.sh eol=lf
 
 ###############################################################################
 # Set default behavior for command prompt diff.
