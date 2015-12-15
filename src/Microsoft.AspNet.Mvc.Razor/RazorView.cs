@@ -155,8 +155,12 @@ namespace Microsoft.AspNet.Mvc.Razor
                     var viewStart = ViewStartPages[i];
                     context.ExecutingFilePath = viewStart.Path;
 
-                    // Copy the layout value from the previous view start (if any) to the current.
-                    viewStart.Layout = layout;
+                    // If non-null, copy the layout value from the previous view start to the current. Otherwise leave
+                    // Layout default alone.
+                    if (layout != null)
+                    {
+                        viewStart.Layout = layout;
+                    }
 
                     await RenderPageCoreAsync(viewStart, context);
 
@@ -170,8 +174,11 @@ namespace Microsoft.AspNet.Mvc.Razor
                 context.ExecutingFilePath = oldFilePath;
             }
 
-            // Copy the layout value from the view start page(s) (if any) to the entry page.
-            RazorPage.Layout = layout;
+            // If non-null, copy the layout value from the view start page(s) to the entry page.
+            if (layout != null)
+            {
+                RazorPage.Layout = layout;
+            }
         }
 
         private async Task RenderLayoutAsync(
