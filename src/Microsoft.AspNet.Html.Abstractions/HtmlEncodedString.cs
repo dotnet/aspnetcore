@@ -2,16 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics;
 using System.IO;
 using System.Text.Encodings.Web;
 
 namespace Microsoft.AspNet.Html
 {
     /// <summary>
-    /// An <see cref="IHtmlContent"/> impelementation that wraps an HTML encoded <see cref="string"/>.
+    /// An <see cref="IHtmlContent"/> implementation that wraps an HTML encoded <see cref="string"/>.
     /// </summary>
-    [DebuggerDisplay("{DebuggerToString()}")]
     public class HtmlEncodedString : IHtmlContent
     {
         /// <summary>
@@ -27,23 +25,29 @@ namespace Microsoft.AspNet.Html
         /// <param name="value">The HTML encoded value.</param>
         public HtmlEncodedString(string value)
         {
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
-
             _value = value;
         }
 
         /// <inheritdoc />
         public void WriteTo(TextWriter writer, HtmlEncoder encoder)
         {
+            if (writer == null)
+            {
+                throw new ArgumentNullException(nameof(writer));
+            }
+
+            if (encoder == null)
+            {
+                throw new ArgumentNullException(nameof(encoder));
+            }
+
             writer.Write(_value);
         }
 
-        private string DebuggerToString()
+        /// <inheritdoc />
+        public override string ToString()
         {
-            return _value;
+            return _value ?? string.Empty;
         }
     }
 }

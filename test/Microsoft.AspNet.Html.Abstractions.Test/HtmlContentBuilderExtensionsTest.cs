@@ -159,6 +159,19 @@ namespace Microsoft.AspNet.Html.Test
         }
 
         [Fact]
+        public void Builder_AppendFormat_HtmlEncodedString()
+        {
+            // Arrange
+            var builder = new TestHtmlContentBuilder();
+
+            // Act
+            builder.AppendFormat("{0}!", new HtmlEncodedString("First"));
+
+            // Assert
+            Assert.Equal("First!", HtmlContentToString(builder));
+        }
+
+        [Fact]
         public void Builder_AppendFormatContent_With1Argument()
         {
             // Arrange

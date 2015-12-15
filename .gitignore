@@ -2,10 +2,17 @@
 [Bb]in/
 TestResults/
 .nuget/
+*.sln.ide/
 _ReSharper.*/
 packages/
 artifacts/
 PublishProfiles/
+.vs/
+bower_components/
+node_modules/
+**/wwwroot/lib/
+debugSettings.json
+project.lock.json
 *.user
 *.suo
 *.cache
@@ -23,5 +30,8 @@ nuget.exe
 *.ncrunchsolution
 *.*sdf
 *.ipch
+.settings
 *.sln.ide
-project.lock.json
+node_modules
+**/[Cc]ompiler/[Rr]esources/**/*.js
+*launchSettings.json

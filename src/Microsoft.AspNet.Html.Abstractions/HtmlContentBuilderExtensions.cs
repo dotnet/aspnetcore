@@ -99,6 +99,11 @@ namespace Microsoft.AspNet.Html
         /// <returns>The <see cref="IHtmlContentBuilder"/>.</returns>
         public static IHtmlContentBuilder AppendLine(this IHtmlContentBuilder builder)
         {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
             builder.Append(HtmlEncodedString.NewLine);
             return builder;
         }
@@ -112,6 +117,11 @@ namespace Microsoft.AspNet.Html
         /// <returns>The <see cref="IHtmlContentBuilder"/>.</returns>
         public static IHtmlContentBuilder AppendLine(this IHtmlContentBuilder builder, string unencoded)
         {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
             builder.Append(unencoded);
             builder.Append(HtmlEncodedString.NewLine);
             return builder;
@@ -125,6 +135,11 @@ namespace Microsoft.AspNet.Html
         /// <returns>The <see cref="IHtmlContentBuilder"/>.</returns>
         public static IHtmlContentBuilder AppendLine(this IHtmlContentBuilder builder, IHtmlContent content)
         {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
             builder.Append(content);
             builder.Append(HtmlEncodedString.NewLine);
             return builder;
@@ -139,6 +154,11 @@ namespace Microsoft.AspNet.Html
         /// <returns>The <see cref="IHtmlContentBuilder"/>.</returns>
         public static IHtmlContentBuilder AppendHtmlLine(this IHtmlContentBuilder builder, string encoded)
         {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
             builder.AppendHtml(encoded);
             builder.Append(HtmlEncodedString.NewLine);
             return builder;
@@ -153,6 +173,11 @@ namespace Microsoft.AspNet.Html
         /// <returns>The <see cref="IHtmlContentBuilder"/>.</returns>
         public static IHtmlContentBuilder SetContent(this IHtmlContentBuilder builder, string unencoded)
         {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
             builder.Clear();
             builder.Append(unencoded);
             return builder;
@@ -166,6 +191,11 @@ namespace Microsoft.AspNet.Html
         /// <returns>The <see cref="IHtmlContentBuilder"/>.</returns>
         public static IHtmlContentBuilder SetContent(this IHtmlContentBuilder builder, IHtmlContent content)
         {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
             builder.Clear();
             builder.Append(content);
             return builder;
@@ -180,6 +210,11 @@ namespace Microsoft.AspNet.Html
         /// <returns>The <see cref="IHtmlContentBuilder"/>.</returns>
         public static IHtmlContentBuilder SetHtmlContent(this IHtmlContentBuilder builder, string encoded)
         {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
             builder.Clear();
             builder.AppendHtml(encoded);
             return builder;
@@ -256,8 +291,14 @@ namespace Microsoft.AspNet.Html
 
             public string Format(string format, object arg, IFormatProvider formatProvider)
             {
-                // This is the case we need to special case. We trust the IHtmlContent instance to do the
-                // right thing with encoding.
+                // These are the cases we need to special case. We trust the HtmlEncodedString or IHtmlContent instance
+                // to do the right thing with encoding.
+                var htmlString = arg as HtmlEncodedString;
+                if (htmlString != null)
+                {
+                    return htmlString.ToString();
+                }
+
                 var htmlContent = arg as IHtmlContent;
                 if (htmlContent != null)
                 {
