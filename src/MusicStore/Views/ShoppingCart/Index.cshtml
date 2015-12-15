@@ -9,7 +9,7 @@
     public string GetAntiXsrfToken()
     {
         var tokens = Xsrf.GetTokens(Context);
-        return tokens.CookieToken + ":" + tokens.FormToken;
+        return tokens.CookieToken + ":" + tokens.RequestToken;
     }
 }
 

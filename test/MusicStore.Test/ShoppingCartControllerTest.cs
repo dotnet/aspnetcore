@@ -180,7 +180,7 @@ namespace MusicStore.Controllers
             // Header initialization for AntiForgery
             var headers = new KeyValuePair<string, StringValues>(
                 "RequestVerificationToken",
-                new string[] { tokens.CookieToken + ":" + tokens.FormToken });
+                new string[] { tokens.CookieToken + ":" + tokens.RequestToken });
             httpContext.Request.Headers.Add(headers);
 
             // Cotroller initialization
