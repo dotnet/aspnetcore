@@ -123,6 +123,19 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             return this;
         }
 
+        public void PauseAcceptingReads()
+        {
+            _state = StreamState.Closed;
+        }
+
+        public void ResumeAcceptingReads()
+        {
+            if (_state == StreamState.Closed)
+            {
+                _state = StreamState.Open;
+            }
+        }
+
         public void StopAcceptingReads()
         {
             // Can't use dispose (or close) as can be disposed too early by user code

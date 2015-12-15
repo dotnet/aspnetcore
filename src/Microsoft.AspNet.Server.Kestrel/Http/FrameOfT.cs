@@ -91,6 +91,9 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                                 await FireOnStarting();
                             }
 
+                            _requestBody.PauseAcceptingReads();
+                            _responseBody.PauseAcceptingWrites();
+
                             if (_onCompleted != null)
                             {
                                 await FireOnCompleted();
@@ -101,10 +104,12 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             // If _requestAbort is set, the connection has already been closed.
                             if (!_requestAborted)
                             {
+                                _responseBody.ResumeAcceptingWrites();
                                 await ProduceEnd();
 
                                 if (_keepAlive)
                                 {
+                                    _requestBody.ResumeAcceptingReads();
                                     // Finish reading the request body in case the app did not.
                                     await messageBody.Consume();
                                 }

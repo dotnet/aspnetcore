@@ -89,6 +89,19 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             return this;
         }
 
+        public void PauseAcceptingWrites()
+        {
+            _state = StreamState.Closed;
+        }
+
+        public void ResumeAcceptingWrites()
+        {
+            if (_state == StreamState.Closed)
+            {
+                _state = StreamState.Open;
+            }
+        }
+
         public void StopAcceptingWrites()
         {
             // Can't use dispose (or close) as can be disposed too early by user code
