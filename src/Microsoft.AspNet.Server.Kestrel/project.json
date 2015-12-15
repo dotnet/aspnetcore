@@ -84,7 +84,7 @@
     "/": "../../content/thirdpartynotices.txt",
     "runtimes/win7-x64/native/": "runtimes/win7-x64/native/*",
     "runtimes/win7-x86/native/": "runtimes/win7-x86/native/*",
-    "runtimes/win10-arm/native/": "runtimes/win10-arm/native/*",
+    "runtimes/win7-arm/native/": "runtimes/win7-arm/native/*",
     "runtimes/osx/native/": "runtimes/osx/native/*"
   }
 }
