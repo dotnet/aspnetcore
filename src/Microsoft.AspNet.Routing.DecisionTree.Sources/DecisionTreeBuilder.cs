@@ -153,7 +153,6 @@ namespace Microsoft.AspNet.Routing.DecisionTree
             foreach (var criterion in criteria.OrderByDescending(c => c.Value.Count))
             {
                 var reducedBranches = new Dictionary<object, DecisionTreeNode<TItem>>(comparer.InnerComparer);
-                DecisionTreeNode<TItem> fallback = null;
 
                 foreach (var branch in criterion.Value)
                 {
@@ -172,24 +171,16 @@ namespace Microsoft.AspNet.Routing.DecisionTree
                         childContext.CurrentCriteria.Add(criterion.Key);
 
                         var newBranch = GenerateNode(childContext, comparer, branch.Value);
-                        if (branch.Key.IsCatchAll)
-                        {
-                            fallback = newBranch;
-                        }
-                        else
-                        {
-                            reducedBranches.Add(branch.Key.Value, newBranch);
-                        }
+                        reducedBranches.Add(branch.Key.Value, newBranch);
                     }
                 }
 
-                if (reducedBranches.Count > 0 || fallback != null)
+                if (reducedBranches.Count > 0)
                 {
                     var newCriterion = new DecisionCriterion<TItem>()
                     {
                         Key = criterion.Key,
                         Branches = reducedBranches,
-                        Fallback = fallback,
                     };
 
                     reducedCriteria.Add(newCriterion);

@@ -16,19 +16,12 @@ namespace Microsoft.AspNet.Routing.DecisionTree
 
         public bool Equals(DecisionCriterionValue x, DecisionCriterionValue y)
         {
-            return x.IsCatchAll == y.IsCatchAll || InnerComparer.Equals(x.Value, y.Value);
+            return InnerComparer.Equals(x.Value, y.Value);
         }
 
         public int GetHashCode(DecisionCriterionValue obj)
         {
-            if (obj.IsCatchAll)
-            {
-                return 0;
-            }
-            else
-            {
-                return InnerComparer.GetHashCode(obj.Value);
-            }
+            return InnerComparer.GetHashCode(obj.Value);
         }
     }
 }

@@ -5,18 +5,11 @@ namespace Microsoft.AspNet.Routing.DecisionTree
 {
     internal struct DecisionCriterionValue
     {
-        private readonly bool _isCatchAll;
         private readonly object _value;
 
-        public DecisionCriterionValue(object value, bool isCatchAll)
+        public DecisionCriterionValue(object value)
         {
             _value = value;
-            _isCatchAll = isCatchAll;
-        }
-
-        public bool IsCatchAll
-        {
-            get { return _isCatchAll; }
         }
 
         public object Value

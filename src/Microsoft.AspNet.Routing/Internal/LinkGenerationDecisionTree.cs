@@ -117,7 +117,7 @@ namespace Microsoft.AspNet.Routing.Internal
                 var results = new Dictionary<string, DecisionCriterionValue>(StringComparer.OrdinalIgnoreCase);
                 foreach (var kvp in item.RequiredLinkValues)
                 {
-                    results.Add(kvp.Key, new DecisionCriterionValue(kvp.Value ?? string.Empty, isCatchAll: false));
+                    results.Add(kvp.Key, new DecisionCriterionValue(kvp.Value ?? string.Empty));
                 }
 
                 return results;

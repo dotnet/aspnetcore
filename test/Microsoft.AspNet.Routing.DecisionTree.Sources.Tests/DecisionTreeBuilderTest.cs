@@ -47,9 +47,9 @@ namespace Microsoft.AspNet.Routing.DecisionTree
             var items = new List<Item>();
 
             var item = new Item();
-            item.Criteria.Add("area", new DecisionCriterionValue(value: "Admin", isCatchAll: false));
-            item.Criteria.Add("controller", new DecisionCriterionValue(value: "Users", isCatchAll: false));
-            item.Criteria.Add("action", new DecisionCriterionValue(value: "AddUser", isCatchAll: false));
+            item.Criteria.Add("area", new DecisionCriterionValue(value: "Admin"));
+            item.Criteria.Add("controller", new DecisionCriterionValue(value: "Users"));
+            item.Criteria.Add("action", new DecisionCriterionValue(value: "AddUser"));
             items.Add(item);
 
             // Act
@@ -60,7 +60,6 @@ namespace Microsoft.AspNet.Routing.DecisionTree
 
             var area = Assert.Single(tree.Criteria);
             Assert.Equal("area", area.Key);
-            Assert.Null(area.Fallback);
 
             var admin = Assert.Single(area.Branches);
             Assert.Equal("Admin", admin.Key);
@@ -68,7 +67,6 @@ namespace Microsoft.AspNet.Routing.DecisionTree
 
             var controller = Assert.Single(admin.Value.Criteria);
             Assert.Equal("controller", controller.Key);
-            Assert.Null(controller.Fallback);
 
             var users = Assert.Single(controller.Branches);
             Assert.Equal("Users", users.Key);
@@ -76,7 +74,6 @@ namespace Microsoft.AspNet.Routing.DecisionTree
 
             var action = Assert.Single(users.Value.Criteria);
             Assert.Equal("action", action.Key);
-            Assert.Null(action.Fallback);
 
             var addUser = Assert.Single(action.Branches);
             Assert.Equal("AddUser", addUser.Key);
@@ -91,13 +88,13 @@ namespace Microsoft.AspNet.Routing.DecisionTree
             var items = new List<Item>();
 
             var item1 = new Item();
-            item1.Criteria.Add("controller", new DecisionCriterionValue(value: "Store", isCatchAll: false));
-            item1.Criteria.Add("action", new DecisionCriterionValue(value: "Buy", isCatchAll: false));
+            item1.Criteria.Add("controller", new DecisionCriterionValue(value: "Store"));
+            item1.Criteria.Add("action", new DecisionCriterionValue(value: "Buy"));
             items.Add(item1);
 
             var item2 = new Item();
-            item2.Criteria.Add("controller", new DecisionCriterionValue(value: "Store", isCatchAll: false));
-            item2.Criteria.Add("action", new DecisionCriterionValue(value: "Checkout", isCatchAll: false));
+            item2.Criteria.Add("controller", new DecisionCriterionValue(value: "Store"));
+            item2.Criteria.Add("action", new DecisionCriterionValue(value: "Checkout"));
             items.Add(item2);
 
             // Act
@@ -108,14 +105,12 @@ namespace Microsoft.AspNet.Routing.DecisionTree
 
             var action = Assert.Single(tree.Criteria);
             Assert.Equal("action", action.Key);
-            Assert.Null(action.Fallback);
 
             var buy = action.Branches["Buy"];
             Assert.Empty(buy.Matches);
 
             var controller = Assert.Single(buy.Criteria);
             Assert.Equal("controller", controller.Key);
-            Assert.Null(controller.Fallback);
 
             var store = Assert.Single(controller.Branches);
             Assert.Equal("Store", store.Key);
@@ -127,7 +122,6 @@ namespace Microsoft.AspNet.Routing.DecisionTree
 
             controller = Assert.Single(checkout.Criteria);
             Assert.Equal("controller", controller.Key);
-            Assert.Null(controller.Fallback);
 
             store = Assert.Single(controller.Branches);
             Assert.Equal("Store", store.Key);
@@ -142,17 +136,17 @@ namespace Microsoft.AspNet.Routing.DecisionTree
             var items = new List<Item>();
 
             var item1 = new Item();
-            item1.Criteria.Add("controller", new DecisionCriterionValue(value: "Store", isCatchAll: false));
-            item1.Criteria.Add("action", new DecisionCriterionValue(value: "Buy", isCatchAll: false));
+            item1.Criteria.Add("controller", new DecisionCriterionValue(value: "Store"));
+            item1.Criteria.Add("action", new DecisionCriterionValue(value: "Buy"));
             items.Add(item1);
 
             var item2 = new Item();
-            item2.Criteria.Add("controller", new DecisionCriterionValue(value: "Store", isCatchAll: false));
-            item2.Criteria.Add("action", new DecisionCriterionValue(value: "Checkout", isCatchAll: false));
+            item2.Criteria.Add("controller", new DecisionCriterionValue(value: "Store"));
+            item2.Criteria.Add("action", new DecisionCriterionValue(value: "Checkout"));
             items.Add(item2);
 
             var item3 = new Item();
-            item3.Criteria.Add("action", new DecisionCriterionValue(value: "Buy", isCatchAll: false));
+            item3.Criteria.Add("action", new DecisionCriterionValue(value: "Buy"));
             items.Add(item3);
 
             // Act
@@ -163,64 +157,9 @@ namespace Microsoft.AspNet.Routing.DecisionTree
 
             var action = Assert.Single(tree.Criteria);
             Assert.Equal("action", action.Key);
-            Assert.Null(action.Fallback);
 
             var buy = action.Branches["Buy"];
             Assert.Same(item3, Assert.Single(buy.Matches));
-        }
-
-        [Fact]
-        public void BuildTree_WithCatchAll()
-        {
-            // Arrange
-            var items = new List<Item>();
-
-            var item1 = new Item();
-            item1.Criteria.Add("country", new DecisionCriterionValue(value: "CA", isCatchAll: false));
-            item1.Criteria.Add("controller", new DecisionCriterionValue(value: "Store", isCatchAll: false));
-            item1.Criteria.Add("action", new DecisionCriterionValue(value: "Checkout", isCatchAll: false));
-            items.Add(item1);
-
-            var item2 = new Item();
-            item2.Criteria.Add("country", new DecisionCriterionValue(value: "US", isCatchAll: false));
-            item2.Criteria.Add("controller", new DecisionCriterionValue(value: "Store", isCatchAll: false));
-            item2.Criteria.Add("action", new DecisionCriterionValue(value: "Checkout", isCatchAll: false));
-            items.Add(item2);
-
-            var item3 = new Item();
-            item3.Criteria.Add("country", new DecisionCriterionValue(value: null, isCatchAll: true));
-            item3.Criteria.Add("controller", new DecisionCriterionValue(value: "Store", isCatchAll: false));
-            item3.Criteria.Add("action", new DecisionCriterionValue(value: "Checkout", isCatchAll: false));
-            items.Add(item3);
-
-            // Act
-            var tree = DecisionTreeBuilder<Item>.GenerateTree(items, new ItemClassifier());
-
-            // Assert
-            Assert.Empty(tree.Matches);
-
-            var country = Assert.Single(tree.Criteria);
-            Assert.Equal("country", country.Key);
-
-            var fallback = country.Fallback;
-            Assert.NotNull(fallback);
-
-            var controller = Assert.Single(fallback.Criteria);
-            Assert.Equal("controller", controller.Key);
-            Assert.Null(controller.Fallback);
-
-            var store = Assert.Single(controller.Branches);
-            Assert.Equal("Store", store.Key);
-            Assert.Empty(store.Value.Matches);
-
-            var action = Assert.Single(store.Value.Criteria);
-            Assert.Equal("action", action.Key);
-            Assert.Null(action.Fallback);
-
-            var checkout = Assert.Single(action.Branches);
-            Assert.Equal("Checkout", checkout.Key);
-            Assert.Empty(checkout.Value.Criteria);
-            Assert.Same(item3, Assert.Single(checkout.Value.Matches));
         }
 
         [Fact]
@@ -230,17 +169,17 @@ namespace Microsoft.AspNet.Routing.DecisionTree
             var items = new List<Item>();
 
             var item1 = new Item();
-            item1.Criteria.Add("controller", new DecisionCriterionValue(value: "Store", isCatchAll: false));
-            item1.Criteria.Add("action", new DecisionCriterionValue(value: "Buy", isCatchAll: false));
+            item1.Criteria.Add("controller", new DecisionCriterionValue(value: "Store"));
+            item1.Criteria.Add("action", new DecisionCriterionValue(value: "Buy"));
             items.Add(item1);
 
             var item2 = new Item();
-            item2.Criteria.Add("controller", new DecisionCriterionValue(value: "Store", isCatchAll: false));
-            item2.Criteria.Add("action", new DecisionCriterionValue(value: "Checkout", isCatchAll: false));
+            item2.Criteria.Add("controller", new DecisionCriterionValue(value: "Store"));
+            item2.Criteria.Add("action", new DecisionCriterionValue(value: "Checkout"));
             items.Add(item2);
 
             var item3 = new Item();
-            item3.Criteria.Add("stub", new DecisionCriterionValue(value: "Bleh", isCatchAll: false));
+            item3.Criteria.Add("stub", new DecisionCriterionValue(value: "Bleh"));
             items.Add(item3);
 
             // Act

@@ -10,7 +10,5 @@ namespace Microsoft.AspNet.Routing.DecisionTree
         public string Key { get; set; }
 
         public Dictionary<object, DecisionTreeNode<TItem>> Branches { get; set; }
-
-        public DecisionTreeNode<TItem> Fallback { get; set; }
     }
 }
