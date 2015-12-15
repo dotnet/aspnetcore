@@ -6,7 +6,9 @@
         <link rel="stylesheet" href="/main.css" />
     </head>
     <body>
-        @RenderBody()
+        <div class="container">
+            @RenderBody()
+        </div>
         @RenderSection("scripts", required: false)
     </body>
 </html>

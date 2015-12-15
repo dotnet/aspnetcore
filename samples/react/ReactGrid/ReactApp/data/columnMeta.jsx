@@ -1,3 +1,12 @@
+import React from 'react';
+import { Link } from 'react-router';
+
+class RowActionsComponent extends React.Component {
+    render() {
+        return <Link to={'/edit/' + this.props.rowData.id}>Edit</Link>;
+    }
+}
+
 var columnMeta = [
   {
     "columnName": "id",
@@ -40,6 +49,13 @@ var columnMeta = [
     "order":  7,
     "locked": false,
     "visible": true
+  },
+  {
+    "columnName": "actions",
+    "order":  8,
+    "locked": true,
+    "visible": true,
+    "customComponent": RowActionsComponent
   }
 ];
 

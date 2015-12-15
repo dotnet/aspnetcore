@@ -2,7 +2,7 @@ import React from 'react';
 import Griddle from 'griddle-react';
 import { CustomPager } from './CustomPager.jsx';
 import { fakeData } from '../data/fakeData.js';
-import { columnMeta } from '../data/columnMeta.js';
+import { columnMeta } from '../data/columnMeta.jsx';
 const resultsPerPage = 10;
 
 export class PeopleGrid extends React.Component {
@@ -13,6 +13,7 @@ export class PeopleGrid extends React.Component {
                 <h1>People</h1>
                 <div id="table-area">
                     <Griddle results={fakeData}
+                        columns={columnMeta.map(x => x.columnName)}
                         columnMetadata={columnMeta}
                         resultsPerPage={resultsPerPage}
                         tableClassName="table"
