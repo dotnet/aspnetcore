@@ -1,15 +1,17 @@
-﻿{
+{
     "webroot": "wwwroot",
     "version": "1.0.0-*",
 
-    "dependencies": {
-        "Microsoft.AspNet.Antiforgery": "1.0.0-*",
-        "Microsoft.AspNet.Http.Extensions": "1.0.0-*",
-        "Microsoft.AspNet.Server.IIS": "1.0.0-*",
-        "Microsoft.AspNet.Server.Kestrel": "1.0.0-*",
-        "Microsoft.AspNet.Server.WebListener": "1.0.0-*",
-        "Microsoft.AspNet.StaticFiles": "1.0.0-*"
-    },
+  "dependencies": {
+    "Microsoft.AspNet.Antiforgery": "1.0.0-*",
+    "Microsoft.AspNet.Http.Abstractions": "1.0.0-rc2-16062",
+    "Microsoft.AspNet.Http.Extensions": "1.0.0-*",
+    "Microsoft.AspNet.Routing.Extensions": "1.0.0-*",
+    "Microsoft.AspNet.Server.Kestrel": "1.0.0-*",
+    "Microsoft.AspNet.Server.WebListener": "1.0.0-*",
+    "Microsoft.AspNet.StaticFiles": "1.0.0-*",
+    "Newtonsoft.Json": "7.0.1"
+  },
 
     "commands": {
         "kestrel": "Microsoft.AspNet.Hosting --server Microsoft.AspNet.Server.Kestrel --server.urls http://localhost:5000",

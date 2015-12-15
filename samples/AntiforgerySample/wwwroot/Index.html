@@ -1,10 +1,47 @@
 ﻿<!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta charset="utf-8" />
-    <title>Antiforgery Sample</title>
+    <title>Todo List Antiforgery Sample</title>
+    <link rel="stylesheet" href="bower_components/bootstrap.min.css" />
 </head>
-<body>
-    <h1>Hello, World!</h1>
+<body ng-app="TODO" ng-controller="todoController">
+    <div class="container">
+        <div class="row">
+            <h1>Todo List Antiforgery Sample</h1>
+        </div>
+        <div class="row">
+            <div class="col-lg-6">
+                <table class="table">
+                    <thead>
+                        <tr><th colspan="2">TODO List</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-repeat="item in itemList">
+                            <td>{{$index + 1}}</td>
+                            <td>
+                                {{item.name}}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="row">
+            <form class="form-inline">
+                <div class="form-group">
+                    <label for="name">New Item:</label>
+                    <input type="text" class="form-control" id="name" placeholder="(Enter Todo Item)" ng-model="item.name">
+                </div>
+                <button class="btn btn-default" value="Create" ng-click="create(item)">Create</button>
+            </form>
+        </div>
+    </div>
+    <script src="bower_components/angular.js"></script>
+    <script src="app.js"></script>
+    <script src="services.js"></script>
+    <script src="controllers.js"></script>
+
 </body>
 </html>

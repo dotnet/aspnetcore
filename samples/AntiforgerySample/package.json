@@ -1,0 +1,13 @@
+{
+  "name": "ASP.NET",
+  "private": true,
+  "version": "0.0.0",
+  "devDependencies": {
+    "gulp": "^3.9.0",
+    "gulp-concat": "^2.6.0",
+    "gulp-cssmin": "^0.1.7",
+    "gulp-uglify": "^1.5.1",
+    "main-bower-files": "^2.9.0",
+    "rimraf": "^2.4.4"
+  }
+}

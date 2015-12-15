@@ -33,7 +33,7 @@ namespace Microsoft.Extensions.DependencyInjection
             return services;
         }
 
-        public static IServiceCollection ConfigureAntiforgery(
+        public static IServiceCollection AddAntiforgery(
             this IServiceCollection services,
             Action<AntiforgeryOptions> setupAction)
         {
@@ -42,12 +42,13 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(services));
             }
 
-            if (setupAction == null)
+            services.AddAntiforgery();
+
+            if (setupAction != null)
             {
-                throw new ArgumentNullException(nameof(setupAction));
+                services.Configure(setupAction);
             }
 
-            services.Configure(setupAction);
             return services;
         }
     }
