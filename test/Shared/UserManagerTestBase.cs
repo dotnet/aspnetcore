@@ -1458,7 +1458,8 @@ namespace Microsoft.AspNet.Identity.Test
             }
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Fails due to threading bugs in Mono")]
         public async Task CanGetRolesForUser()
         {
             if (ShouldSkipDbTests())
@@ -2013,7 +2014,8 @@ namespace Microsoft.AspNet.Identity.Test
             Assert.Equal(DateTimeOffset.Parse("01/01/2014"), await userMgr.GetLockoutEndDateAsync(user));
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Fails due to threading bugs in Mono")]
         public async Task CanGetUsersWithClaims()
         {
             if (ShouldSkipDbTests())
@@ -2038,7 +2040,8 @@ namespace Microsoft.AspNet.Identity.Test
             Assert.Equal(0, (await manager.GetUsersForClaimAsync(new Claim("123", "456"))).Count);
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Fails due to threading bugs in Mono")]
         public async Task CanGetUsersInRole()
         {
             if (ShouldSkipDbTests())
