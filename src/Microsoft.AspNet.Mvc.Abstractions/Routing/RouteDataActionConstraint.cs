@@ -46,20 +46,6 @@ namespace Microsoft.AspNet.Mvc.Routing
         }
 
         /// <summary>
-        /// Create a catch all constraint for the given key.
-        /// </summary>
-        /// <param name="routeKey">Route key.</param>
-        /// <returns>a <see cref="RouteDataActionConstraint"/> that represents a catch all constraint.</returns>
-        public static RouteDataActionConstraint CreateCatchAll(string routeKey)
-        {
-            var c = new RouteDataActionConstraint(routeKey);
-            c.KeyHandling = RouteKeyHandling.CatchAll;
-            c.RouteValue = string.Empty;
-
-            return c;
-        }
-
-        /// <summary>
         /// The route key this constraint matches against.
         /// </summary>
         public string RouteKey { get; private set; }

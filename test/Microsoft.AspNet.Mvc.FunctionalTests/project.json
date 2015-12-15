@@ -7,6 +7,7 @@
     "warningsAsErrors": true
   },
   "dependencies": {
+    "ActionConstraintSample.Web": "1.0.0",
     "ApiExplorerWebSite": "1.0.0",
     "ApplicationModelWebSite": "1.0.0",
     "BasicWebSite": "1.0.0",

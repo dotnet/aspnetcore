@@ -21,16 +21,11 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
     public abstract class RouteConstraintAttribute : Attribute, IRouteConstraintProvider
     {
         /// <summary>
-        /// Creates a new <see cref="RouteConstraintAttribute"/>.
+        /// Creates a new <see cref="RouteConstraintAttribute"/> with <see cref="RouteKeyHandling"/> set as
+        /// <see cref="RouteKeyHandling.DenyKey"/>.
         /// </summary>
         /// <param name="routeKey">The route value key.</param>
-        /// <param name="keyHandling">
-        /// The <see cref="RouteKeyHandling"/> value. Must be <see cref="RouteKeyHandling.CatchAll "/>
-        /// or <see cref="RouteKeyHandling.DenyKey"/>.
-        /// </param>
-        protected RouteConstraintAttribute(
-            string routeKey,
-            RouteKeyHandling keyHandling)
+        protected RouteConstraintAttribute(string routeKey)
         {
             if (routeKey == null)
             {
@@ -38,16 +33,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
             }
 
             RouteKey = routeKey;
-            RouteKeyHandling = keyHandling;
-
-            if (keyHandling != RouteKeyHandling.CatchAll &&
-                keyHandling != RouteKeyHandling.DenyKey)
-            {
-                var message = Resources.FormatRouteConstraintAttribute_InvalidKeyHandlingValue(
-                    Enum.GetName(typeof(RouteKeyHandling), RouteKeyHandling.CatchAll),
-                    Enum.GetName(typeof(RouteKeyHandling), RouteKeyHandling.DenyKey));
-                throw new ArgumentException(message, nameof(keyHandling));
-            }
+            RouteKeyHandling = RouteKeyHandling.DenyKey;
         }
 
         /// <summary>

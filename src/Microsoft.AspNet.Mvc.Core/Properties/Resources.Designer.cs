@@ -475,22 +475,6 @@ namespace Microsoft.AspNet.Mvc.Core
         }
 
         /// <summary>
-        /// The value must be either '{0}' or '{1}'.
-        /// </summary>
-        internal static string RouteConstraintAttribute_InvalidKeyHandlingValue
-        {
-            get { return GetString("RouteConstraintAttribute_InvalidKeyHandlingValue"); }
-        }
-
-        /// <summary>
-        /// The value must be either '{0}' or '{1}'.
-        /// </summary>
-        internal static string FormatRouteConstraintAttribute_InvalidKeyHandlingValue(object p0, object p1)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("RouteConstraintAttribute_InvalidKeyHandlingValue"), p0, p1);
-        }
-
-        /// <summary>
         /// Unable to find the required services. Please add all the required services by calling '{0}' inside the call to '{1}' or '{2}' in the application startup code.
         /// </summary>
         internal static string UnableToFindServices

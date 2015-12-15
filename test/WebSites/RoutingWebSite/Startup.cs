@@ -32,11 +32,6 @@ namespace RoutingWebSite
                     new { controller = "Home", action = "Index" });
 
                 routes.MapRoute(
-                    "products",
-                    "api/Products/{country}/{action}",
-                    defaults: new { controller = "Products" });
-
-                routes.MapRoute(
                     "ActionAsMethod",
                     "{controller}/{action}",
                     defaults: new { controller = "Home", action = "Index" });

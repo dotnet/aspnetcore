@@ -37,15 +37,5 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
             Assert.Equal(routeDataConstraint.KeyHandling, RouteKeyHandling.RequireKey);
             Assert.Equal(routeDataConstraint.RouteValue, "value");
         }
-
-        [Fact]
-        public void RouteDataActionConstraint_CatchAll()
-        {
-            var routeDataConstraint = RouteDataActionConstraint.CreateCatchAll("key");
-
-            Assert.Equal(routeDataConstraint.RouteKey, "key");
-            Assert.Equal(routeDataConstraint.KeyHandling, RouteKeyHandling.CatchAll);
-            Assert.Equal(routeDataConstraint.RouteValue, string.Empty);
-        }
     }
 }

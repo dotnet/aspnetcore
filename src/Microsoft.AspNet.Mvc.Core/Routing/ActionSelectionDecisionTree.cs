@@ -41,69 +41,7 @@ namespace Microsoft.AspNet.Mvc.Routing
             var results = new List<ActionDescriptor>();
             Walk(results, routeValues, _root);
 
-            // If we have a match that isn't using catch-all, then it's considered better than matches with catch all
-            // so filter those out.
-            var hasNonCatchAll = false;
-
-            // The common case for MVC has no catch-alls, so avoid allocating.
-            List<ActionDescriptor> filtered = null;
-
-            // Perf: Avoid allocations
-            for (var i = 0;  i < results.Count; i++)
-            {
-                var action = results[i];
-
-                var actionHasCatchAll = false;
-                if (action.RouteConstraints != null)
-                {
-                    for (var j = 0; j < action.RouteConstraints.Count; j++)
-                    {
-                        var constraint = action.RouteConstraints[j];
-                        if (constraint.KeyHandling == RouteKeyHandling.CatchAll)
-                        {
-                            actionHasCatchAll = true;
-                            break;
-                        }
-                    }
-                }
-
-                if (hasNonCatchAll && actionHasCatchAll)
-                {
-                    // Do nothing - we've already found a better match.
-                }
-                else if (actionHasCatchAll)
-                {
-                    if (filtered == null)
-                    {
-                        filtered = new List<ActionDescriptor>();
-                    }
-
-                    filtered.Add(action);
-                }
-                else if (hasNonCatchAll)
-                {
-                    Debug.Assert(filtered != null);
-                    filtered.Add(action);
-                }
-                else
-                {
-                    // This is the first non-catch-all we've found.
-                    hasNonCatchAll = true;
-
-                    if (filtered == null)
-                    {
-                        filtered = new List<ActionDescriptor>();
-                    }
-                    else
-                    {
-                        filtered.Clear();
-                    }
-
-                    filtered.Add(action);
-                }
-            }
-
-            return filtered ?? results;
+            return results;
         }
 
         private void Walk(
@@ -122,19 +60,12 @@ namespace Microsoft.AspNet.Mvc.Routing
                 var key = criterion.Key;
 
                 object value;
-                var hasValue = routeValues.TryGetValue(key, out value);
+                routeValues.TryGetValue(key, out value);
 
                 DecisionTreeNode<ActionDescriptor> branch;
                 if (criterion.Branches.TryGetValue(value ?? string.Empty, out branch))
                 {
                     Walk(results, routeValues, branch);
-                }
-
-                // If there's a fallback node we always need to process it when we have a value. We'll prioritize
-                // non-fallback matches later in the process.
-                if (hasValue && criterion.Fallback != null)
-                {
-                    Walk(results, routeValues, criterion.Fallback);
                 }
             }
         }
@@ -157,19 +88,15 @@ namespace Microsoft.AspNet.Mvc.Routing
                     foreach (var constraint in item.RouteConstraints)
                     {
                         DecisionCriterionValue value;
-                        if (constraint.KeyHandling == RouteKeyHandling.CatchAll)
-                        {
-                            value = new DecisionCriterionValue(value: null, isCatchAll: true);
-                        }
-                        else if (constraint.KeyHandling == RouteKeyHandling.DenyKey)
+                        if (constraint.KeyHandling == RouteKeyHandling.DenyKey)
                         {
                             // null and string.Empty are equivalent for route values, so just treat nulls as
                             // string.Empty.
-                            value = new DecisionCriterionValue(value: string.Empty, isCatchAll: false);
+                            value = new DecisionCriterionValue(value: string.Empty);
                         }
                         else if (constraint.KeyHandling == RouteKeyHandling.RequireKey)
                         {
-                            value = new DecisionCriterionValue(value: constraint.RouteValue, isCatchAll: false);
+                            value = new DecisionCriterionValue(value: constraint.RouteValue);
                         }
                         else
                         {

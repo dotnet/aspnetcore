@@ -1578,34 +1578,6 @@ namespace Microsoft.AspNet.Mvc.Razor.Test
         }
 
         [Fact]
-        public void GetNormalizedRouteValue_ReturnsRouteDataValue_IfRouteConstraintKeyHandlingIsCatchAll()
-        {
-            // Arrange
-            var key = "some-key";
-            var actionDescriptor = new ActionDescriptor
-            {
-                RouteConstraints = new[]
-                {
-                    RouteDataActionConstraint.CreateCatchAll(key)
-                }
-            };
-
-            var actionContext = new ActionContext
-            {
-                ActionDescriptor = actionDescriptor,
-                RouteData = new RouteData()
-            };
-
-            actionContext.RouteData.Values[key] = "route-value";
-
-            // Act
-            var result = RazorViewEngine.GetNormalizedRouteValue(actionContext, key);
-
-            // Assert
-            Assert.Equal("route-value", result);
-        }
-
-        [Fact]
         public void GetNormalizedRouteValue_UsesRouteValueDefaults_IfAttributeRouted()
         {
             // Arrange

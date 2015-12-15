@@ -464,18 +464,9 @@ namespace Microsoft.AspNet.Mvc.Controllers
                 // Skip duplicates
                 if (!HasConstraint(actionDescriptor.RouteConstraints, constraintAttribute.RouteKey))
                 {
-                    if (constraintAttribute.RouteKeyHandling == RouteKeyHandling.CatchAll)
-                    {
-                        actionDescriptor.RouteConstraints.Add(
-                            RouteDataActionConstraint.CreateCatchAll(
-                            constraintAttribute.RouteKey));
-                    }
-                    else
-                    {
-                        actionDescriptor.RouteConstraints.Add(new RouteDataActionConstraint(
-                            constraintAttribute.RouteKey,
-                            constraintAttribute.RouteValue));
-                    }
+                    actionDescriptor.RouteConstraints.Add(new RouteDataActionConstraint(
+                        constraintAttribute.RouteKey,
+                        constraintAttribute.RouteValue));
                 }
             }
 
@@ -489,18 +480,9 @@ namespace Microsoft.AspNet.Mvc.Controllers
                 // Skip duplicates - this also means that a value on the action will take precedence
                 if (!HasConstraint(actionDescriptor.RouteConstraints, constraintAttribute.RouteKey))
                 {
-                    if (constraintAttribute.RouteKeyHandling == RouteKeyHandling.CatchAll)
-                    {
-                        actionDescriptor.RouteConstraints.Add(
-                            RouteDataActionConstraint.CreateCatchAll(
-                            constraintAttribute.RouteKey));
-                    }
-                    else
-                    {
-                        actionDescriptor.RouteConstraints.Add(new RouteDataActionConstraint(
-                            constraintAttribute.RouteKey,
-                            constraintAttribute.RouteValue));
-                    }
+                    actionDescriptor.RouteConstraints.Add(new RouteDataActionConstraint(
+                        constraintAttribute.RouteKey,
+                        constraintAttribute.RouteValue));
                 }
             }
 

@@ -14,12 +14,5 @@ namespace Microsoft.AspNet.Mvc.Routing
         /// Requires that the key will not be in the route values.
         /// </summary>
         DenyKey,
-
-        /// <summary>
-        /// Requires that the key will be in the route values, but ignore the content.
-        /// Constraints with this value are considered less important than ones with
-        /// <see cref="RequireKey"/>
-        /// </summary>
-        CatchAll,
     }
 }

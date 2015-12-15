@@ -154,7 +154,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                         {
                             return null;
                         }
-                        else if (constraint.KeyHandling == RouteKeyHandling.RequireKey)
+                        else
                         {
                             normalizedValue = constraint.RouteValue;
                         }
