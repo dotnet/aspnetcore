@@ -5,7 +5,6 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Diagnostics.Views;
-using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 
 namespace Microsoft.AspNet.Diagnostics
@@ -42,7 +41,7 @@ namespace Microsoft.AspNet.Diagnostics
         /// <summary>
         /// Process an individual request.
         /// </summary>
-        /// <param name="context">The <see cref="Microsoft.AspNet.Http.HttpContext">.</param>
+        /// <param name="context">The <see cref="HttpContext"/>.</param>
         /// <returns></returns>
         public Task Invoke(HttpContext context)
         {

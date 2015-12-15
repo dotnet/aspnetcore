@@ -7,16 +7,15 @@ using Microsoft.AspNet.Diagnostics;
 namespace Microsoft.AspNet.Builder
 {
     /// <summary>
-    /// IApplicationBuilder extension methods for the ErrorPageMiddleware.
+    /// <see cref="IApplicationBuilder"/> extension methods for the <see cref="DeveloperExceptionPageMiddleware"/>.
     /// </summary>
     public static class DeveloperExceptionPageExtensions
     {
         /// <summary>
-        /// Captures synchronous and asynchronous exceptions from the pipeline and generates HTML error responses.
-        /// Full error details are only displayed by default if 'host.AppMode' is set to 'development' in the IApplicationBuilder.Properties.
+        /// Captures synchronous and asynchronous <see cref="Exception"/> instances from the pipeline and generates HTML error responses.
         /// </summary>
-        /// <param name="builder"></param>
-        /// <returns></returns>
+        /// <param name="builder">The <see cref="IApplicationBuilder"/>.</param>
+        /// <returns>A reference to the <paramref name="builder"/> after the operation has completed.</returns>
         public static IApplicationBuilder UseDeveloperExceptionPage(this IApplicationBuilder builder)
         {
             if (builder == null)
@@ -24,23 +23,31 @@ namespace Microsoft.AspNet.Builder
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            return builder.UseDeveloperExceptionPage(new ErrorPageOptions());
+            return builder.UseDeveloperExceptionPage(options => { });
         }
 
         /// <summary>
-        /// Captures synchronous and asynchronous exceptions from the pipeline and generates HTML error responses.
-        /// Full error details are only displayed by default if 'host.AppMode' is set to 'development' in the IApplicationBuilder.Properties.
+        /// Captures synchronous and asynchronous <see cref="Exception"/> instances from the pipeline and generates HTML error responses.
         /// </summary>
-        /// <param name="builder"></param>
-        /// <param name="options"></param>
-        /// <returns></returns>
-        public static IApplicationBuilder UseDeveloperExceptionPage(this IApplicationBuilder builder, ErrorPageOptions options)
+        /// <param name="builder">The <see cref="IApplicationBuilder"/>.</param>
+        /// <param name="configureOptions">A callback to configure <see cref="ErrorPageOptions"/>.</param>
+        /// <returns>A reference to the <paramref name="builder"/> after the operation has completed.</returns>
+        public static IApplicationBuilder UseDeveloperExceptionPage(
+            this IApplicationBuilder builder,
+            Action<ErrorPageOptions> configureOptions)
         {
             if (builder == null)
             {
                 throw new ArgumentNullException(nameof(builder));
             }
 
+            if (configureOptions == null)
+            {
+                throw new ArgumentNullException(nameof(configureOptions));
+            }
+
+            var options = new ErrorPageOptions();
+            configureOptions(options);
             return builder.UseMiddleware<DeveloperExceptionPageMiddleware>(options);
         }
     }

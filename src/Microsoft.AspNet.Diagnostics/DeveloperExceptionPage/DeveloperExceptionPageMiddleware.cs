@@ -133,7 +133,7 @@ namespace Microsoft.AspNet.Diagnostics
                 };
                 var fileContent = compilationFailure
                     .SourceFileContent
-                                                    .Split(new[] { Environment.NewLine }, StringSplitOptions.None);
+                    .Split(new[] { Environment.NewLine }, StringSplitOptions.None);
 
                 foreach (var item in compilationFailure.Messages)
                 {
