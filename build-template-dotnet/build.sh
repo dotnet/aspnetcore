@@ -6,9 +6,12 @@ while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symli
   SOURCE="$(readlink "$SOURCE")"
   [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
 done
-REPO_FOLDER="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+repoFolder="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
-export DOTNET_INSTALL_DIR=$REPO_FOLDER/packages/cli
+buildFolder=.build
+koreBuildFolder=$buildFolder/KoreBuild-dotnet
+
+nugetPath=$buildFolder/nuget.exe
 
 if test `uname` = Darwin; then
     cachedir=~/Library/Caches/KBuild
@@ -21,39 +24,25 @@ else
 fi
 mkdir -p $cachedir
 nugetVersion=latest
-cachePath=$cachedir/nuget.$nugetVersion.exe
+cacheNuget=$cachedir/nuget.$nugetVersion.exe
 
-url=https://dist.nuget.org/win-x86-commandline/$nugetVersion/nuget.exe
+nugetUrl=https://dist.nuget.org/win-x86-commandline/$nugetVersion/nuget.exe
 
-if test ! -f $cachePath; then
-    wget -O $cachePath $url 2>/dev/null || curl -o $cachePath --location $url /dev/null
+if test ! -d $buildFolder; then
+    mkdir $buildFolder
 fi
 
-if test ! -e .nuget; then
-    mkdir .nuget
-    cp $cachePath .nuget/nuget.exe
+if test ! -f $nugetPath; then
+    if test ! -f $cacheNuget; then
+        wget -O $cacheNuget $nugetUrl 2>/dev/null || curl -o $cacheNuget --location $nugetUrl /dev/null
+    fi
+
+    cp $cacheNuget $nugetPath
 fi
 
-if test ! -d packages/Sake; then
-    mono .nuget/nuget.exe install Sake -ExcludeVersion -Source https://www.nuget.org/api/v2/ -Out packages
+if test ! -d $koreBuildFolder; then
+    mono $nugetPath install KoreBuild-dotnet -ExcludeVersion -o $buildFolder -nocache -pre
 fi
 
-if test ! -d packages/KoreBuild-dotnet; then
-    mono .nuget/nuget.exe install KoreBuild-dotnet -ExcludeVersion -o packages -nocache -pre
-fi
+source $koreBuildFolder/build/KoreBuild.sh
 
-# Temporary because we need 'dnu packages add'
-if ! type dnvm > /dev/null 2>&1; then
-    source packages/KoreBuild/build/dnvm.sh
-fi
-
-if ! type dnx > /dev/null 2>&1 || [ -z "$SKIP_DNX_INSTALL" ]; then
-    dnvm install latest -runtime coreclr -alias default
-    dnvm install default -runtime mono -alias default
-else
-    dnvm use default -runtime mono
-fi
-
-source packages/KoreBuild-dotnet/build/install.sh
-export PATH=$DOTNET_INSTALL_DIR/bin/:$PATH
-mono packages/Sake/tools/Sake.exe -I packages/KoreBuild-dotnet/build -f makefile.shade "$@"

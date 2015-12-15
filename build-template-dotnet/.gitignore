@@ -6,6 +6,7 @@ TestResults/
 _ReSharper.*/
 packages/
 artifacts/
+.build/
 PublishProfiles/
 *.user
 *.suo

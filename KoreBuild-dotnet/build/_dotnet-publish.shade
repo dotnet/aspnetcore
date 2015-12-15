@@ -1,0 +1,29 @@
+@{/*
+
+dotnet-publish
+    Builds package from project.
+
+projectFile=''
+    Required. Path to the project.json to build.
+
+outputFolder=''
+    Optional. The output folder.
+
+configuration=''
+    Optional. The configuration to build in. Defaults to 'Debug'.
+*/}
+
+default configuration = 'Debug'
+
+@{
+    var projectFolder=Path.GetDirectoryName(projectFile);
+    var projectName=Path.GetFileName(projectFolder);
+    var projectBin=Path.Combine(projectFolder, "bin", configuration);
+    
+    var outputArg = string.IsNullOrEmpty(outputFolder)? "": "-o " + outputFolder;
+
+    DeleteFolder(projectBin);
+
+    var dotnetArgs=string.Format("publish --configuration {0} {1} {2}", configuration, outputArg, projectFolder);
+    Dotnet(dotnetArgs);
+}

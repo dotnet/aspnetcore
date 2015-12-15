@@ -170,10 +170,12 @@ default NUGET_FEED = 'https://api.nuget.org/v3/index.json'
     var projectFiles = Files.Include("test/**/project.json").Exclude("**/bin/*/app/project.json").ToList();
     if (ShouldRunInParallel)
     {
+        Parallel.ForEach(projectFiles, projectFile => DnxTest(projectFile, testParallel: true));
         Parallel.ForEach(projectFiles, projectFile => DotnetTest(projectFile, testParallel: true));
     }
     else
     {
+        projectFiles.ForEach(projectFile => DnxTest(projectFile, testParallel: false));
         projectFiles.ForEach(projectFile => DotnetTest(projectFile, testParallel: false));
     }
   }
@@ -340,15 +342,34 @@ macro name="UpdateResx" resxFile='string'
 
 macro name="DotnetTest" projectFile='string' testParallel='bool'
     dotnet-test
-
+    
 macro name="DotnetCompile" projectFile='string' configuration='string'
     dotnet-compile
 
 macro name="DotnetPack" projectFile='string' dotnetPackOutputDir='string' configuration='string'
     dotnet-pack
 
+macro name="DotnetPublish" projectFile='string' outputFolder='string'
+    dotnet-publish
+
 macro name="DeleteFolder" delete='string'
     directory
 
 macro name="CopyFolder" sourceDir='string' outputDir='string' overwrite='bool'
     copy
+
+@{
+// === EVERYTHING BELOW THIS LINE IS TEMPORARY ===
+}
+
+macro name='Dnx' command='string'
+    dnx
+
+macro name='Dnx' command='string' dnxDir='string'
+    dnx
+    
+macro name='Dnx' command='string' dnxDir='string' dnvmUse='string'
+    dnx
+    
+macro name="DnxTest" projectFile='string' testParallel='bool'
+    dnx-test

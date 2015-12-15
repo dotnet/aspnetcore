@@ -7,7 +7,9 @@ default KOREBUILD_TEST_SKIPMONO='${E("KOREBUILD_TEST_SKIPMONO")}'
 
 @{/*
 
-dotnet-test
+// ====== This file shall be removed eventually ====
+
+dnx-test
     Run unit tests in your project.
 
 projectFile=''
@@ -16,10 +18,14 @@ projectFile=''
 */}
 
 @{
+    Console.WriteLine("Project file: " + projectFile);
+
     var projectText = File.ReadAllText(projectFile);
     var project = (JsonObject)Json.Deserialize(projectText);
 
-    if (project.Keys.Contains("testRunner"))
+    var commands = project.ValueAsJsonObject("commands");
+
+    if (commands != null && commands.Keys.Contains("test"))
     {
         var projectFolder = Path.GetDirectoryName(projectFile);
         var projectName = Path.GetFileName(projectFolder);
@@ -47,15 +53,33 @@ projectFile=''
 
         foreach (var framework in targetFrameworks)
         {
-            if (framework.StartsWith("dnxcore"))
+            var testArgs = noParallelTestProjects.Contains(projectName) ? " -parallel none" : "";
+
+            if (!framework.StartsWith("dnxcore", StringComparison.OrdinalIgnoreCase))
             {
-                var publishFolder = Path.Combine(projectFolder, ".testPublish", framework);
-                DotnetPublish(projectFile, publishFolder);
-                
-                var runnerExe = Path.Combine(publishFolder, "dotnet-test-xunit.exe");
-                var targetTestDll = Path.Combine(publishFolder, projectName + ".dll");
-                Exec(runnerExe, targetTestDll);
+                if (IsLinux)
+                {
+                    // Work around issue with testing in parallel on Mono.
+                    testArgs = " -parallel none";
+                }
+
+                if (!IsLinux ||
+                    (!string.Equals(KOREBUILD_TEST_SKIPMONO, "1") &&
+                     !string.Equals(KOREBUILD_TEST_SKIPMONO, "true")))
+                {
+                    Dnx("test" + testArgs, projectFolder);
+                }
             }
+            /*
+            Core CLR tests run with the new runner
+            
+            else if (!IsLinux ||
+                     string.Equals(KOREBUILD_TEST_DNXCORE, "1") ||
+                     string.Equals(KOREBUILD_TEST_DNXCORE, "true"))
+            {
+                Dnx("test" + testArgs, projectFolder, "default -runtime coreclr");
+            }
+            */
         }
     }
 }
