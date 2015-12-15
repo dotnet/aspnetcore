@@ -37,20 +37,21 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         protected override void OnConnection(UvStreamHandle listenSocket, int status)
         {
             var acceptSocket = new UvTcpHandle(Log);
-            acceptSocket.Init(Thread.Loop, Thread.QueueCloseHandle);
-            acceptSocket.NoDelay(NoDelay);
 
             try
             {
+                acceptSocket.Init(Thread.Loop, Thread.QueueCloseHandle);
+                acceptSocket.NoDelay(NoDelay);
                 listenSocket.Accept(acceptSocket);
+                DispatchConnection(acceptSocket);
+
             }
             catch (UvException ex)
             {
                 Log.LogError("TcpListener.OnConnection", ex);
+                acceptSocket.Dispose();
                 return;
             }
-
-            DispatchConnection(acceptSocket);
         }
     }
 }
