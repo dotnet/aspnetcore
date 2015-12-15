@@ -4,12 +4,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Routing.Template;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.OptionsModel;
+using Microsoft.Extensions.WebEncoders.Testing;
 using Moq;
 using Xunit;
 
@@ -1594,7 +1596,7 @@ namespace Microsoft.AspNet.Routing.Tree
 
             entry.Constraints = constraints;
             entry.Defaults = defaults;
-            entry.Binder = new TemplateBinder(entry.Template, defaults);
+            entry.Binder = new TemplateBinder(entry.Template, UrlEncoder.Default, defaults);
             entry.Order = order;
             entry.GenerationPrecedence = RoutePrecedence.ComputeGenerated(entry.Template);
             entry.RequiredLinkValues = new RouteValueDictionary(requiredValues);

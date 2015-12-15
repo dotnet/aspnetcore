@@ -4,11 +4,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Routing.Template;
-using Microsoft.Extensions.Logging.Testing;
+using Microsoft.AspNet.Http.Internal;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.OptionsModel;
 using Moq;
 using Xunit;
@@ -345,8 +347,7 @@ namespace Microsoft.AspNet.Routing
             string template,
             RouteValueDictionary values,
             string expectedUrl,
-            bool lowercaseUrls
-            )
+            bool lowercaseUrls)
         {
             // Arrange
             var routeCollection = new RouteCollection();
@@ -530,17 +531,19 @@ namespace Microsoft.AspNet.Routing
                 options = new RouteOptions();
             }
 
-
             var request = new Mock<HttpRequest>(MockBehavior.Strict);
 
             var optionsAccessor = new Mock<IOptions<RouteOptions>>(MockBehavior.Strict);
             optionsAccessor.SetupGet(o => o.Value).Returns(options);
 
+            var serviceProvider = new ServiceCollection()
+                .AddSingleton(loggerFactory)
+                .AddSingleton(UrlEncoder.Default)
+                .AddSingleton(optionsAccessor.Object)
+                .BuildServiceProvider();
+
             var context = new Mock<HttpContext>(MockBehavior.Strict);
-            context.Setup(m => m.RequestServices.GetService(typeof(ILoggerFactory)))
-                .Returns(loggerFactory);
-            context.Setup(m => m.RequestServices.GetService(typeof(IOptions<RouteOptions>)))
-                .Returns(optionsAccessor.Object);
+            context.SetupGet(m => m.RequestServices).Returns(serviceProvider);
             context.SetupGet(c => c.Request).Returns(request.Object);
 
             return new VirtualPathContext(context.Object, null, null, routeName);
@@ -554,14 +557,19 @@ namespace Microsoft.AspNet.Routing
             var optionsAccessor = new Mock<IOptions<RouteOptions>>(MockBehavior.Strict);
             optionsAccessor.SetupGet(o => o.Value).Returns(options);
 
-            var context = new Mock<HttpContext>(MockBehavior.Strict);
-            context.Setup(m => m.RequestServices.GetService(typeof(IOptions<RouteOptions>)))
-                .Returns(optionsAccessor.Object);
-            context.Setup(m => m.RequestServices.GetService(typeof(ILoggerFactory)))
-                .Returns(NullLoggerFactory.Instance);
+            var serviceProvider = new ServiceCollection()
+                .AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance)
+                .AddSingleton(UrlEncoder.Default)
+                .AddSingleton(optionsAccessor.Object)
+                .BuildServiceProvider();
+
+            var context = new DefaultHttpContext
+            {
+                RequestServices = serviceProvider
+            };
 
             return new VirtualPathContext(
-                context.Object,
+                context,
                 ambientValues: null,
                 values: values,
                 routeName: routeName);

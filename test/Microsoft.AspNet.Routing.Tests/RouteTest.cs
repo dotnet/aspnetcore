@@ -4,9 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Routing.Constraints;
 using Microsoft.AspNet.Testing;
 using Microsoft.Extensions.DependencyInjection;
@@ -373,7 +375,7 @@ namespace Microsoft.AspNet.Routing
             Assert.Null(context.Handler);
         }
 
-#region Route Matching
+        #region Route Matching
 
         // PathString in HttpAbstractions guarantees a leading slash - so no value in testing other cases.
         [Fact]
@@ -595,9 +597,9 @@ namespace Microsoft.AspNet.Routing
 
             return new RouteContext(context.Object);
         }
-#endregion
+        #endregion
 
-#region Route Binding
+        #region Route Binding
 
         [Fact]
         public void GetVirtualPath_Success()
@@ -1296,11 +1298,16 @@ namespace Microsoft.AspNet.Routing
             RouteValueDictionary values,
             RouteValueDictionary ambientValues)
         {
-            var context = new Mock<HttpContext>(MockBehavior.Strict);
-            context.Setup(m => m.RequestServices.GetService(typeof(ILoggerFactory)))
-                .Returns(NullLoggerFactory.Instance);
+            var serviceProvider = new ServiceCollection()
+                .AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance)
+                .AddSingleton(UrlEncoder.Default)
+                .BuildServiceProvider();
+            var context = new DefaultHttpContext
+            {
+                RequestServices = serviceProvider
+            };
 
-            return new VirtualPathContext(context.Object, ambientValues, values);
+            return new VirtualPathContext(context, ambientValues, values);
         }
 
         private static VirtualPathContext CreateVirtualPathContext(string routeName)
@@ -1308,9 +1315,9 @@ namespace Microsoft.AspNet.Routing
             return new VirtualPathContext(null, null, null, routeName);
         }
 
-#endregion
+        #endregion
 
-#region Route Registration
+        #region Route Registration
 
         public static IEnumerable<object[]> DataTokens
         {
@@ -1476,7 +1483,7 @@ namespace Microsoft.AspNet.Routing
             Assert.Equal("RouteName", name);
         }
 
-#endregion
+        #endregion
 
         // DataTokens test data for TemplateRoute.GetVirtualPath
         public static IEnumerable<object[]> DataTokensTestData

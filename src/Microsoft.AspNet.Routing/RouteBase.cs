@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Routing.Internal;
@@ -115,7 +116,7 @@ namespace Microsoft.AspNet.Routing
         /// <inheritdoc />
         public virtual VirtualPathData GetVirtualPath(VirtualPathContext context)
         {
-            EnsureBinder();
+            EnsureBinder(context.HttpContext);
             EnsureLoggers(context.HttpContext);
 
             var values = _binder.GetValues(context.AmbientValues, context.Values);
@@ -237,11 +238,12 @@ namespace Microsoft.AspNet.Routing
             }
         }
 
-        private void EnsureBinder()
+        private void EnsureBinder(HttpContext context)
         {
             if (_binder == null)
             {
-                _binder = new TemplateBinder(ParsedTemplate, Defaults);
+                var urlEncoder = context.RequestServices.GetRequiredService<UrlEncoder>();
+                _binder = new TemplateBinder(ParsedTemplate, urlEncoder, Defaults);
             }
         }
 
