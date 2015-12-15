@@ -10,12 +10,12 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 {
     public class FrameRequestStream : Stream
     {
-        private readonly MessageBody _body;
+        private MessageBody _body;
         private StreamState _state;
 
-        public FrameRequestStream(MessageBody body)
+        public FrameRequestStream()
         {
-            _body = body;
+            _state = StreamState.Closed;
         }
 
         public override bool CanRead { get { return true; } }
@@ -112,18 +112,30 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             throw new NotImplementedException();
         }
 
+        public Stream StartAcceptingReads(MessageBody body)
+        {
+            // Only start if not aborted
+            if (_state == StreamState.Closed)
+            {
+                _state = StreamState.Open;
+                _body = body;
+            }
+            return this;
+        }
+
         public void StopAcceptingReads()
         {
             // Can't use dispose (or close) as can be disposed too early by user code
             // As exampled in EngineTests.ZeroContentLengthNotSetAutomaticallyForCertainStatusCodes
-            _state = StreamState.Disposed;
+            _state = StreamState.Closed;
+            _body = null;
         }
 
         public void Abort()
         {
             // We don't want to throw an ODE until the app func actually completes.
             // If the request is aborted, we throw an IOException instead.
-            if (_state != StreamState.Disposed)
+            if (_state != StreamState.Closed)
             {
                 _state = StreamState.Aborted;
             }
@@ -135,7 +147,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             {
                 case StreamState.Open:
                     return;
-                case StreamState.Disposed:
+                case StreamState.Closed:
                     throw new ObjectDisposedException(nameof(FrameRequestStream));
                 case StreamState.Aborted:
                     throw new IOException("The request has been aborted.");
@@ -145,7 +157,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         private enum StreamState
         {
             Open,
-            Disposed,
+            Closed,
             Aborted
         }
     }

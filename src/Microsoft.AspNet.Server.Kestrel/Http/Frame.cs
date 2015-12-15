@@ -57,6 +57,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         internal FrameRequestStream _requestBody;
         internal FrameResponseStream _responseBody;
+        internal FrameDuplexStream _duplexStream;
 
         protected bool _responseStarted;
         protected bool _keepAlive;
@@ -86,6 +87,9 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             _localEndPoint = localEndPoint;
             _prepareRequest = prepareRequest;
             _pathBase = context.ServerAddress.PathBase;
+            _requestBody = new FrameRequestStream();
+            _responseBody = new FrameResponseStream(this);
+            _duplexStream = new FrameDuplexStream(_requestBody, _responseBody);
 
             FrameControl = this;
             Reset();

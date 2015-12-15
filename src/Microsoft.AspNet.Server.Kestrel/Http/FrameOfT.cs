@@ -64,11 +64,9 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                     {
                         var messageBody = MessageBody.For(HttpVersion, _requestHeaders, this);
                         _keepAlive = messageBody.RequestKeepAlive;
-                        _requestBody = new FrameRequestStream(messageBody);
-                        RequestBody = _requestBody;
-                        _responseBody = new FrameResponseStream(this);
-                        ResponseBody = _responseBody;
-                        DuplexStream = new FrameDuplexStream(RequestBody, ResponseBody);
+                        RequestBody = _requestBody.StartAcceptingReads(messageBody);
+                        ResponseBody = _responseBody.StartAcceptingWrites();
+                        DuplexStream = _duplexStream;
 
                         _abortedCts = null;
                         _manuallySetRequestAbortToken = null;
