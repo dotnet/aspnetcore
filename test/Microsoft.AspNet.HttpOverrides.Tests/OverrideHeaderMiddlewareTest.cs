@@ -15,12 +15,13 @@ namespace Microsoft.AspNet.HttpOverrides
         public async Task XForwardedForOverrideChangesRemoteIp()
         {
             var assertsExecuted = false;
-            var options = new OverrideHeaderMiddlewareOptions();
-            options.ForwardedOptions = ForwardedHeaders.XForwardedFor;
 
             var server = TestServer.Create(app =>
             {
-                app.UseOverrideHeaders(options);
+                app.UseOverrideHeaders(options =>
+                {
+                    options.ForwardedOptions = ForwardedHeaders.XForwardedFor;
+                });
                 app.Run(context =>
                 {
                     Assert.Equal("11.111.111.11", context.Connection.RemoteIpAddress.ToString());
@@ -39,12 +40,13 @@ namespace Microsoft.AspNet.HttpOverrides
         public async Task XForwardedForOverrideBadIpDoesntChangeRemoteIp()
         {
             var assertsExecuted = false;
-            var options = new OverrideHeaderMiddlewareOptions();
-            options.ForwardedOptions = ForwardedHeaders.XForwardedFor;
 
             var server = TestServer.Create(app =>
             {
-                app.UseOverrideHeaders(options);
+                app.UseOverrideHeaders(options =>
+                {
+                    options.ForwardedOptions = ForwardedHeaders.XForwardedFor;
+                });
                 app.Run(context =>
                 {
                     Assert.Null(context.Connection.RemoteIpAddress);
@@ -63,12 +65,13 @@ namespace Microsoft.AspNet.HttpOverrides
         public async Task XForwardedHostOverrideChangesRequestHost()
         {
             var assertsExecuted = false;
-            var options = new OverrideHeaderMiddlewareOptions();
-            options.ForwardedOptions = ForwardedHeaders.XForwardedHost;
 
             var server = TestServer.Create(app =>
             {
-                app.UseOverrideHeaders(options);
+                app.UseOverrideHeaders(options =>
+                {
+                    options.ForwardedOptions = ForwardedHeaders.XForwardedHost;
+                });
                 app.Run(context =>
                 {
                     Assert.Equal("testhost", context.Request.Host.ToString());
@@ -87,12 +90,13 @@ namespace Microsoft.AspNet.HttpOverrides
         public async Task XForwardedProtoOverrideChangesRequestProtocol()
         {
             var assertsExecuted = false;
-            var options = new OverrideHeaderMiddlewareOptions();
-            options.ForwardedOptions = ForwardedHeaders.XForwardedProto;
 
             var server = TestServer.Create(app =>
             {
-                app.UseOverrideHeaders(options);
+                app.UseOverrideHeaders(options =>
+                {
+                    options.ForwardedOptions = ForwardedHeaders.XForwardedProto;
+                });
                 app.Run(context =>
                 {
                     Assert.Equal("TestProtocol", context.Request.Scheme);
@@ -110,7 +114,7 @@ namespace Microsoft.AspNet.HttpOverrides
         [Fact]
         public void AllForwardsDisabledByDefault()
         {
-            var options = new OverrideHeaderMiddlewareOptions();
+            var options = new OverrideHeaderOptions();
             Assert.True(options.ForwardedOptions == 0);
         }
 
@@ -118,12 +122,13 @@ namespace Microsoft.AspNet.HttpOverrides
         public async Task AllForwardsEnabledChangeRequestRemoteIpHostandProtocol()
         {
             var assertsExecuted = false;
-            var options = new OverrideHeaderMiddlewareOptions();
-            options.ForwardedOptions = ForwardedHeaders.All;
 
             var server = TestServer.Create(app =>
             {
-                app.UseOverrideHeaders(options);
+                app.UseOverrideHeaders(options =>
+                {
+                    options.ForwardedOptions = ForwardedHeaders.All;
+                });
                 app.Run(context =>
                 {
                     Assert.Equal("11.111.111.11", context.Connection.RemoteIpAddress.ToString());
@@ -146,12 +151,13 @@ namespace Microsoft.AspNet.HttpOverrides
         public async Task AllOptionsDisabledRequestDoesntChange()
         {
             var assertsExecuted = false;
-            var options = new OverrideHeaderMiddlewareOptions();
-            options.ForwardedOptions = ForwardedHeaders.None;
 
             var server = TestServer.Create(app =>
             {
-                app.UseOverrideHeaders(options);
+                app.UseOverrideHeaders(options =>
+                {
+                    options.ForwardedOptions = ForwardedHeaders.None;
+                });
                 app.Run(context =>
                 {
                     Assert.Null(context.Connection.RemoteIpAddress);
@@ -174,13 +180,13 @@ namespace Microsoft.AspNet.HttpOverrides
         public async Task PartiallyEnabledForwardsPartiallyChangesRequest()
         {
             var assertsExecuted = false;
-            var XForwardedForAndProto = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
-            var options = new OverrideHeaderMiddlewareOptions();
-            options.ForwardedOptions = XForwardedForAndProto;
 
             var server = TestServer.Create(app =>
             {
-                app.UseOverrideHeaders(options);
+                app.UseOverrideHeaders(options =>
+                {
+                    options.ForwardedOptions = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+                });
                 app.Run(context =>
                 {
                     Assert.Equal("11.111.111.11", context.Connection.RemoteIpAddress.ToString());

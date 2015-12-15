@@ -1,0 +1,26 @@
+﻿{
+  "version": "1.0.0-*",
+  "compilationOptions": {
+    "emitEntryPoint": true
+  },
+  "dependencies": {
+    "Microsoft.AspNet.IISPlatformHandler": "1.0.0-*",
+    "Microsoft.AspNet.Server.Kestrel": "1.0.0-*",
+    "Microsoft.AspNet.HttpOverrides": "1.0.0-*"
+  },
+  "commands": {
+    "web": "HttpOverridesSample"
+  },
+  "frameworks": {
+    "dnx451": { },
+    "dnxcore50": { }
+  },
+  "exclude": [
+    "wwwroot",
+    "node_modules"
+  ],
+  "publishExclude": [
+    "**.user",
+    "**.vspscc"
+  ]
+}

@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNet.HttpOverrides
 {
-    public class OverrideHeaderMiddlewareOptions
+    public class OverrideHeaderOptions
     {
         public ForwardedHeaders ForwardedOptions { get; set; }
     }
