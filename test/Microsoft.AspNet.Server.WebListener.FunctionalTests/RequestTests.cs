@@ -18,6 +18,7 @@
 using System;
 using System.IO;
 using System.Net.Http;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Hosting.Server;
@@ -87,6 +88,7 @@ namespace Microsoft.AspNet.Server.WebListener
         [InlineData("/basepath/", "/basepath/subpath", "/basepath", "/subpath")]
         [InlineData("/base path/", "/base%20path/sub path", "/base path", "/sub path")]
         [InlineData("/base葉path/", "/base%E8%91%89path/sub%E8%91%89path", "/base葉path", "/sub葉path")]
+        [InlineData("/basepath/", "/basepath/sub%2Fpath", "/basepath", "/sub%2Fpath")]
         public async Task Request_PathSplitting(string pathBase, string requestPath, string expectedPathBase, string expectedPath)
         {
             string root;
@@ -118,6 +120,23 @@ namespace Microsoft.AspNet.Server.WebListener
             {
                 string response = await SendRequestAsync(root + requestPath);
                 Assert.Equal(string.Empty, response);
+            }
+        }
+
+        [Fact]
+        public async Task Request_DoubleEscapingAllowed()
+        {
+            string root;
+            using (var server = Utilities.CreateHttpServerReturnRoot("/", out root, httpContext =>
+            {
+                var requestInfo = httpContext.Features.Get<IHttpRequestFeature>();
+                Assert.Equal("/%2F", requestInfo.Path);
+                return Task.FromResult(0);
+            }))
+            {
+                var response = await SendSocketRequestAsync(root, "/%252F");
+                var responseStatusCode = response.Substring(9); // Skip "HTTP/1.1 "
+                Assert.Equal("200", responseStatusCode);
             }
         }
 
@@ -187,6 +206,28 @@ namespace Microsoft.AspNet.Server.WebListener
             using (HttpClient client = new HttpClient())
             {
                 return await client.GetStringAsync(uri);
+            }
+        }
+
+        private async Task<string> SendSocketRequestAsync(string address, string path)
+        {
+            var uri = new Uri(address);
+            StringBuilder builder = new StringBuilder();
+            builder.AppendLine("GET " + path + " HTTP/1.1");
+            builder.AppendLine("Connection: close");
+            builder.Append("HOST: ");
+            builder.AppendLine(uri.Authority);
+            builder.AppendLine();
+
+            byte[] request = Encoding.ASCII.GetBytes(builder.ToString());
+
+            using (var socket = new Socket(SocketType.Stream, ProtocolType.Tcp))
+            {
+                socket.Connect(uri.Host, uri.Port);
+                socket.Send(request);
+                var response = new byte[12];
+                await Task.Run(() => socket.Receive(response));
+                return Encoding.ASCII.GetString(response);
             }
         }
     }

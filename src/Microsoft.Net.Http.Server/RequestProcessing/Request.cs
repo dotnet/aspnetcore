@@ -109,21 +109,21 @@ namespace Microsoft.Net.Http.Server
             }
 
             UrlPrefix prefix = httpContext.Server.UrlPrefixes.GetPrefix((int)_contextId);
-            string orriginalPath = RequestPath;
+            string originalPath = RequestPath;
 
             // These paths are both unescaped already.
-            if (orriginalPath.Length == prefix.Path.Length - 1)
+            if (originalPath.Length == prefix.Path.Length - 1)
             {
                 // They matched exactly except for the trailing slash.
-                _pathBase = orriginalPath;
+                _pathBase = originalPath;
                 _path = string.Empty;
             }
             else
             {
                 // url: /base/path, prefix: /base/, base: /base, path: /path
                 // url: /, prefix: /, base: , path: /
-                _pathBase = orriginalPath.Substring(0, prefix.Path.Length - 1);
-                _path = orriginalPath.Substring(prefix.Path.Length - 1);
+                _pathBase = originalPath.Substring(0, prefix.Path.Length - 1);
+                _path = originalPath.Substring(prefix.Path.Length - 1);
             }
 
             int major = memoryBlob.RequestBlob->Version.MajorVersion;
@@ -386,21 +386,7 @@ namespace Microsoft.Net.Http.Server
         {
             get { return IsSecureConnection ? Constants.HttpsScheme : Constants.HttpScheme; }
         }
-        /*
-        internal Uri RequestUri
-        {
-            get
-            {
-                if (_requestUri == null)
-                {
-                    _requestUri = RequestUriBuilder.GetRequestUri(
-                        _rawUrl, RequestScheme, _cookedUrlHost, _cookedUrlPath, _cookedUrlQuery);
-                }
 
-                return _requestUri;
-            }
-        }
-        */
         internal string RequestPath
         {
             get

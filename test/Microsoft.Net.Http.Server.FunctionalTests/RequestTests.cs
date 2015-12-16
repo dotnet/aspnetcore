@@ -3,6 +3,7 @@
 using System;
 using System.IO;
 using System.Net.Http;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using Xunit;
@@ -54,8 +55,9 @@ namespace Microsoft.Net.Http.Server
         [InlineData("/basepath/", "/basepath", "/basepath", "")]
         [InlineData("/basepath/", "/basepath/", "/basepath", "/")]
         [InlineData("/basepath/", "/basepath/subpath", "/basepath", "/subpath")]
-        [InlineData("/base path/", "/base%20path/sub path", "/base path", "/sub path")]
+        [InlineData("/base path/", "/base%20path/sub%20path", "/base path", "/sub path")]
         [InlineData("/base葉path/", "/base%E8%91%89path/sub%E8%91%89path", "/base葉path", "/sub葉path")]
+        [InlineData("/basepath/", "/basepath/sub%2Fpath", "/basepath", "/sub%2Fpath")]
         public async Task Request_PathSplitting(string pathBase, string requestPath, string expectedPathBase, string expectedPath)
         {
             string root;
@@ -77,6 +79,36 @@ namespace Microsoft.Net.Http.Server
 
                 string response = await responseTask;
                 Assert.Equal(string.Empty, response);
+            }
+        }
+
+        [Theory]
+        [InlineData("/path%")]
+        [InlineData("/path%XY")]
+        [InlineData("/path%F")]
+        [InlineData("/path with spaces")]
+        public async Task Request_MalformedPathReturns400StatusCode(string requestPath)
+        {
+            string root;
+            using (var server = Utilities.CreateHttpServerReturnRoot("/", out root))
+            {
+                var responseTask = SendSocketRequestAsync(root, requestPath);
+                var contextTask = server.GetContextAsync();
+                var response = await responseTask;
+                var responseStatusCode = response.Substring(9); // Skip "HTTP/1.1 "
+                Assert.Equal("400", responseStatusCode);
+            }
+        }
+
+        [Fact]
+        public async Task Request_DoubleEscapingAllowed()
+        {
+            string root;
+            using (var server = Utilities.CreateHttpServerReturnRoot("/", out root))
+            {
+                var responseTask = SendSocketRequestAsync(root, "/%252F");
+                var context = await server.GetContextAsync();
+                Assert.Equal("/%2F", context.Request.Path);
             }
         }
 
@@ -129,6 +161,28 @@ namespace Microsoft.Net.Http.Server
             using (HttpClient client = new HttpClient())
             {
                 return await client.GetStringAsync(uri);
+            }
+        }
+
+        private async Task<string> SendSocketRequestAsync(string address, string path)
+        {
+            var uri = new Uri(address);
+            StringBuilder builder = new StringBuilder();
+            builder.AppendLine("GET " + path + " HTTP/1.1");
+            builder.AppendLine("Connection: close");
+            builder.Append("HOST: ");
+            builder.AppendLine(uri.Authority);
+            builder.AppendLine();
+
+            byte[] request = Encoding.ASCII.GetBytes(builder.ToString());
+
+            using (var socket = new Socket(SocketType.Stream, ProtocolType.Tcp))
+            {
+                socket.Connect(uri.Host, uri.Port);
+                socket.Send(request);
+                var response = new byte[12];
+                await Task.Run(() => socket.Receive(response));
+                return Encoding.ASCII.GetString(response);
             }
         }
     }
