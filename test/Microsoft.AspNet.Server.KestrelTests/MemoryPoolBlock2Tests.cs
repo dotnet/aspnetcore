@@ -31,6 +31,70 @@ namespace Microsoft.AspNet.Server.KestrelTests
                     hit = iterator;
                     hit.Seek(byte.MaxValue, ch);
                     Assert.Equal(ch, iterator.GetLength(hit));
+
+                    hit = iterator;
+                    hit.Seek(ch, byte.MaxValue, byte.MaxValue);
+                    Assert.Equal(ch, iterator.GetLength(hit));
+
+                    hit = iterator;
+                    hit.Seek(byte.MaxValue, ch, byte.MaxValue);
+                    Assert.Equal(ch, iterator.GetLength(hit));
+
+                    hit = iterator;
+                    hit.Seek(ch, byte.MaxValue, byte.MaxValue);
+                    Assert.Equal(ch, iterator.GetLength(hit));
+                }
+            }
+        }
+
+        [Fact]
+        public void SeekWorksAcrossBlocks()
+        {
+            using (var pool = new MemoryPool2())
+            {
+                var block1 = pool.Lease(256);
+                var block2 = block1.Next = pool.Lease(256);
+                var block3 = block2.Next = pool.Lease(256);
+
+                foreach (var ch in Enumerable.Range(0, 34).Select(x => (byte)x))
+                {
+                    block1.Array[block1.End++] = ch;
+                }
+                foreach (var ch in Enumerable.Range(34, 25).Select(x => (byte)x))
+                {
+                    block2.Array[block2.End++] = ch;
+                }
+                foreach (var ch in Enumerable.Range(59, 197).Select(x => (byte)x))
+                {
+                    block3.Array[block3.End++] = ch;
+                }
+
+                var iterator = block1.GetIterator();
+                foreach (var ch in Enumerable.Range(0, 256).Select(x => (char)x))
+                {
+                    var hit = iterator;
+                    hit.Seek(ch);
+                    Assert.Equal(ch, iterator.GetLength(hit));
+
+                    hit = iterator;
+                    hit.Seek(ch, byte.MaxValue);
+                    Assert.Equal(ch, iterator.GetLength(hit));
+
+                    hit = iterator;
+                    hit.Seek(byte.MaxValue, ch);
+                    Assert.Equal(ch, iterator.GetLength(hit));
+
+                    hit = iterator;
+                    hit.Seek(ch, byte.MaxValue, byte.MaxValue);
+                    Assert.Equal(ch, iterator.GetLength(hit));
+
+                    hit = iterator;
+                    hit.Seek(byte.MaxValue, ch, byte.MaxValue);
+                    Assert.Equal(ch, iterator.GetLength(hit));
+
+                    hit = iterator;
+                    hit.Seek(ch, byte.MaxValue, byte.MaxValue);
+                    Assert.Equal(ch, iterator.GetLength(hit));
                 }
             }
         }
