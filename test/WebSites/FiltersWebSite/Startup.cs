@@ -58,10 +58,10 @@ namespace FiltersWebSite
         {
             app.UseCultureReplacer();
 
-            app.UseErrorReporter();
 
             app.UseMiddleware<AuthorizeBasicMiddleware>("Interactive");
             app.UseMiddleware<AuthorizeBasicMiddleware>("Api");
+            app.UseMiddleware<ErrorReporterMiddleware>();
 
             app.UseMvcWithDefaultRoute();
         }

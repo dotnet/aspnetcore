@@ -3,10 +3,9 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 
-namespace Microsoft.AspNet.Mvc.TestConfiguration
+namespace FiltersWebSite
 {
     /// <summary>
     /// A middleware that reports errors via header values. Useful for tests that want to verify

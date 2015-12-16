@@ -19,8 +19,6 @@ namespace WebApiCompatShimWebSite
         {
             app.UseCultureReplacer();
 
-            app.UseErrorReporter();
-
             app.UseMvc(routes =>
             {
                 // Tests include different styles of WebAPI conventional routing and action selection - the prefix keeps

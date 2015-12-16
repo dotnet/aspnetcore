@@ -12,10 +12,5 @@ namespace Microsoft.AspNet.Builder
         {
             return app.UseMiddleware<CultureReplacerMiddleware>();
         }
-
-        public static IApplicationBuilder UseErrorReporter(this IApplicationBuilder app)
-        {
-            return app.UseMiddleware<ErrorReporterMiddleware>();
-        }
     }
 }

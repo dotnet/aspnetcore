@@ -822,24 +822,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal("Departments", result.RouteName);
         }
 
-        [Theory]
-        [InlineData("http://localhost/Duplicate/Index")]
-        [InlineData("http://localhost/api/Duplicate/IndexAttribute")]
-        [InlineData("http://localhost/api/Duplicate")]
-        [InlineData("http://localhost/conventional/Duplicate")]
-        public async Task AttributeRoutedAction_ThowsIfConventionalRouteWithTheSameName(string url)
-        {
-            // Arrange
-            var expectedMessage = "The supplied route name 'DuplicateRoute' is ambiguous and matched more than one route.";
-
-            // Act
-            var response = await Client.GetAsync(url);
-
-            // Assert
-            var exception = response.GetServerException();
-            Assert.Equal(expectedMessage, exception.ExceptionMessage);
-        }
-
         [Fact]
         public async Task ConventionalRoutedAction_LinkToArea()
         {

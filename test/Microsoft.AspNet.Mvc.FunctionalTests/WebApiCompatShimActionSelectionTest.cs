@@ -4,7 +4,6 @@
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Mvc.Infrastructure;
 using Newtonsoft.Json;
 using Xunit;
 
@@ -481,22 +480,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var result = JsonConvert.DeserializeObject<ActionSelectionResult>(data);
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal(expectedActionName, result.ActionName);
-        }
-
-        // This would result in ambiguous match because complex parameter is not considered for matching.
-        // Therefore, PostUserByNameAndAddress(string name, Address address) would conflicts with PostUserByName(string name)
-        [Fact]
-        public async Task LegacyActionSelection_RequestToAmbiguousAction_OnDefaultRoute()
-        {
-            // Arrange
-            var request = new HttpRequestMessage(new HttpMethod("POST"), "http://localhost/api/Admin/Test?name=mario");
-
-            // Act
-            var response = await Client.SendAsync(request);
-
-            // Assert
-            var exception = response.GetServerException();
-            Assert.Equal(typeof(AmbiguousActionException).FullName, exception.ExceptionType);
         }
 
         [Theory]

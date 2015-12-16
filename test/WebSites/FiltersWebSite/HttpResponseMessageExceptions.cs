@@ -4,11 +4,10 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
-using Microsoft.AspNet.Mvc.TestConfiguration;
 using Xunit;
 using Xunit.Sdk;
 
-namespace Microsoft.AspNet.Mvc.FunctionalTests
+namespace FiltersWebSite
 {
     public static class HttpResponseMessageExceptions
     {
