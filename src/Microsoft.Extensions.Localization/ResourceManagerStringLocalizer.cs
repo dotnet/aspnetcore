@@ -153,6 +153,13 @@ namespace Microsoft.Extensions.Localization
                 ? GetResourceNamesFromCultureHierarchy(culture)
                 : GetResourceNamesForCulture(culture);
 
+            if (resourceNames == null && !includeParentCultures)
+            {
+                var resourceStreamName = GetResourceStreamName(culture);
+                throw new MissingManifestResourceException(
+                    Resources.FormatLocalization_MissingManifest(resourceStreamName));
+            }
+
             foreach (var name in resourceNames)
             {
                 var value = GetStringSafely(name, culture);
@@ -197,17 +204,21 @@ namespace Microsoft.Extensions.Localization
             var currentCulture = startingCulture;
             var resourceNames = new HashSet<string>();
 
+            var hasAnyCultures = false;
+
             while (true)
             {
-                try
+
+                var cultureResourceNames = GetResourceNamesForCulture(currentCulture);
+
+                if (cultureResourceNames != null)
                 {
-                    var cultureResourceNames = GetResourceNamesForCulture(currentCulture);
                     foreach (var resourceName in cultureResourceNames)
                     {
                         resourceNames.Add(resourceName);
                     }
+                    hasAnyCultures = true;
                 }
-                catch (MissingManifestResourceException) { }
 
                 if (currentCulture == currentCulture.Parent)
                 {
@@ -218,10 +229,15 @@ namespace Microsoft.Extensions.Localization
                 currentCulture = currentCulture.Parent;
             }
 
+            if (!hasAnyCultures)
+            {
+                throw new MissingManifestResourceException(Resources.Localization_MissingManifest_Parent);
+            }
+
             return resourceNames;
         }
 
-        private IList<string> GetResourceNamesForCulture(CultureInfo culture)
+        private string GetResourceStreamName(CultureInfo culture)
         {
             var resourceStreamName = _resourceBaseName;
             if (!string.IsNullOrEmpty(culture.Name))
@@ -230,22 +246,36 @@ namespace Microsoft.Extensions.Localization
             }
             resourceStreamName += ".resources";
 
+            return resourceStreamName;
+        }
+
+        private IList<string> GetResourceNamesForCulture(CultureInfo culture)
+        {
+            var resourceStreamName = GetResourceStreamName(culture);
+
             var cacheKey = $"assembly={_resourceAssemblyWrapper.FullName};resourceStreamName={resourceStreamName}";
 
             var cultureResourceNames = _resourceNamesCache.GetOrAdd(cacheKey, _ =>
             {
-                var names = new List<string>();
                 using (var cultureResourceStream = _resourceAssemblyWrapper.GetManifestResourceStream(resourceStreamName))
-                using (var resources = new ResourceReader(cultureResourceStream))
                 {
-                    foreach (DictionaryEntry entry in resources)
+                    if (cultureResourceStream == null)
                     {
-                        var resourceName = (string)entry.Key;
-                        names.Add(resourceName);
+                        return null;
+                    }
+
+                    using (var resources = new ResourceReader(cultureResourceStream))
+                    {
+                        var names = new List<string>();
+                        foreach (DictionaryEntry entry in resources)
+                        {
+                            var resourceName = (string)entry.Key;
+                            names.Add(resourceName);
+                        }
+                        return names;
                     }
                 }
 
-                return names;
             });
 
             return cultureResourceNames;
