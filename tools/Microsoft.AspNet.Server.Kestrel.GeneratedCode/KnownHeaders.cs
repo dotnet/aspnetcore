@@ -213,7 +213,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {{
             get
             {{
-                return _{header.Identifier};
+                if ({header.TestBit()})
+                {{
+                    return _{header.Identifier};
+                }}
+                return StringValues.Empty;
             }}
             set
             {{
@@ -352,10 +356,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         protected override void ClearFast()
         {{
             _bits = 0;
-            {Each(loop.Headers, header => $@"
-            _{header.Identifier} = StringValues.Empty;")}
-            {Each(loop.Headers.Where(header => header.EnhancedSetter), header => $@"
-            _raw{header.Identifier} = null;")}
             MaybeUnknown?.Clear();
         }}
         
