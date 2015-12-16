@@ -11,10 +11,9 @@ namespace Microsoft.AspNet.Antiforgery
     public class AntiforgeryOptions
     {
         private const string AntiforgeryTokenFieldName = "__RequestVerificationToken";
-        private const string AntiforgertyTokenHeaderName = "RequestVerificationToken";
+        private const string AntiforgeryTokenHeaderName = "RequestVerificationToken";
 
         private string _cookieName;
-        private string _headerName = AntiforgertyTokenHeaderName;
         private string _formFieldName = AntiforgeryTokenFieldName;
 
         /// <summary>
@@ -64,11 +63,7 @@ namespace Microsoft.AspNet.Antiforgery
         /// Specifies the name of the header value that is used by the antiforgery system. If <c>null</c> then
         /// antiforgery validation will only consider form data.
         /// </summary>
-        public string HeaderName
-        {
-            get { return _headerName; }
-            set { _headerName = value; }
-        }
+        public string HeaderName { get; set; } = AntiforgeryTokenHeaderName;
 
         /// <summary>
         /// Specifies whether SSL is required for the antiforgery system

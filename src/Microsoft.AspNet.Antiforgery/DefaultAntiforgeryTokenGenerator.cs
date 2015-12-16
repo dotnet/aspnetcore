@@ -123,7 +123,7 @@ namespace Microsoft.AspNet.Antiforgery
             }
 
             // Are the security tokens embedded in each incoming token identical?
-            if (!Equals(cookieToken.SecurityToken, requestToken.SecurityToken))
+            if (!object.Equals(cookieToken.SecurityToken, requestToken.SecurityToken))
             {
                 throw new InvalidOperationException(Resources.AntiforgeryToken_SecurityTokenMismatch);
             }
@@ -144,15 +144,14 @@ namespace Microsoft.AspNet.Antiforgery
 
             // OpenID and other similar authentication schemes use URIs for the username.
             // These should be treated as case-sensitive.
-            var useCaseSensitiveUsernameComparison =
-                currentUsername.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
-                currentUsername.StartsWith("https://", StringComparison.OrdinalIgnoreCase);
+            var comparer = StringComparer.OrdinalIgnoreCase;
+            if (currentUsername.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
+                currentUsername.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+            {
+                comparer = StringComparer.Ordinal;
+            }
 
-            if (!string.Equals(requestToken.Username,
-                                currentUsername,
-                                (useCaseSensitiveUsernameComparison) ?
-                                                 StringComparison.Ordinal :
-                                                 StringComparison.OrdinalIgnoreCase))
+            if (!comparer.Equals(requestToken.Username, currentUsername))
             {
                 throw new InvalidOperationException(
                     Resources.FormatAntiforgeryToken_UsernameMismatch(requestToken.Username, currentUsername));
