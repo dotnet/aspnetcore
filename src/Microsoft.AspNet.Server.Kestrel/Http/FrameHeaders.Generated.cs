@@ -60,7 +60,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             get
             {
-                return _CacheControl;
+                if (((_bits & 1L) != 0))
+                {
+                    return _CacheControl;
+                }
+                return StringValues.Empty;
             }
             set
             {
@@ -72,7 +76,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             get
             {
-                return _Connection;
+                if (((_bits & 2L) != 0))
+                {
+                    return _Connection;
+                }
+                return StringValues.Empty;
             }
             set
             {
@@ -84,7 +92,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             get
             {
-                return _Date;
+                if (((_bits & 4L) != 0))
+                {
+                    return _Date;
+                }
+                return StringValues.Empty;
             }
             set
             {
@@ -96,7 +108,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             get
             {
-                return _KeepAlive;
+                if (((_bits & 8L) != 0))
+                {
+                    return _KeepAlive;
+                }
+                return StringValues.Empty;
             }
             set
             {
@@ -108,7 +124,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             get
             {
-                return _Pragma;
+                if (((_bits & 16L) != 0))
+                {
+                    return _Pragma;
+                }
+                return StringValues.Empty;
             }
             set
             {
@@ -120,7 +140,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             get
             {
-                return _Trailer;
+                if (((_bits & 32L) != 0))
+                {
+                    return _Trailer;
+                }
+                return StringValues.Empty;
             }
             set
             {
@@ -132,7 +156,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             get
             {
-                return _TransferEncoding;
+                if (((_bits & 64L) != 0))
+                {
+                    return _TransferEncoding;
+                }
+                return StringValues.Empty;
             }
             set
             {
@@ -144,7 +172,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             get
             {
-                return _Upgrade;
+                if (((_bits & 128L) != 0))
+                {
+                    return _Upgrade;
+                }
+                return StringValues.Empty;
             }
             set
             {
@@ -156,7 +188,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             get
             {
-                return _Via;
+                if (((_bits & 256L) != 0))
+                {
+                    return _Via;
+                }
+                return StringValues.Empty;
             }
             set
             {
@@ -168,7 +204,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             get
             {
-                return _Warning;
+                if (((_bits & 512L) != 0))
+                {
+                    return _Warning;
+                }
+                return StringValues.Empty;
             }
             set
             {
@@ -180,7 +220,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             get
             {
-                return _Allow;
+                if (((_bits & 1024L) != 0))
+                {
+                    return _Allow;
+                }
+                return StringValues.Empty;
             }
             set
             {
@@ -192,7 +236,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             get
             {
-                return _ContentLength;
+                if (((_bits & 2048L) != 0))
+                {
+                    return _ContentLength;
+                }
+                return StringValues.Empty;
             }
             set
             {
@@ -204,7 +252,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             get
             {
-                return _ContentType;
+                if (((_bits & 4096L) != 0))
+                {
+                    return _ContentType;
+                }
+                return StringValues.Empty;
             }
             set
             {
@@ -216,7 +268,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             get
             {
-                return _ContentEncoding;
+                if (((_bits & 8192L) != 0))
+                {
+                    return _ContentEncoding;
+                }
+                return StringValues.Empty;
             }
             set
             {
@@ -228,7 +284,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             get
             {
-                return _ContentLanguage;
+                if (((_bits & 16384L) != 0))
+                {
+                    return _ContentLanguage;
+                }
+                return StringValues.Empty;
             }
             set
             {
@@ -240,7 +300,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             get
             {
-                return _ContentLocation;
+                if (((_bits & 32768L) != 0))
+                {
+                    return _ContentLocation;
+                }
+                return StringValues.Empty;
             }
             set
             {
@@ -252,7 +316,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             get
             {
-                return _ContentMD5;
+                if (((_bits & 65536L) != 0))
+                {
+                    return _ContentMD5;
+                }
+                return StringValues.Empty;
             }
             set
             {
@@ -264,7 +332,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             get
             {
-                return _ContentRange;
+                if (((_bits & 131072L) != 0))
+                {
+                    return _ContentRange;
+                }
+                return StringValues.Empty;
             }
             set
             {
@@ -276,7 +348,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             get
             {
-                return _Expires;
+                if (((_bits & 262144L) != 0))
+                {
+                    return _Expires;
+                }
+                return StringValues.Empty;
             }
             set
             {
@@ -288,7 +364,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             get
             {
-                return _LastModified;
+                if (((_bits & 524288L) != 0))
+                {
+                    return _LastModified;
+                }
+                return StringValues.Empty;
             }
             set
             {
@@ -300,7 +380,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             get
             {
-                return _Accept;
+                if (((_bits & 1048576L) != 0))
+                {
+                    return _Accept;
+                }
+                return StringValues.Empty;
             }
             set
             {
@@ -312,7 +396,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             get
             {
-                return _AcceptCharset;
+                if (((_bits & 2097152L) != 0))
+                {
+                    return _AcceptCharset;
+                }
+                return StringValues.Empty;
             }
             set
             {
@@ -324,7 +412,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             get
             {
-                return _AcceptEncoding;
+                if (((_bits & 4194304L) != 0))
+                {
+                    return _AcceptEncoding;
+                }
+                return StringValues.Empty;
             }
             set
             {
@@ -336,7 +428,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             get
             {
-                return _AcceptLanguage;
+                if (((_bits & 8388608L) != 0))
+                {
+                    return _AcceptLanguage;
+                }
+                return StringValues.Empty;
             }
             set
             {
@@ -348,7 +444,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             get
             {
-                return _Authorization;
+                if (((_bits & 16777216L) != 0))
+                {
+                    return _Authorization;
+                }
+                return StringValues.Empty;
             }
             set
             {
@@ -360,7 +460,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             get
             {
-                return _Cookie;
+                if (((_bits & 33554432L) != 0))
+                {
+                    return _Cookie;
+                }
+                return StringValues.Empty;
             }
             set
             {
@@ -372,7 +476,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             get
             {
-                return _Expect;
+                if (((_bits & 67108864L) != 0))
+                {
+                    return _Expect;
+                }
+                return StringValues.Empty;
             }
             set
             {
@@ -384,7 +492,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             get
             {
-                return _From;
+                if (((_bits & 134217728L) != 0))
+                {
+                    return _From;
+                }
+                return StringValues.Empty;
             }
             set
             {
@@ -396,7 +508,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             get
             {
-                return _Host;
+                if (((_bits & 268435456L) != 0))
+                {
+                    return _Host;
+                }
+                return StringValues.Empty;
             }
             set
             {
@@ -408,7 +524,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             get
             {
-                return _IfMatch;
+                if (((_bits & 536870912L) != 0))
+                {
+                    return _IfMatch;
+                }
+                return StringValues.Empty;
             }
             set
             {
@@ -420,7 +540,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             get
             {
-                return _IfModifiedSince;
+                if (((_bits & 1073741824L) != 0))
+                {
+                    return _IfModifiedSince;
+                }
+                return StringValues.Empty;
             }
             set
             {
@@ -432,7 +556,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             get
             {
-                return _IfNoneMatch;
+                if (((_bits & 2147483648L) != 0))
+                {
+                    return _IfNoneMatch;
+                }
+                return StringValues.Empty;
             }
             set
             {
@@ -444,7 +572,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             get
             {
-                return _IfRange;
+                if (((_bits & 4294967296L) != 0))
+                {
+                    return _IfRange;
+                }
+                return StringValues.Empty;
             }
             set
             {
@@ -456,7 +588,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             get
             {
-                return _IfUnmodifiedSince;
+                if (((_bits & 8589934592L) != 0))
+                {
+                    return _IfUnmodifiedSince;
+                }
+                return StringValues.Empty;
             }
             set
             {
@@ -468,7 +604,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             get
             {
-                return _MaxForwards;
+                if (((_bits & 17179869184L) != 0))
+                {
+                    return _MaxForwards;
+                }
+                return StringValues.Empty;
             }
             set
             {
@@ -480,7 +620,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             get
             {
-                return _ProxyAuthorization;
+                if (((_bits & 34359738368L) != 0))
+                {
+                    return _ProxyAuthorization;
+                }
+                return StringValues.Empty;
             }
             set
             {
@@ -492,7 +636,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             get
             {
-                return _Referer;
+                if (((_bits & 68719476736L) != 0))
+                {
+                    return _Referer;
+                }
+                return StringValues.Empty;
             }
             set
             {
@@ -504,7 +652,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             get
             {
-                return _Range;
+                if (((_bits & 137438953472L) != 0))
+                {
+                    return _Range;
+                }
+                return StringValues.Empty;
             }
             set
             {
@@ -516,7 +668,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             get
             {
-                return _TE;
+                if (((_bits & 274877906944L) != 0))
+                {
+                    return _TE;
+                }
+                return StringValues.Empty;
             }
             set
             {
@@ -528,7 +684,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             get
             {
-                return _Translate;
+                if (((_bits & 549755813888L) != 0))
+                {
+                    return _Translate;
+                }
+                return StringValues.Empty;
             }
             set
             {
@@ -540,7 +700,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             get
             {
-                return _UserAgent;
+                if (((_bits & 1099511627776L) != 0))
+                {
+                    return _UserAgent;
+                }
+                return StringValues.Empty;
             }
             set
             {
@@ -3309,49 +3473,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         protected override void ClearFast()
         {
             _bits = 0;
-            
-            _CacheControl = StringValues.Empty;
-            _Connection = StringValues.Empty;
-            _Date = StringValues.Empty;
-            _KeepAlive = StringValues.Empty;
-            _Pragma = StringValues.Empty;
-            _Trailer = StringValues.Empty;
-            _TransferEncoding = StringValues.Empty;
-            _Upgrade = StringValues.Empty;
-            _Via = StringValues.Empty;
-            _Warning = StringValues.Empty;
-            _Allow = StringValues.Empty;
-            _ContentLength = StringValues.Empty;
-            _ContentType = StringValues.Empty;
-            _ContentEncoding = StringValues.Empty;
-            _ContentLanguage = StringValues.Empty;
-            _ContentLocation = StringValues.Empty;
-            _ContentMD5 = StringValues.Empty;
-            _ContentRange = StringValues.Empty;
-            _Expires = StringValues.Empty;
-            _LastModified = StringValues.Empty;
-            _Accept = StringValues.Empty;
-            _AcceptCharset = StringValues.Empty;
-            _AcceptEncoding = StringValues.Empty;
-            _AcceptLanguage = StringValues.Empty;
-            _Authorization = StringValues.Empty;
-            _Cookie = StringValues.Empty;
-            _Expect = StringValues.Empty;
-            _From = StringValues.Empty;
-            _Host = StringValues.Empty;
-            _IfMatch = StringValues.Empty;
-            _IfModifiedSince = StringValues.Empty;
-            _IfNoneMatch = StringValues.Empty;
-            _IfRange = StringValues.Empty;
-            _IfUnmodifiedSince = StringValues.Empty;
-            _MaxForwards = StringValues.Empty;
-            _ProxyAuthorization = StringValues.Empty;
-            _Referer = StringValues.Empty;
-            _Range = StringValues.Empty;
-            _TE = StringValues.Empty;
-            _Translate = StringValues.Empty;
-            _UserAgent = StringValues.Empty;
-            
             MaybeUnknown?.Clear();
         }
         
@@ -4992,7 +5113,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             get
             {
-                return _CacheControl;
+                if (((_bits & 1L) != 0))
+                {
+                    return _CacheControl;
+                }
+                return StringValues.Empty;
             }
             set
             {
@@ -5004,7 +5129,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             get
             {
-                return _Connection;
+                if (((_bits & 2L) != 0))
+                {
+                    return _Connection;
+                }
+                return StringValues.Empty;
             }
             set
             {
@@ -5017,7 +5146,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             get
             {
-                return _Date;
+                if (((_bits & 4L) != 0))
+                {
+                    return _Date;
+                }
+                return StringValues.Empty;
             }
             set
             {
@@ -5030,7 +5163,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             get
             {
-                return _KeepAlive;
+                if (((_bits & 8L) != 0))
+                {
+                    return _KeepAlive;
+                }
+                return StringValues.Empty;
             }
             set
             {
@@ -5042,7 +5179,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             get
             {
-                return _Pragma;
+                if (((_bits & 16L) != 0))
+                {
+                    return _Pragma;
+                }
+                return StringValues.Empty;
             }
             set
             {
@@ -5054,7 +5195,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             get
             {
-                return _Trailer;
+                if (((_bits & 32L) != 0))
+                {
+                    return _Trailer;
+                }
+                return StringValues.Empty;
             }
             set
             {
@@ -5066,7 +5211,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             get
             {
-                return _TransferEncoding;
+                if (((_bits & 64L) != 0))
+                {
+                    return _TransferEncoding;
+                }
+                return StringValues.Empty;
             }
             set
             {
@@ -5079,7 +5228,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             get
             {
-                return _Upgrade;
+                if (((_bits & 128L) != 0))
+                {
+                    return _Upgrade;
+                }
+                return StringValues.Empty;
             }
             set
             {
@@ -5091,7 +5244,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             get
             {
-                return _Via;
+                if (((_bits & 256L) != 0))
+                {
+                    return _Via;
+                }
+                return StringValues.Empty;
             }
             set
             {
@@ -5103,7 +5260,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             get
             {
-                return _Warning;
+                if (((_bits & 512L) != 0))
+                {
+                    return _Warning;
+                }
+                return StringValues.Empty;
             }
             set
             {
@@ -5115,7 +5276,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             get
             {
-                return _Allow;
+                if (((_bits & 1024L) != 0))
+                {
+                    return _Allow;
+                }
+                return StringValues.Empty;
             }
             set
             {
@@ -5127,7 +5292,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             get
             {
-                return _ContentLength;
+                if (((_bits & 2048L) != 0))
+                {
+                    return _ContentLength;
+                }
+                return StringValues.Empty;
             }
             set
             {
@@ -5140,7 +5309,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             get
             {
-                return _ContentType;
+                if (((_bits & 4096L) != 0))
+                {
+                    return _ContentType;
+                }
+                return StringValues.Empty;
             }
             set
             {
@@ -5152,7 +5325,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             get
             {
-                return _ContentEncoding;
+                if (((_bits & 8192L) != 0))
+                {
+                    return _ContentEncoding;
+                }
+                return StringValues.Empty;
             }
             set
             {
@@ -5164,7 +5341,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             get
             {
-                return _ContentLanguage;
+                if (((_bits & 16384L) != 0))
+                {
+                    return _ContentLanguage;
+                }
+                return StringValues.Empty;
             }
             set
             {
@@ -5176,7 +5357,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             get
             {
-                return _ContentLocation;
+                if (((_bits & 32768L) != 0))
+                {
+                    return _ContentLocation;
+                }
+                return StringValues.Empty;
             }
             set
             {
@@ -5188,7 +5373,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             get
             {
-                return _ContentMD5;
+                if (((_bits & 65536L) != 0))
+                {
+                    return _ContentMD5;
+                }
+                return StringValues.Empty;
             }
             set
             {
@@ -5200,7 +5389,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             get
             {
-                return _ContentRange;
+                if (((_bits & 131072L) != 0))
+                {
+                    return _ContentRange;
+                }
+                return StringValues.Empty;
             }
             set
             {
@@ -5212,7 +5405,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             get
             {
-                return _Expires;
+                if (((_bits & 262144L) != 0))
+                {
+                    return _Expires;
+                }
+                return StringValues.Empty;
             }
             set
             {
@@ -5224,7 +5421,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             get
             {
-                return _LastModified;
+                if (((_bits & 524288L) != 0))
+                {
+                    return _LastModified;
+                }
+                return StringValues.Empty;
             }
             set
             {
@@ -5236,7 +5437,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             get
             {
-                return _AcceptRanges;
+                if (((_bits & 1048576L) != 0))
+                {
+                    return _AcceptRanges;
+                }
+                return StringValues.Empty;
             }
             set
             {
@@ -5248,7 +5453,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             get
             {
-                return _Age;
+                if (((_bits & 2097152L) != 0))
+                {
+                    return _Age;
+                }
+                return StringValues.Empty;
             }
             set
             {
@@ -5260,7 +5469,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             get
             {
-                return _ETag;
+                if (((_bits & 4194304L) != 0))
+                {
+                    return _ETag;
+                }
+                return StringValues.Empty;
             }
             set
             {
@@ -5272,7 +5485,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             get
             {
-                return _Location;
+                if (((_bits & 8388608L) != 0))
+                {
+                    return _Location;
+                }
+                return StringValues.Empty;
             }
             set
             {
@@ -5284,7 +5501,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             get
             {
-                return _ProxyAutheticate;
+                if (((_bits & 16777216L) != 0))
+                {
+                    return _ProxyAutheticate;
+                }
+                return StringValues.Empty;
             }
             set
             {
@@ -5296,7 +5517,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             get
             {
-                return _RetryAfter;
+                if (((_bits & 33554432L) != 0))
+                {
+                    return _RetryAfter;
+                }
+                return StringValues.Empty;
             }
             set
             {
@@ -5308,7 +5533,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             get
             {
-                return _Server;
+                if (((_bits & 67108864L) != 0))
+                {
+                    return _Server;
+                }
+                return StringValues.Empty;
             }
             set
             {
@@ -5321,7 +5550,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             get
             {
-                return _SetCookie;
+                if (((_bits & 134217728L) != 0))
+                {
+                    return _SetCookie;
+                }
+                return StringValues.Empty;
             }
             set
             {
@@ -5333,7 +5566,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             get
             {
-                return _Vary;
+                if (((_bits & 268435456L) != 0))
+                {
+                    return _Vary;
+                }
+                return StringValues.Empty;
             }
             set
             {
@@ -5345,7 +5582,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             get
             {
-                return _WWWAuthenticate;
+                if (((_bits & 536870912L) != 0))
+                {
+                    return _WWWAuthenticate;
+                }
+                return StringValues.Empty;
             }
             set
             {
@@ -7441,43 +7682,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         protected override void ClearFast()
         {
             _bits = 0;
-            
-            _CacheControl = StringValues.Empty;
-            _Connection = StringValues.Empty;
-            _Date = StringValues.Empty;
-            _KeepAlive = StringValues.Empty;
-            _Pragma = StringValues.Empty;
-            _Trailer = StringValues.Empty;
-            _TransferEncoding = StringValues.Empty;
-            _Upgrade = StringValues.Empty;
-            _Via = StringValues.Empty;
-            _Warning = StringValues.Empty;
-            _Allow = StringValues.Empty;
-            _ContentLength = StringValues.Empty;
-            _ContentType = StringValues.Empty;
-            _ContentEncoding = StringValues.Empty;
-            _ContentLanguage = StringValues.Empty;
-            _ContentLocation = StringValues.Empty;
-            _ContentMD5 = StringValues.Empty;
-            _ContentRange = StringValues.Empty;
-            _Expires = StringValues.Empty;
-            _LastModified = StringValues.Empty;
-            _AcceptRanges = StringValues.Empty;
-            _Age = StringValues.Empty;
-            _ETag = StringValues.Empty;
-            _Location = StringValues.Empty;
-            _ProxyAutheticate = StringValues.Empty;
-            _RetryAfter = StringValues.Empty;
-            _Server = StringValues.Empty;
-            _SetCookie = StringValues.Empty;
-            _Vary = StringValues.Empty;
-            _WWWAuthenticate = StringValues.Empty;
-            
-            _rawConnection = null;
-            _rawDate = null;
-            _rawTransferEncoding = null;
-            _rawContentLength = null;
-            _rawServer = null;
             MaybeUnknown?.Clear();
         }
         
