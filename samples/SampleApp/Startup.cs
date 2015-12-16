@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Server.Kestrel;
@@ -60,6 +61,21 @@ namespace SampleApp
                 context.Response.ContentType = "text/plain";
                 await context.Response.WriteAsync("Hello world");
             });
+        }
+
+        public static void Main(string[] args)
+        {
+            var application = new WebApplicationBuilder()
+                .UseConfiguration(WebApplicationConfiguration.GetDefault(args))
+                .UseStartup<Startup>()
+                .Build();
+
+            // The following section should be used to demo sockets
+            //var addresses = application.GetAddresses();
+            //addresses.Clear();
+            //addresses.Add("http://unix:/tmp/kestrel-test.sock");
+
+            application.Run();
         }
     }
 }

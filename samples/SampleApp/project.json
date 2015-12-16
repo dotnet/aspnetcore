@@ -1,22 +1,23 @@
 {
-    "version": "1.0.0-*",
-    "dependencies": {
-        "Microsoft.AspNet.Server.Kestrel": "1.0.0-*",
-        "Microsoft.AspNet.Server.Kestrel.Https": "1.0.0-*",
-        "Microsoft.Extensions.Logging.Console": "1.0.0-*"
+  "version": "1.0.0-*",
+  "dependencies": {
+    "Microsoft.AspNet.Server.Kestrel": "1.0.0-*",
+    "Microsoft.AspNet.Server.Kestrel.Https": "1.0.0-*",
+    "Microsoft.Extensions.Logging.Console": "1.0.0-*"
+  },
+  "compilationOptions": {
+    "emitEntryPoint": true
+  },
+  "frameworks": {
+    "dnx451": {
     },
-    "frameworks": {
-        "dnx451": {
-        },
-        "dnxcore50": {
-            "dependencies": {
-                "System.Console": "4.0.0-*"
-            }
-        }
-    },
-    "commands": {
-        "web": "Microsoft.AspNet.Hosting --server Microsoft.AspNet.Server.Kestrel --server.urls http://localhost:5000;https://localhost:5001",
-        "kestrel": "Microsoft.AspNet.Server.Kestrel --server.urls http://localhost:5000;https://localhost:5001",
-        "run-socket": "Microsoft.AspNet.Server.Kestrel --server.urls http://unix:/tmp/kestrel-test.sock"
+    "dnxcore50": {
+      "dependencies": {
+        "System.Console": "4.0.0-*"
+      }
     }
+  },
+  "commands": {
+    "web": "SampleApp"
+  }
 }

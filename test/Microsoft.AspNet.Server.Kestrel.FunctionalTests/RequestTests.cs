@@ -29,31 +29,32 @@ namespace Microsoft.AspNet.Server.Kestrel.FunctionalTests
                 })
                 .Build();
 
-            var hostBuilder = new WebHostBuilder(config);
-            hostBuilder.UseServerFactory("Microsoft.AspNet.Server.Kestrel");
-            hostBuilder.UseStartup(app =>
-            {
-                app.Run(async context =>
+            var applicationBuilder = new WebApplicationBuilder()
+                .UseConfiguration(config)
+                .UseServerFactory("Microsoft.AspNet.Server.Kestrel")
+                .Configure(app =>
                 {
-                    // Read the full request body
-                    var total = 0;
-                    var bytes = new byte[1024];
-                    var count = await context.Request.Body.ReadAsync(bytes, 0, bytes.Length);
-                    while (count > 0)
+                    app.Run(async context =>
                     {
-                        for (int i = 0; i < count; i++)
+                        // Read the full request body
+                        var total = 0;
+                        var bytes = new byte[1024];
+                        var count = await context.Request.Body.ReadAsync(bytes, 0, bytes.Length);
+                        while (count > 0)
                         {
-                            Assert.Equal(total % 256, bytes[i]);
-                            total++;
+                            for (int i = 0; i < count; i++)
+                            {
+                                Assert.Equal(total % 256, bytes[i]);
+                                total++;
+                            }
+                            count = await context.Request.Body.ReadAsync(bytes, 0, bytes.Length);
                         }
-                        count = await context.Request.Body.ReadAsync(bytes, 0, bytes.Length);
-                    }
 
-                    await context.Response.WriteAsync(total.ToString(CultureInfo.InvariantCulture));
+                        await context.Response.WriteAsync(total.ToString(CultureInfo.InvariantCulture));
+                    });
                 });
-            });
 
-            using (var app = hostBuilder.Build().Start())
+            using (var app = applicationBuilder.Build().Start())
             {
                 using (var client = new HttpClient())
                 {
@@ -97,9 +98,10 @@ namespace Microsoft.AspNet.Server.Kestrel.FunctionalTests
                     { "server.urls", "http://localhost:8791" }
                 }).Build();
 
-            var builder = new WebHostBuilder(config)
+            var builder = new WebApplicationBuilder()
+                .UseConfiguration(config)
                 .UseServerFactory("Microsoft.AspNet.Server.Kestrel")
-                .UseStartup(app =>
+                .Configure(app =>
                 {
                     app.Run(async context =>
                     {
@@ -126,9 +128,10 @@ namespace Microsoft.AspNet.Server.Kestrel.FunctionalTests
                     { "server.urls", $"http://{registerAddress}:{port}" }
                 }).Build();
 
-            var builder = new WebHostBuilder(config)
+            var builder = new WebApplicationBuilder()
+                .UseConfiguration(config)
                 .UseServerFactory("Microsoft.AspNet.Server.Kestrel")
-                .UseStartup(app =>
+                .Configure(app =>
                 {
                     app.Run(async context =>
                     {

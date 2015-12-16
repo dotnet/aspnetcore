@@ -28,28 +28,29 @@ namespace Microsoft.AspNet.Server.Kestrel.FunctionalTests
                 })
                 .Build();
 
-            var hostBuilder = new WebHostBuilder(config);
-            hostBuilder.UseServerFactory("Microsoft.AspNet.Server.Kestrel");
-            hostBuilder.UseStartup(app =>
-            {
-                app.Run(async context =>
+            var applicationBuilder = new WebApplicationBuilder()
+                .UseConfiguration(config)
+                .UseServerFactory("Microsoft.AspNet.Server.Kestrel")
+                .Configure(app =>
                 {
-                    var bytes = new byte[1024];
-                    for (int i = 0; i < bytes.Length; i++)
+                    app.Run(async context =>
                     {
-                        bytes[i] = (byte)i;
-                    }
+                        var bytes = new byte[1024];
+                        for (int i = 0; i < bytes.Length; i++)
+                        {
+                            bytes[i] = (byte)i;
+                        }
 
-                    context.Response.ContentLength = bytes.Length * 1024;
+                        context.Response.ContentLength = bytes.Length * 1024;
 
-                    for (int i = 0; i < 1024; i++)
-                    {
-                        await context.Response.Body.WriteAsync(bytes, 0, bytes.Length);
-                    }
+                        for (int i = 0; i < 1024; i++)
+                        {
+                            await context.Response.Body.WriteAsync(bytes, 0, bytes.Length);
+                        }
+                    });
                 });
-            });
 
-            using (var app = hostBuilder.Build().Start())
+            using (var app = applicationBuilder.Build().Start())
             {
                 using (var client = new HttpClient())
                 {
@@ -85,9 +86,10 @@ namespace Microsoft.AspNet.Server.Kestrel.FunctionalTests
                 })
                 .Build();
 
-            var hostBuilder = new WebHostBuilder(config)
+            var hostBuilder = new WebApplicationBuilder()
+                .UseConfiguration(config)
                 .UseServerFactory("Microsoft.AspNet.Server.Kestrel")
-                .UseStartup(app =>
+                .Configure(app =>
                 {
                     app.Run(async context =>
                     {
