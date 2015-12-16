@@ -198,7 +198,7 @@
             "Microsoft.AspNet.Routing.Extensions": { },
             "Microsoft.AspNet.Server.Kestrel": {
                 "SIGN_AUTHENTICODE": {
-                    "runtimes\\win10-arm\\native\\libuv.dll": "We don't sign 3rd party DLLs",
+                    "runtimes\\win7-arm\\native\\libuv.dll": "We don't sign 3rd party DLLs",
                     "runtimes\\win7-x64\\native\\libuv.dll": "We don't sign 3rd party DLLs",
                     "runtimes\\win7-x86\\native\\libuv.dll": "We don't sign 3rd party DLLs"
                 }
