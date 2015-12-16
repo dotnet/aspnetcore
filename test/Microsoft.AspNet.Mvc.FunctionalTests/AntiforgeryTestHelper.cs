@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -14,18 +13,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
     {
         public static string RetrieveAntiforgeryToken(string htmlContent, string actionUrl)
         {
-            return RetrieveAntiforgeryTokens(
-                htmlContent,
-                attribute => attribute.Value.EndsWith(actionUrl, StringComparison.OrdinalIgnoreCase) ||
-                    attribute.Value.EndsWith($"HtmlEncode[[{ actionUrl }]]", StringComparison.OrdinalIgnoreCase))
-                .FirstOrDefault();
-        }
-
-        public static IEnumerable<string> RetrieveAntiforgeryTokens(
-            string htmlContent,
-            Func<XAttribute, bool> predicate = null)
-        {
-            predicate = predicate ?? (_ => true);
             htmlContent = "<Root>" + htmlContent + "</Root>";
             var reader = new StringReader(htmlContent);
             var htmlDocument = XDocument.Load(reader);
@@ -34,8 +21,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             {
                 foreach (var attribute in form.Attributes())
                 {
-                    if (string.Equals(attribute.Name.LocalName, "action", StringComparison.OrdinalIgnoreCase)
-                        && predicate(attribute))
+                    if (string.Equals(attribute.Name.LocalName, "action", StringComparison.OrdinalIgnoreCase))
                     {
                         foreach (var input in form.Descendants("input"))
                         {
@@ -45,12 +31,14 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                                 (input.Attribute("name").Value == "__RequestVerificationToken" ||
                                  input.Attribute("name").Value == "HtmlEncode[[__RequestVerificationToken]]"))
                             {
-                                yield return input.Attributes("value").First().Value;
+                                return input.Attributes("value").First().Value;
                             }
                         }
                     }
                 }
             }
+
+            throw new Exception($"Antiforgery token could not be located in {htmlContent}.");
         }
 
         public static CookieMetadata RetrieveAntiforgeryCookie(HttpResponseMessage response)

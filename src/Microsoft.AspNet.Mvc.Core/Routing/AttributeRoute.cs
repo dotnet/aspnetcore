@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Abstractions;
 using Microsoft.AspNet.Mvc.Core;
@@ -20,6 +21,7 @@ namespace Microsoft.AspNet.Mvc.Routing
         private readonly IRouter _target;
         private readonly IActionDescriptorsCollectionProvider _actionDescriptorsCollectionProvider;
         private readonly IInlineConstraintResolver _constraintResolver;
+        private readonly UrlEncoder _urlEncoder;
         private readonly ILoggerFactory _loggerFactory;
 
         private TreeRouter _router;
@@ -28,6 +30,7 @@ namespace Microsoft.AspNet.Mvc.Routing
             IRouter target,
             IActionDescriptorsCollectionProvider actionDescriptorsCollectionProvider,
             IInlineConstraintResolver constraintResolver,
+            UrlEncoder urlEncoder,
             ILoggerFactory loggerFactory)
         {
             if (target == null)
@@ -45,6 +48,11 @@ namespace Microsoft.AspNet.Mvc.Routing
                 throw new ArgumentNullException(nameof(constraintResolver));
             }
 
+            if (urlEncoder == null)
+            {
+                throw new ArgumentNullException(nameof(urlEncoder));
+            }
+
             if (loggerFactory == null)
             {
                 throw new ArgumentNullException(nameof(loggerFactory));
@@ -53,6 +61,7 @@ namespace Microsoft.AspNet.Mvc.Routing
             _target = target;
             _actionDescriptorsCollectionProvider = actionDescriptorsCollectionProvider;
             _constraintResolver = constraintResolver;
+            _urlEncoder = urlEncoder;
             _loggerFactory = loggerFactory;
         }
 
@@ -95,7 +104,7 @@ namespace Microsoft.AspNet.Mvc.Routing
             {
                 routeBuilder.Add(new TreeRouteLinkGenerationEntry()
                 {
-                    Binder = new TemplateBinder(routeInfo.ParsedTemplate, routeInfo.Defaults),
+                    Binder = new TemplateBinder(routeInfo.ParsedTemplate, _urlEncoder, routeInfo.Defaults),
                     Defaults = routeInfo.Defaults,
                     Constraints = routeInfo.Constraints,
                     Order = routeInfo.Order,

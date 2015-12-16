@@ -12,6 +12,7 @@ using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Routing.Tree;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
+using Microsoft.Extensions.WebEncoders.Testing;
 using Moq;
 using Xunit;
 
@@ -70,6 +71,7 @@ namespace Microsoft.AspNet.Mvc.Routing
                 handler.Object,
                 actionDescriptorsProvider.Object,
                 Mock.Of<IInlineConstraintResolver>(),
+                new UrlTestEncoder(),
                 NullLoggerFactory.Instance);
 
             var requestServices = new Mock<IServiceProvider>(MockBehavior.Strict);

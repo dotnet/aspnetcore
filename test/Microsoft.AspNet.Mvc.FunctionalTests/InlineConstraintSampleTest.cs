@@ -491,7 +491,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                         "GetProductByManufacturingDate",
                         "dateTime",
                         "2014-10-11T13:45:30",
-                        "/products/GetProductByManufacturingDate/2014-10-11T13%3a45%3a30"
+                        "/products/GetProductByManufacturingDate/2014-10-11T13%3A45%3A30"
                     };
 
                 // Conventional Route, id:guid? constraint

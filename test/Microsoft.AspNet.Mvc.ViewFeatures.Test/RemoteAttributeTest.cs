@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Text.Encodings.Web;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.Abstractions;
-using Microsoft.AspNet.Mvc.Infrastructure;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.AspNet.Mvc.Routing;
@@ -14,6 +14,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.OptionsModel;
+using Microsoft.Extensions.WebEncoders.Testing;
 using Moq;
 using Xunit;
 
@@ -314,7 +315,7 @@ namespace Microsoft.AspNet.Mvc
 
             Assert.Equal(2, rule.ValidationParameters.Count);
             Assert.Equal("*.Length", rule.ValidationParameters["additionalfields"]);
-            Assert.Equal("/Controller/Action", rule.ValidationParameters["url"]);
+            Assert.Equal("/UrlEncode[[Controller]]/UrlEncode[[Action]]", rule.ValidationParameters["url"]);
         }
 
         // Test area is current in this case.
@@ -332,7 +333,9 @@ namespace Microsoft.AspNet.Mvc
 
             Assert.Equal(2, rule.ValidationParameters.Count);
             Assert.Equal("*.Length", rule.ValidationParameters["additionalfields"]);
-            Assert.Equal("/Test/Controller/Action", rule.ValidationParameters["url"]);
+            Assert.Equal(
+                "/UrlEncode[[Test]]/UrlEncode[[Controller]]/UrlEncode[[Action]]",
+                rule.ValidationParameters["url"]);
         }
 
         // Explicit reference to the (current) root area.
@@ -351,7 +354,7 @@ namespace Microsoft.AspNet.Mvc
 
             Assert.Equal(2, rule.ValidationParameters.Count);
             Assert.Equal("*.Length", rule.ValidationParameters["additionalfields"]);
-            Assert.Equal("/Controller/Action", rule.ValidationParameters["url"]);
+            Assert.Equal("/UrlEncode[[Controller]]/UrlEncode[[Action]]", rule.ValidationParameters["url"]);
         }
 
         // Test area is current in this case.
@@ -370,7 +373,7 @@ namespace Microsoft.AspNet.Mvc
 
             Assert.Equal(2, rule.ValidationParameters.Count);
             Assert.Equal("*.Length", rule.ValidationParameters["additionalfields"]);
-            Assert.Equal("/Controller/Action", rule.ValidationParameters["url"]);
+            Assert.Equal("/UrlEncode[[Controller]]/UrlEncode[[Action]]", rule.ValidationParameters["url"]);
         }
 
         // Root area is current in this case.
@@ -388,7 +391,9 @@ namespace Microsoft.AspNet.Mvc
 
             Assert.Equal(2, rule.ValidationParameters.Count);
             Assert.Equal("*.Length", rule.ValidationParameters["additionalfields"]);
-            Assert.Equal("/Test/Controller/Action", rule.ValidationParameters["url"]);
+            Assert.Equal(
+                "/UrlEncode[[Test]]/UrlEncode[[Controller]]/UrlEncode[[Action]]",
+                rule.ValidationParameters["url"]);
         }
 
         // Explicit reference to the current (Test) area.
@@ -406,7 +411,9 @@ namespace Microsoft.AspNet.Mvc
 
             Assert.Equal(2, rule.ValidationParameters.Count);
             Assert.Equal("*.Length", rule.ValidationParameters["additionalfields"]);
-            Assert.Equal("/Test/Controller/Action", rule.ValidationParameters["url"]);
+            Assert.Equal(
+                "/UrlEncode[[Test]]/UrlEncode[[Controller]]/UrlEncode[[Action]]",
+                rule.ValidationParameters["url"]);
         }
 
         // Test area is current in this case.
@@ -424,7 +431,9 @@ namespace Microsoft.AspNet.Mvc
 
             Assert.Equal(2, rule.ValidationParameters.Count);
             Assert.Equal("*.Length", rule.ValidationParameters["additionalfields"]);
-            Assert.Equal("/AnotherArea/Controller/Action", rule.ValidationParameters["url"]);
+            Assert.Equal(
+                "/UrlEncode[[AnotherArea]]/UrlEncode[[Controller]]/UrlEncode[[Action]]",
+                rule.ValidationParameters["url"]);
         }
 
         private static ClientModelValidationContext GetValidationContext(IUrlHelper urlHelper)
@@ -558,6 +567,7 @@ namespace Microsoft.AspNet.Mvc
         {
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddSingleton<ILoggerFactory>(new NullLoggerFactory());
+            serviceCollection.AddSingleton<UrlEncoder>(new UrlTestEncoder());
 
             var routeOptions = new RouteOptions();
             var accessor = new Mock<IOptions<RouteOptions>>();

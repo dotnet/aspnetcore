@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text.Encodings.Web;
 #if DNXCORE50
 using System.Reflection;
 #endif
@@ -13,9 +14,11 @@ using Microsoft.AspNet.Mvc.Controllers;
 using Microsoft.AspNet.Mvc.Infrastructure;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Routing.Tree;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.OptionsModel;
+using Microsoft.Extensions.WebEncoders.Testing;
 using Moq;
 using Xunit;
 
@@ -184,25 +187,17 @@ namespace Microsoft.AspNet.Mvc.Routing
                 .Setup(a => a.ActionDescriptors)
                 .Returns(collection);
 
-            var services = new Mock<IServiceProvider>();
-            services
-                .Setup(s => s.GetService(typeof(IActionDescriptorsCollectionProvider)))
-                .Returns(actionDescriptorProvider.Object);
-
             var routeOptions = new Mock<IOptions<RouteOptions>>();
             routeOptions
                 .SetupGet(o => o.Value)
                 .Returns(new RouteOptions());
 
-            services
-                .Setup(s => s.GetService(typeof(IInlineConstraintResolver)))
-                .Returns(new DefaultInlineConstraintResolver(routeOptions.Object));
-
-            services
-                .Setup(s => s.GetService(typeof(ILoggerFactory)))
-                .Returns(NullLoggerFactory.Instance);
-
-            return services.Object;
+            return new ServiceCollection()
+                .AddSingleton(actionDescriptorProvider.Object)
+                .AddSingleton<IInlineConstraintResolver>(new DefaultInlineConstraintResolver(routeOptions.Object))
+                .AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance)
+                .AddSingleton<UrlEncoder>(new UrlTestEncoder())
+                .BuildServiceProvider();
         }
 
         private class DisplayNameActionDescriptor : ActionDescriptor

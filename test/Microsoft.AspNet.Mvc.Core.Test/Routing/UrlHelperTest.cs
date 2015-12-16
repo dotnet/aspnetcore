@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
@@ -14,6 +15,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.OptionsModel;
+using Microsoft.Extensions.WebEncoders.Testing;
 using Moq;
 using Xunit;
 
@@ -951,6 +953,7 @@ namespace Microsoft.AspNet.Mvc.Routing
             var services = new ServiceCollection();
             services.AddLogging();
             services.AddRouting();
+            services.AddSingleton<UrlEncoder>(UrlEncoder.Default);
             return services.BuildServiceProvider();
         }
 
@@ -980,13 +983,15 @@ namespace Microsoft.AspNet.Mvc.Routing
                 .Returns<VirtualPathContext>(context => null);
             routeBuilder.DefaultHandler = target.Object;
 
-            routeBuilder.MapRoute(string.Empty,
-                        "{controller}/{action}/{id}",
-                        new RouteValueDictionary(new { id = "defaultid" }));
+            routeBuilder.MapRoute(
+                string.Empty,
+                "{controller}/{action}/{id}",
+                new RouteValueDictionary(new { id = "defaultid" }));
 
-            routeBuilder.MapRoute("namedroute",
-                        "named/{controller}/{action}/{id}",
-                        new RouteValueDictionary(new { id = "defaultid" }));
+            routeBuilder.MapRoute(
+                "namedroute",
+                "named/{controller}/{action}/{id}",
+                new RouteValueDictionary(new { id = "defaultid" }));
 
             var mockHttpRoute = new Mock<IRouter>();
             mockHttpRoute
