@@ -51,28 +51,34 @@ namespace Microsoft.AspNet.Localization
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether to set a request culture to an ancestor culture in the case the
+        /// Gets or sets a value indicating whether to set a request culture to an parent culture in the case the
         /// culture determined by the configured <see cref="IRequestCultureProvider"/>s is not in the
-        /// <see cref="SupportedCultures"/> list but an ancestor culture is.
+        /// <see cref="SupportedCultures"/> list but a parent culture is.
         /// Defaults to <c>true</c>;
         /// </summary>
+        /// <remarks>
+        /// Note that the parent culture check is done using only the culture name.
+        /// </remarks>
         /// <example>
         /// If this property is <c>true</c> and the application is configured to support the culture "fr", but not the
         /// culture "fr-FR", and a configured <see cref="IRequestCultureProvider"/> determines a request's culture is
-        /// "fr-FR", then the request's culture will be set to the culture "fr", as it is an ancestor of "fr-FR".
+        /// "fr-FR", then the request's culture will be set to the culture "fr", as it is a parent of "fr-FR".
         /// </example>
         public bool FallBackToParentCultures { get; set; } = true;
 
         /// <summary>
-        /// Gets or sets a value indicating whether to set a request UI culture to an ancestor culture in the case the
+        /// Gets or sets a value indicating whether to set a request UI culture to a parent culture in the case the
         /// UI culture determined by the configured <see cref="IRequestCultureProvider"/>s is not in the
-        /// <see cref="SupportedUICultures"/> list but an ancestor culture is.
+        /// <see cref="SupportedUICultures"/> list but a parent culture is.
         /// Defaults to <c>true</c>;
         /// </summary>
+        /// <remarks>
+        /// Note that the parent culture check is done using ony the culture name.
+        /// </remarks>
         /// <example>
         /// If this property is <c>true</c> and the application is configured to support the UI culture "fr", but not
         /// the UI culture "fr-FR", and a configured <see cref="IRequestCultureProvider"/> determines a request's UI
-        /// culture is "fr-FR", then the request's UI culture will be set to the culture "fr", as it is an ancestor of
+        /// culture is "fr-FR", then the request's UI culture will be set to the culture "fr", as it is a parent of
         /// "fr-FR".
         /// </example>
         public bool FallBackToParentUICultures { get; set; } = true;

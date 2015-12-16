@@ -78,8 +78,7 @@ namespace Microsoft.AspNet.Localization
                             cultureInfo = GetCultureInfo(
                                 cultures,
                                 _options.SupportedCultures,
-                                _options.FallBackToParentCultures,
-                                currentDepth: 0);
+                                _options.FallBackToParentCultures);
                         }
 
                         if (_options.SupportedUICultures != null)
@@ -87,8 +86,7 @@ namespace Microsoft.AspNet.Localization
                             uiCultureInfo = GetCultureInfo(
                                 uiCultures,
                                 _options.SupportedUICultures,
-                                _options.FallBackToParentUICultures,
-                                currentDepth: 0);
+                                _options.FallBackToParentUICultures);
                         }
 
                         if (cultureInfo == null && uiCultureInfo == null)
@@ -139,8 +137,7 @@ namespace Microsoft.AspNet.Localization
         private static CultureInfo GetCultureInfo(
             IList<string> cultureNames,
             IList<CultureInfo> supportedCultures,
-            bool fallbackToAncestorCulture,
-            int currentDepth)
+            bool fallbackToAncestorCulture)
         {
             foreach (var cultureName in cultureNames)
             {
@@ -148,7 +145,7 @@ namespace Microsoft.AspNet.Localization
                 // the CultureInfo ctor
                 if (cultureName != null)
                 {
-                    var cultureInfo = CultureInfoCache.GetCultureInfo(cultureName, supportedCultures);
+                    var cultureInfo = GetCultureInfo(cultureName, supportedCultures, fallbackToAncestorCulture, currentDepth: 0);
                     if (cultureInfo != null)
                     {
                         return cultureInfo;
@@ -156,40 +153,31 @@ namespace Microsoft.AspNet.Localization
                 }
             }
 
-            if (fallbackToAncestorCulture & currentDepth < MaxCultureFallbackDepth)
-            {
-                // Walk backwards through the culture list and remove any root cultures (those with no parent)
-                for (var i = cultureNames.Count - 1; i >= 0; i--)
-                {
-                    var cultureName = cultureNames[i];
-                    if (cultureName != null)
-                    {
-                        var lastIndexOfHyphen = cultureName.LastIndexOf('-');
-                        if (lastIndexOfHyphen > 0)
-                        {
-                            // Trim the trailing section from the culture name, e.g. "fr-FR" becomes "fr"
-                            cultureNames[i] = cultureName.Substring(0, lastIndexOfHyphen);
-                        }
-                        else
-                        {
-                            // The culture had no sections left to trim so remove it from the list of candidates
-                            cultureNames.RemoveAt(i);
-                        }
-                    }
-                    else
-                    {
-                        // Culture name was null so just remove it
-                        cultureNames.RemoveAt(i);
-                    }
-                }
+            return null;
+        }
 
-                if (cultureNames.Count > 0)
+        private static CultureInfo GetCultureInfo(
+            string cultureName,
+            IList<CultureInfo> supportedCultures,
+            bool fallbackToAncestorCulture,
+            int currentDepth)
+        {
+            var culture = CultureInfoCache.GetCultureInfo(cultureName, supportedCultures);
+
+            if (culture == null && fallbackToAncestorCulture && currentDepth < MaxCultureFallbackDepth)
+            {
+                var lastIndexOfHyphen = cultureName.LastIndexOf('-');
+
+                if (lastIndexOfHyphen > 0)
                 {
-                    return GetCultureInfo(cultureNames, supportedCultures, fallbackToAncestorCulture, currentDepth + 1);
+                    // Trim the trailing section from the culture name, e.g. "fr-FR" becomes "fr"
+                    var parentCultureName = cultureName.Substring(0, lastIndexOfHyphen);
+
+                    culture = GetCultureInfo(parentCultureName, supportedCultures, fallbackToAncestorCulture, currentDepth + 1);
                 }
             }
 
-            return null;
+            return culture;
         }
     }
 }
