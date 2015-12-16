@@ -61,7 +61,7 @@ namespace Microsoft.AspNet.Localization
         /// culture "fr-FR", and a configured <see cref="IRequestCultureProvider"/> determines a request's culture is
         /// "fr-FR", then the request's culture will be set to the culture "fr", as it is an ancestor of "fr-FR".
         /// </example>
-        public bool FallbackToAncestorCulture { get; set; } = true;
+        public bool FallBackToParentCultures { get; set; } = true;
 
         /// <summary>
         /// Gets or sets a value indicating whether to set a request UI culture to an ancestor culture in the case the
@@ -75,7 +75,7 @@ namespace Microsoft.AspNet.Localization
         /// culture is "fr-FR", then the request's UI culture will be set to the culture "fr", as it is an ancestor of
         /// "fr-FR".
         /// </example>
-        public bool FallbackToAncestorUICulture { get; set; } = true;
+        public bool FallBackToParentUICultures { get; set; } = true;
 
         /// <summary>
         /// The cultures supported by the application. The <see cref="RequestLocalizationMiddleware"/> will only set

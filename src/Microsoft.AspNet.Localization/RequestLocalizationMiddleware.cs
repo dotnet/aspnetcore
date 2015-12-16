@@ -78,7 +78,7 @@ namespace Microsoft.AspNet.Localization
                             cultureInfo = GetCultureInfo(
                                 cultures,
                                 _options.SupportedCultures,
-                                _options.FallbackToAncestorCulture,
+                                _options.FallBackToParentCultures,
                                 currentDepth: 0);
                         }
 
@@ -87,7 +87,7 @@ namespace Microsoft.AspNet.Localization
                             uiCultureInfo = GetCultureInfo(
                                 uiCultures,
                                 _options.SupportedUICultures,
-                                _options.FallbackToAncestorUICulture,
+                                _options.FallBackToParentUICultures,
                                 currentDepth: 0);
                         }
 
