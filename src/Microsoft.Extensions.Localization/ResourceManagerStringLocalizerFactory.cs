@@ -20,7 +20,6 @@ namespace Microsoft.Extensions.Localization
         private readonly ConcurrentDictionary<string, ResourceManagerStringLocalizer> _localizerCache =
             new ConcurrentDictionary<string, ResourceManagerStringLocalizer>();
         private readonly IApplicationEnvironment _applicationEnvironment;
-
         private readonly string _resourcesRelativePath;
 
         /// <summary>
@@ -69,7 +68,8 @@ namespace Microsoft.Extensions.Localization
 
             var baseName = string.IsNullOrEmpty(_resourcesRelativePath)
                 ? typeInfo.FullName
-                : _applicationEnvironment.ApplicationName + "." + _resourcesRelativePath + typeInfo.FullName;
+                : _applicationEnvironment.ApplicationName + "." + _resourcesRelativePath
+                    + TrimPrefix(typeInfo.FullName, _applicationEnvironment.ApplicationName + ".");
 
             return _localizerCache.GetOrAdd(baseName, _ =>
                 new ResourceManagerStringLocalizer(
@@ -95,7 +95,7 @@ namespace Microsoft.Extensions.Localization
 
             var rootPath = location ?? _applicationEnvironment.ApplicationName;
             var assembly = Assembly.Load(new AssemblyName(rootPath));
-            baseName = rootPath + "." + _resourcesRelativePath + baseName;
+            baseName = rootPath + "." + _resourcesRelativePath + TrimPrefix(baseName, rootPath + ".");
 
             return _localizerCache.GetOrAdd(baseName, _ =>
                 new ResourceManagerStringLocalizer(
@@ -104,6 +104,16 @@ namespace Microsoft.Extensions.Localization
                     baseName,
                     _resourceNamesCache)
             );
+        }
+
+        private static string TrimPrefix(string name, string prefix)
+        {
+            if (name.StartsWith(prefix, StringComparison.Ordinal))
+            {
+                return name.Substring(prefix.Length);
+            }
+
+            return name;
         }
     }
 }
