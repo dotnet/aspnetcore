@@ -13,11 +13,17 @@ targetPackagesDir=''
 default targetPackagesDir=''
 
 @{
-   var packages = Directory.EnumerateFiles(sourcePackagesDir, "*.nupkg")
-                           .Where(p => !p.EndsWith(".symbols.nupkg"));
+    var packages = Directory.EnumerateFiles(sourcePackagesDir, "*.nupkg")
+                            .Where(p => !p.EndsWith(".symbols.nupkg"));
 
+    var nugetExePath = Environment.GetEnvironmentVariable("PUSH_NUGET_EXE");
+    if (string.IsNullOrEmpty(nugetExePath))
+    {
+        nugetExePath = ".build/NuGet.exe";
+    }
+    
+    Parallel.ForEach(packages, package =>
+    {
+        ExecClr(nugetExePath, "add " + package + " -source " + targetPackagesDir + " -expand");
+    });
 }
-
--// Temporarily use dnu until we have a nuget command
-exec program='cmd' commandline='/c dnu packages add ${package} ${targetPackagesDir}' each='var package in packages' if='!IsLinux'
-exec program='dnu' commandline='packages add ${package} ${targetPackagesDir}' each='var package in packages' if='IsLinux'

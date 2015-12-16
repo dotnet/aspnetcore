@@ -28,7 +28,7 @@ set nugetArgs='${nugetArgs} ${extra}' if='!string.IsNullOrEmpty(extra)'
     var nugetExePath = Environment.GetEnvironmentVariable("PUSH_NUGET_EXE");
     if (string.IsNullOrEmpty(nugetExePath))
     {
-        nugetExePath = ".nuget/NuGet.exe";
+        nugetExePath = ".build/NuGet.exe";
     }
 
     Parallel.ForEach(packages, package =>
