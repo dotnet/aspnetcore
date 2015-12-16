@@ -27,3 +27,4 @@ project.lock.json
 *.ncrunchsolution
 *.*sdf
 *.ipch
+.build/
