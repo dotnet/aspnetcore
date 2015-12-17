@@ -40,4 +40,19 @@ else
 fi
 # ============
 
+# Probe for Mono Reference assemblies
+if test -z "$DOTNET_REFERENCE_ASSEMBLIES_PATH"; then
+    if test $(uname) == Darwin; then
+        if test -d "/Library/Frameworks/Mono.framework/Version/Current/lib/mono/xbuild-frameworks"; then
+            export DOTNET_REFERENCE_ASSEMBLIES_PATH="/Library/Frameworks/Mono.framework/Version/Current/lib/mono/xbuild-frameworks"
+        fi
+    else
+        if test -d "/usr/local/lib/mono/xbuild-frameworks"; then
+            export DOTNET_REFERENCE_ASSEMBLIES_PATH="/usr/local/lib/mono/xbuild-frameworks"
+        else if test -d "/usr/lib/mono/xbuild-frameworks"; then
+            export DOTNET_REFERENCE_ASSEMBLIES_PATH="/usr/lib/mono/xbuild-frameworks"
+        fi
+    fi
+fi
+
 mono $koreBuildFolder/build/Sake/tools/Sake.exe -I $koreBuildFolder/build -f $makefilePath "$@"
