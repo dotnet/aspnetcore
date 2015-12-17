@@ -6,22 +6,27 @@ using System.Threading.Tasks;
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     /// <summary>
-    /// Interface for model binding.
+    /// Defines an interface for model binders.
     /// </summary>
     public interface IModelBinder
     {
         /// <summary>
-        /// Async function to bind to a particular model.
+        /// Attempts to bind a model.
         /// </summary>
-        /// <param name="bindingContext">The binding context which has the object to be bound.</param>
-        /// <returns>A Task which on completion returns a <see cref="ModelBindingResult"/> which represents the result
-        /// of the model binding process.
+        /// <param name="bindingContext">The <see cref="ModelBindingContext"/>.</param>
+        /// <returns>
+        /// <para>
+        /// A <see cref="Task"/> which on completion returns a <see cref="ModelBindingResult"/> which
+        /// represents the result of the model binding process.
+        /// </para>
+        /// <para>
+        /// If model binding was successful, the <see cref="ModelBindingResult"/> should be a value created
+        /// with <see cref="ModelBindingResult.Success"/>. If model binding failed, the
+        /// <see cref="ModelBindingResult"/> should be a value created with <see cref="ModelBindingResult.Failed"/>.
+        /// If there was no data, or this model binder cannot handle the operation, the
+        /// <see cref="ModelBindingResult"/> should be <see cref="ModelBindingResult.NoResult"/>.
+        /// </para>
         /// </returns>
-        /// <remarks>
-        /// A <c>null</c> return value means that this model binder was not able to handle the request.
-        /// Returning <c>null</c> ensures that subsequent model binders are run. If a non <c>null</c> value indicates 
-        /// that the model binder was able to handle the request.
-        /// </remarks>
         Task<ModelBindingResult> BindModelAsync(ModelBindingContext bindingContext);
     }
 }
