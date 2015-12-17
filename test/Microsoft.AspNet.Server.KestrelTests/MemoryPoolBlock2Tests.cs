@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using Microsoft.AspNet.Server.Kestrel.Infrastructure;
+using System.Numerics;
 using Xunit;
 
 namespace Microsoft.AspNet.Server.KestrelTests
@@ -17,31 +18,36 @@ namespace Microsoft.AspNet.Server.KestrelTests
                 {
                     block.Array[block.End++] = ch;
                 }
+
+                var vectorMaxValues = new Vector<byte>(byte.MaxValue);
+
                 var iterator = block.GetIterator();
-                foreach (var ch in Enumerable.Range(0, 256).Select(x => (char)x))
+                foreach (var ch in Enumerable.Range(0, 256).Select(x => (byte)x))
                 {
+                    var vectorCh = new Vector<byte>(ch);
+
                     var hit = iterator;
-                    hit.Seek(ch);
+                    hit.Seek(vectorCh);
                     Assert.Equal(ch, iterator.GetLength(hit));
 
                     hit = iterator;
-                    hit.Seek(ch, byte.MaxValue);
+                    hit.Seek(vectorCh, vectorMaxValues);
                     Assert.Equal(ch, iterator.GetLength(hit));
 
                     hit = iterator;
-                    hit.Seek(byte.MaxValue, ch);
+                    hit.Seek(vectorMaxValues, vectorCh);
                     Assert.Equal(ch, iterator.GetLength(hit));
 
                     hit = iterator;
-                    hit.Seek(ch, byte.MaxValue, byte.MaxValue);
+                    hit.Seek(vectorCh, vectorMaxValues, vectorMaxValues);
                     Assert.Equal(ch, iterator.GetLength(hit));
 
                     hit = iterator;
-                    hit.Seek(byte.MaxValue, ch, byte.MaxValue);
+                    hit.Seek(vectorMaxValues, vectorCh, vectorMaxValues);
                     Assert.Equal(ch, iterator.GetLength(hit));
 
                     hit = iterator;
-                    hit.Seek(ch, byte.MaxValue, byte.MaxValue);
+                    hit.Seek(vectorCh, vectorMaxValues, vectorMaxValues);
                     Assert.Equal(ch, iterator.GetLength(hit));
                 }
             }
@@ -69,31 +75,35 @@ namespace Microsoft.AspNet.Server.KestrelTests
                     block3.Array[block3.End++] = ch;
                 }
 
+                var vectorMaxValues = new Vector<byte>(byte.MaxValue);
+
                 var iterator = block1.GetIterator();
-                foreach (var ch in Enumerable.Range(0, 256).Select(x => (char)x))
+                foreach (var ch in Enumerable.Range(0, 256).Select(x => (byte)x))
                 {
+                    var vectorCh = new Vector<byte>(ch);
+
                     var hit = iterator;
-                    hit.Seek(ch);
+                    hit.Seek(vectorCh);
                     Assert.Equal(ch, iterator.GetLength(hit));
 
                     hit = iterator;
-                    hit.Seek(ch, byte.MaxValue);
+                    hit.Seek(vectorCh, vectorMaxValues);
                     Assert.Equal(ch, iterator.GetLength(hit));
 
                     hit = iterator;
-                    hit.Seek(byte.MaxValue, ch);
+                    hit.Seek(vectorMaxValues, vectorCh);
                     Assert.Equal(ch, iterator.GetLength(hit));
 
                     hit = iterator;
-                    hit.Seek(ch, byte.MaxValue, byte.MaxValue);
+                    hit.Seek(vectorCh, vectorMaxValues, vectorMaxValues);
                     Assert.Equal(ch, iterator.GetLength(hit));
 
                     hit = iterator;
-                    hit.Seek(byte.MaxValue, ch, byte.MaxValue);
+                    hit.Seek(vectorMaxValues, vectorCh, vectorMaxValues);
                     Assert.Equal(ch, iterator.GetLength(hit));
 
                     hit = iterator;
-                    hit.Seek(ch, byte.MaxValue, byte.MaxValue);
+                    hit.Seek(vectorMaxValues, vectorMaxValues, vectorCh);
                     Assert.Equal(ch, iterator.GetLength(hit));
                 }
             }
