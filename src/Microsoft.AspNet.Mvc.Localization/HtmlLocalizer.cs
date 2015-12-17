@@ -9,12 +9,12 @@ using Microsoft.Extensions.Localization;
 namespace Microsoft.AspNet.Mvc.Localization
 {
     /// <summary>
-    /// An <see cref="IHtmlLocalizer"/> that uses the <see cref="IStringLocalizer"/> to provide localized HTML content.
-    /// This service just encodes the arguments but not the resource string.
+    /// An <see cref="IHtmlLocalizer"/> that uses the provided <see cref="IStringLocalizer"/> to do HTML-aware
+    /// localization of content.
     /// </summary>
     public class HtmlLocalizer : IHtmlLocalizer
     {
-        private IStringLocalizer _localizer;
+        private readonly IStringLocalizer _localizer;
 
         /// <summary>
         /// Creates a new <see cref="HtmlLocalizer"/>.
@@ -31,38 +31,60 @@ namespace Microsoft.AspNet.Mvc.Localization
         }
 
         /// <inheritdoc />
-        public virtual LocalizedString this[string key]
+        public virtual LocalizedHtmlString this[string name]
         {
             get
             {
-                if (key == null)
+                if (name == null)
                 {
-                    throw new ArgumentNullException(nameof(key));
+                    throw new ArgumentNullException(nameof(name));
                 }
 
-                return _localizer[key];
+                return ToHtmlString(_localizer[name]);
             }
         }
 
         /// <inheritdoc />
-        public virtual LocalizedString this[string key, params object[] arguments]
+        public virtual LocalizedHtmlString this[string name, params object[] arguments]
         {
             get
             {
-                if (key == null)
+                if (name == null)
                 {
-                    throw new ArgumentNullException(nameof(key));
+                    throw new ArgumentNullException(nameof(name));
                 }
 
-                return _localizer[key, arguments];
+                return ToHtmlString(_localizer[name], arguments);
             }
         }
 
-        /// <summary>
-        /// Creates a new <see cref="IHtmlLocalizer"/> for a specific <see cref="CultureInfo"/>.
-        /// </summary>
-        /// <param name="culture">The <see cref="CultureInfo"/> to use.</param>
-        /// <returns>A culture-specific <see cref="IHtmlLocalizer"/>.</returns>
+        /// <inheritdoc />
+        public virtual LocalizedString GetString(string name)
+        {
+            if (name == null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
+            return _localizer[name];
+        }
+
+        /// <inheritdoc />
+        public virtual LocalizedString GetString(string name, params object[] arguments)
+        {
+            if (name == null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
+            return _localizer[name, arguments];
+        }
+
+        /// <inheritdoc />
+        public virtual IEnumerable<LocalizedString> GetAllStrings(bool includeParentCultures) =>
+            _localizer.GetAllStrings(includeParentCultures);
+
+        /// <inheritdoc />
         public virtual IHtmlLocalizer WithCulture(CultureInfo culture)
         {
             if (culture == null)
@@ -71,69 +93,6 @@ namespace Microsoft.AspNet.Mvc.Localization
             }
 
             return new HtmlLocalizer(_localizer.WithCulture(culture));
-        }
-
-        /// <summary>
-        /// Creates a new <see cref="IStringLocalizer"/> for a specific <see cref="CultureInfo"/>.
-        /// </summary>
-        /// <param name="culture">The <see cref="CultureInfo"/> to use.</param>
-        /// <returns>A culture-specific <see cref="IStringLocalizer"/>.</returns>
-        IStringLocalizer IStringLocalizer.WithCulture(CultureInfo culture)
-        {
-            if (culture == null)
-            {
-                throw new ArgumentNullException(nameof(culture));
-            }
-
-            return new HtmlLocalizer(_localizer.WithCulture(culture));
-        }
-
-        /// <inheritdoc />
-        public virtual LocalizedString GetString(string key)
-        {
-            if (key == null)
-            {
-                throw new ArgumentNullException(nameof(key));
-            }
-
-            return _localizer.GetString(key);
-        }
-
-        /// <inheritdoc />
-        public virtual LocalizedString GetString(string key, params object[] arguments)
-        {
-            if (key == null)
-            {
-                throw new ArgumentNullException(nameof(key));
-            }
-
-            return _localizer.GetString(key, arguments);
-        }
-
-        /// <inheritdoc />
-        public virtual IEnumerable<LocalizedString> GetAllStrings(bool includeAncestorCultures) =>
-            _localizer.GetAllStrings(includeAncestorCultures);
-
-        /// <inheritdoc />
-        public virtual LocalizedHtmlString Html(string key)
-        {
-            if (key == null)
-            {
-                throw new ArgumentNullException(nameof(key));
-            }
-
-            return ToHtmlString(_localizer.GetString(key));
-        }
-
-        /// <inheritdoc />
-        public virtual LocalizedHtmlString Html(string key, params object[] arguments)
-        {
-            if (key == null)
-            {
-                throw new ArgumentNullException(nameof(key));
-            }
-
-            return ToHtmlString(_localizer.GetString(key), arguments);
         }
 
         /// <summary>

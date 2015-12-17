@@ -24,26 +24,36 @@ namespace Microsoft.AspNet.Mvc.Localization
         /// <summary>
         /// Creates an instance of <see cref="LocalizedHtmlString"/>.
         /// </summary>
-        /// <param name="key">The name of the string resource.</param>
+        /// <param name="name">The name of the string resource.</param>
         /// <param name="value">The string resource.</param>
-        /// <param name="isResourceNotFound">A flag that indicates if the resource is not found.</param>
-        public LocalizedHtmlString(string key, string value, bool isResourceNotFound)
-            : this(key, value, isResourceNotFound, arguments: EmptyArguments)
+        public LocalizedHtmlString(string name, string value)
+            : this(name, value, isResourceNotFound: false, arguments: EmptyArguments)
         {
         }
 
         /// <summary>
         /// Creates an instance of <see cref="LocalizedHtmlString"/>.
         /// </summary>
-        /// <param name="key">The name of the string resource.</param>
+        /// <param name="name">The name of the string resource.</param>
+        /// <param name="value">The string resource.</param>
+        /// <param name="isResourceNotFound">A flag that indicates if the resource is not found.</param>
+        public LocalizedHtmlString(string name, string value, bool isResourceNotFound)
+            : this(name, value, isResourceNotFound, arguments: EmptyArguments)
+        {
+        }
+
+        /// <summary>
+        /// Creates an instance of <see cref="LocalizedHtmlString"/>.
+        /// </summary>
+        /// <param name="name">The name of the string resource.</param>
         /// <param name="value">The string resource.</param>
         /// <param name="isResourceNotFound">A flag that indicates if the resource is not found.</param>
         /// <param name="arguments">The values to format the <paramref name="value"/> with.</param>
-        public LocalizedHtmlString(string key, string value, bool isResourceNotFound, params object[] arguments)
+        public LocalizedHtmlString(string name, string value, bool isResourceNotFound, params object[] arguments)
         {
-            if (key == null)
+            if (name == null)
             {
-                throw new ArgumentNullException(nameof(key));
+                throw new ArgumentNullException(nameof(name));
             }
 
             if (value == null)
@@ -56,7 +66,7 @@ namespace Microsoft.AspNet.Mvc.Localization
                 throw new ArgumentNullException(nameof(arguments));
             }
 
-            Key = key;
+            Name = name;
             Value = value;
             IsResourceNotFound = isResourceNotFound;
             _arguments = arguments;
@@ -65,7 +75,7 @@ namespace Microsoft.AspNet.Mvc.Localization
         /// <summary>
         /// The name of the string resource.
         /// </summary>
-        public string Key { get; }
+        public string Name { get; }
 
         /// <summary>
         /// The string resource.

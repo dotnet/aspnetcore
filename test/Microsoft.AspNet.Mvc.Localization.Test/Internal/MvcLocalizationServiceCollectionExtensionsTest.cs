@@ -219,7 +219,7 @@ namespace Microsoft.AspNet.Mvc.Localization.Internal
 
     public class TestViewLocalizer : IViewLocalizer
     {
-        public LocalizedString this[string name]
+        public LocalizedHtmlString this[string name]
         {
             get
             {
@@ -227,7 +227,7 @@ namespace Microsoft.AspNet.Mvc.Localization.Internal
             }
         }
 
-        public LocalizedString this[string name, params object[] arguments]
+        public LocalizedHtmlString this[string name, params object[] arguments]
         {
             get
             {
@@ -235,27 +235,22 @@ namespace Microsoft.AspNet.Mvc.Localization.Internal
             }
         }
 
-        public IEnumerable<LocalizedString> GetAllStrings(bool includeAncestorCultures)
+        public LocalizedString GetString(string name)
         {
             throw new NotImplementedException();
         }
 
-        public LocalizedHtmlString Html(string key)
+        public LocalizedString GetString(string name, params object[] arguments)
         {
             throw new NotImplementedException();
         }
 
-        public LocalizedHtmlString Html(string key, params object[] arguments)
+        public IEnumerable<LocalizedString> GetAllStrings(bool includeParentCultures)
         {
             throw new NotImplementedException();
         }
 
         public IHtmlLocalizer WithCulture(CultureInfo culture)
-        {
-            throw new NotImplementedException();
-        }
-
-        IStringLocalizer IStringLocalizer.WithCulture(CultureInfo culture)
         {
             throw new NotImplementedException();
         }
@@ -263,7 +258,7 @@ namespace Microsoft.AspNet.Mvc.Localization.Internal
 
     public class TestHtmlLocalizer<HomeController> : IHtmlLocalizer<HomeController>
     {
-        public LocalizedString this[string name]
+        public LocalizedHtmlString this[string name]
         {
             get
             {
@@ -271,7 +266,7 @@ namespace Microsoft.AspNet.Mvc.Localization.Internal
             }
         }
 
-        public LocalizedString this[string name, params object[] arguments]
+        public LocalizedHtmlString this[string name, params object[] arguments]
         {
             get
             {
@@ -279,27 +274,22 @@ namespace Microsoft.AspNet.Mvc.Localization.Internal
             }
         }
 
-        public IEnumerable<LocalizedString> GetAllStrings(bool includeAncestorCultures)
+        public LocalizedString GetString(string name)
         {
             throw new NotImplementedException();
         }
 
-        public LocalizedHtmlString Html(string key)
+        public LocalizedString GetString(string name, params object[] arguments)
         {
             throw new NotImplementedException();
         }
 
-        public LocalizedHtmlString Html(string key, params object[] arguments)
+        public IEnumerable<LocalizedString> GetAllStrings(bool includeParentCultures)
         {
             throw new NotImplementedException();
         }
 
         public IHtmlLocalizer WithCulture(CultureInfo culture)
-        {
-            throw new NotImplementedException();
-        }
-
-        IStringLocalizer IStringLocalizer.WithCulture(CultureInfo culture)
         {
             throw new NotImplementedException();
         }

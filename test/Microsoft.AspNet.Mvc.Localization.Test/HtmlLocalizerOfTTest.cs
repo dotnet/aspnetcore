@@ -14,10 +14,10 @@ namespace Microsoft.AspNet.Mvc.Localization.Test
     public class HtmlLocalizerOfTTest
     {
         [Fact]
-        public void HtmlLocalizerOfTTest_UseIndexer_ReturnsLocalizedString()
+        public void HtmlLocalizerOfTTest_UseIndexer_ReturnsLocalizedHtmlString()
         {
             // Arrange
-            var localizedString = new LocalizedString("Hello", "Bonjour");
+            var localizedString = new LocalizedHtmlString("Hello", "Bonjour");
 
             var htmlLocalizer = new Mock<IHtmlLocalizer>();
             htmlLocalizer.Setup(h => h["Hello"]).Returns(localizedString);
@@ -36,13 +36,13 @@ namespace Microsoft.AspNet.Mvc.Localization.Test
         }
 
         [Fact]
-        public void HtmlLocalizerOfTTest_UseIndexerWithArguments_ReturnsLocalizedString()
+        public void HtmlLocalizerOfTTest_UseIndexerWithArguments_ReturnsLocalizedHtmlString()
         {
             // Arrange
             var applicationEnvironment = new Mock<IApplicationEnvironment>();
             applicationEnvironment.Setup(a => a.ApplicationName).Returns("TestApplication");
 
-            var localizedString = new LocalizedString("Hello", "Bonjour test");
+            var localizedString = new LocalizedHtmlString("Hello", "Bonjour test");
 
             var htmlLocalizer = new Mock<IHtmlLocalizer>();
             htmlLocalizer.Setup(h => h["Hello", "test"]).Returns(localizedString);

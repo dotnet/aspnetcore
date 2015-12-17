@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.Mvc.Localization
         }
 
         /// <inheritdoc />
-        public virtual LocalizedString this[string key]
+        public virtual LocalizedHtmlString this[string key]
         {
             get
             {
@@ -56,7 +56,7 @@ namespace Microsoft.AspNet.Mvc.Localization
         }
 
         /// <inheritdoc />
-        public virtual LocalizedString this[string key, params object[] arguments]
+        public virtual LocalizedHtmlString this[string key, params object[] arguments]
         {
             get
             {
@@ -76,17 +76,16 @@ namespace Microsoft.AspNet.Mvc.Localization
         public LocalizedString GetString(string name, params object[] values) => _localizer.GetString(name, values);
 
         /// <inheritdoc />
-        public LocalizedHtmlString Html(string key) => _localizer.Html(key);
+        public IHtmlLocalizer WithCulture(CultureInfo culture) => _localizer.WithCulture(culture);
 
         /// <inheritdoc />
-        public LocalizedHtmlString Html(string key, params object[] arguments) => _localizer.Html(key, arguments);
+        public IEnumerable<LocalizedString> GetAllStrings(bool includeParentCultures) =>
+            _localizer.GetAllStrings(includeParentCultures);
 
-        /// <inheritdoc />
-        public IStringLocalizer WithCulture(CultureInfo culture) => _localizer.WithCulture(culture);
-
-        /// <inheritdoc />
-        IHtmlLocalizer IHtmlLocalizer.WithCulture(CultureInfo culture) => _localizer.WithCulture(culture);
-
+        /// <summary>
+        /// Apply the specified <see cref="ViewContext"/>.
+        /// </summary>
+        /// <param name="viewContext">The <see cref="ViewContext"/>.</param>
         public void Contextualize(ViewContext viewContext)
         {
             if (viewContext == null)
@@ -95,16 +94,12 @@ namespace Microsoft.AspNet.Mvc.Localization
             }
 
             var baseName = viewContext.View.Path.Replace('/', '.').Replace('\\', '.');
-            if (baseName.StartsWith("."))
+            if (baseName.StartsWith(".", StringComparison.OrdinalIgnoreCase))
             {
                 baseName = baseName.Substring(1);
             }
 
             _localizer = _localizerFactory.Create(baseName, _applicationName);
         }
-
-        /// <inheritdoc />
-        public IEnumerable<LocalizedString> GetAllStrings(bool includeAncestorCultures) =>
-            _localizer.GetAllStrings(includeAncestorCultures);
     }
 }

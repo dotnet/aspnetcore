@@ -7,14 +7,15 @@ using Microsoft.Extensions.Localization;
 namespace Microsoft.AspNet.Mvc.Localization
 {
     /// <summary>
-    /// An <see cref="IHtmlLocalizerFactory"/> that creates instances of <see cref="HtmlLocalizer"/>.
+    /// An <see cref="IHtmlLocalizerFactory"/> that creates instances of <see cref="HtmlLocalizer"/> using the
+    /// registered <see cref="IStringLocalizerFactory"/>.
     /// </summary>
     public class HtmlLocalizerFactory : IHtmlLocalizerFactory
     {
         private readonly IStringLocalizerFactory _factory;
 
         /// <summary>
-        /// Creates a new <see cref="HtmlLocalizer"/>.
+        /// Creates a new <see cref="HtmlLocalizerFactory"/>.
         /// </summary>
         /// <param name="localizerFactory">The <see cref="IStringLocalizerFactory"/>.</param>
         public HtmlLocalizerFactory(IStringLocalizerFactory localizerFactory)
@@ -28,10 +29,9 @@ namespace Microsoft.AspNet.Mvc.Localization
         }
 
         /// <summary>
-        /// Creates an <see cref="HtmlLocalizer"/> using the <see cref="System.Reflection.Assembly"/> and
-        /// <see cref="Type.FullName"/> of the specified <see cref="Type"/>.
+        /// Creates an <see cref="HtmlLocalizer"/> using the specified <see cref="Type"/>.
         /// </summary>
-        /// <param name="resourceSource">The <see cref="Type"/>.</param>
+        /// <param name="resourceSource">The <see cref="Type"/> to load resources for.</param>
         /// <returns>The <see cref="HtmlLocalizer"/>.</returns>
         public virtual IHtmlLocalizer Create(Type resourceSource)
         {
@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.Mvc.Localization
         }
 
         /// <summary>
-        /// Creates an <see cref="HtmlLocalizer"/>.
+        /// Creates an <see cref="HtmlLocalizer"/> using the specified base name and location.
         /// </summary>
         /// <param name="baseName">The base name of the resource to load strings from.</param>
         /// <param name="location">The location to load resources from.</param>

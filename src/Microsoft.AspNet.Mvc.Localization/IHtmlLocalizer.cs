@@ -1,37 +1,65 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using System.Globalization;
 using Microsoft.Extensions.Localization;
 
 namespace Microsoft.AspNet.Mvc.Localization
 {
     /// <summary>
-    /// This service does not HTML encode the resource string. It HTML encodes all arguments that are formatted in
-    /// the resource string.
+    /// Represents a type that that does HTML-aware localization of strings, by HTML encoding arguments that are
+    /// formatted in the resource string.
     /// </summary>
-    public interface IHtmlLocalizer : IStringLocalizer
+    public interface IHtmlLocalizer
     {
         /// <summary>
-        /// Creates a new <see cref="HtmlLocalizer"/> for a specific <see cref="CultureInfo"/>.
+        /// Gets the string resource with the given name.
+        /// </summary>
+        /// <param name="name">The name of the string resource.</param>
+        /// <returns>The string resource as a <see cref="LocalizedHtmlString"/>.</returns>
+        LocalizedHtmlString this[string name] { get; }
+
+        /// <summary>
+        /// Gets the string resource with the given name and formatted with the supplied arguments. The arguments will
+        /// be HTML encoded.
+        /// </summary>
+        /// <param name="name">The name of the string resource.</param>
+        /// <param name="arguments">The values to format the string with.</param>
+        /// <returns>The formatted string resource as a <see cref="LocalizedHtmlString"/>.</returns>
+        LocalizedHtmlString this[string name, params object[] arguments] { get; }
+
+        /// <summary>
+        /// Gets the string resource with the given name.
+        /// </summary>
+        /// <param name="stringLocalizer">The <see cref="IStringLocalizer"/>.</param>
+        /// <param name="name">The name of the string resource.</param>
+        /// <returns>The string resource as a <see cref="LocalizedString"/>.</returns>
+        LocalizedString GetString(string name);
+
+        /// <summary>
+        /// Gets the string resource with the given name and formatted with the supplied arguments.
+        /// </summary>
+        /// <param name="stringLocalizer">The <see cref="IStringLocalizer"/>.</param>
+        /// <param name="name">The name of the string resource.</param>
+        /// <param name="arguments">The values to format the string with.</param>
+        /// <returns>The formatted string resource as a <see cref="LocalizedString"/>.</returns>
+        LocalizedString GetString(string name, params object[] arguments);
+
+        /// <summary>
+        /// Gets all string resources.
+        /// </summary>
+        /// <param name="includeParentCultures">
+        /// A <see cref="System.Boolean"/> indicating whether to include strings from parent cultures.
+        /// </param>
+        /// <returns>The strings.</returns>
+        IEnumerable<LocalizedString> GetAllStrings(bool includeParentCultures);
+
+        /// <summary>
+        /// Creates a new <see cref="IHtmlLocalizer"/> for a specific <see cref="CultureInfo"/>.
         /// </summary>
         /// <param name="culture">The <see cref="CultureInfo"/> to use.</param>
         /// <returns>A culture-specific <see cref="IHtmlLocalizer"/>.</returns>
-        new IHtmlLocalizer WithCulture(CultureInfo culture);
-
-        /// <summary>
-        /// Gets the <see cref="LocalizedHtmlString"/> resource for a specific key.
-        /// </summary>
-        /// <param name="key">The key to use.</param>
-        /// <returns>The <see cref="LocalizedHtmlString"/> resource.</returns>
-        LocalizedHtmlString Html(string key);
-
-        /// <summary>
-        /// Gets the <see cref="LocalizedHtmlString"/> resource for a specific key.
-        /// </summary>
-        /// <param name="key">The key to use.</param>
-        /// <param name="arguments">The values to format the string with.</param>
-        /// <returns>The <see cref="LocalizedHtmlString"/> resource.</returns>
-        LocalizedHtmlString Html(string key, params object[] arguments);
+        IHtmlLocalizer WithCulture(CultureInfo culture);
     }
 }

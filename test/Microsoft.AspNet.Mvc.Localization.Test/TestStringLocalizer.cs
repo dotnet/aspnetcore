@@ -54,12 +54,12 @@ namespace Microsoft.AspNet.Mvc.Localization.Test
             }
         }
 
-        public IEnumerable<LocalizedString> GetAllStrings(bool includeAncestorCultures)
+        public IEnumerable<LocalizedString> GetAllStrings(bool includeParentCultures)
         {
             var allStrings = new List<LocalizedString>();
             allStrings.Add(new LocalizedString("Hello", "World"));
 
-            if (includeAncestorCultures)
+            if (includeParentCultures)
             {
                 allStrings.Add(new LocalizedString("Foo", "Bar"));
             }

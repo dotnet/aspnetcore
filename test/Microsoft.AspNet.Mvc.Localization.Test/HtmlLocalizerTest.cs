@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Mvc.Localization.Test
     public class HtmlLocalizerTest
     {
         [Fact]
-        public void HtmlLocalizer_UseIndexer_ReturnsLocalizedString()
+        public void HtmlLocalizer_UseIndexer_ReturnsLocalizedHtmlString()
         {
             // Arrange
             var localizedString = new LocalizedString("Hello", "Bonjour");
@@ -27,28 +27,30 @@ namespace Microsoft.AspNet.Mvc.Localization.Test
             var htmlLocalizer = new HtmlLocalizer(stringLocalizer.Object);
 
             // Act
-            var actualLocalizedString = htmlLocalizer["Hello"];
+            var actualLocalizedHtmlString = htmlLocalizer["Hello"];
 
             // Assert
-            Assert.Equal(localizedString, actualLocalizedString);
+            Assert.Equal(localizedString.Name, actualLocalizedHtmlString.Name);
+            Assert.Equal(localizedString.Value, actualLocalizedHtmlString.Value);
         }
 
         [Fact]
-        public void HtmlLocalizer_UseIndexerWithArguments_ReturnsLocalizedString()
+        public void HtmlLocalizer_UseIndexerWithArguments_ReturnsLocalizedHtmlString()
         {
             // Arrange
             var localizedString = new LocalizedString("Hello", "Bonjour test");
 
             var stringLocalizer = new Mock<IStringLocalizer>();
-            stringLocalizer.Setup(s => s["Hello", "test"]).Returns(localizedString);
+            stringLocalizer.Setup(s => s["Hello"]).Returns(localizedString);
 
             var htmlLocalizer = new HtmlLocalizer(stringLocalizer.Object);
 
             // Act
-            var actualLocalizedString = htmlLocalizer["Hello", "test"];
+            var actualLocalizedHtmlString = htmlLocalizer["Hello", "test"];
 
             // Assert
-            Assert.Equal(localizedString, actualLocalizedString);
+            Assert.Equal(localizedString.Name, actualLocalizedHtmlString.Name);
+            Assert.Equal(localizedString.Value, actualLocalizedHtmlString.Value);
         }
 
         public static IEnumerable<object[]> HtmlData
@@ -108,7 +110,7 @@ namespace Microsoft.AspNet.Mvc.Localization.Test
             var htmlLocalizer = new HtmlLocalizer(stringLocalizer.Object);
 
             // Act
-            var localizedHtmlString = htmlLocalizer.Html("Hello", arguments);
+            var localizedHtmlString = htmlLocalizer.GetHtml("Hello", arguments);
 
             // Assert
             Assert.NotNull(localizedHtmlString);
@@ -150,7 +152,7 @@ namespace Microsoft.AspNet.Mvc.Localization.Test
             stringLocalizer.Setup(s => s["Hello"]).Returns(localizedString);
 
             var htmlLocalizer = new HtmlLocalizer(stringLocalizer.Object);
-            var content = htmlLocalizer.Html("Hello", new object[] { });
+            var content = htmlLocalizer.GetHtml("Hello", new object[] { });
 
             // Act
             var exception = Assert.Throws<FormatException>(
@@ -200,10 +202,10 @@ namespace Microsoft.AspNet.Mvc.Localization.Test
             var htmlLocalizer = new HtmlLocalizer(stringLocalizer);
 
             // Act
-            var actualLocalizedString = htmlLocalizer.Html("John");
+            var actualLocalizedHtmlString = htmlLocalizer.GetHtml("John");
 
             // Assert
-            Assert.Equal("Hello John", actualLocalizedString.Value);
+            Assert.Equal("Hello John", actualLocalizedHtmlString.Value);
         }
 
         [Fact]
@@ -215,10 +217,10 @@ namespace Microsoft.AspNet.Mvc.Localization.Test
             var htmlLocalizer = new HtmlLocalizer(stringLocalizer);
 
             // Act
-            var actualLocalizedString = htmlLocalizer.WithCulture(new CultureInfo("fr"))["John"];
+            var actualLocalizedHtmlString = htmlLocalizer.WithCulture(new CultureInfo("fr"))["John"];
 
             // Assert
-            Assert.Equal("Bonjour John", actualLocalizedString.Value);
+            Assert.Equal("Bonjour John", actualLocalizedHtmlString.Value);
         }
 
         [Fact]
@@ -230,7 +232,7 @@ namespace Microsoft.AspNet.Mvc.Localization.Test
             var htmlLocalizer = new HtmlLocalizer(stringLocalizer);
 
             // Act
-            var allLocalizedStrings = htmlLocalizer.GetAllStrings(includeAncestorCultures: false).ToList();
+            var allLocalizedStrings = htmlLocalizer.GetAllStrings(includeParentCultures: false).ToList();
 
             //Assert
             Assert.Equal(1, allLocalizedStrings.Count);
@@ -238,7 +240,7 @@ namespace Microsoft.AspNet.Mvc.Localization.Test
         }
 
         [Fact]
-        public void HtmlLocalizer_GetAllStringsIncludeAncestorCulture_ReturnsAllLocalizedStrings()
+        public void HtmlLocalizer_GetAllStringsIncludeParentCulture_ReturnsAllLocalizedStrings()
         {
             // Arrange
             var stringLocalizer = new TestStringLocalizer();

@@ -9,7 +9,8 @@ using Microsoft.Extensions.Localization;
 namespace Microsoft.AspNet.Mvc.Localization
 {
     /// <summary>
-    /// This is an <see cref="IHtmlLocalizer"/> implementation that provides localized HTML content.
+    /// An <see cref="IHtmlLocalizer"/> implementation that provides localized HTML content for the specified type
+    /// <typeparamref name="TResource"/>.
     /// </summary>
     /// <typeparam name="TResource">The <see cref="Type"/> to scope the resource names.</typeparam>
     public class HtmlLocalizer<TResource> : IHtmlLocalizer<TResource>
@@ -17,7 +18,7 @@ namespace Microsoft.AspNet.Mvc.Localization
         private readonly IHtmlLocalizer _localizer;
 
         /// <summary>
-        /// Creates a new <see cref="HtmlLocalizer"/>.
+        /// Creates a new <see cref="HtmlLocalizer{TResource}"/>.
         /// </summary>
         /// <param name="factory">The <see cref="IHtmlLocalizerFactory"/>.</param>
         public HtmlLocalizer(IHtmlLocalizerFactory factory)
@@ -26,32 +27,58 @@ namespace Microsoft.AspNet.Mvc.Localization
         }
 
         /// <inheritdoc />
-        public virtual LocalizedString this[string key]
+        public virtual LocalizedHtmlString this[string name]
         {
             get
             {
-                if (key == null)
+                if (name == null)
                 {
-                    throw new ArgumentNullException(nameof(key));
+                    throw new ArgumentNullException(nameof(name));
                 }
 
-                return _localizer[key];
+                return _localizer[name];
             }
         }
 
         /// <inheritdoc />
-        public virtual LocalizedString this[string key, params object[] arguments]
+        public virtual LocalizedHtmlString this[string name, params object[] arguments]
         {
             get
             {
-                if (key == null)
+                if (name == null)
                 {
-                    throw new ArgumentNullException(nameof(key));
+                    throw new ArgumentNullException(nameof(name));
                 }
 
-                return _localizer[key, arguments];
+                return _localizer[name, arguments];
             }
         }
+
+        /// <inheritdoc />
+        public virtual LocalizedString GetString(string name)
+        {
+            if (name == null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
+            return _localizer.GetString(name);
+        }
+
+        /// <inheritdoc />
+        public virtual LocalizedString GetString(string name, params object[] arguments)
+        {
+            if (name == null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
+            return _localizer.GetString(name, arguments);
+        }
+
+        /// <inheritdoc />
+        public virtual IEnumerable<LocalizedString> GetAllStrings(bool includeParentCultures) =>
+            _localizer.GetAllStrings(includeParentCultures);
 
         /// <inheritdoc />
         public virtual IHtmlLocalizer WithCulture(CultureInfo culture)
@@ -63,64 +90,5 @@ namespace Microsoft.AspNet.Mvc.Localization
 
             return _localizer.WithCulture(culture);
         }
-
-        /// <inheritdoc />
-        IStringLocalizer IStringLocalizer.WithCulture(CultureInfo culture)
-        {
-            if (culture == null)
-            {
-                throw new ArgumentNullException(nameof(culture));
-            }
-
-            return _localizer.WithCulture(culture);
-        }
-
-        /// <inheritdoc />
-        public virtual LocalizedString GetString(string key)
-        {
-            if (key == null)
-            {
-                throw new ArgumentNullException(nameof(key));
-            }
-
-            return _localizer.GetString(key);
-        }
-
-        /// <inheritdoc />
-        public virtual LocalizedString GetString(string key, params object[] arguments)
-        {
-            if (key == null)
-            {
-                throw new ArgumentNullException(nameof(key));
-            }
-
-            return _localizer.GetString(key, arguments);
-        }
-
-        /// <inheritdoc />
-        public virtual LocalizedHtmlString Html(string key)
-        {
-            if (key == null)
-            {
-                throw new ArgumentNullException(nameof(key));
-            }
-
-            return _localizer.Html(key);
-        }
-
-        /// <inheritdoc />
-        public virtual LocalizedHtmlString Html(string key, params object[] arguments)
-        {
-            if (key == null)
-            {
-                throw new ArgumentNullException(nameof(key));
-            }
-
-            return _localizer.Html(key, arguments);
-        }
-
-        /// <inheritdoc />
-        public virtual IEnumerable<LocalizedString> GetAllStrings(bool includeAncestorCultures) =>
-            _localizer.GetAllStrings(includeAncestorCultures);
     }
 }
