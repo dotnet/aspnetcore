@@ -1,13 +1,14 @@
 {
-    "webroot": "wwwroot",
-    "dependencies": {
-        "Microsoft.AspNet.Diagnostics": "",
-        "Microsoft.AspNet.Server.WebListener": "1.0.0-*",
-        "Microsoft.AspNet.Server.IIS": "1.0.0-*"
-    },
-    "commands": { "web": "Microsoft.AspNet.Hosting server=Microsoft.AspNet.Server.WebListener server.urls=http://localhost:5001" },
-    "frameworks": {
-        "dnx451": { },
-        "dnxcore50": { }
-    }
+  "dependencies": {
+    "Microsoft.AspNet.Diagnostics": "",
+    "Microsoft.AspNet.Server.Kestrel": "1.0.0-*"
+  },
+  "compilationOptions": {
+    "emitEntryPoint": true
+  },
+  "commands": { "web": "WelcomePageSample" },
+  "frameworks": {
+    "dnx451": { },
+    "dnxcore50": { }
+  }
 }

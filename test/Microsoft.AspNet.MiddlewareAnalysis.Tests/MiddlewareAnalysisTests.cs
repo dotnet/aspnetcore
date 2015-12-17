@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
@@ -18,16 +19,19 @@ namespace Microsoft.AspNet.MiddlewareAnalysis
         {
             DiagnosticListener diagnosticListener = null;
 
-            var server = TestServer.Create(app =>
-            {
-                diagnosticListener = app.ApplicationServices.GetRequiredService<DiagnosticListener>();
-
-                app.UseDeveloperExceptionPage();
-                app.Run(context =>
+            var builder = new WebApplicationBuilder()
+                .Configure(app =>
                 {
-                    throw new Exception("Test exception");
-                });
-            }, services => services.AddMiddlewareAnalysis());
+                    diagnosticListener = app.ApplicationServices.GetRequiredService<DiagnosticListener>();
+
+                    app.UseDeveloperExceptionPage();
+                    app.Run(context =>
+                    {
+                        throw new Exception("Test exception");
+                    });
+                })
+                .ConfigureServices(services => services.AddMiddlewareAnalysis());
+            var server = new TestServer(builder);
 
             var listener = new TestDiagnosticListener();
             diagnosticListener.SubscribeWithAdapter(listener);

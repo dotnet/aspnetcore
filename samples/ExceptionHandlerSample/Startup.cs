@@ -2,6 +2,7 @@ using System;
 using System.Text.Encodings.Web;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Diagnostics;
+using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
 
@@ -53,6 +54,16 @@ namespace ExceptionHandlerSample
                 await context.Response.WriteAsync("Click here to throw an exception: <a href=\"/throw\">throw</a>\r\n");
                 await context.Response.WriteAsync("</body></html>\r\n");
             });
+        }
+
+        public static void Main(string[] args)
+        {
+            var application = new WebApplicationBuilder()
+                .UseConfiguration(WebApplicationConfiguration.GetDefault(args))
+                .UseStartup<Startup>()
+                .Build();
+
+            application.Run();
         }
     }
 }

@@ -1,9 +1,9 @@
-using System;
-using Microsoft.AspNet.Builder;
-using Microsoft.Data.Entity;
 using System.Linq;
-using Microsoft.Extensions.DependencyInjection;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.Hosting;
+using Microsoft.Data.Entity;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace DatabaseErrorPageSample
 {
@@ -25,6 +25,16 @@ namespace DatabaseErrorPageSample
                 context.RequestServices.GetService<MyContext>().Blog.FirstOrDefault();
                 return Task.FromResult(0);
             });
+        }
+
+        public static void Main(string[] args)
+        {
+            var application = new WebApplicationBuilder()
+                .UseConfiguration(WebApplicationConfiguration.GetDefault(args))
+                .UseStartup<Startup>()
+                .Build();
+
+            application.Run();
         }
     }
 

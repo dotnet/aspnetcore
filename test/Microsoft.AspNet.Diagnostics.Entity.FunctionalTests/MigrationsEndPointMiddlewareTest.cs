@@ -9,6 +9,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Diagnostics.Entity.Tests.Helpers;
+using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.TestHost;
 using Microsoft.AspNet.Testing.xunit;
@@ -26,9 +27,10 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
         [Fact]
         public async Task Non_migration_requests_pass_thru()
         {
-            TestServer server = TestServer.Create(app => app
+            var builder = new WebApplicationBuilder().Configure(app => app
                 .UseMigrationsEndPoint()
                 .UseMiddleware<SuccessMiddleware>());
+            var server = new TestServer(builder);
 
             HttpResponseMessage response = await server.CreateClient().GetAsync("http://localhost/");
 
@@ -71,23 +73,25 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
 
                 var path = useCustomPath ? new PathString("/EndPoints/ApplyMyMigrations") : MigrationsEndPointOptions.DefaultPath;
 
-                TestServer server = TestServer.Create(app =>
-                {
-                    if (useCustomPath)
+                var builder = new WebApplicationBuilder()
+                    .Configure(app =>
                     {
-                        app.UseMigrationsEndPoint(o => o.Path = path);
-                    }
-                    else
+                        if (useCustomPath)
+                        {
+                            app.UseMigrationsEndPoint(o => o.Path = path);
+                        }
+                        else
+                        {
+                            app.UseMigrationsEndPoint();
+                        }
+                    })
+                    .ConfigureServices(services =>
                     {
-                        app.UseMigrationsEndPoint();
-                    }
-                },
-                services =>
-                {
-                    services.AddEntityFramework().AddSqlServer();
-                    services.AddScoped<BloggingContextWithMigrations>();
-                    services.AddSingleton(optionsBuilder.Options);
-                });
+                        services.AddEntityFramework().AddSqlServer();
+                        services.AddScoped<BloggingContextWithMigrations>();
+                        services.AddSingleton(optionsBuilder.Options);
+                    });
+                var server = new TestServer(builder);
 
                 using (var db = BloggingContextWithMigrations.CreateWithoutExternalServiceProvider(optionsBuilder.Options))
                 {
@@ -118,10 +122,12 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
         [Fact]
         public async Task Context_type_not_specified()
         {
-            var server = TestServer.Create(app =>
-            {
-                app.UseMigrationsEndPoint();
-            });
+            var builder = new WebApplicationBuilder()
+                .Configure(app =>
+                {
+                    app.UseMigrationsEndPoint();
+                });
+            var server = new TestServer(builder);
 
             var formData = new FormUrlEncodedContent(new List<KeyValuePair<string, string>>());
 
@@ -136,10 +142,12 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
         [Fact]
         public async Task Invalid_context_type_specified()
         {
-            var server = TestServer.Create(app =>
-            {
-                app.UseMigrationsEndPoint();
-            });
+            var builder = new WebApplicationBuilder()
+                .Configure(app =>
+                {
+                    app.UseMigrationsEndPoint();
+                });
+            var server = new TestServer(builder);
 
             var typeName = "You won't find this type ;)";
             var formData = new FormUrlEncodedContent(new List<KeyValuePair<string, string>>
@@ -158,9 +166,10 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
         [Fact]
         public async Task Context_not_registered_in_services()
         {
-            var server = TestServer.Create(
-                app => app.UseMigrationsEndPoint(),
-                services => services.AddEntityFramework().AddSqlServer());
+            var builder = new WebApplicationBuilder()
+                .Configure(app => app.UseMigrationsEndPoint())
+                .ConfigureServices(services => services.AddEntityFramework().AddSqlServer());
+            var server = new TestServer(builder);
 
             var formData = new FormUrlEncodedContent(new List<KeyValuePair<string, string>>
                 {
@@ -184,14 +193,15 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
                 var optionsBuilder = new DbContextOptionsBuilder();
                 optionsBuilder.UseSqlServer(database.ConnectionString);
 
-                TestServer server = TestServer.Create(
-                    app => app.UseMigrationsEndPoint(),
-                    services =>
+                var builder = new WebApplicationBuilder()
+                    .Configure(app => app.UseMigrationsEndPoint())
+                    .ConfigureServices(services =>
                     {
                         services.AddEntityFramework().AddSqlServer();
                         services.AddScoped<BloggingContextWithSnapshotThatThrows>();
                         services.AddSingleton(optionsBuilder.Options);
                     });
+                var server = new TestServer(builder);
 
                 var formData = new FormUrlEncodedContent(new List<KeyValuePair<string, string>>
                     {

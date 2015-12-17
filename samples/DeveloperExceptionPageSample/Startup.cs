@@ -1,5 +1,6 @@
 using System;
 using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.Hosting;
 
 namespace DeveloperExceptionPageSample
 {
@@ -16,6 +17,16 @@ namespace DeveloperExceptionPageSample
                     "New Line 2", Environment.NewLine,
                     "New Line 3"));
             });
+        }
+
+        public static void Main(string[] args)
+        {
+            var application = new WebApplicationBuilder()
+                .UseConfiguration(WebApplicationConfiguration.GetDefault(args))
+                .UseStartup<Startup>()
+                .Build();
+
+            application.Run();
         }
     }
 }

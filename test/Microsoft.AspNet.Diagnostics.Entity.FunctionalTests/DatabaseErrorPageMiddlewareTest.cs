@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Diagnostics.Entity.FunctionalTests.Helpers;
 using Microsoft.AspNet.Diagnostics.Entity.Tests.Helpers;
+using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.TestHost;
 using Microsoft.AspNet.Testing.xunit;
@@ -28,9 +29,10 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
         [Fact]
         public async Task Successful_requests_pass_thru()
         {
-            TestServer server = TestServer.Create(app => app
+            var builder = new WebApplicationBuilder().Configure(app => app
                 .UseDatabaseErrorPage()
                 .UseMiddleware<SuccessMiddleware>());
+            var server = new TestServer(builder);
 
             HttpResponseMessage response = await server.CreateClient().GetAsync("http://localhost/");
 
@@ -53,9 +55,10 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
         [Fact]
         public async Task Non_database_exceptions_pass_thru()
         {
-            TestServer server = TestServer.Create(app => app
+            var builder = new WebApplicationBuilder().Configure(app => app
                 .UseDatabaseErrorPage()
                 .UseMiddleware<ExceptionMiddleware>());
+            var server = new TestServer(builder);
 
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
                 await server.CreateClient().GetAsync("http://localhost/"));
@@ -252,25 +255,27 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
 
             using (var database = SqlServerTestStore.CreateScratch())
             {
-                var server = TestServer.Create(app =>
-                {
-                    app.UseDatabaseErrorPage(options =>
+                var builder = new WebApplicationBuilder()
+                    .Configure(app =>
                     {
-                        options.EnableAll();
-                        options.MigrationsEndPointPath = new PathString(migrationsEndpoint);
+                        app.UseDatabaseErrorPage(options =>
+                        {
+                            options.EnableAll();
+                            options.MigrationsEndPointPath = new PathString(migrationsEndpoint);
+                        });
+
+                        app.UseMiddleware<PendingMigrationsMiddleware>();
+                    })
+                    .ConfigureServices(services =>
+                    {
+                        services.AddEntityFramework().AddSqlServer();
+                        services.AddScoped<BloggingContextWithMigrations>();
+
+                        var optionsBuilder = new DbContextOptionsBuilder();
+                        optionsBuilder.UseSqlServer(database.ConnectionString);
+                        services.AddSingleton<DbContextOptions>(optionsBuilder.Options);
                     });
-
-                    app.UseMiddleware<PendingMigrationsMiddleware>();
-                },
-                services =>
-                {
-                    services.AddEntityFramework().AddSqlServer();
-                    services.AddScoped<BloggingContextWithMigrations>();
-
-                    var optionsBuilder = new DbContextOptionsBuilder();
-                    optionsBuilder.UseSqlServer(database.ConnectionString);
-                    services.AddSingleton<DbContextOptions>(optionsBuilder.Options);
-                });
+                var server = new TestServer(builder);
 
                 HttpResponseMessage response = await server.CreateClient().GetAsync("http://localhost/");
 
@@ -289,26 +294,29 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
             {
                 var logProvider = new TestLoggerProvider();
 
-                var server = TestServer.Create(app =>
-                {
-                    app.UseDatabaseErrorPage();
-                    app.UseMiddleware<ContextNotRegisteredInServicesMiddleware>();
-                    app.ApplicationServices.GetService<ILoggerFactory>().AddProvider(logProvider);
-                },
-                services =>
-                {
-                    services.AddEntityFramework().AddSqlServer();
-                    var optionsBuilder = new DbContextOptionsBuilder();
-                    if (!PlatformHelper.IsMono)
+                var builder = new WebApplicationBuilder()
+                    .Configure(app =>
                     {
-                        optionsBuilder.UseSqlServer(database.ConnectionString);
-                    }
-                    else
+                        app.UseDatabaseErrorPage();
+                        app.UseMiddleware<ContextNotRegisteredInServicesMiddleware>();
+                        app.ApplicationServices.GetService<ILoggerFactory>().AddProvider(logProvider);
+                    })
+                    .ConfigureServices(
+                    services =>
                     {
-                        optionsBuilder.UseInMemoryDatabase();
-                    }
-                    services.AddSingleton<DbContextOptions>(optionsBuilder.Options);
-                });
+                        services.AddEntityFramework().AddSqlServer();
+                        var optionsBuilder = new DbContextOptionsBuilder();
+                        if (!PlatformHelper.IsMono)
+                        {
+                            optionsBuilder.UseSqlServer(database.ConnectionString);
+                        }
+                        else
+                        {
+                            optionsBuilder.UseInMemoryDatabase();
+                        }
+                        services.AddSingleton<DbContextOptions>(optionsBuilder.Options);
+                    });
+                var server = new TestServer(builder);
 
                 var ex = await Assert.ThrowsAsync<SqlException>(async () =>
                     await server.CreateClient().GetAsync("http://localhost/"));
@@ -404,35 +412,37 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
         {
             using (var database = SqlServerTestStore.CreateScratch())
             {
-                return TestServer.Create(app =>
-                {
-                    app.UseDatabaseErrorPage();
-
-                    app.UseMiddleware<TMiddleware>();
-
-                    if (logProvider != null)
+                var builder = new WebApplicationBuilder()
+                    .Configure(app =>
                     {
-                        app.ApplicationServices.GetService<ILoggerFactory>().AddProvider(logProvider);
-                    }
-                },
-                services =>
-                {
-                    services.AddEntityFramework()
-                        .AddSqlServer();
+                        app.UseDatabaseErrorPage();
 
-                    services.AddScoped<TContext>();
+                        app.UseMiddleware<TMiddleware>();
 
-                    var optionsBuilder = new DbContextOptionsBuilder();
-                    if (!PlatformHelper.IsMono)
+                        if (logProvider != null)
+                        {
+                            app.ApplicationServices.GetService<ILoggerFactory>().AddProvider(logProvider);
+                        }
+                    })
+                    .ConfigureServices(services =>
                     {
-                        optionsBuilder.UseSqlServer(database.ConnectionString);
-                    }
-                    else
-                    {
-                        optionsBuilder.UseInMemoryDatabase();
-                    }
-                    services.AddSingleton(optionsBuilder.Options);
-                });
+                        services.AddEntityFramework()
+                            .AddSqlServer();
+
+                        services.AddScoped<TContext>();
+
+                        var optionsBuilder = new DbContextOptionsBuilder();
+                        if (!PlatformHelper.IsMono)
+                        {
+                            optionsBuilder.UseSqlServer(database.ConnectionString);
+                        }
+                        else
+                        {
+                            optionsBuilder.UseInMemoryDatabase();
+                        }
+                        services.AddSingleton(optionsBuilder.Options);
+                    });
+                return new TestServer(builder);
             }
         }
 

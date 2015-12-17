@@ -1,15 +1,15 @@
 {
-  "webroot": "wwwroot",
   "dependencies": {
     "Microsoft.AspNet.Diagnostics.Entity": "7.0.0-*",
     "EntityFramework.MicrosoftSqlServer": "7.0.0-*",
     "EntityFramework.Commands": "7.0.0-*",
-    "Microsoft.AspNet.Server.WebListener": "1.0.0-*",
     "Microsoft.AspNet.Server.Kestrel": "1.0.0-*"
   },
+  "compilationOptions": {
+    "emitEntryPoint": true
+  },
   "commands": {
-    "ef": "EntityFramework.Commands",
-    "web": "Microsoft.AspNet.Server.Kestrel"
+    "web": "DatabaseErrorPageSample"
   },
     "frameworks": {
       "dnx451": { },
