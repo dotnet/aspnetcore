@@ -585,15 +585,15 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
 
         public void CopyFrom(byte[] data)
         {
-            CopyFrom(new ArraySegment<byte>(data));
-        }
-
-        public void CopyFrom(byte[] data, int offset, int count)
-        {
-            CopyFrom(new ArraySegment<byte>(data, offset, count));
+            CopyFrom(data, 0, data.Length);
         }
 
         public void CopyFrom(ArraySegment<byte> buffer)
+        {
+            CopyFrom(buffer.Array, buffer.Offset, buffer.Count);
+        }
+
+        public void CopyFrom(byte[] data, int offset, int count)
         {
             Debug.Assert(_block != null);
             Debug.Assert(_block.Pool != null);
@@ -604,8 +604,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
             var block = _block;
             var blockIndex = _index;
 
-            var bufferIndex = buffer.Offset;
-            var remaining = buffer.Count;
+            var bufferIndex = offset;
+            var remaining = count;
             var bytesLeftInBlock = block.Data.Offset + block.Data.Count - blockIndex;
 
             while (remaining > 0)
@@ -613,6 +613,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
                 if (bytesLeftInBlock == 0)
                 {
                     var nextBlock = pool.Lease();
+                    block.End = blockIndex;
                     block.Next = nextBlock;
                     block = nextBlock;
 
@@ -622,15 +623,15 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
 
                 var bytesToCopy = remaining < bytesLeftInBlock ? remaining : bytesLeftInBlock;
 
-                Buffer.BlockCopy(buffer.Array, bufferIndex, block.Array, blockIndex, bytesToCopy);
+                Buffer.BlockCopy(data, bufferIndex, block.Array, blockIndex, bytesToCopy);
 
                 blockIndex += bytesToCopy;
                 bufferIndex += bytesToCopy;
                 remaining -= bytesToCopy;
                 bytesLeftInBlock -= bytesToCopy;
-                block.End = blockIndex;
             }
 
+            block.End = blockIndex;
             _block = block;
             _index = blockIndex;
         }
@@ -661,6 +662,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
                     if (bytesLeftInBlock == 0)
                     {
                         var nextBlock = pool.Lease();
+                        block.End = blockIndex;
                         block.Next = nextBlock;
                         block = nextBlock;
 
@@ -692,10 +694,10 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
                         bytesLeftInBlockMinusSpan -= copied;
                         bytesLeftInBlock -= copied;
                     }
-                    block.End = blockIndex;
                 }
             }
 
+            block.End = blockIndex;
             _block = block;
             _index = blockIndex;
         }
