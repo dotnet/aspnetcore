@@ -56,3 +56,4 @@ if test -z "$DOTNET_REFERENCE_ASSEMBLIES_PATH"; then
 fi
 
 mono $koreBuildFolder/build/Sake/tools/Sake.exe -I $koreBuildFolder/build -f $makefilePath "$@"
+
