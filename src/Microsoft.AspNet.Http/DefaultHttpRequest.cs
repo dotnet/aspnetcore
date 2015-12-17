@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Http.Internal
         private HttpContext _context;
         private FeatureReferences<FeatureInterfaces> _features;
 
-        public DefaultHttpRequest(DefaultHttpContext context, IFeatureCollection features)
+        public DefaultHttpRequest(HttpContext context, IFeatureCollection features)
         {
             Initialize(context, features);
         }
