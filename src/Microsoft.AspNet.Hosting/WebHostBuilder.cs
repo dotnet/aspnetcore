@@ -93,12 +93,12 @@ namespace Microsoft.AspNet.Hosting
             {
                 if (defaultPlatformServices.Application != null)
                 {
-                    services.TryAdd(ServiceDescriptor.Instance(defaultPlatformServices.Application));
+                    services.TryAddSingleton(defaultPlatformServices.Application);
                 }
 
                 if (defaultPlatformServices.Runtime != null)
                 {
-                    services.TryAdd(ServiceDescriptor.Instance(defaultPlatformServices.Runtime));
+                    services.TryAddSingleton(defaultPlatformServices.Runtime);
                 }
             }
 
