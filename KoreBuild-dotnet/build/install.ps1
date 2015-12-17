@@ -33,7 +33,7 @@ if (Test-Path $LocalFile)
     if ($LocalVersion -and $LocalHash)
     {
         $RemoteResponse = Invoke-WebRequest -UseBasicParsing "$Feed/$Channel/dnvm/latest.win.version"
-        $RemoteData = @([Text.Encoding]::UTF8.GetString($RemoteResponse.Content).Split());
+        $RemoteData = @([Text.Encoding]::UTF8.GetString($RemoteResponse.Content).Split([char[]]@(), [StringSplitOptions]::RemoveEmptyEntries));
         $RemoteHash = $RemoteData[0].Trim()
         $RemoteVersion = $RemoteData[1].Trim()
 
