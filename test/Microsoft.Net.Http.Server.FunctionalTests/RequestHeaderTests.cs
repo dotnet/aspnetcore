@@ -99,7 +99,7 @@ namespace Microsoft.Net.Http.Server
 
             byte[] response = new byte[1024 * 5];
             await Task.Run(() => socket.Receive(response));
-            socket.Close();
+            socket.Dispose();
         }
     }
 }

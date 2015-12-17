@@ -207,7 +207,11 @@ namespace Microsoft.AspNet.Server.WebListener
                 using (Socket socket = await SendHungRequestAsync("GET", address))
                 {
                     Assert.True(received.WaitOne(interval), "Receive Timeout");
-                    socket.Close(0); // Force a RST
+
+                    // Force a RST
+                    socket.LingerState = new LingerOption(true, 0);
+                    socket.Dispose();
+
                     aborted.Set();
                 }
                 Assert.True(canceled.WaitOne(interval), "canceled");
@@ -267,7 +271,6 @@ namespace Microsoft.AspNet.Server.WebListener
 
         private async Task<string> SendRequestAsync(string uri)
         {
-            ServicePointManager.DefaultConnectionLimit = 100;
             using (HttpClient client = new HttpClient())
             {
                 return await client.GetStringAsync(uri);
@@ -289,6 +292,7 @@ namespace Microsoft.AspNet.Server.WebListener
             // Connect with a socket
             Uri uri = new Uri(address);
             TcpClient client = new TcpClient();
+
             try
             {
                 await client.ConnectAsync(uri.Host, uri.Port);
@@ -297,13 +301,13 @@ namespace Microsoft.AspNet.Server.WebListener
                 // Send an HTTP GET request
                 byte[] requestBytes = BuildGetRequest(method, uri);
                 await stream.WriteAsync(requestBytes, 0, requestBytes.Length);
-                
+
                 // Return the opaque network stream
                 return client.Client;
             }
             catch (Exception)
             {
-                client.Close();
+                ((IDisposable)client).Dispose();
                 throw;
             }
         }

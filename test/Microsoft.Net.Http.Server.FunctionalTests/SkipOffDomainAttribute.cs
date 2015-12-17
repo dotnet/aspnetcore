@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.DirectoryServices.ActiveDirectory;
 using Microsoft.AspNet.Testing.xunit;
 
 namespace Microsoft.Net.Http.Server
@@ -19,7 +18,9 @@ namespace Microsoft.Net.Http.Server
             {
                 try
                 {
-                    return !string.IsNullOrEmpty(Domain.GetComputerDomain().Name);
+#if DNX451
+                    return !string.IsNullOrEmpty(System.DirectoryServices.ActiveDirectory.Domain.GetComputerDomain().Name);
+#endif
                 }
                 catch
                 {

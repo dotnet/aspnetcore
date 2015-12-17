@@ -19,7 +19,7 @@ namespace Microsoft.Net.Http.Server
         
         public ResponseSendFileTests()
         {
-            AbsoluteFilePath = Directory.GetFiles(Environment.CurrentDirectory).First();
+            AbsoluteFilePath = Directory.GetFiles(Directory.GetCurrentDirectory()).First();
             RelativeFilePath = Path.GetFileName(AbsoluteFilePath);
             FileLength = new FileInfo(AbsoluteFilePath).Length;
         }
@@ -205,9 +205,9 @@ namespace Microsoft.Net.Http.Server
         [Fact]
         public async Task ResponseSendFile_EmptyFileCountUnspecified_SetsChunkedAndFlushesHeaders()
         {
-            var emptyFilePath = Path.Combine(Environment.CurrentDirectory, "zz_" + Guid.NewGuid().ToString() + "EmptyTestFile.txt");
+            var emptyFilePath = Path.Combine(Directory.GetCurrentDirectory(), "zz_" + Guid.NewGuid().ToString() + "EmptyTestFile.txt");
             var emptyFile = File.Create(emptyFilePath, 1024);
-            emptyFile.Close();
+            emptyFile.Dispose();
 
             string address;
             using (var server = Utilities.CreateHttpServer(out address))

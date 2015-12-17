@@ -8,6 +8,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Testing.xunit;
 using Xunit;
 
 namespace Microsoft.Net.Http.Server
@@ -94,7 +95,7 @@ namespace Microsoft.Net.Http.Server
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
                 var context = await server.GetContextAsync();
-                context.Response.Headers["transfeR-Encoding"] = " CHunked ";
+                context.Response.Headers["transfeR-Encoding"] = "CHunked";
                 Stream stream = context.Response.Body;
                 var responseBytes = Encoding.ASCII.GetBytes("10\r\nManually Chunked\r\n0\r\n\r\n");
                 await stream.WriteAsync(responseBytes, 0, responseBytes.Length);
@@ -121,7 +122,11 @@ namespace Microsoft.Net.Http.Server
                 var context = await server.GetContextAsync();
                 context.Response.Headers["Content-lenGth"] = " 30 ";
                 Stream stream = context.Response.Body;
+#if DNX451
                 stream.EndWrite(stream.BeginWrite(new byte[10], 0, 10, null, null));
+#else
+                await stream.WriteAsync(new byte[10], 0, 10);
+#endif
                 stream.Write(new byte[10], 0, 10);
                 await stream.WriteAsync(new byte[10], 0, 10);
                 context.Dispose();
@@ -148,12 +153,12 @@ namespace Microsoft.Net.Http.Server
                 var context = await server.GetContextAsync();
                 context.Response.Headers["Content-lenGth"] = " 20 ";
                 context.Dispose();
-
+#if !DNXCORE50
                 // HttpClient retries the request because it didn't get a response.
                 context = await server.GetContextAsync();
                 context.Response.Headers["Content-lenGth"] = " 20 ";
                 context.Dispose();
-
+#endif
                 await Assert.ThrowsAsync<HttpRequestException>(() => responseTask);
             }
         }
@@ -170,13 +175,13 @@ namespace Microsoft.Net.Http.Server
                 context.Response.Headers["Content-lenGth"] = " 20 ";
                 context.Response.Body.Write(new byte[5], 0, 5);
                 context.Dispose();
-
+#if !DNXCORE50
                 // HttpClient retries the request because it didn't get a response.
                 context = await server.GetContextAsync();
                 context.Response.Headers["Content-lenGth"] = " 20 ";
                 context.Response.Body.Write(new byte[5], 0, 5);
                 context.Dispose();
-
+#endif
                 await Assert.ThrowsAsync<HttpRequestException>(() => responseTask);
             }
         }
@@ -194,14 +199,14 @@ namespace Microsoft.Net.Http.Server
                 context.Response.Body.Write(new byte[5], 0, 5);
                 Assert.Throws<InvalidOperationException>(() => context.Response.Body.Write(new byte[6], 0, 6));
                 context.Dispose();
-
+#if !DNXCORE50
                 // HttpClient retries the request because it didn't get a response.
                 context = await server.GetContextAsync();
                 context.Response.Headers["Content-lenGth"] = " 10 ";
                 context.Response.Body.Write(new byte[5], 0, 5);
                 Assert.Throws<InvalidOperationException>(() => context.Response.Body.Write(new byte[6], 0, 6));
                 context.Dispose();
-
+#endif
                 await Assert.ThrowsAsync<HttpRequestException>(() => responseTask);
             }
         }

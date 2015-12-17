@@ -13,6 +13,13 @@
                 "System.Net.Http": "",
                 "System.Net.Http.WebRequest": ""
             }
+        },
+        "dnxcore50": {
+            "dependencies": {
+                "System.Net.Http.WinHttpHandler": "4.0.0-*",
+                "System.Net.Requests": "4.0.11-*",
+                "System.Net.WebHeaderCollection": "4.0.1-*"
+            }
         }
     }
 }

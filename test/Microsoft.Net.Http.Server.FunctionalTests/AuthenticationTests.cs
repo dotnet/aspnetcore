@@ -44,11 +44,12 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData(AuthenticationSchemes.Negotiate)]
         [InlineData(AuthenticationSchemes.NTLM)]
         // [InlineData(AuthenticationType.Digest)] // TODO: Not implemented
         [InlineData(AuthenticationSchemes.Basic)]
+        [FrameworkSkipCondition(RuntimeFrameworks.CoreCLR, SkipReason = "HttpClientHandler issue (https://github.com/dotnet/corefx/issues/5045).")]
         public async Task AuthType_RequireAuth_ChallengesAdded(AuthenticationSchemes authType)
         {
             string address;
@@ -57,18 +58,18 @@ namespace Microsoft.Net.Http.Server
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
                 var contextTask = server.GetContextAsync(); // Fails when the server shuts down, the challenge happens internally.
-
                 var response = await responseTask;
                 Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
                 Assert.Equal(authType.ToString(), response.Headers.WwwAuthenticate.ToString(), StringComparer.OrdinalIgnoreCase);
             }
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData(AuthenticationSchemes.Negotiate)]
         [InlineData(AuthenticationSchemes.NTLM)]
         // [InlineData(AuthenticationSchemes.Digest)] // TODO: Not implemented
         [InlineData(AuthenticationSchemes.Basic)]
+        [FrameworkSkipCondition(RuntimeFrameworks.CoreCLR, SkipReason = "HttpClientHandler issue (https://github.com/dotnet/corefx/issues/5045).")]
         public async Task AuthType_AllowAnonymousButSpecify401_ChallengesAdded(AuthenticationSchemes authType)
         {
             string address;
@@ -89,7 +90,8 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.CoreCLR, SkipReason = "HttpClientHandler issue (https://github.com/dotnet/corefx/issues/5045).")]
         public async Task MultipleAuthTypes_AllowAnonymousButSpecify401_ChallengesAdded()
         {
             string address;
@@ -216,7 +218,7 @@ namespace Microsoft.Net.Http.Server
         {
             HttpClientHandler handler = new HttpClientHandler();
             handler.UseDefaultCredentials = useDefaultCredentials;
-            using (HttpClient client = new HttpClient(handler))
+            using (HttpClient client = new HttpClient(handler) { Timeout = TimeSpan.FromSeconds(5) })
             {
                 return await client.GetAsync(uri);
             }

@@ -191,6 +191,7 @@ namespace Microsoft.AspNet.Server.WebListener
             // Connect with a socket
             Uri uri = new Uri(address);
             TcpClient client = new TcpClient();
+
             try
             {
                 await client.ConnectAsync(uri.Host, uri.Port);
@@ -204,7 +205,7 @@ namespace Microsoft.AspNet.Server.WebListener
             }
             catch (Exception)
             {
-                client.Close();
+                ((IDisposable)client).Dispose();
                 throw;
             }
         }

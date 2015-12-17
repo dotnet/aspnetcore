@@ -167,7 +167,7 @@ namespace Microsoft.Net.Http.Server
             }
             catch (Exception)
             {
-                client.Close();
+                ((IDisposable)client).Dispose();
                 throw;
             }
         }

@@ -25,7 +25,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Features;
-using Microsoft.AspNet.Http.Internal;
 using Xunit;
 
 namespace Microsoft.AspNet.Server.WebListener
@@ -38,7 +37,7 @@ namespace Microsoft.AspNet.Server.WebListener
 
         public ResponseSendFileTests()
         {
-            AbsoluteFilePath = Directory.GetFiles(Environment.CurrentDirectory).First();
+            AbsoluteFilePath = Directory.GetFiles(Directory.GetCurrentDirectory()).First();
             RelativeFilePath = Path.GetFileName(AbsoluteFilePath);
             FileLength = new FileInfo(AbsoluteFilePath).Length;
         }

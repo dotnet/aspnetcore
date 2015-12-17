@@ -8,6 +8,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Testing.xunit;
 using Xunit;
 
 namespace Microsoft.Net.Http.Server
@@ -122,11 +123,11 @@ namespace Microsoft.Net.Http.Server
                 context.Abort();
                 Assert.True(canceled.WaitOne(interval), "Aborted");
                 Assert.True(ct.IsCancellationRequested, "IsCancellationRequested");
-
+#if !DNXCORE50
                 // HttpClient re-tries the request because it doesn't know if the request was received.
                 context = await server.GetContextAsync();
                 context.Abort();
-
+#endif
                 await Assert.ThrowsAsync<HttpRequestException>(() => responseTask);
             }
         }
@@ -246,7 +247,6 @@ namespace Microsoft.Net.Http.Server
 
         private async Task<string> SendRequestAsync(string uri)
         {
-            ServicePointManager.DefaultConnectionLimit = 100;
             using (HttpClient client = new HttpClient())
             {
                 return await client.GetStringAsync(uri);

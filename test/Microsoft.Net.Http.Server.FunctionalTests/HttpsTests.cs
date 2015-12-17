@@ -107,7 +107,11 @@ namespace Microsoft.Net.Http.Server
         private async Task<string> SendRequestAsync(string uri, 
             X509Certificate cert = null)
         {
+#if DNX451
             WebRequestHandler handler = new WebRequestHandler();
+#else
+            WinHttpHandler handler = new WinHttpHandler();
+#endif
             handler.ServerCertificateValidationCallback = (a, b, c, d) => true;
             if (cert != null)
             {
@@ -121,7 +125,11 @@ namespace Microsoft.Net.Http.Server
 
         private async Task<string> SendRequestAsync(string uri, string upload)
         {
+#if DNX451
             WebRequestHandler handler = new WebRequestHandler();
+#else
+            WinHttpHandler handler = new WinHttpHandler();
+#endif
             handler.ServerCertificateValidationCallback = (a, b, c, d) => true;
             using (HttpClient client = new HttpClient(handler))
             {

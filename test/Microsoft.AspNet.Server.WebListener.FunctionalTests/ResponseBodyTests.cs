@@ -25,6 +25,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Http.Internal;
+using Microsoft.AspNet.Testing.xunit;
 using Xunit;
 
 namespace Microsoft.AspNet.Server.WebListener
@@ -78,7 +79,7 @@ namespace Microsoft.AspNet.Server.WebListener
             string address;
             using (Utilities.CreateHttpServer(out address, async httpContext =>
             {
-                httpContext.Response.Headers["transfeR-Encoding"] = " CHunked ";
+                httpContext.Response.Headers["transfeR-Encoding"] = "CHunked";
                 Stream stream = httpContext.Response.Body;
                 var responseBytes = Encoding.ASCII.GetBytes("10\r\nManually Chunked\r\n0\r\n\r\n");
                 await stream.WriteAsync(responseBytes, 0, responseBytes.Length);
@@ -98,13 +99,17 @@ namespace Microsoft.AspNet.Server.WebListener
         public async Task ResponseBody_WriteContentLength_PassedThrough()
         {
             string address;
-            using (Utilities.CreateHttpServer(out address, httpContext =>
+            using (Utilities.CreateHttpServer(out address, async httpContext =>
             {
                 httpContext.Response.Headers["Content-lenGth"] = " 30 ";
                 Stream stream = httpContext.Response.Body;
+#if DNX451
                 stream.EndWrite(stream.BeginWrite(new byte[10], 0, 10, null, null));
+#else
+                await stream.WriteAsync(new byte[10], 0, 10);
+#endif
                 stream.Write(new byte[10], 0, 10);
-                return stream.WriteAsync(new byte[10], 0, 10);
+                await stream.WriteAsync(new byte[10], 0, 10);
             }))
             {
                 HttpResponseMessage response = await SendRequestAsync(address);

@@ -24,7 +24,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
-using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Testing.xunit;
 using Xunit;
 
@@ -218,6 +217,7 @@ namespace Microsoft.AspNet.Server.WebListener
             // Connect with a socket
             Uri uri = new Uri(address);
             TcpClient client = new TcpClient();
+
             try
             {
                 await client.ConnectAsync(uri.Host, uri.Port);
@@ -235,7 +235,7 @@ namespace Microsoft.AspNet.Server.WebListener
             }
             catch (Exception)
             {
-                client.Close();
+                ((IDisposable)client).Dispose();
                 throw;
             }
         }

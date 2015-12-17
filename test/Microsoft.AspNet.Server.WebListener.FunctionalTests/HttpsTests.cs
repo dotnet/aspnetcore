@@ -115,7 +115,11 @@ namespace Microsoft.AspNet.Server.WebListener
         private async Task<string> SendRequestAsync(string uri, 
             X509Certificate cert = null)
         {
-            WebRequestHandler handler = new WebRequestHandler();
+#if DNX451
+            var handler = new WebRequestHandler();
+#else
+            var handler = new WinHttpHandler();
+#endif
             handler.ServerCertificateValidationCallback = (a, b, c, d) => true;
             if (cert != null)
             {
@@ -129,7 +133,11 @@ namespace Microsoft.AspNet.Server.WebListener
 
         private async Task<string> SendRequestAsync(string uri, string upload)
         {
-            WebRequestHandler handler = new WebRequestHandler();
+#if DNX451
+            var handler = new WebRequestHandler();
+#else
+            var handler = new WinHttpHandler();
+#endif
             handler.ServerCertificateValidationCallback = (a, b, c, d) => true;
             using (HttpClient client = new HttpClient(handler))
             {

@@ -107,7 +107,7 @@ namespace Microsoft.AspNet.Server.WebListener
 
             byte[] response = new byte[1024 * 5];
             await Task.Run(() => socket.Receive(response));
-            socket.Close();
+            socket.Dispose();
         }
     }
 }
