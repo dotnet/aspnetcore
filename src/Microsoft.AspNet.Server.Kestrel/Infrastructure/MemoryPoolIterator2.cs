@@ -3,25 +3,12 @@
 
 using System;
 using System.Diagnostics;
-using System.Linq;
 using System.Numerics;
 
 namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
 {
     public struct MemoryPoolIterator2
     {
-        /// <summary>
-        /// Array of "minus one" bytes of the length of SIMD operations on the current hardware. Used as an argument in the
-        /// vector dot product that counts matching character occurrence.
-        /// </summary>
-        private static Vector<byte> _dotCount = new Vector<byte>(Byte.MaxValue);
-
-        /// <summary>
-        /// Array of negative numbers starting at 0 and continuing for the length of SIMD operations on the current hardware.
-        /// Used as an argument in the vector dot product that determines matching character index.
-        /// </summary>
-        private static Vector<byte> _dotIndex = new Vector<byte>(Enumerable.Range(0, Vector<byte>.Count).Select(x => (byte)-x).ToArray());
-
         private MemoryPoolBlock2 _block;
         private int _index;
 
@@ -189,7 +176,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
             }
 
             var byte0 = (byte)char0;
-            var vectorStride = Vector<byte>.Count;
             var ch0Vector = new Vector<byte>(byte0);
 
             var block = _block;
@@ -212,27 +198,20 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
                 while (block.End != index)
                 {
                     var following = block.End - index;
-                    if (following >= vectorStride)
+                    if (following >= Vector<byte>.Count)
                     {
                         var data = new Vector<byte>(array, index);
                         var ch0Equals = Vector.Equals(data, ch0Vector);
-                        var ch0Count = Vector.Dot(ch0Equals, _dotCount);
 
-                        if (ch0Count == 0)
+                        if (ch0Equals.Equals(Vector<byte>.Zero))
                         {
-                            index += vectorStride;
+                            index += Vector<byte>.Count;
                             continue;
                         }
-                        else if (ch0Count == 1)
-                        {
-                            _block = block;
-                            _index = index + Vector.Dot(ch0Equals, _dotIndex);
-                            return char0;
-                        }
-                        else
-                        {
-                            following = vectorStride;
-                        }
+
+                        _block = block;
+                        _index = index + FindFirstEqualByte(ch0Equals);
+                        return char0;
                     }
                     while (following > 0)
                     {
@@ -258,7 +237,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
 
             var byte0 = (byte)char0;
             var byte1 = (byte)char1;
-            var vectorStride = Vector<byte>.Count;
             var ch0Vector = new Vector<byte>(byte0);
             var ch1Vector = new Vector<byte>(byte1);
 
@@ -282,40 +260,39 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
                 while (block.End != index)
                 {
                     var following = block.End - index;
-                    if (following >= vectorStride)
+                    if (following >= Vector<byte>.Count)
                     {
                         var data = new Vector<byte>(array, index);
                         var ch0Equals = Vector.Equals(data, ch0Vector);
-                        var ch0Count = Vector.Dot(ch0Equals, _dotCount);
                         var ch1Equals = Vector.Equals(data, ch1Vector);
-                        var ch1Count = Vector.Dot(ch1Equals, _dotCount);
+                        int ch0Index = int.MaxValue;
+                        int ch1Index = int.MaxValue;
 
-                        if (ch0Count == 0 && ch1Count == 0)
+                        if (!ch0Equals.Equals(Vector<byte>.Zero))
                         {
-                            index += vectorStride;
+                            ch0Index = FindFirstEqualByte(ch0Equals);
+                        }
+                        if (!ch1Equals.Equals(Vector<byte>.Zero))
+                        {
+                            ch1Index = FindFirstEqualByte(ch1Equals);
+                        }
+
+                        if (ch0Index == int.MaxValue && ch1Index == int.MaxValue)
+                        {
+                            index += Vector<byte>.Count;
                             continue;
                         }
-                        else if (ch0Count < 2 && ch1Count < 2)
+
+                        _block = block;
+
+                        if (ch0Index < ch1Index)
                         {
-                            var ch0Index = ch0Count == 1 ? Vector.Dot(ch0Equals, _dotIndex) : byte.MaxValue;
-                            var ch1Index = ch1Count == 1 ? Vector.Dot(ch1Equals, _dotIndex) : byte.MaxValue;
-                            if (ch0Index < ch1Index)
-                            {
-                                _block = block;
-                                _index = index + ch0Index;
-                                return char0;
-                            }
-                            else
-                            {
-                                _block = block;
-                                _index = index + ch1Index;
-                                return char1;
-                            }
+                            _index = index + ch0Index;
+                            return char0;
                         }
-                        else
-                        {
-                            following = vectorStride;
-                        }
+
+                        _index = index + ch1Index;
+                        return char1;
                     }
                     while (following > 0)
                     {
@@ -349,7 +326,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
             var byte0 = (byte)char0;
             var byte1 = (byte)char1;
             var byte2 = (byte)char2;
-            var vectorStride = Vector<byte>.Count;
             var ch0Vector = new Vector<byte>(byte0);
             var ch1Vector = new Vector<byte>(byte1);
             var ch2Vector = new Vector<byte>(byte2);
@@ -374,64 +350,68 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
                 while (block.End != index)
                 {
                     var following = block.End - index;
-                    if (following >= vectorStride)
+                    if (following >= Vector<byte>.Count)
                     {
                         var data = new Vector<byte>(array, index);
                         var ch0Equals = Vector.Equals(data, ch0Vector);
-                        var ch0Count = Vector.Dot(ch0Equals, _dotCount);
                         var ch1Equals = Vector.Equals(data, ch1Vector);
-                        var ch1Count = Vector.Dot(ch1Equals, _dotCount);
                         var ch2Equals = Vector.Equals(data, ch2Vector);
-                        var ch2Count = Vector.Dot(ch2Equals, _dotCount);
+                        int ch0Index = int.MaxValue;
+                        int ch1Index = int.MaxValue;
+                        int ch2Index = int.MaxValue;
 
-                        if (ch0Count == 0 && ch1Count == 0 && ch2Count == 0)
+                        if (!ch0Equals.Equals(Vector<byte>.Zero))
                         {
-                            index += vectorStride;
+                            ch0Index = FindFirstEqualByte(ch0Equals);
+                        }
+                        if (!ch1Equals.Equals(Vector<byte>.Zero))
+                        {
+                            ch1Index = FindFirstEqualByte(ch1Equals);
+                        }
+                        if (!ch2Equals.Equals(Vector<byte>.Zero))
+                        {
+                            ch2Index = FindFirstEqualByte(ch2Equals);
+                        }
+
+                        if (ch0Index == int.MaxValue && ch1Index == int.MaxValue && ch2Index == int.MaxValue)
+                        {
+                            index += Vector<byte>.Count;
                             continue;
                         }
-                        else if (ch0Count < 2 && ch1Count < 2 && ch2Count < 2)
-                        {
-                            var ch0Index = ch0Count == 1 ? Vector.Dot(ch0Equals, _dotIndex) : byte.MaxValue;
-                            var ch1Index = ch1Count == 1 ? Vector.Dot(ch1Equals, _dotIndex) : byte.MaxValue;
-                            var ch2Index = ch2Count == 1 ? Vector.Dot(ch2Equals, _dotIndex) : byte.MaxValue;
 
-                            int toReturn, toMove;
-                            if (ch0Index < ch1Index)
+                        int toReturn, toMove;
+                        if (ch0Index < ch1Index)
+                        {
+                            if (ch0Index < ch2Index)
                             {
-                                if (ch0Index < ch2Index)
-                                {
-                                    toReturn = char0;
-                                    toMove = ch0Index;
-                                }
-                                else
-                                {
-                                    toReturn = char2;
-                                    toMove = ch2Index;
-                                }
+                                toReturn = char0;
+                                toMove = ch0Index;
                             }
                             else
                             {
-                                if (ch1Index < ch2Index)
-                                {
-                                    toReturn = char1;
-                                    toMove = ch1Index;
-                                }
-                                else
-                                {
-                                    toReturn = char2;
-                                    toMove = ch2Index;
-                                }
+                                toReturn = char2;
+                                toMove = ch2Index;
                             }
-
-                            _block = block;
-                            _index = index + toMove;
-                            return toReturn;
                         }
                         else
                         {
-                            following = vectorStride;
+                            if (ch1Index < ch2Index)
+                            {
+                                toReturn = char1;
+                                toMove = ch1Index;
+                            }
+                            else
+                            {
+                                toReturn = char2;
+                                toMove = ch2Index;
+                            }
                         }
+
+                        _block = block;
+                        _index = index + toMove;
+                        return toReturn;
                     }
+
                     while (following > 0)
                     {
                         var byteIndex = block.Array[index];
@@ -458,6 +438,34 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
                     }
                 }
             }
+        }
+
+        private static int FindFirstEqualByte(Vector<byte> chEquals)
+        {
+            // Quasi-tree search
+            var vector64 = Vector.AsVectorInt64(chEquals);
+            for (var i = 0; i < Vector<long>.Count; i++)
+            {
+                var longValue = vector64[i];
+                if (longValue == 0) continue;
+
+                var shift = i << 1;
+                var offset = shift << 2;
+                var vector32 = Vector.AsVectorInt32(chEquals);
+                if (vector32[shift] != 0)
+                {
+                    if (chEquals[offset] != 0) return offset;
+                    if (chEquals[++offset] != 0) return offset;
+                    if (chEquals[++offset] != 0) return offset;
+                    return ++offset;
+                }
+                offset += 4;
+                if (chEquals[offset] != 0) return offset;
+                if (chEquals[++offset] != 0) return offset;
+                if (chEquals[++offset] != 0) return offset;
+                return ++offset;
+            }
+            throw new InvalidOperationException();
         }
 
         /// <summary>
