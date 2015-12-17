@@ -25,6 +25,8 @@ namespace Microsoft.AspNet.Mvc.Razor.Precompilation
     public class RazorPreCompiler
     {
         private const string CacheKeyDirectorySeparator = "/";
+        private readonly TagHelperDescriptorFactory _tagHelperDescriptorFactory =
+            new TagHelperDescriptorFactory(designTime: false);
 
         public RazorPreCompiler(
             BeforeCompileContext compileContext,
@@ -227,7 +229,9 @@ namespace Microsoft.AspNet.Mvc.Razor.Precompilation
 
         protected IMvcRazorHost GetRazorHost()
         {
-            var descriptorResolver = new TagHelperDescriptorResolver(TagHelperTypeResolver, designTime: false);
+            var descriptorResolver = new TagHelperDescriptorResolver(
+                TagHelperTypeResolver,
+                _tagHelperDescriptorFactory);
             return new MvcRazorHost(new DefaultChunkTreeCache(FileProvider))
             {
                 TagHelperDescriptorResolver = descriptorResolver
