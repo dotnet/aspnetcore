@@ -271,7 +271,6 @@ namespace Microsoft.AspNet.Http.Internal
                 {
                     if (property.Name.Contains("Feature"))
                     {
-                        Console.WriteLine($"{value.GetType().Name} {property.Name}");
                         var v = property.GetValue(value);
                         Assert.Same(features[property.PropertyType], v);
                         Assert.NotNull(v);
