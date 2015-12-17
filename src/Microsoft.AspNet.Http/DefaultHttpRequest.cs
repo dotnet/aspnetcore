@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.Http.Internal
             _features.Fetch(ref _features.Cache.Query, f => new QueryFeature(f));
 
         private IFormFeature FormFeature =>
-            _features.Fetch(ref _features.Cache.Form, this, self => new FormFeature(self));
+            _features.Fetch(ref _features.Cache.Form, this, f => new FormFeature(f));
 
         private IRequestCookiesFeature RequestCookiesFeature =>
             _features.Fetch(ref _features.Cache.Cookies, f => new RequestCookiesFeature(f));
