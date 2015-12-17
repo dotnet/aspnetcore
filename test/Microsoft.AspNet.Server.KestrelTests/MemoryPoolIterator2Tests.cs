@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using Microsoft.AspNet.Server.Kestrel.Infrastructure;
+using System.Numerics;
 using Xunit;
 
 namespace Microsoft.AspNet.Server.KestrelTests
@@ -52,15 +53,15 @@ namespace Microsoft.AspNet.Server.KestrelTests
             int found = -1;
             if (searchFor.Length == 1)
             {
-                found = begin.Seek(searchFor[0]);
+                found = begin.Seek(new Vector<byte>((byte)searchFor[0]));
             }
             else if (searchFor.Length == 2)
             {
-                found = begin.Seek(searchFor[0], searchFor[1]);
+                found = begin.Seek(new Vector<byte>((byte)searchFor[0]), new Vector<byte>((byte)searchFor[1]));
             }
             else if (searchFor.Length == 3)
             {
-                found = begin.Seek(searchFor[0], searchFor[1], searchFor[2]);
+                found = begin.Seek(new Vector<byte>((byte)searchFor[0]), new Vector<byte>((byte)searchFor[1]), new Vector<byte>((byte)searchFor[2]));
             }
             else
             {
@@ -217,7 +218,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
             block.End += chars.Length;
             var begin = block.GetIterator();
             var end = begin;
-            end.Seek(endChar);
+            end.Seek(new Vector<byte>((byte)endChar));
             string knownString;
 
             // Act
