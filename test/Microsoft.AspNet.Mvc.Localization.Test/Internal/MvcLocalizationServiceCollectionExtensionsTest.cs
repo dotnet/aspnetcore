@@ -67,7 +67,7 @@ namespace Microsoft.AspNet.Mvc.Localization.Internal
             collection.Add(ServiceDescriptor.Singleton(typeof(IHtmlLocalizerFactory), typeof(TestHtmlLocalizerFactory)));
             collection.Add(ServiceDescriptor.Transient(typeof(IHtmlLocalizer<>), typeof(TestHtmlLocalizer<>)));
             collection.Add(ServiceDescriptor.Transient(typeof(IViewLocalizer), typeof(TestViewLocalizer)));
-            collection.Add(ServiceDescriptor.Instance(typeof(HtmlEncoder), testEncoder));
+            collection.Add(ServiceDescriptor.Singleton(typeof(HtmlEncoder), testEncoder));
 
             MvcLocalizationServices.AddMvcLocalizationServices(
                 collection,
@@ -125,7 +125,7 @@ namespace Microsoft.AspNet.Mvc.Localization.Internal
 
             collection.Add(ServiceDescriptor.Transient(typeof(IHtmlLocalizer<>), typeof(TestHtmlLocalizer<>)));
             collection.Add(ServiceDescriptor.Transient(typeof(IHtmlLocalizer), typeof(TestViewLocalizer)));
-            collection.Add(ServiceDescriptor.Instance(typeof(HtmlEncoder), typeof(HtmlTestEncoder)));
+            collection.Add(ServiceDescriptor.Singleton(typeof(HtmlEncoder), typeof(HtmlTestEncoder)));
 
             // Assert
             Assert.Collection(collection,

@@ -123,7 +123,7 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             if (CompilationServices.Default != null)
             {
-                services.TryAdd(ServiceDescriptor.Instance(CompilationServices.Default.LibraryExporter));
+                services.TryAddSingleton(CompilationServices.Default.LibraryExporter);
             }
 
             services.TryAddEnumerable(
@@ -165,7 +165,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             if (PlatformServices.Default?.AssemblyLoadContextAccessor != null)
             {
-                services.TryAdd(ServiceDescriptor.Instance(PlatformServices.Default.AssemblyLoadContextAccessor));
+                services.TryAddSingleton(PlatformServices.Default.AssemblyLoadContextAccessor);
             }
         }
     }
