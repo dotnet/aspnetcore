@@ -5,7 +5,7 @@ default NO_PARALLEL_TEST_PROJECTS='${E("NO_PARALLEL_TEST_PROJECTS")}'
 
 @{/*
 
-dotnet-test
+xunit-test
     Run unit tests in your project.
 
 projectFile=''
@@ -34,17 +34,19 @@ projectFile=''
         IEnumerable<string> targetFrameworks = configs == null? 
             new string[0]: 
             configs.Keys.Where(k => k.StartsWith("dnx", StringComparison.OrdinalIgnoreCase));
+        
+        var runnerFolder = Path.GetFullPath(Path.Combine(KoreBuildFolderPath, "build", "xunit.runner.console", "tools"));
 
         foreach (var framework in targetFrameworks)
         {
-            if (framework.StartsWith("dnxcore"))
+            if (!framework.StartsWith("dnxcore"))
             {
-                 var publishFolder = Path.Combine(projectFolder, ".testPublish", framework);
-                 DotnetPublish(projectFile, publishFolder, framework);
+                var publishFolder = Path.Combine(projectFolder, ".testPublish", framework);
+                DotnetPublish(projectFile, publishFolder, framework);
+                Copy(runnerFolder, publishFolder, "*.exe", true);
                 
-                var runnerExe = Path.Combine(publishFolder, "dotnet-test-xunit.exe");
-                var targetTestDll = Path.Combine(publishFolder, projectName + ".dll");
-                Exec(runnerExe, targetTestDll);
+                var targetTestDll = projectName + ".dll";
+                ExecClr("xunit.console.exe", targetTestDll, publishFolder);
             }
         }
     }

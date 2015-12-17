@@ -25,4 +25,20 @@ functions
             return "t" + DateTime.UtcNow.ToString("yyMMddHHmmss");
         }
     }
+    
+    string DotBuildFolderPath
+    {
+        get
+        {
+            return Environment.GetEnvironmentVariable("BUILD_FOLDER");
+        }
+    }
+    
+    string KoreBuildFolderPath
+    {
+        get 
+        { 
+            return Environment.GetEnvironmentVariable("KOREBUILD_FOLDER"); 
+        }
+    }
   }

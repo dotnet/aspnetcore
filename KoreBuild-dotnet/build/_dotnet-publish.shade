@@ -11,6 +11,9 @@ outputFolder=''
 
 configuration=''
     Optional. The configuration to build in. Defaults to 'Debug'.
+    
+framework=''
+    Optional. The framework to publish
 */}
 
 default configuration = 'Debug'
@@ -20,10 +23,12 @@ default configuration = 'Debug'
     var projectName=Path.GetFileName(projectFolder);
     var projectBin=Path.Combine(projectFolder, "bin", configuration);
     
-    var outputArg = string.IsNullOrEmpty(outputFolder)? "": "-o " + outputFolder;
+    var outputArg = string.IsNullOrEmpty(outputFolder)? "": "--output " + outputFolder;
+    var frameworkArg = string.IsNullOrEmpty(framework)? "": "--framework " + framework;
 
     DeleteFolder(projectBin);
 
-    var dotnetArgs=string.Format("publish --configuration {0} {1} {2}", configuration, outputArg, projectFolder);
+    var dotnetArgs=string.Format("publish --configuration {0} {1} {2} {3}", configuration, frameworkArg, outputArg, projectFolder);
     Dotnet(dotnetArgs);
 }
+   

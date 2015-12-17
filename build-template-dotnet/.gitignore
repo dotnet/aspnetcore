@@ -3,6 +3,7 @@
 TestResults/
 .nuget/
 .build/
+.testPublish/
 *.sln.ide/
 _ReSharper.*/
 packages/

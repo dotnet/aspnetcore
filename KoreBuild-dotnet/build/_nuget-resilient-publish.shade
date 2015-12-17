@@ -51,6 +51,3 @@ set nugetArgs='${nugetArgs} ${extra}' if='!string.IsNullOrEmpty(extra)'
         }
     });
 }
-
-macro name='ExecClr' program='string' commandline='string'
-    exec-clr
