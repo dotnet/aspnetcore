@@ -38,7 +38,9 @@ namespace Microsoft.AspNet.Server.WebListener
             { typeof(IHttpBufferingFeature), _identityFunc },
             { typeof(IHttpRequestLifetimeFeature), _identityFunc },
             { typeof(IHttpUpgradeFeature), _identityFunc },
+#if WEBSOCKETS
             { typeof(IHttpWebSocketFeature), _identityFunc },
+#endif
             { typeof(IHttpAuthenticationFeature), _identityFunc },
             { typeof(IHttpRequestIdentifierFeature), _identityFunc },
             { typeof(RequestContext), ctx => ctx.RequestContext },
