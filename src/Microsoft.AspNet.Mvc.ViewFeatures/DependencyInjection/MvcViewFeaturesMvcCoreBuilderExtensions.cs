@@ -136,6 +136,12 @@ namespace Microsoft.Extensions.DependencyInjection
             // This does caching so it should stay singleton
             services.TryAddSingleton<ITempDataProvider, SessionStateTempDataProvider>();
 
+            //
+            // Antiforgery
+            //
+            services.TryAddSingleton<ValidateAntiforgeryTokenAuthorizationFilter>();
+            services.TryAddSingleton<AutoValidateAntiforgeryTokenAuthorizationFilter>();
+
             // These are stateless so their lifetime isn't really important.
             services.TryAddSingleton<ITempDataDictionaryFactory, TempDataDictionaryFactory>();
             services.TryAddSingleton<SaveTempDataFilter>();
