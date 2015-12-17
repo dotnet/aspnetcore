@@ -14,9 +14,14 @@ namespace Microsoft.AspNet.Http.Features
             Revision = collection.Revision;
         }
 
-        public readonly IFeatureCollection Collection;
-        public int Revision;
-        public TCache Cache;
+        public IFeatureCollection Collection { get; private set; }
+        public int Revision { get; private set; }
+
+        // cache is a public field because the code calling Fetch must
+        // be able to pass ref values that "dot through" the TCache struct memory, 
+        // if it was a Property then that getter would return a copy of the memory
+        // preventing the use of "ref"
+        public TCache Cache; 
 
         public TFeature Fetch<TFeature, TState>(
             ref TFeature cached,
