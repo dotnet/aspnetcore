@@ -11,96 +11,41 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Http.Internal
 {
-    public class DefaultHttpRequest : HttpRequest, IFeatureCache
+    public class DefaultHttpRequest : HttpRequest
     {
-        private readonly DefaultHttpContext _context;
-        private IFeatureCollection _features;
-        private int _cachedFeaturesRevision = -1;
-
-        private IHttpRequestFeature _request;
-        private IQueryFeature _query;
-        private IFormFeature _form;
-        private IRequestCookiesFeature _cookies;
+        private HttpContext _context;
+        private FeatureReferences<FeatureInterfaces> _features;
 
         public DefaultHttpRequest(DefaultHttpContext context, IFeatureCollection features)
         {
+            Initialize(context, features);
+        }
+
+        public virtual void Initialize(HttpContext context, IFeatureCollection features)
+        {
             _context = context;
-            _features = features;
-            ((IFeatureCache)this).SetFeaturesRevision();
+            _features = new FeatureReferences<FeatureInterfaces>(features);
         }
 
-        void IFeatureCache.CheckFeaturesRevision()
+        public virtual void Uninitialize()
         {
-            if (_cachedFeaturesRevision != _features.Revision)
-            {
-                ResetFeatures();
-            }
+            _context = null;
+            _features = default(FeatureReferences<FeatureInterfaces>);
         }
 
-        void IFeatureCache.SetFeaturesRevision()
-        {
-            _cachedFeaturesRevision = _features.Revision;
-        }
+        public override HttpContext HttpContext => _context;
 
-        public void UpdateFeatures(IFeatureCollection features)
-        {
-            _features = features;
-            ResetFeatures();
-        }
+        private IHttpRequestFeature HttpRequestFeature =>
+            _features.Fetch(ref _features.Cache.Request, f => null);
 
-        private void ResetFeatures()
-        {
-            _request = null;
-            _query = null;
-            _form = null;
-            _cookies = null;
+        private IQueryFeature QueryFeature =>
+            _features.Fetch(ref _features.Cache.Query, f => new QueryFeature(f));
 
-            ((IFeatureCache)this).SetFeaturesRevision();
-        }
+        private IFormFeature FormFeature =>
+            _features.Fetch(ref _features.Cache.Form, this, self => new FormFeature(self));
 
-        private IHttpRequestFeature HttpRequestFeature
-        {
-            get { return FeatureHelpers.GetAndCache(this, _features, ref _request); }
-        }
-
-        private IQueryFeature QueryFeature
-        {
-            get
-            {
-                return FeatureHelpers.GetOrCreateAndCache(
-                    this, 
-                    _features, 
-                    (f) => new QueryFeature(f), 
-                    ref _query);
-            }
-        }
-
-        private IFormFeature FormFeature
-        {
-            get
-            {
-                return FeatureHelpers.GetOrCreateAndCache(
-                    this,
-                    _features,
-                    this,
-                    (r) => new FormFeature(r),
-                    ref _form);
-            }
-        }
-
-        private IRequestCookiesFeature RequestCookiesFeature
-        {
-            get
-            {
-                return FeatureHelpers.GetOrCreateAndCache(
-                    this, 
-                    _features, 
-                    (f) => new RequestCookiesFeature(f), 
-                    ref _cookies);
-            }
-        }
-
-        public override HttpContext HttpContext { get { return _context; } }
+        private IRequestCookiesFeature RequestCookiesFeature =>
+            _features.Fetch(ref _features.Cache.Cookies, f => new RequestCookiesFeature(f));
 
         public override PathString PathBase
         {
@@ -205,6 +150,14 @@ namespace Microsoft.AspNet.Http.Internal
         public override Task<IFormCollection> ReadFormAsync(CancellationToken cancellationToken)
         {
             return FormFeature.ReadFormAsync(cancellationToken);
+        }
+
+        struct FeatureInterfaces
+        {
+            public IHttpRequestFeature Request;
+            public IQueryFeature Query;
+            public IFormFeature Form;
+            public IRequestCookiesFeature Cookies;
         }
     }
 }

@@ -10,56 +10,30 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Http.Internal
 {
-    public class DefaultWebSocketManager : WebSocketManager, IFeatureCache
+    public class DefaultWebSocketManager : WebSocketManager
     {
-        private IFeatureCollection _features;
-        private int _cachedFeaturesRevision = -1;
-
-        private IHttpRequestFeature _request;
-        private IHttpWebSocketFeature _webSockets;
+        private FeatureReferences<FeatureInterfaces> _features;
 
         public DefaultWebSocketManager(IFeatureCollection features)
         {
-            _features = features;
-            ((IFeatureCache)this).SetFeaturesRevision();
+            Initialize(features);
         }
 
-        void IFeatureCache.CheckFeaturesRevision()
+        public virtual void Initialize(IFeatureCollection features)
         {
-            if (_cachedFeaturesRevision != _features.Revision)
-            {
-                ResetFeatures();
-            }
+            _features = new FeatureReferences<FeatureInterfaces>(features);
         }
 
-        void IFeatureCache.SetFeaturesRevision()
+        public virtual void Uninitialize()
         {
-            _cachedFeaturesRevision = _features.Revision;
+            _features = default(FeatureReferences<FeatureInterfaces>);
         }
 
-        public void UpdateFeatures(IFeatureCollection features)
-        {
-            _features = features;
-            ResetFeatures();
-        }
+        private IHttpRequestFeature HttpRequestFeature =>
+            _features.Fetch(ref _features.Cache.Request, f => null);
 
-        private void ResetFeatures()
-        {
-            _request = null;
-            _webSockets = null;
-
-            ((IFeatureCache)this).SetFeaturesRevision();
-        }
-
-        private IHttpRequestFeature HttpRequestFeature
-        {
-            get { return FeatureHelpers.GetAndCache(this, _features, ref _request); }
-        }
-
-        private IHttpWebSocketFeature WebSocketFeature
-        {
-            get { return FeatureHelpers.GetAndCache(this, _features, ref _webSockets); }
-        }
+        private IHttpWebSocketFeature WebSocketFeature =>
+            _features.Fetch(ref _features.Cache.WebSockets, f => null);
 
         public override bool IsWebSocketRequest
         {
@@ -84,6 +58,12 @@ namespace Microsoft.AspNet.Http.Internal
                 throw new NotSupportedException("WebSockets are not supported");
             }
             return WebSocketFeature.AcceptAsync(new WebSocketAcceptContext() { SubProtocol = subProtocol });
+        }
+
+        struct FeatureInterfaces
+        {
+            public IHttpRequestFeature Request;
+            public IHttpWebSocketFeature WebSockets;
         }
     }
 }

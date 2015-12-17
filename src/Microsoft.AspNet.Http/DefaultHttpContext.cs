@@ -14,173 +14,99 @@ using Microsoft.AspNet.Http.Features.Internal;
 
 namespace Microsoft.AspNet.Http.Internal
 {
-    public class DefaultHttpContext : HttpContext, IFeatureCache
+    public class DefaultHttpContext : HttpContext
     {
-        private readonly DefaultHttpRequest _request;
-        private readonly DefaultHttpResponse _response;
+        private FeatureReferences<FeatureInterfaces> _features;
 
-        private DefaultAuthenticationManager _authenticationManager;
-        private DefaultConnectionInfo _connection;
-        private DefaultWebSocketManager _websockets;
-
-        private IItemsFeature _items;
-        private IServiceProvidersFeature _serviceProviders;
-        private IHttpAuthenticationFeature _authentication;
-        private IHttpRequestLifetimeFeature _lifetime;
-        private ISessionFeature _session;
-
-        private IFeatureCollection _features;
-        private int _cachedFeaturesRevision = -1;
+        private HttpRequest _request;
+        private HttpResponse _response;
+        private AuthenticationManager _authenticationManager;
+        private ConnectionInfo _connection;
+        private WebSocketManager _websockets;
 
         public DefaultHttpContext()
             : this(new FeatureCollection())
         {
-            _features.Set<IHttpRequestFeature>(new HttpRequestFeature());
-            _features.Set<IHttpResponseFeature>(new HttpResponseFeature());
-            ((IFeatureCache)this).SetFeaturesRevision();
+            Features.Set<IHttpRequestFeature>(new HttpRequestFeature());
+            Features.Set<IHttpResponseFeature>(new HttpResponseFeature());
         }
 
         public DefaultHttpContext(IFeatureCollection features)
         {
-            _features = features;
-            _request = new DefaultHttpRequest(this, features);
-            _response = new DefaultHttpResponse(this, features);
-            ((IFeatureCache)this).SetFeaturesRevision();
+            Initialize(features);
         }
 
-        void IFeatureCache.CheckFeaturesRevision()
+        public virtual void Initialize(IFeatureCollection features)
         {
-            if (_cachedFeaturesRevision !=_features.Revision)
+            _features = new FeatureReferences<FeatureInterfaces>(features);
+            _request = InitializeHttpRequest();
+            _response = InitializeHttpResponse();
+        }
+
+        public virtual void Uninitialize()
+        {
+            _features = default(FeatureReferences<FeatureInterfaces>);
+            if (_request != null)
             {
-                ResetFeatures();
+                UninitializeHttpRequest(_request);
+                _request = null;
             }
-        }
-
-        void IFeatureCache.SetFeaturesRevision()
-        {
-            _cachedFeaturesRevision = _features.Revision;
-        }
-
-        public void UpdateFeatures(IFeatureCollection features)
-        {
-            _features = features;
-            ResetFeatures();
-
-            _request.UpdateFeatures(features);
-            _response.UpdateFeatures(features);
-
-            _authenticationManager?.UpdateFeatures(features);
-            _connection?.UpdateFeatures(features);
-            _websockets?.UpdateFeatures(features);
-        }
-
-        private void ResetFeatures()
-        {
-            _items = null;
-            _serviceProviders = null;
-            _authentication = null;
-            _lifetime = null;
-            _session = null;
-
-            ((IFeatureCache)this).SetFeaturesRevision();
-        }
-
-        IItemsFeature ItemsFeature
-        {
-            get
+            if (_response != null)
             {
-                return FeatureHelpers.GetOrCreateAndCache(
-                    this, 
-                    _features, 
-                    () => new ItemsFeature(), 
-                    ref _items);
+                UninitializeHttpResponse(_response);
+                _response = null;
             }
-        }
-
-        IServiceProvidersFeature ServiceProvidersFeature
-        {
-            get
+            if (_authenticationManager != null)
             {
-                return FeatureHelpers.GetOrCreateAndCache(
-                    this, 
-                    _features, 
-                    () => new ServiceProvidersFeature(), 
-                    ref _serviceProviders);
+                UninitializeAuthenticationManager(_authenticationManager);
+                _authenticationManager = null;
             }
-        }
-
-        private IHttpAuthenticationFeature HttpAuthenticationFeature
-        {
-            get
+            if (_connection != null)
             {
-                return FeatureHelpers.GetOrCreateAndCache(
-                    this, 
-                    _features, 
-                    () => new HttpAuthenticationFeature(), 
-                    ref _authentication);
+                UninitializeConnectionInfo(_connection);
+                _connection = null;
             }
-        }
-
-        private IHttpRequestLifetimeFeature LifetimeFeature
-        {
-            get
+            if (_websockets != null)
             {
-                return FeatureHelpers.GetOrCreateAndCache(
-                    this, 
-                    _features, 
-                    () => new HttpRequestLifetimeFeature(), 
-                    ref _lifetime);
+                UninitializeWebSocketManager(_websockets);
+                _websockets = null;
             }
         }
+        
+        private IItemsFeature ItemsFeature =>
+            _features.Fetch(ref _features.Cache.Items, f => new ItemsFeature());
 
-        private ISessionFeature SessionFeature
-        {
-            get { return FeatureHelpers.GetAndCache(this, _features, ref _session); }
-            set
-            {
-                _features.Set(value);
-                _session = value;
-            }
-        }
+        private IServiceProvidersFeature ServiceProvidersFeature =>
+            _features.Fetch(ref _features.Cache.ServiceProviders, f => new ServiceProvidersFeature());
 
-        private IHttpRequestIdentifierFeature RequestIdentifierFeature
-        {
-            get {
-                return FeatureHelpers.GetOrCreate<IHttpRequestIdentifierFeature>(
-                  _features,
-                  () => new HttpRequestIdentifierFeature());
-            }
-        }
+        private IHttpAuthenticationFeature HttpAuthenticationFeature =>
+            _features.Fetch(ref _features.Cache.Authentication, f => new HttpAuthenticationFeature());
 
-        public override IFeatureCollection Features { get { return _features; } }
+        private IHttpRequestLifetimeFeature LifetimeFeature =>
+            _features.Fetch(ref _features.Cache.Lifetime, f => new HttpRequestLifetimeFeature());
 
-        public override HttpRequest Request { get { return _request; } }
+        private ISessionFeature SessionFeature =>
+            _features.Fetch(ref _features.Cache.Session, f => new DefaultSessionFeature());
 
-        public override HttpResponse Response { get { return _response; } }
+        private ISessionFeature SessionFeatureOrNull =>
+            _features.Fetch(ref _features.Cache.Session, f => null);
 
-        public override ConnectionInfo Connection
-        {
-            get
-            {
-                if (_connection == null)
-                {
-                    _connection = new DefaultConnectionInfo(_features);
-                }
-                return _connection;
-            }
-        }
 
-        public override AuthenticationManager Authentication
-        {
-            get
-            {
-                if (_authenticationManager == null)
-                {
-                    _authenticationManager = new DefaultAuthenticationManager(_features);
-                }
-                return _authenticationManager;
-            }
-        }
+        private IHttpRequestIdentifierFeature RequestIdentifierFeature =>
+            _features.Fetch(ref _features.Cache.RequestIdentifier, f => new HttpRequestIdentifierFeature());
+
+        public override IFeatureCollection Features => _features.Collection;
+
+        public override HttpRequest Request => _request;
+
+        public override HttpResponse Response => _response;
+
+        public override ConnectionInfo Connection => _connection ?? (_connection = InitializeConnectionInfo());
+
+        public override AuthenticationManager Authentication => _authenticationManager ?? (_authenticationManager = InitializeAuthenticationManager());
+
+        public override WebSocketManager WebSockets => _websockets ?? (_websockets = InitializeWebSocketManager());
+
 
         public override ClaimsPrincipal User
         {
@@ -225,7 +151,7 @@ namespace Microsoft.AspNet.Http.Internal
         {
             get
             {
-                var feature = SessionFeature;
+                var feature = SessionFeatureOrNull;
                 if (feature == null)
                 {
                     throw new InvalidOperationException("Session has not been configured for this application " +
@@ -235,31 +161,41 @@ namespace Microsoft.AspNet.Http.Internal
             }
             set
             {
-                var feature = SessionFeature;
-                if (feature == null)
-                {
-                    feature = new DefaultSessionFeature();
-                    SessionFeature = feature;
-                }
-                feature.Session = value;
+                SessionFeature.Session = value;
             }
         }
 
-        public override WebSocketManager WebSockets
-        {
-            get
-            {
-                if (_websockets == null)
-                {
-                    _websockets = new DefaultWebSocketManager(_features);
-                }
-                return _websockets;
-            }
-        }
+        
 
         public override void Abort()
         {
             LifetimeFeature.Abort();
+        }
+
+
+        protected virtual HttpRequest InitializeHttpRequest() => new DefaultHttpRequest(this, Features);
+        protected virtual void UninitializeHttpRequest(HttpRequest instance) { }
+
+        protected virtual HttpResponse InitializeHttpResponse() => new DefaultHttpResponse(this, Features);
+        protected virtual void UninitializeHttpResponse(HttpResponse instance) { }
+
+        protected virtual ConnectionInfo InitializeConnectionInfo() => new DefaultConnectionInfo(Features);
+        protected virtual void UninitializeConnectionInfo(ConnectionInfo instance) { }
+
+        protected virtual AuthenticationManager InitializeAuthenticationManager() => new DefaultAuthenticationManager(Features);
+        protected virtual void UninitializeAuthenticationManager(AuthenticationManager instance) { }
+
+        protected virtual WebSocketManager InitializeWebSocketManager() => new DefaultWebSocketManager(Features);
+        protected virtual void UninitializeWebSocketManager(WebSocketManager instance) { }
+
+        struct FeatureInterfaces
+        {
+            public IItemsFeature Items;
+            public IServiceProvidersFeature ServiceProviders;
+            public IHttpAuthenticationFeature Authentication;
+            public IHttpRequestLifetimeFeature Lifetime;
+            public ISessionFeature Session;
+            public IHttpRequestIdentifierFeature RequestIdentifier;
         }
     }
 }

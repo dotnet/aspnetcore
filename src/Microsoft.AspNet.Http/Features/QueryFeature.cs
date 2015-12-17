@@ -7,12 +7,9 @@ using Microsoft.AspNet.WebUtilities;
 
 namespace Microsoft.AspNet.Http.Features.Internal
 {
-    public class QueryFeature : IQueryFeature, IFeatureCache
+    public class QueryFeature : IQueryFeature
     {
-        private readonly IFeatureCollection _features;
-        private int _cachedFeaturesRevision = -1;
-
-        private IHttpRequestFeature _request;
+        private FeatureReferences<IHttpRequestFeature> _features;
 
         private string _original;
         private IQueryCollection _parsedValues;
@@ -34,34 +31,17 @@ namespace Microsoft.AspNet.Http.Features.Internal
                 throw new ArgumentNullException(nameof(features));
             }
 
-            _features = features;
-            ((IFeatureCache)this).SetFeaturesRevision();
+            _features = new FeatureReferences<IHttpRequestFeature>(features);
         }
 
-        void IFeatureCache.CheckFeaturesRevision()
-        {
-            if (_cachedFeaturesRevision != _features.Revision)
-            {
-                _request = null;
-                ((IFeatureCache)this).SetFeaturesRevision();
-            }
-        }
-
-        void IFeatureCache.SetFeaturesRevision()
-        {
-            _cachedFeaturesRevision = _features.Revision;
-        }
-
-        private IHttpRequestFeature HttpRequestFeature
-        {
-            get { return FeatureHelpers.GetAndCache(this, _features, ref _request); }
-        }
+        private IHttpRequestFeature HttpRequestFeature =>
+            _features.Fetch(ref _features.Cache, f => null);
 
         public IQueryCollection Query
         {
             get
             {
-                if (_features == null)
+                if (_features.Collection == null)
                 {
                     if (_parsedValues == null)
                     {
@@ -91,7 +71,7 @@ namespace Microsoft.AspNet.Http.Features.Internal
             set
             {
                 _parsedValues = value;
-                if (_features != null)
+                if (_features.Collection != null)
                 {
                     if (value == null)
                     {

@@ -154,68 +154,63 @@ namespace Microsoft.AspNet.Http.Internal
         public void UpdateFeatures_ClearsCachedFeatures()
         {
             var features = new FeatureCollection();
-
-            var context = new DefaultHttpContext(features);
-
-            var request = (DefaultHttpRequest)context.Request;
-            var response = (DefaultHttpResponse)context.Response;
-
-            var authentication = (DefaultAuthenticationManager)context.Authentication;
-            var connection = (DefaultConnectionInfo)context.Connection;
-            var websockets = (DefaultWebSocketManager)context.WebSockets;
-
-            Assert.Equal(0, features.Count());
-
-            TestCachedFeaturesAreNull(context.GetType(), context, features);
-            TestCachedFeaturesAreNull(request.GetType(), request, features);
-            TestCachedFeaturesAreNull(response.GetType(), response, features);
-            TestCachedFeaturesAreNull(authentication.GetType(), authentication, features);
-            TestCachedFeaturesAreNull(connection.GetType(), connection, features);
-            TestCachedFeaturesAreNull(websockets.GetType(), websockets, features);
-            
-            context.Session = new TestSession();
             features.Set<IHttpRequestFeature>(new HttpRequestFeature());
             features.Set<IHttpResponseFeature>(new HttpResponseFeature());
             features.Set<IHttpWebSocketFeature>(new TestHttpWebSocketFeature());
 
-            TestCachedFeaturesAreSet(context.GetType(), context, features);
-            TestCachedFeaturesAreSet(request.GetType(), request, features);
-            TestCachedFeaturesAreSet(response.GetType(), response, features);
-            TestCachedFeaturesAreSet(authentication.GetType(), authentication, features);
-            TestCachedFeaturesAreSet(connection.GetType(), connection, features);
-            TestCachedFeaturesAreSet(websockets.GetType(), websockets, features);
+            var context = new DefaultHttpContext(features);
 
-            Assert.NotEqual(0, features.Count());
+            Assert.Equal(3, features.Count());
 
-            var newFeatures = new FeatureCollection();
-            context.UpdateFeatures(newFeatures);
-
-            Assert.Equal(0, newFeatures.Count());
-
-            TestCachedFeaturesAreNull(context.GetType(), context, newFeatures);
-            TestCachedFeaturesAreNull(request.GetType(), request, newFeatures);
-            TestCachedFeaturesAreNull(response.GetType(), response, newFeatures);
-            TestCachedFeaturesAreNull(authentication.GetType(), authentication, newFeatures);
-            TestCachedFeaturesAreNull(connection.GetType(), connection, newFeatures);
-            TestCachedFeaturesAreNull(websockets.GetType(), websockets, newFeatures);
-
+            TestCachedFeaturesAreNull(context, features);
+            TestCachedFeaturesAreNull(context.Request, features);
+            TestCachedFeaturesAreNull(context.Response, features);
+            TestCachedFeaturesAreNull(context.Authentication, features);
+            TestCachedFeaturesAreNull(context.Connection, features);
+            TestCachedFeaturesAreNull(context.WebSockets, features);
+            
             context.Session = new TestSession();
+
+            TestCachedFeaturesAreSet(context, features);
+            TestCachedFeaturesAreSet(context.Request, features);
+            TestCachedFeaturesAreSet(context.Response, features);
+            TestCachedFeaturesAreSet(context.Authentication, features);
+            TestCachedFeaturesAreSet(context.Connection, features);
+            TestCachedFeaturesAreSet(context.WebSockets, features);
+
+            Assert.NotEqual(3, features.Count());
+
+            context.Uninitialize();
+            var newFeatures = new FeatureCollection();
             newFeatures.Set<IHttpRequestFeature>(new HttpRequestFeature());
             newFeatures.Set<IHttpResponseFeature>(new HttpResponseFeature());
             newFeatures.Set<IHttpWebSocketFeature>(new TestHttpWebSocketFeature());
+            context.Initialize(newFeatures);
 
-            TestCachedFeaturesAreSet(context.GetType(), context, newFeatures);
-            TestCachedFeaturesAreSet(request.GetType(), request, newFeatures);
-            TestCachedFeaturesAreSet(response.GetType(), response, newFeatures);
-            TestCachedFeaturesAreSet(authentication.GetType(), authentication, newFeatures);
-            TestCachedFeaturesAreSet(connection.GetType(), connection, newFeatures);
-            TestCachedFeaturesAreSet(websockets.GetType(), websockets, newFeatures);
+            Assert.Equal(3, newFeatures.Count());
 
-            Assert.NotEqual(0, newFeatures.Count());
+            TestCachedFeaturesAreNull(context, newFeatures);
+            TestCachedFeaturesAreNull(context.Request, newFeatures);
+            TestCachedFeaturesAreNull(context.Response, newFeatures);
+            TestCachedFeaturesAreNull(context.Authentication, newFeatures);
+            TestCachedFeaturesAreNull(context.Connection, newFeatures);
+            TestCachedFeaturesAreNull(context.WebSockets, newFeatures);
+
+            context.Session = new TestSession();
+
+            TestCachedFeaturesAreSet(context, newFeatures);
+            TestCachedFeaturesAreSet(context.Request, newFeatures);
+            TestCachedFeaturesAreSet(context.Response, newFeatures);
+            TestCachedFeaturesAreSet(context.Authentication, newFeatures);
+            TestCachedFeaturesAreSet(context.Connection, newFeatures);
+            TestCachedFeaturesAreSet(context.WebSockets, newFeatures);
+
+            Assert.NotEqual(3, newFeatures.Count());
         }
 
-        void TestCachedFeaturesAreNull(Type type, object value, IFeatureCollection features)
+        void TestCachedFeaturesAreNull(object value, IFeatureCollection features)
         {
+            var type = value.GetType();
 
             var fields = type
                 .GetFields(BindingFlags.NonPublic | BindingFlags.Instance)
@@ -234,8 +229,10 @@ namespace Microsoft.AspNet.Http.Internal
             }
         }
 
-        void TestCachedFeaturesAreSet(Type type, object value, IFeatureCollection features)
+        void TestCachedFeaturesAreSet(object value, IFeatureCollection features)
         {
+            var type = value.GetType();
+
             var properties = type
                 .GetProperties(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance)
                 .Where(p => p.PropertyType.GetTypeInfo().IsInterface);
@@ -274,6 +271,7 @@ namespace Microsoft.AspNet.Http.Internal
                 {
                     if (property.Name.Contains("Feature"))
                     {
+                        Console.WriteLine($"{value.GetType().Name} {property.Name}");
                         var v = property.GetValue(value);
                         Assert.Same(features[property.PropertyType], v);
                         Assert.NotNull(v);
