@@ -133,23 +133,23 @@ namespace Microsoft.Extensions.Localization
         }
 
         /// <inheritdoc />
-        public virtual IEnumerable<LocalizedString> GetAllStrings(bool includeAncestorCultures) =>
-            GetAllStrings(includeAncestorCultures, CultureInfo.CurrentUICulture);
+        public virtual IEnumerable<LocalizedString> GetAllStrings(bool includeParentCultures) =>
+            GetAllStrings(includeParentCultures, CultureInfo.CurrentUICulture);
 
         /// <summary>
         /// Returns all strings in the specified culture.
         /// </summary>
-        /// <param name="includeAncestorCultures"></param>
+        /// <param name="includeParentCultures"></param>
         /// <param name="culture">The <see cref="CultureInfo"/> to get strings for.</param>
         /// <returns>The strings.</returns>
-        protected IEnumerable<LocalizedString> GetAllStrings(bool includeAncestorCultures, CultureInfo culture)
+        protected IEnumerable<LocalizedString> GetAllStrings(bool includeParentCultures, CultureInfo culture)
         {
             if (culture == null)
             {
                 throw new ArgumentNullException(nameof(culture));
             }
 
-            var resourceNames = includeAncestorCultures
+            var resourceNames = includeParentCultures
                 ? GetResourceNamesFromCultureHierarchy(culture)
                 : GetResourceNamesForCulture(culture);
 

@@ -61,7 +61,7 @@ namespace Microsoft.Extensions.Localization
         }
 
         /// <inheritdoc />
-        public IEnumerable<LocalizedString> GetAllStrings(bool includeAncestorCultures) =>
-            _localizer.GetAllStrings(includeAncestorCultures);
+        public IEnumerable<LocalizedString> GetAllStrings(bool includeParentCultures) =>
+            _localizer.GetAllStrings(includeParentCultures);
     }
 }

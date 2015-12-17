@@ -29,12 +29,11 @@ namespace Microsoft.Extensions.Localization
         /// <summary>
         /// Gets all string resources.
         /// </summary>
-        /// <param name="includeAncestorCultures">
-        /// A <see cref="System.Boolean"/> indicating whether to include
-        /// strings from ancestor cultures.
+        /// <param name="includeParentCultures">
+        /// A <see cref="System.Boolean"/> indicating whether to include strings from parent cultures.
         /// </param>
         /// <returns>The strings.</returns>
-        IEnumerable<LocalizedString> GetAllStrings(bool includeAncestorCultures);
+        IEnumerable<LocalizedString> GetAllStrings(bool includeParentCultures);
 
         /// <summary>
         /// Creates a new <see cref="ResourceManagerStringLocalizer"/> for a specific <see cref="CultureInfo"/>.

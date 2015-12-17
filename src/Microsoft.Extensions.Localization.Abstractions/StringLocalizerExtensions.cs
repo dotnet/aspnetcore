@@ -57,7 +57,7 @@ namespace Microsoft.Extensions.Localization
         }
 
         /// <summary>
-        /// Gets all string resources including those for ancestor cultures.
+        /// Gets all string resources including those for parent cultures.
         /// </summary>
         /// <param name="stringLocalizer">The <see cref="IStringLocalizer"/>.</param>
         /// <returns>The string resources.</returns>
@@ -68,7 +68,7 @@ namespace Microsoft.Extensions.Localization
                 throw new ArgumentNullException(nameof(stringLocalizer));
             }
 
-            return stringLocalizer.GetAllStrings(includeAncestorCultures: true);
+            return stringLocalizer.GetAllStrings(includeParentCultures: true);
         }
     }
 }
