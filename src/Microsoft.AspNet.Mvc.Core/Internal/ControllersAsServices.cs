@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.Mvc.Internal
             }
 
             services.Replace(ServiceDescriptor.Transient<IControllerActivator, ServiceBasedControllerActivator>());
-            services.Replace(ServiceDescriptor.Instance<IControllerTypeProvider>(controllerTypeProvider));
+            services.Replace(ServiceDescriptor.Singleton<IControllerTypeProvider>(controllerTypeProvider));
         }
 
         public static void AddControllersAsServices(IServiceCollection services, IEnumerable<Assembly> assemblies)

@@ -65,7 +65,7 @@ namespace Microsoft.Extensions.DependencyInjection
             //
             if (PlatformServices.Default?.LibraryManager != null)
             {
-                services.TryAdd(ServiceDescriptor.Instance(PlatformServices.Default.LibraryManager));
+                services.TryAddSingleton(PlatformServices.Default.LibraryManager);
             }
 
             //
