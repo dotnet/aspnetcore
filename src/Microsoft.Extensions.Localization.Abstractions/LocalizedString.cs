@@ -8,7 +8,7 @@ namespace Microsoft.Extensions.Localization
     /// <summary>
     /// A locale specific string.
     /// </summary>
-    public struct LocalizedString
+    public class LocalizedString
     {
         /// <summary>
         /// Creates a new <see cref="LocalizedString"/>.
