@@ -108,8 +108,8 @@ namespace Microsoft.AspNet.Builder
             }
 
             var inlineConstraintResolver = routeBuilder
-                                           .ServiceProvider
-                                           .GetRequiredService<IInlineConstraintResolver>();
+                .ServiceProvider
+                .GetRequiredService<IInlineConstraintResolver>();
 
             routeBuilder.Routes.Add(new Route(
                 routeBuilder.DefaultHandler,
