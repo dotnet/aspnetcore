@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
         [Fact]
         private void FullByteRangeSupported()
         {
-            var byteRange = Enumerable.Range(0, 255).Select(x => (byte)x).ToArray();
+            var byteRange = Enumerable.Range(0, 256).Select(x => (byte)x).ToArray();
 
             var mem = MemoryPoolBlock2.Create(new ArraySegment<byte>(byteRange), IntPtr.Zero, null, null);
             mem.End = byteRange.Length;
@@ -74,7 +74,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
         }
 
         [Fact]
-        private void HeapAllocationProducesCorrectResults()
+        private void LargeAllocationProducesCorrectResults()
         {
             var byteRange = Enumerable.Range(0, 16384 + 64).Select(x => (byte)x).ToArray();
             var expectedByteRange = byteRange.Concat(byteRange).ToArray();
