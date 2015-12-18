@@ -27,10 +27,23 @@ export DOTNET_HOME=DOTNET_INSTALL_DIR
 export KOREBUILD_FOLDER=$koreBuildFolder
 source $koreBuildFolder/build/dotnet-install.sh
 
+# ==== Temporary ====		
+if ! type dnvm > /dev/null 2>&1; then		
+    source $koreBuildFolder/build/dnvm.sh		
+fi		
+if ! type dnx > /dev/null 2>&1 || [ -z "$SKIP_DNX_INSTALL" ]; then		
+    dnvm install latest -runtime coreclr -alias default		
+    dnvm install default -runtime mono -alias default		
+else		
+    dnvm use default -runtime mono		
+fi		
+# ============
+
 makefilePath=makefile.shade
 if test ! -f $makefilePath; then
     makefilePath=$koreBuildFolder/build/makefile.shade
 fi
+echo "Using makefile: ${makefile}"
 
 # Probe for Mono Reference assemblies
 if test -z "$DOTNET_REFERENCE_ASSEMBLIES_PATH"; then

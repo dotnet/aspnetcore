@@ -1,0 +1,28 @@
+@{/*
+
+dnx
+    Run dnx commands in your project. Executes `dnx` command.
+
+command=''
+    The `dnx` subcommand to execute.
+dnxDir=''
+    Optional. The directory in which to execute the `dnx` command.
+dnvmUse=''
+    Optional. The DNX framework to use. Suitable for a `dnvm run` or `dnvm use` command.
+*/}
+
+default currentDir = '${Directory.GetCurrentDirectory()}'
+default dnxDir = '${ currentDir }'
+
+default dnvmUse=''
+var dnvmPath = '${ Path.Combine(Directory.GetCurrentDirectory(), ".build", "KoreBuild-dotnet", "build", "dnvm") }'
+
+exec program='cmd' commandline='/C dnx ${command}' workingdir='${dnxDir}' if='!IsLinux && string.IsNullOrEmpty(dnvmUse)'
+
+var cmdCommand = '/S /C ""${dnvmPath}.cmd" use ${dnvmUse} && dnx ${command}"'
+exec program='cmd' commandline='${ cmdCommand }' workingdir='${dnxDir}' if='!IsLinux && !string.IsNullOrEmpty(dnvmUse)'
+
+exec program='dnx' commandline='${command}' workingdir='${dnxDir}' if='IsLinux && string.IsNullOrEmpty(dnvmUse)'
+
+var envCommand = 'bash -c "source \"${dnvmPath}.sh\" && dnvm use ${dnvmUse} && dnx ${command}"'
+exec program='/usr/bin/env' commandline='${ envCommand }' workingdir='${dnxDir}' if='IsLinux && !string.IsNullOrEmpty(dnvmUse)'

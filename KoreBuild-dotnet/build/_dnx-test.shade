@@ -1,0 +1,56 @@
+use import="Json"
+use import="Environment"
+
+default NO_PARALLEL_TEST_PROJECTS='${E("NO_PARALLEL_TEST_PROJECTS")}'
+default KOREBUILD_TEST_DNXCORE='${E("KOREBUILD_TEST_DNXCORE")}'
+default KOREBUILD_TEST_SKIPMONO='${E("KOREBUILD_TEST_SKIPMONO")}'
+
+@{/*
+
+dnx-test
+    Run unit tests in your project.
+
+projectFile=''
+    Required. Path to the test project.json to execute
+
+*/}
+
+@{
+    var projectText = File.ReadAllText(projectFile);
+    var project = (JsonObject)Json.Deserialize(projectText);
+
+    var commands = project.ValueAsJsonObject("commands");
+
+    if (commands != null && commands.Keys.Contains("test"))
+    {    
+        var projectFolder = Path.GetDirectoryName(projectFile);
+        var projectName = Path.GetFileName(projectFolder);
+
+        var noParallelTestProjects = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        if (!string.IsNullOrEmpty(NO_PARALLEL_TEST_PROJECTS))
+        {
+            noParallelTestProjects.UnionWith(NO_PARALLEL_TEST_PROJECTS.Split((char)','));
+        }
+
+        var configs = project.ValueAsJsonObject("frameworks");
+        IEnumerable<string> targetFrameworks = configs == null? 
+            new string[0]: 
+            configs.Keys.Where(k => k.StartsWith("dnx", StringComparison.OrdinalIgnoreCase));
+        
+        foreach (var framework in targetFrameworks)
+        {
+            var testArgs = noParallelTestProjects.Contains(projectName) ? " -parallel none" : "";
+
+            if (framework.StartsWith("dnxcore", StringComparison.OrdinalIgnoreCase))
+            {
+                if (IsLinux)
+                {
+                    // Work around issue with testing in parallel on Mono.
+                    testArgs = " -parallel none";
+                }
+
+                Dnx("test" + testArgs, projectFolder, "default -runtime coreclr");
+            }
+        }
+    }
+}

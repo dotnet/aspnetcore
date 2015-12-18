@@ -171,12 +171,14 @@ default NUGET_FEED = 'https://api.nuget.org/v3/index.json'
     if (ShouldRunInParallel)
     {
         Parallel.ForEach(projectFiles, projectFile => XunitTest(projectFile, testParallel: true));
-        Parallel.ForEach(projectFiles, projectFile => DotnetTest(projectFile, testParallel: true));
+        //Parallel.ForEach(projectFiles, projectFile => DotnetTest(projectFile, testParallel: true));
+        Parallel.ForEach(projectFiles, projectFile => DnxTest(projectFile, testParallel: true));
     }
     else
     {
         projectFiles.ForEach(projectFile => XunitTest(projectFile, testParallel: false));
-        projectFiles.ForEach(projectFile => DotnetTest(projectFile, testParallel: false));
+        //projectFiles.ForEach(projectFile => DotnetTest(projectFile, testParallel: false));
+        projectFiles.ForEach(projectFile => DnxTest(projectFile, testParallel: false));
     }
   }
 
@@ -347,4 +349,11 @@ macro name="DotnetTest" projectFile='string' testParallel='bool'
 
 macro name="XunitTest" projectFile='string' testParallel='bool'
     xunit-test
+    
+    
+macro name='Dnx' command='string' dnxDir='string' dnvmUse='string'
+    dnx
+    
+macro name="DnxTest" projectFile='string' testParallel='bool'
+    dnx-test
    
