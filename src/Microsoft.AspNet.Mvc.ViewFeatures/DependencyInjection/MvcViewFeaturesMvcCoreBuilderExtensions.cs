@@ -112,7 +112,8 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAdd(ServiceDescriptor.Singleton<JsonOutputFormatter>(serviceProvider =>
             {
                 var options = serviceProvider.GetRequiredService<IOptions<MvcJsonOptions>>().Value;
-                return new JsonOutputFormatter(options.SerializerSettings);
+                var charPool = serviceProvider.GetRequiredService<ArrayPool<char>>();
+                return new JsonOutputFormatter(options.SerializerSettings, charPool);
             }));
 
             //

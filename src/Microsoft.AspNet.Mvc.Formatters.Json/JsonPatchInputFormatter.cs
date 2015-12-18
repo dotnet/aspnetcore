@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNet.JsonPatch;
@@ -14,12 +15,15 @@ namespace Microsoft.AspNet.Mvc.Formatters
     public class JsonPatchInputFormatter : JsonInputFormatter
     {
         public JsonPatchInputFormatter(ILogger logger)
-            : this(logger, SerializerSettingsProvider.CreateSerializerSettings())
+            : this(logger, SerializerSettingsProvider.CreateSerializerSettings(), ArrayPool<char>.Shared)
         {
         }
 
-        public JsonPatchInputFormatter(ILogger logger, JsonSerializerSettings serializerSettings)
-            : base(logger, serializerSettings)
+        public JsonPatchInputFormatter(
+            ILogger logger,
+            JsonSerializerSettings serializerSettings,
+            ArrayPool<char> charPool)
+            : base(logger, serializerSettings, charPool)
         {
             // Clear all values and only include json-patch+json value.
             SupportedMediaTypes.Clear();

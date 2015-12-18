@@ -2,9 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Mvc.Formatters.Json.Internal;
 using Microsoft.AspNet.Mvc.Internal;
 using Newtonsoft.Json;
 
@@ -15,6 +17,8 @@ namespace Microsoft.AspNet.Mvc.Formatters
     /// </summary>
     public class JsonOutputFormatter : OutputFormatter
     {
+        private readonly IArrayPool<char> _charPool;
+
         private JsonSerializerSettings _serializerSettings;
 
         // Perf: JsonSerializers are relatively expensive to create, and are thread safe. We cache
@@ -22,18 +26,29 @@ namespace Microsoft.AspNet.Mvc.Formatters
         private JsonSerializer _serializer;
 
         public JsonOutputFormatter()
-            : this(SerializerSettingsProvider.CreateSerializerSettings())
+            : this(SerializerSettingsProvider.CreateSerializerSettings(), ArrayPool<char>.Shared)
         {
         }
 
         public JsonOutputFormatter(JsonSerializerSettings serializerSettings)
+            : this(serializerSettings, ArrayPool<char>.Shared)
+        {
+        }
+
+        public JsonOutputFormatter(JsonSerializerSettings serializerSettings, ArrayPool<char> charPool)
         {
             if (serializerSettings == null)
             {
                 throw new ArgumentNullException(nameof(serializerSettings));
             }
 
+            if (charPool == null)
+            {
+                throw new ArgumentNullException(nameof(charPool));
+            }
+
             _serializerSettings = serializerSettings;
+            _charPool = new JsonArrayPool<char>(charPool);
 
             SupportedEncodings.Add(Encoding.UTF8);
             SupportedEncodings.Add(Encoding.Unicode);
@@ -94,8 +109,11 @@ namespace Microsoft.AspNet.Mvc.Formatters
                 throw new ArgumentNullException(nameof(writer));
             }
 
-            var jsonWriter = new JsonTextWriter(writer);
-            jsonWriter.CloseOutput = false;
+            var jsonWriter = new JsonTextWriter(writer)
+            {
+                ArrayPool = _charPool,
+                CloseOutput = false,
+            };
 
             return jsonWriter;
         }

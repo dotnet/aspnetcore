@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Mvc.Formatters.Json.Internal;
 using Microsoft.AspNet.Mvc.Formatters.Json.Logging;
 using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.AspNet.Mvc.ModelBinding;
@@ -13,16 +15,22 @@ namespace Microsoft.AspNet.Mvc.Formatters
 {
     public class JsonInputFormatter : InputFormatter
     {
-        private JsonSerializerSettings _serializerSettings;
-        private ILogger _logger;
+        private readonly IArrayPool<char> _charPool;
+        private readonly ILogger _logger;
 
+        private JsonSerializerSettings _serializerSettings;
 
         public JsonInputFormatter(ILogger logger)
-            : this(logger, SerializerSettingsProvider.CreateSerializerSettings())
+            : this(logger, SerializerSettingsProvider.CreateSerializerSettings(), ArrayPool<char>.Shared)
         {
         }
 
         public JsonInputFormatter(ILogger logger, JsonSerializerSettings serializerSettings)
+            : this(logger, serializerSettings, ArrayPool<char>.Shared)
+        {
+        }
+
+        public JsonInputFormatter(ILogger logger, JsonSerializerSettings serializerSettings, ArrayPool<char> charPool)
         {
             if (serializerSettings == null)
             {
@@ -36,6 +44,7 @@ namespace Microsoft.AspNet.Mvc.Formatters
 
             _logger = logger;
             _serializerSettings = serializerSettings;
+            _charPool = new JsonArrayPool<char>(charPool);
 
             SupportedEncodings.Add(UTF8EncodingWithoutBOM);
             SupportedEncodings.Add(UTF16EncodingLittleEndian);
@@ -84,6 +93,7 @@ namespace Microsoft.AspNet.Mvc.Formatters
             {
                 using (var jsonReader = new JsonTextReader(streamReader))
                 {
+                    jsonReader.ArrayPool = _charPool;
                     jsonReader.CloseInput = false;
 
                     var successful = true;
