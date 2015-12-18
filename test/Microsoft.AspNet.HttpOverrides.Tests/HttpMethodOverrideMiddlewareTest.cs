@@ -4,6 +4,7 @@
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.TestHost;
 using Xunit;
 
@@ -15,16 +16,18 @@ namespace Microsoft.AspNet.HttpOverrides
         public async Task XHttpMethodOverrideHeaderAvaiableChangesRequestMethod()
         {
             var assertsExecuted = false;
-            var server = TestServer.Create(app =>
-            {
-                app.UseHttpMethodOverride();
-                app.Run(context =>
+            var builder = new WebApplicationBuilder()
+                .Configure(app =>
                 {
-                    assertsExecuted = true;
-                    Assert.Equal("DELETE", context.Request.Method);
-                    return Task.FromResult(0);
+                    app.UseHttpMethodOverride();
+                    app.Run(context =>
+                    {
+                        assertsExecuted = true;
+                        Assert.Equal("DELETE", context.Request.Method);
+                        return Task.FromResult(0);
+                    });
                 });
-            });
+            var server = new TestServer(builder);
 
             var req = new HttpRequestMessage(HttpMethod.Post, "");
             req.Headers.Add("X-Http-Method-Override", "DELETE");
@@ -36,16 +39,19 @@ namespace Microsoft.AspNet.HttpOverrides
         public async Task XHttpMethodOverrideHeaderUnavaiableDoesntChangeRequestMethod()
         {
             var assertsExecuted = false;
-            var server = TestServer.Create(app =>
-            {
-                app.UseHttpMethodOverride();
-                app.Run(context =>
+            var builder = new WebApplicationBuilder()
+                .Configure(app =>
                 {
-                    Assert.Equal("POST",context.Request.Method);
-                    assertsExecuted = true;
-                    return Task.FromResult(0);
+                    app.UseHttpMethodOverride();
+                    app.Run(context =>
+                    {
+                        Assert.Equal("POST",context.Request.Method);
+                        assertsExecuted = true;
+                        return Task.FromResult(0);
+                    });
                 });
-            });
+            var server = new TestServer(builder);
+
             var req = new HttpRequestMessage(HttpMethod.Post, "");
             await server.CreateClient().SendAsync(req);
             Assert.True(assertsExecuted);
@@ -55,16 +61,19 @@ namespace Microsoft.AspNet.HttpOverrides
         public async Task XHttpMethodOverrideFromGetRequestDoesntChangeMethodType()
         {
             var assertsExecuted = false;
-            var server = TestServer.Create(app =>
-            {
-                app.UseHttpMethodOverride();
-                app.Run(context =>
+            var builder = new WebApplicationBuilder()
+                .Configure(app =>
                 {
-                    Assert.Equal("GET", context.Request.Method);
-                    assertsExecuted = true;
-                    return Task.FromResult(0);
+                    app.UseHttpMethodOverride();
+                    app.Run(context =>
+                    {
+                        Assert.Equal("GET", context.Request.Method);
+                        assertsExecuted = true;
+                        return Task.FromResult(0);
+                    });
                 });
-            });
+            var server = new TestServer(builder);
+
             var req = new HttpRequestMessage(HttpMethod.Get, "");
             await server.CreateClient().SendAsync(req);
             Assert.True(assertsExecuted);

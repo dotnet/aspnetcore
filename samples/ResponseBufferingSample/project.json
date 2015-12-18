@@ -1,15 +1,14 @@
 ﻿{
-  "webroot": "wwwroot",
   "version": "1.0.0-*",
   "dependencies": {
-    "Kestrel": "1.0.0-*",
     "Microsoft.AspNet.Buffering": "1.0.0-*",
-    "Microsoft.AspNet.Server.IIS": "1.0.0-*",
-    "Microsoft.AspNet.Server.WebListener": "1.0.0-*"
+    "Microsoft.AspNet.Server.Kestrel": "1.0.0-*"
+  },
+  "compilationOptions": {
+    "emitEntryPoint": true
   },
   "commands": {
-    "web": "Microsoft.AspNet.Server.WebListener --server.urls=http://localhost:5000",
-    "kestrel": "Kestrel --server.urls=http://localhost:5001"
+    "web": "ResponseBufferingSample" 
   },
   "frameworks": {
     "dnx451": { },
