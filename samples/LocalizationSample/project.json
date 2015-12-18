@@ -1,5 +1,4 @@
 {
-  "webroot": "wwwroot",
   "version": "1.0.0-*",
 
   "dependencies": {
@@ -8,8 +7,12 @@
     "Microsoft.AspNet.Server.Kestrel": "1.0.0-*"
   },
 
+  "compilationOptions": {
+    "emitEntryPoint": true
+  },
+
   "commands": {
-    "web": "Microsoft.AspNet.Server.Kestrel"
+    "web": "LocalizationSample"
   },
 
   "frameworks": {

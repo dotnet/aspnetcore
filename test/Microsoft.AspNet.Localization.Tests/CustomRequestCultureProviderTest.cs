@@ -6,11 +6,11 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Localization;
 using Microsoft.AspNet.TestHost;
-using Microsoft.Extensions.Globalization;
 using Xunit;
 
 namespace Microsoft.Extensions.Localization.Tests
@@ -20,35 +20,38 @@ namespace Microsoft.Extensions.Localization.Tests
         [Fact]
         public async void CustomRequestCultureProviderThatGetsCultureInfoFromUrl()
         {
-            using (var server = TestServer.Create(app =>
-            {
-                var options = new RequestLocalizationOptions()
+            var builder = new WebApplicationBuilder()
+                .Configure(app =>
                 {
-                    DefaultRequestCulture = new RequestCulture("en-US"),
-                    SupportedCultures = new List<CultureInfo>
+                    var options = new RequestLocalizationOptions()
                     {
-                        new CultureInfo("ar")
-                    },
-                    SupportedUICultures = new List<CultureInfo>
+                        DefaultRequestCulture = new RequestCulture("en-US"),
+                        SupportedCultures = new List<CultureInfo>
+                        {
+                            new CultureInfo("ar")
+                        },
+                        SupportedUICultures = new List<CultureInfo>
+                        {
+                            new CultureInfo("ar")
+                        }
+                    };
+                    options.RequestCultureProviders.Insert(0, new CustomRequestCultureProvider(context =>
                     {
-                        new CultureInfo("ar")
-                    }
-                };
-                options.RequestCultureProviders.Insert(0, new CustomRequestCultureProvider(context =>
-                {
-                    var culture = GetCultureInfoFromUrl(context, options.SupportedCultures);
-                    var requestCulture = new ProviderCultureResult(culture);
-                    return Task.FromResult(requestCulture);
-                }));
-                app.UseRequestLocalization(options);
-                app.Run(context =>
-                {
-                    var requestCultureFeature = context.Features.Get<IRequestCultureFeature>();
-                    var requestCulture = requestCultureFeature.RequestCulture;
-                    Assert.Equal("ar", requestCulture.Culture.Name);
-                    return Task.FromResult(0);
+                        var culture = GetCultureInfoFromUrl(context, options.SupportedCultures);
+                        var requestCulture = new ProviderCultureResult(culture);
+                        return Task.FromResult(requestCulture);
+                    }));
+                    app.UseRequestLocalization(options);
+                    app.Run(context =>
+                    {
+                        var requestCultureFeature = context.Features.Get<IRequestCultureFeature>();
+                        var requestCulture = requestCultureFeature.RequestCulture;
+                        Assert.Equal("ar", requestCulture.Culture.Name);
+                        return Task.FromResult(0);
+                    });
                 });
-            }))
+
+            using (var server = new TestServer(builder))
             {
                 var client = server.CreateClient();
                 var response = await client.GetAsync("/ar/page");

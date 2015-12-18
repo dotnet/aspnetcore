@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Localization;
@@ -161,6 +162,16 @@ $@"<!doctype html>
 #endif
             await context.Response.WriteAsync($"    <option value=\"en-NOTREAL\">English (Not a real locale)</option>");
             await context.Response.WriteAsync($"    <option value=\"pp-NOTREAL\">Made-up (Not a real anything)</option>");
+        }
+
+        public static void Main(string[] args)
+        {
+            var application = new WebApplicationBuilder()
+                .UseConfiguration(WebApplicationConfiguration.GetDefault(args))
+                .UseStartup<Startup>()
+                .Build();
+
+            application.Run();
         }
     }
 }
