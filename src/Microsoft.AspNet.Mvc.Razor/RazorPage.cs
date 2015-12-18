@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.Mvc.Razor
     public abstract class RazorPage : IRazorPage
     {
         private readonly HashSet<string> _renderedSections = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        private readonly Stack<TextWriter> _writerScopes;
+        private readonly Stack<HtmlContentWrapperTextWriter> _writerScopes;
         private TextWriter _originalWriter;
         private IUrlHelper _urlHelper;
         private ITagHelperActivator _tagHelperActivator;
@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         public RazorPage()
         {
             SectionWriters = new Dictionary<string, RenderAsyncDelegate>(StringComparer.OrdinalIgnoreCase);
-            _writerScopes = new Stack<TextWriter>();
+            _writerScopes = new Stack<HtmlContentWrapperTextWriter>();
         }
 
         /// <summary>
@@ -209,29 +209,14 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// </remarks>
         public void StartTagHelperWritingScope()
         {
-            var buffer = new ViewBuffer(BufferScope, Path);
-            StartTagHelperWritingScope(new HtmlContentWrapperTextWriter(buffer, Output.Encoding));
-        }
-
-        /// <summary>
-        /// Starts a new writing scope with the given <paramref name="writer"/>.
-        /// </summary>
-        /// <remarks>
-        /// All writes to the <see cref="Output"/> or <see cref="ViewContext.Writer"/> after calling this method will
-        /// be buffered until <see cref="EndTagHelperWritingScope"/> is called.
-        /// </remarks>
-        public void StartTagHelperWritingScope(TextWriter writer)
-        {
-            if (writer == null)
-            {
-                throw new ArgumentNullException(nameof(writer));
-            }
-
             // If there isn't a base writer take the ViewContext.Writer
             if (_originalWriter == null)
             {
                 _originalWriter = ViewContext.Writer;
             }
+
+            var buffer = new ViewBuffer(BufferScope, Path);
+            var writer = new HtmlContentWrapperTextWriter(buffer, _originalWriter.Encoding);
 
             // We need to replace the ViewContext's Writer to ensure that all content (including content written
             // from HTML helpers) is redirected.
@@ -243,8 +228,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <summary>
         /// Ends the current writing scope that was started by calling <see cref="StartTagHelperWritingScope"/>.
         /// </summary>
-        /// <returns>The <see cref="TextWriter"/> that contains the content written to the <see cref="Output"/> or
-        /// <see cref="ViewContext.Writer"/> during the writing scope.</returns>
+        /// <returns>The buffered <see cref="TagHelperContent"/>.</returns>
         public TagHelperContent EndTagHelperWritingScope()
         {
             if (_writerScopes.Count == 0)
@@ -253,6 +237,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             }
 
             var writer = _writerScopes.Pop();
+            Debug.Assert(writer == ViewContext.Writer);
 
             if (_writerScopes.Count > 0)
             {
@@ -267,24 +252,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             }
 
             var tagHelperContent = new DefaultTagHelperContent();
-            var razorWriter = writer as RazorTextWriter;
-            if (razorWriter != null)
-            {
-                tagHelperContent.Append(razorWriter.Buffer);
-            }
-            else
-            {
-                var htmlContentTextWriter = writer as HtmlContentWrapperTextWriter;
-                if (htmlContentTextWriter != null)
-                {
-                    tagHelperContent.Append(htmlContentTextWriter.ContentBuilder);
-                }
-                else
-                {
-                    tagHelperContent.AppendHtml(writer.ToString());
-                }
-            }
-
+            tagHelperContent.Append(writer.ContentBuilder);
             return tagHelperContent;
         }
 

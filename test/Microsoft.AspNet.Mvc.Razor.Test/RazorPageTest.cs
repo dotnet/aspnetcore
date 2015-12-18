@@ -176,32 +176,6 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         [Fact]
-        public async Task EndTagHelperWritingScope_CopiesContent_IfRazorTextWriter()
-        {
-            // Arrange
-            var viewContext = CreateViewContext();
-
-            // Act
-            var page = CreatePage(v =>
-            {
-                v.HtmlEncoder = new HtmlTestEncoder();
-                var buffer = new ViewBuffer(new TestViewBufferScope(), v.Path);
-                v.StartTagHelperWritingScope(new RazorTextWriter(TextWriter.Null, buffer, v.HtmlEncoder));
-                v.Write("Hello ");
-                v.Write("World!");
-                var returnValue = v.EndTagHelperWritingScope();
-
-                // Assert
-                var content = Assert.IsType<DefaultTagHelperContent>(returnValue);
-                Assert.Equal("HtmlEncode[[Hello ]]HtmlEncode[[World!]]", content.GetContent());
-                Assert.Equal(
-                    "HtmlEncode[[Hello ]]HtmlEncode[[World!]]",
-                    HtmlContentUtilities.HtmlContentToString(content));
-            }, viewContext);
-            await page.ExecuteAsync();
-        }
-
-        [Fact]
         public async Task DefineSection_ThrowsIfSectionIsAlreadyDefined()
         {
             // Arrange
