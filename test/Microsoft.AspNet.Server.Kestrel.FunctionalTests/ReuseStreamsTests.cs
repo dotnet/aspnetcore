@@ -30,23 +30,24 @@ namespace Microsoft.AspNet.Server.Kestrel.FunctionalTests
                 })
                 .Build();
 
-            var hostBuilder = new WebHostBuilder(config);
-            hostBuilder.UseServerFactory("Microsoft.AspNet.Server.Kestrel");
-            hostBuilder.UseStartup(app =>
-            {
-                var serverInfo = app.ServerFeatures.Get<IKestrelServerInformation>();
-                app.Run(context =>
+            var builder = new WebApplicationBuilder()
+                .UseConfiguration(config)
+                .UseServerFactory("Microsoft.AspNet.Server.Kestrel")
+                .Configure(app =>
                 {
-                    if (context.Request.Body != lastStream)
+                    var serverInfo = app.ServerFeatures.Get<IKestrelServerInformation>();
+                    app.Run(context =>
                     {
-                        lastStream = context.Request.Body;
-                        streamCount++;
-                    }
-                    return context.Request.Body.CopyToAsync(context.Response.Body);
-                });
-            });            
+                        if (context.Request.Body != lastStream)
+                        {
+                            lastStream = context.Request.Body;
+                            streamCount++;
+                        }
+                        return context.Request.Body.CopyToAsync(context.Response.Body);
+                    });
+                });            
 
-            using (var app = hostBuilder.Build().Start())
+            using (var app = builder.Build().Start())
             {
                 using (var client = new HttpClient())
                 {
@@ -84,21 +85,22 @@ namespace Microsoft.AspNet.Server.Kestrel.FunctionalTests
                 })
                 .Build();
 
-            var hostBuilder = new WebHostBuilder(config);
-            hostBuilder.UseServerFactory("Microsoft.AspNet.Server.Kestrel");
-            hostBuilder.UseStartup(app =>
-            {
-                var serverInfo = app.ServerFeatures.Get<IKestrelServerInformation>();
-                app.Run(context =>
+            var hostBuilder = new WebApplicationBuilder()
+                .UseConfiguration(config)
+                .UseServerFactory("Microsoft.AspNet.Server.Kestrel")
+                .Configure(app =>
                 {
-                    if (context.Request.Body != lastStream)
+                    var serverInfo = app.ServerFeatures.Get<IKestrelServerInformation>();
+                    app.Run(context =>
                     {
-                        lastStream = context.Request.Body;
-                        streamCount++;
-                    }
-                    return context.Request.Body.CopyToAsync(context.Response.Body);
+                        if (context.Request.Body != lastStream)
+                        {
+                            lastStream = context.Request.Body;
+                            streamCount++;
+                        }
+                        return context.Request.Body.CopyToAsync(context.Response.Body);
+                    });
                 });
-            });
 
             using (var app = hostBuilder.Build().Start())
             {
