@@ -4,6 +4,7 @@
 using System.Globalization;
 using System.Threading;
 using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Routing;
 using Microsoft.Extensions.DependencyInjection;
@@ -59,6 +60,16 @@ namespace RoutingSample.Web
             routeBuilder.AddPrefixRoute("", endpoint2);
 
             app.UseRouter(routeBuilder.Build());
+        }
+
+        public static void Main(string[] args)
+        {
+            var application = new WebApplicationBuilder()
+                .UseConfiguration(WebApplicationConfiguration.GetDefault(args))
+                .UseStartup<Startup>()
+                .Build();
+
+            application.Run();
         }
     }
 }
