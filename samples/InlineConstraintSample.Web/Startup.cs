@@ -10,28 +10,13 @@ namespace InlineConstraintSample.Web
 {
     public class Startup
     {
-        // Set up application services
         public void ConfigureServices(IServiceCollection services)
         {
-            services.ConfigureRouting(
-                routeOptions => routeOptions.ConstraintMap.Add(
-                    "IsbnDigitScheme10",
-                    typeof(IsbnDigitScheme10Constraint)));
-
-            services.ConfigureRouting(
-                routeOptions => routeOptions.ConstraintMap.Add(
-                    "IsbnDigitScheme13",
-                    typeof(IsbnDigitScheme10Constraint)));
-
-            // Update an existing constraint from ConstraintMap for test purpose.
-            services.ConfigureRouting(
-                routeOptions =>
-                {
-                    if (routeOptions.ConstraintMap.ContainsKey("IsbnDigitScheme13"))
-                    {
-                        routeOptions.ConstraintMap["IsbnDigitScheme13"] = typeof(IsbnDigitScheme13Constraint);
-                    }
-                });
+            services.AddRouting( routeOptions =>
+            {
+                routeOptions.ConstraintMap.Add("IsbnDigitScheme10", typeof(IsbnDigitScheme10Constraint));
+                routeOptions.ConstraintMap.Add("IsbnDigitScheme13", typeof(IsbnDigitScheme13Constraint));
+            });
 
             // Add MVC services to the services container
             services.AddMvc();
