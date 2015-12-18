@@ -4,6 +4,7 @@
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http.Features.Authentication;
 using Microsoft.AspNet.TestHost;
 using Xunit;
@@ -17,18 +18,20 @@ namespace Microsoft.AspNet.IISPlatformHandler
         {
             var assertsExecuted = false;
 
-            var server = TestServer.Create(app =>
-            {
-                app.UseIISPlatformHandler();
-                app.Run(context =>
+            var builder = new WebApplicationBuilder()
+                .Configure(app =>
                 {
-                    var auth = (IHttpAuthenticationFeature)context.Features[typeof(IHttpAuthenticationFeature)];
-                    Assert.NotNull(auth);
-                    Assert.Equal("Microsoft.AspNet.IISPlatformHandler.AuthenticationHandler", auth.Handler.GetType().FullName);
-                    assertsExecuted = true;
-                    return Task.FromResult(0);
+                    app.UseIISPlatformHandler();
+                    app.Run(context =>
+                    {
+                        var auth = (IHttpAuthenticationFeature)context.Features[typeof(IHttpAuthenticationFeature)];
+                        Assert.NotNull(auth);
+                        Assert.Equal("Microsoft.AspNet.IISPlatformHandler.AuthenticationHandler", auth.Handler.GetType().FullName);
+                        assertsExecuted = true;
+                        return Task.FromResult(0);
+                    });
                 });
-            });
+            var server = new TestServer(builder);
 
             var req = new HttpRequestMessage(HttpMethod.Get, "");
             await server.CreateClient().SendAsync(req);
@@ -41,17 +44,19 @@ namespace Microsoft.AspNet.IISPlatformHandler
         {
             var assertsExecuted = false;
 
-            var server = TestServer.Create(app =>
-            {
-                app.UseIISPlatformHandler(options => options.FlowWindowsAuthentication = false);
-                app.Run(context =>
+            var builder = new WebApplicationBuilder()
+                .Configure(app =>
                 {
-                    var auth = (IHttpAuthenticationFeature)context.Features[typeof(IHttpAuthenticationFeature)];
-                    Assert.Null(auth);
-                    assertsExecuted = true;
-                    return Task.FromResult(0);
+                    app.UseIISPlatformHandler(options => options.FlowWindowsAuthentication = false);
+                    app.Run(context =>
+                    {
+                        var auth = (IHttpAuthenticationFeature)context.Features[typeof(IHttpAuthenticationFeature)];
+                        Assert.Null(auth);
+                        assertsExecuted = true;
+                        return Task.FromResult(0);
+                    });
                 });
-            });
+            var server = new TestServer(builder);
 
             var req = new HttpRequestMessage(HttpMethod.Get, "");
             await server.CreateClient().SendAsync(req);
