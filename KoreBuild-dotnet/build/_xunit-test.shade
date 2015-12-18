@@ -41,6 +41,12 @@ projectFile=''
         {
             if (!framework.StartsWith("dnxcore"))
             {
+                if (IsLinux)
+                {
+                    // Work around issue with testing in parallel on Mono.
+                    testArgs = " -parallel none";
+                }
+
                 var publishFolder = Path.Combine(projectFolder, ".testPublish", framework);
                 DotnetPublish(projectFile, publishFolder, framework);
                 Copy(runnerFolder, publishFolder, "*.*", true);
@@ -48,7 +54,7 @@ projectFile=''
                 var targetTestDll = projectName + ".dll";
 
                 var runnerExe = Path.GetFullPath(Path.Combine(publishFolder, "xunit.console.exe"));
-                ExecClr(runnerExe, targetTestDll, publishFolder);
+                ExecClr(runnerExe, testArgs + " " targetTestDll, publishFolder);
             }
         }
     }
