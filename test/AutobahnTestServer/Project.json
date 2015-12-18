@@ -1,18 +1,17 @@
 {
-    "webroot": "wwwroot",
-    "exclude": "wwwroot/**/*",
-    "dependencies": {
-        "Microsoft.AspNet.Server.IIS": "1.0.0-*",
-        "Microsoft.AspNet.Server.WebListener": "1.0.0-*",
-        "Microsoft.AspNet.WebSockets.Server": "1.0.0-*",
-        "Microsoft.AspNet.Server.Kestrel": "1.0.0-*"
-    },
-    "commands": {
-        "web": "Microsoft.AspNet.Hosting --server Microsoft.AspNet.Server.WebListener --server.urls http://localhost:12345",
-        "kestrel": "Microsoft.AspNet.Hosting --server Microsoft.AspNet.Server.Kestrel --server.urls http://localhost:12344"
-    },
-    "frameworks" : {
-        "dnx451" : { },
-        "dnxcore50" : { }
-    }
+  "exclude": "wwwroot/**/*",
+  "dependencies": {
+    "Microsoft.AspNet.WebSockets.Server": "1.0.0-*",
+    "Microsoft.AspNet.Server.Kestrel": "1.0.0-*"
+  },
+  "compilationOptions": {
+    "emitEntryPoint": true
+  },
+  "commands": {
+    "web": "AutobahnTestServer"
+  },
+  "frameworks": {
+    "dnx451": { },
+    "dnxcore50": { }
+  }
 }

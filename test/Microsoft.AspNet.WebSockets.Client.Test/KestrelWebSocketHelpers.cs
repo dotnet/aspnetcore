@@ -45,12 +45,13 @@ namespace Microsoft.AspNet.WebSockets.Client.Test
             var config = configBuilder.Build();
             config["server.urls"] = "http://localhost:54321";
 
-            var host = new WebHostBuilder(config)
+            var application = new WebApplicationBuilder()
+                .UseConfiguration(config)
                 .UseServerFactory("Microsoft.AspNet.Server.Kestrel")
-                .UseStartup(startup)
+                .Configure(startup)
                 .Build();
 
-            return host.Start();
+            return application.Start();
         }
     }
 }
