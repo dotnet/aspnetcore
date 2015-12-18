@@ -12,6 +12,7 @@ using Microsoft.AspNet.Authentication.MicrosoftAccount;
 using Microsoft.AspNet.Authentication.OAuth;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.DataProtection;
+using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Authentication;
 using Microsoft.AspNet.TestHost;
@@ -177,53 +178,55 @@ namespace Microsoft.AspNet.Authentication.Tests.MicrosoftAccount
 
         private static TestServer CreateServer(Action<MicrosoftAccountOptions> configureOptions)
         {
-            return TestServer.Create(app =>
-            {
-                app.UseCookieAuthentication(options =>
+            var builder = new WebApplicationBuilder()
+                .Configure(app =>
                 {
-                    options.AuthenticationScheme = TestExtensions.CookieAuthenticationScheme;
-                    options.AutomaticAuthenticate = true;
-                });
-                app.UseMicrosoftAccountAuthentication(configureOptions);
+                    app.UseCookieAuthentication(options =>
+                    {
+                        options.AuthenticationScheme = TestExtensions.CookieAuthenticationScheme;
+                        options.AutomaticAuthenticate = true;
+                    });
+                    app.UseMicrosoftAccountAuthentication(configureOptions);
 
-                app.Use(async (context, next) =>
+                    app.Use(async (context, next) =>
+                    {
+                        var req = context.Request;
+                        var res = context.Response;
+                        if (req.Path == new PathString("/challenge"))
+                        {
+                            await context.Authentication.ChallengeAsync("Microsoft");
+                        }
+                        else if (req.Path == new PathString("/me"))
+                        {
+                            res.Describe(context.User);
+                        }
+                        else if (req.Path == new PathString("/signIn"))
+                        {
+                            await Assert.ThrowsAsync<NotSupportedException>(() => context.Authentication.SignInAsync("Microsoft", new ClaimsPrincipal()));
+                        }
+                        else if (req.Path == new PathString("/signOut"))
+                        {
+                            await Assert.ThrowsAsync<NotSupportedException>(() => context.Authentication.SignOutAsync("Microsoft"));
+                        }
+                        else if (req.Path == new PathString("/forbid"))
+                        {
+                            await Assert.ThrowsAsync<NotSupportedException>(() => context.Authentication.ForbidAsync("Microsoft"));
+                        }
+                        else
+                        {
+                            await next();
+                        }
+                    });
+                })
+                .ConfigureServices(services =>
                 {
-                    var req = context.Request;
-                    var res = context.Response;
-                    if (req.Path == new PathString("/challenge"))
+                    services.AddAuthentication();
+                    services.Configure<SharedAuthenticationOptions>(options =>
                     {
-                        await context.Authentication.ChallengeAsync("Microsoft");
-                    }
-                    else if (req.Path == new PathString("/me"))
-                    {
-                        res.Describe(context.User);
-                    }
-                    else if (req.Path == new PathString("/signIn"))
-                    {
-                        await Assert.ThrowsAsync<NotSupportedException>(() => context.Authentication.SignInAsync("Microsoft", new ClaimsPrincipal()));
-                    }
-                    else if (req.Path == new PathString("/signOut"))
-                    {
-                        await Assert.ThrowsAsync<NotSupportedException>(() => context.Authentication.SignOutAsync("Microsoft"));
-                    }
-                    else if (req.Path == new PathString("/forbid"))
-                    {
-                        await Assert.ThrowsAsync<NotSupportedException>(() => context.Authentication.ForbidAsync("Microsoft"));
-                    }
-                    else
-                    {
-                        await next();
-                    }
+                        options.SignInScheme = TestExtensions.CookieAuthenticationScheme;
+                    });
                 });
-            },
-            services =>
-            {
-                services.AddAuthentication();
-                services.Configure<SharedAuthenticationOptions>(options =>
-                {
-                    options.SignInScheme = TestExtensions.CookieAuthenticationScheme;
-                });
-            });
+            return new TestServer(builder);
         }
 
         private static HttpResponseMessage ReturnJsonResponse(object content)

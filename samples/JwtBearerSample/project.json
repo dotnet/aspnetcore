@@ -11,7 +11,7 @@
     "Microsoft.Extensions.Configuration.UserSecrets": "1.0.0-*"
   },
   "commands": {
-    "web": "Microsoft.AspNet.Server.Kestrel"
+    "web": "JwtBearerSample"
   },
   "frameworks": {
     "dnx451": { },

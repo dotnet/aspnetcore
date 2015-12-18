@@ -4,6 +4,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Http.Features.Internal;
@@ -129,18 +130,20 @@ namespace Microsoft.AspNet.CookiePolicy.Test
         [Fact]
         public async Task CookiePolicyCanHijackAppend()
         {
-            var server = TestServer.Create(app =>
-            {
-                app.UseCookiePolicy(options => options.OnAppendCookie = ctx => ctx.CookieName = ctx.CookieValue = "Hao");
-                app.Run(context =>
+            var builder = new WebApplicationBuilder()
+                .Configure(app =>
                 {
-                    context.Response.Cookies.Append("A", "A");
-                    context.Response.Cookies.Append("B", "B", new CookieOptions { Secure = false });
-                    context.Response.Cookies.Append("C", "C", new CookieOptions());
-                    context.Response.Cookies.Append("D", "D", new CookieOptions { Secure = true });
-                    return Task.FromResult(0);
+                    app.UseCookiePolicy(options => options.OnAppendCookie = ctx => ctx.CookieName = ctx.CookieValue = "Hao");
+                    app.Run(context =>
+                    {
+                        context.Response.Cookies.Append("A", "A");
+                        context.Response.Cookies.Append("B", "B", new CookieOptions { Secure = false });
+                        context.Response.Cookies.Append("C", "C", new CookieOptions());
+                        context.Response.Cookies.Append("D", "D", new CookieOptions { Secure = true });
+                        return Task.FromResult(0);
+                    });
                 });
-            });
+            var server = new TestServer(builder);
 
             var transaction = await server.SendAsync("http://example.com/login");
 
@@ -154,7 +157,8 @@ namespace Microsoft.AspNet.CookiePolicy.Test
         [Fact]
         public async Task CookiePolicyCanHijackDelete()
         {
-            var server = TestServer.Create(app =>
+            var builder = new WebApplicationBuilder()
+                .Configure(app =>
             {
                 app.UseCookiePolicy(options => options.OnDeleteCookie = ctx => ctx.CookieName = "A");
                 app.Run(context =>
@@ -166,6 +170,7 @@ namespace Microsoft.AspNet.CookiePolicy.Test
                     return Task.FromResult(0);
                 });
             });
+            var server = new TestServer(builder);
 
             var transaction = await server.SendAsync("http://example.com/login");
 
@@ -177,7 +182,8 @@ namespace Microsoft.AspNet.CookiePolicy.Test
         [Fact]
         public async Task CookiePolicyCallsCookieFeature()
         {
-            var server = TestServer.Create(app =>
+            var builder = new WebApplicationBuilder()
+                .Configure(app =>
             {
                 app.Use(next => context =>
                 {
@@ -194,6 +200,7 @@ namespace Microsoft.AspNet.CookiePolicy.Test
                     return context.Response.WriteAsync("Done");
                 });
             });
+            var server = new TestServer(builder);
 
             var transaction = await server.SendAsync("http://example.com/login");
             Assert.Equal("Done", transaction.ResponseText);
@@ -251,7 +258,8 @@ namespace Microsoft.AspNet.CookiePolicy.Test
             RequestDelegate configureSetup,
             params RequestTest[] tests)
         {
-            var server = TestServer.Create(app =>
+            var builder = new WebApplicationBuilder()
+                .Configure(app =>
             {
                 app.Map(path, map =>
                 {
@@ -259,6 +267,7 @@ namespace Microsoft.AspNet.CookiePolicy.Test
                     map.Run(configureSetup);
                 });
             });
+            var server = new TestServer(builder);
             foreach (var test in tests)
             {
                 await test.Execute(server);

@@ -9,6 +9,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Authentication;
 using Microsoft.AspNet.Http.Features.Authentication;
@@ -536,67 +537,69 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
 
         private static TestServer CreateServer(Action<JwtBearerOptions> configureOptions, Func<HttpContext, bool> handler = null)
         {
-            return TestServer.Create(app =>
-            {
-                if (configureOptions != null)
+            var builder = new WebApplicationBuilder()
+                .Configure(app =>
                 {
-                    app.UseJwtBearerAuthentication(configureOptions);
-                }
-
-                app.Use(async (context, next) =>
-                {
-                    if (context.Request.Path == new PathString("/checkforerrors"))
+                    if (configureOptions != null)
                     {
-                        var authContext = new AuthenticateContext(Http.Authentication.AuthenticationManager.AutomaticScheme);
-                        await context.Authentication.AuthenticateAsync(authContext);
-                        if (authContext.Error != null)
-                        {
-                            throw new Exception("Failed to authenticate", authContext.Error);
-                        }
-                        return;
+                        app.UseJwtBearerAuthentication(configureOptions);
                     }
-                    else if (context.Request.Path == new PathString("/oauth"))
-                    {
-                        if (context.User == null ||
-                            context.User.Identity == null ||
-                            !context.User.Identity.IsAuthenticated)
-                        {
-                            context.Response.StatusCode = 401;
 
+                    app.Use(async (context, next) =>
+                    {
+                        if (context.Request.Path == new PathString("/checkforerrors"))
+                        {
+                            var authContext = new AuthenticateContext(Http.Authentication.AuthenticationManager.AutomaticScheme);
+                            await context.Authentication.AuthenticateAsync(authContext);
+                            if (authContext.Error != null)
+                            {
+                                throw new Exception("Failed to authenticate", authContext.Error);
+                            }
                             return;
                         }
-
-                        var identifier = context.User.FindFirst(ClaimTypes.NameIdentifier);
-                        if (identifier == null)
+                        else if (context.Request.Path == new PathString("/oauth"))
                         {
-                            context.Response.StatusCode = 500;
+                            if (context.User == null ||
+                                context.User.Identity == null ||
+                                !context.User.Identity.IsAuthenticated)
+                            {
+                                context.Response.StatusCode = 401;
 
-                            return;
+                                return;
+                            }
+
+                            var identifier = context.User.FindFirst(ClaimTypes.NameIdentifier);
+                            if (identifier == null)
+                            {
+                                context.Response.StatusCode = 500;
+
+                                return;
+                            }
+
+                            await context.Response.WriteAsync(identifier.Value);
                         }
-
-                        await context.Response.WriteAsync(identifier.Value);
-                    }
-                    else if (context.Request.Path == new PathString("/unauthorized"))
-                    {
-                        // Simulate Authorization failure 
-                        var result = await context.Authentication.AuthenticateAsync(JwtBearerDefaults.AuthenticationScheme);
-                        await context.Authentication.ChallengeAsync(JwtBearerDefaults.AuthenticationScheme);
-                    }
-                    else if (context.Request.Path == new PathString("/signIn"))
-                    {
-                        await Assert.ThrowsAsync<NotSupportedException>(() => context.Authentication.SignInAsync(JwtBearerDefaults.AuthenticationScheme, new ClaimsPrincipal()));
-                    }
-                    else if (context.Request.Path == new PathString("/signOut"))
-                    {
-                        await Assert.ThrowsAsync<NotSupportedException>(() => context.Authentication.SignOutAsync(JwtBearerDefaults.AuthenticationScheme));
-                    }
-                    else
-                    {
-                        await next();
-                    }
-                });
-            },
-            services => services.AddAuthentication());
+                        else if (context.Request.Path == new PathString("/unauthorized"))
+                        {
+                            // Simulate Authorization failure 
+                            var result = await context.Authentication.AuthenticateAsync(JwtBearerDefaults.AuthenticationScheme);
+                            await context.Authentication.ChallengeAsync(JwtBearerDefaults.AuthenticationScheme);
+                        }
+                        else if (context.Request.Path == new PathString("/signIn"))
+                        {
+                            await Assert.ThrowsAsync<NotSupportedException>(() => context.Authentication.SignInAsync(JwtBearerDefaults.AuthenticationScheme, new ClaimsPrincipal()));
+                        }
+                        else if (context.Request.Path == new PathString("/signOut"))
+                        {
+                            await Assert.ThrowsAsync<NotSupportedException>(() => context.Authentication.SignOutAsync(JwtBearerDefaults.AuthenticationScheme));
+                        }
+                        else
+                        {
+                            await next();
+                        }
+                    });
+                })
+                .ConfigureServices(services => services.AddAuthentication());
+            return new TestServer(builder);
         }
 
         // TODO: see if we can share the TestExtensions SendAsync method (only diff is auth header)

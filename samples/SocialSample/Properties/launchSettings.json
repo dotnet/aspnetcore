@@ -10,22 +10,17 @@
   "profiles": {
     "IIS Express": {
       "commandName": "IISExpress",
-      "launchBrowser": true,
       "environmentVariables": {
         "ASPNET_ENV": "Development"
       }
-    },
-    "kestrel": {
-      "commandName": "kestrel",
-      "launchBrowser": true,
-      "launchUrl": "http://localhost:54540/"
     },
     "web": {
       "commandName": "web",
       "launchBrowser": true,
       "launchUrl": "http://localhost:54540/",
       "environmentVariables": {
-        "Hosting:Environment": "Development"
+        "Hosting:Environment": "Development",
+        "ASPNET_server.urls": "http://localhost:54540/"
       }
     }
   }

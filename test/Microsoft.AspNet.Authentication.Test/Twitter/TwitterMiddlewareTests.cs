@@ -1,17 +1,16 @@
 // Copyright (c) .NET Foundation. All rights reserved. See License.txt in the project root for license information.
 
 using System;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.TestHost;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.WebEncoders;
 using Xunit;
 
 namespace Microsoft.AspNet.Authentication.Twitter
@@ -153,43 +152,45 @@ namespace Microsoft.AspNet.Authentication.Twitter
 
         private static TestServer CreateServer(Action<TwitterOptions> configure, Func<HttpContext, bool> handler = null)
         {
-            return TestServer.Create(app =>
-            {
-                app.UseCookieAuthentication(options =>
+            var builder = new WebApplicationBuilder()
+                .Configure(app =>
                 {
-                    options.AuthenticationScheme = "External";
-                });
-                app.UseTwitterAuthentication(configure);
-                app.Use(async (context, next) =>
+                    app.UseCookieAuthentication(options =>
+                    {
+                        options.AuthenticationScheme = "External";
+                    });
+                    app.UseTwitterAuthentication(configure);
+                    app.Use(async (context, next) =>
+                    {
+                        var req = context.Request;
+                        var res = context.Response;
+                        if (req.Path == new PathString("/signIn"))
+                        {
+                            await Assert.ThrowsAsync<NotSupportedException>(() => context.Authentication.SignInAsync("Twitter", new ClaimsPrincipal()));
+                        }
+                        else if (req.Path == new PathString("/signOut"))
+                        {
+                            await Assert.ThrowsAsync<NotSupportedException>(() => context.Authentication.SignOutAsync("Twitter"));
+                        }
+                        else if (req.Path == new PathString("/forbid"))
+                        {
+                            await Assert.ThrowsAsync<NotSupportedException>(() => context.Authentication.ForbidAsync("Twitter"));
+                        }
+                        else if (handler == null || !handler(context))
+                        {
+                            await next();
+                        }
+                    });
+                })
+                .ConfigureServices(services =>
                 {
-                    var req = context.Request;
-                    var res = context.Response;
-                    if (req.Path == new PathString("/signIn"))
+                    services.AddAuthentication();
+                    services.Configure<SharedAuthenticationOptions>(options =>
                     {
-                        await Assert.ThrowsAsync<NotSupportedException>(() => context.Authentication.SignInAsync("Twitter", new ClaimsPrincipal()));
-                    }
-                    else if (req.Path == new PathString("/signOut"))
-                    {
-                        await Assert.ThrowsAsync<NotSupportedException>(() => context.Authentication.SignOutAsync("Twitter"));
-                    }
-                    else if (req.Path == new PathString("/forbid"))
-                    {
-                        await Assert.ThrowsAsync<NotSupportedException>(() => context.Authentication.ForbidAsync("Twitter"));
-                    }
-                    else if (handler == null || !handler(context))
-                    {
-                        await next();
-                    }
+                        options.SignInScheme = "External";
+                    });
                 });
-            },
-            services =>
-            {
-                services.AddAuthentication();
-                services.Configure<SharedAuthenticationOptions>(options =>
-                {
-                    options.SignInScheme = "External";
-                });
-            });
+            return new TestServer(builder);
         }
     }
 }

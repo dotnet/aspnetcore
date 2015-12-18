@@ -13,6 +13,7 @@ using System.Xml;
 using System.Xml.Linq;
 using Microsoft.AspNet.Authentication;
 using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Owin;
 using Microsoft.Owin.Security.Cookies;
@@ -120,15 +121,18 @@ namespace Microsoft.AspNet.CookiePolicy.Test
 
             var transaction = await SendAsync(interopServer, "http://example.com");
 
-            var newServer = TestHost.TestServer.Create(app =>
-            {
-                app.UseCookieAuthentication(options => options.DataProtectionProvider = dataProtection);
-                app.Run(async context => 
+            var builder = new WebApplicationBuilder()
+                .Configure(app =>
                 {
-                    var result = await context.Authentication.AuthenticateAsync("Cookies");
-                    await context.Response.WriteAsync(result.Identity.Name);
-                });
-            }, services => services.AddAuthentication());
+                    app.UseCookieAuthentication(options => options.DataProtectionProvider = dataProtection);
+                    app.Run(async context => 
+                    {
+                        var result = await context.Authentication.AuthenticateAsync("Cookies");
+                        await context.Response.WriteAsync(result.Identity.Name);
+                    });
+                })
+                .ConfigureServices(services => services.AddAuthentication());
+            var newServer = new TestHost.TestServer(builder);
 
             var request = new HttpRequestMessage(HttpMethod.Get, "http://example.com/login");
             request.Headers.Add("Cookie", transaction.SetCookie.Split(new[] { ';' }, 2).First());
@@ -146,11 +150,14 @@ namespace Microsoft.AspNet.CookiePolicy.Test
             user.AddIdentity(identity);
 
             var dataProtection = new DataProtection.DataProtectionProvider(new DirectoryInfo("..\\..\\artifacts"));
-            var newServer = TestHost.TestServer.Create(app =>
-            {
-                app.UseCookieAuthentication(options => options.DataProtectionProvider = dataProtection);
-                app.Run(context => context.Authentication.SignInAsync("Cookies", user));
-            }, services => services.AddAuthentication());
+            var builder = new WebApplicationBuilder()
+                .Configure(app =>
+                {
+                    app.UseCookieAuthentication(options => options.DataProtectionProvider = dataProtection);
+                    app.Run(context => context.Authentication.SignInAsync("Cookies", user));
+                })
+                .ConfigureServices(services => services.AddAuthentication());
+            var newServer = new TestHost.TestServer(builder);
 
             var cookie = await SendAndGetCookie(newServer, "http://example.com/login");
 

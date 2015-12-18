@@ -8,14 +8,14 @@
     "Microsoft.AspNet.DataProtection": "1.0.0-*",
     "Microsoft.AspNet.IISPlatformHandler": "1.0.0-*",
     "Microsoft.AspNet.Server.Kestrel": "1.0.0-*",
-    "Microsoft.AspNet.Server.WebListener": "1.0.0-*",
     "Microsoft.Extensions.Configuration.UserSecrets": "1.0.0-*",
     "Microsoft.Extensions.Logging.Console": "1.0.0-*"
   },
+  "compilationOptions": {
+    "emitEntryPoint": true
+  },
   "commands": {
-    "web": "Microsoft.AspNet.Server.Kestrel",
-    "kestrel": "Microsoft.AspNet.Server.Kestrel --server.urls http://localhost:54540",
-    "weblistener": "Microsoft.AspNet.Server.WebListener --server.urls=http://localhost:54540"
+    "web": "SocialSample"
   },
   "frameworks": {
     "dnx451": { },

@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.DataProtection;
+using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Authentication;
 using Microsoft.AspNet.Http.Features.Authentication;
@@ -748,12 +749,14 @@ namespace Microsoft.AspNet.Authentication.Cookies
         [Fact]
         public async Task MapWillNotAffectChallenge()
         {
-            var server = TestServer.Create(app =>
+            var builder = new WebApplicationBuilder()
+                .Configure(app =>
                 {
                     app.UseCookieAuthentication(options => options.LoginPath = new PathString("/page"));
                     app.Map("/login", signoutApp => signoutApp.Run(context => context.Authentication.ChallengeAsync("Cookies", new AuthenticationProperties() { RedirectUri = "/" })));
-                },
-                services => services.AddAuthentication());
+                })
+                .ConfigureServices(services => services.AddAuthentication());
+            var server = new TestServer(builder);
 
             var transaction = await server.SendAsync("http://example.com/login");
 
@@ -767,14 +770,17 @@ namespace Microsoft.AspNet.Authentication.Cookies
         [Fact]
         public async Task ChallengeDoesNotSet401OnUnauthorized()
         {
-            var server = TestServer.Create(app =>
-            {
-                app.UseCookieAuthentication();
-                app.Run(async context =>
+            var builder = new WebApplicationBuilder()
+                .Configure(app =>
                 {
-                    await Assert.ThrowsAsync<InvalidOperationException>(() => context.Authentication.ChallengeAsync());
-                });
-            }, services => services.AddAuthentication());
+                    app.UseCookieAuthentication();
+                    app.Run(async context =>
+                    {
+                        await Assert.ThrowsAsync<InvalidOperationException>(() => context.Authentication.ChallengeAsync());
+                    });
+                })
+                .ConfigureServices(services => services.AddAuthentication());
+            var server = new TestServer(builder);
 
             var transaction = await server.SendAsync("http://example.com");
             Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
@@ -783,12 +789,15 @@ namespace Microsoft.AspNet.Authentication.Cookies
         [Fact]
         public async Task UseCookieWithInstanceDoesntUseSharedOptions()
         {
-            var server = TestServer.Create(app =>
-            {
-                app.UseCookieAuthentication(options => options.CookieName = "One");
-                app.UseCookieAuthentication(new CookieAuthenticationOptions());
-                app.Run(context => context.Authentication.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(new ClaimsIdentity())));
-            }, services => services.AddAuthentication());
+            var builder = new WebApplicationBuilder()
+                .Configure(app =>
+                {
+                    app.UseCookieAuthentication(options => options.CookieName = "One");
+                    app.UseCookieAuthentication(new CookieAuthenticationOptions());
+                    app.Run(context => context.Authentication.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(new ClaimsIdentity())));
+                })
+                .ConfigureServices(services => services.AddAuthentication());
+            var server = new TestServer(builder);
 
             var transaction = await server.SendAsync("http://example.com");
 
@@ -799,13 +808,15 @@ namespace Microsoft.AspNet.Authentication.Cookies
         [Fact]
         public async Task MapWithSignInOnlyRedirectToReturnUrlOnLoginPath()
         {
-            var server = TestServer.Create(app =>
-            {
-                app.UseCookieAuthentication(options => options.LoginPath = new PathString("/login"));
-                app.Map("/notlogin", signoutApp => signoutApp.Run(context => context.Authentication.SignInAsync("Cookies",
-                    new ClaimsPrincipal())));
-            },
-                services => services.AddAuthentication());
+            var builder = new WebApplicationBuilder()
+                .Configure(app =>
+                {
+                    app.UseCookieAuthentication(options => options.LoginPath = new PathString("/login"));
+                    app.Map("/notlogin", signoutApp => signoutApp.Run(context => context.Authentication.SignInAsync("Cookies",
+                        new ClaimsPrincipal())));
+                })
+                .ConfigureServices(services => services.AddAuthentication());
+            var server = new TestServer(builder);
 
             var transaction = await server.SendAsync("http://example.com/notlogin?ReturnUrl=%2Fpage");
             Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
@@ -815,13 +826,15 @@ namespace Microsoft.AspNet.Authentication.Cookies
         [Fact]
         public async Task MapWillNotAffectSignInRedirectToReturnUrl()
         {
-            var server = TestServer.Create(app =>
-            {
-                app.UseCookieAuthentication(options => options.LoginPath = new PathString("/login"));
-                app.Map("/login", signoutApp => signoutApp.Run(context => context.Authentication.SignInAsync("Cookies",
-                    new ClaimsPrincipal())));
-            },
-            services => services.AddAuthentication());
+            var builder = new WebApplicationBuilder()
+                .Configure(app =>
+                {
+                    app.UseCookieAuthentication(options => options.LoginPath = new PathString("/login"));
+                    app.Map("/login", signoutApp => signoutApp.Run(context => context.Authentication.SignInAsync("Cookies",
+                        new ClaimsPrincipal())));
+                })
+                .ConfigureServices(services => services.AddAuthentication());
+            var server = new TestServer(builder);
 
             var transaction = await server.SendAsync("http://example.com/login?ReturnUrl=%2Fpage");
 
@@ -835,12 +848,14 @@ namespace Microsoft.AspNet.Authentication.Cookies
         [Fact]
         public async Task MapWithSignOutOnlyRedirectToReturnUrlOnLogoutPath()
         {
-            var server = TestServer.Create(app =>
-            {
-                app.UseCookieAuthentication(options => options.LogoutPath = new PathString("/logout"));
-                app.Map("/notlogout", signoutApp => signoutApp.Run(context => context.Authentication.SignOutAsync("Cookies")));
-            },
-            services => services.AddAuthentication());
+            var builder = new WebApplicationBuilder()
+                .Configure(app =>
+                {
+                    app.UseCookieAuthentication(options => options.LogoutPath = new PathString("/logout"));
+                    app.Map("/notlogout", signoutApp => signoutApp.Run(context => context.Authentication.SignOutAsync("Cookies")));
+                })
+                .ConfigureServices(services => services.AddAuthentication());
+            var server = new TestServer(builder);
 
             var transaction = await server.SendAsync("http://example.com/notlogout?ReturnUrl=%2Fpage");
             Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
@@ -850,12 +865,14 @@ namespace Microsoft.AspNet.Authentication.Cookies
         [Fact]
         public async Task MapWillNotAffectSignOutRedirectToReturnUrl()
         {
-            var server = TestServer.Create(app =>
-            {
-                app.UseCookieAuthentication(options => options.LogoutPath = new PathString("/logout"));
-                app.Map("/logout", signoutApp => signoutApp.Run(context => context.Authentication.SignOutAsync("Cookies")));
-            },
-            services => services.AddAuthentication());
+            var builder = new WebApplicationBuilder()
+                .Configure(app =>
+                {
+                    app.UseCookieAuthentication(options => options.LogoutPath = new PathString("/logout"));
+                    app.Map("/logout", signoutApp => signoutApp.Run(context => context.Authentication.SignOutAsync("Cookies")));
+                })
+                .ConfigureServices(services => services.AddAuthentication());
+            var server = new TestServer(builder);
 
             var transaction = await server.SendAsync("http://example.com/logout?ReturnUrl=%2Fpage");
 
@@ -869,12 +886,14 @@ namespace Microsoft.AspNet.Authentication.Cookies
         [Fact]
         public async Task MapWillNotAffectAccessDenied()
         {
-            var server = TestServer.Create(app =>
+            var builder = new WebApplicationBuilder()
+                .Configure(app =>
                 {
                     app.UseCookieAuthentication(options => options.AccessDeniedPath = new PathString("/denied"));
                     app.Map("/forbid", signoutApp => signoutApp.Run(context => context.Authentication.ForbidAsync("Cookies")));
-                },
-                services => services.AddAuthentication());
+                })
+                .ConfigureServices(services => services.AddAuthentication());
+            var server = new TestServer(builder);
             var transaction = await server.SendAsync("http://example.com/forbid");
 
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
@@ -886,13 +905,15 @@ namespace Microsoft.AspNet.Authentication.Cookies
         [Fact]
         public async Task NestedMapWillNotAffectLogin()
         {
-            var server = TestServer.Create(app =>
-                app.Map("/base", map =>
-                {
-                    map.UseCookieAuthentication(options => options.LoginPath = new PathString("/page"));
-                    map.Map("/login", signoutApp => signoutApp.Run(context => context.Authentication.ChallengeAsync("Cookies", new AuthenticationProperties() { RedirectUri = "/" })));
-                }),
-                services => services.AddAuthentication());
+            var builder = new WebApplicationBuilder()
+                .Configure(app =>
+                    app.Map("/base", map =>
+                    {
+                        map.UseCookieAuthentication(options => options.LoginPath = new PathString("/page"));
+                        map.Map("/login", signoutApp => signoutApp.Run(context => context.Authentication.ChallengeAsync("Cookies", new AuthenticationProperties() { RedirectUri = "/" })));
+                    }))
+                .ConfigureServices(services => services.AddAuthentication());
+            var server = new TestServer(builder);
             var transaction = await server.SendAsync("http://example.com/base/login");
 
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
@@ -905,13 +926,15 @@ namespace Microsoft.AspNet.Authentication.Cookies
         [Fact]
         public async Task NestedMapWillNotAffectAccessDenied()
         {
-            var server = TestServer.Create(app =>
-                app.Map("/base", map =>
-                {
-                    map.UseCookieAuthentication(options => options.AccessDeniedPath = new PathString("/denied"));
-                    map.Map("/forbid", signoutApp => signoutApp.Run(context => context.Authentication.ForbidAsync("Cookies")));
-                }),
-                services => services.AddAuthentication());
+            var builder = new WebApplicationBuilder()
+                .Configure(app =>
+                    app.Map("/base", map =>
+                    {
+                        map.UseCookieAuthentication(options => options.AccessDeniedPath = new PathString("/denied"));
+                        map.Map("/forbid", signoutApp => signoutApp.Run(context => context.Authentication.ForbidAsync("Cookies")));
+                    }))
+                    .ConfigureServices(services => services.AddAuthentication());
+            var server = new TestServer(builder);
             var transaction = await server.SendAsync("http://example.com/base/forbid");
 
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
@@ -925,39 +948,43 @@ namespace Microsoft.AspNet.Authentication.Cookies
         {
 
             var dp = new NoOpDataProtector();
-            var server1 = TestServer.Create(app =>
-            {
-                app.UseCookieAuthentication(options =>
+            var builder1 = new WebApplicationBuilder()
+                .Configure(app =>
                 {
-                    options.TicketDataFormat = new TicketDataFormat(dp);
-                    options.CookieName = "Cookie";
-                });
-                app.Use((context, next) =>
-                    context.Authentication.SignInAsync("Cookies",
-                                    new ClaimsPrincipal(new ClaimsIdentity(new GenericIdentity("Alice", "Cookies"))),
-                                    new AuthenticationProperties()));
-            },
-            services => services.AddAuthentication());
+                    app.UseCookieAuthentication(options =>
+                    {
+                        options.TicketDataFormat = new TicketDataFormat(dp);
+                        options.CookieName = "Cookie";
+                    });
+                    app.Use((context, next) =>
+                        context.Authentication.SignInAsync("Cookies",
+                                        new ClaimsPrincipal(new ClaimsIdentity(new GenericIdentity("Alice", "Cookies"))),
+                                        new AuthenticationProperties()));
+                })
+                .ConfigureServices(services => services.AddAuthentication());
+            var server1 = new TestServer(builder1);
 
             var transaction = await SendAsync(server1, "http://example.com/stuff");
             Assert.NotNull(transaction.SetCookie);
 
-            var server2 = TestServer.Create(app =>
-            {
-                app.UseCookieAuthentication(options =>
+            var builder2 = new WebApplicationBuilder()
+                .Configure(app =>
                 {
-                    options.AuthenticationScheme = "Cookies";
-                    options.CookieName = "Cookie";
-                    options.TicketDataFormat = new TicketDataFormat(dp);
-                });
-                app.Use(async (context, next) =>
-                {
-                    var authContext = new AuthenticateContext("Cookies");
-                    await context.Authentication.AuthenticateAsync(authContext);
-                    Describe(context.Response, authContext);
-                });
-            },
-            services => services.AddAuthentication());
+                    app.UseCookieAuthentication(options =>
+                    {
+                        options.AuthenticationScheme = "Cookies";
+                        options.CookieName = "Cookie";
+                        options.TicketDataFormat = new TicketDataFormat(dp);
+                    });
+                    app.Use(async (context, next) =>
+                    {
+                        var authContext = new AuthenticateContext("Cookies");
+                        await context.Authentication.AuthenticateAsync(authContext);
+                        Describe(context.Response, authContext);
+                    });
+                })
+                .ConfigureServices(services => services.AddAuthentication());
+            var server2 = new TestServer(builder2);
             var transaction2 = await SendAsync(server2, "http://example.com/stuff", transaction.CookieNameValue);
             Assert.Equal("Alice", FindClaimValue(transaction2, ClaimTypes.Name));
         }
@@ -1003,71 +1030,73 @@ namespace Microsoft.AspNet.Authentication.Cookies
 
         private static TestServer CreateServer(Action<CookieAuthenticationOptions> configureOptions, Func<HttpContext, Task> testpath = null, Uri baseAddress = null, Action<ClaimsTransformationOptions> claimsTransform = null)
         {
-            var server = TestServer.Create(app =>
-            {
-                app.UseCookieAuthentication(configureOptions);
-                // app.UseCookieAuthentication(new CookieAuthenticationOptions { AuthenticationScheme = "Cookie2" });
+            var builder = new WebApplicationBuilder()
+                .Configure(app =>
+                {
+                    app.UseCookieAuthentication(configureOptions);
+                    // app.UseCookieAuthentication(new CookieAuthenticationOptions { AuthenticationScheme = "Cookie2" });
 
-                if (claimsTransform != null)
-                {
-                    app.UseClaimsTransformation(claimsTransform);
-                }
-                app.Use(async (context, next) =>
-                {
-                    var req = context.Request;
-                    var res = context.Response;
-                    PathString remainder;
-                    if (req.Path == new PathString("/normal"))
+                    if (claimsTransform != null)
                     {
-                        res.StatusCode = 200;
+                        app.UseClaimsTransformation(claimsTransform);
                     }
-                    else if (req.Path == new PathString("/protected"))
+                    app.Use(async (context, next) =>
                     {
-                        res.StatusCode = 401;
-                    }
-                    else if (req.Path == new PathString("/forbid")) // Simulate forbidden 
-                    {
-                        await context.Authentication.ForbidAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-                    }
-                    else if (req.Path == new PathString("/challenge"))
-                    {
-                        await context.Authentication.ChallengeAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-                    }
-                    else if (req.Path == new PathString("/signout"))
-                    {
-                        await context.Authentication.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-                    }
-                    else if (req.Path == new PathString("/unauthorized"))
-                    {
-                        await context.Authentication.ChallengeAsync(CookieAuthenticationDefaults.AuthenticationScheme, new AuthenticationProperties(), ChallengeBehavior.Unauthorized);
-                    }
-                    else if (req.Path == new PathString("/protected/CustomRedirect"))
-                    {
-                        await context.Authentication.ChallengeAsync(new AuthenticationProperties() { RedirectUri = "/CustomRedirect" });
-                    }
-                    else if (req.Path == new PathString("/me"))
-                    {
-                        var authContext = new AuthenticateContext(CookieAuthenticationDefaults.AuthenticationScheme);
-                        authContext.Authenticated(context.User, properties: null, description: null);
-                        Describe(res, authContext);
-                    }
-                    else if (req.Path.StartsWithSegments(new PathString("/me"), out remainder))
-                    {
-                        var authContext = new AuthenticateContext(remainder.Value.Substring(1));
-                        await context.Authentication.AuthenticateAsync(authContext);
-                        Describe(res, authContext);
-                    }
-                    else if (req.Path == new PathString("/testpath") && testpath != null)
-                    {
-                        await testpath(context);
-                    }
-                    else
-                    {
-                        await next();
-                    }
-                });
-            },
-            services => services.AddAuthentication());
+                        var req = context.Request;
+                        var res = context.Response;
+                        PathString remainder;
+                        if (req.Path == new PathString("/normal"))
+                        {
+                            res.StatusCode = 200;
+                        }
+                        else if (req.Path == new PathString("/protected"))
+                        {
+                            res.StatusCode = 401;
+                        }
+                        else if (req.Path == new PathString("/forbid")) // Simulate forbidden 
+                        {
+                            await context.Authentication.ForbidAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                        }
+                        else if (req.Path == new PathString("/challenge"))
+                        {
+                            await context.Authentication.ChallengeAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                        }
+                        else if (req.Path == new PathString("/signout"))
+                        {
+                            await context.Authentication.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                        }
+                        else if (req.Path == new PathString("/unauthorized"))
+                        {
+                            await context.Authentication.ChallengeAsync(CookieAuthenticationDefaults.AuthenticationScheme, new AuthenticationProperties(), ChallengeBehavior.Unauthorized);
+                        }
+                        else if (req.Path == new PathString("/protected/CustomRedirect"))
+                        {
+                            await context.Authentication.ChallengeAsync(new AuthenticationProperties() { RedirectUri = "/CustomRedirect" });
+                        }
+                        else if (req.Path == new PathString("/me"))
+                        {
+                            var authContext = new AuthenticateContext(CookieAuthenticationDefaults.AuthenticationScheme);
+                            authContext.Authenticated(context.User, properties: null, description: null);
+                            Describe(res, authContext);
+                        }
+                        else if (req.Path.StartsWithSegments(new PathString("/me"), out remainder))
+                        {
+                            var authContext = new AuthenticateContext(remainder.Value.Substring(1));
+                            await context.Authentication.AuthenticateAsync(authContext);
+                            Describe(res, authContext);
+                        }
+                        else if (req.Path == new PathString("/testpath") && testpath != null)
+                        {
+                            await testpath(context);
+                        }
+                        else
+                        {
+                            await next();
+                        }
+                    });
+                })
+                .ConfigureServices(services => services.AddAuthentication());
+            var server = new TestServer(builder);
             server.BaseAddress = baseAddress;
             return server;
         }

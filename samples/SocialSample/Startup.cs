@@ -12,6 +12,7 @@ using Microsoft.AspNet.Authentication.MicrosoftAccount;
 using Microsoft.AspNet.Authentication.OAuth;
 using Microsoft.AspNet.Authentication.Twitter;
 using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Authentication;
 using Microsoft.Extensions.Configuration;
@@ -160,7 +161,7 @@ namespace CookieSample
                 SaveTokensAsClaims = true
             });
 
-            // You must first create an app with live.com and add it's ID and Secret to your config.json or user-secrets.
+            //// You must first create an app with live.com and add it's ID and Secret to your config.json or user-secrets.
             app.UseMicrosoftAccountAuthentication(options =>
             {
                 options.DisplayName = "MicrosoftAccount - Requires project changes";
@@ -322,6 +323,16 @@ namespace CookieSample
                 await context.Response.WriteAsync("<a href=\"/logout\">Logout</a>");
                 await context.Response.WriteAsync("</body></html>");
             });
+        }
+
+        public static void Main(string[] args)
+        {
+            var application = new WebApplicationBuilder()
+                .UseConfiguration(WebApplicationConfiguration.GetDefault(args))
+                .UseStartup<Startup>()
+                .Build();
+
+            application.Run();
         }
     }
 }

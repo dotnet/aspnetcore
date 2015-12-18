@@ -12,6 +12,7 @@ using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Authentication.OpenIdConnect;
 using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http.Authentication;
 using Microsoft.AspNet.TestHost;
 using Microsoft.Extensions.DependencyInjection;
@@ -94,8 +95,8 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
 
         private static TestServer CreateServer(Action<OpenIdConnectOptions> configureOptions, UrlEncoder encoder, OpenIdConnectHandler handler = null)
         {
-            return TestServer.Create(
-                app =>
+            var builder = new WebApplicationBuilder()
+                .Configure(app =>
                 {
                     var options = new OpenIdConnectOptions();
                     configureOptions(options);
@@ -104,13 +105,13 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
                     {
                         await next();
                     });
-                },
-                services =>
+                })
+                .ConfigureServices(services =>
                 {
                     services.AddWebEncoders();
                     services.AddDataProtection();
-                }
-            );
+                });
+            return new TestServer(builder);
         }
     }
 }

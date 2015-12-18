@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -13,6 +12,7 @@ using Microsoft.AspNet.Authentication.Cookies;
 using Microsoft.AspNet.Authentication.OAuth;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.DataProtection;
+using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Authentication;
 using Microsoft.AspNet.TestHost;
@@ -226,21 +226,23 @@ namespace Microsoft.AspNet.Authentication.Facebook
 
         private static TestServer CreateServer(Action<IApplicationBuilder> configure, Action<IServiceCollection> configureServices, Func<HttpContext, bool> handler)
         {
-            return TestServer.Create(app =>
-            {
-                if (configure != null)
+            var builder = new WebApplicationBuilder()
+                .Configure(app =>
                 {
-                    configure(app);
-                }
-                app.Use(async (context, next) =>
-                {
-                    if (handler == null || !handler(context))
+                    if (configure != null)
                     {
-                        await next();
+                        configure(app);
                     }
-                });
-            },
-            configureServices);
+                    app.Use(async (context, next) =>
+                    {
+                        if (handler == null || !handler(context))
+                        {
+                            await next();
+                        }
+                    });
+                })
+                .ConfigureServices(configureServices);
+            return new TestServer(builder);
         }
     }
 }

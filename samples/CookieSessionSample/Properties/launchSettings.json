@@ -22,11 +22,6 @@
       "environmentVariables": {
         "Hosting:Environment": "Development"
       }
-    },
-    "kestrel": {
-      "commandName": "kestrel",
-      "launchBrowser": true,
-      "launchUrl": "http://localhost:5004"
     }
   }
 }

@@ -15,17 +15,13 @@
         "ASPNET_ENV": "Development"
       }
     },
-    "kestrel": {
-      "commandName": "kestrel",
-      "launchBrowser": true,
-      "launchUrl": "http://localhost:42023"
-    },
     "web": {
       "commandName": "web",
       "launchBrowser": true,
       "launchUrl": "http://localhost:42023",
       "environmentVariables": {
-        "Hosting:Environment": "Development"
+        "Hosting:Environment": "Development",
+        "ASPNET_server.urls": "http://localhost:42023"
       }
     }
   }

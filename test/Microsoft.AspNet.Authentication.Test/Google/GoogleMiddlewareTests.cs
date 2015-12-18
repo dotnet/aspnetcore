@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Authentication.OAuth;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.DataProtection;
+using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Authentication;
 using Microsoft.AspNet.Http.Features.Authentication;
@@ -765,74 +766,76 @@ namespace Microsoft.AspNet.Authentication.Google
 
         private static TestServer CreateServer(Action<GoogleOptions> configureOptions, Func<HttpContext, Task> testpath = null)
         {
-            return TestServer.Create(app =>
-            {
-                app.UseCookieAuthentication(options =>
+            var builder = new WebApplicationBuilder()
+                .Configure(app =>
                 {
-                    options.AuthenticationScheme = TestExtensions.CookieAuthenticationScheme;
-                    options.AutomaticAuthenticate = true;
-                });
-                app.UseGoogleAuthentication(configureOptions);
-                app.UseClaimsTransformation(p =>
+                    app.UseCookieAuthentication(options =>
+                    {
+                        options.AuthenticationScheme = TestExtensions.CookieAuthenticationScheme;
+                        options.AutomaticAuthenticate = true;
+                    });
+                    app.UseGoogleAuthentication(configureOptions);
+                    app.UseClaimsTransformation(p =>
+                    {
+                        var id = new ClaimsIdentity("xform");
+                        id.AddClaim(new Claim("xform", "yup"));
+                        p.AddIdentity(id);
+                        return Task.FromResult(p);
+                    });
+                    app.Use(async (context, next) =>
+                    {
+                        var req = context.Request;
+                        var res = context.Response;
+                        if (req.Path == new PathString("/challenge"))
+                        {
+                            await context.Authentication.ChallengeAsync("Google");
+                        }
+                        else if (req.Path == new PathString("/me"))
+                        {
+                            res.Describe(context.User);
+                        }
+                        else if (req.Path == new PathString("/unauthorized"))
+                        {
+                            // Simulate Authorization failure 
+                            var result = await context.Authentication.AuthenticateAsync("Google");
+                            await context.Authentication.ChallengeAsync("Google");
+                        }
+                        else if (req.Path == new PathString("/unauthorizedAuto"))
+                        {
+                            var result = await context.Authentication.AuthenticateAsync("Google");
+                            await context.Authentication.ChallengeAsync();
+                        }
+                        else if (req.Path == new PathString("/401"))
+                        {
+                            res.StatusCode = 401;
+                        }
+                        else if (req.Path == new PathString("/signIn"))
+                        {
+                            await Assert.ThrowsAsync<NotSupportedException>(() => context.Authentication.SignInAsync("Google", new ClaimsPrincipal()));
+                        }
+                        else if (req.Path == new PathString("/signOut"))
+                        {
+                            await Assert.ThrowsAsync<NotSupportedException>(() => context.Authentication.SignOutAsync("Google"));
+                        }
+                        else if (req.Path == new PathString("/forbid"))
+                        {
+                            await Assert.ThrowsAsync<NotSupportedException>(() => context.Authentication.ForbidAsync("Google"));
+                        }
+                        else if (testpath != null)
+                        {
+                            await testpath(context);
+                        }
+                        else
+                        {
+                            await next();
+                        }
+                    });
+                })
+                .ConfigureServices(services =>
                 {
-                    var id = new ClaimsIdentity("xform");
-                    id.AddClaim(new Claim("xform", "yup"));
-                    p.AddIdentity(id);
-                    return Task.FromResult(p);
+                    services.AddAuthentication(options => options.SignInScheme = TestExtensions.CookieAuthenticationScheme);
                 });
-                app.Use(async (context, next) =>
-                {
-                    var req = context.Request;
-                    var res = context.Response;
-                    if (req.Path == new PathString("/challenge"))
-                    {
-                        await context.Authentication.ChallengeAsync("Google");
-                    }
-                    else if (req.Path == new PathString("/me"))
-                    {
-                        res.Describe(context.User);
-                    }
-                    else if (req.Path == new PathString("/unauthorized"))
-                    {
-                        // Simulate Authorization failure 
-                        var result = await context.Authentication.AuthenticateAsync("Google");
-                        await context.Authentication.ChallengeAsync("Google");
-                    }
-                    else if (req.Path == new PathString("/unauthorizedAuto"))
-                    {
-                        var result = await context.Authentication.AuthenticateAsync("Google");
-                        await context.Authentication.ChallengeAsync();
-                    }
-                    else if (req.Path == new PathString("/401"))
-                    {
-                        res.StatusCode = 401;
-                    }
-                    else if (req.Path == new PathString("/signIn"))
-                    {
-                        await Assert.ThrowsAsync<NotSupportedException>(() => context.Authentication.SignInAsync("Google", new ClaimsPrincipal()));
-                    }
-                    else if (req.Path == new PathString("/signOut"))
-                    {
-                        await Assert.ThrowsAsync<NotSupportedException>(() => context.Authentication.SignOutAsync("Google"));
-                    }
-                    else if (req.Path == new PathString("/forbid"))
-                    {
-                        await Assert.ThrowsAsync<NotSupportedException>(() => context.Authentication.ForbidAsync("Google"));
-                    }
-                    else if (testpath != null)
-                    {
-                        await testpath(context);
-                    }
-                    else
-                    {
-                        await next();
-                    }
-                });
-            },
-            services =>
-            {
-                services.AddAuthentication(options => options.SignInScheme = TestExtensions.CookieAuthenticationScheme);
-            });
+            return new TestServer(builder);
         }
     }
 }
