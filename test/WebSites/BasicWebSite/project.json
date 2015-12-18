@@ -1,14 +1,15 @@
 {
   "commands": {
-    "web": "Microsoft.AspNet.Server.Kestrel",
-    "weblistener": "Microsoft.AspNet.Server.WebListener"
+    "web": "BasicWebSite"
+  },
+  "compilationOptions": {
+    "emitEntryPoint": true
   },
   "dependencies": {
     "Microsoft.AspNet.Mvc": "6.0.0-*",
     "Microsoft.AspNet.Mvc.Formatters.Xml": "6.0.0-*",
     "Microsoft.AspNet.Mvc.TestConfiguration": "1.0.0",
     "Microsoft.AspNet.Server.Kestrel": "1.0.0-*",
-    "Microsoft.AspNet.Server.WebListener": "1.0.0-*",
     "Microsoft.AspNet.Session": "1.0.0-*",
     "Microsoft.AspNet.StaticFiles": "1.0.0-*"
   },

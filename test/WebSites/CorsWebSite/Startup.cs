@@ -3,6 +3,7 @@
 
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Cors.Infrastructure;
+using Microsoft.AspNet.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace CorsWebSite
@@ -75,6 +76,16 @@ namespace CorsWebSite
             app.UseCultureReplacer();
 
             app.UseMvc();
+        }
+
+        public static void Main(string[] args)
+        {
+            var application = new WebApplicationBuilder()
+                .UseConfiguration(WebApplicationConfiguration.GetDefault(args))
+                .UseStartup<Startup>()
+                .Build();
+
+            application.Run();
         }
     }
 }

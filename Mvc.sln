@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.24711.0
+VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{DAAE4C74-D06F-4874-A166-33305D2643CE}"
 EndProject
@@ -100,8 +100,6 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.Abstra
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "MvcMinimalSample.Web", "samples\MvcMinimalSample.Web\MvcMinimalSample.Web.xproj", "{F21E225B-190B-4DAA-8B0A-05986D231F56}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "AntiforgeryTokenWebSite", "test\WebSites\AntiforgeryTokenWebSite\AntiforgeryTokenWebSite.xproj", "{A353B17E-A940-4CE8-8BF9-179E24A9041F}"
-EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.ViewFeatures", "src\Microsoft.AspNet.Mvc.ViewFeatures\Microsoft.AspNet.Mvc.ViewFeatures.xproj", "{3F8B8FC1-9FE4-4788-8991-367113E8D7AD}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.Formatters.Json", "src\Microsoft.AspNet.Mvc.Formatters.Json\Microsoft.AspNet.Mvc.Formatters.Json.xproj", "{3FC8D9D6-9352-43A3-8E81-422F270085B7}"
@@ -143,7 +141,7 @@ EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "LocalizationSample.Web", "samples\LocalizationSample.Web\LocalizationSample.Web.xproj", "{FCFE6024-2720-49B4-8257-9DBC6114F0F1}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ActionConstraintSample.Web", "samples\ActionConstraintSample.Web\ActionConstraintSample.Web.xproj", "{EE0BD773-4D47-4AA8-8472-5A938A3953BA}"
-EndProjectOB
+EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "SimpleWebSite", "test\WebSites\SimpleWebSite\SimpleWebSite.xproj", "{396B40D7-AC70-49A7-B33C-ED42129FEBE3}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "InlineConstraintSample.Web", "samples\InlineConstraintSample.Web\InlineConstraintSample.Web.xproj", "{EA34877F-1AC1-42B7-B4E6-15A093F40CAE}"
@@ -605,18 +603,6 @@ Global
 		{F21E225B-190B-4DAA-8B0A-05986D231F56}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{F21E225B-190B-4DAA-8B0A-05986D231F56}.Release|x86.ActiveCfg = Release|Any CPU
 		{F21E225B-190B-4DAA-8B0A-05986D231F56}.Release|x86.Build.0 = Release|Any CPU
-		{A353B17E-A940-4CE8-8BF9-179E24A9041F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A353B17E-A940-4CE8-8BF9-179E24A9041F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A353B17E-A940-4CE8-8BF9-179E24A9041F}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{A353B17E-A940-4CE8-8BF9-179E24A9041F}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{A353B17E-A940-4CE8-8BF9-179E24A9041F}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{A353B17E-A940-4CE8-8BF9-179E24A9041F}.Debug|x86.Build.0 = Debug|Any CPU
-		{A353B17E-A940-4CE8-8BF9-179E24A9041F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A353B17E-A940-4CE8-8BF9-179E24A9041F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A353B17E-A940-4CE8-8BF9-179E24A9041F}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{A353B17E-A940-4CE8-8BF9-179E24A9041F}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{A353B17E-A940-4CE8-8BF9-179E24A9041F}.Release|x86.ActiveCfg = Release|Any CPU
-		{A353B17E-A940-4CE8-8BF9-179E24A9041F}.Release|x86.Build.0 = Release|Any CPU
 		{3F8B8FC1-9FE4-4788-8991-367113E8D7AD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{3F8B8FC1-9FE4-4788-8991-367113E8D7AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3F8B8FC1-9FE4-4788-8991-367113E8D7AD}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
@@ -941,7 +927,6 @@ Global
 		{4C2AD8AB-8AC0-46C4-80C6-C5577C7255F6} = {3BA657BF-28B1-42DA-B5B0-1C4601FCF7B1}
 		{DA000953-7532-4DF5-8DB9-8143DF98D999} = {3BA657BF-28B1-42DA-B5B0-1C4601FCF7B1}
 		{F21E225B-190B-4DAA-8B0A-05986D231F56} = {DAAE4C74-D06F-4874-A166-33305D2643CE}
-		{A353B17E-A940-4CE8-8BF9-179E24A9041F} = {16703B76-C9F7-4C75-AE6C-53D92E308E3C}
 		{3F8B8FC1-9FE4-4788-8991-367113E8D7AD} = {32285FA4-6B46-4D6B-A840-2B13E4C8B58E}
 		{3FC8D9D6-9352-43A3-8E81-422F270085B7} = {32285FA4-6B46-4D6B-A840-2B13E4C8B58E}
 		{42C81540-CD47-4C68-A7A3-2A93B9C3B210} = {32285FA4-6B46-4D6B-A840-2B13E4C8B58E}
