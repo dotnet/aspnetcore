@@ -4,7 +4,9 @@
 using System;
 using System.Text.Encodings.Web;
 using Microsoft.AspNet.Routing;
+using Microsoft.AspNet.Routing.Internal;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.ObjectPool;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -25,6 +27,13 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddOptions();
             services.TryAddTransient<IInlineConstraintResolver, DefaultInlineConstraintResolver>();
             services.TryAddSingleton(UrlEncoder.Default);
+            services.TryAddSingleton<ObjectPoolProvider>(new DefaultObjectPoolProvider());
+            services.TryAddSingleton<ObjectPool<UriBuildingContext>>(s =>
+            {
+                var provider = s.GetRequiredService<ObjectPoolProvider>();
+                var encoder = s.GetRequiredService<UrlEncoder>();
+                return provider.Create<UriBuildingContext>(new UriBuilderContextPooledObjectPolicy(encoder));
+            });
 
             if (configureOptions != null)
             {

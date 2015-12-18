@@ -1298,13 +1298,13 @@ namespace Microsoft.AspNet.Routing
             RouteValueDictionary values,
             RouteValueDictionary ambientValues)
         {
-            var serviceProvider = new ServiceCollection()
-                .AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance)
-                .AddSingleton(UrlEncoder.Default)
-                .BuildServiceProvider();
+            var services = new ServiceCollection();
+            services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
+            services.AddRouting();
+
             var context = new DefaultHttpContext
             {
-                RequestServices = serviceProvider
+                RequestServices = services.BuildServiceProvider(),
             };
 
             return new VirtualPathContext(context, ambientValues, values);

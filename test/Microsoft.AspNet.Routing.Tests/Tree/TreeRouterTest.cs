@@ -7,9 +7,11 @@ using System.Linq;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Routing.Internal;
 using Microsoft.AspNet.Routing.Template;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
+using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.WebEncoders.Testing;
 using Moq;
@@ -20,6 +22,10 @@ namespace Microsoft.AspNet.Routing.Tree
     public class TreeRouterTest
     {
         private static readonly RequestDelegate NullHandler = (c) => Task.FromResult(0);
+
+        private static UrlEncoder Encoder = UrlTestEncoder.Default;
+        private static ObjectPool<UriBuildingContext> Pool = new DefaultObjectPoolProvider().Create(
+            new UriBuilderContextPooledObjectPolicy(Encoder));
 
         [Theory]
         [InlineData("template/5", "template/{parameter:int}")]
@@ -1601,7 +1607,7 @@ namespace Microsoft.AspNet.Routing.Tree
 
             entry.Constraints = constraints;
             entry.Defaults = defaults;
-            entry.Binder = new TemplateBinder(entry.Template, UrlEncoder.Default, defaults);
+            entry.Binder = new TemplateBinder(Encoder, Pool, entry.Template, defaults);
             entry.Order = order;
             entry.GenerationPrecedence = RoutePrecedence.ComputeGenerated(entry.Template);
             entry.RequiredLinkValues = new RouteValueDictionary(requiredValues);

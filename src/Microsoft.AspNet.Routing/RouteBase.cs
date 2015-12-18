@@ -10,6 +10,7 @@ using Microsoft.AspNet.Routing.Internal;
 using Microsoft.AspNet.Routing.Template;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.ObjectPool;
 
 namespace Microsoft.AspNet.Routing
 {
@@ -243,7 +244,8 @@ namespace Microsoft.AspNet.Routing
             if (_binder == null)
             {
                 var urlEncoder = context.RequestServices.GetRequiredService<UrlEncoder>();
-                _binder = new TemplateBinder(ParsedTemplate, urlEncoder, Defaults);
+                var pool = context.RequestServices.GetRequiredService<ObjectPool<UriBuildingContext>>();
+                _binder = new TemplateBinder(urlEncoder, pool, ParsedTemplate, Defaults);
             }
         }
 

@@ -288,7 +288,7 @@ namespace Microsoft.AspNet.Routing
             innerRouteCollection.Add(namedRoute);
             routeCollection.Add(innerRouteCollection);
 
-            var virtualPathContext = CreateVirtualPathContext("Ambiguous", options: new RouteOptions());
+            var virtualPathContext = CreateVirtualPathContext("Ambiguous");
 
             // Act & Assert
             var ex = Assert.Throws<InvalidOperationException>(() => routeCollection.GetVirtualPath(virtualPathContext));
@@ -519,31 +519,24 @@ namespace Microsoft.AspNet.Routing
         private static VirtualPathContext CreateVirtualPathContext(
             string routeName = null,
             ILoggerFactory loggerFactory = null,
-            RouteOptions options = null)
+            Action<RouteOptions> options = null)
         {
             if (loggerFactory == null)
             {
                 loggerFactory = NullLoggerFactory.Instance;
             }
 
-            if (options == null)
-            {
-                options = new RouteOptions();
-            }
-
             var request = new Mock<HttpRequest>(MockBehavior.Strict);
 
-            var optionsAccessor = new Mock<IOptions<RouteOptions>>(MockBehavior.Strict);
-            optionsAccessor.SetupGet(o => o.Value).Returns(options);
-
-            var serviceProvider = new ServiceCollection()
-                .AddSingleton(loggerFactory)
-                .AddSingleton(UrlEncoder.Default)
-                .AddSingleton(optionsAccessor.Object)
-                .BuildServiceProvider();
+            var services = new ServiceCollection();
+            services.AddRouting();
+            if (options != null)
+            {
+                services.Configure(options);
+            }
 
             var context = new Mock<HttpContext>(MockBehavior.Strict);
-            context.SetupGet(m => m.RequestServices).Returns(serviceProvider);
+            context.SetupGet(m => m.RequestServices).Returns(services.BuildServiceProvider());
             context.SetupGet(c => c.Request).Returns(request.Object);
 
             return new VirtualPathContext(context.Object, null, null, routeName);
@@ -551,21 +544,20 @@ namespace Microsoft.AspNet.Routing
 
         private static VirtualPathContext CreateVirtualPathContext(
             RouteValueDictionary values,
-            RouteOptions options = null,
+            Action<RouteOptions> options = null,
             string routeName = null)
         {
-            var optionsAccessor = new Mock<IOptions<RouteOptions>>(MockBehavior.Strict);
-            optionsAccessor.SetupGet(o => o.Value).Returns(options);
-
-            var serviceProvider = new ServiceCollection()
-                .AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance)
-                .AddSingleton(UrlEncoder.Default)
-                .AddSingleton(optionsAccessor.Object)
-                .BuildServiceProvider();
+            var services = new ServiceCollection();
+            services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
+            services.AddRouting();
+            if (options != null)
+            {
+                services.Configure<RouteOptions>(options);
+            }
 
             var context = new DefaultHttpContext
             {
-                RequestServices = serviceProvider
+                RequestServices = services.BuildServiceProvider(),
             };
 
             return new VirtualPathContext(
@@ -626,15 +618,15 @@ namespace Microsoft.AspNet.Routing
             return target;
         }
 
-        private static RouteOptions GetRouteOptions(
+        private static Action<RouteOptions> GetRouteOptions(
             bool lowerCaseUrls = false,
             bool appendTrailingSlash = false)
         {
-            var routeOptions = new RouteOptions();
-            routeOptions.LowercaseUrls = lowerCaseUrls;
-            routeOptions.AppendTrailingSlash = appendTrailingSlash;
-
-            return routeOptions;
+            return (options) =>
+            {
+                options.LowercaseUrls = lowerCaseUrls;
+                options.AppendTrailingSlash = appendTrailingSlash;
+            };
         }
     }
 }

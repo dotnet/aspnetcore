@@ -2,40 +2,47 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using System.IO;
-using System.Text;
 using System.Text.Encodings.Web;
-using Microsoft.AspNet.Http.Extensions;
+using Microsoft.AspNet.Routing.Internal;
+using Microsoft.Extensions.ObjectPool;
 
 namespace Microsoft.AspNet.Routing.Template
 {
     public class TemplateBinder
     {
+        private readonly UrlEncoder _urlEncoder;
+        private readonly ObjectPool<UriBuildingContext> _pool;
+
         private readonly RouteValueDictionary _defaults;
         private readonly RouteValueDictionary _filters;
         private readonly RouteTemplate _template;
-        private readonly UrlEncoder _urlEncoder;
 
         public TemplateBinder(
-            RouteTemplate template,
             UrlEncoder urlEncoder,
+            ObjectPool<UriBuildingContext> pool,
+            RouteTemplate template,
             RouteValueDictionary defaults)
         {
-            if (template == null)
-            {
-                throw new ArgumentNullException(nameof(template));
-            }
-
             if (urlEncoder == null)
             {
                 throw new ArgumentNullException(nameof(urlEncoder));
             }
 
-            _template = template;
+            if (pool == null)
+            {
+                throw new ArgumentNullException(nameof(pool));
+            }
+
+            if (template == null)
+            {
+                throw new ArgumentNullException(nameof(template));
+            }
+
             _urlEncoder = urlEncoder;
+            _pool = pool;
+            _template = template;
             _defaults = defaults;
 
             // Any default that doesn't have a corresponding parameter is a 'filter' and if a value
@@ -189,8 +196,14 @@ namespace Microsoft.AspNet.Routing.Template
         // Step 2: If the route is a match generate the appropriate URI
         public string BindValues(RouteValueDictionary acceptedValues)
         {
-            var context = new UriBuildingContext(_urlEncoder);
+            var context = _pool.Get();
+            var result = BindValues(context, acceptedValues);
+            _pool.Return(context);
+            return result;
+        }
 
+        private string BindValues(UriBuildingContext context, RouteValueDictionary acceptedValues)
+        {
             for (var i = 0; i < _template.Segments.Count; i++)
             {
                 Debug.Assert(context.BufferState == SegmentState.Beginning);
@@ -268,7 +281,7 @@ namespace Microsoft.AspNet.Routing.Template
             }
 
             // Generate the query string from the remaining values
-            var queryBuilder = new QueryBuilder();
+            var wroteFirst = false;
             foreach (var kvp in acceptedValues)
             {
                 if (_defaults != null && _defaults.ContainsKey(kvp.Key))
@@ -283,12 +296,22 @@ namespace Microsoft.AspNet.Routing.Template
                     continue;
                 }
 
-                queryBuilder.Add(kvp.Key, converted);
+                if (!wroteFirst)
+                {
+                    context.Writer.Write('?');
+                    wroteFirst = true;
+                }
+                else
+                {
+                    context.Writer.Write('&');
+                }
+
+                _urlEncoder.Encode(context.Writer, kvp.Key);
+                context.Writer.Write('=');
+                _urlEncoder.Encode(context.Writer, converted);
             }
 
-            var uri = context.GetUri();
-            uri.Append(queryBuilder);
-            return uri.ToString();
+            return context.ToString();
         }
 
         private TemplatePart GetParameter(string name)
@@ -350,7 +373,7 @@ namespace Microsoft.AspNet.Routing.Template
         }
 
         [DebuggerDisplay("{DebuggerToString(),nq}")]
-        private class TemplateBindingContext
+        private struct TemplateBindingContext
         {
             private readonly RouteValueDictionary _defaults;
             private readonly RouteValueDictionary _acceptedValues;
@@ -395,197 +418,6 @@ namespace Microsoft.AspNet.Routing.Template
             {
                 return string.Format("{{Accepted: '{0}'}}", string.Join(", ", _acceptedValues.Keys));
             }
-        }
-
-        [DebuggerDisplay("{DebuggerToString(),nq}")]
-        private class UriBuildingContext
-        {
-            // Holds the 'accepted' parts of the uri.
-            private readonly StringBuilder _uri;
-
-            // Holds the 'optional' parts of the uri. We need a secondary buffer to handle cases where an optional
-            // segment is in the middle of the uri. We don't know if we need to write it out - if it's
-            // followed by other optional segments than we will just throw it away.
-            private readonly List<BufferValue> _buffer;
-            private readonly UrlEncoder _urlEncoder;
-            private readonly StringWriter _uriWriter;
-
-            private bool _hasEmptySegment;
-            private int _lastValueOffset;
-
-            public UriBuildingContext(UrlEncoder urlEncoder)
-            {
-                _urlEncoder = urlEncoder;
-                _uri = new StringBuilder();
-                _buffer = new List<BufferValue>();
-                _uriWriter = new StringWriter(_uri);
-                _lastValueOffset = -1;
-
-                BufferState = SegmentState.Beginning;
-                UriState = SegmentState.Beginning;
-            }
-
-            public SegmentState BufferState { get; private set; }
-
-            public SegmentState UriState { get; private set; }
-
-            public bool Accept(string value)
-            {
-                if (string.IsNullOrEmpty(value))
-                {
-                    if (UriState == SegmentState.Inside || BufferState == SegmentState.Inside)
-                    {
-                        // We can't write an 'empty' part inside a segment
-                        return false;
-                    }
-                    else
-                    {
-                        _hasEmptySegment = true;
-                        return true;
-                    }
-                }
-                else if (_hasEmptySegment)
-                {
-                    // We're trying to write text after an empty segment - this is not allowed.
-                    return false;
-                }
-
-                for (var i = 0; i < _buffer.Count; i++)
-                {
-                    if (_buffer[i].RequiresEncoding)
-                    {
-                        _urlEncoder.Encode(_uriWriter, _buffer[i].Value);
-                    }
-                    else
-                    {
-                        _uri.Append(_buffer[i].Value);
-                    }
-                }
-                _buffer.Clear();
-
-                if (UriState == SegmentState.Beginning && BufferState == SegmentState.Beginning)
-                {
-                    if (_uri.Length != 0)
-                    {
-                        _uri.Append("/");
-                    }
-                }
-
-                BufferState = SegmentState.Inside;
-                UriState = SegmentState.Inside;
-
-                _lastValueOffset = _uri.Length;
-                // Allow the first segment to have a leading slash.
-                // This prevents the leading slash from PathString segments from being encoded.
-                if (_uri.Length == 0 && value.Length > 0 && value[0] == '/')
-                {
-                    _uri.Append("/");
-                    _urlEncoder.Encode(_uriWriter, value, 1, value.Length - 1);
-                }
-                else
-                {
-                    _urlEncoder.Encode(_uriWriter, value);
-                }
-
-                return true;
-            }
-
-            public void Remove(string literal)
-            {
-                Debug.Assert(_lastValueOffset != -1, "Cannot invoke Remove more than once.");
-                _uri.Length = _lastValueOffset;
-                _lastValueOffset = -1;
-            }
-
-            public bool Buffer(string value)
-            {
-                if (string.IsNullOrEmpty(value))
-                {
-                    if (BufferState == SegmentState.Inside)
-                    {
-                        // We can't write an 'empty' part inside a segment
-                        return false;
-                    }
-                    else
-                    {
-                        _hasEmptySegment = true;
-                        return true;
-                    }
-                }
-                else if (_hasEmptySegment)
-                {
-                    // We're trying to write text after an empty segment - this is not allowed.
-                    return false;
-                }
-
-                if (UriState == SegmentState.Inside)
-                {
-                    // We've already written part of this segment so there's no point in buffering, we need to
-                    // write out the rest or give up.
-                    var result = Accept(value);
-
-                    // We've already checked the conditions that could result in a rejected part, so this should
-                    // always be true.
-                    Debug.Assert(result);
-
-                    return result;
-                }
-
-                if (UriState == SegmentState.Beginning && BufferState == SegmentState.Beginning)
-                {
-                    if (_uri.Length != 0 || _buffer.Count != 0)
-                    {
-                        _buffer.Add(new BufferValue("/", requiresEncoding: false));
-                    }
-
-                    BufferState = SegmentState.Inside;
-                }
-
-                _buffer.Add(new BufferValue(value, requiresEncoding: true));
-                return true;
-            }
-
-            internal void EndSegment()
-            {
-                BufferState = SegmentState.Beginning;
-                UriState = SegmentState.Beginning;
-            }
-
-            internal StringBuilder GetUri()
-            {
-                // We can ignore any currently buffered segments - they are are guaranteed to be 'defaults'.
-                return _uri;
-            }
-
-            private string DebuggerToString()
-            {
-                return string.Format("{{Accepted: '{0}' Buffered: '{1}'}}", _uri, string.Join("", _buffer));
-            }
-        }
-
-        // Segments are treated as all-or-none. We should never output a partial segment.
-        // If we add any subsegment of this segment to the generated URI, we have to add
-        // the complete match. For example, if the subsegment is "{p1}-{p2}.xml" and we
-        // used a value for {p1}, we have to output the entire segment up to the next "/".
-        // Otherwise we could end up with the partial segment "v1" instead of the entire
-        // segment "v1-v2.xml".
-        private enum SegmentState
-        {
-            Beginning,
-            Inside,
-        }
-
-        private struct BufferValue
-        {
-            public BufferValue(string value, bool requiresEncoding)
-            {
-                Value = value;
-                RequiresEncoding = requiresEncoding;
-            }
-
-            public bool RequiresEncoding { get; }
-
-            public string Value { get; }
         }
     }
 }

@@ -5,7 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Encodings.Web;
+using Microsoft.AspNet.Routing.Internal;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.WebEncoders.Testing;
 using Xunit;
@@ -114,9 +116,11 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             string expected)
         {
             // Arrange
+            var encoder = new UrlTestEncoder();
             var binder = new TemplateBinder(
+                encoder,
+                new DefaultObjectPoolProvider().Create(new UriBuilderContextPooledObjectPolicy(encoder)),
                 TemplateParser.Parse(template),
-                new UrlTestEncoder(),
                 defaults);
 
             // Act & Assert
@@ -247,7 +251,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
                     new RouteValueDictionary(new {val1 = "someval1", val2 = "someval2" }),
                     new RouteValueDictionary(),
                     new RouteValueDictionary(new {val3 = "someval3" }),
-                    "UrlEncode[[Test]]/UrlEncode[[someval1]]UrlEncode[[.]]UrlEncode[[someval2]]?val3=someval3"
+                    "UrlEncode[[Test]]/UrlEncode[[someval1]]UrlEncode[[.]]UrlEncode[[someval2]]?UrlEncode[[val3]]=UrlEncode[[someval3]]"
                 },
             };
 
@@ -261,9 +265,11 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             string expected)
         {
             // Arrange
+            var encoder = new UrlTestEncoder();
             var binder = new TemplateBinder(
+                encoder,
+                new DefaultObjectPoolProvider().Create(new UriBuilderContextPooledObjectPolicy(encoder)),
                 TemplateParser.Parse(template),
-                new UrlTestEncoder(),
                 defaults);
 
             // Act & Assert
@@ -602,7 +608,8 @@ namespace Microsoft.AspNet.Routing.Template.Tests
                 new RouteValueDictionary(new { controller = "Home" }),
                 new RouteValueDictionary(new { controller = "home", action = "Index", id = (string)null }),
                 values,
-               "UrlEncode[[products]]UrlEncode[[.mvc]]/UrlEncode[[showcategory]]/UrlEncode[[123]]?so%3Frt=de%3Fsc&maxPrice=100");
+               "UrlEncode[[products]]UrlEncode[[.mvc]]/UrlEncode[[showcategory]]/UrlEncode[[123]]" +
+               "?UrlEncode[[so?rt]]=UrlEncode[[de?sc]]&UrlEncode[[maxPrice]]=UrlEncode[[100]]");
         }
 
         [Fact]
@@ -622,7 +629,8 @@ namespace Microsoft.AspNet.Routing.Template.Tests
                         maxPrice = 100,
                         custom = "customValue"
                     }),
-                "UrlEncode[[products]]UrlEncode[[.mvc]]/UrlEncode[[showcategory]]/UrlEncode[[123]]?sort=desc&maxPrice=100");
+                "UrlEncode[[products]]UrlEncode[[.mvc]]/UrlEncode[[showcategory]]/UrlEncode[[123]]" +
+                "?UrlEncode[[sort]]=UrlEncode[[desc]]&UrlEncode[[maxPrice]]=UrlEncode[[100]]");
         }
 
         [Fact]
@@ -1091,7 +1099,12 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         {
             // Arrange
             encoder = encoder ?? new UrlTestEncoder();
-            var binder = new TemplateBinder(TemplateParser.Parse(template), encoder, defaults);
+
+            var binder = new TemplateBinder(
+                encoder,
+                new DefaultObjectPoolProvider().Create(new UriBuilderContextPooledObjectPolicy(encoder)),
+                TemplateParser.Parse(template),
+                defaults);
 
             // Act & Assert
             var result = binder.GetValues(ambientValues, values);
