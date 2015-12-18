@@ -14,19 +14,22 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
             IsWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
             IsDarwin = RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
 #else
-            var p = (int)System.Environment.OSVersion.Platform;
+            var p = (int)Environment.OSVersion.Platform;
             IsWindows = (p != 4) && (p != 6) && (p != 128);
-            
-            // When running on Mono in Darwin OSVersion doesn't return Darwin. It returns Unix instead.
-            // Fallback to use uname.
-            IsDarwin = string.Equals(GetUname(), "Darwin", StringComparison.Ordinal);
+
+            if (!IsWindows)
+            {
+                // When running on Mono in Darwin OSVersion doesn't return Darwin. It returns Unix instead.
+                // Fallback to use uname.
+                IsDarwin = string.Equals(GetUname(), "Darwin", StringComparison.Ordinal);
+            }
 #endif
         }
-        
+
         public static bool IsWindows { get; }
 
         public static bool IsDarwin { get; }
-        
+
         [DllImport("libc")]
         static extern int uname(IntPtr buf);
 
