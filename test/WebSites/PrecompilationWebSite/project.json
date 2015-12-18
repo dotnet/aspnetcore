@@ -1,28 +1,31 @@
 {
-    "commands": {
-        "web": "Microsoft.AspNet.Hosting server=Microsoft.AspNet.Server.WebListener server.urls=http://localhost:5001",
-        "kestrel": "Microsoft.AspNet.Hosting --server Microsoft.AspNet.Server.Kestrel --server.urls http://localhost:5000"
+  "commands": {
+    "web": "PrecompilationWebSite"
+  },
+  "compilationOptions": {
+    "emitEntryPoint": true
+  },
+  "dependencies": {
+    "Microsoft.AspNet.Mvc": "6.0.0-*",
+    "Microsoft.AspNet.Mvc.TagHelpers": "6.0.0-*",
+    "Microsoft.AspNet.Mvc.TestConfiguration": "1.0.0",
+    "Microsoft.AspNet.Server.Kestrel": "1.0.0-*",
+    "Microsoft.AspNet.StaticFiles": "1.0.0-*",
+    "Microsoft.Extensions.PropertyHelper.Sources": {
+      "version": "1.0.0-*",
+      "type": "build"
+    }
+  },
+  "frameworks": {
+    "dnx451": {
+      "compilationOptions": {
+        "define": [ "CUSTOM_DNX451_DEFINE" ]
+      }
     },
-    "dependencies": {
-        "Microsoft.AspNet.Server.Kestrel": "1.0.0-*",
-        "Microsoft.AspNet.Mvc": "6.0.0-*",
-        "Microsoft.AspNet.Mvc.TagHelpers": "6.0.0-*",
-        "Microsoft.AspNet.Mvc.TestConfiguration": "1.0.0",
-        "Microsoft.AspNet.Server.WebListener": "1.0.0-*",
-        "Microsoft.AspNet.StaticFiles": "1.0.0-*",
-        "Microsoft.Extensions.PropertyHelper.Sources": { "version": "1.0.0-*", "type": "build" }
-    },
-    "frameworks": {
-        "dnx451": {
-            "compilationOptions": {
-                "define": [ "CUSTOM_DNX451_DEFINE" ]
-            }
-        },
-        "dnxcore50": {
-            "compilationOptions": {
-                "define": [ "CUSTOM_DNXCORE50_DEFINE" ]
-            }
-        }
-    },
-    "webroot": "wwwroot"
+    "dnxcore50": {
+      "compilationOptions": {
+        "define": [ "CUSTOM_DNXCORE50_DEFINE" ]
+      }
+    }
+  }
 }

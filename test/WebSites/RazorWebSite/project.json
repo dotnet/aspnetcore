@@ -1,28 +1,28 @@
 {
-    "commands": {
-        "web": "Microsoft.AspNet.Hosting server=Microsoft.AspNet.Server.WebListener server.urls=http://localhost:5001",
-        "kestrel": "Microsoft.AspNet.Hosting --server Microsoft.AspNet.Server.Kestrel --server.urls http://localhost:5000"
+  "commands": {
+    "web": "RazorWebSite"
+  },
+  "compilationOptions": {
+    "emitEntryPoint": true
+  },
+  "dependencies": {
+    "Microsoft.AspNet.Localization": "1.0.0-*",
+    "Microsoft.AspNet.Mvc": "6.0.0-*",
+    "Microsoft.AspNet.Mvc.Localization": "6.0.0-*",
+    "Microsoft.AspNet.Mvc.TestConfiguration": "1.0.0",
+    "Microsoft.AspNet.Server.Kestrel": "1.0.0-*",
+    "Microsoft.AspNet.StaticFiles": "1.0.0-*"
+  },
+  "frameworks": {
+    "dnx451": {
+      "compilationOptions": {
+        "define": [ "DNX451_CUSTOM_DEFINE" ]
+      }
     },
-    "dependencies": {
-        "Microsoft.AspNet.Server.Kestrel": "1.0.0-*",
-        "Microsoft.AspNet.Localization": "1.0.0-*",
-        "Microsoft.AspNet.Mvc": "6.0.0-*",
-        "Microsoft.AspNet.Mvc.Localization": "6.0.0-*",
-        "Microsoft.AspNet.Mvc.TestConfiguration": "1.0.0",
-        "Microsoft.AspNet.Server.WebListener": "1.0.0-*",
-        "Microsoft.AspNet.StaticFiles": "1.0.0-*"
-    },
-    "frameworks": {
-        "dnx451": {
-            "compilationOptions": {
-                "define": [ "DNX451_CUSTOM_DEFINE" ]
-            }
-        },
-        "dnxcore50": {
-            "compilationOptions": {
-                "define": [ "DNXCORE50_CUSTOM_DEFINE" ]
-            }
-        }
-    },
-    "webroot": "wwwroot"
+    "dnxcore50": {
+      "compilationOptions": {
+        "define": [ "DNXCORE50_CUSTOM_DEFINE" ]
+      }
+    }
+  }
 }

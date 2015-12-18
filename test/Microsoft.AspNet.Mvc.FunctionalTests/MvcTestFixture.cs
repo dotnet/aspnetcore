@@ -16,6 +16,7 @@ using Microsoft.Extensions.PlatformAbstractions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
+using Microsoft.AspNet.Hosting.Internal;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
@@ -41,33 +42,22 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                 configureApplication = application => configureWithLogger(application, NullLoggerFactory.Instance);
             }
 
-            var buildServices = (Func<IServiceCollection, IServiceProvider>)startupTypeInfo
+            var configureServices = (Action<IServiceCollection>)startupTypeInfo
                 .DeclaredMethods
-                .FirstOrDefault(m => m.Name == "ConfigureServices" && m.ReturnType == typeof(IServiceProvider))
-                ?.CreateDelegate(typeof(Func<IServiceCollection, IServiceProvider>), startupInstance);
-            if (buildServices == null)
-            {
-                var configureServices = (Action<IServiceCollection>)startupTypeInfo
-                    .DeclaredMethods
-                    .FirstOrDefault(m => m.Name == "ConfigureServices" && m.ReturnType == typeof(void))
-                    ?.CreateDelegate(typeof(Action<IServiceCollection>), startupInstance);
-                Debug.Assert(configureServices != null);
-
-                buildServices = services =>
-                {
-                    configureServices(services);
-                    return services.BuildServiceProvider();
-                };
-            }
+                .First(m => m.Name == "ConfigureServices")
+                .CreateDelegate(typeof(Action<IServiceCollection>), startupInstance);
 
             // RequestLocalizationOptions saves the current culture when constructed, potentially changing response
             // localization i.e. RequestLocalizationMiddleware behavior. Ensure the saved culture
             // (DefaultRequestCulture) is consistent regardless of system configuration or personal preferences.
             using (new CultureReplacer())
             {
-                _server = TestServer.Create(
-                    configureApplication,
-                    configureServices: InitializeServices(startupTypeInfo.Assembly, buildServices));
+                var builder = new WebApplicationBuilder()
+                    .Configure(configureApplication)
+                    .ConfigureServices(
+                        services => InitializeServices(startupTypeInfo.Assembly, services, configureServices));
+
+                _server = new TestServer(builder);
             }
 
             Client = _server.CreateClient();
@@ -86,9 +76,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         {
         }
 
-        private Func<IServiceCollection, IServiceProvider> InitializeServices(
+        private void InitializeServices(
             Assembly startupAssembly,
-            Func<IServiceCollection, IServiceProvider> buildServices)
+            IServiceCollection services,
+            Action<IServiceCollection> configureServices)
         {
             var libraryManager = PlatformServices.Default.LibraryManager;
 
@@ -104,24 +95,24 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             var applicationEnvironment = PlatformServices.Default.Application;
 
-            return (services) =>
+            services.AddSingleton<IApplicationEnvironment>(
+                new TestApplicationEnvironment(applicationEnvironment, applicationName, applicationRoot));
+
+            var hostingEnvironment = new HostingEnvironment();
+            hostingEnvironment.Initialize(applicationRoot, new WebApplicationOptions(), configuration: null);
+            services.AddSingleton<IHostingEnvironment>(hostingEnvironment);
+
+            // Inject a custom assembly provider. Overrides AddMvc() because that uses TryAdd().
+            var assemblyProvider = new StaticAssemblyProvider();
+            assemblyProvider.CandidateAssemblies.Add(startupAssembly);
+            services.AddSingleton<IAssemblyProvider>(assemblyProvider);
+
+            AddAdditionalServices(services);
+
+            if (configureServices != null)
             {
-                services.AddSingleton<IApplicationEnvironment>(
-                    new TestApplicationEnvironment(applicationEnvironment, applicationName, applicationRoot));
-
-                var hostingEnvironment = new HostingEnvironment();
-                hostingEnvironment.Initialize(applicationRoot, new WebHostOptions(), configuration: null);
-                services.AddSingleton<IHostingEnvironment>(hostingEnvironment);
-
-                // Inject a custom assembly provider. Overrides AddMvc() because that uses TryAdd().
-                var assemblyProvider = new StaticAssemblyProvider();
-                assemblyProvider.CandidateAssemblies.Add(startupAssembly);
-                services.AddSingleton<IAssemblyProvider>(assemblyProvider);
-
-                AddAdditionalServices(services);
-
-                return buildServices(services);
-            };
+                configureServices(services);
+            }
         }
     }
 }
