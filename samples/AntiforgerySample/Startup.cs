@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using Microsoft.AspNet.Antiforgery;
 using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Routing;
 using Microsoft.Extensions.DependencyInjection;
@@ -68,6 +69,16 @@ namespace AntiforgerySample
             });
 
             app.UseRouter(routes.Build());
+        }
+
+        public static void Main(string[] args)
+        {
+            var application = new WebApplicationBuilder()
+                .UseConfiguration(WebApplicationConfiguration.GetDefault(args))
+                .UseStartup<Startup>()
+                .Build();
+
+            application.Run();
         }
     }
 }
