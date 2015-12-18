@@ -1,12 +1,13 @@
 ﻿{
   "commands": {
-    "web": "Microsoft.AspNet.Server.Kestrel",
-    "weblistener": "Microsoft.AspNet.Server.WebListener"
+    "web": "LocalizationSample.Web"
+  },
+  "compilationOptions": {
+    "emitEntryPoint": true
   },
   "dependencies": {
     "Microsoft.AspNet.Mvc": "6.0.0-*",
-    "Microsoft.AspNet.Server.Kestrel": "1.0.0-*",
-    "Microsoft.AspNet.Server.WebListener": "1.0.0-*"
+    "Microsoft.AspNet.Server.Kestrel": "1.0.0-*"
   },
   "frameworks": {
     "dnx451": { },

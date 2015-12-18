@@ -1,10 +1,10 @@
 {
-  "commands": {
-    "web": "Microsoft.AspNet.Hosting server=Microsoft.AspNet.Server.WebListener server.urls=http://localhost:5001/taghelpers",
-    "kestrel": "Microsoft.AspNet.Hosting --server Microsoft.AspNet.Server.Kestrel --server.urls http://localhost:5000"
-  },
   "compilationOptions": {
+    "emitEntryPoint": true,
     "warningsAsErrors": true
+  },
+  "commands": {
+    "web": "TagHelperSample.Web"
   },
   "dependencies": {
     "Microsoft.AspNet.Server.Kestrel": "1.0.0-*",
@@ -12,7 +12,6 @@
     "Microsoft.AspNet.Diagnostics": "1.0.0-*",
     "Microsoft.AspNet.Mvc": "6.0.0-*",
     "Microsoft.AspNet.Mvc.TagHelpers": "6.0.0-*",
-    "Microsoft.AspNet.Server.WebListener": "1.0.0-*",
     "Microsoft.AspNet.StaticFiles": "1.0.0-*",
     "Microsoft.AspNet.Tooling.Razor": "1.0.0-*"
   },
@@ -28,6 +27,5 @@
   "publishExclude": [
     "**.user",
     "**.vspscc"
-  ],
-  "webroot": "wwwroot"
+  ]
 }

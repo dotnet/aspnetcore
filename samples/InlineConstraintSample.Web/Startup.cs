@@ -3,6 +3,7 @@
 
 using InlineConstraintSample.Web.Constraints;
 using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Localization;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -33,6 +34,16 @@ namespace InlineConstraintSample.Web
             app.UseRequestLocalization(localizationOptions);
 
             app.UseMvc();
+        }
+
+        public static void Main(string[] args)
+        {
+            var application = new WebApplicationBuilder()
+                .UseConfiguration(WebApplicationConfiguration.GetDefault(args))
+                .UseStartup<Startup>()
+                .Build();
+
+            application.Run();
         }
     }
 }
