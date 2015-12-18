@@ -109,7 +109,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         [MemberData(nameof(EmptyAndNullDefaultValues))]
         public void Binding_WithEmptyAndNull_DefaultValues(
             string template,
-            IReadOnlyDictionary<string, object> defaults,
+            RouteValueDictionary defaults,
             RouteValueDictionary values,
             string expected)
         {
@@ -255,7 +255,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         [MemberData(nameof(OptionalParamValues))]
         public void GetVirtualPathWithMultiSegmentWithOptionalParam(
             string template,
-            IReadOnlyDictionary<string, object> defaults,
+            RouteValueDictionary defaults,
             RouteValueDictionary ambientValues,
             RouteValueDictionary values,
             string expected)
@@ -1083,7 +1083,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
 
         private static void RunTest(
             string template,
-            IReadOnlyDictionary<string, object> defaults,
+            RouteValueDictionary defaults,
             RouteValueDictionary ambientValues,
             RouteValueDictionary values,
             string expected,

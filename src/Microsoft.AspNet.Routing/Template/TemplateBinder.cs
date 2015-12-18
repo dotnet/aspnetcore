@@ -14,14 +14,15 @@ namespace Microsoft.AspNet.Routing.Template
 {
     public class TemplateBinder
     {
-        private readonly IReadOnlyDictionary<string, object> _defaults;
+        private readonly RouteValueDictionary _defaults;
+        private readonly RouteValueDictionary _filters;
         private readonly RouteTemplate _template;
         private readonly UrlEncoder _urlEncoder;
 
         public TemplateBinder(
             RouteTemplate template,
             UrlEncoder urlEncoder,
-            IReadOnlyDictionary<string, object> defaults)
+            RouteValueDictionary defaults)
         {
             if (template == null)
             {
@@ -36,6 +37,14 @@ namespace Microsoft.AspNet.Routing.Template
             _template = template;
             _urlEncoder = urlEncoder;
             _defaults = defaults;
+
+            // Any default that doesn't have a corresponding parameter is a 'filter' and if a value
+            // is provided for that 'filter' it must match the value in defaults.
+            _filters = new RouteValueDictionary(_defaults);
+            foreach (var parameter in _template.Parameters)
+            {
+                _filters.Remove(parameter.Name);
+            }
         }
 
         // Step 1: Get the list of values we're going to try to use to match and generate this URI
@@ -132,25 +141,22 @@ namespace Microsoft.AspNet.Routing.Template
 
             // Any default values that don't appear as parameters are treated like filters. Any new values
             // provided must match these defaults.
-            if (context.Filters != null)
+            foreach (var filter in _filters)
             {
-                foreach (var filter in context.Filters)
+                var parameter = GetParameter(filter.Key);
+                if (parameter != null)
                 {
-                    var parameter = GetParameter(filter.Key);
-                    if (parameter != null)
-                    {
-                        continue;
-                    }
+                    continue;
+                }
 
-                    object value;
-                    if (values.TryGetValue(filter.Key, out value))
+                object value;
+                if (values.TryGetValue(filter.Key, out value))
+                {
+                    if (!RoutePartsEqual(value, filter.Value))
                     {
-                        if (!RoutePartsEqual(value, filter.Value))
-                        {
-                            // If there is a non-parameterized value in the route and there is a
-                            // new value for it and it doesn't match, this route won't match.
-                            return null;
-                        }
+                        // If there is a non-parameterized value in the route and there is a
+                        // new value for it and it doesn't match, this route won't match.
+                        return null;
                     }
                 }
             }
@@ -346,31 +352,19 @@ namespace Microsoft.AspNet.Routing.Template
         [DebuggerDisplay("{DebuggerToString(),nq}")]
         private class TemplateBindingContext
         {
-            private readonly IReadOnlyDictionary<string, object> _defaults;
-
+            private readonly RouteValueDictionary _defaults;
             private readonly RouteValueDictionary _acceptedValues;
-            private readonly RouteValueDictionary _filters;
 
-            public TemplateBindingContext(IReadOnlyDictionary<string, object> defaults)
+            public TemplateBindingContext(RouteValueDictionary defaults)
             {
                 _defaults = defaults;
 
                 _acceptedValues = new RouteValueDictionary();
-
-                if (_defaults != null)
-                {
-                    _filters = new RouteValueDictionary(_defaults);
-                }
             }
 
             public RouteValueDictionary AcceptedValues
             {
                 get { return _acceptedValues; }
-            }
-
-            public RouteValueDictionary Filters
-            {
-                get { return _filters; }
             }
 
             public void Accept(string key, object value)
@@ -388,7 +382,6 @@ namespace Microsoft.AspNet.Routing.Template
                 object value;
                 if (_defaults != null && _defaults.TryGetValue(key, out value))
                 {
-                    _filters.Remove(key);
                     _acceptedValues.Add(key, value);
                 }
             }
@@ -400,10 +393,7 @@ namespace Microsoft.AspNet.Routing.Template
 
             private string DebuggerToString()
             {
-                return string.Format(
-                    "{{Accepted: '{0}' Filters: '{1}'}}",
-                    string.Join(", ", _acceptedValues.Keys),
-                    string.Join(", ", _filters?.Keys));
+                return string.Format("{{Accepted: '{0}'}}", string.Join(", ", _acceptedValues.Keys));
             }
         }
 

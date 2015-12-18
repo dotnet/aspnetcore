@@ -1571,9 +1571,14 @@ namespace Microsoft.AspNet.Routing.Tree
             var entry = new TreeRouteLinkGenerationEntry();
             entry.Template = TemplateParser.Parse(template);
 
-            var defaults = entry.Template.Parameters
-                .Where(p => p.DefaultValue != null)
-                .ToDictionary(p => p.Name, p => p.DefaultValue);
+            var defaults = new RouteValueDictionary();
+            foreach (var parameter in entry.Template.Parameters)
+            {
+                if (parameter.DefaultValue != null)
+                {
+                    defaults.Add(parameter.Name, parameter.DefaultValue);
+                }
+            }
 
             var constraintBuilder = new RouteConstraintBuilder(CreateConstraintResolver(), template);
             foreach (var parameter in entry.Template.Parameters)
