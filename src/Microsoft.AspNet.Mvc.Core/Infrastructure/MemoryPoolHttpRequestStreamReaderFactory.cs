@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.IO;
 using System.Text;
-using Microsoft.Extensions.MemoryPool;
 
 namespace Microsoft.AspNet.Mvc.Infrastructure
 {
@@ -18,21 +18,21 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
         /// </summary>
         public static readonly int DefaultBufferSize = 1024; // 1KB - results in a 4KB byte array for UTF8.
 
-        private readonly IArraySegmentPool<byte> _bytePool;
-        private readonly IArraySegmentPool<char> _charPool;
+        private readonly ArrayPool<byte> _bytePool;
+        private readonly ArrayPool<char> _charPool;
 
         /// <summary>
         /// Creates a new <see cref="MemoryPoolHttpRequestStreamReaderFactory"/>.
         /// </summary>
         /// <param name="bytePool">
-        /// The <see cref="IArraySegmentPool{byte}"/> for creating <see cref="byte"/> buffers.
+        /// The <see cref="ArrayPool{byte}"/> for creating <see cref="byte"/> buffers.
         /// </param>
         /// <param name="charPool">
-        /// The <see cref="IArraySegmentPool{char}"/> for creating <see cref="char"/> buffers.
+        /// The <see cref="ArrayPool{char}"/> for creating <see cref="char"/> buffers.
         /// </param>
         public MemoryPoolHttpRequestStreamReaderFactory(
-            IArraySegmentPool<byte> bytePool,
-            IArraySegmentPool<char> charPool)
+            ArrayPool<byte> bytePool,
+            ArrayPool<char> charPool)
         {
             if (bytePool == null)
             {
@@ -61,34 +61,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
                 throw new ArgumentNullException(nameof(encoding));
             }
 
-            LeasedArraySegment<byte> bytes = null;
-            LeasedArraySegment<char> chars = null;
-
-            try
-            {
-                bytes = _bytePool.Lease(DefaultBufferSize);
-
-                // We need to compute the minimum size of the char buffer based on the size of the byte buffer,
-                // so that we have enough room to encode the buffer in one shot.
-                var minimumSize = encoding.GetMaxCharCount(DefaultBufferSize);
-                chars = _charPool.Lease(minimumSize);
-
-                return new HttpRequestStreamReader(stream, encoding, DefaultBufferSize, bytes, chars);
-            }
-            catch
-            {
-                if (bytes != null)
-                {
-                    bytes.Owner.Return(bytes);
-                }
-
-                if (chars != null)
-                {
-                    chars.Owner.Return(chars);
-                }
-
-                throw;
-            }
+            return new HttpRequestStreamReader(stream, encoding, DefaultBufferSize, _bytePool, _charPool);
         }
     }
 }

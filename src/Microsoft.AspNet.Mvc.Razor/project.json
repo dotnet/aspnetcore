@@ -26,7 +26,8 @@
       "type": "build"
     },
     "Microsoft.Dnx.Compilation.CSharp.Common": "1.0.0-*",
-    "Microsoft.Dnx.Compilation.CSharp.Abstractions": "1.0.0-*"
+    "Microsoft.Dnx.Compilation.CSharp.Abstractions": "1.0.0-*",
+    "Microsoft.Extensions.MemoryPool": "1.0.0-*"
   },
   "frameworks": {
     "net451": {

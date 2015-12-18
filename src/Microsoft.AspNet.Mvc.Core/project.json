@@ -26,7 +26,6 @@
       "type": "build"
     },
     "Microsoft.Extensions.Logging.Abstractions": "1.0.0-*",
-    "Microsoft.Extensions.MemoryPool": "1.0.0-*",
     "Microsoft.Extensions.PropertyActivator.Sources": {
       "version": "1.0.0-*",
       "type": "build"
@@ -39,6 +38,7 @@
       "version": "1.0.0-*",
       "type": "build"
     },
+    "System.Buffers": "4.0.0-*",
     "System.Diagnostics.DiagnosticSource": "4.0.0-*"
   },
   "frameworks": {

@@ -13,7 +13,6 @@ using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.AspNet.Mvc.ViewFeatures.Buffer;
 using Microsoft.AspNet.Mvc.ViewFeatures.Internal;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.MemoryPool;
 using Microsoft.Extensions.OptionsModel;
 
 namespace Microsoft.Extensions.DependencyInjection

@@ -2,12 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Core;
-using Microsoft.Extensions.MemoryPool;
 
 namespace Microsoft.AspNet.Mvc.Infrastructure
 {
@@ -21,12 +21,12 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
         private readonly Encoding _encoding;
         private readonly Decoder _decoder;
 
-        private readonly LeasedArraySegment<byte> _leasedByteBuffer;
-        private readonly LeasedArraySegment<char> _leasedCharBuffer;
+        private readonly ArrayPool<byte> _bytePool;
+        private readonly ArrayPool<char> _charPool;
 
         private readonly int _byteBufferSize;
-        private readonly ArraySegment<byte> _byteBuffer;
-        private readonly ArraySegment<char> _charBuffer;
+        private byte[] _byteBuffer;
+        private char[] _charBuffer;
 
         private int _charBufferIndex;
         private int _charsRead;
@@ -66,17 +66,17 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
             }
 
             _byteBufferSize = bufferSize;
-            _byteBuffer = new ArraySegment<byte>(new byte[bufferSize]);
+            _byteBuffer = new byte[bufferSize];
             var maxCharsPerBuffer = encoding.GetMaxCharCount(bufferSize);
-            _charBuffer = new ArraySegment<char>(new char[maxCharsPerBuffer]);
+            _charBuffer = new char[maxCharsPerBuffer];
         }
 
         public HttpRequestStreamReader(
             Stream stream,
             Encoding encoding,
             int bufferSize,
-            LeasedArraySegment<byte> leasedByteBuffer,
-            LeasedArraySegment<char> leasedCharBuffer)
+            ArrayPool<byte> bytePool,
+            ArrayPool<char> charPool)
         {
             if (stream == null)
             {
@@ -93,42 +93,47 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
                 throw new ArgumentNullException(nameof(encoding));
             }
 
-            if (leasedByteBuffer == null)
+            if (bytePool == null)
             {
-                throw new ArgumentNullException(nameof(leasedByteBuffer));
+                throw new ArgumentNullException(nameof(bytePool));
             }
 
-            if (leasedCharBuffer == null)
+            if (charPool == null)
             {
-                throw new ArgumentNullException(nameof(leasedCharBuffer));
+                throw new ArgumentNullException(nameof(charPool));
             }
 
-            if (bufferSize <= 0 || bufferSize > leasedByteBuffer.Data.Count)
+            if (bufferSize <= 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(bufferSize));
-            }
-
-            var requiredLength = encoding.GetMaxCharCount(bufferSize);
-            if (requiredLength > leasedCharBuffer.Data.Count)
-            {
-                var message = Resources.FormatHttpRequestStreamReader_InvalidBufferSize(
-                    requiredLength,
-                    bufferSize,
-                    encoding.EncodingName,
-                    typeof(Encoding).FullName,
-                    nameof(Encoding.GetMaxCharCount));
-                throw new ArgumentException(message, nameof(leasedCharBuffer));
             }
 
             _stream = stream;
             _encoding = encoding;
             _byteBufferSize = bufferSize;
-            _leasedByteBuffer = leasedByteBuffer;
-            _leasedCharBuffer = leasedCharBuffer;
+            _bytePool = bytePool;
+            _charPool = charPool;
 
             _decoder = encoding.GetDecoder();
-            _byteBuffer = _leasedByteBuffer.Data;
-            _charBuffer = _leasedCharBuffer.Data;
+
+            _byteBuffer = _bytePool.Rent(bufferSize);
+
+            try
+            {
+                var requiredLength = encoding.GetMaxCharCount(bufferSize);
+                _charBuffer = _charPool.Rent(requiredLength);
+            }
+            catch
+            {
+                _bytePool.Return(_byteBuffer);
+                _byteBuffer = null;
+
+                if (_charBuffer != null)
+                {
+                    _charPool.Return(_charBuffer);
+                    _charBuffer = null;
+                }
+            }
         }
 
 #if dnx451 
@@ -144,14 +149,16 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
             {
                 _stream = null;
 
-                if (_leasedByteBuffer != null)
+                if (_bytePool != null)
                 {
-                    _leasedByteBuffer.Owner.Return(_leasedByteBuffer);
+                    _bytePool.Return(_byteBuffer);
+                    _byteBuffer = null;
                 }
 
-                if (_leasedCharBuffer != null)
+                if (_charPool != null)
                 {
-                    _leasedCharBuffer.Owner.Return(_leasedCharBuffer);
+                    _charPool.Return(_charBuffer);
+                    _charBuffer = null;
                 }
             }
 
@@ -173,7 +180,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
                 }
             }
 
-            return _charBuffer.Array[_charBuffer.Offset + _charBufferIndex];
+            return _charBuffer[_charBufferIndex];
         }
 
         public override int Read()
@@ -191,7 +198,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
                 }
             }
 
-            return _charBuffer.Array[_charBuffer.Offset + _charBufferIndex++];
+            return _charBuffer[_charBufferIndex++];
         }
 
         public override int Read(char[] buffer, int index, int count)
@@ -236,8 +243,8 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
                 }
 
                 Buffer.BlockCopy(
-                    _charBuffer.Array,
-                    (_charBuffer.Offset + _charBufferIndex) * 2,
+                    _charBuffer,
+                    _charBufferIndex * 2,
                     buffer,
                     (index + charsRead) * 2,
                     charsRemaining * 2);
@@ -303,8 +310,8 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
                     {
                         Debug.Assert(n == 0);
                         _bytesRead = await _stream.ReadAsync(
-                            _byteBuffer.Array,
-                            _byteBuffer.Offset,
+                            _byteBuffer,
+                            0,
                             _byteBufferSize);
                         if (_bytesRead == 0)  // EOF
                         {
@@ -319,12 +326,12 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
 
                         _charBufferIndex = 0;
                         n = _decoder.GetChars(
-                            _byteBuffer.Array,
-                            _byteBuffer.Offset,
+                            _byteBuffer,
+                            0,
                             _bytesRead,
-                            _charBuffer.Array,
-                            _charBuffer.Offset);
-                        
+                            _charBuffer,
+                            0);
+
                         Debug.Assert(n > 0);
 
                         _charsRead += n; // Number of chars in StreamReader's buffer.
@@ -344,8 +351,8 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
                 }
 
                 Buffer.BlockCopy(
-                    _charBuffer.Array,
-                    (_charBuffer.Offset + _charBufferIndex) * 2,
+                    _charBuffer,
+                    _charBufferIndex * 2,
                     buffer,
                     (index + charsRead) * 2,
                     n * 2);
@@ -375,7 +382,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
 
             do
             {
-                _bytesRead = _stream.Read(_byteBuffer.Array, _byteBuffer.Offset, _byteBufferSize);
+                _bytesRead = _stream.Read(_byteBuffer, 0, _byteBufferSize);
                 if (_bytesRead == 0)  // We're at EOF
                 {
                     return _charsRead;
@@ -383,11 +390,11 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
 
                 _isBlocked = (_bytesRead < _byteBufferSize);
                 _charsRead += _decoder.GetChars(
-                    _byteBuffer.Array,
-                    _byteBuffer.Offset,
+                    _byteBuffer,
+                    0,
                     _bytesRead,
-                    _charBuffer.Array,
-                    _charBuffer.Offset + _charsRead);
+                    _charBuffer,
+                    _charsRead);
             }
             while (_charsRead == 0);
 
@@ -404,8 +411,8 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
             {
 
                 _bytesRead = await _stream.ReadAsync(
-                    _byteBuffer.Array,
-                    _byteBuffer.Offset,
+                    _byteBuffer,
+                    0,
                     _byteBufferSize).ConfigureAwait(false);
                 if (_bytesRead == 0)
                 {
@@ -417,11 +424,11 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
                 _isBlocked = (_bytesRead < _byteBufferSize);
 
                 _charsRead += _decoder.GetChars(
-                    _byteBuffer.Array,
-                    _byteBuffer.Offset,
+                    _byteBuffer,
+                    0,
                     _bytesRead,
-                    _charBuffer.Array,
-                    _charBuffer.Offset + _charsRead);
+                    _charBuffer,
+                    _charsRead);
             }
             while (_charsRead == 0);
 

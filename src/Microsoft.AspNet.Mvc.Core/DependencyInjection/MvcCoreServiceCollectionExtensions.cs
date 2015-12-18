@@ -2,8 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Internal;
+using System.Buffers;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.Abstractions;
 using Microsoft.AspNet.Mvc.ActionConstraints;
@@ -18,7 +17,6 @@ using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.AspNet.Routing;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.MemoryPool;
 using Microsoft.Extensions.OptionsModel;
 using Microsoft.Extensions.PlatformAbstractions;
 
@@ -144,8 +142,8 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<IUrlHelperFactory, UrlHelperFactory>();
             services.TryAddSingleton<IHttpRequestStreamReaderFactory, MemoryPoolHttpRequestStreamReaderFactory>();
             services.TryAddSingleton<IHttpResponseStreamWriterFactory, MemoryPoolHttpResponseStreamWriterFactory>();
-            services.TryAddSingleton<IArraySegmentPool<byte>, DefaultArraySegmentPool<byte>>();
-            services.TryAddSingleton<IArraySegmentPool<char>, DefaultArraySegmentPool<char>>();
+            services.TryAddSingleton(ArrayPool<byte>.Shared);
+            services.TryAddSingleton(ArrayPool<char>.Shared);
             services.TryAddSingleton<ObjectResultExecutor>();
         }
 

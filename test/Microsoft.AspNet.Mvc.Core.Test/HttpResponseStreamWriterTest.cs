@@ -1,12 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Buffers;
 using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Testing;
-using Microsoft.Extensions.MemoryPool;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc
@@ -384,96 +384,19 @@ namespace Microsoft.AspNet.Mvc
 
             var expectedBytes = encoding.GetBytes("Hello, World!");
 
-            using (var bytePool = new DefaultArraySegmentPool<byte>())
+            using (var writer = new HttpResponseStreamWriter(
+                stream,
+                encoding,
+                1024,
+                ArrayPool<byte>.Shared,
+                ArrayPool<char>.Shared))
             {
-                using (var charPool = new DefaultArraySegmentPool<char>())
-                {
-                    LeasedArraySegment<byte> bytes = null;
-                    LeasedArraySegment<char> chars = null;
-                    HttpResponseStreamWriter writer;
-
-                    try
-                    {
-                        bytes = bytePool.Lease(4096);
-                        chars = charPool.Lease(1024);
-
-                        writer = new HttpResponseStreamWriter(stream, encoding, 1024, bytes, chars);
-                    }
-                    catch
-                    {
-                        if (bytes != null)
-                        {
-                            bytes.Owner.Return(bytes);
-                        }
-
-                        if (chars != null)
-                        {
-                            chars.Owner.Return(chars);
-                        }
-
-                        throw;
-                    }
-
-                    // Act
-                    using (writer)
-                    {
-                        writer.Write("Hello, World!");
-                    }
-                }
+                // Act
+                writer.Write("Hello, World!");
             }
 
             // Assert
             Assert.Equal(expectedBytes, stream.ToArray());
-        }
-
-        // This covers the error case where the byte buffer is too small. This is a safeguard, and shouldn't happen 
-        // if we're using the writer factory.
-        [Fact]
-        public void HttpResponseStreamWriter_UsingPooledBuffers_SmallByteBuffer()
-        {
-            // Arrange
-            var encoding = Encoding.UTF8;
-            var stream = new MemoryStream();
-
-            var message =
-                "The byte buffer must have a length of at least '12291' to be used with a char buffer of " +
-                "size '4096' and encoding 'Unicode (UTF-8)'. Use 'System.Text.Encoding.GetMaxByteCount' " +
-                "to compute the correct size for the byte buffer.";
-
-            using (var bytePool = new DefaultArraySegmentPool<byte>())
-            {
-                using (var charPool = new DefaultArraySegmentPool<char>())
-                {
-                    LeasedArraySegment<byte> bytes = null;
-                    LeasedArraySegment<char> chars = null;
-                    HttpResponseStreamWriter writer = null;
-
-                    try
-                    {
-                        bytes = bytePool.Lease(1024);
-                        chars = charPool.Lease(4096);
-
-                        // Act & Assert
-                        ExceptionAssert.ThrowsArgument(
-                            () => writer = new HttpResponseStreamWriter(stream, encoding, chars.Data.Count, bytes, chars),
-                            "byteBuffer",
-                            message);
-                        writer.Dispose();
-                    }
-                    catch
-                    {
-                        if (bytes != null)
-                        {
-                            bytes.Owner.Return(bytes);
-                        }
-
-                        if (chars != null)
-                        {
-                            chars.Owner.Return(chars);
-                        }
-                    }
-                }
-            }
         }
 
         private class TestMemoryStream : MemoryStream

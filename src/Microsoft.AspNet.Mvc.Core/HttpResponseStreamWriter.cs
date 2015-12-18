@@ -2,11 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Core;
-using Microsoft.Extensions.MemoryPool;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -23,13 +23,15 @@ namespace Microsoft.AspNet.Mvc
         /// </summary>
         public const int DefaultBufferSize = 1024;
 
-        private readonly Stream _stream;
-        private Encoder _encoder;
-        private LeasedArraySegment<byte> _leasedByteBuffer;
-        private LeasedArraySegment<char> _leasedCharBuffer;
-        private ArraySegment<byte> _byteBuffer;
-        private ArraySegment<char> _charBuffer;
-        private int _charBufferSize;
+        private Stream _stream;
+        private readonly Encoder _encoder;
+        private readonly ArrayPool<byte> _bytePool;
+        private readonly ArrayPool<char> _charPool;
+        private readonly int _charBufferSize;
+
+        private byte[] _byteBuffer;
+        private char[] _charBuffer;
+
         private int _charBufferCount;
 
         public HttpResponseStreamWriter(Stream stream, Encoding encoding)
@@ -64,16 +66,16 @@ namespace Microsoft.AspNet.Mvc
             }
 
             _encoder = encoding.GetEncoder();
-            _byteBuffer = new ArraySegment<byte>(new byte[encoding.GetMaxByteCount(bufferSize)]);
-            _charBuffer = new ArraySegment<char>(new char[bufferSize]);
+            _byteBuffer = new byte[encoding.GetMaxByteCount(bufferSize)];
+            _charBuffer = new char[bufferSize];
         }
 
         public HttpResponseStreamWriter(
             Stream stream,
             Encoding encoding,
             int bufferSize,
-            LeasedArraySegment<byte> leasedByteBuffer,
-            LeasedArraySegment<char> leasedCharBuffer)
+            ArrayPool<byte> bytePool,
+            ArrayPool<char> charPool)
         {
             if (stream == null)
             {
@@ -90,59 +92,71 @@ namespace Microsoft.AspNet.Mvc
                 throw new ArgumentNullException(nameof(encoding));
             }
 
-            if (leasedByteBuffer == null)
+            if (bytePool == null)
             {
-                throw new ArgumentNullException(nameof(leasedByteBuffer));
+                throw new ArgumentNullException(nameof(bytePool));
             }
 
-            if (leasedCharBuffer == null)
+            if (charPool == null)
             {
-                throw new ArgumentNullException(nameof(leasedCharBuffer));
-            }
-
-            if (bufferSize <= 0 || bufferSize > leasedCharBuffer.Data.Count)
-            {
-                throw new ArgumentOutOfRangeException(nameof(bufferSize));
-            }
-
-            var requiredLength = encoding.GetMaxByteCount(bufferSize);
-            if (requiredLength > leasedByteBuffer.Data.Count)
-            {
-                var message = Resources.FormatHttpResponseStreamWriter_InvalidBufferSize(
-                    requiredLength,
-                    bufferSize,
-                    encoding.EncodingName,
-                    typeof(Encoding).FullName,
-                    nameof(Encoding.GetMaxByteCount));
-                throw new ArgumentException(message, nameof(leasedByteBuffer));
+                throw new ArgumentNullException(nameof(charPool));
             }
 
             _stream = stream;
             Encoding = encoding;
             _charBufferSize = bufferSize;
-            _leasedByteBuffer = leasedByteBuffer;
-            _leasedCharBuffer = leasedCharBuffer;
 
             _encoder = encoding.GetEncoder();
-            _byteBuffer = leasedByteBuffer.Data;
-            _charBuffer = leasedCharBuffer.Data;
+            _bytePool = bytePool;
+            _charPool = charPool;
+
+            _charBuffer = charPool.Rent(bufferSize);
+
+            try
+            {
+                var requiredLength = encoding.GetMaxByteCount(bufferSize);
+                _byteBuffer = bytePool.Rent(requiredLength);
+            }
+            catch
+            {
+                charPool.Return(_charBuffer);
+                _charBuffer = null;
+
+                if (_byteBuffer != null)
+                {
+                    bytePool.Return(_byteBuffer);
+                    _byteBuffer = null;
+                }
+
+                throw;
+            }
         }
 
         public override Encoding Encoding { get; }
 
         public override void Write(char value)
         {
+            if (_stream == null)
+            {
+                throw new ObjectDisposedException("stream");
+            }
+
             if (_charBufferCount == _charBufferSize)
             {
                 FlushInternal();
             }
 
-            _charBuffer.Array[_charBuffer.Offset + _charBufferCount] = value;
+            _charBuffer[_charBufferCount] = value;
             _charBufferCount++;
         }
 
         public override void Write(char[] values, int index, int count)
         {
+            if (_stream == null)
+            {
+                throw new ObjectDisposedException("stream");
+            }
+
             if (values == null)
             {
                 return;
@@ -161,6 +175,11 @@ namespace Microsoft.AspNet.Mvc
 
         public override void Write(string value)
         {
+            if (_stream == null)
+            {
+                throw new ObjectDisposedException("stream");
+            }
+
             if (value == null)
             {
                 return;
@@ -181,17 +200,27 @@ namespace Microsoft.AspNet.Mvc
 
         public override async Task WriteAsync(char value)
         {
+            if (_stream == null)
+            {
+                throw new ObjectDisposedException("stream");
+            }
+
             if (_charBufferCount == _charBufferSize)
             {
                 await FlushInternalAsync();
             }
 
-            _charBuffer.Array[_charBuffer.Offset + _charBufferCount] = value;
+            _charBuffer[_charBufferCount] = value;
             _charBufferCount++;
         }
 
         public override async Task WriteAsync(char[] values, int index, int count)
         {
+            if (_stream == null)
+            {
+                throw new ObjectDisposedException("stream");
+            }
+
             if (values == null)
             {
                 return;
@@ -210,6 +239,11 @@ namespace Microsoft.AspNet.Mvc
 
         public override async Task WriteAsync(string value)
         {
+            if (_stream == null)
+            {
+                throw new ObjectDisposedException("stream");
+            }
+
             if (value == null)
             {
                 return;
@@ -233,11 +267,21 @@ namespace Microsoft.AspNet.Mvc
 
         public override void Flush()
         {
+            if (_stream == null)
+            {
+                throw new ObjectDisposedException("stream");
+            }
+
             FlushInternal(true, true);
         }
 
         public override Task FlushAsync()
         {
+            if (_stream == null)
+            {
+                throw new ObjectDisposedException("stream");
+            }
+
             return FlushInternalAsync(flushStream: true, flushEncoder: true);
         }
 
@@ -245,7 +289,7 @@ namespace Microsoft.AspNet.Mvc
         // sent in chunked encoding in case of Helios.
         protected override void Dispose(bool disposing)
         {
-            if (disposing)
+            if (disposing && _stream != null)
             {
                 try
                 {
@@ -253,14 +297,18 @@ namespace Microsoft.AspNet.Mvc
                 }
                 finally
                 {
-                    if (_leasedByteBuffer != null)
+                    _stream = null;
+
+                    if (_bytePool != null)
                     {
-                        _leasedByteBuffer.Owner.Return(_leasedByteBuffer);
+                        _bytePool.Return(_byteBuffer);
+                        _byteBuffer = null;
                     }
 
-                    if (_leasedCharBuffer != null)
+                    if (_charPool != null)
                     {
-                        _leasedCharBuffer.Owner.Return(_leasedCharBuffer);
+                        _charPool.Return(_charBuffer);
+                        _charBuffer = null;
                     }
                 }
             }
@@ -274,16 +322,16 @@ namespace Microsoft.AspNet.Mvc
             }
 
             var count = _encoder.GetBytes(
-                _charBuffer.Array,
-                _charBuffer.Offset,
+                _charBuffer,
+                0,
                 _charBufferCount,
-                _byteBuffer.Array,
-                _byteBuffer.Offset,
+                _byteBuffer,
+                0,
                 flushEncoder);
 
             if (count > 0)
             {
-                _stream.Write(_byteBuffer.Array, _byteBuffer.Offset, count);
+                _stream.Write(_byteBuffer, 0, count);
             }
 
             _charBufferCount = 0;
@@ -302,16 +350,16 @@ namespace Microsoft.AspNet.Mvc
             }
 
             var count = _encoder.GetBytes(
-                _charBuffer.Array,
-                _charBuffer.Offset,
+                _charBuffer,
+                0,
                 _charBufferCount,
-                _byteBuffer.Array,
-                _byteBuffer.Offset,
+                _byteBuffer,
+                0,
                 flushEncoder);
 
             if (count > 0)
             {
-                await _stream.WriteAsync(_byteBuffer.Array, _byteBuffer.Offset, count);
+                await _stream.WriteAsync(_byteBuffer, 0, count);
             }
 
             _charBufferCount = 0;
@@ -328,8 +376,8 @@ namespace Microsoft.AspNet.Mvc
 
             value.CopyTo(
                 sourceIndex: index,
-                destination: _charBuffer.Array,
-                destinationIndex: _charBuffer.Offset + _charBufferCount,
+                destination: _charBuffer,
+                destinationIndex: _charBufferCount,
                 count: remaining);
 
             _charBufferCount += remaining;
@@ -344,8 +392,8 @@ namespace Microsoft.AspNet.Mvc
             Buffer.BlockCopy(
                 src: values,
                 srcOffset: index * sizeof(char),
-                dst: _charBuffer.Array,
-                dstOffset: (_charBuffer.Offset + _charBufferCount) * sizeof(char),
+                dst: _charBuffer,
+                dstOffset: _charBufferCount * sizeof(char),
                 count: remaining * sizeof(char));
 
             _charBufferCount += remaining;
