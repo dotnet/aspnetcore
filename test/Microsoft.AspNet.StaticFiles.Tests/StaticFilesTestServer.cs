@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,7 +20,11 @@ namespace Microsoft.AspNet.StaticFiles
             {
                 new KeyValuePair<string, string>("webroot", ".")
             });
-            return TestServer.Create(configurationBuilder.Build(), configureApp, configureServices: configureServices);
+            var builder = new WebApplicationBuilder()
+                .UseConfiguration(configurationBuilder.Build())
+                .Configure(configureApp)
+                .ConfigureServices(configureServices);
+            return new TestServer(builder);
         }
     }
 }

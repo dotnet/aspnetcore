@@ -4,10 +4,10 @@
 using System;
 using System.IO;
 using System.Net;
-using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.FileProviders;
+using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.TestHost;
 using Microsoft.AspNet.Testing.xunit;
@@ -20,7 +20,9 @@ namespace Microsoft.AspNet.StaticFiles
         [Fact]
         public async Task ReturnsNotFoundWithoutWwwroot()
         {
-            var server = TestServer.Create(app => app.UseStaticFiles());
+            var builder = new WebApplicationBuilder()
+                .Configure(app => app.UseStaticFiles());
+            var server = new TestServer(builder);
 
             var response = await server.CreateClient().GetAsync("/ranges.txt");
 
