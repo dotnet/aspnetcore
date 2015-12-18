@@ -45,7 +45,7 @@ namespace Microsoft.Extensions.Localization
 
         public static implicit operator string(LocalizedString localizedString)
         {
-            return localizedString.Value;
+            return localizedString?.Value;
         }
 
         /// <summary>
