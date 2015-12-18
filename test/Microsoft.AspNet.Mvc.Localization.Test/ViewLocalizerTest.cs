@@ -16,6 +16,39 @@ namespace Microsoft.AspNet.Mvc.Localization.Test
 {
     public class ViewLocalizerTest
     {
+        [Theory]
+        [InlineData("TestApplication", "Views/Home/Index.cshtml", "Views/Home/Index.cshtml", "TestApplication.Views.Home.Index")]
+        [InlineData("TestApplication.Web", "Views/Home/Index.cshtml", "Views/Home/Index.cshtml", "TestApplication.Web.Views.Home.Index")]
+        [InlineData("TestApplication", "Views/Home/Index.cshtml", "Views/Shared/_Layout.cshtml", "TestApplication.Views.Shared._Layout")]
+        [InlineData("TestApplication", "Views/Home/Index.cshtml", "Views/Shared/_MyPartial.cshtml", "TestApplication.Views.Shared._MyPartial")]
+        [InlineData("TestApplication", "Views/Home/Index.cshtml", "Views/Home/_HomePartial.cshtml", "TestApplication.Views.Home._HomePartial")]
+        [InlineData("TestApplication", "Views/Home/Index.cshtml", null, "TestApplication.Views.Home.Index")]
+        [InlineData("TestApplication", "Views/Home/Index.txt", null, "TestApplication.Views.Home.Index")]
+        [InlineData("TestApplication", "Views/Home/Index.cshtml", "", "TestApplication.Views.Home.Index")]
+        [InlineData("TestApplication", "Views/Home/Index.txt", "", "TestApplication.Views.Home.Index")]
+        public void ViewLocalizer_LooksForCorrectResourceBaseNameLocation(string appName, string viewPath, string executingPath, string expectedBaseName)
+        {
+            // Arrange
+            var applicationEnvironment = new Mock<IApplicationEnvironment>();
+            applicationEnvironment.Setup(a => a.ApplicationName).Returns(appName);
+            var htmlLocalizerFactory = new Mock<IHtmlLocalizerFactory>(MockBehavior.Loose);
+            var view = new Mock<IView>();
+            view.Setup(v => v.Path).Returns(viewPath);
+            var viewContext = new ViewContext();
+            viewContext.ExecutingFilePath = executingPath;
+            viewContext.View = view.Object;
+            var viewLocalizer = new ViewLocalizer(htmlLocalizerFactory.Object, applicationEnvironment.Object);
+
+            // Act
+            viewLocalizer.Contextualize(viewContext);
+
+            // Assert
+            htmlLocalizerFactory.Verify(h => h.Create(
+                It.Is<string>(baseName => baseName == expectedBaseName),
+                It.Is<string>(location => location == appName)
+            ));
+        }
+
         [Fact]
         public void ViewLocalizer_UseIndexer_ReturnsLocalizedHtmlString()
         {
@@ -29,7 +62,7 @@ namespace Microsoft.AspNet.Mvc.Localization.Test
             htmlLocalizer.Setup(h => h["Hello"]).Returns(localizedString);
 
             var htmlLocalizerFactory = new Mock<IHtmlLocalizerFactory>();
-            htmlLocalizerFactory.Setup(h => h.Create("example", "TestApplication"))
+            htmlLocalizerFactory.Setup(h => h.Create("TestApplication.example", "TestApplication"))
                 .Returns(htmlLocalizer.Object);
 
             var viewLocalizer = new ViewLocalizer(htmlLocalizerFactory.Object, applicationEnvironment.Object);
@@ -62,7 +95,7 @@ namespace Microsoft.AspNet.Mvc.Localization.Test
 
             var htmlLocalizerFactory = new Mock<IHtmlLocalizerFactory>();
             htmlLocalizerFactory.Setup(
-                h => h.Create("example", "TestApplication")).Returns(htmlLocalizer.Object);
+                h => h.Create("TestApplication.example", "TestApplication")).Returns(htmlLocalizer.Object);
 
             var viewLocalizer = new ViewLocalizer(htmlLocalizerFactory.Object, applicationEnvironment.Object);
 

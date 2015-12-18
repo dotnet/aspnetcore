@@ -4,7 +4,7 @@
 namespace Microsoft.AspNet.Mvc.Localization
 {
     /// <summary>
-    /// A service that provides localized strings for views.
+    /// Represents a type that provides HTML-aware localization for views.
     /// </summary>
     public interface IViewLocalizer : IHtmlLocalizer
     {

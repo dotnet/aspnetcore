@@ -3,7 +3,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.ViewFeatures.Internal;
 using Microsoft.Extensions.Localization;
@@ -12,7 +14,8 @@ using Microsoft.Extensions.PlatformAbstractions;
 namespace Microsoft.AspNet.Mvc.Localization
 {
     /// <summary>
-    /// A <see cref="IHtmlLocalizer"/> implementation that provides localized strings for views.
+    /// An <see cref="IViewLocalizer"/> implementation that derives the resource location from the executing view's
+    /// file path.
     /// </summary>
     public class ViewLocalizer : IViewLocalizer, ICanHasViewContext
     {
@@ -93,11 +96,29 @@ namespace Microsoft.AspNet.Mvc.Localization
                 throw new ArgumentNullException(nameof(viewContext));
             }
 
-            var baseName = viewContext.View.Path.Replace('/', '.').Replace('\\', '.');
-            if (baseName.StartsWith(".", StringComparison.OrdinalIgnoreCase))
+            // Given a view path "/Views/Home/Index.cshtml" we want a baseName like "MyApplication.Views.Home.Index"
+
+            var path = viewContext.ExecutingFilePath;
+
+            if (string.IsNullOrEmpty(path))
             {
-                baseName = baseName.Substring(1);
+                path = viewContext.View.Path;
             }
+
+            // Trim the file extension from the end of the path
+            if (!string.IsNullOrEmpty(path) && Path.HasExtension(path))
+            {
+                var extension = Path.GetExtension(path);
+                path = path.Substring(0, path.Length - extension.Length);
+            }
+
+            Debug.Assert(!string.IsNullOrEmpty(path), "Couldn't determine a path for the view");
+
+            var baseName = path.Replace('/', '.').Replace('\\', '.');
+            baseName = baseName.TrimStart('.');
+
+            // Prepend the application name
+            baseName = _applicationName + "." + baseName;
 
             _localizer = _localizerFactory.Create(baseName, _applicationName);
         }
