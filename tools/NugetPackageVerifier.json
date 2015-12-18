@@ -282,6 +282,7 @@
             "Microsoft.Extensions.Logging.Testing": { },
             "Microsoft.Extensions.Logging.TraceSource": { },
             "Microsoft.Extensions.MemoryPool": { },
+            "Microsoft.Extensions.ObjectPool": { },
             "Microsoft.Extensions.OptionsModel": { },
             "Microsoft.Extensions.PlatformAbstractions": { },
             "Microsoft.Extensions.Primitives": { },
