@@ -1,19 +1,20 @@
 {
-    "commands": {
-        "web": "Microsoft.AspNet.Hosting server=Microsoft.AspNet.Server.WebListener server.urls=http://localhost:5001"
-    },
-    "dependencies": {
-        "Microsoft.AspNet.Server.IIS": "1.0.0-*",
-        "Microsoft.AspNet.Server.WebListener": "1.0.0-*",
-        "Microsoft.AspNet.Session": "1.0.0-*",
-        "Microsoft.Extensions.Caching.Memory": "1.0.0-*",
-        "Microsoft.Extensions.Caching.Redis": "1.0.0-*",
-        "Microsoft.Extensions.Caching.SqlServer": "1.0.0-*",
-        "Microsoft.Extensions.Logging.Console": "1.0.0-*"
-    },
-    "exclude": "wwwroot/**/*.*",
-    "frameworks": {
-        "dnx451": { }
-    },
-    "webroot": "wwwroot"
+  "compilationOptions": {
+    "emitEntryPoint": true
+  },
+  "commands": {
+    "web": "SessionSample"
+  },
+  "dependencies": {
+    "Microsoft.AspNet.Server.Kestrel": "1.0.0-*",
+    "Microsoft.AspNet.Session": "1.0.0-*",
+    "Microsoft.Extensions.Caching.Memory": "1.0.0-*",
+    "Microsoft.Extensions.Caching.Redis": "1.0.0-*",
+    "Microsoft.Extensions.Caching.SqlServer": "1.0.0-*",
+    "Microsoft.Extensions.Logging.Console": "1.0.0-*"
+  },
+  "exclude": "wwwroot/**/*.*",
+  "frameworks": {
+    "dnx451": { }
+  }
 }

@@ -4,10 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.TestHost;
@@ -27,21 +27,24 @@ namespace Microsoft.AspNet.Session
         [Fact]
         public async Task ReadingEmptySessionDoesNotCreateCookie()
         {
-            using (var server = TestServer.Create(app =>
-            {
-                app.UseSession();
-
-                app.Run(context =>
+            var builder = new WebApplicationBuilder()
+                .Configure(app =>
                 {
-                    Assert.Null(context.Session.GetString("NotFound"));
-                    return Task.FromResult(0);
+                    app.UseSession();
+
+                    app.Run(context =>
+                    {
+                        Assert.Null(context.Session.GetString("NotFound"));
+                        return Task.FromResult(0);
+                    });
+                })
+                .ConfigureServices(services =>
+                {
+                    services.AddCaching();
+                    services.AddSession();
                 });
-            },
-            services =>
-            {
-                services.AddCaching();
-                services.AddSession();
-            }))
+
+            using (var server = new TestServer(builder))
             {
                 var client = server.CreateClient();
                 var response = await client.GetAsync(string.Empty);
@@ -54,22 +57,25 @@ namespace Microsoft.AspNet.Session
         [Fact]
         public async Task SettingAValueCausesTheCookieToBeCreated()
         {
-            using (var server = TestServer.Create(app =>
-            {
-                app.UseSession();
-                app.Run(context =>
+            var builder = new WebApplicationBuilder()
+                .Configure(app =>
                 {
-                    Assert.Null(context.Session.GetString("Key"));
-                    context.Session.SetString("Key", "Value");
-                    Assert.Equal("Value", context.Session.GetString("Key"));
-                    return Task.FromResult(0);
+                    app.UseSession();
+                    app.Run(context =>
+                    {
+                        Assert.Null(context.Session.GetString("Key"));
+                        context.Session.SetString("Key", "Value");
+                        Assert.Equal("Value", context.Session.GetString("Key"));
+                        return Task.FromResult(0);
+                    });
+                })
+                .ConfigureServices(services =>
+                {
+                    services.AddCaching();
+                    services.AddSession();
                 });
-            },
-            services =>
-            {
-                services.AddCaching();
-                services.AddSession();
-            }))
+
+            using (var server = new TestServer(builder))
             {
                 var client = server.CreateClient();
                 var response = await client.GetAsync(string.Empty);
@@ -84,27 +90,30 @@ namespace Microsoft.AspNet.Session
         [Fact]
         public async Task SessionCanBeAccessedOnTheNextRequest()
         {
-            using (var server = TestServer.Create(app =>
-            {
-                app.UseSession();
-                app.Run(context =>
+            var builder = new WebApplicationBuilder()
+                .Configure(app =>
                 {
-                    int? value = context.Session.GetInt32("Key");
-                    if (context.Request.Path == new PathString("/first"))
+                    app.UseSession();
+                    app.Run(context =>
                     {
-                        Assert.False(value.HasValue);
-                        value = 0;
-                    }
-                    Assert.True(value.HasValue);
-                    context.Session.SetInt32("Key", value.Value + 1);
-                    return context.Response.WriteAsync(value.Value.ToString());
+                        int? value = context.Session.GetInt32("Key");
+                        if (context.Request.Path == new PathString("/first"))
+                        {
+                            Assert.False(value.HasValue);
+                            value = 0;
+                        }
+                        Assert.True(value.HasValue);
+                        context.Session.SetInt32("Key", value.Value + 1);
+                        return context.Response.WriteAsync(value.Value.ToString());
+                    });
+                })
+                .ConfigureServices(services =>
+                {
+                    services.AddCaching();
+                    services.AddSession();
                 });
-            },
-            services =>
-            {
-                services.AddCaching();
-                services.AddSession();
-            }))
+
+            using (var server = new TestServer(builder))
             {
                 var client = server.CreateClient();
                 var response = await client.GetAsync("first");
@@ -123,37 +132,41 @@ namespace Microsoft.AspNet.Session
         [Fact]
         public async Task RemovedItemCannotBeAccessedAgain()
         {
-            using (var server = TestServer.Create(app =>
-            {
-                app.UseSession();
-                app.Run(context =>
+            var builder = new WebApplicationBuilder()
+                .Configure(app =>
                 {
-                    int? value = context.Session.GetInt32("Key");
-                    if (context.Request.Path == new PathString("/first"))
+                    app.UseSession();
+                    app.Run(context =>
                     {
-                        Assert.False(value.HasValue);
-                        value = 0;
-                        context.Session.SetInt32("Key", 1);
-                    }
-                    else if (context.Request.Path == new PathString("/second"))
-                    {
-                        Assert.True(value.HasValue);
-                        Assert.Equal(1, value);
-                        context.Session.Remove("Key");
-                    }
-                    else if (context.Request.Path == new PathString("/third"))
-                    {
-                        Assert.False(value.HasValue);
-                        value = 2;
-                    }
-                    return context.Response.WriteAsync(value.Value.ToString());
+                        int? value = context.Session.GetInt32("Key");
+                        if (context.Request.Path == new PathString("/first"))
+                        {
+                            Assert.False(value.HasValue);
+                            value = 0;
+                            context.Session.SetInt32("Key", 1);
+                        }
+                        else if (context.Request.Path == new PathString("/second"))
+                        {
+                            Assert.True(value.HasValue);
+                            Assert.Equal(1, value);
+                            context.Session.Remove("Key");
+                        }
+                        else if (context.Request.Path == new PathString("/third"))
+                        {
+                            Assert.False(value.HasValue);
+                            value = 2;
+                        }
+                        return context.Response.WriteAsync(value.Value.ToString());
+                    });
+                })
+                .ConfigureServices(
+                services =>
+                {
+                    services.AddCaching();
+                    services.AddSession();
                 });
-            },
-            services =>
-            {
-                services.AddCaching();
-                services.AddSession();
-            }))
+
+            using (var server = new TestServer(builder))
             {
                 var client = server.CreateClient();
                 var response = await client.GetAsync("first");
@@ -171,37 +184,40 @@ namespace Microsoft.AspNet.Session
         [Fact]
         public async Task ClearedItemsCannotBeAccessedAgain()
         {
-            using (var server = TestServer.Create(app =>
-            {
-                app.UseSession();
-                app.Run(context =>
+            var builder = new WebApplicationBuilder()
+                .Configure(app =>
                 {
-                    int? value = context.Session.GetInt32("Key");
-                    if (context.Request.Path == new PathString("/first"))
+                    app.UseSession();
+                    app.Run(context =>
                     {
-                        Assert.False(value.HasValue);
-                        value = 0;
-                        context.Session.SetInt32("Key", 1);
-                    }
-                    else if (context.Request.Path == new PathString("/second"))
-                    {
-                        Assert.True(value.HasValue);
-                        Assert.Equal(1, value);
-                        context.Session.Clear();
-                    }
-                    else if (context.Request.Path == new PathString("/third"))
-                    {
-                        Assert.False(value.HasValue);
-                        value = 2;
-                    }
-                    return context.Response.WriteAsync(value.Value.ToString());
+                        int? value = context.Session.GetInt32("Key");
+                        if (context.Request.Path == new PathString("/first"))
+                        {
+                            Assert.False(value.HasValue);
+                            value = 0;
+                            context.Session.SetInt32("Key", 1);
+                        }
+                        else if (context.Request.Path == new PathString("/second"))
+                        {
+                            Assert.True(value.HasValue);
+                            Assert.Equal(1, value);
+                            context.Session.Clear();
+                        }
+                        else if (context.Request.Path == new PathString("/third"))
+                        {
+                            Assert.False(value.HasValue);
+                            value = 2;
+                        }
+                        return context.Response.WriteAsync(value.Value.ToString());
+                    });
+                })
+                .ConfigureServices(services =>
+                {
+                    services.AddCaching();
+                    services.AddSession();
                 });
-            },
-            services =>
-            {
-                services.AddCaching();
-                services.AddSession();
-            }))
+
+            using (var server = new TestServer(builder))
             {
                 var client = server.CreateClient();
                 var response = await client.GetAsync("first");
@@ -221,21 +237,24 @@ namespace Microsoft.AspNet.Session
         {
             var sink = new TestSink();
             var loggerFactory = new TestLoggerFactory(sink, enabled: true);
-            using (var server = TestServer.Create(app =>
-            {
-                app.UseSession();
-                app.Run(context =>
+            var builder = new WebApplicationBuilder()
+                .Configure(app =>
                 {
-                    context.Session.SetString("Key", "Value");
-                    return Task.FromResult(0);
+                    app.UseSession();
+                    app.Run(context =>
+                    {
+                        context.Session.SetString("Key", "Value");
+                        return Task.FromResult(0);
+                    });
+                })
+                .ConfigureServices(services =>
+                {
+                    services.AddSingleton(typeof(ILoggerFactory), loggerFactory);
+                    services.AddCaching();
+                    services.AddSession();
                 });
-            },
-            services =>
-            {
-                services.AddSingleton(typeof(ILoggerFactory), loggerFactory);
-                services.AddCaching();
-                services.AddSession();
-            }))
+
+            using (var server = new TestServer(builder))
             {
                 var client = server.CreateClient();
                 var response = await client.GetAsync(string.Empty);
@@ -254,32 +273,35 @@ namespace Microsoft.AspNet.Session
         {
             var sink = new TestSink();
             var loggerFactory = new TestLoggerFactory(sink, enabled: true);
-            using (var server = TestServer.Create(app =>
-            {
-                app.UseSession();
-                app.Run(context =>
+            var builder = new WebApplicationBuilder()
+                .Configure(app =>
                 {
-                    int? value = context.Session.GetInt32("Key");
-                    if (context.Request.Path == new PathString("/first"))
+                    app.UseSession();
+                    app.Run(context =>
                     {
-                        Assert.False(value.HasValue);
-                        value = 1;
-                        context.Session.SetInt32("Key", 1);
-                    }
-                    else if (context.Request.Path == new PathString("/second"))
-                    {
-                        Assert.False(value.HasValue);
-                        value = 2;
-                    }
-                    return context.Response.WriteAsync(value.Value.ToString());
+                        int? value = context.Session.GetInt32("Key");
+                        if (context.Request.Path == new PathString("/first"))
+                        {
+                            Assert.False(value.HasValue);
+                            value = 1;
+                            context.Session.SetInt32("Key", 1);
+                        }
+                        else if (context.Request.Path == new PathString("/second"))
+                        {
+                            Assert.False(value.HasValue);
+                            value = 2;
+                        }
+                        return context.Response.WriteAsync(value.Value.ToString());
+                    });
+                })
+                .ConfigureServices(services =>
+                {
+                    services.AddSingleton(typeof(ILoggerFactory), loggerFactory);
+                    services.AddCaching();
+                    services.AddSession(o => o.IdleTimeout = TimeSpan.FromMilliseconds(30));
                 });
-            },
-            services =>
-            {
-                services.AddSingleton(typeof(ILoggerFactory), loggerFactory);
-                services.AddCaching();
-                services.AddSession(o => o.IdleTimeout = TimeSpan.FromMilliseconds(30));
-            }))
+
+            using (var server = new TestServer(builder))
             {
                 var client = server.CreateClient();
                 var response = await client.GetAsync("first");
@@ -305,37 +327,40 @@ namespace Microsoft.AspNet.Session
         public async Task RefreshesSession_WhenSessionData_IsNotModified()
         {
             var clock = new TestClock();
-            using (var server = TestServer.Create(app =>
-            {
-                app.UseSession();
-                app.Run(context =>
+            var builder = new WebApplicationBuilder()
+                .Configure(app =>
                 {
-                    string responseData = string.Empty;
-                    if (context.Request.Path == new PathString("/AddDataToSession"))
+                    app.UseSession();
+                    app.Run(context =>
                     {
-                        context.Session.SetInt32("Key", 10);
-                        responseData = "added data to session";
-                    }
-                    else if (context.Request.Path == new PathString("/AccessSessionData"))
-                    {
-                        var value = context.Session.GetInt32("Key");
-                        responseData = (value == null) ? "No value found in session." : value.ToString();
-                    }
-                    else if (context.Request.Path == new PathString("/DoNotAccessSessionData"))
-                    {
-                        responseData = "did not access session data";
-                    }
+                        string responseData = string.Empty;
+                        if (context.Request.Path == new PathString("/AddDataToSession"))
+                        {
+                            context.Session.SetInt32("Key", 10);
+                            responseData = "added data to session";
+                        }
+                        else if (context.Request.Path == new PathString("/AccessSessionData"))
+                        {
+                            var value = context.Session.GetInt32("Key");
+                            responseData = (value == null) ? "No value found in session." : value.ToString();
+                        }
+                        else if (context.Request.Path == new PathString("/DoNotAccessSessionData"))
+                        {
+                            responseData = "did not access session data";
+                        }
 
-                    return context.Response.WriteAsync(responseData);
+                        return context.Response.WriteAsync(responseData);
+                    });
+                })
+                .ConfigureServices(services =>
+                {
+                    services.AddSingleton(typeof(ILoggerFactory), new NullLoggerFactory());
+                    services.AddCaching();
+                    services.AddSession(o => o.IdleTimeout = TimeSpan.FromMinutes(20));
+                    services.Configure<MemoryCacheOptions>(o => o.Clock = clock);
                 });
-            },
-            services =>
-            {
-                services.AddSingleton(typeof(ILoggerFactory), new NullLoggerFactory());
-                services.AddCaching();
-                services.AddSession(o => o.IdleTimeout = TimeSpan.FromMinutes(20));
-                services.Configure<MemoryCacheOptions>(o => o.Clock = clock);
-            }))
+
+            using (var server = new TestServer(builder))
             {
                 var client = server.CreateClient();
                 var response = await client.GetAsync("AddDataToSession");
@@ -360,28 +385,31 @@ namespace Microsoft.AspNet.Session
         [Fact]
         public async Task SessionFeature_IsUnregistered_WhenResponseGoingOut()
         {
-            using (var server = TestServer.Create(app =>
-            {
-                app.Use(async (httpContext, next) =>
+            var builder = new WebApplicationBuilder()
+                .Configure(app =>
                 {
-                    await next();
+                    app.Use(async (httpContext, next) =>
+                    {
+                        await next();
 
-                    Assert.Null(httpContext.Features.Get<ISessionFeature>());
+                        Assert.Null(httpContext.Features.Get<ISessionFeature>());
+                    });
+
+                    app.UseSession();
+
+                    app.Run(context =>
+                    {
+                        context.Session.SetString("key", "value");
+                        return Task.FromResult(0);
+                    });
+                })
+                .ConfigureServices(services =>
+                {
+                    services.AddCaching();
+                    services.AddSession();
                 });
 
-                app.UseSession();
-
-                app.Run(context =>
-                {
-                    context.Session.SetString("key", "value");
-                    return Task.FromResult(0);
-                });
-            },
-            services =>
-            {
-                services.AddCaching();
-                services.AddSession();
-            }))
+            using (var server = new TestServer(builder))
             {
                 var client = server.CreateClient();
                 var response = await client.GetAsync(string.Empty);
@@ -392,36 +420,39 @@ namespace Microsoft.AspNet.Session
         [Fact]
         public async Task SessionFeature_IsUnregistered_WhenResponseGoingOut_AndAnUnhandledExcetionIsThrown()
         {
-            using (var server = TestServer.Create(app =>
-            {
-                app.Use(async (httpContext, next) =>
+            var builder = new WebApplicationBuilder()
+                .Configure(app =>
                 {
-                    var exceptionThrown = false;
-                    try
+                    app.Use(async (httpContext, next) =>
                     {
-                        await next();
-                    }
-                    catch
-                    {
-                        exceptionThrown = true;
-                    }
+                        var exceptionThrown = false;
+                        try
+                        {
+                            await next();
+                        }
+                        catch
+                        {
+                            exceptionThrown = true;
+                        }
 
-                    Assert.True(exceptionThrown);
-                    Assert.Null(httpContext.Features.Get<ISessionFeature>());
+                        Assert.True(exceptionThrown);
+                        Assert.Null(httpContext.Features.Get<ISessionFeature>());
+                    });
+
+                    app.UseSession();
+
+                    app.Run(context =>
+                    {
+                        throw new InvalidOperationException("An error occurred.");
+                    });
+                })
+                .ConfigureServices(services =>
+                {
+                    services.AddCaching();
+                    services.AddSession();
                 });
 
-                app.UseSession();
-
-                app.Run(context =>
-                {
-                    throw new InvalidOperationException("An error occurred.");
-                });
-            },
-            services =>
-            {
-                services.AddCaching();
-                services.AddSession();
-            }))
+            using (var server = new TestServer(builder))
             {
                 var client = server.CreateClient();
                 var response = await client.GetAsync(string.Empty);
@@ -434,15 +465,18 @@ namespace Microsoft.AspNet.Session
             // Arrange, Act & Assert
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
             {
-                using (var server = TestServer.Create(app =>
-                {
-                    app.UseSession();
-                },
-                services =>
-                {
-                    services.AddSingleton<IDistributedCache, TestDistributedCache>();
-                    services.AddSession();
-                }))
+                var builder = new WebApplicationBuilder()
+                    .Configure(app =>
+                    {
+                        app.UseSession();
+                    })
+                    .ConfigureServices(services =>
+                    {
+                        services.AddSingleton<IDistributedCache, TestDistributedCache>();
+                        services.AddSession();
+                    });
+
+                using (var server = new TestServer(builder))
                 {
                     var client = server.CreateClient();
                     await client.GetAsync(string.Empty);
@@ -455,23 +489,26 @@ namespace Microsoft.AspNet.Session
         [Fact]
         public async Task SessionKeys_AreCaseSensitive()
         {
-            using (var server = TestServer.Create(app =>
-            {
-                app.UseSession();
-                app.Run(context =>
+            var builder = new WebApplicationBuilder()
+                .Configure(app =>
                 {
-                    context.Session.SetString("KEY", "VALUE");
-                    context.Session.SetString("key", "value");
-                    Assert.Equal("VALUE", context.Session.GetString("KEY"));
-                    Assert.Equal("value", context.Session.GetString("key"));
-                    return Task.FromResult(0);
+                    app.UseSession();
+                    app.Run(context =>
+                    {
+                        context.Session.SetString("KEY", "VALUE");
+                        context.Session.SetString("key", "value");
+                        Assert.Equal("VALUE", context.Session.GetString("KEY"));
+                        Assert.Equal("value", context.Session.GetString("key"));
+                        return Task.FromResult(0);
+                    });
+                })
+                .ConfigureServices(services =>
+                {
+                    services.AddCaching();
+                    services.AddSession();
                 });
-            },
-            services =>
-            {
-                services.AddCaching();
-                services.AddSession();
-            }))
+
+            using (var server = new TestServer(builder))
             {
                 var client = server.CreateClient();
                 var response = await client.GetAsync(string.Empty);
