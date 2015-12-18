@@ -66,6 +66,7 @@ namespace Microsoft.Extensions.Localization
             var typeInfo = resourceSource.GetTypeInfo();
             var assembly = typeInfo.Assembly;
 
+            // Re-root the base name if a resources path is set
             var baseName = string.IsNullOrEmpty(_resourcesRelativePath)
                 ? typeInfo.FullName
                 : _applicationEnvironment.ApplicationName + "." + _resourcesRelativePath
@@ -93,17 +94,19 @@ namespace Microsoft.Extensions.Localization
                 throw new ArgumentNullException(nameof(baseName));
             }
 
-            var rootPath = location ?? _applicationEnvironment.ApplicationName;
-            var assembly = Assembly.Load(new AssemblyName(rootPath));
-            baseName = rootPath + "." + _resourcesRelativePath + TrimPrefix(baseName, rootPath + ".");
+            location = location ?? _applicationEnvironment.ApplicationName;
 
-            return _localizerCache.GetOrAdd(baseName, _ =>
-                new ResourceManagerStringLocalizer(
+            baseName = location + "." + _resourcesRelativePath + TrimPrefix(baseName, location + ".");
+
+            return _localizerCache.GetOrAdd($"B={baseName},L={location}", _ =>
+            {
+                var assembly = Assembly.Load(new AssemblyName(location));
+                return new ResourceManagerStringLocalizer(
                     new ResourceManager(baseName, assembly),
                     assembly,
                     baseName,
-                    _resourceNamesCache)
-            );
+                    _resourceNamesCache);
+            });
         }
 
         private static string TrimPrefix(string name, string prefix)
