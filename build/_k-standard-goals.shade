@@ -38,22 +38,6 @@ default NUGET_FEED = 'https://api.nuget.org/v3/index.json'
   }
 
   Log.Info("Build v2: " + IsBuildV2);
-
-  // Temporary until KoreBuild is updated
-  // It looks like it isn't possible to do this in .travis.yml because we only want
-  // to do it on Linux and I couldn't find an easy way to do that kind of selective
-  // environment variable set.
-  if(E('TRAVIS') == "true")
-  {
-    if(CanBuildForLinux) 
-    {
-      E('DNX_RUNTIME_ID', 'ubuntu.14.04-x64');
-    }
-    else
-    {
-      E('DNX_RUNTIME_ID', 'osx.10.10-x64');
-    }
-  }
 }
 
 #restore-npm-modules
