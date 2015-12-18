@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.TestHost;
@@ -20,19 +21,22 @@ namespace Microsoft.AspNet.Cors.Infrastructure
         public async Task CorsRequest_MatchPolicy_SetsResponseHeaders()
         {
             // Arrange
-            using (var server = TestServer.Create(app =>
-            {
-                app.UseCors(builder =>
-                    builder.WithOrigins("http://localhost:5001")
-                           .WithMethods("PUT")
-                           .WithHeaders("Header1")
-                           .WithExposedHeaders("AllowedHeader"));
-                app.Run(async context =>
+            var appBuilder = new WebApplicationBuilder()
+                .Configure(app =>
                 {
-                    await context.Response.WriteAsync("Cross origin response");
-                });
-            },
-            services => services.AddCors()))
+                    app.UseCors(builder =>
+                        builder.WithOrigins("http://localhost:5001")
+                               .WithMethods("PUT")
+                               .WithHeaders("Header1")
+                               .WithExposedHeaders("AllowedHeader"));
+                    app.Run(async context =>
+                    {
+                        await context.Response.WriteAsync("Cross origin response");
+                    });
+                })
+                .ConfigureServices(services => services.AddCors());
+
+            using (var server = new TestServer(appBuilder))
             {
                 // Act
                 // Actual request.
@@ -59,21 +63,24 @@ namespace Microsoft.AspNet.Cors.Infrastructure
             policy.Headers.Add("Header1");
             policy.ExposedHeaders.Add("AllowedHeader");
 
-            using (var server = TestServer.Create(app =>
-            {
-                app.UseCors("customPolicy");
-                app.Run(async context =>
+            var appBuilder = new WebApplicationBuilder()
+                .Configure(app =>
                 {
-                    await context.Response.WriteAsync("Cross origin response");
-                });
-            },
-            services =>
-            {
-                services.AddCors(options =>
+                    app.UseCors("customPolicy");
+                    app.Run(async context =>
+                    {
+                        await context.Response.WriteAsync("Cross origin response");
+                    });
+                })
+                .ConfigureServices(services =>
                 {
-                    options.AddPolicy("customPolicy", policy);
+                    services.AddCors(options =>
+                    {
+                        options.AddPolicy("customPolicy", policy);
+                    });
                 });
-            }))
+
+            using (var server = new TestServer(appBuilder))
             {
                 // Act
                 // Preflight request.
@@ -94,19 +101,22 @@ namespace Microsoft.AspNet.Cors.Infrastructure
         public async Task PreFlightRequest_DoesNotMatchPolicy_DoesNotSetHeaders()
         {
             // Arrange
-            using (var server = TestServer.Create(app =>
-            {
-                app.UseCors(builder =>
-                    builder.WithOrigins("http://localhost:5001")
-                           .WithMethods("PUT")
-                           .WithHeaders("Header1")
-                           .WithExposedHeaders("AllowedHeader"));
-                app.Run(async context =>
+            var appBuilder = new WebApplicationBuilder()
+                .Configure(app =>
                 {
-                    await context.Response.WriteAsync("Cross origin response");
-                });
-            },
-            services => services.AddCors()))
+                    app.UseCors(builder =>
+                        builder.WithOrigins("http://localhost:5001")
+                               .WithMethods("PUT")
+                               .WithHeaders("Header1")
+                               .WithExposedHeaders("AllowedHeader"));
+                    app.Run(async context =>
+                    {
+                        await context.Response.WriteAsync("Cross origin response");
+                    });
+                })
+                .ConfigureServices(services => services.AddCors());
+
+            using (var server = new TestServer(appBuilder))
             {
                 // Act
                 // Preflight request.
@@ -125,19 +135,22 @@ namespace Microsoft.AspNet.Cors.Infrastructure
         public async Task CorsRequest_DoesNotMatchPolicy_DoesNotSetHeaders()
         {
             // Arrange
-            using (var server = TestServer.Create(app =>
-            {
-                app.UseCors(builder =>
-                    builder.WithOrigins("http://localhost:5001")
-                           .WithMethods("PUT")
-                           .WithHeaders("Header1")
-                           .WithExposedHeaders("AllowedHeader"));
-                app.Run(async context =>
+            var appBuilder = new WebApplicationBuilder()
+                .Configure(app =>
                 {
-                    await context.Response.WriteAsync("Cross origin response");
-                });
-            },
-            services => services.AddCors()))
+                    app.UseCors(builder =>
+                        builder.WithOrigins("http://localhost:5001")
+                               .WithMethods("PUT")
+                               .WithHeaders("Header1")
+                               .WithExposedHeaders("AllowedHeader"));
+                    app.Run(async context =>
+                    {
+                        await context.Response.WriteAsync("Cross origin response");
+                    });
+                })
+                .ConfigureServices(services => services.AddCors());
+
+            using (var server = new TestServer(appBuilder))
             {
                 // Act
                 // Actual request.

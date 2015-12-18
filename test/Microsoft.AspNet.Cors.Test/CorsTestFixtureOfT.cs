@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.Cors.Infrastructure
 
         public CorsTestFixture()
         {
-            var builder = new WebHostBuilder().UseStartup<TStartup>();
+            var builder = new WebApplicationBuilder().UseStartup<TStartup>();
             _server = new TestServer(builder);
 
             Client = _server.CreateClient();
