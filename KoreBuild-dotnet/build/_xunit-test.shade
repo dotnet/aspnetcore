@@ -43,10 +43,12 @@ projectFile=''
             {
                 var publishFolder = Path.Combine(projectFolder, ".testPublish", framework);
                 DotnetPublish(projectFile, publishFolder, framework);
-                Copy(runnerFolder, publishFolder, "*.exe", true);
+                Copy(runnerFolder, publishFolder, "*.*", true);
                 
                 var targetTestDll = projectName + ".dll";
-                ExecClr("xunit.console.exe", targetTestDll, publishFolder);
+
+                var runnerExe = Path.Combine(runnerFolder, "xunit.console.exe");
+                ExecClr(runnerExe, targetTestDll, publishFolder);
             }
         }
     }
