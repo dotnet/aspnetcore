@@ -54,7 +54,7 @@ projectFile=''
                 var targetTestDll = projectName + ".dll";
 
                 var runnerExe = Path.GetFullPath(Path.Combine(publishFolder, "xunit.console.exe"));
-                ExecClr(runnerExe, testArgs + " " targetTestDll, publishFolder);
+                ExecClr(runnerExe, testArgs + " " + targetTestDll, publishFolder);
             }
         }
     }
