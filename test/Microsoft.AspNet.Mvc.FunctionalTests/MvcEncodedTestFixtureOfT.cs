@@ -8,10 +8,10 @@ using Microsoft.Extensions.WebEncoders.Testing;
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
     public class MvcEncodedTestFixture<TStartup> : MvcTestFixture<TStartup>
-        where TStartup : new()
     {
-        protected override void AddAdditionalServices(IServiceCollection services)
+        protected override void InitializeServices(IServiceCollection services)
         {
+            base.InitializeServices(services);
             services.AddTransient<HtmlEncoder, HtmlTestEncoder>();
             services.AddTransient<JavaScriptEncoder, JavaScriptTestEncoder>();
             services.AddTransient<UrlEncoder, UrlTestEncoder>();
