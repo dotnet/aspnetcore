@@ -26,18 +26,19 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
         public const string Http10Version = "HTTP/1.0";
         public const string Http11Version = "HTTP/1.1";
 
-        private static long _httpConnectMethodLong = GetAsciiStringAsLong("CONNECT\0");
-        private static long _httpDeleteMethodLong = GetAsciiStringAsLong("DELETE\0\0");
-        private static long _httpGetMethodLong = GetAsciiStringAsLong("GET\0\0\0\0\0");
-        private static long _httpHeadMethodLong = GetAsciiStringAsLong("HEAD\0\0\0\0");
-        private static long _httpPatchMethodLong = GetAsciiStringAsLong("PATCH\0\0\0");
-        private static long _httpPostMethodLong = GetAsciiStringAsLong("POST\0\0\0\0");
-        private static long _httpPutMethodLong = GetAsciiStringAsLong("PUT\0\0\0\0\0");
-        private static long _httpOptionsMethodLong = GetAsciiStringAsLong("OPTIONS\0");
-        private static long _httpTraceMethodLong = GetAsciiStringAsLong("TRACE\0\0\0");
+        // readonly primitive statics can be Jit'd to consts https://github.com/dotnet/coreclr/issues/1079
+        private readonly static long _httpConnectMethodLong = GetAsciiStringAsLong("CONNECT\0");
+        private readonly static long _httpDeleteMethodLong = GetAsciiStringAsLong("DELETE\0\0");
+        private readonly static long _httpGetMethodLong = GetAsciiStringAsLong("GET\0\0\0\0\0");
+        private readonly static long _httpHeadMethodLong = GetAsciiStringAsLong("HEAD\0\0\0\0");
+        private readonly static long _httpPatchMethodLong = GetAsciiStringAsLong("PATCH\0\0\0");
+        private readonly static long _httpPostMethodLong = GetAsciiStringAsLong("POST\0\0\0\0");
+        private readonly static long _httpPutMethodLong = GetAsciiStringAsLong("PUT\0\0\0\0\0");
+        private readonly static long _httpOptionsMethodLong = GetAsciiStringAsLong("OPTIONS\0");
+        private readonly static long _httpTraceMethodLong = GetAsciiStringAsLong("TRACE\0\0\0");
 
-        private static long _http10VersionLong = GetAsciiStringAsLong("HTTP/1.0");
-        private static long _http11VersionLong = GetAsciiStringAsLong("HTTP/1.1");
+        private readonly static long _http10VersionLong = GetAsciiStringAsLong("HTTP/1.0");
+        private readonly static long _http11VersionLong = GetAsciiStringAsLong("HTTP/1.1");
 
         private const int PerfectHashDivisor = 37;
         private static Tuple<long, string>[] _knownStrings = new Tuple<long, string>[PerfectHashDivisor];
