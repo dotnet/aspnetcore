@@ -6,7 +6,7 @@ using System.Linq;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Routing.Constraints;
 using Microsoft.AspNet.Testing;
-using Microsoft.Extensions.OptionsModel;
+using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 

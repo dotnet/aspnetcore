@@ -4,7 +4,7 @@
 using System.Collections.Generic;
 using Microsoft.AspNet.Http;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.OptionsModel;
+using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace Microsoft.AspNet.Routing.Template.Tests

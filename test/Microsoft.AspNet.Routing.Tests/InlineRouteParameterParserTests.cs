@@ -7,7 +7,7 @@ using System.Linq;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Routing.Template;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.OptionsModel;
+using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace Microsoft.AspNet.Routing.Tests

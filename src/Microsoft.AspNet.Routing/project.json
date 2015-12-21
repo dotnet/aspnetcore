@@ -21,7 +21,7 @@
       "version": "1.0.0-*"
     },
     "Microsoft.Extensions.Logging.Abstractions": "1.0.0-*",
-    "Microsoft.Extensions.OptionsModel": "1.0.0-*",
+    "Microsoft.Extensions.Options": "1.0.0-*",
     "Microsoft.Extensions.PropertyHelper.Sources": {
       "type": "build",
       "version": "1.0.0-*"

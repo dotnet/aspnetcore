@@ -10,7 +10,7 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Routing.Template;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
-using Microsoft.Extensions.OptionsModel;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.WebEncoders.Testing;
 using Moq;
 using Xunit;

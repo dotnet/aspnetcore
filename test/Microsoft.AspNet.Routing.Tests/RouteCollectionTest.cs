@@ -11,7 +11,7 @@ using Microsoft.AspNet.Http.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
-using Microsoft.Extensions.OptionsModel;
+using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
