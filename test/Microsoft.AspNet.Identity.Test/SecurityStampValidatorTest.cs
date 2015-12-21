@@ -10,7 +10,7 @@ using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Authentication;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.OptionsModel;
+using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
@@ -28,7 +28,7 @@ namespace Microsoft.AspNet.Identity.Test
             var ticket = new AuthenticationTicket(id, new AuthenticationProperties { IssuedUtc = DateTimeOffset.UtcNow }, scheme);
             var context = new CookieValidatePrincipalContext(httpContext.Object, ticket, new CookieAuthenticationOptions());
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => SecurityStampValidator.ValidatePrincipalAsync(context));
-            Assert.True(ex.Message.Contains("No service for type 'Microsoft.Extensions.OptionsModel.IOptions"));
+            Assert.True(ex.Message.Contains("No service for type 'Microsoft.Extensions.Options.IOptions"));
         }
 
         [Theory]

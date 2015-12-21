@@ -5,7 +5,7 @@ using System;
 
 using Microsoft.AspNet.Identity;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.OptionsModel;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNet.Builder
 {

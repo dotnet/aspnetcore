@@ -21,7 +21,6 @@
     "EntityFramework.MicrosoftSqlServer": "7.0.0-*",
     "Microsoft.Extensions.Configuration.EnvironmentVariables": "1.0.0-*",
     "Microsoft.Extensions.Configuration.Json": "1.0.0-*",
-    "Microsoft.Extensions.OptionsModel": "1.0.0-*",
     "Microsoft.Extensions.Logging.Console": "1.0.0-*"
   },
   "compilationOptions": {
