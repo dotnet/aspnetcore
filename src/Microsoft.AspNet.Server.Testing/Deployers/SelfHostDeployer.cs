@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
@@ -51,10 +52,14 @@ namespace Microsoft.AspNet.Server.Testing
             var commandName = DeploymentParameters.Command;
             if (string.IsNullOrEmpty(commandName))
             {
-                commandName = DeploymentParameters.ServerType == ServerType.WebListener ? "weblistener" : "kestrel";
+                commandName = "run";
             }
+
             var dnxPath = Path.Combine(ChosenRuntimePath, DnxCommandName);
-            var dnxArgs = $"-p \"{DeploymentParameters.ApplicationPath}\" {commandName} --server.urls {DeploymentParameters.ApplicationBaseUriHint}";
+            var dnxArgs = $"-p \"{DeploymentParameters.ApplicationPath}\" {commandName} " +
+                          $"--server.urls {DeploymentParameters.ApplicationBaseUriHint} " +
+                          $"--server {(DeploymentParameters.ServerType == ServerType.WebListener ? "Microsoft.AspNet.Server.WebListener" : "Microsoft.AspNet.Server.Kestrel")}";
+
             Logger.LogInformation($"Executing {dnxPath} {dnxArgs}");
 
             var startInfo = new ProcessStartInfo
