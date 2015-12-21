@@ -116,7 +116,7 @@ namespace ServerComparison.FunctionalTests
                 {
                     ApplicationBaseUriHint = applicationBaseUrl,
                     EnvironmentName = "Responses",
-                    Command = serverType == ServerType.WebListener ? "weblistener" : "web",
+                    Command = "web",
                     ApplicationHostConfigTemplateContent = (serverType == ServerType.IISExpress) ? File.ReadAllText("Http.config") : null,
                     SiteName = "HttpTestSite", // This is configured in the Http.config
                 };
