@@ -4,7 +4,7 @@
 using System;
 using Microsoft.AspNet.DataProtection.KeyManagement;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.OptionsModel;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNet.DataProtection
 {
