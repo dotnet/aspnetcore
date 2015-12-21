@@ -4,7 +4,7 @@
 using System;
 using Microsoft.AspNet.Antiforgery;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.OptionsModel;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
