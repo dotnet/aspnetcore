@@ -4,7 +4,7 @@
 using System.Net;
 using Xunit;
 
-namespace Microsoft.AspNetCore.HttpOverrides
+namespace Microsoft.AspNetCore.HttpOverrides.Internal
 {
     public class IPEndPointParserTests
     {

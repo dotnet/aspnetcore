@@ -3,7 +3,7 @@
 
 using System.Net;
 
-namespace Microsoft.AspNetCore.HttpOverrides
+namespace Microsoft.AspNetCore.HttpOverrides.Internal
 {
     public static class IPEndPointParser
     {
