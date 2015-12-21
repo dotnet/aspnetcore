@@ -9,7 +9,7 @@ using System.Text.Encodings.Web;
 using Microsoft.AspNet.DataProtection;
 using Microsoft.AspNet.Http;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.OptionsModel;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 

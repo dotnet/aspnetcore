@@ -6,7 +6,7 @@ using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNet.DataProtection;
 using Microsoft.AspNet.Http;
-using Microsoft.Extensions.OptionsModel;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNet.Authentication.Cookies
 {
