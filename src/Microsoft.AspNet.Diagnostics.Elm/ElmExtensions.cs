@@ -5,7 +5,7 @@ using System;
 using Microsoft.AspNet.Diagnostics.Elm;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.OptionsModel;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNet.Builder
 {
