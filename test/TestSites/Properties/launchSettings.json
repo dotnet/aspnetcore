@@ -12,13 +12,13 @@
       "commandName": "IISExpress",
       "launchBrowser": true,
       "environmentVariables": {
-        "ASPNET_ENV": "HelloWorld"
+        "ASPNET_ENVIRONMENT": "HelloWorld"
       }
     },
     "web": {
       "commandName": "web",
       "environmentVariables": {
-        "Hosting:Environment": "Development"
+        "ASPNET_ENVIRONMENT": "HelloWorld"
       }
     }
   }

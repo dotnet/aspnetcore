@@ -20,8 +20,10 @@
     }
   },
   "commands": {
-    "weblistener": "Microsoft.AspNet.Server.WebListener",
-    "web": "Microsoft.AspNet.Server.Kestrel"
+    "web": "TestSites"
+  },
+  "compilationOptions": {
+    "emitEntryPoint": true
   },
   "publishExclude": [
     "node_modules",
