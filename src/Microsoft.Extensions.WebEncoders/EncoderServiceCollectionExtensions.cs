@@ -4,7 +4,7 @@
 using System;
 using System.Text.Encodings.Web;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.OptionsModel;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.WebEncoders;
 
 namespace Microsoft.Extensions.DependencyInjection
