@@ -7,7 +7,7 @@
         "Microsoft.AspNet.Hosting": "1.0.0-*",
         "Microsoft.AspNet.Owin": "1.0.0-*",
         "Microsoft.AspNet.Testing": "1.0.0-*",
-        "Microsoft.Extensions.OptionsModel": "1.0.0-*",
+        "Microsoft.Extensions.Options": "1.0.0-*",
         "Microsoft.Extensions.PlatformAbstractions": "1.0.0-*",
         "xunit.runner.aspnet": "2.0.0-aspnet-*"
     },
