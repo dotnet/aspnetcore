@@ -126,20 +126,11 @@ namespace Microsoft.AspNet.Server.Testing
         private string GetIISExpressPath()
         {
             // Get path to program files
-            var iisExpressPath = Path.Combine(Environment.GetEnvironmentVariable("ProgramFiles(x86)"), "IIS Express", "iisexpress.exe");
-
-            // Get path to 64 bit of IIS Express
-            if (DeploymentParameters.RuntimeArchitecture == RuntimeArchitecture.x64)
-            {
-                iisExpressPath = Path.Combine(Environment.GetEnvironmentVariable("ProgramFiles"), "IIS Express", "iisexpress.exe");
-
-                // If process is 32 bit, the path points to x86. Replace path to point to x64
-                iisExpressPath = IntPtr.Size == 8 ? iisExpressPath : iisExpressPath.Replace(" (x86)", "");
-            }
+            var iisExpressPath = Path.Combine(Environment.GetEnvironmentVariable("SystemDrive") + "\\", "Program Files", "IIS Express", "iisexpress.exe");
 
             if (!File.Exists(iisExpressPath))
             {
-                throw new Exception("Unable to find IISExpress on the machine");
+                throw new Exception("Unable to find IISExpress on the machine: " + iisExpressPath);
             }
 
             return iisExpressPath;
