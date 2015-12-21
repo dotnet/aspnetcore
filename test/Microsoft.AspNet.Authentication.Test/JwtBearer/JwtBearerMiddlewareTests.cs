@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IdentityModel.Tokens;
 using System.Net;
 using System.Net.Http;
 using System.Security.Claims;
@@ -16,6 +15,7 @@ using Microsoft.AspNet.Http.Features.Authentication;
 using Microsoft.AspNet.TestHost;
 using Microsoft.AspNet.Testing.xunit;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
 using Xunit;
 
 namespace Microsoft.AspNet.Authentication.JwtBearer
