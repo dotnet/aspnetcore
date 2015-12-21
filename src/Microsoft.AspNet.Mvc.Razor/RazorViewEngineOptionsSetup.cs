@@ -6,7 +6,7 @@ using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Mvc.Razor;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.Extensions.OptionsModel;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.PlatformAbstractions;
 
 namespace Microsoft.AspNet.Mvc

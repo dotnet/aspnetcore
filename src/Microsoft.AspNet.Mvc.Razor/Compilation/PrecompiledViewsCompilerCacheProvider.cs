@@ -9,7 +9,7 @@ using System.Threading;
 using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Mvc.Razor.Precompilation;
 using Microsoft.Extensions.PlatformAbstractions;
-using Microsoft.Extensions.OptionsModel;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNet.Mvc.Razor.Compilation
 {

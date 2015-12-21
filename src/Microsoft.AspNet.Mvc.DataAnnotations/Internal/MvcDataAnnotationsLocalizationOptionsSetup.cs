@@ -3,7 +3,7 @@
 
 using System;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
-using Microsoft.Extensions.OptionsModel;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNet.Mvc.DataAnnotations.Internal
 {

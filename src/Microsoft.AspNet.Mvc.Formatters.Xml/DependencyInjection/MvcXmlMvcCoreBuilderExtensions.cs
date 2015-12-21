@@ -5,7 +5,7 @@ using System;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.Formatters.Xml.Internal;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.OptionsModel;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.DependencyInjection
 {

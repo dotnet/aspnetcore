@@ -20,7 +20,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Emit;
 using Microsoft.Dnx.Compilation.CSharp;
 using Microsoft.Extensions.PlatformAbstractions;
-using Microsoft.Extensions.OptionsModel;
+using Microsoft.Extensions.Options;
 using Microsoft.AspNet.Diagnostics;
 
 namespace Microsoft.AspNet.Mvc.Razor.Compilation

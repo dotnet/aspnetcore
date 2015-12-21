@@ -8,7 +8,7 @@ using Microsoft.AspNet.Mvc.DataAnnotations;
 using System.Reflection;
 #endif
 using Microsoft.Extensions.Localization;
-using Microsoft.Extensions.OptionsModel;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 {

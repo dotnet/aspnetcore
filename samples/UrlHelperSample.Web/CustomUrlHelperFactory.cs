@@ -3,7 +3,7 @@
 
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.Routing;
-using Microsoft.Extensions.OptionsModel;
+using Microsoft.Extensions.Options;
 
 namespace UrlHelperSample.Web
 {

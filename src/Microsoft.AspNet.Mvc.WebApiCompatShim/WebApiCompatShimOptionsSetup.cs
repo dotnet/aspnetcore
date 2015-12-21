@@ -5,7 +5,7 @@ using System.Net.Http;
 using System.Net.Http.Formatting;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.OptionsModel;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNet.Mvc.WebApiCompatShim
 {

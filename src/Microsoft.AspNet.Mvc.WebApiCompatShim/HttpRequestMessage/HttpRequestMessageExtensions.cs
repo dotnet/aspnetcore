@@ -9,7 +9,7 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.WebApiCompatShim;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.OptionsModel;
+using Microsoft.Extensions.Options;
 using ShimResources = Microsoft.AspNet.Mvc.WebApiCompatShim.Resources;
 
 namespace System.Net.Http

@@ -4,7 +4,7 @@
 using System;
 using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.OptionsModel;
+using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.Razor

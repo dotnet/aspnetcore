@@ -9,7 +9,7 @@ using Microsoft.AspNet.Diagnostics;
 using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Razor;
 using Microsoft.AspNet.Razor.CodeGenerators;
-using Microsoft.Extensions.OptionsModel;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNet.Mvc.Razor.Compilation
 {
