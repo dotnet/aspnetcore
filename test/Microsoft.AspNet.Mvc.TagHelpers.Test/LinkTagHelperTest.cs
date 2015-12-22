@@ -885,22 +885,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             return applicationEnvironment.Object;
         }
 
-        private static IMemoryCache MakeCache(object result = null)
-        {
-            var cache = new Mock<IMemoryCache>();
-            cache.CallBase = true;
-            cache.Setup(c => c.TryGetValue(It.IsAny<string>(), out result))
-                .Returns(result != null);
-
-            cache
-                .Setup(
-                    c => c.Set(
-                        /*key*/ It.IsAny<string>(),
-                        /*value*/ It.IsAny<object>(),
-                        /*options*/ It.IsAny<MemoryCacheEntryOptions>()))
-                .Returns(result);
-            return cache.Object;
-        }
+        private static IMemoryCache MakeCache() => new MemoryCache(new MemoryCacheOptions());
 
         private static IUrlHelperFactory MakeUrlHelperFactory()
         {

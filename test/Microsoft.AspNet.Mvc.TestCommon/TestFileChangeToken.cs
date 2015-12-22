@@ -13,7 +13,14 @@ namespace Microsoft.Extensions.Primitives
 
         public IDisposable RegisterChangeCallback(Action<object> callback, object state)
         {
-            throw new NotImplementedException();
+            return new NullDisposable();
+        }
+
+        private class NullDisposable : IDisposable
+        {
+            public void Dispose()
+            {
+            }
         }
     }
 }

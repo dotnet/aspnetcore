@@ -16,6 +16,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
     public class FileVersionProvider
     {
         private const string VersionKey = "v";
+        private static readonly char[] QueryStringAndFragmentTokens = new [] { '?', '#' };
         private readonly IFileProvider _fileProvider;
         private readonly IMemoryCache _cache;
         private readonly PathString _requestPathBase;
@@ -24,8 +25,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
         /// Creates a new instance of <see cref="FileVersionProvider"/>.
         /// </summary>
         /// <param name="fileProvider">The file provider to get and watch files.</param>
-        /// <param name="applicationName">Name of the application.</param>
         /// <param name="cache"><see cref="IMemoryCache"/> where versioned urls of files are cached.</param>
+        /// <param name="requestPathBase">The base path for the current HTTP request.</param>
         public FileVersionProvider(
             IFileProvider fileProvider,
             IMemoryCache cache,
@@ -52,7 +53,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
         /// <param name="path">The path of the file to which version should be added.</param>
         /// <returns>Path containing the version query string.</returns>
         /// <remarks>
-        /// The version query string is appended as with the key "v".
+        /// The version query string is appended with the key "v".
         /// </remarks>
         public string AddFileVersionToPath(string path)
         {
@@ -63,7 +64,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
 
             var resolvedPath = path;
 
-            var queryStringOrFragmentStartIndex = path.IndexOfAny(new char[] { '?', '#' });
+            var queryStringOrFragmentStartIndex = path.IndexOfAny(QueryStringAndFragmentTokens);
             if (queryStringOrFragmentStartIndex != -1)
             {
                 resolvedPath = path.Substring(0, queryStringOrFragmentStartIndex);
@@ -76,35 +77,39 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
                 return path;
             }
 
-            var fileInfo = _fileProvider.GetFileInfo(resolvedPath);
-            if (!fileInfo.Exists)
-            {
-                if (_requestPathBase.HasValue &&
-                    resolvedPath.StartsWith(_requestPathBase.Value, StringComparison.OrdinalIgnoreCase))
-                {
-                    resolvedPath = resolvedPath.Substring(_requestPathBase.Value.Length);
-                    fileInfo = _fileProvider.GetFileInfo(resolvedPath);
-                }
-
-                if (!fileInfo.Exists)
-                {
-                    // if the file is not in the current server.
-                    return path;
-                }
-            }
-
             string value;
             if (!_cache.TryGetValue(path, out value))
             {
-                value = QueryHelpers.AddQueryString(path, VersionKey, GetHashForFile(fileInfo));
-                var cacheEntryOptions = new MemoryCacheEntryOptions().AddExpirationToken(_fileProvider.Watch(resolvedPath));
-                _cache.Set(path, value, cacheEntryOptions);
+                var cacheEntryOptions = new MemoryCacheEntryOptions();
+                cacheEntryOptions.AddExpirationToken(_fileProvider.Watch(resolvedPath));
+                var fileInfo = _fileProvider.GetFileInfo(resolvedPath);
+
+                if (!fileInfo.Exists &&
+                    _requestPathBase.HasValue &&
+                    resolvedPath.StartsWith(_requestPathBase.Value, StringComparison.OrdinalIgnoreCase))
+                {
+                    var requestPathBaseRelativePath = resolvedPath.Substring(_requestPathBase.Value.Length);
+                    cacheEntryOptions.AddExpirationToken(_fileProvider.Watch(requestPathBaseRelativePath));
+                    fileInfo = _fileProvider.GetFileInfo(requestPathBaseRelativePath);
+                }
+
+                if (fileInfo.Exists)
+                {
+                    value = QueryHelpers.AddQueryString(path, VersionKey, GetHashForFile(fileInfo));
+                }
+                else
+                {
+                    // if the file is not in the current server.
+                    value = path;
+                }
+
+                value = _cache.Set<string>(path, value, cacheEntryOptions);
             }
 
             return value;
         }
 
-        private string GetHashForFile(IFileInfo fileInfo)
+        private static string GetHashForFile(IFileInfo fileInfo)
         {
             using (var sha256 = SHA256.Create())
             {
