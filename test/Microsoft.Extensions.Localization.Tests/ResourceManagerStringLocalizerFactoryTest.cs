@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using Xunit;
 using Moq;
 using Microsoft.Extensions.PlatformAbstractions;
-using Microsoft.Extensions.OptionsModel;
+using Microsoft.Extensions.Options;
 using System.Reflection;
 
 namespace Microsoft.Extensions.Localization.Test

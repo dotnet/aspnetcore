@@ -6,7 +6,7 @@ using System.Collections.Concurrent;
 using System.IO;
 using System.Reflection;
 using System.Resources;
-using Microsoft.Extensions.OptionsModel;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.PlatformAbstractions;
 
 namespace Microsoft.Extensions.Localization
