@@ -39,15 +39,15 @@ namespace Microsoft.AspNet.Server.Testing
         {
             get
             {
-                if (TestPlatformHelper.IsLinux)
+                if (PlatformServices.Default.Runtime.OperatingSystemPlatform == Platform.Linux)
                 {
                     return "linux";
                 }
-                else if (TestPlatformHelper.IsMac)
+                else if (PlatformServices.Default.Runtime.OperatingSystemPlatform == Platform.Darwin)
                 {
                     return "darwin";
                 }
-                else if (TestPlatformHelper.IsWindows)
+                else if (PlatformServices.Default.Runtime.OperatingSystemPlatform == Platform.Windows)
                 {
                     return "win";
                 }
