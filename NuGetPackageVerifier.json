@@ -9,7 +9,8 @@
             "StrictSemanticVersionValidationRule"
         ],
         "packages": {
-            "Microsoft.AspNet.Html.Abstractions": { }
+            "Microsoft.AspNet.Html.Abstractions": { },
+            "Microsoft.Extensions.WebEncoders": { }
         }
     },
     "Default": { // Rules to run for packages not listed in any other set.

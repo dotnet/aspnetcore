@@ -1,0 +1,27 @@
+{
+  "version": "1.0.0-*",
+  "description": "Contains registration and configuration APIs for the core framework encoders.",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/aspnet/httpabstractions"
+  },
+  "compilationOptions": {
+    "warningsAsErrors": true,
+    "allowUnsafe": true,
+    "keyFile": "../../tools/Key.snk"
+  },
+  "dependencies": {
+    "Microsoft.Extensions.DependencyInjection.Abstractions": "1.0.0-*",
+    "Microsoft.Extensions.Options": "1.0.0-*",
+    "System.Text.Encodings.Web": "4.0.0-*"
+  },
+  "frameworks": {
+    "net451": {
+      "frameworkAssemblies": {
+        "System.IO": "",
+        "System.Runtime": ""
+      }
+    },
+    "dotnet5.4": {}
+  }
+}
