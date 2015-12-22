@@ -76,9 +76,9 @@ namespace Microsoft.AspNet.Hosting.Internal
             _httpContextFactory.Dispose(httpContext);
         }
 
-        public async Task ProcessRequestAsync(Context context)
+        public Task ProcessRequestAsync(Context context)
         {
-            await _application(context.HttpContext);
+            return _application(context.HttpContext);
         }
 
         public struct Context
