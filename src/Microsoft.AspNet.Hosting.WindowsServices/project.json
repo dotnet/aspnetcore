@@ -1,0 +1,22 @@
+﻿{
+    "version": "1.0.0-*",
+    "description": "ASP.NET 5 core hosting infrastructure and startup logic for web applications running within a Windows service.",
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/aspnet/hosting"
+    },
+    "compilationOptions": {
+        "warningsAsErrors": true,
+        "keyFile": "../../tools/Key.snk"
+    },
+    "dependencies": {
+        "Microsoft.AspNet.Hosting": "1.0.0-*"
+    },
+    "frameworks": {
+        "net451": {
+            "frameworkAssemblies": {
+                "System.ServiceProcess": ""
+            }
+        }
+    }
+}
