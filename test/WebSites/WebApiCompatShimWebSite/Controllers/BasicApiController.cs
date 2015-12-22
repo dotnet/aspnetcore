@@ -9,7 +9,7 @@ using System.Web.Http;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc;
 using Microsoft.AspNet.Mvc.WebApiCompatShim;
-using Microsoft.Extensions.OptionsModel;
+using Microsoft.Extensions.Options;
 
 namespace WebApiCompatShimWebSite
 {

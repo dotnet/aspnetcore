@@ -6,7 +6,7 @@ using System.Text;
 using Microsoft.AspNet.Mvc.Razor;
 using Microsoft.AspNet.Mvc.Razor.Compilation;
 using Microsoft.AspNet.Razor.CodeGenerators;
-using Microsoft.Extensions.OptionsModel;
+using Microsoft.Extensions.Options;
 
 namespace RazorPageExecutionInstrumentationWebSite
 {

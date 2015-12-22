@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Authentication;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http.Authentication;
-using Microsoft.Extensions.OptionsModel;
+using Microsoft.Extensions.Options;
 
 namespace FiltersWebSite
 {
