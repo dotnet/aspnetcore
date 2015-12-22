@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Text;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.ViewFeatures.Internal;
 using Microsoft.Extensions.Localization;
@@ -97,7 +98,6 @@ namespace Microsoft.AspNet.Mvc.Localization
             }
 
             // Given a view path "/Views/Home/Index.cshtml" we want a baseName like "MyApplication.Views.Home.Index"
-
             var path = viewContext.ExecutingFilePath;
 
             if (string.IsNullOrEmpty(path))
@@ -105,22 +105,26 @@ namespace Microsoft.AspNet.Mvc.Localization
                 path = viewContext.View.Path;
             }
 
-            // Trim the file extension from the end of the path
-            if (!string.IsNullOrEmpty(path) && Path.HasExtension(path))
-            {
-                var extension = Path.GetExtension(path);
-                path = path.Substring(0, path.Length - extension.Length);
-            }
-
             Debug.Assert(!string.IsNullOrEmpty(path), "Couldn't determine a path for the view");
 
-            var baseName = path.Replace('/', '.').Replace('\\', '.');
-            baseName = baseName.TrimStart('.');
+            _localizer = _localizerFactory.Create(BuildBaseName(path), _applicationName);
+        }
+
+        private string BuildBaseName(string path)
+        {
+            var extension = Path.GetExtension(path);
+            var startIndex = path[0] == '/' || path[0] == '\\' ? 1 : 0;
+            var length = path.Length - startIndex - extension.Length;
+            var capacity = length + _applicationName.Length + 1;
+            var builder = new StringBuilder(path, startIndex, length, capacity);
+
+            builder.Replace('/', '.').Replace('\\', '.');
 
             // Prepend the application name
-            baseName = _applicationName + "." + baseName;
+            builder.Insert(0, '.');
+            builder.Insert(0, _applicationName);
 
-            _localizer = _localizerFactory.Create(baseName, _applicationName);
+            return builder.ToString();
         }
     }
 }
