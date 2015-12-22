@@ -29,21 +29,9 @@
     "System.Diagnostics.DiagnosticSource": "4.0.0-*"
   },
   "frameworks": {
-    "dnx451": {
-      "frameworkAssemblies": {
-        "System.Runtime": ""
-      }
-    },
     "net451": {
       "frameworkAssemblies": {
         "System.Runtime": { "type": "build" }
-      }
-    },
-    "dnxcore50": {
-      "dependencies": {
-        "System.Console": "4.0.0-*",
-        "System.Diagnostics.StackTrace": "4.0.1-*",
-        "System.Reflection.Extensions": "4.0.1-*"
       }
     },
     "dotnet5.4": {
