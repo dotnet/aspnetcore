@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.WebSockets.Server;
 
 namespace AutobahnTestServer
 {
@@ -19,9 +18,9 @@ namespace AutobahnTestServer
             app.Map("/Managed", managedWebSocketsApp =>
             {
                 // Comment this out to test native server implementations
-                managedWebSocketsApp.UseWebSockets(new WebSocketOptions()
+                managedWebSocketsApp.UseWebSockets(options =>
                 {
-                    ReplaceFeature = true,
+                    options.ReplaceFeature = true;
                 });
 
                 managedWebSocketsApp.Use(async (context, next) =>
