@@ -23,32 +23,13 @@ namespace Microsoft.AspNet.Builder
             {
                 throw new ArgumentNullException(nameof(app));
             }
+            if (configureOptions == null)
+            {
+                throw new ArgumentNullException(nameof(configureOptions));
+            }
 
             var options = new TwitterOptions();
-            if (configureOptions != null)
-            {
-                configureOptions(options);
-            }
-            return app.UseTwitterAuthentication(options);
-        }
-
-        /// <summary>
-        /// Adds the <see cref="TwitterMiddleware"/> middleware to the specified <see cref="IApplicationBuilder"/>, which enables Twitter authentication capabilities.
-        /// </summary>
-        /// <param name="app">The <see cref="IApplicationBuilder"/> to add the middleware to.</param>
-        /// <param name="options">A <see cref="TwitterOptions"/> that specifies options for the middleware.</param>
-        /// <returns>A reference to this instance after the operation has completed.</returns>
-        public static IApplicationBuilder UseTwitterAuthentication(this IApplicationBuilder app, TwitterOptions options)
-        {
-            if (app == null)
-            {
-                throw new ArgumentNullException(nameof(app));
-            }
-
-            if (options == null)
-            {
-                throw new ArgumentNullException(nameof(options));
-            }
+            configureOptions(options);
 
             return app.UseMiddleware<TwitterMiddleware>(options);
         }

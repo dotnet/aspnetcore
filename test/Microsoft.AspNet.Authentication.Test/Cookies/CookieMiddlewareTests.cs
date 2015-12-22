@@ -793,7 +793,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
                 .Configure(app =>
                 {
                     app.UseCookieAuthentication(options => options.CookieName = "One");
-                    app.UseCookieAuthentication(new CookieAuthenticationOptions());
+                    app.UseCookieAuthentication();
                     app.Run(context => context.Authentication.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(new ClaimsIdentity())));
                 })
                 .ConfigureServices(services => services.AddAuthentication());

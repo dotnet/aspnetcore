@@ -72,26 +72,29 @@ namespace CookieSample
 
             // You must first create an app with facebook and add it's ID and Secret to your config.json or user-secrets.
             // https://developers.facebook.com/apps/
-            app.UseFacebookAuthentication(new FacebookOptions()
+            app.UseFacebookAuthentication(options =>
             {
-                AppId = Configuration["facebook:appid"],
-                AppSecret = Configuration["facebook:appsecret"],
-                Scope = { "email" },
-                Fields = { "name", "email" },
+                options.AppId = Configuration["facebook:appid"];
+                options.AppSecret = Configuration["facebook:appsecret"];
+                options.Scope.Add("email");
+                options.Fields.Add("name");
+                options.Fields.Add("email");
             });
 
             // See config.json
-            app.UseOAuthAuthentication(new OAuthOptions
+            app.UseOAuthAuthentication(options =>
             {
-                AuthenticationScheme = "Google-AccessToken",
-                DisplayName = "Google-AccessToken",
-                ClientId = Configuration["google:clientid"],
-                ClientSecret = Configuration["google:clientsecret"],
-                CallbackPath = new PathString("/signin-google-token"),
-                AuthorizationEndpoint = GoogleDefaults.AuthorizationEndpoint,
-                TokenEndpoint = GoogleDefaults.TokenEndpoint,
-                Scope = { "openid", "profile", "email" },
-                SaveTokensAsClaims = true
+                options.AuthenticationScheme = "Google-AccessToken";
+                options.DisplayName = "Google-AccessToken";
+                options.ClientId = Configuration["google:clientid"];
+                options.ClientSecret = Configuration["google:clientsecret"];
+                options.CallbackPath = new PathString("/signin-google-token");
+                options.AuthorizationEndpoint = GoogleDefaults.AuthorizationEndpoint;
+                options.TokenEndpoint = GoogleDefaults.TokenEndpoint;
+                options.Scope.Add("openid");
+                options.Scope.Add("profile");
+                options.Scope.Add("email");
+                options.SaveTokensAsClaims = true;
             });
 
             // See config.json
@@ -148,17 +151,17 @@ namespace CookieSample
             The sample app can then be run via:
              dnx . web
             */
-            app.UseOAuthAuthentication(new OAuthOptions
+            app.UseOAuthAuthentication(options => 
             {
-                AuthenticationScheme = "Microsoft-AccessToken",
-                DisplayName = "MicrosoftAccount-AccessToken - Requires project changes",
-                ClientId = Configuration["msa:clientid"],
-                ClientSecret = Configuration["msa:clientsecret"],
-                CallbackPath = new PathString("/signin-microsoft-token"),
-                AuthorizationEndpoint = MicrosoftAccountDefaults.AuthorizationEndpoint,
-                TokenEndpoint = MicrosoftAccountDefaults.TokenEndpoint,
-                Scope = { "wl.basic" },
-                SaveTokensAsClaims = true
+                options.AuthenticationScheme = "Microsoft-AccessToken";
+                options.DisplayName = "MicrosoftAccount-AccessToken - Requires project changes";
+                options.ClientId = Configuration["msa:clientid"];
+                options.ClientSecret = Configuration["msa:clientsecret"];
+                options.CallbackPath = new PathString("/signin-microsoft-token");
+                options.AuthorizationEndpoint = MicrosoftAccountDefaults.AuthorizationEndpoint;
+                options.TokenEndpoint = MicrosoftAccountDefaults.TokenEndpoint;
+                options.Scope.Add("wl.basic");
+                options.SaveTokensAsClaims = true;
             });
 
             //// You must first create an app with live.com and add it's ID and Secret to your config.json or user-secrets.
@@ -172,32 +175,32 @@ namespace CookieSample
 
             // See config.json
             // https://github.com/settings/applications/
-            app.UseOAuthAuthentication(new OAuthOptions
+            app.UseOAuthAuthentication(options =>
             {
-                AuthenticationScheme = "GitHub-AccessToken",
-                DisplayName = "Github-AccessToken",
-                ClientId = Configuration["github-token:clientid"],
-                ClientSecret = Configuration["github-token:clientsecret"],
-                CallbackPath = new PathString("/signin-github-token"),
-                AuthorizationEndpoint = "https://github.com/login/oauth/authorize",
-                TokenEndpoint = "https://github.com/login/oauth/access_token",
-                SaveTokensAsClaims = true
+                options.AuthenticationScheme = "GitHub-AccessToken";
+                options.DisplayName = "Github-AccessToken";
+                options.ClientId = Configuration["github-token:clientid"];
+                options.ClientSecret = Configuration["github-token:clientsecret"];
+                options.CallbackPath = new PathString("/signin-github-token");
+                options.AuthorizationEndpoint = "https://github.com/login/oauth/authorize";
+                options.TokenEndpoint = "https://github.com/login/oauth/access_token";
+                options.SaveTokensAsClaims = true;
             });
 
             // See config.json
-            app.UseOAuthAuthentication(new OAuthOptions
+            app.UseOAuthAuthentication(options =>
             {
-                AuthenticationScheme = "GitHub",
-                DisplayName = "Github",
-                ClientId = Configuration["github:clientid"],
-                ClientSecret = Configuration["github:clientsecret"],
-                CallbackPath = new PathString("/signin-github"),
-                AuthorizationEndpoint = "https://github.com/login/oauth/authorize",
-                TokenEndpoint = "https://github.com/login/oauth/access_token",
-                UserInformationEndpoint = "https://api.github.com/user",
-                ClaimsIssuer = "OAuth2-Github",
+                options.AuthenticationScheme = "GitHub";
+                options.DisplayName = "Github";
+                options.ClientId = Configuration["github:clientid"];
+                options.ClientSecret = Configuration["github:clientsecret"];
+                options.CallbackPath = new PathString("/signin-github");
+                options.AuthorizationEndpoint = "https://github.com/login/oauth/authorize";
+                options.TokenEndpoint = "https://github.com/login/oauth/access_token";
+                options.UserInformationEndpoint = "https://api.github.com/user";
+                options.ClaimsIssuer = "OAuth2-Github";
                 // Retrieving user information is unique to each provider.
-                Events = new OAuthEvents
+                options.Events = new OAuthEvents
                 {
                     OnCreatingTicket = async context =>
                     {
@@ -210,7 +213,7 @@ namespace CookieSample
                         response.EnsureSuccessStatusCode();
 
                         var user = JObject.Parse(await response.Content.ReadAsStringAsync());
-                        
+
                         var identifier = user.Value<string>("id");
                         if (!string.IsNullOrEmpty(identifier))
                         {
@@ -243,7 +246,7 @@ namespace CookieSample
                                 ClaimValueTypes.String, context.Options.ClaimsIssuer));
                         }
                     }
-                }
+                };
             });
 
             // Choose an authentication type
