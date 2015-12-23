@@ -65,5 +65,25 @@ namespace Microsoft.AspNet.Builder
 
             return app.UseMiddleware<StaticFileMiddleware>(options);
         }
+
+        /// <summary>
+        /// Enables static file serving with the given options
+        /// </summary>
+        /// <param name="app"></param>
+        /// <param name="options"></param>
+        /// <returns></returns>
+        public static IApplicationBuilder UseStaticFiles(this IApplicationBuilder app, StaticFileOptions options)
+        {
+            if (app == null)
+            {
+                throw new ArgumentNullException(nameof(app));
+            }
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
+            return app.UseMiddleware<StaticFileMiddleware>(options);
+        }
     }
 }

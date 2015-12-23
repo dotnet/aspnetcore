@@ -65,5 +65,25 @@ namespace Microsoft.AspNet.Builder
 
             return app.UseMiddleware<DirectoryBrowserMiddleware>(options);
         }
+
+        /// <summary>
+        /// Enable directory browsing with the given options
+        /// </summary>
+        /// <param name="app"></param>
+        /// <param name="options"></param>
+        /// <returns></returns>
+        public static IApplicationBuilder UseDirectoryBrowser(this IApplicationBuilder app, DirectoryBrowserOptions options)
+        {
+            if (app == null)
+            {
+                throw new ArgumentNullException(nameof(app));
+            }
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
+            return app.UseMiddleware<DirectoryBrowserMiddleware>(options);
+        }
     }
 }

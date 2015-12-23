@@ -65,5 +65,25 @@ namespace Microsoft.AspNet.Builder
 
             return app.UseMiddleware<DefaultFilesMiddleware>(options);
         }
+
+        /// <summary>
+        /// Enables default file mapping with the given options
+        /// </summary>
+        /// <param name="app"></param>
+        /// <param name="options"></param>
+        /// <returns></returns>
+        public static IApplicationBuilder UseDefaultFiles(this IApplicationBuilder app, DefaultFilesOptions options)
+        {
+            if (app == null)
+            {
+                throw new ArgumentNullException(nameof(app));
+            }
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
+            return app.UseMiddleware<DefaultFilesMiddleware>(options);
+        }
     }
 }

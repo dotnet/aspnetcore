@@ -97,5 +97,35 @@ namespace Microsoft.AspNet.Builder
 
             return app.UseStaticFiles(options => { options = fileServerOptions.StaticFileOptions; });
         }
+
+        /// <summary>
+        /// Enable all static file middleware with the given options
+        /// </summary>
+        /// <param name="app"></param>
+        /// <param name="options"></param>
+        /// <returns></returns>
+        public static IApplicationBuilder UseFileServer(this IApplicationBuilder app, FileServerOptions options)
+        {
+            if (app == null)
+            {
+                throw new ArgumentNullException(nameof(app));
+            }
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
+            if (options.EnableDefaultFiles)
+            {
+                app = app.UseDefaultFiles(options.DefaultFilesOptions);
+            }
+
+            if (options.EnableDirectoryBrowsing)
+            {
+                app = app.UseDirectoryBrowser(options.DirectoryBrowserOptions);
+            }
+
+            return app.UseStaticFiles(options.StaticFileOptions);
+        }
     }
 }
