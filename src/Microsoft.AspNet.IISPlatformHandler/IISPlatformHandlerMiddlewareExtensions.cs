@@ -43,9 +43,27 @@ namespace Microsoft.AspNet.Builder
             }
 
             var options = new IISPlatformHandlerOptions();
-            if (configureOptions != null)
+            configureOptions(options);
+
+            return app.UseMiddleware<IISPlatformHandlerMiddleware>(options);
+        }
+
+        /// <summary>
+        /// Adds middleware for interacting with the IIS HttpPlatformHandler reverse proxy module.
+        /// This will handle forwarded Windows Authentication, request scheme, remote IPs, etc..
+        /// </summary>
+        /// <param name="app"></param>
+        /// <param name="options"></param>
+        /// <returns></returns>
+        public static IApplicationBuilder UseIISPlatformHandler(this IApplicationBuilder app, IISPlatformHandlerOptions options)
+        {
+            if (app == null)
             {
-                configureOptions(options);
+                throw new ArgumentNullException(nameof(app));
+            }
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
             }
 
             return app.UseMiddleware<IISPlatformHandlerMiddleware>(options);
