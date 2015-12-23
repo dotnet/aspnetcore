@@ -29,11 +29,8 @@ namespace Microsoft.AspNet.Server.KestrelTests
 
         public void Add(string text, bool fin = false)
         {
-            var encoding = System.Text.Encoding.ASCII;
-            var count = encoding.GetByteCount(text);
-            var buffer = FrameContext.SocketInput.IncomingStart(text.Length);
-            count = encoding.GetBytes(text, 0, text.Length, buffer.Data.Array, buffer.Data.Offset);
-            FrameContext.SocketInput.IncomingComplete(count, null);
+            var data = System.Text.Encoding.ASCII.GetBytes(text);
+            FrameContext.SocketInput.IncomingData(data, 0, data.Length);
             if (fin)
             {
                 FrameContext.SocketInput.RemoteIntakeFin = true;

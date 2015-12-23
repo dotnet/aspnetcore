@@ -55,9 +55,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
             var headerCollection = new FrameRequestHeaders();
 
             var headerArray = Encoding.ASCII.GetBytes(rawHeaders);
-            var inputBuffer = socketInput.IncomingStart(headerArray.Length);
-            Buffer.BlockCopy(headerArray, 0, inputBuffer.Data.Array, inputBuffer.Data.Offset, headerArray.Length);
-            socketInput.IncomingComplete(headerArray.Length, null);
+            socketInput.IncomingData(headerArray, 0, headerArray.Length);
 
             var success = Frame.TakeMessageHeaders(socketInput, headerCollection);
 

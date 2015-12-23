@@ -74,11 +74,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Filter
 
         public override void Write(byte[] buffer, int offset, int count)
         {
-            var inputBuffer = _socketInput.IncomingStart(count);
-
-            Buffer.BlockCopy(buffer, offset, inputBuffer.Data.Array, inputBuffer.Data.Offset, count);
-
-            _socketInput.IncomingComplete(count, error: null);
+            _socketInput.IncomingData(buffer, offset, count);
         }
 
         public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken token)
@@ -90,7 +86,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Filter
         protected override void Dispose(bool disposing)
         {
             // Close _socketInput with a fake zero-length write that will result in a zero-length read.
-            _socketInput.IncomingComplete(0, error: null);
+            _socketInput.IncomingData(null, 0, 0);
             base.Dispose(disposing);
         }
     }
