@@ -16,49 +16,71 @@ namespace Microsoft.AspNet.Builder
         /// <summary>
         /// Adds the WelcomePageMiddleware to the pipeline with the given options.
         /// </summary>
-        /// <param name="builder"></param>
-        /// <param name="options"></param>
+        /// <param name="app"></param>
+        /// <param name="configureOptions"></param>
         /// <returns></returns>
-        public static IApplicationBuilder UseWelcomePage(this IApplicationBuilder builder, WelcomePageOptions options)
+        public static IApplicationBuilder UseWelcomePage(this IApplicationBuilder app, Action<WelcomePageOptions> configureOptions)
         {
-            if (builder == null)
+            if (app == null)
             {
-                throw new ArgumentNullException(nameof(builder));
+                throw new ArgumentNullException(nameof(app));
+            }
+            if (configureOptions == null)
+            {
+                throw new ArgumentNullException(nameof(configureOptions));
             }
 
-            return builder.Use(next => new WelcomePageMiddleware(next, options).Invoke);
+            var options = new WelcomePageOptions();
+            configureOptions(options);
+
+            return app.UseMiddleware<WelcomePageMiddleware>(options);
         }
 
         /// <summary>
         /// Adds the WelcomePageMiddleware to the pipeline with the given path.
         /// </summary>
-        /// <param name="builder"></param>
+        /// <param name="app"></param>
         /// <param name="path"></param>
         /// <returns></returns>
-        public static IApplicationBuilder UseWelcomePage(this IApplicationBuilder builder, PathString path)
+        public static IApplicationBuilder UseWelcomePage(this IApplicationBuilder app, PathString path)
         {
-            return UseWelcomePage(builder, new WelcomePageOptions { Path = path });
+            if (app == null)
+            {
+                throw new ArgumentNullException(nameof(app));
+            }
+
+            return app.UseWelcomePage(options => { options.Path = path; });
         }
 
         /// <summary>
         /// Adds the WelcomePageMiddleware to the pipeline with the given path.
         /// </summary>
-        /// <param name="builder"></param>
+        /// <param name="app"></param>
         /// <param name="path"></param>
         /// <returns></returns>
-        public static IApplicationBuilder UseWelcomePage(this IApplicationBuilder builder, string path)
+        public static IApplicationBuilder UseWelcomePage(this IApplicationBuilder app, string path)
         {
-            return UseWelcomePage(builder, new WelcomePageOptions { Path = new PathString(path) });
+            if (app == null)
+            {
+                throw new ArgumentNullException(nameof(app));
+            }
+
+            return app.UseWelcomePage(options => { options.Path = new PathString(path); });
         }
 
         /// <summary>
         /// Adds the WelcomePageMiddleware to the pipeline.
         /// </summary>
-        /// <param name="builder"></param>
+        /// <param name="app"></param>
         /// <returns></returns>
-        public static IApplicationBuilder UseWelcomePage(this IApplicationBuilder builder)
+        public static IApplicationBuilder UseWelcomePage(this IApplicationBuilder app)
         {
-            return UseWelcomePage(builder, new WelcomePageOptions());
+            if (app == null)
+            {
+                throw new ArgumentNullException(nameof(app));
+            }
+
+            return app.UseWelcomePage(options => { });
         }
     }
 }

@@ -14,33 +14,33 @@ namespace Microsoft.AspNet.Builder
         /// <summary>
         /// Enables the Elm logging service, which can be accessed via the <see cref="ElmPageMiddleware"/>.
         /// </summary>
-        public static IApplicationBuilder UseElmCapture(this IApplicationBuilder builder)
+        public static IApplicationBuilder UseElmCapture(this IApplicationBuilder app)
         {
-            if (builder == null)
+            if (app == null)
             {
-                throw new ArgumentNullException(nameof(builder));
+                throw new ArgumentNullException(nameof(app));
             }
 
             // add the elm provider to the factory here so the logger can start capturing logs immediately
-            var factory = builder.ApplicationServices.GetRequiredService<ILoggerFactory>();
-            var store = builder.ApplicationServices.GetRequiredService<ElmStore>();
-            var options = builder.ApplicationServices.GetService<IOptions<ElmOptions>>();
+            var factory = app.ApplicationServices.GetRequiredService<ILoggerFactory>();
+            var store = app.ApplicationServices.GetRequiredService<ElmStore>();
+            var options = app.ApplicationServices.GetService<IOptions<ElmOptions>>();
             factory.AddProvider(new ElmLoggerProvider(store, options?.Value ?? new ElmOptions()));
 
-            return builder.UseMiddleware<ElmCaptureMiddleware>();
+            return app.UseMiddleware<ElmCaptureMiddleware>();
         }
 
         /// <summary>
         /// Enables viewing logs captured by the <see cref="ElmCaptureMiddleware"/>.
         /// </summary>
-        public static IApplicationBuilder UseElmPage(this IApplicationBuilder builder)
+        public static IApplicationBuilder UseElmPage(this IApplicationBuilder app)
         {
-            if (builder == null)
+            if (app == null)
             {
-                throw new ArgumentNullException(nameof(builder));
+                throw new ArgumentNullException(nameof(app));
             }
 
-            return builder.UseMiddleware<ElmPageMiddleware>();
+            return app.UseMiddleware<ElmPageMiddleware>();
         }
     }
 }

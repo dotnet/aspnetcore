@@ -10,33 +10,45 @@ namespace Microsoft.AspNet.Builder
 {
     public static class RuntimeInfoExtensions
     {
-        public static IApplicationBuilder UseRuntimeInfoPage(this IApplicationBuilder builder)
+        public static IApplicationBuilder UseRuntimeInfoPage(this IApplicationBuilder app)
         {
-            return UseRuntimeInfoPage(builder, new RuntimeInfoPageOptions());
+            if (app == null)
+            {
+                throw new ArgumentNullException(nameof(app));
+            }
+
+            return app.UseRuntimeInfoPage(options => { });
         }
 
-        public static IApplicationBuilder UseRuntimeInfoPage(this IApplicationBuilder builder, string path)
+        public static IApplicationBuilder UseRuntimeInfoPage(this IApplicationBuilder app, string path)
         {
-            return UseRuntimeInfoPage(builder, new RuntimeInfoPageOptions() { Path = new PathString(path) });
+            if (app == null)
+            {
+                throw new ArgumentNullException(nameof(app));
+            }
+
+            return app.UseRuntimeInfoPage(options => { options.Path = new PathString(path); });
         }
 
         public static IApplicationBuilder UseRuntimeInfoPage(
-            this IApplicationBuilder builder,
-            RuntimeInfoPageOptions options)
+            this IApplicationBuilder app,
+            Action<RuntimeInfoPageOptions> configureOptions)
         {
-            if (builder == null)
+            if (app == null)
             {
-                throw new ArgumentNullException(nameof(builder));
+                throw new ArgumentNullException(nameof(app));
+            }
+            if (configureOptions == null)
+            {
+                throw new ArgumentNullException(nameof(configureOptions));
             }
 
-            if (options == null)
-            {
-                throw new ArgumentNullException(nameof(options));
-            }
+            var libraryManager = app.ApplicationServices.GetService(typeof(ILibraryManager)) as ILibraryManager;
+            var runtimeEnvironment = app.ApplicationServices.GetService(typeof(IRuntimeEnvironment)) as IRuntimeEnvironment;
+            var options = new RuntimeInfoPageOptions();
+            configureOptions(options);
 
-            var libraryManager = builder.ApplicationServices.GetService(typeof(ILibraryManager)) as ILibraryManager;
-            var runtimeEnvironment = builder.ApplicationServices.GetService(typeof(IRuntimeEnvironment)) as IRuntimeEnvironment;
-            return builder.Use(next => new RuntimeInfoMiddleware(next, options, libraryManager, runtimeEnvironment).Invoke);
+            return app.Use(next => new RuntimeInfoMiddleware(next, options, libraryManager, runtimeEnvironment).Invoke);
         }
     }
 }

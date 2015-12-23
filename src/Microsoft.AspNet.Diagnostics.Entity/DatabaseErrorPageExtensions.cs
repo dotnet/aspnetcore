@@ -20,9 +20,12 @@ namespace Microsoft.AspNet.Builder
         /// </summary>
         /// <param name="app">The <see cref="IApplicationBuilder"/> to register the middleware with.</param>
         /// <returns>The same <see cref="IApplicationBuilder"/> instance so that multiple calls can be chained.</returns>
-        public static IApplicationBuilder UseDatabaseErrorPage([NotNull] this IApplicationBuilder app)
+        public static IApplicationBuilder UseDatabaseErrorPage(this IApplicationBuilder app)
         {
-            Check.NotNull(app, nameof(app));
+            if (app == null)
+            {
+                throw new ArgumentNullException(nameof(app));
+            }
 
             return app.UseDatabaseErrorPage(options => options.EnableAll());
         }
@@ -32,19 +35,25 @@ namespace Microsoft.AspNet.Builder
         /// migrations. When these exceptions occur an HTML response with details of possible actions to resolve the issue is generated.
         /// </summary>
         /// <param name="app">The <see cref="IApplicationBuilder"/> to register the middleware with.</param>
-        /// <param name="optionsAction">An action to set the options for the middleware. All options are disabled by default.</param>
+        /// <param name="configureOptions">An action to set the options for the middleware. All options are disabled by default.</param>
         /// <returns>The same <see cref="IApplicationBuilder"/> instance so that multiple calls can be chained.</returns>
-        public static IApplicationBuilder UseDatabaseErrorPage([NotNull] this IApplicationBuilder app, [NotNull] Action<DatabaseErrorPageOptions> optionsAction)
+        public static IApplicationBuilder UseDatabaseErrorPage(this IApplicationBuilder app, Action<DatabaseErrorPageOptions> configureOptions)
         {
-            Check.NotNull(app, nameof(app));
-            Check.NotNull(optionsAction, nameof(optionsAction));
+            if (app == null)
+            {
+                throw new ArgumentNullException(nameof(app));
+            }
+            if (configureOptions == null)
+            {
+                throw new ArgumentNullException(nameof(configureOptions));
+            }
 
             var options = new DatabaseErrorPageOptions();
-            optionsAction(options);
+            configureOptions(options);
 
             app = app.UseMiddleware<DatabaseErrorPageMiddleware>(options);
 
-            if(options.EnableMigrationCommands)
+            if (options.EnableMigrationCommands)
             {
                 app.UseMigrationsEndPoint(o => o.Path = options.MigrationsEndPointPath);
             }
@@ -56,9 +65,12 @@ namespace Microsoft.AspNet.Builder
         /// Sets the options to display the maximum amount of information available.
         /// </summary>
         /// <param name="options">The options to be configured.</param>
-        public static void EnableAll([NotNull] this DatabaseErrorPageOptions options)
+        public static void EnableAll(this DatabaseErrorPageOptions options)
         {
-            Check.NotNull(options, nameof(options));
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
 
             options.ShowExceptionDetails = true;
             options.ListMigrations = true;

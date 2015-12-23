@@ -17,14 +17,21 @@ namespace Microsoft.AspNet.Builder
         /// between 400 and 599 that do not have a body.
         /// </summary>
         /// <param name="app"></param>
-        /// <param name="options"></param>
+        /// <param name="configureOptions"></param>
         /// <returns></returns>
-        public static IApplicationBuilder UseStatusCodePages(this IApplicationBuilder app, StatusCodePagesOptions options)
+        public static IApplicationBuilder UseStatusCodePages(this IApplicationBuilder app, Action<StatusCodePagesOptions> configureOptions)
         {
             if (app == null)
             {
                 throw new ArgumentNullException(nameof(app));
             }
+            if (configureOptions == null)
+            {
+                throw new ArgumentNullException(nameof(configureOptions));
+            }
+
+            var options = new StatusCodePagesOptions();
+            configureOptions(options);
 
             return app.UseMiddleware<StatusCodePagesMiddleware>(options);
         }
@@ -37,7 +44,12 @@ namespace Microsoft.AspNet.Builder
         /// <returns></returns>
         public static IApplicationBuilder UseStatusCodePages(this IApplicationBuilder app)
         {
-            return UseStatusCodePages(app, new StatusCodePagesOptions());
+            if (app == null)
+            {
+                throw new ArgumentNullException(nameof(app));
+            }
+
+            return app.UseStatusCodePages(configureOptions: options => { });
         }
 
         /// <summary>
@@ -49,7 +61,16 @@ namespace Microsoft.AspNet.Builder
         /// <returns></returns>
         public static IApplicationBuilder UseStatusCodePages(this IApplicationBuilder app, Func<StatusCodeContext, Task> handler)
         {
-            return UseStatusCodePages(app, new StatusCodePagesOptions() { HandleAsync = handler });
+            if (app == null)
+            {
+                throw new ArgumentNullException(nameof(app));
+            }
+            if (handler == null)
+            {
+                throw new ArgumentNullException(nameof(handler));
+            }
+
+            return app.UseStatusCodePages(options => { options.HandleAsync = handler; });
         }
 
         /// <summary>
@@ -62,7 +83,12 @@ namespace Microsoft.AspNet.Builder
         /// <returns></returns>
         public static IApplicationBuilder UseStatusCodePages(this IApplicationBuilder app, string contentType, string bodyFormat)
         {
-            return UseStatusCodePages(app, context =>
+            if (app == null)
+            {
+                throw new ArgumentNullException(nameof(app));
+            }
+
+            return app.UseStatusCodePages(context =>
             {
                 var body = string.Format(CultureInfo.InvariantCulture, bodyFormat, context.HttpContext.Response.StatusCode);
                 context.HttpContext.Response.ContentType = contentType;
@@ -80,10 +106,15 @@ namespace Microsoft.AspNet.Builder
         /// <returns></returns>
         public static IApplicationBuilder UseStatusCodePagesWithRedirects(this IApplicationBuilder app, string locationFormat)
         {
+            if (app == null)
+            {
+                throw new ArgumentNullException(nameof(app));
+            }
+
             if (locationFormat.StartsWith("~"))
             {
                 locationFormat = locationFormat.Substring(1);
-                return UseStatusCodePages(app, context =>
+                return app.UseStatusCodePages(context =>
                 {
                     var location = string.Format(CultureInfo.InvariantCulture, locationFormat, context.HttpContext.Response.StatusCode);
                     context.HttpContext.Response.Redirect(context.HttpContext.Request.PathBase + location);
@@ -92,7 +123,7 @@ namespace Microsoft.AspNet.Builder
             }
             else
             {
-                return UseStatusCodePages(app, context =>
+                return app.UseStatusCodePages(context =>
                 {
                     var location = string.Format(CultureInfo.InvariantCulture, locationFormat, context.HttpContext.Response.StatusCode);
                     context.HttpContext.Response.Redirect(location);
@@ -110,10 +141,15 @@ namespace Microsoft.AspNet.Builder
         /// <returns></returns>
         public static IApplicationBuilder UseStatusCodePages(this IApplicationBuilder app, Action<IApplicationBuilder> configuration)
         {
+            if (app == null)
+            {
+                throw new ArgumentNullException(nameof(app));
+            }
+
             var builder = app.New();
             configuration(builder);
             var tangent = builder.Build();
-            return UseStatusCodePages(app, context => tangent(context.HttpContext));
+            return app.UseStatusCodePages(context => tangent(context.HttpContext));
         }
 
         /// <summary>
@@ -125,7 +161,12 @@ namespace Microsoft.AspNet.Builder
         /// <returns></returns>
         public static IApplicationBuilder UseStatusCodePagesWithReExecute(this IApplicationBuilder app, string pathFormat)
         {
-            return UseStatusCodePages(app, async context =>
+            if (app == null)
+            {
+                throw new ArgumentNullException(nameof(app));
+            }
+
+            return app.UseStatusCodePages(async context =>
             {
                 var newPath = new PathString(string.Format(CultureInfo.InvariantCulture, pathFormat, context.HttpContext.Response.StatusCode));
 

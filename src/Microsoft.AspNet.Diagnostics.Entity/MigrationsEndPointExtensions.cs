@@ -18,26 +18,30 @@ namespace Microsoft.AspNet.Builder
         /// </summary>
         /// <param name="app">The <see cref="IApplicationBuilder"/> to register the middleware with.</param>
         /// <returns>The same <see cref="IApplicationBuilder"/> instance so that multiple calls can be chained.</returns>
-        public static IApplicationBuilder UseMigrationsEndPoint([NotNull] this IApplicationBuilder app)
+        public static IApplicationBuilder UseMigrationsEndPoint(this IApplicationBuilder app)
         {
-            Check.NotNull(app, "builder");
-
             return app.UseMigrationsEndPoint(options => { });
         }
 
         /// <summary>
-        /// Processes requests to execute migrations operations. The middleware will listen for requests to the path configured in <paramref name="optionsAction"/>.
+        /// Processes requests to execute migrations operations. The middleware will listen for requests to the path configured in <paramref name="configureOptions"/>.
         /// </summary>
         /// <param name="app">The <see cref="IApplicationBuilder"/> to register the middleware with.</param>
-        /// <param name="optionsAction">An action to set the options for the middleware.</param>
+        /// <param name="configureOptions">An action to set the options for the middleware.</param>
         /// <returns>The same <see cref="IApplicationBuilder"/> instance so that multiple calls can be chained.</returns>
-        public static IApplicationBuilder UseMigrationsEndPoint([NotNull] this IApplicationBuilder app, [NotNull] Action<MigrationsEndPointOptions> optionsAction)
+        public static IApplicationBuilder UseMigrationsEndPoint(this IApplicationBuilder app, Action<MigrationsEndPointOptions> configureOptions)
         {
-            Check.NotNull(app, "builder");
-            Check.NotNull(optionsAction, "optionsAction");
+            if (app == null)
+            {
+                throw new ArgumentNullException(nameof(app));
+            }
+            if (configureOptions == null)
+            {
+                throw new ArgumentNullException(nameof(configureOptions));
+            }
 
             var options = new MigrationsEndPointOptions();
-            optionsAction(options);
+            configureOptions(options);
 
             return app.UseMiddleware<MigrationsEndPointMiddleware>(options);
         }
