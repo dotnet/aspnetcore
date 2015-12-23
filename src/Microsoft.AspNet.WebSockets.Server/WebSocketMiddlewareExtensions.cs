@@ -8,21 +8,21 @@ namespace Microsoft.AspNet.Builder
 {
     public static class WebSocketMiddlewareExtensions
     {
-        public static IApplicationBuilder UseWebSockets(this IApplicationBuilder builder)
+        public static IApplicationBuilder UseWebSockets(this IApplicationBuilder app)
         {
-            if (builder == null)
+            if (app == null)
             {
-                throw new ArgumentNullException(nameof(builder));
+                throw new ArgumentNullException(nameof(app));
             }
 
-            return builder.UseWebSockets(options => { });
+            return app.UseWebSockets(options => { });
         }
 
-        public static IApplicationBuilder UseWebSockets(this IApplicationBuilder builder, Action<WebSocketOptions> configureOptions)
+        public static IApplicationBuilder UseWebSockets(this IApplicationBuilder app, Action<WebSocketOptions> configureOptions)
         {
-            if (builder == null)
+            if (app == null)
             {
-                throw new ArgumentNullException(nameof(builder));
+                throw new ArgumentNullException(nameof(app));
             }
             if (configureOptions == null)
             {
@@ -32,7 +32,21 @@ namespace Microsoft.AspNet.Builder
             var options = new WebSocketOptions();
             configureOptions(options);
 
-            return builder.Use(next => new WebSocketMiddleware(next, options).Invoke);
+            return app.UseMiddleware<WebSocketMiddleware>(options);
+        }
+
+        public static IApplicationBuilder UseWebSockets(this IApplicationBuilder app, WebSocketOptions options)
+        {
+            if (app == null)
+            {
+                throw new ArgumentNullException(nameof(app));
+            }
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
+            return app.UseMiddleware<WebSocketMiddleware>(options);
         }
     }
 }
