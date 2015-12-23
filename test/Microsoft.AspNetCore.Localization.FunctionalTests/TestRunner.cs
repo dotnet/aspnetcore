@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
 
 using System;
-using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -14,21 +13,26 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
 {
     public class TestRunner
     {
-        public async Task RunTestAndVerifyResponse(
+        private string _applicationPath;
+        
+        public TestRunner(string applicationPath){
+            _applicationPath = applicationPath;
+        }
+        
+        private async Task<string> RunTestAndGetResponse(
             RuntimeFlavor runtimeFlavor,
-            RuntimeArchitecture runtimeArchitechture,
+            RuntimeArchitecture runtimeArchitecture,
             string applicationBaseUrl,
             string environmentName,
-            string locale,
-            string expectedText)
+            string locale)
         {
             var logger = new LoggerFactory()
                             .AddConsole()
-                            .CreateLogger(string.Format("Localization Test Site:{0}:{1}:{2}", ServerType.Kestrel, runtimeFlavor, runtimeArchitechture));
+                            .CreateLogger(string.Format("Localization Test Site:{0}:{1}:{2}", ServerType.Kestrel, runtimeFlavor, runtimeArchitecture));
 
             using (logger.BeginScope("LocalizationTest"))
             {
-                var deploymentParameters = new DeploymentParameters(GetApplicationPath(), ServerType.Kestrel, runtimeFlavor, runtimeArchitechture)
+                var deploymentParameters = new DeploymentParameters(_applicationPath, ServerType.Kestrel, runtimeFlavor, runtimeArchitecture)
                 {
                     ApplicationBaseUriHint = applicationBaseUrl,
                     Command = "web",
@@ -54,16 +58,36 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
                         return httpClient.GetAsync(string.Empty);
                     }, logger, deploymentResult.HostShutdownToken);
 
-                    var responseText = await response.Content.ReadAsStringAsync();
-                    Console.WriteLine("Response Text " + responseText);
-                    Assert.Equal(expectedText, responseText);
+                    return await response.Content.ReadAsStringAsync();
                 }
             }
         }
-
-        public string GetApplicationPath()
+        
+        public async Task RunTestAndVerifyResponse(
+            RuntimeFlavor runtimeFlavor,
+            RuntimeArchitecture runtimeArchitecture,
+            string applicationBaseUrl,
+            string environmentName,
+            string locale,
+            string expectedText)
         {
-            return Path.GetFullPath(Path.Combine("..", "LocalizationWebsite"));
+            var responseText = await RunTestAndGetResponse(runtimeFlavor, runtimeArchitecture, applicationBaseUrl, environmentName, locale);
+            Console.WriteLine("Response Text " + responseText);
+            Assert.Equal(expectedText, responseText);
+        }
+        
+        public async Task RunTestAndVerifyResponseHeading(
+            RuntimeFlavor runtimeFlavor,
+            RuntimeArchitecture runtimeArchitecture,
+            string applicationBaseUrl,
+            string environmentName,
+            string locale,
+            string expectedHeadingText)
+        {
+            var responseText = await RunTestAndGetResponse(runtimeFlavor, runtimeArchitecture, applicationBaseUrl, environmentName, locale);
+            var headingIndex = responseText.IndexOf(expectedHeadingText);
+            Console.WriteLine("Response Header " + responseText);
+            Assert.True(headingIndex >= 0);
         }
     }
 }
