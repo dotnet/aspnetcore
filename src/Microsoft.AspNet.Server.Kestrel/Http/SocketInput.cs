@@ -116,13 +116,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             Complete();
         }
 
-        public void AbortAwaiting()
-        {
-            _awaitableError = new ObjectDisposedException(nameof(SocketInput), "The request was aborted");
-
-            Complete();
-        }
-
         private void Complete()
         {
             var awaitableState = Interlocked.Exchange(
@@ -175,6 +168,13 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 returnStart = returnStart.Next;
                 returnBlock.Pool.Return(returnBlock);
             }
+        }
+
+        public void AbortAwaiting()
+        {
+            _awaitableError = new ObjectDisposedException(nameof(SocketInput), "The request was aborted");
+
+            Complete();
         }
 
         public SocketInput GetAwaiter()

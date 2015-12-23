@@ -12,5 +12,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
 #else
         public static Task CompletedTask = Task.FromResult<object>(null);
 #endif
+        public static Task<int> ZeroTask = Task.FromResult(0);
     }
 }
