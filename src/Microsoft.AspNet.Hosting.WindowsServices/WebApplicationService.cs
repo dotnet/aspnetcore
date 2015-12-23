@@ -1,8 +1,9 @@
-﻿using Microsoft.AspNet.Hosting.Internal;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.ServiceProcess;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNet.Hosting.WindowsServices
 {
@@ -11,9 +12,6 @@ namespace Microsoft.AspNet.Hosting.WindowsServices
     /// </summary>
     public class WebApplicationService : ServiceBase
     {
-        private const string HostingJsonFile = "hosting.json";
-        private const string EnvironmentVariablesPrefix = "ASPNET_";
-        private const string ConfigFileKey = "config";
         private IWebApplication _application;
         private IDisposable _applicationShutdown;
         private bool _stopRequestedByWindows;
