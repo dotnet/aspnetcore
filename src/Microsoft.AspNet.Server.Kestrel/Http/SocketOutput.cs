@@ -400,7 +400,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 return;
             }
 
-            bytes = start.Block.Data.Offset + start.Block.Data.Count - start.Index;
+            bytes = start.Block.BlockEndOffset - start.Index;
             buffers = 1;
 
             for (var block = start.Block.Next; block != end.Block; block = block.Next)

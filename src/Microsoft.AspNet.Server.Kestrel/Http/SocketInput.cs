@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             const int minimumSize = 2048;
 
-            if (_tail != null && minimumSize <= _tail.Data.Offset + _tail.Data.Count - _tail.End)
+            if (_tail != null && minimumSize <= _tail.BlockEndOffset - _tail.End)
             {
                 _pinned = _tail;
             }

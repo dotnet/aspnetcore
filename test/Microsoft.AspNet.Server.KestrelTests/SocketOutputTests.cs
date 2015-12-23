@@ -308,11 +308,11 @@ namespace Microsoft.AspNet.Server.KestrelTests
 
                 // block 1
                 var start = socketOutput.ProducingStart();
-                start.Block.End = start.Block.Data.Offset + start.Block.Data.Count;
+                start.Block.End = start.Block.BlockEndOffset;
 
                 // block 2
                 var block2 = memory.Lease();
-                block2.End = block2.Data.Offset + block2.Data.Count;
+                block2.End = block2.BlockEndOffset;
                 start.Block.Next = block2;
 
                 var end = new MemoryPoolIterator2(block2, block2.End);
