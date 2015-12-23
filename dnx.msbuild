@@ -451,7 +451,7 @@
                                     $(PoliCheckPath)**\src\EntityFramework.Core.FunctionalTests\OptimisticConcurrencyTestBase.cs;
                                     $(PoliCheckPath)**\EntityFramework.Core.FunctionalTests.dll;
                                     $(PoliCheckPath)**\src\Microsoft.AspNet.Razor.Runtime.Precompilation\CodeAnalysisSymbolLookupCache.cs;
-                                    $(PoliCheckPath)**\src\Microsoft.Extensions.PropertyHelper.Sources/PropertyHelper.cs">
+                                    $(PoliCheckPath)**\src\Microsoft.Extensions.PropertyHelper.Sources\PropertyHelper.cs">
                 <term>races</term>
                 <Justification>refers to race condition; property name</Justification>
             </SrcExclusions>
