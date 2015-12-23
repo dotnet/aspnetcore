@@ -95,15 +95,8 @@ default NUGET_FEED = 'https://api.nuget.org/v3/index.json'
 #build-compile target='compile' if='Directory.Exists("src")'
   @{
     var projectFiles = Files.Include("src/**/project.json").ToList();
-    if (ShouldRunInParallel)
-    {
-        Parallel.ForEach(projectFiles, projectFile => DotnetPack(projectFile, BUILD_DIR, Configuration));
-    }
-    else
-    {
-        projectFiles.ForEach(projectFile => DotnetPack(projectFile, BUILD_DIR, Configuration));
-    }
-
+    projectFiles.ForEach(projectFile => DotnetPack(projectFile, BUILD_DIR, Configuration));
+    
     foreach (var nupkg in Files.Include(Path.Combine(BUILD_DIR, "*/*.nupkg")))
     {
         File.Copy(nupkg, Path.Combine(BUILD_DIR, Path.GetFileName(nupkg)), true);
@@ -168,31 +161,15 @@ default NUGET_FEED = 'https://api.nuget.org/v3/index.json'
 #xunit-test target='test' if='Directory.Exists("test")'
   @{
     var projectFiles = Files.Include("test/**/project.json").Exclude("**/bin/*/app/project.json").ToList();
-    if (ShouldRunInParallel)
-    {
-        Parallel.ForEach(projectFiles, projectFile => XunitTest(projectFile, testParallel: true));
-        //Parallel.ForEach(projectFiles, projectFile => DotnetTest(projectFile, testParallel: true));
-        Parallel.ForEach(projectFiles, projectFile => DnxTest(projectFile, testParallel: true));
-    }
-    else
-    {
-        projectFiles.ForEach(projectFile => XunitTest(projectFile, testParallel: false));
-        //projectFiles.ForEach(projectFile => DotnetTest(projectFile, testParallel: false));
-        projectFiles.ForEach(projectFile => DnxTest(projectFile, testParallel: false));
-    }
+    projectFiles.ForEach(projectFile => XunitTest(projectFile, testParallel: false));
+    //projectFiles.ForEach(projectFile => DotnetTest(projectFile, testParallel: false));
+    projectFiles.ForEach(projectFile => DnxTest(projectFile, testParallel: false));
   }
 
 #build-samples target='test' if='Directory.Exists("samples")'
   @{
     var projectFiles = Files.Include("samples/**/project.json").ToList();
-    if (ShouldRunInParallel)
-    {
-        Parallel.ForEach(projectFiles, projectFile => DotnetCompile(projectFile, Configuration));
-    }
-    else
-    {
-        projectFiles.ForEach(projectFile => DotnetCompile(projectFile, Configuration));
-    }
+    projectFiles.ForEach(projectFile => DotnetCompile(projectFile, Configuration));
   }
 
 #make-roslyn-fast
@@ -207,11 +184,11 @@ default NUGET_FEED = 'https://api.nuget.org/v3/index.json'
     AddToE("KOREBUILD_NPM_INSTALL_OPTIONS", "--quiet");
     Quiet = true;
   }
-
+  
 #--parallel
-  @{
-    E("KOREBUILD_PARALLEL", "1");
-  }
+   @{
+     Log.Warn("The --parallel flag is no longer supported. It will be ignored.");
+   }
 
 #--test-dnxcore
   @{
@@ -295,11 +272,6 @@ functions @{
         Log.Warn("   command not found");
         return false;
       }
-    }
-
-    bool ShouldRunInParallel
-    {
-        get { return !string.IsNullOrEmpty(E("KOREBUILD_PARALLEL")); }
     }
 
     bool ShouldVerifyNupkgs
