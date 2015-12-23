@@ -48,9 +48,9 @@ namespace Microsoft.AspNet.Http.Internal
             var body = request.Body;
             if (!body.CanSeek)
             {
-                // TODO: Register this buffer for disposal at the end of the request to ensure the temp file is deleted.
-                //  Otherwise it won't get deleted until GC closes the stream.
-                request.Body = new FileBufferingReadStream(body, bufferThreshold, _getTempDirectory);
+                var fileStream = new FileBufferingReadStream(body, bufferThreshold, _getTempDirectory);
+                request.Body = fileStream;
+                request.HttpContext.Response.RegisterForDispose(fileStream);
             }
             return request;
         }
