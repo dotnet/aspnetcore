@@ -17,21 +17,23 @@ namespace Microsoft.AspNet.Builder
         /// requests based on information provided by the client.
         /// </summary>
         /// <param name="app">The <see cref="IApplicationBuilder"/>.</param>
-        /// <param name="options">The options to configure the middleware with.</param>
+        /// <param name="configureOptions">An action delegate to configure the provided <see cref="RequestLocalizationOptions"/>.</param>
         /// <returns>The <see cref="IApplicationBuilder"/>.</returns>
         public static IApplicationBuilder UseRequestLocalization(
             this IApplicationBuilder app,
-            RequestLocalizationOptions options)
+            Action<RequestLocalizationOptions> configureOptions)
         {
             if (app == null)
             {
                 throw new ArgumentNullException(nameof(app));
             }
-
-            if (options == null)
+            if (configureOptions == null)
             {
-                throw new ArgumentNullException(nameof(options));
+                throw new ArgumentNullException(nameof(configureOptions));
             }
+
+            var options = new RequestLocalizationOptions();
+            configureOptions(options);
 
             return app.UseMiddleware<RequestLocalizationMiddleware>(options);
         }

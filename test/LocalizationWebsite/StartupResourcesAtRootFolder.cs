@@ -29,20 +29,18 @@ namespace LocalizationWebsite
         {
             loggerFactory.AddConsole(minLevel: LogLevel.Warning);
 
-            var options = new RequestLocalizationOptions
+            app.UseRequestLocalization(options =>
             {
-                DefaultRequestCulture = new RequestCulture("en-US"),
-                SupportedCultures = new List<CultureInfo>()
+                options.DefaultRequestCulture = new RequestCulture("en-US");
+                options.SupportedCultures = new List<CultureInfo>()
                 {
                     new CultureInfo("fr-FR")
-                },
-                SupportedUICultures = new List<CultureInfo>()
+                };
+                options.SupportedUICultures = new List<CultureInfo>()
                 {
                     new CultureInfo("fr-FR")
-                }
-            };
-
-            app.UseRequestLocalization(options);
+                };
+            });
 
             var stringLocalizer = stringLocalizerFactory.Create("Test", location: null);
 

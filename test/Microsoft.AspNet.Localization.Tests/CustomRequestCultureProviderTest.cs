@@ -23,25 +23,24 @@ namespace Microsoft.Extensions.Localization.Tests
             var builder = new WebApplicationBuilder()
                 .Configure(app =>
                 {
-                    var options = new RequestLocalizationOptions()
+                    app.UseRequestLocalization(options =>
                     {
-                        DefaultRequestCulture = new RequestCulture("en-US"),
-                        SupportedCultures = new List<CultureInfo>
+                        options.DefaultRequestCulture = new RequestCulture("en-US");
+                        options.SupportedCultures = new List<CultureInfo>
                         {
                             new CultureInfo("ar")
-                        },
-                        SupportedUICultures = new List<CultureInfo>
+                        };
+                        options.SupportedUICultures = new List<CultureInfo>
                         {
                             new CultureInfo("ar")
-                        }
-                    };
-                    options.RequestCultureProviders.Insert(0, new CustomRequestCultureProvider(context =>
-                    {
-                        var culture = GetCultureInfoFromUrl(context, options.SupportedCultures);
-                        var requestCulture = new ProviderCultureResult(culture);
-                        return Task.FromResult(requestCulture);
-                    }));
-                    app.UseRequestLocalization(options);
+                        };
+                        options.RequestCultureProviders.Insert(0, new CustomRequestCultureProvider(context =>
+                        {
+                            var culture = GetCultureInfoFromUrl(context, options.SupportedCultures);
+                            var requestCulture = new ProviderCultureResult(culture);
+                            return Task.FromResult(requestCulture);
+                        }));
+                    });
                     app.Run(context =>
                     {
                         var requestCultureFeature = context.Features.Get<IRequestCultureFeature>();
