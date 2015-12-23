@@ -22,21 +22,20 @@ namespace LocalizationSample.Web
 
         public void Configure(IApplicationBuilder app)
         {
-            var options = new RequestLocalizationOptions
+            app.UseRequestLocalization(options =>
             {
-                DefaultRequestCulture = new RequestCulture("en-US"),
-                SupportedCultures = new List<CultureInfo>
+                options.DefaultRequestCulture = new RequestCulture("en-US");
+                options.SupportedCultures = new List<CultureInfo>
                 {
                     new CultureInfo("fr"),
                     new CultureInfo("en-GB"),
-                },
-                SupportedUICultures = new List<CultureInfo>
+                };
+                options.SupportedUICultures = new List<CultureInfo>
                 {
                     new CultureInfo("fr"),
                     new CultureInfo("en-GB"),
-                },
-            };
-            app.UseRequestLocalization(options);
+                };
+            });
 
             app.UseMvcWithDefaultRoute();
         }

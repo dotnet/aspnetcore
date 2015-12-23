@@ -25,13 +25,12 @@ namespace InlineConstraintSample.Web
 
         public void Configure(IApplicationBuilder app)
         {
-            // Ignore ambient and client locale. Use same values as ReplaceCultureAttribute / CultureReplacerMiddleware.
-            var localizationOptions = new RequestLocalizationOptions
+            app.UseRequestLocalization(localizationOptions =>
             {
-                DefaultRequestCulture = new RequestCulture("en-GB", "en-US"),
-            };
-            localizationOptions.RequestCultureProviders.Clear();
-            app.UseRequestLocalization(localizationOptions);
+                // Ignore ambient and client locale. Use same values as ReplaceCultureAttribute / CultureReplacerMiddleware.
+                localizationOptions.DefaultRequestCulture = new RequestCulture("en-GB", "en-US");
+                localizationOptions.RequestCultureProviders.Clear();
+            });
 
             app.UseMvc();
         }
