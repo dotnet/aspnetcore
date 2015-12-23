@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Builder
         /// <param name="app">The <see cref="IApplicationBuilder"/> to add the middleware to.</param>
         /// <param name="configureOptions">An action delegate to configure the provided <see cref="TwitterOptions"/>.</param>
         /// <returns>A reference to this instance after the operation has completed.</returns>
-        public static IApplicationBuilder UseTwitterAuthentication(this IApplicationBuilder app, Action<TwitterOptions> configureOptions = null)
+        public static IApplicationBuilder UseTwitterAuthentication(this IApplicationBuilder app, Action<TwitterOptions> configureOptions)
         {
             if (app == null)
             {
@@ -30,6 +30,26 @@ namespace Microsoft.AspNet.Builder
 
             var options = new TwitterOptions();
             configureOptions(options);
+
+            return app.UseMiddleware<TwitterMiddleware>(options);
+        }
+
+        /// <summary>
+        /// Adds the <see cref="TwitterMiddleware"/> middleware to the specified <see cref="IApplicationBuilder"/>, which enables Twitter authentication capabilities.
+        /// </summary>
+        /// <param name="app">The <see cref="IApplicationBuilder"/> to add the middleware to.</param>
+        /// <param name="options">An action delegate to configure the provided <see cref="TwitterOptions"/>.</param>
+        /// <returns>A reference to this instance after the operation has completed.</returns>
+        public static IApplicationBuilder UseTwitterAuthentication(this IApplicationBuilder app, TwitterOptions options)
+        {
+            if (app == null)
+            {
+                throw new ArgumentNullException(nameof(app));
+            }
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
 
             return app.UseMiddleware<TwitterMiddleware>(options);
         }
