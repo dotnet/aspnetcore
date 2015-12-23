@@ -15,53 +15,55 @@ namespace Microsoft.AspNet.Builder
         /// <summary>
         /// Enable directory browsing on the current path
         /// </summary>
-        /// <param name="builder"></param>
+        /// <param name="app"></param>
         /// <returns></returns>
-        public static IApplicationBuilder UseDirectoryBrowser(this IApplicationBuilder builder)
+        public static IApplicationBuilder UseDirectoryBrowser(this IApplicationBuilder app)
         {
-            if (builder == null)
+            if (app == null)
             {
-                throw new ArgumentNullException(nameof(builder));
+                throw new ArgumentNullException(nameof(app));
             }
 
-            return builder.UseDirectoryBrowser(new DirectoryBrowserOptions());
+            return app.UseDirectoryBrowser(options => { });
         }
 
         /// <summary>
         /// Enables directory browsing for the given request path
         /// </summary>
-        /// <param name="builder"></param>
+        /// <param name="app"></param>
         /// <param name="requestPath">The relative request path.</param>
         /// <returns></returns>
-        public static IApplicationBuilder UseDirectoryBrowser(this IApplicationBuilder builder, string requestPath)
+        public static IApplicationBuilder UseDirectoryBrowser(this IApplicationBuilder app, string requestPath)
         {
-            if (builder == null)
+            if (app == null)
             {
-                throw new ArgumentNullException(nameof(builder));
+                throw new ArgumentNullException(nameof(app));
             }
 
-            return builder.UseDirectoryBrowser(new DirectoryBrowserOptions() { RequestPath = new PathString(requestPath) });
+            return app.UseDirectoryBrowser(options => { options.RequestPath = new PathString(requestPath); });
         }
 
         /// <summary>
         /// Enable directory browsing with the given options
         /// </summary>
-        /// <param name="builder"></param>
-        /// <param name="options"></param>
+        /// <param name="app"></param>
+        /// <param name="configureOptions"></param>
         /// <returns></returns>
-        public static IApplicationBuilder UseDirectoryBrowser(this IApplicationBuilder builder, DirectoryBrowserOptions options)
+        public static IApplicationBuilder UseDirectoryBrowser(this IApplicationBuilder app, Action<DirectoryBrowserOptions> configureOptions)
         {
-            if (builder == null)
+            if (app == null)
             {
-                throw new ArgumentNullException(nameof(builder));
+                throw new ArgumentNullException(nameof(app));
+            }
+            if (configureOptions == null)
+            {
+                throw new ArgumentNullException(nameof(configureOptions));
             }
 
-            if (options == null)
-            {
-                throw new ArgumentNullException(nameof(options));
-            }
+            var options = new DirectoryBrowserOptions();
+            configureOptions(options);
 
-            return builder.UseMiddleware<DirectoryBrowserMiddleware>(options);
+            return app.UseMiddleware<DirectoryBrowserMiddleware>(options);
         }
     }
 }

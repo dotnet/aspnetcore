@@ -1,6 +1,5 @@
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting;
-using Microsoft.AspNet.StaticFiles;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -18,9 +17,9 @@ namespace StaticFilesSample
             // Displays all log levels
             factory.AddConsole(LogLevel.Debug);
 
-            app.UseFileServer(new FileServerOptions()
+            app.UseFileServer(options =>
             {
-                EnableDirectoryBrowsing = true,
+                options.EnableDirectoryBrowsing = true;
             });
         }
 

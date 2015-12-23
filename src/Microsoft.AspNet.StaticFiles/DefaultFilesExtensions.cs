@@ -15,53 +15,55 @@ namespace Microsoft.AspNet.Builder
         /// <summary>
         /// Enables default file mapping on the current path
         /// </summary>
-        /// <param name="builder"></param>
+        /// <param name="app"></param>
         /// <returns></returns>
-        public static IApplicationBuilder UseDefaultFiles(this IApplicationBuilder builder)
+        public static IApplicationBuilder UseDefaultFiles(this IApplicationBuilder app)
         {
-            if (builder == null)
+            if (app == null)
             {
-                throw new ArgumentNullException(nameof(builder));
+                throw new ArgumentNullException(nameof(app));
             }
 
-            return builder.UseDefaultFiles(new DefaultFilesOptions());
+            return app.UseDefaultFiles(options => { });
         }
 
         /// <summary>
         /// Enables default file mapping for the given request path
         /// </summary>
-        /// <param name="builder"></param>
+        /// <param name="app"></param>
         /// <param name="requestPath">The relative request path.</param>
         /// <returns></returns>
-        public static IApplicationBuilder UseDefaultFiles(this IApplicationBuilder builder, string requestPath)
+        public static IApplicationBuilder UseDefaultFiles(this IApplicationBuilder app, string requestPath)
         {
-            if (builder == null)
+            if (app == null)
             {
-                throw new ArgumentNullException(nameof(builder));
+                throw new ArgumentNullException(nameof(app));
             }
 
-            return builder.UseDefaultFiles(new DefaultFilesOptions() { RequestPath = new PathString(requestPath) });
+            return app.UseDefaultFiles(options => { options.RequestPath = new PathString(requestPath); });
         }
 
         /// <summary>
         /// Enables default file mapping with the given options
         /// </summary>
-        /// <param name="builder"></param>
-        /// <param name="options"></param>
+        /// <param name="app"></param>
+        /// <param name="configureOptions"></param>
         /// <returns></returns>
-        public static IApplicationBuilder UseDefaultFiles(this IApplicationBuilder builder, DefaultFilesOptions options)
+        public static IApplicationBuilder UseDefaultFiles(this IApplicationBuilder app, Action<DefaultFilesOptions> configureOptions)
         {
-            if (builder == null)
+            if (app == null)
             {
-                throw new ArgumentNullException(nameof(builder));
+                throw new ArgumentNullException(nameof(app));
+            }
+            if (configureOptions == null)
+            {
+                throw new ArgumentNullException(nameof(configureOptions));
             }
 
-            if (options == null)
-            {
-                throw new ArgumentNullException(nameof(options));
-            }
+            var options = new DefaultFilesOptions();
+            configureOptions(options);
 
-            return builder.UseMiddleware<DefaultFilesMiddleware>(options);
+            return app.UseMiddleware<DefaultFilesMiddleware>(options);
         }
     }
 }
