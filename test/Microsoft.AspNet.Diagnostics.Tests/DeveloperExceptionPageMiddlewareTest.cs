@@ -36,7 +36,9 @@ namespace Microsoft.AspNet.Diagnostics
                     "TestFiles/SourceFile.txt"
                 };
 
-                if (!(TestPlatformHelper.IsLinux || TestPlatformHelper.IsMac))
+                var OSPlatform = PlatformServices.Default.Runtime.OperatingSystemPlatform;
+
+                if (!(OSPlatform == Platform.Linux || OSPlatform == Platform.Darwin))
                 {
                     data.Add(@"TestFiles\SourceFile.txt");
                 }
