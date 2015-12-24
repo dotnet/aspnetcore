@@ -272,7 +272,7 @@
             "Microsoft.Extensions.Logging.TraceSource": { },
             "Microsoft.Extensions.MemoryPool": { },
             "Microsoft.Extensions.Options.ConfigurationExtensions": { },
-            "Microsoft.Extensions.OptionsModel": { },
+            "Microsoft.Extensions.Options": { },
             "Microsoft.Extensions.PlatformAbstractions": { },
             "Microsoft.Extensions.Primitives": { },
             "Microsoft.Extensions.SecretManager": { },
