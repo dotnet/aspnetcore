@@ -10,8 +10,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 {
     public partial class FrameResponseHeaders : FrameHeaders
     {
-        private static byte[] _CrLf = new[] { (byte)'\r', (byte)'\n' };
-        private static byte[] _colonSpace = new[] { (byte)':', (byte)' ' };
+        private static readonly byte[] _CrLf = new[] { (byte)'\r', (byte)'\n' };
+        private static readonly byte[] _colonSpace = new[] { (byte)':', (byte)' ' };
 
         public bool HasConnection => HeaderConnection.Count != 0;
 
@@ -53,11 +53,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         public partial struct Enumerator : IEnumerator<KeyValuePair<string, StringValues>>
         {
-            private FrameResponseHeaders _collection;
-            private long _bits;
+            private readonly FrameResponseHeaders _collection;
+            private readonly long _bits;
             private int _state;
             private KeyValuePair<string, StringValues> _current;
-            private bool _hasUnknown;
+            private readonly bool _hasUnknown;
             private Dictionary<string, StringValues>.Enumerator _unknownEnumerator;
 
             internal Enumerator(FrameResponseHeaders collection)

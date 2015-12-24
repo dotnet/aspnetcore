@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         private const int _initialTaskQueues = 64;
         private const int _maxPooledWriteContexts = 32;
 
-        private static WaitCallback _returnBlocks = (state) => ReturnBlocks((MemoryPoolBlock2)state);
+        private static readonly WaitCallback _returnBlocks = (state) => ReturnBlocks((MemoryPoolBlock2)state);
 
         private readonly KestrelThread _thread;
         private readonly UvStreamHandle _socket;

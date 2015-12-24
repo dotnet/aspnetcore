@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
     {
         private const int _maxStackAllocBytes = 16384;
 
-        private static Encoding _utf8 = Encoding.UTF8;
+        private static readonly Encoding _utf8 = Encoding.UTF8;
 
         public const string HttpConnectMethod = "CONNECT";
         public const string HttpDeleteMethod = "DELETE";
@@ -41,7 +41,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
         private readonly static long _http11VersionLong = GetAsciiStringAsLong("HTTP/1.1");
 
         private const int PerfectHashDivisor = 37;
-        private static Tuple<long, string>[] _knownStrings = new Tuple<long, string>[PerfectHashDivisor];
+        private static readonly Tuple<long, string>[] _knownStrings = new Tuple<long, string>[PerfectHashDivisor];
 
         static MemoryPoolIterator2Extensions()
         {

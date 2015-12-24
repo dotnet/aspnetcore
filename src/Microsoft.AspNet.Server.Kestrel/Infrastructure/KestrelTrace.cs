@@ -12,15 +12,15 @@ namespace Microsoft.AspNet.Server.Kestrel
     /// </summary>
     public class KestrelTrace : IKestrelTrace
     {
-        private static Action<ILogger, long, Exception> _connectionStart;
-        private static Action<ILogger, long, Exception> _connectionStop;
-        private static Action<ILogger, long, Exception> _connectionPause;
-        private static Action<ILogger, long, Exception> _connectionResume;
-        private static Action<ILogger, long, Exception> _connectionReadFin;
-        private static Action<ILogger, long, Exception> _connectionWriteFin;
-        private static Action<ILogger, long, int, Exception> _connectionWroteFin;
-        private static Action<ILogger, long, Exception> _connectionKeepAlive;
-        private static Action<ILogger, long, Exception> _connectionDisconnect;
+        private static readonly Action<ILogger, long, Exception> _connectionStart;
+        private static readonly Action<ILogger, long, Exception> _connectionStop;
+        private static readonly Action<ILogger, long, Exception> _connectionPause;
+        private static readonly Action<ILogger, long, Exception> _connectionResume;
+        private static readonly Action<ILogger, long, Exception> _connectionReadFin;
+        private static readonly Action<ILogger, long, Exception> _connectionWriteFin;
+        private static readonly Action<ILogger, long, int, Exception> _connectionWroteFin;
+        private static readonly Action<ILogger, long, Exception> _connectionKeepAlive;
+        private static readonly Action<ILogger, long, Exception> _connectionDisconnect;
 
         protected readonly ILogger _logger;
 

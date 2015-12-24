@@ -21,11 +21,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         public partial struct Enumerator : IEnumerator<KeyValuePair<string, StringValues>>
         {
-            private FrameRequestHeaders _collection;
-            private long _bits;
+            private readonly FrameRequestHeaders _collection;
+            private readonly long _bits;
             private int _state;
             private KeyValuePair<string, StringValues> _current;
-            private bool _hasUnknown;
+            private readonly bool _hasUnknown;
             private Dictionary<string, StringValues>.Enumerator _unknownEnumerator;
 
             internal Enumerator(FrameRequestHeaders collection)

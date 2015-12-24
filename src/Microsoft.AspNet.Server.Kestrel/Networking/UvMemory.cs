@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
     {
         protected Libuv _uv;
         protected int _threadId;
-        protected IKestrelTrace _log;
+        protected readonly IKestrelTrace _log;
 
         protected UvMemory(IKestrelTrace logger) : base(IntPtr.Zero, true)
         {

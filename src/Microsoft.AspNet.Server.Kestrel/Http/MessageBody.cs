@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 {
     public abstract class MessageBody
     {
-        private FrameContext _context;
+        private readonly FrameContext _context;
         private int _send100Continue = 1;
 
         protected MessageBody(FrameContext context)
@@ -130,7 +130,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         }
 
 
-        class ForRemainingData : MessageBody
+        private class ForRemainingData : MessageBody
         {
             public ForRemainingData(FrameContext context)
                 : base(context)
@@ -143,7 +143,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             }
         }
 
-        class ForContentLength : MessageBody
+        private class ForContentLength : MessageBody
         {
             private readonly int _contentLength;
             private int _inputLength;
@@ -182,7 +182,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         /// <summary>
         ///   http://tools.ietf.org/html/rfc2616#section-3.6.1
         /// </summary>
-        class ForChunkedEncoding : MessageBody
+        private class ForChunkedEncoding : MessageBody
         {
             private int _inputLength;
 

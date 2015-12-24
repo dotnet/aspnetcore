@@ -14,9 +14,9 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
     /// A primary listener waits for incoming connections on a specified socket. Incoming 
     /// connections may be passed to a secondary listener to handle.
     /// </summary>
-    abstract public class ListenerPrimary : Listener
+    public abstract class ListenerPrimary : Listener
     {
-        private List<UvPipeHandle> _dispatchPipes = new List<UvPipeHandle>();
+        private readonly List<UvPipeHandle> _dispatchPipes = new List<UvPipeHandle>();
         private int _dispatchIndex;
         private string _pipeName;
 
@@ -28,7 +28,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
         }
 
-        UvPipeHandle ListenPipe { get; set; }
+        private UvPipeHandle ListenPipe { get; set; }
 
         public async Task StartAsync(
             string pipeName,

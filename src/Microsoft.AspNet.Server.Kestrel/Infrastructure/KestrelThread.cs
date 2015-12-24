@@ -30,21 +30,21 @@ namespace Microsoft.AspNet.Server.Kestrel
         private static readonly Action<object, object> _listenerPrimaryCallbackAdapter = (callback, state) => ((Action<ListenerPrimary>)callback).Invoke((ListenerPrimary)state);
         private static readonly Action<object, object> _listenerSecondaryCallbackAdapter = (callback, state) => ((Action<ListenerSecondary>)callback).Invoke((ListenerSecondary)state);
 
-        private KestrelEngine _engine;
+        private readonly KestrelEngine _engine;
         private readonly IApplicationLifetime _appLifetime;
-        private Thread _thread;
-        private UvLoopHandle _loop;
-        private UvAsyncHandle _post;
+        private readonly Thread _thread;
+        private readonly UvLoopHandle _loop;
+        private readonly UvAsyncHandle _post;
         private Queue<Work> _workAdding = new Queue<Work>(1024);
         private Queue<Work> _workRunning = new Queue<Work>(1024);
         private Queue<CloseHandle> _closeHandleAdding = new Queue<CloseHandle>(256);
         private Queue<CloseHandle> _closeHandleRunning = new Queue<CloseHandle>(256);
-        private object _workSync = new Object();
+        private readonly object _workSync = new Object();
         private bool _stopImmediate = false;
         private bool _initCompleted = false;
         private ExceptionDispatchInfo _closeError;
-        private IKestrelTrace _log;
-        private IThreadPool _threadPool;
+        private readonly IKestrelTrace _log;
+        private readonly IThreadPool _threadPool;
 
         public KestrelThread(KestrelEngine engine)
         {

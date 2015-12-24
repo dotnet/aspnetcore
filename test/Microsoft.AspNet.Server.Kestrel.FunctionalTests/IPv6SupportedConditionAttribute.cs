@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.Server.Kestrel.FunctionalTests
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
     public class IPv6SupportedConditionAttribute : Attribute, ITestCondition
     {
-        private static Lazy<bool> _ipv6Supported = new Lazy<bool>(CanBindToIPv6Address);
+        private static readonly Lazy<bool> _ipv6Supported = new Lazy<bool>(CanBindToIPv6Address);
 
         public bool IsMet
         {

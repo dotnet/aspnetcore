@@ -103,7 +103,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
             }
         }
 
-        public bool IsWindows;
+        public readonly bool IsWindows;
 
         public int Check(int statusCode)
         {
