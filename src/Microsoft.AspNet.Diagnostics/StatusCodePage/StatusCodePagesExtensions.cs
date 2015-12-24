@@ -37,6 +37,27 @@ namespace Microsoft.AspNet.Builder
         }
 
         /// <summary>
+        /// Adds a StatusCodePages middleware with the given options that checks for responses with status codes 
+        /// between 400 and 599 that do not have a body.
+        /// </summary>
+        /// <param name="app"></param>
+        /// <param name="options"></param>
+        /// <returns></returns>
+        public static IApplicationBuilder UseStatusCodePages(this IApplicationBuilder app, StatusCodePagesOptions options)
+        {
+            if (app == null)
+            {
+                throw new ArgumentNullException(nameof(app));
+            }
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
+            return app.UseMiddleware<StatusCodePagesMiddleware>(options);
+        }
+
+        /// <summary>
         /// Adds a StatusCodePages middleware with a default response handler that checks for responses with status codes 
         /// between 400 and 599 that do not have a body.
         /// </summary>

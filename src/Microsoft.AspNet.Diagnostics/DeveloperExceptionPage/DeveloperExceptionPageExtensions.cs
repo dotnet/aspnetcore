@@ -50,5 +50,28 @@ namespace Microsoft.AspNet.Builder
             configureOptions(options);
             return app.UseMiddleware<DeveloperExceptionPageMiddleware>(options);
         }
+
+        /// <summary>
+        /// Captures synchronous and asynchronous <see cref="Exception"/> instances from the pipeline and generates HTML error responses.
+        /// </summary>
+        /// <param name="app">The <see cref="IApplicationBuilder"/>.</param>
+        /// <param name="options">A <see cref="DeveloperExceptionPageOptions"/> that specifies options for the middleware.</param>
+        /// <returns>A reference to the <paramref name="app"/> after the operation has completed.</returns>
+        public static IApplicationBuilder UseDeveloperExceptionPage(
+            this IApplicationBuilder app,
+            DeveloperExceptionPageOptions options)
+        {
+            if (app == null)
+            {
+                throw new ArgumentNullException(nameof(app));
+            }
+
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+            
+            return app.UseMiddleware<DeveloperExceptionPageMiddleware>(options);
+        }
     }
 }

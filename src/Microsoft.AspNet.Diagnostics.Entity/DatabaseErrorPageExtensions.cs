@@ -62,6 +62,34 @@ namespace Microsoft.AspNet.Builder
         }
 
         /// <summary>
+        /// Captures synchronous and asynchronous database related exceptions from the pipeline that may be resolved using Entity Framework
+        /// migrations. When these exceptions occur an HTML response with details of possible actions to resolve the issue is generated.
+        /// </summary>
+        /// <param name="app">The <see cref="IApplicationBuilder"/> to register the middleware with.</param>
+        /// <param name="options">A <see cref="DatabaseErrorPageOptions"/> that specifies options for the middleware.</param>
+        /// <returns>The same <see cref="IApplicationBuilder"/> instance so that multiple calls can be chained.</returns>
+        public static IApplicationBuilder UseDatabaseErrorPage(this IApplicationBuilder app, DatabaseErrorPageOptions options)
+        {
+            if (app == null)
+            {
+                throw new ArgumentNullException(nameof(app));
+            }
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
+            app = app.UseMiddleware<DatabaseErrorPageMiddleware>(options);
+
+            if (options.EnableMigrationCommands)
+            {
+                app.UseMigrationsEndPoint(o => o.Path = options.MigrationsEndPointPath);
+            }
+
+            return app;
+        }
+
+        /// <summary>
         /// Sets the options to display the maximum amount of information available.
         /// </summary>
         /// <param name="options">The options to be configured.</param>

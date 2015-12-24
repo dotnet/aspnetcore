@@ -74,5 +74,26 @@ namespace Microsoft.AspNet.Builder
 
             return app.UseMiddleware<ExceptionHandlerMiddleware>(options);
         }
+
+        /// <summary>
+        /// Adds a middleware to the pipeline that will catch exceptions, log them, and re-execute the request in an alternate pipeline.
+        /// The request will not be re-executed if the response has already started.
+        /// </summary>
+        /// <param name="app"></param>
+        /// <param name="options"></param>
+        /// <returns></returns>
+        public static IApplicationBuilder UseExceptionHandler(this IApplicationBuilder app, ExceptionHandlerOptions options)
+        {
+            if (app == null)
+            {
+                throw new ArgumentNullException(nameof(app));
+            }
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
+            return app.UseMiddleware<ExceptionHandlerMiddleware>(options);
+        }
     }
 }

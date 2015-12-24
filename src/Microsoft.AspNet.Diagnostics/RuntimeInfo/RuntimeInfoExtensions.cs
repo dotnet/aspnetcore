@@ -50,5 +50,24 @@ namespace Microsoft.AspNet.Builder
 
             return app.Use(next => new RuntimeInfoMiddleware(next, options, libraryManager, runtimeEnvironment).Invoke);
         }
+
+        public static IApplicationBuilder UseRuntimeInfoPage(
+            this IApplicationBuilder app,
+            RuntimeInfoPageOptions options)
+        {
+            if (app == null)
+            {
+                throw new ArgumentNullException(nameof(app));
+            }
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
+            var libraryManager = app.ApplicationServices.GetService(typeof(ILibraryManager)) as ILibraryManager;
+            var runtimeEnvironment = app.ApplicationServices.GetService(typeof(IRuntimeEnvironment)) as IRuntimeEnvironment;
+
+            return app.Use(next => new RuntimeInfoMiddleware(next, options, libraryManager, runtimeEnvironment).Invoke);
+        }
     }
 }

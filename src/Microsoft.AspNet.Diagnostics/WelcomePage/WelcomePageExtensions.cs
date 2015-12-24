@@ -37,6 +37,26 @@ namespace Microsoft.AspNet.Builder
         }
 
         /// <summary>
+        /// Adds the WelcomePageMiddleware to the pipeline with the given options.
+        /// </summary>
+        /// <param name="app"></param>
+        /// <param name="options"></param>
+        /// <returns></returns>
+        public static IApplicationBuilder UseWelcomePage(this IApplicationBuilder app, WelcomePageOptions options)
+        {
+            if (app == null)
+            {
+                throw new ArgumentNullException(nameof(app));
+            }
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
+            return app.UseMiddleware<WelcomePageMiddleware>(options);
+        }
+
+        /// <summary>
         /// Adds the WelcomePageMiddleware to the pipeline with the given path.
         /// </summary>
         /// <param name="app"></param>
