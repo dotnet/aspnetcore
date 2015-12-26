@@ -59,26 +59,23 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
 
         public int Take()
         {
-            if (_block == null)
+            var block = _block;
+            if (block == null)
             {
                 return -1;
             }
-            else if (_index < _block.End)
+
+            var index = _index;
+
+            if (index < block.End)
             {
-                return _block.Array[_index++];
+                _index = index + 1;
+                return block.Array[index];
             }
 
-            var block = _block;
-            var index = _index;
-            while (true)
+            do
             {
-                if (index < block.End)
-                {
-                    _block = block;
-                    _index = index + 1;
-                    return block.Array[index];
-                }
-                else if (block.Next == null)
+                if (block.Next == null)
                 {
                     return -1;
                 }
@@ -87,7 +84,14 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
                     block = block.Next;
                     index = block.Start;
                 }
-            }
+
+                if (index < block.End)
+                {
+                    _block = block;
+                    _index = index + 1;
+                    return block.Array[index];
+                }
+            } while (true);
         }
 
         public int Peek()
