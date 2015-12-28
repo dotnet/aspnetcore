@@ -56,7 +56,8 @@ namespace Microsoft.AspNet.Mvc.Controllers
                     nameof(ControllerContext)));
             }
 
-            // Perf: Avoid allocating async state machines when we know there's nothing to bind.
+            // Perf: Avoid allocating async state machines where possible. We only need the state
+            // machine if you need to bind properties.
             var actionDescriptor = context.ActionDescriptor;
             if (actionDescriptor.BoundProperties.Count == 0 &&
                 actionDescriptor.Parameters.Count == 0)
@@ -64,33 +65,34 @@ namespace Microsoft.AspNet.Mvc.Controllers
                 return Task.FromResult<IDictionary<string, object>>(
                     new Dictionary<string, object>(StringComparer.Ordinal));
             }
+            else if (actionDescriptor.BoundProperties.Count == 0)
+            {
+                var operationBindingContext = GetOperationBindingContext(context);
+                return PopulateArgumentsAsync(operationBindingContext, actionDescriptor.Parameters);
+            }
             else
             {
-                return BindActionArgumentsCoreAsync(
+                return BindActionArgumentsAndPropertiesCoreAsync(
                     context,
                     controller,
                     actionDescriptor);
             }
         }
 
-        private async Task<IDictionary<string, object>> BindActionArgumentsCoreAsync(
+        private async Task<IDictionary<string, object>> BindActionArgumentsAndPropertiesCoreAsync(
             ControllerContext context,
             object controller,
             ControllerActionDescriptor actionDescriptor)
         {
             var operationBindingContext = GetOperationBindingContext(context);
-            var controllerProperties = new Dictionary<string, object>(StringComparer.Ordinal);
-            await PopulateArgumentsAsync(
-                operationBindingContext,
-                controllerProperties,
-                actionDescriptor.BoundProperties);
-            var controllerType = actionDescriptor.ControllerTypeInfo.AsType();
-            ActivateProperties(controller, controllerType, controllerProperties);
 
-            var actionArguments = new Dictionary<string, object>(StringComparer.Ordinal);
-            await PopulateArgumentsAsync(
+            var controllerProperties = await PopulateArgumentsAsync(
                 operationBindingContext,
-                actionArguments,
+                actionDescriptor.BoundProperties);
+            ActivateProperties(actionDescriptor, controller, controllerProperties);
+
+            var actionArguments = await PopulateArgumentsAsync(
+                operationBindingContext,
                 actionDescriptor.Parameters);
             return actionArguments;
         }
@@ -145,22 +147,41 @@ namespace Microsoft.AspNet.Mvc.Controllers
             }
         }
 
-        private void ActivateProperties(object controller, Type containerType, Dictionary<string, object> properties)
+        private void ActivateProperties(
+            ControllerActionDescriptor actionDescriptor,
+            object controller,
+            IDictionary<string, object> properties)
         {
             var propertyHelpers = PropertyHelper.GetProperties(controller);
-            foreach (var property in properties)
+            for (var i = 0; i < actionDescriptor.BoundProperties.Count; i++)
             {
-                var propertyHelper = propertyHelpers.First(helper =>
-                    string.Equals(helper.Name, property.Key, StringComparison.Ordinal));
+                var property = actionDescriptor.BoundProperties[i];
+
+                PropertyHelper propertyHelper = null;
+                for (var j = 0; j < propertyHelpers.Length; j++)
+                {
+                    if (string.Equals(propertyHelpers[j].Name, property.Name, StringComparison.Ordinal))
+                    {
+                        propertyHelper = propertyHelpers[j];
+                        break;
+                    }
+                }
+
+                object value;
+                if (propertyHelper == null || !properties.TryGetValue(property.Name, out value))
+                {
+                    continue;
+                }
+
                 var propertyType = propertyHelper.Property.PropertyType;
                 var metadata = _modelMetadataProvider.GetMetadataForType(propertyType);
-                var source = property.Value;
+
                 if (propertyHelper.Property.CanWrite && propertyHelper.Property.SetMethod?.IsPublic == true)
                 {
                     // Handle settable property. Do not set the property to null if the type is a non-nullable type.
-                    if (source != null || metadata.IsReferenceOrNullableType)
+                    if (value != null || metadata.IsReferenceOrNullableType)
                     {
-                        propertyHelper.SetValue(controller, source);
+                        propertyHelper.SetValue(controller, value);
                     }
 
                     continue;
@@ -174,7 +195,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
                 }
 
                 var target = propertyHelper.GetValue(controller);
-                if (source == null || target == null)
+                if (value == null || target == null)
                 {
                     // Nothing to do when source or target is null.
                     continue;
@@ -189,15 +210,16 @@ namespace Microsoft.AspNet.Mvc.Controllers
                 // Handle a read-only collection property.
                 var propertyAddRange = CallPropertyAddRangeOpenGenericMethod.MakeGenericMethod(
                     metadata.ElementMetadata.ModelType);
-                propertyAddRange.Invoke(obj: null, parameters: new[] { target, source });
+                propertyAddRange.Invoke(obj: null, parameters: new[] { target, value });
             }
         }
 
-        private async Task PopulateArgumentsAsync(
+        private async Task<IDictionary<string, object>> PopulateArgumentsAsync(
             OperationBindingContext operationContext,
-            IDictionary<string, object> arguments,
             IList<ParameterDescriptor> parameterMetadata)
         {
+            var arguments = new Dictionary<string, object>(StringComparer.Ordinal);
+
             // Perf: Avoid allocations
             for (var i = 0; i < parameterMetadata.Count; i++)
             {
@@ -208,6 +230,8 @@ namespace Microsoft.AspNet.Mvc.Controllers
                     arguments[parameter.Name] = modelBindingResult.Model;
                 }
             }
+
+            return arguments;
         }
 
         private OperationBindingContext GetOperationBindingContext(ControllerContext context)
