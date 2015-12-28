@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Server.Kestrel.Infrastructure;
 using Microsoft.AspNet.Server.Kestrel.Networking;
+using Microsoft.AspNet.Server.Kestrel.Http;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNet.Server.Kestrel
@@ -23,7 +24,12 @@ namespace Microsoft.AspNet.Server.Kestrel
         // otherwise it needs to wait till the next pass of the libuv loop
         private const int _maxLoops = 8;
 
-        private static Action<object, object> _threadCallbackAdapter = (callback, state) => ((Action<KestrelThread>)callback).Invoke((KestrelThread)state);
+        private static readonly Action<object, object> _threadCallbackAdapter = (callback, state) => ((Action<KestrelThread>)callback).Invoke((KestrelThread)state);
+        private static readonly Action<object, object> _socketCallbackAdapter = (callback, state) => ((Action<SocketOutput>)callback).Invoke((SocketOutput)state);
+        private static readonly Action<object, object> _tcsCallbackAdapter = (callback, state) => ((Action<TaskCompletionSource<int>>)callback).Invoke((TaskCompletionSource<int>)state);
+        private static readonly Action<object, object> _listenerPrimaryCallbackAdapter = (callback, state) => ((Action<ListenerPrimary>)callback).Invoke((ListenerPrimary)state);
+        private static readonly Action<object, object> _listenerSecondaryCallbackAdapter = (callback, state) => ((Action<ListenerSecondary>)callback).Invoke((ListenerSecondary)state);
+
         private KestrelEngine _engine;
         private readonly IApplicationLifetime _appLifetime;
         private Thread _thread;
@@ -144,13 +150,13 @@ namespace Microsoft.AspNet.Server.Kestrel
             _post.Send();
         }
 
-        public void Post<T>(Action<T> callback, T state)
+        public void Post(Action<SocketOutput> callback, SocketOutput state)
         {
             lock (_workSync)
             {
                 _workAdding.Enqueue(new Work
                 {
-                    CallbackAdapter = (callback2, state2) => ((Action<T>)callback2).Invoke((T)state2),
+                    CallbackAdapter = _socketCallbackAdapter,
                     Callback = callback,
                     State = state
                 });
@@ -158,14 +164,28 @@ namespace Microsoft.AspNet.Server.Kestrel
             _post.Send();
         }
 
-        public Task PostAsync<T>(Action<T> callback, T state)
+        public void Post(Action<TaskCompletionSource<int>> callback, TaskCompletionSource<int> state)
+        {
+            lock (_workSync)
+            {
+                _workAdding.Enqueue(new Work
+                {
+                    CallbackAdapter = _tcsCallbackAdapter,
+                    Callback = callback,
+                    State = state
+                });
+            }
+            _post.Send();
+        }
+
+        public Task PostAsync(Action<ListenerPrimary> callback, ListenerPrimary state)
         {
             var tcs = new TaskCompletionSource<object>();
             lock (_workSync)
             {
                 _workAdding.Enqueue(new Work
                 {
-                    CallbackAdapter = (state1, state2) => ((Action<T>)state1).Invoke((T)state2),
+                    CallbackAdapter = _listenerPrimaryCallbackAdapter,
                     Callback = callback,
                     State = state,
                     Completion = tcs
@@ -175,7 +195,24 @@ namespace Microsoft.AspNet.Server.Kestrel
             return tcs.Task;
         }
 
-        public void Send<T>(Action<T> callback, T state)
+        public Task PostAsync(Action<ListenerSecondary> callback, ListenerSecondary state)
+        {
+            var tcs = new TaskCompletionSource<object>();
+            lock (_workSync)
+            {
+                _workAdding.Enqueue(new Work
+                {
+                    CallbackAdapter = _listenerSecondaryCallbackAdapter,
+                    Callback = callback,
+                    State = state,
+                    Completion = tcs
+                });
+            }
+            _post.Send();
+            return tcs.Task;
+        }
+
+        public void Send(Action<ListenerSecondary> callback, ListenerSecondary state)
         {
             if (_loop.ThreadId == Thread.CurrentThread.ManagedThreadId)
             {
