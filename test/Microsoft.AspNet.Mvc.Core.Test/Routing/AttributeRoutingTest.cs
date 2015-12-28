@@ -193,10 +193,11 @@ namespace Microsoft.AspNet.Mvc.Routing
                 .Returns(new RouteOptions());
 
             return new ServiceCollection()
-                .AddSingleton(actionDescriptorProvider.Object)
                 .AddSingleton<IInlineConstraintResolver>(new DefaultInlineConstraintResolver(routeOptions.Object))
-                .AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance)
                 .AddSingleton<UrlEncoder>(new UrlTestEncoder())
+                .AddRouting()
+                .AddSingleton(actionDescriptorProvider.Object)
+                .AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance)
                 .BuildServiceProvider();
         }
 

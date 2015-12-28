@@ -9,9 +9,11 @@ using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.Abstractions;
 using Microsoft.AspNet.Mvc.Infrastructure;
 using Microsoft.AspNet.Routing;
+using Microsoft.AspNet.Routing.Internal;
 using Microsoft.AspNet.Routing.Tree;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
+using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.WebEncoders.Testing;
 using Moq;
 using Xunit;
@@ -67,10 +69,14 @@ namespace Microsoft.AspNet.Mvc.Routing
                 .SetupGet(ad => ad.ActionDescriptors)
                 .Returns(new ActionDescriptorsCollection(actionDescriptors, version: 1));
 
+            var policy = new UriBuilderContextPooledObjectPolicy(new UrlTestEncoder());
+            var pool = new DefaultObjectPool<UriBuildingContext>(policy);
+
             var route = new AttributeRoute(
                 handler.Object,
                 actionDescriptorsProvider.Object,
                 Mock.Of<IInlineConstraintResolver>(),
+                pool,
                 new UrlTestEncoder(),
                 NullLoggerFactory.Instance);
 

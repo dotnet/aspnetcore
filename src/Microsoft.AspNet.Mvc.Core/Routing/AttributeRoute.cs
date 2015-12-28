@@ -10,9 +10,11 @@ using Microsoft.AspNet.Mvc.Abstractions;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.Infrastructure;
 using Microsoft.AspNet.Routing;
+using Microsoft.AspNet.Routing.Internal;
 using Microsoft.AspNet.Routing.Template;
 using Microsoft.AspNet.Routing.Tree;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.ObjectPool;
 
 namespace Microsoft.AspNet.Mvc.Routing
 {
@@ -21,6 +23,7 @@ namespace Microsoft.AspNet.Mvc.Routing
         private readonly IRouter _target;
         private readonly IActionDescriptorsCollectionProvider _actionDescriptorsCollectionProvider;
         private readonly IInlineConstraintResolver _constraintResolver;
+        private readonly ObjectPool<UriBuildingContext> _contextPool;
         private readonly UrlEncoder _urlEncoder;
         private readonly ILoggerFactory _loggerFactory;
 
@@ -30,6 +33,7 @@ namespace Microsoft.AspNet.Mvc.Routing
             IRouter target,
             IActionDescriptorsCollectionProvider actionDescriptorsCollectionProvider,
             IInlineConstraintResolver constraintResolver,
+            ObjectPool<UriBuildingContext> contextPool,
             UrlEncoder urlEncoder,
             ILoggerFactory loggerFactory)
         {
@@ -48,6 +52,11 @@ namespace Microsoft.AspNet.Mvc.Routing
                 throw new ArgumentNullException(nameof(constraintResolver));
             }
 
+            if (contextPool == null)
+            {
+                throw new ArgumentNullException(nameof(contextPool));
+            }
+
             if (urlEncoder == null)
             {
                 throw new ArgumentNullException(nameof(urlEncoder));
@@ -61,6 +70,7 @@ namespace Microsoft.AspNet.Mvc.Routing
             _target = target;
             _actionDescriptorsCollectionProvider = actionDescriptorsCollectionProvider;
             _constraintResolver = constraintResolver;
+            _contextPool = contextPool;
             _urlEncoder = urlEncoder;
             _loggerFactory = loggerFactory;
         }
@@ -104,7 +114,7 @@ namespace Microsoft.AspNet.Mvc.Routing
             {
                 routeBuilder.Add(new TreeRouteLinkGenerationEntry()
                 {
-                    Binder = new TemplateBinder(routeInfo.ParsedTemplate, _urlEncoder, routeInfo.Defaults),
+                    Binder = new TemplateBinder(_urlEncoder, _contextPool, routeInfo.ParsedTemplate, routeInfo.Defaults),
                     Defaults = routeInfo.Defaults,
                     Constraints = routeInfo.Constraints,
                     Order = routeInfo.Order,

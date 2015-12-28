@@ -576,6 +576,7 @@ namespace Microsoft.AspNet.Mvc
                 .Returns(routeOptions);
 
             serviceCollection.AddSingleton<IOptions<RouteOptions>>(accessor.Object);
+            serviceCollection.AddRouting();
 
             serviceCollection.AddSingleton<IInlineConstraintResolver>(
                 new DefaultInlineConstraintResolver(accessor.Object));
