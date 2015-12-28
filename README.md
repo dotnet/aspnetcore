@@ -1,5 +1,7 @@
 # Getting Started with ASP.NET 5 and DNX
 
+[![Join the chat at https://gitter.im/aspnet/Home](https://badges.gitter.im/aspnet/Home.svg)](https://gitter.im/aspnet/Home?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 This guide is designed to get you started building applications with the latest development versions ASP.NET 5 and DNX. This means nightly builds and potentially broken or unstable packages.
 
 If you want a more stable, released, experience then you should go to https://www.asp.net/vnext.
