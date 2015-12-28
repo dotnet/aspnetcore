@@ -15,7 +15,7 @@ namespace FormatFilterSample.Web
         // Set up application services
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc(options =>
+            var mvcBuilder = services.AddMvc(options =>
             {
                 var formatFilter = new FormatFilterAttribute();
                 options.Filters.Add(formatFilter);
@@ -28,6 +28,8 @@ namespace FormatFilterSample.Web
                     "custom",
                     MediaTypeHeaderValue.Parse("application/custom"));
             });
+
+            mvcBuilder.AddXmlDataContractSerializerFormatters();
         }
 
         public void Configure(IApplicationBuilder app)

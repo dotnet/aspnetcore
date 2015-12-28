@@ -60,12 +60,13 @@ namespace Microsoft.AspNet.Mvc.Formatters
         {
             // If the format is present in both route and query data, the one in route data wins
 
-            // Arrange  
+            // Arrange
             var mediaType = MediaTypeHeaderValue.Parse("application/json");
             var mockObjects = new MockObjects("json", FormatSource.RouteData);
             var httpContext = new Mock<HttpContext>();
+            httpContext.Setup(c => c.Response).Returns(new Mock<HttpResponse>().Object);
 
-            // Query contains xml    
+            // Query contains xml
             httpContext.Setup(c => c.Request.Query.ContainsKey("format")).Returns(true);
             httpContext.Setup(c => c.Request.Query["format"]).Returns("xml");
 
@@ -106,7 +107,7 @@ namespace Microsoft.AspNet.Mvc.Formatters
             FormatSource place,
             string contentType)
         {
-            // Arrange  
+            // Arrange
             var mediaType = MediaTypeHeaderValue.Parse(contentType);
 
             var mockObjects = new MockObjects(format, place);
@@ -226,7 +227,7 @@ namespace Microsoft.AspNet.Mvc.Formatters
             // Act
             filter.OnResourceExecuting(resourceExecutingContext);
 
-            // Assert            
+            // Assert
             var actionResult = resourceExecutingContext.Result;
             Assert.IsType<HttpNotFoundResult>(actionResult);
         }
@@ -298,6 +299,73 @@ namespace Microsoft.AspNet.Mvc.Formatters
             Assert.Equal(expected, filter.GetFormat(context));
         }
 
+        [Fact]
+        public void FormatFilter_ExplicitContentType_SetOnObjectResult_TakesPrecedence()
+        {
+            // Arrange
+            var mediaType = MediaTypeHeaderValue.Parse("application/foo");
+            var mockObjects = new MockObjects("json", FormatSource.QueryData);
+            var httpContext = new Mock<HttpContext>();
+            httpContext.Setup(c => c.Response).Returns(new Mock<HttpResponse>().Object);
+            httpContext.Setup(c => c.Request.Query["format"]).Returns("json");
+            var actionContext = new ActionContext(httpContext.Object, new RouteData(), new ActionDescriptor());
+            var objectResult = new ObjectResult("Hello!");
+            objectResult.ContentTypes.Add(new MediaTypeHeaderValue("application/foo"));
+            var resultExecutingContext = new ResultExecutingContext(
+                actionContext,
+                new IFilterMetadata[] { },
+                objectResult,
+                controller: new object());
+
+            var resourceExecutingContext = new ResourceExecutingContext(
+                actionContext,
+                new IFilterMetadata[] { });
+
+            var filter = new FormatFilter(mockObjects.OptionsManager);
+
+            // Act
+            filter.OnResourceExecuting(resourceExecutingContext);
+            filter.OnResultExecuting(resultExecutingContext);
+
+            // Assert
+            var result = Assert.IsType<ObjectResult>(resultExecutingContext.Result);
+            Assert.Equal(1, result.ContentTypes.Count);
+            AssertMediaTypesEqual(mediaType, result.ContentTypes[0]);
+        }
+
+        [Fact]
+        public void FormatFilter_ExplicitContentType_SetOnResponse_TakesPrecedence()
+        {
+            // Arrange
+            var mediaType = MediaTypeHeaderValue.Parse("application/foo");
+            var mockObjects = new MockObjects("json", FormatSource.QueryData);
+            var response = new Mock<HttpResponse>();
+            response.Setup(r => r.ContentType).Returns("application/foo");
+            var httpContext = new Mock<HttpContext>();
+            httpContext.Setup(c => c.Response).Returns(response.Object);
+            httpContext.Setup(c => c.Request.Query["format"]).Returns("json");
+            var actionContext = new ActionContext(httpContext.Object, new RouteData(), new ActionDescriptor());
+            var resultExecutingContext = new ResultExecutingContext(
+                actionContext,
+                new IFilterMetadata[] { },
+                new ObjectResult("Hello!"),
+                controller: new object());
+
+            var resourceExecutingContext = new ResourceExecutingContext(
+                actionContext,
+                new IFilterMetadata[] { });
+
+            var filter = new FormatFilter(mockObjects.OptionsManager);
+
+            // Act
+            filter.OnResourceExecuting(resourceExecutingContext);
+            filter.OnResultExecuting(resultExecutingContext);
+
+            // Assert
+            var result = Assert.IsType<ObjectResult>(resultExecutingContext.Result);
+            Assert.Equal(0, result.ContentTypes.Count);
+        }
+
         private static void AssertMediaTypesEqual(
             MediaTypeHeaderValue expectedMediaType,
             MediaTypeHeaderValue actualMediaType)
@@ -326,6 +394,7 @@ namespace Microsoft.AspNet.Mvc.Formatters
             {
                 var httpContext = new Mock<HttpContext>();
                 httpContext.Setup(c => c.Request.Query.ContainsKey("format")).Returns(false);
+                httpContext.Setup(c => c.Response).Returns(new Mock<HttpResponse>().Object);
                 MockHttpContext = httpContext.Object;
 
                 Initialize(httpContext, format, place);
