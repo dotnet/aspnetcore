@@ -88,6 +88,9 @@ namespace Microsoft.AspNet.Authorization
                 var rolesSplit = authorizeAttribute.Roles?.Split(',');
                 if (rolesSplit != null && rolesSplit.Any())
                 {
+                    for (int i = 0; i < rolesSplit.Length; ++i)
+                        rolesSplit[i] = rolesSplit[i]?.Trim();
+
                     policyBuilder.RequireRole(rolesSplit);
                     useDefaultPolicy = false;
                 }
@@ -96,7 +99,9 @@ namespace Microsoft.AspNet.Authorization
                 {
                     foreach (var authType in authTypesSplit)
                     {
-                        policyBuilder.AuthenticationSchemes.Add(authType);
+                        if (string.IsNullOrEmpty(authType))
+                            continue;
+                        policyBuilder.AuthenticationSchemes.Add(authType.Trim());
                     }
                 }
                 if (useDefaultPolicy)
