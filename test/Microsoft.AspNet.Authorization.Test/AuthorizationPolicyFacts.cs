@@ -73,7 +73,7 @@ namespace Microsoft.AspNet.Authroization.Test
         {
             // Arrange
             var attributes = new AuthorizeAttribute[] {
-                new AuthorizeAttribute("2") { Roles = "r1 , r2" }
+                new AuthorizeAttribute() { Roles = "r1 , r2" }
             };
             var options = new AuthorizationOptions();
 
@@ -91,7 +91,7 @@ namespace Microsoft.AspNet.Authroization.Test
         {
             // Arrange
             var attributes = new AuthorizeAttribute[] {
-                new AuthorizeAttribute("2") { ActiveAuthenticationSchemes = "a1 , a2" }
+                new AuthorizeAttribute() { ActiveAuthenticationSchemes = "a1 , a2" }
             };
             var options = new AuthorizationOptions();
 
