@@ -87,6 +87,9 @@ If you see errors, or want some extra content, then feel free to create an issue
 ## [ASP.NET/vNext](https://www.asp.net/vnext)
 The vNext page on the ASP.NET site has links to some TechEd videos and articles with some good information about vNext.
 
+## [Roadmap] (https://github.com/aspnet/Home/wiki/Roadmap)
+The schedule and milestone themes for ASP.NET 5. 
+
 ## Repos and Projects
 
 These are some of the most common repos:
