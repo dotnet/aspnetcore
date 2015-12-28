@@ -77,8 +77,10 @@ namespace Microsoft.AspNet.Authroization.Test
             };
             var options = new AuthorizationOptions();
 
+            // Act
             var combined = AuthorizationPolicy.Combine(options, attributes);
 
+            // Assert
             Assert.True(combined.Requirements.Any(r => r is RolesAuthorizationRequirement));
             var rolesAuthorizationRequirement = combined.Requirements.OfType<RolesAuthorizationRequirement>().First();
             Assert.Equal(2, rolesAuthorizationRequirement.AllowedRoles.Count());
@@ -95,11 +97,51 @@ namespace Microsoft.AspNet.Authroization.Test
             };
             var options = new AuthorizationOptions();
 
+            // Act
             var combined = AuthorizationPolicy.Combine(options, attributes);
 
+            // Assert
             Assert.Equal(2, combined.AuthenticationSchemes.Count());
             Assert.True(combined.AuthenticationSchemes.Any(a => a.Equals("a1")));
             Assert.True(combined.AuthenticationSchemes.Any(a => a.Equals("a2")));
+        }
+        
+        [Fact]
+        public void CombineMustIgnoreEmptyAuthenticationScheme()
+        {
+            // Arrange
+            var attributes = new AuthorizeAttribute[] {
+                new AuthorizeAttribute() { ActiveAuthenticationSchemes = "a1 , , ,,, a2" }
+            };
+            var options = new AuthorizationOptions();
+
+            // Act
+            var combined = AuthorizationPolicy.Combine(options, attributes);
+
+            // Assert
+            Assert.Equal(2, combined.AuthenticationSchemes.Count());
+            Assert.True(combined.AuthenticationSchemes.Any(a => a.Equals("a1")));
+            Assert.True(combined.AuthenticationSchemes.Any(a => a.Equals("a2")));
+        }
+        
+        [Fact]
+        public void CombineMustIgnoreEmptyRoles()
+        {
+            // Arrange
+            var attributes = new AuthorizeAttribute[] {
+                new AuthorizeAttribute() { Roles = "r1 , ,, , r2" }
+            };
+            var options = new AuthorizationOptions();
+
+            // Act
+            var combined = AuthorizationPolicy.Combine(options, attributes);
+
+            // Assert
+            Assert.True(combined.Requirements.Any(r => r is RolesAuthorizationRequirement));
+            var rolesAuthorizationRequirement = combined.Requirements.OfType<RolesAuthorizationRequirement>().First();
+            Assert.Equal(2, rolesAuthorizationRequirement.AllowedRoles.Count());
+            Assert.True(rolesAuthorizationRequirement.AllowedRoles.Any(r => r.Equals("r1")));
+            Assert.True(rolesAuthorizationRequirement.AllowedRoles.Any(r => r.Equals("r2")));
         }
     }
 }
