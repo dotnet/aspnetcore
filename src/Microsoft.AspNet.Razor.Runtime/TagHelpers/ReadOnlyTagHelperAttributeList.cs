@@ -4,7 +4,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Microsoft.AspNet.Razor.TagHelpers
 {
@@ -17,6 +16,13 @@ namespace Microsoft.AspNet.Razor.TagHelpers
     public class ReadOnlyTagHelperAttributeList<TAttribute> : IReadOnlyList<TAttribute>
         where TAttribute : IReadOnlyTagHelperAttribute
     {
+        private static readonly IReadOnlyList<TAttribute> EmptyList =
+#if NET451
+            new TAttribute[0];
+#else
+            Array.Empty<TAttribute>();
+#endif
+
         /// <summary>
         /// Instantiates a new instance of <see cref="ReadOnlyTagHelperAttributeList{TAttribute}"/> with an empty
         /// collection.
@@ -190,12 +196,11 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         /// <param name="name">The <see cref="IReadOnlyTagHelperAttribute.Name"/> of the
         /// <typeparamref name="TAttribute"/>s to get.</param>
         /// <param name="attributes">When this method returns, the <typeparamref name="TAttribute"/>s with
-        /// <see cref="IReadOnlyTagHelperAttribute.Name"/> matching <paramref name="name"/>, if at least one is
-        /// found; otherwise, <c>null</c>.</param>
+        /// <see cref="IReadOnlyTagHelperAttribute.Name"/> matching <paramref name="name"/>.</param>
         /// <returns><c>true</c> if at least one <typeparamref name="TAttribute"/> with the same
         /// <see cref="IReadOnlyTagHelperAttribute.Name"/> exists in the collection; otherwise, <c>false</c>.</returns>
         /// <remarks><paramref name="name"/> is compared case-insensitively.</remarks>
-        public bool TryGetAttributes(string name, out IEnumerable<TAttribute> attributes)
+        public bool TryGetAttributes(string name, out IReadOnlyList<TAttribute> attributes)
         {
             if (name == null)
             {
@@ -216,7 +221,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
                     matchedAttributes.Add(Attributes[i]);
                 }
             }
-            attributes = matchedAttributes ?? Enumerable.Empty<TAttribute>();
+            attributes = matchedAttributes ?? EmptyList;
 
             return matchedAttributes != null;
         }

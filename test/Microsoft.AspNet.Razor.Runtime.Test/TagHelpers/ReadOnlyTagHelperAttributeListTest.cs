@@ -587,7 +587,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         {
             // Arrange
             var attributes = new ReadOnlyTagHelperAttributeList<IReadOnlyTagHelperAttribute>(initialAttributes);
-            IEnumerable<IReadOnlyTagHelperAttribute> resolvedAttributes;
+            IReadOnlyList<IReadOnlyTagHelperAttribute> resolvedAttributes;
 
             // Act
             var result = attributes.TryGetAttributes(nameToLookup, out resolvedAttributes);
