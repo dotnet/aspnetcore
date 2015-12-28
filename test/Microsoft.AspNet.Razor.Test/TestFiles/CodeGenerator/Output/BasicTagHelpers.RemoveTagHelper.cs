@@ -1,4 +1,4 @@
-#pragma checksum "BasicTagHelpers.RemoveTagHelper.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "69b58621318bc8f4c0498f15f088da6220f94ffe"
+#pragma checksum "BasicTagHelpers.RemoveTagHelper.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "4cc0436af5a28bdf170d94f0ae03ff19aff89b88"
 namespace TestOutput
 {
     using System;
@@ -14,7 +14,7 @@ namespace TestOutput
         #pragma warning disable 1998
         public override async Task ExecuteAsync()
         {
-            Instrumentation.BeginContext(68, 187, true);
+            Instrumentation.BeginContext(70, 187, true);
             WriteLiteral("\r\n<div class=\"randomNonTagHelperAttribute\">\r\n    <p class=\"Hello World\">\r\n       " +
 " <p></p>\r\n        <input type=\"text\" />\r\n        <input type=\"checkbox\" checked=" +
 "\"true\"/>\r\n    </p>\r\n</div>");

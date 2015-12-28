@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics;
 using System.Globalization;
 using Microsoft.AspNet.Razor.Chunks;
+using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 
 namespace Microsoft.AspNet.Razor.CodeGenerators.Visitors
 {
@@ -74,20 +75,20 @@ namespace Microsoft.AspNet.Razor.CodeGenerators.Visitors
 
         protected override void Visit(TagHelperPrefixDirectiveChunk chunk)
         {
-            VisitTagHelperDirectiveChunk(chunk.Prefix, chunk);
+            VisitTagHelperDirectiveChunk(chunk);
         }
 
         protected override void Visit(AddTagHelperChunk chunk)
         {
-            VisitTagHelperDirectiveChunk(chunk.LookupText, chunk);
+            VisitTagHelperDirectiveChunk(chunk);
         }
 
         protected override void Visit(RemoveTagHelperChunk chunk)
         {
-            VisitTagHelperDirectiveChunk(chunk.LookupText, chunk);
+            VisitTagHelperDirectiveChunk(chunk);
         }
 
-        private void VisitTagHelperDirectiveChunk(string text, Chunk chunk)
+        private void VisitTagHelperDirectiveChunk(Chunk chunk)
         {
             // We should always be in design time mode because of the calling AcceptTree method verification.
             Debug.Assert(Context.Host.DesignTimeMode);
@@ -98,16 +99,26 @@ namespace Microsoft.AspNet.Razor.CodeGenerators.Visitors
                 Writer.WriteVariableDeclaration("string", TagHelperDirectiveSyntaxHelper, "null");
             }
 
-            Writer
-                .WriteStartAssignment(TagHelperDirectiveSyntaxHelper)
-                .Write("\"");
+            var text = ((Span)chunk.Association).Content.Trim();
+
+            Writer.WriteStartAssignment(TagHelperDirectiveSyntaxHelper);
+
+            if (!text.StartsWith("\"", StringComparison.Ordinal))
+            {
+                Writer.Write("\"");
+            }
 
             using (new CSharpLineMappingWriter(Writer, chunk.Start, text.Length))
             {
                 Writer.Write(text);
             }
 
-            Writer.WriteLine("\";");
+            if (!text.EndsWith("\"", StringComparison.Ordinal))
+            {
+                Writer.Write("\"");
+            }
+
+            Writer.WriteLine(";");
         }
     }
 }

@@ -404,11 +404,12 @@ namespace Microsoft.AspNet.Razor.Test.Generator
         {
             get
             {
-                return new TheoryData<string, // Test name
-                                      string, // Baseline name
-                                      IEnumerable<TagHelperDescriptor>, // TagHelperDescriptors provided
-                                      IEnumerable<TagHelperDescriptor>, // Expected TagHelperDescriptors
-                                      bool> // Design time mode.
+                return new TheoryData<
+                    string,  // Test name
+                    string, // Baseline name
+                    IEnumerable<TagHelperDescriptor>, // TagHelperDescriptors provided
+                    IEnumerable<TagHelperDescriptor>, // Expected TagHelperDescriptors
+                    bool> // Design time mode.
                 {
                     {
                         "SingleTagHelper",
@@ -527,9 +528,10 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                 tagHelperDescriptors: tagHelperDescriptors,
                 onResults: (results) =>
                 {
-                    Assert.Equal(expectedTagHelperDescriptors,
-                                 results.TagHelperDescriptors,
-                                 TagHelperDescriptorComparer.Default);
+                    Assert.Equal(
+                        expectedTagHelperDescriptors,
+                        results.TagHelperDescriptors,
+                        TagHelperDescriptorComparer.Default);
                 },
                 designTimeMode: designTimeMode);
         }
@@ -569,25 +571,25 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                         "BasicTagHelpers",
                         "BasicTagHelpers.DesignTime",
                         DefaultPAndInputTagHelperDescriptors,
-                        new List<LineMapping>
+                        new[]
                         {
                             BuildLineMapping(
                                 documentAbsoluteIndex: 14,
                                 documentLineIndex: 0,
                                 documentCharacterOffsetIndex: 14,
-                                generatedAbsoluteIndex: 372,
+                                generatedAbsoluteIndex: 371,
                                 generatedLineIndex: 12,
-                                generatedCharacterOffsetIndex: 48,
-                                contentLength: 15),
+                                generatedCharacterOffsetIndex: 47,
+                                contentLength: 17),
                             BuildLineMapping(
-                                documentAbsoluteIndex: 200,
+                                documentAbsoluteIndex: 202,
                                 documentLineIndex: 5,
                                 generatedAbsoluteIndex: 1293,
                                 generatedLineIndex: 31,
                                 characterOffsetIndex: 38,
                                 contentLength: 23),
                             BuildLineMapping(
-                                documentAbsoluteIndex: 283,
+                                documentAbsoluteIndex: 285,
                                 documentLineIndex: 6,
                                 documentCharacterOffsetIndex: 40,
                                 generatedAbsoluteIndex: 1934,
@@ -600,18 +602,18 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                         "BasicTagHelpers.Prefixed",
                         "BasicTagHelpers.Prefixed.DesignTime",
                         PrefixedPAndInputTagHelperDescriptors,
-                        new List<LineMapping>
+                        new[]
                         {
                             BuildLineMapping(
                                 documentAbsoluteIndex: 17,
                                 documentLineIndex: 0,
                                 documentCharacterOffsetIndex: 17,
-                                generatedAbsoluteIndex: 381,
+                                generatedAbsoluteIndex: 380,
                                 generatedLineIndex: 12,
-                                generatedCharacterOffsetIndex: 48,
-                                contentLength: 3),
+                                generatedCharacterOffsetIndex: 47,
+                                contentLength: 5),
                             BuildLineMapping(
-                                documentAbsoluteIndex: 36,
+                                documentAbsoluteIndex: 38,
                                 documentLineIndex: 1,
                                 documentCharacterOffsetIndex: 14,
                                 generatedAbsoluteIndex: 436,
@@ -619,7 +621,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
                                 generatedCharacterOffsetIndex: 48,
                                 contentLength: 15),
                             BuildLineMapping(
-                                documentAbsoluteIndex: 222,
+                                documentAbsoluteIndex: 224,
                                 documentLineIndex: 7,
                                 generatedAbsoluteIndex: 1437,
                                 generatedLineIndex: 33,

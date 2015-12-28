@@ -332,24 +332,24 @@ namespace Microsoft.AspNet.Razor.Test.Framework
                 .Accepts(AcceptedCharacters.AnyExceptNewline);
         }
 
-        public SpanConstructor AsAddTagHelper()
+        public SpanConstructor AsAddTagHelper(string lookupText)
         {
             return _self
-                .With(new AddTagHelperChunkGenerator())
+                .With(new AddTagHelperChunkGenerator(lookupText))
                 .Accepts(AcceptedCharacters.AnyExceptNewline);
         }
 
-        public SpanConstructor AsRemoveTagHelper()
+        public SpanConstructor AsRemoveTagHelper(string lookupText)
         {
             return _self
-                .With(new RemoveTagHelperChunkGenerator())
+                .With(new RemoveTagHelperChunkGenerator(lookupText))
                 .Accepts(AcceptedCharacters.AnyExceptNewline);
         }
 
-        public SpanConstructor AsTagHelperPrefixDirective()
+        public SpanConstructor AsTagHelperPrefixDirective(string prefix)
         {
             return _self
-                .With(new TagHelperPrefixDirectiveChunkGenerator())
+                .With(new TagHelperPrefixDirectiveChunkGenerator(prefix))
                 .Accepts(AcceptedCharacters.AnyExceptNewline);
         }
 

@@ -4,9 +4,8 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.Razor.Chunks.Generators;
-using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Compilation.TagHelpers;
-using System.Diagnostics;
+using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 
 namespace Microsoft.AspNet.Razor.Parser.TagHelpers
 {

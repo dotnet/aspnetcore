@@ -425,4 +425,7 @@ Instead, wrap the contents of the block in "{{}}":
   <data name="ParseError_HelperDirectiveNotAvailable" xml:space="preserve">
     <value>The {0} directive is not supported.</value>
   </data>
+  <data name="ParseError_IncompleteQuotesAroundDirective" xml:space="preserve">
+    <value>Optional quote around the directive '{0}' is missing the corresponding opening or closing quote.</value>
+  </data>
 </root>

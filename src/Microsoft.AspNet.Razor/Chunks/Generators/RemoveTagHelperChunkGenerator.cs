@@ -10,6 +10,19 @@ namespace Microsoft.AspNet.Razor.Chunks.Generators
     /// </summary>
     public class RemoveTagHelperChunkGenerator : SpanChunkGenerator
     {
+        private readonly string _lookupText;
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="RemoveTagHelperChunkGenerator"/>.
+        /// </summary>
+        /// <param name="lookupText">
+        /// Text used to look up <see cref="Compilation.TagHelpers.TagHelperDescriptor"/>s that should be removed.
+        /// </param>
+        public RemoveTagHelperChunkGenerator(string lookupText)
+        {
+            _lookupText = lookupText;
+        }
+
         /// <summary>
         /// Generates <see cref="RemoveTagHelperChunk"/>s.
         /// </summary>
@@ -20,9 +33,7 @@ namespace Microsoft.AspNet.Razor.Chunks.Generators
         /// the current chunk generation process.</param>
         public override void GenerateChunk(Span target, ChunkGeneratorContext context)
         {
-            var lookupText = target.Content.Trim();
-
-            context.ChunkTreeBuilder.AddRemoveTagHelperChunk(lookupText, target);
+            context.ChunkTreeBuilder.AddRemoveTagHelperChunk(_lookupText, target);
         }
     }
 }

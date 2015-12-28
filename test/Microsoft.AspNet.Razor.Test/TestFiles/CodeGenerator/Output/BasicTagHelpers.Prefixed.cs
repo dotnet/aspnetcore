@@ -1,4 +1,4 @@
-#pragma checksum "BasicTagHelpers.Prefixed.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "58d527033ea3d1d7e092e5e3561d80a474d60e97"
+#pragma checksum "BasicTagHelpers.Prefixed.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "859f448778119fd3043b1f19ea3d1f695558d6a6"
 namespace TestOutput
 {
     using System;
@@ -25,11 +25,11 @@ namespace TestOutput
         public override async Task ExecuteAsync()
         {
             __tagHelperRunner = __tagHelperRunner ?? new global::Microsoft.AspNet.Razor.Runtime.TagHelperRunner();
-            Instrumentation.BeginContext(53, 52, true);
+            Instrumentation.BeginContext(55, 52, true);
             WriteLiteral("\r\n<THSdiv class=\"randomNonTagHelperAttribute\">\r\n    ");
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.Begin("p", global::Microsoft.AspNet.Razor.TagHelpers.TagMode.StartTagAndEndTag, "test", async() => {
-                Instrumentation.BeginContext(131, 56, true);
+                Instrumentation.BeginContext(133, 56, true);
                 WriteLiteral("\r\n        <p></p>\r\n        <input type=\"text\">\r\n        ");
                 Instrumentation.EndContext();
                 __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input", global::Microsoft.AspNet.Razor.TagHelpers.TagMode.StartTagOnly, "test", async() => {
@@ -49,11 +49,11 @@ namespace TestOutput
 #line hidden
                 __tagHelperExecutionContext.AddTagHelperAttribute("checked", __TestNamespace_InputTagHelper2.Checked);
                 __tagHelperExecutionContext.Output = await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
-                Instrumentation.BeginContext(187, 41, false);
+                Instrumentation.BeginContext(189, 41, false);
                 Write(__tagHelperExecutionContext.Output);
                 Instrumentation.EndContext();
                 __tagHelperExecutionContext = __tagHelperScopeManager.End();
-                Instrumentation.BeginContext(228, 6, true);
+                Instrumentation.BeginContext(230, 6, true);
                 WriteLiteral("\r\n    ");
                 Instrumentation.EndContext();
             }
@@ -66,11 +66,11 @@ namespace TestOutput
             {
                 __tagHelperExecutionContext.Output.Content = await __tagHelperExecutionContext.Output.GetChildContentAsync();
             }
-            Instrumentation.BeginContext(105, 136, false);
+            Instrumentation.BeginContext(107, 136, false);
             Write(__tagHelperExecutionContext.Output);
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.End();
-            Instrumentation.BeginContext(241, 11, true);
+            Instrumentation.BeginContext(243, 11, true);
             WriteLiteral("\r\n</THSdiv>");
             Instrumentation.EndContext();
         }

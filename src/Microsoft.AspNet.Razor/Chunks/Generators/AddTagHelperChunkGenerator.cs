@@ -10,6 +10,19 @@ namespace Microsoft.AspNet.Razor.Chunks.Generators
     /// </summary>
     public class AddTagHelperChunkGenerator : SpanChunkGenerator
     {
+        private readonly string _lookupText;
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="AddTagHelperChunkGenerator"/>.
+        /// </summary>
+        /// <param name="lookupText">
+        /// Text used to look up <see cref="Compilation.TagHelpers.TagHelperDescriptor"/>s that should be added.
+        /// </param>
+        public AddTagHelperChunkGenerator(string lookupText)
+        {
+            _lookupText = lookupText;
+        }
+
         /// <summary>
         /// Generates <see cref="AddTagHelperChunk"/>s.
         /// </summary>
@@ -20,9 +33,7 @@ namespace Microsoft.AspNet.Razor.Chunks.Generators
         /// the current chunk generation process.</param>
         public override void GenerateChunk(Span target, ChunkGeneratorContext context)
         {
-            var lookupText = target.Content.Trim();
-
-            context.ChunkTreeBuilder.AddAddTagHelperChunk(lookupText, target);
+            context.ChunkTreeBuilder.AddAddTagHelperChunk(_lookupText, target);
         }
     }
 }

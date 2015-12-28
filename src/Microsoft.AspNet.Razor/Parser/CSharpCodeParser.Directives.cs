@@ -25,17 +25,21 @@ namespace Microsoft.AspNet.Razor.Parser
         {
             TagHelperDirective(
                 SyntaxConstants.CSharp.TagHelperPrefixKeyword,
-                new TagHelperPrefixDirectiveChunkGenerator());
+                prefix => new TagHelperPrefixDirectiveChunkGenerator(prefix));
         }
 
         protected virtual void AddTagHelperDirective()
         {
-            TagHelperDirective(SyntaxConstants.CSharp.AddTagHelperKeyword, new AddTagHelperChunkGenerator());
+            TagHelperDirective(
+                SyntaxConstants.CSharp.AddTagHelperKeyword,
+                lookupText => new AddTagHelperChunkGenerator(lookupText));
         }
 
         protected virtual void RemoveTagHelperDirective()
         {
-            TagHelperDirective(SyntaxConstants.CSharp.RemoveTagHelperKeyword, new RemoveTagHelperChunkGenerator());
+            TagHelperDirective(
+                SyntaxConstants.CSharp.RemoveTagHelperKeyword,
+                lookupText => new RemoveTagHelperChunkGenerator(lookupText));
         }
 
         protected virtual void SectionDirective()
@@ -285,7 +289,7 @@ namespace Microsoft.AspNet.Razor.Parser
             Output(SpanKind.Code, AcceptedCharacters.AnyExceptNewline);
         }
 
-        private void TagHelperDirective(string keyword, ISpanChunkGenerator chunkGenerator)
+        private void TagHelperDirective(string keyword, Func<string, ISpanChunkGenerator> chunkGeneratorFactory)
         {
             AssertDirective(keyword);
             var keywordStartLocation = CurrentLocation;
@@ -305,12 +309,15 @@ namespace Microsoft.AspNet.Razor.Parser
             // to the document.  We can't accept it.
             Output(SpanKind.MetaCode, foundWhitespace ? AcceptedCharacters.None : AcceptedCharacters.AnyExceptNewline);
 
+            ISpanChunkGenerator chunkGenerator;
             if (EndOfFile || At(CSharpSymbolType.NewLine))
             {
                 Context.OnError(
                     keywordStartLocation,
                     RazorResources.FormatParseError_DirectiveMustHaveValue(keyword),
                     keywordLength);
+
+                chunkGenerator = chunkGeneratorFactory(string.Empty);
             }
             else
             {
@@ -320,6 +327,34 @@ namespace Microsoft.AspNet.Razor.Parser
                 // Parse to the end of the line. Essentially accepts anything until end of line, comments, invalid code
                 // etc.
                 AcceptUntil(CSharpSymbolType.NewLine);
+
+                // Pull out the value and remove whitespaces and optional quotes
+                var rawValue = Span.GetContent().Value.Trim();
+
+                var startsWithQuote = rawValue.StartsWith("\"", StringComparison.Ordinal);
+                var endsWithQuote = rawValue.EndsWith("\"", StringComparison.Ordinal);
+                if (startsWithQuote != endsWithQuote)
+                {
+                    Context.OnError(
+                        startLocation,
+                        RazorResources.FormatParseError_IncompleteQuotesAroundDirective(keyword),
+                        rawValue.Length);
+                }
+                else if (startsWithQuote)
+                {
+                    if (rawValue.Length > 2)
+                    {
+                        // Remove extra quotes
+                        rawValue = rawValue.Substring(1, rawValue.Length - 2);
+                    }
+                    else
+                    {
+                        // raw value is only quotes
+                        rawValue = string.Empty;
+                    }
+                }
+
+                chunkGenerator = chunkGeneratorFactory(rawValue);
             }
 
             Span.ChunkGenerator = chunkGenerator;

@@ -1546,6 +1546,22 @@ namespace Microsoft.AspNet.Razor
             return string.Format(CultureInfo.CurrentCulture, GetString("ParseError_HelperDirectiveNotAvailable"), p0);
         }
 
+        /// <summary>
+        /// Optional quote around the directive '{0}' is missing the corresponding opening or closing quote.
+        /// </summary>
+        internal static string ParseError_IncompleteQuotesAroundDirective
+        {
+            get { return GetString("ParseError_IncompleteQuotesAroundDirective"); }
+        }
+
+        /// <summary>
+        /// Optional quote around the directive '{0}' is missing the corresponding opening or closing quote.
+        /// </summary>
+        internal static string FormatParseError_IncompleteQuotesAroundDirective(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("ParseError_IncompleteQuotesAroundDirective"), p0);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);
