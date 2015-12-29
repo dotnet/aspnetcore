@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
@@ -179,6 +180,92 @@ namespace Microsoft.AspNet.Server.KestrelTests
                         "",
                         "Goodbye");
                 }
+            }
+        }
+
+        [ConditionalTheory]
+        [MemberData(nameof(ConnectionFilterData))]
+        public async Task ReuseStreamsOn(ServiceContext testContext)
+        {
+            testContext.ReuseStreams = true;
+
+            var streamCount = 0;
+            var loopCount = 20;
+            Stream lastStream = null;
+
+            using (var server = new TestServer(
+                context =>
+                    {
+                        if (context.Request.Body != lastStream)
+                        {
+                            lastStream = context.Request.Body;
+                            streamCount++;
+                        }
+                        context.Response.Headers.Clear();
+                        return context.Request.Body.CopyToAsync(context.Response.Body);
+                    },
+                    testContext))
+            {
+
+                using (var connection = new TestConnection())
+                {
+                    var requestData = 
+                        Enumerable.Repeat("GET / HTTP/1.1\r\n", loopCount)
+                            .Concat(new[] { "GET / HTTP/1.1\r\nConnection: close\r\n\r\nGoodbye" });
+
+                    var responseData = 
+                        Enumerable.Repeat("HTTP/1.1 200 OK\r\nContent-Length: 0\r\n", loopCount)
+                            .Concat(new[] { "HTTP/1.1 200 OK\r\nConnection: close\r\n\r\nGoodbye" });
+
+                    await connection.SendEnd(requestData.ToArray());
+                    
+                    await connection.ReceiveEnd(responseData.ToArray());
+                }
+
+                Assert.Equal(1, streamCount);
+            }
+        }
+
+        [ConditionalTheory]
+        [MemberData(nameof(ConnectionFilterData))]
+        public async Task ReuseStreamsOff(ServiceContext testContext)
+        {
+            testContext.ReuseStreams = false;
+
+            var streamCount = 0;
+            var loopCount = 20;
+            Stream lastStream = null;
+
+            using (var server = new TestServer(
+                context =>
+                {
+                    if (context.Request.Body != lastStream)
+                    {
+                        lastStream = context.Request.Body;
+                        streamCount++;
+                    }
+                    context.Response.Headers.Clear();
+                    return context.Request.Body.CopyToAsync(context.Response.Body);
+                },
+                    testContext))
+            {
+
+                using (var connection = new TestConnection())
+                {
+                    var requestData =
+                        Enumerable.Repeat("GET / HTTP/1.1\r\n", loopCount)
+                            .Concat(new[] { "GET / HTTP/1.1\r\nConnection: close\r\n\r\nGoodbye" });
+
+                    var responseData =
+                        Enumerable.Repeat("HTTP/1.1 200 OK\r\nContent-Length: 0\r\n", loopCount)
+                            .Concat(new[] { "HTTP/1.1 200 OK\r\nConnection: close\r\n\r\nGoodbye" });
+
+                    await connection.SendEnd(requestData.ToArray());
+
+                    await connection.ReceiveEnd(responseData.ToArray());
+                }
+
+                Assert.Equal(loopCount + 1, streamCount);
             }
         }
 
