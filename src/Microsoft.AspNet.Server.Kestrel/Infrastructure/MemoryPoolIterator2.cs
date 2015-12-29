@@ -92,28 +92,22 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
 
         public int Peek()
         {
-            if (_block == null)
-            {
-                return -1;
-            }
-            else if (_index < _block.End)
-            {
-                return _block.Array[_index];
-            }
-            else if (_block.Next == null)
+            var block = _block;
+            if (block == null)
             {
                 return -1;
             }
 
-            var block = _block.Next;
-            var index = block.Start;
-            while (true)
+            var index = _index;
+
+            if (index < block.End)
             {
-                if (index < block.End)
-                {
-                    return block.Array[index];
-                }
-                else if (block.Next == null)
+                return block.Array[index];
+            }
+
+            do
+            {
+                if (block.Next == null)
                 {
                     return -1;
                 }
@@ -122,7 +116,12 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
                     block = block.Next;
                     index = block.Start;
                 }
-            }
+
+                if (index < block.End)
+                {
+                    return block.Array[index];
+                }
+            } while (true);
         }
 
         public unsafe long PeekLong()
