@@ -217,9 +217,9 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
                 return -1;
             }
 
-            var following = _block.End - _index;
             var block = _block;
             var index = _index;
+            var following = block.End - index;
             byte[] array;
             var byte0 = byte0Vector[0];
 
@@ -264,9 +264,9 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
 #if !DEBUG // Need unit tests to test Vector path
                     }
 #endif
-                    fixed (byte* ptr = block.Array)
+                    fixed (byte* ptr = &block.Array[index])
                     {
-                        var pCurrent = ptr + index;
+                        var pCurrent = ptr;
                         var pEnd = pCurrent + following;
                         do
                         {
@@ -294,9 +294,9 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
                 return -1;
             }
 
-            var following = _block.End - _index;
             var block = _block;
             var index = _index;
+            var following = block.End - index;
             byte[] array;
             int byte0Index = int.MaxValue;
             int byte1Index = int.MaxValue;
@@ -363,9 +363,9 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
 #if !DEBUG // Need unit tests to test Vector path
                     }
 #endif
-                    fixed (byte* ptr = block.Array)
+                    fixed (byte* ptr = &block.Array[index])
                     {
-                        var pCurrent = ptr + index;
+                        var pCurrent = ptr;
                         var pEnd = pCurrent + following;
                         do
                         {
@@ -399,9 +399,9 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
                 return -1;
             }
 
-            var following = _block.End - _index;
             var block = _block;
             var index = _index;
+            var following = block.End - index;
             byte[] array;
             int byte0Index = int.MaxValue;
             int byte1Index = int.MaxValue;
@@ -496,9 +496,9 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
 #if !DEBUG // Need unit tests to test Vector path
                     }
 #endif
-                    fixed (byte* ptr = block.Array)
+                    fixed (byte* ptr = &block.Array[index])
                     {
-                        var pCurrent = ptr + index;
+                        var pCurrent = ptr;
                         var pEnd = pCurrent + following;
                         do
                         {
