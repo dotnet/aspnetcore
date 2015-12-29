@@ -513,21 +513,24 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
             var block = _block;
             var index = _index;
             var length = 0;
-            while (true)
+            checked
             {
-                if (block == end._block)
+                while (true)
                 {
-                    return length + end._index - index;
-                }
-                else if (block.Next == null)
-                {
-                    throw new InvalidOperationException("end did not follow iterator");
-                }
-                else
-                {
-                    length += block.End - index;
-                    block = block.Next;
-                    index = block.Start;
+                    if (block == end._block)
+                    {
+                        return length + end._index - index;
+                    }
+                    else if (block.Next == null)
+                    {
+                        throw new InvalidOperationException("end did not follow iterator");
+                    }
+                    else
+                    {
+                        length += block.End - index;
+                        block = block.Next;
+                        index = block.Start;
+                    }
                 }
             }
         }
