@@ -56,8 +56,8 @@ namespace Microsoft.AspNet.Mvc.Razor.TagHelpers
         // Valid whitespace characters defined by the HTML5 spec.
         private static readonly char[] ValidAttributeWhitespaceChars =
             new[] { '\t', '\n', '\u000C', '\r', ' ' };
-        private static readonly IReadOnlyDictionary<string, IEnumerable<string>> ElementAttributeLookups =
-            new Dictionary<string, IEnumerable<string>>(StringComparer.OrdinalIgnoreCase)
+        private static readonly Dictionary<string, string[]> ElementAttributeLookups =
+            new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase)
             {
                 { "a", new[] { "href" } },
                 { "applet", new[] { "archive" } },
@@ -125,12 +125,12 @@ namespace Microsoft.AspNet.Mvc.Razor.TagHelpers
                 throw new ArgumentNullException(nameof(output));
             }
 
-            IEnumerable<string> attributeNames;
+            string[] attributeNames;
             if (ElementAttributeLookups.TryGetValue(output.TagName, out attributeNames))
             {
-                foreach (var attributeName in attributeNames)
+                for (var i = 0; i < attributeNames.Length; i++)
                 {
-                    ProcessUrlAttribute(attributeName, output);
+                    ProcessUrlAttribute(attributeNames[i], output);
                 }
             }
 
@@ -157,11 +157,12 @@ namespace Microsoft.AspNet.Mvc.Razor.TagHelpers
                 throw new ArgumentNullException(nameof(output));
             }
 
-            IEnumerable<TagHelperAttribute> attributes;
+            IReadOnlyList<TagHelperAttribute> attributes;
             if (output.Attributes.TryGetAttributes(attributeName, out attributes))
             {
-                foreach (var attribute in attributes)
+                for (var i = 0; i < attributes.Count; i++)
                 {
+                    var attribute = attributes[i];
                     var stringValue = attribute.Value as string;
                     if (stringValue != null)
                     {
