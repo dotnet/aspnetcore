@@ -4,24 +4,25 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Xml;
 using System.Xml.Linq;
 using Microsoft.AspNet.Hosting;
+using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Formatters;
 using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNet.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.AspNet.Mvc.Razor;
 using Microsoft.Extensions.CompilationAbstractions;
-using Microsoft.Extensions.PlatformAbstractions;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.PlatformAbstractions;
 using Moq;
 using Newtonsoft.Json.Linq;
 using Xunit;
-using Microsoft.Extensions.Logging;
-using System.Threading;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Mvc.ModelBinding.Metadata;
 
 namespace Microsoft.AspNet.Mvc
 {
@@ -45,19 +46,18 @@ namespace Microsoft.AspNet.Mvc
             var options = GetOptions<MvcOptions>();
 
             // Assert
-            var i = 0;
-            Assert.Equal(11, options.ModelBinders.Count);
-            Assert.IsType(typeof(BinderTypeBasedModelBinder), options.ModelBinders[i++]);
-            Assert.IsType(typeof(ServicesModelBinder), options.ModelBinders[i++]);
-            Assert.IsType(typeof(BodyModelBinder), options.ModelBinders[i++]);
-            Assert.IsType(typeof(HeaderModelBinder), options.ModelBinders[i++]);
-            Assert.IsType(typeof(SimpleTypeModelBinder), options.ModelBinders[i++]);
-            Assert.IsType(typeof(CancellationTokenModelBinder), options.ModelBinders[i++]);
-            Assert.IsType(typeof(ByteArrayModelBinder), options.ModelBinders[i++]);
-            Assert.IsType(typeof(FormFileModelBinder), options.ModelBinders[i++]);
-            Assert.IsType(typeof(FormCollectionModelBinder), options.ModelBinders[i++]);
-            Assert.IsType(typeof(GenericModelBinder), options.ModelBinders[i++]);
-            Assert.IsType(typeof(MutableObjectModelBinder), options.ModelBinders[i++]);
+            Assert.Collection(options.ModelBinders,
+                binder => Assert.IsType<BinderTypeBasedModelBinder>(binder),
+                binder => Assert.IsType<ServicesModelBinder>(binder),
+                binder => Assert.IsType<BodyModelBinder>(binder),
+                binder => Assert.IsType<HeaderModelBinder>(binder),
+                binder => Assert.IsType<SimpleTypeModelBinder>(binder),
+                binder => Assert.IsType<CancellationTokenModelBinder>(binder),
+                binder => Assert.IsType<ByteArrayModelBinder>(binder),
+                binder => Assert.IsType<FormFileModelBinder>(binder),
+                binder => Assert.IsType<FormCollectionModelBinder>(binder),
+                binder => Assert.IsType<GenericModelBinder>(binder),
+                binder => Assert.IsType<MutableObjectModelBinder>(binder));
         }
 
         [Fact]
@@ -68,11 +68,11 @@ namespace Microsoft.AspNet.Mvc
 
             // Assert
             var valueProviders = options.ValueProviderFactories;
-            Assert.Equal(4, valueProviders.Count);
-            Assert.IsType<RouteValueValueProviderFactory>(valueProviders[0]);
-            Assert.IsType<QueryStringValueProviderFactory>(valueProviders[1]);
-            Assert.IsType<FormValueProviderFactory>(valueProviders[2]);
-            Assert.IsType<JQueryFormValueProviderFactory>(valueProviders[3]);
+            Assert.Collection(valueProviders,
+                provider => Assert.IsType<RouteValueProviderFactory>(provider),
+                provider => Assert.IsType<QueryStringValueProviderFactory>(provider),
+                provider => Assert.IsType<FormValueProviderFactory>(provider),
+                provider => Assert.IsType<JQueryFormValueProviderFactory>(provider));
         }
 
         [Fact]
@@ -82,11 +82,11 @@ namespace Microsoft.AspNet.Mvc
             var options = GetOptions<MvcOptions>();
 
             // Assert
-            Assert.Equal(4, options.OutputFormatters.Count);
-            Assert.IsType<HttpNoContentOutputFormatter>(options.OutputFormatters[0]);
-            Assert.IsType<StringOutputFormatter>(options.OutputFormatters[1]);
-            Assert.IsType<StreamOutputFormatter>(options.OutputFormatters[2]);
-            Assert.IsType<JsonOutputFormatter>(options.OutputFormatters[3]);
+            Assert.Collection(options.OutputFormatters,
+                formatter => Assert.IsType<HttpNoContentOutputFormatter>(formatter),
+                formatter => Assert.IsType<StringOutputFormatter>(formatter),
+                formatter => Assert.IsType<StreamOutputFormatter>(formatter),
+                formatter => Assert.IsType<JsonOutputFormatter>(formatter));
         }
 
         [Fact]
@@ -96,9 +96,9 @@ namespace Microsoft.AspNet.Mvc
             var options = GetOptions<MvcOptions>();
 
             // Assert
-            Assert.Equal(2, options.InputFormatters.Count);
-            Assert.IsType<JsonInputFormatter>(options.InputFormatters[0]);
-            Assert.IsType<JsonPatchInputFormatter>(options.InputFormatters[1]);
+            Assert.Collection(options.InputFormatters,
+                formatter => Assert.IsType<JsonInputFormatter>(formatter),
+                formatter => Assert.IsType<JsonPatchInputFormatter>(formatter));
         }
 
         [Fact]
@@ -108,9 +108,9 @@ namespace Microsoft.AspNet.Mvc
             var options = GetOptions<MvcOptions>();
 
             // Assert
-            Assert.Equal(2, options.ModelValidatorProviders.Count);
-            Assert.IsType<DefaultModelValidatorProvider>(options.ModelValidatorProviders[0]);
-            Assert.IsType<DataAnnotationsModelValidatorProvider>(options.ModelValidatorProviders[1]);
+            Assert.Collection(options.ModelValidatorProviders,
+                validator => Assert.IsType<DefaultModelValidatorProvider>(validator),
+                validator => Assert.IsType<DataAnnotationsModelValidatorProvider>(validator));
         }
 
         [Fact]
@@ -120,10 +120,10 @@ namespace Microsoft.AspNet.Mvc
             var options = GetOptions<MvcViewOptions>(AddDnxServices);
 
             // Assert
-            Assert.Equal(3, options.ClientModelValidatorProviders.Count);
-            Assert.IsType<DefaultClientModelValidatorProvider>(options.ClientModelValidatorProviders[0]);
-            Assert.IsType<DataAnnotationsClientModelValidatorProvider>(options.ClientModelValidatorProviders[1]);
-            Assert.IsType<NumericClientModelValidatorProvider>(options.ClientModelValidatorProviders[2]);
+            Assert.Collection(options.ClientModelValidatorProviders,
+                validator => Assert.IsType<DefaultClientModelValidatorProvider>(validator),
+                validator => Assert.IsType<DataAnnotationsClientModelValidatorProvider>(validator),
+                validator => Assert.IsType<NumericClientModelValidatorProvider>(validator));
         }
 
         [Fact]
@@ -148,39 +148,51 @@ namespace Microsoft.AspNet.Mvc
 
             // Assert
             var providers = options.ModelMetadataDetailsProviders;
-            Assert.Equal(12, providers.Count);
-            var i = 0;
-
-            Assert.IsType<DefaultBindingMetadataProvider>(providers[i++]);
-            Assert.IsType<DefaultValidationMetadataProvider>(providers[i++]);
-
-            var excludeFilter = Assert.IsType<ValidationExcludeFilter>(providers[i++]);
-            Assert.Equal(typeof(Type), excludeFilter.Type);
-
-            excludeFilter = Assert.IsType<ValidationExcludeFilter>(providers[i++]);
-            Assert.Equal(typeof(Uri), excludeFilter.Type);
-
-            excludeFilter = Assert.IsType<ValidationExcludeFilter>(providers[i++]);
-            Assert.Equal(typeof(CancellationToken), excludeFilter.Type);
-
-            excludeFilter = Assert.IsType<ValidationExcludeFilter>(providers[i++]);
-            Assert.Equal(typeof(IFormFile), excludeFilter.Type);
-
-            excludeFilter = Assert.IsType<ValidationExcludeFilter>(providers[i++]);
-            Assert.Equal(typeof(IFormCollection), excludeFilter.Type);
-
-            Assert.IsType<DataAnnotationsMetadataProvider>(providers[i++]);
-
-            excludeFilter = Assert.IsType<ValidationExcludeFilter>(providers[i++]);
-            Assert.Equal(typeof(JToken), excludeFilter.Type);
-
-            Assert.IsType<DataMemberRequiredBindingMetadataProvider>(providers[i++]);
-
-            excludeFilter = Assert.IsType<ValidationExcludeFilter>(providers[i++]);
-            Assert.Equal(typeof(XObject).FullName, excludeFilter.FullTypeName);
-
-            excludeFilter = Assert.IsType<ValidationExcludeFilter>(providers[i++]);
-            Assert.Equal("System.Xml.XmlNode", excludeFilter.FullTypeName);
+            Assert.Collection(providers,
+                provider => Assert.IsType<DefaultBindingMetadataProvider>(provider),
+                provider => Assert.IsType<DefaultValidationMetadataProvider>(provider),
+                provider =>
+                {
+                    var excludeFilter = Assert.IsType<ValidationExcludeFilter>(provider);
+                    Assert.Equal(typeof(Type), excludeFilter.Type);
+                },
+                provider =>
+                {
+                    var excludeFilter = Assert.IsType<ValidationExcludeFilter>(provider);
+                    Assert.Equal(typeof(Uri), excludeFilter.Type);
+                },
+                provider =>
+                {
+                    var excludeFilter = Assert.IsType<ValidationExcludeFilter>(provider);
+                    Assert.Equal(typeof(CancellationToken), excludeFilter.Type);
+                },
+                provider =>
+                {
+                    var excludeFilter = Assert.IsType<ValidationExcludeFilter>(provider);
+                    Assert.Equal(typeof(IFormFile), excludeFilter.Type);
+                },
+                provider =>
+                {
+                    var excludeFilter = Assert.IsType<ValidationExcludeFilter>(provider);
+                    Assert.Equal(typeof(IFormCollection), excludeFilter.Type);
+                },
+                provider => Assert.IsType<DataAnnotationsMetadataProvider>(provider),
+                provider =>
+                {
+                    var excludeFilter = Assert.IsType<ValidationExcludeFilter>(provider);
+                    Assert.Equal(typeof(JToken), excludeFilter.Type);
+                },
+                provider => Assert.IsType<DataMemberRequiredBindingMetadataProvider>(provider),
+                provider =>
+                {
+                    var excludeFilter = Assert.IsType<ValidationExcludeFilter>(provider);
+                    Assert.Equal(typeof(XObject).FullName, excludeFilter.FullTypeName);
+                },
+                provider =>
+                {
+                    var excludeFilter = Assert.IsType<ValidationExcludeFilter>(provider);
+                    Assert.Equal(typeof(XmlNode).FullName, excludeFilter.FullTypeName);
+                });
         }
 
         [Fact]

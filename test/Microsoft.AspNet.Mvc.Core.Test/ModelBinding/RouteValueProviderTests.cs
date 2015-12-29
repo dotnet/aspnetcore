@@ -3,22 +3,22 @@
 
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
+using Microsoft.AspNet.Routing;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
-    public class DictionaryBasedValueProviderTests
+    public class RouteValueProviderTests
     {
         [Fact]
         public void GetValueProvider_ReturnsNull_WhenKeyIsNotFound()
         {
             // Arrange
-            var values = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
+            var values = new RouteValueDictionary(new Dictionary<string, object>
             {
                 { "test-key", "value" }
-            };
-            var provider = new DictionaryBasedValueProvider(BindingSource.Query, values);
+            });
+            var provider = new RouteValueProvider(BindingSource.Query, values);
 
             // Act
             var result = provider.GetValue("not-test-key");
@@ -31,11 +31,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public void GetValueProvider_ReturnsValue_IfKeyIsPresent()
         {
             // Arrange
-            var values = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
+            var values = new RouteValueDictionary(new Dictionary<string, object>
             {
                 { "test-key", "test-value" }
-            };
-            var provider = new DictionaryBasedValueProvider(BindingSource.Query, values);
+            });
+            var provider = new RouteValueProvider(BindingSource.Query, values);
 
             // Act
             var result = provider.GetValue("test-key");
@@ -48,11 +48,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public void ContainsPrefix_ReturnsNullValue_IfKeyIsPresent()
         {
             // Arrange
-            var values = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
+            var values = new RouteValueDictionary(new Dictionary<string, object>
             {
                 { "test-key", null }
-            };
-            var provider = new DictionaryBasedValueProvider(BindingSource.Query, values);
+            });
+            var provider = new RouteValueProvider(BindingSource.Query, values);
 
             // Act
             var result = provider.GetValue("test-key");
@@ -68,13 +68,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public void ContainsPrefix_ReturnsTrue_ForKnownPrefixes(string prefix)
         {
             // Arrange
-            var values = new Dictionary<string, object>
+            var values = new RouteValueDictionary(new Dictionary<string, object>
             {
                 { "foo", 1 },
                 { "bar.baz", 1 },
-            };
+            });
 
-            var valueProvider = new DictionaryBasedValueProvider(BindingSource.Query, values);
+            var valueProvider = new RouteValueProvider(BindingSource.Query, values);
 
             // Act
             var result = valueProvider.ContainsPrefix(prefix);
@@ -89,13 +89,13 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public void GetValue_ReturnsCorrectValue_ForKnownKeys(string prefix, string expectedValue)
         {
             // Arrange
-            var values = new Dictionary<string, object>
+            var values = new RouteValueDictionary(new Dictionary<string, object>
             {
                 { "bar", 1 },
                 { "bar.baz", 2 },
-            };
+            });
 
-            var valueProvider = new DictionaryBasedValueProvider(BindingSource.Query, values);
+            var valueProvider = new RouteValueProvider(BindingSource.Query, values);
 
             // Act
             var result = valueProvider.GetValue(prefix);
@@ -108,12 +108,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public void GetValue_DoesNotReturnAValue_ForAKeyPrefix()
         {
             // Arrange
-            var values = new Dictionary<string, object>
+            var values = new RouteValueDictionary(new Dictionary<string, object>
             {
                 { "bar.baz", 2 },
-            };
+            });
 
-            var valueProvider = new DictionaryBasedValueProvider(BindingSource.Query, values);
+            var valueProvider = new RouteValueProvider(BindingSource.Query, values);
 
             // Act
             var result = valueProvider.GetValue("bar");
@@ -126,11 +126,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public void ContainsPrefix_ReturnsFalse_IfKeyIsNotPresent()
         {
             // Arrange
-            var values = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
+            var values = new RouteValueDictionary(new Dictionary<string, object>
             {
                 { "test-key", "test-value" }
-            };
-            var provider = new DictionaryBasedValueProvider(BindingSource.Query, values);
+            });
+            var provider = new RouteValueProvider(BindingSource.Query, values);
 
             // Act
             var result = provider.ContainsPrefix("not-test-key");
@@ -143,11 +143,11 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public void ContainsPrefix_ReturnsTrue_IfKeyIsPresent()
         {
             // Arrange
-            var values = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
+            var values = new RouteValueDictionary(new Dictionary<string, object>
             {
                 { "test-key", "test-value" }
-            };
-            var provider = new DictionaryBasedValueProvider(BindingSource.Query, values);
+            });
+            var provider = new RouteValueProvider(BindingSource.Query, values);
 
             // Act
             var result = provider.ContainsPrefix("test-key");
@@ -160,8 +160,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public void FilterInclude()
         {
             // Arrange
-            var values = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
-            var provider = new DictionaryBasedValueProvider(BindingSource.Query, values);
+            var values = new RouteValueDictionary();
+            var provider = new RouteValueProvider(BindingSource.Query, values);
 
             var bindingSource = new BindingSource(
                 BindingSource.Query.Id,
@@ -181,8 +181,8 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         public void FilterExclude()
         {
             // Arrange
-            var values = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
-            var provider = new DictionaryBasedValueProvider(BindingSource.Query, values);
+            var values = new RouteValueDictionary();
+            var provider = new RouteValueProvider(BindingSource.Query, values);
 
             var bindingSource = new BindingSource(
                 "Test",

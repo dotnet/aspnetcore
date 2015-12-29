@@ -2,28 +2,27 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Globalization;
+using Microsoft.AspNet.Routing;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     /// <summary>
-    /// An <see cref="IValueProvider"/> adapter for data stored in an
-    /// <see cref="IDictionary{string, object}"/>.
+    /// An <see cref="IValueProvider"/> adapter for data stored in an <see cref="RouteValueDictionary"/>.
     /// </summary>
-    public class DictionaryBasedValueProvider : BindingSourceValueProvider
+    public class RouteValueProvider : BindingSourceValueProvider
     {
-        private readonly IDictionary<string, object> _values;
+        private readonly RouteValueDictionary _values;
         private PrefixContainer _prefixContainer;
 
         /// <summary>
-        /// Creates a new <see cref="DictionaryBasedValueProvider"/>.
+        /// Creates a new <see cref="RouteValueProvider"/>.
         /// </summary>
         /// <param name="bindingSource">The <see cref="BindingSource"/> of the data.</param>
         /// <param name="values">The values.</param>
-        public DictionaryBasedValueProvider(
+        public RouteValueProvider(
             BindingSource bindingSource,
-            IDictionary<string, object> values)
+            RouteValueDictionary values)
             : base(bindingSource)
         {
             if (bindingSource == null)

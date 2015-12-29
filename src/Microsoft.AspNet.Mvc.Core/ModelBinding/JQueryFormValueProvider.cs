@@ -9,7 +9,7 @@ using Microsoft.Extensions.Primitives;
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     /// <summary>
-    /// An <see cref="IValueProvider"/> for form data stored in an <see cref="IDictionary{string, string[]}"/>.
+    /// An <see cref="IValueProvider"/> for jQuery formatted form data.
     /// </summary>
     public class JQueryFormValueProvider : BindingSourceValueProvider, IEnumerableValueProvider
     {
@@ -17,10 +17,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         private PrefixContainer _prefixContainer;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DictionaryBasedValueProvider"/> class.
+        /// Initializes a new instance of the <see cref="JQueryFormValueProvider"/> class.
         /// </summary>
         /// <param name="bindingSource">The <see cref="BindingSource"/> of the data.</param>
-        /// <param name="valuesFactory">A delegate which provides the values to wrap.</param>
+        /// <param name="values">The values.</param>
         /// <param name="culture">The culture to return with ValueProviderResult instances.</param>
         public JQueryFormValueProvider(
             BindingSource bindingSource,

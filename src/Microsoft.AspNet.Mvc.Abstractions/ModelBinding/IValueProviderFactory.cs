@@ -5,6 +5,9 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
+    /// <summary>
+    /// A factory for creating <see cref="IValueProvider"/> instances.
+    /// </summary>
     public interface IValueProviderFactory
     {
         /// <summary>

@@ -13,8 +13,12 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
+    /// <summary>
+    /// A <see cref="IValueProviderFactory"/> for <see cref="JQueryFormValueProvider"/>.
+    /// </summary>
     public class JQueryFormValueProviderFactory : IValueProviderFactory
     {
+        /// <inheritdoc />
         public Task<IValueProvider> GetValueProviderAsync(ActionContext context)
         {
             if (context == null)
@@ -34,9 +38,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         private static async Task<IValueProvider> CreateValueProviderAsync(HttpRequest request)
         {
             return new JQueryFormValueProvider(
-                    BindingSource.Form,
-                    await GetValueCollectionAsync(request),
-                    CultureInfo.CurrentCulture);
+                BindingSource.Form,
+                await GetValueCollectionAsync(request),
+                CultureInfo.CurrentCulture);
         }
 
         private static async Task<IDictionary<string, StringValues>> GetValueCollectionAsync(HttpRequest request)

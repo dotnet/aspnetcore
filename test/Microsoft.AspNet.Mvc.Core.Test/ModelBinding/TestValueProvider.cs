@@ -2,10 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using Microsoft.AspNet.Routing;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
-    public class TestValueProvider : DictionaryBasedValueProvider
+    public class TestValueProvider : RouteValueProvider
     {
         public static readonly BindingSource TestBindingSource = new BindingSource(
             id: "Test",
@@ -14,12 +15,12 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
             isFromRequest: true);
 
         public TestValueProvider(IDictionary<string, object> values)
-            : base(TestBindingSource, values)
+            : base(TestBindingSource, new RouteValueDictionary(values))
         {
         }
 
         public TestValueProvider(BindingSource bindingSource, IDictionary<string, object> values)
-            : base(bindingSource, values)
+            : base(bindingSource, new RouteValueDictionary(values))
         {
         }
     }

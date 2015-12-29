@@ -6,8 +6,12 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {
-    public class RouteValueValueProviderFactory : IValueProviderFactory
+    /// <summary>
+    /// A <see cref="IValueProviderFactory"/> for creating <see cref="RouteValueProvider"/> instances.
+    /// </summary>
+    public class RouteValueProviderFactory : IValueProviderFactory
     {
+        /// <inheritdoc />
         public Task<IValueProvider> GetValueProviderAsync(ActionContext context)
         {
             if (context == null)
@@ -15,7 +19,7 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 throw new ArgumentNullException(nameof(context));
             }
 
-            return Task.FromResult<IValueProvider>(new DictionaryBasedValueProvider(
+            return Task.FromResult<IValueProvider>(new RouteValueProvider(
                 BindingSource.Path,
                 context.RouteData.Values));
         }
