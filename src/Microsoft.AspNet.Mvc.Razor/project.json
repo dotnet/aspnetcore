@@ -10,6 +10,7 @@
     "keyFile": "../../tools/Key.snk"
   },
   "dependencies": {
+    "Microsoft.AspNet.FileProviders.Composite": "1.0.0-*",
     "Microsoft.AspNet.Mvc.Razor.Host": "6.0.0-*",
     "Microsoft.AspNet.Mvc.ViewFeatures": "6.0.0-*",
     "Microsoft.AspNet.Razor.Runtime.Precompilation": "4.0.0-*",
@@ -26,8 +27,7 @@
       "type": "build"
     },
     "Microsoft.Dnx.Compilation.CSharp.Common": "1.0.0-*",
-    "Microsoft.Dnx.Compilation.CSharp.Abstractions": "1.0.0-*",
-    "Microsoft.Extensions.MemoryPool": "1.0.0-*"
+    "Microsoft.Dnx.Compilation.CSharp.Abstractions": "1.0.0-*"
   },
   "frameworks": {
     "net451": {

@@ -2,11 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Runtime.Versioning;
 using Microsoft.AspNet.FileProviders;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
-using Microsoft.Dnx.Runtime;
 using Microsoft.Extensions.CompilationAbstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.PlatformAbstractions;
@@ -35,7 +33,8 @@ public class MyTestType  {}";
                 applicationEnvironment,
                 libraryExporter,
                 mvcRazorHost.Object,
-                GetOptions());
+                GetOptions(),
+                GetFileProviderAccessor());
             var relativeFileInfo = new RelativeFileInfo(
                 new TestFileInfo { PhysicalPath = "SomePath" },
                 "some-relative-path");
@@ -66,7 +65,8 @@ this should fail";
                 applicationEnvironment,
                 libraryExporter,
                 mvcRazorHost,
-                GetOptions(fileProvider));
+                GetOptions(),
+                GetFileProviderAccessor(fileProvider));
             var relativeFileInfo = new RelativeFileInfo(fileInfo, "some-relative-path");
 
             // Act
@@ -94,7 +94,8 @@ this should fail";
                 applicationEnvironment,
                 libraryExporter,
                 mvcRazorHost,
-                GetOptions());
+                GetOptions(),
+                GetFileProviderAccessor());
             var relativeFileInfo = new RelativeFileInfo(
                 new TestFileInfo { Content = fileContent },
                 "some-relative-path");
@@ -125,7 +126,7 @@ this should fail";
 
             var mockFileInfo = new Mock<IFileInfo>();
             mockFileInfo.Setup(f => f.CreateReadStream())
-                        .Throws(new Exception());
+                .Throws(new Exception());
             var fileProvider = new TestFileProvider();
             fileProvider.AddFile(path, mockFileInfo.Object);
 
@@ -133,7 +134,8 @@ this should fail";
                 applicationEnvironment,
                 libraryExporter,
                 mvcRazorHost,
-                GetOptions(fileProvider));
+                GetOptions(),
+                GetFileProviderAccessor(fileProvider));
 
             var relativeFileInfo = new RelativeFileInfo(mockFileInfo.Object, path);
 
@@ -163,7 +165,7 @@ public class MyNonCustomDefinedClass {}
             var libraryExporter = CompilationServices.Default.LibraryExporter;
             var mvcRazorHost = new Mock<IMvcRazorHost>();
             mvcRazorHost.SetupGet(m => m.MainClassNamePrefix)
-                        .Returns("My");
+                .Returns("My");
 
             var options = GetOptions();
             options.Value.ParseOptions = options.Value.ParseOptions.WithPreprocessorSymbols("MY_CUSTOM_DEFINE");
@@ -172,7 +174,8 @@ public class MyNonCustomDefinedClass {}
                 applicationEnvironment,
                 libraryExporter,
                 mvcRazorHost.Object,
-                options);
+                options,
+                GetFileProviderAccessor());
             var relativeFileInfo = new RelativeFileInfo(
                 new TestFileInfo { PhysicalPath = "SomePath" },
                 "some-relative-path");
@@ -202,7 +205,8 @@ public class NotRazorPrefixType {}";
                 applicationEnvironment,
                 libraryExporter,
                 mvcRazorHost.Object,
-                GetOptions());
+                GetOptions(),
+                GetFileProviderAccessor());
 
             var relativeFileInfo = new RelativeFileInfo(
                 new TestFileInfo { PhysicalPath = "SomePath" },
@@ -224,17 +228,17 @@ public class NotRazorPrefixType {}";
             var generatedCodeFileName = "Generated Code";
             var fileProvider = new TestFileProvider();
             fileProvider.AddFile(viewPath, "view-content");
-            var options = new Mock<IOptions<RazorViewEngineOptions>>();
-            options.SetupGet(o => o.Value)
-                .Returns(new RazorViewEngineOptions
-                {
-                    FileProvider = fileProvider
-                });
+            var options = new RazorViewEngineOptions();
+            options.FileProviders.Add(fileProvider);
+            var optionsAccessor = new Mock<IOptions<RazorViewEngineOptions>>();
+            optionsAccessor.SetupGet(o => o.Value)
+                .Returns(options);
             var compilationService = new RoslynCompilationService(
                 PlatformServices.Default.Application,
                 CompilationServices.Default.LibraryExporter,
                 Mock.Of<IMvcRazorHost>(),
-                options.Object);
+                optionsAccessor.Object,
+                GetFileProviderAccessor(fileProvider));
 
             var assemblyName = "random-assembly-name";
 
@@ -325,7 +329,8 @@ public class NotRazorPrefixType {}";
                 applicationEnvironment,
                 libraryExporter,
                 mvcRazorHost.Object,
-                GetOptions(callback: c => usedCompilation = c));
+                GetOptions(callback: c => usedCompilation = c),
+                GetFileProviderAccessor());
 
             var relativeFileInfo = new RelativeFileInfo(
                 new TestFileInfo { PhysicalPath = "SomePath" },
@@ -350,18 +355,25 @@ public class NotRazorPrefixType {}";
                 isEnabledByDefault: true);
         }
 
-        private static IOptions<RazorViewEngineOptions> GetOptions(IFileProvider fileProvider = null,
-            Action<RoslynCompilationContext> callback = null)
+        private static IOptions<RazorViewEngineOptions> GetOptions(Action<RoslynCompilationContext> callback = null)
         {
             var razorViewEngineOptions = new RazorViewEngineOptions
             {
-                FileProvider = fileProvider ?? new TestFileProvider(),
-                CompilationCallback = callback ?? (c => { })
+                CompilationCallback = callback ?? (c => { }),
             };
             var options = new Mock<IOptions<RazorViewEngineOptions>>();
             options
                 .SetupGet(o => o.Value)
                 .Returns(razorViewEngineOptions);
+
+            return options.Object;
+        }
+
+        private IRazorViewEngineFileProviderAccessor GetFileProviderAccessor(IFileProvider fileProvider = null)
+        {
+            var options = new Mock<IRazorViewEngineFileProviderAccessor>();
+            options.SetupGet(o => o.FileProvider)
+                .Returns(fileProvider ?? new TestFileProvider());
 
             return options.Object;
         }

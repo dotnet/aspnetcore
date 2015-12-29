@@ -14,7 +14,6 @@ using Microsoft.AspNet.Razor.TagHelpers;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.CompilationAbstractions;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.MemoryPool;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.PlatformAbstractions;
 
@@ -130,12 +129,14 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddEnumerable(
                 ServiceDescriptor.Transient<IConfigureOptions<RazorViewEngineOptions>, RazorViewEngineOptionsSetup>());
 
+            services.TryAddSingleton<IRazorViewEngineFileProviderAccessor, DefaultRazorViewEngineFileProviderAccessor>();
+
             services.TryAddSingleton<IRazorViewEngine, RazorViewEngine>();
 
             services.TryAdd(ServiceDescriptor.Singleton<IChunkTreeCache>(serviceProvider =>
             {
-                var cachedFileProvider = serviceProvider.GetRequiredService<IOptions<RazorViewEngineOptions>>();
-                return new DefaultChunkTreeCache(cachedFileProvider.Value.FileProvider);
+                var accessor = serviceProvider.GetRequiredService<IRazorViewEngineFileProviderAccessor>();
+                return new DefaultChunkTreeCache(accessor.FileProvider);
             }));
 
             // Caches compilation artifacts across the lifetime of the application.

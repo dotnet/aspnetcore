@@ -21,18 +21,18 @@ namespace Microsoft.AspNet.Mvc
             var options = new RazorViewEngineOptions();
             var appEnv = new Mock<IApplicationEnvironment>();
             appEnv.SetupGet(e => e.ApplicationBasePath)
-                  .Returns(Directory.GetCurrentDirectory());
+                .Returns(Directory.GetCurrentDirectory());
             var hostingEnv = new Mock<IHostingEnvironment>();
             hostingEnv.SetupGet(e => e.EnvironmentName)
-                  .Returns("Development");
+                .Returns("Development");
             var optionsSetup = new RazorViewEngineOptionsSetup(appEnv.Object, hostingEnv.Object);
 
             // Act
             optionsSetup.Configure(options);
 
             // Assert
-            Assert.NotNull(options.FileProvider);
-            Assert.IsType<PhysicalFileProvider>(options.FileProvider);
+            var fileProvider = Assert.Single(options.FileProviders);
+            Assert.IsType<PhysicalFileProvider>(fileProvider);
         }
 
         [Theory]
@@ -62,7 +62,9 @@ namespace Microsoft.AspNet.Mvc
         [InlineData("Development", OptimizationLevel.Debug)]
         [InlineData("Staging", OptimizationLevel.Release)]
         [InlineData("Production", OptimizationLevel.Release)]
-        public void RazorViewEngineOptionsSetup_SetsOptimizationLevel(string environment, OptimizationLevel expectedOptimizationLevel)
+        public void RazorViewEngineOptionsSetup_SetsOptimizationLevel(
+            string environment,
+            OptimizationLevel expectedOptimizationLevel)
         {
             // Arrange
             var options = new RazorViewEngineOptions();

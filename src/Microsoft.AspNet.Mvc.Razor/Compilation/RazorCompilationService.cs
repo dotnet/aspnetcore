@@ -27,17 +27,15 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
         /// </summary>
         /// <param name="compilationService">The <see cref="ICompilationService"/> to compile generated code.</param>
         /// <param name="razorHost">The <see cref="IMvcRazorHost"/> to generate code from Razor files.</param>
-        /// <param name="viewEngineOptions">
-        /// The <see cref="IFileProvider"/> to read Razor files referenced in error messages.
-        /// </param>
+        /// <param name="fileProviderAccessor">The <see cref="IRazorViewEngineFileProviderAccessor"/>.</param>
         public RazorCompilationService(
             ICompilationService compilationService,
             IMvcRazorHost razorHost,
-            IOptions<RazorViewEngineOptions> viewEngineOptions)
+            IRazorViewEngineFileProviderAccessor fileProviderAccessor)
         {
             _compilationService = compilationService;
             _razorHost = razorHost;
-            _fileProvider = viewEngineOptions.Value.FileProvider;
+            _fileProvider = fileProviderAccessor.FileProvider;
         }
 
         /// <inheritdoc />
@@ -105,9 +103,10 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
 
         private DiagnosticMessage CreateDiagnosticMessage(RazorError error, string filePath)
         {
+            var location = error.Location;
             return new DiagnosticMessage(
                 message: error.Message,
-                formattedMessage: $"{error} ({error.Location.LineIndex},{error.Location.CharacterIndex}) {error.Message}",
+                formattedMessage: $"{error} ({location.LineIndex},{location.CharacterIndex}) {error.Message}",
                 filePath: filePath,
                 startLine: error.Location.LineIndex + 1,
                 startColumn: error.Location.CharacterIndex,

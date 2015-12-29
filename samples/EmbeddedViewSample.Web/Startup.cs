@@ -20,10 +20,12 @@ namespace EmbeddedViewSample.Web
 
             services.Configure<RazorViewEngineOptions>(options =>
             {
+                options.FileProviders.Clear();
+
                 // Base namespace matches the resources added to the assembly from the EmbeddedResources folder.
-                options.FileProvider = new EmbeddedFileProvider(
+                options.FileProviders.Add(new EmbeddedFileProvider(
                     GetType().GetTypeInfo().Assembly,
-                    baseNamespace: "EmbeddedViewSample.Web.EmbeddedResources");
+                    baseNamespace: "EmbeddedViewSample.Web.EmbeddedResources"));
             });
         }
 

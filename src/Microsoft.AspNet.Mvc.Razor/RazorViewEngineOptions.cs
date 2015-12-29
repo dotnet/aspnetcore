@@ -14,12 +14,9 @@ namespace Microsoft.AspNet.Mvc.Razor
     /// </summary>
     public class RazorViewEngineOptions
     {
-        private IFileProvider _fileProvider;
-
         private CSharpParseOptions _parseOptions = new CSharpParseOptions(LanguageVersion.CSharp6);
-
-        private CSharpCompilationOptions _compilationOptions = new CSharpCompilationOptions(CodeAnalysis.OutputKind.DynamicallyLinkedLibrary);
-
+        private CSharpCompilationOptions _compilationOptions =
+            new CSharpCompilationOptions(CodeAnalysis.OutputKind.DynamicallyLinkedLibrary);
         private Action<RoslynCompilationContext> _compilationCallback = c => { };
 
         /// <summary>
@@ -29,33 +26,22 @@ namespace Microsoft.AspNet.Mvc.Razor
             = new List<IViewLocationExpander>();
 
         /// <summary>
-        /// Gets or sets the <see cref="IFileProvider" /> used by <see cref="RazorViewEngine"/> to locate Razor files on
-        /// disk.
+        /// Gets the sequence of <see cref="IFileProvider" /> instances used by <see cref="RazorViewEngine"/> to
+        /// locate Razor files.
         /// </summary>
         /// <remarks>
-        /// At startup, this is initialized to an instance of <see cref="PhysicalFileProvider"/> that is rooted at the
-        /// application root.
+        /// At startup, this is initialized to include an instance of <see cref="PhysicalFileProvider"/> that is
+        /// rooted at the application root.
         /// </remarks>
-        public IFileProvider FileProvider
-        {
-            get { return _fileProvider; }
-
-            set
-            {
-                if (value == null)
-                {
-                    throw new ArgumentNullException(nameof(value));
-                }
-
-                _fileProvider = value;
-            }
-        }
+        public IList<IFileProvider> FileProviders { get; } = new List<IFileProvider>();
 
         /// <summary>
         /// Gets or sets the callback that is used to customize Razor compilation
         /// to change compilation settings you can update <see cref="RoslynCompilationContext.Compilation"/> property.
-        /// Customizations made here would not reflect in tooling (Intellisense).
         /// </summary>
+        /// <remarks>
+        /// Customizations made here would not reflect in tooling (Intellisense).
+        /// </remarks>
         public Action<RoslynCompilationContext> CompilationCallback
         {
             get { return _compilationCallback; }
@@ -65,6 +51,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 {
                     throw new ArgumentNullException(nameof(value));
                 }
+
                 _compilationCallback = value;
             }
         }
@@ -81,6 +68,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 {
                     throw new ArgumentNullException(nameof(value));
                 }
+
                 _parseOptions = value;
             }
         }
@@ -97,9 +85,9 @@ namespace Microsoft.AspNet.Mvc.Razor
                 {
                     throw new ArgumentNullException(nameof(value));
                 }
+
                 _compilationOptions = value;
             }
         }
-
     }
 }

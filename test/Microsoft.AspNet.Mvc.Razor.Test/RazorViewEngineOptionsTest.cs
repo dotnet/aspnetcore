@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -12,18 +11,7 @@ namespace Microsoft.AspNet.Mvc.Razor
     public class RazorViewEngineOptionsTest
     {
         [Fact]
-        public void FileProviderThrows_IfNullIsAssigned()
-        {
-            // Arrange
-            var options = new RazorViewEngineOptions();
-
-            // Act and Assert
-            var ex = Assert.Throws<ArgumentNullException>(() => options.FileProvider = null);
-            Assert.Equal("value", ex.ParamName);
-        }
-
-        [Fact]
-        public void AddRazorOptions_ConfiguresOptionsProperly()
+        public void AddRazorOptions_ConfiguresOptionsAsExpected()
         {
             // Arrange
             var services = new ServiceCollection().AddOptions();
@@ -33,13 +21,13 @@ namespace Microsoft.AspNet.Mvc.Razor
             var builder = new MvcBuilder(services);
             builder.AddRazorOptions(options =>
             {
-                options.FileProvider = fileProvider;
+                options.FileProviders.Add(fileProvider);
             });
             var serviceProvider = services.BuildServiceProvider();
 
             // Assert
             var accessor = serviceProvider.GetRequiredService<IOptions<RazorViewEngineOptions>>();
-            Assert.Same(fileProvider, accessor.Value.FileProvider);
+            Assert.Same(fileProvider, accessor.Value.FileProviders[0]);
         }
     }
 }

@@ -13,11 +13,10 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
         /// <summary>
         /// Initializes a new instance of <see cref="DefaultCompilerCacheProvider"/>.
         /// </summary>
-        /// <param name="optionsAccessor">An accessor to the <see cref="RazorViewEngineOptions"/>.</param>
-        public DefaultCompilerCacheProvider(IOptions<RazorViewEngineOptions> mvcViewOptions)
+        /// <param name="fileProviderAccessor">The <see cref="IRazorViewEngineFileProviderAccessor"/>.</param>
+        public DefaultCompilerCacheProvider(IRazorViewEngineFileProviderAccessor fileProviderAccessor)
         {
-            var fileProvider = mvcViewOptions.Value.FileProvider;
-            Cache = new CompilerCache(fileProvider);
+            Cache = new CompilerCache(fileProviderAccessor.FileProvider);
         }
 
         /// <inheritdoc />

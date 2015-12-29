@@ -6,7 +6,6 @@ using System.Text;
 using Microsoft.AspNet.Mvc.Razor;
 using Microsoft.AspNet.Mvc.Razor.Compilation;
 using Microsoft.AspNet.Razor.CodeGenerators;
-using Microsoft.Extensions.Options;
 
 namespace RazorPageExecutionInstrumentationWebSite
 {
@@ -15,8 +14,8 @@ namespace RazorPageExecutionInstrumentationWebSite
         public TestRazorCompilationService(
             ICompilationService compilationService,
             IMvcRazorHost razorHost,
-            IOptions<RazorViewEngineOptions> viewEngineOptions)
-            : base(compilationService, razorHost, viewEngineOptions)
+            IRazorViewEngineFileProviderAccessor fileProviderAccessor)
+            : base(compilationService, razorHost, fileProviderAccessor)
         {
         }
 

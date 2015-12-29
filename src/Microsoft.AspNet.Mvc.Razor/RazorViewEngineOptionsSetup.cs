@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.Mvc
             IApplicationEnvironment applicationEnvironment,
             IHostingEnvironment hostingEnvironment)
         {
-            razorOptions.FileProvider = new PhysicalFileProvider(applicationEnvironment.ApplicationBasePath);
+            razorOptions.FileProviders.Add(new PhysicalFileProvider(applicationEnvironment.ApplicationBasePath));
 
             var parseOptions = new CSharpParseOptions(LanguageVersion.CSharp6);
             var compilationOptions = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary);

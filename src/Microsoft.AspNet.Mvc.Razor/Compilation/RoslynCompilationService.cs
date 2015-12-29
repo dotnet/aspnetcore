@@ -51,21 +51,21 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
         /// Initalizes a new instance of the <see cref="RoslynCompilationService"/> class.
         /// </summary>
         /// <param name="environment">The environment for the executing application.</param>
-        /// <param name="loaderAccessor">
-        /// The accessor for the <see cref="IAssemblyLoadContext"/> used to load compiled assemblies.
-        /// </param>
         /// <param name="libraryExporter">The library manager that provides export and reference information.</param>
         /// <param name="host">The <see cref="IMvcRazorHost"/> that was used to generate the code.</param>
+        /// <param name="optionsAccessor">Accessor to <see cref="RazorViewEngineOptions"/>.</param>
+        /// <param name="fileProviderAccessor">The <see cref="IRazorViewEngineFileProviderAccessor"/>.</param>
         public RoslynCompilationService(
             IApplicationEnvironment environment,
             Extensions.CompilationAbstractions.ILibraryExporter libraryExporter,
             IMvcRazorHost host,
-            IOptions<RazorViewEngineOptions> optionsAccessor)
+            IOptions<RazorViewEngineOptions> optionsAccessor,
+            IRazorViewEngineFileProviderAccessor fileProviderAccessor)
         {
             _environment = environment;
             _libraryExporter = libraryExporter;
             _applicationReferences = new Lazy<List<MetadataReference>>(GetApplicationReferences);
-            _fileProvider = optionsAccessor.Value.FileProvider;
+            _fileProvider = fileProviderAccessor.FileProvider;
             _classPrefix = host.MainClassNamePrefix;
             _compilationCallback = optionsAccessor.Value.CompilationCallback;
             _parseOptions = optionsAccessor.Value.ParseOptions;

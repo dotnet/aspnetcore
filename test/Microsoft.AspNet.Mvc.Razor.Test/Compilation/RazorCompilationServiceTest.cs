@@ -38,7 +38,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
             compiler.Setup(c => c.Compile(relativeFileInfo, It.IsAny<string>()))
                     .Returns(new CompilationResult(typeof(RazorCompilationServiceTest)));
 
-            var razorService = new RazorCompilationService(compiler.Object, host.Object, GetOptions());
+            var razorService = new RazorCompilationService(compiler.Object, host.Object, GetFileProviderAccessor());
 
             // Act
             razorService.Compile(relativeFileInfo);
@@ -70,7 +70,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
 
             var compiler = new Mock<ICompilationService>(MockBehavior.Strict);
             var relativeFileInfo = new RelativeFileInfo(fileInfo.Object, @"Views\index\home.cshtml");
-            var razorService = new RazorCompilationService(compiler.Object, host.Object, GetOptions());
+            var razorService = new RazorCompilationService(compiler.Object, host.Object, GetFileProviderAccessor());
 
             // Act
             var result = razorService.Compile(relativeFileInfo);
@@ -111,7 +111,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
             compiler.Setup(c => c.Compile(relativeFileInfo, code))
                     .Returns(compilationResult)
                     .Verifiable();
-            var razorService = new RazorCompilationService(compiler.Object, host.Object, GetOptions());
+            var razorService = new RazorCompilationService(compiler.Object, host.Object, GetFileProviderAccessor());
 
             // Act
             var result = razorService.Compile(relativeFileInfo);
@@ -136,7 +136,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
             var razorService = new RazorCompilationService(
                 Mock.Of<ICompilationService>(),
                 Mock.Of<IMvcRazorHost>(),
-                GetOptions(fileProvider));
+                GetFileProviderAccessor(fileProvider));
             var errors = new[]
             {
                 new RazorError("message-1", new SourceLocation(1, 2, 17), length: 1),
@@ -211,15 +211,11 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
                     new ChunkTree());
         }
 
-        private static IOptions<RazorViewEngineOptions> GetOptions(IFileProvider fileProvider = null)
+        private static IRazorViewEngineFileProviderAccessor GetFileProviderAccessor(IFileProvider fileProvider = null)
         {
-            var razorViewEngineOptions = new RazorViewEngineOptions
-            {
-                FileProvider = fileProvider ?? new TestFileProvider()
-            };
-            var options = new Mock<IOptions<RazorViewEngineOptions>>();
-            options.SetupGet(o => o.Value)
-                .Returns(razorViewEngineOptions);
+            var options = new Mock<IRazorViewEngineFileProviderAccessor>();
+            options.SetupGet(o => o.FileProvider)
+                .Returns(fileProvider ?? new TestFileProvider());
 
             return options.Object;
         }
