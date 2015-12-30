@@ -9,13 +9,9 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Http.Features.Internal
 {
-    public class RequestCookiesFeature : IRequestCookiesFeature, IFeatureCache
+    public class RequestCookiesFeature : IRequestCookiesFeature
     {
-        private readonly IFeatureCollection _features;
-        private int _cachedFeaturesRevision = -1;
-
-        private IHttpRequestFeature _request;
-
+        private FeatureReferences<IHttpRequestFeature> _features;
         private StringValues _original;
         private IRequestCookieCollection _parsedValues;
         
@@ -36,34 +32,17 @@ namespace Microsoft.AspNet.Http.Features.Internal
                 throw new ArgumentNullException(nameof(features));
             }
 
-            _features = features;
-            ((IFeatureCache)this).SetFeaturesRevision();
+            _features = new FeatureReferences<IHttpRequestFeature>(features);
         }
 
-        void IFeatureCache.CheckFeaturesRevision()
-        {
-            if (_cachedFeaturesRevision != _features.Revision)
-            {
-                _request = null;
-                ((IFeatureCache)this).SetFeaturesRevision();
-            }
-        }
-
-        void IFeatureCache.SetFeaturesRevision()
-        {
-            _cachedFeaturesRevision = _features.Revision;
-        }
-
-        private IHttpRequestFeature HttpRequestFeature
-        {
-            get { return FeatureHelpers.GetAndCache(this, _features, ref _request); }
-        }
+        private IHttpRequestFeature HttpRequestFeature =>
+            _features.Fetch(ref _features.Cache, f => null);
 
         public IRequestCookieCollection Cookies
         {
             get
             {
-                if (_features == null)
+                if (_features.Collection == null)
                 {
                     if (_parsedValues == null)
                     {
@@ -91,7 +70,7 @@ namespace Microsoft.AspNet.Http.Features.Internal
             {
                 _parsedValues = value;
                 _original = StringValues.Empty;
-                if (_features != null)
+                if (_features.Collection != null)
                 {
                     if (_parsedValues == null || _parsedValues.Count == 0)
                     {
