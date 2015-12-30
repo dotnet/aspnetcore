@@ -12,7 +12,6 @@ using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
-using Microsoft.Extensions.WebEncoders;
 
 namespace Microsoft.AspNet.Diagnostics.Views
 {
@@ -44,17 +43,17 @@ namespace Microsoft.AspNet.Diagnostics.Views
         /// <summary>
         /// Html encoder used to encode content.
         /// </summary>
-        protected HtmlEncoder HtmlEncoder { get; set; }
+        protected HtmlEncoder HtmlEncoder { get; set; } = HtmlEncoder.Default;
 
         /// <summary>
         /// Url encoder used to encode content.
         /// </summary>
-        protected UrlEncoder UrlEncoder { get; set; }
+        protected UrlEncoder UrlEncoder { get; set; } = UrlEncoder.Default;
 
         /// <summary>
         /// JavaScript encoder used to encode content.
         /// </summary>
-        protected JavaScriptEncoder JavaScriptEncoder { get; set; }
+        protected JavaScriptEncoder JavaScriptEncoder { get; set; } = JavaScriptEncoder.Default;
 
         /// <summary>
         /// Execute an individual request
@@ -66,9 +65,6 @@ namespace Microsoft.AspNet.Diagnostics.Views
             Request = Context.Request;
             Response = Context.Response;
             Output = new StreamWriter(Response.Body, Encoding.UTF8, 4096, leaveOpen: true);
-            HtmlEncoder = context.RequestServices.GetHtmlEncoder();
-            UrlEncoder = context.RequestServices.GetUrlEncoder();
-            JavaScriptEncoder = context.RequestServices.GetJavaScriptEncoder();
             await ExecuteAsync();
             Output.Dispose();
         }
