@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections;
 using System.Diagnostics;
 using System.Globalization;
 using System.Text.Encodings.Web;
@@ -290,28 +291,34 @@ namespace Microsoft.AspNet.Routing.Template
                     continue;
                 }
 
-                var converted = Convert.ToString(kvp.Value, CultureInfo.InvariantCulture);
-                if (string.IsNullOrEmpty(converted))
+                var values = kvp.Value as IEnumerable;
+                if (values != null && !(values is string))
                 {
-                    continue;
-                }
-
-                if (!wroteFirst)
-                {
-                    context.Writer.Write('?');
-                    wroteFirst = true;
+                    foreach (var value in values)
+                    {
+                        wroteFirst |= AddParameterToContext(context, kvp.Key, value, wroteFirst);
+                    }
                 }
                 else
                 {
-                    context.Writer.Write('&');
+                    wroteFirst |= AddParameterToContext(context, kvp.Key, kvp.Value, wroteFirst);
                 }
+            }
+            return context.ToString();
+        }
 
-                _urlEncoder.Encode(context.Writer, kvp.Key);
+        private bool AddParameterToContext(UriBuildingContext context, string key, object value, bool wroteFirst)
+        {
+            var converted = Convert.ToString(value, CultureInfo.InvariantCulture);
+            if (!string.IsNullOrEmpty(converted))
+            {
+                context.Writer.Write(wroteFirst ? '&' : '?');
+                _urlEncoder.Encode(context.Writer, key);
                 context.Writer.Write('=');
                 _urlEncoder.Encode(context.Writer, converted);
+                return true;
             }
-
-            return context.ToString();
+            return false;
         }
 
         private TemplatePart GetParameter(string name)
