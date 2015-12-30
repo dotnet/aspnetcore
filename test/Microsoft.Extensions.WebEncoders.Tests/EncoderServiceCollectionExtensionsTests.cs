@@ -77,13 +77,13 @@ namespace Microsoft.Extensions.WebEncoders
             // Assert
             var serviceProvider = serviceCollection.BuildServiceProvider();
 
-            var htmlEncoder = serviceProvider.GetHtmlEncoder();
+            var htmlEncoder = serviceProvider.GetRequiredService<HtmlEncoder>();
             Assert.Equal("HtmlEncode[[abcde]]", htmlEncoder.Encode("abcde"));
 
-            var javaScriptEncoder = serviceProvider.GetJavaScriptEncoder();
+            var javaScriptEncoder = serviceProvider.GetRequiredService<JavaScriptEncoder>();
             Assert.Equal("JavaScriptEncode[[abcde]]", javaScriptEncoder.Encode("abcde"));
 
-            var urlEncoder = serviceProvider.GetUrlEncoder();
+            var urlEncoder = serviceProvider.GetRequiredService<UrlEncoder>();
             Assert.Equal("a%62c%64e", urlEncoder.Encode("abcde"));
         }
     }

@@ -11,6 +11,12 @@ namespace Microsoft.Extensions.DependencyInjection
 {
     public static class EncoderServiceCollectionExtensions
     {
+        /// <summary>
+        /// Adds <see cref="HtmlEncoder"/>, <see cref="JavaScriptEncoder"/> and <see cref="UrlEncoder"/>
+        /// to the specified <paramref name="services" />.
+        /// </summary>
+        /// <param name="services">The <see cref="IServiceCollection"/>.</param>
+        /// <returns>The <see cref="IServiceCollection"/> instance after the encoders have been added.</returns>
         public static IServiceCollection AddWebEncoders(this IServiceCollection services)
         {
             if (services == null)
@@ -21,6 +27,13 @@ namespace Microsoft.Extensions.DependencyInjection
             return AddWebEncoders(services, configureOptions: null);
         }
 
+        /// <summary>
+        /// Adds <see cref="HtmlEncoder"/>, <see cref="JavaScriptEncoder"/> and <see cref="UrlEncoder"/>
+        /// to the specified <paramref name="services" />.
+        /// </summary>
+        /// <param name="services">The <see cref="IServiceCollection"/>.</param>
+        /// <param name="configureOptions">A callback to configure <see cref="WebEncoderOptions"/>.</param>
+        /// <returns>The <see cref="IServiceCollection"/> instance after the encoders have been added.</returns>
         public static IServiceCollection AddWebEncoders(this IServiceCollection services, Action<WebEncoderOptions> configureOptions)
         {
             if (services == null)

@@ -2,7 +2,6 @@
   "dependencies": {
     "Microsoft.Extensions.DependencyInjection": "1.0.0-*",
     "Microsoft.Extensions.WebEncoders": "1.0.0-*",
-    "Newtonsoft.Json": "6.0.6",
     "xunit.runner.aspnet": "2.0.0-aspnet-*"
   },
   "commands": {
@@ -15,10 +14,6 @@
   },
   "frameworks": {
     "dnx451": { },
-    "dnxcore50": {
-      "dependencies": {
-        "System.Text.Encoding.Extensions": "4.0.11-*"
-      }
-    }
+    "dnxcore50": { }
   }
 }
