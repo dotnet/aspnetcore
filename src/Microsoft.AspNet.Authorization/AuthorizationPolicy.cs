@@ -85,26 +85,22 @@ namespace Microsoft.AspNet.Authorization
                     policyBuilder.Combine(policy);
                     useDefaultPolicy = false;
                 }
-                var rolesSplit = authorizeAttribute.Roles?.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+                var rolesSplit = authorizeAttribute.Roles?.Split(',');
                 if (rolesSplit != null && rolesSplit.Any())
                 {
-                    for (int i = 0; i < rolesSplit.Length; ++i)
-                    {    
-                        rolesSplit[i] = rolesSplit[i].Trim(); 
-                    }
+                    var trimmedRolesSplit = rolesSplit.Where(r => !string.IsNullOrWhiteSpace(r)).Select(r => r.Trim());
 
-                    policyBuilder.RequireRole(rolesSplit.Where(r => !string.IsNullOrWhiteSpace(r)));
+                    policyBuilder.RequireRole(trimmedRolesSplit);
                     useDefaultPolicy = false;
                 }
-                var authTypesSplit = authorizeAttribute.ActiveAuthenticationSchemes?.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+                var authTypesSplit = authorizeAttribute.ActiveAuthenticationSchemes?.Split(',');
                 if (authTypesSplit != null && authTypesSplit.Any())
                 {
                     foreach (var authType in authTypesSplit)
                     {
-                        var trimmedAuthType = authType.Trim();
-                        if(!string.IsNullOrWhiteSpace(trimmedAuthType))
+                        if (!string.IsNullOrWhiteSpace(authType))
                         {
-                            policyBuilder.AuthenticationSchemes.Add(trimmedAuthType);
+                            policyBuilder.AuthenticationSchemes.Add(authType.Trim());
                         }
                     }
                 }
