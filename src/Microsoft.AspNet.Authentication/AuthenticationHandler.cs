@@ -108,7 +108,7 @@ namespace Microsoft.AspNet.Authentication
                 if (ticket?.Principal != null)
                 {
                     Context.User = SecurityHelper.MergeUserPrincipal(Context.User, ticket.Principal);
-                    Logger.LogInformation(0, "HttContext.User merged via AutomaticAuthentication from authenticationScheme: {scheme}.", Options.AuthenticationScheme);
+                    Logger.LogInformation(0, "HttpContext.User merged via AutomaticAuthentication from authenticationScheme: {scheme}.", Options.AuthenticationScheme);
                 }
             }
         }
