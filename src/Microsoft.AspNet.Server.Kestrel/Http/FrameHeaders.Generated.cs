@@ -54,6 +54,9 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         private StringValues _TE;
         private StringValues _Translate;
         private StringValues _UserAgent;
+        private StringValues _Origin;
+        private StringValues _AccessControlRequestMethod;
+        private StringValues _AccessControlRequestHeaders;
         
         
         public StringValues HeaderCacheControl
@@ -712,6 +715,54 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 _UserAgent = value; 
             }
         }
+        public StringValues HeaderOrigin
+        {
+            get
+            {
+                if (((_bits & 2199023255552L) != 0))
+                {
+                    return _Origin;
+                }
+                return StringValues.Empty;
+            }
+            set
+            {
+                _bits |= 2199023255552L;
+                _Origin = value; 
+            }
+        }
+        public StringValues HeaderAccessControlRequestMethod
+        {
+            get
+            {
+                if (((_bits & 4398046511104L) != 0))
+                {
+                    return _AccessControlRequestMethod;
+                }
+                return StringValues.Empty;
+            }
+            set
+            {
+                _bits |= 4398046511104L;
+                _AccessControlRequestMethod = value; 
+            }
+        }
+        public StringValues HeaderAccessControlRequestHeaders
+        {
+            get
+            {
+                if (((_bits & 8796093022208L) != 0))
+                {
+                    return _AccessControlRequestHeaders;
+                }
+                return StringValues.Empty;
+            }
+            set
+            {
+                _bits |= 8796093022208L;
+                _AccessControlRequestHeaders = value; 
+            }
+        }
         
         protected override int GetCountFast()
         {
@@ -908,6 +959,18 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             if (((_bits & 67108864L) != 0))
                             {
                                 return _Expect;
+                            }
+                            else
+                            {
+                                throw new System.Collections.Generic.KeyNotFoundException();
+                            }
+                        }
+                    
+                        if ("Origin".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        {
+                            if (((_bits & 2199023255552L) != 0))
+                            {
+                                return _Origin;
                             }
                             else
                             {
@@ -1280,6 +1343,38 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         }
                     }
                     break;
+
+                case 29:
+                    {
+                        if ("Access-Control-Request-Method".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        {
+                            if (((_bits & 4398046511104L) != 0))
+                            {
+                                return _AccessControlRequestMethod;
+                            }
+                            else
+                            {
+                                throw new System.Collections.Generic.KeyNotFoundException();
+                            }
+                        }
+                    }
+                    break;
+
+                case 30:
+                    {
+                        if ("Access-Control-Request-Headers".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        {
+                            if (((_bits & 8796093022208L) != 0))
+                            {
+                                return _AccessControlRequestHeaders;
+                            }
+                            else
+                            {
+                                throw new System.Collections.Generic.KeyNotFoundException();
+                            }
+                        }
+                    }
+                    break;
 }
             if (MaybeUnknown == null) 
             {
@@ -1506,6 +1601,20 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             if (((_bits & 67108864L) != 0))
                             {
                                 value = _Expect;
+                                return true;
+                            }
+                            else
+                            {
+                                value = StringValues.Empty;
+                                return false;
+                            }
+                        }
+                    
+                        if ("Origin".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 2199023255552L) != 0))
+                            {
+                                value = _Origin;
                                 return true;
                             }
                             else
@@ -1932,6 +2041,42 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         }
                     }
                     break;
+
+                case 29:
+                    {
+                        if ("Access-Control-Request-Method".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 4398046511104L) != 0))
+                            {
+                                value = _AccessControlRequestMethod;
+                                return true;
+                            }
+                            else
+                            {
+                                value = StringValues.Empty;
+                                return false;
+                            }
+                        }
+                    }
+                    break;
+
+                case 30:
+                    {
+                        if ("Access-Control-Request-Headers".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 8796093022208L) != 0))
+                            {
+                                value = _AccessControlRequestHeaders;
+                                return true;
+                            }
+                            else
+                            {
+                                value = StringValues.Empty;
+                                return false;
+                            }
+                        }
+                    }
+                    break;
 }
             value = StringValues.Empty;
             return MaybeUnknown?.TryGetValue(key, out value) ?? false;
@@ -2056,6 +2201,13 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         {
                             _bits |= 67108864L;
                             _Expect = value;
+                            return;
+                        }
+                    
+                        if ("Origin".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            _bits |= 2199023255552L;
+                            _Origin = value;
                             return;
                         }
                     }
@@ -2294,6 +2446,28 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         }
                     }
                     break;
+
+                case 29:
+                    {
+                        if ("Access-Control-Request-Method".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            _bits |= 4398046511104L;
+                            _AccessControlRequestMethod = value;
+                            return;
+                        }
+                    }
+                    break;
+
+                case 30:
+                    {
+                        if ("Access-Control-Request-Headers".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            _bits |= 8796093022208L;
+                            _AccessControlRequestHeaders = value;
+                            return;
+                        }
+                    }
+                    break;
 }
             Unknown[key] = value;
         }
@@ -2477,6 +2651,17 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             }
                             _bits |= 67108864L;
                             _Expect = value;
+                            return;
+                        }
+                    
+                        if ("Origin".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        {
+                            if (((_bits & 2199023255552L) != 0))
+                            {
+                                throw new ArgumentException("An item with the same key has already been added.");
+                            }
+                            _bits |= 2199023255552L;
+                            _Origin = value;
                             return;
                         }
                     }
@@ -2819,6 +3004,36 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         }
                     }
                     break;
+            
+                case 29:
+                    {
+                        if ("Access-Control-Request-Method".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        {
+                            if (((_bits & 4398046511104L) != 0))
+                            {
+                                throw new ArgumentException("An item with the same key has already been added.");
+                            }
+                            _bits |= 4398046511104L;
+                            _AccessControlRequestMethod = value;
+                            return;
+                        }
+                    }
+                    break;
+            
+                case 30:
+                    {
+                        if ("Access-Control-Request-Headers".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        {
+                            if (((_bits & 8796093022208L) != 0))
+                            {
+                                throw new ArgumentException("An item with the same key has already been added.");
+                            }
+                            _bits |= 8796093022208L;
+                            _AccessControlRequestHeaders = value;
+                            return;
+                        }
+                    }
+                    break;
             }
             Unknown.Add(key, value);
         }
@@ -3042,6 +3257,20 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             {
                                 _bits &= ~67108864L;
                                 _Expect = StringValues.Empty;
+                                return true;
+                            }
+                            else
+                            {
+                                return false;
+                            }
+                        }
+                    
+                        if ("Origin".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 2199023255552L) != 0))
+                            {
+                                _bits &= ~2199023255552L;
+                                _Origin = StringValues.Empty;
                                 return true;
                             }
                             else
@@ -3458,6 +3687,42 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             {
                                 _bits &= ~549755813888L;
                                 _Translate = StringValues.Empty;
+                                return true;
+                            }
+                            else
+                            {
+                                return false;
+                            }
+                        }
+                    }
+                    break;
+            
+                case 29:
+                    {
+                        if ("Access-Control-Request-Method".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 4398046511104L) != 0))
+                            {
+                                _bits &= ~4398046511104L;
+                                _AccessControlRequestMethod = StringValues.Empty;
+                                return true;
+                            }
+                            else
+                            {
+                                return false;
+                            }
+                        }
+                    }
+                    break;
+            
+                case 30:
+                    {
+                        if ("Access-Control-Request-Headers".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 8796093022208L) != 0))
+                            {
+                                _bits &= ~8796093022208L;
+                                _AccessControlRequestHeaders = StringValues.Empty;
                                 return true;
                             }
                             else
@@ -3934,6 +4199,39 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                     ++arrayIndex;
                 }
             
+                if (((_bits & 2199023255552L) != 0)) 
+                {
+                    if (arrayIndex == array.Length)
+                    {
+                        throw new ArgumentException();
+                    }
+
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Origin", _Origin);
+                    ++arrayIndex;
+                }
+            
+                if (((_bits & 4398046511104L) != 0)) 
+                {
+                    if (arrayIndex == array.Length)
+                    {
+                        throw new ArgumentException();
+                    }
+
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Access-Control-Request-Method", _AccessControlRequestMethod);
+                    ++arrayIndex;
+                }
+            
+                if (((_bits & 8796093022208L) != 0)) 
+                {
+                    if (arrayIndex == array.Length)
+                    {
+                        throw new ArgumentException();
+                    }
+
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Access-Control-Request-Headers", _AccessControlRequestHeaders);
+                    ++arrayIndex;
+                }
+            
             ((ICollection<KeyValuePair<string, StringValues>>)MaybeUnknown)?.CopyTo(array, arrayIndex);
         }
         
@@ -4162,6 +4460,20 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             {
                                 _bits |= 67108864L;
                                 _Expect = new StringValues(value);
+                            }
+                            return;
+                        }
+                    
+                        if ((((pUI[0] & 3755991007u) == 1195987535u) && ((pUS[2] & 57311u) == 20041u))) 
+                        {
+                            if (((_bits & 2199023255552L) != 0))
+                            {
+                                _Origin = AppendValue(_Origin, value);
+                            }
+                            else
+                            {
+                                _bits |= 2199023255552L;
+                                _Origin = new StringValues(value);
                             }
                             return;
                         }
@@ -4583,6 +4895,42 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         }
                     }
                     break;
+            
+                case 29:
+                    {
+                        if ((((pUL[0] & 16140865742145839071uL) == 4840616791602578241uL) && ((pUL[1] & 16140865742145839071uL) == 5921472988629454415uL) && ((pUL[2] & 16140865742145839071uL) == 5561193831494668613uL) && ((pUI[6] & 3755991007u) == 1330140229u) && ((pUB[28] & 223u) == 68u))) 
+                        {
+                            if (((_bits & 4398046511104L) != 0))
+                            {
+                                _AccessControlRequestMethod = AppendValue(_AccessControlRequestMethod, value);
+                            }
+                            else
+                            {
+                                _bits |= 4398046511104L;
+                                _AccessControlRequestMethod = new StringValues(value);
+                            }
+                            return;
+                        }
+                    }
+                    break;
+            
+                case 30:
+                    {
+                        if ((((pUL[0] & 16140865742145839071uL) == 4840616791602578241uL) && ((pUL[1] & 16140865742145839071uL) == 5921472988629454415uL) && ((pUL[2] & 16140865742145839071uL) == 5200905861305028933uL) && ((pUI[6] & 3755991007u) == 1162101061u) && ((pUS[14] & 57311u) == 21330u))) 
+                        {
+                            if (((_bits & 8796093022208L) != 0))
+                            {
+                                _AccessControlRequestHeaders = AppendValue(_AccessControlRequestHeaders, value);
+                            }
+                            else
+                            {
+                                _bits |= 8796093022208L;
+                                _AccessControlRequestHeaders = new StringValues(value);
+                            }
+                            return;
+                        }
+                    }
+                    break;
             }}
             var key = System.Text.Encoding.ASCII.GetString(keyBytes, keyOffset, keyLength);
             StringValues existing;
@@ -4718,6 +5066,15 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                     
                         case 40:
                             goto state40;
+                    
+                        case 41:
+                            goto state41;
+                    
+                        case 42:
+                            goto state42;
+                    
+                        case 43:
+                            goto state43;
                     
                     default:
                         goto state_default;
@@ -5051,6 +5408,30 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         return true;
                     }
                 
+                state41:
+                    if (((_bits & 2199023255552L) != 0))
+                    {
+                        _current = new KeyValuePair<string, StringValues>("Origin", _collection._Origin);
+                        _state = 42;
+                        return true;
+                    }
+                
+                state42:
+                    if (((_bits & 4398046511104L) != 0))
+                    {
+                        _current = new KeyValuePair<string, StringValues>("Access-Control-Request-Method", _collection._AccessControlRequestMethod);
+                        _state = 43;
+                        return true;
+                    }
+                
+                state43:
+                    if (((_bits & 8796093022208L) != 0))
+                    {
+                        _current = new KeyValuePair<string, StringValues>("Access-Control-Request-Headers", _collection._AccessControlRequestHeaders);
+                        _state = 44;
+                        return true;
+                    }
+                
                 state_default:
                     if (!_hasUnknown || !_unknownEnumerator.MoveNext())
                     {
@@ -5067,7 +5448,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
     {
         private static byte[] _headerBytes = new byte[]
         {
-            13,10,67,97,99,104,101,45,67,111,110,116,114,111,108,58,32,13,10,67,111,110,110,101,99,116,105,111,110,58,32,13,10,68,97,116,101,58,32,13,10,75,101,101,112,45,65,108,105,118,101,58,32,13,10,80,114,97,103,109,97,58,32,13,10,84,114,97,105,108,101,114,58,32,13,10,84,114,97,110,115,102,101,114,45,69,110,99,111,100,105,110,103,58,32,13,10,85,112,103,114,97,100,101,58,32,13,10,86,105,97,58,32,13,10,87,97,114,110,105,110,103,58,32,13,10,65,108,108,111,119,58,32,13,10,67,111,110,116,101,110,116,45,76,101,110,103,116,104,58,32,13,10,67,111,110,116,101,110,116,45,84,121,112,101,58,32,13,10,67,111,110,116,101,110,116,45,69,110,99,111,100,105,110,103,58,32,13,10,67,111,110,116,101,110,116,45,76,97,110,103,117,97,103,101,58,32,13,10,67,111,110,116,101,110,116,45,76,111,99,97,116,105,111,110,58,32,13,10,67,111,110,116,101,110,116,45,77,68,53,58,32,13,10,67,111,110,116,101,110,116,45,82,97,110,103,101,58,32,13,10,69,120,112,105,114,101,115,58,32,13,10,76,97,115,116,45,77,111,100,105,102,105,101,100,58,32,13,10,65,99,99,101,112,116,45,82,97,110,103,101,115,58,32,13,10,65,103,101,58,32,13,10,69,84,97,103,58,32,13,10,76,111,99,97,116,105,111,110,58,32,13,10,80,114,111,120,121,45,65,117,116,104,101,116,105,99,97,116,101,58,32,13,10,82,101,116,114,121,45,65,102,116,101,114,58,32,13,10,83,101,114,118,101,114,58,32,13,10,83,101,116,45,67,111,111,107,105,101,58,32,13,10,86,97,114,121,58,32,13,10,87,87,87,45,65,117,116,104,101,110,116,105,99,97,116,101,58,32,
+            13,10,67,97,99,104,101,45,67,111,110,116,114,111,108,58,32,13,10,67,111,110,110,101,99,116,105,111,110,58,32,13,10,68,97,116,101,58,32,13,10,75,101,101,112,45,65,108,105,118,101,58,32,13,10,80,114,97,103,109,97,58,32,13,10,84,114,97,105,108,101,114,58,32,13,10,84,114,97,110,115,102,101,114,45,69,110,99,111,100,105,110,103,58,32,13,10,85,112,103,114,97,100,101,58,32,13,10,86,105,97,58,32,13,10,87,97,114,110,105,110,103,58,32,13,10,65,108,108,111,119,58,32,13,10,67,111,110,116,101,110,116,45,76,101,110,103,116,104,58,32,13,10,67,111,110,116,101,110,116,45,84,121,112,101,58,32,13,10,67,111,110,116,101,110,116,45,69,110,99,111,100,105,110,103,58,32,13,10,67,111,110,116,101,110,116,45,76,97,110,103,117,97,103,101,58,32,13,10,67,111,110,116,101,110,116,45,76,111,99,97,116,105,111,110,58,32,13,10,67,111,110,116,101,110,116,45,77,68,53,58,32,13,10,67,111,110,116,101,110,116,45,82,97,110,103,101,58,32,13,10,69,120,112,105,114,101,115,58,32,13,10,76,97,115,116,45,77,111,100,105,102,105,101,100,58,32,13,10,65,99,99,101,112,116,45,82,97,110,103,101,115,58,32,13,10,65,103,101,58,32,13,10,69,84,97,103,58,32,13,10,76,111,99,97,116,105,111,110,58,32,13,10,80,114,111,120,121,45,65,117,116,104,101,116,105,99,97,116,101,58,32,13,10,82,101,116,114,121,45,65,102,116,101,114,58,32,13,10,83,101,114,118,101,114,58,32,13,10,83,101,116,45,67,111,111,107,105,101,58,32,13,10,86,97,114,121,58,32,13,10,87,87,87,45,65,117,116,104,101,110,116,105,99,97,116,101,58,32,13,10,65,99,99,101,115,115,45,67,111,110,116,114,111,108,45,65,108,108,111,119,45,67,114,101,100,101,110,116,105,97,108,115,58,32,13,10,65,99,99,101,115,115,45,67,111,110,116,114,111,108,45,65,108,108,111,119,45,72,101,97,100,101,114,115,58,32,13,10,65,99,99,101,115,115,45,67,111,110,116,114,111,108,45,65,108,108,111,119,45,77,101,116,104,111,100,115,58,32,13,10,65,99,99,101,115,115,45,67,111,110,116,114,111,108,45,65,108,108,111,119,45,79,114,105,103,105,110,58,32,13,10,65,99,99,101,115,115,45,67,111,110,116,114,111,108,45,69,120,112,111,115,101,45,72,101,97,100,101,114,115,58,32,13,10,65,99,99,101,115,115,45,67,111,110,116,114,111,108,45,77,97,120,45,65,103,101,58,32,
         };
         
         private long _bits = 0;
@@ -5102,6 +5483,12 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         private StringValues _SetCookie;
         private StringValues _Vary;
         private StringValues _WWWAuthenticate;
+        private StringValues _AccessControlAllowCredentials;
+        private StringValues _AccessControlAllowHeaders;
+        private StringValues _AccessControlAllowMethods;
+        private StringValues _AccessControlAllowOrigin;
+        private StringValues _AccessControlExposeHeaders;
+        private StringValues _AccessControlMaxAge;
         
         private byte[] _rawConnection;
         private byte[] _rawDate;
@@ -5594,6 +5981,102 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 _WWWAuthenticate = value; 
             }
         }
+        public StringValues HeaderAccessControlAllowCredentials
+        {
+            get
+            {
+                if (((_bits & 1073741824L) != 0))
+                {
+                    return _AccessControlAllowCredentials;
+                }
+                return StringValues.Empty;
+            }
+            set
+            {
+                _bits |= 1073741824L;
+                _AccessControlAllowCredentials = value; 
+            }
+        }
+        public StringValues HeaderAccessControlAllowHeaders
+        {
+            get
+            {
+                if (((_bits & 2147483648L) != 0))
+                {
+                    return _AccessControlAllowHeaders;
+                }
+                return StringValues.Empty;
+            }
+            set
+            {
+                _bits |= 2147483648L;
+                _AccessControlAllowHeaders = value; 
+            }
+        }
+        public StringValues HeaderAccessControlAllowMethods
+        {
+            get
+            {
+                if (((_bits & 4294967296L) != 0))
+                {
+                    return _AccessControlAllowMethods;
+                }
+                return StringValues.Empty;
+            }
+            set
+            {
+                _bits |= 4294967296L;
+                _AccessControlAllowMethods = value; 
+            }
+        }
+        public StringValues HeaderAccessControlAllowOrigin
+        {
+            get
+            {
+                if (((_bits & 8589934592L) != 0))
+                {
+                    return _AccessControlAllowOrigin;
+                }
+                return StringValues.Empty;
+            }
+            set
+            {
+                _bits |= 8589934592L;
+                _AccessControlAllowOrigin = value; 
+            }
+        }
+        public StringValues HeaderAccessControlExposeHeaders
+        {
+            get
+            {
+                if (((_bits & 17179869184L) != 0))
+                {
+                    return _AccessControlExposeHeaders;
+                }
+                return StringValues.Empty;
+            }
+            set
+            {
+                _bits |= 17179869184L;
+                _AccessControlExposeHeaders = value; 
+            }
+        }
+        public StringValues HeaderAccessControlMaxAge
+        {
+            get
+            {
+                if (((_bits & 34359738368L) != 0))
+                {
+                    return _AccessControlMaxAge;
+                }
+                return StringValues.Empty;
+            }
+            set
+            {
+                _bits |= 34359738368L;
+                _AccessControlMaxAge = value; 
+            }
+        }
         
         public void SetRawConnection(StringValues value, byte[] raw)
         {
@@ -6036,6 +6519,98 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             if (((_bits & 8388608L) != 0))
                             {
                                 return _Location;
+                            }
+                            else
+                            {
+                                throw new System.Collections.Generic.KeyNotFoundException();
+                            }
+                        }
+                    }
+                    break;
+
+                case 32:
+                    {
+                        if ("Access-Control-Allow-Credentials".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        {
+                            if (((_bits & 1073741824L) != 0))
+                            {
+                                return _AccessControlAllowCredentials;
+                            }
+                            else
+                            {
+                                throw new System.Collections.Generic.KeyNotFoundException();
+                            }
+                        }
+                    }
+                    break;
+
+                case 28:
+                    {
+                        if ("Access-Control-Allow-Headers".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        {
+                            if (((_bits & 2147483648L) != 0))
+                            {
+                                return _AccessControlAllowHeaders;
+                            }
+                            else
+                            {
+                                throw new System.Collections.Generic.KeyNotFoundException();
+                            }
+                        }
+                    
+                        if ("Access-Control-Allow-Methods".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        {
+                            if (((_bits & 4294967296L) != 0))
+                            {
+                                return _AccessControlAllowMethods;
+                            }
+                            else
+                            {
+                                throw new System.Collections.Generic.KeyNotFoundException();
+                            }
+                        }
+                    }
+                    break;
+
+                case 27:
+                    {
+                        if ("Access-Control-Allow-Origin".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        {
+                            if (((_bits & 8589934592L) != 0))
+                            {
+                                return _AccessControlAllowOrigin;
+                            }
+                            else
+                            {
+                                throw new System.Collections.Generic.KeyNotFoundException();
+                            }
+                        }
+                    }
+                    break;
+
+                case 29:
+                    {
+                        if ("Access-Control-Expose-Headers".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        {
+                            if (((_bits & 17179869184L) != 0))
+                            {
+                                return _AccessControlExposeHeaders;
+                            }
+                            else
+                            {
+                                throw new System.Collections.Generic.KeyNotFoundException();
+                            }
+                        }
+                    }
+                    break;
+
+                case 22:
+                    {
+                        if ("Access-Control-Max-Age".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        {
+                            if (((_bits & 34359738368L) != 0))
+                            {
+                                return _AccessControlMaxAge;
                             }
                             else
                             {
@@ -6526,6 +7101,110 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         }
                     }
                     break;
+
+                case 32:
+                    {
+                        if ("Access-Control-Allow-Credentials".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 1073741824L) != 0))
+                            {
+                                value = _AccessControlAllowCredentials;
+                                return true;
+                            }
+                            else
+                            {
+                                value = StringValues.Empty;
+                                return false;
+                            }
+                        }
+                    }
+                    break;
+
+                case 28:
+                    {
+                        if ("Access-Control-Allow-Headers".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 2147483648L) != 0))
+                            {
+                                value = _AccessControlAllowHeaders;
+                                return true;
+                            }
+                            else
+                            {
+                                value = StringValues.Empty;
+                                return false;
+                            }
+                        }
+                    
+                        if ("Access-Control-Allow-Methods".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 4294967296L) != 0))
+                            {
+                                value = _AccessControlAllowMethods;
+                                return true;
+                            }
+                            else
+                            {
+                                value = StringValues.Empty;
+                                return false;
+                            }
+                        }
+                    }
+                    break;
+
+                case 27:
+                    {
+                        if ("Access-Control-Allow-Origin".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 8589934592L) != 0))
+                            {
+                                value = _AccessControlAllowOrigin;
+                                return true;
+                            }
+                            else
+                            {
+                                value = StringValues.Empty;
+                                return false;
+                            }
+                        }
+                    }
+                    break;
+
+                case 29:
+                    {
+                        if ("Access-Control-Expose-Headers".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 17179869184L) != 0))
+                            {
+                                value = _AccessControlExposeHeaders;
+                                return true;
+                            }
+                            else
+                            {
+                                value = StringValues.Empty;
+                                return false;
+                            }
+                        }
+                    }
+                    break;
+
+                case 22:
+                    {
+                        if ("Access-Control-Max-Age".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 34359738368L) != 0))
+                            {
+                                value = _AccessControlMaxAge;
+                                return true;
+                            }
+                            else
+                            {
+                                value = StringValues.Empty;
+                                return false;
+                            }
+                        }
+                    }
+                    break;
 }
             value = StringValues.Empty;
             return MaybeUnknown?.TryGetValue(key, out value) ?? false;
@@ -6796,6 +7475,68 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         {
                             _bits |= 8388608L;
                             _Location = value;
+                            return;
+                        }
+                    }
+                    break;
+
+                case 32:
+                    {
+                        if ("Access-Control-Allow-Credentials".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            _bits |= 1073741824L;
+                            _AccessControlAllowCredentials = value;
+                            return;
+                        }
+                    }
+                    break;
+
+                case 28:
+                    {
+                        if ("Access-Control-Allow-Headers".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            _bits |= 2147483648L;
+                            _AccessControlAllowHeaders = value;
+                            return;
+                        }
+                    
+                        if ("Access-Control-Allow-Methods".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            _bits |= 4294967296L;
+                            _AccessControlAllowMethods = value;
+                            return;
+                        }
+                    }
+                    break;
+
+                case 27:
+                    {
+                        if ("Access-Control-Allow-Origin".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            _bits |= 8589934592L;
+                            _AccessControlAllowOrigin = value;
+                            return;
+                        }
+                    }
+                    break;
+
+                case 29:
+                    {
+                        if ("Access-Control-Expose-Headers".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            _bits |= 17179869184L;
+                            _AccessControlExposeHeaders = value;
+                            return;
+                        }
+                    }
+                    break;
+
+                case 22:
+                    {
+                        if ("Access-Control-Max-Age".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            _bits |= 34359738368L;
+                            _AccessControlMaxAge = value;
                             return;
                         }
                     }
@@ -7189,6 +7930,92 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                             }
                             _bits |= 8388608L;
                             _Location = value;
+                            return;
+                        }
+                    }
+                    break;
+            
+                case 32:
+                    {
+                        if ("Access-Control-Allow-Credentials".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        {
+                            if (((_bits & 1073741824L) != 0))
+                            {
+                                throw new ArgumentException("An item with the same key has already been added.");
+                            }
+                            _bits |= 1073741824L;
+                            _AccessControlAllowCredentials = value;
+                            return;
+                        }
+                    }
+                    break;
+            
+                case 28:
+                    {
+                        if ("Access-Control-Allow-Headers".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        {
+                            if (((_bits & 2147483648L) != 0))
+                            {
+                                throw new ArgumentException("An item with the same key has already been added.");
+                            }
+                            _bits |= 2147483648L;
+                            _AccessControlAllowHeaders = value;
+                            return;
+                        }
+                    
+                        if ("Access-Control-Allow-Methods".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        {
+                            if (((_bits & 4294967296L) != 0))
+                            {
+                                throw new ArgumentException("An item with the same key has already been added.");
+                            }
+                            _bits |= 4294967296L;
+                            _AccessControlAllowMethods = value;
+                            return;
+                        }
+                    }
+                    break;
+            
+                case 27:
+                    {
+                        if ("Access-Control-Allow-Origin".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        {
+                            if (((_bits & 8589934592L) != 0))
+                            {
+                                throw new ArgumentException("An item with the same key has already been added.");
+                            }
+                            _bits |= 8589934592L;
+                            _AccessControlAllowOrigin = value;
+                            return;
+                        }
+                    }
+                    break;
+            
+                case 29:
+                    {
+                        if ("Access-Control-Expose-Headers".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        {
+                            if (((_bits & 17179869184L) != 0))
+                            {
+                                throw new ArgumentException("An item with the same key has already been added.");
+                            }
+                            _bits |= 17179869184L;
+                            _AccessControlExposeHeaders = value;
+                            return;
+                        }
+                    }
+                    break;
+            
+                case 22:
+                    {
+                        if ("Access-Control-Max-Age".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        {
+                            if (((_bits & 34359738368L) != 0))
+                            {
+                                throw new ArgumentException("An item with the same key has already been added.");
+                            }
+                            _bits |= 34359738368L;
+                            _AccessControlMaxAge = value;
                             return;
                         }
                     }
@@ -7676,6 +8503,110 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         }
                     }
                     break;
+            
+                case 32:
+                    {
+                        if ("Access-Control-Allow-Credentials".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 1073741824L) != 0))
+                            {
+                                _bits &= ~1073741824L;
+                                _AccessControlAllowCredentials = StringValues.Empty;
+                                return true;
+                            }
+                            else
+                            {
+                                return false;
+                            }
+                        }
+                    }
+                    break;
+            
+                case 28:
+                    {
+                        if ("Access-Control-Allow-Headers".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 2147483648L) != 0))
+                            {
+                                _bits &= ~2147483648L;
+                                _AccessControlAllowHeaders = StringValues.Empty;
+                                return true;
+                            }
+                            else
+                            {
+                                return false;
+                            }
+                        }
+                    
+                        if ("Access-Control-Allow-Methods".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 4294967296L) != 0))
+                            {
+                                _bits &= ~4294967296L;
+                                _AccessControlAllowMethods = StringValues.Empty;
+                                return true;
+                            }
+                            else
+                            {
+                                return false;
+                            }
+                        }
+                    }
+                    break;
+            
+                case 27:
+                    {
+                        if ("Access-Control-Allow-Origin".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 8589934592L) != 0))
+                            {
+                                _bits &= ~8589934592L;
+                                _AccessControlAllowOrigin = StringValues.Empty;
+                                return true;
+                            }
+                            else
+                            {
+                                return false;
+                            }
+                        }
+                    }
+                    break;
+            
+                case 29:
+                    {
+                        if ("Access-Control-Expose-Headers".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 17179869184L) != 0))
+                            {
+                                _bits &= ~17179869184L;
+                                _AccessControlExposeHeaders = StringValues.Empty;
+                                return true;
+                            }
+                            else
+                            {
+                                return false;
+                            }
+                        }
+                    }
+                    break;
+            
+                case 22:
+                    {
+                        if ("Access-Control-Max-Age".Equals(key, StringComparison.OrdinalIgnoreCase)) 
+                        {
+                            if (((_bits & 34359738368L) != 0))
+                            {
+                                _bits &= ~34359738368L;
+                                _AccessControlMaxAge = StringValues.Empty;
+                                return true;
+                            }
+                            else
+                            {
+                                return false;
+                            }
+                        }
+                    }
+                    break;
             }
             return MaybeUnknown?.Remove(key) ?? false;
         }
@@ -8019,6 +8950,72 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                     }
 
                     array[arrayIndex] = new KeyValuePair<string, StringValues>("WWW-Authenticate", _WWWAuthenticate);
+                    ++arrayIndex;
+                }
+            
+                if (((_bits & 1073741824L) != 0)) 
+                {
+                    if (arrayIndex == array.Length)
+                    {
+                        throw new ArgumentException();
+                    }
+
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Access-Control-Allow-Credentials", _AccessControlAllowCredentials);
+                    ++arrayIndex;
+                }
+            
+                if (((_bits & 2147483648L) != 0)) 
+                {
+                    if (arrayIndex == array.Length)
+                    {
+                        throw new ArgumentException();
+                    }
+
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Access-Control-Allow-Headers", _AccessControlAllowHeaders);
+                    ++arrayIndex;
+                }
+            
+                if (((_bits & 4294967296L) != 0)) 
+                {
+                    if (arrayIndex == array.Length)
+                    {
+                        throw new ArgumentException();
+                    }
+
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Access-Control-Allow-Methods", _AccessControlAllowMethods);
+                    ++arrayIndex;
+                }
+            
+                if (((_bits & 8589934592L) != 0)) 
+                {
+                    if (arrayIndex == array.Length)
+                    {
+                        throw new ArgumentException();
+                    }
+
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Access-Control-Allow-Origin", _AccessControlAllowOrigin);
+                    ++arrayIndex;
+                }
+            
+                if (((_bits & 17179869184L) != 0)) 
+                {
+                    if (arrayIndex == array.Length)
+                    {
+                        throw new ArgumentException();
+                    }
+
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Access-Control-Expose-Headers", _AccessControlExposeHeaders);
+                    ++arrayIndex;
+                }
+            
+                if (((_bits & 34359738368L) != 0)) 
+                {
+                    if (arrayIndex == array.Length)
+                    {
+                        throw new ArgumentException();
+                    }
+
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Access-Control-Max-Age", _AccessControlMaxAge);
                     ++arrayIndex;
                 }
             
@@ -8403,6 +9400,78 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         if (value != null)
                         {
                             output.CopyFrom(_headerBytes, 399, 20);
+                            output.CopyFromAscii(value);
+                        }
+                    }
+                }
+            
+                if (((_bits & 1073741824L) != 0)) 
+                { 
+                    foreach(var value in _AccessControlAllowCredentials)
+                    {
+                        if (value != null)
+                        {
+                            output.CopyFrom(_headerBytes, 419, 36);
+                            output.CopyFromAscii(value);
+                        }
+                    }
+                }
+            
+                if (((_bits & 2147483648L) != 0)) 
+                { 
+                    foreach(var value in _AccessControlAllowHeaders)
+                    {
+                        if (value != null)
+                        {
+                            output.CopyFrom(_headerBytes, 455, 32);
+                            output.CopyFromAscii(value);
+                        }
+                    }
+                }
+            
+                if (((_bits & 4294967296L) != 0)) 
+                { 
+                    foreach(var value in _AccessControlAllowMethods)
+                    {
+                        if (value != null)
+                        {
+                            output.CopyFrom(_headerBytes, 487, 32);
+                            output.CopyFromAscii(value);
+                        }
+                    }
+                }
+            
+                if (((_bits & 8589934592L) != 0)) 
+                { 
+                    foreach(var value in _AccessControlAllowOrigin)
+                    {
+                        if (value != null)
+                        {
+                            output.CopyFrom(_headerBytes, 519, 31);
+                            output.CopyFromAscii(value);
+                        }
+                    }
+                }
+            
+                if (((_bits & 17179869184L) != 0)) 
+                { 
+                    foreach(var value in _AccessControlExposeHeaders)
+                    {
+                        if (value != null)
+                        {
+                            output.CopyFrom(_headerBytes, 550, 33);
+                            output.CopyFromAscii(value);
+                        }
+                    }
+                }
+            
+                if (((_bits & 34359738368L) != 0)) 
+                { 
+                    foreach(var value in _AccessControlMaxAge)
+                    {
+                        if (value != null)
+                        {
+                            output.CopyFrom(_headerBytes, 583, 26);
                             output.CopyFromAscii(value);
                         }
                     }
@@ -8890,6 +9959,110 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                         }
                     }
                     break;
+            
+                case 32:
+                    {
+                        if ((((pUL[0] & 16140865742145839071uL) == 4840616791602578241uL) && ((pUL[1] & 16140865742145839071uL) == 4696493889984679503uL) && ((pUL[2] & 16131858680330051551uL) == 4995128798724705356uL) && ((pUL[3] & 16131858542891098079uL) == 6002244186580862276uL))) 
+                        {
+                            if (((_bits & 1073741824L) != 0))
+                            {
+                                _AccessControlAllowCredentials = AppendValue(_AccessControlAllowCredentials, value);
+                            }
+                            else
+                            {
+                                _bits |= 1073741824L;
+                                _AccessControlAllowCredentials = new StringValues(value);
+                            }
+                            return;
+                        }
+                    }
+                    break;
+            
+                case 28:
+                    {
+                        if ((((pUL[0] & 16140865742145839071uL) == 4840616791602578241uL) && ((pUL[1] & 16140865742145839071uL) == 4696493889984679503uL) && ((pUL[2] & 16131858680330051551uL) == 4703244745433893964uL) && ((pUI[6] & 3755991007u) == 1397900612u))) 
+                        {
+                            if (((_bits & 2147483648L) != 0))
+                            {
+                                _AccessControlAllowHeaders = AppendValue(_AccessControlAllowHeaders, value);
+                            }
+                            else
+                            {
+                                _bits |= 2147483648L;
+                                _AccessControlAllowHeaders = new StringValues(value);
+                            }
+                            return;
+                        }
+                    
+                        if ((((pUL[0] & 16140865742145839071uL) == 4840616791602578241uL) && ((pUL[1] & 16140865742145839071uL) == 4696493889984679503uL) && ((pUL[2] & 16131858680330051551uL) == 6072344529712663628uL) && ((pUI[6] & 3755991007u) == 1396985672u))) 
+                        {
+                            if (((_bits & 4294967296L) != 0))
+                            {
+                                _AccessControlAllowMethods = AppendValue(_AccessControlAllowMethods, value);
+                            }
+                            else
+                            {
+                                _bits |= 4294967296L;
+                                _AccessControlAllowMethods = new StringValues(value);
+                            }
+                            return;
+                        }
+                    }
+                    break;
+            
+                case 27:
+                    {
+                        if ((((pUL[0] & 16140865742145839071uL) == 4840616791602578241uL) && ((pUL[1] & 16140865742145839071uL) == 4696493889984679503uL) && ((pUL[2] & 16131858680330051551uL) == 5283372369015950412uL) && ((pUS[12] & 57311u) == 18759u) && ((pUB[26] & 223u) == 78u))) 
+                        {
+                            if (((_bits & 8589934592L) != 0))
+                            {
+                                _AccessControlAllowOrigin = AppendValue(_AccessControlAllowOrigin, value);
+                            }
+                            else
+                            {
+                                _bits |= 8589934592L;
+                                _AccessControlAllowOrigin = new StringValues(value);
+                            }
+                            return;
+                        }
+                    }
+                    break;
+            
+                case 29:
+                    {
+                        if ((((pUL[0] & 16140865742145839071uL) == 4840616791602578241uL) && ((pUL[1] & 16140865742145839071uL) == 4984724266136391247uL) && ((pUL[2] & 16131893727263186911uL) == 4992289962713895000uL) && ((pUI[6] & 3755991007u) == 1380271169u) && ((pUB[28] & 223u) == 83u))) 
+                        {
+                            if (((_bits & 17179869184L) != 0))
+                            {
+                                _AccessControlExposeHeaders = AppendValue(_AccessControlExposeHeaders, value);
+                            }
+                            else
+                            {
+                                _bits |= 17179869184L;
+                                _AccessControlExposeHeaders = new StringValues(value);
+                            }
+                            return;
+                        }
+                    }
+                    break;
+            
+                case 22:
+                    {
+                        if ((((pUL[0] & 16140865742145839071uL) == 4840616791602578241uL) && ((pUL[1] & 16140865742145839071uL) == 5561185018439814735uL) && ((pUI[4] & 3758088159u) == 1093490753u) && ((pUS[10] & 57311u) == 17735u))) 
+                        {
+                            if (((_bits & 34359738368L) != 0))
+                            {
+                                _AccessControlMaxAge = AppendValue(_AccessControlMaxAge, value);
+                            }
+                            else
+                            {
+                                _bits |= 34359738368L;
+                                _AccessControlMaxAge = new StringValues(value);
+                            }
+                            return;
+                        }
+                    }
+                    break;
             }}
             var key = System.Text.Encoding.ASCII.GetString(keyBytes, keyOffset, keyLength);
             StringValues existing;
@@ -8992,6 +10165,24 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                     
                         case 29:
                             goto state29;
+                    
+                        case 30:
+                            goto state30;
+                    
+                        case 31:
+                            goto state31;
+                    
+                        case 32:
+                            goto state32;
+                    
+                        case 33:
+                            goto state33;
+                    
+                        case 34:
+                            goto state34;
+                    
+                        case 35:
+                            goto state35;
                     
                     default:
                         goto state_default;
@@ -9234,6 +10425,54 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                     {
                         _current = new KeyValuePair<string, StringValues>("WWW-Authenticate", _collection._WWWAuthenticate);
                         _state = 30;
+                        return true;
+                    }
+                
+                state30:
+                    if (((_bits & 1073741824L) != 0))
+                    {
+                        _current = new KeyValuePair<string, StringValues>("Access-Control-Allow-Credentials", _collection._AccessControlAllowCredentials);
+                        _state = 31;
+                        return true;
+                    }
+                
+                state31:
+                    if (((_bits & 2147483648L) != 0))
+                    {
+                        _current = new KeyValuePair<string, StringValues>("Access-Control-Allow-Headers", _collection._AccessControlAllowHeaders);
+                        _state = 32;
+                        return true;
+                    }
+                
+                state32:
+                    if (((_bits & 4294967296L) != 0))
+                    {
+                        _current = new KeyValuePair<string, StringValues>("Access-Control-Allow-Methods", _collection._AccessControlAllowMethods);
+                        _state = 33;
+                        return true;
+                    }
+                
+                state33:
+                    if (((_bits & 8589934592L) != 0))
+                    {
+                        _current = new KeyValuePair<string, StringValues>("Access-Control-Allow-Origin", _collection._AccessControlAllowOrigin);
+                        _state = 34;
+                        return true;
+                    }
+                
+                state34:
+                    if (((_bits & 17179869184L) != 0))
+                    {
+                        _current = new KeyValuePair<string, StringValues>("Access-Control-Expose-Headers", _collection._AccessControlExposeHeaders);
+                        _state = 35;
+                        return true;
+                    }
+                
+                state35:
+                    if (((_bits & 34359738368L) != 0))
+                    {
+                        _current = new KeyValuePair<string, StringValues>("Access-Control-Max-Age", _collection._AccessControlMaxAge);
+                        _state = 36;
                         return true;
                     }
                 

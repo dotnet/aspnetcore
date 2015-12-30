@@ -103,6 +103,13 @@ namespace Microsoft.AspNet.Server.Kestrel.GeneratedCode
                 "Expires",
                 "Last-Modified"
             };
+            // http://www.w3.org/TR/cors/#syntax
+            var corsRequestHeaders = new[]
+            {
+                "Origin",
+                "Access-Control-Request-Method",
+                "Access-Control-Request-Headers",
+            };
             var requestHeaders = commonHeaders.Concat(new[]
             {
                 "Accept",
@@ -126,7 +133,7 @@ namespace Microsoft.AspNet.Server.Kestrel.GeneratedCode
                 "TE",
                 "Translate",
                 "User-Agent",
-            }).Select((header, index) => new KnownHeader
+            }).Concat(corsRequestHeaders).Select((header, index) => new KnownHeader
             {
                 Name = header,
                 Index = index
@@ -138,6 +145,16 @@ namespace Microsoft.AspNet.Server.Kestrel.GeneratedCode
                 "Date",
                 "Transfer-Encoding",
                 "Content-Length",
+            };
+            // http://www.w3.org/TR/cors/#syntax
+            var corsResponseHeaders = new[]
+            {
+                "Access-Control-Allow-Credentials",
+                "Access-Control-Allow-Headers",
+                "Access-Control-Allow-Methods",
+                "Access-Control-Allow-Origin",
+                "Access-Control-Expose-Headers",
+                "Access-Control-Max-Age",
             };
             var responseHeaders = commonHeaders.Concat(new[]
             {
@@ -151,7 +168,7 @@ namespace Microsoft.AspNet.Server.Kestrel.GeneratedCode
                 "Set-Cookie",
                 "Vary",
                 "WWW-Authenticate",
-            }).Select((header, index) => new KnownHeader
+            }).Concat(corsResponseHeaders).Select((header, index) => new KnownHeader
             {
                 Name = header,
                 Index = index,

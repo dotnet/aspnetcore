@@ -114,7 +114,6 @@ namespace Microsoft.AspNet.Server.KestrelTests
                 headers.Values);
         }
 
-
         [Fact]
         public void ContainsAndContainsKeyWork()
         {
