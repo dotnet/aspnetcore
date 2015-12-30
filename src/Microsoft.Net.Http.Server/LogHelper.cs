@@ -51,7 +51,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        internal static void LogDebug(ILogger logger, string data)
+        internal static void LogDebug(ILogger logger, string location, string data)
         {
             if (logger == null)
             {
@@ -59,7 +59,7 @@ namespace Microsoft.Net.Http.Server
             }
             else
             {
-                logger.LogDebug(data);
+                logger.LogDebug(location + "; " + data);
             }
         }
 

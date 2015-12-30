@@ -391,7 +391,7 @@ namespace Microsoft.Net.Http.Server
         {
             get
             {
-                return RequestUriBuilder.GetRequestPath(_rawUrl, _cookedUrlPath);
+                return RequestUriBuilder.GetRequestPath(_rawUrl, _cookedUrlPath, RequestContext.Logger);
             }
         }
 

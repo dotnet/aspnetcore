@@ -26,6 +26,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Text;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Net.Http.Server
 {
@@ -52,18 +53,22 @@ namespace Microsoft.Net.Http.Server
         private List<byte> _rawOctets;
         private string _rawPath;
 
+        private ILogger _logger;
+
         static RequestUriBuilder()
         {
             Utf8Encoding = new UTF8Encoding(false, true);
         }
 
-        private RequestUriBuilder(string rawUri, string cookedUriPath)
+        private RequestUriBuilder(string rawUri, string cookedUriPath, ILogger logger)
         {
             Debug.Assert(!string.IsNullOrEmpty(rawUri), "Empty raw URL.");
             Debug.Assert(!string.IsNullOrEmpty(cookedUriPath), "Empty cooked URL path.");
+            Debug.Assert(logger != null, "Null logger.");
 
             this._rawUri = rawUri;
             this._cookedUriPath = AddSlashToAsteriskOnlyPath(cookedUriPath);
+            this._logger = logger;
         }
 
         private enum ParsingResult
@@ -74,9 +79,9 @@ namespace Microsoft.Net.Http.Server
         }
 
         // Process only the path.
-        internal static string GetRequestPath(string rawUri, string cookedUriPath)
+        internal static string GetRequestPath(string rawUri, string cookedUriPath, ILogger logger)
         {
-            RequestUriBuilder builder = new RequestUriBuilder(rawUri, cookedUriPath);
+            RequestUriBuilder builder = new RequestUriBuilder(rawUri, cookedUriPath, logger);
 
             return builder.GetPath();
         }
@@ -167,7 +172,7 @@ namespace Microsoft.Net.Http.Server
             byte encodedValue;
             if (!byte.TryParse(escapedCharacter, NumberStyles.HexNumber, null, out encodedValue))
             {
-                LogWarning(nameof(AddPercentEncodedOctetToRawOctetsList), "Can't convert code point: " + escapedCharacter);
+                LogHelper.LogDebug(_logger, nameof(AddPercentEncodedOctetToRawOctetsList), "Can't convert code point: " + escapedCharacter);
                 return false;
             }
 
@@ -198,7 +203,7 @@ namespace Microsoft.Net.Http.Server
             }
             catch (DecoderFallbackException e)
             {
-                LogWarning(nameof(EmptyDecodeAndAppendDecodedOctetsList), "Can't convert bytes: " + GetOctetsAsString(_rawOctets), e.Message);
+                LogHelper.LogDebug(_logger, nameof(EmptyDecodeAndAppendDecodedOctetsList), "Can't convert bytes: " + GetOctetsAsString(_rawOctets) + ": " + e.Message);
             }
 
             return false;
@@ -306,11 +311,6 @@ namespace Microsoft.Net.Http.Server
             }
 
             return path;
-        }
-
-        private void LogWarning(string methodName, string message, params object[] args)
-        {
-            // TODO: Verbose log
         }
     }
 }
