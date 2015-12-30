@@ -1,0 +1,25 @@
+{
+  "dependencies": {
+    "AntiforgerySample": "1.0.0-*",
+    "Microsoft.AspNet.TestHost": "1.0.0-*",
+    "Microsoft.AspNet.Testing": "1.0.0-*",
+    "xunit.runner.aspnet": "2.0.0-aspnet-*"
+  },
+  "commands": {
+    "run": "xunit.runner.aspnet",
+    "test": "xunit.runner.aspnet"
+  },
+  "frameworks": {
+    "dnx451": {
+      "dependencies": {
+        "Moq": "4.2.1312.1622",
+        "System.Net.Http": "4.0.1-rc2-23621"
+      }
+    },
+    "dnxcore50": {
+      "dependencies": {
+        "moq.netcore": "4.4.0-beta8"
+      }
+    }
+  }
+}
