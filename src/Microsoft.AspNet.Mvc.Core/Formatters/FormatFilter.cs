@@ -127,7 +127,7 @@ namespace Microsoft.AspNet.Mvc.Formatters
                 return;
             }
 
-            // If the action sets a single content type, then its takes precedence over the user
+            // If the action sets a single content type, then it takes precedence over the user
             // supplied content type based on format mapping.
             if ((objectResult.ContentTypes != null && objectResult.ContentTypes.Count == 1) ||
                 !string.IsNullOrEmpty(context.HttpContext.Response.ContentType))
