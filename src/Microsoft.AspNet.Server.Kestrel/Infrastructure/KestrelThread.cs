@@ -55,6 +55,7 @@ namespace Microsoft.AspNet.Server.Kestrel
             _loop = new UvLoopHandle(_log);
             _post = new UvAsyncHandle(_log);
             _thread = new Thread(ThreadStart);
+            _thread.Name = "KestrelThread - libuv";
             QueueCloseHandle = PostCloseHandle;
         }
 
