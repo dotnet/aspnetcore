@@ -558,9 +558,19 @@ namespace Microsoft.AspNet.Hosting
             {
             }
 
+            public TFeature Get<TFeature>()
+            {
+                return default(TFeature);
+            }
+
             public IEnumerator<KeyValuePair<Type, object>> GetEnumerator()
             {
                 yield break;
+            }
+
+            public void Set<TFeature>(TFeature instance)
+            {
+                throw new NotSupportedException();
             }
 
             IEnumerator IEnumerable.GetEnumerator()
