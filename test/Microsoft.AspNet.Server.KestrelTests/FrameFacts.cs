@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
             frame.Reset();
 
             // Assert
-            Assert.Equal("http", frame.Get<IHttpRequestFeature>().Scheme);
+            Assert.Equal("http", ((IFeatureCollection)frame).Get<IHttpRequestFeature>().Scheme);
         }
     }
 }
