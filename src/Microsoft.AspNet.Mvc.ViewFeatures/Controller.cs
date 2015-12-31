@@ -343,11 +343,7 @@ namespace Microsoft.AspNet.Mvc
         }
 
         /// <inheritdoc />
-        public void Dispose()
-        {
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
-        }
+        public void Dispose() => Dispose(disposing: true);
 
         /// <summary>
         /// Releases all resources currently used by this <see cref="Controller"/> instance.

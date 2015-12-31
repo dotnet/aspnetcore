@@ -8,11 +8,18 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNet.Mvc.Rendering
 {
+    /// <summary>
+    /// An HTML form element in an MVC view.
+    /// </summary>
     public class MvcForm : IDisposable
     {
         private readonly ViewContext _viewContext;
         private bool _disposed;
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="MvcForm"/>.
+        /// </summary>
+        /// <param name="viewContext">The <see cref="ViewContext"/>.</param>
         public MvcForm(ViewContext viewContext)
         {
             if (viewContext == null)
@@ -23,10 +30,14 @@ namespace Microsoft.AspNet.Mvc.Rendering
             _viewContext = viewContext;
         }
 
+        /// <inheritdoc />
         public void Dispose()
         {
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
+            if (!_disposed)
+            {
+                _disposed = true;
+                GenerateEndForm();
+            }
         }
 
         /// <summary>
@@ -34,23 +45,18 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// </summary>
         public void EndForm()
         {
-            Dispose(disposing: true);
+            Dispose();
         }
 
+        /// <summary>
+        /// Renders <see cref="ViewFeatures.FormContext.EndOfFormContent"/> and
+        /// the &lt;/form&gt;.
+        /// </summary>
         protected virtual void GenerateEndForm()
         {
             RenderEndOfFormContent();
             _viewContext.Writer.Write("</form>");
             _viewContext.FormContext = null;
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!_disposed)
-            {
-                _disposed = true;
-                GenerateEndForm();
-            }
         }
 
         private void RenderEndOfFormContent()

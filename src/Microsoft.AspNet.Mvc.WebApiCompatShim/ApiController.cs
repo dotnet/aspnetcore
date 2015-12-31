@@ -544,11 +544,8 @@ namespace System.Web.Http
             return new HttpStatusCodeResult((int)status);
         }
 
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
+        /// <inheritdoc />
+        public void Dispose() => Dispose(disposing: true);
 
         /// <summary>
         /// Validates the given entity and adds the validation errors to the <see cref="ApiController.ModelState"/>
