@@ -98,5 +98,15 @@ namespace Microsoft.AspNet.Server.WebListener
                 }
             }
         }
+
+        public TFeature Get<TFeature>()
+        {
+            return (TFeature)this[typeof(TFeature)];
+        }
+
+        public void Set<TFeature>(TFeature instance)
+        {
+            this[typeof(TFeature)] = instance;
+        }
     }
 }
