@@ -358,6 +358,16 @@ namespace Microsoft.AspNet.Owin
             throw new NotSupportedException();
         }
 
+        public TFeature Get<TFeature>()
+        {
+            return (TFeature)this[typeof(TFeature)];
+        }
+
+        public void Set<TFeature>(TFeature instance)
+        {
+            this[typeof(TFeature)] = instance;
+        }
+
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();

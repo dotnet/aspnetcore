@@ -93,6 +93,16 @@ namespace Microsoft.AspNet.Http.Features
             }
         }
 
+        public TFeature Get<TFeature>()
+        {
+            return (TFeature)this[typeof(TFeature)];
+        }
+
+        public void Set<TFeature>(TFeature instance)
+        {
+            this[typeof(TFeature)] = instance;
+        }
+
         private class KeyComparer : IEqualityComparer<KeyValuePair<Type, object>>
         {
             public bool Equals(KeyValuePair<Type, object> x, KeyValuePair<Type, object> y)
