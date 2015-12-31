@@ -97,7 +97,7 @@ namespace Microsoft.AspNet.Mvc
             var fileProvider = GetFileProvider(response.HttpContext.RequestServices);
 
             var normalizedPath = FileName;
-            if (normalizedPath.StartsWith("~"))
+            if (normalizedPath.StartsWith("~", StringComparison.Ordinal))
             {
                 normalizedPath = normalizedPath.Substring(1);
             }

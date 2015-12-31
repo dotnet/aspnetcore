@@ -90,7 +90,7 @@ namespace Microsoft.AspNet.Mvc.Formatters
                 throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(format));
             }
 
-            if (format.StartsWith("."))
+            if (format.StartsWith(".", StringComparison.Ordinal))
             {
                 if (format == ".")
                 {
