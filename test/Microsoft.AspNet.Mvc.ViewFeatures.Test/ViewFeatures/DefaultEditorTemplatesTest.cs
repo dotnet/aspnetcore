@@ -1002,6 +1002,7 @@ Environment.NewLine;
                 string controllerName,
                 object routeValues,
                 FormMethod method,
+                bool antiforgery,
                 object htmlAttributes)
             {
                 throw new NotImplementedException();
@@ -1011,6 +1012,7 @@ Environment.NewLine;
                 string routeName,
                 object routeValues,
                 FormMethod method,
+                bool antiforgery,
                 object htmlAttributes)
             {
                 throw new NotImplementedException();

@@ -114,6 +114,10 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <see cref="IDictionary{string, object}"/> instance containing the route parameters.
         /// </param>
         /// <param name="method">The HTTP method for processing the form, either GET or POST.</param>
+        /// <param name="suppressAntiforgery">
+        /// If <c>true</c>, suppresses the generation an &lt;input&gt; of type "hidden" with an antiforgery token. By
+        /// default &lt;form&gt; elements will automatically include an antiforgery token.
+        /// </param>
         /// <param name="htmlAttributes">
         /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
         /// <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
@@ -129,6 +133,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             string controllerName,
             object routeValues,
             FormMethod method,
+            bool suppressAntiforgery,
             object htmlAttributes);
 
         /// <summary>
@@ -143,6 +148,9 @@ namespace Microsoft.AspNet.Mvc.Rendering
         /// <see cref="IDictionary{string, object}"/> instance containing the route parameters.
         /// </param>
         /// <param name="method">The HTTP method for processing the form, either GET or POST.</param>
+        /// <param name="suppressAntiforgery">
+        /// Determines whether or not to include an &lt;input&gt; of type "hidden" with an antiforgery token.
+        /// </param>
         /// <param name="htmlAttributes">
         /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
         /// <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
@@ -157,6 +165,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
             string routeName,
             object routeValues,
             FormMethod method,
+            bool suppressAntiforgery,
             object htmlAttributes);
 
         /// <summary>

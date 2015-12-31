@@ -31,6 +31,8 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             }
         }
 
+        public bool HasAntiforgeryToken { get; set; }
+
         public bool HasFormData => _formData != null;
 
         public bool HasEndOfFormContent => _endOfFormContent != null;

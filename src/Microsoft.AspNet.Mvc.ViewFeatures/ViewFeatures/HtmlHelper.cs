@@ -270,6 +270,14 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         /// <inheritdoc />
         public IHtmlContent AntiForgeryToken()
         {
+            // If we're inside a BeginForm/BeginRouteForm, the antiforgery token might have already been
+            // created and appended to the 'end form' content.
+            if (ViewContext.FormContext.HasAntiforgeryToken)
+            {
+                return HtmlString.Empty;
+            }
+
+            ViewContext.FormContext.HasAntiforgeryToken = true;
             var html = _htmlGenerator.GenerateAntiforgery(ViewContext);
             return html ?? HtmlString.Empty;
         }
@@ -280,6 +288,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             string controllerName,
             object routeValues,
             FormMethod method,
+            bool suppressAntiforgery,
             object htmlAttributes)
         {
             // Push the new FormContext; MvcForm.GenerateEndForm() does the corresponding pop.
@@ -288,11 +297,16 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                 CanRenderAtEndOfForm = true
             };
 
-            return GenerateForm(actionName, controllerName, routeValues, method, htmlAttributes);
+            return GenerateForm(actionName, controllerName, routeValues, method, suppressAntiforgery, htmlAttributes);
         }
 
         /// <inheritdoc />
-        public MvcForm BeginRouteForm(string routeName, object routeValues, FormMethod method, object htmlAttributes)
+        public MvcForm BeginRouteForm(
+            string routeName,
+            object routeValues,
+            FormMethod method,
+            bool suppressAntiforgery,
+            object htmlAttributes)
         {
             // Push the new FormContext; MvcForm.GenerateEndForm() does the corresponding pop.
             _viewContext.FormContext = new FormContext
@@ -300,7 +314,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                 CanRenderAtEndOfForm = true
             };
 
-            return GenerateRouteForm(routeName, routeValues, method, htmlAttributes);
+            return GenerateRouteForm(routeName, routeValues, method, suppressAntiforgery, htmlAttributes);
         }
 
         /// <inheritdoc />
@@ -852,6 +866,10 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         /// <see cref="IDictionary{string, object}"/> instance containing the route parameters.
         /// </param>
         /// <param name="method">The HTTP method for processing the form, either GET or POST.</param>
+        /// <param name="suppressAntiforgery">
+        /// If <c>true</c>, suppresses the generation an &lt;input&gt; of type "hidden" with an antiforgery token. By
+        /// default &lt;form&gt; elements will automatically include an antiforgery token.
+        /// </param>
         /// <param name="htmlAttributes">
         /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
         /// <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
@@ -867,6 +885,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             string controllerName,
             object routeValues,
             FormMethod method,
+            bool suppressAntiforgery,
             object htmlAttributes)
         {
             var tagBuilder = _htmlGenerator.GenerateForm(
@@ -880,6 +899,12 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             {
                 tagBuilder.TagRenderMode = TagRenderMode.StartTag;
                 tagBuilder.WriteTo(ViewContext.Writer, _htmlEncoder);
+            }
+
+            if (!suppressAntiforgery)
+            {
+                ViewContext.FormContext.EndOfFormContent.Add(_htmlGenerator.GenerateAntiforgery(ViewContext));
+                ViewContext.FormContext.HasAntiforgeryToken = true;
             }
 
             return CreateForm();
@@ -897,6 +922,10 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         /// <see cref="IDictionary{string, object}"/> instance containing the route parameters.
         /// </param>
         /// <param name="method">The HTTP method for processing the form, either GET or POST.</param>
+        /// <param name="suppressAntiforgery">
+        /// If <c>true</c>, suppresses the generation an &lt;input&gt; of type "hidden" with an antiforgery token. By
+        /// default &lt;form&gt; elements will automatically include an antiforgery token.
+        /// </param>
         /// <param name="htmlAttributes">
         /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
         /// <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
@@ -911,6 +940,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             string routeName,
             object routeValues,
             FormMethod method,
+            bool suppressAntiforgery,
             object htmlAttributes)
         {
             var tagBuilder = _htmlGenerator.GenerateRouteForm(
@@ -923,6 +953,12 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             {
                 tagBuilder.TagRenderMode = TagRenderMode.StartTag;
                 tagBuilder.WriteTo(ViewContext.Writer, _htmlEncoder);
+            }
+
+            if (!suppressAntiforgery)
+            {
+                ViewContext.FormContext.EndOfFormContent.Add(_htmlGenerator.GenerateAntiforgery(ViewContext));
+                ViewContext.FormContext.HasAntiforgeryToken = true;
             }
 
             return CreateForm();

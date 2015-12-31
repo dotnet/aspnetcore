@@ -5,7 +5,7 @@ Secondary content
 @{
     await Html.RenderPartialAsync("_PartialWithFlush");
 }
-@using (Html.BeginForm())
+@using (Html.BeginForm(method: FormMethod.Post, suppressAntiforgery: true, htmlAttributes: null))
 {
     @Html.TextBox("Name1")
     @await FlushAsync()

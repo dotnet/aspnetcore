@@ -44,12 +44,12 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                     // Testing attribute values with boolean and null values
                     { "AttributesWithBooleanValues", null },
                     // Testing SelectTagHelper with Html.BeginForm
-                    { "CreateWarehouse", null },
+                    { "CreateWarehouse", "/HtmlGeneration_Home/CreateWarehouse" },
                     // Testing the HTML helpers with FormTagHelper
                     { "EditWarehouse", null },
                     { "Form", "/HtmlGeneration_Home/Form" },
                     // Testing MVC tag helpers invoked in the editor templates from HTML helpers
-                    { "EmployeeList", null },
+                    { "EmployeeList", "/HtmlGeneration_Home/EmployeeList" },
                     // Testing the EnvironmentTagHelper
                     { "Environment", null },
                     // Testing the ImageTagHelper
@@ -63,7 +63,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                     { "Order", "/HtmlGeneration_Order/Submit" },
                     { "OrderUsingHtmlHelpers", "/HtmlGeneration_Order/Submit" },
                     // Testing InputTagHelpers invoked in the partial views
-                    { "ProductList", null },
+                    { "ProductList", "/HtmlGeneration_Product" },
                 };
 
                 // One path hits aspnet/External#50 with Mono on Mac.
