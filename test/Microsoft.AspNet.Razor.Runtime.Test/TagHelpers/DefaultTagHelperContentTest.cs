@@ -179,7 +179,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
             tagHelperContent.Append(text2);
 
             // Act
-            copiedTagHelperContent.Append(tagHelperContent);
+            copiedTagHelperContent.AppendHtml(tagHelperContent);
 
             // Assert
             Assert.Equal(expected, copiedTagHelperContent.GetContent(new HtmlTestEncoder()));
@@ -233,7 +233,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
             TagHelperContent NullContent = null;
 
             // Act
-            tagHelperContent.Append(NullContent);
+            tagHelperContent.AppendHtml(NullContent);
 
             // Assert
             Assert.True(tagHelperContent.IsModified);
@@ -317,7 +317,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
             var copiedTagHelperContent = new DefaultTagHelperContent();
 
             // Act
-            tagHelperContent.Append(copiedTagHelperContent);
+            tagHelperContent.AppendHtml(copiedTagHelperContent);
             tagHelperContent.Append(string.Empty);
 
             // Assert
@@ -372,7 +372,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
             copiedTagHelperContent.SetContent("Hello");
 
             // Act
-            tagHelperContent.Append(copiedTagHelperContent);
+            tagHelperContent.AppendHtml(copiedTagHelperContent);
 
             // Assert
             Assert.False(tagHelperContent.IsEmpty);

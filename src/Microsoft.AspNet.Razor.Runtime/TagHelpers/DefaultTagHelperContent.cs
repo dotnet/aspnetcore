@@ -142,7 +142,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         }
 
         /// <inheritdoc />
-        public override TagHelperContent Append(IHtmlContent htmlContent)
+        public override TagHelperContent AppendHtml(IHtmlContent htmlContent)
         {
             Buffer.Add(htmlContent);
             return this;

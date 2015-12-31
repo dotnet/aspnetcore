@@ -79,7 +79,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         /// </summary>
         /// <param name="htmlContent">The <see cref="IHtmlContent"/> to be appended.</param>
         /// <returns>A reference to this instance after the append operation has completed.</returns>
-        public abstract TagHelperContent Append(IHtmlContent htmlContent);
+        public abstract TagHelperContent AppendHtml(IHtmlContent htmlContent);
 
         /// <summary>
         /// Appends <paramref name="encoded"/> to the existing content. <paramref name="encoded"/> is assumed
@@ -145,9 +145,9 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         public abstract void WriteTo(TextWriter writer, HtmlEncoder encoder);
 
         /// <inheritdoc />
-        IHtmlContentBuilder IHtmlContentBuilder.Append(IHtmlContent content)
+        IHtmlContentBuilder IHtmlContentBuilder.AppendHtml(IHtmlContent content)
         {
-            return Append(content);
+            return AppendHtml(content);
         }
 
         /// <inheritdoc />
