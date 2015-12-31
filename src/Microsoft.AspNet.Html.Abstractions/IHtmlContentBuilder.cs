@@ -13,7 +13,7 @@ namespace Microsoft.AspNet.Html
         /// </summary>
         /// <param name="content">The <see cref="IHtmlContent"/> to append.</param>
         /// <returns>The <see cref="IHtmlContentBuilder"/>.</returns>
-        IHtmlContentBuilder Append(IHtmlContent content);
+        IHtmlContentBuilder AppendHtml(IHtmlContent content);
 
         /// <summary>
         /// Appends a <see cref="string"/> value. The value is treated as unencoded as-provided, and will be HTML

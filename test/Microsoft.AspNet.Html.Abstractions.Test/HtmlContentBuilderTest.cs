@@ -65,7 +65,7 @@ namespace Microsoft.Extensions.Internal
             var writer = new StringWriter();
 
             // Act
-            content.Append(new TestHtmlContent("Hello"));
+            content.AppendHtml(new TestHtmlContent("Hello"));
 
             // Assert
             var result = Assert.Single(content.Entries);
@@ -81,7 +81,7 @@ namespace Microsoft.Extensions.Internal
             var content = new HtmlContentBuilder();
 
             // Act
-            content.Append(new TestHtmlContent("hello"));
+            content.AppendHtml(new TestHtmlContent("hello"));
             content.Append("Test");
 
             // Assert
@@ -95,7 +95,7 @@ namespace Microsoft.Extensions.Internal
         {
             // Arrange
             var content = new HtmlContentBuilder();
-            content.Append(new TestHtmlContent("hello"));
+            content.AppendHtml(new TestHtmlContent("hello"));
             content.Append("Test");
 
             // Act
@@ -111,7 +111,7 @@ namespace Microsoft.Extensions.Internal
             // Arrange
             var content = new HtmlContentBuilder();
             var writer = new StringWriter();
-            content.Append(new TestHtmlContent("Hello"));
+            content.AppendHtml(new TestHtmlContent("Hello"));
             content.Append("Test");
 
             // Act

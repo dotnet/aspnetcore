@@ -374,7 +374,7 @@ namespace Microsoft.AspNet.Html.Test
                 return this;
             }
 
-            public IHtmlContentBuilder Append(IHtmlContent content)
+            public IHtmlContentBuilder AppendHtml(IHtmlContent content)
             {
                 Entries.Add(content);
                 return this;

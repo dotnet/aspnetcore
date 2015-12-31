@@ -48,7 +48,7 @@ namespace Microsoft.AspNet.Html
                 throw new ArgumentNullException(nameof(args));
             }
 
-            builder.Append(new HtmlFormatString(format, args));
+            builder.AppendHtml(new HtmlFormatString(format, args));
             return builder;
         }
 
@@ -88,7 +88,7 @@ namespace Microsoft.AspNet.Html
                 throw new ArgumentNullException(nameof(args));
             }
 
-            builder.Append(new HtmlFormatString(formatProvider, format, args));
+            builder.AppendHtml(new HtmlFormatString(formatProvider, format, args));
             return builder;
         }
 
@@ -104,7 +104,7 @@ namespace Microsoft.AspNet.Html
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            builder.Append(HtmlEncodedString.NewLine);
+            builder.AppendHtml(HtmlEncodedString.NewLine);
             return builder;
         }
 
@@ -123,7 +123,7 @@ namespace Microsoft.AspNet.Html
             }
 
             builder.Append(unencoded);
-            builder.Append(HtmlEncodedString.NewLine);
+            builder.AppendHtml(HtmlEncodedString.NewLine);
             return builder;
         }
 
@@ -140,8 +140,8 @@ namespace Microsoft.AspNet.Html
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            builder.Append(content);
-            builder.Append(HtmlEncodedString.NewLine);
+            builder.AppendHtml(content);
+            builder.AppendHtml(HtmlEncodedString.NewLine);
             return builder;
         }
 
@@ -160,7 +160,7 @@ namespace Microsoft.AspNet.Html
             }
 
             builder.AppendHtml(encoded);
-            builder.Append(HtmlEncodedString.NewLine);
+            builder.AppendHtml(HtmlEncodedString.NewLine);
             return builder;
         }
 
@@ -197,7 +197,7 @@ namespace Microsoft.AspNet.Html
             }
 
             builder.Clear();
-            builder.Append(content);
+            builder.AppendHtml(content);
             return builder;
         }
 

@@ -67,7 +67,7 @@ namespace Microsoft.AspNet.Html
         }
 
         /// <inheritdoc />
-        public IHtmlContentBuilder Append(IHtmlContent htmlContent)
+        public IHtmlContentBuilder AppendHtml(IHtmlContent htmlContent)
         {
             if (htmlContent == null)
             {
