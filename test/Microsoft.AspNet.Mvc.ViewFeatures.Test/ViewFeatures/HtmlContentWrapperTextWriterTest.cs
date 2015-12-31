@@ -159,7 +159,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                 return this;
             }
 
-            public IHtmlContentBuilder Append(IHtmlContent content)
+            public IHtmlContentBuilder AppendHtml(IHtmlContent content)
             {
                 Values.Add(content);
                 return this;

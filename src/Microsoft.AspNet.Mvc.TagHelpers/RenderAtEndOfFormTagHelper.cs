@@ -60,7 +60,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 // Perf: Avoid allocating enumerator
                 for (var i = 0; i < formContext.EndOfFormContent.Count; i++)
                 {
-                    output.PostContent.Append(formContext.EndOfFormContent[i]);
+                    output.PostContent.AppendHtml(formContext.EndOfFormContent[i]);
                 }
             }
 

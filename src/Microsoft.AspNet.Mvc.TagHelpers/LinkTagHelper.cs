@@ -338,7 +338,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     }
                 }
 
-                builder.Append(HtmlString.NewLine);
+                builder.AppendHtml(HtmlString.NewLine);
 
                 // Build the <meta /> tag that's used to test for the presence of the stylesheet
                 builder

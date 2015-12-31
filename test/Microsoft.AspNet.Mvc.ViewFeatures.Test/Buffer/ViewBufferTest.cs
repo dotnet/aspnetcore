@@ -37,7 +37,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Buffer
             var content = new HtmlString("hello-world");
 
             // Act
-            buffer.Append(content);
+            buffer.AppendHtml(content);
 
             // Assert
             var segment = Assert.Single(buffer.BufferSegments);
@@ -136,7 +136,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Buffer
 
             // Act
             buffer.Append("Hello");
-            buffer.Append(new HtmlString(" world"));
+            buffer.AppendHtml(new HtmlString(" world"));
             buffer.AppendHtml(" 123");
             buffer.WriteTo(writer, new HtmlTestEncoder());
 

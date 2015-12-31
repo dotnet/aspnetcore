@@ -252,7 +252,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             }
 
             var tagHelperContent = new DefaultTagHelperContent();
-            tagHelperContent.Append(writer.ContentBuilder);
+            tagHelperContent.AppendHtml(writer.ContentBuilder);
             return tagHelperContent;
         }
 

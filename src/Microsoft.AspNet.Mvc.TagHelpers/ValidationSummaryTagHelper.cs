@@ -107,7 +107,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             if (tagBuilder != null)
             {
                 output.MergeAttributes(tagBuilder);
-                output.PostContent.Append(tagBuilder.InnerHtml);
+                output.PostContent.AppendHtml(tagBuilder.InnerHtml);
             }
         }
     }

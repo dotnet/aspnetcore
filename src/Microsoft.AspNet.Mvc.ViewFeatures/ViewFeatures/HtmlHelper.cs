@@ -757,7 +757,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                 return HtmlString.Empty;
             }
 
-            var checkboxContent = new HtmlContentBuilder().Append(checkbox);
+            var checkboxContent = new HtmlContentBuilder().AppendHtml(checkbox);
 
             if (ViewContext.FormContext.CanRenderAtEndOfForm)
             {
@@ -765,7 +765,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             }
             else
             {
-                checkboxContent.Append(hiddenForCheckboxTag);
+                checkboxContent.AppendHtml(hiddenForCheckboxTag);
             }
 
             return checkboxContent;

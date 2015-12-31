@@ -103,7 +103,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                 throw new ArgumentNullException(nameof(value));
             }
 
-            ContentBuilder.Append(value);
+            ContentBuilder.AppendHtml(value);
         }
 
         /// <inheritdoc />

@@ -116,7 +116,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                         templateName: null,
                         readOnly: false,
                         additionalViewData: null);
-                    result.Append(templateBuilder.Build());
+                    result.AppendHtml(templateBuilder.Build());
                 }
 
                 return result;
@@ -146,7 +146,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             var result = new HtmlContentBuilder();
             if (!viewData.ModelMetadata.HideSurroundingHtml)
             {
-                result.Append(DefaultDisplayTemplates.StringTemplate(htmlHelper));
+                result.AppendHtml(DefaultDisplayTemplates.StringTemplate(htmlHelper));
             }
 
             // Special-case opaque values and arbitrary binary data.
@@ -158,7 +158,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
 
             var htmlAttributesObject = viewData[HtmlAttributeKey];
             var hiddenResult = htmlHelper.Hidden(expression: null, value: model, htmlAttributes: htmlAttributesObject);
-            result.Append(hiddenResult);
+            result.AppendHtml(hiddenResult);
 
             return result;
         }
@@ -285,9 +285,9 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                     var valueDivTag = new TagBuilder("div");
                     valueDivTag.AddCssClass("editor-field");
 
-                    valueDivTag.InnerHtml.Append(templateBuilderResult);
+                    valueDivTag.InnerHtml.AppendHtml(templateBuilderResult);
                     valueDivTag.InnerHtml.AppendHtml(" ");
-                    valueDivTag.InnerHtml.Append(htmlHelper.ValidationMessage(
+                    valueDivTag.InnerHtml.AppendHtml(htmlHelper.ValidationMessage(
                         propertyMetadata.PropertyName,
                         message: null,
                         htmlAttributes: null,
@@ -297,7 +297,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                 }
                 else
                 {
-                    content.Append(templateBuilderResult);
+                    content.AppendHtml(templateBuilderResult);
                 }
             }
 

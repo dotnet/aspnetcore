@@ -55,7 +55,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
 
             foreach (var item in TriStateValues(value))
             {
-                selectTag.InnerHtml.Append(DefaultHtmlGenerator.GenerateOption(item, item.Text));
+                selectTag.InnerHtml.AppendHtml(DefaultHtmlGenerator.GenerateOption(item, item.Text));
             }
             
             return selectTag;
@@ -152,7 +152,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                         templateName: null,
                         readOnly: true,
                         additionalViewData: null);
-                    result.Append(templateBuilder.Build());
+                    result.AppendHtml(templateBuilder.Build());
                 }
 
                 return result;
@@ -266,7 +266,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                 }
                 else
                 {
-                    content.Append(templateBuilderResult);
+                    content.AppendHtml(templateBuilderResult);
                 }
             }
 

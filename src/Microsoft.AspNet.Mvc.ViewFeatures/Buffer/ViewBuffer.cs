@@ -59,7 +59,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures.Buffer
         }
 
         /// <inheritdoc />
-        public IHtmlContentBuilder Append(IHtmlContent content)
+        public IHtmlContentBuilder AppendHtml(IHtmlContent content)
         {
             if (content == null)
             {

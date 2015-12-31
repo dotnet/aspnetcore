@@ -848,8 +848,8 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                 tagBuilder.AddCssClass(HtmlHelper.ValidationSummaryCssClassName);
             }
 
-            tagBuilder.InnerHtml.Append(wrappedMessage);
-            tagBuilder.InnerHtml.Append(htmlSummary);
+            tagBuilder.InnerHtml.AppendHtml(wrappedMessage);
+            tagBuilder.InnerHtml.AppendHtml(htmlSummary);
 
             if (formContext != null && !excludePropertyErrors)
             {
