@@ -271,10 +271,10 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 _requestProcessingStarted = true;
                 _requestProcessingTask =
                     Task.Factory.StartNew(
-                        (o) => ((Frame)o).RequestProcessingAsync(), 
-                        this, 
-                        CancellationToken.None, 
-                        TaskCreationOptions.DenyChildAttach, 
+                        (o) => ((Frame)o).RequestProcessingAsync(),
+                        this,
+                        CancellationToken.None,
+                        TaskCreationOptions.DenyChildAttach,
                         TaskScheduler.Default);
             }
         }
@@ -710,19 +710,18 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             var consumed = scan;
             try
             {
-                var begin = scan;
-                if (scan.Seek(_vectorSpaces) == -1)
-                {
-                    return false;
-                }
-
                 string method;
-                if (!begin.GetKnownString(scan, out method))
+                var begin = scan;
+                if (!begin.GetKnownMethod(ref scan,out method))
                 {
+                    if (scan.Seek(_vectorSpaces) == -1)
+                    {
+                        return false;
+                    }
                     method = begin.GetAsciiString(scan);
+                    scan.Take();
                 }
 
-                scan.Take();
                 begin = scan;
 
                 var needDecode = false;
@@ -749,18 +748,19 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
                 scan.Take();
                 begin = scan;
-                if (scan.Seek(_vectorCRs) == -1)
-                {
-                    return false;
-                }
 
                 string httpVersion;
-                if (!begin.GetKnownString(scan, out httpVersion))
+                if (!begin.GetKnownVersion(ref scan, out httpVersion))
                 {
+                    scan = begin;
+                    if (scan.Seek(_vectorCRs) == -1)
+                    {
+                        return false;
+                    }
                     httpVersion = begin.GetAsciiString(scan);
-                }
 
-                scan.Take();
+                    scan.Take();
+                }
                 if (scan.Take() != '\n')
                 {
                     return false;

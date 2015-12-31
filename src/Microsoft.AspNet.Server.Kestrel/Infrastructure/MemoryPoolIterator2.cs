@@ -94,6 +94,43 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
             } while (true);
         }
 
+        public void Skip(int bytesToSkip)
+        {
+            if (_block == null)
+            {
+                return;
+            }
+            var following = _block.End - _index;
+            if (following >= bytesToSkip)
+            {
+                _index += bytesToSkip;
+                return;
+            }
+
+            var block = _block;
+            var index = _index;
+            while (true)
+            {
+                if (block.Next == null)
+                {
+                    return;
+                }
+                else
+                {
+                    bytesToSkip -= following;
+                    block = block.Next;
+                    index = block.Start;
+                }
+                following = block.End - index;
+                if (following >= bytesToSkip)
+                {
+                    _block = block;
+                    _index = index + bytesToSkip;
+                    return;
+                }
+            }
+        }
+
         public int Peek()
         {
             var block = _block;
