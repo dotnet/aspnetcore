@@ -595,6 +595,8 @@ namespace Microsoft.AspNet.Mvc
                 _url = url;
             }
 
+            public ActionContext ActionContext { get; }
+
             public object RouteValues { get; private set; }
 
             public string Action(UrlActionContext actionContext)

@@ -11,6 +11,11 @@ namespace Microsoft.AspNet.Mvc
     public interface IUrlHelper
     {
         /// <summary>
+        /// Gets the <see cref="ActionContext"/> for the current request.
+        /// </summary>
+        ActionContext ActionContext { get; }
+
+        /// <summary>
         /// Generates a fully qualified or absolute URL specified by <see cref="UrlActionContext"/> for an action
         /// method, which contains action name, controller name, route values, protocol to use, host name, and fragment.
         /// </summary>
