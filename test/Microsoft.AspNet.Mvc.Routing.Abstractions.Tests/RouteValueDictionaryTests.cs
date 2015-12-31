@@ -160,17 +160,15 @@ namespace Microsoft.AspNet.Routing.Tests
         public void CreateFromObject_MixedCaseThrows()
         {
             // Arrange
-            var expected = GetDuplicateKeyErrorMessage();
             var obj = new { controller = "Home", Controller = "Home" };
 
             // Act & Assert
             ExceptionAssert.Throws<ArgumentException>(
-                () =>
-                {
-                    var dictionary = new RouteValueDictionary(obj);
-                    dictionary.Add("Hi", "There");
-                },
-                expected);
+            () =>
+            {
+                var dictionary = new RouteValueDictionary(obj);
+                dictionary.Add("Hi", "There");
+            });
         }
 
         public static IEnumerable<object[]> IEnumerableKeyValuePairData
@@ -224,20 +222,6 @@ namespace Microsoft.AspNet.Routing.Tests
             var address = Assert.IsType<Address>(routeValueDictionary["Address"]);
             address.State = "Washington";
             Assert.Equal("Washington", ((Address)routeValueDictionary["Address"]).State);
-        }
-
-        private static string GetDuplicateKeyErrorMessage()
-        {
-            // Gets the exception message when duplicate entries are
-            // added to a Dictionary in a platform independent way
-            var ex = Assert.Throws<ArgumentException>(
-                () => new Dictionary<string, string>()
-                {
-                    { "key", "value" },
-                    { "key", "value" }
-                });
-
-            return ex.Message;
         }
 
         private class RegularType
