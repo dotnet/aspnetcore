@@ -73,27 +73,27 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         public static MessageBody For(
             string httpVersion,
-            IDictionary<string, StringValues> headers,
+            FrameRequestHeaders headers,
             FrameContext context)
         {
             // see also http://tools.ietf.org/html/rfc2616#section-4.4
 
             var keepAlive = httpVersion != "HTTP/1.0";
 
-            string connection;
-            if (TryGet(headers, "Connection", out connection))
+            var connection = headers.HeaderConnection.ToString();
+            if (connection.Length > 0)
             {
                 keepAlive = connection.Equals("keep-alive", StringComparison.OrdinalIgnoreCase);
             }
 
-            string transferEncoding;
-            if (TryGet(headers, "Transfer-Encoding", out transferEncoding))
+            var transferEncoding = headers.HeaderTransferEncoding.ToString();
+            if (transferEncoding.Length > 0)
             {
                 return new ForChunkedEncoding(keepAlive, context);
             }
 
-            string contentLength;
-            if (TryGet(headers, "Content-Length", out contentLength))
+            var contentLength = headers.HeaderContentLength.ToString();
+            if (contentLength.Length > 0)
             {
                 return new ForContentLength(keepAlive, int.Parse(contentLength), context);
             }
@@ -105,30 +105,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
             return new ForRemainingData(context);
         }
-
-        public static bool TryGet(IDictionary<string, StringValues> headers, string name, out string value)
-        {
-            StringValues values;
-            if (!headers.TryGetValue(name, out values) || values.Count == 0)
-            {
-                value = null;
-                return false;
-            }
-            var count = values.Count;
-            if (count == 0)
-            {
-                value = null;
-                return false;
-            }
-            if (count == 1)
-            {
-                value = values[0];
-                return true;
-            }
-            value = string.Join(",", values.ToArray());
-            return true;
-        }
-
 
         private class ForRemainingData : MessageBody
         {
