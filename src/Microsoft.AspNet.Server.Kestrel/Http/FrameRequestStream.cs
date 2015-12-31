@@ -53,7 +53,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             ValidateState();
 
-            return ReadAsync(buffer, offset, count).GetAwaiter().GetResult();
+            // ValueTask uses .GetAwaiter().GetResult() if necessary
+            return ReadAsync(buffer, offset, count).Result;
         }
 
 #if NET451
@@ -80,7 +81,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
             var tcs = new TaskCompletionSource<int>(state);
             var task = _body.ReadAsync(new ArraySegment<byte>(buffer, offset, count), cancellationToken);
-            task.ContinueWith((task2, state2) =>
+            task.AsTask().ContinueWith((task2, state2) =>
             {
                 var tcs2 = (TaskCompletionSource<int>)state2;
                 if (task2.IsCanceled)
@@ -104,7 +105,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         {
             ValidateState();
 
-            return _body.ReadAsync(new ArraySegment<byte>(buffer, offset, count), cancellationToken);
+            // Needs .AsTask to match Stream's Async method return types
+            return _body.ReadAsync(new ArraySegment<byte>(buffer, offset, count), cancellationToken).AsTask();
         }
 
         public override void Write(byte[] buffer, int offset, int count)
