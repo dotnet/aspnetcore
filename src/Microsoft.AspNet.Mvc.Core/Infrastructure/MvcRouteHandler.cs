@@ -38,25 +38,20 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
             return null;
         }
 
-        public async Task RouteAsync(RouteContext context)
+        public Task RouteAsync(RouteContext context)
         {
             if (context == null)
             {
                 throw new ArgumentNullException(nameof(context));
             }
 
-            var services = context.HttpContext.RequestServices;
-
-            // Verify if AddMvc was done before calling UseMvc
-            // We use the MvcMarkerService to make sure if all the services were added.
-            MvcServicesHelper.ThrowIfMvcNotRegistered(services);
             EnsureServices(context.HttpContext);
 
-            var actionDescriptor = await _actionSelector.SelectAsync(context);
+            var actionDescriptor = _actionSelector.Select(context);
             if (actionDescriptor == null)
             {
                 _logger.NoActionsMatched();
-                return;
+                return TaskCache.CompletedTask;
             }
 
             if (actionDescriptor.RouteValueDefaults != null)
@@ -68,12 +63,13 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
                         context.RouteData.Values.Add(kvp.Key, kvp.Value);
                     }
                 }
+
+                // Removing RouteGroup from RouteValues to simulate the result of conventional routing
+                context.RouteData.Values.Remove(TreeRouter.RouteGroupKey);
             }
 
-            // Removing RouteGroup from RouteValues to simulate the result of conventional routing
-            context.RouteData.Values.Remove(TreeRouter.RouteGroupKey);
-
             context.Handler = (c) => InvokeActionAsync(c, actionDescriptor);
+            return TaskCache.CompletedTask;
         }
 
         private async Task InvokeActionAsync(HttpContext httpContext, ActionDescriptor actionDescriptor)
@@ -121,15 +117,21 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
                 return;
             }
 
+            var services = context.RequestServices;
+
+            // Verify if AddMvc was done before calling UseMvc
+            // We use the MvcMarkerService to make sure if all the services were added.
+            MvcServicesHelper.ThrowIfMvcNotRegistered(services);
+
             // The IActionContextAccessor is optional. We want to avoid the overhead of using CallContext
             // if possible.
-            _actionContextAccessor = context.RequestServices.GetService<IActionContextAccessor>();
+            _actionContextAccessor = services.GetService<IActionContextAccessor>();
 
-            _actionInvokerFactory = context.RequestServices.GetRequiredService<IActionInvokerFactory>();
-            _actionSelector = context.RequestServices.GetRequiredService<IActionSelector>();
-            _diagnosticSource = context.RequestServices.GetRequiredService<DiagnosticSource>();
+            _actionInvokerFactory = services.GetRequiredService<IActionInvokerFactory>();
+            _actionSelector = services.GetRequiredService<IActionSelector>();
+            _diagnosticSource = services.GetRequiredService<DiagnosticSource>();
 
-            var factory = context.RequestServices.GetRequiredService<ILoggerFactory>();
+            var factory = services.GetRequiredService<ILoggerFactory>();
             _logger = factory.CreateLogger<MvcRouteHandler>();
 
             _servicesRetrieved = true;

@@ -58,8 +58,9 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
             var loggerFactory = new TestLoggerFactory(sink, enabled: true);
 
             var mockActionSelector = new Mock<IActionSelector>();
-            mockActionSelector.Setup(a => a.SelectAsync(It.IsAny<RouteContext>()))
-                .Returns(Task.FromResult<ActionDescriptor>(null));
+            mockActionSelector
+                .Setup(a => a.Select(It.IsAny<RouteContext>()))
+                .Returns<ActionDescriptor>(null);
 
             var context = CreateRouteContext(
                 actionSelector: mockActionSelector.Object,
@@ -172,8 +173,8 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
             if (actionSelector == null)
             {
                 var mockActionSelector = new Mock<IActionSelector>();
-                mockActionSelector.Setup(a => a.SelectAsync(It.IsAny<RouteContext>()))
-                    .Returns(Task.FromResult(actionDescriptor));
+                mockActionSelector.Setup(a => a.Select(It.IsAny<RouteContext>()))
+                    .Returns(actionDescriptor);
 
                 actionSelector = mockActionSelector.Object;
             }

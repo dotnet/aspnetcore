@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Abstractions;
 using Microsoft.AspNet.Mvc.ActionConstraints;
@@ -16,12 +15,21 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNet.Mvc.Infrastructure
 {
+    /// <summary>
+    /// A default <see cref="IActionSelector"/> implementation.
+    /// </summary>
     public class DefaultActionSelector : IActionSelector
     {
         private readonly IActionSelectorDecisionTreeProvider _decisionTreeProvider;
         private readonly IActionConstraintProvider[] _actionConstraintProviders;
         private ILogger _logger;
 
+        /// <summary>
+        /// Creates a new <see cref="DefaultActionSelector"/>.
+        /// </summary>
+        /// <param name="decisionTreeProvider">The <see cref="IActionSelectorDecisionTreeProvider"/>.</param>
+        /// <param name="actionConstraintProviders">The set of <see cref="IActionInvokerProvider"/> instances.</param>
+        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
         public DefaultActionSelector(
             IActionSelectorDecisionTreeProvider decisionTreeProvider,
             IEnumerable<IActionConstraintProvider> actionConstraintProviders,
@@ -32,7 +40,8 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
             _logger = loggerFactory.CreateLogger<DefaultActionSelector>();
         }
 
-        public Task<ActionDescriptor> SelectAsync(RouteContext context)
+        /// <inheritdoc />
+        public ActionDescriptor Select(RouteContext context)
         {
             if (context == null)
             {
@@ -71,13 +80,13 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
 
             if (finalMatches == null || finalMatches.Count == 0)
             {
-                return Task.FromResult<ActionDescriptor>(null);
+                return null;
             }
             else if (finalMatches.Count == 1)
             {
                 var selectedAction = finalMatches[0];
 
-                return Task.FromResult(selectedAction);
+                return selectedAction;
             }
             else
             {
