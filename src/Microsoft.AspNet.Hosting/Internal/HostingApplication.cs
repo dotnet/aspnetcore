@@ -33,41 +33,50 @@ namespace Microsoft.AspNet.Hosting.Internal
         public Context CreateContext(IFeatureCollection contextFeatures)
         {
             var httpContext = _httpContextFactory.Create(contextFeatures);
-            var startTick = Environment.TickCount;
+            var diagnoticsEnabled = _diagnosticSource.IsEnabled("Microsoft.AspNet.Hosting.BeginRequest");
+            var startTimestamp = (diagnoticsEnabled || _logger.IsEnabled(LogLevel.Information)) ? Stopwatch.GetTimestamp() : 0;
 
             var scope = _logger.RequestScope(httpContext);
             _logger.RequestStarting(httpContext);
-            if (_diagnosticSource.IsEnabled("Microsoft.AspNet.Hosting.BeginRequest"))
+            if (diagnoticsEnabled)
             {
-                _diagnosticSource.Write("Microsoft.AspNet.Hosting.BeginRequest", new { httpContext = httpContext, tickCount = startTick });
+                _diagnosticSource.Write("Microsoft.AspNet.Hosting.BeginRequest", new { httpContext = httpContext, timestamp = startTimestamp });
             }
 
             return new Context
             {
                 HttpContext = httpContext,
                 Scope = scope,
-                StartTick = startTick,
+                StartTimestamp = startTimestamp,
             };
         }
 
         public void DisposeContext(Context context, Exception exception)
         {
             var httpContext = context.HttpContext;
-            var currentTick = Environment.TickCount;
-            _logger.RequestFinished(httpContext, context.StartTick, currentTick);
 
             if (exception == null)
             {
-                if (_diagnosticSource.IsEnabled("Microsoft.AspNet.Hosting.EndRequest"))
+                var diagnoticsEnabled = _diagnosticSource.IsEnabled("Microsoft.AspNet.Hosting.EndRequest");
+                var currentTimestamp = (diagnoticsEnabled || context.StartTimestamp != 0) ? Stopwatch.GetTimestamp() : 0;
+
+                _logger.RequestFinished(httpContext, context.StartTimestamp, currentTimestamp);
+
+                if (diagnoticsEnabled)
                 {
-                    _diagnosticSource.Write("Microsoft.AspNet.Hosting.EndRequest", new { httpContext = httpContext, tickCount = currentTick });
+                    _diagnosticSource.Write("Microsoft.AspNet.Hosting.EndRequest", new { httpContext = httpContext, timestamp = currentTimestamp });
                 }
             }
             else
             {
-                if (_diagnosticSource.IsEnabled("Microsoft.AspNet.Hosting.UnhandledException"))
+                var diagnoticsEnabled = _diagnosticSource.IsEnabled("Microsoft.AspNet.Hosting.UnhandledException");
+                var currentTimestamp = (diagnoticsEnabled || context.StartTimestamp != 0) ? Stopwatch.GetTimestamp() : 0;
+
+                _logger.RequestFinished(httpContext, context.StartTimestamp, currentTimestamp);
+
+                if (diagnoticsEnabled)
                 {
-                    _diagnosticSource.Write("Microsoft.AspNet.Hosting.UnhandledException", new { httpContext = httpContext, tickCount = currentTick, exception = exception });
+                    _diagnosticSource.Write("Microsoft.AspNet.Hosting.UnhandledException", new { httpContext = httpContext, timestamp = currentTimestamp, exception = exception });
                 }
             }
 
@@ -85,7 +94,7 @@ namespace Microsoft.AspNet.Hosting.Internal
         {
             public HttpContext HttpContext { get; set; }
             public IDisposable Scope { get; set; }
-            public int StartTick { get; set; }
+            public long StartTimestamp { get; set; }
         }
     }
 }

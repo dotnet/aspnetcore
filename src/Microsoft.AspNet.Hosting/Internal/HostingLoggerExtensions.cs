@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Collections.Generic;
 using Microsoft.AspNet.Http;
 using Microsoft.Extensions.Logging;
@@ -10,8 +11,8 @@ namespace Microsoft.AspNet.Hosting.Internal
 {
     internal static class HostingLoggerExtensions
     {
-        private const long TicksPerMillisecond = 10000;
-		
+        private static readonly double TimestampToTicks = TimeSpan.TicksPerSecond / (double)Stopwatch.Frequency;
+
         public static IDisposable RequestScope(this ILogger logger, HttpContext httpContext)
         {
             return logger.BeginScopeImpl(new HostingLogScope(httpContext));
@@ -30,13 +31,12 @@ namespace Microsoft.AspNet.Hosting.Internal
             }
         }
 
-        public static void RequestFinished(this ILogger logger, HttpContext httpContext, int startTimeInTicks, int currentTick)
+        public static void RequestFinished(this ILogger logger, HttpContext httpContext, long startTimestamp, long currentTimestamp)
         {
-            if (logger.IsEnabled(LogLevel.Information))
+            // Don't log if Information logging wasn't enabled at start or end of request as time will be wildly wrong.
+            if (startTimestamp != 0)
             {
-                var elapsed = new TimeSpan(TicksPerMillisecond * (currentTick < startTimeInTicks ?
-                    (int.MaxValue - startTimeInTicks) + (currentTick - int.MinValue) :
-                    currentTick - startTimeInTicks));
+                var elapsed = new TimeSpan((long)(TimestampToTicks * (currentTimestamp - startTimestamp)));
 
                 logger.Log(
                     logLevel: LogLevel.Information,
