@@ -87,7 +87,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
                 {
                     _logger.ExecutingAction(actionDescriptor);
 
-                    var startTime = Environment.TickCount;
+                    var startTimestamp = _logger.IsEnabled(LogLevel.Information) ? Stopwatch.GetTimestamp() : 0;
 
                     var actionContext = new ActionContext(httpContext, routeData, actionDescriptor);
                     if (_actionContextAccessor != null)
@@ -105,7 +105,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
 
                     await invoker.InvokeAsync();
 
-                    _logger.ExecutedAction(actionDescriptor, startTime);
+                    _logger.ExecutedAction(actionDescriptor, startTimestamp);
                 }
             }
             finally

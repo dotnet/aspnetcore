@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Microsoft.AspNet.Mvc.Abstractions;
 using Microsoft.Extensions.Logging;
 
@@ -10,6 +11,8 @@ namespace Microsoft.AspNet.Mvc.Logging
 {
     internal static class MvcRouteHandlerLoggerExtensions
     {
+        private static readonly double TimestampToTicks = Stopwatch.Frequency / 10000000.0;
+
         private static readonly Action<ILogger, string, Exception> _actionExecuting;
         private static readonly Action<ILogger, string, double, Exception> _actionExecuted;
 
@@ -36,10 +39,16 @@ namespace Microsoft.AspNet.Mvc.Logging
             _actionExecuting(logger, action.DisplayName, null);
         }
 
-        public static void ExecutedAction(this ILogger logger, ActionDescriptor action, int startTicks)
+        public static void ExecutedAction(this ILogger logger, ActionDescriptor action, long startTimestamp)
         {
-            var elapsed = new TimeSpan(Environment.TickCount - startTicks);
-            _actionExecuted(logger, action.DisplayName, elapsed.TotalMilliseconds, null);
+            // Don't log if logging wasn't enabled at start of request as time will be wildly wrong.
+            if (startTimestamp != 0)
+            {
+                var currentTimestamp = Stopwatch.GetTimestamp();
+                var elapsed = new TimeSpan((long)(TimestampToTicks * (currentTimestamp - startTimestamp)));
+
+                _actionExecuted(logger, action.DisplayName, elapsed.TotalMilliseconds, null);
+            }
         }
 
         public static void NoActionsMatched(this ILogger logger)

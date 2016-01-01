@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Microsoft.AspNet.Mvc.ViewComponents;
 using Microsoft.Extensions.Logging;
 
@@ -10,6 +11,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures.Logging
 {
     public static class DefaultViewComponentInvokerLoggerExtensions
     {
+        private static readonly double TimestampToTicks = Stopwatch.Frequency / 10000000.0;
         private static readonly string[] EmptyArguments =
 #if NET451
             new string[0];
@@ -66,16 +68,22 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures.Logging
         public static void ViewComponentExecuted(
             this ILogger logger,
             ViewComponentContext context,
-            int startTime,
+            long startTimestamp,
             object result)
         {
-            var elapsed = new TimeSpan(Environment.TickCount - startTime);
-            _viewComponentExecuted(
-                logger,
-                context.ViewComponentDescriptor.DisplayName,
-                elapsed.TotalMilliseconds,
-                Convert.ToString(result),
-                null);
+            // Don't log if logging wasn't enabled at start of request as time will be wildly wrong.
+            if (startTimestamp != 0)
+            {
+                var currentTimestamp = Stopwatch.GetTimestamp();
+                var elapsed = new TimeSpan((long)(TimestampToTicks * (currentTimestamp - startTimestamp)));
+
+                _viewComponentExecuted(
+                    logger,
+                    context.ViewComponentDescriptor.DisplayName,
+                    elapsed.TotalMilliseconds,
+                    Convert.ToString(result),
+                    null);
+            }
         }
 
         private class ViewComponentLogScope : ILogValues

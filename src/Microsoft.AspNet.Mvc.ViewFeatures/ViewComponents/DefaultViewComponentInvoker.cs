@@ -124,11 +124,11 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
                 _diagnosticSource.BeforeViewComponent(context, component);
                 _logger.ViewComponentExecuting(context, arguments);
 
-                var startTime = Environment.TickCount;
+                var startTimestamp = _logger.IsEnabled(LogLevel.Debug) ? Stopwatch.GetTimestamp() : 0;
                 var result = await ControllerActionExecutor.ExecuteAsync(method, component, arguments);
 
                 var viewComponentResult = CoerceToViewComponentResult(result);
-                _logger.ViewComponentExecuted(context, startTime, viewComponentResult);
+                _logger.ViewComponentExecuted(context, startTimestamp, viewComponentResult);
                 _diagnosticSource.AfterViewComponent(context, viewComponentResult, component);
 
                 return viewComponentResult;
@@ -149,7 +149,7 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
                 _diagnosticSource.BeforeViewComponent(context, component);
                 _logger.ViewComponentExecuting(context, arguments);
 
-                var startTime = Environment.TickCount;
+                var startTimestamp = _logger.IsEnabled(LogLevel.Debug) ? Stopwatch.GetTimestamp() : 0;
                 object result;
                 try
                 {
@@ -164,7 +164,7 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
                 }
 
                 var viewComponentResult = CoerceToViewComponentResult(result);
-                _logger.ViewComponentExecuted(context, startTime, viewComponentResult);
+                _logger.ViewComponentExecuted(context, startTimestamp, viewComponentResult);
                 _diagnosticSource.AfterViewComponent(context, viewComponentResult, component);
 
                 return viewComponentResult;
