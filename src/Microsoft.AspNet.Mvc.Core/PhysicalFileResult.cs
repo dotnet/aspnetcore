@@ -3,8 +3,10 @@
 
 using System;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.Net.Http.Headers;
 
@@ -16,6 +18,7 @@ namespace Microsoft.AspNet.Mvc
     /// </summary>
     public class PhysicalFileResult : FileResult
     {
+        private const int DefaultBufferSize = 0x1000;
         private string _fileName;
 
         /// <summary>
@@ -80,14 +83,52 @@ namespace Microsoft.AspNet.Mvc
         }
 
         /// <inheritdoc />
-        protected override Task WriteFileAsync(HttpResponse response)
+        protected override async Task WriteFileAsync(HttpResponse response)
         {
             if (!Path.IsPathRooted(FileName))
             {
                 throw new NotSupportedException(Resources.FormatFileResult_PathNotRooted(FileName));
             }
 
-            return response.SendFileAsync(FileName);
+            var sendFile = response.HttpContext.Features.Get<IHttpSendFileFeature>();
+            if (sendFile != null)
+            {
+                await sendFile.SendFileAsync(
+                    FileName,
+                    offset: 0,
+                    length: null,
+                    cancellation: default(CancellationToken));
+            }
+            else
+            {
+                var fileStream = GetFileStream(FileName);
+
+                using (fileStream)
+                {
+                    await fileStream.CopyToAsync(response.Body, DefaultBufferSize);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Returns <see cref="Stream"/> for the specified <paramref name="path"/>.
+        /// </summary>
+        /// <param name="path">The path for which the <see cref="FileStream"/> is needed.</param>
+        /// <returns><see cref="FileStream"/> for the specified <paramref name="path"/>.</returns>
+        protected virtual Stream GetFileStream(string path)
+        {
+            if (path == null)
+            {
+                throw new ArgumentNullException(nameof(path));
+            }
+
+            return new FileStream(
+                    path,
+                    FileMode.Open,
+                    FileAccess.Read,
+                    FileShare.ReadWrite,
+                    DefaultBufferSize,
+                    FileOptions.Asynchronous | FileOptions.SequentialScan);
         }
     }
 }

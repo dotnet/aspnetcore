@@ -106,9 +106,14 @@ namespace Microsoft.AspNet.Mvc
             if (fileInfo.Exists)
             {
                 var physicalPath = fileInfo.PhysicalPath;
-                if (!string.IsNullOrEmpty(physicalPath))
+                var sendFile = response.HttpContext.Features.Get<IHttpSendFileFeature>();
+                if (sendFile != null && !string.IsNullOrEmpty(physicalPath))
                 {
-                    await response.SendFileAsync(physicalPath);
+                    await sendFile.SendFileAsync(
+                        physicalPath,
+                        offset: 0,
+                        length: null,
+                        cancellation: default(CancellationToken));
                 }
                 else
                 {
