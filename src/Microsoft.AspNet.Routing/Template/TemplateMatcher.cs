@@ -14,11 +14,15 @@ namespace Microsoft.AspNet.Routing.Template
         private const string SeparatorString = "/";
         private const char SeparatorChar = '/';
 
+        // Perf: This is a cache to avoid looking things up in 'Defaults' each request.
+        private readonly bool[] _hasDefaultValue;
+        private readonly object[] _defaultValues;
+
         private static readonly char[] Delimiters = new char[] { SeparatorChar };
 
         public TemplateMatcher(
             RouteTemplate template,
-            IReadOnlyDictionary<string, object> defaults)
+            RouteValueDictionary defaults)
         {
             if (template == null)
             {
@@ -27,11 +31,37 @@ namespace Microsoft.AspNet.Routing.Template
 
             Template = template;
             Defaults = defaults ?? new RouteValueDictionary();
+
+            // Perf: cache the default value for each parameter (other than complex segments).
+            _hasDefaultValue = new bool[Template.Segments.Count];
+            _defaultValues = new object[Template.Segments.Count];
+
+            for (var i = 0; i < Template.Segments.Count; i++)
+            {
+                var segment = Template.Segments[i];
+                if (!segment.IsSimple)
+                {
+                    continue;
+                }
+
+                var part = segment.Parts[0];
+                if (!part.IsParameter)
+                {
+                    continue;
+                }
+
+                object value;
+                if (Defaults.TryGetValue(part.Name, out value))
+                {
+                    _hasDefaultValue[i] = true;
+                    _defaultValues[i] = value;
+                }
+            }
         }
 
-        public IReadOnlyDictionary<string, object> Defaults { get; private set; }
+        public RouteValueDictionary Defaults { get; }
 
-        public RouteTemplate Template { get; private set; }
+        public RouteTemplate Template { get; }
 
         public RouteValueDictionary Match(PathString path)
         {
@@ -77,7 +107,7 @@ namespace Microsoft.AspNet.Routing.Template
                     // For a parameter, validate that it's a has some length, or we have a default, or it's optional.
                     var part = routeSegment.Parts[0];
                     if (requestSegment.Length == 0 &&
-                        !Defaults.ContainsKey(part.Name) &&
+                        !_hasDefaultValue[i] &&
                         !part.IsOptional)
                     {
                         // There's no value for this parameter, the route can't match.
@@ -125,7 +155,7 @@ namespace Microsoft.AspNet.Routing.Template
                 // If we get here, this is a simple segment with a parameter. We need it to be optional, or for the
                 // defaults to have a value.
                 Debug.Assert(routeSegment.IsSimple && part.IsParameter);
-                if (!Defaults.ContainsKey(part.Name) && !part.IsOptional)
+                if (!_hasDefaultValue[i] && !part.IsOptional)
                 {
                     // There's no default for this (non-optional) parameter so it can't match.
                     return null;
@@ -151,11 +181,8 @@ namespace Microsoft.AspNet.Routing.Template
                     }
                     else
                     {
-                        // It's ok for a catch-all to produce a null value
-                        object defaultValue;
-                        Defaults.TryGetValue(part.Name, out defaultValue);
-
-                        values.Add(part.Name, defaultValue);
+                        // It's ok for a catch-all to produce a null value, so we don't check _hasDefaultValue.
+                        values.Add(part.Name, _defaultValues[i]);
                     }
 
                     // A catch-all has to be the last part, so we're done.
@@ -172,10 +199,9 @@ namespace Microsoft.AspNet.Routing.Template
                     }
                     else
                     {
-                        object defaultValue;
-                        if (Defaults.TryGetValue(part.Name, out defaultValue))
+                        if (_hasDefaultValue[i])
                         {
-                            values.Add(part.Name, defaultValue);
+                            values.Add(part.Name, _defaultValues[i]);
                         }
                     }
                 }
@@ -200,10 +226,9 @@ namespace Microsoft.AspNet.Routing.Template
                 Debug.Assert(part.IsParameter);
    
                 // It's ok for a catch-all to produce a null value
-                object defaultValue;
-                if (Defaults.TryGetValue(part.Name, out defaultValue) || part.IsCatchAll)
+                if (_hasDefaultValue[i] || part.IsCatchAll)
                 {
-                    values.Add(part.Name, defaultValue);
+                    values.Add(part.Name, _defaultValues[i]);
                 }
             }
 

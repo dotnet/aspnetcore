@@ -915,13 +915,13 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         private static void RunTest(
             string template,
             string path,
-            IReadOnlyDictionary<string, object> defaults,
+            RouteValueDictionary defaults,
             IDictionary<string, object> expected)
         {
             // Arrange
             var matcher = new TemplateMatcher(
                 TemplateParser.Parse(template), 
-                defaults ?? new Dictionary<string, object>());
+                defaults ?? new RouteValueDictionary());
 
             // Act
             var match = matcher.Match(new PathString(path));
