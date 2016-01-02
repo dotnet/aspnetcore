@@ -241,7 +241,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
                 array = block.Array;
                 while (following > 0)
                 {
-#if !DEBUG // Need unit tests to test Vector path
+// Need unit tests to test Vector path
+#if !DEBUG 
                     // Check will be Jitted away https://github.com/dotnet/coreclr/issues/1079
                     if (Vector.IsHardwareAccelerated)
                     {
@@ -261,7 +262,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
                             _index = index + FindFirstEqualByte(ref byte0Equals);
                             return byte0;
                         }
-#if !DEBUG // Need unit tests to test Vector path
+// Need unit tests to test Vector path
+#if !DEBUG 
                     }
 #endif
                     fixed (byte* ptr = &block.Array[index])
@@ -322,7 +324,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
                 while (following > 0)
                 {
 
-#if !DEBUG // Need unit tests to test Vector path
+// Need unit tests to test Vector path
+#if !DEBUG 
                     // Check will be Jitted away https://github.com/dotnet/coreclr/issues/1079
                     if (Vector.IsHardwareAccelerated)
                     {
@@ -360,7 +363,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
                             _index = index + byte1Index;
                             return byte1;
                         }
-#if !DEBUG // Need unit tests to test Vector path
+// Need unit tests to test Vector path
+#if !DEBUG 
                     }
 #endif
                     fixed (byte* ptr = &block.Array[index])
@@ -428,7 +432,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
                 array = block.Array;
                 while (following > 0)
                 {
-#if !DEBUG // Need unit tests to test Vector path
+// Need unit tests to test Vector path
+#if !DEBUG 
                     // Check will be Jitted away https://github.com/dotnet/coreclr/issues/1079
                     if (Vector.IsHardwareAccelerated)
                     {
@@ -493,7 +498,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
                             _index = index + toMove;
                             return toReturn;
                         }
-#if !DEBUG // Need unit tests to test Vector path
+// Need unit tests to test Vector path
+#if !DEBUG 
                     }
 #endif
                     fixed (byte* ptr = &block.Array[index])
