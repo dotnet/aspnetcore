@@ -10,7 +10,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
     {
         static PlatformApis()
         {
-#if DOTNET5_4 || DNXCORE50
+#if DOTNET5_4
             IsWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
             IsDarwin = RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
 #else

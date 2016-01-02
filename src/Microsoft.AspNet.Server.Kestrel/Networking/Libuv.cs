@@ -12,12 +12,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
         {
             IsWindows = PlatformApis.IsWindows;
 
-            var isDarwinMono =
-#if DNX451
-                IsWindows ? false : PlatformApis.IsDarwin;
-#else
-                false;
-#endif
+            var isDarwinMono = !IsWindows && PlatformApis.IsDarwin;
 
             if (isDarwinMono)
             {
