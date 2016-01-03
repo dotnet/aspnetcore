@@ -149,7 +149,7 @@ namespace Microsoft.AspNet.Mvc
             var content = "<html>CreatedBody</html>";
             var contentType = "text/html";
             var fileName = "Created.html";
-            var mockHttpContext = new Mock<DefaultHttpContext>();
+            var mockHttpContext = new Mock<HttpContext>();
             mockHttpContext.Setup(x => x.Response.RegisterForDispose(It.IsAny<IDisposable>()));
 
             var controller = new TestabilityController();
@@ -563,7 +563,7 @@ namespace Microsoft.AspNet.Mvc
 
             // Assert
             Assert.NotNull(result);
-            
+
             Assert.Equal("TagCloud", result.ViewComponentName);
         }
 

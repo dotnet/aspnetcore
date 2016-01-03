@@ -3,10 +3,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Internal;
@@ -14,9 +12,6 @@ using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.AspNet.Mvc.ViewFeatures;
-using Microsoft.AspNet.Routing;
-using Microsoft.AspNet.Testing;
-using Microsoft.Net.Http.Headers;
 using Moq;
 using Newtonsoft.Json;
 using Xunit;
@@ -189,7 +184,7 @@ namespace Microsoft.AspNet.Mvc.Test
         public void Controller_Json_IDisposableObject_RegistersForDispose()
         {
             // Arrange
-            var mockHttpContext = new Mock<DefaultHttpContext>();
+            var mockHttpContext = new Mock<HttpContext>();
             mockHttpContext.Setup(x => x.Response.RegisterForDispose(It.IsAny<IDisposable>()));
 
             var controller = new TestableController();
@@ -212,7 +207,7 @@ namespace Microsoft.AspNet.Mvc.Test
         public void Controller_JsonWithParameterValueAndSerializerSettings_IDisposableObject_RegistersForDispose()
         {
             // Arrange
-            var mockHttpContext = new Mock<DefaultHttpContext>();
+            var mockHttpContext = new Mock<HttpContext>();
             mockHttpContext.Setup(x => x.Response.RegisterForDispose(It.IsAny<IDisposable>()));
 
             var controller = new TestableController();
@@ -262,7 +257,7 @@ namespace Microsoft.AspNet.Mvc.Test
             // Assert
             Assert.True(controller.DisposeCalled);
         }
-        
+
         [Fact]
         public void TempData_CanSetAndGetValues()
         {

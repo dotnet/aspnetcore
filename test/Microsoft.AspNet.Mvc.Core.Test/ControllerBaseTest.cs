@@ -448,7 +448,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         public void Created_IDisposableObject_RegistersForDispose()
         {
             // Arrange
-            var mockHttpContext = new Mock<DefaultHttpContext>();
+            var mockHttpContext = new Mock<HttpContext>();
             mockHttpContext.Setup(x => x.Response.RegisterForDispose(It.IsAny<IDisposable>()));
             var uri = new Uri("/test/url", UriKind.Relative);
 
@@ -534,7 +534,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         public void CreatedAtAction_IDisposableObject_RegistersForDispose()
         {
             // Arrange
-            var mockHttpContext = new Mock<DefaultHttpContext>();
+            var mockHttpContext = new Mock<HttpContext>();
             mockHttpContext.Setup(x => x.Response.RegisterForDispose(It.IsAny<IDisposable>()));
 
             var controller = new TestableController();
@@ -616,7 +616,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         public void CreatedAtRoute_IDisposableObject_RegistersForDispose()
         {
             // Arrange
-            var mockHttpContext = new Mock<DefaultHttpContext>();
+            var mockHttpContext = new Mock<HttpContext>();
             mockHttpContext.Setup(x => x.Response.RegisterForDispose(It.IsAny<IDisposable>()));
 
             var controller = new TestableController();
@@ -709,7 +709,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         public void File_WithStream()
         {
             // Arrange
-            var mockHttpContext = new Mock<DefaultHttpContext>();
+            var mockHttpContext = new Mock<HttpContext>();
             mockHttpContext.Setup(x => x.Response.RegisterForDispose(It.IsAny<IDisposable>()));
 
             var controller = new TestableController();
@@ -731,7 +731,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         public void File_WithStreamAndFileDownloadName()
         {
             // Arrange
-            var mockHttpContext = new Mock<DefaultHttpContext>();
+            var mockHttpContext = new Mock<HttpContext>();
             mockHttpContext.Setup(x => x.Response.RegisterForDispose(It.IsAny<IDisposable>()));
 
             var controller = new TestableController();
@@ -799,7 +799,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         public void HttpNotFound_IDisposableObject_RegistersForDispose()
         {
             // Arrange
-            var mockHttpContext = new Mock<DefaultHttpContext>();
+            var mockHttpContext = new Mock<HttpContext>();
             mockHttpContext.Setup(x => x.Response.RegisterForDispose(It.IsAny<IDisposable>()));
 
             var controller = new TestableController();
@@ -837,7 +837,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         public void Ok_WithIDisposableObject_RegistersForDispose()
         {
             // Arrange
-            var mockHttpContext = new Mock<DefaultHttpContext>();
+            var mockHttpContext = new Mock<HttpContext>();
             mockHttpContext.Setup(x => x.Response.RegisterForDispose(It.IsAny<IDisposable>()));
 
             var controller = new TestableController();
@@ -891,7 +891,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
         public void BadRequest_IDisposableObject_RegistersForDispose()
         {
             // Arrange
-            var mockHttpContext = new Mock<DefaultHttpContext>();
+            var mockHttpContext = new Mock<HttpContext>();
             mockHttpContext.Setup(x => x.Response.RegisterForDispose(It.IsAny<IDisposable>()));
 
             var controller = new TestableController();
