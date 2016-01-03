@@ -6,9 +6,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.AspNet.Razor.Chunks.Generators;
+using Microsoft.AspNet.Razor.Compilation.TagHelpers;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.TagHelpers;
-using Microsoft.AspNet.Razor.Compilation.TagHelpers;
 using Microsoft.AspNet.Razor.Tokenizer.Symbols;
 
 namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
@@ -119,7 +119,7 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
             var childSpan = beginTagBlock.FindLastDescendentSpan();
 
             // Self-closing tags are always valid despite descriptors[X].TagStructure.
-            if (childSpan?.Content.EndsWith("/>") ?? false)
+            if (childSpan?.Content.EndsWith("/>", StringComparison.Ordinal) ?? false)
             {
                 return TagMode.SelfClosing;
             }

@@ -108,7 +108,7 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
         {
             WriteStringLiteral(value.Value);
             WriteParameterSeparator();
-            Write(value.Location.AbsoluteIndex.ToString(CultureInfo.CurrentCulture));
+            Write(value.Location.AbsoluteIndex.ToString(CultureInfo.InvariantCulture));
 
             return this;
         }
@@ -144,7 +144,8 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
 
         public CSharpCodeWriter WriteUsing(string name, bool endLine)
         {
-            Write(string.Format("using {0}", name));
+            Write("using ");
+            Write(name);
 
             if (endLine)
             {
@@ -225,6 +226,7 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
         {
             return WriteEndMethodInvocation(endLine: true);
         }
+
         public CSharpCodeWriter WriteEndMethodInvocation(bool endLine)
         {
             Write(")");
@@ -300,7 +302,9 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
 
         public CSharpCodeWriter WriteMethodInvocation(string methodName, bool endLine, params string[] parameters)
         {
-            return WriteStartMethodInvocation(methodName).Write(string.Join(", ", parameters)).WriteEndMethodInvocation(endLine);
+            return WriteStartMethodInvocation(methodName)
+                .Write(string.Join(", ", parameters))
+                .WriteEndMethodInvocation(endLine);
         }
 
         public CSharpDisableWarningScope BuildDisableWarningScope(int warning)
@@ -363,7 +367,10 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
             return BuildClassDeclaration(accessibility, name, new string[] { baseType });
         }
 
-        public CSharpCodeWritingScope BuildClassDeclaration(string accessibility, string name, IEnumerable<string> baseTypes)
+        public CSharpCodeWritingScope BuildClassDeclaration(
+            string accessibility,
+            string name,
+            IEnumerable<string> baseTypes)
         {
             Write(accessibility).Write(" class ").Write(name);
 
@@ -388,9 +395,17 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
             return BuildConstructor(accessibility, name, Enumerable.Empty<KeyValuePair<string, string>>());
         }
 
-        public CSharpCodeWritingScope BuildConstructor(string accessibility, string name, IEnumerable<KeyValuePair<string, string>> parameters)
+        public CSharpCodeWritingScope BuildConstructor(
+            string accessibility,
+            string name,
+            IEnumerable<KeyValuePair<string, string>> parameters)
         {
-            Write(accessibility).Write(" ").Write(name).Write("(").Write(string.Join(", ", parameters.Select(p => p.Key + " " + p.Value))).WriteLine(")");
+            Write(accessibility)
+                .Write(" ")
+                .Write(name)
+                .Write("(")
+                .Write(string.Join(", ", parameters.Select(p => p.Key + " " + p.Value)))
+                .WriteLine(")");
 
             return new CSharpCodeWritingScope(this);
         }
@@ -400,15 +415,28 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
             return BuildMethodDeclaration(accessibility, returnType, name, Enumerable.Empty<KeyValuePair<string, string>>());
         }
 
-        public CSharpCodeWritingScope BuildMethodDeclaration(string accessibility, string returnType, string name, IEnumerable<KeyValuePair<string, string>> parameters)
+        public CSharpCodeWritingScope BuildMethodDeclaration(
+            string accessibility,
+            string returnType,
+            string name,
+            IEnumerable<KeyValuePair<string, string>> parameters)
         {
-            Write(accessibility).Write(" ").Write(returnType).Write(" ").Write(name).Write("(").Write(string.Join(", ", parameters.Select(p => p.Key + " " + p.Value))).WriteLine(")");
+            Write(accessibility)
+                .Write(" ")
+                .Write(returnType)
+                .Write(" ")
+                .Write(name)
+                .Write("(")
+                .Write(string.Join(", ", parameters.Select(p => p.Key + " " + p.Value)))
+                .WriteLine(")");
 
             return new CSharpCodeWritingScope(this);
         }
 
-        // TODO: Do I need to look at the document content to determine its mapping length?
-        public CSharpLineMappingWriter BuildLineMapping(SourceLocation documentLocation, int contentLength, string sourceFilename)
+        public CSharpLineMappingWriter BuildLineMapping(
+            SourceLocation documentLocation,
+            int contentLength,
+            string sourceFilename)
         {
             return new CSharpLineMappingWriter(this, documentLocation, contentLength, sourceFilename);
         }

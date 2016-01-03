@@ -12,45 +12,65 @@ using Microsoft.AspNet.Razor.Text;
 namespace Microsoft.AspNet.Razor
 {
     /// <summary>
-    /// Parser used by editors to avoid reparsing the entire document on each text change
+    /// Parser used by editors to avoid reparsing the entire document on each text change.
     /// </summary>
     /// <remarks>
+    /// <para>
     /// This parser is designed to allow editors to avoid having to worry about incremental parsing.
-    /// The CheckForStructureChanges method can be called with every change made by a user in an editor and
-    /// the parser will provide a result indicating if it was able to incrementally reparse the document.
-    ///
+    /// The <see cref="CheckForStructureChanges"/> method can be called with every change made by a user in an editor
+    /// and the parser will provide a result indicating if it was able to incrementally apply the change.
+    /// </para>
+    /// <para>
     /// The general workflow for editors with this parser is:
-    /// 0. User edits document
-    /// 1. Editor builds TextChange structure describing the edit and providing a reference to the _updated_ text buffer
-    /// 2. Editor calls CheckForStructureChanges passing in that change.
-    /// 3. Parser determines if the change can be simply applied to an existing parse tree node
-    ///   a.  If it can, the Parser updates its parse tree and returns PartialParseResult.Accepted
-    ///   b.  If it can not, the Parser starts a background parse task and return PartialParseResult.Rejected
-    /// NOTE: Additional flags can be applied to the PartialParseResult, see that enum for more details.  However,
-    ///       the Accepted or Rejected flags will ALWAYS be present
-    ///
-    /// A change can only be incrementally parsed if a single, unique, Span (see Microsoft.AspNet.Razor.Parser.SyntaxTree) in the syntax tree can
-    /// be identified as owning the entire change.  For example, if a change overlaps with multiple spans, the change cannot be
-    /// parsed incrementally and a full reparse is necessary.  A Span "owns" a change if the change occurs either a) entirely
-    /// within it's boundaries or b) it is a pure insertion (see TextChange) at the end of a Span whose CanGrow flag (see Span) is
-    /// true.
-    ///
-    /// Even if a single unique Span owner can be identified, it's possible the edit will cause the Span to split or merge with other
-    /// Spans, in which case, a full reparse is necessary to identify the extent of the changes to the tree.
-    ///
-    /// When the RazorEditorParser returns Accepted, it updates CurrentParseTree immediately.  However, the editor is expected to
-    /// update it's own data structures independently.  It can use CurrentParseTree to do this, as soon as the editor returns from
-    /// CheckForStructureChanges, but it should (ideally) have logic for doing so without needing the new tree.
-    ///
-    /// When Rejected is returned by CheckForStructureChanges, a background parse task has _already_ been started.  When that task
-    /// finishes, the DocumentStructureChanged event will be fired containing the new generated code, parse tree and a reference to
-    /// the original TextChange that caused the reparse, to allow the editor to resolve the new tree against any changes made since
-    /// calling CheckForStructureChanges.
-    ///
-    /// If a call to CheckForStructureChanges occurs while a reparse is already in-progress, the reparse is cancelled IMMEDIATELY
-    /// and Rejected is returned without attempting to reparse.  This means that if a conusmer calls CheckForStructureChanges, which
-    /// returns Rejected, then calls it again before DocumentParseComplete is fired, it will only recieve one DocumentParseComplete
-    /// event, for the second change.
+    /// <list type="number">
+    /// <item><description>User edits document.</description></item>
+    /// <item><description>Editor builds a <see cref="TextChange"/> structure describing the edit and providing a
+    /// reference to the <em>updated</em> text buffer.</description></item>
+    /// <item><description>Editor calls <see cref="CheckForStructureChanges"/> passing in that change.
+    /// </description></item>
+    /// <item><description>Parser determines if the change can be simply applied to an existing parse tree node.
+    /// </description></item>
+    /// <list type="number">
+    /// <item><description>If it can, the Parser updates its parse tree and returns
+    /// <see cref="PartialParseResult.Accepted"/>.</description></item>
+    /// <item><description>If it cannot, the Parser starts a background parse task and returns
+    /// <see cref="PartialParseResult.Rejected"/>.</description></item>
+    /// </list>
+    /// </list>
+    /// NOTE: Additional flags can be applied to the <see cref="PartialParseResult"/>, see that <c>enum</c> for more
+    /// details. However, the <see cref="PartialParseResult.Accepted"/> or <see cref="PartialParseResult.Rejected"/>
+    /// flags will ALWAYS be present.
+    /// </para>
+    /// <para>
+    /// A change can only be incrementally parsed if a single, unique, <see cref="Span"/> (see
+    /// <see cref="Parser.SyntaxTree"/>) in the syntax tree can be identified as owning the entire change.
+    /// For example, if a change overlaps with multiple <see cref="Span"/>s, the change cannot be parsed incrementally
+    /// and a full reparse is necessary. A <see cref="Span"/> "owns" a change if the change occurs either a) entirely
+    /// within it's boundaries or b) it is a pure insertion (see <see cref="TextChange"/>) at the end of a
+    /// <see cref="Span"/> whose <see cref="Span.EditHandler"/> can accept the change (see
+    /// <see cref="SpanEditHandler.CanAcceptChange"/>).
+    /// </para>
+    /// <para>
+    /// When the <see cref="RazorEditorParser"/> returns <see cref="PartialParseResult.Accepted"/>, it updates
+    /// <see cref="CurrentParseTree"/> immediately. However, the editor is expected to update it's own data structures
+    /// independently. It can use <see cref="CurrentParseTree"/> to do this, as soon as the editor returns from
+    /// <see cref="CheckForStructureChanges"/>, but it should (ideally) have logic for doing so without needing the new
+    /// tree.
+    /// </para>
+    /// <para>
+    /// When <see cref="PartialParseResult.Rejected"/> is returned by <see cref="CheckForStructureChanges"/>, a
+    /// background parse task has <em>already</em> been started. When that task finishes, the
+    /// <see cref="DocumentParseComplete"/> event will be fired containing the new generated code, parse tree and a
+    /// reference to the original <see cref="TextChange"/> that caused the reparse, to allow the editor to resolve the
+    /// new tree against any changes made since calling <see cref="CheckForStructureChanges"/>.
+    /// </para>
+    /// <para>
+    /// If a call to <see cref="CheckForStructureChanges"/> occurs while a reparse is already in-progress, the reparse
+    /// is canceled IMMEDIATELY and <see cref="PartialParseResult.Rejected"/> is returned without attempting to
+    /// reparse. This means that if a consumer calls <see cref="CheckForStructureChanges"/>, which returns
+    /// <see cref="PartialParseResult.Rejected"/>, then calls it again before <see cref="DocumentParseComplete"/> is
+    /// fired, it will only receive one <see cref="DocumentParseComplete"/> event, for the second change.
+    /// </para>
     /// </remarks>
     public class RazorEditorParser : IDisposable
     {
@@ -61,11 +81,13 @@ namespace Microsoft.AspNet.Razor
         private Block _currentParseTree;
 
         /// <summary>
-        /// Constructs the editor parser.  One instance should be used per active editor.  This
-        /// instance _can_ be shared among reparses, but should _never_ be shared between documents.
+        /// Constructs the editor parser. One instance should be used per active editor. This
+        /// instance <em>can</em> be shared among reparses, but should <em>never</em> be shared between documents.
         /// </summary>
-        /// <param name="host">The <see cref="RazorEngineHost"/> which defines the environment in which the generated code will live.  <see cref="F:RazorEngineHost.DesignTimeMode"/> should be set if design-time code mappings are desired</param>
-        /// <param name="sourceFileName">The physical path to use in line pragmas</param>
+        /// <param name="host">The <see cref="RazorEngineHost"/> which defines the environment in which the generated
+        /// code will live. <see cref="RazorEngineHost.DesignTimeMode"/> should be set if design-time behavior is
+        /// desired.</param>
+        /// <param name="sourceFileName">The physical path to use in line pragmas.</param>
         public RazorEditorParser(RazorEngineHost host, string sourceFileName)
         {
             if (host == null)
@@ -86,7 +108,7 @@ namespace Microsoft.AspNet.Razor
         }
 
         /// <summary>
-        /// Event fired when a full reparse of the document completes
+        /// Event fired when a full reparse of the document completes.
         /// </summary>
         public event EventHandler<DocumentParseCompleteEventArgs> DocumentParseComplete;
 
@@ -112,19 +134,20 @@ namespace Microsoft.AspNet.Razor
         }
 
         /// <summary>
-        /// Determines if a change will cause a structural change to the document and if not, applies it to the existing tree.
-        /// If a structural change would occur, automatically starts a reparse
+        /// Determines if a change will cause a structural change to the document and if not, applies it to the
+        /// existing tree. If a structural change would occur, automatically starts a reparse.
         /// </summary>
         /// <remarks>
         /// NOTE: The initial incremental parsing check and actual incremental parsing (if possible) occurs
-        /// on the callers thread.  However, if a full reparse is needed, this occurs on a background thread.
+        /// on the caller's thread. However, if a full reparse is needed, this occurs on a background thread.
         /// </remarks>
-        /// <param name="change">The change to apply to the parse tree</param>
-        /// <returns>A PartialParseResult value indicating the result of the incremental parse</returns>
+        /// <param name="change">The change to apply to the parse tree.</param>
+        /// <returns>A <see cref="PartialParseResult"/> value indicating the result of the incremental parse.</returns>
         public virtual PartialParseResult CheckForStructureChanges(TextChange change)
         {
             // Validate the change
             long? elapsedMs = null;
+
 #if EDITOR_TRACING
             var sw = new Stopwatch();
             sw.Start();
@@ -132,9 +155,9 @@ namespace Microsoft.AspNet.Razor
             RazorEditorTrace.TraceLine(RazorResources.FormatTrace_EditorReceivedChange(Path.GetFileName(FileName), change));
             if (change.NewBuffer == null)
             {
-                throw new ArgumentException(RazorResources.FormatStructure_Member_CannotBeNull(
-                                                          nameof(change.NewBuffer),
-                                                          nameof(TextChange)), nameof(change));
+                throw new ArgumentException(
+                    RazorResources.FormatStructure_Member_CannotBeNull(nameof(change.NewBuffer), nameof(TextChange)),
+                    nameof(change));
             }
 
             var result = PartialParseResult.Rejected;
@@ -168,16 +191,18 @@ namespace Microsoft.AspNet.Razor
             elapsedMs = sw.ElapsedMilliseconds;
             sw.Reset();
 #endif
-            RazorEditorTrace.TraceLine(
-                RazorResources.FormatTrace_EditorProcessedChange(
-                            Path.GetFileName(FileName),
-                            changeString, elapsedMs.HasValue ? elapsedMs.Value.ToString(CultureInfo.InvariantCulture) : "?",
-                            result.ToString()));
+
+            RazorEditorTrace.TraceLine(RazorResources.FormatTrace_EditorProcessedChange(
+                Path.GetFileName(FileName),
+                changeString,
+                elapsedMs.HasValue ? elapsedMs.Value.ToString(CultureInfo.InvariantCulture) : "?",
+                result.ToString()));
+
             return result;
         }
 
         /// <summary>
-        /// Disposes of this parser.  Should be called when the editor window is closed and the document is unloaded.
+        /// Disposes of this parser. Should be called when the editor window is closed and the document is unloaded.
         /// </summary>
         public void Dispose()
         {
@@ -235,6 +260,7 @@ namespace Microsoft.AspNet.Razor
                     _lastAutoCompleteSpan = null;
                 }
             }
+
             return result;
         }
 

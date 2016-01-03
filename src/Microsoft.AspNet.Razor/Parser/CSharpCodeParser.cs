@@ -4,8 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using Microsoft.AspNet.Razor.Editor;
 using Microsoft.AspNet.Razor.Chunks.Generators;
+using Microsoft.AspNet.Razor.Editor;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.Tokenizer;
 using Microsoft.AspNet.Razor.Tokenizer.Symbols;
@@ -103,12 +103,16 @@ namespace Microsoft.AspNet.Razor.Parser
         [Conditional("DEBUG")]
         internal void Assert(CSharpKeyword expectedKeyword)
         {
-            Debug.Assert(CurrentSymbol.Type == CSharpSymbolType.Keyword && CurrentSymbol.Keyword.HasValue && CurrentSymbol.Keyword.Value == expectedKeyword);
+            Debug.Assert(CurrentSymbol.Type == CSharpSymbolType.Keyword &&
+                CurrentSymbol.Keyword.HasValue &&
+                CurrentSymbol.Keyword.Value == expectedKeyword);
         }
 
         protected internal bool At(CSharpKeyword keyword)
         {
-            return At(CSharpSymbolType.Keyword) && CurrentSymbol.Keyword.HasValue && CurrentSymbol.Keyword.Value == keyword;
+            return At(CSharpSymbolType.Keyword) &&
+                CurrentSymbol.Keyword.HasValue &&
+                CurrentSymbol.Keyword.Value == keyword;
         }
 
         protected internal bool AcceptIf(CSharpKeyword keyword)
@@ -145,7 +149,9 @@ namespace Microsoft.AspNet.Razor.Parser
                     AcceptWhile(IsSpacingToken(includeNewLines: true, includeComments: true));
 
                     var current = CurrentSymbol;
-                    if (At(CSharpSymbolType.StringLiteral) && CurrentSymbol.Content.Length > 0 && CurrentSymbol.Content[0] == SyntaxConstants.TransitionCharacter)
+                    if (At(CSharpSymbolType.StringLiteral) &&
+                        CurrentSymbol.Content.Length > 0 &&
+                        CurrentSymbol.Content[0] == SyntaxConstants.TransitionCharacter)
                     {
                         var split = Language.SplitSymbol(CurrentSymbol, 1, CSharpSymbolType.Transition);
                         current = split.Item1;
@@ -222,11 +228,15 @@ namespace Microsoft.AspNet.Razor.Parser
                             }
                             else
                             {
-                                if (CurrentSymbol.Content.Equals(SyntaxConstants.CSharp.HelperKeyword))
+                                if (string.Equals(
+                                    CurrentSymbol.Content,
+                                    SyntaxConstants.CSharp.HelperKeyword,
+                                    StringComparison.Ordinal))
                                 {
                                     Context.OnError(
                                         CurrentLocation,
-                                        RazorResources.FormatParseError_HelperDirectiveNotAvailable(SyntaxConstants.CSharp.HelperKeyword),
+                                        RazorResources.FormatParseError_HelperDirectiveNotAvailable(
+                                            SyntaxConstants.CSharp.HelperKeyword),
                                         CurrentSymbol.Content.Length);
                                 }
 
@@ -380,7 +390,8 @@ namespace Microsoft.AspNet.Razor.Parser
         {
             if (!EndOfFile)
             {
-                if (CurrentSymbol.Type == CSharpSymbolType.LeftParenthesis || CurrentSymbol.Type == CSharpSymbolType.LeftBracket)
+                if (CurrentSymbol.Type == CSharpSymbolType.LeftParenthesis ||
+                    CurrentSymbol.Type == CSharpSymbolType.LeftBracket)
                 {
                     // If we end within "(", whitespace is fine
                     Span.EditHandler.AcceptedCharacters = AcceptedCharacters.Any;
@@ -541,7 +552,9 @@ namespace Microsoft.AspNet.Razor.Parser
             using (PushSpanConfig(ConfigureExplicitExpressionSpan))
             {
                 var success = Balance(
-                    BalancingModes.BacktrackOnFailure | BalancingModes.NoErrorOnFailure | BalancingModes.AllowCommentsAndTemplates,
+                    BalancingModes.BacktrackOnFailure |
+                        BalancingModes.NoErrorOnFailure |
+                        BalancingModes.AllowCommentsAndTemplates,
                     CSharpSymbolType.LeftParenthesis,
                     CSharpSymbolType.RightParenthesis,
                     block.Start);

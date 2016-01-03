@@ -5,7 +5,6 @@ using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
-using System.Text;
 using Microsoft.AspNet.Razor.Chunks;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 
@@ -257,9 +256,9 @@ namespace Microsoft.AspNet.Razor.CodeGenerators.Visitors
 
                 Writer
                     .WriteParameterSeparator()
-                    .Write(chunk.Start.AbsoluteIndex.ToString(CultureInfo.CurrentCulture))
+                    .Write(chunk.Start.AbsoluteIndex.ToString(CultureInfo.InvariantCulture))
                     .WriteParameterSeparator()
-                    .Write(chunk.Association.Length.ToString(CultureInfo.CurrentCulture))
+                    .Write(chunk.Association.Length.ToString(CultureInfo.InvariantCulture))
                     .WriteParameterSeparator()
                     .WriteBooleanLiteral(value: false)
                     .WriteEndMethodInvocation();
@@ -281,9 +280,9 @@ namespace Microsoft.AspNet.Razor.CodeGenerators.Visitors
                 Writer
                     .WriteEndMethodInvocation(false)
                     .WriteParameterSeparator()
-                    .Write(chunk.Start.AbsoluteIndex.ToString(CultureInfo.CurrentCulture))
+                    .Write(chunk.Start.AbsoluteIndex.ToString(CultureInfo.InvariantCulture))
                     .WriteParameterSeparator()
-                    .Write(chunk.Association.Length.ToString(CultureInfo.CurrentCulture))
+                    .Write(chunk.Association.Length.ToString(CultureInfo.InvariantCulture))
                     .WriteParameterSeparator()
                     .WriteBooleanLiteral(false)
                     .WriteEndMethodInvocation();
@@ -334,9 +333,9 @@ namespace Microsoft.AspNet.Razor.CodeGenerators.Visitors
 
                 Writer
                     .WriteParameterSeparator()
-                    .Write(chunk.ValueLocation.AbsoluteIndex.ToString(CultureInfo.CurrentCulture))
+                    .Write(chunk.ValueLocation.AbsoluteIndex.ToString(CultureInfo.InvariantCulture))
                     .WriteParameterSeparator()
-                    .Write(chunk.Association.Length.ToString(CultureInfo.CurrentCulture))
+                    .Write(chunk.Association.Length.ToString(CultureInfo.InvariantCulture))
                     .WriteParameterSeparator()
                     .WriteBooleanLiteral(false)
                     .WriteEndMethodInvocation();
@@ -346,7 +345,7 @@ namespace Microsoft.AspNet.Razor.CodeGenerators.Visitors
                 Writer
                     .WriteLocationTaggedString(chunk.Value)
                     .WriteParameterSeparator()
-                    .Write(chunk.Association.Length.ToString(CultureInfo.CurrentCulture))
+                    .Write(chunk.Association.Length.ToString(CultureInfo.InvariantCulture))
                     .WriteParameterSeparator()
                     .WriteBooleanLiteral(true)
                     .WriteEndMethodInvocation();
@@ -382,7 +381,7 @@ namespace Microsoft.AspNet.Razor.CodeGenerators.Visitors
                    .WriteParameterSeparator()
                    .WriteLocationTaggedString(chunk.Suffix)
                    .WriteParameterSeparator()
-                   .Write(attributeCount.ToString(CultureInfo.CurrentCulture))
+                   .Write(attributeCount.ToString(CultureInfo.InvariantCulture))
                    .WriteEndMethodInvocation();
 
             Accept(chunk.Children);

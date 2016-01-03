@@ -73,7 +73,7 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
 
         public override string ToString()
         {
-            return string.Format(CultureInfo.CurrentUICulture, "{0} -> {1}", DocumentLocation, GeneratedLocation);
+            return string.Format(CultureInfo.CurrentCulture, "{0} -> {1}", DocumentLocation, GeneratedLocation);
         }
     }
 }

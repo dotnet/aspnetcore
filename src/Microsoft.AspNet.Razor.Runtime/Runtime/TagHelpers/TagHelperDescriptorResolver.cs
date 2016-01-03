@@ -276,7 +276,8 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             var trimmedAssemblyName = lookupStrings[1].Trim();
 
             // + 1 is for the comma separator in the lookup text.
-            var assemblyNameIndex = lookupStrings[0].Length + 1 + lookupStrings[1].IndexOf(trimmedAssemblyName);
+            var assemblyNameIndex =
+                lookupStrings[0].Length + 1 + lookupStrings[1].IndexOf(trimmedAssemblyName, StringComparison.Ordinal);
             var assemblyNamePrefix = directiveDescriptor.DirectiveText.Substring(0, assemblyNameIndex);
             var assemblyNameLocation = SourceLocation.Advance(directiveDescriptor.Location, assemblyNamePrefix);
 

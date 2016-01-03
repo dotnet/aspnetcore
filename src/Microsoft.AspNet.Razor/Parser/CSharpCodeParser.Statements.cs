@@ -18,7 +18,13 @@ namespace Microsoft.AspNet.Razor.Parser
 
         private void SetUpKeywords()
         {
-            MapKeywords(ConditionalBlock, CSharpKeyword.For, CSharpKeyword.Foreach, CSharpKeyword.While, CSharpKeyword.Switch, CSharpKeyword.Lock);
+            MapKeywords(
+                ConditionalBlock,
+                CSharpKeyword.For,
+                CSharpKeyword.Foreach,
+                CSharpKeyword.While,
+                CSharpKeyword.Switch,
+                CSharpKeyword.Lock);
             MapKeywords(CaseStatement, false, CSharpKeyword.Case, CSharpKeyword.Default);
             MapKeywords(IfStatement, CSharpKeyword.If);
             MapKeywords(TryStatement, CSharpKeyword.Try);
@@ -443,7 +449,8 @@ namespace Microsoft.AspNet.Razor.Parser
 
             // Accept whitespace but always keep the last whitespace node so we can put it back if necessary
             var lastWhitespace = AcceptWhiteSpaceInLines();
-            Debug.Assert(lastWhitespace == null || (lastWhitespace.Start.AbsoluteIndex + lastWhitespace.Content.Length == CurrentLocation.AbsoluteIndex));
+            Debug.Assert(lastWhitespace == null ||
+                (lastWhitespace.Start.AbsoluteIndex + lastWhitespace.Content.Length == CurrentLocation.AbsoluteIndex));
 
             if (EndOfFile)
             {
@@ -459,8 +466,8 @@ namespace Microsoft.AspNet.Razor.Parser
 
             var isSingleLineMarkup = type == CSharpSymbolType.Transition && NextIs(CSharpSymbolType.Colon);
             var isMarkup = isSingleLineMarkup ||
-                           type == CSharpSymbolType.LessThan ||
-                           (type == CSharpSymbolType.Transition && NextIs(CSharpSymbolType.LessThan));
+                type == CSharpSymbolType.LessThan ||
+                (type == CSharpSymbolType.Transition && NextIs(CSharpSymbolType.LessThan));
 
             if (Context.DesignTimeMode || !isMarkup)
             {
@@ -477,8 +484,9 @@ namespace Microsoft.AspNet.Razor.Parser
                 // MARKUP owns whitespace EXCEPT in DesignTimeMode.
                 PutCurrentBack();
 
-                // Don't putback the whitespace if it precedes a '<text>' tag.
-                if (nextSymbol != null && !nextSymbol.Content.Equals(SyntaxConstants.TextTagName))
+                // Put back the whitespace unless it precedes a '<text>' tag.
+                if (nextSymbol != null &&
+                    !string.Equals(nextSymbol.Content, SyntaxConstants.TextTagName, StringComparison.Ordinal))
                 {
                     PutBack(lastWhitespace);
                 }
@@ -496,7 +504,8 @@ namespace Microsoft.AspNet.Razor.Parser
 
                 // Markup block
                 Output(SpanKind.Code);
-                if (Context.DesignTimeMode && CurrentSymbol != null && (CurrentSymbol.Type == CSharpSymbolType.LessThan || CurrentSymbol.Type == CSharpSymbolType.Transition))
+                if (Context.DesignTimeMode && CurrentSymbol != null &&
+                    (CurrentSymbol.Type == CSharpSymbolType.LessThan || CurrentSymbol.Type == CSharpSymbolType.Transition))
                 {
                     PutCurrentBack();
                 }
@@ -600,7 +609,9 @@ namespace Microsoft.AspNet.Razor.Parser
                                                                   sym.Type != CSharpSymbolType.LeftParenthesis &&
                                                                   sym.Type != CSharpSymbolType.LeftBracket &&
                                                                   sym.Type != CSharpSymbolType.RightBrace);
-                if (At(CSharpSymbolType.LeftBrace) || At(CSharpSymbolType.LeftParenthesis) || At(CSharpSymbolType.LeftBracket))
+                if (At(CSharpSymbolType.LeftBrace) ||
+                    At(CSharpSymbolType.LeftParenthesis) ||
+                    At(CSharpSymbolType.LeftBracket))
                 {
                     Accept(read);
                     if (Balance(BalancingModes.AllowCommentsAndTemplates | BalancingModes.BacktrackOnFailure))

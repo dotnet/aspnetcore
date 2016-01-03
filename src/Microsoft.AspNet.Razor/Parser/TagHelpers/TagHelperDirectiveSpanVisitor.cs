@@ -107,7 +107,7 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers
             }
 
             var directiveText = span.Content.Trim();
-            var startOffset = span.Content.IndexOf(directiveText);
+            var startOffset = span.Content.IndexOf(directiveText, StringComparison.Ordinal);
             var offsetContent = span.Content.Substring(0, startOffset);
             var offsetTextLocation = SourceLocation.Advance(span.Start, offsetContent);
             var directiveDescriptor = new TagHelperDirectiveDescriptor

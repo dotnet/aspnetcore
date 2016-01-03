@@ -5,9 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Microsoft.AspNet.Razor.Compilation.TagHelpers;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
 using Microsoft.AspNet.Razor.TagHelpers;
-using Microsoft.AspNet.Razor.Compilation.TagHelpers;
 using Microsoft.AspNet.Razor.Tokenizer.Symbols;
 
 namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
@@ -663,7 +663,7 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
         {
             var childSpan = childBlock.FindLastDescendentSpan();
 
-            return childSpan?.Content.EndsWith("/>") ?? false;
+            return childSpan?.Content.EndsWith("/>", StringComparison.Ordinal) ?? false;
         }
 
         private void PushTrackerStack(TagBlockTracker tracker)
