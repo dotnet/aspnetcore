@@ -1,9 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Collections.Generic;
-using Microsoft.Extensions.PlatformAbstractions;
-
 namespace Microsoft.AspNet.Diagnostics.Views
 {
     public class RuntimeInfoPageModel
@@ -15,7 +12,5 @@ namespace Microsoft.AspNet.Diagnostics.Views
         public string RuntimeArchitecture { get; internal set; }
 
         public string RuntimeType { get; internal set; }
-
-        public IEnumerable<Library> References { get; internal set; }
     }
 }

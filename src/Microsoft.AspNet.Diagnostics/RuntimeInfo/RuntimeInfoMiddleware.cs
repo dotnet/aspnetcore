@@ -3,7 +3,6 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Diagnostics.Views;
 using Microsoft.AspNet.Http;
 using Microsoft.Extensions.PlatformAbstractions;
@@ -17,7 +16,6 @@ namespace Microsoft.AspNet.Diagnostics
     {
         private readonly RequestDelegate _next;
         private readonly RuntimeInfoPageOptions _options;
-        private readonly ILibraryManager _libraryManager;
         private readonly IRuntimeEnvironment _runtimeEnvironment;
 
         /// <summary>
@@ -28,7 +26,6 @@ namespace Microsoft.AspNet.Diagnostics
         public RuntimeInfoMiddleware(
             RequestDelegate next,
             RuntimeInfoPageOptions options,
-            ILibraryManager libraryManager,
             IRuntimeEnvironment runtimeEnvironment)
         {
             if (next == null)
@@ -41,11 +38,6 @@ namespace Microsoft.AspNet.Diagnostics
                 throw new ArgumentNullException(nameof(options));
             }
 
-            if (libraryManager == null)
-            {
-                throw new ArgumentNullException(nameof(libraryManager));
-            }
-
             if (runtimeEnvironment == null)
             {
                 throw new ArgumentNullException(nameof(runtimeEnvironment));
@@ -53,7 +45,6 @@ namespace Microsoft.AspNet.Diagnostics
 
             _next = next;
             _options = options;
-            _libraryManager = libraryManager;
             _runtimeEnvironment = runtimeEnvironment;
         }
 
@@ -78,7 +69,6 @@ namespace Microsoft.AspNet.Diagnostics
         internal RuntimeInfoPageModel CreateRuntimeInfoModel()
         {
             var model = new RuntimeInfoPageModel();
-            model.References = _libraryManager.GetLibraries();
             model.Version = _runtimeEnvironment.RuntimeVersion;
             model.OperatingSystem = _runtimeEnvironment.OperatingSystem;
             model.RuntimeType = _runtimeEnvironment.RuntimeType;

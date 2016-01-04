@@ -43,12 +43,11 @@ namespace Microsoft.AspNet.Builder
                 throw new ArgumentNullException(nameof(configureOptions));
             }
 
-            var libraryManager = app.ApplicationServices.GetService(typeof(ILibraryManager)) as ILibraryManager;
             var runtimeEnvironment = app.ApplicationServices.GetService(typeof(IRuntimeEnvironment)) as IRuntimeEnvironment;
             var options = new RuntimeInfoPageOptions();
             configureOptions(options);
 
-            return app.Use(next => new RuntimeInfoMiddleware(next, options, libraryManager, runtimeEnvironment).Invoke);
+            return app.Use(next => new RuntimeInfoMiddleware(next, options, runtimeEnvironment).Invoke);
         }
 
         public static IApplicationBuilder UseRuntimeInfoPage(
@@ -64,10 +63,8 @@ namespace Microsoft.AspNet.Builder
                 throw new ArgumentNullException(nameof(options));
             }
 
-            var libraryManager = app.ApplicationServices.GetService(typeof(ILibraryManager)) as ILibraryManager;
             var runtimeEnvironment = app.ApplicationServices.GetService(typeof(IRuntimeEnvironment)) as IRuntimeEnvironment;
-
-            return app.Use(next => new RuntimeInfoMiddleware(next, options, libraryManager, runtimeEnvironment).Invoke);
+            return app.Use(next => new RuntimeInfoMiddleware(next, options, runtimeEnvironment).Invoke);
         }
     }
 }

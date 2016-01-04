@@ -81,8 +81,8 @@ WriteAttributeValue("", 456, CultureInfo.CurrentUICulture.TwoLetterISOLanguageNa
 
 #line default
 #line hidden
-            WriteLiteral("</title>\r\n    <style>\r\n        body {\r\n    font-family: 'Segoe UI', Tahoma, Arial, Helvetica, sans-serif;\r\n    font-size: .813em;\r\n    line-height: 1.4em;\r\n    color: #222;\r\n}\r\n\r\nh1, h2, h3, h4, h5, th {\r\n    font-weight: 100;\r\n}\r\n\r\nh1 {\r\n    color: #44525e;\r\n    margin: 15px 0 15px 0;\r\n}\r\n\r\nh2 {\r\n    margin: 10px 5px 0 0;\r\n}\r\n\r\ntable .even{\r\n    background-color: #f0f0f0;\r\n}\r\n\r\nth {\r\n    font-size: 16px;\r\n}\r\n\r\n\r\n\r\n    </style>\r" +
-"\n</head>\r\n<body>\r\n    <h2>");
+            WriteLiteral("</title>\r\n    <style>\r\n        <%$ include: RuntimeInfoPage.css % >\r\n    </style>" +
+"\r\n</head>\r\n<body>\r\n    <h2>");
 #line 30 "RuntimeInfoPage.cshtml"
    Write(Resources.RuntimeInfoPage_Environment);
 
@@ -136,135 +136,7 @@ WriteAttributeValue("", 456, CultureInfo.CurrentUICulture.TwoLetterISOLanguageNa
 
 #line default
 #line hidden
-            WriteLiteral("</p>\r\n\r\n    <h2>");
-#line 39 "RuntimeInfoPage.cshtml"
-   Write(Resources.RuntimeInfoPage_Packages);
-
-#line default
-#line hidden
-            WriteLiteral("</h2>\r\n");
-#line 40 "RuntimeInfoPage.cshtml"
-    
-
-#line default
-#line hidden
-
-#line 40 "RuntimeInfoPage.cshtml"
-     if (@Resources.RuntimeInfoPage_Packages == null)
-    {
-
-#line default
-#line hidden
-
-            WriteLiteral("        <h2>");
-#line 42 "RuntimeInfoPage.cshtml"
-       Write(Resources.RuntimeInfoPage_PackagesFail);
-
-#line default
-#line hidden
-            WriteLiteral("</h2>\r\n");
-#line 43 "RuntimeInfoPage.cshtml"
-    }
-    else
-    {
-
-#line default
-#line hidden
-
-            WriteLiteral("        <table>\r\n            <thead>\r\n                <tr>\r\n                    <" +
-"th>");
-#line 49 "RuntimeInfoPage.cshtml"
-                   Write(Resources.RuntimeInfoPage_PackageNameColumnName);
-
-#line default
-#line hidden
-            WriteLiteral("</th>\r\n                    <th>");
-#line 50 "RuntimeInfoPage.cshtml"
-                   Write(Resources.RuntimeInfoPage_PackageVersionColumnName);
-
-#line default
-#line hidden
-            WriteLiteral("</th>\r\n                    <th>");
-#line 51 "RuntimeInfoPage.cshtml"
-                   Write(Resources.RuntimeInfoPage_PackagePathColumnName);
-
-#line default
-#line hidden
-            WriteLiteral("</th>\r\n                </tr>\r\n            </thead>\r\n            <tbody>\r\n");
-#line 55 "RuntimeInfoPage.cshtml"
-            
-
-#line default
-#line hidden
-
-#line 55 "RuntimeInfoPage.cshtml"
-               bool even = false; 
-
-#line default
-#line hidden
-
-            WriteLiteral("            ");
-#line 56 "RuntimeInfoPage.cshtml"
-             foreach (var package in Model.References.OrderBy(package => package.Name.ToLowerInvariant()))
-            {
-
-#line default
-#line hidden
-
-            WriteLiteral("                <tr");
-            BeginWriteAttribute("class", " class=\"", 2229, "\"", 2257, 1);
-#line 58 "RuntimeInfoPage.cshtml"
-WriteAttributeValue("", 2237, even?"even":"odd", 2237, 20, false);
-
-#line default
-#line hidden
-            EndWriteAttribute();
-            WriteLiteral(">\r\n                    <td>");
-#line 59 "RuntimeInfoPage.cshtml"
-                   Write(package.Name);
-
-#line default
-#line hidden
-            WriteLiteral("</td>\r\n                    <td>");
-#line 60 "RuntimeInfoPage.cshtml"
-                   Write(package.Version);
-
-#line default
-#line hidden
-            WriteLiteral("</td>\r\n                    <td>");
-#line 61 "RuntimeInfoPage.cshtml"
-                   Write(package.Path);
-
-#line default
-#line hidden
-            WriteLiteral("</td>\r\n                </tr>\r\n");
-#line 63 "RuntimeInfoPage.cshtml"
-                
-
-#line default
-#line hidden
-
-#line 63 "RuntimeInfoPage.cshtml"
-                   even = !even; 
-
-#line default
-#line hidden
-
-#line 63 "RuntimeInfoPage.cshtml"
-                                  
-            }
-
-#line default
-#line hidden
-
-            WriteLiteral("            </tbody>\r\n        </table>\r\n");
-#line 67 "RuntimeInfoPage.cshtml"
-    }
-
-#line default
-#line hidden
-
-            WriteLiteral("</body>\r\n</html>\r\n");
+            WriteLiteral("</p>\r\n</body>\r\n</html>\r\n");
         }
         #pragma warning restore 1998
     }

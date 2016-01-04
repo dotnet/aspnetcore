@@ -31,14 +31,6 @@ namespace Microsoft.AspNet.Diagnostics.Tests
         public void CreateRuntimeInfoModel_GetsTheVersionAndAllPackages()
         {
             // Arrage
-            var libraries = new[] {
-                new Library("LibInfo1", string.Empty, "Path1", string.Empty, Enumerable.Empty<string>(), Enumerable.Empty<AssemblyName>()),
-                new Library("LibInfo2", string.Empty, "Path2", string.Empty, Enumerable.Empty<string>(), Enumerable.Empty<AssemblyName>())
-            };
-
-            var libraryManagerMock = new Mock<ILibraryManager>(MockBehavior.Strict);
-            libraryManagerMock.Setup(l => l.GetLibraries()).Returns(libraries);
-
             var runtimeEnvironmentMock = new Mock<IRuntimeEnvironment>(MockBehavior.Strict);
             runtimeEnvironmentMock.Setup(r => r.OperatingSystem).Returns("Windows");
             runtimeEnvironmentMock.Setup(r => r.RuntimeArchitecture).Returns("x64");
@@ -53,7 +45,6 @@ namespace Microsoft.AspNet.Diagnostics.Tests
             var middleware = new RuntimeInfoMiddleware(
                 next,
                 new RuntimeInfoPageOptions(),
-                libraryManagerMock.Object,
                 runtimeEnvironmentMock.Object);
 
             // Act
@@ -64,14 +55,12 @@ namespace Microsoft.AspNet.Diagnostics.Tests
             Assert.Equal("Windows", model.OperatingSystem);
             Assert.Equal("clr", model.RuntimeType);
             Assert.Equal("x64", model.RuntimeArchitecture);
-            Assert.Same(libraries, model.References);
         }
 
         [Fact]
         public async void Invoke_WithNonMatchingPath_IgnoresRequest()
         {
             // Arrange
-            var libraryManagerMock = new Mock<ILibraryManager>(MockBehavior.Strict);
             var runtimeEnvironmentMock = new Mock<IRuntimeEnvironment>(MockBehavior.Strict);
 
             RequestDelegate next = _ =>
@@ -82,7 +71,6 @@ namespace Microsoft.AspNet.Diagnostics.Tests
             var middleware = new RuntimeInfoMiddleware(
                next,
                new RuntimeInfoPageOptions(),
-               libraryManagerMock.Object,
                runtimeEnvironmentMock.Object);
 
             var contextMock = new Mock<HttpContext>(MockBehavior.Strict);
@@ -101,12 +89,6 @@ namespace Microsoft.AspNet.Diagnostics.Tests
         public async void Invoke_WithMatchingPath_ReturnsInfoPage()
         {
             // Arrange
-            var libraryManagerMock = new Mock<ILibraryManager>(MockBehavior.Strict);
-            libraryManagerMock.Setup(l => l.GetLibraries()).Returns(new[] {
-                        new Library("LibInfo1", "1.0.0-beta1", "Path1", string.Empty, Enumerable.Empty<string>(), Enumerable.Empty<AssemblyName>()),
-                        new Library("LibInfo2", "1.0.0-beta2", "Path2", string.Empty, Enumerable.Empty<string>(), Enumerable.Empty<AssemblyName>())
-                    });
-
             var runtimeEnvironmentMock = new Mock<IRuntimeEnvironment>(MockBehavior.Strict);
             runtimeEnvironmentMock.Setup(r => r.OperatingSystem).Returns("Windows");
             runtimeEnvironmentMock.Setup(r => r.RuntimeArchitecture).Returns("x64");
@@ -121,7 +103,6 @@ namespace Microsoft.AspNet.Diagnostics.Tests
             var middleware = new RuntimeInfoMiddleware(
                 next,
                 new RuntimeInfoPageOptions(),
-                libraryManagerMock.Object,
                 runtimeEnvironmentMock.Object);
 
             var buffer = new byte[4096];
@@ -148,12 +129,6 @@ namespace Microsoft.AspNet.Diagnostics.Tests
                 Assert.Contains("<p>Operating System: Windows</p>", response);
                 Assert.Contains("<p>Runtime Architecture: x64</p>", response);
                 Assert.Contains("<p>Runtime Type: clr</p>", response);
-                Assert.Contains("<td>LibInfo1</td>", response);
-                Assert.Contains("<td>1.0.0-beta1</td>", response);
-                Assert.Contains("<td>Path1</td>", response);
-                Assert.Contains("<td>LibInfo2</td>", response);
-                Assert.Contains("<td>1.0.0-beta2</td>", response);
-                Assert.Contains("<td>Path2</td>", response);
             }
         }
     }

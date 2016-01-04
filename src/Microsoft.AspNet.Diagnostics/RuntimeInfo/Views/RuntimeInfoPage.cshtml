@@ -23,7 +23,7 @@
     <meta charset="utf-8" />
     <title>@Resources.RuntimeInfoPage_Title</title>
     <style>
-        <%$ include: RuntimeInfoPage.css %>
+        <%$ include: RuntimeInfoPage.css % >
     </style>
 </head>
 <body>
@@ -35,35 +35,5 @@
     <p>@Resources.RuntimeInfoPage_RuntimeArchitecture @(string.IsNullOrWhiteSpace(Model.RuntimeArchitecture) ? Resources.RuntimeInfoPage_RuntimeArchitectureFail : Model.RuntimeArchitecture)</p>
 
     <p>@Resources.RuntimeInfoPage_RuntimeType @(string.IsNullOrWhiteSpace(Model.RuntimeType) ? Resources.RuntimeInfoPage_RuntimeTypeFail : Model.RuntimeType)</p>
-
-    <h2>@Resources.RuntimeInfoPage_Packages</h2>
-    @if (@Resources.RuntimeInfoPage_Packages == null)
-    {
-        <h2>@Resources.RuntimeInfoPage_PackagesFail</h2>
-    }
-    else
-    {
-        <table>
-            <thead>
-                <tr>
-                    <th>@Resources.RuntimeInfoPage_PackageNameColumnName</th>
-                    <th>@Resources.RuntimeInfoPage_PackageVersionColumnName</th>
-                    <th>@Resources.RuntimeInfoPage_PackagePathColumnName</th>
-                </tr>
-            </thead>
-            <tbody>
-            @{ bool even = false; }
-            @foreach (var package in Model.References.OrderBy(package => package.Name.ToLowerInvariant()))
-            {
-                <tr class="@(even?"even":"odd")">
-                    <td>@package.Name</td>
-                    <td>@package.Version</td>
-                    <td>@package.Path</td>
-                </tr>
-                @{ even = !even; }
-            }
-            </tbody>
-        </table>
-    }
 </body>
 </html>
