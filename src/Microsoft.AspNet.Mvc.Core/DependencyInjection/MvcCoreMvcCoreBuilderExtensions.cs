@@ -10,6 +10,7 @@ using Microsoft.AspNet.Mvc.ApplicationModels;
 using Microsoft.AspNet.Mvc.Formatters;
 using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using System.Linq;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -99,8 +100,21 @@ namespace Microsoft.Extensions.DependencyInjection
         /// discovery.
         /// </summary>
         /// <param name="builder">The <see cref="IMvcCoreBuilder"/>.</param>
-        /// <param name="controllerTypes">A sequence of controller <see cref="Type"/>s to register in the
-        /// <paramref name="services"/> and used for controller discovery.</param>
+        /// <param name="controllerTypes">A sequence of controller <see cref="Type"/>s to register.</param>
+        /// <returns>The <see cref="IMvcCoreBuilder"/>.</returns>
+        public static IMvcCoreBuilder AddControllersAsServices(
+           this IMvcCoreBuilder builder,
+           params Type[] controllerTypes)
+        {
+            return builder.AddControllersAsServices(controllerTypes.AsEnumerable());
+        }
+
+        /// <summary>
+        /// Register the specified <paramref name="controllerTypes"/> as services and as a source for controller
+        /// discovery.
+        /// </summary>
+        /// <param name="builder">The <see cref="IMvcCoreBuilder"/>.</param>
+        /// <param name="controllerTypes">A sequence of controller <see cref="Type"/>s to register.</param>
         /// <returns>The <see cref="IMvcCoreBuilder"/>.</returns>
         public static IMvcCoreBuilder AddControllersAsServices(
            this IMvcCoreBuilder builder,
@@ -111,17 +125,26 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            if (controllerTypes == null)
-            {
-                throw new ArgumentNullException(nameof(controllerTypes));
-            }
-
             ControllersAsServices.AddControllersAsServices(builder.Services, controllerTypes);
             return builder;
         }
 
         /// <summary>
-        /// Registers controller types from the specified <paramref name="assemblies"/> as services and as a source
+        /// Registers controller types from the specified <paramref name="controllerAssemblies"/> as services and as a source
+        /// for controller discovery.
+        /// </summary>
+        /// <param name="builder">The <see cref="IMvcCoreBuilder"/>.</param>
+        /// <param name="controllerAssemblies">Assemblies to scan.</param>
+        /// <returns>The <see cref="IMvcCoreBuilder"/>.</returns>
+        public static IMvcCoreBuilder AddControllersAsServices(
+            this IMvcCoreBuilder builder,
+            params Assembly[] controllerAssemblies)
+        {
+            return builder.AddControllersAsServices(controllerAssemblies.AsEnumerable());
+        }
+
+        /// <summary>
+        /// Registers controller types from the specified <paramref name="controllerAssemblies"/> as services and as a source
         /// for controller discovery.
         /// </summary>
         /// <param name="builder">The <see cref="IMvcCoreBuilder"/>.</param>
@@ -134,11 +157,6 @@ namespace Microsoft.Extensions.DependencyInjection
             if (builder == null)
             {
                 throw new ArgumentNullException(nameof(builder));
-            }
-
-            if (controllerAssemblies == null)
-            {
-                throw new ArgumentNullException(nameof(controllerAssemblies));
             }
 
             ControllersAsServices.AddControllersAsServices(builder.Services, controllerAssemblies);

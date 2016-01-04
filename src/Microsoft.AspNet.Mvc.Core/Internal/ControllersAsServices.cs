@@ -16,7 +16,18 @@ namespace Microsoft.AspNet.Mvc.Internal
     {
         public static void AddControllersAsServices(IServiceCollection services, IEnumerable<Type> types)
         {
+            if (services == null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+
+            if (types == null)
+            {
+                throw new ArgumentNullException(nameof(types));
+            }
+
             var controllerTypeProvider = new StaticControllerTypeProvider();
+
             foreach (var type in types)
             {
                 services.TryAddTransient(type, type);
@@ -29,7 +40,18 @@ namespace Microsoft.AspNet.Mvc.Internal
 
         public static void AddControllersAsServices(IServiceCollection services, IEnumerable<Assembly> assemblies)
         {
+            if (services == null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+
+            if (assemblies == null)
+            {
+                throw new ArgumentNullException(nameof(assemblies));
+            }
+
             var assemblyProvider = new StaticAssemblyProvider();
+
             foreach (var assembly in assemblies)
             {
                 assemblyProvider.CandidateAssemblies.Add(assembly);
