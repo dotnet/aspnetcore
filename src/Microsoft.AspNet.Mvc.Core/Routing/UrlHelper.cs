@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Text;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Routing;
 
@@ -14,7 +15,6 @@ namespace Microsoft.AspNet.Mvc.Routing
     /// </summary>
     public class UrlHelper : IUrlHelper
     {
-
         /// <summary>
         /// Initializes a new instance of the <see cref="UrlHelper"/> class using the specified action context and
         /// action selector.
@@ -28,7 +28,7 @@ namespace Microsoft.AspNet.Mvc.Routing
             {
                 throw new ArgumentNullException(nameof(actionContext));
             }
-            
+
             ActionContext = actionContext;
         }
 
@@ -79,7 +79,7 @@ namespace Microsoft.AspNet.Mvc.Routing
                 valuesDictionary["controller"] = actionContext.Controller;
             }
 
-            var path = GeneratePathFromRoute(valuesDictionary);
+            var path = GeneratePathFromRoute(routeName: null, values: valuesDictionary);
             if (path == null)
             {
                 return null;
@@ -120,11 +120,6 @@ namespace Microsoft.AspNet.Mvc.Routing
             return GenerateUrl(routeContext.Protocol, routeContext.Host, path, routeContext.Fragment);
         }
 
-        private string GeneratePathFromRoute(RouteValueDictionary values)
-        {
-            return GeneratePathFromRoute(routeName: null, values: values);
-        }
-
         /// <summary>
         /// Generates the absolute path of the url for the specified route values by
         /// using the specified route name.
@@ -143,15 +138,48 @@ namespace Microsoft.AspNet.Mvc.Routing
 
             // VirtualPathData.VirtualPath returns string.Empty for null.
             Debug.Assert(pathData.VirtualPath != null);
-
-            var fullPath = HttpContext.Request.PathBase.Add(pathData.VirtualPath).Value;
-            if (fullPath.Length == 0)
+            var pathBase = HttpContext.Request.PathBase;
+            if (!pathBase.HasValue)
             {
-                return "/";
+                if (pathData.VirtualPath.Length == 0)
+                {
+                    return "/";
+                }
+                else if (!pathData.VirtualPath.StartsWith("/", StringComparison.Ordinal))
+                {
+                    return "/" + pathData.VirtualPath;
+                }
+                else
+                {
+                    return pathData.VirtualPath;
+                }
             }
             else
             {
-                return fullPath;
+                if (pathData.VirtualPath.Length == 0)
+                {
+                    return pathBase;
+                }
+                else
+                {
+                    var builder = new StringBuilder(
+                        pathBase.Value,
+                        pathBase.Value.Length + pathData.VirtualPath.Length);
+
+                    if (pathBase.Value.EndsWith("/", StringComparison.Ordinal))
+                    {
+                        builder.Length--;
+                    }
+
+                    if (!pathData.VirtualPath.StartsWith("/", StringComparison.Ordinal))
+                    {
+                        builder.Append("/");
+                    }
+
+                    builder.Append(pathData.VirtualPath);
+
+                    return builder.ToString();
+                }
             }
         }
 
@@ -187,9 +215,7 @@ namespace Microsoft.AspNet.Mvc.Routing
 
         private string GenerateUrl(string protocol, string host, string path, string fragment)
         {
-            // We should have a robust and centrallized version of this code. See HttpAbstractions#28
             Debug.Assert(path != null);
-
             var url = path;
             if (!string.IsNullOrEmpty(fragment))
             {
