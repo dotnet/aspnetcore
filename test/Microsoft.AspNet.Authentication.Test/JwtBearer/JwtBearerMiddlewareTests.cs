@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
 {
     public class JwtBearerMiddlewareTests
     {
-        [ConditionalFact]
+        [ConditionalFact(Skip = "Need to remove dependency on AAD since the generated tokens will expire")]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         // https://github.com/AzureAD/azure-activedirectory-identitymodel-extensions-for-dotnet/issues/179
         public async Task BearerTokenValidation()
