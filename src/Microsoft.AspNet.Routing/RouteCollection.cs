@@ -137,7 +137,7 @@ namespace Microsoft.AspNet.Routing
                 return pathData;
             }
 
-            var url = pathData.VirtualPath.Value;
+            var url = pathData.VirtualPath;
 
             if (!string.IsNullOrEmpty(url) && (_options.LowercaseUrls || _options.AppendTrailingSlash))
             {

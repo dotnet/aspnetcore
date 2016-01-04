@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNet.Http;
 
 namespace Microsoft.AspNet.Routing
 {
@@ -13,6 +12,7 @@ namespace Microsoft.AspNet.Routing
     public class VirtualPathData
     {
         private RouteValueDictionary _dataTokens;
+        private string _virtualPath;
 
         /// <summary>
         ///  Initializes a new instance of the <see cref="VirtualPathData"/> class.
@@ -33,20 +33,6 @@ namespace Microsoft.AspNet.Routing
         public VirtualPathData(
             IRouter router,
             string virtualPath,
-            RouteValueDictionary dataTokens)
-            : this(router, CreatePathString(virtualPath), dataTokens)
-        {
-        }
-
-        /// <summary>
-        ///  Initializes a new instance of the <see cref="VirtualPathData"/> class.
-        /// </summary>
-        /// <param name="router">The object that is used to generate the URL.</param>
-        /// <param name="virtualPath">The generated URL.</param>
-        /// <param name="dataTokens">The collection of custom values.</param>
-        public VirtualPathData(
-            IRouter router,
-            PathString virtualPath,
             RouteValueDictionary dataTokens)
         {
             if (router == null)
@@ -83,26 +69,31 @@ namespace Microsoft.AspNet.Routing
         /// <summary>
         /// Gets or sets the URL that was generated from the <see cref="Router"/>.
         /// </summary>
-        public PathString VirtualPath { get; set; }
-
-        private static PathString CreatePathString(string path)
+        public string VirtualPath
         {
-            if (!string.IsNullOrEmpty(path))
+            get
             {
-                PathString pathString;
-                if (path.Length > 0 && !path.StartsWith("/", StringComparison.Ordinal))
-                {
-                    pathString = new PathString("/" + path);
-                }
-                else
-                {
-                    pathString = new PathString(path);
-                }
+                return _virtualPath;
+            }
+            set
+            {
+                _virtualPath = NormalizePath(value);
+            }
+        }
 
-                return pathString;
+        private static string NormalizePath(string path)
+        {
+            if (string.IsNullOrEmpty(path))
+            {
+                return string.Empty;
             }
 
-            return PathString.Empty;
+            if (!path.StartsWith("/", StringComparison.Ordinal))
+            {
+                return "/" + path;
+            }
+
+            return path;
         }
     }
 }

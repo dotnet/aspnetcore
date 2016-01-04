@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNet.Http;
 using Moq;
 using Xunit;
 
@@ -13,8 +12,8 @@ namespace Microsoft.AspNet.Routing
         public void Constructor_CreatesEmptyDataTokensIfNull()
         {
             // Arrange
-            var router = new Mock<IRouter>().Object;
-            var path = new PathString("/virtual path");
+            var router = Mock.Of<IRouter>();
+            var path = "/virtual path";
 
             // Act
             var pathData = new VirtualPathData(router, path, null);
@@ -30,8 +29,8 @@ namespace Microsoft.AspNet.Routing
         public void Constructor_CopiesDataTokens()
         {
             // Arrange
-            var router = new Mock<IRouter>().Object;
-            var path = new PathString("/virtual path");
+            var router = Mock.Of<IRouter>();
+            var path = "/virtual path";
             var dataTokens = new RouteValueDictionary();
             dataTokens["TestKey"] = "TestValue";
 
@@ -51,14 +50,14 @@ namespace Microsoft.AspNet.Routing
         public void VirtualPath_ReturnsEmptyStringIfNull()
         {
             // Arrange
-            var router = new Mock<IRouter>().Object;
+            var router = Mock.Of<IRouter>();
 
             // Act
             var pathData = new VirtualPathData(router, virtualPath: null);
 
             // Assert
             Assert.Same(router, pathData.Router);
-            Assert.Equal(new PathString(string.Empty), pathData.VirtualPath);
+            Assert.Empty(pathData.VirtualPath);
             Assert.NotNull(pathData.DataTokens);
             Assert.Empty(pathData.DataTokens);
         }

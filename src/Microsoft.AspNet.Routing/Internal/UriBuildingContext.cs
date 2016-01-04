@@ -188,6 +188,12 @@ namespace Microsoft.AspNet.Routing.Internal
         public override string ToString()
         {
             // We can ignore any currently buffered segments - they are are guaranteed to be 'defaults'.
+            if (_uri.Length > 0 && _uri[0] != '/')
+            {
+                // Normalize generated paths so that they always contain a leading slash.
+                _uri.Insert(0, '/');
+            }
+
             return _uri.ToString();
         }
 
