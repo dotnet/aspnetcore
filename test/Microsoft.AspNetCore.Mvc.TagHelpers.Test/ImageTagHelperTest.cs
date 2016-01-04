@@ -31,20 +31,19 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         [Theory]
         [InlineData(null, "test.jpg", "test.jpg")]
         [InlineData("abcd.jpg", "test.jpg", "test.jpg")]
-        [InlineData(null, "~/test.jpg", "virtualRoot/test.jpg")]
-        [InlineData("abcd.jpg", "~/test.jpg", "virtualRoot/test.jpg")]
+        [InlineData(null, "~/test.jpg", "/virtualRoot/test.jpg")]
+        [InlineData("abcd.jpg", "~/test.jpg", "/virtualRoot/test.jpg")]
         public void Process_SrcDefaultsToTagHelperOutputSrcAttributeAddedByOtherTagHelper(
             string src,
             string srcOutput,
             string expectedSrcPrefix)
         {
             // Arrange
-            var allAttributes = new TagHelperAttributeList(
-                new TagHelperAttributeList
-                {
-                    { "alt", new HtmlString("Testing") },
-                    { "asp-append-version", true },
-                });
+            var allAttributes = new TagHelperAttributeList
+            {
+                { "alt", new HtmlString("Testing") },
+                { "asp-append-version", true },
+            };
             var context = MakeTagHelperContext(allAttributes);
             var outputAttributes = new TagHelperAttributeList
                 {
@@ -60,11 +59,9 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var viewContext = MakeViewContext();
             var urlHelper = new Mock<IUrlHelper>();
 
-            // Ensure expanded path does not look like an absolute path on Linux, avoiding
-            // https://github.com/aspnet/External/issues/21
             urlHelper
                 .Setup(urlhelper => urlhelper.Content(It.IsAny<string>()))
-                .Returns(new Func<string, string>(url => url.Replace("~/", "virtualRoot/")));
+                .Returns(new Func<string, string>(url => url.Replace("~/", "/virtualRoot/")));
             var urlHelperFactory = new Mock<IUrlHelperFactory>();
             urlHelperFactory
                 .Setup(f => f.GetUrlHelper(It.IsAny<ActionContext>()))

@@ -74,8 +74,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [ConditionalFact]
-        // Mono issue - https://github.com/aspnet/External/issues/21
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "aspnet/External#21, redirect scheme is file:.")]
         public async Task Redirect_RetainsTempData_EvenIfAccessed()
         {
             // Arrange
@@ -140,8 +139,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [ConditionalFact]
-        // Mono issue - https://github.com/aspnet/External/issues/21
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "aspnet/External#21, redirect scheme is file:.")]
         public async Task TempData_ValidTypes_RoundTripProperly()
         {
             // Arrange

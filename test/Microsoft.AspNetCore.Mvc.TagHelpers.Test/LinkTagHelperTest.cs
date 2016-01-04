@@ -35,8 +35,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         [Theory]
         [InlineData(null, "test.css", "test.css")]
         [InlineData("abcd.css", "test.css", "test.css")]
-        [InlineData(null, "~/test.css", "virtualRoot/test.css")]
-        [InlineData("abcd.css", "~/test.css", "virtualRoot/test.css")]
+        [InlineData(null, "~/test.css", "/virtualRoot/test.css")]
+        [InlineData("abcd.css", "~/test.css", "/virtualRoot/test.css")]
         public void Process_HrefDefaultsToTagHelperOutputHrefAttributeAddedByOtherTagHelper(
             string href,
             string hrefOutput,
@@ -60,11 +60,9 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var viewContext = MakeViewContext();
             var urlHelper = new Mock<IUrlHelper>();
 
-            // Ensure expanded path does not look like an absolute path on Linux, avoiding
-            // https://github.com/aspnet/External/issues/21
             urlHelper
                 .Setup(urlhelper => urlhelper.Content(It.IsAny<string>()))
-                .Returns(new Func<string, string>(url => url.Replace("~/", "virtualRoot/")));
+                .Returns(new Func<string, string>(url => url.Replace("~/", "/virtualRoot/")));
             var urlHelperFactory = new Mock<IUrlHelperFactory>();
             urlHelperFactory
                 .Setup(f => f.GetUrlHelper(It.IsAny<ActionContext>()))
