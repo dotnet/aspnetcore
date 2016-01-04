@@ -51,9 +51,9 @@ namespace Microsoft.AspNet.Mvc.Internal
             options.OutputFormatters.Add(new StreamOutputFormatter());
 
             // Set up ValueProviders
+            options.ValueProviderFactories.Add(new FormValueProviderFactory());
             options.ValueProviderFactories.Add(new RouteValueProviderFactory());
             options.ValueProviderFactories.Add(new QueryStringValueProviderFactory());
-            options.ValueProviderFactories.Add(new FormValueProviderFactory());
             options.ValueProviderFactories.Add(new JQueryFormValueProviderFactory());
 
             // Set up metadata providers

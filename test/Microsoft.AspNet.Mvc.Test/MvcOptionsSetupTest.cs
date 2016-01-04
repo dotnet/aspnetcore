@@ -69,9 +69,9 @@ namespace Microsoft.AspNet.Mvc
             // Assert
             var valueProviders = options.ValueProviderFactories;
             Assert.Collection(valueProviders,
+                provider => Assert.IsType<FormValueProviderFactory>(provider),
                 provider => Assert.IsType<RouteValueProviderFactory>(provider),
                 provider => Assert.IsType<QueryStringValueProviderFactory>(provider),
-                provider => Assert.IsType<FormValueProviderFactory>(provider),
                 provider => Assert.IsType<JQueryFormValueProviderFactory>(provider));
         }
 
