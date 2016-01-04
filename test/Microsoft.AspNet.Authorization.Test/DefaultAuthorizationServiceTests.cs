@@ -817,6 +817,39 @@ namespace Microsoft.AspNet.Authorization.Test
             }
         }
 
+        public class EvenHandler : AuthorizationHandler<OperationAuthorizationRequirement, int>
+        {
+            protected override void Handle(AuthorizationContext context, OperationAuthorizationRequirement requirement, int id)
+            {
+                if (id % 2 == 0)
+                {
+                    context.Succeed(requirement);
+                }
+            }
+        }
+
+        [Fact]
+        public async Task CanUseValueTypeResource()
+        {
+            // Arrange
+            var authorizationService = BuildAuthorizationService(services =>
+            {
+                services.AddTransient<IAuthorizationHandler, EvenHandler>();
+            });
+            var user = new ClaimsPrincipal(
+                new ClaimsIdentity(
+                    new Claim[] {
+                    },
+                    "AuthType")
+                );
+
+            // Act
+            // Assert
+            Assert.False(await authorizationService.AuthorizeAsync(user, 1, Operations.Edit));
+            Assert.True(await authorizationService.AuthorizeAsync(user, 2, Operations.Edit));
+        }
+
+
         [Fact]
         public async Task DoesNotCallHandlerWithWrongResourceType()
         {

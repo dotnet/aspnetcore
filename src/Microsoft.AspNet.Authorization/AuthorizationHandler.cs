@@ -35,7 +35,6 @@ namespace Microsoft.AspNet.Authorization
     }
 
     public abstract class AuthorizationHandler<TRequirement, TResource> : IAuthorizationHandler
-        where TResource : class
         where TRequirement : IAuthorizationRequirement
     {
         public virtual async Task HandleAsync(AuthorizationContext context)
@@ -57,13 +56,11 @@ namespace Microsoft.AspNet.Authorization
 
         public virtual void Handle(AuthorizationContext context)
         {
-            var resource = context.Resource as TResource;
-            // REVIEW: should we allow null resources?
-            if (resource != null)
+            if (context.Resource is TResource)
             {
                 foreach (var req in context.Requirements.OfType<TRequirement>())
                 {
-                    Handle(context, req, resource);
+                    Handle(context, req, (TResource)context.Resource);
                 }
             }
         }
