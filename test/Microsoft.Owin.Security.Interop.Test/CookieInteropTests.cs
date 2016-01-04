@@ -1,117 +1,48 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
-using Microsoft.AspNet.Http;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
-using Microsoft.AspNet.Authentication;
 using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.DataProtection;
 using Microsoft.AspNet.Hosting;
+using Microsoft.AspNet.Http;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Owin;
 using Microsoft.Owin.Security.Cookies;
-using Microsoft.Owin.Security.Cookies.Interop;
 using Microsoft.Owin.Testing;
 using Owin;
 using Xunit;
 
-namespace Microsoft.AspNet.CookiePolicy.Test
+namespace Microsoft.Owin.Security.Interop
 {
-    public class TicketInteropTests
+    public class CookiesInteropTests
     {
-        [Fact]
-        public void NewSerializerCanReadInteropTicket()
-        {
-            var identity = new ClaimsIdentity("scheme");
-            identity.AddClaim(new Claim("Test", "Value"));
-
-            var expires = DateTime.Today;
-            var issued = new DateTime(1979, 11, 11);
-            var properties = new Owin.Security.AuthenticationProperties();
-            properties.IsPersistent = true;
-            properties.RedirectUri = "/redirect";
-            properties.Dictionary["key"] = "value";
-            properties.ExpiresUtc = expires;
-            properties.IssuedUtc = issued;
-
-            var interopTicket = new Owin.Security.AuthenticationTicket(identity, properties);
-            var interopSerializer = new AspNetTicketSerializer();
-
-            var bytes = interopSerializer.Serialize(interopTicket);
-
-            var newSerializer = new TicketSerializer();
-            var newTicket = newSerializer.Deserialize(bytes);
-
-            Assert.NotNull(newTicket);
-            Assert.Equal(1, newTicket.Principal.Identities.Count());
-            var newIdentity = newTicket.Principal.Identity as ClaimsIdentity;
-            Assert.NotNull(newIdentity);
-            Assert.Equal("scheme", newIdentity.AuthenticationType);
-            Assert.True(newIdentity.HasClaim(c => c.Type == "Test" && c.Value == "Value"));
-            Assert.NotNull(newTicket.Properties);
-            Assert.True(newTicket.Properties.IsPersistent);
-            Assert.Equal("/redirect", newTicket.Properties.RedirectUri);
-            Assert.Equal("value", newTicket.Properties.Items["key"]);
-            Assert.Equal(expires, newTicket.Properties.ExpiresUtc);
-            Assert.Equal(issued, newTicket.Properties.IssuedUtc);
-        }
-
-        [Fact]
-        public void InteropSerializerCanReadNewTicket()
-        {
-            var user = new ClaimsPrincipal();
-            var identity = new ClaimsIdentity("scheme");
-            identity.AddClaim(new Claim("Test", "Value"));
-            user.AddIdentity(identity);
-
-            var expires = DateTime.Today;
-            var issued = new DateTime(1979, 11, 11);
-            var properties = new Http.Authentication.AuthenticationProperties();
-            properties.IsPersistent = true;
-            properties.RedirectUri = "/redirect";
-            properties.Items["key"] = "value";
-            properties.ExpiresUtc = expires;
-            properties.IssuedUtc = issued;
-
-            var newTicket = new AuthenticationTicket(user, properties, "scheme");
-            var newSerializer = new TicketSerializer();
-
-            var bytes = newSerializer.Serialize(newTicket);
-
-            var interopSerializer = new AspNetTicketSerializer();
-            var interopTicket = interopSerializer.Deserialize(bytes);
-
-            Assert.NotNull(interopTicket);
-            var newIdentity = interopTicket.Identity;
-            Assert.NotNull(newIdentity);
-            Assert.Equal("scheme", newIdentity.AuthenticationType);
-            Assert.True(newIdentity.HasClaim(c => c.Type == "Test" && c.Value == "Value"));
-            Assert.NotNull(interopTicket.Properties);
-            Assert.True(interopTicket.Properties.IsPersistent);
-            Assert.Equal("/redirect", interopTicket.Properties.RedirectUri);
-            Assert.Equal("value", interopTicket.Properties.Dictionary["key"]);
-            Assert.Equal(expires, interopTicket.Properties.ExpiresUtc);
-            Assert.Equal(issued, interopTicket.Properties.IssuedUtc);
-        }
-
         [Fact]
         public async Task AspNet5WithInteropCookieContainsIdentity()
         {
             var identity = new ClaimsIdentity("Cookies");
             identity.AddClaim(new Claim(ClaimTypes.Name, "Alice"));
 
-            var dataProtection = new DataProtection.DataProtectionProvider(new DirectoryInfo("..\\..\\artifacts"));
+            var dataProtection = new DataProtectionProvider(new DirectoryInfo("..\\..\\artifacts"));
+            var dataProtector = dataProtection.CreateProtector(
+                "Microsoft.AspNet.Authentication.Cookies.CookieAuthenticationMiddleware", // full name of the ASP.NET 5 type
+                CookieAuthenticationDefaults.AuthenticationType, "v2");
+
             var interopServer = TestServer.Create(app =>
             {
                 app.Properties["host.AppName"] = "Microsoft.Owin.Security.Tests";
-                app.UseCookieAuthentication(new CookieAuthenticationOptions(), dataProtection);
+
+                app.UseCookieAuthentication(new CookieAuthenticationOptions
+                {
+                    TicketDataFormat = new AspNetTicketDataFormat(new DataProtectorShim(dataProtector))
+                });
+
                 app.Run(context =>
                 {
                     context.Authentication.SignIn(identity);
@@ -132,7 +63,7 @@ namespace Microsoft.AspNet.CookiePolicy.Test
                     });
                 })
                 .ConfigureServices(services => services.AddAuthentication());
-            var newServer = new TestHost.TestServer(builder);
+            var newServer = new AspNet.TestHost.TestServer(builder);
 
             var request = new HttpRequestMessage(HttpMethod.Get, "http://example.com/login");
             request.Headers.Add("Cookie", transaction.SetCookie.Split(new[] { ';' }, 2).First());
@@ -149,7 +80,11 @@ namespace Microsoft.AspNet.CookiePolicy.Test
             identity.AddClaim(new Claim(ClaimTypes.Name, "Alice"));
             user.AddIdentity(identity);
 
-            var dataProtection = new DataProtection.DataProtectionProvider(new DirectoryInfo("..\\..\\artifacts"));
+            var dataProtection = new DataProtectionProvider(new DirectoryInfo("..\\..\\artifacts"));
+            var dataProtector = dataProtection.CreateProtector(
+                "Microsoft.AspNet.Authentication.Cookies.CookieAuthenticationMiddleware", // full name of the ASP.NET 5 type
+                CookieAuthenticationDefaults.AuthenticationType, "v2");
+
             var builder = new WebApplicationBuilder()
                 .Configure(app =>
                 {
@@ -157,14 +92,19 @@ namespace Microsoft.AspNet.CookiePolicy.Test
                     app.Run(context => context.Authentication.SignInAsync("Cookies", user));
                 })
                 .ConfigureServices(services => services.AddAuthentication());
-            var newServer = new TestHost.TestServer(builder);
+            var newServer = new AspNet.TestHost.TestServer(builder);
 
             var cookie = await SendAndGetCookie(newServer, "http://example.com/login");
 
             var server = TestServer.Create(app =>
             {
                 app.Properties["host.AppName"] = "Microsoft.Owin.Security.Tests";
-                app.UseCookieAuthentication(new CookieAuthenticationOptions(), dataProtection);
+
+                app.UseCookieAuthentication(new CookieAuthenticationOptions
+                {
+                    TicketDataFormat = new AspNetTicketDataFormat(new DataProtectorShim(dataProtector))
+                });
+
                 app.Run(async context =>
                 {
                     var result = await context.Authentication.AuthenticateAsync("Cookies");
@@ -177,7 +117,7 @@ namespace Microsoft.AspNet.CookiePolicy.Test
             Assert.Equal("Alice", FindClaimValue(transaction2, ClaimTypes.Name));
         }
 
-        private static async Task<string> SendAndGetCookie(TestHost.TestServer server, string uri)
+        private static async Task<string> SendAndGetCookie(AspNet.TestHost.TestServer server, string uri)
         {
             var request = new HttpRequestMessage(HttpMethod.Get, uri);
             var response = await server.CreateClient().SendAsync(request);
@@ -270,5 +210,4 @@ namespace Microsoft.AspNet.CookiePolicy.Test
 
     }
 }
-
 

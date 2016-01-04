@@ -5,12 +5,12 @@ using Microsoft.Owin.Security.DataHandler;
 using Microsoft.Owin.Security.DataHandler.Encoder;
 using Microsoft.Owin.Security.DataProtection;
 
-namespace Microsoft.Owin.Security.Cookies.Interop
+namespace Microsoft.Owin.Security.Interop
 {
     public class AspNetTicketDataFormat : SecureDataFormat<AuthenticationTicket>
     {
         public AspNetTicketDataFormat(IDataProtector protector)
-            : base(new AspNetTicketSerializer(), protector, TextEncodings.Base64Url)
+            : base(AspNetTicketSerializer.Default, protector, TextEncodings.Base64Url)
         {
         }
     }

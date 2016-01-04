@@ -3,13 +3,13 @@
 
 using Microsoft.AspNet.DataProtection;
 
-namespace Microsoft.Owin.Security.Cookies.Interop
+namespace Microsoft.Owin.Security.Interop
 {
     /// <summary>
     /// Converts an <see cref="IDataProtector"/> to an
     /// <see cref="Microsoft.Owin.Security.DataProtection.IDataProtector"/>.
     /// </summary>
-    internal sealed class DataProtectorShim : Microsoft.Owin.Security.DataProtection.IDataProtector
+    public sealed class DataProtectorShim : Microsoft.Owin.Security.DataProtection.IDataProtector
     {
         private readonly IDataProtector _protector;
 

@@ -8,7 +8,7 @@ using System.Security.Claims;
 
 namespace Microsoft.AspNet.Authentication
 {
-    // This MUST be kept in sync with Microsoft.Owin.Security.Cookies.AspNetTicketSerializer
+    // This MUST be kept in sync with Microsoft.Owin.Security.Interop.AspNetTicketSerializer
     public class TicketSerializer : IDataSerializer<AuthenticationTicket>
     {
         private const string DefaultStringPlaceholder = "\0";

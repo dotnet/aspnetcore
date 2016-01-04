@@ -7,7 +7,7 @@ using System.Linq;
 using System.Security.Claims;
 using Microsoft.Owin.Security.DataHandler.Serializer;
 
-namespace Microsoft.Owin.Security.Cookies.Interop
+namespace Microsoft.Owin.Security.Interop
 {
     // This MUST be kept in sync with Microsoft.AspNet.Authentication.DataHandler.TicketSerializer
     public class AspNetTicketSerializer : IDataSerializer<AuthenticationTicket>
@@ -15,7 +15,7 @@ namespace Microsoft.Owin.Security.Cookies.Interop
         private const string DefaultStringPlaceholder = "\0";
         private const int FormatVersion = 5;
 
-        public static TicketSerializer Default { get; } = new TicketSerializer();
+        public static AspNetTicketSerializer Default { get; } = new AspNetTicketSerializer();
 
         public virtual byte[] Serialize(AuthenticationTicket ticket)
         {
