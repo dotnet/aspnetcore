@@ -16,7 +16,7 @@ SOURCE="${BASH_SOURCE[0]}"
 while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
   DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
   SOURCE="$(readlink "$SOURCE")"
-  [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
+  [[ "$SOURCE" != /* ]] && SOURCE="$DIR/$SOURCE" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
 done
 DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
@@ -87,7 +87,12 @@ current_os()
     if [ "$uname" = "Darwin" ]; then
         echo "osx"
     else
-        echo "linux"
+        # Detect Distro
+        if [ "$(cat /etc/*-release | grep -cim1 ubuntu)" -eq 1 ]; then
+            echo "ubuntu"
+        elif [ "$(cat /etc/*-release | grep -cim1 centos)" -eq 1 ]; then
+            echo "centos"
+        fi
     fi
 }
 
@@ -107,7 +112,7 @@ check_pre_reqs() {
         return 0
     fi
 
-    if [ "$os" = "linux" ]; then
+    if [ "$(uname)" = "Linux" ]; then
         [ -z "$(ldconfig -p | grep libunwind)" ] && say_err "Unable to locate libunwind. Install libunwind to continue" && _failing=true
         [ -z "$(ldconfig -p | grep libssl)" ] && say_err "Unable to locate libssl. Install libssl to continue" && _failing=true
         [ -z "$(ldconfig -p | grep libcurl)" ] && say_err "Unable to locate libcurl. Install libcurl to continue" && _failing=true
