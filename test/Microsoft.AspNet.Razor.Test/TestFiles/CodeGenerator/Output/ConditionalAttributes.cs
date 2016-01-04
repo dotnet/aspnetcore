@@ -123,8 +123,7 @@ WriteAttributeValue("", 426, Url.Content("~/Scripts/modernizr-2.0.6-development-
 #line hidden
             EndWriteAttribute();
             Instrumentation.BeginContext(488, 152, true);
-            WriteLiteral(" type=\"text/javascript\"></script>\r\n    <script src=\"http://ajax.aspnetcdn.com/aja" +
-"x/jquery.ui/1.8.16/jquery-ui.min.js\" type=\"text/javascript\"></script>\r\n");
+            WriteLiteral(" type=\"text/javascript\"></script>\r\n    <script src=\"http://ajax.aspnetcdn.com/ajax/jquery.ui/1.8.16/jquery-ui.min.js\" type=\"text/javascript\"></script>\r\n");
             Instrumentation.EndContext();
 #line 15 "ConditionalAttributes.cshtml"
 

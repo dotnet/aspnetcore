@@ -24,8 +24,7 @@ namespace TestOutput
         public override async Task ExecuteAsync()
         {
             Instrumentation.BeginContext(91, 100, true);
-            WriteLiteral("\r\n<section>\r\n    <h1>Basic Asynchronous Expression Test</h1>\r\n    <p>Basic Asynch" +
-"ronous Expression: ");
+            WriteLiteral("\r\n<section>\r\n    <h1>Basic Asynchronous Expression Test</h1>\r\n    <p>Basic Asynchronous Expression: ");
             Instrumentation.EndContext();
             Instrumentation.BeginContext(192, 11, false);
 #line 10 "Await.cshtml"
@@ -83,8 +82,7 @@ namespace TestOutput
 #line hidden
             Instrumentation.EndContext();
             Instrumentation.BeginContext(453, 124, true);
-            WriteLiteral("</p>\r\n</section>\r\n\r\n<section>\r\n    <h1>Advanced Asynchronous Expression Test</h1>" +
-"\r\n    <p>Advanced Asynchronous Expression: ");
+            WriteLiteral("</p>\r\n</section>\r\n\r\n<section>\r\n    <h1>Advanced Asynchronous Expression Test</h1>\r\n    <p>Advanced Asynchronous Expression: ");
             Instrumentation.EndContext();
             Instrumentation.BeginContext(578, 15, false);
 #line 19 "Await.cshtml"

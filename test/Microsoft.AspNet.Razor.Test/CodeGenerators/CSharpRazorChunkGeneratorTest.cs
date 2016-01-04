@@ -52,6 +52,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
         }
 
         [Theory]
+        [InlineData("StringLiterals")]
         [InlineData("NestedCSharp")]
         [InlineData("NullConditionalExpressions")]
         [InlineData("NestedCodeBlocks")]

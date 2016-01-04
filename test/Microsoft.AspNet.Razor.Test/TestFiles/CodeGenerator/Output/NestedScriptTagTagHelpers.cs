@@ -26,8 +26,7 @@ namespace TestOutput
         {
             __tagHelperRunner = __tagHelperRunner ?? new global::Microsoft.AspNet.Razor.Runtime.TagHelperRunner();
             Instrumentation.BeginContext(31, 106, true);
-            WriteLiteral("\r\n<script type=\"text/html\">\r\n    <div data-animation=\"fade\" class=\"randomNonTagHe" +
-"lperAttribute\">\r\n        ");
+            WriteLiteral("\r\n<script type=\"text/html\">\r\n    <div data-animation=\"fade\" class=\"randomNonTagHelperAttribute\">\r\n        ");
             Instrumentation.EndContext();
             __tagHelperExecutionContext = __tagHelperScopeManager.Begin("p", global::Microsoft.AspNet.Razor.TagHelpers.TagMode.StartTagAndEndTag, "test", async() => {
                 Instrumentation.BeginContext(178, 2, true);
@@ -46,8 +45,7 @@ namespace TestOutput
 #line hidden
 
                 Instrumentation.BeginContext(223, 84, true);
-                WriteLiteral("                <script id=\"nestedScriptTag\" type=\"text/html\">\r\n                 " +
-"   ");
+                WriteLiteral("                <script id=\"nestedScriptTag\" type=\"text/html\">\r\n                    ");
                 Instrumentation.EndContext();
                 __tagHelperExecutionContext = __tagHelperScopeManager.Begin("input", global::Microsoft.AspNet.Razor.TagHelpers.TagMode.StartTagOnly, "test", async() => {
                 }
@@ -90,8 +88,7 @@ namespace TestOutput
 #line hidden
 
                 Instrumentation.BeginContext(437, 129, true);
-                WriteLiteral("            <script type=\"text/javascript\">\r\n                var tag = \'<input ch" +
-"ecked=\"true\">\';\r\n            </script>\r\n        ");
+                WriteLiteral("            <script type=\"text/javascript\">\r\n                var tag = \'<input checked=\"true\">\';\r\n            </script>\r\n        ");
                 Instrumentation.EndContext();
             }
             , StartTagHelperWritingScope, EndTagHelperWritingScope);

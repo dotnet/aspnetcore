@@ -15,9 +15,7 @@ namespace TestOutput
         public override async Task ExecuteAsync()
         {
             Instrumentation.BeginContext(70, 187, true);
-            WriteLiteral("\r\n<div class=\"randomNonTagHelperAttribute\">\r\n    <p class=\"Hello World\">\r\n       " +
-" <p></p>\r\n        <input type=\"text\" />\r\n        <input type=\"checkbox\" checked=" +
-"\"true\"/>\r\n    </p>\r\n</div>");
+            WriteLiteral("\r\n<div class=\"randomNonTagHelperAttribute\">\r\n    <p class=\"Hello World\">\r\n        <p></p>\r\n        <input type=\"text\" />\r\n        <input type=\"checkbox\" checked=\"true\"/>\r\n    </p>\r\n</div>");
             Instrumentation.EndContext();
         }
         #pragma warning restore 1998

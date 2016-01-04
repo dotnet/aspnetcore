@@ -498,23 +498,6 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
                         Write(literal[i].ToString());
                         break;
                 }
-                if (i > 0 && i % 80 == 0)
-                {
-                    // If current character is a high surrogate and the following
-                    // character is a low surrogate, don't break them.
-                    // Otherwise when we write the string to a file, we might lose
-                    // the characters.
-                    if (Char.IsHighSurrogate(literal[i])
-                        && (i < literal.Length - 1)
-                        && Char.IsLowSurrogate(literal[i + 1]))
-                    {
-                        Write(literal[++i].ToString());
-                    }
-
-                    Write("\" +");
-                    Write(NewLine);
-                    Write("\"");
-                }
             }
             Write("\"");
         }

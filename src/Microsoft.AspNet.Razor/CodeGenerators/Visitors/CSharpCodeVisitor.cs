@@ -15,6 +15,7 @@ namespace Microsoft.AspNet.Razor.CodeGenerators.Visitors
         private const string ItemParameterName = "item";
         private const string ValueWriterName = "__razor_attribute_value_writer";
         private const string TemplateWriterName = "__razor_template_writer";
+        private const int MaxStringLiteralLength = 1024;
 
         private CSharpPaddingBuilder _paddingBuilder;
         private CSharpTagHelperCodeRenderer _tagHelperCodeRenderer;
@@ -134,17 +135,7 @@ namespace Microsoft.AspNet.Razor.CodeGenerators.Visitors
                 Writer.WriteStartInstrumentationContext(Context, start, text.Length, isLiteral: true);
             }
 
-            if (Context.ExpressionRenderingMode == ExpressionRenderingMode.WriteToOutput)
-            {
-                RenderPreWriteStart();
-            }
-
-            Writer.WriteStringLiteral(text);
-
-            if (Context.ExpressionRenderingMode == ExpressionRenderingMode.WriteToOutput)
-            {
-                Writer.WriteEndMethodInvocation();
-            }
+            RenderStartWriteLiteral(text);
 
             if (Context.Host.EnableInstrumentation)
             {
@@ -165,17 +156,7 @@ namespace Microsoft.AspNet.Razor.CodeGenerators.Visitors
                 Writer.WriteStartInstrumentationContext(Context, chunk.Association, isLiteral: true);
             }
 
-            if (Context.ExpressionRenderingMode == ExpressionRenderingMode.WriteToOutput)
-            {
-                RenderPreWriteStart();
-            }
-
-            Writer.WriteStringLiteral(chunk.Text);
-
-            if (Context.ExpressionRenderingMode == ExpressionRenderingMode.WriteToOutput)
-            {
-                Writer.WriteEndMethodInvocation();
-            }
+            RenderStartWriteLiteral(chunk.Text);
 
             if (Context.Host.EnableInstrumentation)
             {
@@ -575,25 +556,47 @@ namespace Microsoft.AspNet.Razor.CodeGenerators.Visitors
                    Context.ExpressionRenderingMode == ExpressionRenderingMode.WriteToOutput;
         }
 
-        private CSharpCodeWriter RenderPreWriteStart()
+        private void RenderStartWriteLiteral(string text)
         {
-            return RenderPreWriteStart(Writer, Context);
-        }
+            var charactersRendered = 0;
 
-        public static CSharpCodeWriter RenderPreWriteStart(CSharpCodeWriter writer, CodeGeneratorContext context)
-        {
-            if (!string.IsNullOrEmpty(context.TargetWriterName))
+            // Render the string in pieces to avoid Roslyn OOM exceptions at compile time:
+            // https://github.com/aspnet/External/issues/54
+            while (charactersRendered < text.Length)
             {
-                writer.WriteStartMethodInvocation(context.Host.GeneratedClassContext.WriteLiteralToMethodName)
-                      .Write(context.TargetWriterName)
-                      .WriteParameterSeparator();
-            }
-            else
-            {
-                writer.WriteStartMethodInvocation(context.Host.GeneratedClassContext.WriteLiteralMethodName);
-            }
+                if (Context.ExpressionRenderingMode == ExpressionRenderingMode.WriteToOutput)
+                {
+                    if (!string.IsNullOrEmpty(Context.TargetWriterName))
+                    {
+                        Writer.WriteStartMethodInvocation(Context.Host.GeneratedClassContext.WriteLiteralToMethodName)
+                              .Write(Context.TargetWriterName)
+                              .WriteParameterSeparator();
+                    }
+                    else
+                    {
+                        Writer.WriteStartMethodInvocation(Context.Host.GeneratedClassContext.WriteLiteralMethodName);
+                    }
+                }
 
-            return writer;
+                string textToRender;
+                if (text.Length <= MaxStringLiteralLength)
+                {
+                    textToRender = text;
+                }
+                else
+                {
+                    var charactersToSubstring = Math.Min(MaxStringLiteralLength, text.Length - charactersRendered);
+                    textToRender = text.Substring(charactersRendered, charactersToSubstring);
+                }
+
+                Writer.WriteStringLiteral(textToRender);
+                charactersRendered += textToRender.Length;
+
+                if (Context.ExpressionRenderingMode == ExpressionRenderingMode.WriteToOutput)
+                {
+                    Writer.WriteEndMethodInvocation();
+                }
+            }
         }
     }
 }
