@@ -9,11 +9,12 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
 {
     public class AuthorizationResponseReceivedContext : BaseOpenIdConnectContext
     {
-        public AuthorizationResponseReceivedContext(HttpContext context, OpenIdConnectOptions options)
+        public AuthorizationResponseReceivedContext(HttpContext context, OpenIdConnectOptions options, AuthenticationProperties properties)
             : base(context, options)
         {
+            Properties = properties;
         }
 
-        public AuthenticationProperties Properties { get; set; }
+        public AuthenticationProperties Properties { get; }
     }
 }

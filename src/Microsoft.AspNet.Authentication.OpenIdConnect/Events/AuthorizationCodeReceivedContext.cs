@@ -4,7 +4,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNet.Http;
-using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+using Microsoft.AspNet.Http.Authentication;
 
 namespace Microsoft.AspNet.Authentication.OpenIdConnect
 {
@@ -16,10 +16,13 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         /// <summary>
         /// Creates a <see cref="AuthorizationCodeReceivedContext"/>
         /// </summary>
-        public AuthorizationCodeReceivedContext(HttpContext context, OpenIdConnectOptions options)
+        public AuthorizationCodeReceivedContext(HttpContext context, OpenIdConnectOptions options, AuthenticationProperties properties)
             : base(context, options)
-        { 
+        {
+            Properties = properties;
         }
+
+        public AuthenticationProperties Properties { get; set; }
 
         /// <summary>
         /// Gets or sets the 'code'.

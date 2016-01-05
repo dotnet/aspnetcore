@@ -19,28 +19,36 @@ namespace Microsoft.AspNet.Authentication.OAuth
         /// <summary>
         /// Initializes a new <see cref="OAuthCreatingTicketContext"/>.
         /// </summary>
+        /// <param name="principal">The <see cref="ClaimsPrincipal"/> representing the user.</param>
+        /// <param name="properties">Property bag for common authentication properties.</param>
         /// <param name="context">The HTTP environment.</param>
         /// <param name="options">The options used by the authentication middleware.</param>
         /// <param name="backchannel">The HTTP client used by the authentication middleware</param>
         /// <param name="tokens">The tokens returned from the token endpoint.</param>
         public OAuthCreatingTicketContext(
+            ClaimsPrincipal principal,
+            AuthenticationProperties properties,
             HttpContext context,
             OAuthOptions options,
             HttpClient backchannel,
             OAuthTokenResponse tokens)
-            : this(context, options, backchannel, tokens, user: new JObject())
+            : this(principal, properties, context, options, backchannel, tokens, user: new JObject())
         {
         }
 
         /// <summary>
         /// Initializes a new <see cref="OAuthCreatingTicketContext"/>.
         /// </summary>
+        /// <param name="principal">The <see cref="ClaimsPrincipal"/> representing the user.</param>
+        /// <param name="properties">Property bag for common authentication properties.</param>
         /// <param name="context">The HTTP environment.</param>
         /// <param name="options">The options used by the authentication middleware.</param>
         /// <param name="backchannel">The HTTP client used by the authentication middleware</param>
         /// <param name="tokens">The tokens returned from the token endpoint.</param>
         /// <param name="user">The JSON-serialized user.</param>
         public OAuthCreatingTicketContext(
+            ClaimsPrincipal principal,
+            AuthenticationProperties properties,
             HttpContext context,
             OAuthOptions options,
             HttpClient backchannel,
@@ -77,6 +85,8 @@ namespace Microsoft.AspNet.Authentication.OAuth
             Backchannel = backchannel;
             User = user;
             Options = options;
+            Principal = principal;
+            Properties = properties;
         }
 
         public OAuthOptions Options { get; }

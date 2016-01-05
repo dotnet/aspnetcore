@@ -534,6 +534,54 @@ namespace Microsoft.AspNet.Authentication.Cookies
         }
 
         [Fact]
+        public async Task CookieValidatorOnlyCalledOnce()
+        {
+            var clock = new TestClock();
+            var server = CreateServer(options =>
+            {
+                options.SystemClock = clock;
+                options.ExpireTimeSpan = TimeSpan.FromMinutes(10);
+                options.SlidingExpiration = false;
+                options.Events = new CookieAuthenticationEvents
+                {
+                    OnValidatePrincipal = ctx =>
+                    {
+                        ctx.ShouldRenew = true;
+                        return Task.FromResult(0);
+                    }
+                };
+            },
+            context =>
+                context.Authentication.SignInAsync("Cookies",
+                    new ClaimsPrincipal(new ClaimsIdentity(new GenericIdentity("Alice", "Cookies")))));
+
+            var transaction1 = await SendAsync(server, "http://example.com/testpath");
+
+            var transaction2 = await SendAsync(server, "http://example.com/me/Cookies", transaction1.CookieNameValue);
+            Assert.NotNull(transaction2.SetCookie);
+            Assert.Equal("Alice", FindClaimValue(transaction2, ClaimTypes.Name));
+
+            clock.Add(TimeSpan.FromMinutes(5));
+
+            var transaction3 = await SendAsync(server, "http://example.com/me/Cookies", transaction2.CookieNameValue);
+            Assert.NotNull(transaction3.SetCookie);
+            Assert.Equal("Alice", FindClaimValue(transaction3, ClaimTypes.Name));
+
+            clock.Add(TimeSpan.FromMinutes(6));
+
+            var transaction4 = await SendAsync(server, "http://example.com/me/Cookies", transaction1.CookieNameValue);
+            Assert.Null(transaction4.SetCookie);
+            Assert.Null(FindClaimValue(transaction4, ClaimTypes.Name));
+
+            clock.Add(TimeSpan.FromMinutes(5));
+
+            var transaction5 = await SendAsync(server, "http://example.com/me/Cookies", transaction2.CookieNameValue);
+            Assert.Null(transaction5.SetCookie);
+            Assert.Null(FindClaimValue(transaction5, ClaimTypes.Name));
+        }
+
+
+        [Fact]
         public async Task CookieExpirationCanBeOverridenInEvent()
         {
             var clock = new TestClock();

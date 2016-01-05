@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
         /// <summary>
         /// The name of the AuthenticationScheme creating a cookie
         /// </summary>
-        public string AuthenticationScheme { get; private set; }
+        public string AuthenticationScheme { get; }
 
         /// <summary>
         /// Contains the claims about to be converted into the outgoing cookie.

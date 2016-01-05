@@ -155,11 +155,7 @@ namespace Microsoft.AspNet.Authentication.OAuth
 
         protected virtual async Task<AuthenticationTicket> CreateTicketAsync(ClaimsIdentity identity, AuthenticationProperties properties, OAuthTokenResponse tokens)
         {
-            var context = new OAuthCreatingTicketContext(Context, Options, Backchannel, tokens)
-            {
-                Principal = new ClaimsPrincipal(identity),
-                Properties = properties
-            };
+            var context = new OAuthCreatingTicketContext(new ClaimsPrincipal(identity), properties, Context, Options, Backchannel, tokens);
 
             await Options.Events.CreatingTicket(context);
 

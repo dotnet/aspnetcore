@@ -203,7 +203,7 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
 
         protected override async Task<bool> HandleUnauthorizedAsync(ChallengeContext context)
         {
-            var eventContext = new JwtBearerChallengeContext(Context, Options);
+            var eventContext = new JwtBearerChallengeContext(Context, Options, new AuthenticationProperties(context.Properties));
             await Options.Events.Challenge(eventContext);
             if (eventContext.HandledResponse)
             {
