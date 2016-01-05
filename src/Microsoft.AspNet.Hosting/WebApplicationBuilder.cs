@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Runtime.Versioning;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting.Builder;
 using Microsoft.AspNet.Hosting.Internal;
@@ -29,6 +30,7 @@ namespace Microsoft.AspNet.Hosting
         private Action<IServiceCollection> _configureServices;
         private string _environmentName;
         private string _webRoot;
+        private string _applicationBasePath;
 
         // Only one of these should be set
         private StartupMethods _startup;
@@ -49,6 +51,12 @@ namespace Microsoft.AspNet.Hosting
         public WebApplicationBuilder UseConfiguration(IConfiguration configuration)
         {
             _config = configuration;
+            return this;
+        }
+
+        public WebApplicationBuilder UseApplicationBasePath(string applicationBasePath)
+        {
+            _applicationBasePath = applicationBasePath;
             return this;
         }
 
@@ -216,11 +224,18 @@ namespace Microsoft.AspNet.Hosting
             services.AddTransient<IStartupFilter, AutoRequestServicesStartupFilter>();
 
             var defaultPlatformServices = PlatformServices.Default;
+
             if (defaultPlatformServices != null)
             {
                 if (defaultPlatformServices.Application != null)
                 {
-                    services.TryAddSingleton(defaultPlatformServices.Application);
+                    var appEnv = defaultPlatformServices.Application;
+                    if (!string.IsNullOrEmpty(_applicationBasePath))
+                    {
+                        appEnv = new WrappedApplicationEnvironment(_applicationBasePath, appEnv);
+                    }
+
+                    services.TryAddSingleton(appEnv);
                 }
 
                 if (defaultPlatformServices.Runtime != null)
@@ -235,6 +250,25 @@ namespace Microsoft.AspNet.Hosting
             }
 
             return services;
+        }
+
+        private class WrappedApplicationEnvironment : IApplicationEnvironment
+        {
+            public WrappedApplicationEnvironment(string applicationBasePath, IApplicationEnvironment env)
+            {
+                ApplicationBasePath = applicationBasePath;
+                ApplicationName = env.ApplicationName;
+                ApplicationVersion = env.ApplicationVersion;
+                RuntimeFramework = env.RuntimeFramework;
+            }
+
+            public string ApplicationBasePath { get; }
+
+            public string ApplicationName { get; }
+
+            public string ApplicationVersion { get; }
+
+            public FrameworkName RuntimeFramework { get; }
         }
     }
 }

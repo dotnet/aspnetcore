@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,6 +15,7 @@ namespace SampleStartups
         {
             var application = new WebApplicationBuilder()
                 .UseServerFactory("Microsoft.AspNet.Server.Kestrel") // Set the server manually
+                .UseApplicationBasePath(Directory.GetCurrentDirectory()) // Override the application base with the current directory
                 .UseEnvironment("Development")
                 .UseWebRoot("public")
                 .ConfigureLogging(loggerFactory =>

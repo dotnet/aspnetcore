@@ -13,6 +13,7 @@ using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.PlatformAbstractions;
 using Xunit;
 
 namespace Microsoft.AspNet.Hosting
@@ -135,6 +136,27 @@ namespace Microsoft.AspNet.Hosting
                 .Build();
 
             Assert.Equal(expected, application.Services.GetService<IHostingEnvironment>().EnvironmentName);
+        }
+
+        [Fact]
+        public void UseBasePathConfiguresBasePath()
+        {
+            var vals = new Dictionary<string, string>
+            {
+                { "ENV", "Dev" },
+            };
+            var builder = new ConfigurationBuilder()
+                .AddInMemoryCollection(vals);
+            var config = builder.Build();
+
+            var application = new WebApplicationBuilder()
+                .UseConfiguration(config)
+                .UseApplicationBasePath("/foo/bar")
+                .UseServer(new TestServer())
+                .UseStartup("Microsoft.AspNet.Hosting.Tests")
+                .Build();
+
+            Assert.Equal("/foo/bar", application.Services.GetService<IApplicationEnvironment>().ApplicationBasePath);
         }
 
         private WebApplicationBuilder CreateWebApplicationBuilder()
