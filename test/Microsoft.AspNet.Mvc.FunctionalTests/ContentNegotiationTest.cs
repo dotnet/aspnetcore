@@ -405,6 +405,50 @@ END:VCARD
         }
 
         [Fact]
+        public async Task InvalidResponseContentType_WithNotMatchingAcceptHeader_Returns406()
+        {
+            // Arrange
+            var targetUri = "http://localhost/InvalidContentType/SetResponseContentTypeJson";
+            var request = new HttpRequestMessage(HttpMethod.Get, targetUri);
+            request.Headers.Accept.Add(MediaTypeWithQualityHeaderValue.Parse("application/custom1"));
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.NotAcceptable, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task InvalidResponseContentType_WithMatchingAcceptHeader_Returns406()
+        {
+            // Arrange
+            var targetUri = "http://localhost/InvalidContentType/SetResponseContentTypeJson";
+            var request = new HttpRequestMessage(HttpMethod.Get, targetUri);
+            request.Headers.Accept.Add(MediaTypeWithQualityHeaderValue.Parse("application/json"));
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.NotAcceptable, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task InvalidResponseContentType_WithoutAcceptHeader_Returns406()
+        {
+            // Arrange
+            var targetUri = "http://localhost/InvalidContentType/SetResponseContentTypeJson";
+            var request = new HttpRequestMessage(HttpMethod.Get, targetUri);
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.NotAcceptable, response.StatusCode);
+        }
+
+        [Fact]
         public async Task ProducesAttribute_And_FormatFilterAttribute_Conflicting()
         {
             // Arrange

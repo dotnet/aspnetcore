@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.Mvc.Formatters
     public abstract class OutputFormatterCanWriteContext
     {
         /// <summary>
-        /// Gets or sets the <see cref="MediaTypeHeaderValue"/> of the content type to write to the response.
+        /// Gets or sets the content type to write to the response.
         /// </summary>
         /// <remarks>
         /// An <see cref="IOutputFormatter"/> can set this value when its

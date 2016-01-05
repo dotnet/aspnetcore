@@ -92,15 +92,15 @@ namespace Microsoft.AspNet.Mvc
             var contentTypes = new MediaTypeCollection();
             foreach (var arg in completeArgs)
             {
-                var contentType = arg;
-                if (MediaTypeComparisons.MatchesAllSubtypes(contentType)||
-                    MediaTypeComparisons.MatchesAllTypes(contentType))
+                var contentType = new MediaType(arg);
+                if (contentType.MatchesAllTypes ||
+                    contentType.MatchesAllSubTypes)
                 {
                     throw new InvalidOperationException(
                         Resources.FormatMatchAllContentTypeIsNotAllowed(arg));
                 }
 
-                contentTypes.Add(contentType);
+                contentTypes.Add(arg);
             }
 
             return contentTypes;

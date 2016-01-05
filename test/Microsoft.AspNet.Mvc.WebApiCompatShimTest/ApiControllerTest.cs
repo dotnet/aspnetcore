@@ -265,7 +265,7 @@ namespace System.Web.Http
             var jsonResult = Assert.IsType<JsonResult>(result);
             Assert.Same(product, jsonResult.Value);
 
-            Assert.Same(Encoding.UTF8, MediaTypeEncoding.GetEncoding(jsonResult.ContentType));
+            Assert.Same(Encoding.UTF8, MediaType.GetEncoding(jsonResult.ContentType));
         }
 
         [Fact]

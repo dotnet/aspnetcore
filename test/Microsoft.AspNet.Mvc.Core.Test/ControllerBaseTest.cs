@@ -977,7 +977,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             // Assert
             Assert.IsType<ContentResult>(actualContentResult);
             Assert.Equal("TestContent", actualContentResult.Content);
-            Assert.Null(MediaTypeEncoding.GetEncoding(actualContentResult.ContentType));
+            Assert.Null(MediaType.GetEncoding(actualContentResult.ContentType));
             Assert.Equal("text/plain", actualContentResult.ContentType.ToString());
         }
 
@@ -993,7 +993,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             // Assert
             Assert.IsType<ContentResult>(actualContentResult);
             Assert.Equal("TestContent", actualContentResult.Content);
-            Assert.Same(Encoding.UTF8, MediaTypeEncoding.GetEncoding(actualContentResult.ContentType));
+            Assert.Same(Encoding.UTF8, MediaType.GetEncoding(actualContentResult.ContentType));
             Assert.Equal("text/plain; charset=utf-8", actualContentResult.ContentType.ToString());
         }
 
@@ -1026,7 +1026,7 @@ namespace Microsoft.AspNet.Mvc.Core.Test
             Assert.NotNull(contentResult.ContentType);
             Assert.Equal(contentType, contentResult.ContentType.ToString());
             // The default encoding of ContentResult is used when this result is executed.
-            Assert.Null(MediaTypeEncoding.GetEncoding(contentResult.ContentType));
+            Assert.Null(MediaType.GetEncoding(contentResult.ContentType));
         }
 
         [Fact]

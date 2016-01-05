@@ -41,7 +41,7 @@ namespace BasicWebSite.Formatters
             builder.AppendLine();
             builder.AppendLine("END:VCARD");
 
-            var selectedEncoding = MediaTypeEncoding.GetEncoding(context.ContentType) ?? Encoding.UTF8;
+            var selectedEncoding = new MediaType(context.ContentType).Encoding ?? Encoding.UTF8;
 
             await context.HttpContext.Response.WriteAsync(
                 builder.ToString(),

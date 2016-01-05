@@ -69,10 +69,21 @@ namespace Microsoft.AspNet.Mvc.Formatters
 
             // Confirm the request's content type is more specific than a media type this formatter supports e.g. OK if
             // client sent "text/plain" data and this formatter supports "text/*".
-            return SupportedMediaTypes.Any(supportedMediaType =>
+            return IsSubsetOfAnySupportedContentType(contentType);
+        }
+
+        private bool IsSubsetOfAnySupportedContentType(string contentType)
+        {
+            var parsedContentType = new MediaType(contentType);
+            for (var i = 0; i < SupportedMediaTypes.Count; i++)
             {
-                return MediaTypeComparisons.IsSubsetOf(supportedMediaType, contentType);
-            });
+                var supportedMediaType = new MediaType(SupportedMediaTypes[i]);
+                if (parsedContentType.IsSubsetOf(supportedMediaType))
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         /// <summary>
@@ -120,7 +131,7 @@ namespace Microsoft.AspNet.Mvc.Formatters
 
             if (request.ContentType != null)
             {
-                var encoding = MediaTypeEncoding.GetEncoding(request.ContentType);
+                var encoding = MediaType.GetEncoding(request.ContentType);
                 if (encoding != null)
                 {
                     foreach (var supportedEncoding in SupportedEncodings)

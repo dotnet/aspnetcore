@@ -322,4 +322,7 @@
   <data name="FormatFormatterMappings_GetMediaTypeMappingForFormat_InvalidFormat" xml:space="preserve">
     <value>The argument '{0}' is invalid. Empty or null formats are not supported.</value>
   </data>
+  <data name="AcceptHeaderParser_ParseAcceptHeader_InvalidValues" xml:space="preserve">
+    <value>"Invalid values '{0}'."</value>
+  </data>
 </root>

@@ -1050,6 +1050,22 @@ namespace Microsoft.AspNet.Mvc.Core
             return string.Format(CultureInfo.CurrentCulture, GetString("FormatFormatterMappings_GetMediaTypeMappingForFormat_InvalidFormat"), p0);
         }
 
+        /// <summary>
+        /// "Invalid values '{0}'."
+        /// </summary>
+        internal static string AcceptHeaderParser_ParseAcceptHeader_InvalidValues
+        {
+            get { return GetString("AcceptHeaderParser_ParseAcceptHeader_InvalidValues"); }
+        }
+
+        /// <summary>
+        /// "Invalid values '{0}'."
+        /// </summary>
+        internal static string FormatAcceptHeaderParser_ParseAcceptHeader_InvalidValues(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("AcceptHeaderParser_ParseAcceptHeader_InvalidValues"), p0);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

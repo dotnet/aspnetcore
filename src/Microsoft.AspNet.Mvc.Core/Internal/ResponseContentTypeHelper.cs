@@ -37,14 +37,14 @@ namespace Microsoft.AspNet.Mvc.Internal
         {
             Debug.Assert(defaultContentType != null);
 
-            var defaultContentTypeEncoding = MediaTypeEncoding.GetEncoding(defaultContentType);
+            var defaultContentTypeEncoding = MediaType.GetEncoding(defaultContentType);
             Debug.Assert(defaultContentTypeEncoding != null);
 
             // 1. User sets the ContentType property on the action result
             if (actionResultContentType != null)
             {
                 resolvedContentType = actionResultContentType;
-                var actionResultEncoding = MediaTypeEncoding.GetEncoding(actionResultContentType);
+                var actionResultEncoding = MediaType.GetEncoding(actionResultContentType);
                 resolvedContentTypeEncoding = actionResultEncoding ?? defaultContentTypeEncoding;
                 return;
             }
@@ -52,7 +52,7 @@ namespace Microsoft.AspNet.Mvc.Internal
             // 2. User sets the ContentType property on the http response directly
             if (!string.IsNullOrEmpty(httpResponseContentType))
             {
-                var mediaTypeEncoding = MediaTypeEncoding.GetEncoding(httpResponseContentType);
+                var mediaTypeEncoding = MediaType.GetEncoding(httpResponseContentType);
                 if (mediaTypeEncoding != null)
                 {
                     resolvedContentType = httpResponseContentType;

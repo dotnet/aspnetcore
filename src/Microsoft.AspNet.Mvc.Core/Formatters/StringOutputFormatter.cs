@@ -55,10 +55,7 @@ namespace Microsoft.AspNet.Mvc.Formatters
             }
 
             var response = context.HttpContext.Response;
-
-            return response.WriteAsync(
-                valueAsString,
-                MediaTypeEncoding.GetEncoding(context.ContentType) ?? Encoding.UTF8);
+            return response.WriteAsync(valueAsString, MediaType.GetEncoding(response.ContentType) ?? Encoding.UTF8);
         }
     }
 }

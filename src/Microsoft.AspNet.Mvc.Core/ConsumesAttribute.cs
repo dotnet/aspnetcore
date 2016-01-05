@@ -68,12 +68,25 @@ namespace Microsoft.AspNet.Mvc
 
                 // Confirm the request's content type is more specific than a media type this action supports e.g. OK
                 // if client sent "text/plain" data and this action supports "text/*".
-                if (requestContentType != null &&
-                    !ContentTypes.Any(contentType => MediaTypeComparisons.IsSubsetOf(contentType, requestContentType)))
+                if (requestContentType != null && !IsSubsetOfAnyContentType(requestContentType))
                 {
                     context.Result = new UnsupportedMediaTypeResult();
                 }
             }
+        }
+
+        private bool IsSubsetOfAnyContentType(string requestMediaType)
+        {
+            var parsedRequestMediaType = new MediaType(requestMediaType);
+            for (var i = 0; i < ContentTypes.Count; i++)
+            {
+                var contentTypeMediaType = new MediaType(ContentTypes[i]);
+                if (parsedRequestMediaType.IsSubsetOf(contentTypeMediaType))
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         /// <inheritdoc />
@@ -111,9 +124,9 @@ namespace Microsoft.AspNet.Mvc
                 return !isActionWithoutConsumeConstraintPresent;
             }
 
-            // Confirm the request's content type is more specific than a media type this action supports e.g. OK
+            // Confirm the request's content type is more specific than (a media type this action supports e.g. OK
             // if client sent "text/plain" data and this action supports "text/*".
-            if (ContentTypes.Any(contentType => MediaTypeComparisons.IsSubsetOf(contentType, requestContentType)))
+            if (IsSubsetOfAnyContentType(requestContentType))
             {
                 return true;
             }
@@ -181,8 +194,9 @@ namespace Microsoft.AspNet.Mvc
             var contentTypes = new MediaTypeCollection();
             foreach (var arg in completeArgs)
             {
-                if (MediaTypeComparisons.MatchesAllSubtypes(arg) ||
-                    MediaTypeComparisons.MatchesAllTypes(arg))
+                var mediaType = new MediaType(arg);
+                if (mediaType.MatchesAllSubTypes ||
+                    mediaType.MatchesAllTypes)
                 {
                     throw new InvalidOperationException(
                         Resources.FormatMatchAllContentTypeIsNotAllowed(arg));

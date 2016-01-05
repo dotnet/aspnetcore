@@ -51,7 +51,7 @@ namespace Microsoft.AspNet.Mvc.Formatters
                     var cache = new Dictionary<string, string>();
                     foreach (var mediaType in SupportedMediaTypes)
                     {
-                        cache.Add(mediaType, MediaTypeEncoding.ReplaceEncoding(mediaType, Encoding.UTF8));
+                        cache.Add(mediaType, MediaType.ReplaceEncoding(mediaType, Encoding.UTF8));
                     }
 
                     // Safe race condition, worst case scenario we initialize the field multiple times with dictionaries containing
@@ -93,11 +93,14 @@ namespace Microsoft.AspNet.Mvc.Formatters
             {
                 List<string> mediaTypes = null;
 
+                var parsedContentType = new MediaType(contentType);
+
                 // Confirm this formatter supports a more specific media type than requested e.g. OK if "text/*"
                 // requested and formatter supports "text/plain". Treat contentType like it came from an Accept header.
                 foreach (var mediaType in SupportedMediaTypes)
                 {
-                    if (MediaTypeComparisons.IsSubsetOf(new StringSegment(contentType), mediaType))
+                    var parsedMediaType = new MediaType(mediaType);
+                    if (parsedMediaType.IsSubsetOf(parsedContentType))
                     {
                         if (mediaTypes == null)
                         {
@@ -135,13 +138,14 @@ namespace Microsoft.AspNet.Mvc.Formatters
 
             if (context.ContentType.HasValue)
             {
-                var contentTypeEncoding = MediaTypeEncoding.GetCharsetParameter(context.ContentType);
-                if (contentTypeEncoding.HasValue)
+                var parsedContentType = new MediaType(context.ContentType);
+                var contentTypeCharset = parsedContentType.Charset;
+                if (contentTypeCharset.HasValue)
                 {
                     for (var i = 0; i < SupportedEncodings.Count; i++)
                     {
                         var supportedEncoding = SupportedEncodings[i];
-                        if (contentTypeEncoding.Equals(supportedEncoding.WebName, StringComparison.OrdinalIgnoreCase))
+                        if (contentTypeCharset.Equals(supportedEncoding.WebName, StringComparison.OrdinalIgnoreCase))
                         {
                             // This is supported.
                             return SupportedEncodings[i];
@@ -186,11 +190,11 @@ namespace Microsoft.AspNet.Mvc.Formatters
                 // Confirm this formatter supports a more specific media type than requested e.g. OK if "text/*"
                 // requested and formatter supports "text/plain". contentType is typically what we got in an Accept
                 // header.
-                var contentType = context.ContentType;
+                var parsedContentType = new MediaType(context.ContentType);
                 for (var i = 0; i < SupportedMediaTypes.Count; i++)
                 {
-                    var supportedMediaType = SupportedMediaTypes[i];
-                    if (MediaTypeComparisons.IsSubsetOf(contentType, supportedMediaType))
+                    var supportedMediaType = new MediaType(SupportedMediaTypes[i]);
+                    if (supportedMediaType.IsSubsetOf(parsedContentType))
                     {
                         context.ContentType = new StringSegment(SupportedMediaTypes[i]);
                         return true;
@@ -272,11 +276,11 @@ namespace Microsoft.AspNet.Mvc.Formatters
         {
             if (string.Equals(encoding.WebName, Encoding.UTF8.WebName, StringComparison.OrdinalIgnoreCase) &&
                 OutputMediaTypeCache.ContainsKey(mediaType))
-            {
-                return OutputMediaTypeCache[mediaType];
-            }
+                {
+                    return OutputMediaTypeCache[mediaType];
+                }
 
-            return MediaTypeEncoding.ReplaceEncoding(mediaType, encoding);
+            return MediaType.ReplaceEncoding(mediaType, encoding);
         }
 
         private Encoding MatchAcceptCharacterEncoding(IList<StringWithQualityHeaderValue> acceptCharsetHeaders)

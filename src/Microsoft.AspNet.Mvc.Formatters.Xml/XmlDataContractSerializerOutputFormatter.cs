@@ -188,7 +188,7 @@ namespace Microsoft.AspNet.Mvc.Formatters
             }
 
             var writerSettings = WriterSettings.Clone();
-            writerSettings.Encoding = MediaTypeEncoding.GetEncoding(context.ContentType) ?? Encoding.UTF8;
+            writerSettings.Encoding = MediaType.GetEncoding(context.ContentType) ?? Encoding.UTF8;
 
             // Wrap the object only if there is a wrapping type.
             var value = context.Object;

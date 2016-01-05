@@ -282,7 +282,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             // Check if the original instance provided by the user has not changed.
             // Since we do not have access to the new instance created within the view executor,
             // check if at least the content is the same.
-            Assert.Null(MediaTypeEncoding.GetEncoding(contentType));
+            Assert.Null(MediaType.GetEncoding(contentType));
         }
 
         [Fact]

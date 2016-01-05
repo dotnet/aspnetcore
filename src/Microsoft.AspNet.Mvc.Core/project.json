@@ -26,6 +26,10 @@
       "type": "build"
     },
     "Microsoft.Extensions.Logging.Abstractions": "1.0.0-*",
+    "Microsoft.Extensions.HashCodeCombiner.Sources": {
+      "type": "build",
+      "version": "1.0.0-*"
+    },
     "Microsoft.Extensions.PropertyActivator.Sources": {
       "version": "1.0.0-*",
       "type": "build"

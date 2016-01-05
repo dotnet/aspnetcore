@@ -91,7 +91,7 @@ namespace Microsoft.AspNet.Mvc
             var contentResult = Assert.IsType<ContentResult>(result);
             Assert.Equal(content, contentResult.Content);
             Assert.Equal("text/asp; charset=us-ascii", contentResult.ContentType.ToString());
-            Assert.Equal(encoding, MediaTypeEncoding.GetEncoding(contentResult.ContentType));
+            Assert.Equal(encoding, MediaType.GetEncoding(contentResult.ContentType));
         }
 
         [Theory]

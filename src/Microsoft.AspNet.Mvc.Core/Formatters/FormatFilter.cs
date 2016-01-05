@@ -89,11 +89,26 @@ namespace Microsoft.AspNet.Mvc.Formatters
                 // request's format and IApiResponseMetadataProvider-provided content types similarly to an Accept
                 // header and an output formatter's SupportedMediaTypes: Confirm action supports a more specific media
                 // type than requested e.g. OK if "text/*" requested and action supports "text/plain".
-                if (!supportedMediaTypes.Any(c => MediaTypeComparisons.IsSubsetOf(contentType, c)))
+                if (!IsSuperSetOfAnySupportedMediaType(contentType, supportedMediaTypes))
                 {
                     context.Result = new HttpNotFoundResult();
                 }
             }
+        }
+
+        private bool IsSuperSetOfAnySupportedMediaType(string contentType, MediaTypeCollection supportedMediaTypes)
+        {
+            var parsedContentType = new MediaType(contentType);
+            for (var i = 0; i < supportedMediaTypes.Count; i++)
+            {
+                var supportedMediaType = new MediaType(supportedMediaTypes[i]);
+                if (supportedMediaType.IsSubsetOf(parsedContentType))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         /// <inheritdoc />

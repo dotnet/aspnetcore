@@ -138,7 +138,6 @@ namespace Microsoft.AspNet.Mvc.Internal
                 out resolvedContentTypeEncoding);
 
             // Assert
-
             Assert.Equal(expectedContentType, resolvedContentType);
             Assert.Equal(Encoding.UTF8, resolvedContentTypeEncoding);
         }

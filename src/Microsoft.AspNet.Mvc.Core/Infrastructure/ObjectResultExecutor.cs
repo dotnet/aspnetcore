@@ -256,19 +256,11 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
             HttpRequest request)
         {
             var result = new List<MediaTypeSegmentWithQuality>();
-            var parsedHeaders = request.GetTypedHeaders().Accept;
-            for (var i = 0; i < parsedHeaders?.Count; i++)
+            AcceptHeaderParser.ParseAcceptHeader(request.Headers[HeaderNames.Accept], result);
+            for (int i = 0; i < result.Count; i++)
             {
-                result.Add(new MediaTypeSegmentWithQuality(
-                    new StringSegment(parsedHeaders[i].ToString()),
-                    parsedHeaders[i].Quality ?? 1.0));
-            }
-
-            for (var i = 0; i < result.Count; i++)
-            {
-                if (!RespectBrowserAcceptHeader &&
-                    MediaTypeComparisons.MatchesAllTypes(result[i].MediaType) &&
-                    MediaTypeComparisons.MatchesAllSubtypes(result[i].MediaType))
+                var mediaType = new MediaType(result[i].MediaType);
+                if (!RespectBrowserAcceptHeader && mediaType.MatchesAllSubTypes && mediaType.MatchesAllTypes)
                 {
                     result.Clear();
                     return result;
@@ -292,9 +284,11 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
                 return true;
             }
 
+            var parsedMediaType = new MediaType(mediaType);
             for (int i = 0; i < acceptableMediaTypes.Count; i++)
             {
-                if (MediaTypeComparisons.IsSubsetOf(mediaType, acceptableMediaTypes[i]))
+                var acceptableMediaType = new MediaType(acceptableMediaTypes[i]);
+                if (acceptableMediaType.IsSubsetOf(parsedMediaType))
                 {
                     return true;
                 }
@@ -378,7 +372,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
             {
                 var mediaType = sortedAcceptHeaders[i];
                 formatterContext.ContentType = mediaType.MediaType;
-                for(var j = 0;j < formatters.Count;j++)
+                for (var j = 0; j < formatters.Count; j++)
                 {
                     var formatter = formatters[j];
                     if (formatter.CanWriteResult(formatterContext))
@@ -450,8 +444,9 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
             for (var i = 0; i < contentTypes.Count; i++)
             {
                 var contentType = contentTypes[i];
-                if (MediaTypeComparisons.MatchesAllTypes(contentType) ||
-                    MediaTypeComparisons.MatchesAllSubtypes(contentType))
+                var parsedContentType = new MediaType(contentType);
+                if (parsedContentType.MatchesAllTypes ||
+                    parsedContentType.MatchesAllSubTypes)
                 {
                     var message = Resources.FormatObjectResult_MatchAllContentType(
                         contentType,
