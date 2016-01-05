@@ -105,7 +105,7 @@ namespace Microsoft.Extensions.Localization.Tests
             });
             var expected = includeParentCultures
                 ? "No manifests exist for the current culture."
-                : "The manifest 'testington.en-US.resources' was not found.";
+                : $"The manifest 'testington.{CultureInfo.CurrentCulture}.resources' was not found.";
             Assert.Equal(expected, exception.Message);
         }
 
