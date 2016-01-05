@@ -151,7 +151,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             var ptr = Interlocked.Exchange(ref _ptr, IntPtr.Zero);
             if (ptr != IntPtr.Zero)
             {
-                Marshal.FreeHGlobal(_ptr);
+                Marshal.FreeHGlobal(ptr);
             }
         }
 
