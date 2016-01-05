@@ -289,16 +289,9 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 _connection.Abort();
             }
 
-            bool scheduleWrite = false;
-
             lock (_contextLock)
             {
                 PoolWriteContext(writeContext);
-                if (_nextWriteContext != null)
-                {
-                    scheduleWrite = true;
-                    _writePending = true;
-                }
 
                 // _numBytesPreCompleted can temporarily go negative in the event there are
                 // completed writes that we haven't triggered callbacks for yet.
@@ -334,12 +327,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             }
 
             _log.ConnectionWriteCallback(_connectionId, status);
-
-            if (scheduleWrite)
-            {
-                ScheduleWrite();
-            }
-
             _tasksCompleted.Clear();
         }
 
