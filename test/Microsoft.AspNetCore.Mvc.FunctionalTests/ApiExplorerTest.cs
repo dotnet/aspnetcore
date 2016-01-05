@@ -487,8 +487,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [ConditionalFact]
-        // Mono issue - https://github.com/aspnet/External/issues/18
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "aspnet/External#18, DCS issue on Mono")]
         public async Task ApiExplorer_ResponseContentType_Unset()
         {
             // Arrange & Act
@@ -553,8 +552,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [ConditionalTheory]
-        // Mono issue - https://github.com/aspnet/External/issues/18
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "aspnet/External#18, DCS issue on Mono")]
         [InlineData("Controller", "text/xml", "Microsoft.AspNetCore.Mvc.Formatters.XmlDataContractSerializerOutputFormatter")]
         [InlineData("Action", "application/json", "Microsoft.AspNetCore.Mvc.Formatters.JsonOutputFormatter")]
         public async Task ApiExplorer_ResponseContentType_OverrideOnAction(

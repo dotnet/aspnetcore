@@ -21,8 +21,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public HttpClient Client { get; }
 
         [ConditionalTheory]
-        // Mono issue - https://github.com/aspnet/External/issues/18
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "aspnet/External#18, DCS issue on Mono")]
         [InlineData("http://localhost/IEnumerable/ValueTypes")]
         [InlineData("http://localhost/IQueryable/ValueTypes")]
         public async Task CanWrite_ValueTypes(string url)
@@ -45,8 +44,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [ConditionalTheory]
-        // Mono issue - https://github.com/aspnet/External/issues/18
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "aspnet/External#18, DCS issue on Mono")]
         [InlineData("http://localhost/IEnumerable/NonWrappedTypes")]
         [InlineData("http://localhost/IQueryable/NonWrappedTypes")]
         public async Task CanWrite_NonWrappedTypes(string url)
@@ -69,8 +67,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [ConditionalTheory]
-        // Mono issue - https://github.com/aspnet/External/issues/18
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "aspnet/External#18, DCS issue on Mono")]
         [InlineData("http://localhost/IEnumerable/NonWrappedTypes_Empty")]
         [InlineData("http://localhost/IQueryable/NonWrappedTypes_Empty")]
         public async Task CanWrite_NonWrappedTypes_Empty(string url)
@@ -92,8 +89,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [ConditionalTheory]
-        // Mono issue - https://github.com/aspnet/External/issues/18
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "aspnet/External#18, DCS issue on Mono")]
         [InlineData("http://localhost/IEnumerable/NonWrappedTypes_NullInstance")]
         [InlineData("http://localhost/IQueryable/NonWrappedTypes_NullInstance")]
         public async Task CanWrite_NonWrappedTypes_NullInstance(string url)
@@ -115,8 +111,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [ConditionalTheory]
-        // Mono issue - https://github.com/aspnet/External/issues/18
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "aspnet/External#18, DCS issue on Mono")]
         [InlineData("http://localhost/IEnumerable/WrappedTypes")]
         [InlineData("http://localhost/IQueryable/WrappedTypes")]
         public async Task CanWrite_WrappedTypes(string url)
@@ -140,8 +135,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [ConditionalTheory]
-        // Mono issue - https://github.com/aspnet/External/issues/18
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "aspnet/External#18, DCS issue on Mono")]
         [InlineData("http://localhost/IEnumerable/WrappedTypes_Empty")]
         [InlineData("http://localhost/IQueryable/WrappedTypes_Empty")]
         public async Task CanWrite_WrappedTypes_Empty(string url)
@@ -163,8 +157,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [ConditionalTheory]
-        // Mono issue - https://github.com/aspnet/External/issues/18
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "aspnet/External#18, DCS issue on Mono")]
         [InlineData("http://localhost/IEnumerable/WrappedTypes_NullInstance")]
         [InlineData("http://localhost/IQueryable/WrappedTypes_NullInstance")]
         public async Task CanWrite_WrappedTypes_NullInstance(string url)
@@ -186,8 +179,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [ConditionalFact]
-        // Mono issue - https://github.com/aspnet/External/issues/18
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "aspnet/External#18, DCS issue on Mono")]
         public async Task CanWrite_IEnumerableOf_SerializableErrors()
         {
             // Arrange

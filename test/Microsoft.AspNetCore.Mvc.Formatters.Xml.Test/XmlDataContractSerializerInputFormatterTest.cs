@@ -54,8 +54,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
         }
 
         [ConditionalTheory]
-        // Mono issue - https://github.com/aspnet/External/issues/18
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "aspnet/External#18, DCS issue on Mono")]
         [InlineData("application/xml", true)]
         [InlineData("application/*", false)]
         [InlineData("*/*", false)]
@@ -91,8 +90,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
         }
 
         [ConditionalFact]
-        // Mono issue - https://github.com/aspnet/External/issues/18
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "aspnet/External#18, DCS issue on Mono")]
         public void XmlDataContractSerializer_CachesSerializerForType()
         {
             // Arrange
@@ -137,8 +135,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
         }
 
         [ConditionalFact]
-        // Mono issue - https://github.com/aspnet/External/issues/18
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "aspnet/External#18, DCS issue on Mono")]
         public async Task ReadAsync_ReadsSimpleTypes()
         {
             // Arrange
@@ -166,8 +163,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
         }
 
         [ConditionalFact]
-        // Mono issue - https://github.com/aspnet/External/issues/18
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "aspnet/External#18, DCS issue on Mono")]
         public async Task ReadAsync_ReadsComplexTypes()
         {
             // Arrange
@@ -198,8 +194,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
         }
 
         [ConditionalFact]
-        // Mono issue - https://github.com/aspnet/External/issues/18
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "aspnet/External#18, DCS issue on Mono")]
         public async Task ReadAsync_ReadsWhenMaxDepthIsModified()
         {
             // Arrange
@@ -274,8 +269,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
         }
 
         [ConditionalFact]
-        // Mono issue - https://github.com/aspnet/External/issues/18
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "aspnet/External#18, DCS issue on Mono")]
         public async Task ReadAsync_VerifyStreamIsOpenAfterRead()
         {
             // Arrange
@@ -296,8 +290,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
         }
 
         [ConditionalFact]
-        // Mono issue - https://github.com/aspnet/External/issues/18
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "aspnet/External#18, DCS issue on Mono")]
         public async Task ReadAsync_FallsbackToUTF8_WhenCharSet_NotInContentType()
         {
             // Arrange
@@ -325,8 +318,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
         }
 
         [ConditionalFact]
-        // Mono issue - https://github.com/aspnet/External/issues/18
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "aspnet/External#18, DCS issue on Mono")]
         public async Task ReadAsync_UsesContentTypeCharSet_ToReadStream()
         {
             // Arrange
@@ -358,8 +350,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
         }
 
         [ConditionalFact]
-        // Mono issue - https://github.com/aspnet/External/issues/18
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "aspnet/External#18, DCS issue on Mono")]
         public async Task ReadAsync_IgnoresBOMCharacters()
         {
             // Arrange
@@ -392,8 +383,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
         }
 
         [ConditionalFact]
-        // Mono issue - https://github.com/aspnet/External/issues/18
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "aspnet/External#18, DCS issue on Mono")]
         public async Task ReadAsync_AcceptsUTF16Characters()
         {
             // Arrange
@@ -432,8 +422,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
         }
 
         [ConditionalFact]
-        // Mono issue - https://github.com/aspnet/External/issues/18
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "aspnet/External#18, DCS issue on Mono")]
         public async Task ReadAsync_ThrowsWhenNotConfiguredWithRootName()
         {
             // Arrange
@@ -453,8 +442,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
         }
 
         [ConditionalFact]
-        // Mono issue - https://github.com/aspnet/External/issues/18
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "aspnet/External#18, DCS issue on Mono")]
         public async Task ReadAsync_ReadsWhenConfiguredWithRootName()
         {
             // Arrange
@@ -492,8 +480,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
         }
 
         [ConditionalFact]
-        // Mono issue - https://github.com/aspnet/External/issues/18
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "aspnet/External#18, DCS issue on Mono")]
         public async Task ReadAsync_ThrowsWhenNotConfiguredWithKnownTypes()
         {
             // Arrange
@@ -514,8 +501,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
         }
 
         [ConditionalFact]
-        // Mono issue - https://github.com/aspnet/External/issues/18
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "aspnet/External#18, DCS issue on Mono")]
         public async Task ReadAsync_ReadsWhenConfiguredWithKnownTypes()
         {
             // Arrange

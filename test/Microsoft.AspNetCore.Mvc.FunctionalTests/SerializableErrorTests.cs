@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                     "application/xml-xmlser"
                 };
 
-                // Mono issue - https://github.com/aspnet/External/issues/18
+                // Avoid aspnet/External#18, a DCS issue on Mono.
                 if (!TestPlatformHelper.IsMono)
                 {
                     data.Add("application/xml-dcs");
@@ -63,10 +63,8 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [ConditionalTheory]
-        // Mono issue - https://github.com/aspnet/External/issues/18
-        // XmlSerializer test is disabled Mono.Xml2.XmlTextReader.ReadText is unable to read the XML.
-        // This is fixed in mono 4.3.0.
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        // Mono.Xml2.XmlTextReader.ReadText is unable to read the XML. Is this the same bug as aspnet/External#18???
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "aspnet/External#18, DCS issue on Mono")]
         [InlineData("application/xml-xmlser")]
         [InlineData("application/xml-dcs")]
         public async Task PostedSerializableError_IsBound(string acceptHeader)
@@ -90,10 +88,8 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [ConditionalTheory]
-        // Mono issue - https://github.com/aspnet/External/issues/18
-        // XmlSerializer test is disabled Mono.Xml2.XmlTextReader.ReadText is unable to read the XML.
-        // This is fixed in mono 4.3.0.
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        // Mono.Xml2.XmlTextReader.ReadText is unable to read the XML. Is this the same bug as aspnet/External#18???
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "aspnet/External#18, DCS issue on Mono")]
         [InlineData("application/xml-xmlser")]
         [InlineData("application/xml-dcs")]
         public async Task IsReturnedInExpectedFormat(string acceptHeader)
