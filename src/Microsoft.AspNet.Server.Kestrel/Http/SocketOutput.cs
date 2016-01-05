@@ -16,7 +16,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
     {
         public const int MaxPooledWriteReqs = 1024;
 
-        private const int _maxPendingWrites = 3;
         private const int _maxBytesPreCompleted = 65536;
         private const int _initialTaskQueues = 64;
         private const int _maxPooledWriteContexts = 32;
@@ -44,7 +43,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         // The number of write operations that have been scheduled so far
         // but have not completed.
-        private int _writesPending = 0;
+        private bool _writePending = false;
         private int _numBytesPreCompleted = 0;
         private Exception _lastWriteError;
         private WriteContext _nextWriteContext;
@@ -139,10 +138,10 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                     _tasksPending.Enqueue(tcs);
                 }
 
-                if (_writesPending < _maxPendingWrites && immediate)
+                if (!_writePending && immediate)
                 {
+                    _writePending = true;
                     scheduleWrite = true;
-                    _writesPending++;
                 }
             }
 
@@ -258,6 +257,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
             lock (_contextLock)
             {
+                _writePending = false;
+
                 if (_nextWriteContext != null)
                 {
                     writingContext = _nextWriteContext;
@@ -265,26 +266,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 }
                 else
                 {
-                    _writesPending--;
                     return;
                 }
             }
 
-            try
-            {
-                writingContext.DoWriteIfNeeded();
-            }
-            catch
-            {
-                lock (_contextLock)
-                {
-                    // Lock instead of using Interlocked.Decrement so _writesSending
-                    // doesn't change in the middle of executing other synchronized code.
-                    _writesPending--;
-                }
-
-                throw;
-            }
+            writingContext.DoWriteIfNeeded();
         }
 
         // This is called on the libuv event loop
@@ -303,19 +289,9 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 _connection.Abort();
             }
 
-            bool scheduleWrite = false;
-
             lock (_contextLock)
             {
                 PoolWriteContext(writeContext);
-                if (_nextWriteContext != null)
-                {
-                    scheduleWrite = true;
-                }
-                else
-                {
-                    _writesPending--;
-                }
 
                 // _numBytesPreCompleted can temporarily go negative in the event there are
                 // completed writes that we haven't triggered callbacks for yet.
@@ -351,12 +327,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             }
 
             _log.ConnectionWriteCallback(_connectionId, status);
-
-            if (scheduleWrite)
-            {
-                ScheduleWrite();
-            }
-
             _tasksCompleted.Clear();
         }
 
