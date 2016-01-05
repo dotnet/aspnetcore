@@ -27,27 +27,27 @@ namespace Microsoft.AspNet.Server.KestrelTests
                     var vectorCh = new Vector<byte>(ch);
 
                     var hit = iterator;
-                    hit.Seek(vectorCh);
+                    hit.Seek(ref vectorCh);
                     Assert.Equal(ch, iterator.GetLength(hit));
 
                     hit = iterator;
-                    hit.Seek(vectorCh, vectorMaxValues);
+                    hit.Seek(ref vectorCh, ref vectorMaxValues);
                     Assert.Equal(ch, iterator.GetLength(hit));
 
                     hit = iterator;
-                    hit.Seek(vectorMaxValues, vectorCh);
+                    hit.Seek(ref vectorMaxValues, ref vectorCh);
                     Assert.Equal(ch, iterator.GetLength(hit));
 
                     hit = iterator;
-                    hit.Seek(vectorCh, vectorMaxValues, vectorMaxValues);
+                    hit.Seek(ref vectorCh, ref vectorMaxValues, ref vectorMaxValues);
                     Assert.Equal(ch, iterator.GetLength(hit));
 
                     hit = iterator;
-                    hit.Seek(vectorMaxValues, vectorCh, vectorMaxValues);
+                    hit.Seek(ref vectorMaxValues, ref vectorCh, ref vectorMaxValues);
                     Assert.Equal(ch, iterator.GetLength(hit));
 
                     hit = iterator;
-                    hit.Seek(vectorCh, vectorMaxValues, vectorMaxValues);
+                    hit.Seek(ref vectorCh, ref vectorMaxValues, ref vectorMaxValues);
                     Assert.Equal(ch, iterator.GetLength(hit));
                 }
             }
@@ -56,6 +56,9 @@ namespace Microsoft.AspNet.Server.KestrelTests
         [Fact]
         public void SeekWorksAcrossBlocks()
         {
+            Console.WriteLine($"Vector.IsHardwareAccelerated == {Vector.IsHardwareAccelerated}");
+            Console.WriteLine($"Vector<byte>.Count == {Vector<byte>.Count}");
+
             using (var pool = new MemoryPool2())
             {
                 var block1 = pool.Lease(256);
@@ -83,27 +86,27 @@ namespace Microsoft.AspNet.Server.KestrelTests
                     var vectorCh = new Vector<byte>(ch);
 
                     var hit = iterator;
-                    hit.Seek(vectorCh);
+                    hit.Seek(ref vectorCh);
                     Assert.Equal(ch, iterator.GetLength(hit));
 
                     hit = iterator;
-                    hit.Seek(vectorCh, vectorMaxValues);
+                    hit.Seek(ref vectorCh, ref vectorMaxValues);
                     Assert.Equal(ch, iterator.GetLength(hit));
 
                     hit = iterator;
-                    hit.Seek(vectorMaxValues, vectorCh);
+                    hit.Seek(ref vectorMaxValues, ref vectorCh);
                     Assert.Equal(ch, iterator.GetLength(hit));
 
                     hit = iterator;
-                    hit.Seek(vectorCh, vectorMaxValues, vectorMaxValues);
+                    hit.Seek(ref vectorCh, ref vectorMaxValues, ref vectorMaxValues);
                     Assert.Equal(ch, iterator.GetLength(hit));
 
                     hit = iterator;
-                    hit.Seek(vectorMaxValues, vectorCh, vectorMaxValues);
+                    hit.Seek(ref vectorMaxValues, ref vectorCh, ref vectorMaxValues);
                     Assert.Equal(ch, iterator.GetLength(hit));
 
                     hit = iterator;
-                    hit.Seek(vectorMaxValues, vectorMaxValues, vectorCh);
+                    hit.Seek(ref vectorMaxValues, ref vectorMaxValues, ref vectorCh);
                     Assert.Equal(ch, iterator.GetLength(hit));
                 }
             }

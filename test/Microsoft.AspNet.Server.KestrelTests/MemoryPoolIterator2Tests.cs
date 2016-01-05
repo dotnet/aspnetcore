@@ -53,15 +53,21 @@ namespace Microsoft.AspNet.Server.KestrelTests
             int found = -1;
             if (searchFor.Length == 1)
             {
-                found = begin.Seek(new Vector<byte>((byte)searchFor[0]));
+                var search0 = new Vector<byte>((byte)searchFor[0]);
+                found = begin.Seek(ref search0);
             }
             else if (searchFor.Length == 2)
             {
-                found = begin.Seek(new Vector<byte>((byte)searchFor[0]), new Vector<byte>((byte)searchFor[1]));
+                var search0 = new Vector<byte>((byte)searchFor[0]);
+                var search1 = new Vector<byte>((byte)searchFor[1]);
+                found = begin.Seek(ref search0, ref search1);
             }
             else if (searchFor.Length == 3)
             {
-                found = begin.Seek(new Vector<byte>((byte)searchFor[0]), new Vector<byte>((byte)searchFor[1]), new Vector<byte>((byte)searchFor[2]));
+                var search0 = new Vector<byte>((byte)searchFor[0]);
+                var search1 = new Vector<byte>((byte)searchFor[1]);
+                var search2 = new Vector<byte>((byte)searchFor[2]);
+                found = begin.Seek(ref search0, ref search1, ref search2);
             }
             else
             {

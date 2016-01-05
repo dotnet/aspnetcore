@@ -40,11 +40,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         private static readonly byte[] _bytesDate = Encoding.ASCII.GetBytes("Date: ");
         private static readonly byte[] _bytesEndHeaders = Encoding.ASCII.GetBytes("\r\n\r\n");
 
-        private static readonly Vector<byte> _vectorCRs = new Vector<byte>((byte)'\r');
-        private static readonly Vector<byte> _vectorColons = new Vector<byte>((byte)':');
-        private static readonly Vector<byte> _vectorSpaces = new Vector<byte>((byte)' ');
-        private static readonly Vector<byte> _vectorQuestionMarks = new Vector<byte>((byte)'?');
-        private static readonly Vector<byte> _vectorPercentages = new Vector<byte>((byte)'%');
+        private static Vector<byte> _vectorCRs = new Vector<byte>((byte)'\r');
+        private static Vector<byte> _vectorColons = new Vector<byte>((byte)':');
+        private static Vector<byte> _vectorSpaces = new Vector<byte>((byte)' ');
+        private static Vector<byte> _vectorQuestionMarks = new Vector<byte>((byte)'?');
+        private static Vector<byte> _vectorPercentages = new Vector<byte>((byte)'%');
 
         private readonly object _onStartingSync = new Object();
         private readonly object _onCompletedSync = new Object();
@@ -714,7 +714,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 var begin = scan;
                 if (!begin.GetKnownMethod(ref scan,out method))
                 {
-                    if (scan.Seek(_vectorSpaces) == -1)
+                    if (scan.Seek(ref _vectorSpaces) == -1)
                     {
                         return false;
                     }
@@ -725,11 +725,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 begin = scan;
 
                 var needDecode = false;
-                var chFound = scan.Seek(_vectorSpaces, _vectorQuestionMarks, _vectorPercentages);
+                var chFound = scan.Seek(ref _vectorSpaces, ref _vectorQuestionMarks, ref _vectorPercentages);
                 if (chFound == '%')
                 {
                     needDecode = true;
-                    chFound = scan.Seek(_vectorSpaces, _vectorQuestionMarks);
+                    chFound = scan.Seek(ref _vectorSpaces, ref _vectorQuestionMarks);
                 }
 
                 var pathBegin = begin;
@@ -739,7 +739,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 if (chFound == '?')
                 {
                     begin = scan;
-                    if (scan.Seek(_vectorSpaces) != ' ')
+                    if (scan.Seek(ref _vectorSpaces) != ' ')
                     {
                         return false;
                     }
@@ -753,7 +753,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 if (!begin.GetKnownVersion(ref scan, out httpVersion))
                 {
                     scan = begin;
-                    if (scan.Seek(_vectorCRs) == -1)
+                    if (scan.Seek(ref _vectorCRs) == -1)
                     {
                         return false;
                     }
@@ -843,7 +843,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 while (!scan.IsEnd)
                 {
                     var beginName = scan;
-                    scan.Seek(_vectorColons, _vectorCRs);
+                    scan.Seek(ref _vectorColons, ref _vectorCRs);
                     var endName = scan;
 
                     chFirst = scan.Take();
@@ -894,7 +894,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                     var wrapping = false;
                     while (!scan.IsEnd)
                     {
-                        if (scan.Seek(_vectorCRs) == -1)
+                        if (scan.Seek(ref _vectorCRs) == -1)
                         {
                             // no "\r" in sight, burn used bytes and go back to await more data
                             return false;
