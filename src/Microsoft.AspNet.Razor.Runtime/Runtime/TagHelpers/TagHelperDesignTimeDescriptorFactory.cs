@@ -118,7 +118,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                     return null;
                 }
 
-                var xmlDocumentationFile = GetXmlDocumentationFile(assembly, assemblyLocation);
+                var xmlDocumentationFile = GetXmlDocumentationFile(assemblyLocation);
 
                 // Only want to process the file if it exists.
                 if (xmlDocumentationFile != null)
@@ -154,7 +154,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             return null;
         }
 
-        private static FileInfo GetXmlDocumentationFile(Assembly assembly, string assemblyLocation)
+        private static FileInfo GetXmlDocumentationFile(string assemblyLocation)
         {
             try
             {
