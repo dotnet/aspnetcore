@@ -256,7 +256,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         }}
         protected override StringValues GetValueFast(string key)
         {{
-            switch(key.Length)
+            switch (key.Length)
             {{{Each(loop.HeadersByLength, byLength => $@"
                 case {byLength.Key}:
                     {{{Each(byLength, header => $@"
@@ -282,7 +282,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         }}
         protected override bool TryGetValueFast(string key, out StringValues value)
         {{
-            switch(key.Length)
+            switch (key.Length)
             {{{Each(loop.HeadersByLength, byLength => $@"
                 case {byLength.Key}:
                     {{{Each(byLength, header => $@"
@@ -307,7 +307,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         }}
         protected override void SetValueFast(string key, StringValues value)
         {{
-            switch(key.Length)
+            switch (key.Length)
             {{{Each(loop.HeadersByLength, byLength => $@"
                 case {byLength.Key}:
                     {{{Each(byLength, header => $@"
@@ -325,7 +325,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         }}
         protected override void AddValueFast(string key, StringValues value)
         {{
-            switch(key.Length)
+            switch (key.Length)
             {{{Each(loop.HeadersByLength, byLength => $@"
                 case {byLength.Key}:
                     {{{Each(byLength, header => $@"
@@ -347,7 +347,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         }}
         protected override bool RemoveFast(string key)
         {{
-            switch(key.Length)
+            switch (key.Length)
             {{{Each(loop.HeadersByLength, byLength => $@"
                 case {byLength.Key}:
                     {{{Each(byLength, header => $@"
@@ -405,42 +405,49 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                     if (_raw{header.Identifier} != null) 
                     {{
                         output.CopyFrom(_raw{header.Identifier}, 0, _raw{header.Identifier}.Length);
-                    }} else ")}
-                    foreach(var value in _{header.Identifier})
-                    {{
-                        if (value != null)
+                    }} 
+                    else ")}
+                        foreach (var value in _{header.Identifier})
                         {{
-                            output.CopyFrom(_headerBytes, {header.BytesOffset}, {header.BytesCount});
-                            output.CopyFromAscii(value);
+                            if (value != null)
+                            {{
+                                output.CopyFrom(_headerBytes, {header.BytesOffset}, {header.BytesCount});
+                                output.CopyFromAscii(value);
+                            }}
                         }}
-                    }}
                 }}
             ")}
         }}" : "")}
         public unsafe void Append(byte[] keyBytes, int keyOffset, int keyLength, string value)
         {{
-            fixed(byte* ptr = keyBytes) {{ var pUB = ptr + keyOffset; var pUL = (ulong*)pUB; var pUI = (uint*)pUB; var pUS = (ushort*)pUB;
-            switch(keyLength)
-            {{{Each(loop.HeadersByLength, byLength => $@"
-                case {byLength.Key}:
-                    {{{Each(byLength, header => $@"
-                        if ({header.EqualIgnoreCaseBytes()}) 
-                        {{
-                            if ({header.TestBit()})
+            fixed (byte* ptr = &keyBytes[keyOffset]) 
+            {{ 
+                var pUB = ptr; 
+                var pUL = (ulong*)pUB; 
+                var pUI = (uint*)pUB; 
+                var pUS = (ushort*)pUB;
+                switch (keyLength)
+                {{{Each(loop.HeadersByLength, byLength => $@"
+                    case {byLength.Key}:
+                        {{{Each(byLength, header => $@"
+                            if ({header.EqualIgnoreCaseBytes()}) 
                             {{
-                                _{header.Identifier} = AppendValue(_{header.Identifier}, value);
+                                if ({header.TestBit()})
+                                {{
+                                    _{header.Identifier} = AppendValue(_{header.Identifier}, value);
+                                }}
+                                else
+                                {{
+                                    {header.SetBit()};
+                                    _{header.Identifier} = new StringValues(value);{(header.EnhancedSetter == false ? "" : $@"
+                                    _raw{header.Identifier} = null;")}
+                                }}
+                                return;
                             }}
-                            else
-                            {{
-                                {header.SetBit()};
-                                _{header.Identifier} = new StringValues(value);{(header.EnhancedSetter == false ? "" : $@"
-                                _raw{header.Identifier} = null;")}
-                            }}
-                            return;
-                        }}
-                    ")}}}
-                    break;
-            ")}}}}}
+                        ")}}}
+                        break;
+                ")}}}
+            }}
             var key = System.Text.Encoding.ASCII.GetString(keyBytes, keyOffset, keyLength);
             StringValues existing;
             Unknown.TryGetValue(key, out existing);
@@ -479,8 +486,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             }}
         }}
     }}
-")}}}
-";
+")}}}";
         }
         public virtual void AfterCompile(AfterCompileContext context)
         {

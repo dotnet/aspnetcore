@@ -770,7 +770,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         }
         protected override StringValues GetValueFast(string key)
         {
-            switch(key.Length)
+            switch (key.Length)
             {
                 case 13:
                     {
@@ -1384,7 +1384,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         }
         protected override bool TryGetValueFast(string key, out StringValues value)
         {
-            switch(key.Length)
+            switch (key.Length)
             {
                 case 13:
                     {
@@ -2083,7 +2083,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         }
         protected override void SetValueFast(string key, StringValues value)
         {
-            switch(key.Length)
+            switch (key.Length)
             {
                 case 13:
                     {
@@ -2473,7 +2473,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         }
         protected override void AddValueFast(string key, StringValues value)
         {
-            switch(key.Length)
+            switch (key.Length)
             {
                 case 13:
                     {
@@ -3039,7 +3039,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         }
         protected override bool RemoveFast(string key)
         {
-            switch(key.Length)
+            switch (key.Length)
             {
                 case 13:
                     {
@@ -4237,701 +4237,707 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         
         public unsafe void Append(byte[] keyBytes, int keyOffset, int keyLength, string value)
         {
-            fixed(byte* ptr = keyBytes) { var pUB = ptr + keyOffset; var pUL = (ulong*)pUB; var pUI = (uint*)pUB; var pUS = (ushort*)pUB;
-            switch(keyLength)
-            {
-                case 13:
-                    {
-                        if ((((pUL[0] & 16131893727263186911uL) == 5711458528024281411uL) && ((pUI[2] & 3755991007u) == 1330795598u) && ((pUB[12] & 223u) == 76u))) 
+            fixed (byte* ptr = &keyBytes[keyOffset]) 
+            { 
+                var pUB = ptr; 
+                var pUL = (ulong*)pUB; 
+                var pUI = (uint*)pUB; 
+                var pUS = (ushort*)pUB;
+                switch (keyLength)
+                {
+                    case 13:
                         {
-                            if (((_bits & 1L) != 0))
+                            if ((((pUL[0] & 16131893727263186911uL) == 5711458528024281411uL) && ((pUI[2] & 3755991007u) == 1330795598u) && ((pUB[12] & 223u) == 76u))) 
                             {
-                                _CacheControl = AppendValue(_CacheControl, value);
+                                if (((_bits & 1L) != 0))
+                                {
+                                    _CacheControl = AppendValue(_CacheControl, value);
+                                }
+                                else
+                                {
+                                    _bits |= 1L;
+                                    _CacheControl = new StringValues(value);
+                                }
+                                return;
                             }
-                            else
+                        
+                            if ((((pUL[0] & 18437701552104792031uL) == 3266321689424580419uL) && ((pUI[2] & 3755991007u) == 1196310866u) && ((pUB[12] & 223u) == 69u))) 
                             {
-                                _bits |= 1L;
-                                _CacheControl = new StringValues(value);
+                                if (((_bits & 131072L) != 0))
+                                {
+                                    _ContentRange = AppendValue(_ContentRange, value);
+                                }
+                                else
+                                {
+                                    _bits |= 131072L;
+                                    _ContentRange = new StringValues(value);
+                                }
+                                return;
                             }
-                            return;
+                        
+                            if ((((pUL[0] & 16131858680330051551uL) == 4922237774822850892uL) && ((pUI[2] & 3755991007u) == 1162430025u) && ((pUB[12] & 223u) == 68u))) 
+                            {
+                                if (((_bits & 524288L) != 0))
+                                {
+                                    _LastModified = AppendValue(_LastModified, value);
+                                }
+                                else
+                                {
+                                    _bits |= 524288L;
+                                    _LastModified = new StringValues(value);
+                                }
+                                return;
+                            }
+                        
+                            if ((((pUL[0] & 16131858542891098079uL) == 6505821637182772545uL) && ((pUI[2] & 3755991007u) == 1330205761u) && ((pUB[12] & 223u) == 78u))) 
+                            {
+                                if (((_bits & 16777216L) != 0))
+                                {
+                                    _Authorization = AppendValue(_Authorization, value);
+                                }
+                                else
+                                {
+                                    _bits |= 16777216L;
+                                    _Authorization = new StringValues(value);
+                                }
+                                return;
+                            }
+                        
+                            if ((((pUL[0] & 18437701552106889183uL) == 3262099607620765257uL) && ((pUI[2] & 3755991007u) == 1129595213u) && ((pUB[12] & 223u) == 72u))) 
+                            {
+                                if (((_bits & 2147483648L) != 0))
+                                {
+                                    _IfNoneMatch = AppendValue(_IfNoneMatch, value);
+                                }
+                                else
+                                {
+                                    _bits |= 2147483648L;
+                                    _IfNoneMatch = new StringValues(value);
+                                }
+                                return;
+                            }
                         }
-                    
-                        if ((((pUL[0] & 18437701552104792031uL) == 3266321689424580419uL) && ((pUI[2] & 3755991007u) == 1196310866u) && ((pUB[12] & 223u) == 69u))) 
+                        break;
+                
+                    case 10:
                         {
-                            if (((_bits & 131072L) != 0))
+                            if ((((pUL[0] & 16131858542891098079uL) == 5283922227757993795uL) && ((pUS[4] & 57311u) == 20047u))) 
                             {
-                                _ContentRange = AppendValue(_ContentRange, value);
+                                if (((_bits & 2L) != 0))
+                                {
+                                    _Connection = AppendValue(_Connection, value);
+                                }
+                                else
+                                {
+                                    _bits |= 2L;
+                                    _Connection = new StringValues(value);
+                                }
+                                return;
                             }
-                            else
+                        
+                            if ((((pUL[0] & 16131858680330051551uL) == 5281668125874799947uL) && ((pUS[4] & 57311u) == 17750u))) 
                             {
-                                _bits |= 131072L;
-                                _ContentRange = new StringValues(value);
+                                if (((_bits & 8L) != 0))
+                                {
+                                    _KeepAlive = AppendValue(_KeepAlive, value);
+                                }
+                                else
+                                {
+                                    _bits |= 8L;
+                                    _KeepAlive = new StringValues(value);
+                                }
+                                return;
                             }
-                            return;
+                        
+                            if ((((pUL[0] & 16131858680330051551uL) == 4992030374873092949uL) && ((pUS[4] & 57311u) == 21582u))) 
+                            {
+                                if (((_bits & 1099511627776L) != 0))
+                                {
+                                    _UserAgent = AppendValue(_UserAgent, value);
+                                }
+                                else
+                                {
+                                    _bits |= 1099511627776L;
+                                    _UserAgent = new StringValues(value);
+                                }
+                                return;
+                            }
                         }
-                    
-                        if ((((pUL[0] & 16131858680330051551uL) == 4922237774822850892uL) && ((pUI[2] & 3755991007u) == 1162430025u) && ((pUB[12] & 223u) == 68u))) 
+                        break;
+                
+                    case 4:
                         {
-                            if (((_bits & 524288L) != 0))
+                            if ((((pUI[0] & 3755991007u) == 1163149636u))) 
                             {
-                                _LastModified = AppendValue(_LastModified, value);
+                                if (((_bits & 4L) != 0))
+                                {
+                                    _Date = AppendValue(_Date, value);
+                                }
+                                else
+                                {
+                                    _bits |= 4L;
+                                    _Date = new StringValues(value);
+                                }
+                                return;
                             }
-                            else
+                        
+                            if ((((pUI[0] & 3755991007u) == 1297044038u))) 
                             {
-                                _bits |= 524288L;
-                                _LastModified = new StringValues(value);
+                                if (((_bits & 134217728L) != 0))
+                                {
+                                    _From = AppendValue(_From, value);
+                                }
+                                else
+                                {
+                                    _bits |= 134217728L;
+                                    _From = new StringValues(value);
+                                }
+                                return;
                             }
-                            return;
+                        
+                            if ((((pUI[0] & 3755991007u) == 1414745928u))) 
+                            {
+                                if (((_bits & 268435456L) != 0))
+                                {
+                                    _Host = AppendValue(_Host, value);
+                                }
+                                else
+                                {
+                                    _bits |= 268435456L;
+                                    _Host = new StringValues(value);
+                                }
+                                return;
+                            }
                         }
-                    
-                        if ((((pUL[0] & 16131858542891098079uL) == 6505821637182772545uL) && ((pUI[2] & 3755991007u) == 1330205761u) && ((pUB[12] & 223u) == 78u))) 
+                        break;
+                
+                    case 6:
                         {
-                            if (((_bits & 16777216L) != 0))
+                            if ((((pUI[0] & 3755991007u) == 1195463248u) && ((pUS[2] & 57311u) == 16717u))) 
                             {
-                                _Authorization = AppendValue(_Authorization, value);
+                                if (((_bits & 16L) != 0))
+                                {
+                                    _Pragma = AppendValue(_Pragma, value);
+                                }
+                                else
+                                {
+                                    _bits |= 16L;
+                                    _Pragma = new StringValues(value);
+                                }
+                                return;
                             }
-                            else
+                        
+                            if ((((pUI[0] & 3755991007u) == 1162036033u) && ((pUS[2] & 57311u) == 21584u))) 
                             {
-                                _bits |= 16777216L;
-                                _Authorization = new StringValues(value);
+                                if (((_bits & 1048576L) != 0))
+                                {
+                                    _Accept = AppendValue(_Accept, value);
+                                }
+                                else
+                                {
+                                    _bits |= 1048576L;
+                                    _Accept = new StringValues(value);
+                                }
+                                return;
                             }
-                            return;
+                        
+                            if ((((pUI[0] & 3755991007u) == 1263488835u) && ((pUS[2] & 57311u) == 17737u))) 
+                            {
+                                if (((_bits & 33554432L) != 0))
+                                {
+                                    _Cookie = AppendValue(_Cookie, value);
+                                }
+                                else
+                                {
+                                    _bits |= 33554432L;
+                                    _Cookie = new StringValues(value);
+                                }
+                                return;
+                            }
+                        
+                            if ((((pUI[0] & 3755991007u) == 1162893381u) && ((pUS[2] & 57311u) == 21571u))) 
+                            {
+                                if (((_bits & 67108864L) != 0))
+                                {
+                                    _Expect = AppendValue(_Expect, value);
+                                }
+                                else
+                                {
+                                    _bits |= 67108864L;
+                                    _Expect = new StringValues(value);
+                                }
+                                return;
+                            }
+                        
+                            if ((((pUI[0] & 3755991007u) == 1195987535u) && ((pUS[2] & 57311u) == 20041u))) 
+                            {
+                                if (((_bits & 2199023255552L) != 0))
+                                {
+                                    _Origin = AppendValue(_Origin, value);
+                                }
+                                else
+                                {
+                                    _bits |= 2199023255552L;
+                                    _Origin = new StringValues(value);
+                                }
+                                return;
+                            }
                         }
-                    
-                        if ((((pUL[0] & 18437701552106889183uL) == 3262099607620765257uL) && ((pUI[2] & 3755991007u) == 1129595213u) && ((pUB[12] & 223u) == 72u))) 
+                        break;
+                
+                    case 7:
                         {
-                            if (((_bits & 2147483648L) != 0))
+                            if ((((pUI[0] & 3755991007u) == 1229017684u) && ((pUS[2] & 57311u) == 17740u) && ((pUB[6] & 223u) == 82u))) 
                             {
-                                _IfNoneMatch = AppendValue(_IfNoneMatch, value);
+                                if (((_bits & 32L) != 0))
+                                {
+                                    _Trailer = AppendValue(_Trailer, value);
+                                }
+                                else
+                                {
+                                    _bits |= 32L;
+                                    _Trailer = new StringValues(value);
+                                }
+                                return;
                             }
-                            else
+                        
+                            if ((((pUI[0] & 3755991007u) == 1380405333u) && ((pUS[2] & 57311u) == 17473u) && ((pUB[6] & 223u) == 69u))) 
                             {
-                                _bits |= 2147483648L;
-                                _IfNoneMatch = new StringValues(value);
+                                if (((_bits & 128L) != 0))
+                                {
+                                    _Upgrade = AppendValue(_Upgrade, value);
+                                }
+                                else
+                                {
+                                    _bits |= 128L;
+                                    _Upgrade = new StringValues(value);
+                                }
+                                return;
                             }
-                            return;
+                        
+                            if ((((pUI[0] & 3755991007u) == 1314013527u) && ((pUS[2] & 57311u) == 20041u) && ((pUB[6] & 223u) == 71u))) 
+                            {
+                                if (((_bits & 512L) != 0))
+                                {
+                                    _Warning = AppendValue(_Warning, value);
+                                }
+                                else
+                                {
+                                    _bits |= 512L;
+                                    _Warning = new StringValues(value);
+                                }
+                                return;
+                            }
+                        
+                            if ((((pUI[0] & 3755991007u) == 1230002245u) && ((pUS[2] & 57311u) == 17746u) && ((pUB[6] & 223u) == 83u))) 
+                            {
+                                if (((_bits & 262144L) != 0))
+                                {
+                                    _Expires = AppendValue(_Expires, value);
+                                }
+                                else
+                                {
+                                    _bits |= 262144L;
+                                    _Expires = new StringValues(value);
+                                }
+                                return;
+                            }
+                        
+                            if ((((pUI[0] & 3755991007u) == 1162233170u) && ((pUS[2] & 57311u) == 17746u) && ((pUB[6] & 223u) == 82u))) 
+                            {
+                                if (((_bits & 68719476736L) != 0))
+                                {
+                                    _Referer = AppendValue(_Referer, value);
+                                }
+                                else
+                                {
+                                    _bits |= 68719476736L;
+                                    _Referer = new StringValues(value);
+                                }
+                                return;
+                            }
                         }
-                    }
-                    break;
-            
-                case 10:
-                    {
-                        if ((((pUL[0] & 16131858542891098079uL) == 5283922227757993795uL) && ((pUS[4] & 57311u) == 20047u))) 
+                        break;
+                
+                    case 17:
                         {
-                            if (((_bits & 2L) != 0))
+                            if ((((pUL[0] & 16131858542891098079uL) == 5928221808112259668uL) && ((pUL[1] & 16131858542891098111uL) == 5641115115480565037uL) && ((pUB[16] & 223u) == 71u))) 
                             {
-                                _Connection = AppendValue(_Connection, value);
+                                if (((_bits & 64L) != 0))
+                                {
+                                    _TransferEncoding = AppendValue(_TransferEncoding, value);
+                                }
+                                else
+                                {
+                                    _bits |= 64L;
+                                    _TransferEncoding = new StringValues(value);
+                                }
+                                return;
                             }
-                            else
+                        
+                            if ((((pUL[0] & 16131858542893195231uL) == 5064654363342751305uL) && ((pUL[1] & 16131858543427968991uL) == 4849894470315165001uL) && ((pUB[16] & 223u) == 69u))) 
                             {
-                                _bits |= 2L;
-                                _Connection = new StringValues(value);
+                                if (((_bits & 1073741824L) != 0))
+                                {
+                                    _IfModifiedSince = AppendValue(_IfModifiedSince, value);
+                                }
+                                else
+                                {
+                                    _bits |= 1073741824L;
+                                    _IfModifiedSince = new StringValues(value);
+                                }
+                                return;
                             }
-                            return;
                         }
-                    
-                        if ((((pUL[0] & 16131858680330051551uL) == 5281668125874799947uL) && ((pUS[4] & 57311u) == 17750u))) 
+                        break;
+                
+                    case 3:
                         {
-                            if (((_bits & 8L) != 0))
+                            if ((((pUS[0] & 57311u) == 18774u) && ((pUB[2] & 223u) == 65u))) 
                             {
-                                _KeepAlive = AppendValue(_KeepAlive, value);
+                                if (((_bits & 256L) != 0))
+                                {
+                                    _Via = AppendValue(_Via, value);
+                                }
+                                else
+                                {
+                                    _bits |= 256L;
+                                    _Via = new StringValues(value);
+                                }
+                                return;
                             }
-                            else
-                            {
-                                _bits |= 8L;
-                                _KeepAlive = new StringValues(value);
-                            }
-                            return;
                         }
-                    
-                        if ((((pUL[0] & 16131858680330051551uL) == 4992030374873092949uL) && ((pUS[4] & 57311u) == 21582u))) 
+                        break;
+                
+                    case 5:
                         {
-                            if (((_bits & 1099511627776L) != 0))
+                            if ((((pUI[0] & 3755991007u) == 1330400321u) && ((pUB[4] & 223u) == 87u))) 
                             {
-                                _UserAgent = AppendValue(_UserAgent, value);
+                                if (((_bits & 1024L) != 0))
+                                {
+                                    _Allow = AppendValue(_Allow, value);
+                                }
+                                else
+                                {
+                                    _bits |= 1024L;
+                                    _Allow = new StringValues(value);
+                                }
+                                return;
                             }
-                            else
+                        
+                            if ((((pUI[0] & 3755991007u) == 1196310866u) && ((pUB[4] & 223u) == 69u))) 
                             {
-                                _bits |= 1099511627776L;
-                                _UserAgent = new StringValues(value);
+                                if (((_bits & 137438953472L) != 0))
+                                {
+                                    _Range = AppendValue(_Range, value);
+                                }
+                                else
+                                {
+                                    _bits |= 137438953472L;
+                                    _Range = new StringValues(value);
+                                }
+                                return;
                             }
-                            return;
                         }
-                    }
-                    break;
-            
-                case 4:
-                    {
-                        if ((((pUI[0] & 3755991007u) == 1163149636u))) 
+                        break;
+                
+                    case 14:
                         {
-                            if (((_bits & 4L) != 0))
+                            if ((((pUL[0] & 18437701552104792031uL) == 3266321689424580419uL) && ((pUI[2] & 3755991007u) == 1196311884u) && ((pUS[6] & 57311u) == 18516u))) 
                             {
-                                _Date = AppendValue(_Date, value);
+                                if (((_bits & 2048L) != 0))
+                                {
+                                    _ContentLength = AppendValue(_ContentLength, value);
+                                }
+                                else
+                                {
+                                    _bits |= 2048L;
+                                    _ContentLength = new StringValues(value);
+                                }
+                                return;
                             }
-                            else
+                        
+                            if ((((pUL[0] & 16140865742145839071uL) == 4840617878229304129uL) && ((pUI[2] & 3755991007u) == 1397899592u) && ((pUS[6] & 57311u) == 21573u))) 
                             {
-                                _bits |= 4L;
-                                _Date = new StringValues(value);
+                                if (((_bits & 2097152L) != 0))
+                                {
+                                    _AcceptCharset = AppendValue(_AcceptCharset, value);
+                                }
+                                else
+                                {
+                                    _bits |= 2097152L;
+                                    _AcceptCharset = new StringValues(value);
+                                }
+                                return;
                             }
-                            return;
                         }
-                    
-                        if ((((pUI[0] & 3755991007u) == 1297044038u))) 
+                        break;
+                
+                    case 12:
                         {
-                            if (((_bits & 134217728L) != 0))
+                            if ((((pUL[0] & 18437701552104792031uL) == 3266321689424580419uL) && ((pUI[2] & 3755991007u) == 1162893652u))) 
                             {
-                                _From = AppendValue(_From, value);
+                                if (((_bits & 4096L) != 0))
+                                {
+                                    _ContentType = AppendValue(_ContentType, value);
+                                }
+                                else
+                                {
+                                    _bits |= 4096L;
+                                    _ContentType = new StringValues(value);
+                                }
+                                return;
                             }
-                            else
+                        
+                            if ((((pUL[0] & 16131858543427968991uL) == 6292178792217067853uL) && ((pUI[2] & 3755991007u) == 1396986433u))) 
                             {
-                                _bits |= 134217728L;
-                                _From = new StringValues(value);
+                                if (((_bits & 17179869184L) != 0))
+                                {
+                                    _MaxForwards = AppendValue(_MaxForwards, value);
+                                }
+                                else
+                                {
+                                    _bits |= 17179869184L;
+                                    _MaxForwards = new StringValues(value);
+                                }
+                                return;
                             }
-                            return;
                         }
-                    
-                        if ((((pUI[0] & 3755991007u) == 1414745928u))) 
+                        break;
+                
+                    case 16:
                         {
-                            if (((_bits & 268435456L) != 0))
+                            if ((((pUL[0] & 18437701552104792031uL) == 3266321689424580419uL) && ((pUL[1] & 16131858542891098079uL) == 5138124782612729413uL))) 
                             {
-                                _Host = AppendValue(_Host, value);
+                                if (((_bits & 8192L) != 0))
+                                {
+                                    _ContentEncoding = AppendValue(_ContentEncoding, value);
+                                }
+                                else
+                                {
+                                    _bits |= 8192L;
+                                    _ContentEncoding = new StringValues(value);
+                                }
+                                return;
                             }
-                            else
+                        
+                            if ((((pUL[0] & 18437701552104792031uL) == 3266321689424580419uL) && ((pUL[1] & 16131858542891098079uL) == 4992030546487820620uL))) 
                             {
-                                _bits |= 268435456L;
-                                _Host = new StringValues(value);
+                                if (((_bits & 16384L) != 0))
+                                {
+                                    _ContentLanguage = AppendValue(_ContentLanguage, value);
+                                }
+                                else
+                                {
+                                    _bits |= 16384L;
+                                    _ContentLanguage = new StringValues(value);
+                                }
+                                return;
                             }
-                            return;
+                        
+                            if ((((pUL[0] & 18437701552104792031uL) == 3266321689424580419uL) && ((pUL[1] & 16131858542891098079uL) == 5642809484339531596uL))) 
+                            {
+                                if (((_bits & 32768L) != 0))
+                                {
+                                    _ContentLocation = AppendValue(_ContentLocation, value);
+                                }
+                                else
+                                {
+                                    _bits |= 32768L;
+                                    _ContentLocation = new StringValues(value);
+                                }
+                                return;
+                            }
                         }
-                    }
-                    break;
-            
-                case 6:
-                    {
-                        if ((((pUI[0] & 3755991007u) == 1195463248u) && ((pUS[2] & 57311u) == 16717u))) 
+                        break;
+                
+                    case 11:
                         {
-                            if (((_bits & 16L) != 0))
+                            if ((((pUL[0] & 18437701552104792031uL) == 3266321689424580419uL) && ((pUS[4] & 57311u) == 17485u) && ((pUB[10] & 255u) == 53u))) 
                             {
-                                _Pragma = AppendValue(_Pragma, value);
+                                if (((_bits & 65536L) != 0))
+                                {
+                                    _ContentMD5 = AppendValue(_ContentMD5, value);
+                                }
+                                else
+                                {
+                                    _bits |= 65536L;
+                                    _ContentMD5 = new StringValues(value);
+                                }
+                                return;
                             }
-                            else
-                            {
-                                _bits |= 16L;
-                                _Pragma = new StringValues(value);
-                            }
-                            return;
                         }
-                    
-                        if ((((pUI[0] & 3755991007u) == 1162036033u) && ((pUS[2] & 57311u) == 21584u))) 
+                        break;
+                
+                    case 15:
                         {
-                            if (((_bits & 1048576L) != 0))
+                            if ((((pUL[0] & 16140865742145839071uL) == 4984733066305160001uL) && ((pUI[2] & 3755991007u) == 1146045262u) && ((pUS[6] & 57311u) == 20041u) && ((pUB[14] & 223u) == 71u))) 
                             {
-                                _Accept = AppendValue(_Accept, value);
+                                if (((_bits & 4194304L) != 0))
+                                {
+                                    _AcceptEncoding = AppendValue(_AcceptEncoding, value);
+                                }
+                                else
+                                {
+                                    _bits |= 4194304L;
+                                    _AcceptEncoding = new StringValues(value);
+                                }
+                                return;
                             }
-                            else
+                        
+                            if ((((pUL[0] & 16140865742145839071uL) == 5489136224570655553uL) && ((pUI[2] & 3755991007u) == 1430736449u) && ((pUS[6] & 57311u) == 18241u) && ((pUB[14] & 223u) == 69u))) 
                             {
-                                _bits |= 1048576L;
-                                _Accept = new StringValues(value);
+                                if (((_bits & 8388608L) != 0))
+                                {
+                                    _AcceptLanguage = AppendValue(_AcceptLanguage, value);
+                                }
+                                else
+                                {
+                                    _bits |= 8388608L;
+                                    _AcceptLanguage = new StringValues(value);
+                                }
+                                return;
                             }
-                            return;
                         }
-                    
-                        if ((((pUI[0] & 3755991007u) == 1263488835u) && ((pUS[2] & 57311u) == 17737u))) 
+                        break;
+                
+                    case 8:
                         {
-                            if (((_bits & 33554432L) != 0))
+                            if ((((pUL[0] & 16131858542893195231uL) == 5207098233614845513uL))) 
                             {
-                                _Cookie = AppendValue(_Cookie, value);
+                                if (((_bits & 536870912L) != 0))
+                                {
+                                    _IfMatch = AppendValue(_IfMatch, value);
+                                }
+                                else
+                                {
+                                    _bits |= 536870912L;
+                                    _IfMatch = new StringValues(value);
+                                }
+                                return;
                             }
-                            else
+                        
+                            if ((((pUL[0] & 16131858542893195231uL) == 4992044754422023753uL))) 
                             {
-                                _bits |= 33554432L;
-                                _Cookie = new StringValues(value);
+                                if (((_bits & 4294967296L) != 0))
+                                {
+                                    _IfRange = AppendValue(_IfRange, value);
+                                }
+                                else
+                                {
+                                    _bits |= 4294967296L;
+                                    _IfRange = new StringValues(value);
+                                }
+                                return;
                             }
-                            return;
                         }
-                    
-                        if ((((pUI[0] & 3755991007u) == 1162893381u) && ((pUS[2] & 57311u) == 21571u))) 
+                        break;
+                
+                    case 19:
                         {
-                            if (((_bits & 67108864L) != 0))
+                            if ((((pUL[0] & 16131858542893195231uL) == 4922237916571059785uL) && ((pUL[1] & 16131893727263186911uL) == 5283616559079179849uL) && ((pUS[8] & 57311u) == 17230u) && ((pUB[18] & 223u) == 69u))) 
                             {
-                                _Expect = AppendValue(_Expect, value);
+                                if (((_bits & 8589934592L) != 0))
+                                {
+                                    _IfUnmodifiedSince = AppendValue(_IfUnmodifiedSince, value);
+                                }
+                                else
+                                {
+                                    _bits |= 8589934592L;
+                                    _IfUnmodifiedSince = new StringValues(value);
+                                }
+                                return;
                             }
-                            else
+                        
+                            if ((((pUL[0] & 16131893727263186911uL) == 6143241228466999888uL) && ((pUL[1] & 16131858542891098079uL) == 6071233043632179284uL) && ((pUS[8] & 57311u) == 20297u) && ((pUB[18] & 223u) == 78u))) 
                             {
-                                _bits |= 67108864L;
-                                _Expect = new StringValues(value);
+                                if (((_bits & 34359738368L) != 0))
+                                {
+                                    _ProxyAuthorization = AppendValue(_ProxyAuthorization, value);
+                                }
+                                else
+                                {
+                                    _bits |= 34359738368L;
+                                    _ProxyAuthorization = new StringValues(value);
+                                }
+                                return;
                             }
-                            return;
                         }
-                    
-                        if ((((pUI[0] & 3755991007u) == 1195987535u) && ((pUS[2] & 57311u) == 20041u))) 
+                        break;
+                
+                    case 2:
                         {
-                            if (((_bits & 2199023255552L) != 0))
+                            if ((((pUS[0] & 57311u) == 17748u))) 
                             {
-                                _Origin = AppendValue(_Origin, value);
+                                if (((_bits & 274877906944L) != 0))
+                                {
+                                    _TE = AppendValue(_TE, value);
+                                }
+                                else
+                                {
+                                    _bits |= 274877906944L;
+                                    _TE = new StringValues(value);
+                                }
+                                return;
                             }
-                            else
-                            {
-                                _bits |= 2199023255552L;
-                                _Origin = new StringValues(value);
-                            }
-                            return;
                         }
-                    }
-                    break;
-            
-                case 7:
-                    {
-                        if ((((pUI[0] & 3755991007u) == 1229017684u) && ((pUS[2] & 57311u) == 17740u) && ((pUB[6] & 223u) == 82u))) 
+                        break;
+                
+                    case 9:
                         {
-                            if (((_bits & 32L) != 0))
+                            if ((((pUL[0] & 16131858542891098079uL) == 6071217693351039572uL) && ((pUB[8] & 223u) == 69u))) 
                             {
-                                _Trailer = AppendValue(_Trailer, value);
+                                if (((_bits & 549755813888L) != 0))
+                                {
+                                    _Translate = AppendValue(_Translate, value);
+                                }
+                                else
+                                {
+                                    _bits |= 549755813888L;
+                                    _Translate = new StringValues(value);
+                                }
+                                return;
                             }
-                            else
-                            {
-                                _bits |= 32L;
-                                _Trailer = new StringValues(value);
-                            }
-                            return;
                         }
-                    
-                        if ((((pUI[0] & 3755991007u) == 1380405333u) && ((pUS[2] & 57311u) == 17473u) && ((pUB[6] & 223u) == 69u))) 
+                        break;
+                
+                    case 29:
                         {
-                            if (((_bits & 128L) != 0))
+                            if ((((pUL[0] & 16140865742145839071uL) == 4840616791602578241uL) && ((pUL[1] & 16140865742145839071uL) == 5921472988629454415uL) && ((pUL[2] & 16140865742145839071uL) == 5561193831494668613uL) && ((pUI[6] & 3755991007u) == 1330140229u) && ((pUB[28] & 223u) == 68u))) 
                             {
-                                _Upgrade = AppendValue(_Upgrade, value);
+                                if (((_bits & 4398046511104L) != 0))
+                                {
+                                    _AccessControlRequestMethod = AppendValue(_AccessControlRequestMethod, value);
+                                }
+                                else
+                                {
+                                    _bits |= 4398046511104L;
+                                    _AccessControlRequestMethod = new StringValues(value);
+                                }
+                                return;
                             }
-                            else
-                            {
-                                _bits |= 128L;
-                                _Upgrade = new StringValues(value);
-                            }
-                            return;
                         }
-                    
-                        if ((((pUI[0] & 3755991007u) == 1314013527u) && ((pUS[2] & 57311u) == 20041u) && ((pUB[6] & 223u) == 71u))) 
+                        break;
+                
+                    case 30:
                         {
-                            if (((_bits & 512L) != 0))
+                            if ((((pUL[0] & 16140865742145839071uL) == 4840616791602578241uL) && ((pUL[1] & 16140865742145839071uL) == 5921472988629454415uL) && ((pUL[2] & 16140865742145839071uL) == 5200905861305028933uL) && ((pUI[6] & 3755991007u) == 1162101061u) && ((pUS[14] & 57311u) == 21330u))) 
                             {
-                                _Warning = AppendValue(_Warning, value);
+                                if (((_bits & 8796093022208L) != 0))
+                                {
+                                    _AccessControlRequestHeaders = AppendValue(_AccessControlRequestHeaders, value);
+                                }
+                                else
+                                {
+                                    _bits |= 8796093022208L;
+                                    _AccessControlRequestHeaders = new StringValues(value);
+                                }
+                                return;
                             }
-                            else
-                            {
-                                _bits |= 512L;
-                                _Warning = new StringValues(value);
-                            }
-                            return;
                         }
-                    
-                        if ((((pUI[0] & 3755991007u) == 1230002245u) && ((pUS[2] & 57311u) == 17746u) && ((pUB[6] & 223u) == 83u))) 
-                        {
-                            if (((_bits & 262144L) != 0))
-                            {
-                                _Expires = AppendValue(_Expires, value);
-                            }
-                            else
-                            {
-                                _bits |= 262144L;
-                                _Expires = new StringValues(value);
-                            }
-                            return;
-                        }
-                    
-                        if ((((pUI[0] & 3755991007u) == 1162233170u) && ((pUS[2] & 57311u) == 17746u) && ((pUB[6] & 223u) == 82u))) 
-                        {
-                            if (((_bits & 68719476736L) != 0))
-                            {
-                                _Referer = AppendValue(_Referer, value);
-                            }
-                            else
-                            {
-                                _bits |= 68719476736L;
-                                _Referer = new StringValues(value);
-                            }
-                            return;
-                        }
-                    }
-                    break;
-            
-                case 17:
-                    {
-                        if ((((pUL[0] & 16131858542891098079uL) == 5928221808112259668uL) && ((pUL[1] & 16131858542891098111uL) == 5641115115480565037uL) && ((pUB[16] & 223u) == 71u))) 
-                        {
-                            if (((_bits & 64L) != 0))
-                            {
-                                _TransferEncoding = AppendValue(_TransferEncoding, value);
-                            }
-                            else
-                            {
-                                _bits |= 64L;
-                                _TransferEncoding = new StringValues(value);
-                            }
-                            return;
-                        }
-                    
-                        if ((((pUL[0] & 16131858542893195231uL) == 5064654363342751305uL) && ((pUL[1] & 16131858543427968991uL) == 4849894470315165001uL) && ((pUB[16] & 223u) == 69u))) 
-                        {
-                            if (((_bits & 1073741824L) != 0))
-                            {
-                                _IfModifiedSince = AppendValue(_IfModifiedSince, value);
-                            }
-                            else
-                            {
-                                _bits |= 1073741824L;
-                                _IfModifiedSince = new StringValues(value);
-                            }
-                            return;
-                        }
-                    }
-                    break;
-            
-                case 3:
-                    {
-                        if ((((pUS[0] & 57311u) == 18774u) && ((pUB[2] & 223u) == 65u))) 
-                        {
-                            if (((_bits & 256L) != 0))
-                            {
-                                _Via = AppendValue(_Via, value);
-                            }
-                            else
-                            {
-                                _bits |= 256L;
-                                _Via = new StringValues(value);
-                            }
-                            return;
-                        }
-                    }
-                    break;
-            
-                case 5:
-                    {
-                        if ((((pUI[0] & 3755991007u) == 1330400321u) && ((pUB[4] & 223u) == 87u))) 
-                        {
-                            if (((_bits & 1024L) != 0))
-                            {
-                                _Allow = AppendValue(_Allow, value);
-                            }
-                            else
-                            {
-                                _bits |= 1024L;
-                                _Allow = new StringValues(value);
-                            }
-                            return;
-                        }
-                    
-                        if ((((pUI[0] & 3755991007u) == 1196310866u) && ((pUB[4] & 223u) == 69u))) 
-                        {
-                            if (((_bits & 137438953472L) != 0))
-                            {
-                                _Range = AppendValue(_Range, value);
-                            }
-                            else
-                            {
-                                _bits |= 137438953472L;
-                                _Range = new StringValues(value);
-                            }
-                            return;
-                        }
-                    }
-                    break;
-            
-                case 14:
-                    {
-                        if ((((pUL[0] & 18437701552104792031uL) == 3266321689424580419uL) && ((pUI[2] & 3755991007u) == 1196311884u) && ((pUS[6] & 57311u) == 18516u))) 
-                        {
-                            if (((_bits & 2048L) != 0))
-                            {
-                                _ContentLength = AppendValue(_ContentLength, value);
-                            }
-                            else
-                            {
-                                _bits |= 2048L;
-                                _ContentLength = new StringValues(value);
-                            }
-                            return;
-                        }
-                    
-                        if ((((pUL[0] & 16140865742145839071uL) == 4840617878229304129uL) && ((pUI[2] & 3755991007u) == 1397899592u) && ((pUS[6] & 57311u) == 21573u))) 
-                        {
-                            if (((_bits & 2097152L) != 0))
-                            {
-                                _AcceptCharset = AppendValue(_AcceptCharset, value);
-                            }
-                            else
-                            {
-                                _bits |= 2097152L;
-                                _AcceptCharset = new StringValues(value);
-                            }
-                            return;
-                        }
-                    }
-                    break;
-            
-                case 12:
-                    {
-                        if ((((pUL[0] & 18437701552104792031uL) == 3266321689424580419uL) && ((pUI[2] & 3755991007u) == 1162893652u))) 
-                        {
-                            if (((_bits & 4096L) != 0))
-                            {
-                                _ContentType = AppendValue(_ContentType, value);
-                            }
-                            else
-                            {
-                                _bits |= 4096L;
-                                _ContentType = new StringValues(value);
-                            }
-                            return;
-                        }
-                    
-                        if ((((pUL[0] & 16131858543427968991uL) == 6292178792217067853uL) && ((pUI[2] & 3755991007u) == 1396986433u))) 
-                        {
-                            if (((_bits & 17179869184L) != 0))
-                            {
-                                _MaxForwards = AppendValue(_MaxForwards, value);
-                            }
-                            else
-                            {
-                                _bits |= 17179869184L;
-                                _MaxForwards = new StringValues(value);
-                            }
-                            return;
-                        }
-                    }
-                    break;
-            
-                case 16:
-                    {
-                        if ((((pUL[0] & 18437701552104792031uL) == 3266321689424580419uL) && ((pUL[1] & 16131858542891098079uL) == 5138124782612729413uL))) 
-                        {
-                            if (((_bits & 8192L) != 0))
-                            {
-                                _ContentEncoding = AppendValue(_ContentEncoding, value);
-                            }
-                            else
-                            {
-                                _bits |= 8192L;
-                                _ContentEncoding = new StringValues(value);
-                            }
-                            return;
-                        }
-                    
-                        if ((((pUL[0] & 18437701552104792031uL) == 3266321689424580419uL) && ((pUL[1] & 16131858542891098079uL) == 4992030546487820620uL))) 
-                        {
-                            if (((_bits & 16384L) != 0))
-                            {
-                                _ContentLanguage = AppendValue(_ContentLanguage, value);
-                            }
-                            else
-                            {
-                                _bits |= 16384L;
-                                _ContentLanguage = new StringValues(value);
-                            }
-                            return;
-                        }
-                    
-                        if ((((pUL[0] & 18437701552104792031uL) == 3266321689424580419uL) && ((pUL[1] & 16131858542891098079uL) == 5642809484339531596uL))) 
-                        {
-                            if (((_bits & 32768L) != 0))
-                            {
-                                _ContentLocation = AppendValue(_ContentLocation, value);
-                            }
-                            else
-                            {
-                                _bits |= 32768L;
-                                _ContentLocation = new StringValues(value);
-                            }
-                            return;
-                        }
-                    }
-                    break;
-            
-                case 11:
-                    {
-                        if ((((pUL[0] & 18437701552104792031uL) == 3266321689424580419uL) && ((pUS[4] & 57311u) == 17485u) && ((pUB[10] & 255u) == 53u))) 
-                        {
-                            if (((_bits & 65536L) != 0))
-                            {
-                                _ContentMD5 = AppendValue(_ContentMD5, value);
-                            }
-                            else
-                            {
-                                _bits |= 65536L;
-                                _ContentMD5 = new StringValues(value);
-                            }
-                            return;
-                        }
-                    }
-                    break;
-            
-                case 15:
-                    {
-                        if ((((pUL[0] & 16140865742145839071uL) == 4984733066305160001uL) && ((pUI[2] & 3755991007u) == 1146045262u) && ((pUS[6] & 57311u) == 20041u) && ((pUB[14] & 223u) == 71u))) 
-                        {
-                            if (((_bits & 4194304L) != 0))
-                            {
-                                _AcceptEncoding = AppendValue(_AcceptEncoding, value);
-                            }
-                            else
-                            {
-                                _bits |= 4194304L;
-                                _AcceptEncoding = new StringValues(value);
-                            }
-                            return;
-                        }
-                    
-                        if ((((pUL[0] & 16140865742145839071uL) == 5489136224570655553uL) && ((pUI[2] & 3755991007u) == 1430736449u) && ((pUS[6] & 57311u) == 18241u) && ((pUB[14] & 223u) == 69u))) 
-                        {
-                            if (((_bits & 8388608L) != 0))
-                            {
-                                _AcceptLanguage = AppendValue(_AcceptLanguage, value);
-                            }
-                            else
-                            {
-                                _bits |= 8388608L;
-                                _AcceptLanguage = new StringValues(value);
-                            }
-                            return;
-                        }
-                    }
-                    break;
-            
-                case 8:
-                    {
-                        if ((((pUL[0] & 16131858542893195231uL) == 5207098233614845513uL))) 
-                        {
-                            if (((_bits & 536870912L) != 0))
-                            {
-                                _IfMatch = AppendValue(_IfMatch, value);
-                            }
-                            else
-                            {
-                                _bits |= 536870912L;
-                                _IfMatch = new StringValues(value);
-                            }
-                            return;
-                        }
-                    
-                        if ((((pUL[0] & 16131858542893195231uL) == 4992044754422023753uL))) 
-                        {
-                            if (((_bits & 4294967296L) != 0))
-                            {
-                                _IfRange = AppendValue(_IfRange, value);
-                            }
-                            else
-                            {
-                                _bits |= 4294967296L;
-                                _IfRange = new StringValues(value);
-                            }
-                            return;
-                        }
-                    }
-                    break;
-            
-                case 19:
-                    {
-                        if ((((pUL[0] & 16131858542893195231uL) == 4922237916571059785uL) && ((pUL[1] & 16131893727263186911uL) == 5283616559079179849uL) && ((pUS[8] & 57311u) == 17230u) && ((pUB[18] & 223u) == 69u))) 
-                        {
-                            if (((_bits & 8589934592L) != 0))
-                            {
-                                _IfUnmodifiedSince = AppendValue(_IfUnmodifiedSince, value);
-                            }
-                            else
-                            {
-                                _bits |= 8589934592L;
-                                _IfUnmodifiedSince = new StringValues(value);
-                            }
-                            return;
-                        }
-                    
-                        if ((((pUL[0] & 16131893727263186911uL) == 6143241228466999888uL) && ((pUL[1] & 16131858542891098079uL) == 6071233043632179284uL) && ((pUS[8] & 57311u) == 20297u) && ((pUB[18] & 223u) == 78u))) 
-                        {
-                            if (((_bits & 34359738368L) != 0))
-                            {
-                                _ProxyAuthorization = AppendValue(_ProxyAuthorization, value);
-                            }
-                            else
-                            {
-                                _bits |= 34359738368L;
-                                _ProxyAuthorization = new StringValues(value);
-                            }
-                            return;
-                        }
-                    }
-                    break;
-            
-                case 2:
-                    {
-                        if ((((pUS[0] & 57311u) == 17748u))) 
-                        {
-                            if (((_bits & 274877906944L) != 0))
-                            {
-                                _TE = AppendValue(_TE, value);
-                            }
-                            else
-                            {
-                                _bits |= 274877906944L;
-                                _TE = new StringValues(value);
-                            }
-                            return;
-                        }
-                    }
-                    break;
-            
-                case 9:
-                    {
-                        if ((((pUL[0] & 16131858542891098079uL) == 6071217693351039572uL) && ((pUB[8] & 223u) == 69u))) 
-                        {
-                            if (((_bits & 549755813888L) != 0))
-                            {
-                                _Translate = AppendValue(_Translate, value);
-                            }
-                            else
-                            {
-                                _bits |= 549755813888L;
-                                _Translate = new StringValues(value);
-                            }
-                            return;
-                        }
-                    }
-                    break;
-            
-                case 29:
-                    {
-                        if ((((pUL[0] & 16140865742145839071uL) == 4840616791602578241uL) && ((pUL[1] & 16140865742145839071uL) == 5921472988629454415uL) && ((pUL[2] & 16140865742145839071uL) == 5561193831494668613uL) && ((pUI[6] & 3755991007u) == 1330140229u) && ((pUB[28] & 223u) == 68u))) 
-                        {
-                            if (((_bits & 4398046511104L) != 0))
-                            {
-                                _AccessControlRequestMethod = AppendValue(_AccessControlRequestMethod, value);
-                            }
-                            else
-                            {
-                                _bits |= 4398046511104L;
-                                _AccessControlRequestMethod = new StringValues(value);
-                            }
-                            return;
-                        }
-                    }
-                    break;
-            
-                case 30:
-                    {
-                        if ((((pUL[0] & 16140865742145839071uL) == 4840616791602578241uL) && ((pUL[1] & 16140865742145839071uL) == 5921472988629454415uL) && ((pUL[2] & 16140865742145839071uL) == 5200905861305028933uL) && ((pUI[6] & 3755991007u) == 1162101061u) && ((pUS[14] & 57311u) == 21330u))) 
-                        {
-                            if (((_bits & 8796093022208L) != 0))
-                            {
-                                _AccessControlRequestHeaders = AppendValue(_AccessControlRequestHeaders, value);
-                            }
-                            else
-                            {
-                                _bits |= 8796093022208L;
-                                _AccessControlRequestHeaders = new StringValues(value);
-                            }
-                            return;
-                        }
-                    }
-                    break;
-            }}
+                        break;
+                }
+            }
             var key = System.Text.Encoding.ASCII.GetString(keyBytes, keyOffset, keyLength);
             StringValues existing;
             Unknown.TryGetValue(key, out existing);
@@ -6114,7 +6120,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         }
         protected override StringValues GetValueFast(string key)
         {
-            switch(key.Length)
+            switch (key.Length)
             {
                 case 13:
                     {
@@ -6628,7 +6634,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         }
         protected override bool TryGetValueFast(string key, out StringValues value)
         {
-            switch(key.Length)
+            switch (key.Length)
             {
                 case 13:
                     {
@@ -7211,7 +7217,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         }
         protected override void SetValueFast(string key, StringValues value)
         {
-            switch(key.Length)
+            switch (key.Length)
             {
                 case 13:
                     {
@@ -7546,7 +7552,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         }
         protected override void AddValueFast(string key, StringValues value)
         {
-            switch(key.Length)
+            switch (key.Length)
             {
                 case 13:
                     {
@@ -8025,7 +8031,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         }
         protected override bool RemoveFast(string key)
         {
-            switch(key.Length)
+            switch (key.Length)
             {
                 case 13:
                     {
@@ -9027,14 +9033,14 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             
                 if (((_bits & 1L) != 0)) 
                 { 
-                    foreach(var value in _CacheControl)
-                    {
-                        if (value != null)
+                        foreach (var value in _CacheControl)
                         {
-                            output.CopyFrom(_headerBytes, 0, 17);
-                            output.CopyFromAscii(value);
+                            if (value != null)
+                            {
+                                output.CopyFrom(_headerBytes, 0, 17);
+                                output.CopyFromAscii(value);
+                            }
                         }
-                    }
                 }
             
                 if (((_bits & 2L) != 0)) 
@@ -9042,15 +9048,16 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                     if (_rawConnection != null) 
                     {
                         output.CopyFrom(_rawConnection, 0, _rawConnection.Length);
-                    } else 
-                    foreach(var value in _Connection)
-                    {
-                        if (value != null)
+                    } 
+                    else 
+                        foreach (var value in _Connection)
                         {
-                            output.CopyFrom(_headerBytes, 17, 14);
-                            output.CopyFromAscii(value);
+                            if (value != null)
+                            {
+                                output.CopyFrom(_headerBytes, 17, 14);
+                                output.CopyFromAscii(value);
+                            }
                         }
-                    }
                 }
             
                 if (((_bits & 4L) != 0)) 
@@ -9058,51 +9065,52 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                     if (_rawDate != null) 
                     {
                         output.CopyFrom(_rawDate, 0, _rawDate.Length);
-                    } else 
-                    foreach(var value in _Date)
-                    {
-                        if (value != null)
+                    } 
+                    else 
+                        foreach (var value in _Date)
                         {
-                            output.CopyFrom(_headerBytes, 31, 8);
-                            output.CopyFromAscii(value);
+                            if (value != null)
+                            {
+                                output.CopyFrom(_headerBytes, 31, 8);
+                                output.CopyFromAscii(value);
+                            }
                         }
-                    }
                 }
             
                 if (((_bits & 8L) != 0)) 
                 { 
-                    foreach(var value in _KeepAlive)
-                    {
-                        if (value != null)
+                        foreach (var value in _KeepAlive)
                         {
-                            output.CopyFrom(_headerBytes, 39, 14);
-                            output.CopyFromAscii(value);
+                            if (value != null)
+                            {
+                                output.CopyFrom(_headerBytes, 39, 14);
+                                output.CopyFromAscii(value);
+                            }
                         }
-                    }
                 }
             
                 if (((_bits & 16L) != 0)) 
                 { 
-                    foreach(var value in _Pragma)
-                    {
-                        if (value != null)
+                        foreach (var value in _Pragma)
                         {
-                            output.CopyFrom(_headerBytes, 53, 10);
-                            output.CopyFromAscii(value);
+                            if (value != null)
+                            {
+                                output.CopyFrom(_headerBytes, 53, 10);
+                                output.CopyFromAscii(value);
+                            }
                         }
-                    }
                 }
             
                 if (((_bits & 32L) != 0)) 
                 { 
-                    foreach(var value in _Trailer)
-                    {
-                        if (value != null)
+                        foreach (var value in _Trailer)
                         {
-                            output.CopyFrom(_headerBytes, 63, 11);
-                            output.CopyFromAscii(value);
+                            if (value != null)
+                            {
+                                output.CopyFrom(_headerBytes, 63, 11);
+                                output.CopyFromAscii(value);
+                            }
                         }
-                    }
                 }
             
                 if (((_bits & 64L) != 0)) 
@@ -9110,63 +9118,64 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                     if (_rawTransferEncoding != null) 
                     {
                         output.CopyFrom(_rawTransferEncoding, 0, _rawTransferEncoding.Length);
-                    } else 
-                    foreach(var value in _TransferEncoding)
-                    {
-                        if (value != null)
+                    } 
+                    else 
+                        foreach (var value in _TransferEncoding)
                         {
-                            output.CopyFrom(_headerBytes, 74, 21);
-                            output.CopyFromAscii(value);
+                            if (value != null)
+                            {
+                                output.CopyFrom(_headerBytes, 74, 21);
+                                output.CopyFromAscii(value);
+                            }
                         }
-                    }
                 }
             
                 if (((_bits & 128L) != 0)) 
                 { 
-                    foreach(var value in _Upgrade)
-                    {
-                        if (value != null)
+                        foreach (var value in _Upgrade)
                         {
-                            output.CopyFrom(_headerBytes, 95, 11);
-                            output.CopyFromAscii(value);
+                            if (value != null)
+                            {
+                                output.CopyFrom(_headerBytes, 95, 11);
+                                output.CopyFromAscii(value);
+                            }
                         }
-                    }
                 }
             
                 if (((_bits & 256L) != 0)) 
                 { 
-                    foreach(var value in _Via)
-                    {
-                        if (value != null)
+                        foreach (var value in _Via)
                         {
-                            output.CopyFrom(_headerBytes, 106, 7);
-                            output.CopyFromAscii(value);
+                            if (value != null)
+                            {
+                                output.CopyFrom(_headerBytes, 106, 7);
+                                output.CopyFromAscii(value);
+                            }
                         }
-                    }
                 }
             
                 if (((_bits & 512L) != 0)) 
                 { 
-                    foreach(var value in _Warning)
-                    {
-                        if (value != null)
+                        foreach (var value in _Warning)
                         {
-                            output.CopyFrom(_headerBytes, 113, 11);
-                            output.CopyFromAscii(value);
+                            if (value != null)
+                            {
+                                output.CopyFrom(_headerBytes, 113, 11);
+                                output.CopyFromAscii(value);
+                            }
                         }
-                    }
                 }
             
                 if (((_bits & 1024L) != 0)) 
                 { 
-                    foreach(var value in _Allow)
-                    {
-                        if (value != null)
+                        foreach (var value in _Allow)
                         {
-                            output.CopyFrom(_headerBytes, 124, 9);
-                            output.CopyFromAscii(value);
+                            if (value != null)
+                            {
+                                output.CopyFrom(_headerBytes, 124, 9);
+                                output.CopyFromAscii(value);
+                            }
                         }
-                    }
                 }
             
                 if (((_bits & 2048L) != 0)) 
@@ -9174,183 +9183,184 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                     if (_rawContentLength != null) 
                     {
                         output.CopyFrom(_rawContentLength, 0, _rawContentLength.Length);
-                    } else 
-                    foreach(var value in _ContentLength)
-                    {
-                        if (value != null)
+                    } 
+                    else 
+                        foreach (var value in _ContentLength)
                         {
-                            output.CopyFrom(_headerBytes, 133, 18);
-                            output.CopyFromAscii(value);
+                            if (value != null)
+                            {
+                                output.CopyFrom(_headerBytes, 133, 18);
+                                output.CopyFromAscii(value);
+                            }
                         }
-                    }
                 }
             
                 if (((_bits & 4096L) != 0)) 
                 { 
-                    foreach(var value in _ContentType)
-                    {
-                        if (value != null)
+                        foreach (var value in _ContentType)
                         {
-                            output.CopyFrom(_headerBytes, 151, 16);
-                            output.CopyFromAscii(value);
+                            if (value != null)
+                            {
+                                output.CopyFrom(_headerBytes, 151, 16);
+                                output.CopyFromAscii(value);
+                            }
                         }
-                    }
                 }
             
                 if (((_bits & 8192L) != 0)) 
                 { 
-                    foreach(var value in _ContentEncoding)
-                    {
-                        if (value != null)
+                        foreach (var value in _ContentEncoding)
                         {
-                            output.CopyFrom(_headerBytes, 167, 20);
-                            output.CopyFromAscii(value);
+                            if (value != null)
+                            {
+                                output.CopyFrom(_headerBytes, 167, 20);
+                                output.CopyFromAscii(value);
+                            }
                         }
-                    }
                 }
             
                 if (((_bits & 16384L) != 0)) 
                 { 
-                    foreach(var value in _ContentLanguage)
-                    {
-                        if (value != null)
+                        foreach (var value in _ContentLanguage)
                         {
-                            output.CopyFrom(_headerBytes, 187, 20);
-                            output.CopyFromAscii(value);
+                            if (value != null)
+                            {
+                                output.CopyFrom(_headerBytes, 187, 20);
+                                output.CopyFromAscii(value);
+                            }
                         }
-                    }
                 }
             
                 if (((_bits & 32768L) != 0)) 
                 { 
-                    foreach(var value in _ContentLocation)
-                    {
-                        if (value != null)
+                        foreach (var value in _ContentLocation)
                         {
-                            output.CopyFrom(_headerBytes, 207, 20);
-                            output.CopyFromAscii(value);
+                            if (value != null)
+                            {
+                                output.CopyFrom(_headerBytes, 207, 20);
+                                output.CopyFromAscii(value);
+                            }
                         }
-                    }
                 }
             
                 if (((_bits & 65536L) != 0)) 
                 { 
-                    foreach(var value in _ContentMD5)
-                    {
-                        if (value != null)
+                        foreach (var value in _ContentMD5)
                         {
-                            output.CopyFrom(_headerBytes, 227, 15);
-                            output.CopyFromAscii(value);
+                            if (value != null)
+                            {
+                                output.CopyFrom(_headerBytes, 227, 15);
+                                output.CopyFromAscii(value);
+                            }
                         }
-                    }
                 }
             
                 if (((_bits & 131072L) != 0)) 
                 { 
-                    foreach(var value in _ContentRange)
-                    {
-                        if (value != null)
+                        foreach (var value in _ContentRange)
                         {
-                            output.CopyFrom(_headerBytes, 242, 17);
-                            output.CopyFromAscii(value);
+                            if (value != null)
+                            {
+                                output.CopyFrom(_headerBytes, 242, 17);
+                                output.CopyFromAscii(value);
+                            }
                         }
-                    }
                 }
             
                 if (((_bits & 262144L) != 0)) 
                 { 
-                    foreach(var value in _Expires)
-                    {
-                        if (value != null)
+                        foreach (var value in _Expires)
                         {
-                            output.CopyFrom(_headerBytes, 259, 11);
-                            output.CopyFromAscii(value);
+                            if (value != null)
+                            {
+                                output.CopyFrom(_headerBytes, 259, 11);
+                                output.CopyFromAscii(value);
+                            }
                         }
-                    }
                 }
             
                 if (((_bits & 524288L) != 0)) 
                 { 
-                    foreach(var value in _LastModified)
-                    {
-                        if (value != null)
+                        foreach (var value in _LastModified)
                         {
-                            output.CopyFrom(_headerBytes, 270, 17);
-                            output.CopyFromAscii(value);
+                            if (value != null)
+                            {
+                                output.CopyFrom(_headerBytes, 270, 17);
+                                output.CopyFromAscii(value);
+                            }
                         }
-                    }
                 }
             
                 if (((_bits & 1048576L) != 0)) 
                 { 
-                    foreach(var value in _AcceptRanges)
-                    {
-                        if (value != null)
+                        foreach (var value in _AcceptRanges)
                         {
-                            output.CopyFrom(_headerBytes, 287, 17);
-                            output.CopyFromAscii(value);
+                            if (value != null)
+                            {
+                                output.CopyFrom(_headerBytes, 287, 17);
+                                output.CopyFromAscii(value);
+                            }
                         }
-                    }
                 }
             
                 if (((_bits & 2097152L) != 0)) 
                 { 
-                    foreach(var value in _Age)
-                    {
-                        if (value != null)
+                        foreach (var value in _Age)
                         {
-                            output.CopyFrom(_headerBytes, 304, 7);
-                            output.CopyFromAscii(value);
+                            if (value != null)
+                            {
+                                output.CopyFrom(_headerBytes, 304, 7);
+                                output.CopyFromAscii(value);
+                            }
                         }
-                    }
                 }
             
                 if (((_bits & 4194304L) != 0)) 
                 { 
-                    foreach(var value in _ETag)
-                    {
-                        if (value != null)
+                        foreach (var value in _ETag)
                         {
-                            output.CopyFrom(_headerBytes, 311, 8);
-                            output.CopyFromAscii(value);
+                            if (value != null)
+                            {
+                                output.CopyFrom(_headerBytes, 311, 8);
+                                output.CopyFromAscii(value);
+                            }
                         }
-                    }
                 }
             
                 if (((_bits & 8388608L) != 0)) 
                 { 
-                    foreach(var value in _Location)
-                    {
-                        if (value != null)
+                        foreach (var value in _Location)
                         {
-                            output.CopyFrom(_headerBytes, 319, 12);
-                            output.CopyFromAscii(value);
+                            if (value != null)
+                            {
+                                output.CopyFrom(_headerBytes, 319, 12);
+                                output.CopyFromAscii(value);
+                            }
                         }
-                    }
                 }
             
                 if (((_bits & 16777216L) != 0)) 
                 { 
-                    foreach(var value in _ProxyAutheticate)
-                    {
-                        if (value != null)
+                        foreach (var value in _ProxyAutheticate)
                         {
-                            output.CopyFrom(_headerBytes, 331, 21);
-                            output.CopyFromAscii(value);
+                            if (value != null)
+                            {
+                                output.CopyFrom(_headerBytes, 331, 21);
+                                output.CopyFromAscii(value);
+                            }
                         }
-                    }
                 }
             
                 if (((_bits & 33554432L) != 0)) 
                 { 
-                    foreach(var value in _RetryAfter)
-                    {
-                        if (value != null)
+                        foreach (var value in _RetryAfter)
                         {
-                            output.CopyFrom(_headerBytes, 352, 15);
-                            output.CopyFromAscii(value);
+                            if (value != null)
+                            {
+                                output.CopyFrom(_headerBytes, 352, 15);
+                                output.CopyFromAscii(value);
+                            }
                         }
-                    }
                 }
             
                 if (((_bits & 67108864L) != 0)) 
@@ -9358,712 +9368,719 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                     if (_rawServer != null) 
                     {
                         output.CopyFrom(_rawServer, 0, _rawServer.Length);
-                    } else 
-                    foreach(var value in _Server)
-                    {
-                        if (value != null)
+                    } 
+                    else 
+                        foreach (var value in _Server)
                         {
-                            output.CopyFrom(_headerBytes, 367, 10);
-                            output.CopyFromAscii(value);
+                            if (value != null)
+                            {
+                                output.CopyFrom(_headerBytes, 367, 10);
+                                output.CopyFromAscii(value);
+                            }
                         }
-                    }
                 }
             
                 if (((_bits & 134217728L) != 0)) 
                 { 
-                    foreach(var value in _SetCookie)
-                    {
-                        if (value != null)
+                        foreach (var value in _SetCookie)
                         {
-                            output.CopyFrom(_headerBytes, 377, 14);
-                            output.CopyFromAscii(value);
+                            if (value != null)
+                            {
+                                output.CopyFrom(_headerBytes, 377, 14);
+                                output.CopyFromAscii(value);
+                            }
                         }
-                    }
                 }
             
                 if (((_bits & 268435456L) != 0)) 
                 { 
-                    foreach(var value in _Vary)
-                    {
-                        if (value != null)
+                        foreach (var value in _Vary)
                         {
-                            output.CopyFrom(_headerBytes, 391, 8);
-                            output.CopyFromAscii(value);
+                            if (value != null)
+                            {
+                                output.CopyFrom(_headerBytes, 391, 8);
+                                output.CopyFromAscii(value);
+                            }
                         }
-                    }
                 }
             
                 if (((_bits & 536870912L) != 0)) 
                 { 
-                    foreach(var value in _WWWAuthenticate)
-                    {
-                        if (value != null)
+                        foreach (var value in _WWWAuthenticate)
                         {
-                            output.CopyFrom(_headerBytes, 399, 20);
-                            output.CopyFromAscii(value);
+                            if (value != null)
+                            {
+                                output.CopyFrom(_headerBytes, 399, 20);
+                                output.CopyFromAscii(value);
+                            }
                         }
-                    }
                 }
             
                 if (((_bits & 1073741824L) != 0)) 
                 { 
-                    foreach(var value in _AccessControlAllowCredentials)
-                    {
-                        if (value != null)
+                        foreach (var value in _AccessControlAllowCredentials)
                         {
-                            output.CopyFrom(_headerBytes, 419, 36);
-                            output.CopyFromAscii(value);
+                            if (value != null)
+                            {
+                                output.CopyFrom(_headerBytes, 419, 36);
+                                output.CopyFromAscii(value);
+                            }
                         }
-                    }
                 }
             
                 if (((_bits & 2147483648L) != 0)) 
                 { 
-                    foreach(var value in _AccessControlAllowHeaders)
-                    {
-                        if (value != null)
+                        foreach (var value in _AccessControlAllowHeaders)
                         {
-                            output.CopyFrom(_headerBytes, 455, 32);
-                            output.CopyFromAscii(value);
+                            if (value != null)
+                            {
+                                output.CopyFrom(_headerBytes, 455, 32);
+                                output.CopyFromAscii(value);
+                            }
                         }
-                    }
                 }
             
                 if (((_bits & 4294967296L) != 0)) 
                 { 
-                    foreach(var value in _AccessControlAllowMethods)
-                    {
-                        if (value != null)
+                        foreach (var value in _AccessControlAllowMethods)
                         {
-                            output.CopyFrom(_headerBytes, 487, 32);
-                            output.CopyFromAscii(value);
+                            if (value != null)
+                            {
+                                output.CopyFrom(_headerBytes, 487, 32);
+                                output.CopyFromAscii(value);
+                            }
                         }
-                    }
                 }
             
                 if (((_bits & 8589934592L) != 0)) 
                 { 
-                    foreach(var value in _AccessControlAllowOrigin)
-                    {
-                        if (value != null)
+                        foreach (var value in _AccessControlAllowOrigin)
                         {
-                            output.CopyFrom(_headerBytes, 519, 31);
-                            output.CopyFromAscii(value);
+                            if (value != null)
+                            {
+                                output.CopyFrom(_headerBytes, 519, 31);
+                                output.CopyFromAscii(value);
+                            }
                         }
-                    }
                 }
             
                 if (((_bits & 17179869184L) != 0)) 
                 { 
-                    foreach(var value in _AccessControlExposeHeaders)
-                    {
-                        if (value != null)
+                        foreach (var value in _AccessControlExposeHeaders)
                         {
-                            output.CopyFrom(_headerBytes, 550, 33);
-                            output.CopyFromAscii(value);
+                            if (value != null)
+                            {
+                                output.CopyFrom(_headerBytes, 550, 33);
+                                output.CopyFromAscii(value);
+                            }
                         }
-                    }
                 }
             
                 if (((_bits & 34359738368L) != 0)) 
                 { 
-                    foreach(var value in _AccessControlMaxAge)
-                    {
-                        if (value != null)
+                        foreach (var value in _AccessControlMaxAge)
                         {
-                            output.CopyFrom(_headerBytes, 583, 26);
-                            output.CopyFromAscii(value);
+                            if (value != null)
+                            {
+                                output.CopyFrom(_headerBytes, 583, 26);
+                                output.CopyFromAscii(value);
+                            }
                         }
-                    }
                 }
             
         }
         public unsafe void Append(byte[] keyBytes, int keyOffset, int keyLength, string value)
         {
-            fixed(byte* ptr = keyBytes) { var pUB = ptr + keyOffset; var pUL = (ulong*)pUB; var pUI = (uint*)pUB; var pUS = (ushort*)pUB;
-            switch(keyLength)
-            {
-                case 13:
-                    {
-                        if ((((pUL[0] & 16131893727263186911uL) == 5711458528024281411uL) && ((pUI[2] & 3755991007u) == 1330795598u) && ((pUB[12] & 223u) == 76u))) 
+            fixed (byte* ptr = &keyBytes[keyOffset]) 
+            { 
+                var pUB = ptr; 
+                var pUL = (ulong*)pUB; 
+                var pUI = (uint*)pUB; 
+                var pUS = (ushort*)pUB;
+                switch (keyLength)
+                {
+                    case 13:
                         {
-                            if (((_bits & 1L) != 0))
+                            if ((((pUL[0] & 16131893727263186911uL) == 5711458528024281411uL) && ((pUI[2] & 3755991007u) == 1330795598u) && ((pUB[12] & 223u) == 76u))) 
                             {
-                                _CacheControl = AppendValue(_CacheControl, value);
+                                if (((_bits & 1L) != 0))
+                                {
+                                    _CacheControl = AppendValue(_CacheControl, value);
+                                }
+                                else
+                                {
+                                    _bits |= 1L;
+                                    _CacheControl = new StringValues(value);
+                                }
+                                return;
                             }
-                            else
+                        
+                            if ((((pUL[0] & 18437701552104792031uL) == 3266321689424580419uL) && ((pUI[2] & 3755991007u) == 1196310866u) && ((pUB[12] & 223u) == 69u))) 
                             {
-                                _bits |= 1L;
-                                _CacheControl = new StringValues(value);
+                                if (((_bits & 131072L) != 0))
+                                {
+                                    _ContentRange = AppendValue(_ContentRange, value);
+                                }
+                                else
+                                {
+                                    _bits |= 131072L;
+                                    _ContentRange = new StringValues(value);
+                                }
+                                return;
                             }
-                            return;
+                        
+                            if ((((pUL[0] & 16131858680330051551uL) == 4922237774822850892uL) && ((pUI[2] & 3755991007u) == 1162430025u) && ((pUB[12] & 223u) == 68u))) 
+                            {
+                                if (((_bits & 524288L) != 0))
+                                {
+                                    _LastModified = AppendValue(_LastModified, value);
+                                }
+                                else
+                                {
+                                    _bits |= 524288L;
+                                    _LastModified = new StringValues(value);
+                                }
+                                return;
+                            }
+                        
+                            if ((((pUL[0] & 16140865742145839071uL) == 5921481788798223169uL) && ((pUI[2] & 3755991007u) == 1162300993u) && ((pUB[12] & 223u) == 83u))) 
+                            {
+                                if (((_bits & 1048576L) != 0))
+                                {
+                                    _AcceptRanges = AppendValue(_AcceptRanges, value);
+                                }
+                                else
+                                {
+                                    _bits |= 1048576L;
+                                    _AcceptRanges = new StringValues(value);
+                                }
+                                return;
+                            }
                         }
-                    
-                        if ((((pUL[0] & 18437701552104792031uL) == 3266321689424580419uL) && ((pUI[2] & 3755991007u) == 1196310866u) && ((pUB[12] & 223u) == 69u))) 
+                        break;
+                
+                    case 10:
                         {
-                            if (((_bits & 131072L) != 0))
+                            if ((((pUL[0] & 16131858542891098079uL) == 5283922227757993795uL) && ((pUS[4] & 57311u) == 20047u))) 
                             {
-                                _ContentRange = AppendValue(_ContentRange, value);
+                                if (((_bits & 2L) != 0))
+                                {
+                                    _Connection = AppendValue(_Connection, value);
+                                }
+                                else
+                                {
+                                    _bits |= 2L;
+                                    _Connection = new StringValues(value);
+                                    _rawConnection = null;
+                                }
+                                return;
                             }
-                            else
+                        
+                            if ((((pUL[0] & 16131858680330051551uL) == 5281668125874799947uL) && ((pUS[4] & 57311u) == 17750u))) 
                             {
-                                _bits |= 131072L;
-                                _ContentRange = new StringValues(value);
+                                if (((_bits & 8L) != 0))
+                                {
+                                    _KeepAlive = AppendValue(_KeepAlive, value);
+                                }
+                                else
+                                {
+                                    _bits |= 8L;
+                                    _KeepAlive = new StringValues(value);
+                                }
+                                return;
                             }
-                            return;
+                        
+                            if ((((pUL[0] & 16131858543427968991uL) == 5426643225946637651uL) && ((pUS[4] & 57311u) == 17737u))) 
+                            {
+                                if (((_bits & 134217728L) != 0))
+                                {
+                                    _SetCookie = AppendValue(_SetCookie, value);
+                                }
+                                else
+                                {
+                                    _bits |= 134217728L;
+                                    _SetCookie = new StringValues(value);
+                                }
+                                return;
+                            }
                         }
-                    
-                        if ((((pUL[0] & 16131858680330051551uL) == 4922237774822850892uL) && ((pUI[2] & 3755991007u) == 1162430025u) && ((pUB[12] & 223u) == 68u))) 
+                        break;
+                
+                    case 4:
                         {
-                            if (((_bits & 524288L) != 0))
+                            if ((((pUI[0] & 3755991007u) == 1163149636u))) 
                             {
-                                _LastModified = AppendValue(_LastModified, value);
+                                if (((_bits & 4L) != 0))
+                                {
+                                    _Date = AppendValue(_Date, value);
+                                }
+                                else
+                                {
+                                    _bits |= 4L;
+                                    _Date = new StringValues(value);
+                                    _rawDate = null;
+                                }
+                                return;
                             }
-                            else
+                        
+                            if ((((pUI[0] & 3755991007u) == 1195463749u))) 
                             {
-                                _bits |= 524288L;
-                                _LastModified = new StringValues(value);
+                                if (((_bits & 4194304L) != 0))
+                                {
+                                    _ETag = AppendValue(_ETag, value);
+                                }
+                                else
+                                {
+                                    _bits |= 4194304L;
+                                    _ETag = new StringValues(value);
+                                }
+                                return;
                             }
-                            return;
+                        
+                            if ((((pUI[0] & 3755991007u) == 1498562902u))) 
+                            {
+                                if (((_bits & 268435456L) != 0))
+                                {
+                                    _Vary = AppendValue(_Vary, value);
+                                }
+                                else
+                                {
+                                    _bits |= 268435456L;
+                                    _Vary = new StringValues(value);
+                                }
+                                return;
+                            }
                         }
-                    
-                        if ((((pUL[0] & 16140865742145839071uL) == 5921481788798223169uL) && ((pUI[2] & 3755991007u) == 1162300993u) && ((pUB[12] & 223u) == 83u))) 
+                        break;
+                
+                    case 6:
                         {
-                            if (((_bits & 1048576L) != 0))
+                            if ((((pUI[0] & 3755991007u) == 1195463248u) && ((pUS[2] & 57311u) == 16717u))) 
                             {
-                                _AcceptRanges = AppendValue(_AcceptRanges, value);
+                                if (((_bits & 16L) != 0))
+                                {
+                                    _Pragma = AppendValue(_Pragma, value);
+                                }
+                                else
+                                {
+                                    _bits |= 16L;
+                                    _Pragma = new StringValues(value);
+                                }
+                                return;
                             }
-                            else
+                        
+                            if ((((pUI[0] & 3755991007u) == 1448232275u) && ((pUS[2] & 57311u) == 21061u))) 
                             {
-                                _bits |= 1048576L;
-                                _AcceptRanges = new StringValues(value);
+                                if (((_bits & 67108864L) != 0))
+                                {
+                                    _Server = AppendValue(_Server, value);
+                                }
+                                else
+                                {
+                                    _bits |= 67108864L;
+                                    _Server = new StringValues(value);
+                                    _rawServer = null;
+                                }
+                                return;
                             }
-                            return;
                         }
-                    }
-                    break;
-            
-                case 10:
-                    {
-                        if ((((pUL[0] & 16131858542891098079uL) == 5283922227757993795uL) && ((pUS[4] & 57311u) == 20047u))) 
+                        break;
+                
+                    case 7:
                         {
-                            if (((_bits & 2L) != 0))
+                            if ((((pUI[0] & 3755991007u) == 1229017684u) && ((pUS[2] & 57311u) == 17740u) && ((pUB[6] & 223u) == 82u))) 
                             {
-                                _Connection = AppendValue(_Connection, value);
+                                if (((_bits & 32L) != 0))
+                                {
+                                    _Trailer = AppendValue(_Trailer, value);
+                                }
+                                else
+                                {
+                                    _bits |= 32L;
+                                    _Trailer = new StringValues(value);
+                                }
+                                return;
                             }
-                            else
+                        
+                            if ((((pUI[0] & 3755991007u) == 1380405333u) && ((pUS[2] & 57311u) == 17473u) && ((pUB[6] & 223u) == 69u))) 
                             {
-                                _bits |= 2L;
-                                _Connection = new StringValues(value);
-                                _rawConnection = null;
+                                if (((_bits & 128L) != 0))
+                                {
+                                    _Upgrade = AppendValue(_Upgrade, value);
+                                }
+                                else
+                                {
+                                    _bits |= 128L;
+                                    _Upgrade = new StringValues(value);
+                                }
+                                return;
                             }
-                            return;
+                        
+                            if ((((pUI[0] & 3755991007u) == 1314013527u) && ((pUS[2] & 57311u) == 20041u) && ((pUB[6] & 223u) == 71u))) 
+                            {
+                                if (((_bits & 512L) != 0))
+                                {
+                                    _Warning = AppendValue(_Warning, value);
+                                }
+                                else
+                                {
+                                    _bits |= 512L;
+                                    _Warning = new StringValues(value);
+                                }
+                                return;
+                            }
+                        
+                            if ((((pUI[0] & 3755991007u) == 1230002245u) && ((pUS[2] & 57311u) == 17746u) && ((pUB[6] & 223u) == 83u))) 
+                            {
+                                if (((_bits & 262144L) != 0))
+                                {
+                                    _Expires = AppendValue(_Expires, value);
+                                }
+                                else
+                                {
+                                    _bits |= 262144L;
+                                    _Expires = new StringValues(value);
+                                }
+                                return;
+                            }
                         }
-                    
-                        if ((((pUL[0] & 16131858680330051551uL) == 5281668125874799947uL) && ((pUS[4] & 57311u) == 17750u))) 
+                        break;
+                
+                    case 17:
                         {
-                            if (((_bits & 8L) != 0))
+                            if ((((pUL[0] & 16131858542891098079uL) == 5928221808112259668uL) && ((pUL[1] & 16131858542891098111uL) == 5641115115480565037uL) && ((pUB[16] & 223u) == 71u))) 
                             {
-                                _KeepAlive = AppendValue(_KeepAlive, value);
+                                if (((_bits & 64L) != 0))
+                                {
+                                    _TransferEncoding = AppendValue(_TransferEncoding, value);
+                                }
+                                else
+                                {
+                                    _bits |= 64L;
+                                    _TransferEncoding = new StringValues(value);
+                                    _rawTransferEncoding = null;
+                                }
+                                return;
                             }
-                            else
+                        
+                            if ((((pUL[0] & 16131893727263186911uL) == 6143241228466999888uL) && ((pUL[1] & 16131858542891098079uL) == 6071207754897639508uL) && ((pUB[16] & 223u) == 69u))) 
                             {
-                                _bits |= 8L;
-                                _KeepAlive = new StringValues(value);
+                                if (((_bits & 16777216L) != 0))
+                                {
+                                    _ProxyAutheticate = AppendValue(_ProxyAutheticate, value);
+                                }
+                                else
+                                {
+                                    _bits |= 16777216L;
+                                    _ProxyAutheticate = new StringValues(value);
+                                }
+                                return;
                             }
-                            return;
                         }
-                    
-                        if ((((pUL[0] & 16131858543427968991uL) == 5426643225946637651uL) && ((pUS[4] & 57311u) == 17737u))) 
+                        break;
+                
+                    case 3:
                         {
-                            if (((_bits & 134217728L) != 0))
+                            if ((((pUS[0] & 57311u) == 18774u) && ((pUB[2] & 223u) == 65u))) 
                             {
-                                _SetCookie = AppendValue(_SetCookie, value);
+                                if (((_bits & 256L) != 0))
+                                {
+                                    _Via = AppendValue(_Via, value);
+                                }
+                                else
+                                {
+                                    _bits |= 256L;
+                                    _Via = new StringValues(value);
+                                }
+                                return;
                             }
-                            else
+                        
+                            if ((((pUS[0] & 57311u) == 18241u) && ((pUB[2] & 223u) == 69u))) 
                             {
-                                _bits |= 134217728L;
-                                _SetCookie = new StringValues(value);
+                                if (((_bits & 2097152L) != 0))
+                                {
+                                    _Age = AppendValue(_Age, value);
+                                }
+                                else
+                                {
+                                    _bits |= 2097152L;
+                                    _Age = new StringValues(value);
+                                }
+                                return;
                             }
-                            return;
                         }
-                    }
-                    break;
-            
-                case 4:
-                    {
-                        if ((((pUI[0] & 3755991007u) == 1163149636u))) 
+                        break;
+                
+                    case 5:
                         {
-                            if (((_bits & 4L) != 0))
+                            if ((((pUI[0] & 3755991007u) == 1330400321u) && ((pUB[4] & 223u) == 87u))) 
                             {
-                                _Date = AppendValue(_Date, value);
+                                if (((_bits & 1024L) != 0))
+                                {
+                                    _Allow = AppendValue(_Allow, value);
+                                }
+                                else
+                                {
+                                    _bits |= 1024L;
+                                    _Allow = new StringValues(value);
+                                }
+                                return;
                             }
-                            else
-                            {
-                                _bits |= 4L;
-                                _Date = new StringValues(value);
-                                _rawDate = null;
-                            }
-                            return;
                         }
-                    
-                        if ((((pUI[0] & 3755991007u) == 1195463749u))) 
+                        break;
+                
+                    case 14:
                         {
-                            if (((_bits & 4194304L) != 0))
+                            if ((((pUL[0] & 18437701552104792031uL) == 3266321689424580419uL) && ((pUI[2] & 3755991007u) == 1196311884u) && ((pUS[6] & 57311u) == 18516u))) 
                             {
-                                _ETag = AppendValue(_ETag, value);
+                                if (((_bits & 2048L) != 0))
+                                {
+                                    _ContentLength = AppendValue(_ContentLength, value);
+                                }
+                                else
+                                {
+                                    _bits |= 2048L;
+                                    _ContentLength = new StringValues(value);
+                                    _rawContentLength = null;
+                                }
+                                return;
                             }
-                            else
-                            {
-                                _bits |= 4194304L;
-                                _ETag = new StringValues(value);
-                            }
-                            return;
                         }
-                    
-                        if ((((pUI[0] & 3755991007u) == 1498562902u))) 
+                        break;
+                
+                    case 12:
                         {
-                            if (((_bits & 268435456L) != 0))
+                            if ((((pUL[0] & 18437701552104792031uL) == 3266321689424580419uL) && ((pUI[2] & 3755991007u) == 1162893652u))) 
                             {
-                                _Vary = AppendValue(_Vary, value);
+                                if (((_bits & 4096L) != 0))
+                                {
+                                    _ContentType = AppendValue(_ContentType, value);
+                                }
+                                else
+                                {
+                                    _bits |= 4096L;
+                                    _ContentType = new StringValues(value);
+                                }
+                                return;
                             }
-                            else
-                            {
-                                _bits |= 268435456L;
-                                _Vary = new StringValues(value);
-                            }
-                            return;
                         }
-                    }
-                    break;
-            
-                case 6:
-                    {
-                        if ((((pUI[0] & 3755991007u) == 1195463248u) && ((pUS[2] & 57311u) == 16717u))) 
+                        break;
+                
+                    case 16:
                         {
-                            if (((_bits & 16L) != 0))
+                            if ((((pUL[0] & 18437701552104792031uL) == 3266321689424580419uL) && ((pUL[1] & 16131858542891098079uL) == 5138124782612729413uL))) 
                             {
-                                _Pragma = AppendValue(_Pragma, value);
+                                if (((_bits & 8192L) != 0))
+                                {
+                                    _ContentEncoding = AppendValue(_ContentEncoding, value);
+                                }
+                                else
+                                {
+                                    _bits |= 8192L;
+                                    _ContentEncoding = new StringValues(value);
+                                }
+                                return;
                             }
-                            else
+                        
+                            if ((((pUL[0] & 18437701552104792031uL) == 3266321689424580419uL) && ((pUL[1] & 16131858542891098079uL) == 4992030546487820620uL))) 
                             {
-                                _bits |= 16L;
-                                _Pragma = new StringValues(value);
+                                if (((_bits & 16384L) != 0))
+                                {
+                                    _ContentLanguage = AppendValue(_ContentLanguage, value);
+                                }
+                                else
+                                {
+                                    _bits |= 16384L;
+                                    _ContentLanguage = new StringValues(value);
+                                }
+                                return;
                             }
-                            return;
+                        
+                            if ((((pUL[0] & 18437701552104792031uL) == 3266321689424580419uL) && ((pUL[1] & 16131858542891098079uL) == 5642809484339531596uL))) 
+                            {
+                                if (((_bits & 32768L) != 0))
+                                {
+                                    _ContentLocation = AppendValue(_ContentLocation, value);
+                                }
+                                else
+                                {
+                                    _bits |= 32768L;
+                                    _ContentLocation = new StringValues(value);
+                                }
+                                return;
+                            }
+                        
+                            if ((((pUL[0] & 16131858543427968991uL) == 5211884407196440407uL) && ((pUL[1] & 16131858542891098079uL) == 4995689643909598789uL))) 
+                            {
+                                if (((_bits & 536870912L) != 0))
+                                {
+                                    _WWWAuthenticate = AppendValue(_WWWAuthenticate, value);
+                                }
+                                else
+                                {
+                                    _bits |= 536870912L;
+                                    _WWWAuthenticate = new StringValues(value);
+                                }
+                                return;
+                            }
                         }
-                    
-                        if ((((pUI[0] & 3755991007u) == 1448232275u) && ((pUS[2] & 57311u) == 21061u))) 
+                        break;
+                
+                    case 11:
                         {
-                            if (((_bits & 67108864L) != 0))
+                            if ((((pUL[0] & 18437701552104792031uL) == 3266321689424580419uL) && ((pUS[4] & 57311u) == 17485u) && ((pUB[10] & 255u) == 53u))) 
                             {
-                                _Server = AppendValue(_Server, value);
+                                if (((_bits & 65536L) != 0))
+                                {
+                                    _ContentMD5 = AppendValue(_ContentMD5, value);
+                                }
+                                else
+                                {
+                                    _bits |= 65536L;
+                                    _ContentMD5 = new StringValues(value);
+                                }
+                                return;
                             }
-                            else
+                        
+                            if ((((pUL[0] & 16131893727263186911uL) == 5062377317797741906uL) && ((pUS[4] & 57311u) == 17748u) && ((pUB[10] & 223u) == 82u))) 
                             {
-                                _bits |= 67108864L;
-                                _Server = new StringValues(value);
-                                _rawServer = null;
+                                if (((_bits & 33554432L) != 0))
+                                {
+                                    _RetryAfter = AppendValue(_RetryAfter, value);
+                                }
+                                else
+                                {
+                                    _bits |= 33554432L;
+                                    _RetryAfter = new StringValues(value);
+                                }
+                                return;
                             }
-                            return;
                         }
-                    }
-                    break;
-            
-                case 7:
-                    {
-                        if ((((pUI[0] & 3755991007u) == 1229017684u) && ((pUS[2] & 57311u) == 17740u) && ((pUB[6] & 223u) == 82u))) 
+                        break;
+                
+                    case 8:
                         {
-                            if (((_bits & 32L) != 0))
+                            if ((((pUL[0] & 16131858542891098079uL) == 5642809484339531596uL))) 
                             {
-                                _Trailer = AppendValue(_Trailer, value);
+                                if (((_bits & 8388608L) != 0))
+                                {
+                                    _Location = AppendValue(_Location, value);
+                                }
+                                else
+                                {
+                                    _bits |= 8388608L;
+                                    _Location = new StringValues(value);
+                                }
+                                return;
                             }
-                            else
-                            {
-                                _bits |= 32L;
-                                _Trailer = new StringValues(value);
-                            }
-                            return;
                         }
-                    
-                        if ((((pUI[0] & 3755991007u) == 1380405333u) && ((pUS[2] & 57311u) == 17473u) && ((pUB[6] & 223u) == 69u))) 
+                        break;
+                
+                    case 32:
                         {
-                            if (((_bits & 128L) != 0))
+                            if ((((pUL[0] & 16140865742145839071uL) == 4840616791602578241uL) && ((pUL[1] & 16140865742145839071uL) == 4696493889984679503uL) && ((pUL[2] & 16131858680330051551uL) == 4995128798724705356uL) && ((pUL[3] & 16131858542891098079uL) == 6002244186580862276uL))) 
                             {
-                                _Upgrade = AppendValue(_Upgrade, value);
+                                if (((_bits & 1073741824L) != 0))
+                                {
+                                    _AccessControlAllowCredentials = AppendValue(_AccessControlAllowCredentials, value);
+                                }
+                                else
+                                {
+                                    _bits |= 1073741824L;
+                                    _AccessControlAllowCredentials = new StringValues(value);
+                                }
+                                return;
                             }
-                            else
-                            {
-                                _bits |= 128L;
-                                _Upgrade = new StringValues(value);
-                            }
-                            return;
                         }
-                    
-                        if ((((pUI[0] & 3755991007u) == 1314013527u) && ((pUS[2] & 57311u) == 20041u) && ((pUB[6] & 223u) == 71u))) 
+                        break;
+                
+                    case 28:
                         {
-                            if (((_bits & 512L) != 0))
+                            if ((((pUL[0] & 16140865742145839071uL) == 4840616791602578241uL) && ((pUL[1] & 16140865742145839071uL) == 4696493889984679503uL) && ((pUL[2] & 16131858680330051551uL) == 4703244745433893964uL) && ((pUI[6] & 3755991007u) == 1397900612u))) 
                             {
-                                _Warning = AppendValue(_Warning, value);
+                                if (((_bits & 2147483648L) != 0))
+                                {
+                                    _AccessControlAllowHeaders = AppendValue(_AccessControlAllowHeaders, value);
+                                }
+                                else
+                                {
+                                    _bits |= 2147483648L;
+                                    _AccessControlAllowHeaders = new StringValues(value);
+                                }
+                                return;
                             }
-                            else
+                        
+                            if ((((pUL[0] & 16140865742145839071uL) == 4840616791602578241uL) && ((pUL[1] & 16140865742145839071uL) == 4696493889984679503uL) && ((pUL[2] & 16131858680330051551uL) == 6072344529712663628uL) && ((pUI[6] & 3755991007u) == 1396985672u))) 
                             {
-                                _bits |= 512L;
-                                _Warning = new StringValues(value);
+                                if (((_bits & 4294967296L) != 0))
+                                {
+                                    _AccessControlAllowMethods = AppendValue(_AccessControlAllowMethods, value);
+                                }
+                                else
+                                {
+                                    _bits |= 4294967296L;
+                                    _AccessControlAllowMethods = new StringValues(value);
+                                }
+                                return;
                             }
-                            return;
                         }
-                    
-                        if ((((pUI[0] & 3755991007u) == 1230002245u) && ((pUS[2] & 57311u) == 17746u) && ((pUB[6] & 223u) == 83u))) 
+                        break;
+                
+                    case 27:
                         {
-                            if (((_bits & 262144L) != 0))
+                            if ((((pUL[0] & 16140865742145839071uL) == 4840616791602578241uL) && ((pUL[1] & 16140865742145839071uL) == 4696493889984679503uL) && ((pUL[2] & 16131858680330051551uL) == 5283372369015950412uL) && ((pUS[12] & 57311u) == 18759u) && ((pUB[26] & 223u) == 78u))) 
                             {
-                                _Expires = AppendValue(_Expires, value);
+                                if (((_bits & 8589934592L) != 0))
+                                {
+                                    _AccessControlAllowOrigin = AppendValue(_AccessControlAllowOrigin, value);
+                                }
+                                else
+                                {
+                                    _bits |= 8589934592L;
+                                    _AccessControlAllowOrigin = new StringValues(value);
+                                }
+                                return;
                             }
-                            else
-                            {
-                                _bits |= 262144L;
-                                _Expires = new StringValues(value);
-                            }
-                            return;
                         }
-                    }
-                    break;
-            
-                case 17:
-                    {
-                        if ((((pUL[0] & 16131858542891098079uL) == 5928221808112259668uL) && ((pUL[1] & 16131858542891098111uL) == 5641115115480565037uL) && ((pUB[16] & 223u) == 71u))) 
+                        break;
+                
+                    case 29:
                         {
-                            if (((_bits & 64L) != 0))
+                            if ((((pUL[0] & 16140865742145839071uL) == 4840616791602578241uL) && ((pUL[1] & 16140865742145839071uL) == 4984724266136391247uL) && ((pUL[2] & 16131893727263186911uL) == 4992289962713895000uL) && ((pUI[6] & 3755991007u) == 1380271169u) && ((pUB[28] & 223u) == 83u))) 
                             {
-                                _TransferEncoding = AppendValue(_TransferEncoding, value);
+                                if (((_bits & 17179869184L) != 0))
+                                {
+                                    _AccessControlExposeHeaders = AppendValue(_AccessControlExposeHeaders, value);
+                                }
+                                else
+                                {
+                                    _bits |= 17179869184L;
+                                    _AccessControlExposeHeaders = new StringValues(value);
+                                }
+                                return;
                             }
-                            else
-                            {
-                                _bits |= 64L;
-                                _TransferEncoding = new StringValues(value);
-                                _rawTransferEncoding = null;
-                            }
-                            return;
                         }
-                    
-                        if ((((pUL[0] & 16131893727263186911uL) == 6143241228466999888uL) && ((pUL[1] & 16131858542891098079uL) == 6071207754897639508uL) && ((pUB[16] & 223u) == 69u))) 
+                        break;
+                
+                    case 22:
                         {
-                            if (((_bits & 16777216L) != 0))
+                            if ((((pUL[0] & 16140865742145839071uL) == 4840616791602578241uL) && ((pUL[1] & 16140865742145839071uL) == 5561185018439814735uL) && ((pUI[4] & 3758088159u) == 1093490753u) && ((pUS[10] & 57311u) == 17735u))) 
                             {
-                                _ProxyAutheticate = AppendValue(_ProxyAutheticate, value);
+                                if (((_bits & 34359738368L) != 0))
+                                {
+                                    _AccessControlMaxAge = AppendValue(_AccessControlMaxAge, value);
+                                }
+                                else
+                                {
+                                    _bits |= 34359738368L;
+                                    _AccessControlMaxAge = new StringValues(value);
+                                }
+                                return;
                             }
-                            else
-                            {
-                                _bits |= 16777216L;
-                                _ProxyAutheticate = new StringValues(value);
-                            }
-                            return;
                         }
-                    }
-                    break;
-            
-                case 3:
-                    {
-                        if ((((pUS[0] & 57311u) == 18774u) && ((pUB[2] & 223u) == 65u))) 
-                        {
-                            if (((_bits & 256L) != 0))
-                            {
-                                _Via = AppendValue(_Via, value);
-                            }
-                            else
-                            {
-                                _bits |= 256L;
-                                _Via = new StringValues(value);
-                            }
-                            return;
-                        }
-                    
-                        if ((((pUS[0] & 57311u) == 18241u) && ((pUB[2] & 223u) == 69u))) 
-                        {
-                            if (((_bits & 2097152L) != 0))
-                            {
-                                _Age = AppendValue(_Age, value);
-                            }
-                            else
-                            {
-                                _bits |= 2097152L;
-                                _Age = new StringValues(value);
-                            }
-                            return;
-                        }
-                    }
-                    break;
-            
-                case 5:
-                    {
-                        if ((((pUI[0] & 3755991007u) == 1330400321u) && ((pUB[4] & 223u) == 87u))) 
-                        {
-                            if (((_bits & 1024L) != 0))
-                            {
-                                _Allow = AppendValue(_Allow, value);
-                            }
-                            else
-                            {
-                                _bits |= 1024L;
-                                _Allow = new StringValues(value);
-                            }
-                            return;
-                        }
-                    }
-                    break;
-            
-                case 14:
-                    {
-                        if ((((pUL[0] & 18437701552104792031uL) == 3266321689424580419uL) && ((pUI[2] & 3755991007u) == 1196311884u) && ((pUS[6] & 57311u) == 18516u))) 
-                        {
-                            if (((_bits & 2048L) != 0))
-                            {
-                                _ContentLength = AppendValue(_ContentLength, value);
-                            }
-                            else
-                            {
-                                _bits |= 2048L;
-                                _ContentLength = new StringValues(value);
-                                _rawContentLength = null;
-                            }
-                            return;
-                        }
-                    }
-                    break;
-            
-                case 12:
-                    {
-                        if ((((pUL[0] & 18437701552104792031uL) == 3266321689424580419uL) && ((pUI[2] & 3755991007u) == 1162893652u))) 
-                        {
-                            if (((_bits & 4096L) != 0))
-                            {
-                                _ContentType = AppendValue(_ContentType, value);
-                            }
-                            else
-                            {
-                                _bits |= 4096L;
-                                _ContentType = new StringValues(value);
-                            }
-                            return;
-                        }
-                    }
-                    break;
-            
-                case 16:
-                    {
-                        if ((((pUL[0] & 18437701552104792031uL) == 3266321689424580419uL) && ((pUL[1] & 16131858542891098079uL) == 5138124782612729413uL))) 
-                        {
-                            if (((_bits & 8192L) != 0))
-                            {
-                                _ContentEncoding = AppendValue(_ContentEncoding, value);
-                            }
-                            else
-                            {
-                                _bits |= 8192L;
-                                _ContentEncoding = new StringValues(value);
-                            }
-                            return;
-                        }
-                    
-                        if ((((pUL[0] & 18437701552104792031uL) == 3266321689424580419uL) && ((pUL[1] & 16131858542891098079uL) == 4992030546487820620uL))) 
-                        {
-                            if (((_bits & 16384L) != 0))
-                            {
-                                _ContentLanguage = AppendValue(_ContentLanguage, value);
-                            }
-                            else
-                            {
-                                _bits |= 16384L;
-                                _ContentLanguage = new StringValues(value);
-                            }
-                            return;
-                        }
-                    
-                        if ((((pUL[0] & 18437701552104792031uL) == 3266321689424580419uL) && ((pUL[1] & 16131858542891098079uL) == 5642809484339531596uL))) 
-                        {
-                            if (((_bits & 32768L) != 0))
-                            {
-                                _ContentLocation = AppendValue(_ContentLocation, value);
-                            }
-                            else
-                            {
-                                _bits |= 32768L;
-                                _ContentLocation = new StringValues(value);
-                            }
-                            return;
-                        }
-                    
-                        if ((((pUL[0] & 16131858543427968991uL) == 5211884407196440407uL) && ((pUL[1] & 16131858542891098079uL) == 4995689643909598789uL))) 
-                        {
-                            if (((_bits & 536870912L) != 0))
-                            {
-                                _WWWAuthenticate = AppendValue(_WWWAuthenticate, value);
-                            }
-                            else
-                            {
-                                _bits |= 536870912L;
-                                _WWWAuthenticate = new StringValues(value);
-                            }
-                            return;
-                        }
-                    }
-                    break;
-            
-                case 11:
-                    {
-                        if ((((pUL[0] & 18437701552104792031uL) == 3266321689424580419uL) && ((pUS[4] & 57311u) == 17485u) && ((pUB[10] & 255u) == 53u))) 
-                        {
-                            if (((_bits & 65536L) != 0))
-                            {
-                                _ContentMD5 = AppendValue(_ContentMD5, value);
-                            }
-                            else
-                            {
-                                _bits |= 65536L;
-                                _ContentMD5 = new StringValues(value);
-                            }
-                            return;
-                        }
-                    
-                        if ((((pUL[0] & 16131893727263186911uL) == 5062377317797741906uL) && ((pUS[4] & 57311u) == 17748u) && ((pUB[10] & 223u) == 82u))) 
-                        {
-                            if (((_bits & 33554432L) != 0))
-                            {
-                                _RetryAfter = AppendValue(_RetryAfter, value);
-                            }
-                            else
-                            {
-                                _bits |= 33554432L;
-                                _RetryAfter = new StringValues(value);
-                            }
-                            return;
-                        }
-                    }
-                    break;
-            
-                case 8:
-                    {
-                        if ((((pUL[0] & 16131858542891098079uL) == 5642809484339531596uL))) 
-                        {
-                            if (((_bits & 8388608L) != 0))
-                            {
-                                _Location = AppendValue(_Location, value);
-                            }
-                            else
-                            {
-                                _bits |= 8388608L;
-                                _Location = new StringValues(value);
-                            }
-                            return;
-                        }
-                    }
-                    break;
-            
-                case 32:
-                    {
-                        if ((((pUL[0] & 16140865742145839071uL) == 4840616791602578241uL) && ((pUL[1] & 16140865742145839071uL) == 4696493889984679503uL) && ((pUL[2] & 16131858680330051551uL) == 4995128798724705356uL) && ((pUL[3] & 16131858542891098079uL) == 6002244186580862276uL))) 
-                        {
-                            if (((_bits & 1073741824L) != 0))
-                            {
-                                _AccessControlAllowCredentials = AppendValue(_AccessControlAllowCredentials, value);
-                            }
-                            else
-                            {
-                                _bits |= 1073741824L;
-                                _AccessControlAllowCredentials = new StringValues(value);
-                            }
-                            return;
-                        }
-                    }
-                    break;
-            
-                case 28:
-                    {
-                        if ((((pUL[0] & 16140865742145839071uL) == 4840616791602578241uL) && ((pUL[1] & 16140865742145839071uL) == 4696493889984679503uL) && ((pUL[2] & 16131858680330051551uL) == 4703244745433893964uL) && ((pUI[6] & 3755991007u) == 1397900612u))) 
-                        {
-                            if (((_bits & 2147483648L) != 0))
-                            {
-                                _AccessControlAllowHeaders = AppendValue(_AccessControlAllowHeaders, value);
-                            }
-                            else
-                            {
-                                _bits |= 2147483648L;
-                                _AccessControlAllowHeaders = new StringValues(value);
-                            }
-                            return;
-                        }
-                    
-                        if ((((pUL[0] & 16140865742145839071uL) == 4840616791602578241uL) && ((pUL[1] & 16140865742145839071uL) == 4696493889984679503uL) && ((pUL[2] & 16131858680330051551uL) == 6072344529712663628uL) && ((pUI[6] & 3755991007u) == 1396985672u))) 
-                        {
-                            if (((_bits & 4294967296L) != 0))
-                            {
-                                _AccessControlAllowMethods = AppendValue(_AccessControlAllowMethods, value);
-                            }
-                            else
-                            {
-                                _bits |= 4294967296L;
-                                _AccessControlAllowMethods = new StringValues(value);
-                            }
-                            return;
-                        }
-                    }
-                    break;
-            
-                case 27:
-                    {
-                        if ((((pUL[0] & 16140865742145839071uL) == 4840616791602578241uL) && ((pUL[1] & 16140865742145839071uL) == 4696493889984679503uL) && ((pUL[2] & 16131858680330051551uL) == 5283372369015950412uL) && ((pUS[12] & 57311u) == 18759u) && ((pUB[26] & 223u) == 78u))) 
-                        {
-                            if (((_bits & 8589934592L) != 0))
-                            {
-                                _AccessControlAllowOrigin = AppendValue(_AccessControlAllowOrigin, value);
-                            }
-                            else
-                            {
-                                _bits |= 8589934592L;
-                                _AccessControlAllowOrigin = new StringValues(value);
-                            }
-                            return;
-                        }
-                    }
-                    break;
-            
-                case 29:
-                    {
-                        if ((((pUL[0] & 16140865742145839071uL) == 4840616791602578241uL) && ((pUL[1] & 16140865742145839071uL) == 4984724266136391247uL) && ((pUL[2] & 16131893727263186911uL) == 4992289962713895000uL) && ((pUI[6] & 3755991007u) == 1380271169u) && ((pUB[28] & 223u) == 83u))) 
-                        {
-                            if (((_bits & 17179869184L) != 0))
-                            {
-                                _AccessControlExposeHeaders = AppendValue(_AccessControlExposeHeaders, value);
-                            }
-                            else
-                            {
-                                _bits |= 17179869184L;
-                                _AccessControlExposeHeaders = new StringValues(value);
-                            }
-                            return;
-                        }
-                    }
-                    break;
-            
-                case 22:
-                    {
-                        if ((((pUL[0] & 16140865742145839071uL) == 4840616791602578241uL) && ((pUL[1] & 16140865742145839071uL) == 5561185018439814735uL) && ((pUI[4] & 3758088159u) == 1093490753u) && ((pUS[10] & 57311u) == 17735u))) 
-                        {
-                            if (((_bits & 34359738368L) != 0))
-                            {
-                                _AccessControlMaxAge = AppendValue(_AccessControlMaxAge, value);
-                            }
-                            else
-                            {
-                                _bits |= 34359738368L;
-                                _AccessControlMaxAge = new StringValues(value);
-                            }
-                            return;
-                        }
-                    }
-                    break;
-            }}
+                        break;
+                }
+            }
             var key = System.Text.Encoding.ASCII.GetString(keyBytes, keyOffset, keyLength);
             StringValues existing;
             Unknown.TryGetValue(key, out existing);

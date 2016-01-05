@@ -66,7 +66,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
 
             var bytes = Encoding.ASCII.GetBytes(str);
 
-            fixed (byte* ptr = bytes)
+            fixed (byte* ptr = &bytes[0])
             {
                 return *(long*)ptr;
             }

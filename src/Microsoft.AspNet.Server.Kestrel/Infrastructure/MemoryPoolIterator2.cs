@@ -175,9 +175,9 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
             }
             else if (_block.End - _index >= sizeof(long))
             {
-                fixed (byte* ptr = _block.Array)
+                fixed (byte* ptr = &_block.Array[_index])
                 {
-                    return *(long*)(ptr + _index);
+                    return *(long*)(ptr);
                 }
             }
             else if (_block.Next == null)
@@ -195,15 +195,15 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
                 }
 
                 long blockLong;
-                fixed (byte* ptr = _block.Array)
+                fixed (byte* ptr = &_block.Array[_block.End - sizeof(long)])
                 {
-                    blockLong = *(long*)(ptr + _block.End - sizeof(long));
+                    blockLong = *(long*)(ptr);
                 }
 
                 long nextLong;
-                fixed (byte* ptr = _block.Next.Array)
+                fixed (byte* ptr = &_block.Next.Array[_block.Next.Start])
                 {
-                    nextLong = *(long*)(ptr + _block.Next.Start);
+                    nextLong = *(long*)(ptr );
                 }
 
                 return (blockLong >> (sizeof(long) - blockBytes) * 8) | (nextLong << (sizeof(long) - nextBytes) * 8);
@@ -770,9 +770,10 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
                         bytesLeftInBlockMinusSpan = bytesLeftInBlock - 3;
                     }
 
-                    fixed (byte* pOutput = block.Data.Array)
+                    fixed (byte* pOutput = &block.Data.Array[block.End])
                     {
-                        var output = pOutput + block.End;
+                        //this line is needed to allow output be an register var 
+                        var output = pOutput;
 
                         var copied = 0;
                         for (; input < inputEndMinusSpan && copied < bytesLeftInBlockMinusSpan; copied += 4)
