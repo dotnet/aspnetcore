@@ -32,7 +32,8 @@ namespace Microsoft.AspNet.Authentication.Google
 
             var payload = JObject.Parse(await response.Content.ReadAsStringAsync());
 
-            var context = new OAuthCreatingTicketContext(new ClaimsPrincipal(identity), properties, Context, Options, Backchannel, tokens, payload);
+            var ticket = new AuthenticationTicket(new ClaimsPrincipal(identity), properties, Options.AuthenticationScheme);
+            var context = new OAuthCreatingTicketContext(ticket, Context, Options, Backchannel, tokens, payload);
 
             var identifier = GoogleHelper.GetId(payload);
             if (!string.IsNullOrEmpty(identifier))
@@ -72,7 +73,7 @@ namespace Microsoft.AspNet.Authentication.Google
 
             await Options.Events.CreatingTicket(context);
 
-            return new AuthenticationTicket(context.Principal, context.Properties, context.Options.AuthenticationScheme);
+            return context.Ticket;
         }
 
         // TODO: Abstract this properties override pattern into the base class?

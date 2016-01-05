@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Authentication
             : base(context)
         {
             Options = options;
-            AuthenticationTicket = ticket;
+            Ticket = ticket;
             if (ticket != null)
             {
                 Principal = ticket.Principal;

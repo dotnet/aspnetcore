@@ -82,7 +82,7 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
                             new Claim(ClaimsIdentity.DefaultNameClaimType, "bob")
                         };
 
-                        context.AuthenticationTicket = new AuthenticationTicket(
+                        context.Ticket = new AuthenticationTicket(
                             new ClaimsPrincipal(new ClaimsIdentity(claims, context.Options.AuthenticationScheme)),
                             new AuthenticationProperties(), context.Options.AuthenticationScheme);
 
@@ -160,7 +160,7 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
                             new Claim(ClaimsIdentity.DefaultNameClaimType, "bob")
                         };
 
-                        context.AuthenticationTicket = new AuthenticationTicket(
+                        context.Ticket = new AuthenticationTicket(
                             new ClaimsPrincipal(new ClaimsIdentity(claims, context.Options.AuthenticationScheme)),
                             new AuthenticationProperties(), context.Options.AuthenticationScheme);
 
@@ -189,7 +189,7 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
                     {
                         // Retrieve the NameIdentifier claim from the identity
                         // returned by the custom security token validator.
-                        var identity = (ClaimsIdentity)context.AuthenticationTicket.Principal.Identity;
+                        var identity = (ClaimsIdentity)context.Ticket.Principal.Identity;
                         var identifier = identity.FindFirst(ClaimTypes.NameIdentifier);
 
                         Assert.Equal("Bob le Tout Puissant", identifier.Value);
@@ -236,7 +236,7 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
                             new Claim(ClaimsIdentity.DefaultNameClaimType, "bob")
                         };
 
-                        context.AuthenticationTicket = new AuthenticationTicket(
+                        context.Ticket = new AuthenticationTicket(
                             new ClaimsPrincipal(new ClaimsIdentity(claims, context.Options.AuthenticationScheme)),
                             new AuthenticationProperties(), context.Options.AuthenticationScheme);
 
@@ -268,7 +268,7 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
                             new Claim(ClaimsIdentity.DefaultNameClaimType, "bob")
                         };
 
-                        context.AuthenticationTicket = new AuthenticationTicket(
+                        context.Ticket = new AuthenticationTicket(
                             new ClaimsPrincipal(new ClaimsIdentity(claims, context.Options.AuthenticationScheme)),
                             new AuthenticationProperties(), context.Options.AuthenticationScheme);
 
@@ -299,7 +299,7 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
                             new Claim(ClaimsIdentity.DefaultNameClaimType, "bob")
                         };
 
-                        context.AuthenticationTicket = new AuthenticationTicket(
+                        context.Ticket = new AuthenticationTicket(
                             new ClaimsPrincipal(new ClaimsIdentity(claims, context.Options.AuthenticationScheme)),
                             new AuthenticationProperties(), context.Options.AuthenticationScheme);
 

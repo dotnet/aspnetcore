@@ -531,7 +531,7 @@ namespace Microsoft.AspNet.Authentication.Google
                     OnCreatingTicket = context =>
                     {
                         var refreshToken = context.RefreshToken;
-                        context.Principal.AddIdentity(new ClaimsIdentity(new Claim[] { new Claim("RefreshToken", refreshToken, ClaimValueTypes.String, "Google") }, "Google"));
+                        context.Ticket.Principal.AddIdentity(new ClaimsIdentity(new Claim[] { new Claim("RefreshToken", refreshToken, ClaimValueTypes.String, "Google") }, "Google"));
                         return Task.FromResult(0);
                     }
                 };
@@ -610,7 +610,7 @@ namespace Microsoft.AspNet.Authentication.Google
                 {
                     OnTicketReceived = context =>
                     {
-                        context.AuthenticationTicket.Properties.RedirectUri = null;
+                        context.Ticket.Properties.RedirectUri = null;
                         return Task.FromResult(0);
                     }
                 };

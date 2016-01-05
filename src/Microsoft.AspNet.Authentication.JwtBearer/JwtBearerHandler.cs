@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
                 await Options.Events.ReceivingToken(receivingTokenContext);
                 if (receivingTokenContext.HandledResponse)
                 {
-                    return AuthenticateResult.Success(receivingTokenContext.AuthenticationTicket);
+                    return AuthenticateResult.Success(receivingTokenContext.Ticket);
                 }
                 if (receivingTokenContext.Skipped)
                 {
@@ -77,7 +77,7 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
                 await Options.Events.ReceivedToken(receivedTokenContext);
                 if (receivedTokenContext.HandledResponse)
                 {
-                    return AuthenticateResult.Success(receivedTokenContext.AuthenticationTicket);
+                    return AuthenticateResult.Success(receivedTokenContext.Ticket);
                 }
                 if (receivedTokenContext.Skipped)
                 {
@@ -139,13 +139,13 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
                         var ticket = new AuthenticationTicket(principal, new AuthenticationProperties(), Options.AuthenticationScheme);
                         var validatedTokenContext = new ValidatedTokenContext(Context, Options)
                         {
-                            AuthenticationTicket = ticket
+                            Ticket = ticket
                         };
 
                         await Options.Events.ValidatedToken(validatedTokenContext);
                         if (validatedTokenContext.HandledResponse)
                         {
-                            return AuthenticateResult.Success(validatedTokenContext.AuthenticationTicket);
+                            return AuthenticateResult.Success(validatedTokenContext.Ticket);
                         }
                         if (validatedTokenContext.Skipped)
                         {
@@ -166,7 +166,7 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
                     await Options.Events.AuthenticationFailed(authenticationFailedContext);
                     if (authenticationFailedContext.HandledResponse)
                     {
-                        return AuthenticateResult.Success(authenticationFailedContext.AuthenticationTicket);
+                        return AuthenticateResult.Success(authenticationFailedContext.Ticket);
                     }
                     if (authenticationFailedContext.Skipped)
                     {
@@ -190,7 +190,7 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
                 await Options.Events.AuthenticationFailed(authenticationFailedContext);
                 if (authenticationFailedContext.HandledResponse)
                 {
-                    return AuthenticateResult.Success(authenticationFailedContext.AuthenticationTicket);
+                    return AuthenticateResult.Success(authenticationFailedContext.Ticket);
                 }
                 if (authenticationFailedContext.Skipped)
                 {

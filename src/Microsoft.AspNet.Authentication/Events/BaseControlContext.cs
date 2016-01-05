@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.Authentication
         /// <summary>
         /// Discontinue all processing for this request and return to the client.
         /// The caller is responsible for generating the full response.
-        /// Set the <see cref="AuthenticationTicket"/> to trigger SignIn.
+        /// Set the <see cref="Ticket"/> to trigger SignIn.
         /// </summary>
         public void HandleResponse()
         {
@@ -43,8 +43,8 @@ namespace Microsoft.AspNet.Authentication
         }
 
         /// <summary>
-        /// Gets or set the <see cref="AuthenticationTicket"/> to return if this event signals it handled the event.
+        /// Gets or set the <see cref="Ticket"/> to return if this event signals it handled the event.
         /// </summary>
-        public AuthenticationTicket AuthenticationTicket { get; set; }
+        public AuthenticationTicket Ticket { get; set; }
     }
 }
