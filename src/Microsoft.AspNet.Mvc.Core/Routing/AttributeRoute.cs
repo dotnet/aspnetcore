@@ -141,7 +141,7 @@ namespace Microsoft.AspNet.Mvc.Routing
                     RouteTemplate = TemplateParser.Parse(routeInfo.RouteTemplate),
                     TemplateMatcher = new TemplateMatcher(
                         routeInfo.ParsedTemplate,
-                        new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
+                        new RouteValueDictionary(StringComparer.OrdinalIgnoreCase)
                         {
                             { TreeRouter.RouteGroupKey, routeInfo.RouteGroup }
                         }),
