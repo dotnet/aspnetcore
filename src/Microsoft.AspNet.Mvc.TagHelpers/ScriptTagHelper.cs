@@ -9,11 +9,8 @@ using Microsoft.AspNet.Mvc.Razor.TagHelpers;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.AspNet.Mvc.TagHelpers.Internal;
-using Microsoft.AspNet.Mvc.TagHelpers.Logging;
-using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.AspNet.Razor.TagHelpers;
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNet.Mvc.TagHelpers
 {
@@ -40,32 +37,36 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         private const string FallbackTestExpressionAttributeName = "asp-fallback-test";
         private const string SrcAttributeName = "src";
         private const string AppendVersionAttributeName = "asp-append-version";
-
+        private static readonly Func<Mode, Mode, int> Compare = (a, b) => a - b;
         private FileVersionProvider _fileVersionProvider;
 
         private static readonly ModeAttributes<Mode>[] ModeDetails = new[] {
             // Regular src with file version alone
-            ModeAttributes.Create(Mode.AppendVersion, new[] { AppendVersionAttributeName }),
+            new ModeAttributes<Mode>(Mode.AppendVersion, new[] { AppendVersionAttributeName }),
             // Globbed src (include only)
-            ModeAttributes.Create(Mode.GlobbedSrc, new [] { SrcIncludeAttributeName }),
+            new ModeAttributes<Mode>(Mode.GlobbedSrc, new [] { SrcIncludeAttributeName }),
             // Globbed src (include & exclude)
-            ModeAttributes.Create(Mode.GlobbedSrc, new [] { SrcIncludeAttributeName, SrcExcludeAttributeName }),
+            new ModeAttributes<Mode>(Mode.GlobbedSrc, new [] { SrcIncludeAttributeName, SrcExcludeAttributeName }),
             // Fallback with static src
-            ModeAttributes.Create(
-                Mode.Fallback, new[]
+            new ModeAttributes<Mode>(Mode.Fallback,
+                new[]
                 {
                     FallbackSrcAttributeName,
                     FallbackTestExpressionAttributeName
                 }),
             // Fallback with globbed src (include only)
-            ModeAttributes.Create(
-                Mode.Fallback, new[] {
+            new ModeAttributes<Mode>(
+                Mode.Fallback,
+                new[]
+                {
                     FallbackSrcIncludeAttributeName,
                     FallbackTestExpressionAttributeName
                 }),
             // Fallback with globbed src (include & exclude)
-            ModeAttributes.Create(
-                Mode.Fallback, new[] {
+            new ModeAttributes<Mode>(
+                Mode.Fallback,
+                new[]
+                {
                     FallbackSrcIncludeAttributeName,
                     FallbackSrcExcludeAttributeName,
                     FallbackTestExpressionAttributeName
@@ -75,14 +76,12 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         /// <summary>
         /// Creates a new <see cref="ScriptTagHelper"/>.
         /// </summary>
-        /// <param name="logger">The <see cref="ILogger{ScriptTagHelper}"/>.</param>
         /// <param name="hostingEnvironment">The <see cref="IHostingEnvironment"/>.</param>
         /// <param name="cache">The <see cref="IMemoryCache"/>.</param>
         /// <param name="htmlEncoder">The <see cref="HtmlEncoder"/>.</param>
         /// <param name="javaScriptEncoder">The <see cref="JavaScriptEncoder"/>.</param>
         /// <param name="urlHelperFactory">The <see cref="IUrlHelperFactory"/>.</param>
         public ScriptTagHelper(
-            ILogger<ScriptTagHelper> logger,
             IHostingEnvironment hostingEnvironment,
             IMemoryCache cache,
             HtmlEncoder htmlEncoder,
@@ -90,7 +89,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             IUrlHelperFactory urlHelperFactory)
             : base(urlHelperFactory, htmlEncoder)
         {
-            Logger = logger;
             HostingEnvironment = hostingEnvironment;
             Cache = cache;
             JavaScriptEncoder = javaScriptEncoder;
@@ -167,8 +165,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         [HtmlAttributeName(FallbackTestExpressionAttributeName)]
         public string FallbackTestExpression { get; set; }
 
-        protected ILogger<ScriptTagHelper> Logger { get; }
-
         protected IHostingEnvironment HostingEnvironment { get; }
 
         protected IMemoryCache Cache { get; }
@@ -205,10 +201,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             // not function properly.
             Src = output.Attributes[SrcAttributeName]?.Value as string;
 
-            var modeResult = AttributeMatcher.DetermineMode(context, ModeDetails);
-            Logger.TagHelperModeMatchResult(modeResult, context.UniqueId, ViewContext.View.Path, this);
-
-            if (modeResult.FullMatches.Count == 0)
+            Mode mode;
+            if (!AttributeMatcher.TryDetermineMode(context, ModeDetails, Compare, out mode))
             {
                 // No attributes matched so we have nothing to do
                 return;
@@ -228,17 +222,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             }
 
             var builder = new DefaultTagHelperContent();
-
-            // Get the highest matched mode
-            var mode = modeResult.FullMatches[0].Mode;
-            for (var i = 1; i < modeResult.FullMatches.Count; i++)
-            {
-                var currentMode = modeResult.FullMatches[i].Mode;
-                if (mode < currentMode)
-                {
-                    mode = currentMode;
-                }
-            }
 
             if (mode == Mode.GlobbedSrc || mode == Mode.Fallback && !string.IsNullOrEmpty(SrcInclude))
             {

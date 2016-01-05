@@ -3,7 +3,6 @@
 
 using System;
 using System.Diagnostics;
-using System.Globalization;
 using System.Linq;
 using System.Text.Encodings.Web;
 using Microsoft.AspNet.Hosting;
@@ -11,10 +10,8 @@ using Microsoft.AspNet.Mvc.Razor.TagHelpers;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.AspNet.Mvc.TagHelpers.Internal;
-using Microsoft.AspNet.Mvc.TagHelpers.Logging;
 using Microsoft.AspNet.Razor.TagHelpers;
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNet.Mvc.TagHelpers
 {
@@ -35,6 +32,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
     [HtmlTargetElement("link", Attributes = AppendVersionAttributeName, TagStructure = TagStructure.WithoutEndTag)]
     public class LinkTagHelper : UrlResolutionTagHelper
     {
+
         private static readonly string FallbackJavaScriptResourceName =
             typeof(LinkTagHelper).Namespace + ".compiler.resources.LinkTagHelper_FallbackJavaScript.js";
 
@@ -48,19 +46,21 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         private const string FallbackTestValueAttributeName = "asp-fallback-test-value";
         private const string AppendVersionAttributeName = "asp-append-version";
         private const string HrefAttributeName = "href";
+        private static readonly Func<Mode, Mode, int> Compare = (a, b) => a - b;
 
         private FileVersionProvider _fileVersionProvider;
 
         private static readonly ModeAttributes<Mode>[] ModeDetails = new[] {
             // Regular src with file version alone
-            ModeAttributes.Create(Mode.AppendVersion, new[] { AppendVersionAttributeName }),
+            new ModeAttributes<Mode>(Mode.AppendVersion, new[] { AppendVersionAttributeName }),
             // Globbed Href (include only) no static href
-            ModeAttributes.Create(Mode.GlobbedHref, new [] { HrefIncludeAttributeName }),
+            new ModeAttributes<Mode>(Mode.GlobbedHref, new [] { HrefIncludeAttributeName }),
             // Globbed Href (include & exclude), no static href
-            ModeAttributes.Create(Mode.GlobbedHref, new [] { HrefIncludeAttributeName, HrefExcludeAttributeName }),
+            new ModeAttributes<Mode>(Mode.GlobbedHref, new [] { HrefIncludeAttributeName, HrefExcludeAttributeName }),
             // Fallback with static href
-            ModeAttributes.Create(
-                Mode.Fallback, new[]
+            new ModeAttributes<Mode>(
+                Mode.Fallback,
+                new[]
                 {
                     FallbackHrefAttributeName,
                     FallbackTestClassAttributeName,
@@ -68,16 +68,20 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     FallbackTestValueAttributeName
                 }),
             // Fallback with globbed href (include only)
-            ModeAttributes.Create(
-                Mode.Fallback, new[] {
+            new ModeAttributes<Mode>(
+                Mode.Fallback,
+                new[]
+                {
                     FallbackHrefIncludeAttributeName,
                     FallbackTestClassAttributeName,
                     FallbackTestPropertyAttributeName,
                     FallbackTestValueAttributeName
                 }),
             // Fallback with globbed href (include & exclude)
-            ModeAttributes.Create(
-                Mode.Fallback, new[] {
+            new ModeAttributes<Mode>(
+                Mode.Fallback,
+                new[]
+                {
                     FallbackHrefIncludeAttributeName,
                     FallbackHrefExcludeAttributeName,
                     FallbackTestClassAttributeName,
@@ -89,14 +93,12 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         /// <summary>
         /// Creates a new <see cref="LinkTagHelper"/>.
         /// </summary>
-        /// <param name="logger">The <see cref="ILogger{ScriptTagHelper}"/>.</param>
         /// <param name="hostingEnvironment">The <see cref="IHostingEnvironment"/>.</param>
         /// <param name="cache">The <see cref="IMemoryCache"/>.</param>
         /// <param name="htmlEncoder">The <see cref="HtmlEncoder"/>.</param>
         /// <param name="javaScriptEncoder">The <see cref="JavaScriptEncoder"/>.</param>
         /// <param name="urlHelperFactory">The <see cref="IUrlHelperFactory"/>.</param>
         public LinkTagHelper(
-            ILogger<LinkTagHelper> logger,
             IHostingEnvironment hostingEnvironment,
             IMemoryCache cache,
             HtmlEncoder htmlEncoder,
@@ -104,7 +106,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             IUrlHelperFactory urlHelperFactory)
             : base(urlHelperFactory, htmlEncoder)
         {
-            Logger = logger;
             HostingEnvironment = hostingEnvironment;
             Cache = cache;
             JavaScriptEncoder = javaScriptEncoder;
@@ -199,8 +200,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         [HtmlAttributeName(FallbackTestValueAttributeName)]
         public string FallbackTestValue { get; set; }
 
-        protected ILogger<LinkTagHelper> Logger { get; }
-
         protected IHostingEnvironment HostingEnvironment { get; }
 
         protected IMemoryCache Cache { get; }
@@ -237,10 +236,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             // not function properly.
             Href = output.Attributes[HrefAttributeName]?.Value as string;
 
-            var modeResult = AttributeMatcher.DetermineMode(context, ModeDetails);
-            Logger.TagHelperModeMatchResult(modeResult, context.UniqueId, ViewContext.View.Path, this);
-
-            if (modeResult.FullMatches.Count == 0)
+            Mode mode;
+            if (!AttributeMatcher.TryDetermineMode(context, ModeDetails, Compare, out mode))
             {
                 // No attributes matched so we have nothing to do
                 return;
@@ -260,18 +257,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             }
 
             var builder = new DefaultTagHelperContent();
-
-            // Get the highest matched mode
-            var mode = modeResult.FullMatches[0].Mode;
-            for (var i = 1; i < modeResult.FullMatches.Count; i++)
-            {
-                var currentMode = modeResult.FullMatches[i].Mode;
-                if (mode < currentMode)
-                {
-                    mode = currentMode;
-                }
-            }
-
             if (mode == Mode.GlobbedHref || mode == Mode.Fallback && !string.IsNullOrEmpty(HrefInclude))
             {
                 BuildGlobbedLinkTags(attributes, builder);

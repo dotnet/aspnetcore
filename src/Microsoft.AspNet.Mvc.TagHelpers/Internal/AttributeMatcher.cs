@@ -13,16 +13,20 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
     public static class AttributeMatcher
     {
         /// <summary>
-        /// Determines the modes a <see cref="ITagHelper" /> can run in based on which modes have all their required
-        /// attributes present, non null, non empty, and non whitepsace.
+        /// Determines the most effective mode a <see cref="ITagHelper" /> can run in based on which modes have
+        /// all their required attributes present.
         /// </summary>
         /// <typeparam name="TMode">The type representing the <see cref="ITagHelper" />'s modes.</typeparam>
         /// <param name="context">The <see cref="TagHelperContext"/>.</param>
         /// <param name="modeInfos">The modes and their required attributes.</param>
-        /// <returns>The <see cref="ModeMatchResult{TMode}"/>.</returns>
-        public static ModeMatchResult<TMode> DetermineMode<TMode>(
+        /// <param name="compare">A comparer delegate.</param>
+        /// <param name="result">The resulting most effective mode.</param>
+        /// <returns><c>true</c> if a mode was determined, otherwise <c>false</c>.</returns>
+        public static bool TryDetermineMode<TMode>(
             TagHelperContext context,
-            IReadOnlyList<ModeAttributes<TMode>> modeInfos)
+            IReadOnlyList<ModeAttributes<TMode>> modeInfos,
+            Func<TMode, TMode, int> compare,
+            out TMode result)
         {
             if (context == null)
             {
@@ -34,100 +38,57 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
                 throw new ArgumentNullException(nameof(modeInfos));
             }
 
-            // true == full match, false == partial match
-            var matchedAttributes = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
-            var result = new ModeMatchResult<TMode>();
+            if (compare == null)
+            {
+                throw new ArgumentNullException(nameof(compare));
+            }
+
+            var foundResult = false;
+            result = default(TMode);
 
             // Perf: Avoid allocating enumerator
             for (var i = 0; i < modeInfos.Count; i++)
             {
                 var modeInfo = modeInfos[i];
-                var modeAttributes = GetPresentMissingAttributes(context, modeInfo.Attributes);
-
-                if (modeAttributes.Present.Count > 0)
+                if (!HasMissingAttributes(context, modeInfo.Attributes) &&
+                    compare(result, modeInfo.Mode) <= 0)
                 {
-                    if (modeAttributes.Missing.Count == 0)
-                    {
-                        // Perf: Avoid allocating enumerator
-                        // A complete match, mark the attribute as fully matched
-                        for (var j = 0; j < modeAttributes.Present.Count; j++)
-                        {
-                            matchedAttributes[modeAttributes.Present[j]] = true;
-                        }
-
-                        result.FullMatches.Add(ModeMatchAttributes.Create(modeInfo.Mode, modeInfo.Attributes));
-                    }
-                    else
-                    {
-                        // Perf: Avoid allocating enumerator
-                        // A partial match, mark the attribute as partially matched if not already fully matched
-                        for (var j = 0; j < modeAttributes.Present.Count; j++)
-                        {
-                            var attribute = modeAttributes.Present[j];
-                            bool attributeMatch;
-                            if (!matchedAttributes.TryGetValue(attribute, out attributeMatch))
-                            {
-                                matchedAttributes[attribute] = false;
-                            }
-                        }
-
-                        result.PartialMatches.Add(ModeMatchAttributes.Create(
-                            modeInfo.Mode, modeAttributes.Present, modeAttributes.Missing));
-                    }
+                    foundResult = true;
+                    result = modeInfo.Mode;
                 }
             }
 
-            // Build the list of partially matched attributes (those with partial matches but no full matches)
-            foreach (var attribute in matchedAttributes.Keys)
-            {
-                if (!matchedAttributes[attribute])
-                {
-                    result.PartiallyMatchedAttributes.Add(attribute);
-                }
-            }
-
-            return result;
+            return foundResult;
         }
 
-        private static PresentMissingAttributes GetPresentMissingAttributes(
-            TagHelperContext context,
-            string[] requiredAttributes)
+        private static bool HasMissingAttributes(TagHelperContext context, string[] requiredAttributes)
         {
-            // Check for all attribute values
-            var presentAttributes = new List<string>();
-            var missingAttributes = new List<string>();
+            if (context.AllAttributes.Count < requiredAttributes.Length)
+            {
+                // If there are fewer attributes present than required, one or more of them must be missing.
+                return true;
+            }
 
+            // Check for all attribute values
             // Perf: Avoid allocating enumerator
             for (var i = 0; i < requiredAttributes.Length; i++)
             {
-                var requiredAttribute = requiredAttributes[i];
                 IReadOnlyTagHelperAttribute attribute;
-                if (!context.AllAttributes.TryGetAttribute(requiredAttribute, out attribute))
+                if (!context.AllAttributes.TryGetAttribute(requiredAttributes[i], out attribute))
                 {
                     // Missing attribute.
-                    missingAttributes.Add(requiredAttribute);
-                    continue;
+                    return true;
                 }
 
                 var valueAsString = attribute.Value as string;
                 if (valueAsString != null && string.IsNullOrEmpty(valueAsString))
                 {
                     // Treat attributes with empty values as missing.
-                    missingAttributes.Add(requiredAttribute);
-                    continue;
+                    return true;
                 }
-
-                presentAttributes.Add(requiredAttribute);
             }
 
-            return new PresentMissingAttributes { Present = presentAttributes, Missing = missingAttributes };
-        }
-
-        private class PresentMissingAttributes
-        {
-            public List<string> Present { get; set; }
-
-            public List<string> Missing { get; set; }
+            return false;
         }
     }
 }

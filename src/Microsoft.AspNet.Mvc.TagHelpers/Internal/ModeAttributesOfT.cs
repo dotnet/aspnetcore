@@ -10,13 +10,24 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
     public class ModeAttributes<TMode>
     {
         /// <summary>
-        /// The <see cref="AspNet.Razor.TagHelpers.ITagHelper"/>'s mode.
+        /// Initializes a new instance of <see cref="ModeAttributes{TMode}"/>.
         /// </summary>
-        public TMode Mode { get; set; }
+        /// <param name="mode">The <see cref="AspNet.Razor.TagHelpers.ITagHelper"/>'s mode.</param>
+        /// <param name="attributes">The names of attributes required for this mode.</param>
+        public ModeAttributes(TMode mode, string[] attributes)
+        {
+            Mode = mode;
+            Attributes = attributes;
+        }
 
         /// <summary>
-        /// The names of attributes required for this mode.
+        /// Gets the <see cref="AspNet.Razor.TagHelpers.ITagHelper"/>'s mode.
         /// </summary>
-        public string[] Attributes { get; set; }
+        public TMode Mode { get; }
+
+        /// <summary>
+        /// Gets the names of attributes required for this mode.
+        /// </summary>
+        public string[] Attributes { get; }
     }
 }

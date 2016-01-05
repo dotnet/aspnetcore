@@ -13,19 +13,19 @@ using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.Abstractions;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
+using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.AspNet.Mvc.TagHelpers.Internal;
 using Microsoft.AspNet.Mvc.ViewEngines;
 using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.AspNet.Razor.TagHelpers;
 using Microsoft.AspNet.Routing;
-using Microsoft.Extensions.PlatformAbstractions;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.PlatformAbstractions;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Extensions.WebEncoders.Testing;
 using Moq;
 using Xunit;
-using Microsoft.AspNet.Mvc.Routing;
 
 namespace Microsoft.AspNet.Mvc.TagHelpers
 {
@@ -55,7 +55,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     { "src", srcOutput },
                 };
             var output = MakeTagHelperOutput("script", outputAttributes);
-            var logger = new Mock<ILogger<ScriptTagHelper>>();
             var hostingEnvironment = MakeHostingEnvironment();
             var viewContext = MakeViewContext();
             var urlHelper = new Mock<IUrlHelper>();
@@ -71,7 +70,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 .Returns(urlHelper.Object);
 
             var helper = new ScriptTagHelper(
-                logger.Object,
                 hostingEnvironment,
                 MakeCache(),
                 new HtmlTestEncoder(),
@@ -119,7 +117,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var hostingEnvironment = MakeHostingEnvironment();
 
             var helper = new ScriptTagHelper(
-                CreateLogger(),
                 hostingEnvironment,
                 MakeCache(),
                 new HtmlTestEncoder(),
@@ -273,7 +270,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             // Arrange
             var context = MakeTagHelperContext(attributes);
             var output = MakeTagHelperOutput("script");
-            var logger = CreateLogger();
             var hostingEnvironment = MakeHostingEnvironment();
             var viewContext = MakeViewContext();
             var globbingUrlBuilder = new Mock<GlobbingUrlBuilder>();
@@ -281,7 +277,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 .Returns(new[] { "/common.js" });
 
             var helper = new ScriptTagHelper(
-                CreateLogger(),
                 hostingEnvironment,
                 MakeCache(),
                 new HtmlTestEncoder(),
@@ -300,7 +295,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             Assert.NotNull(output.TagName);
             Assert.False(output.IsContentModified);
             Assert.True(output.PostElement.IsModified);
-            Assert.Empty(logger.Logged);
         }
 
         public static TheoryData RunsWhenRequiredAttributesArePresent_NoSrc_Data
@@ -370,7 +364,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             // Arrange
             var context = MakeTagHelperContext(attributes);
             var output = MakeTagHelperOutput("script");
-            var logger = CreateLogger();
             var hostingEnvironment = MakeHostingEnvironment();
             var viewContext = MakeViewContext();
             var globbingUrlBuilder = new Mock<GlobbingUrlBuilder>();
@@ -378,7 +371,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 .Returns(new[] { "/common.js" });
 
             var helper = new ScriptTagHelper(
-                CreateLogger(),
                 hostingEnvironment,
                 MakeCache(),
                 new HtmlTestEncoder(),
@@ -397,7 +389,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             Assert.Null(output.TagName);
             Assert.True(output.IsContentModified);
             Assert.True(output.PostElement.IsModified);
-            Assert.Empty(logger.Logged);
         }
 
         public static TheoryData DoesNotRunWhenARequiredAttributeIsMissing_Data
@@ -474,7 +465,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var viewContext = MakeViewContext();
 
             var helper = new ScriptTagHelper(
-                CreateLogger(),
                 hostingEnvironment,
                 MakeCache(),
                 new HtmlTestEncoder(),
@@ -495,54 +485,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             Assert.True(output.PostElement.IsEmpty);
         }
 
-        [Theory]
-        [MemberData(nameof(DoesNotRunWhenARequiredAttributeIsMissing_Data))]
-        public async Task LogsWhenARequiredAttributeIsMissing(
-            TagHelperAttributeList attributes,
-            Action<ScriptTagHelper> setProperties)
-        {
-            // Arrange
-            var tagHelperContext = MakeTagHelperContext(attributes);
-            var output = MakeTagHelperOutput("script");
-            var logger = CreateLogger();
-            var hostingEnvironment = MakeHostingEnvironment();
-            var viewContext = MakeViewContext();
-
-            var helper = new ScriptTagHelper(
-                logger,
-                hostingEnvironment,
-                MakeCache(),
-                new HtmlTestEncoder(),
-                new JavaScriptTestEncoder(),
-                MakeUrlHelperFactory())
-            {
-                ViewContext = viewContext,
-            };
-            setProperties(helper);
-
-            // Act
-            await helper.ProcessAsync(tagHelperContext, output);
-
-            // Assert
-            Assert.Equal("script", output.TagName);
-            Assert.False(output.IsContentModified);
-            Assert.Empty(output.Attributes);
-            Assert.True(output.PostElement.IsEmpty);
-
-            Assert.Equal(2, logger.Logged.Count);
-
-            Assert.Equal(LogLevel.Warning, logger.Logged[0].LogLevel);
-            Assert.IsAssignableFrom<ILogValues>(logger.Logged[0].State);
-
-            var loggerData0 = (ILogValues)logger.Logged[0].State;
-
-            Assert.Equal(LogLevel.Debug, logger.Logged[1].LogLevel);
-            Assert.IsAssignableFrom<ILogValues>(logger.Logged[1].State);
-            Assert.StartsWith("Skipping processing for tag helper 'Microsoft.AspNet.Mvc.TagHelpers.ScriptTagHelper'" +
-                " with id",
-                ((ILogValues)logger.Logged[1].State).ToString());
-        }
-
         [Fact]
         public async Task DoesNotRunWhenAllRequiredAttributesAreMissing()
         {
@@ -550,10 +492,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var tagHelperContext = MakeTagHelperContext();
             var viewContext = MakeViewContext();
             var output = MakeTagHelperOutput("script");
-            var logger = CreateLogger();
 
             var helper = new ScriptTagHelper(
-                CreateLogger(),
                 MakeHostingEnvironment(),
                 MakeCache(),
                 new HtmlTestEncoder(),
@@ -571,41 +511,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             Assert.False(output.IsContentModified);
             Assert.Empty(output.Attributes);
             Assert.True(output.PostElement.IsEmpty);
-        }
-
-        [Fact]
-        public async Task LogsWhenAllRequiredAttributesAreMissing()
-        {
-            // Arrange
-            var tagHelperContext = MakeTagHelperContext();
-            var viewContext = MakeViewContext();
-            var output = MakeTagHelperOutput("script");
-            var logger = CreateLogger();
-
-            var helper = new ScriptTagHelper(
-                logger,
-                MakeHostingEnvironment(),
-                MakeCache(),
-                new HtmlTestEncoder(),
-                new JavaScriptTestEncoder(),
-                MakeUrlHelperFactory())
-            {
-                ViewContext = viewContext,
-            };
-
-            // Act
-            await helper.ProcessAsync(tagHelperContext, output);
-
-            // Assert
-            Assert.Equal("script", output.TagName);
-            Assert.False(output.IsContentModified);
-
-            Assert.Single(logger.Logged);
-
-            Assert.Equal(LogLevel.Debug, logger.Logged[0].LogLevel);
-            Assert.IsAssignableFrom<ILogValues>(logger.Logged[0].State);
-            Assert.StartsWith("Skipping processing for tag helper 'Microsoft.AspNet.Mvc.TagHelpers.ScriptTagHelper'",
-                ((ILogValues)logger.Logged[0].State).ToString());
         }
 
         [Fact]
@@ -631,11 +536,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     ["data-more"] = "else",
                 });
 
-            var logger = CreateLogger();
             var hostingEnvironment = MakeHostingEnvironment();
 
             var helper = new ScriptTagHelper(
-                logger,
                 hostingEnvironment,
                 MakeCache(),
                 new HtmlTestEncoder(),
@@ -655,7 +558,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             Assert.Equal("data-extra", output.Attributes[0].Name);
             Assert.Equal("src", output.Attributes[1].Name);
             Assert.Equal("data-more", output.Attributes[2].Name);
-            Assert.Empty(logger.Logged);
         }
 
         [Fact]
@@ -669,7 +571,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     ["asp-src-include"] = "**/*.js"
                 });
             var output = MakeTagHelperOutput("script", attributes: new TagHelperAttributeList());
-            var logger = new Mock<ILogger<ScriptTagHelper>>();
             var hostingEnvironment = MakeHostingEnvironment();
             var viewContext = MakeViewContext();
             var globbingUrlBuilder = new Mock<GlobbingUrlBuilder>();
@@ -677,7 +578,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 .Returns(new[] { "/common.js" });
 
             var helper = new ScriptTagHelper(
-                logger.Object,
                 hostingEnvironment,
                 MakeCache(),
                 new HtmlTestEncoder(),
@@ -710,7 +610,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     ["asp-src-include"] = "**/*.js"
                 });
             var output = MakeTagHelperOutput("script", attributes: new TagHelperAttributeList());
-            var logger = new Mock<ILogger<ScriptTagHelper>>();
             var hostingEnvironment = MakeHostingEnvironment();
             var viewContext = MakeViewContext();
             var globbingUrlBuilder = new Mock<GlobbingUrlBuilder>();
@@ -718,7 +617,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 .Returns(new[] { "/common.js" });
 
             var helper = new ScriptTagHelper(
-                logger.Object,
                 hostingEnvironment,
                 MakeCache(),
                 new HtmlTestEncoder(),
@@ -752,12 +650,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 });
             var output = MakeTagHelperOutput("script", attributes: new TagHelperAttributeList());
 
-            var logger = new Mock<ILogger<ScriptTagHelper>>();
             var hostingEnvironment = MakeHostingEnvironment();
             var viewContext = MakeViewContext();
 
             var helper = new ScriptTagHelper(
-                logger.Object,
                 MakeHostingEnvironment(),
                 MakeCache(),
                 new HtmlTestEncoder(),
@@ -788,13 +684,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     ["asp-append-version"] = "true"
                 });
             var output = MakeTagHelperOutput("script", attributes: new TagHelperAttributeList());
-
-            var logger = new Mock<ILogger<ScriptTagHelper>>();
             var hostingEnvironment = MakeHostingEnvironment();
             var viewContext = MakeViewContext("/bar");
 
             var helper = new ScriptTagHelper(
-                logger.Object,
                 MakeHostingEnvironment(),
                 MakeCache(),
                 new HtmlTestEncoder(),
@@ -827,13 +720,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     ["asp-append-version"] = "true"
                 });
             var output = MakeTagHelperOutput("script", attributes: new TagHelperAttributeList());
-
-            var logger = new Mock<ILogger<ScriptTagHelper>>();
             var hostingEnvironment = MakeHostingEnvironment();
             var viewContext = MakeViewContext();
 
             var helper = new ScriptTagHelper(
-                logger.Object,
                 MakeHostingEnvironment(),
                 MakeCache(),
                 new HtmlTestEncoder(),
@@ -870,7 +760,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                     ["asp-append-version"] = "true"
                 });
             var output = MakeTagHelperOutput("script", attributes: new TagHelperAttributeList());
-            var logger = new Mock<ILogger<ScriptTagHelper>>();
             var hostingEnvironment = MakeHostingEnvironment();
             var viewContext = MakeViewContext();
             var globbingUrlBuilder = new Mock<GlobbingUrlBuilder>();
@@ -878,7 +767,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 .Returns(new[] { "/common.js" });
 
             var helper = new ScriptTagHelper(
-                logger.Object,
                 MakeHostingEnvironment(),
                 MakeCache(),
                 new HtmlTestEncoder(),
@@ -943,11 +831,6 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 tagName,
                 attributes,
                 getChildContentAsync: (_) => Task.FromResult<TagHelperContent>(new DefaultTagHelperContent()));
-        }
-
-        private TagHelperLogger<ScriptTagHelper> CreateLogger()
-        {
-            return new TagHelperLogger<ScriptTagHelper>();
         }
 
         private static IHostingEnvironment MakeHostingEnvironment()
