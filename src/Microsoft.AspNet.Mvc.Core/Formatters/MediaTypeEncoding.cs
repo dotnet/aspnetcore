@@ -69,8 +69,13 @@ namespace Microsoft.AspNet.Mvc.Formatters
         public static string ReplaceEncoding(StringSegment mediaType, Encoding encoding)
         {
             var parsedMediaType = MediaTypeHeaderValue.Parse(mediaType.Value);
-            parsedMediaType.Encoding = encoding;
 
+            if (string.Equals(parsedMediaType.Encoding?.WebName, encoding?.WebName, StringComparison.OrdinalIgnoreCase))
+            {
+                return mediaType.Value;
+            }
+
+            parsedMediaType.Encoding = encoding;
             return parsedMediaType.ToString();
         }
 

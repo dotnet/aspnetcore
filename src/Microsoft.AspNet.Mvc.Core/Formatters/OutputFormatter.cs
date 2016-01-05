@@ -18,6 +18,8 @@ namespace Microsoft.AspNet.Mvc.Formatters
     /// </summary>
     public abstract class OutputFormatter : IOutputFormatter, IApiResponseFormatMetadataProvider
     {
+        private IDictionary<string, string> _outputMediaTypeCache;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="OutputFormatter"/> class.
         /// </summary>
@@ -39,6 +41,28 @@ namespace Microsoft.AspNet.Mvc.Formatters
         /// this <see cref="OutputFormatter"/>.
         /// </summary>
         public MediaTypeCollection SupportedMediaTypes { get; }
+
+        private IDictionary<string, string> OutputMediaTypeCache
+        {
+            get
+            {
+                if (_outputMediaTypeCache == null)
+                {
+                    var cache = new Dictionary<string, string>();
+                    foreach (var mediaType in SupportedMediaTypes)
+                    {
+                        cache.Add(mediaType, MediaTypeEncoding.ReplaceEncoding(mediaType, Encoding.UTF8));
+                    }
+
+                    // Safe race condition, worst case scenario we initialize the field multiple times with dictionaries containing
+                    // the same values.
+                    _outputMediaTypeCache = cache;
+                }
+
+                return _outputMediaTypeCache;
+            }
+        }
+
 
         /// <summary>
         /// Returns a value indicating whether or not the given type can be written by this serializer.
@@ -244,31 +268,15 @@ namespace Microsoft.AspNet.Mvc.Formatters
         /// <returns>A task which can write the response body.</returns>
         public abstract Task WriteResponseBodyAsync(OutputFormatterWriteContext context);
 
-        /// <summary>
-        /// Adds or replaces the charset parameter in a given <paramref name="mediaType"/> with the
-        /// given <paramref name="encoding"/>.
-        /// </summary>
-        /// <param name="mediaType">The <see cref="StringSegment"/> with the media type.</param>
-        /// <param name="encoding">
-        /// The <see cref="Encoding"/> to add or replace in the <paramref name="mediaType"/>.
-        /// </param>
-        /// <returns>The mediaType with the given encoding.</returns>
-        protected string GetMediaTypeWithCharset(string mediaType, Encoding encoding)
+        private string GetMediaTypeWithCharset(string mediaType, Encoding encoding)
         {
-            var mediaTypeEncoding = MediaTypeEncoding.GetEncoding(mediaType);
-            if (mediaTypeEncoding == encoding)
+            if (string.Equals(encoding.WebName, Encoding.UTF8.WebName, StringComparison.OrdinalIgnoreCase) &&
+                OutputMediaTypeCache.ContainsKey(mediaType))
             {
-                return mediaType;
+                return OutputMediaTypeCache[mediaType];
             }
-            else if (mediaTypeEncoding == null)
-            {
-                return CreateMediaTypeWithEncoding(mediaType, encoding);
-            }
-            else
-            {
-                // This can happen if the user has overriden SelectCharacterEncoding
-                return MediaTypeEncoding.ReplaceEncoding(mediaType, encoding);
-            }
+
+            return MediaTypeEncoding.ReplaceEncoding(mediaType, encoding);
         }
 
         private Encoding MatchAcceptCharacterEncoding(IList<StringWithQualityHeaderValue> acceptCharsetHeaders)
@@ -353,16 +361,6 @@ namespace Microsoft.AspNet.Mvc.Formatters
             // We want a descending sort, but BinarySearch does ascending
             sorted.Reverse();
             return sorted;
-        }
-
-        private static string CreateMediaTypeWithEncoding(string mediaType, Encoding encoding)
-        {
-            return CreateMediaTypeWithEncoding(new StringSegment(mediaType), encoding);
-        }
-
-        private static string CreateMediaTypeWithEncoding(StringSegment mediaType, Encoding encoding)
-        {
-            return $"{mediaType.Value}; charset={encoding.WebName}";
         }
     }
 }

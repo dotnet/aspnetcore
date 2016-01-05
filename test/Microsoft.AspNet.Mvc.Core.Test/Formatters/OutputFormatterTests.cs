@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Internal;
+using Microsoft.AspNet.Mvc.TestCommon;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 using Moq;
@@ -99,6 +100,88 @@ namespace Microsoft.AspNet.Mvc.Formatters
 
             // Assert
             Assert.Equal(new StringSegment(expectedContentType), formatterContext.ContentType);
+        }
+
+        [Fact]
+        public void WriteResponse_GetMediaTypeWithCharsetReturnsMediaTypeFromCache_IfEncodingIsUtf8()
+        {
+            // Arrange
+            var formatter = new TestOutputFormatter();
+
+            var formatterContext = new OutputFormatterWriteContext(
+                new DefaultHttpContext(),
+                new TestHttpResponseStreamWriterFactory().CreateWriter,
+                objectType: null,
+                @object: null)
+            {
+                ContentType = new StringSegment("application/json"),
+            };
+
+            formatter.SupportedMediaTypes.Add("application/json");
+            formatter.SupportedEncodings.Add(Encoding.UTF8);
+
+            // Act
+            formatter.WriteAsync(formatterContext);
+            var firstContentType = formatterContext.ContentType;
+
+            formatterContext.ContentType = new StringSegment("application/json");
+
+            formatter.WriteAsync(formatterContext);
+            var secondContentType = formatterContext.ContentType;
+
+            // Assert
+            Assert.Same(firstContentType.Buffer, secondContentType.Buffer);
+        }
+
+        [Fact]
+        public void WriteResponse_GetMediaTypeWithCharsetReplacesCharset_IfDifferentThanEncoding()
+        {
+            // Arrange
+            var formatter = new TestOutputFormatter();
+
+            var formatterContext = new OutputFormatterWriteContext(
+                new DefaultHttpContext(),
+                new TestHttpResponseStreamWriterFactory().CreateWriter,
+                objectType: null,
+                @object: null)
+            {
+                ContentType = new StringSegment("application/json; charset=utf-7"),
+            };
+
+            formatter.SupportedMediaTypes.Add("application/json");
+            formatter.SupportedEncodings.Add(Encoding.UTF8);
+
+            // Act
+            formatter.WriteAsync(formatterContext);
+
+            // Assert
+            Assert.Equal(new StringSegment("application/json; charset=utf-8"), formatterContext.ContentType);
+        }
+
+        [Fact]
+        public void WriteResponse_GetMediaTypeWithCharsetReturnsSameString_IfCharsetEqualToEncoding()
+        {
+            // Arrange
+            var formatter = new TestOutputFormatter();
+
+            var contentType = "application/json; charset=utf-16";
+            var formatterContext = new OutputFormatterWriteContext(
+                new DefaultHttpContext(),
+                new TestHttpResponseStreamWriterFactory().CreateWriter,
+                objectType: null,
+                @object: null)
+            {
+                ContentType = new StringSegment(contentType),
+            };
+
+            formatter.SupportedMediaTypes.Add("application/json");
+            formatter.SupportedEncodings.Add(Encoding.Unicode);
+
+            // Act
+            formatter.WriteAsync(formatterContext);
+
+            // Assert
+            Assert.Same(contentType, formatterContext.ContentType.Buffer);
         }
 
         [Fact]
