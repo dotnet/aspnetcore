@@ -206,6 +206,7 @@ namespace Microsoft.AspNet.Hosting
             services.AddTransient<IApplicationBuilderFactory, ApplicationBuilderFactory>();
             services.AddTransient<IHttpContextFactory, HttpContextFactory>();
             services.AddLogging();
+            services.AddOptions();
 
             var diagnosticSource = new DiagnosticListener("Microsoft.AspNet");
             services.AddSingleton<DiagnosticSource>(diagnosticSource);
