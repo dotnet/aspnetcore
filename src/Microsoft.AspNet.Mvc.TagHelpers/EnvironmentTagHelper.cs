@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Razor.TagHelpers;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNet.Mvc.TagHelpers
 {
@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
     /// </summary>
     public class EnvironmentTagHelper : TagHelper
     {
-        private static readonly char[] NameSeparator = new[] { ',' };
+        private static readonly char NameSeparator = ',';
 
         /// <summary>
         /// Creates a new <see cref="EnvironmentTagHelper"/>.
@@ -26,13 +26,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         }
 
         /// <inheritdoc />
-        public override int Order
-        {
-            get
-            {
-                return -1000;
-            }
-        }
+        public override int Order => -1000;
 
         /// <summary>
         /// A comma separated list of environment names in which the content should be rendered.
@@ -74,36 +68,28 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 return;
             }
 
-            var values = Names.Split(NameSeparator, StringSplitOptions.RemoveEmptyEntries);
-            var environments = new List<string>();
-
-            for (var i = 0; i < values.Length; i++)
+            var tokenizer = new StringTokenizer(Names, NameSeparator);
+            var hasEnvironments = false;
+            foreach (var item in tokenizer)
             {
-                var trimmedValue = values[i].Trim();
-
-                if (trimmedValue.Length > 0)
+                var environment = item.Trim();
+                if (environment.HasValue && environment.Length > 0)
                 {
-                    environments.Add(trimmedValue);
+                    hasEnvironments = true;
+                    if (environment.Equals(currentEnvironmentName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        // Matching environment name found, do nothing
+                        return;
+                    }
                 }
             }
 
-            if (environments.Count == 0)
+            if (hasEnvironments)
             {
-                // Names contains only commas or empty entries, do nothing
-                return;
+                // This instance had at least one non-empty environment specified but none of these
+                // environments matched the current environment. Suppress the output in this case.
+                output.SuppressOutput();
             }
-
-            for (var i = 0; i < environments.Count; i++)
-            {
-                if (string.Equals(environments[i], currentEnvironmentName, StringComparison.OrdinalIgnoreCase))
-                {
-                    // Matching environment name found, do nothing
-                    return;
-                }
-            }
-
-            // No matching environment name found, suppress all output
-            output.SuppressOutput();
         }
     }
 }
