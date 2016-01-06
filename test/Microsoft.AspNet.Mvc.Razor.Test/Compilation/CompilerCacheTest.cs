@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Diagnostics;
 using Moq;
 using Xunit;
 
@@ -441,6 +442,70 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
             var result1 = task1.Result;
             var result2 = task2.Result;
             Assert.Same(result1.CompilationResult.CompiledType, result2.CompilationResult.CompiledType);
+        }
+
+        [Fact]
+        public void GetOrAdd_CachesCompilationExceptions()
+        {
+            // Arrange
+            var fileProvider = new TestFileProvider();
+            fileProvider.AddFile(ViewPath, "some content");
+            var cache = new CompilerCache(fileProvider);
+            var exception = new InvalidTimeZoneException();
+
+            // Act and Assert - 1
+            var actual = Assert.Throws<InvalidTimeZoneException>(() =>
+                cache.GetOrAdd(ViewPath, _ => { throw exception; }));
+            Assert.Same(exception, actual);
+
+            // Act and Assert - 2
+            actual = Assert.Throws<InvalidTimeZoneException>(() => cache.GetOrAdd(ViewPath, ThrowsIfCalled));
+            Assert.Same(exception, actual);
+        }
+
+        [Fact]
+        public void GetOrAdd_ReturnsSuccessfulCompilationResultIfTriggerExpires()
+        {
+            // Arrange
+            var fileProvider = new TestFileProvider();
+            fileProvider.AddFile(ViewPath, "some content");
+            var cache = new CompilerCache(fileProvider);
+
+            // Act and Assert - 1
+            Assert.Throws<InvalidTimeZoneException>(() =>
+                cache.GetOrAdd(ViewPath, _ => { throw new InvalidTimeZoneException(); }));
+
+            // Act - 2
+            fileProvider.GetChangeToken(ViewPath).HasChanged = true;
+            var result = cache.GetOrAdd(ViewPath, _ => new CompilationResult(typeof(TestView)));
+
+            // Assert - 2
+            Assert.Same(typeof(TestView), result.CompilationResult.CompiledType);
+        }
+
+        [Fact]
+        public void GetOrAdd_CachesExceptionsInCompilationResult()
+        {
+            // Arrange
+            var fileProvider = new TestFileProvider();
+            fileProvider.AddFile(ViewPath, "some content");
+            var cache = new CompilerCache(fileProvider);
+            var diagnosticMessages = new[]
+            {
+                new AspNet.Diagnostics.DiagnosticMessage("message", "message", ViewPath, 1, 1, 1, 1)
+            };
+            var compilationResult = new CompilationResult(new[]
+            {
+                new CompilationFailure(ViewPath, "some content", "compiled content", diagnosticMessages)
+            });
+
+            // Act and Assert - 1
+            var ex = Assert.Throws<CompilationFailedException>(() => cache.GetOrAdd(ViewPath, _ => compilationResult));
+            Assert.Same(compilationResult.CompilationFailures, ex.CompilationFailures);
+
+            // Act and Assert - 2
+            ex = Assert.Throws<CompilationFailedException>(() => cache.GetOrAdd(ViewPath, ThrowsIfCalled));
+            Assert.Same(compilationResult.CompilationFailures, ex.CompilationFailures);
         }
 
         private class TestView

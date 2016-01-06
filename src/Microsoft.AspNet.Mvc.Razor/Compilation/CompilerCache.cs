@@ -141,11 +141,18 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
                 Debug.Assert(fileInfo != null && fileInfo.Exists);
                 Debug.Assert(cacheEntryOptions != null);
                 var relativeFileInfo = new RelativeFileInfo(fileInfo, normalizedPath);
-                var compilationResult = compile(relativeFileInfo);
-                compilationResult.EnsureSuccessful();
 
-                compilationTaskSource.SetResult(
-                    new CompilerCacheResult(compilationResult, cacheEntryOptions.ExpirationTokens));
+                try
+                {
+                    var compilationResult = compile(relativeFileInfo);
+                    compilationResult.EnsureSuccessful();
+                    compilationTaskSource.SetResult(
+                        new CompilerCacheResult(compilationResult, cacheEntryOptions.ExpirationTokens));
+                }
+                catch (Exception ex)
+                {
+                    compilationTaskSource.SetException(ex);
+                }
             }
 
             return cacheEntry;
