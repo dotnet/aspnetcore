@@ -23,12 +23,12 @@ namespace Microsoft.AspNet.StaticFiles
         public async Task NullArguments()
         {
             Assert.Throws<ArgumentException>(() => StaticFilesTestServer.Create(
-                app => app.UseDirectoryBrowser(options => { options.Formatter = null; }),
+                app => app.UseDirectoryBrowser(new DirectoryBrowserOptions { Formatter = null }),
             services => services.AddDirectoryBrowser()));
 
             // No exception, default provided
             StaticFilesTestServer.Create(
-                app => app.UseDirectoryBrowser(options => { options.FileProvider = null; }),
+                app => app.UseDirectoryBrowser(new DirectoryBrowserOptions { FileProvider = null }),
                 services => services.AddDirectoryBrowser());
 
             // PathString(null) is OK.
@@ -66,10 +66,10 @@ namespace Microsoft.AspNet.StaticFiles
             using (var fileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), baseDir)))
             {
                 var server = StaticFilesTestServer.Create(
-                    app => app.UseDirectoryBrowser(options =>
+                    app => app.UseDirectoryBrowser(new DirectoryBrowserOptions
                     {
-                        options.RequestPath = new PathString(baseUrl);
-                        options.FileProvider = fileProvider;
+                        RequestPath = new PathString(baseUrl),
+                        FileProvider = fileProvider
                     }),
                     services => services.AddDirectoryBrowser());
                 var response = await server.CreateRequest(requestUrl).GetAsync();
@@ -103,10 +103,10 @@ namespace Microsoft.AspNet.StaticFiles
             using (var fileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), baseDir)))
             {
                 var server = StaticFilesTestServer.Create(
-                    app => app.UseDirectoryBrowser(options =>
+                    app => app.UseDirectoryBrowser(new DirectoryBrowserOptions
                     {
-                        options.RequestPath = new PathString(baseUrl);
-                        options.FileProvider = fileProvider;
+                        RequestPath = new PathString(baseUrl),
+                        FileProvider = fileProvider
                     }),
                     services => services.AddDirectoryBrowser());
                 var response = await server.CreateRequest(requestUrl).GetAsync();
@@ -145,10 +145,10 @@ namespace Microsoft.AspNet.StaticFiles
             using (var fileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), baseDir)))
             {
                 var server = StaticFilesTestServer.Create(
-                    app => app.UseDirectoryBrowser(options =>
+                    app => app.UseDirectoryBrowser(new DirectoryBrowserOptions
                     {
-                        options.RequestPath = new PathString(baseUrl);
-                        options.FileProvider = fileProvider;
+                        RequestPath = new PathString(baseUrl),
+                        FileProvider = fileProvider
                     }),
                     services => services.AddDirectoryBrowser());
 
@@ -184,10 +184,10 @@ namespace Microsoft.AspNet.StaticFiles
             using (var fileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), baseDir)))
             {
                 var server = StaticFilesTestServer.Create(
-                    app => app.UseDirectoryBrowser(options =>
+                    app => app.UseDirectoryBrowser(new DirectoryBrowserOptions
                     {
-                        options.RequestPath = new PathString(baseUrl);
-                        options.FileProvider = fileProvider;
+                        RequestPath = new PathString(baseUrl),
+                        FileProvider = fileProvider
                     }),
                     services => services.AddDirectoryBrowser());
 
@@ -220,10 +220,10 @@ namespace Microsoft.AspNet.StaticFiles
             using (var fileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), baseDir)))
             {
                 var server = StaticFilesTestServer.Create(
-                    app => app.UseDirectoryBrowser(options =>
+                    app => app.UseDirectoryBrowser(new DirectoryBrowserOptions
                     {
-                        options.RequestPath = new PathString(baseUrl);
-                        options.FileProvider = fileProvider;
+                        RequestPath = new PathString(baseUrl),
+                        FileProvider = fileProvider
                     }),
                     services => services.AddDirectoryBrowser());
 

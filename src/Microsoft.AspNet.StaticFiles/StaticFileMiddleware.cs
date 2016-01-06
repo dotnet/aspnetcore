@@ -4,9 +4,11 @@
 using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNet.StaticFiles
 {
@@ -26,7 +28,7 @@ namespace Microsoft.AspNet.StaticFiles
         /// <param name="next">The next middleware in the pipeline.</param>
         /// <param name="options">The configuration options.</param>
         /// <param name="loggerFactory">An <see cref="ILoggerFactory"/> instance used to create loggers.</param>
-        public StaticFileMiddleware(RequestDelegate next, IHostingEnvironment hostingEnv, StaticFileOptions options, ILoggerFactory loggerFactory)
+        public StaticFileMiddleware(RequestDelegate next, IHostingEnvironment hostingEnv, IOptions<StaticFileOptions> options, ILoggerFactory loggerFactory)
         {
             if (next == null)
             {
@@ -48,15 +50,15 @@ namespace Microsoft.AspNet.StaticFiles
                 throw new ArgumentNullException(nameof(loggerFactory));
             }
 
-            if (options.ContentTypeProvider == null)
+            if (options.Value.ContentTypeProvider == null)
             {
                 throw new ArgumentException(Resources.Args_NoContentTypeProvider);
             }
-            options.ResolveFileProvider(hostingEnv);
 
             _next = next;
-            _options = options;
-            _matchUrl = options.RequestPath;
+            _options = options.Value;
+            _options.ResolveFileProvider(hostingEnv);
+            _matchUrl = _options.RequestPath;
             _logger = loggerFactory.CreateLogger<StaticFileMiddleware>();
         }
 

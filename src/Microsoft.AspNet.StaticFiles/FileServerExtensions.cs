@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.Builder
                 throw new ArgumentNullException(nameof(app));
             }
 
-            return app.UseFileServer(options => { });
+            return app.UseFileServer(new FileServerOptions());
         }
 
         /// <summary>
@@ -41,7 +41,10 @@ namespace Microsoft.AspNet.Builder
                 throw new ArgumentNullException(nameof(app));
             }
 
-            return app.UseFileServer(options => { options.EnableDirectoryBrowsing = enableDirectoryBrowsing; });
+            return app.UseFileServer(new FileServerOptions
+            {
+                EnableDirectoryBrowsing = enableDirectoryBrowsing
+            });
         }
 
         /// <summary>
@@ -62,40 +65,10 @@ namespace Microsoft.AspNet.Builder
                 throw new ArgumentNullException(nameof(requestPath));
             }
 
-            return app.UseFileServer(options => { options.RequestPath = new PathString(requestPath); });
-        }
-
-        /// <summary>
-        /// Enable all static file middleware with the given options
-        /// </summary>
-        /// <param name="app"></param>
-        /// <param name="configureOptions"></param>
-        /// <returns></returns>
-        public static IApplicationBuilder UseFileServer(this IApplicationBuilder app, Action<FileServerOptions> configureOptions)
-        {
-            if (app == null)
+            return app.UseFileServer(new FileServerOptions
             {
-                throw new ArgumentNullException(nameof(app));
-            }
-            if (configureOptions == null)
-            {
-                throw new ArgumentNullException(nameof(configureOptions));
-            }
-
-            var fileServerOptions = new FileServerOptions();
-            configureOptions(fileServerOptions);
-
-            if (fileServerOptions.EnableDefaultFiles)
-            {
-                app = app.UseDefaultFiles(options => { options = fileServerOptions.DefaultFilesOptions; });
-            }
-
-            if (fileServerOptions.EnableDirectoryBrowsing)
-            {
-                app = app.UseDirectoryBrowser(options => { options = fileServerOptions.DirectoryBrowserOptions; });
-            }
-
-            return app.UseStaticFiles(options => { options = fileServerOptions.StaticFileOptions; });
+                RequestPath = new PathString(requestPath)
+            });
         }
 
         /// <summary>
@@ -117,12 +90,12 @@ namespace Microsoft.AspNet.Builder
 
             if (options.EnableDefaultFiles)
             {
-                app = app.UseDefaultFiles(options.DefaultFilesOptions);
+                app.UseDefaultFiles(options.DefaultFilesOptions);
             }
 
             if (options.EnableDirectoryBrowsing)
             {
-                app = app.UseDirectoryBrowser(options.DirectoryBrowserOptions);
+                app.UseDirectoryBrowser(options.DirectoryBrowserOptions);
             }
 
             return app.UseStaticFiles(options.StaticFileOptions);

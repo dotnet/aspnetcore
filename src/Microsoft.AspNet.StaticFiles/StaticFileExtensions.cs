@@ -4,6 +4,7 @@
 using System;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.StaticFiles;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNet.Builder
 {
@@ -24,7 +25,7 @@ namespace Microsoft.AspNet.Builder
                 throw new ArgumentNullException(nameof(app));
             }
 
-            return app.UseStaticFiles(options => { });
+            return app.UseMiddleware<StaticFileMiddleware>();
         }
 
         /// <summary>
@@ -40,30 +41,10 @@ namespace Microsoft.AspNet.Builder
                 throw new ArgumentNullException(nameof(app));
             }
 
-            return app.UseStaticFiles(options => { options.RequestPath = new PathString(requestPath); });
-        }
-
-        /// <summary>
-        /// Enables static file serving with the given options
-        /// </summary>
-        /// <param name="app"></param>
-        /// <param name="configureOptions"></param>
-        /// <returns></returns>
-        public static IApplicationBuilder UseStaticFiles(this IApplicationBuilder app, Action<StaticFileOptions> configureOptions)
-        {
-            if (app == null)
+            return app.UseStaticFiles(new StaticFileOptions
             {
-                throw new ArgumentNullException(nameof(app));
-            }
-            if (configureOptions == null)
-            {
-                throw new ArgumentNullException(nameof(configureOptions));
-            }
-
-            var options = new StaticFileOptions();
-            configureOptions(options);
-
-            return app.UseMiddleware<StaticFileMiddleware>(options);
+                RequestPath = new PathString(requestPath)
+            });
         }
 
         /// <summary>
@@ -83,7 +64,7 @@ namespace Microsoft.AspNet.Builder
                 throw new ArgumentNullException(nameof(options));
             }
 
-            return app.UseMiddleware<StaticFileMiddleware>(options);
+            return app.UseMiddleware<StaticFileMiddleware>(Options.Create(options));
         }
     }
 }

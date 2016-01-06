@@ -3,7 +3,7 @@
 
 using Microsoft.AspNet.StaticFiles.Infrastructure;
 
-namespace Microsoft.AspNet.StaticFiles
+namespace Microsoft.AspNet.Builder
 {
     /// <summary>
     /// Options for all of the static file middleware components

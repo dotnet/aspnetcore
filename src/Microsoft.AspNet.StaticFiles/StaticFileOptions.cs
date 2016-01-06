@@ -2,9 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNet.StaticFiles;
 using Microsoft.AspNet.StaticFiles.Infrastructure;
 
-namespace Microsoft.AspNet.StaticFiles
+namespace Microsoft.AspNet.Builder
 {
     /// <summary>
     /// Options for serving static files

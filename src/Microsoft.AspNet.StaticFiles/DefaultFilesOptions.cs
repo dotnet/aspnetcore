@@ -4,7 +4,7 @@
 using System.Collections.Generic;
 using Microsoft.AspNet.StaticFiles.Infrastructure;
 
-namespace Microsoft.AspNet.StaticFiles
+namespace Microsoft.AspNet.Builder
 {
     /// <summary>
     /// Options for selecting default file names.

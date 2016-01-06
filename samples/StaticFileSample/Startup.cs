@@ -17,9 +17,9 @@ namespace StaticFilesSample
             // Displays all log levels
             factory.AddConsole(LogLevel.Debug);
 
-            app.UseFileServer(options =>
+            app.UseFileServer(new FileServerOptions
             {
-                options.EnableDirectoryBrowsing = true;
+                EnableDirectoryBrowsing = true
             });
         }
 

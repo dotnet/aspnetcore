@@ -4,6 +4,7 @@
 using System;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.StaticFiles;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNet.Builder
 {
@@ -24,7 +25,7 @@ namespace Microsoft.AspNet.Builder
                 throw new ArgumentNullException(nameof(app));
             }
 
-            return app.UseDirectoryBrowser(options => { });
+            return app.UseMiddleware<DirectoryBrowserMiddleware>();
         }
 
         /// <summary>
@@ -40,30 +41,10 @@ namespace Microsoft.AspNet.Builder
                 throw new ArgumentNullException(nameof(app));
             }
 
-            return app.UseDirectoryBrowser(options => { options.RequestPath = new PathString(requestPath); });
-        }
-
-        /// <summary>
-        /// Enable directory browsing with the given options
-        /// </summary>
-        /// <param name="app"></param>
-        /// <param name="configureOptions"></param>
-        /// <returns></returns>
-        public static IApplicationBuilder UseDirectoryBrowser(this IApplicationBuilder app, Action<DirectoryBrowserOptions> configureOptions)
-        {
-            if (app == null)
+            return app.UseDirectoryBrowser(new DirectoryBrowserOptions
             {
-                throw new ArgumentNullException(nameof(app));
-            }
-            if (configureOptions == null)
-            {
-                throw new ArgumentNullException(nameof(configureOptions));
-            }
-
-            var options = new DirectoryBrowserOptions();
-            configureOptions(options);
-
-            return app.UseMiddleware<DirectoryBrowserMiddleware>(options);
+                RequestPath = new PathString(requestPath)
+            });
         }
 
         /// <summary>
@@ -83,7 +64,7 @@ namespace Microsoft.AspNet.Builder
                 throw new ArgumentNullException(nameof(options));
             }
 
-            return app.UseMiddleware<DirectoryBrowserMiddleware>(options);
+            return app.UseMiddleware<DirectoryBrowserMiddleware>(Options.Create(options));
         }
     }
 }

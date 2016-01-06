@@ -1,9 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.AspNet.StaticFiles;
 using Microsoft.AspNet.StaticFiles.Infrastructure;
 
-namespace Microsoft.AspNet.StaticFiles
+namespace Microsoft.AspNet.Builder
 {
     /// <summary>
     /// Directory browsing options

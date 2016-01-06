@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.StaticFiles
         public async Task NullArguments()
         {
             // No exception, default provided
-            StaticFilesTestServer.Create(app => app.UseDefaultFiles(options => { options.FileProvider = null; }));
+            StaticFilesTestServer.Create(app => app.UseDefaultFiles(new DefaultFilesOptions { FileProvider = null }));
 
             // PathString(null) is OK.
             var server = StaticFilesTestServer.Create(app => app.UseDefaultFiles((string)null));
@@ -56,10 +56,10 @@ namespace Microsoft.AspNet.StaticFiles
             {
                 var server = StaticFilesTestServer.Create(app =>
                 {
-                    app.UseDefaultFiles(options =>
+                    app.UseDefaultFiles(new DefaultFilesOptions
                     {
-                        options.RequestPath = new PathString(baseUrl);
-                        options.FileProvider = fileProvider;
+                        RequestPath = new PathString(baseUrl),
+                        FileProvider = fileProvider
                     });
                     app.Run(context => context.Response.WriteAsync(context.Request.Path.Value));
                 });
@@ -95,10 +95,10 @@ namespace Microsoft.AspNet.StaticFiles
             {
                 var server = StaticFilesTestServer.Create(app =>
                 {
-                    app.UseDefaultFiles(options =>
+                    app.UseDefaultFiles(new DefaultFilesOptions
                     {
-                        options.RequestPath = new PathString(baseUrl);
-                        options.FileProvider = fileProvider;
+                        RequestPath = new PathString(baseUrl),
+                        FileProvider = fileProvider
                     });
                     app.Run(context => context.Response.WriteAsync(context.Request.Path.Value));
                 });
@@ -132,10 +132,10 @@ namespace Microsoft.AspNet.StaticFiles
         {
             using (var fileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), baseDir)))
             {
-                var server = StaticFilesTestServer.Create(app => app.UseDefaultFiles(options =>
+                var server = StaticFilesTestServer.Create(app => app.UseDefaultFiles(new DefaultFilesOptions
                 {
-                    options.RequestPath = new PathString(baseUrl);
-                    options.FileProvider = fileProvider;
+                    RequestPath = new PathString(baseUrl),
+                    FileProvider = fileProvider
                 }));
                 var response = await server.CreateRequest(requestUrl + queryString).GetAsync();
 
@@ -170,10 +170,10 @@ namespace Microsoft.AspNet.StaticFiles
         {
             using (var fileProvder = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), baseDir)))
             {
-                var server = StaticFilesTestServer.Create(app => app.UseDefaultFiles(options =>
+                var server = StaticFilesTestServer.Create(app => app.UseDefaultFiles(new DefaultFilesOptions
                 {
-                    options.RequestPath = new PathString(baseUrl);
-                    options.FileProvider = fileProvder;
+                    RequestPath = new PathString(baseUrl),
+                    FileProvider = fileProvder
                 }));
                 var response = await server.CreateRequest(requestUrl).GetAsync();
 

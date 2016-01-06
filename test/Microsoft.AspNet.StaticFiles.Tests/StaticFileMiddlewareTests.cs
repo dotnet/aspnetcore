@@ -32,10 +32,10 @@ namespace Microsoft.AspNet.StaticFiles
         [Fact]
         public async Task NullArguments()
         {
-            Assert.Throws<ArgumentException>(() => StaticFilesTestServer.Create(app => app.UseStaticFiles(options => { options.ContentTypeProvider = null; })));
+            Assert.Throws<ArgumentException>(() => StaticFilesTestServer.Create(app => app.UseStaticFiles(new StaticFileOptions { ContentTypeProvider = null })));
 
             // No exception, default provided
-            StaticFilesTestServer.Create(app => app.UseStaticFiles(options => { options.FileProvider = null; }));
+            StaticFilesTestServer.Create(app => app.UseStaticFiles(new StaticFileOptions { FileProvider = null }));
 
             // PathString(null) is OK.
             var server = StaticFilesTestServer.Create(app => app.UseStaticFiles((string)null));
@@ -52,10 +52,10 @@ namespace Microsoft.AspNet.StaticFiles
         {
             using (var fileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), baseDir)))
             {
-                var server = StaticFilesTestServer.Create(app => app.UseStaticFiles(options =>
+                var server = StaticFilesTestServer.Create(app => app.UseStaticFiles(new StaticFileOptions
                 {
-                    options.RequestPath = new PathString(baseUrl);
-                    options.FileProvider = fileProvider;
+                    RequestPath = new PathString(baseUrl),
+                    FileProvider = fileProvider
                 }));
                 var response = await server.CreateRequest(requestUrl).GetAsync();
                 Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -89,10 +89,10 @@ namespace Microsoft.AspNet.StaticFiles
         {
             using (var fileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), baseDir)))
             {
-                var server = StaticFilesTestServer.Create(app => app.UseStaticFiles(options =>
+                var server = StaticFilesTestServer.Create(app => app.UseStaticFiles(new StaticFileOptions
                 {
-                    options.RequestPath = new PathString(baseUrl);
-                    options.FileProvider = fileProvider;
+                    RequestPath = new PathString(baseUrl),
+                    FileProvider = fileProvider
                 }));
                 var response = await server.CreateRequest(requestUrl).GetAsync();
 
@@ -113,10 +113,10 @@ namespace Microsoft.AspNet.StaticFiles
         {
             using (var fileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), baseDir)))
             {
-                var server = StaticFilesTestServer.Create(app => app.UseStaticFiles(options =>
+                var server = StaticFilesTestServer.Create(app => app.UseStaticFiles(new StaticFileOptions
                 {
-                    options.RequestPath = new PathString(baseUrl);
-                    options.FileProvider = fileProvider;
+                    RequestPath = new PathString(baseUrl),
+                    FileProvider = fileProvider
                 }));
                 var response = await server.CreateRequest(requestUrl).PostAsync();
                 Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -133,10 +133,10 @@ namespace Microsoft.AspNet.StaticFiles
         {
             using (var fileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), baseDir)))
             {
-                var server = StaticFilesTestServer.Create(app => app.UseStaticFiles(options =>
+                var server = StaticFilesTestServer.Create(app => app.UseStaticFiles(new StaticFileOptions
                 {
-                    options.RequestPath = new PathString(baseUrl);
-                    options.FileProvider = fileProvider;
+                    RequestPath = new PathString(baseUrl),
+                    FileProvider = fileProvider
                 }));
                 var response = await server.CreateRequest(requestUrl).SendAsync("HEAD");
 

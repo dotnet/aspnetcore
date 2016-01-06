@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
+using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.StaticFiles
@@ -26,7 +27,7 @@ namespace Microsoft.AspNet.StaticFiles
         /// </summary>
         /// <param name="next">The next middleware in the pipeline.</param>
         /// <param name="options">The configuration options for this middleware.</param>
-        public DefaultFilesMiddleware(RequestDelegate next, IHostingEnvironment hostingEnv, DefaultFilesOptions options)
+        public DefaultFilesMiddleware(RequestDelegate next, IHostingEnvironment hostingEnv, IOptions<DefaultFilesOptions> options)
         {
             if (next == null)
             {
@@ -42,12 +43,11 @@ namespace Microsoft.AspNet.StaticFiles
             {
                 throw new ArgumentNullException(nameof(options));
             }
-
-            options.ResolveFileProvider(hostingEnv);
-
+            
             _next = next;
-            _options = options;
-            _matchUrl = options.RequestPath;
+            _options = options.Value;
+            _options.ResolveFileProvider(hostingEnv);
+            _matchUrl = _options.RequestPath;
         }
 
         /// <summary>

@@ -4,6 +4,7 @@
 using System;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.StaticFiles;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNet.Builder
 {
@@ -24,7 +25,7 @@ namespace Microsoft.AspNet.Builder
                 throw new ArgumentNullException(nameof(app));
             }
 
-            return app.UseDefaultFiles(options => { });
+            return app.UseMiddleware<DefaultFilesMiddleware>();
         }
 
         /// <summary>
@@ -40,30 +41,10 @@ namespace Microsoft.AspNet.Builder
                 throw new ArgumentNullException(nameof(app));
             }
 
-            return app.UseDefaultFiles(options => { options.RequestPath = new PathString(requestPath); });
-        }
-
-        /// <summary>
-        /// Enables default file mapping with the given options
-        /// </summary>
-        /// <param name="app"></param>
-        /// <param name="configureOptions"></param>
-        /// <returns></returns>
-        public static IApplicationBuilder UseDefaultFiles(this IApplicationBuilder app, Action<DefaultFilesOptions> configureOptions)
-        {
-            if (app == null)
+            return app.UseDefaultFiles(new DefaultFilesOptions
             {
-                throw new ArgumentNullException(nameof(app));
-            }
-            if (configureOptions == null)
-            {
-                throw new ArgumentNullException(nameof(configureOptions));
-            }
-
-            var options = new DefaultFilesOptions();
-            configureOptions(options);
-
-            return app.UseMiddleware<DefaultFilesMiddleware>(options);
+                RequestPath = new PathString(requestPath)
+            });
         }
 
         /// <summary>
@@ -83,7 +64,7 @@ namespace Microsoft.AspNet.Builder
                 throw new ArgumentNullException(nameof(options));
             }
 
-            return app.UseMiddleware<DefaultFilesMiddleware>(options);
+            return app.UseMiddleware<DefaultFilesMiddleware>(Options.Create(options));
         }
     }
 }
