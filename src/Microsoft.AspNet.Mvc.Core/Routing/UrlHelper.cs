@@ -19,9 +19,7 @@ namespace Microsoft.AspNet.Mvc.Routing
         /// Initializes a new instance of the <see cref="UrlHelper"/> class using the specified action context and
         /// action selector.
         /// </summary>
-        /// <param name="actionContext">
-        /// The <see cref="Mvc.ActionContext"/> for the current request.
-        /// </param>
+        /// <param name="actionContext">The <see cref="Mvc.ActionContext"/> for the current request.</param>
         public UrlHelper(ActionContext actionContext)
         {
             if (actionContext == null)
@@ -79,13 +77,8 @@ namespace Microsoft.AspNet.Mvc.Routing
                 valuesDictionary["controller"] = actionContext.Controller;
             }
 
-            var path = GeneratePathFromRoute(routeName: null, values: valuesDictionary);
-            if (path == null)
-            {
-                return null;
-            }
-
-            return GenerateUrl(actionContext.Protocol, actionContext.Host, path, actionContext.Fragment);
+            var virtualPathData = GetVirtualPathData(routeName: null, values: valuesDictionary);
+            return GenerateUrl(actionContext.Protocol, actionContext.Host, virtualPathData, actionContext.Fragment);
         }
 
         /// <inheritdoc />
@@ -110,61 +103,53 @@ namespace Microsoft.AspNet.Mvc.Routing
             }
 
             var valuesDictionary = new RouteValueDictionary(routeContext.Values);
-
-            var path = GeneratePathFromRoute(routeContext.RouteName, valuesDictionary);
-            if (path == null)
-            {
-                return null;
-            }
-
-            return GenerateUrl(routeContext.Protocol, routeContext.Host, path, routeContext.Fragment);
+            var virtualPathData = GetVirtualPathData(routeContext.RouteName, valuesDictionary);
+            return GenerateUrl(routeContext.Protocol, routeContext.Host, virtualPathData, routeContext.Fragment);
         }
 
         /// <summary>
-        /// Generates the absolute path of the url for the specified route values by
-        /// using the specified route name.
+        /// Gets the <see cref="VirtualPathData"/> for the specified route values by using the specified route name.
         /// </summary>
-        /// <param name="routeName">The name of the route that is used to generate the URL.</param>
+        /// <param name="routeName">The name of the route that is used to generate the <see cref="VirtualPathData"/>.
+        /// </param>
         /// <param name="values">A dictionary that contains the parameters for a route.</param>
-        /// <returns>The absolute path of the URL.</returns>
-        protected virtual string GeneratePathFromRoute(string routeName, RouteValueDictionary values)
+        /// <returns>The <see cref="VirtualPathData"/>.</returns>
+        protected virtual VirtualPathData GetVirtualPathData(string routeName, RouteValueDictionary values)
         {
             var context = new VirtualPathContext(HttpContext, AmbientValues, values, routeName);
-            var pathData = Router.GetVirtualPath(context);
-            if (pathData == null)
-            {
-                return null;
-            }
+            return Router.GetVirtualPath(context);
+        }
 
-            // VirtualPathData.VirtualPath returns string.Empty for null.
-            Debug.Assert(pathData.VirtualPath != null);
+        // Internal for unit testing.
+        internal void AppendPathAndFragment(StringBuilder builder, VirtualPathData pathData, string fragment)
+        {
             var pathBase = HttpContext.Request.PathBase;
+
             if (!pathBase.HasValue)
             {
                 if (pathData.VirtualPath.Length == 0)
                 {
-                    return "/";
-                }
-                else if (!pathData.VirtualPath.StartsWith("/", StringComparison.Ordinal))
-                {
-                    return "/" + pathData.VirtualPath;
+                    builder.Append("/");
                 }
                 else
                 {
-                    return pathData.VirtualPath;
+                    if (!pathData.VirtualPath.StartsWith("/", StringComparison.Ordinal))
+                    {
+                        builder.Append("/");
+                    }
+
+                    builder.Append(pathData.VirtualPath);
                 }
             }
             else
             {
                 if (pathData.VirtualPath.Length == 0)
                 {
-                    return pathBase;
+                    builder.Append(pathBase.Value);
                 }
                 else
                 {
-                    var builder = new StringBuilder(
-                        pathBase.Value,
-                        pathBase.Value.Length + pathData.VirtualPath.Length);
+                    builder.Append(pathBase.Value);
 
                     if (pathBase.Value.EndsWith("/", StringComparison.Ordinal))
                     {
@@ -177,9 +162,12 @@ namespace Microsoft.AspNet.Mvc.Routing
                     }
 
                     builder.Append(pathData.VirtualPath);
-
-                    return builder.ToString();
                 }
+            }
+
+            if (!string.IsNullOrEmpty(fragment))
+            {
+                builder.Append("#").Append(fragment);
             }
         }
 
@@ -213,34 +201,47 @@ namespace Microsoft.AspNet.Mvc.Routing
             });
         }
 
-        private string GenerateUrl(string protocol, string host, string path, string fragment)
+        /// <summary>
+        /// Generates the URL using the specified components.
+        /// </summary>
+        /// <param name="protocol">The protocol.</param>
+        /// <param name="host">The host.</param>
+        /// <param name="pathData">The <see cref="VirtualPathData"/>.</param>
+        /// <param name="fragment">The URL fragment.</param>
+        /// <returns>The generated URL.</returns>
+        protected virtual string GenerateUrl(string protocol, string host, VirtualPathData pathData, string fragment)
         {
-            Debug.Assert(path != null);
-            var url = path;
-            if (!string.IsNullOrEmpty(fragment))
+            if (pathData == null)
             {
-                url += "#" + fragment;
+                return null;
             }
 
+            // VirtualPathData.VirtualPath returns string.Empty instead of null.
+            Debug.Assert(pathData.VirtualPath != null);
+
+            var builder = new StringBuilder();
             if (string.IsNullOrEmpty(protocol) && string.IsNullOrEmpty(host))
             {
-                // We're returning a partial url (just path + query + fragment), but we still want it
-                // to be rooted.
-                if (!url.StartsWith("/", StringComparison.Ordinal))
+                AppendPathAndFragment(builder, pathData, fragment);
+                // We're returning a partial URL (just path + query + fragment), but we still want it to be rooted.
+                if (builder.Length == 0 || builder[0] != '/')
                 {
-                    url = "/" + url;
+                    builder.Insert(0, '/');
                 }
-
-                return url;
             }
             else
             {
                 protocol = string.IsNullOrEmpty(protocol) ? "http" : protocol;
-                host = string.IsNullOrEmpty(host) ? HttpContext.Request.Host.Value : host;
+                builder.Append(protocol);
 
-                url = protocol + "://" + host + url;
-                return url;
+                builder.Append("://");
+
+                host = string.IsNullOrEmpty(host) ? HttpContext.Request.Host.Value : host;
+                builder.Append(host);
+                AppendPathAndFragment(builder, pathData, fragment);
             }
+
+            return builder.ToString();
         }
     }
 }

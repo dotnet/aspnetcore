@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
@@ -892,25 +893,50 @@ namespace Microsoft.AspNet.Mvc.Routing
 
         [Theory]
         [MemberData(nameof(GeneratePathFromRoute_HandlesLeadingAndTrailingSlashesData))]
-        public void GeneratePathFromRoute_HandlesLeadingAndTrailingSlashes(
+        public void AppendPathAndFragment_HandlesLeadingAndTrailingSlashes(
             string appBase,
             string virtualPath,
             string expected)
         {
             // Arrage
-            var router = new Mock<IRouter>();
-            router.Setup(r => r.GetVirtualPath(It.IsAny<VirtualPathContext>()))
-                .Returns(new VirtualPathData(router.Object, virtualPath)
-                {
-                    VirtualPath = virtualPath
-                });
-            var urlHelper = CreateUrlHelper(appBase, router.Object);
+            var router = Mock.Of<IRouter>();
+            var pathData = new VirtualPathData(router, virtualPath)
+            {
+                VirtualPath = virtualPath
+            };
+            var urlHelper = CreateUrlHelper(appBase, router);
+            var builder = new StringBuilder();
 
             // Act
-            var result = urlHelper.GeneratePathFromRoutePublic("some-name", new RouteValueDictionary());
+            urlHelper.AppendPathAndFragment(builder, pathData, string.Empty);
 
             // Assert
-            Assert.Equal(expected, result);
+            Assert.Equal(expected, builder.ToString());
+        }
+
+        [Theory]
+        [MemberData(nameof(GeneratePathFromRoute_HandlesLeadingAndTrailingSlashesData))]
+        public void AppendPathAndFragment_AppendsFragments(
+            string appBase,
+            string virtualPath,
+            string expected)
+        {
+            // Arrage
+            var fragmentValue = "fragment-value";
+            expected += $"#{fragmentValue}";
+            var router = Mock.Of<IRouter>();
+            var pathData = new VirtualPathData(router, virtualPath)
+            {
+                VirtualPath = virtualPath
+            };
+            var urlHelper = CreateUrlHelper(appBase, router);
+            var builder = new StringBuilder();
+
+            // Act
+            urlHelper.AppendPathAndFragment(builder, pathData, fragmentValue);
+
+            // Assert
+            Assert.Equal(expected, builder.ToString());
         }
 
         private static HttpContext CreateHttpContext(
@@ -939,13 +965,13 @@ namespace Microsoft.AspNet.Mvc.Routing
             return new ActionContext(context, routeData, new ActionDescriptor());
         }
 
-        private static TestableUrlHelper CreateUrlHelper()
+        private static UrlHelper CreateUrlHelper()
         {
             var services = CreateServices();
             var context = CreateHttpContext(services, string.Empty);
             var actionContext = CreateActionContext(context);
 
-            return new TestableUrlHelper(actionContext);
+            return new UrlHelper(actionContext);
         }
 
         private static UrlHelper CreateUrlHelper(ActionContext context)
@@ -964,7 +990,7 @@ namespace Microsoft.AspNet.Mvc.Routing
             return new UrlHelper(actionContext);
         }
 
-        private static TestableUrlHelper CreateUrlHelper(string host, string protocol, IRouter router)
+        private static UrlHelper CreateUrlHelper(string host, string protocol, IRouter router)
         {
             var services = CreateServices();
             var context = CreateHttpContext(services, string.Empty);
@@ -973,19 +999,19 @@ namespace Microsoft.AspNet.Mvc.Routing
 
             var actionContext = CreateActionContext(context, router);
 
-            return new TestableUrlHelper(actionContext);
+            return new UrlHelper(actionContext);
         }
 
-        private static TestableUrlHelper CreateUrlHelper(string appBase, IRouter router)
+        private static UrlHelper CreateUrlHelper(string appBase, IRouter router)
         {
             var services = CreateServices();
             var context = CreateHttpContext(services, appBase);
             var actionContext = CreateActionContext(context, router);
 
-            return new TestableUrlHelper(actionContext);
+            return new UrlHelper(actionContext);
         }
 
-        private static TestableUrlHelper CreateUrlHelperWithRouteCollection(
+        private static UrlHelper CreateUrlHelperWithRouteCollection(
             IServiceProvider services,
             string appPrefix)
         {
@@ -1065,17 +1091,6 @@ namespace Microsoft.AspNet.Mvc.Routing
                 context.Handler = (c) => Task.FromResult(0);
                 return Task.FromResult(false);
             }
-        }
-
-        private class TestableUrlHelper : UrlHelper
-        {
-            public TestableUrlHelper(ActionContext context)
-                : base(context)
-            {
-            }
-
-            public string GeneratePathFromRoutePublic(string routeName, RouteValueDictionary values) =>
-                GeneratePathFromRoute(routeName, values);
         }
     }
 }
