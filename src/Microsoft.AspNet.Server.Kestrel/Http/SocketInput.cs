@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         public bool RemoteIntakeFin { get; set; }
 
-        public bool IsCompleted => (_awaitableState == _awaitableIsCompleted);
+        public bool IsCompleted => ReferenceEquals(_awaitableState, _awaitableIsCompleted);
 
         public MemoryPoolBlock2 IncomingStart()
         {
@@ -124,8 +124,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
             _manualResetEvent.Set();
 
-            if (awaitableState != _awaitableIsCompleted &&
-                awaitableState != _awaitableIsNotCompleted)
+            if (!ReferenceEquals(awaitableState, _awaitableIsCompleted) &&
+                !ReferenceEquals(awaitableState, _awaitableIsNotCompleted))
             {
                 _threadPool.Run(awaitableState);
             }
@@ -201,11 +201,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 continuation,
                 _awaitableIsNotCompleted);
 
-            if (awaitableState == _awaitableIsNotCompleted)
+            if (ReferenceEquals(awaitableState, _awaitableIsNotCompleted))
             {
                 return;
             }
-            else if (awaitableState == _awaitableIsCompleted)
+            else if (ReferenceEquals(awaitableState, _awaitableIsCompleted))
             {
                 _threadPool.Run(continuation);
             }
