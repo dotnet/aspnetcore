@@ -243,6 +243,7 @@
             "Microsoft.Extensions.CodeGeneration.EntityFramework": { },
             "Microsoft.Extensions.CodeGeneration.Templating": { },
             "Microsoft.Extensions.CodeGenerators.Mvc": { },
+            "Microsoft.Extensions.CommandLineUtils": { },
             "Microsoft.Extensions.CompilationAbstractions": { },
             "Microsoft.Extensions.Configuration": { },
             "Microsoft.Extensions.Configuration.Abstractions": { },
