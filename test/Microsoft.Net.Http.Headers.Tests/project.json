@@ -1,14 +1,27 @@
 {
-    "version": "1.0.0-*",
-    "dependencies": {
-        "Microsoft.Net.Http.Headers": "1.0.0-*",
+  "version": "1.0.0-*",
+  "dependencies": {
+    "Microsoft.Net.Http.Headers": "1.0.0-*",
+    "xunit": "2.1.0"
+  },
+  "frameworks": {
+    "dnx451": {
+     "frameworkAssemblies": {
+        "System.Runtime": "",
+        "System.Threading.Tasks": ""
+      },
+      "dependencies": {
+        "xunit.runner.console": "2.1.0"
+      }
+    },
+    "dnxcore50": { 
+      "dependencies": {
         "xunit.runner.aspnet": "2.0.0-aspnet-*"
-    },
-    "commands": {
-        "test": "xunit.runner.aspnet"
-    },
-    "frameworks": {
-        "dnx451": { },
-        "dnxcore50": { }
+      }
     }
+  },
+  "testRunner": "xunit",
+  "commands": {
+    "test": "xunit.runner.aspnet"
+  }
 }

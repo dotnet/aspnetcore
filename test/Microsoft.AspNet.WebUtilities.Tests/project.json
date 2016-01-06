@@ -1,19 +1,29 @@
 {
   "dependencies": {
     "Microsoft.AspNet.WebUtilities": "1.0.0-*",
-    "xunit.runner.aspnet": "2.0.0-aspnet-*"
+    "xunit": "2.1.0"
   },
   "compilationOptions": {
     "warningsAsErrors": true
   },
+  "testRunner": "xunit",
   "commands": {
     "test": "xunit.runner.aspnet"
   },
   "frameworks": {
-    "dnx451": { },
+    "dnx451": {
+      "frameworkAssemblies": {
+        "System.Runtime": "",
+        "System.Threading.Tasks": ""
+      },
+      "dependencies": {
+        "xunit.runner.console": "2.1.0"
+      }        
+    },
     "dnxcore50": {
       "dependencies": {
-        "System.Text.Encoding.Extensions": "4.0.11-*"
+        "System.Text.Encoding.Extensions": "4.0.11-*",
+        "xunit.runner.aspnet": "2.0.0-aspnet-*"
       }
     }
   }
