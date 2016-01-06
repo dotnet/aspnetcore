@@ -3,6 +3,7 @@
 
 using System;
 using System.Runtime.InteropServices;
+using Microsoft.Extensions.PlatformAbstractions;
 
 namespace Microsoft.AspNet.Server.Kestrel.Networking
 {
@@ -24,11 +25,15 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
                 IsDarwin = string.Equals(GetUname(), "Darwin", StringComparison.Ordinal);
             }
 #endif
+
+            IsMono = PlatformServices.Default.Runtime.RuntimeType == "Mono";
         }
 
         public static bool IsWindows { get; }
 
         public static bool IsDarwin { get; }
+
+        public static bool IsMono { get; }
 
         [DllImport("libc")]
         static extern int uname(IntPtr buf);
