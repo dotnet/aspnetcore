@@ -6,9 +6,8 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.CompilationAbstractions;
+using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.PlatformAbstractions;
-using Microsoft.Dnx.Runtime.Common.CommandLine;
 using Microsoft.Dnx.Watcher.Core;
 using Microsoft.Extensions.Logging;
 

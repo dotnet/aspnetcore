@@ -7,7 +7,7 @@
     },
     "dependencies": {
         "Microsoft.Dnx.Watcher.Core": "1.0.0-*",
-        "Microsoft.Extensions.CommandLineUtils.Sources": { "version": "1.0.0-*", "type": "build" },
+        "Microsoft.Extensions.CommandLineUtils": "1.0.0-*",
         "Microsoft.Extensions.Logging": "1.0.0-*",
         "Microsoft.Extensions.Logging.Console": "1.0.0-*"
     }, 
