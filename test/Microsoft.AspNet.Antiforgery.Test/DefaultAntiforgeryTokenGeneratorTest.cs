@@ -303,7 +303,7 @@ namespace Microsoft.AspNet.Antiforgery
 
             // Act & assert
             var ex1 =
-                Assert.Throws<InvalidOperationException>(
+                Assert.Throws<AntiforgeryValidationException>(
                     () => tokenProvider.ValidateTokens(httpContext, fieldtoken, fieldtoken));
             Assert.Equal(
                 "Validation of the provided antiforgery token failed. " +
@@ -311,7 +311,7 @@ namespace Microsoft.AspNet.Antiforgery
                 ex1.Message);
 
             var ex2 =
-                Assert.Throws<InvalidOperationException>(
+                Assert.Throws<AntiforgeryValidationException>(
                     () => tokenProvider.ValidateTokens(httpContext, cookieToken, cookieToken));
             Assert.Equal(
                 "Validation of the provided antiforgery token failed. " +
@@ -334,7 +334,7 @@ namespace Microsoft.AspNet.Antiforgery
                 additionalDataProvider: null);
 
             // Act & Assert
-            var exception = Assert.Throws<InvalidOperationException>(
+            var exception = Assert.Throws<AntiforgeryValidationException>(
                     () => tokenProvider.ValidateTokens(httpContext, cookieToken, fieldtoken));
             Assert.Equal(
                 @"The antiforgery cookie token and request token do not match.",
@@ -369,7 +369,7 @@ namespace Microsoft.AspNet.Antiforgery
                 additionalDataProvider: null);
 
             // Act & Assert
-            var exception = Assert.Throws<InvalidOperationException>(
+            var exception = Assert.Throws<AntiforgeryValidationException>(
                     () => tokenProvider.ValidateTokens(httpContext, cookieToken, fieldtoken));
             Assert.Equal(
                 @"The provided antiforgery token was meant for user """ + embeddedUsername +
@@ -403,7 +403,7 @@ namespace Microsoft.AspNet.Antiforgery
                 additionalDataProvider: null);
 
             // Act & assert
-            var exception = Assert.Throws<InvalidOperationException>(
+            var exception = Assert.Throws<AntiforgeryValidationException>(
                     () => tokenProvider.ValidateTokens(httpContext, cookieToken, fieldtoken));
             Assert.Equal(
                 @"The provided antiforgery token was meant for a different claims-based user than the current user.",
@@ -436,7 +436,7 @@ namespace Microsoft.AspNet.Antiforgery
                 additionalDataProvider: mockAdditionalDataProvider.Object);
 
             // Act & assert
-            var exception = Assert.Throws<InvalidOperationException>(
+            var exception = Assert.Throws<AntiforgeryValidationException>(
                     () => tokenProvider.ValidateTokens(httpContext, cookieToken, fieldtoken));
             Assert.Equal(@"The provided antiforgery token failed a custom data check.", exception.Message);
         }

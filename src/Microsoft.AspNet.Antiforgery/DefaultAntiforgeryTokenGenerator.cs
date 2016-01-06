@@ -119,13 +119,13 @@ namespace Microsoft.AspNet.Antiforgery
             // Do the tokens have the correct format?
             if (!cookieToken.IsCookieToken || requestToken.IsCookieToken)
             {
-                throw new InvalidOperationException(Resources.AntiforgeryToken_TokensSwapped);
+                throw new AntiforgeryValidationException(Resources.AntiforgeryToken_TokensSwapped);
             }
 
             // Are the security tokens embedded in each incoming token identical?
             if (!object.Equals(cookieToken.SecurityToken, requestToken.SecurityToken))
             {
-                throw new InvalidOperationException(Resources.AntiforgeryToken_SecurityTokenMismatch);
+                throw new AntiforgeryValidationException(Resources.AntiforgeryToken_SecurityTokenMismatch);
             }
 
             // Is the incoming token meant for the current user?
@@ -153,20 +153,20 @@ namespace Microsoft.AspNet.Antiforgery
 
             if (!comparer.Equals(requestToken.Username, currentUsername))
             {
-                throw new InvalidOperationException(
+                throw new AntiforgeryValidationException(
                     Resources.FormatAntiforgeryToken_UsernameMismatch(requestToken.Username, currentUsername));
             }
 
-            if (!Equals(requestToken.ClaimUid, currentClaimUid))
+            if (!object.Equals(requestToken.ClaimUid, currentClaimUid))
             {
-                throw new InvalidOperationException(Resources.AntiforgeryToken_ClaimUidMismatch);
+                throw new AntiforgeryValidationException(Resources.AntiforgeryToken_ClaimUidMismatch);
             }
 
             // Is the AdditionalData valid?
             if (_additionalDataProvider != null &&
                 !_additionalDataProvider.ValidateAdditionalData(httpContext, requestToken.AdditionalData))
             {
-                throw new InvalidOperationException(Resources.AntiforgeryToken_AdditionalDataCheckFailed);
+                throw new AntiforgeryValidationException(Resources.AntiforgeryToken_AdditionalDataCheckFailed);
             }
         }
 

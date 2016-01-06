@@ -68,7 +68,7 @@ namespace Microsoft.AspNet.Antiforgery
             var requestCookie = httpContext.Request.Cookies[_options.CookieName];
             if (string.IsNullOrEmpty(requestCookie))
             {
-                throw new InvalidOperationException(
+                throw new AntiforgeryValidationException(
                     Resources.FormatAntiforgery_CookieToken_MustBeProvided(_options.CookieName));
             }
 
@@ -92,19 +92,19 @@ namespace Microsoft.AspNet.Antiforgery
                 if (_options.HeaderName == null)
                 {
                     var message = Resources.FormatAntiforgery_FormToken_MustBeProvided(_options.FormFieldName);
-                    throw new InvalidOperationException(message);
+                    throw new AntiforgeryValidationException(message);
                 }
                 else if (!httpContext.Request.HasFormContentType)
                 {
                     var message = Resources.FormatAntiforgery_HeaderToken_MustBeProvided(_options.HeaderName);
-                    throw new InvalidOperationException(message);
+                    throw new AntiforgeryValidationException(message);
                 }
                 else
                 {
                     var message = Resources.FormatAntiforgery_RequestToken_MustBeProvided(
                         _options.FormFieldName,
                         _options.HeaderName);
-                    throw new InvalidOperationException(message);
+                    throw new AntiforgeryValidationException(message);
                 }
             }
 

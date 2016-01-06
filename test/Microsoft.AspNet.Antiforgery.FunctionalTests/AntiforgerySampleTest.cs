@@ -43,13 +43,13 @@ namespace Microsoft.AspNet.Antiforgery.FunctionalTests
             var httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, "http://localhost/api/items");
 
             // Act
-            var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            var exception = await Assert.ThrowsAsync<AntiforgeryValidationException>(async () =>
             {
                 var response = await Client.SendAsync(httpRequestMessage);
             });
 
             // Assert
-            Assert.Contains("required antiforgery cookie", exception.Message);
+            Assert.Contains("The required antiforgery cookie \"3Cs-jwHTMFk\" is not present.", exception.Message);
         }
 
         [Fact]

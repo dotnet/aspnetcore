@@ -112,7 +112,7 @@ namespace Microsoft.AspNet.Antiforgery
             // Arrange
             var mockHttpContext = GetMockHttpContext(_cookieName, "invalid-value");
 
-            var expectedException = new InvalidOperationException("some exception");
+            var expectedException = new AntiforgeryValidationException("some exception");
             var mockSerializer = new Mock<IAntiforgeryTokenSerializer>();
             mockSerializer
                 .Setup(o => o.Deserialize("invalid-value"))
@@ -128,7 +128,7 @@ namespace Microsoft.AspNet.Antiforgery
                 tokenSerializer: mockSerializer.Object);
 
             // Act & assert
-            var ex = Assert.Throws<InvalidOperationException>(() => tokenStore.GetCookieToken(mockHttpContext));
+            var ex = Assert.Throws<AntiforgeryValidationException>(() => tokenStore.GetCookieToken(mockHttpContext));
             Assert.Same(expectedException, ex);
         }
 
@@ -179,7 +179,7 @@ namespace Microsoft.AspNet.Antiforgery
                 tokenSerializer: Mock.Of<IAntiforgeryTokenSerializer>());
 
             // Act
-            var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            var exception = await Assert.ThrowsAsync<AntiforgeryValidationException>(
                 async () => await tokenStore.GetRequestTokensAsync(httpContext));
 
             // Assert         
@@ -212,7 +212,7 @@ namespace Microsoft.AspNet.Antiforgery
                 tokenSerializer: new DefaultAntiforgeryTokenSerializer(new EphemeralDataProtectionProvider()));
 
             // Act
-            var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            var exception = await Assert.ThrowsAsync<AntiforgeryValidationException>(
                 async () => await tokenStore.GetRequestTokensAsync(httpContext));
 
             // Assert         
@@ -315,7 +315,7 @@ namespace Microsoft.AspNet.Antiforgery
                 tokenSerializer: new DefaultAntiforgeryTokenSerializer(new EphemeralDataProtectionProvider()));
 
             // Act
-            var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            var exception = await Assert.ThrowsAsync<AntiforgeryValidationException>(
                 async () => await tokenStore.GetRequestTokensAsync(httpContext));
 
             // Assert
@@ -346,7 +346,7 @@ namespace Microsoft.AspNet.Antiforgery
                 tokenSerializer: Mock.Of<IAntiforgeryTokenSerializer>());
 
             // Act
-            var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            var exception = await Assert.ThrowsAsync<AntiforgeryValidationException>(
                 async () => await tokenStore.GetRequestTokensAsync(httpContext));
 
             // Assert         
