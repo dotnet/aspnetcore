@@ -9,8 +9,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
 {
     public static class MemoryPoolIterator2Extensions
     {
-        private const int _maxStackAllocBytes = 16384;
-
         private static readonly Encoding _utf8 = Encoding.UTF8;
 
         public const string HttpConnectMethod = "CONNECT";
@@ -81,102 +79,110 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
             }
         }
 
-        private static unsafe string GetAsciiStringStack(byte[] input, int inputOffset, int length)
-        {
-            // avoid declaring other local vars, or doing work with stackalloc
-            // to prevent the .locals init cil flag , see: https://github.com/dotnet/coreclr/issues/1279
-            char* output = stackalloc char[length];
-
-            return GetAsciiStringImplementation(output, input, inputOffset, length);
-        }
-
-        private static unsafe string GetAsciiStringImplementation(char* output, byte[] input, int inputOffset, int length)
-        {
-            for (var i = 0; i < length; i++)
-            {
-                output[i] = (char)input[inputOffset + i];
-            }
-
-            return new string(output, 0, length);
-        }
-
-        private static unsafe string GetAsciiStringStack(MemoryPoolBlock2 start, MemoryPoolIterator2 end, int inputOffset, int length)
-        {
-            // avoid declaring other local vars, or doing work with stackalloc
-            // to prevent the .locals init cil flag , see: https://github.com/dotnet/coreclr/issues/1279
-            char* output = stackalloc char[length];
-
-            return GetAsciiStringImplementation(output, start, end, inputOffset, length);
-        }
-
-        private unsafe static string GetAsciiStringHeap(MemoryPoolBlock2 start, MemoryPoolIterator2 end, int inputOffset, int length)
-        {
-            var buffer = new char[length];
-
-            fixed (char* output = buffer)
-            {
-                return GetAsciiStringImplementation(output, start, end, inputOffset, length);
-            }
-        }
-
-        private static unsafe string GetAsciiStringImplementation(char* output, MemoryPoolBlock2 start, MemoryPoolIterator2 end, int inputOffset, int length)
-        {
-            var outputOffset = 0;
-            var block = start;
-            var remaining = length;
-
-            var endBlock = end.Block;
-            var endIndex = end.Index;
-
-            while (true)
-            {
-                int following = (block != endBlock ? block.End : endIndex) - inputOffset;
-
-                if (following > 0)
-                {
-                    var input = block.Array;
-                    for (var i = 0; i < following; i++)
-                    {
-                        output[i + outputOffset] = (char)input[i + inputOffset];
-                    }
-
-                    remaining -= following;
-                    outputOffset += following;
-                }
-
-                if (remaining == 0)
-                {
-                    return new string(output, 0, length);
-                }
-
-                block = block.Next;
-                inputOffset = block.Start;
-            }
-        }
-
-        public static string GetAsciiString(this MemoryPoolIterator2 start, MemoryPoolIterator2 end)
+        public unsafe static string GetAsciiString(this MemoryPoolIterator2 start, MemoryPoolIterator2 end)
         {
             if (start.IsDefault || end.IsDefault)
             {
-                return default(string);
+                return null;
             }
 
             var length = start.GetLength(end);
 
+            if (length == 0)
+            {
+                return null;
+            }
+
             // Bytes out of the range of ascii are treated as "opaque data" 
             // and kept in string as a char value that casts to same input byte value
             // https://tools.ietf.org/html/rfc7230#section-3.2.4
-            if (end.Block == start.Block)
+
+            var inputOffset = start.Index;
+            var block = start.Block;
+
+            var asciiString = new string('\0', length);
+
+            fixed (char* outputStart = asciiString)
             {
-                return GetAsciiStringStack(start.Block.Array, start.Index, length);
+                var output = outputStart;
+                var remaining = length;
+
+                var endBlock = end.Block;
+                var endIndex = end.Index;
+
+                while (true)
+                {
+                    int following = (block != endBlock ? block.End : endIndex) - inputOffset;
+
+                    if (following > 0)
+                    {
+                        fixed (byte* blockStart = block.Array)
+                        {
+                            var input = blockStart + inputOffset;
+                            var i = 0;
+                            while (i < following - 11)
+                            {
+                                i += 12;
+                                *(output) = (char)*(input);
+                                *(output + 1) = (char)*(input + 1);
+                                *(output + 2) = (char)*(input + 2);
+                                *(output + 3) = (char)*(input + 3);
+                                *(output + 4) = (char)*(input + 4);
+                                *(output + 5) = (char)*(input + 5);
+                                *(output + 6) = (char)*(input + 6);
+                                *(output + 7) = (char)*(input + 7);
+                                *(output + 8) = (char)*(input + 8);
+                                *(output + 9) = (char)*(input + 9);
+                                *(output + 10) = (char)*(input + 10);
+                                *(output + 11) = (char)*(input + 11);
+                                output += 12;
+                                input += 12;
+                            }
+                            if (i < following - 5)
+                            {
+                                i += 6;
+                                *(output) = (char)*(input);
+                                *(output + 1) = (char)*(input + 1);
+                                *(output + 2) = (char)*(input + 2);
+                                *(output + 3) = (char)*(input + 3);
+                                *(output + 4) = (char)*(input + 4);
+                                *(output + 5) = (char)*(input + 5);
+                                output += 6;
+                                input += 6;
+                            }
+                            if (i < following - 3)
+                            {
+                                i += 4;
+                                *(output) = (char)*(input);
+                                *(output + 1) = (char)*(input + 1);
+                                *(output + 2) = (char)*(input + 2);
+                                *(output + 3) = (char)*(input + 3);
+                                output += 4;
+                                input += 4;
+                            }
+                            while (i < following)
+                            {
+                                i++;
+                                *output = (char)*input;
+                                output++;
+                                input++;
+                            }
+                        
+                            remaining -= following;
+                        }
+                    }
+
+                    if (remaining == 0)
+                    {
+                        break;
+                    }
+
+                    block = block.Next;
+                    inputOffset = block.Start;
+                }
             }
 
-            if (length > _maxStackAllocBytes)
-            {
-                return GetAsciiStringHeap(start.Block, end, start.Index, length);
-            }
-
-            return GetAsciiStringStack(start.Block, end, start.Index, length);
+            return asciiString;
         }
 
         public static string GetUtf8String(this MemoryPoolIterator2 start, MemoryPoolIterator2 end)
