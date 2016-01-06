@@ -74,20 +74,20 @@ namespace IdentitySamples
             app.UseDeveloperExceptionPage()
                .UseStaticFiles()
                .UseIdentity()
-               .UseFacebookAuthentication(options =>
+               .UseFacebookAuthentication(new FacebookOptions
                {
-                   options.AppId = "901611409868059";
-                   options.AppSecret = "4aa3c530297b1dcebc8860334b39668b";
+                   AppId = "901611409868059",
+                   AppSecret = "4aa3c530297b1dcebc8860334b39668b"
                })
-               .UseGoogleAuthentication(options =>
+               .UseGoogleAuthentication(new GoogleOptions
                {
-                   options.ClientId = "514485782433-fr3ml6sq0imvhi8a7qir0nb46oumtgn9.apps.googleusercontent.com";
-                   options.ClientSecret = "V2nDD9SkFbvLTqAUBWBBxYAL";
+                   ClientId = "514485782433-fr3ml6sq0imvhi8a7qir0nb46oumtgn9.apps.googleusercontent.com",
+                   ClientSecret = "V2nDD9SkFbvLTqAUBWBBxYAL"
                })
-               .UseTwitterAuthentication(options =>
+               .UseTwitterAuthentication(new TwitterOptions
                {
-                   options.ConsumerKey = "BSdJJ0CrDuvEhpkchnukXZBUv";
-                   options.ConsumerSecret = "xKUNuKhsRdHD03eLn67xhPAyE1wFFEndFo1X2UJaK2m1jdAxf4";
+                   ConsumerKey = "BSdJJ0CrDuvEhpkchnukXZBUv",
+                   ConsumerSecret = "xKUNuKhsRdHD03eLn67xhPAyE1wFFEndFo1X2UJaK2m1jdAxf4"
                })
                .UseMvc(routes =>
                 {

@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNet.Authentication.Cookies;
+using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 
 namespace Microsoft.AspNet.Identity

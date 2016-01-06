@@ -2,8 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNet.Identity;
 
-namespace Microsoft.AspNet.Identity
+namespace Microsoft.AspNet.Builder
 {
     /// <summary>
     /// Represents all the options you can use to configure the identity system.

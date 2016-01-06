@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Identity;
@@ -44,7 +45,6 @@ namespace Microsoft.Extensions.DependencyInjection
             where TRole : class
         {
             // Services used by identity
-            services.AddOptions();
             services.AddAuthentication(options =>
             {
                 // This is the Default value for ExternalCookieAuthenticationScheme

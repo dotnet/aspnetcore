@@ -5,7 +5,7 @@ using System;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Authentication.Cookies;
-using Microsoft.AspNet.Http.Authentication;
+using Microsoft.AspNet.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 

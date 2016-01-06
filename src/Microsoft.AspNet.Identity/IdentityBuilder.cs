@@ -3,6 +3,7 @@
 
 using System;
 using System.Reflection;
+using Microsoft.AspNet.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNet.Identity
