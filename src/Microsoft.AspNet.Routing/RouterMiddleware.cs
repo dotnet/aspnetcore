@@ -1,10 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Routing;
+using Microsoft.AspNet.Routing.Logging;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNet.Builder
@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.Builder
 
             if (context.Handler == null)
             {
-                _logger.LogDebug("Request did not match any routes.");
+                _logger.RequestDidNotMatchRoutes();
                 await _next.Invoke(httpContext);
             }
             else

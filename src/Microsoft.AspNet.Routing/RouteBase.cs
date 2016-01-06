@@ -7,6 +7,7 @@ using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Routing.Internal;
+using Microsoft.AspNet.Routing.Logging;
 using Microsoft.AspNet.Routing.Template;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -105,13 +106,9 @@ namespace Microsoft.AspNet.Routing
             {
                 return TaskCache.CompletedTask;
             }
+            _logger.MatchedRouteName(Name, ParsedTemplate.TemplateText);
 
-            _logger.LogDebug(
-                "Request successfully matched the route with name '{RouteName}' and template '{RouteTemplate}'.",
-                Name,
-                ParsedTemplate.TemplateText);
-
-           return OnRouteMatched(context);
+            return OnRouteMatched(context);
         }
 
         /// <inheritdoc />

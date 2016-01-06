@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Routing.Logging;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNet.Routing
@@ -53,12 +54,7 @@ namespace Microsoft.AspNet.Routing
                         object routeValue;
                         routeValues.TryGetValue(kvp.Key, out routeValue);
 
-                        logger.LogDebug(
-                            "Route value '{RouteValue}' with key '{RouteKey}' did not match " +
-                            "the constraint '{RouteConstraint}'.",
-                            routeValue,
-                            kvp.Key,
-                            kvp.Value);
+                        logger.RouteValueDoesNotMatchConstraint(routeValue, kvp.Key, kvp.Value);
                     }
 
                     return false;
