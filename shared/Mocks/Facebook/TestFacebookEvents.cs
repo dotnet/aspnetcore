@@ -15,7 +15,7 @@ namespace MusicStore.Mocks.Facebook
     {
         internal static Task OnCreatingTicket(OAuthCreatingTicketContext context)
         {
-            if (context.Principal != null)
+            if (context.Ticket.Principal != null)
             {
                 Helpers.ThrowIfConditionFailed(() => context.AccessToken == "ValidAccessToken", "");
                 Helpers.ThrowIfConditionFailed(() => FacebookHelper.GetEmail(context.User) == "AspnetvnextTest@test.com", "");
@@ -26,7 +26,7 @@ namespace MusicStore.Mocks.Facebook
                 Helpers.ThrowIfConditionFailed(() => context.User.SelectToken("id").ToString() == FacebookHelper.GetId(context.User), "");
                 Helpers.ThrowIfConditionFailed(() => context.ExpiresIn.Value == TimeSpan.FromSeconds(100), "");
                 Helpers.ThrowIfConditionFailed(() => context.AccessToken == "ValidAccessToken", "");
-                context.Principal.Identities.First().AddClaim(new Claim("ManageStore", "false"));
+                context.Ticket.Principal.Identities.First().AddClaim(new Claim("ManageStore", "false"));
             }
 
             return Task.FromResult(0);
