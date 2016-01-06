@@ -1,5 +1,3 @@
-use assembly='WindowsBase, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35'
-use namespace='System.IO.Packaging'
 use import="Environment"
 
 var VERSION='0.1'
@@ -9,78 +7,20 @@ var AUTHORS='Microsoft Open Technologies, Inc.'
 use-standard-lifecycle
 k-standard-goals
 
-var Configuration2='${E("Configuration")}'
-var ROOT = '${Directory.GetCurrentDirectory()}'
-var BUILD_DIR2 = '${Path.Combine(ROOT, "build")}'
+var Configuration_Local = '${E("Configuration")}'
+var ROOT_Local = '${Directory.GetCurrentDirectory()}'
+var BUILD_DIR_Local = '${Path.Combine(ROOT_Local, "build")}'
 
-#build-compile target='compile' if='!IsWindows && !IsBuildV2 && Directory.Exists("src")'
-    @{
-        var projectFiles = Files.Include("src/**/project.json")
-            .Exclude("src/Microsoft.AspNet.DataProtection.SystemWeb/project.json")
-            .ToList();
-
-        if (ShouldRunInParallel)
-        {
-            Parallel.ForEach(projectFiles, projectFile => DnuPack(projectFile, BUILD_DIR2, Configuration2));
-        }
-        else
-        {
-            projectFiles.ForEach(projectFile => DnuPack(projectFile, BUILD_DIR2, Configuration2));
-        }
-
-        foreach (var nupkg in Files.Include(Path.Combine(BUILD_DIR2, "*/*.nupkg")))
-        {
-            File.Copy(nupkg, Path.Combine(BUILD_DIR2, Path.GetFileName(nupkg)), true);
-        }
+#build-compile target='compile' if='IsLinux'
+  @{
+    var projectFiles = Files.Include("src/**/project.json")
+        .Exclude("src/Microsoft.AspNet.DataProtection.SystemWeb/project.json")
+        .ToList();
+        
+    projectFiles.ForEach(projectFile => DotnetPack(projectFile, BUILD_DIR_Local, Configuration_Local));
+    
+    foreach (var nupkg in Files.Include(Path.Combine(BUILD_DIR_Local, "*/*.nupkg")))
+    {
+        File.Copy(nupkg, Path.Combine(BUILD_DIR_Local, Path.GetFileName(nupkg)), true);
     }
-
-#build-compile target='compile' if='!IsWindows && IsBuildV2'
-    @{
-        if (Directory.Exists("src"))
-        {
-            var projects = Files.Include("src/*")
-                .Exclude("src/Microsoft.AspNet.DataProtection.SystemWeb")
-                .ToList();
-
-            DnuPack(string.Join(";", projects), BUILD_DIR2, Configuration2);
-
-            foreach (var nupkg in Files.Include(Path.Combine(BUILD_DIR2, "*/*.nupkg")))
-            {
-                File.Copy(nupkg, Path.Combine(BUILD_DIR2, Path.GetFileName(nupkg)), true);
-            }
-        }
-
-        if (Directory.Exists("test"))
-        {
-            DnuBuild("test/*", Configuration2);
-        }
-    }
-
-functions
-    @{
-        PackagePart CreatePartFromFile(
-            Package destination,
-            string sourceFileName,
-            string partUriString)
-        {
-            var partUri = PackUriHelper.CreatePartUri(new Uri(partUriString, UriKind.Relative));
-            var packagePart = destination.CreatePart(partUri, "application/octet", CompressionOption.Maximum);
-
-            using (var sourceStream = File.OpenRead(sourceFileName))
-            using (var stream = packagePart.GetStream())
-            {
-                sourceStream.CopyTo(stream);
-            }
-
-            return packagePart;
-        }
-
-        bool IsWindows
-        {
-            get
-            {
-                var p = (int)Environment.OSVersion.Platform;
-                return (p != 4) && (p != 6) && (p != 128);
-            }
-        }
-    }
+  }
