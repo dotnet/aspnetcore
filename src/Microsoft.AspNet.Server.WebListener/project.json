@@ -11,13 +11,7 @@
     "keyFile": "../../tools/Key.snk"
   },
   "frameworks": {
-    "dnx451": {},
     "net451": { },
-    "dnxcore50": {
-      "dependencies": {
-        "System.Security.Claims": "4.0.1-*"
-      }
-    },
     "dotnet5.4": {
       "dependencies": {
         "System.Security.Claims": "4.0.1-*"

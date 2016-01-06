@@ -24,14 +24,14 @@ namespace TestClient
 
             /*
             int completionCount = 0;
-            int itterations = 30000;
-            for (int i = 0; i < itterations; i++)
+            int iterations = 30000;
+            for (int i = 0; i < iterations; i++)
             {
                 client.GetAsync(Address)
                     .ContinueWith(t => Interlocked.Increment(ref completionCount));
             }
 
-            while (completionCount < itterations)
+            while (completionCount < iterations)
             {
                 Thread.Sleep(10);
             }*/
