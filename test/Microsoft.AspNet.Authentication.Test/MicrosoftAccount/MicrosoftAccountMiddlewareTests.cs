@@ -8,7 +8,6 @@ using System.Security.Claims;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Authentication.MicrosoftAccount;
 using Microsoft.AspNet.Authentication.OAuth;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.DataProtection;
@@ -27,19 +26,18 @@ namespace Microsoft.AspNet.Authentication.Tests.MicrosoftAccount
         [Fact]
         public async Task ChallengeWillTriggerApplyRedirectEvent()
         {
-            var server = CreateServer(
-                options =>
+            var server = CreateServer(new MicrosoftAccountOptions
                 {
-                    options.ClientId = "Test Client Id";
-                    options.ClientSecret = "Test Client Secret";
-                    options.Events = new OAuthEvents
+                    ClientId = "Test Client Id",
+                    ClientSecret = "Test Client Secret",
+                    Events = new OAuthEvents
                     {
                         OnRedirectToAuthorizationEndpoint = context =>
                         {
                             context.Response.Redirect(context.RedirectUri + "&custom=test");
                             return Task.FromResult(0);
                         }
-                    };
+                    }
                 });
             var transaction = await server.SendAsync("http://example.com/challenge");
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
@@ -50,10 +48,10 @@ namespace Microsoft.AspNet.Authentication.Tests.MicrosoftAccount
         [Fact]
         public async Task SignInThrows()
         {
-            var server = CreateServer(options =>
+            var server = CreateServer(new MicrosoftAccountOptions
             {
-                options.ClientId = "Test Id";
-                options.ClientSecret = "Test Secret";
+                ClientId = "Test Id",
+                ClientSecret = "Test Secret"
             });
             var transaction = await server.SendAsync("https://example.com/signIn");
             Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
@@ -62,10 +60,10 @@ namespace Microsoft.AspNet.Authentication.Tests.MicrosoftAccount
         [Fact]
         public async Task SignOutThrows()
         {
-            var server = CreateServer(options =>
+            var server = CreateServer(new MicrosoftAccountOptions
             {
-                options.ClientId = "Test Id";
-                options.ClientSecret = "Test Secret";
+                ClientId = "Test Id",
+                ClientSecret = "Test Secret"
             });
             var transaction = await server.SendAsync("https://example.com/signOut");
             Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
@@ -74,10 +72,10 @@ namespace Microsoft.AspNet.Authentication.Tests.MicrosoftAccount
         [Fact]
         public async Task ForbidThrows()
         {
-            var server = CreateServer(options =>
+            var server = CreateServer(new MicrosoftAccountOptions
             {
-                options.ClientId = "Test Id";
-                options.ClientSecret = "Test Secret";
+                ClientId = "Test Id",
+                ClientSecret = "Test Secret"
             });
             var transaction = await server.SendAsync("https://example.com/signOut");
             Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
@@ -86,11 +84,10 @@ namespace Microsoft.AspNet.Authentication.Tests.MicrosoftAccount
         [Fact]
         public async Task ChallengeWillTriggerRedirection()
         {
-            var server = CreateServer(
-                options =>
-                {
-                    options.ClientId = "Test Client Id";
-                    options.ClientSecret = "Test Client Secret";
+            var server = CreateServer(new MicrosoftAccountOptions
+            {
+                    ClientId = "Test Client Id",
+                    ClientSecret = "Test Client Secret"
                 });
             var transaction = await server.SendAsync("http://example.com/challenge");
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
@@ -107,13 +104,12 @@ namespace Microsoft.AspNet.Authentication.Tests.MicrosoftAccount
         public async Task AuthenticatedEventCanGetRefreshToken()
         {
             var stateFormat = new PropertiesDataFormat(new EphemeralDataProtectionProvider().CreateProtector("MsftTest"));
-            var server = CreateServer(
-                options =>
-                {
-                    options.ClientId = "Test Client Id";
-                    options.ClientSecret = "Test Client Secret";
-                    options.StateDataFormat = stateFormat;
-                    options.BackchannelHttpHandler = new TestHttpMessageHandler
+            var server = CreateServer(new MicrosoftAccountOptions
+            {
+                    ClientId = "Test Client Id",
+                    ClientSecret = "Test Client Secret",
+                    StateDataFormat = stateFormat,
+                    BackchannelHttpHandler = new TestHttpMessageHandler
                     {
                         Sender = req =>
                         {
@@ -144,8 +140,8 @@ namespace Microsoft.AspNet.Authentication.Tests.MicrosoftAccount
 
                             return null;
                         }
-                    };
-                    options.Events = new OAuthEvents
+                    },
+                    Events = new OAuthEvents
                     {
                         OnCreatingTicket = context =>
                         {
@@ -153,7 +149,7 @@ namespace Microsoft.AspNet.Authentication.Tests.MicrosoftAccount
                             context.Ticket.Principal.AddIdentity(new ClaimsIdentity(new Claim[] { new Claim("RefreshToken", refreshToken, ClaimValueTypes.String, "Microsoft") }, "Microsoft"));
                             return Task.FromResult<object>(null);
                         }
-                    };
+                    }
                 });
             var properties = new AuthenticationProperties();
             var correlationKey = ".AspNet.Correlation.Microsoft";
@@ -176,17 +172,17 @@ namespace Microsoft.AspNet.Authentication.Tests.MicrosoftAccount
             Assert.Equal("Test Refresh Token", transaction.FindClaimValue("RefreshToken"));
         }
 
-        private static TestServer CreateServer(Action<MicrosoftAccountOptions> configureOptions)
+        private static TestServer CreateServer(MicrosoftAccountOptions options)
         {
             var builder = new WebApplicationBuilder()
                 .Configure(app =>
                 {
-                    app.UseCookieAuthentication(options =>
+                    app.UseCookieAuthentication(new CookieAuthenticationOptions
                     {
-                        options.AuthenticationScheme = TestExtensions.CookieAuthenticationScheme;
-                        options.AutomaticAuthenticate = true;
+                        AuthenticationScheme = TestExtensions.CookieAuthenticationScheme,
+                        AutomaticAuthenticate = true
                     });
-                    app.UseMicrosoftAccountAuthentication(configureOptions);
+                    app.UseMicrosoftAccountAuthentication(options);
 
                     app.Use(async (context, next) =>
                     {
@@ -221,9 +217,9 @@ namespace Microsoft.AspNet.Authentication.Tests.MicrosoftAccount
                 .ConfigureServices(services =>
                 {
                     services.AddAuthentication();
-                    services.Configure<SharedAuthenticationOptions>(options =>
+                    services.Configure<SharedAuthenticationOptions>(authOptions =>
                     {
-                        options.SignInScheme = TestExtensions.CookieAuthenticationScheme;
+                        authOptions.SignInScheme = TestExtensions.CookieAuthenticationScheme;
                     });
                 });
             return new TestServer(builder);

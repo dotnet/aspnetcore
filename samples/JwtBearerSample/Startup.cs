@@ -59,13 +59,13 @@ namespace JwtBearerSample
             app.UseDefaultFiles();
             app.UseStaticFiles();
 
-            app.UseJwtBearerAuthentication(options =>
+            app.UseJwtBearerAuthentication(new JwtBearerOptions
             {
-                options.AutomaticAuthenticate = true;
-                options.AutomaticChallenge = true;
+                AutomaticAuthenticate = true,
+                AutomaticChallenge = true,
                 // You also need to update /wwwroot/app/scripts/app.js
-                options.Authority = Configuration["jwt:authority"];
-                options.Audience = Configuration["jwt:audience"];
+                Authority = Configuration["jwt:authority"],
+                Audience = Configuration["jwt:audience"]
             });
 
             // [Authorize] would usually handle this

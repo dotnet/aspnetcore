@@ -27,9 +27,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
         [Fact]
         public async Task NormalRequestPassesThrough()
         {
-            var server = CreateServer(options =>
-            {
-            });
+            var server = CreateServer(new CookieAuthenticationOptions());
             var response = await server.CreateClient().GetAsync("http://example.com/normal");
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
@@ -37,10 +35,10 @@ namespace Microsoft.AspNet.Authentication.Cookies
         [Fact]
         public async Task AjaxLoginRedirectToReturnUrlTurnsInto200WithLocationHeader()
         {
-            var server = CreateServer(options =>
+            var server = CreateServer(new CookieAuthenticationOptions
             {
-                options.AutomaticChallenge = true;
-                options.LoginPath = "/login";
+                AutomaticChallenge = true,
+                LoginPath = "/login"
             });
 
             var transaction = await SendAsync(server, "http://example.com/protected?X-Requested-With=XMLHttpRequest");
@@ -53,9 +51,9 @@ namespace Microsoft.AspNet.Authentication.Cookies
         [Fact]
         public async Task AjaxForbidTurnsInto403WithLocationHeader()
         {
-            var server = CreateServer(options =>
+            var server = CreateServer(new CookieAuthenticationOptions
             {
-                options.AccessDeniedPath = "/denied";
+                AccessDeniedPath = "/denied"
             });
 
             var transaction = await SendAsync(server, "http://example.com/forbid?X-Requested-With=XMLHttpRequest");
@@ -68,9 +66,9 @@ namespace Microsoft.AspNet.Authentication.Cookies
         [Fact]
         public async Task AjaxLogoutRedirectToReturnUrlTurnsInto200WithLocationHeader()
         {
-            var server = CreateServer(options =>
+            var server = CreateServer(new CookieAuthenticationOptions
             {
-                options.LogoutPath = "/signout";
+                LogoutPath = "/signout"
             });
 
             var transaction = await SendAsync(server, "http://example.com/signout?X-Requested-With=XMLHttpRequest&ReturnUrl=/");
@@ -83,9 +81,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
         [Fact]
         public async Task AjaxChallengeRedirectTurnsInto200WithLocationHeader()
         {
-            var server = CreateServer(options =>
-            {
-            });
+            var server = CreateServer(new CookieAuthenticationOptions());
 
             var transaction = await SendAsync(server, "http://example.com/challenge?X-Requested-With=XMLHttpRequest&ReturnUrl=/");
             Assert.Equal(HttpStatusCode.Unauthorized, transaction.Response.StatusCode);
@@ -100,10 +96,10 @@ namespace Microsoft.AspNet.Authentication.Cookies
         [InlineData(false)]
         public async Task ProtectedRequestShouldRedirectToLoginOnlyWhenAutomatic(bool auto)
         {
-            var server = CreateServer(options =>
+            var server = CreateServer(new CookieAuthenticationOptions
             {
-                options.LoginPath = new PathString("/login");
-                options.AutomaticChallenge = auto;
+                LoginPath = new PathString("/login"),
+                AutomaticChallenge = auto
             });
 
             var transaction = await SendAsync(server, "http://example.com/protected");
@@ -120,7 +116,10 @@ namespace Microsoft.AspNet.Authentication.Cookies
         [Fact]
         public async Task ProtectedCustomRequestShouldRedirectToCustomRedirectUri()
         {
-            var server = CreateServer(options => options.AutomaticChallenge = true);
+            var server = CreateServer(new CookieAuthenticationOptions
+            {
+                AutomaticChallenge = true
+            });
 
             var transaction = await SendAsync(server, "http://example.com/protected/CustomRedirect");
 
@@ -151,10 +150,10 @@ namespace Microsoft.AspNet.Authentication.Cookies
         [Fact]
         public async Task SignInCausesDefaultCookieToBeCreated()
         {
-            var server = CreateServer(options =>
+            var server = CreateServer(new CookieAuthenticationOptions
             {
-                options.LoginPath = new PathString("/login");
-                options.CookieName = "TestCookie";
+                LoginPath = new PathString("/login"),
+                CookieName = "TestCookie"
             }, SignInAsAlice);
 
             var transaction = await SendAsync(server, "http://example.com/testpath");
@@ -171,10 +170,10 @@ namespace Microsoft.AspNet.Authentication.Cookies
         [Fact]
         public async Task SignInWrongAuthTypeThrows()
         {
-            var server = CreateServer(options =>
+            var server = CreateServer(new CookieAuthenticationOptions
             {
-                options.LoginPath = new PathString("/login");
-                options.CookieName = "TestCookie";
+                LoginPath = new PathString("/login"),
+                CookieName = "TestCookie"
             }, SignInAsWrong);
 
             await Assert.ThrowsAsync<InvalidOperationException>(async () => await SendAsync(server, "http://example.com/testpath"));
@@ -183,10 +182,10 @@ namespace Microsoft.AspNet.Authentication.Cookies
         [Fact]
         public async Task SignOutWrongAuthTypeThrows()
         {
-            var server = CreateServer(options =>
+            var server = CreateServer(new CookieAuthenticationOptions
             {
-                options.LoginPath = new PathString("/login");
-                options.CookieName = "TestCookie";
+                LoginPath = new PathString("/login"),
+                CookieName = "TestCookie"
             }, SignOutAsWrong);
 
             await Assert.ThrowsAsync<InvalidOperationException>(async () => await SendAsync(server, "http://example.com/testpath"));
@@ -204,11 +203,11 @@ namespace Microsoft.AspNet.Authentication.Cookies
             string requestUri,
             bool shouldBeSecureOnly)
         {
-            var server = CreateServer(options =>
+            var server = CreateServer(new CookieAuthenticationOptions
             {
-                options.LoginPath = new PathString("/login");
-                options.CookieName = "TestCookie";
-                options.CookieSecure = cookieSecureOption;
+                LoginPath = new PathString("/login"),
+                CookieName = "TestCookie",
+                CookieSecure = cookieSecureOption
             }, SignInAsAlice);
 
             var transaction = await SendAsync(server, requestUri);
@@ -227,13 +226,13 @@ namespace Microsoft.AspNet.Authentication.Cookies
         [Fact]
         public async Task CookieOptionsAlterSetCookieHeader()
         {
-            TestServer server1 = CreateServer(options =>
+            TestServer server1 = CreateServer(new CookieAuthenticationOptions
             {
-                options.CookieName = "TestCookie";
-                options.CookiePath = "/foo";
-                options.CookieDomain = "another.com";
-                options.CookieSecure = CookieSecureOption.Always;
-                options.CookieHttpOnly = true;
+                CookieName = "TestCookie",
+                CookiePath = "/foo",
+                CookieDomain = "another.com",
+                CookieSecure = CookieSecureOption.Always,
+                CookieHttpOnly = true
             }, SignInAsAlice, new Uri("http://example.com/base"));
 
             var transaction1 = await SendAsync(server1, "http://example.com/base/testpath");
@@ -246,11 +245,11 @@ namespace Microsoft.AspNet.Authentication.Cookies
             Assert.Contains(" secure", setCookie1);
             Assert.Contains(" httponly", setCookie1);
 
-            var server2 = CreateServer(options =>
+            var server2 = CreateServer(new CookieAuthenticationOptions
             {
-                options.CookieName = "SecondCookie";
-                options.CookieSecure = CookieSecureOption.Never;
-                options.CookieHttpOnly = false;
+                CookieName = "SecondCookie",
+                CookieSecure = CookieSecureOption.Never,
+                CookieHttpOnly = false
             }, SignInAsAlice, new Uri("http://example.com/base"));
 
             var transaction2 = await SendAsync(server2, "http://example.com/base/testpath");
@@ -268,9 +267,9 @@ namespace Microsoft.AspNet.Authentication.Cookies
         public async Task CookieContainsIdentity()
         {
             var clock = new TestClock();
-            var server = CreateServer(options =>
+            var server = CreateServer(new CookieAuthenticationOptions
             {
-                options.SystemClock = clock;
+                SystemClock = clock
             }, SignInAsAlice);
 
             var transaction1 = await SendAsync(server, "http://example.com/testpath");
@@ -284,24 +283,27 @@ namespace Microsoft.AspNet.Authentication.Cookies
         public async Task CookieAppliesClaimsTransform()
         {
             var clock = new TestClock();
-            var server = CreateServer(options =>
+            var server = CreateServer(new CookieAuthenticationOptions
             {
-                options.SystemClock = clock;
+                SystemClock = clock
             },
             SignInAsAlice,
             baseAddress: null,
-            claimsTransform: o => o.Transformer = new ClaimsTransformer
+            claimsTransform: new ClaimsTransformationOptions
             {
-                OnTransform = p =>
+                Transformer = new ClaimsTransformer
                 {
-                    if (!p.Identities.Any(i => i.AuthenticationType == "xform"))
+                    OnTransform = p =>
                     {
-                        // REVIEW: Xform runs twice, once on Authenticate, and then once from the middleware
-                        var id = new ClaimsIdentity("xform");
-                        id.AddClaim(new Claim("xform", "yup"));
-                        p.AddIdentity(id);
+                        if (!p.Identities.Any(i => i.AuthenticationType == "xform"))
+                        {
+                            // REVIEW: Xform runs twice, once on Authenticate, and then once from the middleware
+                            var id = new ClaimsIdentity("xform");
+                            id.AddClaim(new Claim("xform", "yup"));
+                            p.AddIdentity(id);
+                        }
+                        return Task.FromResult(p);
                     }
-                    return Task.FromResult(p);
                 }
             });
 
@@ -318,11 +320,11 @@ namespace Microsoft.AspNet.Authentication.Cookies
         public async Task CookieStopsWorkingAfterExpiration()
         {
             var clock = new TestClock();
-            var server = CreateServer(options =>
+            var server = CreateServer(new CookieAuthenticationOptions
             {
-                options.SystemClock = clock;
-                options.ExpireTimeSpan = TimeSpan.FromMinutes(10);
-                options.SlidingExpiration = false;
+                SystemClock = clock,
+                ExpireTimeSpan = TimeSpan.FromMinutes(10),
+                SlidingExpiration = false
             }, SignInAsAlice);
 
             var transaction1 = await SendAsync(server, "http://example.com/testpath");
@@ -349,11 +351,11 @@ namespace Microsoft.AspNet.Authentication.Cookies
         public async Task CookieExpirationCanBeOverridenInSignin()
         {
             var clock = new TestClock();
-            var server = CreateServer(options =>
+            var server = CreateServer(new CookieAuthenticationOptions
             {
-                options.SystemClock = clock;
-                options.ExpireTimeSpan = TimeSpan.FromMinutes(10);
-                options.SlidingExpiration = false;
+                SystemClock = clock,
+                ExpireTimeSpan = TimeSpan.FromMinutes(10),
+                SlidingExpiration = false
             },
             context =>
                 context.Authentication.SignInAsync("Cookies",
@@ -384,18 +386,18 @@ namespace Microsoft.AspNet.Authentication.Cookies
         public async Task ExpiredCookieWithValidatorStillExpired()
         {
             var clock = new TestClock();
-            var server = CreateServer(options =>
+            var server = CreateServer(new CookieAuthenticationOptions
             {
-                options.SystemClock = clock;
-                options.ExpireTimeSpan = TimeSpan.FromMinutes(10);
-                options.Events = new CookieAuthenticationEvents
+                SystemClock = clock,
+                ExpireTimeSpan = TimeSpan.FromMinutes(10),
+                Events = new CookieAuthenticationEvents
                 {
                     OnValidatePrincipal = ctx =>
                     {
                         ctx.ShouldRenew = true;
                         return Task.FromResult(0);
                     }
-                };
+                }
             },
             context =>
                 context.Authentication.SignInAsync("Cookies",
@@ -414,12 +416,12 @@ namespace Microsoft.AspNet.Authentication.Cookies
         public async Task CookieCanBeRejectedAndSignedOutByValidator()
         {
             var clock = new TestClock();
-            var server = CreateServer(options =>
+            var server = CreateServer(new CookieAuthenticationOptions
             {
-                options.SystemClock = clock;
-                options.ExpireTimeSpan = TimeSpan.FromMinutes(10);
-                options.SlidingExpiration = false;
-                options.Events = new CookieAuthenticationEvents
+                SystemClock = clock,
+                ExpireTimeSpan = TimeSpan.FromMinutes(10),
+                SlidingExpiration = false,
+                Events = new CookieAuthenticationEvents
                 {
                     OnValidatePrincipal = ctx =>
                     {
@@ -427,7 +429,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
                         ctx.HttpContext.Authentication.SignOutAsync("Cookies");
                         return Task.FromResult(0);
                     }
-                };
+                }
             },
             context =>
                 context.Authentication.SignInAsync("Cookies",
@@ -444,19 +446,19 @@ namespace Microsoft.AspNet.Authentication.Cookies
         public async Task CookieCanBeRenewedByValidator()
         {
             var clock = new TestClock();
-            var server = CreateServer(options =>
+            var server = CreateServer(new CookieAuthenticationOptions
             {
-                options.SystemClock = clock;
-                options.ExpireTimeSpan = TimeSpan.FromMinutes(10);
-                options.SlidingExpiration = false;
-                options.Events = new CookieAuthenticationEvents
+                SystemClock = clock,
+                ExpireTimeSpan = TimeSpan.FromMinutes(10),
+                SlidingExpiration = false,
+                Events = new CookieAuthenticationEvents
                 {
                     OnValidatePrincipal = ctx =>
                     {
                         ctx.ShouldRenew = true;
                         return Task.FromResult(0);
                     }
-                };
+                }
             },
             context =>
                 context.Authentication.SignInAsync("Cookies",
@@ -491,18 +493,18 @@ namespace Microsoft.AspNet.Authentication.Cookies
         public async Task CookieCanBeRenewedByValidatorWithSlidingExpiry()
         {
             var clock = new TestClock();
-            var server = CreateServer(options =>
+            var server = CreateServer(new CookieAuthenticationOptions
             {
-                options.SystemClock = clock;
-                options.ExpireTimeSpan = TimeSpan.FromMinutes(10);
-                options.Events = new CookieAuthenticationEvents
+                SystemClock = clock,
+                ExpireTimeSpan = TimeSpan.FromMinutes(10),
+                Events = new CookieAuthenticationEvents
                 {
                     OnValidatePrincipal = ctx =>
                     {
                         ctx.ShouldRenew = true;
                         return Task.FromResult(0);
                     }
-                };
+                }
             },
             context =>
                 context.Authentication.SignInAsync("Cookies",
@@ -537,19 +539,19 @@ namespace Microsoft.AspNet.Authentication.Cookies
         public async Task CookieValidatorOnlyCalledOnce()
         {
             var clock = new TestClock();
-            var server = CreateServer(options =>
+            var server = CreateServer(new CookieAuthenticationOptions
             {
-                options.SystemClock = clock;
-                options.ExpireTimeSpan = TimeSpan.FromMinutes(10);
-                options.SlidingExpiration = false;
-                options.Events = new CookieAuthenticationEvents
+                SystemClock = clock,
+                ExpireTimeSpan = TimeSpan.FromMinutes(10),
+                SlidingExpiration = false,
+                Events = new CookieAuthenticationEvents
                 {
                     OnValidatePrincipal = ctx =>
                     {
                         ctx.ShouldRenew = true;
                         return Task.FromResult(0);
                     }
-                };
+                }
             },
             context =>
                 context.Authentication.SignInAsync("Cookies",
@@ -588,12 +590,12 @@ namespace Microsoft.AspNet.Authentication.Cookies
             var clock = new TestClock();
             DateTimeOffset? lastValidateIssuedDate = null;
             DateTimeOffset? lastExpiresDate = null;
-            var server = CreateServer(options =>
+            var server = CreateServer(new CookieAuthenticationOptions
             {
-                options.SystemClock = clock;
-                options.ExpireTimeSpan = TimeSpan.FromMinutes(10);
-                options.SlidingExpiration = sliding;
-                options.Events = new CookieAuthenticationEvents
+                SystemClock = clock,
+                ExpireTimeSpan = TimeSpan.FromMinutes(10),
+                SlidingExpiration = sliding,
+                Events = new CookieAuthenticationEvents
                 {
                     OnValidatePrincipal = ctx =>
                     {
@@ -602,7 +604,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
                         ctx.ShouldRenew = true;
                         return Task.FromResult(0);
                     }
-                };
+                }
             },
             context =>
                 context.Authentication.SignInAsync("Cookies",
@@ -640,19 +642,19 @@ namespace Microsoft.AspNet.Authentication.Cookies
         public async Task CookieExpirationCanBeOverridenInEvent()
         {
             var clock = new TestClock();
-            var server = CreateServer(options =>
+            var server = CreateServer(new CookieAuthenticationOptions
             {
-                options.SystemClock = clock;
-                options.ExpireTimeSpan = TimeSpan.FromMinutes(10);
-                options.SlidingExpiration = false;
-                options.Events = new CookieAuthenticationEvents()
+                SystemClock = clock,
+                ExpireTimeSpan = TimeSpan.FromMinutes(10),
+                SlidingExpiration = false,
+                Events = new CookieAuthenticationEvents()
                 {
                     OnSigningIn = context =>
                     {
                         context.Properties.ExpiresUtc = clock.UtcNow.Add(TimeSpan.FromMinutes(5));
                         return Task.FromResult(0);
                     }
-                };
+                }
             }, SignInAsAlice);
 
             var transaction1 = await SendAsync(server, "http://example.com/testpath");
@@ -678,11 +680,11 @@ namespace Microsoft.AspNet.Authentication.Cookies
         public async Task CookieIsRenewedWithSlidingExpiration()
         {
             var clock = new TestClock();
-            var server = CreateServer(options =>
+            var server = CreateServer(new CookieAuthenticationOptions
             {
-                options.SystemClock = clock;
-                options.ExpireTimeSpan = TimeSpan.FromMinutes(10);
-                options.SlidingExpiration = true;
+                SystemClock = clock,
+                ExpireTimeSpan = TimeSpan.FromMinutes(10),
+                SlidingExpiration = true
             }, SignInAsAlice);
 
             var transaction1 = await SendAsync(server, "http://example.com/testpath");
@@ -715,7 +717,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
         public async Task CookieUsesPathBaseByDefault()
         {
             var clock = new TestClock();
-            var server = CreateServer(options => { },
+            var server = CreateServer(new CookieAuthenticationOptions(),
             context =>
             {
                 Assert.Equal(new PathString("/base"), context.Request.PathBase);
@@ -734,10 +736,10 @@ namespace Microsoft.AspNet.Authentication.Cookies
         public async Task CookieTurnsChallengeIntoForbidWithCookie(bool automatic)
         {
             var clock = new TestClock();
-            var server = CreateServer(options =>
+            var server = CreateServer(new CookieAuthenticationOptions
             {
-                options.AutomaticAuthenticate = automatic;
-                options.SystemClock = clock;
+                AutomaticAuthenticate = automatic,
+                SystemClock = clock
             },
             SignInAsAlice);
 
@@ -758,10 +760,10 @@ namespace Microsoft.AspNet.Authentication.Cookies
         public async Task CookieChallengeRedirectsToLoginWithoutCookie(bool automatic)
         {
             var clock = new TestClock();
-            var server = CreateServer(options =>
+            var server = CreateServer(new CookieAuthenticationOptions
             {
-                options.AutomaticAuthenticate = automatic;
-                options.SystemClock = clock;
+                AutomaticAuthenticate = automatic,
+                SystemClock = clock
             },
             SignInAsAlice);
 
@@ -779,10 +781,10 @@ namespace Microsoft.AspNet.Authentication.Cookies
         public async Task CookieForbidRedirectsWithoutCookie(bool automatic)
         {
             var clock = new TestClock();
-            var server = CreateServer(options =>
+            var server = CreateServer(new CookieAuthenticationOptions
             {
-                options.AutomaticAuthenticate = automatic;
-                options.SystemClock = clock;
+                AutomaticAuthenticate = automatic,
+                SystemClock = clock
             },
             SignInAsAlice);
 
@@ -798,10 +800,10 @@ namespace Microsoft.AspNet.Authentication.Cookies
         public async Task CookieTurns401ToAccessDeniedWhenSetWithCookie()
         {
             var clock = new TestClock();
-            var server = CreateServer(options =>
+            var server = CreateServer(new CookieAuthenticationOptions
             {
-                options.SystemClock = clock;
-                options.AccessDeniedPath = new PathString("/accessdenied");
+                SystemClock = clock,
+                AccessDeniedPath = new PathString("/accessdenied")
             },
             SignInAsAlice);
 
@@ -819,10 +821,10 @@ namespace Microsoft.AspNet.Authentication.Cookies
         public async Task CookieChallengeRedirectsWithLoginPath()
         {
             var clock = new TestClock();
-            var server = CreateServer(options =>
+            var server = CreateServer(new CookieAuthenticationOptions
             {
-                options.SystemClock = clock;
-                options.LoginPath = new PathString("/page");
+                SystemClock = clock,
+                LoginPath = new PathString("/page")
             });
 
             var transaction1 = await SendAsync(server, "http://example.com/testpath");
@@ -836,10 +838,10 @@ namespace Microsoft.AspNet.Authentication.Cookies
         public async Task CookieChallengeWithUnauthorizedRedirectsToLoginIfNotAuthenticated()
         {
             var clock = new TestClock();
-            var server = CreateServer(options =>
+            var server = CreateServer(new CookieAuthenticationOptions
             {
-                options.SystemClock = clock;
-                options.LoginPath = new PathString("/page");
+                SystemClock = clock,
+                LoginPath = new PathString("/page")
             });
 
             var transaction1 = await SendAsync(server, "http://example.com/testpath");
@@ -855,7 +857,10 @@ namespace Microsoft.AspNet.Authentication.Cookies
             var builder = new WebApplicationBuilder()
                 .Configure(app =>
                 {
-                    app.UseCookieAuthentication(options => options.LoginPath = new PathString("/page"));
+                    app.UseCookieAuthentication(new CookieAuthenticationOptions
+                    {
+                        LoginPath = new PathString("/page")
+                    });
                     app.Map("/login", signoutApp => signoutApp.Run(context => context.Authentication.ChallengeAsync("Cookies", new AuthenticationProperties() { RedirectUri = "/" })));
                 })
                 .ConfigureServices(services => services.AddAuthentication());
@@ -895,7 +900,10 @@ namespace Microsoft.AspNet.Authentication.Cookies
             var builder = new WebApplicationBuilder()
                 .Configure(app =>
                 {
-                    app.UseCookieAuthentication(options => options.CookieName = "One");
+                    app.UseCookieAuthentication(new CookieAuthenticationOptions
+                    {
+                        CookieName = "One"
+                    });
                     app.UseCookieAuthentication();
                     app.Run(context => context.Authentication.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(new ClaimsIdentity())));
                 })
@@ -914,7 +922,10 @@ namespace Microsoft.AspNet.Authentication.Cookies
             var builder = new WebApplicationBuilder()
                 .Configure(app =>
                 {
-                    app.UseCookieAuthentication(options => options.LoginPath = new PathString("/login"));
+                    app.UseCookieAuthentication(new CookieAuthenticationOptions
+                    {
+                        LoginPath = new PathString("/login")
+                    });
                     app.Map("/notlogin", signoutApp => signoutApp.Run(context => context.Authentication.SignInAsync("Cookies",
                         new ClaimsPrincipal())));
                 })
@@ -932,7 +943,10 @@ namespace Microsoft.AspNet.Authentication.Cookies
             var builder = new WebApplicationBuilder()
                 .Configure(app =>
                 {
-                    app.UseCookieAuthentication(options => options.LoginPath = new PathString("/login"));
+                    app.UseCookieAuthentication(new CookieAuthenticationOptions
+                    {
+                        LoginPath = new PathString("/login")
+                    });
                     app.Map("/login", signoutApp => signoutApp.Run(context => context.Authentication.SignInAsync("Cookies",
                         new ClaimsPrincipal())));
                 })
@@ -954,7 +968,10 @@ namespace Microsoft.AspNet.Authentication.Cookies
             var builder = new WebApplicationBuilder()
                 .Configure(app =>
                 {
-                    app.UseCookieAuthentication(options => options.LogoutPath = new PathString("/logout"));
+                    app.UseCookieAuthentication(new CookieAuthenticationOptions
+                    {
+                        LogoutPath = new PathString("/logout")
+                    });
                     app.Map("/notlogout", signoutApp => signoutApp.Run(context => context.Authentication.SignOutAsync("Cookies")));
                 })
                 .ConfigureServices(services => services.AddAuthentication());
@@ -971,7 +988,10 @@ namespace Microsoft.AspNet.Authentication.Cookies
             var builder = new WebApplicationBuilder()
                 .Configure(app =>
                 {
-                    app.UseCookieAuthentication(options => options.LogoutPath = new PathString("/logout"));
+                    app.UseCookieAuthentication(new CookieAuthenticationOptions
+                    {
+                        LogoutPath = new PathString("/logout")
+                    });
                     app.Map("/logout", signoutApp => signoutApp.Run(context => context.Authentication.SignOutAsync("Cookies")));
                 })
                 .ConfigureServices(services => services.AddAuthentication());
@@ -992,7 +1012,10 @@ namespace Microsoft.AspNet.Authentication.Cookies
             var builder = new WebApplicationBuilder()
                 .Configure(app =>
                 {
-                    app.UseCookieAuthentication(options => options.AccessDeniedPath = new PathString("/denied"));
+                    app.UseCookieAuthentication(new CookieAuthenticationOptions
+                    {
+                        AccessDeniedPath = new PathString("/denied")
+                    });
                     app.Map("/forbid", signoutApp => signoutApp.Run(context => context.Authentication.ForbidAsync("Cookies")));
                 })
                 .ConfigureServices(services => services.AddAuthentication());
@@ -1012,7 +1035,10 @@ namespace Microsoft.AspNet.Authentication.Cookies
                 .Configure(app =>
                     app.Map("/base", map =>
                     {
-                        map.UseCookieAuthentication(options => options.LoginPath = new PathString("/page"));
+                        map.UseCookieAuthentication(new CookieAuthenticationOptions
+                        {
+                            LoginPath = new PathString("/page")
+                        });
                         map.Map("/login", signoutApp => signoutApp.Run(context => context.Authentication.ChallengeAsync("Cookies", new AuthenticationProperties() { RedirectUri = "/" })));
                     }))
                 .ConfigureServices(services => services.AddAuthentication());
@@ -1033,7 +1059,10 @@ namespace Microsoft.AspNet.Authentication.Cookies
                 .Configure(app =>
                     app.Map("/base", map =>
                     {
-                        map.UseCookieAuthentication(options => options.AccessDeniedPath = new PathString("/denied"));
+                        map.UseCookieAuthentication(new CookieAuthenticationOptions
+                        {
+                            AccessDeniedPath = new PathString("/denied")
+                        });
                         map.Map("/forbid", signoutApp => signoutApp.Run(context => context.Authentication.ForbidAsync("Cookies")));
                     }))
                     .ConfigureServices(services => services.AddAuthentication());
@@ -1054,10 +1083,10 @@ namespace Microsoft.AspNet.Authentication.Cookies
             var builder1 = new WebApplicationBuilder()
                 .Configure(app =>
                 {
-                    app.UseCookieAuthentication(options =>
+                    app.UseCookieAuthentication(new CookieAuthenticationOptions
                     {
-                        options.TicketDataFormat = new TicketDataFormat(dp);
-                        options.CookieName = "Cookie";
+                        TicketDataFormat = new TicketDataFormat(dp),
+                        CookieName = "Cookie"
                     });
                     app.Use((context, next) =>
                         context.Authentication.SignInAsync("Cookies",
@@ -1073,11 +1102,11 @@ namespace Microsoft.AspNet.Authentication.Cookies
             var builder2 = new WebApplicationBuilder()
                 .Configure(app =>
                 {
-                    app.UseCookieAuthentication(options =>
+                    app.UseCookieAuthentication(new CookieAuthenticationOptions
                     {
-                        options.AuthenticationScheme = "Cookies";
-                        options.CookieName = "Cookie";
-                        options.TicketDataFormat = new TicketDataFormat(dp);
+                        AuthenticationScheme = "Cookies",
+                        CookieName = "Cookie",
+                        TicketDataFormat = new TicketDataFormat(dp)
                     });
                     app.Use(async (context, next) =>
                     {
@@ -1131,12 +1160,12 @@ namespace Microsoft.AspNet.Authentication.Cookies
             return me;
         }
 
-        private static TestServer CreateServer(Action<CookieAuthenticationOptions> configureOptions, Func<HttpContext, Task> testpath = null, Uri baseAddress = null, Action<ClaimsTransformationOptions> claimsTransform = null)
+        private static TestServer CreateServer(CookieAuthenticationOptions options, Func<HttpContext, Task> testpath = null, Uri baseAddress = null, ClaimsTransformationOptions claimsTransform = null)
         {
             var builder = new WebApplicationBuilder()
                 .Configure(app =>
                 {
-                    app.UseCookieAuthentication(configureOptions);
+                    app.UseCookieAuthentication(options);
                     // app.UseCookieAuthentication(new CookieAuthenticationOptions { AuthenticationScheme = "Cookie2" });
 
                     if (claimsTransform != null)

@@ -5,8 +5,8 @@ using System;
 using System.Globalization;
 using System.Net.Http;
 using System.Security.Claims;
+using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Authentication;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNet.Authentication.OAuth

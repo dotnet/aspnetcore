@@ -3,7 +3,9 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNet.Authentication
 {
@@ -13,7 +15,7 @@ namespace Microsoft.AspNet.Authentication
 
         public ClaimsTransformationMiddleware(
             RequestDelegate next,
-            ClaimsTransformationOptions options)
+            IOptions<ClaimsTransformationOptions> options)
         {
             if (next == null)
             {
@@ -25,7 +27,7 @@ namespace Microsoft.AspNet.Authentication
                 throw new ArgumentNullException(nameof(options));
             }
 
-            Options = options;
+            Options = options.Value;
             _next = next;
         }
 

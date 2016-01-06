@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using Microsoft.AspNet.Authentication.OAuth;
+using Microsoft.AspNet.Authentication.Facebook;
 using Microsoft.AspNet.Http;
 
-namespace Microsoft.AspNet.Authentication.Facebook
+namespace Microsoft.AspNet.Builder
 {
     /// <summary>
     /// Configuration options for <see cref="FacebookMiddleware"/>.

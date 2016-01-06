@@ -20,19 +20,19 @@ namespace Microsoft.AspNet.Authentication.Twitter
         [Fact]
         public async Task ChallengeWillTriggerApplyRedirectEvent()
         {
-            var server = CreateServer(options =>
+            var server = CreateServer(new TwitterOptions
                 {
-                    options.ConsumerKey = "Test Consumer Key";
-                    options.ConsumerSecret = "Test Consumer Secret";
-                    options.Events = new TwitterEvents
+                    ConsumerKey = "Test Consumer Key",
+                    ConsumerSecret = "Test Consumer Secret",
+                    Events = new TwitterEvents
                     {
                         OnRedirectToAuthorizationEndpoint = context =>
                         {
                             context.Response.Redirect(context.RedirectUri + "&custom=test");
                             return Task.FromResult(0);
                         }
-                    };
-                    options.BackchannelHttpHandler = new TestHttpMessageHandler
+                    },
+                    BackchannelHttpHandler = new TestHttpMessageHandler
                     {
                         Sender = req =>
                         {
@@ -48,7 +48,7 @@ namespace Microsoft.AspNet.Authentication.Twitter
                             }
                             return null;
                         }
-                    };
+                    }
                 },
                 context => 
                 {
@@ -65,10 +65,10 @@ namespace Microsoft.AspNet.Authentication.Twitter
         [Fact]
         public async Task BadSignInWillThrow()
         {
-            var server = CreateServer(options =>
+            var server = CreateServer(new TwitterOptions
             {
-                options.ConsumerKey = "Test Consumer Key";
-                options.ConsumerSecret = "Test Consumer Secret";
+                ConsumerKey = "Test Consumer Key",
+                ConsumerSecret = "Test Consumer Secret"
             });
 
             // Send a bogus sign in
@@ -79,10 +79,10 @@ namespace Microsoft.AspNet.Authentication.Twitter
         [Fact]
         public async Task SignInThrows()
         {
-            var server = CreateServer(options =>
+            var server = CreateServer(new TwitterOptions
             {
-                options.ConsumerKey = "Test Consumer Key";
-                options.ConsumerSecret = "Test Consumer Secret";
+                ConsumerKey = "Test Consumer Key",
+                ConsumerSecret = "Test Consumer Secret"
             });
             var transaction = await server.SendAsync("https://example.com/signIn");
             Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
@@ -91,10 +91,10 @@ namespace Microsoft.AspNet.Authentication.Twitter
         [Fact]
         public async Task SignOutThrows()
         {
-            var server = CreateServer(options =>
+            var server = CreateServer(new TwitterOptions
             {
-                options.ConsumerKey = "Test Consumer Key";
-                options.ConsumerSecret = "Test Consumer Secret";
+                ConsumerKey = "Test Consumer Key",
+                ConsumerSecret = "Test Consumer Secret"
             });
             var transaction = await server.SendAsync("https://example.com/signOut");
             Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
@@ -103,10 +103,10 @@ namespace Microsoft.AspNet.Authentication.Twitter
         [Fact]
         public async Task ForbidThrows()
         {
-            var server = CreateServer(options =>
+            var server = CreateServer(new TwitterOptions
             {
-                options.ConsumerKey = "Test Consumer Key";
-                options.ConsumerSecret = "Test Consumer Secret";
+                ConsumerKey = "Test Consumer Key",
+                ConsumerSecret = "Test Consumer Secret"
             });
             var transaction = await server.SendAsync("https://example.com/signOut");
             Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
@@ -116,11 +116,11 @@ namespace Microsoft.AspNet.Authentication.Twitter
         [Fact]
         public async Task ChallengeWillTriggerRedirection()
         {
-            var server = CreateServer(options =>
-                {
-                    options.ConsumerKey = "Test Consumer Key";
-                    options.ConsumerSecret = "Test Consumer Secret";
-                    options.BackchannelHttpHandler = new TestHttpMessageHandler
+            var server = CreateServer(new TwitterOptions
+            {
+                    ConsumerKey = "Test Consumer Key",
+                    ConsumerSecret = "Test Consumer Secret",
+                    BackchannelHttpHandler = new TestHttpMessageHandler
                     {
                         Sender = req =>
                         {
@@ -136,7 +136,7 @@ namespace Microsoft.AspNet.Authentication.Twitter
                             }
                             return null;
                         }
-                    };
+                    }
                 },
                 context =>
                 {
@@ -150,16 +150,16 @@ namespace Microsoft.AspNet.Authentication.Twitter
             Assert.Contains("https://api.twitter.com/oauth/authenticate?oauth_token=", location);
         }
 
-        private static TestServer CreateServer(Action<TwitterOptions> configure, Func<HttpContext, bool> handler = null)
+        private static TestServer CreateServer(TwitterOptions options, Func<HttpContext, bool> handler = null)
         {
             var builder = new WebApplicationBuilder()
                 .Configure(app =>
                 {
-                    app.UseCookieAuthentication(options =>
+                    app.UseCookieAuthentication(new CookieAuthenticationOptions
                     {
-                        options.AuthenticationScheme = "External";
+                        AuthenticationScheme = "External"
                     });
-                    app.UseTwitterAuthentication(configure);
+                    app.UseTwitterAuthentication(options);
                     app.Use(async (context, next) =>
                     {
                         var req = context.Request;
@@ -185,9 +185,9 @@ namespace Microsoft.AspNet.Authentication.Twitter
                 .ConfigureServices(services =>
                 {
                     services.AddAuthentication();
-                    services.Configure<SharedAuthenticationOptions>(options =>
+                    services.Configure<SharedAuthenticationOptions>(authOptions =>
                     {
-                        options.SignInScheme = "External";
+                        authOptions.SignInScheme = "External";
                     });
                 });
             return new TestServer(builder);

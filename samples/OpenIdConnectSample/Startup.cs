@@ -35,18 +35,18 @@ namespace OpenIdConnectSample
 
             app.UseIISPlatformHandler();
 
-            app.UseCookieAuthentication(options =>
+            app.UseCookieAuthentication(new CookieAuthenticationOptions
             {
-                options.AutomaticAuthenticate = true;
+                AutomaticAuthenticate = true
             });
 
-            app.UseOpenIdConnectAuthentication(options =>
+            app.UseOpenIdConnectAuthentication(new OpenIdConnectOptions
             {
-                options.ClientId = Configuration["oidc:clientid"];
-                options.ClientSecret = Configuration["oidc:clientsecret"]; // for code flow
-                options.Authority = Configuration["oidc:authority"];
-                options.ResponseType = OpenIdConnectResponseTypes.Code;
-                options.GetClaimsFromUserInfoEndpoint = true;
+                ClientId = Configuration["oidc:clientid"],
+                ClientSecret = Configuration["oidc:clientsecret"], // for code flow
+                Authority = Configuration["oidc:authority"],
+                ResponseType = OpenIdConnectResponseTypes.Code,
+                GetClaimsFromUserInfoEndpoint = true
             });
 
             app.Run(async context =>

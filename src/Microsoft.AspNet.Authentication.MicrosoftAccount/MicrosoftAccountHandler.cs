@@ -6,6 +6,7 @@ using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Authentication.OAuth;
+using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http.Authentication;
 using Newtonsoft.Json.Linq;
 

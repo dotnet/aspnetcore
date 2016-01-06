@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Authentication.OAuth;
+using Microsoft.AspNet.Authentication.MicrosoftAccount;
 
-namespace Microsoft.AspNet.Authentication.MicrosoftAccount
+namespace Microsoft.AspNet.Builder
 {
     /// <summary>
     /// Configuration options for <see cref="MicrosoftAccountMiddleware"/>.

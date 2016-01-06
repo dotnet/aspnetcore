@@ -10,7 +10,8 @@
     "keyFile": "../../tools/Key.snk"
   },
   "dependencies": {
-    "Microsoft.AspNet.Http": "1.0.0-*"
+    "Microsoft.AspNet.Http": "1.0.0-*",
+    "Microsoft.Extensions.Options": "1.0.0-*"
   },
   "frameworks": {
     "net451": {},

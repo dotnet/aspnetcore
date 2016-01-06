@@ -4,8 +4,10 @@
 using System;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNet.Authentication
 {
@@ -15,7 +17,7 @@ namespace Microsoft.AspNet.Authentication
 
         protected AuthenticationMiddleware(
             RequestDelegate next,
-            TOptions options,
+            IOptions<TOptions> options,
             ILoggerFactory loggerFactory,
             UrlEncoder encoder)
         {
@@ -39,7 +41,7 @@ namespace Microsoft.AspNet.Authentication
                 throw new ArgumentNullException(nameof(encoder));
             }
 
-            Options = options;
+            Options = options.Value;
             Logger = loggerFactory.CreateLogger(this.GetType().FullName);
             UrlEncoder = encoder;
 

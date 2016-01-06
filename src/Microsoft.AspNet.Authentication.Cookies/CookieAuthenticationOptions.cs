@@ -4,11 +4,13 @@
 using System;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNet.Authentication;
+using Microsoft.AspNet.Authentication.Cookies;
 using Microsoft.AspNet.DataProtection;
 using Microsoft.AspNet.Http;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNet.Authentication.Cookies
+namespace Microsoft.AspNet.Builder
 {
     /// <summary>
     /// Contains the options used by the CookiesAuthenticationMiddleware

@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNet.Authentication.Cookies;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNet.Builder
 {
@@ -22,31 +23,8 @@ namespace Microsoft.AspNet.Builder
             {
                 throw new ArgumentNullException(nameof(app));
             }
-
-            return app.UseCookieAuthentication(options => { });
-        }
-
-        /// <summary>
-        /// Adds the <see cref="CookieAuthenticationMiddleware"/> middleware to the specified <see cref="IApplicationBuilder"/>, which enables cookie authentication capabilities.
-        /// </summary>
-        /// <param name="app">The <see cref="IApplicationBuilder"/> to add the middleware to.</param>
-        /// <param name="configureOptions">An action delegate to configure the provided <see cref="CookieAuthenticationOptions"/>.</param>
-        /// <returns>A reference to this instance after the operation has completed.</returns>
-        public static IApplicationBuilder UseCookieAuthentication(this IApplicationBuilder app, Action<CookieAuthenticationOptions> configureOptions)
-        {
-            if (app == null)
-            {
-                throw new ArgumentNullException(nameof(app));
-            }
-            if (configureOptions == null)
-            {
-                throw new ArgumentNullException(nameof(configureOptions));
-            }
-
-            var options = new CookieAuthenticationOptions();
-            configureOptions(options);
-
-            return app.UseMiddleware<CookieAuthenticationMiddleware>(options);
+            
+            return app.UseMiddleware<CookieAuthenticationMiddleware>();
         }
 
         /// <summary>
@@ -66,7 +44,7 @@ namespace Microsoft.AspNet.Builder
                 throw new ArgumentNullException(nameof(options));
             }
 
-            return app.UseMiddleware<CookieAuthenticationMiddleware>(options);
+            return app.UseMiddleware<CookieAuthenticationMiddleware>(Options.Create(options));
         }
     }
 }

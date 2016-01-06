@@ -6,6 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Text;
 using System.Text.Encodings.Web;
+using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.DataProtection;
 using Microsoft.AspNet.Http;
 using Microsoft.Extensions.Logging;
@@ -38,7 +39,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
             UrlEncoder encoder,
             IServiceProvider services,
             IOptions<SharedAuthenticationOptions> sharedOptions,
-            OpenIdConnectOptions options,
+            IOptions<OpenIdConnectOptions> options,
             HtmlEncoder htmlEncoder)
             : base(next, options, loggerFactory, encoder)
         {

@@ -36,7 +36,10 @@ namespace Microsoft.AspNet.CookiePolicy.Test
         public async Task SecureAlwaysSetsSecure()
         {
             await RunTest("/secureAlways",
-                options => options.Secure = SecurePolicy.Always,
+                new CookiePolicyOptions
+                {
+                    Secure = SecurePolicy.Always
+                },
                 SecureCookieAppends,
                 new RequestTest("http://example.com/secureAlways",
                 transaction =>
@@ -53,7 +56,10 @@ namespace Microsoft.AspNet.CookiePolicy.Test
         public async Task SecureNoneLeavesSecureUnchanged()
         {
             await RunTest("/secureNone",
-                options => options.Secure = SecurePolicy.None,
+                new CookiePolicyOptions
+                {
+                    Secure = SecurePolicy.None
+                },
                 SecureCookieAppends,
                 new RequestTest("http://example.com/secureNone",
                 transaction =>
@@ -71,7 +77,10 @@ namespace Microsoft.AspNet.CookiePolicy.Test
         public async Task SecureSameUsesRequest()
         {
             await RunTest("/secureSame",
-                options => options.Secure = SecurePolicy.SameAsRequest,
+                new CookiePolicyOptions
+                {
+                    Secure = SecurePolicy.SameAsRequest
+                },
                 SecureCookieAppends,
                 new RequestTest("http://example.com/secureSame",
                 transaction =>
@@ -97,7 +106,10 @@ namespace Microsoft.AspNet.CookiePolicy.Test
         public async Task HttpOnlyAlwaysSetsItAlways()
         {
             await RunTest("/httpOnlyAlways",
-                options => options.HttpOnly = HttpOnlyPolicy.Always,
+                new CookiePolicyOptions
+                {
+                    HttpOnly = HttpOnlyPolicy.Always
+                },
                 HttpCookieAppends,
                 new RequestTest("http://example.com/httpOnlyAlways",
                 transaction =>
@@ -114,7 +126,10 @@ namespace Microsoft.AspNet.CookiePolicy.Test
         public async Task HttpOnlyNoneLeavesItAlone()
         {
             await RunTest("/httpOnlyNone",
-                options => options.HttpOnly = HttpOnlyPolicy.None,
+                new CookiePolicyOptions
+                {
+                    HttpOnly = HttpOnlyPolicy.None
+                },
                 HttpCookieAppends,
                 new RequestTest("http://example.com/httpOnlyNone",
                 transaction =>
@@ -133,7 +148,10 @@ namespace Microsoft.AspNet.CookiePolicy.Test
             var builder = new WebApplicationBuilder()
                 .Configure(app =>
                 {
-                    app.UseCookiePolicy(options => options.OnAppendCookie = ctx => ctx.CookieName = ctx.CookieValue = "Hao");
+                    app.UseCookiePolicy(new CookiePolicyOptions
+                    {
+                        OnAppendCookie = ctx => ctx.CookieName = ctx.CookieValue = "Hao"
+                    });
                     app.Run(context =>
                     {
                         context.Response.Cookies.Append("A", "A");
@@ -160,7 +178,10 @@ namespace Microsoft.AspNet.CookiePolicy.Test
             var builder = new WebApplicationBuilder()
                 .Configure(app =>
             {
-                app.UseCookiePolicy(options => options.OnDeleteCookie = ctx => ctx.CookieName = "A");
+                app.UseCookiePolicy(new CookiePolicyOptions
+                {
+                    OnDeleteCookie = ctx => ctx.CookieName = "A"
+                });
                 app.Run(context =>
                 {
                     context.Response.Cookies.Delete("A");
@@ -190,7 +211,10 @@ namespace Microsoft.AspNet.CookiePolicy.Test
                     context.Features.Set<IResponseCookiesFeature>(new TestCookieFeature());
                     return next(context);
                 });
-                app.UseCookiePolicy(options => options.OnDeleteCookie = ctx => ctx.CookieName = "A");
+                app.UseCookiePolicy(new CookiePolicyOptions
+                {
+                    OnDeleteCookie = ctx => ctx.CookieName = "A"
+                });
                 app.Run(context =>
                 {
                     Assert.Throws<NotImplementedException>(() => context.Response.Cookies.Delete("A"));
@@ -254,7 +278,7 @@ namespace Microsoft.AspNet.CookiePolicy.Test
 
         private async Task RunTest(
             string path, 
-            Action<CookiePolicyOptions> configureCookiePolicy,
+            CookiePolicyOptions cookiePolicy,
             RequestDelegate configureSetup,
             params RequestTest[] tests)
         {
@@ -263,7 +287,7 @@ namespace Microsoft.AspNet.CookiePolicy.Test
             {
                 app.Map(path, map =>
                 {
-                    map.UseCookiePolicy(configureCookiePolicy);
+                    map.UseCookiePolicy(cookiePolicy);
                     map.Run(configureSetup);
                 });
             });

@@ -3,6 +3,7 @@
 
 using System;
 using System.Security.Claims;
+using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Authentication;
 

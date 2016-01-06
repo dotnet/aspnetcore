@@ -42,12 +42,12 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
         [Fact]
         public async Task ChallengeWillIssueHtmlFormWhenEnabled()
         {
-            var server = CreateServer(options =>
+            var server = CreateServer(new OpenIdConnectOptions
             {
-                options.Authority = DefaultAuthority;
-                options.ClientId = "Test Id";
-                options.Configuration = TestUtilities.DefaultOpenIdConnectConfiguration;
-                options.AuthenticationMethod = OpenIdConnectRedirectBehavior.FormPost;
+                Authority = DefaultAuthority,
+                ClientId = "Test Id",
+                Configuration = TestUtilities.DefaultOpenIdConnectConfiguration,
+                AuthenticationMethod = OpenIdConnectRedirectBehavior.FormPost
             });
             var transaction = await SendAsync(server, DefaultHost + Challenge);
             Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
@@ -61,10 +61,7 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
             var stateDataFormat = new AuthenticationPropertiesFormaterKeyValue();
             var queryValues = ExpectedQueryValues.Defaults(DefaultAuthority);
             queryValues.State = OpenIdConnectDefaults.AuthenticationPropertiesKey + "=" + stateDataFormat.Protect(new AuthenticationProperties());
-            var server = CreateServer(options =>
-            {
-                SetOptions(options, DefaultParameters(), queryValues);
-            });
+            var server = CreateServer(GetOptions(DefaultParameters(), queryValues));
 
             var transaction = await SendAsync(server, DefaultHost + Challenge);
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
@@ -74,11 +71,11 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
         [Fact]
         public async Task ChallengeWillSetNonceAndStateCookies()
         {
-            var server = CreateServer(options =>
+            var server = CreateServer(new OpenIdConnectOptions
             {
-                options.Authority = DefaultAuthority;
-                options.ClientId = "Test Id";
-                options.Configuration = TestUtilities.DefaultOpenIdConnectConfiguration;
+                Authority = DefaultAuthority,
+                ClientId = "Test Id",
+                Configuration = TestUtilities.DefaultOpenIdConnectConfiguration
             });
             var transaction = await SendAsync(server, DefaultHost + Challenge);
 
@@ -95,10 +92,7 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
         public async Task ChallengeWillUseOptionsProperties()
         {
             var queryValues = new ExpectedQueryValues(DefaultAuthority);
-            var server = CreateServer(options =>
-            {
-                SetOptions(options, DefaultParameters(), queryValues);
-            });
+            var server = CreateServer(GetOptions(DefaultParameters(), queryValues));
 
             var transaction = await SendAsync(server, DefaultHost + Challenge);
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
@@ -121,7 +115,7 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
             {
                 RequestType = OpenIdConnectRequestType.AuthenticationRequest
             };
-            var server = CreateServer(SetProtocolMessageOptions);
+            var server = CreateServer(GetProtocolMessageOptions());
             var transaction = await SendAsync(server, DefaultHost + Challenge);
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
             queryValues.CheckValues(transaction.Response.Headers.Location.AbsoluteUri, new string[] {});
@@ -143,14 +137,15 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
             {
                 RequestType = OpenIdConnectRequestType.LogoutRequest
             };
-            var server = CreateServer(SetProtocolMessageOptions);
+            var server = CreateServer(GetProtocolMessageOptions());
             var transaction = await SendAsync(server, DefaultHost + Signout);
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
             queryValues.CheckValues(transaction.Response.Headers.Location.AbsoluteUri, new string[] { });
         }
 
-        private static void SetProtocolMessageOptions(OpenIdConnectOptions options)
+        private static OpenIdConnectOptions GetProtocolMessageOptions()
         {
+            var options = new OpenIdConnectOptions();
             var fakeOpenIdRequestMessage = new FakeOpenIdConnectMessage(ExpectedAuthorizeRequest, ExpectedLogoutRequest);
             options.AutomaticChallenge = true;
             options.Events = new OpenIdConnectEvents()
@@ -166,7 +161,9 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
                     return Task.FromResult(0);
                 }
             };
+            return options;
         }
+
         private class FakeOpenIdConnectMessage : OpenIdConnectMessage
         {
             private readonly string _authorizeRequest;
@@ -207,21 +204,19 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
                 properties.Items.Add("item1", Guid.NewGuid().ToString());
             }
 
-            var server = CreateServer(options =>
+            var options = GetOptions(DefaultParameters(new string[] { OpenIdConnectParameterNames.State }), queryValues, stateDataFormat);
+            options.AutomaticChallenge = challenge.Equals(ChallengeWithOutContext);
+            options.Events = new OpenIdConnectEvents()
             {
-                SetOptions(options, DefaultParameters(new string[] { OpenIdConnectParameterNames.State }), queryValues, stateDataFormat);
-                options.AutomaticChallenge = challenge.Equals(ChallengeWithOutContext);
-                options.Events = new OpenIdConnectEvents()
+                OnRedirectToAuthenticationEndpoint = context =>
                 {
-                    OnRedirectToAuthenticationEndpoint = context =>
-                    {
-                        context.ProtocolMessage.State = userState;
-                        context.ProtocolMessage.RedirectUri = queryValues.RedirectUri;
-                        return Task.FromResult<object>(null);
-                    }
+                    context.ProtocolMessage.State = userState;
+                    context.ProtocolMessage.RedirectUri = queryValues.RedirectUri;
+                    return Task.FromResult<object>(null);
+                }
 
-                };
-            }, null, properties);
+            };
+            var server = CreateServer(options, null, properties);
 
             var transaction = await SendAsync(server, DefaultHost + challenge);
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
@@ -260,29 +255,28 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
         {
             var queryValues = new ExpectedQueryValues(DefaultAuthority);
             var queryValuesSetInEvent = new ExpectedQueryValues(DefaultAuthority);
-            var server = CreateServer(options =>
+            var options = GetOptions(DefaultParameters(), queryValues);
+            options.Events = new OpenIdConnectEvents()
             {
-                SetOptions(options, DefaultParameters(), queryValues);
-                options.Events = new OpenIdConnectEvents()
+                OnRedirectToAuthenticationEndpoint = context =>
                 {
-                    OnRedirectToAuthenticationEndpoint = context =>
-                    {
-                        context.ProtocolMessage.ClientId = queryValuesSetInEvent.ClientId;
-                        context.ProtocolMessage.RedirectUri = queryValuesSetInEvent.RedirectUri;
-                        context.ProtocolMessage.Resource = queryValuesSetInEvent.Resource;
-                        context.ProtocolMessage.Scope = queryValuesSetInEvent.Scope;
-                        return Task.FromResult<object>(null);
-                    }
-                };
-            });
+                    context.ProtocolMessage.ClientId = queryValuesSetInEvent.ClientId;
+                    context.ProtocolMessage.RedirectUri = queryValuesSetInEvent.RedirectUri;
+                    context.ProtocolMessage.Resource = queryValuesSetInEvent.Resource;
+                    context.ProtocolMessage.Scope = queryValuesSetInEvent.Scope;
+                    return Task.FromResult<object>(null);
+                }
+            };
+            var server = CreateServer(options);
 
             var transaction = await SendAsync(server, DefaultHost + Challenge);
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
             queryValuesSetInEvent.CheckValues(transaction.Response.Headers.Location.AbsoluteUri, DefaultParameters());
         }
 
-        private void SetOptions(OpenIdConnectOptions options, List<string> parameters, ExpectedQueryValues queryValues, ISecureDataFormat<AuthenticationProperties> secureDataFormat = null)
+        private OpenIdConnectOptions GetOptions(List<string> parameters, ExpectedQueryValues queryValues, ISecureDataFormat<AuthenticationProperties> secureDataFormat = null)
         {
+            var options = new OpenIdConnectOptions();
             foreach (var param in parameters)
             {
                 if (param.Equals(OpenIdConnectParameterNames.ClientId))
@@ -301,6 +295,8 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
             options.Authority = queryValues.Authority;
             options.Configuration = queryValues.Configuration;
             options.StateDataFormat = secureDataFormat ?? new AuthenticationPropertiesFormaterKeyValue();
+
+            return options;
         }
 
         private List<string> DefaultParameters(string[] additionalParams = null)
@@ -333,11 +329,11 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
         public async Task SignOutWithDefaultRedirectUri()
         {
             var configuration = TestUtilities.DefaultOpenIdConnectConfiguration;
-            var server = CreateServer(options =>
+            var server = CreateServer(new OpenIdConnectOptions
             {
-                options.Authority = DefaultAuthority;
-                options.ClientId = "Test Id";
-                options.Configuration = configuration;
+                Authority = DefaultAuthority,
+                ClientId = "Test Id",
+                Configuration = configuration
             });
 
             var transaction = await SendAsync(server, DefaultHost + Signout);
@@ -349,12 +345,12 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
         public async Task SignOutWithCustomRedirectUri()
         {
             var configuration = TestUtilities.DefaultOpenIdConnectConfiguration;
-            var server = CreateServer(options =>
+            var server = CreateServer(new OpenIdConnectOptions
             {
-                options.Authority = DefaultAuthority;
-                options.ClientId = "Test Id";
-                options.Configuration = configuration;
-                options.PostLogoutRedirectUri = "https://example.com/logout";
+                Authority = DefaultAuthority,
+                ClientId = "Test Id",
+                Configuration = configuration,
+                PostLogoutRedirectUri = "https://example.com/logout"
             });
 
             var transaction = await SendAsync(server, DefaultHost + Signout);
@@ -366,12 +362,12 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
         public async Task SignOutWith_Specific_RedirectUri_From_Authentication_Properites()
         {
             var configuration = TestUtilities.DefaultOpenIdConnectConfiguration;
-            var server = CreateServer(options =>
+            var server = CreateServer(new OpenIdConnectOptions
             {
-                options.Authority = DefaultAuthority;
-                options.ClientId = "Test Id";
-                options.Configuration = configuration;
-                options.PostLogoutRedirectUri = "https://example.com/logout";
+                Authority = DefaultAuthority,
+                ClientId = "Test Id",
+                Configuration = configuration,
+                PostLogoutRedirectUri = "https://example.com/logout"
             });
 
             var transaction = await SendAsync(server, "https://example.com/signout_with_specific_redirect_uri");
@@ -379,16 +375,16 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
             Assert.Contains(UrlEncoder.Default.Encode("http://www.example.com/specific_redirect_uri"), transaction.Response.Headers.Location.AbsoluteUri);
         }
 
-        private static TestServer CreateServer(Action<OpenIdConnectOptions> configureOptions, Func<HttpContext, Task> handler = null, AuthenticationProperties properties = null)
+        private static TestServer CreateServer(OpenIdConnectOptions options, Func<HttpContext, Task> handler = null, AuthenticationProperties properties = null)
         {
             var builder = new WebApplicationBuilder()
                 .Configure(app =>
                 {
-                    app.UseCookieAuthentication(options =>
+                    app.UseCookieAuthentication(new CookieAuthenticationOptions
                     {
-                        options.AuthenticationScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                        AuthenticationScheme = CookieAuthenticationDefaults.AuthenticationScheme
                     });
-                    app.UseOpenIdConnectAuthentication(configureOptions);
+                    app.UseOpenIdConnectAuthentication(options);
                     app.Use(async (context, next) =>
                     {
                         var req = context.Request;
@@ -434,9 +430,9 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
                 .ConfigureServices(services =>
                 {
                     services.AddAuthentication();
-                    services.Configure<SharedAuthenticationOptions>(options =>
+                    services.Configure<SharedAuthenticationOptions>(authOptions =>
                     {
-                        options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                        authOptions.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
                     });
                 });
             return new TestServer(builder);

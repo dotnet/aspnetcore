@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNet.Authentication.JwtBearer;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNet.Builder
 {
@@ -21,23 +22,15 @@ namespace Microsoft.AspNet.Builder
         /// See also http://tools.ietf.org/html/rfc6749
         /// </summary>
         /// <param name="app">The <see cref="IApplicationBuilder"/> to add the middleware to.</param>
-        /// <param name="configureOptions">An action delegate to configure the provided <see cref="JwtBearerOptions"/>.</param>
         /// <returns>A reference to this instance after the operation has completed.</returns>
-        public static IApplicationBuilder UseJwtBearerAuthentication(this IApplicationBuilder app, Action<JwtBearerOptions> configureOptions)
+        public static IApplicationBuilder UseJwtBearerAuthentication(this IApplicationBuilder app)
         {
             if (app == null)
             {
                 throw new ArgumentNullException(nameof(app));
             }
-            if (configureOptions == null)
-            {
-                throw new ArgumentNullException(nameof(configureOptions));
-            }
 
-            var options = new JwtBearerOptions();
-            configureOptions(options);
-
-            return app.UseMiddleware<JwtBearerMiddleware>(options);
+            return app.UseMiddleware<JwtBearerMiddleware>();
         }
 
         /// <summary>
@@ -63,7 +56,7 @@ namespace Microsoft.AspNet.Builder
                 throw new ArgumentNullException(nameof(options));
             }
 
-            return app.UseMiddleware<JwtBearerMiddleware>(options);
+            return app.UseMiddleware<JwtBearerMiddleware>(Options.Create(options));
         }
     }
 }

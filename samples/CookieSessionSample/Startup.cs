@@ -21,10 +21,10 @@ namespace CookieSessionSample
         {
             loggerfactory.AddConsole(LogLevel.Information);
 
-            app.UseCookieAuthentication(options =>
+            app.UseCookieAuthentication(new CookieAuthenticationOptions
             {
-                options.AutomaticAuthenticate = true;
-                options.SessionStore = new MemoryCacheTicketStore();
+                AutomaticAuthenticate = true,
+                SessionStore = new MemoryCacheTicketStore()
             });
 
             app.Run(async context =>

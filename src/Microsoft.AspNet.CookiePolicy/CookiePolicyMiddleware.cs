@@ -3,9 +3,10 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Http.Features.Internal;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNet.CookiePolicy
 {
@@ -15,9 +16,9 @@ namespace Microsoft.AspNet.CookiePolicy
 
         public CookiePolicyMiddleware(
             RequestDelegate next,
-            CookiePolicyOptions options)
+            IOptions<CookiePolicyOptions> options)
         {
-            Options = options;
+            Options = options.Value;
             _next = next;
         }
 

@@ -4,8 +4,10 @@
 using System;
 using System.Net.Http;
 using System.Text.Encodings.Web;
+using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
@@ -27,7 +29,7 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
             RequestDelegate next,
             ILoggerFactory loggerFactory,
             UrlEncoder encoder,
-            JwtBearerOptions options)
+            IOptions<JwtBearerOptions> options)
             : base(next, options, loggerFactory, encoder)
         {
             if (next == null)

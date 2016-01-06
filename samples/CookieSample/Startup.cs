@@ -20,9 +20,9 @@ namespace CookieSample
         {
             loggerfactory.AddConsole(LogLevel.Information);
 
-            app.UseCookieAuthentication(options =>
+            app.UseCookieAuthentication(new CookieAuthenticationOptions
             {
-                options.AutomaticAuthenticate = true;
+                AutomaticAuthenticate = true
             });
 
             app.Run(async context =>

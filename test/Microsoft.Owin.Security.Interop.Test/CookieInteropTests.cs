@@ -38,7 +38,7 @@ namespace Microsoft.Owin.Security.Interop
             {
                 app.Properties["host.AppName"] = "Microsoft.Owin.Security.Tests";
 
-                app.UseCookieAuthentication(new CookieAuthenticationOptions
+                app.UseCookieAuthentication(new Cookies.CookieAuthenticationOptions
                 {
                     TicketDataFormat = new AspNetTicketDataFormat(new DataProtectorShim(dataProtector))
                 });
@@ -55,7 +55,10 @@ namespace Microsoft.Owin.Security.Interop
             var builder = new WebApplicationBuilder()
                 .Configure(app =>
                 {
-                    app.UseCookieAuthentication(options => options.DataProtectionProvider = dataProtection);
+                    app.UseCookieAuthentication(new AspNet.Builder.CookieAuthenticationOptions
+                    {
+                        DataProtectionProvider = dataProtection
+                    });
                     app.Run(async context => 
                     {
                         var result = await context.Authentication.AuthenticateAsync("Cookies");
@@ -88,7 +91,10 @@ namespace Microsoft.Owin.Security.Interop
             var builder = new WebApplicationBuilder()
                 .Configure(app =>
                 {
-                    app.UseCookieAuthentication(options => options.DataProtectionProvider = dataProtection);
+                    app.UseCookieAuthentication(new AspNet.Builder.CookieAuthenticationOptions
+                    {
+                        DataProtectionProvider = dataProtection
+                    });
                     app.Run(context => context.Authentication.SignInAsync("Cookies", user));
                 })
                 .ConfigureServices(services => services.AddAuthentication());
@@ -100,7 +106,7 @@ namespace Microsoft.Owin.Security.Interop
             {
                 app.Properties["host.AppName"] = "Microsoft.Owin.Security.Tests";
 
-                app.UseCookieAuthentication(new CookieAuthenticationOptions
+                app.UseCookieAuthentication(new Owin.Security.Cookies.CookieAuthenticationOptions
                 {
                     TicketDataFormat = new AspNetTicketDataFormat(new DataProtectorShim(dataProtector))
                 });

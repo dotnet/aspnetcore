@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNet.Authentication.OpenIdConnect;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNet.Builder
 {
@@ -15,23 +16,15 @@ namespace Microsoft.AspNet.Builder
         /// Adds the <see cref="OpenIdConnectMiddleware"/> middleware to the specified <see cref="IApplicationBuilder"/>, which enables OpenID Connect authentication capabilities.
         /// </summary>
         /// <param name="app">The <see cref="IApplicationBuilder"/> to add the middleware to.</param>
-        /// <param name="configureOptions">An action delegate to configure the provided <see cref="OpenIdConnectOptions"/>.</param>
         /// <returns>A reference to this instance after the operation has completed.</returns>
-        public static IApplicationBuilder UseOpenIdConnectAuthentication(this IApplicationBuilder app, Action<OpenIdConnectOptions> configureOptions)
+        public static IApplicationBuilder UseOpenIdConnectAuthentication(this IApplicationBuilder app)
         {
             if (app == null)
             {
                 throw new ArgumentNullException(nameof(app));
             }
-            if (configureOptions == null)
-            {
-                throw new ArgumentNullException(nameof(configureOptions));
-            }
 
-            var options = new OpenIdConnectOptions();
-            configureOptions(options);
-
-            return app.UseMiddleware<OpenIdConnectMiddleware>(options);
+            return app.UseMiddleware<OpenIdConnectMiddleware>();
         }
 
         /// <summary>
@@ -51,7 +44,7 @@ namespace Microsoft.AspNet.Builder
                 throw new ArgumentNullException(nameof(options));
             }
 
-            return app.UseMiddleware<OpenIdConnectMiddleware>(options);
+            return app.UseMiddleware<OpenIdConnectMiddleware>(Options.Create(options));
         }
     }
 }

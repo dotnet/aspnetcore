@@ -3,7 +3,7 @@
 
 using Microsoft.AspNet.Http.Authentication;
 
-namespace Microsoft.AspNet.Authentication
+namespace Microsoft.AspNet.Builder
 {
     /// <summary>
     /// Base Options for all authentication middleware
