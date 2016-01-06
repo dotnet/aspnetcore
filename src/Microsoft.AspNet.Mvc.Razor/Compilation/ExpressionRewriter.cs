@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
         {
             if (IsInsideClass)
             {
-                // Avoid recursing into nested classes. 
+                // Avoid recursing into nested classes.
                 return node;
             }
 
@@ -101,7 +101,12 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
             //      }
             //
             var type = SemanticModel.GetTypeInfo(node);
-            if (type.ConvertedType.Name != typeof(Expression).Name &&
+
+            // Due to an anomaly where Roslyn (depending on code sample) may finish compilation without diagnostic
+            // errors (this code path does not execute when diagnostic errors are present) we need to validate that
+            // the ConvertedType was determined/is not null.
+            if (type.ConvertedType == null ||
+                type.ConvertedType.Name != typeof(Expression).Name &&
                 type.ConvertedType.ContainingNamespace.Name != typeof(Expression).Namespace)
             {
                 return node;
@@ -129,7 +134,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
             SimpleLambdaExpressionSyntax node,
             IdentifierNameSyntax memberAccess)
         {
-            // We want to make the new span 
+            // We want to make the new span
             var originalSpan = node.GetLocation().GetMappedLineSpan();
 
             // Start by collecting all the trivia 'inside' the expression - we need to tack that on the end, but

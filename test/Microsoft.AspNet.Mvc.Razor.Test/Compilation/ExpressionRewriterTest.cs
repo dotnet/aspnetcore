@@ -4,8 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Reflection;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -18,6 +16,46 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
 {
     public class ExpressionRewriterTest
     {
+        [Fact]
+        public void ExpressionRewriter_DoesNotThrowsOnUnknownTypes()
+        {
+            // Arrange
+            var source = @"
+using System.Threading.Tasks;
+using Microsoft.AspNet.Mvc;
+using Microsoft.AspNet.Mvc.Razor;
+
+public class ExamplePage : RazorPage
+{
+    public IViewComponentHelper Component { get; set; }
+
+    public override async Task ExecuteAsync()
+    {
+        Write(
+            await Component.InvokeAsync(
+                ""SomeComponent"",
+                item => new HelperResult((__razor_template_writer) => WriteLiteralTo(__razor_template_writer, ""Hello World""))));
+        }
+    }
+";
+            var tree = CSharpSyntaxTree.ParseText(source);
+
+            // Allow errors here because of an anomaly where Roslyn (depending on code sample) will finish compilation
+            // without diagnostic errors. This test case replicates that scenario by allowing a semantic model with
+            // errors to be visited by the expression rewriter to validate unexpected exceptions aren't thrown.
+            // Error created: "Cannot convert lambda expression to type 'object' because it is not a delegate type."
+            var compilation = Compile(tree, allowErrors: true);
+            var semanticModel = compilation.GetSemanticModel(tree, ignoreAccessibility: true);
+            var rewriter = new ExpressionRewriter(semanticModel);
+            var root = tree.GetRoot();
+
+            // Act
+            var result = rewriter.Visit(root);
+
+            // Assert
+            Assert.True(root.IsEquivalentTo(result));
+        }
+
         [Fact]
         public void ExpressionRewriter_CanRewriteExpression_IdentityExpression()
         {
@@ -268,7 +306,7 @@ public class Program
         public static void CalledWithExpression(Expression<Func<object, int>> expression)
         {
         }
-        
+
         public static void Main(string[] args)
         {
             Expression<Func<object, int>> expr = x => x.GetHashCode();
@@ -455,7 +493,7 @@ public class Person
                 .Cast<FieldDeclarationSyntax>();
         }
 
-        private CSharpCompilation Compile(SyntaxTree tree)
+        private CSharpCompilation Compile(SyntaxTree tree, bool allowErrors = false)
         {
             // Disable 1702 until roslyn turns this off by default
             var options = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
@@ -472,10 +510,10 @@ public class Person
                 GetReferences(),
                 options: options);
 
-            var diagnostics = compilation.GetDiagnostics();
-            if (diagnostics.Length > 0)
+            if (!allowErrors)
             {
-                Assert.False(true, string.Join(Environment.NewLine, diagnostics));
+                var diagnostics = compilation.GetDiagnostics();
+                Assert.True(diagnostics.Length == 0, string.Join(Environment.NewLine, diagnostics));
             }
 
             return compilation;
