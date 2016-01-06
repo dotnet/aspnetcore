@@ -169,7 +169,7 @@ default NUGET_FEED = 'https://api.nuget.org/v3/index.json'
 #build-samples target='test' if='Directory.Exists("samples")'
   @{
     var projectFiles = Files.Include("samples/**/project.json").ToList();
-    projectFiles.ForEach(projectFile => DotnetCompile(projectFile, Configuration));
+    projectFiles.ForEach(projectFile => DotnetBuild(projectFile, Configuration));
   }
 
 #make-roslyn-fast
@@ -307,8 +307,8 @@ macro name='Dotnet' command='string'
 macro name='Dotnet' command='string' dotnetDir='string'
     dotnet    
 
-macro name="DotnetCompile" projectFile='string' configuration='string'
-    dotnet-compile
+macro name="DotnetBuild" projectFile='string' configuration='string'
+    dotnet-build
 
 macro name="DotnetPack" projectFile='string' dotnetPackOutputDir='string' configuration='string'
     dotnet-pack

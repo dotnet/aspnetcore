@@ -1,6 +1,6 @@
 @{/*
 
-dotnet-compile
+dotnet-build
     Builds a project.
 
 projectFile=''
@@ -11,7 +11,7 @@ configuration=''
 */}
 
 default configuration = 'Debug'
-default compile_options=' ${E("KOREBUILD_DOTNET_COMPILE_OPTIONS")}'
+default build_options=' ${E("KOREBUILD_DOTNET_BUILD_OPTIONS")}'
 
 @{
     var projectFolder=Path.GetDirectoryName(projectFile);
@@ -19,6 +19,6 @@ default compile_options=' ${E("KOREBUILD_DOTNET_COMPILE_OPTIONS")}'
 
     DeleteFolder(projectBin);
 
-    var dotnetArgs=string.Format("compile{0} {1} --configuration {2}", compile_options, projectFolder, configuration);
+    var dotnetArgs=string.Format("build{0} {1} --configuration {2}", build_options, projectFolder, configuration);
     Dotnet(dotnetArgs);
 }
