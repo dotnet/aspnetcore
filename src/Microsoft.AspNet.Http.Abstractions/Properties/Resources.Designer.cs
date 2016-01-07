@@ -13,14 +13,6 @@ namespace Microsoft.AspNet.Http.Abstractions
         /// <summary>
         /// '{0}' is not available.
         /// </summary>
-        internal static string FormatException_PathMustStartWithSlash(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("Exception_PathMustStartWithSlash"), p0);
-        }
-
-        /// <summary>
-        /// '{0}' is not available.
-        /// </summary>
         internal static string Exception_UseMiddlewareIServiceProviderNotAvailable
         {
             get { return GetString("Exception_UseMiddlewareIServiceProviderNotAvailable"); }
@@ -96,6 +88,54 @@ namespace Microsoft.AspNet.Http.Abstractions
         internal static string FormatException_UseMiddleMutlipleInvokes(object p0)
         {
             return string.Format(CultureInfo.CurrentCulture, GetString("Exception_UseMiddleMutlipleInvokes"), p0);
+        }
+
+        /// <summary>
+        /// The path in '{0}' must start with '/'.
+        /// </summary>
+        internal static string Exception_PathMustStartWithSlash
+        {
+            get { return GetString("Exception_PathMustStartWithSlash"); }
+        }
+
+        /// <summary>
+        /// The path in '{0}' must start with '/'.
+        /// </summary>
+        internal static string FormatException_PathMustStartWithSlash(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Exception_PathMustStartWithSlash"), p0);
+        }
+
+        /// <summary>
+        /// Unable to resolve service for type '{0}' while attempting to Invoke middleware '{1}'.
+        /// </summary>
+        internal static string Exception_InvokeMiddlewareNoService
+        {
+            get { return GetString("Exception_InvokeMiddlewareNoService"); }
+        }
+
+        /// <summary>
+        /// Unable to resolve service for type '{0}' while attempting to Invoke middleware '{1}'.
+        /// </summary>
+        internal static string FormatException_InvokeMiddlewareNoService(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Exception_InvokeMiddlewareNoService"), p0, p1);
+        }
+
+        /// <summary>
+        /// The '{0}' method must not have ref or out parameters.
+        /// </summary>
+        internal static string Exception_InvokeDoesNotSupportRefOrOutParams
+        {
+            get { return GetString("Exception_InvokeDoesNotSupportRefOrOutParams"); }
+        }
+
+        /// <summary>
+        /// The '{0}' method must not have ref or out parameters.
+        /// </summary>
+        internal static string FormatException_InvokeDoesNotSupportRefOrOutParams(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Exception_InvokeDoesNotSupportRefOrOutParams"), p0);
         }
 
         private static string GetString(string name, params string[] formatterNames)

@@ -135,4 +135,10 @@
   <data name="Exception_PathMustStartWithSlash" xml:space="preserve">
     <value>The path in '{0}' must start with '/'.</value>
   </data>
+  <data name="Exception_InvokeMiddlewareNoService" xml:space="preserve">
+    <value>Unable to resolve service for type '{0}' while attempting to Invoke middleware '{1}'.</value>
+  </data>
+  <data name="Exception_InvokeDoesNotSupportRefOrOutParams" xml:space="preserve">
+    <value>The '{0}' method must not have ref or out parameters.</value>
+  </data>
 </root>

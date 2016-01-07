@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
@@ -16,7 +17,9 @@ namespace Microsoft.AspNet.Builder
     /// </summary>
     public static class UseMiddlewareExtensions
     {
-        const string InvokeMethodName = "Invoke";
+        private const string InvokeMethodName = "Invoke";
+
+        private static readonly MethodInfo GetServiceInfo = typeof(UseMiddlewareExtensions).GetMethod(nameof(GetService), BindingFlags.NonPublic | BindingFlags.Static);
 
         /// <summary>
         /// Adds a middleware type to the application's request pipeline.
@@ -49,7 +52,7 @@ namespace Microsoft.AspNet.Builder
                     throw new InvalidOperationException(Resources.FormatException_UseMiddleMutlipleInvokes(InvokeMethodName));
                 }
 
-                if (invokeMethods.Length  == 0)
+                if (invokeMethods.Length == 0)
                 {
                     throw new InvalidOperationException(Resources.FormatException_UseMiddlewareNoInvokeMethod(InvokeMethodName));
                 }
@@ -63,14 +66,19 @@ namespace Microsoft.AspNet.Builder
                 var parameters = methodinfo.GetParameters();
                 if (parameters.Length == 0 || parameters[0].ParameterType != typeof(HttpContext))
                 {
-                    throw new InvalidOperationException(Resources.FormatException_UseMiddlewareNoParameters(InvokeMethodName,nameof(HttpContext)));
+                    throw new InvalidOperationException(Resources.FormatException_UseMiddlewareNoParameters(InvokeMethodName, nameof(HttpContext)));
                 }
 
-                var instance = ActivatorUtilities.CreateInstance(app.ApplicationServices, middleware, new[] { next }.Concat(args).ToArray());
+                var ctorArgs = new object[args.Length + 1];
+                ctorArgs[0] = next;
+                Array.Copy(args, 0, ctorArgs, 1, args.Length);
+                var instance = ActivatorUtilities.CreateInstance(app.ApplicationServices, middleware, ctorArgs);
                 if (parameters.Length == 1)
                 {
                     return (RequestDelegate)methodinfo.CreateDelegate(typeof(RequestDelegate), instance);
                 }
+
+                var factory = Compile<object>(methodinfo, parameters);
 
                 return context =>
                 {
@@ -80,20 +88,97 @@ namespace Microsoft.AspNet.Builder
                         throw new InvalidOperationException(Resources.FormatException_UseMiddlewareIServiceProviderNotAvailable(nameof(IServiceProvider)));
                     }
 
-                    var arguments = new object[parameters.Length];
-                    arguments[0] = context;
-                    for(var index = 1; index != parameters.Length; ++index)
-                    {
-                        var serviceType = parameters[index].ParameterType;
-                        arguments[index] = serviceProvider.GetService(serviceType);
-                        if (arguments[index] == null)
-                        {
-                            throw new Exception(string.Format("No service for type '{0}' has been registered.", serviceType));
-                        }
-                    }
-                    return (Task)methodinfo.Invoke(instance, arguments);
+                    return factory(instance, context, serviceProvider);
                 };
             });
+        }
+
+        private static Func<T, HttpContext, IServiceProvider, Task> Compile<T>(MethodInfo methodinfo, ParameterInfo[] parameters)
+        {
+
+            // If we call something like
+            // 
+            // public class Middleware
+            // {
+            //    public Task Invoke(HttpContext context, ILoggerFactory loggeryFactory)
+            //    {
+            //         
+            //    }
+            // }
+            //
+
+            // We'll end up with something like this:
+            //   Generic version:
+            //
+            //   Task Invoke(Middleware instance, HttpContext httpContext, IServiceprovider provider)
+            //   {
+            //      return instance.Invoke(httpContext, (ILoggerFactory)UseMiddlewareExtensions.GetService(provider, typeof(ILoggerFactory));
+            //   }
+
+            //   Non generic version:
+            //
+            //   Task Invoke(object instance, HttpContext httpContext, IServiceprovider provider)
+            //   {
+            //      return ((Middleware)instance).Invoke(httpContext, (ILoggerFactory)UseMiddlewareExtensions.GetService(provider, typeof(ILoggerFactory));
+            //   }
+
+            //   context =>
+            //   {
+            //       var serviceProvider = context.RequestServices ?? applicationServices;
+            //       if (serviceProvider == null)
+            //       {
+            //          throw new InvalidOperationException(Resources.FormatException_UseMiddlewareIServiceProviderNotAvailable(nameof(IServiceProvider)));
+            //       }
+            // 
+            //       return Invoke(httpContext, serviceProvider);
+            //   }
+
+            var middleware = typeof(T);
+
+            var httpContextArg = Expression.Parameter(typeof(HttpContext), "httpContext");
+            var providerArg = Expression.Parameter(typeof(IServiceProvider), "serviceProvider");
+            var instanceArg = Expression.Parameter(middleware, "middleware");
+
+            var methodArguments = new Expression[parameters.Length];
+            methodArguments[0] = httpContextArg;
+            for (int i = 1; i < parameters.Length; i++)
+            {
+                var parameterType = parameters[i].ParameterType;
+                if (parameterType.IsByRef)
+                {
+                    throw new NotSupportedException(Resources.FormatException_InvokeDoesNotSupportRefOrOutParams(InvokeMethodName));
+                }
+
+                var parameterTypeExpression = new Expression[] {
+                        providerArg,
+                        Expression.Constant(parameterType, typeof(Type)),
+                        Expression.Constant(methodinfo.DeclaringType, typeof(Type))
+                    };
+                methodArguments[i] = Expression.Convert(Expression.Call(GetServiceInfo, parameterTypeExpression), parameterType);
+            }
+
+            Expression middlewareInstanceArg = instanceArg;
+            if (methodinfo.DeclaringType != typeof(T))
+            {
+                middlewareInstanceArg = Expression.Convert(middlewareInstanceArg, methodinfo.DeclaringType);
+            }
+
+            var body = Expression.Call(middlewareInstanceArg, methodinfo, methodArguments);
+
+            var lambda = Expression.Lambda<Func<T, HttpContext, IServiceProvider, Task>>(body, instanceArg, httpContextArg, providerArg);
+
+            return lambda.Compile();
+        }
+
+        private static object GetService(IServiceProvider sp, Type type, Type middleware)
+        {
+            var service = sp.GetService(type);
+            if (service == null)
+            {
+                throw new InvalidOperationException(Resources.FormatException_InvokeMiddlewareNoService(type, middleware));
+            }
+
+            return service;
         }
     }
 }
