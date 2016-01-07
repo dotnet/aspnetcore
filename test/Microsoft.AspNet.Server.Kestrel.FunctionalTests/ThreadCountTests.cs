@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Features;
 using Microsoft.Extensions.Configuration;
 using Xunit;
 
@@ -26,7 +25,7 @@ namespace Microsoft.AspNet.Server.Kestrel.FunctionalTests
 
             var applicationBuilder = new WebApplicationBuilder()
                 .UseConfiguration(config)
-                .UseServerFactory("Microsoft.AspNet.Server.Kestrel")
+                .UseServer("Microsoft.AspNet.Server.Kestrel")
                 .Configure(app =>
                 {
                     var serverInfo = app.ServerFeatures.Get<IKestrelServerInformation>();
@@ -37,8 +36,10 @@ namespace Microsoft.AspNet.Server.Kestrel.FunctionalTests
                     });
                 });            
 
-            using (var app = applicationBuilder.Build().Start())
+            using (var app = applicationBuilder.Build())
             {
+                app.Start();
+
                 using (var client = new HttpClient())
                 {
                     // Send 20 requests just to make sure we don't get any failures

@@ -42,11 +42,13 @@ namespace Microsoft.AspNet.Server.Kestrel.FunctionalTests
 
             var applicationBuilder = new WebApplicationBuilder()
                 .UseConfiguration(config)
-                .UseServerFactory("Microsoft.AspNet.Server.Kestrel")
+                .UseServer("Microsoft.AspNet.Server.Kestrel")
                 .Configure(ConfigureEchoAddress);
 
-            using (var app = applicationBuilder.Build().Start())
+            using (var app = applicationBuilder.Build())
             {
+                app.Start();
+
                 using (var client = new HttpClient())
                 {
                     foreach (var testUrl in testUrls)

@@ -81,7 +81,7 @@ namespace Microsoft.AspNet.Server.Kestrel.FunctionalTests
 
             var builder = new WebApplicationBuilder()
                 .UseConfiguration(config)
-                .UseServerFactory("Microsoft.AspNet.Server.Kestrel")
+                .UseServer("Microsoft.AspNet.Server.Kestrel")
                 .Configure(app =>
                 {
                     app.Run(async context =>
@@ -94,8 +94,10 @@ namespace Microsoft.AspNet.Server.Kestrel.FunctionalTests
                     });
                 });
 
-            using (var app = builder.Build().Start())
+            using (var app = builder.Build())
             {
+                app.Start();
+
                 using (var client = new HttpClient())
                 {
                     var response = await client.GetAsync(requestAddress);

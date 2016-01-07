@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.Server.Kestrel.FunctionalTests
 
             var applicationBuilder = new WebApplicationBuilder()
                 .UseConfiguration(config)
-                .UseServerFactory("Microsoft.AspNet.Server.Kestrel")
+                .UseServer("Microsoft.AspNet.Server.Kestrel")
                 .Configure(app =>
                 {
                     app.Run(async context =>
@@ -54,8 +54,10 @@ namespace Microsoft.AspNet.Server.Kestrel.FunctionalTests
                     });
                 });
 
-            using (var app = applicationBuilder.Build().Start())
+            using (var app = applicationBuilder.Build())
             {
+                app.Start();
+
                 using (var client = new HttpClient())
                 {
                     var bytes = new byte[1024 * 1024];
@@ -100,7 +102,7 @@ namespace Microsoft.AspNet.Server.Kestrel.FunctionalTests
 
             var builder = new WebApplicationBuilder()
                 .UseConfiguration(config)
-                .UseServerFactory("Microsoft.AspNet.Server.Kestrel")
+                .UseServer("Microsoft.AspNet.Server.Kestrel")
                 .Configure(app =>
                 {
                     app.Run(async context =>
@@ -110,9 +112,11 @@ namespace Microsoft.AspNet.Server.Kestrel.FunctionalTests
                     });
                 });
 
-            using (var app = builder.Build().Start())
+            using (var app = builder.Build())
             using (var client = new HttpClient())
             {
+                app.Start();
+
                 client.DefaultRequestHeaders.Connection.Clear();
                 client.DefaultRequestHeaders.Connection.Add("close");
 
@@ -130,7 +134,7 @@ namespace Microsoft.AspNet.Server.Kestrel.FunctionalTests
 
             var builder = new WebApplicationBuilder()
                 .UseConfiguration(config)
-                .UseServerFactory("Microsoft.AspNet.Server.Kestrel")
+                .UseServer("Microsoft.AspNet.Server.Kestrel")
                 .Configure(app =>
                 {
                     app.Run(async context =>
@@ -147,9 +151,11 @@ namespace Microsoft.AspNet.Server.Kestrel.FunctionalTests
                     });
                 });
 
-            using (var app = builder.Build().Start())
+            using (var app = builder.Build())
             using (var client = new HttpClient())
             {
+                app.Start();
+
                 var response = await client.GetAsync($"http://{requestAddress}:{port}/");
                 response.EnsureSuccessStatusCode();
 
