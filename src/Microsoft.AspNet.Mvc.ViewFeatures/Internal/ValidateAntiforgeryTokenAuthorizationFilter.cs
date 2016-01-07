@@ -8,14 +8,17 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Antiforgery;
 using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.AspNet.Mvc.Internal;
+using Microsoft.AspNet.Mvc.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNet.Mvc.ViewFeatures.Internal
 {
     public class ValidateAntiforgeryTokenAuthorizationFilter : IAsyncAuthorizationFilter, IAntiforgeryPolicy
     {
         private readonly IAntiforgery _antiforgery;
+        private readonly ILogger _logger;
 
-        public ValidateAntiforgeryTokenAuthorizationFilter(IAntiforgery antiforgery)
+        public ValidateAntiforgeryTokenAuthorizationFilter(IAntiforgery antiforgery, ILoggerFactory loggerFactory)
         {
             if (antiforgery == null)
             {
@@ -23,9 +26,10 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures.Internal
             }
 
             _antiforgery = antiforgery;
+            _logger = loggerFactory.CreateLogger<ValidateAntiforgeryTokenAuthorizationFilter>();
         }
 
-        public Task OnAuthorizationAsync(AuthorizationContext context)
+        public async Task OnAuthorizationAsync(AuthorizationContext context)
         {
             if (context == null)
             {
@@ -34,10 +38,16 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures.Internal
 
             if (IsClosestAntiforgeryPolicy(context.Filters) && ShouldValidate(context))
             {
-                return _antiforgery.ValidateRequestAsync(context.HttpContext);
+                try
+                {
+                    await _antiforgery.ValidateRequestAsync(context.HttpContext);
+                }
+                catch (AntiforgeryValidationException exception)
+                {
+                    _logger.AntiforgeryTokenInvalid(exception.Message, exception);
+                    context.Result = new BadRequestResult();
+                }
             }
-
-            return TaskCache.CompletedTask;
         }
 
         protected virtual bool ShouldValidate(AuthorizationContext context)

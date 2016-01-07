@@ -8,6 +8,7 @@ using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.Abstractions;
 using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.AspNet.Routing;
+using Microsoft.Extensions.Logging.Testing;
 using Moq;
 using Xunit;
 
@@ -32,7 +33,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures.Internal
                 .Returns(Task.FromResult(0))
                 .Verifiable();
 
-            var filter = new ValidateAntiforgeryTokenAuthorizationFilter(antiforgery.Object);
+            var filter = new ValidateAntiforgeryTokenAuthorizationFilter(antiforgery.Object, NullLoggerFactory.Instance);
 
             var actionContext = new ActionContext(new DefaultHttpContext(), new RouteData(), new ActionDescriptor());
             actionContext.HttpContext.Request.Method = httpMethod;
@@ -56,7 +57,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures.Internal
                 .Returns(Task.FromResult(0))
                 .Verifiable();
 
-            var filter = new ValidateAntiforgeryTokenAuthorizationFilter(antiforgery.Object);
+            var filter = new ValidateAntiforgeryTokenAuthorizationFilter(antiforgery.Object, NullLoggerFactory.Instance);
 
             var actionContext = new ActionContext(new DefaultHttpContext(), new RouteData(), new ActionDescriptor());
             actionContext.HttpContext.Request.Method = "POST";

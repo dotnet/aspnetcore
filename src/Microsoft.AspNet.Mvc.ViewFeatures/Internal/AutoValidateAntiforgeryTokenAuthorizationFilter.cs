@@ -4,13 +4,14 @@
 using System;
 using Microsoft.AspNet.Antiforgery;
 using Microsoft.AspNet.Mvc.Filters;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNet.Mvc.ViewFeatures.Internal
 {
     public class AutoValidateAntiforgeryTokenAuthorizationFilter : ValidateAntiforgeryTokenAuthorizationFilter
     {
-        public AutoValidateAntiforgeryTokenAuthorizationFilter(IAntiforgery antiforgery)
-            : base(antiforgery)
+        public AutoValidateAntiforgeryTokenAuthorizationFilter(IAntiforgery antiforgery, ILoggerFactory loggerFactory)
+            : base(antiforgery, loggerFactory)
         {
         }
 

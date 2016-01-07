@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Antiforgery;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
@@ -115,6 +116,34 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal("OK", await response.Content.ReadAsStringAsync());
+        }
+
+        [Fact]
+        public async Task Antiforgery_HeaderNotSet_SendsBadRequest()
+        {
+            // Arrange
+            var getResponse = await Client.GetAsync("http://localhost/Antiforgery/Login");
+            var responseBody = await getResponse.Content.ReadAsStringAsync();
+
+            var formToken = AntiforgeryTestHelper.RetrieveAntiforgeryToken(
+                responseBody,
+                "Antiforgery/Login");
+
+            var request = new HttpRequestMessage(HttpMethod.Post, "http://localhost/Antiforgery/Login");
+            var nameValueCollection = new List<KeyValuePair<string, string>>
+            {
+                new KeyValuePair<string,string>("__RequestVerificationToken", formToken),
+                new KeyValuePair<string,string>("UserName", "test"),
+                new KeyValuePair<string,string>("Password", "password"),
+            };
+
+            request.Content = new FormUrlEncodedContent(nameValueCollection);
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         }
     }
 }
