@@ -16,14 +16,15 @@ namespace Microsoft.AspNet.TestHost
     {
         private const string DefaultEnvironmentName = "Development";
         private const string ServerName = nameof(TestServer);
-        private IDisposable _appInstance;
+        private IWebApplication _appInstance;
         private bool _disposed = false;
         private IHttpApplication<Context> _application;
 
-        public TestServer(WebApplicationBuilder builder)
+        public TestServer(IWebApplicationBuilder builder)
         {
             var application = builder.UseServer(this).Build();
-            _appInstance = application.Start();
+            application.Start();
+            _appInstance = application;
         }
 
         public Uri BaseAddress { get; set; } = new Uri("http://localhost/");
@@ -59,8 +60,11 @@ namespace Microsoft.AspNet.TestHost
 
         public void Dispose()
         {
-            _disposed = true;
-            _appInstance.Dispose();
+            if (!_disposed)
+            {
+                _disposed = true;
+                _appInstance.Dispose();
+            }
         }
 
         void IServer.Start<TContext>(IHttpApplication<TContext> application)

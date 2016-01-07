@@ -32,11 +32,8 @@ namespace SampleStartups
             var application = new WebApplicationBuilder()
                 .UseConfiguration(config)
                 .UseStartup<StartupConfigureAddresses>()
+                .UseUrls("http://localhost:5000", "http://localhost:5001")
                 .Build();
-
-            var addresses = application.GetAddresses();
-            addresses.Add("http://localhost:5000");
-            addresses.Add("http://localhost:5001");
 
             application.Run();
         }

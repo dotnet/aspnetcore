@@ -15,11 +15,11 @@ namespace Microsoft.AspNet.Hosting.Tests
         {
             var parameters = new Dictionary<string, string>()
             {
-                {"webroot", "wwwroot"},
-                {"server", "Microsoft.AspNet.Server.Kestrel"},
-                {"app", "MyProjectReference"},
-                {"environment", "Development"},
-                {"detailederrors", "true"},
+                { "webroot", "wwwroot"},
+                { "server", "Microsoft.AspNet.Server.Kestrel"},
+                { "application", "MyProjectReference"},
+                { "environment", "Development"},
+                { "detailederrors", "true"},
                 { "captureStartupErrors", "true" }
             };
 

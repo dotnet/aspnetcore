@@ -9,7 +9,7 @@ namespace Microsoft.AspNet.Hosting
     /// <summary>
     /// Represents a configured web application
     /// </summary>
-    public interface IWebApplication
+    public interface IWebApplication : IDisposable
     {
         /// <summary>
         /// The <see cref="IFeatureCollection"/> exposed by the configured server.
@@ -25,6 +25,6 @@ namespace Microsoft.AspNet.Hosting
         /// Starts listening on the configured addresses.
         /// </summary>
         /// <returns></returns>
-        IDisposable Start();
+        void Start();
     }
 }

@@ -27,6 +27,7 @@ namespace Microsoft.AspNet.Hosting.Internal
             Environment = configuration[WebApplicationConfiguration.EnvironmentKey] ?? configuration[OldEnvironmentKey];
             ServerFactoryLocation = configuration[WebApplicationConfiguration.ServerKey];
             WebRoot = configuration[WebApplicationConfiguration.WebRootKey];
+            ApplicationBasePath = configuration[WebApplicationConfiguration.ApplicationBaseKey];
         }
 
         public string Application { get; set; }
@@ -40,6 +41,8 @@ namespace Microsoft.AspNet.Hosting.Internal
         public string ServerFactoryLocation { get; set; }
 
         public string WebRoot { get; set; }
+
+        public string ApplicationBasePath { get; set; }
 
         private static bool ParseBool(IConfiguration configuration, string key)
         {

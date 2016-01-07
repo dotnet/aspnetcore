@@ -14,14 +14,11 @@ namespace SampleStartups
         public static void Main(string[] args)
         {
             var application = new WebApplicationBuilder()
-                .UseServerFactory("Microsoft.AspNet.Server.Kestrel") // Set the server manually
+                .UseServer("Microsoft.AspNet.Server.Kestrel") // Set the server manually
                 .UseApplicationBasePath(Directory.GetCurrentDirectory()) // Override the application base with the current directory
+                .UseUrls("http://*:1000", "https://*:902")
                 .UseEnvironment("Development")
                 .UseWebRoot("public")
-                .ConfigureLogging(loggerFactory =>
-                {
-                    loggerFactory.AddProvider(new MyHostLoggerProvider());
-                })
                 .ConfigureServices(services =>
                 {
                     // Configure services that the application can see

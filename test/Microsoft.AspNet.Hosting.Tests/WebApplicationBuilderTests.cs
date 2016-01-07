@@ -36,8 +36,9 @@ namespace Microsoft.AspNet.Hosting
             var builder = CreateWebApplicationBuilder();
             var server = new TestServer();
             var application = builder.UseServer(server).UseStartup("MissingStartupAssembly").Build();
-            using (application.Start())
+            using (application)
             {
+                application.Start();
                 await AssertResponseContains(server.RequestDelegate, "MissingStartupAssembly");
             }
         }
@@ -48,8 +49,9 @@ namespace Microsoft.AspNet.Hosting
             var builder = CreateWebApplicationBuilder();
             var server = new TestServer();
             var application = builder.UseServer(server).UseStartup<StartupStaticCtorThrows>().Build();
-            using (application.Start())
+            using (application)
             {
+                application.Start();
                 await AssertResponseContains(server.RequestDelegate, "Exception from static constructor");
             }
         }
@@ -60,8 +62,9 @@ namespace Microsoft.AspNet.Hosting
             var builder = CreateWebApplicationBuilder();
             var server = new TestServer();
             var application = builder.UseServer(server).UseStartup<StartupCtorThrows>().Build();
-            using (application.Start())
+            using (application)
             {
+                application.Start();
                 await AssertResponseContains(server.RequestDelegate, "Exception from constructor");
             }
         }
@@ -72,8 +75,9 @@ namespace Microsoft.AspNet.Hosting
             var builder = CreateWebApplicationBuilder();
             var server = new TestServer();
             var application = builder.UseServer(server).UseStartup<StartupThrowTypeLoadException>().Build();
-            using (application.Start())
+            using (application)
             {
+                application.Start();
                 await AssertResponseContains(server.RequestDelegate, "Message from the LoaderException</span>");
             }
         }
@@ -84,8 +88,9 @@ namespace Microsoft.AspNet.Hosting
             var builder = CreateWebApplicationBuilder();
             var server = new TestServer();
             var application = builder.UseServer(server).UseStartup<StartupCtorThrows>().Build();
-            using (application.Start())
+            using (application)
             {
+                application.Start();
                 var service = application.Services.GetServices<IApplicationLifetime>();
                 Assert.NotNull(service);
                 await AssertResponseContains(server.RequestDelegate, "Exception from constructor");
@@ -98,8 +103,9 @@ namespace Microsoft.AspNet.Hosting
             var builder = CreateWebApplicationBuilder();
             var server = new TestServer();
             var application = builder.UseServer(server).UseStartup<StartupConfigureServicesThrows>().Build();
-            using (application.Start())
+            using (application)
             {
+                application.Start();
                 await AssertResponseContains(server.RequestDelegate, "Exception from ConfigureServices");
             }
         }
@@ -110,8 +116,9 @@ namespace Microsoft.AspNet.Hosting
             var builder = CreateWebApplicationBuilder();
             var server = new TestServer();
             var application = builder.UseServer(server).UseStartup<StartupConfigureServicesThrows>().Build();
-            using (application.Start())
+            using (application)
             {
+                application.Start();
                 await AssertResponseContains(server.RequestDelegate, "Exception from Configure");
             }
         }
@@ -139,6 +146,28 @@ namespace Microsoft.AspNet.Hosting
         }
 
         [Fact]
+        public void BuildAndDispose()
+        {
+            var vals = new Dictionary<string, string>
+            {
+                { "ENV", "Dev" },
+            };
+            var builder = new ConfigurationBuilder()
+                .AddInMemoryCollection(vals);
+            var config = builder.Build();
+
+            var expected = "MY_TEST_ENVIRONMENT";
+            var application = new WebApplicationBuilder()
+                .UseConfiguration(config)
+                .UseEnvironment(expected)
+                .UseServer(new TestServer())
+                .UseStartup("Microsoft.AspNet.Hosting.Tests")
+                .Build();
+
+            application.Dispose();
+        }
+
+        [Fact]
         public void UseBasePathConfiguresBasePath()
         {
             var vals = new Dictionary<string, string>
@@ -159,7 +188,7 @@ namespace Microsoft.AspNet.Hosting
             Assert.Equal("/foo/bar", application.Services.GetService<IApplicationEnvironment>().ApplicationBasePath);
         }
 
-        private WebApplicationBuilder CreateWebApplicationBuilder()
+        private IWebApplicationBuilder CreateWebApplicationBuilder()
         {
             var vals = new Dictionary<string, string>
             {

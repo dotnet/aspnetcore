@@ -4,12 +4,14 @@ namespace Microsoft.AspNet.Hosting
 {
     public class WebApplicationConfiguration
     {
-        public static readonly string ApplicationKey = "app";
+        public static readonly string ApplicationKey = "application";
         public static readonly string DetailedErrorsKey = "detailedErrors";
         public static readonly string EnvironmentKey = "environment";
         public static readonly string ServerKey = "server";
         public static readonly string WebRootKey = "webroot";
         public static readonly string CaptureStartupErrorsKey = "captureStartupErrors";
+        public static readonly string ServerUrlsKey = "server.urls";
+        public static readonly string ApplicationBaseKey = "applicationBase";
 
         public static readonly string HostingJsonFile = "hosting.json";
         public static readonly string EnvironmentVariablesPrefix = "ASPNET_";

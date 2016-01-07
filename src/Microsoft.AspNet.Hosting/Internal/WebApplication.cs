@@ -32,6 +32,7 @@ namespace Microsoft.AspNet.Hosting.Internal
 
         private IServiceProvider _applicationServices;
         private RequestDelegate _application;
+        private ILogger<WebApplication> _logger;
 
         // Only one of these should be set
         internal string StartupAssemblyName { get; set; }
@@ -41,7 +42,7 @@ namespace Microsoft.AspNet.Hosting.Internal
         // Only one of these should be set
         internal IServerFactory ServerFactory { get; set; }
         internal string ServerFactoryLocation { get; set; }
-        internal IServer Server { get; set; }
+        private IServer Server { get; set; }
 
         public WebApplication(
             IServiceCollection appServices,
@@ -97,29 +98,20 @@ namespace Microsoft.AspNet.Hosting.Internal
             }
         }
 
-        public virtual IDisposable Start()
+        public virtual void Start()
         {
             Initialize();
 
-            var logger = _applicationServices.GetRequiredService<ILogger<WebApplication>>();
+            _logger = _applicationServices.GetRequiredService<ILogger<WebApplication>>();
             var diagnosticSource = _applicationServices.GetRequiredService<DiagnosticSource>();
             var httpContextFactory = _applicationServices.GetRequiredService<IHttpContextFactory>();
 
-            logger.Starting();
+            _logger.Starting();
 
-            Server.Start(new HostingApplication(_application, logger, diagnosticSource, httpContextFactory));
+            Server.Start(new HostingApplication(_application, _logger, diagnosticSource, httpContextFactory));
 
             _applicationLifetime.NotifyStarted();
-            logger.Started();
-
-            return new Disposable(() =>
-           {
-               logger.Shutdown();
-               _applicationLifetime.StopApplication();
-               Server.Dispose();
-               _applicationLifetime.NotifyStopped();
-               (_applicationServices as IDisposable)?.Dispose();
-           });
+            _logger.Started();
         }
 
         private void EnsureApplicationServices()
@@ -246,6 +238,15 @@ namespace Microsoft.AspNet.Hosting.Internal
                     }
                 }
             }
+        }
+
+        public void Dispose()
+        {
+            _logger?.Shutdown();
+            _applicationLifetime.StopApplication();
+            Server?.Dispose();
+            _applicationLifetime.NotifyStopped();
+            (_applicationServices as IDisposable)?.Dispose();
         }
 
         private class Disposable : IDisposable

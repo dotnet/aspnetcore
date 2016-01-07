@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.Versioning;
 using Microsoft.AspNet.Builder;
@@ -16,10 +17,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.PlatformAbstractions;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNet.Hosting
 {
-    public class WebApplicationBuilder
+    public class WebApplicationBuilder : IWebApplicationBuilder
     {
         private readonly IHostingEnvironment _hostingEnvironment;
         private readonly ILoggerFactory _loggerFactory;
@@ -28,19 +30,15 @@ namespace Microsoft.AspNet.Hosting
         private WebApplicationOptions _options;
 
         private Action<IServiceCollection> _configureServices;
-        private string _environmentName;
-        private string _webRoot;
-        private string _applicationBasePath;
 
         // Only one of these should be set
         private StartupMethods _startup;
         private Type _startupType;
-        private string _startupAssemblyName;
 
         // Only one of these should be set
-        private string _serverFactoryLocation;
         private IServerFactory _serverFactory;
-        private IServer _server;
+
+        private Dictionary<string, string> _settings = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
         public WebApplicationBuilder()
         {
@@ -48,62 +46,19 @@ namespace Microsoft.AspNet.Hosting
             _loggerFactory = new LoggerFactory();
         }
 
-        public WebApplicationBuilder UseConfiguration(IConfiguration configuration)
+        public IWebApplicationBuilder UseSetting(string key, string value)
+        {
+            _settings[key] = value;
+            return this;
+        }
+
+        public IWebApplicationBuilder UseConfiguration(IConfiguration configuration)
         {
             _config = configuration;
             return this;
         }
 
-        public WebApplicationBuilder UseApplicationBasePath(string applicationBasePath)
-        {
-            _applicationBasePath = applicationBasePath;
-            return this;
-        }
-
-        public WebApplicationBuilder UseEnvironment(string environment)
-        {
-            if (environment == null)
-            {
-                throw new ArgumentNullException(nameof(environment));
-            }
-
-            _environmentName = environment;
-            return this;
-        }
-
-        public WebApplicationBuilder UseWebRoot(string webRoot)
-        {
-            if (webRoot == null)
-            {
-                throw new ArgumentNullException(nameof(webRoot));
-            }
-            _webRoot = webRoot;
-            return this;
-        }
-
-        public WebApplicationBuilder UseServer(IServer server)
-        {
-            if (server == null)
-            {
-                throw new ArgumentNullException(nameof(server));
-            }
-
-            _server = server;
-            return this;
-        }
-
-        public WebApplicationBuilder UseServerFactory(string assemblyName)
-        {
-            if (assemblyName == null)
-            {
-                throw new ArgumentNullException(nameof(assemblyName));
-            }
-
-            _serverFactoryLocation = assemblyName;
-            return this;
-        }
-
-        public WebApplicationBuilder UseServerFactory(IServerFactory factory)
+        public IWebApplicationBuilder UseServer(IServerFactory factory)
         {
             if (factory == null)
             {
@@ -114,18 +69,7 @@ namespace Microsoft.AspNet.Hosting
             return this;
         }
 
-        public WebApplicationBuilder UseStartup(string startupAssemblyName)
-        {
-            if (startupAssemblyName == null)
-            {
-                throw new ArgumentNullException(nameof(startupAssemblyName));
-            }
-
-            _startupAssemblyName = startupAssemblyName;
-            return this;
-        }
-
-        public WebApplicationBuilder UseStartup(Type startupType)
+        public IWebApplicationBuilder UseStartup(Type startupType)
         {
             if (startupType == null)
             {
@@ -136,18 +80,13 @@ namespace Microsoft.AspNet.Hosting
             return this;
         }
 
-        public WebApplicationBuilder UseStartup<TStartup>() where TStartup : class
-        {
-            return UseStartup(typeof(TStartup));
-        }
-
-        public WebApplicationBuilder ConfigureServices(Action<IServiceCollection> configureServices)
+        public IWebApplicationBuilder ConfigureServices(Action<IServiceCollection> configureServices)
         {
             _configureServices = configureServices;
             return this;
         }
 
-        public WebApplicationBuilder Configure(Action<IApplicationBuilder> configureApp)
+        public IWebApplicationBuilder Configure(Action<IApplicationBuilder> configureApp)
         {
             if (configureApp == null)
             {
@@ -158,7 +97,7 @@ namespace Microsoft.AspNet.Hosting
             return this;
         }
 
-        public WebApplicationBuilder ConfigureLogging(Action<ILoggerFactory> configureLogging)
+        public IWebApplicationBuilder ConfigureLogging(Action<ILoggerFactory> configureLogging)
         {
             configureLogging(_loggerFactory);
             return this;
@@ -173,29 +112,19 @@ namespace Microsoft.AspNet.Hosting
             var appEnvironment = hostingContainer.GetRequiredService<IApplicationEnvironment>();
             var startupLoader = hostingContainer.GetRequiredService<IStartupLoader>();
 
-            _config = _config ?? WebApplicationConfiguration.GetDefault();
-            _options = new WebApplicationOptions(_config);
-
             // Initialize the hosting environment
-            _options.WebRoot = _webRoot ?? _options.WebRoot;
             _hostingEnvironment.Initialize(appEnvironment.ApplicationBasePath, _options, _config);
-
-            if (!string.IsNullOrEmpty(_environmentName))
-            {
-                _hostingEnvironment.EnvironmentName = _environmentName;
-            }
 
             var application = new WebApplication(hostingServices, startupLoader, _options, _config);
 
             // Only one of these should be set, but they are used in priority
-            application.Server = _server;
             application.ServerFactory = _serverFactory;
-            application.ServerFactoryLocation = _options.ServerFactoryLocation ?? _serverFactoryLocation;
+            application.ServerFactoryLocation = _options.ServerFactoryLocation;
 
             // Only one of these should be set, but they are used in priority
             application.Startup = _startup;
             application.StartupType = _startupType;
-            application.StartupAssemblyName = _startupAssemblyName ?? _options.Application;
+            application.StartupAssemblyName = _options.Application;
 
             application.Initialize();
 
@@ -204,6 +133,17 @@ namespace Microsoft.AspNet.Hosting
 
         private IServiceCollection BuildHostingServices()
         {
+            // Apply the configuration settings
+            var configuration = _config ?? WebApplicationConfiguration.GetDefault();
+
+            var mergedConfiguration = new ConfigurationBuilder()
+                                .Add(new IncludedConfigurationProvider(configuration))
+                                .AddInMemoryCollection(_settings)
+                                .Build();
+
+            _config = mergedConfiguration;
+            _options = new WebApplicationOptions(_config);
+
             var services = new ServiceCollection();
             services.AddSingleton(_hostingEnvironment);
             services.AddSingleton(_loggerFactory);
@@ -230,9 +170,9 @@ namespace Microsoft.AspNet.Hosting
                 if (defaultPlatformServices.Application != null)
                 {
                     var appEnv = defaultPlatformServices.Application;
-                    if (!string.IsNullOrEmpty(_applicationBasePath))
+                    if (!string.IsNullOrEmpty(_options.ApplicationBasePath))
                     {
-                        appEnv = new WrappedApplicationEnvironment(_applicationBasePath, appEnv);
+                        appEnv = new WrappedApplicationEnvironment(_options.ApplicationBasePath, appEnv);
                     }
 
                     services.TryAddSingleton(appEnv);

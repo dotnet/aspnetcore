@@ -35,8 +35,9 @@ namespace SampleStartups
                 .UseStartup<StartupBlockingOnStart>()
                 .Build();
 
-            using (application.Start())
+            using (application)
             {
+                application.Start();
                 Console.ReadLine();
             }
         }

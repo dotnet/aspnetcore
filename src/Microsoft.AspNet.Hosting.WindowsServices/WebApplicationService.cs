@@ -13,7 +13,6 @@ namespace Microsoft.AspNet.Hosting.WindowsServices
     public class WebApplicationService : ServiceBase
     {
         private IWebApplication _application;
-        private IDisposable _applicationShutdown;
         private bool _stopRequestedByWindows;
 
         /// <summary>
@@ -41,7 +40,7 @@ namespace Microsoft.AspNet.Hosting.WindowsServices
                     }
                 });
 
-            _applicationShutdown = _application.Start();
+            _application.Start();
 
             OnStarted();
         }
@@ -50,7 +49,7 @@ namespace Microsoft.AspNet.Hosting.WindowsServices
         {
             _stopRequestedByWindows = true;
             OnStopping();
-            _applicationShutdown?.Dispose();
+            _application?.Dispose();
             OnStopped();
         }
 
