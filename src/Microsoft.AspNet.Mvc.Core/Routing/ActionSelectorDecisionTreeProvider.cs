@@ -10,19 +10,19 @@ namespace Microsoft.AspNet.Mvc.Routing
     /// <inheritdoc />
     public class ActionSelectorDecisionTreeProvider : IActionSelectorDecisionTreeProvider
     {
-        private readonly IActionDescriptorsCollectionProvider _actionDescriptorsCollectionProvider;
+        private readonly IActionDescriptorCollectionProvider _actionDescriptorCollectionProvider;
         private ActionSelectionDecisionTree _decisionTree;
 
         /// <summary>
         /// Creates a new <see cref="ActionSelectorDecisionTreeProvider"/>.
         /// </summary>
-        /// <param name="actionDescriptorsCollectionProvider">
-        /// The <see cref="IActionDescriptorsCollectionProvider"/>.
+        /// <param name="actionDescriptorCollectionProvider">
+        /// The <see cref="IActionDescriptorCollectionProvider"/>.
         /// </param>
         public ActionSelectorDecisionTreeProvider(
-            IActionDescriptorsCollectionProvider actionDescriptorsCollectionProvider)
+            IActionDescriptorCollectionProvider actionDescriptorCollectionProvider)
         {
-            _actionDescriptorsCollectionProvider = actionDescriptorsCollectionProvider;
+            _actionDescriptorCollectionProvider = actionDescriptorCollectionProvider;
         }
 
         /// <inheritdoc />
@@ -30,13 +30,13 @@ namespace Microsoft.AspNet.Mvc.Routing
         {
             get
             {
-                var descriptors = _actionDescriptorsCollectionProvider.ActionDescriptors;
+                var descriptors = _actionDescriptorCollectionProvider.ActionDescriptors;
                 if (descriptors == null)
                 {
                     throw new InvalidOperationException(
                         Resources.FormatPropertyOfTypeCannotBeNull(
                             "ActionDescriptors",
-                            _actionDescriptorsCollectionProvider.GetType()));
+                            _actionDescriptorCollectionProvider.GetType()));
                 }
 
                 if (_decisionTree == null || descriptors.Version != _decisionTree.Version)

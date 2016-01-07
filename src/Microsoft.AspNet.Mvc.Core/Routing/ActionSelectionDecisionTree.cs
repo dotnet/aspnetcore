@@ -6,7 +6,6 @@ using System.Collections.Generic;
 #if NET451
 using System.ComponentModel;
 #endif
-using System.Diagnostics;
 using Microsoft.AspNet.Mvc.Abstractions;
 using Microsoft.AspNet.Mvc.Infrastructure;
 using Microsoft.AspNet.Routing;
@@ -22,8 +21,8 @@ namespace Microsoft.AspNet.Mvc.Routing
         /// <summary>
         /// Creates a new <see cref="ActionSelectionDecisionTree"/>.
         /// </summary>
-        /// <param name="actions">The <see cref="ActionDescriptorsCollection"/>.</param>
-        public ActionSelectionDecisionTree(ActionDescriptorsCollection actions)
+        /// <param name="actions">The <see cref="ActionDescriptorCollection"/>.</param>
+        public ActionSelectionDecisionTree(ActionDescriptorCollection actions)
         {
             Version = actions.Version;
 

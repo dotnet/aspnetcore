@@ -518,9 +518,9 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
 
             serviceContainer.AddSingleton(typeof(IEnumerable<IActionDescriptorProvider>), list);
 
-            var actionDescriptorsCollectionProvider = new DefaultActionDescriptorsCollectionProvider(
+            var actionDescriptorCollectionProvider = new DefaultActionDescriptorCollectionProvider(
                 serviceContainer.BuildServiceProvider());
-            var decisionTreeProvider = new ActionSelectorDecisionTreeProvider(actionDescriptorsCollectionProvider);
+            var decisionTreeProvider = new ActionSelectorDecisionTreeProvider(actionDescriptorCollectionProvider);
 
             var actionConstraintProviders = new[]
             {
@@ -599,10 +599,10 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
         {
             loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
 
-            var actionProvider = new Mock<IActionDescriptorsCollectionProvider>(MockBehavior.Strict);
+            var actionProvider = new Mock<IActionDescriptorCollectionProvider>(MockBehavior.Strict);
 
             actionProvider
-                .Setup(p => p.ActionDescriptors).Returns(new ActionDescriptorsCollection(actions, 0));
+                .Setup(p => p.ActionDescriptors).Returns(new ActionDescriptorCollection(actions, 0));
 
             var decisionTreeProvider = new ActionSelectorDecisionTreeProvider(actionProvider.Object);
 

@@ -64,23 +64,23 @@ namespace Microsoft.AspNet.Mvc.Routing
 
         private string[] GetAndCacheAllMatchingValues(string routeKey, HttpContext httpContext)
         {
-            var actionDescriptors = GetAndValidateActionDescriptorsCollection(httpContext);
+            var actionDescriptors = GetAndValidateActionDescriptorCollection(httpContext);
             var version = actionDescriptors.Version;
             var valuesCollection = _cachedValuesCollection;
 
             if (valuesCollection == null ||
                 version != valuesCollection.Version)
             {
-                var routeValueCollection = actionDescriptors
-                                            .Items
-                                            .Select(ad => ad.RouteConstraints
-                                                            .FirstOrDefault(
-                                                                c => c.RouteKey == routeKey &&
-                                                                c.KeyHandling == RouteKeyHandling.RequireKey))
-                                            .Where(rc => rc != null)
-                                            .Select(rc => rc.RouteValue)
-                                            .Distinct()
-                                            .ToArray();
+                var routeValueCollection =
+                    actionDescriptors
+                        .Items
+                        .Select(ad => ad.RouteConstraints.FirstOrDefault(
+                            c => c.RouteKey == routeKey &&
+                            c.KeyHandling == RouteKeyHandling.RequireKey))
+                        .Where(rc => rc != null)
+                        .Select(rc => rc.RouteValue)
+                        .Distinct()
+                        .ToArray();
 
                 valuesCollection = new RouteValuesCollection(version, routeValueCollection);
                 _cachedValuesCollection = valuesCollection;
@@ -89,10 +89,10 @@ namespace Microsoft.AspNet.Mvc.Routing
             return _cachedValuesCollection.Items;
         }
 
-        private static ActionDescriptorsCollection GetAndValidateActionDescriptorsCollection(HttpContext httpContext)
+        private static ActionDescriptorCollection GetAndValidateActionDescriptorCollection(HttpContext httpContext)
         {
-            var provider = httpContext.RequestServices
-                                      .GetRequiredService<IActionDescriptorsCollectionProvider>();
+            var services = httpContext.RequestServices;
+            var provider = services.GetRequiredService<IActionDescriptorCollectionProvider>();
             var descriptors = provider.ActionDescriptors;
 
             if (descriptors == null)

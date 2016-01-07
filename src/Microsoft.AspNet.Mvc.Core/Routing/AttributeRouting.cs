@@ -32,7 +32,7 @@ namespace Microsoft.AspNet.Mvc.Routing
                 throw new ArgumentNullException(nameof(services));
             }
 
-            var actionDescriptorProvider = services.GetRequiredService<IActionDescriptorsCollectionProvider>();
+            var actionDescriptorProvider = services.GetRequiredService<IActionDescriptorCollectionProvider>();
             var inlineConstraintResolver = services.GetRequiredService<IInlineConstraintResolver>();
             var pool = services.GetRequiredService<ObjectPool<UriBuildingContext>>();
             var urlEncoder = services.GetRequiredService<UrlEncoder>();

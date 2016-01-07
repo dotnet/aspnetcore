@@ -64,17 +64,17 @@ namespace Microsoft.AspNet.Mvc.Routing
                 },
             };
 
-            var actionDescriptorsProvider = new Mock<IActionDescriptorsCollectionProvider>(MockBehavior.Strict);
-            actionDescriptorsProvider
+            var actionDescriptorProvider = new Mock<IActionDescriptorCollectionProvider>(MockBehavior.Strict);
+            actionDescriptorProvider
                 .SetupGet(ad => ad.ActionDescriptors)
-                .Returns(new ActionDescriptorsCollection(actionDescriptors, version: 1));
+                .Returns(new ActionDescriptorCollection(actionDescriptors, version: 1));
 
             var policy = new UriBuilderContextPooledObjectPolicy(new UrlTestEncoder());
             var pool = new DefaultObjectPool<UriBuildingContext>(policy);
 
             var route = new AttributeRoute(
                 handler.Object,
-                actionDescriptorsProvider.Object,
+                actionDescriptorProvider.Object,
                 Mock.Of<IInlineConstraintResolver>(),
                 pool,
                 new UrlTestEncoder(),
@@ -103,9 +103,9 @@ namespace Microsoft.AspNet.Mvc.Routing
 
             // Arrange 2 - remove the action and update the collection
             actionDescriptors.RemoveAt(1);
-            actionDescriptorsProvider
+            actionDescriptorProvider
                 .SetupGet(ad => ad.ActionDescriptors)
-                .Returns(new ActionDescriptorsCollection(actionDescriptors, version: 2));
+                .Returns(new ActionDescriptorCollection(actionDescriptors, version: 2));
 
             context = new RouteContext(httpContext);
 

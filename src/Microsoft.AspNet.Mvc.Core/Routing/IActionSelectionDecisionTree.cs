@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.Mvc.Routing
     {
         /// <summary>
         /// Gets the version. The same as the value of
-        /// <see cref="Infrastructure.ActionDescriptorsCollection.Version"/>.
+        /// <see cref="Infrastructure.ActionDescriptorCollection.Version"/>.
         /// </summary>
         int Version { get; }
 

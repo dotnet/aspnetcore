@@ -130,13 +130,13 @@ namespace Microsoft.AspNet.Mvc.Routing
         [Theory]
         [InlineData(RouteDirection.IncomingRequest)]
         [InlineData(RouteDirection.UrlGeneration)]
-        public void ActionDescriptorsCollection_SettingNullValue_Throws(RouteDirection direction)
+        public void ActionDescriptorCollection_SettingNullValue_Throws(RouteDirection direction)
         {
             // Arrange
-            var actionDescriptorCollectionProvider = Mock.Of<IActionDescriptorsCollectionProvider>();
+            var actionDescriptorCollectionProvider = Mock.Of<IActionDescriptorCollectionProvider>();
             var httpContext = new Mock<HttpContext>();
             httpContext
-                .Setup(o => o.RequestServices.GetService(typeof(IActionDescriptorsCollectionProvider)))
+                .Setup(o => o.RequestServices.GetService(typeof(IActionDescriptorCollectionProvider)))
                 .Returns(actionDescriptorCollectionProvider);
 
             // Act & Assert
@@ -175,8 +175,8 @@ namespace Microsoft.AspNet.Mvc.Routing
                    .Returns(new[] { actionProvider.Object });
 
             context.Setup(o => o.RequestServices
-                               .GetService(typeof(IActionDescriptorsCollectionProvider)))
-                   .Returns(new DefaultActionDescriptorsCollectionProvider(context.Object.RequestServices));
+                               .GetService(typeof(IActionDescriptorCollectionProvider)))
+                   .Returns(new DefaultActionDescriptorCollectionProvider(context.Object.RequestServices));
             return context.Object;
         }
 

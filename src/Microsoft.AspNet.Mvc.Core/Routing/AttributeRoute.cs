@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.Mvc.Routing
     public class AttributeRoute : IRouter
     {
         private readonly IRouter _target;
-        private readonly IActionDescriptorsCollectionProvider _actionDescriptorsCollectionProvider;
+        private readonly IActionDescriptorCollectionProvider _actionDescriptorCollectionProvider;
         private readonly IInlineConstraintResolver _constraintResolver;
         private readonly ObjectPool<UriBuildingContext> _contextPool;
         private readonly UrlEncoder _urlEncoder;
@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.Mvc.Routing
 
         public AttributeRoute(
             IRouter target,
-            IActionDescriptorsCollectionProvider actionDescriptorsCollectionProvider,
+            IActionDescriptorCollectionProvider actionDescriptorCollectionProvider,
             IInlineConstraintResolver constraintResolver,
             ObjectPool<UriBuildingContext> contextPool,
             UrlEncoder urlEncoder,
@@ -42,9 +42,9 @@ namespace Microsoft.AspNet.Mvc.Routing
                 throw new ArgumentNullException(nameof(target));
             }
 
-            if (actionDescriptorsCollectionProvider == null)
+            if (actionDescriptorCollectionProvider == null)
             {
-                throw new ArgumentNullException(nameof(actionDescriptorsCollectionProvider));
+                throw new ArgumentNullException(nameof(actionDescriptorCollectionProvider));
             }
 
             if (constraintResolver == null)
@@ -68,7 +68,7 @@ namespace Microsoft.AspNet.Mvc.Routing
             }
 
             _target = target;
-            _actionDescriptorsCollectionProvider = actionDescriptorsCollectionProvider;
+            _actionDescriptorCollectionProvider = actionDescriptorCollectionProvider;
             _constraintResolver = constraintResolver;
             _contextPool = contextPool;
             _urlEncoder = urlEncoder;
@@ -91,7 +91,7 @@ namespace Microsoft.AspNet.Mvc.Routing
 
         private TreeRouter GetTreeRouter()
         {
-            var actions = _actionDescriptorsCollectionProvider.ActionDescriptors;
+            var actions = _actionDescriptorCollectionProvider.ActionDescriptors;
 
             // This is a safe-race. We'll never set router back to null after initializing
             // it on startup.
@@ -103,7 +103,7 @@ namespace Microsoft.AspNet.Mvc.Routing
             return _router;
         }
 
-        private TreeRouter BuildRoute(ActionDescriptorsCollection actions)
+        private TreeRouter BuildRoute(ActionDescriptorCollection actions)
         {
             var routeBuilder = new TreeRouteBuilder(_target, _loggerFactory);
             var routeInfos = GetRouteInfos(_constraintResolver, actions.Items);

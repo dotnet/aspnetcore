@@ -10,19 +10,19 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Microsoft.AspNet.Mvc.Infrastructure
 {
     /// <summary>
-    /// Default implementation for ActionDescriptors.
+    /// Default implementation of <see cref="IActionDescriptorCollectionProvider"/>.
     /// This implementation caches the results at first call, and is not responsible for updates.
     /// </summary>
-    public class DefaultActionDescriptorsCollectionProvider : IActionDescriptorsCollectionProvider
+    public class DefaultActionDescriptorCollectionProvider : IActionDescriptorCollectionProvider
     {
         private readonly IServiceProvider _serviceProvider;
-        private ActionDescriptorsCollection _collection;
+        private ActionDescriptorCollection _collection;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DefaultActionDescriptorsCollectionProvider" /> class.
+        /// Initializes a new instance of the <see cref="DefaultActionDescriptorCollectionProvider" /> class.
         /// </summary>
         /// <param name="serviceProvider">The application IServiceProvider.</param>
-        public DefaultActionDescriptorsCollectionProvider(IServiceProvider serviceProvider)
+        public DefaultActionDescriptorCollectionProvider(IServiceProvider serviceProvider)
         {
             _serviceProvider = serviceProvider;
         }
@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
         /// <summary>
         /// Returns a cached collection of <see cref="ActionDescriptor" />.
         /// </summary>
-        public ActionDescriptorsCollection ActionDescriptors
+        public ActionDescriptorCollection ActionDescriptors
         {
             get
             {
@@ -43,7 +43,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
             }
         }
 
-        private ActionDescriptorsCollection GetCollection()
+        private ActionDescriptorCollection GetCollection()
         {
             var providers =
                 _serviceProvider.GetServices<IActionDescriptorProvider>()
@@ -62,7 +62,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
                 providers[i].OnProvidersExecuted(context);
             }
 
-            return new ActionDescriptorsCollection(
+            return new ActionDescriptorCollection(
                 new ReadOnlyCollection<ActionDescriptor>(context.Results), 0);
         }
     }

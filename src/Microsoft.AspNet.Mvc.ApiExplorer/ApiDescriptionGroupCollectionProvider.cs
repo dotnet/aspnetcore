@@ -10,7 +10,7 @@ namespace Microsoft.AspNet.Mvc.ApiExplorer
     /// <inheritdoc />
     public class ApiDescriptionGroupCollectionProvider : IApiDescriptionGroupCollectionProvider
     {
-        private readonly IActionDescriptorsCollectionProvider _actionDescriptorCollectionProvider;
+        private readonly IActionDescriptorCollectionProvider _actionDescriptorCollectionProvider;
         private readonly IApiDescriptionProvider[] _apiDescriptionProviders;
 
         private ApiDescriptionGroupCollection _apiDescriptionGroups;
@@ -19,13 +19,13 @@ namespace Microsoft.AspNet.Mvc.ApiExplorer
         /// Creates a new instance of <see cref="ApiDescriptionGroupCollectionProvider"/>.
         /// </summary>
         /// <param name="actionDescriptorCollectionProvider">
-        /// The <see cref="IActionDescriptorsCollectionProvider"/>.
+        /// The <see cref="IActionDescriptorCollectionProvider"/>.
         /// </param>
         /// <param name="apiDescriptionProviders">
         /// The <see cref="IEnumerable{IApiDescriptionProvider}}"/>.
         /// </param>
         public ApiDescriptionGroupCollectionProvider(
-            IActionDescriptorsCollectionProvider actionDescriptorCollectionProvider,
+            IActionDescriptorCollectionProvider actionDescriptorCollectionProvider,
             IEnumerable<IApiDescriptionProvider> apiDescriptionProviders)
         {
             _actionDescriptorCollectionProvider = actionDescriptorCollectionProvider;
@@ -47,7 +47,7 @@ namespace Microsoft.AspNet.Mvc.ApiExplorer
             }
         }
 
-        private ApiDescriptionGroupCollection GetCollection(ActionDescriptorsCollection actionDescriptors)
+        private ApiDescriptionGroupCollection GetCollection(ActionDescriptorCollection actionDescriptors)
         {
             var context = new ApiDescriptionProviderContext(actionDescriptors.Items);
 

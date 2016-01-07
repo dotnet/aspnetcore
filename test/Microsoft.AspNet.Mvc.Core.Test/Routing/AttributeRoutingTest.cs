@@ -180,9 +180,9 @@ namespace Microsoft.AspNet.Mvc.Routing
 
         private static IServiceProvider CreateServices(params ActionDescriptor[] actions)
         {
-            var collection = new ActionDescriptorsCollection(actions, version: 0);
+            var collection = new ActionDescriptorCollection(actions, version: 0);
 
-            var actionDescriptorProvider = new Mock<IActionDescriptorsCollectionProvider>();
+            var actionDescriptorProvider = new Mock<IActionDescriptorCollectionProvider>();
             actionDescriptorProvider
                 .Setup(a => a.ActionDescriptors)
                 .Returns(collection);

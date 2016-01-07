@@ -10,14 +10,14 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
     /// <summary>
     /// A cached collection of <see cref="ActionDescriptor" />.
     /// </summary>
-    public class ActionDescriptorsCollection
+    public class ActionDescriptorCollection
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="ActionDescriptorsCollection"/>.
+        /// Initializes a new instance of the <see cref="ActionDescriptorCollection"/>.
         /// </summary>
         /// <param name="items">The result of action discovery</param>
         /// <param name="version">The unique version of discovered actions.</param>
-        public ActionDescriptorsCollection(IReadOnlyList<ActionDescriptor> items, int version)
+        public ActionDescriptorCollection(IReadOnlyList<ActionDescriptor> items, int version)
         {
             if (items == null)
             {
