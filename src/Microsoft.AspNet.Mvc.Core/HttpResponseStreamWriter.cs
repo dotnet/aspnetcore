@@ -272,7 +272,7 @@ namespace Microsoft.AspNet.Mvc
                 throw new ObjectDisposedException("stream");
             }
 
-            FlushInternal(true, true);
+            FlushInternal();
         }
 
         public override Task FlushAsync()
@@ -282,18 +282,16 @@ namespace Microsoft.AspNet.Mvc
                 throw new ObjectDisposedException("stream");
             }
 
-            return FlushInternalAsync(flushStream: true, flushEncoder: true);
+            return FlushInternalAsync();
         }
 
-        // Do not flush the stream on Dispose, as this will cause response to be
-        // sent in chunked encoding in case of Helios.
         protected override void Dispose(bool disposing)
         {
             if (disposing && _stream != null)
             {
                 try
                 {
-                    FlushInternal(flushStream: false, flushEncoder: true);
+                    FlushInternal();
                 }
                 finally
                 {
@@ -314,7 +312,9 @@ namespace Microsoft.AspNet.Mvc
             }
         }
 
-        private void FlushInternal(bool flushStream = false, bool flushEncoder = false)
+        // Note: our FlushInternal method does NOT flush the underlying stream. This would result in
+        // chunking.
+        private void FlushInternal()
         {
             if (_charBufferCount == 0)
             {
@@ -327,7 +327,7 @@ namespace Microsoft.AspNet.Mvc
                 _charBufferCount,
                 _byteBuffer,
                 0,
-                flushEncoder);
+                flush: true);
 
             if (count > 0)
             {
@@ -335,14 +335,11 @@ namespace Microsoft.AspNet.Mvc
             }
 
             _charBufferCount = 0;
-
-            if (flushStream)
-            {
-                _stream.Flush();
-            }
         }
 
-        private async Task FlushInternalAsync(bool flushStream = false, bool flushEncoder = false)
+        // Note: our FlushInternalAsync method does NOT flush the underlying stream. This would result in
+        // chunking.
+        private async Task FlushInternalAsync()
         {
             if (_charBufferCount == 0)
             {
@@ -355,7 +352,7 @@ namespace Microsoft.AspNet.Mvc
                 _charBufferCount,
                 _byteBuffer,
                 0,
-                flushEncoder);
+                flush: true);
 
             if (count > 0)
             {
@@ -363,11 +360,6 @@ namespace Microsoft.AspNet.Mvc
             }
 
             _charBufferCount = 0;
-
-            if (flushStream)
-            {
-                await _stream.FlushAsync();
-            }
         }
 
         private void CopyToCharBuffer(string value, ref int index, ref int count)

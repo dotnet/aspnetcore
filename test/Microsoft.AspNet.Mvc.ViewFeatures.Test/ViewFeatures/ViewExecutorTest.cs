@@ -309,6 +309,8 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                 await v.Writer.WriteAsync(text);
             });
 
+            var expectedWriteCallCount = Math.Ceiling((double)writeLength / HttpResponseStreamWriter.DefaultBufferSize);
+
             var context = new DefaultHttpContext();
             var stream = new Mock<Stream>();
             stream.SetupGet(s => s.CanWrite).Returns(true);
@@ -332,7 +334,10 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                 statusCode: null);
 
             // Assert
-            stream.Verify(s => s.FlushAsync(It.IsAny<CancellationToken>()), Times.Once());
+            stream.Verify(s => s.FlushAsync(It.IsAny<CancellationToken>()), Times.Never());
+            stream.Verify(
+                s => s.WriteAsync(It.IsAny<byte[]>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()), 
+                Times.Exactly((int)expectedWriteCallCount));
             stream.Verify(s => s.Write(It.IsAny<byte[]>(), It.IsAny<int>(), It.IsAny<int>()), Times.Never());
         }
 

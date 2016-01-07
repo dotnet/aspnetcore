@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Buffers;
 using System.IO;
 using System.Text;
@@ -164,18 +165,21 @@ namespace Microsoft.AspNet.Mvc
         [InlineData(1024)]
         [InlineData(1050)]
         [InlineData(2048)]
-        public void FlushesBuffer_OnFlush(int byteLength)
+        public void FlushesBuffer_ButNotStream_OnFlush(int byteLength)
         {
             // Arrange
             var stream = new TestMemoryStream();
             var writer = new HttpResponseStreamWriter(stream, Encoding.UTF8);
             writer.Write(new string('a', byteLength));
 
+            var expectedWriteCount = Math.Ceiling((double)byteLength / HttpResponseStreamWriter.DefaultBufferSize);
+
             // Act
             writer.Flush();
 
             // Assert
-            Assert.Equal(1, stream.FlushCallCount);
+            Assert.Equal(0, stream.FlushCallCount);
+            Assert.Equal(expectedWriteCount, stream.WriteCallCount);
             Assert.Equal(byteLength, stream.Length);
         }
 
@@ -199,18 +203,21 @@ namespace Microsoft.AspNet.Mvc
         [InlineData(1024)]
         [InlineData(1050)]
         [InlineData(2048)]
-        public async Task FlushesBuffer_OnFlushAsync(int byteLength)
+        public async Task FlushesBuffer_ButNotStream_OnFlushAsync(int byteLength)
         {
             // Arrange
             var stream = new TestMemoryStream();
             var writer = new HttpResponseStreamWriter(stream, Encoding.UTF8);
             await writer.WriteAsync(new string('a', byteLength));
 
+            var expectedWriteCount = Math.Ceiling((double)byteLength / HttpResponseStreamWriter.DefaultBufferSize);
+
             // Act
             await writer.FlushAsync();
 
             // Assert
-            Assert.Equal(1, stream.FlushAsyncCallCount);
+            Assert.Equal(0, stream.FlushAsyncCallCount);
+            Assert.Equal(expectedWriteCount, stream.WriteAsyncCallCount);
             Assert.Equal(byteLength, stream.Length);
         }
 
@@ -401,28 +408,40 @@ namespace Microsoft.AspNet.Mvc
 
         private class TestMemoryStream : MemoryStream
         {
-            private int _flushCallCount;
-            private int _flushAsyncCallCount;
-            private int _disposeCallCount;
+            public int FlushCallCount { get; private set; }
 
-            public int FlushCallCount { get { return _flushCallCount; } }
-
-            public int FlushAsyncCallCount { get { return _flushAsyncCallCount; } }
+            public int FlushAsyncCallCount { get; private set; }
 
             public int CloseCallCount { get; private set; }
 
-            public int DisposeCallCount { get { return _disposeCallCount; } }
+            public int DisposeCallCount { get; private set; }
+
+            public int WriteCallCount { get; private set; }
+
+            public int WriteAsyncCallCount { get; private set; }
 
             public override void Flush()
             {
-                _flushCallCount++;
+                FlushCallCount++;
                 base.Flush();
             }
 
             public override Task FlushAsync(CancellationToken cancellationToken)
             {
-                _flushAsyncCallCount++;
+                FlushAsyncCallCount++;
                 return base.FlushAsync(cancellationToken);
+            }
+
+            public override void Write(byte[] buffer, int offset, int count)
+            {
+                WriteCallCount++;
+                base.Write(buffer, offset, count);
+            }
+
+            public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+            {
+                WriteAsyncCallCount++;
+                return base.WriteAsync(buffer, offset, count, cancellationToken);
             }
 
 #if DNX451
@@ -435,7 +454,7 @@ namespace Microsoft.AspNet.Mvc
 
             protected override void Dispose(bool disposing)
             {
-                _disposeCallCount++;
+                DisposeCallCount++;
                 base.Dispose(disposing);
             }
         }

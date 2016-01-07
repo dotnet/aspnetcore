@@ -154,7 +154,7 @@ namespace Microsoft.AspNet.Mvc.Formatters
         }
 
         /// <inheritdoc />
-        public override Task WriteResponseBodyAsync(OutputFormatterWriteContext context)
+        public override async Task WriteResponseBodyAsync(OutputFormatterWriteContext context)
         {
             if (context == null)
             {
@@ -186,9 +186,12 @@ namespace Microsoft.AspNet.Mvc.Formatters
                 {
                     xmlSerializer.Serialize(xmlWriter, value);
                 }
-            }
 
-            return TaskCache.CompletedTask;
+                // Perf: call FlushAsync to call WriteAsync on the stream with any content left in the TextWriter's
+                // buffers. This is better than just letting dispose handle it (which would result in a synchronous 
+                // write).
+                await textWriter.FlushAsync();
+            }
         }
 
         /// <summary>
