@@ -6,10 +6,19 @@ using System.Diagnostics;
 
 namespace Microsoft.AspNet.Mvc.Filters
 {
-    // Used to flow filters back from the FilterProviderContext
+    /// <summary>
+    /// Used to associate executable filters with <see cref="IFilterMetadata"/> instances
+    /// as part of <see cref="FilterProviderContext"/>. An <see cref="IFilterProvider"/> should
+    /// inspect <see cref="FilterProviderContext.Results"/> and set <see cref="Filter"/> and
+    /// <see cref="IsReusable"/> as appropriate.
+    /// </summary>
     [DebuggerDisplay("FilterItem: {Filter}")]
     public class FilterItem
     {
+        /// <summary>
+        /// Creates a new <see cref="FilterItem"/>.
+        /// </summary>
+        /// <param name="descriptor">The <see cref="FilterDescriptor"/>.</param>
         public FilterItem(FilterDescriptor descriptor)
         {
             if (descriptor == null)
@@ -20,6 +29,11 @@ namespace Microsoft.AspNet.Mvc.Filters
             Descriptor = descriptor;
         }
 
+        /// <summary>
+        /// Creates a new <see cref="FilterItem"/>.
+        /// </summary>
+        /// <param name="descriptor">The <see cref="FilterDescriptor"/>.</param>
+        /// <param name="filter"></param>
         public FilterItem(FilterDescriptor descriptor, IFilterMetadata filter)
             : this(descriptor)
         {
@@ -31,8 +45,19 @@ namespace Microsoft.AspNet.Mvc.Filters
             Filter = filter;
         }
 
-        public FilterDescriptor Descriptor { get; set; }
+        /// <summary>
+        /// Gets the <see cref="FilterDescriptor"/> containing the filter metadata.
+        /// </summary>
+        public FilterDescriptor Descriptor { get; }
 
+        /// <summary>
+        /// Gets or sets the executable <see cref="IFilterMetadata"/> associated with <see cref="Descriptor"/>.
+        /// </summary>
         public IFilterMetadata Filter { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether or not <see cref="Filter"/> can be reused across requests.
+        /// </summary>
+        public bool IsReusable { get; set; }
     }
 }

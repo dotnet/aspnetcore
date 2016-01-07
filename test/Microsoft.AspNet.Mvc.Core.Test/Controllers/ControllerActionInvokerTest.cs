@@ -14,6 +14,7 @@ using Microsoft.AspNet.Mvc.Abstractions;
 using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.AspNet.Mvc.Formatters;
 using Microsoft.AspNet.Mvc.Infrastructure;
+using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.AspNet.Routing;
@@ -22,7 +23,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Options;
-using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit;
 
@@ -2027,10 +2027,10 @@ namespace Microsoft.AspNet.Mvc.Controllers
                     {
                         foreach (var filterMetadata in filters)
                         {
-                            var filter = new FilterItem(
-                                new FilterDescriptor(filterMetadata, FilterScope.Action),
-                                filterMetadata);
-                            context.Results.Add(filter);
+                            context.Results.Add(new FilterItem(new FilterDescriptor(filterMetadata, FilterScope.Action))
+                            {
+                                Filter = filterMetadata,
+                            });
                         }
                     });
 
@@ -2106,7 +2106,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
 
             var invoker = new ControllerActionInvoker(
                 actionContext,
-                new List<IFilterProvider>(),
+                CreateFilterCache(),
                 controllerFactory.Object,
                 actionDescriptor,
                 new IInputFormatter[0],
@@ -2222,11 +2222,18 @@ namespace Microsoft.AspNet.Mvc.Controllers
             }
         }
 
+        private static FilterCache CreateFilterCache(IFilterProvider[] filterProviders = null)
+        {
+            var services = new ServiceCollection().BuildServiceProvider();
+            var descriptorProvider = new DefaultActionDescriptorCollectionProvider(services);
+            return new FilterCache(descriptorProvider, filterProviders.AsEnumerable() ?? new List<IFilterProvider>());
+        }
+
         private class TestControllerActionInvoker : ControllerActionInvoker
         {
             public TestControllerActionInvoker(
                 ActionContext actionContext,
-                IFilterProvider[] filterProvider,
+                IFilterProvider[] filterProviders,
                 MockControllerFactory controllerFactory,
                 ControllerActionDescriptor descriptor,
                 IReadOnlyList<IInputFormatter> inputFormatters,
@@ -2239,7 +2246,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
                 int maxAllowedErrorsInModelState)
                 : base(
                       actionContext,
-                      filterProvider,
+                      CreateFilterCache(filterProviders),
                       controllerFactory,
                       descriptor,
                       inputFormatters,

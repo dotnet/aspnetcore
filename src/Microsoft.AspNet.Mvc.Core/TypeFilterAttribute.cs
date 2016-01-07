@@ -29,7 +29,11 @@ namespace Microsoft.AspNet.Mvc
 
         public Type ImplementationType { get; private set; }
 
+        /// <inheritdoc />
         public int Order { get; set; }
+
+        /// <inheritdoc />
+        public bool IsReusable { get; set; }
 
         public IFilterMetadata CreateInstance(IServiceProvider serviceProvider)
         {

@@ -25,6 +25,9 @@ namespace Microsoft.AspNet.Mvc
         public int Order { get; set; }
 
         /// <inheritdoc />
+        public bool IsReusable => true;
+
+        /// <inheritdoc />
         public IFilterMetadata CreateInstance(IServiceProvider serviceProvider)
         {
             return serviceProvider.GetRequiredService<AutoValidateAntiforgeryTokenAuthorizationFilter>();

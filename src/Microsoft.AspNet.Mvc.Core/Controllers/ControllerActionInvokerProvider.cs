@@ -6,8 +6,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.AspNet.Mvc.Abstractions;
-using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.AspNet.Mvc.Formatters;
+using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.Extensions.Logging;
@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
     {
         private readonly IControllerActionArgumentBinder _argumentBinder;
         private readonly IControllerFactory _controllerFactory;
-        private readonly IFilterProvider[] _filterProviders;
+        private readonly FilterCache _filterCache;
         private readonly IReadOnlyList<IInputFormatter> _inputFormatters;
         private readonly IReadOnlyList<IModelBinder> _modelBinders;
         private readonly IReadOnlyList<IModelValidatorProvider> _modelValidatorProviders;
@@ -30,14 +30,14 @@ namespace Microsoft.AspNet.Mvc.Controllers
 
         public ControllerActionInvokerProvider(
             IControllerFactory controllerFactory,
-            IEnumerable<IFilterProvider> filterProviders,
+            FilterCache filterCache,
             IControllerActionArgumentBinder argumentBinder,
             IOptions<MvcOptions> optionsAccessor,
             ILoggerFactory loggerFactory,
             DiagnosticSource diagnosticSource)
         {
             _controllerFactory = controllerFactory;
-            _filterProviders = filterProviders.OrderBy(item => item.Order).ToArray();
+            _filterCache = filterCache;
             _argumentBinder = argumentBinder;
             _inputFormatters = optionsAccessor.Value.InputFormatters.ToArray();
             _modelBinders = optionsAccessor.Value.ModelBinders.ToArray();
@@ -67,7 +67,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
             {
                 context.Result = new ControllerActionInvoker(
                     context.ActionContext,
-                    _filterProviders,
+                    _filterCache,
                     _controllerFactory,
                     actionDescriptor,
                     _inputFormatters,

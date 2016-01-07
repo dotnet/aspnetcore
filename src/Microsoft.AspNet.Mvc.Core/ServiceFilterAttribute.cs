@@ -23,9 +23,13 @@ namespace Microsoft.AspNet.Mvc
             ServiceType = type;
         }
 
+        /// <inheritdoc />
+        public int Order { get; set; }
+
         public Type ServiceType { get; private set; }
 
-        public int Order { get; set; }
+        /// <inheritdoc />
+        public bool IsReusable { get; set; }
 
         public IFilterMetadata CreateInstance(IServiceProvider serviceProvider)
         {

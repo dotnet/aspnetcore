@@ -34,6 +34,9 @@ namespace Microsoft.AspNet.Mvc.Cors
             }
         }
 
+        /// <inheritdoc />
+        public bool IsReusable => true;
+
         public IFilterMetadata CreateInstance(IServiceProvider serviceProvider)
         {
             if (serviceProvider == null)

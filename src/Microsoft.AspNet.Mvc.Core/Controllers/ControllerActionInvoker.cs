@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.AspNet.Mvc.Formatters;
+using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.AspNet.Mvc.Logging;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
@@ -25,11 +26,11 @@ namespace Microsoft.AspNet.Mvc.Controllers
 
         public ControllerActionInvoker(
             ActionContext actionContext,
-            IReadOnlyList<IFilterProvider> filterProviders,
+            FilterCache filterCache,
             IControllerFactory controllerFactory,
             ControllerActionDescriptor descriptor,
             IReadOnlyList<IInputFormatter> inputFormatters,
-            IControllerActionArgumentBinder controllerActionArgumentBinder,
+            IControllerActionArgumentBinder argumentBinder,
             IReadOnlyList<IModelBinder> modelBinders,
             IReadOnlyList<IModelValidatorProvider> modelValidatorProviders,
             IReadOnlyList<IValueProviderFactory> valueProviderFactories,
@@ -38,7 +39,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
             int maxModelValidationErrors)
             : base(
                   actionContext,
-                  filterProviders,
+                  filterCache,
                   inputFormatters,
                   modelBinders,
                   modelValidatorProviders,
@@ -47,16 +48,6 @@ namespace Microsoft.AspNet.Mvc.Controllers
                   diagnosticSource,
                   maxModelValidationErrors)
         {
-            if (actionContext == null)
-            {
-                throw new ArgumentNullException(nameof(actionContext));
-            }
-
-            if (filterProviders == null)
-            {
-                throw new ArgumentNullException(nameof(filterProviders));
-            }
-
             if (controllerFactory == null)
             {
                 throw new ArgumentNullException(nameof(controllerFactory));
@@ -67,51 +58,22 @@ namespace Microsoft.AspNet.Mvc.Controllers
                 throw new ArgumentNullException(nameof(descriptor));
             }
 
-            if (inputFormatters == null)
+            if (argumentBinder == null)
             {
-                throw new ArgumentNullException(nameof(inputFormatters));
+                throw new ArgumentNullException(nameof(argumentBinder));
             }
 
-            if (controllerActionArgumentBinder == null)
-            {
-                throw new ArgumentNullException(nameof(controllerActionArgumentBinder));
-            }
-
-            if (modelBinders == null)
-            {
-                throw new ArgumentNullException(nameof(modelBinders));
-            }
-
-            if (modelValidatorProviders == null)
-            {
-                throw new ArgumentNullException(nameof(modelValidatorProviders));
-            }
-
-            if (valueProviderFactories == null)
-            {
-                throw new ArgumentNullException(nameof(valueProviderFactories));
-            }
-
-            if (logger == null)
-            {
-                throw new ArgumentNullException(nameof(logger));
-            }
-
-            if (diagnosticSource == null)
-            {
-                throw new ArgumentNullException(nameof(diagnosticSource));
-            }
-
-            _descriptor = descriptor;
             _controllerFactory = controllerFactory;
-            _argumentBinder = controllerActionArgumentBinder;
+            _descriptor = descriptor;
+            _argumentBinder = argumentBinder;
 
             if (descriptor.MethodInfo == null)
             {
                 throw new ArgumentException(
-                    Resources.FormatPropertyOfTypeCannotBeNull("MethodInfo",
-                                                               typeof(ControllerActionDescriptor)),
-                    "descriptor");
+                    Resources.FormatPropertyOfTypeCannotBeNull(
+                        nameof(descriptor.MethodInfo),
+                        typeof(ControllerActionDescriptor)),
+                    nameof(descriptor));
             }
         }
 

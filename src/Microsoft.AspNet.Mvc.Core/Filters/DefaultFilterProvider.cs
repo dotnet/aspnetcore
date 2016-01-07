@@ -50,11 +50,13 @@ namespace Microsoft.AspNet.Mvc.Filters
             if (filterFactory == null)
             {
                 filterItem.Filter = filter;
+                filterItem.IsReusable = true;
             }
             else
             {
                 var services = context.ActionContext.HttpContext.RequestServices;
                 filterItem.Filter = filterFactory.CreateInstance(services);
+                filterItem.IsReusable = filterFactory.IsReusable;
 
                 if (filterItem.Filter == null)
                 {

@@ -81,10 +81,11 @@ namespace Microsoft.AspNet.Mvc
         /// </summary>
         public string CacheProfileName { get; set; }
 
-        /// <summary>
-        /// The order of the filter.
-        /// </summary>
+        /// <inheritdoc />
         public int Order { get; set; }
+
+        /// <inheritdoc />
+        public bool IsReusable => true;
 
         public IFilterMetadata CreateInstance(IServiceProvider serviceProvider)
         {

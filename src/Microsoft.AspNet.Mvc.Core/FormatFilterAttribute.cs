@@ -15,6 +15,9 @@ namespace Microsoft.AspNet.Mvc
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
     public class FormatFilterAttribute : Attribute, IFilterFactory
     {
+        /// <inheritdoc />
+        public bool IsReusable => true;
+
         /// <summary>
         /// Creates an instance of <see cref="FormatFilter"/>.
         /// </summary>

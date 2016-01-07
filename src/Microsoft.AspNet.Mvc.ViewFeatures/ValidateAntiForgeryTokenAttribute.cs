@@ -19,7 +19,11 @@ namespace Microsoft.AspNet.Mvc
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
     public class ValidateAntiForgeryTokenAttribute : Attribute, IFilterFactory, IOrderedFilter
     {
+        /// <inheritdoc />
         public int Order { get; set; }
+
+        /// <inheritdoc />
+        public bool IsReusable => true;
 
         public IFilterMetadata CreateInstance(IServiceProvider serviceProvider)
         {

@@ -21,9 +21,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
 {
     public abstract class FilterActionInvoker : IActionInvoker
     {
-        private static readonly IFilterMetadata[] EmptyFilterArray = new IFilterMetadata[0];
-
-        private readonly IReadOnlyList<IFilterProvider> _filterProviders;
+        private readonly FilterCache _filterCache;
         private readonly IReadOnlyList<IInputFormatter> _inputFormatters;
         private readonly IReadOnlyList<IModelBinder> _modelBinders;
         private readonly IReadOnlyList<IModelValidatorProvider> _modelValidatorProviders;
@@ -49,7 +47,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
 
         public FilterActionInvoker(
             ActionContext actionContext,
-            IReadOnlyList<IFilterProvider> filterProviders,
+            FilterCache filterCache,
             IReadOnlyList<IInputFormatter> inputFormatters,
             IReadOnlyList<IModelBinder> modelBinders,
             IReadOnlyList<IModelValidatorProvider> modelValidatorProviders,
@@ -63,9 +61,9 @@ namespace Microsoft.AspNet.Mvc.Controllers
                 throw new ArgumentNullException(nameof(actionContext));
             }
 
-            if (filterProviders == null)
+            if (filterCache == null)
             {
-                throw new ArgumentNullException(nameof(filterProviders));
+                throw new ArgumentNullException(nameof(filterCache));
             }
 
             if (inputFormatters == null)
@@ -100,7 +98,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
 
             Context = new ControllerContext(actionContext);
 
-            _filterProviders = filterProviders;
+            _filterCache = filterCache;
             _inputFormatters = inputFormatters;
             _modelBinders = modelBinders;
             _modelValidatorProviders = modelValidatorProviders;
@@ -184,51 +182,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
 
         private IFilterMetadata[] GetFilters()
         {
-            var filterDescriptors = Context.ActionDescriptor.FilterDescriptors;
-            var items = new List<FilterItem>(filterDescriptors.Count);
-            for (var i = 0; i < filterDescriptors.Count; i++)
-            {
-                items.Add(new FilterItem(filterDescriptors[i]));
-            }
-
-            var context = new FilterProviderContext(Context, items);
-            for (var i = 0; i < _filterProviders.Count; i++)
-            {
-                _filterProviders[i].OnProvidersExecuting(context);
-            }
-
-            for (var i = _filterProviders.Count - 1; i >= 0; i--)
-            {
-                _filterProviders[i].OnProvidersExecuted(context);
-            }
-
-            var count = 0;
-            for (var i = 0; i < items.Count; i++)
-            {
-                if (items[i].Filter != null)
-                {
-                    count++;
-                }
-            }
-
-            if (count == 0)
-            {
-                return EmptyFilterArray;
-            }
-            else
-            {
-                var filters = new IFilterMetadata[count];
-                for (int i = 0, j = 0; i < items.Count; i++)
-                {
-                    var filter = items[i].Filter;
-                    if (filter != null)
-                    {
-                        filters[j++] = filter;
-                    }
-                }
-
-                return filters;
-            }
+            return _filterCache.GetFilters(Context);
         }
 
         private Task InvokeAllAuthorizationFiltersAsync()

@@ -11,8 +11,14 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
     /// Adds a filter which will save the <see cref="ITempDataDictionary"/> for a request.
     /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
-    public class SaveTempDataAttribute : Attribute, IFilterFactory
+    public class SaveTempDataAttribute : Attribute, IFilterFactory, IOrderedFilter
     {
+        /// <inheritdoc />
+        public int Order { get; set; }
+
+        /// <inheritdoc />
+        public bool IsReusable => true;
+
         /// <inheritdoc />
         public IFilterMetadata CreateInstance(IServiceProvider serviceProvider)
         {
