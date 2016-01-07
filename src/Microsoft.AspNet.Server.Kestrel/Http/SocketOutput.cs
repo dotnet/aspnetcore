@@ -83,19 +83,19 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             bool socketShutdownSend = false,
             bool socketDisconnect = false)
         {
-            if (buffer.Count > 0)
-            {
-                var tail = ProducingStart();
-                tail.CopyFrom(buffer);
-                // We do our own accounting below
-                ProducingCompleteNoPreComplete(tail);
-            }
             TaskCompletionSource<object> tcs = null;
-
             var scheduleWrite = false;
 
             lock (_contextLock)
             {
+                if (buffer.Count > 0)
+                {
+                    var tail = ProducingStart();
+                    tail.CopyFrom(buffer);
+                    // We do our own accounting below
+                    ProducingCompleteNoPreComplete(tail);
+                }
+
                 if (_nextWriteContext == null)
                 {
                     if (_writeContextPool.Count > 0)
@@ -253,9 +253,9 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         // This is called on the libuv event loop
         private void WriteAllPending()
         {
-            WriteContext writingContext;
+            WriteContext writingContext = null;
 
-            lock (_contextLock)
+            if (Monitor.TryEnter(_contextLock))
             {
                 _writePending = false;
 
@@ -264,13 +264,18 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                     writingContext = _nextWriteContext;
                     _nextWriteContext = null;
                 }
-                else
-                {
-                    return;
-                }
+
+                Monitor.Exit(_contextLock);
+            }
+            else
+            {
+                ScheduleWrite();
             }
 
-            writingContext.DoWriteIfNeeded();
+            if (writingContext != null)
+            {
+                writingContext.DoWriteIfNeeded();
+            }
         }
 
         // This is called on the libuv event loop
