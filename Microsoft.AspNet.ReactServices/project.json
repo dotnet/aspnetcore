@@ -12,7 +12,7 @@
   "dependencies": {
     "Microsoft.AspNet.Mvc.TagHelpers": "6.0.0-rc1-final",
     "Microsoft.AspNet.NodeServices": "1.0.0-alpha7",
-    "Microsoft.AspNet.SpaServices": "1.0.0-alpha7"
+    "Microsoft.AspNet.SpaServices": "1.0.0-alpha7-1"
   },
   "frameworks": {
     "net451": { },
