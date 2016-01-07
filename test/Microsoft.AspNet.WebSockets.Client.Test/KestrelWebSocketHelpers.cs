@@ -47,11 +47,13 @@ namespace Microsoft.AspNet.WebSockets.Client.Test
 
             var application = new WebApplicationBuilder()
                 .UseConfiguration(config)
-                .UseServerFactory("Microsoft.AspNet.Server.Kestrel")
+                .UseServer("Microsoft.AspNet.Server.Kestrel")
                 .Configure(startup)
                 .Build();
 
-            return application.Start();
+            application.Start();
+
+            return application;
         }
     }
 }
