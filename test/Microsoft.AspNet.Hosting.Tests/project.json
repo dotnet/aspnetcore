@@ -1,21 +1,33 @@
 {
-    "compilationOptions": {
-        "warningsAsErrors": true,
-        "keyFile": "../../tools/Key.snk"
+  "compilationOptions": {
+    "warningsAsErrors": true,
+    "keyFile": "../../tools/Key.snk"
+  },
+  "content": [
+    "testroot/**/*"  
+  ],
+  "dependencies": {
+    "Microsoft.AspNet.Hosting": "1.0.0-*",
+    "Microsoft.AspNet.Owin": "1.0.0-*",
+    "Microsoft.AspNet.Testing": "1.0.0-*",
+    "Microsoft.Extensions.Options": "1.0.0-*",
+    "Microsoft.Extensions.PlatformAbstractions": "1.0.0-*",
+    "xunit": "2.1.0"
+  },
+  "frameworks": {
+    "dnx451": {
+      "dependencies": {
+        "xunit.runner.console": "2.1.0"
+      }
     },
-    "dependencies": {
-        "Microsoft.AspNet.Hosting": "1.0.0-*",
-        "Microsoft.AspNet.Owin": "1.0.0-*",
-        "Microsoft.AspNet.Testing": "1.0.0-*",
-        "Microsoft.Extensions.Options": "1.0.0-*",
-        "Microsoft.Extensions.PlatformAbstractions": "1.0.0-*",
+    "dnxcore50": { 
+      "dependencies": {
         "xunit.runner.aspnet": "2.0.0-aspnet-*"
-    },
-    "frameworks": {
-        "dnx451": { },
-        "dnxcore50": { }
-    },
-    "commands": {
-        "test": "xunit.runner.aspnet"
+      }
     }
+  },
+  "testRunner": "xunit",
+  "commands": {
+    "test": "xunit.runner.aspnet"
+  }
 }

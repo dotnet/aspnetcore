@@ -301,7 +301,7 @@ namespace Microsoft.AspNet.Hosting
             Assert.Equal("Staging", env.EnvironmentName);
         }
 
-        [Fact]
+        [Fact(Skip = "Missing content publish property")]
         public void WebRootCanBeResolvedFromTheConfig()
         {
             var vals = new Dictionary<string, string>
