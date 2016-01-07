@@ -178,9 +178,6 @@ default NUGET_FEED = 'https://api.nuget.org/v3/index.json'
 #--quiet
   @{
     AddToE("KOREBUILD_BOWER_INSTALL_OPTIONS", "--quiet");
-    AddToE("KOREBUILD_DOTNET_BUILD_OPTIONS", "--quiet");
-    AddToE("KOREBUILD_DOTNET_PACK_OPTIONS", "--quiet");
-    AddToE("KOREBUILD_DOTNET_RESTORE_OPTIONS", "--quiet");
     AddToE("KOREBUILD_NPM_INSTALL_OPTIONS", "--quiet");
     Quiet = true;
   }

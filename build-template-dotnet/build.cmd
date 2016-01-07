@@ -2,7 +2,7 @@
 SETLOCAL
 
 SET REPO_FOLDER=%~dp0
-CD %REPO_FOLDER%
+CD "%REPO_FOLDER%"
 
 SET BUILD_FOLDER=.build
 SET KOREBUILD_FOLDER=%BUILD_FOLDER%\KoreBuild-dotnet
@@ -34,7 +34,7 @@ IF NOT EXIST %KOREBUILD_FOLDER% (
         SET KOREBUILD_DOWNLOAD_ARGS=-version %KOREBUILD_VERSION%
     )
     
-    %NUGET_PATH% install KoreBuild-dotnet -ExcludeVersion -o %BUILD_FOLDER% -nocache -pre %KOREBUILD_DOWNLOAD_ARGS%
+    %BUILD_FOLDER%\nuget.exe install KoreBuild-dotnet -ExcludeVersion -o %BUILD_FOLDER% -nocache -pre %KOREBUILD_DOWNLOAD_ARGS%
 )
 
 "%KOREBUILD_FOLDER%\build\KoreBuild.cmd" %*
