@@ -6,36 +6,12 @@ using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Diagnostics;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Features;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNet.Builder
 {
     public static class StatusCodePagesExtensions
     {
-        /// <summary>
-        /// Adds a StatusCodePages middleware with the given options that checks for responses with status codes 
-        /// between 400 and 599 that do not have a body.
-        /// </summary>
-        /// <param name="app"></param>
-        /// <param name="configureOptions"></param>
-        /// <returns></returns>
-        public static IApplicationBuilder UseStatusCodePages(this IApplicationBuilder app, Action<StatusCodePagesOptions> configureOptions)
-        {
-            if (app == null)
-            {
-                throw new ArgumentNullException(nameof(app));
-            }
-            if (configureOptions == null)
-            {
-                throw new ArgumentNullException(nameof(configureOptions));
-            }
-
-            var options = new StatusCodePagesOptions();
-            configureOptions(options);
-
-            return app.UseMiddleware<StatusCodePagesMiddleware>(options);
-        }
-
         /// <summary>
         /// Adds a StatusCodePages middleware with the given options that checks for responses with status codes 
         /// between 400 and 599 that do not have a body.
@@ -54,7 +30,7 @@ namespace Microsoft.AspNet.Builder
                 throw new ArgumentNullException(nameof(options));
             }
 
-            return app.UseMiddleware<StatusCodePagesMiddleware>(options);
+            return app.UseMiddleware<StatusCodePagesMiddleware>(Options.Create(options));
         }
 
         /// <summary>
@@ -70,7 +46,7 @@ namespace Microsoft.AspNet.Builder
                 throw new ArgumentNullException(nameof(app));
             }
 
-            return app.UseStatusCodePages(configureOptions: options => { });
+            return app.UseMiddleware<StatusCodePagesMiddleware>();
         }
 
         /// <summary>
@@ -91,7 +67,10 @@ namespace Microsoft.AspNet.Builder
                 throw new ArgumentNullException(nameof(handler));
             }
 
-            return app.UseStatusCodePages(options => { options.HandleAsync = handler; });
+            return app.UseStatusCodePages(new StatusCodePagesOptions
+            {
+                HandleAsync = handler
+            });
         }
 
         /// <summary>

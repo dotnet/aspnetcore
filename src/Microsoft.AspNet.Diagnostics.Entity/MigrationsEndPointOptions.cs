@@ -3,7 +3,7 @@
 
 using Microsoft.AspNet.Http;
 
-namespace Microsoft.AspNet.Diagnostics.Entity
+namespace Microsoft.AspNet.Builder
 {
     /// <summary>
     /// Options for the <see cref="MigrationsEndPointMiddleware"/>.

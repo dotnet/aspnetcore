@@ -3,8 +3,10 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Diagnostics.Views;
 using Microsoft.AspNet.Http;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.PlatformAbstractions;
 
 namespace Microsoft.AspNet.Diagnostics
@@ -25,7 +27,7 @@ namespace Microsoft.AspNet.Diagnostics
         /// <param name="options"></param>
         public RuntimeInfoMiddleware(
             RequestDelegate next,
-            RuntimeInfoPageOptions options,
+            IOptions<RuntimeInfoPageOptions> options,
             IRuntimeEnvironment runtimeEnvironment)
         {
             if (next == null)
@@ -44,7 +46,7 @@ namespace Microsoft.AspNet.Diagnostics
             }
 
             _next = next;
-            _options = options;
+            _options = options.Value;
             _runtimeEnvironment = runtimeEnvironment;
         }
 

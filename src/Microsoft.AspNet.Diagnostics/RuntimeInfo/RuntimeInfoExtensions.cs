@@ -4,6 +4,7 @@
 using System;
 using Microsoft.AspNet.Diagnostics;
 using Microsoft.AspNet.Http;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.PlatformAbstractions;
 
 namespace Microsoft.AspNet.Builder
@@ -17,7 +18,7 @@ namespace Microsoft.AspNet.Builder
                 throw new ArgumentNullException(nameof(app));
             }
 
-            return app.UseRuntimeInfoPage(options => { });
+            return app.UseMiddleware<RuntimeInfoMiddleware>();
         }
 
         public static IApplicationBuilder UseRuntimeInfoPage(this IApplicationBuilder app, string path)
@@ -27,27 +28,10 @@ namespace Microsoft.AspNet.Builder
                 throw new ArgumentNullException(nameof(app));
             }
 
-            return app.UseRuntimeInfoPage(options => { options.Path = new PathString(path); });
-        }
-
-        public static IApplicationBuilder UseRuntimeInfoPage(
-            this IApplicationBuilder app,
-            Action<RuntimeInfoPageOptions> configureOptions)
-        {
-            if (app == null)
+            return app.UseRuntimeInfoPage(new RuntimeInfoPageOptions 
             {
-                throw new ArgumentNullException(nameof(app));
-            }
-            if (configureOptions == null)
-            {
-                throw new ArgumentNullException(nameof(configureOptions));
-            }
-
-            var runtimeEnvironment = app.ApplicationServices.GetService(typeof(IRuntimeEnvironment)) as IRuntimeEnvironment;
-            var options = new RuntimeInfoPageOptions();
-            configureOptions(options);
-
-            return app.Use(next => new RuntimeInfoMiddleware(next, options, runtimeEnvironment).Invoke);
+                Path = new PathString(path)
+            });
         }
 
         public static IApplicationBuilder UseRuntimeInfoPage(
@@ -64,7 +48,7 @@ namespace Microsoft.AspNet.Builder
             }
 
             var runtimeEnvironment = app.ApplicationServices.GetService(typeof(IRuntimeEnvironment)) as IRuntimeEnvironment;
-            return app.Use(next => new RuntimeInfoMiddleware(next, options, runtimeEnvironment).Invoke);
+            return app.UseMiddleware<RuntimeInfoMiddleware>(Options.Create(options), runtimeEnvironment);
         }
     }
 }

@@ -174,37 +174,31 @@ using Microsoft.Extensions.Logging
 #line default
 #line hidden
 
-            WriteLiteral("        <h2 id=\"requestHeader\">Request Details</h2>\r\n        <table id=\"requestDe" +
-"tails\">\r\n            <colgroup><col id=\"label\" /><col /></colgroup>\r\n\r\n         " +
-"   <tr>\r\n                <th>Path</th>\r\n                <td>");
+            WriteLiteral("        <h2 id=\"requestHeader\">Request Details</h2>\r\n        <table id=\"requestDetails\">\r\n            <colgroup><col id=\"label\" /><col /></colgroup>\r\n\r\n            <tr>\r\n                <th>Path</th>\r\n                <td>");
 #line 110 "DetailsPage.cshtml"
                Write(context.Path);
 
 #line default
 #line hidden
-            WriteLiteral("</td>\r\n            </tr>\r\n            <tr>\r\n                <th>Host</th>\r\n      " +
-"          <td>");
+            WriteLiteral("</td>\r\n            </tr>\r\n            <tr>\r\n                <th>Host</th>\r\n                <td>");
 #line 114 "DetailsPage.cshtml"
                Write(context.Host);
 
 #line default
 #line hidden
-            WriteLiteral("</td>\r\n            </tr>\r\n            <tr>\r\n                <th>Content Type</th>" +
-"\r\n                <td>");
+            WriteLiteral("</td>\r\n            </tr>\r\n            <tr>\r\n                <th>Content Type</th>\r\n                <td>");
 #line 118 "DetailsPage.cshtml"
                Write(context.ContentType);
 
 #line default
 #line hidden
-            WriteLiteral("</td>\r\n            </tr>\r\n            <tr>\r\n                <th>Method</th>\r\n    " +
-"            <td>");
+            WriteLiteral("</td>\r\n            </tr>\r\n            <tr>\r\n                <th>Method</th>\r\n                <td>");
 #line 122 "DetailsPage.cshtml"
                Write(context.Method);
 
 #line default
 #line hidden
-            WriteLiteral("</td>\r\n            </tr>\r\n            <tr>\r\n                <th>Protocol</th>\r\n  " +
-"              <td>");
+            WriteLiteral("</td>\r\n            </tr>\r\n            <tr>\r\n                <th>Protocol</th>\r\n                <td>");
 #line 126 "DetailsPage.cshtml"
                Write(context.Protocol);
 
@@ -256,23 +250,19 @@ using Microsoft.Extensions.Logging
 #line default
 #line hidden
 
-            WriteLiteral("                        </tbody>\r\n                    </table>\r\n                <" +
-"/td>\r\n            </tr>\r\n            <tr>\r\n                <th>Status Code</th>\r" +
-"\n                <td>");
+            WriteLiteral("                        </tbody>\r\n                    </table>\r\n                </td>\r\n            </tr>\r\n            <tr>\r\n                <th>Status Code</th>\r\n                <td>");
 #line 152 "DetailsPage.cshtml"
                Write(context.StatusCode);
 
 #line default
 #line hidden
-            WriteLiteral("</td>\r\n            </tr>\r\n            <tr>\r\n                <th>User</th>\r\n      " +
-"          <td>");
+            WriteLiteral("</td>\r\n            </tr>\r\n            <tr>\r\n                <th>User</th>\r\n                <td>");
 #line 156 "DetailsPage.cshtml"
                Write(context.User.Identity.Name);
 
 #line default
 #line hidden
-            WriteLiteral("</td>\r\n            </tr>\r\n            <tr>\r\n                <th>Claims</th>\r\n    " +
-"            <td>\r\n");
+            WriteLiteral("</td>\r\n            </tr>\r\n            <tr>\r\n                <th>Claims</th>\r\n                <td>\r\n");
 #line 161 "DetailsPage.cshtml"
                     
 
@@ -334,22 +324,19 @@ using Microsoft.Extensions.Logging
 #line default
 #line hidden
 
-            WriteLiteral("                </td>\r\n            </tr>\r\n            <tr>\r\n                <th>S" +
-"cheme</th>\r\n                <td>");
+            WriteLiteral("                </td>\r\n            </tr>\r\n            <tr>\r\n                <th>Scheme</th>\r\n                <td>");
 #line 185 "DetailsPage.cshtml"
                Write(context.Scheme);
 
 #line default
 #line hidden
-            WriteLiteral("</td>\r\n            </tr>\r\n            <tr>\r\n                <th>Query</th>\r\n     " +
-"           <td>");
+            WriteLiteral("</td>\r\n            </tr>\r\n            <tr>\r\n                <th>Query</th>\r\n                <td>");
 #line 189 "DetailsPage.cshtml"
                Write(context.Query.Value);
 
 #line default
 #line hidden
-            WriteLiteral("</td>\r\n            </tr>\r\n            <tr>\r\n                <th>Cookies</th>\r\n   " +
-"             <td>\r\n");
+            WriteLiteral("</td>\r\n            </tr>\r\n            <tr>\r\n                <th>Cookies</th>\r\n                <td>\r\n");
 #line 194 "DetailsPage.cshtml"
                     
 

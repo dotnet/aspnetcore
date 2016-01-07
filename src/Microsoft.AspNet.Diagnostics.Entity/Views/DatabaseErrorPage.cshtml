@@ -33,17 +33,14 @@
 </head>
 <body>
     <h1>@Strings.DatabaseErrorPage_Title</h1>
-    @if (Model.Options.ShowExceptionDetails)
-    {
-        <p>
-            @for (Exception ex = Model.Exception; ex != null; ex = ex.InnerException)
-                {
-                <span>@ex.GetType().Name: @ex.Message</span>
-                <br />
-            }
-        </p>
-        <hr />
-    }
+    <p>
+        @for (Exception ex = Model.Exception; ex != null; ex = ex.InnerException)
+            {
+            <span>@ex.GetType().Name: @ex.Message</span>
+            <br />
+        }
+    </p>
+    <hr />
 
     @if (!Model.DatabaseExists && !Model.PendingMigrations.Any())
     {
@@ -60,59 +57,53 @@
             <h2>@Strings.FormatDatabaseErrorPage_PendingMigrationsTitle(Model.ContextType.Name)</h2>
             <p>@Strings.FormatDatabaseErrorPage_PendingMigrationsInfo(Model.ContextType.Name)</p>
 
-            @if (Model.Options.ListMigrations)
-            {
-                <ul>
-                    @foreach (var migration in Model.PendingMigrations)
-                    {
-                        <li>@migration</li>
-                    }
-                </ul>
-            }
+            <ul>
+                @foreach (var migration in Model.PendingMigrations)
+                {
+                    <li>@migration</li>
+                }
+            </ul>
 
-            @if (Model.Options.EnableMigrationCommands)
-            {
-                <p>
-                    <button id="applyMigrations" onclick="ApplyMigrations()">@Strings.DatabaseErrorPage_ApplyMigrationsButton</button>
-                    <span id="applyMigrationsError" class="error"></span>
-                    <span id="applyMigrationsSuccess"></span>
-                </p>
-                <script>
-                    function ApplyMigrations() {
-                        applyMigrations.disabled = true;
-                        applyMigrationsError.innerHTML = "";
-                        applyMigrations.innerHTML = "@JavaScriptEncode(Strings.DatabaseErrorPage_ApplyMigrationsButtonRunning)";
+            <p>
+                <button id="applyMigrations" onclick="ApplyMigrations()">@Strings.DatabaseErrorPage_ApplyMigrationsButton</button>
+                <span id="applyMigrationsError" class="error"></span>
+                <span id="applyMigrationsSuccess"></span>
+            </p>
+            <script>
+                function ApplyMigrations() {
+                    applyMigrations.disabled = true;
+                    applyMigrationsError.innerHTML = "";
+                    applyMigrations.innerHTML = "@JavaScriptEncode(Strings.DatabaseErrorPage_ApplyMigrationsButtonRunning)";
 
-                        var req = new XMLHttpRequest();
+                    var req = new XMLHttpRequest();
 
-                        req.onload = function (e) {
-                            if (req.status === 204) {
-                                applyMigrations.innerHTML = "@JavaScriptEncode(Strings.DatabaseErrorPage_ApplyMigrationsButtonDone)";
-                                applyMigrationsSuccess.innerHTML = "@JavaScriptEncode(Strings.DatabaseErrorPage_MigrationsAppliedRefresh)";
-                            } else {
-                                ErrorApplyingMigrations();
-                            }
-                        };
-
-                        req.onerror = function (e) {
+                    req.onload = function (e) {
+                        if (req.status === 204) {
+                            applyMigrations.innerHTML = "@JavaScriptEncode(Strings.DatabaseErrorPage_ApplyMigrationsButtonDone)";
+                            applyMigrationsSuccess.innerHTML = "@JavaScriptEncode(Strings.DatabaseErrorPage_MigrationsAppliedRefresh)";
+                        } else {
                             ErrorApplyingMigrations();
-                        };
+                        }
+                    };
 
-                        var formBody = "context=@JavaScriptEncode(UrlEncode(Model.ContextType.AssemblyQualifiedName))";
-                        req.open("POST", "@JavaScriptEncode(Model.Options.MigrationsEndPointPath.Value)", true);
-                        req.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-                        req.setRequestHeader("Content-length", formBody.length);
-                        req.setRequestHeader("Connection", "close");
-                        req.send(formBody);
-                    }
+                    req.onerror = function (e) {
+                        ErrorApplyingMigrations();
+                    };
 
-                    function ErrorApplyingMigrations() {
-                        applyMigrations.innerHTML = "@JavaScriptEncode(Strings.DatabaseErrorPage_ApplyMigrationsButton)";
-                        applyMigrationsError.innerHTML = "@JavaScriptEncode(Strings.DatabaseErrorPage_ApplyMigrationsFailed)";
-                        applyMigrations.disabled = false;
-                    }
-                </script>
-            }
+                    var formBody = "context=@JavaScriptEncode(UrlEncode(Model.ContextType.AssemblyQualifiedName))";
+                    req.open("POST", "@JavaScriptEncode(Model.Options.MigrationsEndPointPath.Value)", true);
+                    req.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+                    req.setRequestHeader("Content-length", formBody.length);
+                    req.setRequestHeader("Connection", "close");
+                    req.send(formBody);
+                }
+
+                function ErrorApplyingMigrations() {
+                    applyMigrations.innerHTML = "@JavaScriptEncode(Strings.DatabaseErrorPage_ApplyMigrationsButton)";
+                    applyMigrationsError.innerHTML = "@JavaScriptEncode(Strings.DatabaseErrorPage_ApplyMigrationsFailed)";
+                    applyMigrations.disabled = false;
+                }
+            </script>
 
             <p>@Strings.DatabaseErrorPage_HowToApplyFromCmd</p>
             <code>@Strings.DatabaseErrorPage_ApplyMigrationsCommand</code>

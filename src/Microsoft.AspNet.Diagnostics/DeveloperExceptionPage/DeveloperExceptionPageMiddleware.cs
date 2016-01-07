@@ -9,10 +9,12 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Diagnostics.Views;
 using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Http;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.PlatformAbstractions;
 using StackFrame = Microsoft.AspNet.Diagnostics.Views.StackFrame;
 
@@ -37,7 +39,7 @@ namespace Microsoft.AspNet.Diagnostics
         /// <param name="options"></param>
         public DeveloperExceptionPageMiddleware(
             RequestDelegate next,
-            DeveloperExceptionPageOptions options,
+            IOptions<DeveloperExceptionPageOptions> options,
             ILoggerFactory loggerFactory,
             IApplicationEnvironment appEnvironment,
             DiagnosticSource diagnosticSource)
@@ -53,9 +55,9 @@ namespace Microsoft.AspNet.Diagnostics
             }
 
             _next = next;
-            _options = options;
+            _options = options.Value;
             _logger = loggerFactory.CreateLogger<DeveloperExceptionPageMiddleware>();
-            _fileProvider = options.FileProvider ?? new PhysicalFileProvider(appEnvironment.ApplicationBasePath);
+            _fileProvider = _options.FileProvider ?? new PhysicalFileProvider(appEnvironment.ApplicationBasePath);
             _diagnosticSource = diagnosticSource;
         }
 

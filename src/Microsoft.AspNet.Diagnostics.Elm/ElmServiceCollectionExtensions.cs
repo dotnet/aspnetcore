@@ -17,8 +17,7 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 throw new ArgumentNullException(nameof(services));
             }
-
-            services.AddOptions();
+            
             services.AddSingleton<ElmStore>();
             return services;
         }

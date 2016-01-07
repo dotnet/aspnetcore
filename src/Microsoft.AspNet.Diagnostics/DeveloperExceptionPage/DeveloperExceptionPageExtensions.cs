@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNet.Diagnostics;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNet.Builder
 {
@@ -23,32 +24,7 @@ namespace Microsoft.AspNet.Builder
                 throw new ArgumentNullException(nameof(app));
             }
 
-            return app.UseDeveloperExceptionPage(options => { });
-        }
-
-        /// <summary>
-        /// Captures synchronous and asynchronous <see cref="Exception"/> instances from the pipeline and generates HTML error responses.
-        /// </summary>
-        /// <param name="app">The <see cref="IApplicationBuilder"/>.</param>
-        /// <param name="configureOptions">A callback to configure <see cref="DeveloperExceptionPageOptions"/>.</param>
-        /// <returns>A reference to the <paramref name="app"/> after the operation has completed.</returns>
-        public static IApplicationBuilder UseDeveloperExceptionPage(
-            this IApplicationBuilder app,
-            Action<DeveloperExceptionPageOptions> configureOptions)
-        {
-            if (app == null)
-            {
-                throw new ArgumentNullException(nameof(app));
-            }
-
-            if (configureOptions == null)
-            {
-                throw new ArgumentNullException(nameof(configureOptions));
-            }
-
-            var options = new DeveloperExceptionPageOptions();
-            configureOptions(options);
-            return app.UseMiddleware<DeveloperExceptionPageMiddleware>(options);
+            return app.UseMiddleware<DeveloperExceptionPageMiddleware>();
         }
 
         /// <summary>
@@ -71,7 +47,7 @@ namespace Microsoft.AspNet.Builder
                 throw new ArgumentNullException(nameof(options));
             }
             
-            return app.UseMiddleware<DeveloperExceptionPageMiddleware>(options);
+            return app.UseMiddleware<DeveloperExceptionPageMiddleware>(Options.Create(options));
         }
     }
 }

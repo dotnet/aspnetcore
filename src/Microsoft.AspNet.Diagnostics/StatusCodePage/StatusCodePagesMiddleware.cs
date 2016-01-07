@@ -5,7 +5,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Features;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNet.Diagnostics
 {
@@ -14,10 +14,10 @@ namespace Microsoft.AspNet.Diagnostics
         private readonly RequestDelegate _next;
         private readonly StatusCodePagesOptions _options;
 
-        public StatusCodePagesMiddleware(RequestDelegate next, StatusCodePagesOptions options)
+        public StatusCodePagesMiddleware(RequestDelegate next, IOptions<StatusCodePagesOptions> options)
         {
             _next = next;
-            _options = options;
+            _options = options.Value;
             if (_options.HandleAsync == null)
             {
                 throw new ArgumentException("Missing options.HandleAsync implementation.");

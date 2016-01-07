@@ -5,6 +5,7 @@
 using System;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Diagnostics;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNet.Builder
 {
@@ -13,29 +14,6 @@ namespace Microsoft.AspNet.Builder
     /// </summary>
     public static class WelcomePageExtensions
     {
-        /// <summary>
-        /// Adds the WelcomePageMiddleware to the pipeline with the given options.
-        /// </summary>
-        /// <param name="app"></param>
-        /// <param name="configureOptions"></param>
-        /// <returns></returns>
-        public static IApplicationBuilder UseWelcomePage(this IApplicationBuilder app, Action<WelcomePageOptions> configureOptions)
-        {
-            if (app == null)
-            {
-                throw new ArgumentNullException(nameof(app));
-            }
-            if (configureOptions == null)
-            {
-                throw new ArgumentNullException(nameof(configureOptions));
-            }
-
-            var options = new WelcomePageOptions();
-            configureOptions(options);
-
-            return app.UseMiddleware<WelcomePageMiddleware>(options);
-        }
-
         /// <summary>
         /// Adds the WelcomePageMiddleware to the pipeline with the given options.
         /// </summary>
@@ -53,7 +31,7 @@ namespace Microsoft.AspNet.Builder
                 throw new ArgumentNullException(nameof(options));
             }
 
-            return app.UseMiddleware<WelcomePageMiddleware>(options);
+            return app.UseMiddleware<WelcomePageMiddleware>(Options.Create(options));
         }
 
         /// <summary>
@@ -69,7 +47,10 @@ namespace Microsoft.AspNet.Builder
                 throw new ArgumentNullException(nameof(app));
             }
 
-            return app.UseWelcomePage(options => { options.Path = path; });
+            return app.UseWelcomePage(new WelcomePageOptions
+            {
+                Path = path
+            });
         }
 
         /// <summary>
@@ -85,7 +66,10 @@ namespace Microsoft.AspNet.Builder
                 throw new ArgumentNullException(nameof(app));
             }
 
-            return app.UseWelcomePage(options => { options.Path = new PathString(path); });
+            return app.UseWelcomePage(new WelcomePageOptions
+            {
+                Path = new PathString(path)
+            });
         }
 
         /// <summary>
@@ -100,7 +84,7 @@ namespace Microsoft.AspNet.Builder
                 throw new ArgumentNullException(nameof(app));
             }
 
-            return app.UseWelcomePage(options => { });
+            return app.UseMiddleware<WelcomePageMiddleware>();
         }
     }
 }

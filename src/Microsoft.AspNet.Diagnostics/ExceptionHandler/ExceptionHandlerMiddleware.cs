@@ -6,8 +6,8 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Features;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Diagnostics
@@ -23,11 +23,11 @@ namespace Microsoft.AspNet.Diagnostics
         public ExceptionHandlerMiddleware(
             RequestDelegate next, 
             ILoggerFactory loggerFactory, 
-            ExceptionHandlerOptions options,
+            IOptions<ExceptionHandlerOptions> options,
             DiagnosticSource diagnosticSource)
         {
             _next = next;
-            _options = options;
+            _options = options.Value;
             _logger = loggerFactory.CreateLogger<ExceptionHandlerMiddleware>();
             if (_options.ExceptionHandler == null)
             {

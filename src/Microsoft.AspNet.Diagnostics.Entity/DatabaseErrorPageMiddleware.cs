@@ -14,6 +14,7 @@ using Microsoft.Data.Entity.Infrastructure;
 using Microsoft.Data.Entity.Migrations;
 using Microsoft.Data.Entity.Storage;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNet.Diagnostics.Entity
 {
@@ -39,7 +40,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity
         /// consumes them to detect database related exception.
         /// </param>
         /// <param name="options">The options to control what information is displayed on the error page.</param>
-        public DatabaseErrorPageMiddleware([NotNull] RequestDelegate next, [NotNull] IServiceProvider serviceProvider, [NotNull] ILoggerFactory loggerFactory, [NotNull] DatabaseErrorPageOptions options)
+        public DatabaseErrorPageMiddleware([NotNull] RequestDelegate next, [NotNull] IServiceProvider serviceProvider, [NotNull] ILoggerFactory loggerFactory, [NotNull] IOptions<DatabaseErrorPageOptions> options)
         {
             Check.NotNull(next, nameof(next));
             Check.NotNull(serviceProvider, nameof(serviceProvider));
@@ -48,7 +49,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity
 
             _next = next;
             _serviceProvider = serviceProvider;
-            _options = options;
+            _options = options.Value;
             _logger = loggerFactory.CreateLogger<DatabaseErrorPageMiddleware>();
 
             _loggerProvider = new DataStoreErrorLoggerProvider();

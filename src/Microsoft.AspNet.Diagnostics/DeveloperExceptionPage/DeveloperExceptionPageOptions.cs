@@ -1,9 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.AspNet.Diagnostics;
 using Microsoft.AspNet.FileProviders;
 
-namespace Microsoft.AspNet.Diagnostics
+namespace Microsoft.AspNet.Builder
 {
     /// <summary>
     /// Options for the <see cref="DeveloperExceptionPageMiddleware"/>.

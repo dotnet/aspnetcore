@@ -19,6 +19,7 @@ using Microsoft.AspNet.Testing;
 using Microsoft.Extensions.PlatformAbstractions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using Xunit;
 using StackFrame = Microsoft.AspNet.Diagnostics.Views.StackFrame;
@@ -306,7 +307,7 @@ namespace Microsoft.AspNet.Diagnostics
 
             var middleware = new DeveloperExceptionPageMiddleware(
                 (httpContext) => { return Task.FromResult(0); },
-                options,
+                Options.Create(options),
                 new LoggerFactory(),
                 new TestApplicationEnvironment(),
                 new DiagnosticListener("Microsoft.Aspnet"));

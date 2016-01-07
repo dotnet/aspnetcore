@@ -21,7 +21,6 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
         public async Task No_database_or_migrations_only_displays_scaffold_first_migration()
         {
             var options = new DatabaseErrorPageOptions();
-            options.EnableAll();
 
             var model = new DatabaseErrorPageModel(
                 contextType: typeof(BloggingContext),
@@ -42,7 +41,6 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
         public async Task No_database_with_migrations_only_displays_apply_migrations()
         {
             var options = new DatabaseErrorPageOptions();
-            options.EnableAll();
 
             var model = new DatabaseErrorPageModel(
                 contextType: typeof(BloggingContext),
@@ -63,7 +61,6 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
         public async Task Existing_database_with_migrations_only_displays_apply_migrations()
         {
             var options = new DatabaseErrorPageOptions();
-            options.EnableAll();
 
             var model = new DatabaseErrorPageModel(
                 contextType: typeof(BloggingContext),
@@ -84,7 +81,6 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
         public async Task Existing_database_with_migrations_and_pending_model_changes_only_displays_apply_migrations()
         {
             var options = new DatabaseErrorPageOptions();
-            options.EnableAll();
 
             var model = new DatabaseErrorPageModel(
                 contextType: typeof(BloggingContext),
@@ -105,7 +101,6 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
         public async Task Pending_model_changes_only_displays_scaffold_next_migration()
         {
             var options = new DatabaseErrorPageOptions();
-            options.EnableAll();
 
             var model = new DatabaseErrorPageModel(
                 contextType: typeof(BloggingContext),
@@ -126,7 +121,6 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
         public async Task Exception_details_are_displayed()
         {
             var options = new DatabaseErrorPageOptions();
-            options.EnableAll();
 
             var model = new DatabaseErrorPageModel(
                 contextType: typeof(BloggingContext),
@@ -145,7 +139,6 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
         public async Task Inner_exception_details_are_displayed()
         {
             var options = new DatabaseErrorPageOptions();
-            options.EnableAll();
 
             var model = new DatabaseErrorPageModel(
                 contextType: typeof(BloggingContext),
@@ -160,72 +153,11 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
             Assert.Contains("Something bad happened", content);
             Assert.Contains("Because something more badder happened", content);
         }
-
-        [Fact]
-        public async Task ShowExceptionDetails_is_respected()
-        {
-            var options = new DatabaseErrorPageOptions();
-            options.EnableAll();
-            options.ShowExceptionDetails = false;
-
-            var model = new DatabaseErrorPageModel(
-                contextType: typeof(BloggingContext),
-                exception: new Exception("Something bad happened"),
-                databaseExists: false,
-                pendingModelChanges: false,
-                pendingMigrations: new string[] { },
-                options: options);
-
-            var content = await ExecutePage(options, model);
-
-            Assert.DoesNotContain("Something bad happened", content);
-        }
-
-        [Fact]
-        public async Task ListMigrations_is_respected()
-        {
-            var options = new DatabaseErrorPageOptions();
-            options.EnableAll();
-            options.ListMigrations = false;
-
-            var model = new DatabaseErrorPageModel(
-               contextType: typeof(BloggingContext),
-               exception: new Exception(),
-               databaseExists: true,
-               pendingModelChanges: false,
-               pendingMigrations: new string[] { "111_MigrationOne" },
-               options: options);
-
-            var content = await ExecutePage(options, model);
-
-            Assert.DoesNotContain("111_MigrationOne", content);
-        }
-
-        [Fact]
-        public async Task EnableMigrationCommands_is_respected()
-        {
-            var options = new DatabaseErrorPageOptions();
-            options.EnableAll();
-            options.EnableMigrationCommands = false;
-
-            var model = new DatabaseErrorPageModel(
-               contextType: typeof(BloggingContext),
-               exception: new Exception(),
-               databaseExists: true,
-               pendingModelChanges: false,
-               pendingMigrations: new string[] { "111_MigrationOne" },
-               options: options);
-
-            var content = await ExecutePage(options, model);
-
-            Assert.DoesNotContain(options.MigrationsEndPointPath.Value, content);
-        }
-
+        
         [Fact]
         public async Task MigrationsEndPointPath_is_respected()
         {
             var options = new DatabaseErrorPageOptions();
-            options.EnableAll();
             options.MigrationsEndPointPath = "/HitThisEndPoint";
 
             var model = new DatabaseErrorPageModel(

@@ -258,10 +258,9 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
                 var builder = new WebApplicationBuilder()
                     .Configure(app =>
                     {
-                        app.UseDatabaseErrorPage(options =>
+                        app.UseDatabaseErrorPage(new DatabaseErrorPageOptions
                         {
-                            options.EnableAll();
-                            options.MigrationsEndPointPath = new PathString(migrationsEndpoint);
+                            MigrationsEndPointPath = new PathString(migrationsEndpoint)
                         });
 
                         app.UseMiddleware<PendingMigrationsMiddleware>();

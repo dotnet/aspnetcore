@@ -2,11 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
-using System.Linq;
-using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.PlatformAbstractions;
 using Moq;
 using Xunit;
@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.Diagnostics.Tests
 
             var middleware = new RuntimeInfoMiddleware(
                 next,
-                new RuntimeInfoPageOptions(),
+                Options.Create(new RuntimeInfoPageOptions()),
                 runtimeEnvironmentMock.Object);
 
             // Act
@@ -70,7 +70,7 @@ namespace Microsoft.AspNet.Diagnostics.Tests
 
             var middleware = new RuntimeInfoMiddleware(
                next,
-               new RuntimeInfoPageOptions(),
+               Options.Create(new RuntimeInfoPageOptions()),
                runtimeEnvironmentMock.Object);
 
             var contextMock = new Mock<HttpContext>(MockBehavior.Strict);
@@ -102,7 +102,7 @@ namespace Microsoft.AspNet.Diagnostics.Tests
 
             var middleware = new RuntimeInfoMiddleware(
                 next,
-                new RuntimeInfoPageOptions(),
+                Options.Create(new RuntimeInfoPageOptions()),
                 runtimeEnvironmentMock.Object);
 
             var buffer = new byte[4096];

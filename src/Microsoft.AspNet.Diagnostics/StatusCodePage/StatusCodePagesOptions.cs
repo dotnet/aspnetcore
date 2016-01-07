@@ -4,10 +4,11 @@
 using System;
 using System.Globalization;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Diagnostics;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.WebUtilities;
 
-namespace Microsoft.AspNet.Diagnostics
+namespace Microsoft.AspNet.Builder
 {
     /// <summary>
     /// Options for StatusCodePagesMiddleware.

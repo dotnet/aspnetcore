@@ -2,9 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using JetBrains.Annotations;
 using Microsoft.AspNet.Diagnostics.Entity;
-using Microsoft.AspNet.Diagnostics.Entity.Utilities;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNet.Builder
 {
@@ -25,30 +24,7 @@ namespace Microsoft.AspNet.Builder
                 throw new ArgumentNullException(nameof(app));
             }
 
-            return app.UseMigrationsEndPoint(options => { });
-        }
-
-        /// <summary>
-        /// Processes requests to execute migrations operations. The middleware will listen for requests to the path configured in <paramref name="configureOptions"/>.
-        /// </summary>
-        /// <param name="app">The <see cref="IApplicationBuilder"/> to register the middleware with.</param>
-        /// <param name="configureOptions">An action to set the options for the middleware.</param>
-        /// <returns>The same <see cref="IApplicationBuilder"/> instance so that multiple calls can be chained.</returns>
-        public static IApplicationBuilder UseMigrationsEndPoint(this IApplicationBuilder app, Action<MigrationsEndPointOptions> configureOptions)
-        {
-            if (app == null)
-            {
-                throw new ArgumentNullException(nameof(app));
-            }
-            if (configureOptions == null)
-            {
-                throw new ArgumentNullException(nameof(configureOptions));
-            }
-
-            var options = new MigrationsEndPointOptions();
-            configureOptions(options);
-
-            return app.UseMiddleware<MigrationsEndPointMiddleware>(options);
+            return app.UseMiddleware<MigrationsEndPointMiddleware>();
         }
 
         /// <summary>
@@ -68,7 +44,7 @@ namespace Microsoft.AspNet.Builder
                 throw new ArgumentNullException(nameof(options));
             }
 
-            return app.UseMiddleware<MigrationsEndPointMiddleware>(options);
+            return app.UseMiddleware<MigrationsEndPointMiddleware>(Options.Create(options));
         }
     }
 }

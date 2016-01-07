@@ -4,8 +4,10 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Diagnostics.Views;
 using Microsoft.AspNet.Http;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNet.Diagnostics
 {
@@ -22,7 +24,7 @@ namespace Microsoft.AspNet.Diagnostics
         /// </summary>
         /// <param name="next"></param>
         /// <param name="options"></param>
-        public WelcomePageMiddleware(RequestDelegate next, WelcomePageOptions options)
+        public WelcomePageMiddleware(RequestDelegate next, IOptions<WelcomePageOptions> options)
         {
             if (next == null)
             {
@@ -35,7 +37,7 @@ namespace Microsoft.AspNet.Diagnostics
             }
 
             _next = next;
-            _options = options;
+            _options = options.Value;
         }
 
         /// <summary>

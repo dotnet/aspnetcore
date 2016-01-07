@@ -485,9 +485,7 @@ WriteAttributeValue("", 6944, activityPath, 6944, 13, false);
 #line default
 #line hidden
 
-            WriteLiteral("                            </tbody>\r\n                            <tbody class=\"s" +
-"ummary\">\r\n                                <tr class=\"logRow\">\r\n                 " +
-"                   <td>");
+            WriteLiteral("                            </tbody>\r\n                            <tbody class=\"summary\">\r\n                                <tr class=\"logRow\">\r\n                                    <td>");
 #line 227 "LogPage.cshtml"
                                    Write(activity.Time.ToString("MM-dd-yyyy HH:mm:ss"));
 
@@ -549,9 +547,7 @@ WriteAttributeValue("", 6944, activityPath, 6944, 13, false);
 #line default
 #line hidden
 
-            WriteLiteral("                                </tr>\r\n                            </tbody>\r\n    " +
-"                    </table>\r\n                    </td>\r\n                </tr>\r\n" +
-"            </tbody>\r\n");
+            WriteLiteral("                                </tr>\r\n                            </tbody>\r\n                        </table>\r\n                    </td>\r\n                </tr>\r\n            </tbody>\r\n");
 #line 244 "LogPage.cshtml"
         }
 

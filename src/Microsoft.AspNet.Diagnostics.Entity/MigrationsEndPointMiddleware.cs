@@ -10,6 +10,7 @@ using Microsoft.AspNet.Diagnostics.Entity.Utilities;
 using Microsoft.AspNet.Http;
 using Microsoft.Data.Entity;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNet.Diagnostics.Entity
 {
@@ -34,7 +35,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity
             [NotNull] RequestDelegate next, 
             [NotNull] IServiceProvider serviceProvider, 
             [NotNull] ILogger<MigrationsEndPointMiddleware> logger, 
-            [NotNull] MigrationsEndPointOptions options)
+            [NotNull] IOptions<MigrationsEndPointOptions> options)
         {
             Check.NotNull(next, "next");
             Check.NotNull(serviceProvider, "serviceProvider");
@@ -44,7 +45,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity
             _next = next;
             _serviceProvider = serviceProvider;
             _logger = logger;
-            _options = options;
+            _options = options.Value;
         }
 
         /// <summary>

@@ -74,15 +74,13 @@ WriteAttributeValue("", 456, CultureInfo.CurrentUICulture.TwoLetterISOLanguageNa
 #line default
 #line hidden
             EndWriteAttribute();
-            WriteLiteral(" xmlns=\"http://www.w3.org/1999/xhtml\">\r\n<head>\r\n    <meta charset=\"utf-8\" />\r\n   " +
-" <title>");
+            WriteLiteral(" xmlns=\"http://www.w3.org/1999/xhtml\">\r\n<head>\r\n    <meta charset=\"utf-8\" />\r\n    <title>");
 #line 24 "RuntimeInfoPage.cshtml"
       Write(Resources.RuntimeInfoPage_Title);
 
 #line default
 #line hidden
-            WriteLiteral("</title>\r\n    <style>\r\n        <%$ include: RuntimeInfoPage.css % >\r\n    </style>" +
-"\r\n</head>\r\n<body>\r\n    <h2>");
+            WriteLiteral("</title>\r\n    <style>\r\n        <%$ include: RuntimeInfoPage.css % >\r\n    </style>\r\n</head>\r\n<body>\r\n    <h2>");
 #line 30 "RuntimeInfoPage.cshtml"
    Write(Resources.RuntimeInfoPage_Environment);
 

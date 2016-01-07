@@ -78,7 +78,10 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
                     {
                         if (useCustomPath)
                         {
-                            app.UseMigrationsEndPoint(o => o.Path = path);
+                            app.UseMigrationsEndPoint(new MigrationsEndPointOptions
+                            {
+                                Path = path
+                            });
                         }
                         else
                         {
