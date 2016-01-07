@@ -484,14 +484,6 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 throw new ArgumentNullException(nameof(propertyMetadata));
             }
 
-            var bindingFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.IgnoreCase;
-            var property = bindingContext.ModelType.GetProperty(propertyMetadata.PropertyName, bindingFlags);
-
-            if (property == null)
-            {
-                // Nothing to do if property does not exist.
-                return;
-            }
 
             if (!result.IsModelSet)
             {
@@ -499,10 +491,10 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 return;
             }
 
-            if (!property.CanWrite)
+            if (propertyMetadata.IsReadOnly)
             {
                 // Try to handle as a collection if property exists but is not settable.
-                AddToProperty(bindingContext, metadata, property, result);
+                AddToProperty(bindingContext, metadata, propertyMetadata, result);
                 return;
             }
 
@@ -520,11 +512,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         private void AddToProperty(
             ModelBindingContext bindingContext,
             ModelMetadata modelMetadata,
-            PropertyInfo property,
+            ModelMetadata propertyMetadata,
             ModelBindingResult result)
         {
-            var propertyMetadata = modelMetadata.Properties[property.Name];
-
             var target = propertyMetadata.PropertyGetter(bindingContext.Model);
             var source = result.Model;
             if (target == null || source == null)
