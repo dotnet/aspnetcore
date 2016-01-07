@@ -7,9 +7,11 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Text.Encodings.Web;
+using Microsoft.AspNet.Mvc.Logging;
 using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.AspNet.Mvc.ViewEngines;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 
@@ -35,6 +37,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         private readonly IList<IViewLocationExpander> _viewLocationExpanders;
         private readonly IRazorPageActivator _pageActivator;
         private readonly HtmlEncoder _htmlEncoder;
+        private readonly ILogger _logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RazorViewEngine" />.
@@ -43,12 +46,14 @@ namespace Microsoft.AspNet.Mvc.Razor
             IRazorPageFactoryProvider pageFactory,
             IRazorPageActivator pageActivator,
             HtmlEncoder htmlEncoder,
-            IOptions<RazorViewEngineOptions> optionsAccessor)
+            IOptions<RazorViewEngineOptions> optionsAccessor,
+            ILoggerFactory loggerFactory)
         {
             _pageFactory = pageFactory;
             _pageActivator = pageActivator;
             _viewLocationExpanders = optionsAccessor.Value.ViewLocationExpanders;
             _htmlEncoder = htmlEncoder;
+            _logger = loggerFactory.CreateLogger<RazorViewEngine>();
             ViewLookupCache = new MemoryCache(new MemoryCacheOptions
             {
                 CompactOnMemoryPressure = false
@@ -341,7 +346,12 @@ namespace Microsoft.AspNet.Mvc.Razor
             ViewLocationCacheResult cacheResult;
             if (!ViewLookupCache.TryGetValue(cacheKey, out cacheResult))
             {
+                _logger.ViewLookupCacheMiss(cacheKey.ViewName, cacheKey.ControllerName);
                 cacheResult = OnCacheMiss(expanderContext, cacheKey);
+            }
+            else
+            {
+                _logger.ViewLookupCacheHit(cacheKey.ViewName, cacheKey.ControllerName);
             }
 
             return cacheResult;

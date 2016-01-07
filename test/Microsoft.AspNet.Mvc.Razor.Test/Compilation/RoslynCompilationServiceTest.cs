@@ -6,6 +6,7 @@ using Microsoft.AspNet.FileProviders;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.CompilationAbstractions;
+using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.PlatformAbstractions;
 using Moq;
@@ -34,7 +35,8 @@ public class MyTestType  {}";
                 libraryExporter,
                 mvcRazorHost.Object,
                 GetOptions(),
-                GetFileProviderAccessor());
+                GetFileProviderAccessor(),
+                NullLoggerFactory.Instance);
             var relativeFileInfo = new RelativeFileInfo(
                 new TestFileInfo { PhysicalPath = "SomePath" },
                 "some-relative-path");
@@ -66,7 +68,8 @@ this should fail";
                 libraryExporter,
                 mvcRazorHost,
                 GetOptions(),
-                GetFileProviderAccessor(fileProvider));
+                GetFileProviderAccessor(fileProvider),
+                NullLoggerFactory.Instance);
             var relativeFileInfo = new RelativeFileInfo(fileInfo, "some-relative-path");
 
             // Act
@@ -95,7 +98,8 @@ this should fail";
                 libraryExporter,
                 mvcRazorHost,
                 GetOptions(),
-                GetFileProviderAccessor());
+                GetFileProviderAccessor(),
+                NullLoggerFactory.Instance);
             var relativeFileInfo = new RelativeFileInfo(
                 new TestFileInfo { Content = fileContent },
                 "some-relative-path");
@@ -135,7 +139,8 @@ this should fail";
                 libraryExporter,
                 mvcRazorHost,
                 GetOptions(),
-                GetFileProviderAccessor(fileProvider));
+                GetFileProviderAccessor(fileProvider),
+                NullLoggerFactory.Instance);
 
             var relativeFileInfo = new RelativeFileInfo(mockFileInfo.Object, path);
 
@@ -175,7 +180,8 @@ public class MyNonCustomDefinedClass {}
                 libraryExporter,
                 mvcRazorHost.Object,
                 options,
-                GetFileProviderAccessor());
+                GetFileProviderAccessor(),
+                NullLoggerFactory.Instance);
             var relativeFileInfo = new RelativeFileInfo(
                 new TestFileInfo { PhysicalPath = "SomePath" },
                 "some-relative-path");
@@ -206,7 +212,8 @@ public class NotRazorPrefixType {}";
                 libraryExporter,
                 mvcRazorHost.Object,
                 GetOptions(),
-                GetFileProviderAccessor());
+                GetFileProviderAccessor(),
+                NullLoggerFactory.Instance);
 
             var relativeFileInfo = new RelativeFileInfo(
                 new TestFileInfo { PhysicalPath = "SomePath" },
@@ -238,7 +245,8 @@ public class NotRazorPrefixType {}";
                 CompilationServices.Default.LibraryExporter,
                 Mock.Of<IMvcRazorHost>(),
                 optionsAccessor.Object,
-                GetFileProviderAccessor(fileProvider));
+                GetFileProviderAccessor(fileProvider),
+                NullLoggerFactory.Instance);
 
             var assemblyName = "random-assembly-name";
 
@@ -330,7 +338,8 @@ public class NotRazorPrefixType {}";
                 libraryExporter,
                 mvcRazorHost.Object,
                 GetOptions(callback: c => usedCompilation = c),
-                GetFileProviderAccessor());
+                GetFileProviderAccessor(),
+                NullLoggerFactory.Instance);
 
             var relativeFileInfo = new RelativeFileInfo(
                 new TestFileInfo { PhysicalPath = "SomePath" },

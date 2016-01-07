@@ -3,12 +3,15 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Microsoft.AspNet.Diagnostics;
 using Microsoft.AspNet.FileProviders;
+using Microsoft.AspNet.Mvc.Logging;
 using Microsoft.AspNet.Razor;
 using Microsoft.AspNet.Razor.CodeGenerators;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNet.Mvc.Razor.Compilation
@@ -21,6 +24,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
         private readonly ICompilationService _compilationService;
         private readonly IMvcRazorHost _razorHost;
         private readonly IFileProvider _fileProvider;
+        private readonly ILogger _logger;
 
         /// <summary>
         /// Instantiates a new instance of the <see cref="RazorCompilationService"/> class.
@@ -31,11 +35,13 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
         public RazorCompilationService(
             ICompilationService compilationService,
             IMvcRazorHost razorHost,
-            IRazorViewEngineFileProviderAccessor fileProviderAccessor)
+            IRazorViewEngineFileProviderAccessor fileProviderAccessor,
+            ILoggerFactory loggerFactory)
         {
             _compilationService = compilationService;
             _razorHost = razorHost;
             _fileProvider = fileProviderAccessor.FileProvider;
+            _logger = loggerFactory.CreateLogger<RazorCompilationService>();
         }
 
         /// <inheritdoc />
@@ -49,7 +55,13 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
             GeneratorResults results;
             using (var inputStream = file.FileInfo.CreateReadStream())
             {
+                _logger.RazorFileToCodeCompilationStart(file.RelativePath);
+
+                var startTimestamp = _logger.IsEnabled(LogLevel.Debug) ? Stopwatch.GetTimestamp() : 0;
+
                 results = GenerateCode(file.RelativePath, inputStream);
+
+                _logger.RazorFileToCodeCompilationEnd(file.RelativePath, startTimestamp);
             }
 
             if (!results.Success)

@@ -14,6 +14,7 @@ using System.Runtime.Loader;
 #endif
 using System.Runtime.Versioning;
 using Microsoft.AspNet.FileProviders;
+using Microsoft.AspNet.Mvc.Logging;
 using Microsoft.AspNet.Mvc.Razor.Internal;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -22,6 +23,7 @@ using Microsoft.Dnx.Compilation.CSharp;
 using Microsoft.Extensions.PlatformAbstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.AspNet.Diagnostics;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNet.Mvc.Razor.Compilation
 {
@@ -42,6 +44,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
         private readonly Action<RoslynCompilationContext> _compilationCallback;
         private readonly CSharpParseOptions _parseOptions;
         private readonly CSharpCompilationOptions _compilationOptions;
+        private readonly ILogger _logger;
 
 #if DOTNET5_5
         private readonly RazorLoadContext _razorLoadContext;
@@ -60,7 +63,8 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
             Extensions.CompilationAbstractions.ILibraryExporter libraryExporter,
             IMvcRazorHost host,
             IOptions<RazorViewEngineOptions> optionsAccessor,
-            IRazorViewEngineFileProviderAccessor fileProviderAccessor)
+            IRazorViewEngineFileProviderAccessor fileProviderAccessor,
+            ILoggerFactory loggerFactory)
         {
             _environment = environment;
             _libraryExporter = libraryExporter;
@@ -70,6 +74,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
             _compilationCallback = optionsAccessor.Value.CompilationCallback;
             _parseOptions = optionsAccessor.Value.ParseOptions;
             _compilationOptions = optionsAccessor.Value.CompilationOptions;
+            _logger = loggerFactory.CreateLogger<RoslynCompilationService>();
 
 #if DOTNET5_5
             _razorLoadContext = new RazorLoadContext();
@@ -88,6 +93,10 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
             {
                 throw new ArgumentNullException(nameof(compilationContent));
             }
+
+            _logger.GeneratedCodeToAssemblyCompilationStart(fileInfo.RelativePath);
+
+            var startTimestamp = _logger.IsEnabled(LogLevel.Debug) ? Stopwatch.GetTimestamp() : 0;
 
             var assemblyName = Path.GetRandomFileName();
 
@@ -149,6 +158,8 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
 
                     var type = assembly.GetExportedTypes()
                                        .First(t => t.Name.StartsWith(_classPrefix, StringComparison.Ordinal));
+
+                    _logger.GeneratedCodeToAssemblyCompilationEnd(fileInfo.RelativePath, startTimestamp);
 
                     return new CompilationResult(type);
                 }

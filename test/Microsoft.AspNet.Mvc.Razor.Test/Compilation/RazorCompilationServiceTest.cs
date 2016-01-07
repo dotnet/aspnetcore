@@ -9,6 +9,7 @@ using Microsoft.AspNet.Razor.Chunks;
 using Microsoft.AspNet.Razor.CodeGenerators;
 using Microsoft.AspNet.Razor.Compilation.TagHelpers;
 using Microsoft.AspNet.Razor.Parser.SyntaxTree;
+using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
@@ -38,7 +39,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
             compiler.Setup(c => c.Compile(relativeFileInfo, It.IsAny<string>()))
                     .Returns(new CompilationResult(typeof(RazorCompilationServiceTest)));
 
-            var razorService = new RazorCompilationService(compiler.Object, host.Object, GetFileProviderAccessor());
+            var razorService = new RazorCompilationService(compiler.Object, host.Object, GetFileProviderAccessor(), NullLoggerFactory.Instance);
 
             // Act
             razorService.Compile(relativeFileInfo);
@@ -70,7 +71,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
 
             var compiler = new Mock<ICompilationService>(MockBehavior.Strict);
             var relativeFileInfo = new RelativeFileInfo(fileInfo.Object, @"Views\index\home.cshtml");
-            var razorService = new RazorCompilationService(compiler.Object, host.Object, GetFileProviderAccessor());
+            var razorService = new RazorCompilationService(compiler.Object, host.Object, GetFileProviderAccessor(), NullLoggerFactory.Instance);
 
             // Act
             var result = razorService.Compile(relativeFileInfo);
@@ -111,7 +112,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
             compiler.Setup(c => c.Compile(relativeFileInfo, code))
                     .Returns(compilationResult)
                     .Verifiable();
-            var razorService = new RazorCompilationService(compiler.Object, host.Object, GetFileProviderAccessor());
+            var razorService = new RazorCompilationService(compiler.Object, host.Object, GetFileProviderAccessor(), NullLoggerFactory.Instance);
 
             // Act
             var result = razorService.Compile(relativeFileInfo);
@@ -136,7 +137,8 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
             var razorService = new RazorCompilationService(
                 Mock.Of<ICompilationService>(),
                 Mock.Of<IMvcRazorHost>(),
-                GetFileProviderAccessor(fileProvider));
+                GetFileProviderAccessor(fileProvider),
+                NullLoggerFactory.Instance);
             var errors = new[]
             {
                 new RazorError("message-1", new SourceLocation(1, 2, 17), length: 1),
