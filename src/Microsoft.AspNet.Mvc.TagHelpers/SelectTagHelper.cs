@@ -8,6 +8,7 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
+using Microsoft.AspNet.Mvc.TagHelpers.Internal;
 using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.AspNet.Razor.TagHelpers;
 
@@ -22,7 +23,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         private const string ForAttributeName = "asp-for";
         private const string ItemsAttributeName = "asp-items";
         private bool _allowMultiple;
-        private IReadOnlyCollection<string> _currentValues;
+        private ICollection<string> _currentValues;
 
         /// <summary>
         /// Creates a new <see cref="SelectTagHelper"/>.
@@ -94,7 +95,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             // Whether or not (not being highly unlikely) we generate anything, could update contained <option/>
             // elements. Provide selected values for <option/> tag helpers.
-            context.Items[typeof(SelectTagHelper)] = _currentValues;
+            var currentValues = _currentValues == null ? null : new CurrentValues(_currentValues);
+            context.Items[typeof(SelectTagHelper)] = currentValues;
         }
 
         /// <inheritdoc />

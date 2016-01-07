@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Rendering;
+using Microsoft.AspNet.Mvc.TagHelpers.Internal;
 using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.AspNet.Razor.TagHelpers;
 
@@ -55,8 +56,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         /// <inheritdoc />
         /// <remarks>
         /// Does nothing unless <see cref="TagHelperContext.Items"/> contains a
-        /// <see cref="SelectTagHelper"/> <see cref="Type"/> entry and that entry is a non-empty
-        /// <see cref="ICollection{string}"/> instance. Also does nothing if the associated &lt;option&gt; is already
+        /// <see cref="SelectTagHelper"/> <see cref="Type"/> entry and that entry is a non-<c>null</c>
+        /// <see cref="CurrentValues"/> instance. Also does nothing if the associated &lt;option&gt; is already
         /// selected.
         /// </remarks>
         public override async Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
@@ -85,32 +86,43 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 context.Items.TryGetValue(typeof(SelectTagHelper), out formDataEntry);
 
                 // ... And did the SelectTagHelper determine any selected values?
-                var selectedValues = formDataEntry as ICollection<string>;
-                if (selectedValues != null && selectedValues.Count != 0)
+                var currentValues = formDataEntry as CurrentValues;
+                if (currentValues?.Values != null && currentValues.Values.Count != 0)
                 {
-                    // Encode all selected values for comparison with element content.
-                    var encodedValues = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                    foreach (var selectedValue in selectedValues)
-                    {
-                        encodedValues.Add(Generator.Encode(selectedValue));
-                    }
-
-                    // Select this <option/> element if value attribute or content matches a selected value. Callers
-                    // encode values as-needed while executing child content. But TagHelperOutput itself
-                    // encodes attribute values later, when start tag is generated.
+                    // Select this <option/> element if value attribute or (if no value attribute) body matches a
+                    // selected value. Body is encoded as-needed while executing child content. But TagHelperOutput
+                    // itself encodes attribute values later, when start tag is generated.
                     bool selected;
                     if (Value != null)
                     {
-                        selected = selectedValues.Contains(Value);
-                    }
-                    else if (output.IsContentModified)
-                    {
-                        selected = encodedValues.Contains(output.Content.GetContent());
+                        selected = currentValues.Values.Contains(Value);
                     }
                     else
                     {
-                        var childContent = await output.GetChildContentAsync();
-                        selected = encodedValues.Contains(childContent.GetContent());
+                        if (currentValues.ValuesAndEncodedValues == null)
+                        {
+                            // Include encoded versions of all selected values when comparing with body.
+                            var allValues = new HashSet<string>(currentValues.Values, StringComparer.OrdinalIgnoreCase);
+                            foreach (var selectedValue in currentValues.Values)
+                            {
+                                allValues.Add(Generator.Encode(selectedValue));
+                            }
+
+                            currentValues.ValuesAndEncodedValues = allValues;
+                        }
+
+                        TagHelperContent childContent;
+                        if (output.IsContentModified)
+                        {
+                            // Another tag helper has modified the body. Use what they wrote.
+                            childContent = output.Content;
+                        }
+                        else
+                        {
+                            childContent = await output.GetChildContentAsync();
+                        }
+
+                        selected = currentValues.ValuesAndEncodedValues.Contains(childContent.GetContent());
                     }
 
                     if (selected)

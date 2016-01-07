@@ -511,7 +511,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             string optionLabel,
             string expression,
             IEnumerable<SelectListItem> selectList,
-            IReadOnlyCollection<string> currentValues,
+            ICollection<string> currentValues,
             bool allowMultiple,
             object htmlAttributes)
         {
@@ -886,7 +886,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         }
 
         /// <inheritdoc />
-        public virtual IReadOnlyCollection<string> GetCurrentValues(
+        public virtual ICollection<string> GetCurrentValues(
             ViewContext viewContext,
             ModelExplorer modelExplorer,
             string expression,
@@ -1026,9 +1026,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                 }
             }
 
-            // HashSet<> implements IReadOnlyCollection<> as of 4.6, but does not for 4.5.1. If the runtime cast succeeds,
-            // avoid creating a new collection.
-            return (currentValues as IReadOnlyCollection<string>) ?? currentValues.ToArray();
+            return currentValues;
         }
 
         internal static string EvalString(ViewContext viewContext, string key, string format)
@@ -1407,7 +1405,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         private static IEnumerable<SelectListItem> UpdateSelectListItemsWithDefaultValue(
             ModelExplorer modelExplorer,
             IEnumerable<SelectListItem> selectList,
-            IReadOnlyCollection<string> currentValues)
+            ICollection<string> currentValues)
         {
             // Perform deep copy of selectList to avoid changing user's Selected property values.
             var newSelectList = new List<SelectListItem>();

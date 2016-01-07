@@ -273,7 +273,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         /// <c>ViewContext.ViewData[expression]</c>.
         /// </param>
         /// <param name="currentValues">
-        /// An <see cref="IReadOnlyCollection{string}"/> containing values for &lt;option&gt; elements to select. If
+        /// An <see cref="ICollection{string}"/> containing values for &lt;option&gt; elements to select. If
         /// <c>null</c>, selects &lt;option&gt; elements based on <see cref="SelectListItem.Selected"/> values in
         /// <paramref name="selectList"/>.
         /// </param>
@@ -303,7 +303,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             string optionLabel,
             string expression,
             IEnumerable<SelectListItem> selectList,
-            IReadOnlyCollection<string> currentValues,
+            ICollection<string> currentValues,
             bool allowMultiple,
             object htmlAttributes);
 
@@ -361,8 +361,8 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         /// </param>
         /// <returns>
         /// <para>
-        /// <c>null</c> if no <paramref name="expression"/> result is found. Otherwise an
-        /// <see cref="IReadOnlyCollection{string}"/> containing current values for the given
+        /// <c>null</c> if no <paramref name="expression"/> result is found. Otherwise a
+        /// <see cref="ICollection{string}"/> containing current values for the given
         /// <paramref name="expression"/>.
         /// </para>
         /// <para>
@@ -380,7 +380,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         /// <remarks>
         /// See <see cref="GenerateSelect"/> for information about how the return value may be used.
         /// </remarks>
-        IReadOnlyCollection<string> GetCurrentValues(
+        ICollection<string> GetCurrentValues(
             ViewContext viewContext,
             ModelExplorer modelExplorer,
             string expression,

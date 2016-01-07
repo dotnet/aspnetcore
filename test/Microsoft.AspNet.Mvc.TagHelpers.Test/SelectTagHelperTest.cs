@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
+using Microsoft.AspNet.Mvc.TagHelpers.Internal;
 using Microsoft.AspNet.Mvc.TestCommon;
 using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.AspNet.Razor.TagHelpers;
@@ -544,7 +545,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var keyValuePair = Assert.Single(
                 tagHelperContext.Items,
                 entry => (Type)entry.Key == typeof(SelectTagHelper));
-            Assert.Same(currentValues, keyValuePair.Value);
+            var actualCurrentValues = Assert.IsType<CurrentValues>(keyValuePair.Value);
+            Assert.Same(currentValues, actualCurrentValues.Values);
         }
 
         [Theory]
@@ -618,7 +620,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var keyValuePair = Assert.Single(
                 tagHelperContext.Items,
                 entry => (Type)entry.Key == typeof(SelectTagHelper));
-            Assert.Same(currentValues, keyValuePair.Value);
+            var actualCurrentValues = Assert.IsType<CurrentValues>(keyValuePair.Value);
+            Assert.Same(currentValues, actualCurrentValues.Values);
         }
 
         public class NameAndId
