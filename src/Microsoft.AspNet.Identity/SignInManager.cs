@@ -41,7 +41,7 @@ namespace Microsoft.AspNet.Identity
             {
                 throw new ArgumentNullException(nameof(userManager));
             }
-            if (contextAccessor == null || contextAccessor.HttpContext == null)
+            if (contextAccessor == null)
             {
                 throw new ArgumentNullException(nameof(contextAccessor));
             }
@@ -51,11 +51,14 @@ namespace Microsoft.AspNet.Identity
             }
 
             UserManager = userManager;
-            Context = contextAccessor.HttpContext;
+            _contextAccessor = contextAccessor;
             ClaimsFactory = claimsFactory;
             Options = optionsAccessor?.Value ?? new IdentityOptions();
             Logger = logger;
         }
+
+        private readonly IHttpContextAccessor _contextAccessor;
+        private HttpContext _context;
 
         /// <summary>
         /// Gets the <see cref="ILogger"/> used to log messages from the manager.
@@ -65,9 +68,25 @@ namespace Microsoft.AspNet.Identity
         /// </value>
         protected internal virtual ILogger Logger { get; set; }
         protected internal UserManager<TUser> UserManager { get; set; }
-        internal HttpContext Context { get; set; }
         internal IUserClaimsPrincipalFactory<TUser> ClaimsFactory { get; set; }
         internal IdentityOptions Options { get; set; }
+
+        internal HttpContext Context { 
+            get
+            {
+                var context = _context ?? _contextAccessor?.HttpContext;
+                if (context == null)
+                {
+                    throw new InvalidOperationException("HttpContext must not be null.");
+                }
+                return context;
+            }
+            set
+            {
+                _context = value;
+            }
+        }
+
 
         /// <summary>
         /// Creates a <see cref="ClaimsPrincipal"/> for the specified <paramref name="user"/>, as an asynchronous operation.
