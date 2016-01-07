@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNet.HttpOverrides;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNet.Builder
 {
@@ -19,7 +20,8 @@ namespace Microsoft.AspNet.Builder
             {
                 throw new ArgumentNullException(nameof(builder));
             }
-            return builder.Use(next => new HttpMethodOverrideMiddleware(next, new HttpMethodOverrideOptions()).Invoke);
+
+            return builder.UseMiddleware<HttpMethodOverrideMiddleware>();
         }
 
         /// <summary>
@@ -28,19 +30,18 @@ namespace Microsoft.AspNet.Builder
         /// <param name="builder"></param>
         /// <param name="formFieldInput">Denotes the element that contains the name of the resulting method type.</param>
         /// <returns></returns>
-        public static IApplicationBuilder UseHttpMethodOverride(this IApplicationBuilder builder, Action<HttpMethodOverrideOptions> configureOptions)
+        public static IApplicationBuilder UseHttpMethodOverride(this IApplicationBuilder builder, HttpMethodOverrideOptions options)
         {
             if (builder == null)
             {
                 throw new ArgumentNullException(nameof(builder));
             }
-            if (configureOptions == null)
+            if (options == null)
             {
-                throw new ArgumentNullException(nameof(configureOptions));
+                throw new ArgumentNullException(nameof(options));
             }
-            var options = new HttpMethodOverrideOptions();
-            configureOptions(options);
-            return builder.Use(next => new HttpMethodOverrideMiddleware(next, options).Invoke);
+
+            return builder.UseMiddleware<HttpMethodOverrideMiddleware>(Options.Create(options));
         }
     }
 }

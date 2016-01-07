@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNet.HttpOverrides;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNet.Builder
 {
@@ -14,19 +15,34 @@ namespace Microsoft.AspNet.Builder
         /// <param name="builder"></param>
         /// <param name="options">Enables the different override options.</param>
         /// <returns></returns>
-        public static IApplicationBuilder UseOverrideHeaders(this IApplicationBuilder builder, Action<OverrideHeaderOptions> configureOptions)
+        public static IApplicationBuilder UseOverrideHeaders(this IApplicationBuilder builder)
         {
             if (builder == null)
             {
                 throw new ArgumentNullException(nameof(builder));
             }
-            if (configureOptions == null)
+
+            return builder.UseMiddleware<OverrideHeaderMiddleware>();
+        }
+
+        /// <summary>
+        /// Forwards proxied headers onto current request
+        /// </summary>
+        /// <param name="builder"></param>
+        /// <param name="options">Enables the different override options.</param>
+        /// <returns></returns>
+        public static IApplicationBuilder UseOverrideHeaders(this IApplicationBuilder builder, OverrideHeaderOptions options)
+        {
+            if (builder == null)
             {
-                throw new ArgumentNullException(nameof(configureOptions));
+                throw new ArgumentNullException(nameof(builder));
             }
-            var options = new OverrideHeaderOptions();
-            configureOptions(options);
-            return builder.Use(next => new OverrideHeaderMiddleware(next, options).Invoke);
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
+            return builder.UseMiddleware<OverrideHeaderMiddleware>(Options.Create(options));
         }
     }
 }

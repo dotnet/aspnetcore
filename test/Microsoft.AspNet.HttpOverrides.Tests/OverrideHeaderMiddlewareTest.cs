@@ -20,9 +20,9 @@ namespace Microsoft.AspNet.HttpOverrides
             var builder = new WebApplicationBuilder()
                 .Configure(app =>
                 {
-                    app.UseOverrideHeaders(options =>
+                    app.UseOverrideHeaders(new OverrideHeaderOptions
                     {
-                        options.ForwardedOptions = ForwardedHeaders.XForwardedFor;
+                        ForwardedOptions = ForwardedHeaders.XForwardedFor
                     });
                     app.Run(context =>
                     {
@@ -47,9 +47,9 @@ namespace Microsoft.AspNet.HttpOverrides
             var builder = new WebApplicationBuilder()
                 .Configure(app =>
                 {
-                    app.UseOverrideHeaders(options =>
+                    app.UseOverrideHeaders(new OverrideHeaderOptions
                     {
-                        options.ForwardedOptions = ForwardedHeaders.XForwardedFor;
+                        ForwardedOptions = ForwardedHeaders.XForwardedFor
                     });
                     app.Run(context =>
                     {
@@ -74,9 +74,9 @@ namespace Microsoft.AspNet.HttpOverrides
             var builder = new WebApplicationBuilder()
                 .Configure(app =>
                 {
-                    app.UseOverrideHeaders(options =>
+                    app.UseOverrideHeaders(new OverrideHeaderOptions
                     {
-                        options.ForwardedOptions = ForwardedHeaders.XForwardedHost;
+                        ForwardedOptions = ForwardedHeaders.XForwardedHost
                     });
                     app.Run(context =>
                     {
@@ -101,9 +101,9 @@ namespace Microsoft.AspNet.HttpOverrides
             var builder = new WebApplicationBuilder()
                 .Configure(app =>
                 {
-                    app.UseOverrideHeaders(options =>
+                    app.UseOverrideHeaders(new OverrideHeaderOptions
                     {
-                        options.ForwardedOptions = ForwardedHeaders.XForwardedProto;
+                        ForwardedOptions = ForwardedHeaders.XForwardedProto
                     });
                     app.Run(context =>
                     {
@@ -135,9 +135,9 @@ namespace Microsoft.AspNet.HttpOverrides
             var builder = new WebApplicationBuilder()
                 .Configure(app =>
                 {
-                    app.UseOverrideHeaders(options =>
+                    app.UseOverrideHeaders(new OverrideHeaderOptions
                     {
-                        options.ForwardedOptions = ForwardedHeaders.All;
+                        ForwardedOptions = ForwardedHeaders.All
                     });
                     app.Run(context =>
                     {
@@ -166,9 +166,9 @@ namespace Microsoft.AspNet.HttpOverrides
             var builder = new WebApplicationBuilder()
                 .Configure(app =>
                 {
-                    app.UseOverrideHeaders(options =>
+                    app.UseOverrideHeaders(new OverrideHeaderOptions
                     {
-                        options.ForwardedOptions = ForwardedHeaders.None;
+                        ForwardedOptions = ForwardedHeaders.None
                     });
                     app.Run(context =>
                     {
@@ -197,9 +197,9 @@ namespace Microsoft.AspNet.HttpOverrides
             var builder = new WebApplicationBuilder()
                 .Configure(app =>
                 {
-                    app.UseOverrideHeaders(options =>
+                    app.UseOverrideHeaders(new OverrideHeaderOptions
                     {
-                        options.ForwardedOptions = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+                        ForwardedOptions = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
                     });
                     app.Run(context =>
                     {

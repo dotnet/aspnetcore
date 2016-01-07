@@ -3,7 +3,9 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNet.HttpOverrides
 {
@@ -13,7 +15,7 @@ namespace Microsoft.AspNet.HttpOverrides
         private readonly RequestDelegate _next;
         private readonly HttpMethodOverrideOptions _options;
 
-        public HttpMethodOverrideMiddleware(RequestDelegate next, HttpMethodOverrideOptions options)
+        public HttpMethodOverrideMiddleware(RequestDelegate next, IOptions<HttpMethodOverrideOptions> options)
         {
             if (next == null)
             {
@@ -24,7 +26,7 @@ namespace Microsoft.AspNet.HttpOverrides
                 throw new ArgumentNullException(nameof(options));
             }
             _next = next;
-            _options = options;
+            _options = options.Value;
         }
 
         public async Task Invoke(HttpContext context)

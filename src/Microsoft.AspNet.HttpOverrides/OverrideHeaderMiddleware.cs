@@ -4,7 +4,9 @@
 using System;
 using System.Net;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNet.HttpOverrides
 {
@@ -19,7 +21,7 @@ namespace Microsoft.AspNet.HttpOverrides
         private readonly OverrideHeaderOptions _options;
         private readonly RequestDelegate _next;
 
-        public OverrideHeaderMiddleware(RequestDelegate next, OverrideHeaderOptions options)
+        public OverrideHeaderMiddleware(RequestDelegate next, IOptions<OverrideHeaderOptions> options)
         {
             if (next == null)
             {
@@ -30,7 +32,7 @@ namespace Microsoft.AspNet.HttpOverrides
                 throw new ArgumentNullException(nameof(options));
             }
 
-            _options = options;
+            _options = options.Value;
             _next = next;
         }
 

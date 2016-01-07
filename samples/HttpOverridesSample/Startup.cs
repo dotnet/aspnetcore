@@ -11,9 +11,9 @@ namespace HttpOverridesSample
         public void Configure(IApplicationBuilder app)
         {
             app.UseIISPlatformHandler();
-            app.UseOverrideHeaders(options =>
+            app.UseOverrideHeaders(new OverrideHeaderOptions
             {
-                options.ForwardedOptions = ForwardedHeaders.All;
+                ForwardedOptions = ForwardedHeaders.All
             });
             app.UseHttpMethodOverride();
 
