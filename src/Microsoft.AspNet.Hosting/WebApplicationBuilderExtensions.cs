@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.Hosting
                 throw new ArgumentNullException(nameof(assemblyName));
             }
 
-            return applicationBuilder.UseSetting(WebApplicationConfiguration.ServerKey, assemblyName);
+            return applicationBuilder.UseSetting(WebApplicationDefaults.ServerKey, assemblyName);
         }
 
         public static IWebApplicationBuilder UseServer(this IWebApplicationBuilder applicationBuilder, IServer server)
@@ -45,7 +45,7 @@ namespace Microsoft.AspNet.Hosting
                 throw new ArgumentNullException(nameof(applicationBasePath));
             }
 
-            return applicationBuilder.UseSetting(WebApplicationConfiguration.ApplicationBaseKey, applicationBasePath);
+            return applicationBuilder.UseSetting(WebApplicationDefaults.ApplicationBaseKey, applicationBasePath);
         }
 
         public static IWebApplicationBuilder UseEnvironment(this IWebApplicationBuilder applicationBuilder, string environment)
@@ -55,7 +55,7 @@ namespace Microsoft.AspNet.Hosting
                 throw new ArgumentNullException(nameof(environment));
             }
 
-            return applicationBuilder.UseSetting(WebApplicationConfiguration.EnvironmentKey, environment);
+            return applicationBuilder.UseSetting(WebApplicationDefaults.EnvironmentKey, environment);
         }
 
         public static IWebApplicationBuilder UseWebRoot(this IWebApplicationBuilder applicationBuilder, string webRoot)
@@ -65,7 +65,7 @@ namespace Microsoft.AspNet.Hosting
                 throw new ArgumentNullException(nameof(webRoot));
             }
 
-            return applicationBuilder.UseSetting(WebApplicationConfiguration.WebRootKey, webRoot);
+            return applicationBuilder.UseSetting(WebApplicationDefaults.WebRootKey, webRoot);
         }
 
         public static IWebApplicationBuilder UseUrls(this IWebApplicationBuilder applicationBuilder, params string[] urls)
@@ -75,7 +75,7 @@ namespace Microsoft.AspNet.Hosting
                 throw new ArgumentNullException(nameof(urls));
             }
 
-            return applicationBuilder.UseSetting(WebApplicationConfiguration.ServerUrlsKey, string.Join(ServerUrlsSeparator, urls));
+            return applicationBuilder.UseSetting(WebApplicationDefaults.ServerUrlsKey, string.Join(ServerUrlsSeparator, urls));
         }
 
         public static IWebApplicationBuilder UseStartup(this IWebApplicationBuilder applicationBuilder, string startupAssemblyName)
@@ -85,7 +85,7 @@ namespace Microsoft.AspNet.Hosting
                 throw new ArgumentNullException(nameof(startupAssemblyName));
             }
 
-            return applicationBuilder.UseSetting(WebApplicationConfiguration.ApplicationKey, startupAssemblyName);
+            return applicationBuilder.UseSetting(WebApplicationDefaults.ApplicationKey, startupAssemblyName);
         }
 
         public static IWebApplication Start(this IWebApplicationBuilder applicationBuilder, params string[] urls)
