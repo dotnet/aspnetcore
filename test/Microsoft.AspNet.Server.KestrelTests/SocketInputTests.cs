@@ -78,6 +78,27 @@ namespace Microsoft.AspNet.Server.KestrelTests
             }
         }
 
+        [Fact]
+        public void ConsumingOutOfOrderFailsGracefully()
+        {
+            var defultIter = new MemoryPoolIterator2();
+
+            // Calling ConsumingComplete without a preceding calling to ConsumingStart fails
+            var socketInput = new SocketInput(null, null);
+            Assert.Throws<InvalidOperationException>(() => socketInput.ConsumingComplete(defultIter, defultIter));
+
+            // Calling ConsumingStart twice in a row fails
+            socketInput = new SocketInput(null, null);
+            socketInput.ConsumingStart();
+            Assert.Throws<InvalidOperationException>(() => socketInput.ConsumingStart());
+
+            // Calling ConsumingComplete twice in a row fails
+            socketInput = new SocketInput(null, null);
+            socketInput.ConsumingStart();
+            socketInput.ConsumingComplete(defultIter, defultIter);
+            Assert.Throws<InvalidOperationException>(() => socketInput.ConsumingComplete(defultIter, defultIter));
+        }
+
         private static void TestConcurrentFaultedTask(Task t)
         {
             Assert.True(t.IsFaulted);
