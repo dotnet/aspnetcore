@@ -192,7 +192,7 @@ namespace Microsoft.AspNet.Routing.Tree
                             continue;
                         }
 
-                        _logger.MatchedRouteName(match.Entry.RouteName, match.Entry.RouteTemplate.TemplateText);
+                        _logger.MatchedRoute(match.Entry.RouteName, match.Entry.RouteTemplate.TemplateText);
 
                         context.RouteData = newRouteData;
 

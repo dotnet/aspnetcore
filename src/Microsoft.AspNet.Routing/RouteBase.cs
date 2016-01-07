@@ -106,7 +106,7 @@ namespace Microsoft.AspNet.Routing
             {
                 return TaskCache.CompletedTask;
             }
-            _logger.MatchedRouteName(Name, ParsedTemplate.TemplateText);
+            _logger.MatchedRoute(Name, ParsedTemplate.TemplateText);
 
             return OnRouteMatched(context);
         }
