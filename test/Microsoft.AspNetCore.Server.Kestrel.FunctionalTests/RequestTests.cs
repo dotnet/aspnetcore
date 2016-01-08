@@ -3,7 +3,10 @@
 
 using System.Collections.Generic;
 using System.Globalization;
+using System.Net;
 using System.Net.Http;
+using System.Net.Sockets;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -88,7 +91,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [IPv6SupportedCondition]
         public Task RemoteIPv6Address()
         {
-            return TestRemoteIPAddress("[::1]", "[::1]", "::1", "8792");
+            return TestRemoteIPAddress("[::1]", "[::1]", "::1", "8793");
         }
 
         [ConditionalFact]
@@ -97,7 +100,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         {
             var config = new ConfigurationBuilder().AddInMemoryCollection(
                 new Dictionary<string, string> {
-                    { "server.urls", "http://localhost:8791" }
+                    { "server.urls", "http://localhost:8794" }
                 }).Build();
 
             var builder = new WebHostBuilder()
@@ -120,8 +123,59 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 client.DefaultRequestHeaders.Connection.Clear();
                 client.DefaultRequestHeaders.Connection.Add("close");
 
-                var response = await client.GetAsync("http://localhost:8791/");
+                var response = await client.GetAsync("http://localhost:8794/");
                 response.EnsureSuccessStatusCode();
+            }
+        }
+
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Test hangs after execution on Mono.")]
+        public async Task RequestPathIsNormalized()
+        {
+            var config = new ConfigurationBuilder().AddInMemoryCollection(
+                new Dictionary<string, string> {
+                    { "server.urls", "http://localhost:8795/\u0041\u030A" }
+                }).Build();
+
+            var builder = new WebHostBuilder()
+                .UseConfiguration(config)
+                .UseServer("Microsoft.AspNetCore.Server.Kestrel")
+                .Configure(app =>
+                {
+                    app.Run(async context =>
+                    {
+                        var connection = context.Connection;
+                        Assert.Equal("/\u00C5", context.Request.PathBase.Value);
+                        Assert.Equal("/B/\u00C5", context.Request.Path.Value);
+                        await context.Response.WriteAsync("hello, world");
+                    });
+                });
+
+            using (var host = builder.Build())
+            {
+                host.Start();
+
+                using (var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
+                {
+                    socket.Connect(new IPEndPoint(IPAddress.Loopback, 8795));
+                    socket.Send(Encoding.ASCII.GetBytes("GET /%41%CC%8A/A/../B/%41%CC%8A HTTP/1.1\r\n\r\n"));
+                    socket.Shutdown(SocketShutdown.Send);
+
+                    var response = new StringBuilder();
+                    var buffer = new byte[4096];
+                    while (true)
+                    {
+                        var length = socket.Receive(buffer);
+                        if (length == 0)
+                        {
+                            break;
+                        }
+                        
+                        response.Append(Encoding.ASCII.GetString(buffer, 0, length));
+                    }
+                    
+                    Assert.StartsWith("HTTP/1.1 200 OK", response.ToString());
+                }
             }
         }
 

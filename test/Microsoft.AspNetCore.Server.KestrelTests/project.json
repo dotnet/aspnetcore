@@ -12,6 +12,8 @@
         "dnxcore50": {
             "dependencies": {
                 "System.Diagnostics.TraceSource": "4.0.0-*",
+                "System.Globalization.Extensions": "4.0.1-*",
+                "System.IO": "4.1.0-*",
                 "System.Net.Http.WinHttpHandler": "4.0.0-*",
                 "System.Net.Sockets": "4.1.0-*",
                 "System.Runtime.Handles": "4.0.1-*"

@@ -1120,7 +1120,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 try
                 {
                     // Ensure write is long enough to disable write-behind buffering
-                    for (int i = 0; i < 10; i++)
+                    for (int i = 0; i < 100; i++)
                     {
                         await response.WriteAsync(largeString, lifetime.RequestAborted);
                     }

@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics;
 using System.Globalization;
+using Microsoft.AspNetCore.Server.Kestrel.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel
@@ -146,6 +147,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel
             {
                 serverAddress.PathBase = url.Substring(pathDelimiterEnd);
             }
+
+            serverAddress.PathBase = PathNormalizer.NormalizeToNFC(serverAddress.PathBase);
 
             return serverAddress;
         }

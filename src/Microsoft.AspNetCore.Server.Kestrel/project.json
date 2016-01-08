@@ -6,6 +6,7 @@
     "url": "git://github.com/aspnet/kestrelhttpserver"
   },
   "dependencies": {
+    "System.Buffers": "4.0.0-*",
     "Microsoft.AspNetCore.Hosting": "1.0.0-*",
     "Microsoft.Extensions.Logging.Abstractions": "1.0.0-*",
     "Microsoft.Extensions.PlatformAbstractions": "1.0.0-*",
