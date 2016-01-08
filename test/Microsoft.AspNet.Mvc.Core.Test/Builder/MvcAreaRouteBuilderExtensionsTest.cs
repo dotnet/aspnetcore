@@ -230,6 +230,7 @@ namespace Microsoft.AspNet.Builder
         private IServiceProvider CreateServices()
         {
             var services = new ServiceCollection();
+            services.AddOptions();
             services.AddRouting();
             return services.BuildServiceProvider();
         }

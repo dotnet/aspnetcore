@@ -1001,6 +1001,7 @@ namespace Microsoft.AspNet.Mvc.Routing
         private static IServiceProvider CreateServices()
         {
             var services = new ServiceCollection();
+            services.AddOptions();
             services.AddLogging();
             services.AddRouting();
             services.AddSingleton<UrlEncoder>(UrlEncoder.Default);
