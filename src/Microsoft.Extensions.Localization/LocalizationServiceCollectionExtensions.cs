@@ -55,7 +55,6 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 services.Configure(setupAction);
             }
-            services.AddOptions();
             return services;
         }
     }

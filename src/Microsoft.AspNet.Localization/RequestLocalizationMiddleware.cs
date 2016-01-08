@@ -6,9 +6,10 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Features;
 using Microsoft.Extensions.Globalization;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNet.Localization
 {
@@ -29,7 +30,7 @@ namespace Microsoft.AspNet.Localization
         /// <param name="next">The <see cref="RequestDelegate"/> representing the next middleware in the pipeline.</param>
         /// <param name="options">The <see cref="RequestLocalizationOptions"/> representing the options for the
         /// <see cref="RequestLocalizationMiddleware"/>.</param>
-        public RequestLocalizationMiddleware(RequestDelegate next, RequestLocalizationOptions options)
+        public RequestLocalizationMiddleware(RequestDelegate next, IOptions<RequestLocalizationOptions> options)
         {
             if (next == null)
             {
@@ -42,7 +43,7 @@ namespace Microsoft.AspNet.Localization
             }
 
             _next = next;
-            _options = options;
+            _options = options.Value;
         }
 
         /// <summary>

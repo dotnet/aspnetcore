@@ -4,6 +4,7 @@
 using System;
 using System.Globalization;
 using System.Threading;
+using Microsoft.AspNet.Builder;
 using Xunit;
 
 namespace Microsoft.AspNet.Localization.Tests

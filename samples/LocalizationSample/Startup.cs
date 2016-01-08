@@ -7,7 +7,6 @@ using System.Globalization;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Localization;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
@@ -23,12 +22,12 @@ namespace LocalizationSample
 
         public void Configure(IApplicationBuilder app, IStringLocalizer<Startup> SR)
         {
-            app.UseRequestLocalization(options =>
+            app.UseRequestLocalization(new RequestLocalizationOptions
             {
-                options.DefaultRequestCulture = new RequestCulture("en-US");
+                DefaultRequestCulture = new RequestCulture("en-US"),
 
                 // Set options here to change middleware behavior
-                options.SupportedCultures = new List<CultureInfo>
+                SupportedCultures = new List<CultureInfo>
                 {
                     new CultureInfo("en-US"),
                     new CultureInfo("en-AU"),
@@ -39,8 +38,8 @@ namespace LocalizationSample
                     new CultureInfo("zh"),
                     new CultureInfo("zh-CN"),
                     new CultureInfo("zh-CHT")
-                };
-                options.SupportedUICultures = new List<CultureInfo>
+                },
+                SupportedUICultures = new List<CultureInfo>
                 {
                     new CultureInfo("en-US"),
                     new CultureInfo("en-AU"),
@@ -51,14 +50,14 @@ namespace LocalizationSample
                     new CultureInfo("zh"),
                     new CultureInfo("zh-CN"),
                     new CultureInfo("zh-CHT")
-                };
+                }
 
                 // Optionally create an app-specific provider with just a delegate, e.g. look up user preference from DB.
                 // Inserting it as position 0 ensures it has priority over any of the default providers.
-                //options.RequestCultureProviders.Insert(0, new CustomRequestCultureProvider(async context =>
+                //RequestCultureProviders.Insert(0, new CustomRequestCultureProvider(async context =>
                 //{
 
-                //}));
+                //}))
             });
 
             app.Use(async (context, next) =>

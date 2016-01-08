@@ -6,7 +6,6 @@ using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting;
-using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Localization;
 using Microsoft.AspNet.TestHost;
 using Xunit;
@@ -21,14 +20,14 @@ namespace Microsoft.Extensions.Localization.Tests
             var builder = new WebApplicationBuilder()
                 .Configure(app =>
                 {
-                    app.UseRequestLocalization(options =>
+                    app.UseRequestLocalization(new RequestLocalizationOptions
                     {
-                        options.DefaultRequestCulture = new RequestCulture("en-US");
-                        options.SupportedCultures = new List<CultureInfo>
+                        DefaultRequestCulture = new RequestCulture("en-US"),
+                        SupportedCultures = new List<CultureInfo>
                         {
                             new CultureInfo("ar-SA"),
                             new CultureInfo("en-US")
-                        };
+                        }
                     });
                     app.Run(context =>
                     {
@@ -55,14 +54,14 @@ namespace Microsoft.Extensions.Localization.Tests
             var builder = new WebApplicationBuilder()
                 .Configure(app =>
                 {
-                    app.UseRequestLocalization(options =>
+                    app.UseRequestLocalization(new RequestLocalizationOptions
                     {
-                        options.DefaultRequestCulture = new RequestCulture("fr-FR");
-                        options.SupportedCultures = new List<CultureInfo>
+                        DefaultRequestCulture = new RequestCulture("fr-FR"),
+                        SupportedCultures = new List<CultureInfo>
                         {
                             new CultureInfo("ar-SA"),
                             new CultureInfo("en-US")
-                        };
+                        }
                     });
                     app.Run(context =>
                     {
@@ -88,14 +87,14 @@ namespace Microsoft.Extensions.Localization.Tests
             var builder = new WebApplicationBuilder()
                 .Configure(app =>
                 {
-                    app.UseRequestLocalization(options =>
+                    app.UseRequestLocalization(new RequestLocalizationOptions
                     {
-                        options.DefaultRequestCulture = new RequestCulture("fr-FR");
-                        options.SupportedCultures = new List<CultureInfo>
+                        DefaultRequestCulture = new RequestCulture("fr-FR"),
+                        SupportedCultures = new List<CultureInfo>
                         {
                             new CultureInfo("ar-SA"),
                             new CultureInfo("af-ZA")
-                        };
+                        }
                     });
                     app.Run(context =>
                     {
@@ -122,17 +121,17 @@ namespace Microsoft.Extensions.Localization.Tests
             var builder = new WebApplicationBuilder()
                 .Configure(app =>
                 {
-                    app.UseRequestLocalization(options =>
+                    app.UseRequestLocalization(new RequestLocalizationOptions
                     {
-                        options.DefaultRequestCulture = new RequestCulture("en-US");
-                        options.SupportedCultures = new List<CultureInfo>
+                        DefaultRequestCulture = new RequestCulture("en-US"),
+                        SupportedCultures = new List<CultureInfo>
                         {
                             new CultureInfo("ar-YE")
-                        };
-                        options.SupportedUICultures = new List<CultureInfo>
+                        },
+                        SupportedUICultures = new List<CultureInfo>
                         {
                             new CultureInfo("ar-YE")
-                        };
+                        }
                     });
                     app.Run(context =>
                     {

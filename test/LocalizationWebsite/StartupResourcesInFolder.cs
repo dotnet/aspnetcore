@@ -29,17 +29,17 @@ namespace LocalizationWebsite
         {
             loggerFactory.AddConsole(minLevel: LogLevel.Warning);
 
-            app.UseRequestLocalization(options =>
+            app.UseRequestLocalization(new RequestLocalizationOptions
             {
-                options.DefaultRequestCulture = new RequestCulture("en-US");
-                options.SupportedCultures = new List<CultureInfo>()
+                DefaultRequestCulture = new RequestCulture("en-US"),
+                SupportedCultures = new List<CultureInfo>()
                 {
                     new CultureInfo("fr-FR")
-                };
-                options.SupportedUICultures = new List<CultureInfo>()
+                },
+                SupportedUICultures = new List<CultureInfo>()
                 {
                     new CultureInfo("fr-FR")
-                };
+                }
             });
 
             var stringLocalizer = stringLocalizerFactory.Create("Test", location: null);

@@ -21,17 +21,17 @@ namespace Microsoft.Extensions.Localization.Tests
             var builder = new WebApplicationBuilder()
                 .Configure(app =>
                 {
-                    app.UseRequestLocalization(options =>
+                    app.UseRequestLocalization(new RequestLocalizationOptions
                     {
-                        options.DefaultRequestCulture = new RequestCulture("en-US");
-                        options.SupportedCultures = new List<CultureInfo>
+                        DefaultRequestCulture = new RequestCulture("en-US"),
+                        SupportedCultures = new List<CultureInfo>
                         {
                             new CultureInfo("ar-SA")
-                        };
-                        options.SupportedUICultures = new List<CultureInfo>
+                        },
+                        SupportedUICultures = new List<CultureInfo>
                         {
                             new CultureInfo("ar-YE")
-                        };
+                        }
                     });
                     app.Run(context =>
                     {
@@ -56,9 +56,9 @@ namespace Microsoft.Extensions.Localization.Tests
             var builder = new WebApplicationBuilder()
                 .Configure(app =>
                 {
-                    app.UseRequestLocalization(options =>
+                    app.UseRequestLocalization(new RequestLocalizationOptions
                     {
-                        options.DefaultRequestCulture = new RequestCulture("en-US");
+                        DefaultRequestCulture = new RequestCulture("en-US")
                     });
                     app.Run(context =>
                     {
@@ -83,17 +83,17 @@ namespace Microsoft.Extensions.Localization.Tests
             var builder = new WebApplicationBuilder()
                 .Configure(app =>
                 {
-                    app.UseRequestLocalization(options =>
+                    app.UseRequestLocalization(new RequestLocalizationOptions
                     {
-                        options.DefaultRequestCulture = new RequestCulture("en-US");
-                        options.SupportedCultures = new List<CultureInfo>
+                        DefaultRequestCulture = new RequestCulture("en-US"),
+                        SupportedCultures = new List<CultureInfo>
                         {
                             new CultureInfo("ar-SA")
-                        };
-                        options.SupportedUICultures = new List<CultureInfo>
+                        },
+                        SupportedUICultures = new List<CultureInfo>
                         {
                             new CultureInfo("ar-SA")
-                        };
+                        }
                     });
                     app.Run(context =>
                     {
@@ -117,17 +117,17 @@ namespace Microsoft.Extensions.Localization.Tests
             var builder = new WebApplicationBuilder()
                 .Configure(app =>
                 {
-                    app.UseRequestLocalization(options =>
+                    app.UseRequestLocalization(new RequestLocalizationOptions
                     {
-                        options.DefaultRequestCulture = new RequestCulture("en-US");
-                        options.SupportedCultures = new List<CultureInfo>
+                        DefaultRequestCulture = new RequestCulture("en-US"),
+                        SupportedCultures = new List<CultureInfo>
                         {
                             new CultureInfo("ar-SA")
-                        };
-                        options.SupportedUICultures = new List<CultureInfo>
+                        },
+                        SupportedUICultures = new List<CultureInfo>
                         {
                             new CultureInfo("ar-SA")
-                        };
+                        }
                     });
                     app.Run(context =>
                     {
@@ -151,17 +151,17 @@ namespace Microsoft.Extensions.Localization.Tests
             var builder = new WebApplicationBuilder()
                 .Configure(app =>
                 {
-                    app.UseRequestLocalization(options =>
+                    app.UseRequestLocalization(new RequestLocalizationOptions
                     {
-                        options.DefaultRequestCulture = new RequestCulture("en-US");
-                        options.SupportedCultures = new List<CultureInfo>
+                        DefaultRequestCulture = new RequestCulture("en-US"),
+                        SupportedCultures = new List<CultureInfo>
                         {
                             new CultureInfo("ar-SA")
-                        };
-                        options.SupportedUICultures = new List<CultureInfo>
+                        },
+                        SupportedUICultures = new List<CultureInfo>
                         {
                             new CultureInfo("ar-SA")
-                        };
+                        }
                     });
                     app.Run(context =>
                     {
@@ -186,17 +186,17 @@ namespace Microsoft.Extensions.Localization.Tests
             var builder = new WebApplicationBuilder()
                 .Configure(app =>
                 {
-                    app.UseRequestLocalization(options =>
+                    app.UseRequestLocalization(new RequestLocalizationOptions
                     {
-                        options.DefaultRequestCulture = new RequestCulture("en-US");
-                        options.SupportedCultures = new List<CultureInfo>
+                        DefaultRequestCulture = new RequestCulture("en-US"),
+                        SupportedCultures = new List<CultureInfo>
                         {
                             new CultureInfo("ar-SA")
-                        };
-                        options.SupportedUICultures = new List<CultureInfo>
+                        },
+                        SupportedUICultures = new List<CultureInfo>
                         {
                             new CultureInfo("ar-SA")
-                        };
+                        }
                     });
                     app.Run(context =>
                     {
@@ -221,22 +221,23 @@ namespace Microsoft.Extensions.Localization.Tests
             var builder = new WebApplicationBuilder()
                 .Configure(app =>
                 {
-                    app.UseRequestLocalization(options =>
+                    var options = new RequestLocalizationOptions
                     {
-                        options.DefaultRequestCulture = new RequestCulture("en-US");
-                        options.SupportedCultures = new List<CultureInfo>
+                        DefaultRequestCulture = new RequestCulture("en-US"),
+                        SupportedCultures = new List<CultureInfo>
                         {
                             new CultureInfo("ar-SA")
-                        };
-                        options.SupportedUICultures = new List<CultureInfo>
+                        },
+                        SupportedUICultures = new List<CultureInfo>
                         {
                             new CultureInfo("ar-YE")
-                        };
-                        var provider = new QueryStringRequestCultureProvider();
-                        provider.QueryStringKey = "c";
-                        provider.UIQueryStringKey = "uic";
-                        options.RequestCultureProviders.Insert(0, provider);
-                    });
+                        }
+                    };
+                    var provider = new QueryStringRequestCultureProvider();
+                    provider.QueryStringKey = "c";
+                    provider.UIQueryStringKey = "uic";
+                    options.RequestCultureProviders.Insert(0, provider);
+                    app.UseRequestLocalization(options);
                     app.Run(context =>
                     {
                         var requestCultureFeature = context.Features.Get<IRequestCultureFeature>();
@@ -260,22 +261,23 @@ namespace Microsoft.Extensions.Localization.Tests
             var builder = new WebApplicationBuilder()
                 .Configure(app =>
                 {
-                    app.UseRequestLocalization(options =>
+                    var options = new RequestLocalizationOptions
                     {
-                        options.DefaultRequestCulture = new RequestCulture("en-US");
-                        options.SupportedCultures = new List<CultureInfo>
+                        DefaultRequestCulture = new RequestCulture("en-US"),
+                        SupportedCultures = new List<CultureInfo>
                         {
                             new CultureInfo("FR")
-                        };
-                        options.SupportedUICultures = new List<CultureInfo>
+                        },
+                        SupportedUICultures = new List<CultureInfo>
                         {
                             new CultureInfo("FR")
-                        };
-                        var provider = new QueryStringRequestCultureProvider();
-                        provider.QueryStringKey = "c";
-                        provider.UIQueryStringKey = "uic";
-                        options.RequestCultureProviders.Insert(0, provider);
-                    });
+                        }
+                    };
+                    var provider = new QueryStringRequestCultureProvider();
+                    provider.QueryStringKey = "c";
+                    provider.UIQueryStringKey = "uic";
+                    options.RequestCultureProviders.Insert(0, provider);
+                    app.UseRequestLocalization(options);
                     app.Run(context =>
                     {
                         var requestCultureFeature = context.Features.Get<IRequestCultureFeature>();

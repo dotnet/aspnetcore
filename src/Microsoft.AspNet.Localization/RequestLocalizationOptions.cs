@@ -4,8 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using Microsoft.AspNet.Localization;
 
-namespace Microsoft.AspNet.Localization
+namespace Microsoft.AspNet.Builder
 {
     /// <summary>
     /// Specifies options for the <see cref="RequestLocalizationMiddleware"/>.

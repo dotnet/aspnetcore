@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
 
 using System;
-using System.Globalization;
 using Microsoft.AspNet.Localization;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNet.Builder
 {
@@ -17,25 +17,15 @@ namespace Microsoft.AspNet.Builder
         /// requests based on information provided by the client.
         /// </summary>
         /// <param name="app">The <see cref="IApplicationBuilder"/>.</param>
-        /// <param name="configureOptions">An action delegate to configure the provided <see cref="RequestLocalizationOptions"/>.</param>
         /// <returns>The <see cref="IApplicationBuilder"/>.</returns>
-        public static IApplicationBuilder UseRequestLocalization(
-            this IApplicationBuilder app,
-            Action<RequestLocalizationOptions> configureOptions)
+        public static IApplicationBuilder UseRequestLocalization(this IApplicationBuilder app)
         {
             if (app == null)
             {
                 throw new ArgumentNullException(nameof(app));
             }
-            if (configureOptions == null)
-            {
-                throw new ArgumentNullException(nameof(configureOptions));
-            }
 
-            var options = new RequestLocalizationOptions();
-            configureOptions(options);
-
-            return app.UseMiddleware<RequestLocalizationMiddleware>(options);
+            return app.UseMiddleware<RequestLocalizationMiddleware>();
         }
 
         /// <summary>
@@ -58,7 +48,7 @@ namespace Microsoft.AspNet.Builder
                 throw new ArgumentNullException(nameof(options));
             }
 
-            return app.UseMiddleware<RequestLocalizationMiddleware>(options);
+            return app.UseMiddleware<RequestLocalizationMiddleware>(Options.Create(options));
         }
     }
 }
