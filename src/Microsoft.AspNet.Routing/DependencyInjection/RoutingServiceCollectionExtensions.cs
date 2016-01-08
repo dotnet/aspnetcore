@@ -24,7 +24,6 @@ namespace Microsoft.Extensions.DependencyInjection
             this IServiceCollection services,
             Action<RouteOptions> configureOptions)
         {
-            services.AddOptions();
             services.TryAddTransient<IInlineConstraintResolver, DefaultInlineConstraintResolver>();
             services.TryAddSingleton(UrlEncoder.Default);
             services.TryAddSingleton<ObjectPoolProvider>(new DefaultObjectPoolProvider());
