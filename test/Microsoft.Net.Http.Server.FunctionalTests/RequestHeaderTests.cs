@@ -1,7 +1,6 @@
-// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
 using System;
-using System.Linq;
 using System.Net.Http;
 using System.Net.Sockets;
 using System.Text;
@@ -64,7 +63,34 @@ namespace Microsoft.Net.Http.Server
                 await responseTask;
             }
         }
-        
+
+        [Fact]
+        public async Task RequestHeaders_ClientSendsUtf8Headers_Success()
+        {
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
+            {
+                string[] customValues = new string[] { "custom1, and custom测试2", "custom3" };
+                Task responseTask = SendRequestAsync(address, "Custom-Header", customValues);
+
+                var context = await server.GetContextAsync();
+                var requestHeaders = context.Request.Headers;
+                Assert.Equal(4, requestHeaders.Count);
+                Assert.Equal(new Uri(address).Authority, requestHeaders["Host"]);
+                Assert.Equal(new[] { new Uri(address).Authority }, requestHeaders.GetValues("Host"));
+                Assert.Equal("close", requestHeaders["Connection"]);
+                Assert.Equal(new[] { "close" }, requestHeaders.GetValues("Connection"));
+                // Apparently Http.Sys squashes request headers together.
+                Assert.Equal("custom1, and custom测试2, custom3", requestHeaders["Custom-Header"]);
+                Assert.Equal(new[] { "custom1", "and custom测试2", "custom3" }, requestHeaders.GetValues("Custom-Header"));
+                Assert.Equal("spacervalue, spacervalue", requestHeaders["Spacer-Header"]);
+                Assert.Equal(new[] { "spacervalue", "spacervalue" }, requestHeaders.GetValues("Spacer-Header"));
+                context.Dispose();
+
+                await responseTask;
+            }
+        }
+
         private async Task<string> SendRequestAsync(string uri)
         {
             using (HttpClient client = new HttpClient())
@@ -90,7 +116,7 @@ namespace Microsoft.Net.Http.Server
             }
             builder.AppendLine();
 
-            byte[] request = Encoding.ASCII.GetBytes(builder.ToString());
+            byte[] request = Encoding.UTF8.GetBytes(builder.ToString());
 
             Socket socket = new Socket(SocketType.Stream, ProtocolType.Tcp);
             socket.Connect(uri.Host, uri.Port);

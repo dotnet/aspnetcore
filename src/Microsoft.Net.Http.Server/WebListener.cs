@@ -774,9 +774,8 @@ namespace Microsoft.Net.Http.Server
                     {
                         // Add Value
                         string headerValue = authChallenges[headerValueIndex];
-                        byte[] bytes = new byte[HeaderEncoding.GetByteCount(headerValue)];
+                        byte[] bytes = HeaderEncoding.GetBytes(headerValue);
                         nativeHeaderValues[header.KnownHeaderCount].RawValueLength = (ushort)bytes.Length;
-                        HeaderEncoding.GetBytes(headerValue, 0, bytes.Length, bytes, 0);
                         gcHandle = GCHandle.Alloc(bytes, GCHandleType.Pinned);
                         pinnedHeaders.Add(gcHandle);
                         nativeHeaderValues[header.KnownHeaderCount].pRawValue = (sbyte*)gcHandle.AddrOfPinnedObject();

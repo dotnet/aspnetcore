@@ -401,11 +401,10 @@ namespace Microsoft.Net.Http.Server
                     cachePolicy.SecondsToLive = (uint)Math.Min(cacheTtl.Value.Ticks / TimeSpan.TicksPerSecond, Int32.MaxValue);
                 }
 
-                byte[] reasonPhraseBytes = new byte[HeaderEncoding.GetByteCount(reasonPhrase)];
+                byte[] reasonPhraseBytes = HeaderEncoding.GetBytes(reasonPhrase);
                 fixed (byte* pReasonPhrase = reasonPhraseBytes)
                 {
                     _nativeResponse.Response_V1.ReasonLength = (ushort)reasonPhraseBytes.Length;
-                    HeaderEncoding.GetBytes(reasonPhrase, 0, reasonPhraseBytes.Length, reasonPhraseBytes, 0);
                     _nativeResponse.Response_V1.pReason = (sbyte*)pReasonPhrase;
                     fixed (HttpApi.HTTP_RESPONSE_V2* pResponse = &_nativeResponse)
                     {
@@ -622,18 +621,16 @@ namespace Microsoft.Net.Http.Server
                             for (int headerValueIndex = 0; headerValueIndex < headerValues.Count; headerValueIndex++)
                             {
                                 // Add Name
-                                bytes = new byte[HeaderEncoding.GetByteCount(headerName)];
+                                bytes = HeaderEncoding.GetBytes(headerName);
                                 unknownHeaders[_nativeResponse.Response_V1.Headers.UnknownHeaderCount].NameLength = (ushort)bytes.Length;
-                                HeaderEncoding.GetBytes(headerName, 0, bytes.Length, bytes, 0);
                                 gcHandle = GCHandle.Alloc(bytes, GCHandleType.Pinned);
                                 pinnedHeaders.Add(gcHandle);
                                 unknownHeaders[_nativeResponse.Response_V1.Headers.UnknownHeaderCount].pName = (sbyte*)gcHandle.AddrOfPinnedObject();
 
                                 // Add Value
                                 headerValue = headerValues[headerValueIndex] ?? string.Empty;
-                                bytes = new byte[HeaderEncoding.GetByteCount(headerValue)];
+                                bytes = HeaderEncoding.GetBytes(headerValue);
                                 unknownHeaders[_nativeResponse.Response_V1.Headers.UnknownHeaderCount].RawValueLength = (ushort)bytes.Length;
-                                HeaderEncoding.GetBytes(headerValue, 0, bytes.Length, bytes, 0);
                                 gcHandle = GCHandle.Alloc(bytes, GCHandleType.Pinned);
                                 pinnedHeaders.Add(gcHandle);
                                 unknownHeaders[_nativeResponse.Response_V1.Headers.UnknownHeaderCount].pRawValue = (sbyte*)gcHandle.AddrOfPinnedObject();
@@ -643,9 +640,8 @@ namespace Microsoft.Net.Http.Server
                         else if (headerPair.Value.Count == 1)
                         {
                             headerValue = headerValues[0] ?? string.Empty;
-                            bytes = new byte[HeaderEncoding.GetByteCount(headerValue)];
+                            bytes = HeaderEncoding.GetBytes(headerValue);
                             pKnownHeaders[lookup].RawValueLength = (ushort)bytes.Length;
-                            HeaderEncoding.GetBytes(headerValue, 0, bytes.Length, bytes, 0);
                             gcHandle = GCHandle.Alloc(bytes, GCHandleType.Pinned);
                             pinnedHeaders.Add(gcHandle);
                             pKnownHeaders[lookup].pRawValue = (sbyte*)gcHandle.AddrOfPinnedObject();
@@ -677,9 +673,8 @@ namespace Microsoft.Net.Http.Server
                             {
                                 // Add Value
                                 headerValue = headerValues[headerValueIndex] ?? string.Empty;
-                                bytes = new byte[HeaderEncoding.GetByteCount(headerValue)];
+                                bytes = HeaderEncoding.GetBytes(headerValue);
                                 nativeHeaderValues[header.KnownHeaderCount].RawValueLength = (ushort)bytes.Length;
-                                HeaderEncoding.GetBytes(headerValue, 0, bytes.Length, bytes, 0);
                                 gcHandle = GCHandle.Alloc(bytes, GCHandleType.Pinned);
                                 pinnedHeaders.Add(gcHandle);
                                 nativeHeaderValues[header.KnownHeaderCount].pRawValue = (sbyte*)gcHandle.AddrOfPinnedObject();
