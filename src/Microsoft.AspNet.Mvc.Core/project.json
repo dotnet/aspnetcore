@@ -21,6 +21,7 @@
       "version": "1.0.0-*"
     },
     "Microsoft.Extensions.PlatformAbstractions": "1.0.0-*",
+    "Microsoft.Extensions.DependencyModel": "1.0.0-*",
     "Microsoft.Extensions.ClosedGenericMatcher.Sources": {
       "version": "1.0.0-*",
       "type": "build"
@@ -44,6 +45,7 @@
   "frameworks": {
     "net451": {
       "frameworkAssemblies": {
+        "System.Reflection": "",
         "System.Runtime": ""
       }
     },

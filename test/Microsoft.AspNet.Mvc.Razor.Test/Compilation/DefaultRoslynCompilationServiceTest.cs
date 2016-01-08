@@ -14,7 +14,7 @@ using Xunit;
 
 namespace Microsoft.AspNet.Mvc.Razor.Compilation
 {
-    public class RoslynCompilationServiceTest
+    public class DefaultRoslynCompilationServiceTest
     {
         private const string ConfigurationName = "Release";
 
@@ -30,7 +30,7 @@ public class MyTestType  {}";
             mvcRazorHost.SetupGet(m => m.MainClassNamePrefix)
                         .Returns(string.Empty);
 
-            var compilationService = new RoslynCompilationService(
+            var compilationService = new DefaultRoslynCompilationService(
                 applicationEnvironment,
                 libraryExporter,
                 mvcRazorHost.Object,
@@ -63,7 +63,7 @@ this should fail";
             var fileProvider = new TestFileProvider();
             var fileInfo = fileProvider.AddFile(viewPath, fileContent);
 
-            var compilationService = new RoslynCompilationService(
+            var compilationService = new DefaultRoslynCompilationService(
                 applicationEnvironment,
                 libraryExporter,
                 mvcRazorHost,
@@ -93,7 +93,7 @@ this should fail";
             var libraryExporter = CompilationServices.Default.LibraryExporter;
             var mvcRazorHost = Mock.Of<IMvcRazorHost>();
 
-            var compilationService = new RoslynCompilationService(
+            var compilationService = new DefaultRoslynCompilationService(
                 applicationEnvironment,
                 libraryExporter,
                 mvcRazorHost,
@@ -134,7 +134,7 @@ this should fail";
             var fileProvider = new TestFileProvider();
             fileProvider.AddFile(path, mockFileInfo.Object);
 
-            var compilationService = new RoslynCompilationService(
+            var compilationService = new DefaultRoslynCompilationService(
                 applicationEnvironment,
                 libraryExporter,
                 mvcRazorHost,
@@ -175,7 +175,7 @@ public class MyNonCustomDefinedClass {}
             var options = GetOptions();
             options.Value.ParseOptions = options.Value.ParseOptions.WithPreprocessorSymbols("MY_CUSTOM_DEFINE");
 
-            var compilationService = new RoslynCompilationService(
+            var compilationService = new DefaultRoslynCompilationService(
                 applicationEnvironment,
                 libraryExporter,
                 mvcRazorHost.Object,
@@ -207,7 +207,7 @@ public class NotRazorPrefixType {}";
             mvcRazorHost.SetupGet(m => m.MainClassNamePrefix)
                         .Returns("RazorPrefix");
 
-            var compilationService = new RoslynCompilationService(
+            var compilationService = new DefaultRoslynCompilationService(
                 applicationEnvironment,
                 libraryExporter,
                 mvcRazorHost.Object,
@@ -240,7 +240,7 @@ public class NotRazorPrefixType {}";
             var optionsAccessor = new Mock<IOptions<RazorViewEngineOptions>>();
             optionsAccessor.SetupGet(o => o.Value)
                 .Returns(options);
-            var compilationService = new RoslynCompilationService(
+            var compilationService = new DefaultRoslynCompilationService(
                 PlatformServices.Default.Application,
                 CompilationServices.Default.LibraryExporter,
                 Mock.Of<IMvcRazorHost>(),
@@ -333,7 +333,7 @@ public class NotRazorPrefixType {}";
             mvcRazorHost.SetupGet(m => m.MainClassNamePrefix)
                         .Returns(string.Empty);
 
-            var compilationService = new RoslynCompilationService(
+            var compilationService = new DefaultRoslynCompilationService(
                 applicationEnvironment,
                 libraryExporter,
                 mvcRazorHost.Object,
