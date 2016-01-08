@@ -3,8 +3,9 @@
 
 using System.Collections.Generic;
 using Microsoft.AspNet.Http.Authentication;
+using Microsoft.AspNet.IISPlatformHandler;
 
-namespace Microsoft.AspNet.IISPlatformHandler
+namespace Microsoft.AspNet.Builder
 {
     public class IISPlatformHandlerOptions
     {

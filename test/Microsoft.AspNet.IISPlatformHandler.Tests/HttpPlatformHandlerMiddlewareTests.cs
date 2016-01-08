@@ -47,7 +47,10 @@ namespace Microsoft.AspNet.IISPlatformHandler
             var builder = new WebApplicationBuilder()
                 .Configure(app =>
                 {
-                    app.UseIISPlatformHandler(options => options.FlowWindowsAuthentication = false);
+                    app.UseIISPlatformHandler(new IISPlatformHandlerOptions
+                    {
+                        FlowWindowsAuthentication = false
+                    });
                     app.Run(context =>
                     {
                         var auth = (IHttpAuthenticationFeature)context.Features[typeof(IHttpAuthenticationFeature)];

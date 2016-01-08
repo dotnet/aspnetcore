@@ -15,7 +15,8 @@
     "Microsoft.Extensions.SecurityHelper.Sources": {
       "type": "build",
       "version": "1.0.0-*"
-    }
+    },
+    "Microsoft.Extensions.Options": "1.0.0-*"
   },
   "frameworks": {
     "net451": { },

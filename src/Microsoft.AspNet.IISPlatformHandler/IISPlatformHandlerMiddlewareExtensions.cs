@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNet.IISPlatformHandler;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNet.Builder
 {
@@ -21,31 +22,7 @@ namespace Microsoft.AspNet.Builder
                 throw new ArgumentNullException(nameof(app));
             }
 
-            return app.UseIISPlatformHandler(options => { });
-        }
-
-        /// <summary>
-        /// Adds middleware for interacting with the IIS HttpPlatformHandler reverse proxy module.
-        /// This will handle forwarded Windows Authentication, request scheme, remote IPs, etc..
-        /// </summary>
-        /// <param name="app"></param>
-        /// <param name="configureOptions"></param>
-        /// <returns></returns>
-        public static IApplicationBuilder UseIISPlatformHandler(this IApplicationBuilder app, Action<IISPlatformHandlerOptions> configureOptions)
-        {
-            if (app == null)
-            {
-                throw new ArgumentNullException(nameof(app));
-            }
-            if (configureOptions == null)
-            {
-                throw new ArgumentNullException(nameof(configureOptions));
-            }
-
-            var options = new IISPlatformHandlerOptions();
-            configureOptions(options);
-
-            return app.UseMiddleware<IISPlatformHandlerMiddleware>(options);
+            return app.UseMiddleware<IISPlatformHandlerMiddleware>();
         }
 
         /// <summary>
@@ -66,7 +43,7 @@ namespace Microsoft.AspNet.Builder
                 throw new ArgumentNullException(nameof(options));
             }
 
-            return app.UseMiddleware<IISPlatformHandlerMiddleware>(options);
+            return app.UseMiddleware<IISPlatformHandlerMiddleware>(Options.Create(options));
         }
     }
 }

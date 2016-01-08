@@ -5,11 +5,12 @@ using System;
 using System.Globalization;
 using System.Security.Principal;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Http.Features.Authentication;
 using Microsoft.AspNet.Http.Features.Authentication.Internal;
 using Microsoft.Extensions.Internal;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNet.IISPlatformHandler
@@ -21,7 +22,7 @@ namespace Microsoft.AspNet.IISPlatformHandler
         private readonly RequestDelegate _next;
         private readonly IISPlatformHandlerOptions _options;
 
-        public IISPlatformHandlerMiddleware(RequestDelegate next, IISPlatformHandlerOptions options)
+        public IISPlatformHandlerMiddleware(RequestDelegate next, IOptions<IISPlatformHandlerOptions> options)
         {
             if (next == null)
             {
@@ -31,8 +32,9 @@ namespace Microsoft.AspNet.IISPlatformHandler
             {
                 throw new ArgumentNullException(nameof(options));
             }
+
             _next = next;
-            _options = options;
+            _options = options.Value;
         }
 
         public async Task Invoke(HttpContext httpContext)
