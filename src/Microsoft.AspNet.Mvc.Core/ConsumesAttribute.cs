@@ -6,10 +6,10 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNet.Mvc.Abstractions;
 using Microsoft.AspNet.Mvc.ActionConstraints;
+using Microsoft.AspNet.Mvc.ApiExplorer;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.AspNet.Mvc.Formatters;
-using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Mvc
@@ -18,7 +18,11 @@ namespace Microsoft.AspNet.Mvc
     /// Specifies the allowed content types which can be used to select the action based on request's content-type.
     /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
-    public class ConsumesAttribute : Attribute, IResourceFilter, IConsumesActionConstraint
+    public class ConsumesAttribute :
+        Attribute,
+        IResourceFilter,
+        IConsumesActionConstraint,
+        IApiRequestMetadataProvider
     {
         public static readonly int ConsumesActionConstraintOrder = 200;
 
@@ -206,6 +210,16 @@ namespace Microsoft.AspNet.Mvc
             }
 
             return contentTypes;
+        }
+
+        /// <inheritdoc />
+        public void SetContentTypes(MediaTypeCollection contentTypes)
+        {
+            contentTypes.Clear();
+            foreach (var contentType in ContentTypes)
+            {
+                contentTypes.Add(contentType);
+            }
         }
     }
 }

@@ -24,6 +24,7 @@ namespace Microsoft.AspNet.Mvc.ApiExplorer
     /// </summary>
     public class DefaultApiDescriptionProvider : IApiDescriptionProvider
     {
+        private readonly IList<IInputFormatter> _inputFormatters;
         private readonly IList<IOutputFormatter> _outputFormatters;
         private readonly IModelMetadataProvider _modelMetadataProvider;
         private readonly IInlineConstraintResolver _constraintResolver;
@@ -40,6 +41,7 @@ namespace Microsoft.AspNet.Mvc.ApiExplorer
             IInlineConstraintResolver constraintResolver,
             IModelMetadataProvider modelMetadataProvider)
         {
+            _inputFormatters = optionsAccessor.Value.InputFormatters;
             _outputFormatters = optionsAccessor.Value.OutputFormatters;
             _constraintResolver = constraintResolver;
             _modelMetadataProvider = modelMetadataProvider;
@@ -101,6 +103,7 @@ namespace Microsoft.AspNet.Mvc.ApiExplorer
                 apiDescription.ParameterDescriptions.Add(parameter);
             }
 
+            var requestMetadataAttributes = GetRequestMetadataAttributes(action);
             var responseMetadataAttributes = GetResponseMetadataAttributes(action);
 
             // We only provide response info if we can figure out a type that is a user-data type.
@@ -125,19 +128,27 @@ namespace Microsoft.AspNet.Mvc.ApiExplorer
 
                 apiDescription.ResponseModelMetadata = _modelMetadataProvider.GetMetadataForType(runtimeReturnType);
 
-                var formats = GetResponseFormats(
-                    action,
-                    responseMetadataAttributes,
-                    runtimeReturnType);
-
+                var formats = GetResponseFormats(action, responseMetadataAttributes, runtimeReturnType);
                 foreach (var format in formats)
                 {
                     apiDescription.SupportedResponseFormats.Add(format);
                 }
             }
+            
+            // It would be possible here to configure an action with multiple body parameters, in which case you
+            // could end up with duplicate data. 
+            foreach (var parameter in apiDescription.ParameterDescriptions.Where(p => p.Source == BindingSource.Body))
+            {
+                var formats = GetRequestFormats(action, requestMetadataAttributes, parameter.Type);
+                foreach (var format in formats)
+                {
+                    apiDescription.SupportedRequestFormats.Add(format);
+                }
+            }
 
             return apiDescription;
         }
+
         private IList<ApiParameterDescription> GetParameters(ApiParameterContext context)
         {
             // First, get parameters from the model-binding/parameter-binding side of the world.
@@ -301,6 +312,56 @@ namespace Microsoft.AspNet.Mvc.ApiExplorer
             return string.Join("/", segments);
         }
 
+        private IReadOnlyList<ApiRequestFormat> GetRequestFormats(
+            ControllerActionDescriptor action,
+            IApiRequestMetadataProvider[] requestMetadataAttributes,
+            Type type)
+        {
+            var results = new List<ApiRequestFormat>();
+
+            // Walk through all 'filter' attributes in order, and allow each one to see or override
+            // the results of the previous ones. This is similar to the execution path for content-negotiation.
+            var contentTypes = new MediaTypeCollection();
+            if (requestMetadataAttributes != null)
+            {
+                foreach (var metadataAttribute in requestMetadataAttributes)
+                {
+                    metadataAttribute.SetContentTypes(contentTypes);
+                }
+            }
+
+            if (contentTypes.Count == 0)
+            {
+                contentTypes.Add((string)null);
+            }
+
+            foreach (var contentType in contentTypes)
+            {
+                foreach (var formatter in _inputFormatters)
+                {
+                    var requestFormatMetadataProvider = formatter as IApiRequestFormatMetadataProvider;
+                    if (requestFormatMetadataProvider != null)
+                    {
+                        var supportedTypes = requestFormatMetadataProvider.GetSupportedContentTypes(contentType, type);
+
+                        if (supportedTypes != null)
+                        {
+                            foreach (var supportedType in supportedTypes)
+                            {
+                                results.Add(new ApiRequestFormat()
+                                {
+                                    Formatter = formatter,
+                                    MediaType = supportedType,
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+
+            return results;
+        }
+
         private IReadOnlyList<ApiResponseFormat> GetResponseFormats(
             ControllerActionDescriptor action,
             IApiResponseMetadataProvider[] responseMetadataAttributes,
@@ -416,6 +477,23 @@ namespace Microsoft.AspNet.Mvc.ApiExplorer
             }
 
             return declaredReturnType;
+        }
+
+        private IApiRequestMetadataProvider[] GetRequestMetadataAttributes(ControllerActionDescriptor action)
+        {
+            if (action.FilterDescriptors == null)
+            {
+                return null;
+            }
+
+            // This technique for enumerating filters will intentionally ignore any filter that is an IFilterFactory
+            // while searching for a filter that implements IApiRequestMetadataProvider.
+            //
+            // The workaround for that is to implement the metadata interface on the IFilterFactory.
+            return action.FilterDescriptors
+                .Select(fd => fd.Filter)
+                .OfType<IApiRequestMetadataProvider>()
+                .ToArray();
         }
 
         private IApiResponseMetadataProvider[] GetResponseMetadataAttributes(ControllerActionDescriptor action)

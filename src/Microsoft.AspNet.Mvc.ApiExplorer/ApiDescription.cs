@@ -14,47 +14,37 @@ namespace Microsoft.AspNet.Mvc.ApiExplorer
     public class ApiDescription
     {
         /// <summary>
-        /// Creates a new instance of <see cref="ApiDescription"/>.
-        /// </summary>
-        public ApiDescription()
-        {
-            Properties = new Dictionary<object, object>();
-            ParameterDescriptions = new List<ApiParameterDescription>();
-            SupportedResponseFormats = new List<ApiResponseFormat>();
-        }
-
-        /// <summary>
-        /// The <see cref="ActionDescriptor"/> for this api.
+        /// Gets or sets <see cref="ActionDescriptor"/> for this api.
         /// </summary>
         public ActionDescriptor ActionDescriptor { get; set; }
 
         /// <summary>
-        /// The group name for this api.
+        /// Gets or sets group name for this api.
         /// </summary>
         public string GroupName { get; set; }
 
         /// <summary>
-        /// The supported HTTP method for this api, or null if all HTTP methods are supported.
+        /// Gets or sets the supported HTTP method for this api, or null if all HTTP methods are supported.
         /// </summary>
         public string HttpMethod { get; set; }
 
         /// <summary>
-        /// The list of <see cref="ApiParameterDescription"/> for this api.
+        /// Gets a list of <see cref="ApiParameterDescription"/> for this api.
         /// </summary>
-        public IList<ApiParameterDescription> ParameterDescriptions { get; private set; }
+        public IList<ApiParameterDescription> ParameterDescriptions { get; } = new List<ApiParameterDescription>();
 
         /// <summary>
-        /// Stores arbitrary metadata properties associated with the <see cref="ApiDescription"/>.
+        /// Gets arbitrary metadata properties associated with the <see cref="ApiDescription"/>.
         /// </summary>
-        public IDictionary<object, object> Properties { get; private set; }
+        public IDictionary<object, object> Properties { get; } = new Dictionary<object, object>();
 
         /// <summary>
-        /// The relative url path template (relative to application root) for this api.
+        /// Gets or sets relative url path template (relative to application root) for this api.
         /// </summary>
         public string RelativePath { get; set; }
 
         /// <summary>
-        /// The <see cref="ModelMetadata"/> for the <see cref="ResponseType"/> or null.
+        /// Gets or sets <see cref="ModelMetadata"/> for the <see cref="ResponseType"/> or null.
         /// </summary>
         /// <remarks>
         /// Will be null if <see cref="ResponseType"/> is null.
@@ -62,7 +52,7 @@ namespace Microsoft.AspNet.Mvc.ApiExplorer
         public ModelMetadata ResponseModelMetadata { get; set; }
 
         /// <summary>
-        /// The CLR data type of the response or null.
+        /// Gets or sets the CLR data type of the response or null.
         /// </summary>
         /// <remarks>
         /// Will be null if the action returns no response, or if the response type is unclear. Use
@@ -71,12 +61,21 @@ namespace Microsoft.AspNet.Mvc.ApiExplorer
         public Type ResponseType { get; set; }
 
         /// <summary>
-        /// A list of possible formats for a response.
+        /// Gets the list of possible formats for a response.
         /// </summary>
         /// <remarks>
         /// Will be empty if the action returns no response, or if the response type is unclear. Use
         /// <c>ProducesAttribute</c> on an action method to specify a response type.
         /// </remarks>
-        public IList<ApiResponseFormat> SupportedResponseFormats { get; private set; }
+        public IList<ApiRequestFormat> SupportedRequestFormats { get; } = new List<ApiRequestFormat>();
+
+        /// <summary>
+        /// Gets the list of possible formats for a response.
+        /// </summary>
+        /// <remarks>
+        /// Will be empty if the action returns no response, or if the response type is unclear. Use
+        /// <c>ProducesAttribute</c> on an action method to specify a response type.
+        /// </remarks>
+        public IList<ApiResponseFormat> SupportedResponseFormats { get; } = new List<ApiResponseFormat>();
     }
 }

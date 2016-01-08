@@ -28,7 +28,7 @@ namespace Microsoft.AspNet.Mvc.Description
     public class DefaultApiDescriptionProviderTest
     {
         [Fact]
-        public void GetApiDescription_IgnoresNonReflectedActionDescriptor()
+        public void GetApiDescription_IgnoresNonControllerActionDescriptor()
         {
             // Arrange
             var action = new ActionDescriptor();
@@ -471,13 +471,12 @@ namespace Microsoft.AspNet.Mvc.Description
 
             // Assert
             var description = Assert.Single(descriptions);
-            Assert.Equal(4, description.SupportedResponseFormats.Count);
-
-            var formats = description.SupportedResponseFormats;
-            Assert.Single(formats, f => f.MediaType.ToString() == "text/json");
-            Assert.Single(formats, f => f.MediaType.ToString() == "application/json");
-            Assert.Single(formats, f => f.MediaType.ToString() == "text/xml");
-            Assert.Single(formats, f => f.MediaType.ToString() == "application/xml");
+            Assert.Collection(
+                description.SupportedResponseFormats.OrderBy(f => f.MediaType.ToString()),
+                f => Assert.Equal("application/json", f.MediaType.ToString()),
+                f => Assert.Equal("application/xml", f.MediaType.ToString()),
+                f => Assert.Equal("text/json", f.MediaType.ToString()),
+                f => Assert.Equal("text/xml", f.MediaType.ToString()));
         }
 
         [Fact]
@@ -494,11 +493,10 @@ namespace Microsoft.AspNet.Mvc.Description
 
             // Assert
             var description = Assert.Single(descriptions);
-            Assert.Equal(2, description.SupportedResponseFormats.Count);
-
-            var formats = description.SupportedResponseFormats;
-            Assert.Single(formats, f => f.MediaType.ToString() == "text/json");
-            Assert.Single(formats, f => f.MediaType.ToString() == "text/xml");
+            Assert.Collection(
+                description.SupportedResponseFormats.OrderBy(f => f.MediaType.ToString()),
+                f => Assert.Equal("text/json", f.MediaType.ToString()),
+                f => Assert.Equal("text/xml", f.MediaType.ToString()));
         }
 
         [Fact]
@@ -514,7 +512,7 @@ namespace Microsoft.AspNet.Mvc.Description
             action.FilterDescriptors = new List<FilterDescriptor>();
             action.FilterDescriptors.Add(new FilterDescriptor(filter, FilterScope.Action));
 
-            var formatters = CreateFormatters();
+            var formatters = CreateOutputFormatters();
 
             // This will just format Order
             formatters[0].SupportedTypes.Add(typeof(Order));
@@ -523,7 +521,7 @@ namespace Microsoft.AspNet.Mvc.Description
             formatters[1].SupportedTypes.Add(typeof(Product));
 
             // Act
-            var descriptions = GetApiDescriptions(action, formatters);
+            var descriptions = GetApiDescriptions(action, outputFormatters: formatters);
 
             // Assert
             var description = Assert.Single(descriptions);
@@ -534,6 +532,87 @@ namespace Microsoft.AspNet.Mvc.Description
             var formats = description.SupportedResponseFormats;
             Assert.Single(formats, f => f.MediaType.ToString() == "text/json");
             Assert.Same(formatters[0], formats[0].Formatter);
+        }
+
+        [Fact]
+        public void GetApiDescription_RequestFormatsEmpty_WithNoBodyParameter()
+        {
+            // Arrange
+            var action = CreateActionDescriptor(nameof(AcceptsProduct));
+
+            // Act
+            var descriptions = GetApiDescriptions(action);
+
+            // Assert
+            var description = Assert.Single(descriptions);
+            Assert.Empty(description.SupportedRequestFormats);
+        }
+
+        [Fact]
+        public void GetApiDescription_IncludesRequestFormats()
+        {
+            // Arrange
+            var action = CreateActionDescriptor(nameof(AcceptsProduct_Body));
+
+            // Act
+            var descriptions = GetApiDescriptions(action);
+
+            // Assert
+            var description = Assert.Single(descriptions);
+            Assert.Collection(
+                description.SupportedRequestFormats.OrderBy(f => f.MediaType.ToString()),
+                f => Assert.Equal("application/json", f.MediaType.ToString()),
+                f => Assert.Equal("application/xml", f.MediaType.ToString()),
+                f => Assert.Equal("text/json", f.MediaType.ToString()),
+                f => Assert.Equal("text/xml", f.MediaType.ToString()));
+        }
+
+        [Fact]
+        public void GetApiDescription_IncludesRequestFormats_FilteredByAttribute()
+        {
+            // Arrange
+            var action = CreateActionDescriptor(nameof(AcceptsProduct_Body));
+
+            action.FilterDescriptors = new List<FilterDescriptor>();
+            action.FilterDescriptors.Add(new FilterDescriptor(new ContentTypeAttribute("text/*"), FilterScope.Action));
+
+            // Act
+            var descriptions = GetApiDescriptions(action);
+
+            // Assert
+            var description = Assert.Single(descriptions);
+            Assert.Collection(
+                description.SupportedRequestFormats.OrderBy(f => f.MediaType.ToString()),
+                f => Assert.Equal("text/json", f.MediaType.ToString()),
+                f => Assert.Equal("text/xml", f.MediaType.ToString()));
+        }
+
+        [Fact]
+        public void GetApiDescription_IncludesRequestFormats_FilteredByType()
+        {
+            // Arrange
+            var action = CreateActionDescriptor(nameof(AcceptsProduct_Body));
+
+            action.FilterDescriptors = new List<FilterDescriptor>();
+            action.FilterDescriptors.Add(new FilterDescriptor(new ContentTypeAttribute("text/*"), FilterScope.Action));
+
+            var formatters = CreateInputFormatters();
+
+            // This will just format Order
+            formatters[0].SupportedTypes.Add(typeof(Order));
+
+            // This will just format Product
+            formatters[1].SupportedTypes.Add(typeof(Product));
+
+            // Act
+            var descriptions = GetApiDescriptions(action, inputFormatters: formatters);
+
+            // Assert
+            var description = Assert.Single(descriptions);
+
+            var format = Assert.Single(description.SupportedRequestFormats);
+            Assert.Equal("text/xml", format.MediaType.ToString());
+            Assert.Same(formatters[1], format.Formatter);
         }
 
         [Fact]
@@ -986,19 +1065,20 @@ namespace Microsoft.AspNet.Mvc.Description
             Assert.Equal(typeof(string), comments.Type);
         }
 
-        private IReadOnlyList<ApiDescription> GetApiDescriptions(ActionDescriptor action)
-        {
-            return GetApiDescriptions(action, CreateFormatters());
-        }
-
         private IReadOnlyList<ApiDescription> GetApiDescriptions(
             ActionDescriptor action,
-            List<MockFormatter> formatters)
+            List<MockInputFormatter> inputFormatters = null,
+            List<MockOutputFormatter> outputFormatters = null)
         {
             var context = new ApiDescriptionProviderContext(new ActionDescriptor[] { action });
 
             var options = new MvcOptions();
-            foreach (var formatter in formatters)
+            foreach (var formatter in inputFormatters ?? CreateInputFormatters())
+            {
+                options.InputFormatters.Add(formatter);
+            }
+
+            foreach (var formatter in outputFormatters ?? CreateOutputFormatters())
             {
                 options.OutputFormatters.Add(formatter);
             }
@@ -1024,13 +1104,31 @@ namespace Microsoft.AspNet.Mvc.Description
             return new ReadOnlyCollection<ApiDescription>(context.Results);
         }
 
-        private List<MockFormatter> CreateFormatters()
+        private List<MockInputFormatter> CreateInputFormatters()
         {
             // Include some default formatters that look reasonable, some tests will override this.
-            var formatters = new List<MockFormatter>()
+            var formatters = new List<MockInputFormatter>()
             {
-                new MockFormatter(),
-                new MockFormatter(),
+                new MockInputFormatter(),
+                new MockInputFormatter(),
+            };
+
+            formatters[0].SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("application/json"));
+            formatters[0].SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("text/json"));
+
+            formatters[1].SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("application/xml"));
+            formatters[1].SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("text/xml"));
+
+            return formatters;
+        }
+
+        private List<MockOutputFormatter> CreateOutputFormatters()
+        {
+            // Include some default formatters that look reasonable, some tests will override this.
+            var formatters = new List<MockOutputFormatter>()
+            {
+                new MockOutputFormatter(),
+                new MockOutputFormatter(),
             };
 
             formatters[0].SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("application/json"));
@@ -1356,7 +1454,33 @@ namespace Microsoft.AspNet.Mvc.Description
             public int Id { get; set; }
         }
 
-        private class MockFormatter : OutputFormatter
+        private class MockInputFormatter : InputFormatter
+        {
+            public List<Type> SupportedTypes { get; } = new List<Type>();
+
+            public override Task<InputFormatterResult> ReadRequestBodyAsync(InputFormatterContext context)
+            {
+                throw new NotImplementedException();
+            }
+
+            protected override bool CanReadType(Type type)
+            {
+                if (SupportedTypes.Count == 0)
+                {
+                    return true;
+                }
+                else if (type == null)
+                {
+                    return false;
+                }
+                else
+                {
+                    return SupportedTypes.Contains(type);
+                }
+            }
+        }
+
+        private class MockOutputFormatter : OutputFormatter
         {
             public List<Type> SupportedTypes { get; } = new List<Type>();
 
@@ -1382,7 +1506,11 @@ namespace Microsoft.AspNet.Mvc.Description
             }
         }
 
-        private class ContentTypeAttribute : Attribute, IFilterMetadata, IApiResponseMetadataProvider
+        private class ContentTypeAttribute :
+            Attribute,
+            IFilterMetadata,
+            IApiResponseMetadataProvider,
+            IApiRequestMetadataProvider
         {
             public ContentTypeAttribute(string mediaType)
             {

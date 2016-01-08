@@ -8,7 +8,9 @@ using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.Abstractions;
 using Microsoft.AspNet.Mvc.ActionConstraints;
 using Microsoft.AspNet.Mvc.Filters;
+using Microsoft.AspNet.Mvc.Formatters;
 using Microsoft.AspNet.Routing;
+using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit;
 
@@ -365,6 +367,28 @@ namespace Microsoft.AspNet.Mvc
 
             // Assert
             Assert.Null(resourceExecutingContext.Result);
+        }
+
+        [Fact]
+        public void SetContentTypes_ClearsAndSetsContentTypes()
+        {
+            // Arrange
+            var attribute = new ConsumesAttribute("application/json", "text/json");
+
+            var contentTypes = new MediaTypeCollection()
+            {
+                MediaTypeHeaderValue.Parse("application/xml"),
+                MediaTypeHeaderValue.Parse("text/xml"),
+            };
+
+            // Act
+            attribute.SetContentTypes(contentTypes);
+
+            // Assert
+            Assert.Collection(
+                contentTypes.OrderBy(t => t),
+                t => Assert.Equal("application/json", t),
+                t => Assert.Equal("text/json", t));
         }
 
         private static RouteContext CreateRouteContext(string contentType = null, object routeValues = null)

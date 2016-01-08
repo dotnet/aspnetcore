@@ -3,20 +3,21 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNet.Mvc.ApiExplorer
 {
     /// <summary>
-    /// Provides metadata information about the response format to an <c>IApiDescriptionProvider</c>.
+    /// Provides metadata information about the request format to an <c>IApiDescriptionProvider</c>.
     /// </summary>
     /// <remarks>
-    /// An <see cref="Formatters.IOutputFormatter"/> should implement this interface to expose metadata information
+    /// An <see cref="Formatters.IInputFormatter"/> should implement this interface to expose metadata information
     /// to an <c>IApiDescriptionProvider</c>.
     /// </remarks>
-    public interface IApiResponseFormatMetadataProvider
+    public interface IApiRequestFormatMetadataProvider
     {
         /// <summary>
-        /// Gets a filtered list of content types which are supported by the <see cref="Formatters.IOutputFormatter"/>
+        /// Gets a filtered list of content types which are supported by the <see cref="Formatters.IInputFormatter"/>
         /// for the <paramref name="objectType"/> and <paramref name="contentType"/>.
         /// </summary>
         /// <param name="contentType">
@@ -26,7 +27,7 @@ namespace Microsoft.AspNet.Mvc.ApiExplorer
         /// <param name="objectType">
         /// The <see cref="Type"/> for which the supported content types are desired.
         /// </param>
-        /// <returns>Content types which are supported by the <see cref="Formatters.IOutputFormatter"/>.</returns>
+        /// <returns>Content types which are supported by the <see cref="Formatters.IInputFormatter"/>.</returns>
         IReadOnlyList<string> GetSupportedContentTypes(
             string contentType,
             Type objectType);

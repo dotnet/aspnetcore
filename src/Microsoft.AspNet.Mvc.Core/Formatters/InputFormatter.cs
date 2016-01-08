@@ -7,6 +7,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Mvc.ApiExplorer;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
@@ -16,7 +17,7 @@ namespace Microsoft.AspNet.Mvc.Formatters
     /// <summary>
     /// Reads an object from the request body.
     /// </summary>
-    public abstract class InputFormatter : IInputFormatter
+    public abstract class InputFormatter : IInputFormatter, IApiRequestFormatMetadataProvider
     {
         /// <summary>
         /// Returns UTF8 Encoding without BOM and throws on invalid bytes.
@@ -158,6 +159,44 @@ namespace Microsoft.AspNet.Mvc.Formatters
                 Resources.FormatInputFormatterNoEncoding(GetType().FullName));
 
             return null;
+        }
+
+        /// <inheritdoc />
+        public IReadOnlyList<string> GetSupportedContentTypes(string contentType, Type objectType)
+        {
+            if (!CanReadType(objectType))
+            {
+                return null;
+            }
+
+            if (contentType == null)
+            {
+                // If contentType is null, then any type we support is valid.
+                return SupportedMediaTypes.Count > 0 ? SupportedMediaTypes : null;
+            }
+            else
+            {
+                var parsedContentType = new MediaType(contentType);
+                List<string> mediaTypes = null;
+
+                // Confirm this formatter supports a more specific media type than requested e.g. OK if "text/*"
+                // requested and formatter supports "text/plain". Treat contentType like it came from an Content-Type header.
+                foreach (var mediaType in SupportedMediaTypes)
+                {
+                    var parsedMediaType = new MediaType(mediaType);
+                    if (parsedMediaType.IsSubsetOf(parsedContentType))
+                    {
+                        if (mediaTypes == null)
+                        {
+                            mediaTypes = new List<string>();
+                        }
+
+                        mediaTypes.Add(mediaType);
+                    }
+                }
+
+                return mediaTypes;
+            }
         }
     }
 }

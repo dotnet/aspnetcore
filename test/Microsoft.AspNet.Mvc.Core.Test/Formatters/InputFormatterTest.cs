@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.ModelBinding;
@@ -317,8 +319,78 @@ namespace Microsoft.AspNet.Mvc.Formatters
             Assert.False(result);
         }
 
+        [Fact]
+        public void GetSupportedContentTypes_UnsupportedObjectType_ReturnsNull()
+        {
+            // Arrange
+            var formatter = new TestFormatter();
+            formatter.SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("text/xml"));
+            formatter.SupportedTypes.Add(typeof(string));
+
+            // Act
+            var results = formatter.GetSupportedContentTypes(contentType: null, objectType: typeof(int));
+
+            // Assert
+            Assert.Null(results);
+        }
+
+        [Fact]
+        public void GetSupportedContentTypes_SupportedObjectType_ReturnsContentTypes()
+        {
+            // Arrange
+            var formatter = new TestFormatter();
+            formatter.SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("text/xml"));
+            formatter.SupportedTypes.Add(typeof(string));
+
+            // Act
+            var results = formatter.GetSupportedContentTypes(contentType: null, objectType: typeof(string));
+
+            // Assert
+            Assert.Collection(results, c => Assert.Equal("text/xml", c));
+        }
+
+        [Fact]
+        public void GetSupportedContentTypes_NullContentType_ReturnsAllContentTypes()
+        {
+            // Arrange
+            var formatter = new TestFormatter();
+            formatter.SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("application/xml"));
+            formatter.SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("text/xml"));
+
+            // Act
+            var results = formatter.GetSupportedContentTypes(contentType: null, objectType: typeof(string));
+
+            // Assert
+            Assert.Collection(
+                results.OrderBy(c => c.ToString()),
+                c => Assert.Equal("application/xml", c),
+                c => Assert.Equal("text/xml", c));
+        }
+
+        [Fact]
+        public void GetSupportedContentTypes_NonNullContentType_FiltersContentTypes()
+        {
+            // Arrange
+            var formatter = new TestFormatter();
+            formatter.SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("application/xml"));
+            formatter.SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("text/xml"));
+
+            // Act
+            var results = formatter.GetSupportedContentTypes("text/*", typeof(string));
+
+            // Assert
+            Assert.Collection(results, c => Assert.Equal("text/xml", c));
+        }
+
         private class TestFormatter : InputFormatter
         {
+            public IList<Type> SupportedTypes { get; } = new List<Type>();
+
+            protected override bool CanReadType(Type type)
+            {
+                return SupportedTypes.Count == 0 ? true : SupportedTypes.Contains(type);
+            }
+
             public override Task<InputFormatterResult> ReadRequestBodyAsync(InputFormatterContext context)
             {
                 throw new NotImplementedException();
