@@ -3,6 +3,7 @@
 
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNet.Html;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.ViewFeatures.Buffer;
@@ -162,6 +163,64 @@ namespace Microsoft.AspNet.Mvc.Razor.Buffer
                 buffer.AppendHtml("abc");
             }
             buffer.WriteTo(writer, new HtmlTestEncoder());
+
+            // Assert
+            Assert.Equal(expected, writer.ToString());
+        }
+
+        [Fact]
+        public async Task WriteToAsync_WritesSelf_WhenWriterIsHtmlTextWriter()
+        {
+            // Arrange
+            var buffer = new ViewBuffer(new TestViewBufferScope(), "some-name");
+            var htmlWriter = new Mock<HtmlTextWriter>();
+            htmlWriter.Setup(w => w.Write(buffer)).Verifiable();
+
+            // Act
+            buffer.Append("Hello world");
+            await buffer.WriteToAsync(htmlWriter.Object, new HtmlTestEncoder());
+
+            // Assert
+            htmlWriter.Verify();
+        }
+
+        [Fact]
+        public async Task WriteToAsync_WritesRazorValues_ToTextWriter()
+        {
+            // Arrange
+            var buffer = new ViewBuffer(new TestViewBufferScope(), "some-name");
+            var writer = new StringWriter();
+
+            // Act
+            buffer.Append("Hello");
+            buffer.AppendHtml(new HtmlString(" world"));
+            buffer.AppendHtml(" 123");
+
+            await buffer.WriteToAsync(writer, new HtmlTestEncoder());
+
+            // Assert
+            Assert.Equal("Hello world 123", writer.ToString());
+        }
+
+        [Theory]
+        [InlineData(9)]
+        [InlineData(10)]
+        [InlineData(11)]
+        [InlineData(23)]
+        public async Task WriteToAsync_WritesRazorValuesFromAllBuffers(int valuesToWrite)
+        {
+            // Arrange
+            var buffer = new ViewBuffer(new TestViewBufferScope(4), "some-name");
+            var writer = new StringWriter();
+            var expected = string.Join("", Enumerable.Range(0, valuesToWrite).Select(_ => "abc"));
+
+            // Act
+            for (var i = 0; i < valuesToWrite; i++)
+            {
+                buffer.AppendHtml("abc");
+            }
+
+            await buffer.WriteToAsync(writer, new HtmlTestEncoder());
 
             // Assert
             Assert.Equal(expected, writer.ToString());

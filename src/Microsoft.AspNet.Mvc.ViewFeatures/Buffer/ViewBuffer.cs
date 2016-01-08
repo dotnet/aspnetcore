@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text.Encodings.Web;
+using System.Threading.Tasks;
 using Microsoft.AspNet.Html;
 using Microsoft.AspNet.Mvc.Rendering;
 
@@ -142,7 +143,73 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures.Buffer
                 for (var j = 0; j < count; j++)
                 {
                     var value = segment[j];
-                    value.WriteTo(writer, encoder);
+
+                    var valueAsString = value.Value as string;
+                    if (valueAsString != null)
+                    {
+                        writer.Write(valueAsString);
+                        continue;
+                    }
+
+                    var valueAsHtmlContent = value.Value as IHtmlContent;
+                    if (valueAsHtmlContent != null)
+                    {
+                        valueAsHtmlContent.WriteTo(writer, encoder);
+                        continue;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Writes the buffered content to <paramref name="writer"/>.
+        /// </summary>
+        /// <param name="writer">The <see cref="TextWriter"/>.</param>
+        /// <param name="encoder">The <see cref="HtmlEncoder"/>.</param>
+        /// <returns>A <see cref="Task"/> which will complete once content has been written.</returns>
+        public async Task WriteToAsync(TextWriter writer, HtmlEncoder encoder)
+        {
+            if (BufferSegments == null)
+            {
+                return;
+            }
+
+            var htmlTextWriter = writer as HtmlTextWriter;
+            if (htmlTextWriter != null)
+            {
+                htmlTextWriter.Write(this);
+                return;
+            }
+
+            for (var i = 0; i < BufferSegments.Count; i++)
+            {
+                var segment = BufferSegments[i];
+                var count = i == BufferSegments.Count - 1 ? CurrentCount : segment.Length;
+
+                for (var j = 0; j < count; j++)
+                {
+                    var value = segment[j];
+
+                    var valueAsString = value.Value as string;
+                    if (valueAsString != null)
+                    {
+                        await writer.WriteAsync(valueAsString);
+                        continue;
+                    }
+
+                    var valueAsViewBuffer = value.Value as ViewBuffer;
+                    if (valueAsViewBuffer != null)
+                    {
+                        await valueAsViewBuffer.WriteToAsync(writer, encoder);
+                        continue;
+                    }
+
+                    var valueAsHtmlContent = value.Value as IHtmlContent;
+                    if (valueAsHtmlContent != null)
+                    {
+                        valueAsHtmlContent.WriteTo(writer, encoder);
+                        continue;
+                    }
                 }
             }
         }

@@ -233,7 +233,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             if (bodyWriter.IsBuffering)
             {
                 // Only copy buffered content to the Output if we're currently buffering.
-                bodyWriter.Buffer.WriteTo(context.Writer, _htmlEncoder);
+                await bodyWriter.Buffer.WriteToAsync(context.Writer, _htmlEncoder);
             }
         }
 

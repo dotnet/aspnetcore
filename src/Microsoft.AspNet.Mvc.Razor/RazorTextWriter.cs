@@ -8,6 +8,7 @@ using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Html;
 using Microsoft.AspNet.Mvc.ViewFeatures;
+using Microsoft.AspNet.Mvc.ViewFeatures.Buffer;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {
@@ -24,11 +25,12 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// </summary>
         /// <param name="unbufferedWriter">The <see cref="TextWriter"/> to write output to when this instance
         /// is no longer buffering.</param>
-        /// <param name="buffer">The <see cref="IHtmlContentBuilder"/> to buffer output to.</param>
+        /// <param name="buffer">The <see cref="ViewBuffer"/> to buffer output to.</param>
         /// <param name="encoder">The HTML encoder.</param>
-        public RazorTextWriter(TextWriter unbufferedWriter, IHtmlContentBuilder buffer, HtmlEncoder encoder)
+        public RazorTextWriter(TextWriter unbufferedWriter, ViewBuffer buffer, HtmlEncoder encoder)
         {
             UnbufferedWriter = unbufferedWriter;
+            Buffer = buffer;
             HtmlEncoder = encoder;
 
             BufferedWriter = new HtmlContentWrapperTextWriter(buffer, unbufferedWriter.Encoding);
@@ -47,7 +49,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <summary>
         /// Gets the buffered content.
         /// </summary>
-        public IHtmlContent Buffer => BufferedWriter.ContentBuilder;
+        public ViewBuffer Buffer { get; }
 
         // Internal for unit testing
         internal HtmlContentWrapperTextWriter BufferedWriter { get; }

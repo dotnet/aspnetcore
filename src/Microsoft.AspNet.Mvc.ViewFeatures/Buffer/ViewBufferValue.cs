@@ -35,31 +35,5 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures.Buffer
         /// Gets the value.
         /// </summary>
         public object Value { get; }
-
-        /// <summary>
-        /// Writes the <see cref="Value"/> by encoding it with the specified <paramref name="encoder"/> to the
-        /// specified <paramref name="writer"/>.
-        /// </summary>
-        /// <param name="writer">The <see cref="TextWriter"/> to write the value to.</param>
-        /// <param name="encoder">The <see cref="HtmlEncoder"/> which encodes the content to be written.</param>
-        public void WriteTo(TextWriter writer, HtmlEncoder encoder)
-        {
-            if (Value == null)
-            {
-                return;
-            }
-
-            var stringValue = Value as string;
-            if (stringValue != null)
-            {
-                writer.Write(stringValue);
-            }
-            else
-            {
-                Debug.Assert(Value is IHtmlContent);
-                var htmlContentValue = (IHtmlContent)Value;
-                htmlContentValue.WriteTo(writer, encoder);
-            }
-        }
     }
 }
