@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.IO;
 using System.Xml;
 using System.Xml.Linq;
@@ -63,7 +66,7 @@ namespace Microsoft.AspNet.Tools.PublishIIS
 #if DEBUG
                 Console.Error.WriteLine(e);
 #else
-                Console.Error.WriteLine(ex.Message);
+                Console.Error.WriteLine(e.Message);
 #endif
             }
 
