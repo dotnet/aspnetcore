@@ -365,6 +365,7 @@
                                     $(PoliCheckPath)**\src\Microsoft.AspNet.Proxy\ProxyMiddleware.cs;
                                     $(PoliCheckPath)**\src\Microsoft.Net.Http.Server\RequestProcessing\BoundaryType.cs;
                                     $(PoliCheckPath)**\src\Microsoft.Net.Http.Server\RequestProcessing\Response.cs;
+                                    $(PoliCheckPath)**\src\Microsoft.AspNet.Mvc.Core\HttpResponseStreamWriter.cs;
                                     $(PoliCheckPath)**\Microsoft.AspNet.Authentication.Cookies.dll;
                                     $(PoliCheckPath)**\Microsoft.AspNet.Authentication.Cookies.xml">
                 <term>chunking</term>
