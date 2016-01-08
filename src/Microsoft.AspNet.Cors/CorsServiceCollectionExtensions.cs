@@ -23,8 +23,7 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 throw new ArgumentNullException(nameof(serviceCollection));
             }
-
-            serviceCollection.AddOptions();
+            
             serviceCollection.TryAdd(ServiceDescriptor.Transient<ICorsService, CorsService>());
             serviceCollection.TryAdd(ServiceDescriptor.Transient<ICorsPolicyProvider, DefaultCorsPolicyProvider>());
             return serviceCollection;
