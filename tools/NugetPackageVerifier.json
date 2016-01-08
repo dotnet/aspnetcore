@@ -271,7 +271,6 @@
             "Microsoft.Extensions.Logging.EventLog": { },
             "Microsoft.Extensions.Logging.Testing": { },
             "Microsoft.Extensions.Logging.TraceSource": { },
-            "Microsoft.Extensions.MemoryPool": { },
             "Microsoft.Extensions.Options.ConfigurationExtensions": { },
             "Microsoft.Extensions.Options": { },
             "Microsoft.Extensions.PlatformAbstractions": { },
