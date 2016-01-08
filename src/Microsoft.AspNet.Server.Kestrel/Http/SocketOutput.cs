@@ -49,7 +49,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         private Exception _lastWriteError;
         private WriteContext _nextWriteContext;
         private readonly Queue<TaskCompletionSource<object>> _tasksPending;
-        private readonly Queue<TaskCompletionSource<object>> _tasksCompleted;
         private readonly Queue<WriteContext> _writeContextPool;
         private readonly Queue<UvWriteReq> _writeReqPool;
 
@@ -70,7 +69,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             _log = log;
             _threadPool = threadPool;
             _tasksPending = new Queue<TaskCompletionSource<object>>(_initialTaskQueues);
-            _tasksCompleted = new Queue<TaskCompletionSource<object>>(_initialTaskQueues);
             _writeContextPool = new Queue<WriteContext>(_maxPooledWriteContexts);
             _writeReqPool = writeReqPool;
 
@@ -287,7 +285,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             var status = writeContext.WriteStatus;
             var error = writeContext.WriteError;
 
-
             if (error != null)
             {
                 _lastWriteError = new IOException(error.Message, error);
@@ -314,12 +311,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 _numBytesPreCompleted += bytesToWrite;
                 bytesLeftToBuffer -= bytesToWrite;
 
-                _tasksCompleted.Enqueue(tcs);
-            }
-
-            while (_tasksCompleted.Count > 0)
-            {
-                var tcs = _tasksCompleted.Dequeue();
                 if (_lastWriteError == null)
                 {
                     _threadPool.Complete(tcs);
@@ -331,7 +322,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             }
 
             _log.ConnectionWriteCallback(_connectionId, status);
-            _tasksCompleted.Clear();
         }
 
         // This is called on the libuv event loop
