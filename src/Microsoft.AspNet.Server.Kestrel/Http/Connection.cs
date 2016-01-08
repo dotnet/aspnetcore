@@ -140,11 +140,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         private Libuv.uv_buf_t OnAlloc(UvStreamHandle handle, int suggestedSize)
         {
-            var result = _rawSocketInput.IncomingStart(2048);
+            var result = _rawSocketInput.IncomingStart();
 
             return handle.Libuv.buf_init(
-                result.DataPtr,
-                result.Data.Count);
+                result.Pin() + result.End,
+                result.Data.Offset + result.Data.Count - result.End);
         }
 
         private static void ReadCallback(UvStreamHandle handle, int status, object state)
