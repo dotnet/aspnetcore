@@ -3,6 +3,7 @@
 
 using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Testing.xunit;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
@@ -55,7 +56,7 @@ After flush inside partial<form action=""/FlushPoint/PageWithoutLayout"" method=
             Assert.Equal(expected, body, ignoreLineEndingDifferences: true);
         }
 
-        [Theory]
+        [ConditionalTheory(Skip = "Hangs arbitrarily on CI")]
         [InlineData("PageWithPartialsAndViewComponents", "FlushAsync invoked inside RenderSection")]
         [InlineData("PageWithRenderSectionAsync", "FlushAsync invoked inside RenderSectionAsync")]
         public async Task FlushPointsAreExecutedForPagesWithComponentsPartialsAndSections(string action, string title)
