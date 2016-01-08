@@ -127,6 +127,7 @@ namespace Microsoft.AspNet.Builder
         private static IServiceProvider CreateServices()
         {
             var services = new ServiceCollection();
+            services.AddOptions();
             services.AddRouting();
             services.AddLogging();
             return services.BuildServiceProvider();

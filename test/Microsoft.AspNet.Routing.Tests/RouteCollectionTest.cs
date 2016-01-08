@@ -528,6 +528,7 @@ namespace Microsoft.AspNet.Routing
             var request = new Mock<HttpRequest>(MockBehavior.Strict);
 
             var services = new ServiceCollection();
+            services.AddOptions();
             services.AddRouting();
             if (options != null)
             {
@@ -548,6 +549,7 @@ namespace Microsoft.AspNet.Routing
         {
             var services = new ServiceCollection();
             services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
+            services.AddOptions();
             services.AddRouting();
             if (options != null)
             {

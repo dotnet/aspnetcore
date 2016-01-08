@@ -16,6 +16,7 @@ namespace Microsoft.AspNet.Routing.Tests
         {
             // Arrange
             var services = new ServiceCollection();
+            services.AddOptions();
 
             // Act
             services.AddRouting(options => options.ConstraintMap.Add("foo", typeof(TestRouteConstraint)));
