@@ -1,8 +1,10 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
@@ -121,6 +123,50 @@ namespace Microsoft.AspNet.Server.Kestrel.FunctionalTests
                         Assert.True(headers.Contains(headerName));
                         Assert.Equal(headers.GetValues(headerName).Single(), expectedValue);
                     }
+                }
+            }
+        }
+
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Test hangs after execution on mono.")]
+        public async Task OnCompleteCalledEvenWhenOnStartingNotCalled()
+        {
+            var config = new ConfigurationBuilder()
+                .AddInMemoryCollection(new Dictionary<string, string>
+                {
+                    { "server.urls", "http://localhost:8794/" }
+                })
+                .Build();
+
+            var onStartingCalled = false;
+            var onCompletedCalled = false;
+
+            var hostBuilder = new WebApplicationBuilder()
+                .UseConfiguration(config)
+                .UseServer("Microsoft.AspNet.Server.Kestrel")
+                .Configure(app =>
+                {
+                    app.Run(context =>
+                    {
+                        context.Response.OnStarting(() => Task.Run(() => onStartingCalled = true));
+                        context.Response.OnCompleted(() => Task.Run(() => onCompletedCalled = true));
+
+                        // Prevent OnStarting call (see Frame<T>.RequestProcessingAsync()).
+                        throw new Exception();
+                    });
+                });
+
+            using (var app = hostBuilder.Build())
+            {
+                app.Start();
+
+                using (var client = new HttpClient())
+                {
+                    var response = await client.GetAsync("http://localhost:8794/");
+
+                    Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+                    Assert.False(onStartingCalled);
+                    Assert.True(onCompletedCalled);
                 }
             }
         }
