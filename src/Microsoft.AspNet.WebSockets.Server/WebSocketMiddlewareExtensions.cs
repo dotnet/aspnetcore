@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNet.WebSockets.Server;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNet.Builder
 {
@@ -15,24 +16,7 @@ namespace Microsoft.AspNet.Builder
                 throw new ArgumentNullException(nameof(app));
             }
 
-            return app.UseWebSockets(options => { });
-        }
-
-        public static IApplicationBuilder UseWebSockets(this IApplicationBuilder app, Action<WebSocketOptions> configureOptions)
-        {
-            if (app == null)
-            {
-                throw new ArgumentNullException(nameof(app));
-            }
-            if (configureOptions == null)
-            {
-                throw new ArgumentNullException(nameof(configureOptions));
-            }
-
-            var options = new WebSocketOptions();
-            configureOptions(options);
-
-            return app.UseMiddleware<WebSocketMiddleware>(options);
+            return app.UseMiddleware<WebSocketMiddleware>();
         }
 
         public static IApplicationBuilder UseWebSockets(this IApplicationBuilder app, WebSocketOptions options)
@@ -46,7 +30,7 @@ namespace Microsoft.AspNet.Builder
                 throw new ArgumentNullException(nameof(options));
             }
 
-            return app.UseMiddleware<WebSocketMiddleware>(options);
+            return app.UseMiddleware<WebSocketMiddleware>(Options.Create(options));
         }
     }
 }

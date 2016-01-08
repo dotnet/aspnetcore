@@ -10,6 +10,7 @@ using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.WebSockets.Protocol;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNet.WebSockets.Server
 {
@@ -18,10 +19,19 @@ namespace Microsoft.AspNet.WebSockets.Server
         private readonly RequestDelegate _next;
         private readonly WebSocketOptions _options;
 
-        public WebSocketMiddleware(RequestDelegate next, WebSocketOptions options)
+        public WebSocketMiddleware(RequestDelegate next, IOptions<WebSocketOptions> options)
         {
+            if (next == null)
+            {
+                throw new ArgumentNullException(nameof(next));
+            }
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
             _next = next;
-            _options = options;
+            _options = options.Value;
 
             // TODO: validate options.
         }
