@@ -95,7 +95,6 @@ namespace Microsoft.AspNet.Builder
 
         private static Func<T, HttpContext, IServiceProvider, Task> Compile<T>(MethodInfo methodinfo, ParameterInfo[] parameters)
         {
-
             // If we call something like
             // 
             // public class Middleware
@@ -122,17 +121,6 @@ namespace Microsoft.AspNet.Builder
             //      return ((Middleware)instance).Invoke(httpContext, (ILoggerFactory)UseMiddlewareExtensions.GetService(provider, typeof(ILoggerFactory));
             //   }
 
-            //   context =>
-            //   {
-            //       var serviceProvider = context.RequestServices ?? applicationServices;
-            //       if (serviceProvider == null)
-            //       {
-            //          throw new InvalidOperationException(Resources.FormatException_UseMiddlewareIServiceProviderNotAvailable(nameof(IServiceProvider)));
-            //       }
-            // 
-            //       return Invoke(httpContext, serviceProvider);
-            //   }
-
             var middleware = typeof(T);
 
             var httpContextArg = Expression.Parameter(typeof(HttpContext), "httpContext");
@@ -149,12 +137,15 @@ namespace Microsoft.AspNet.Builder
                     throw new NotSupportedException(Resources.FormatException_InvokeDoesNotSupportRefOrOutParams(InvokeMethodName));
                 }
 
-                var parameterTypeExpression = new Expression[] {
-                        providerArg,
-                        Expression.Constant(parameterType, typeof(Type)),
-                        Expression.Constant(methodinfo.DeclaringType, typeof(Type))
-                    };
-                methodArguments[i] = Expression.Convert(Expression.Call(GetServiceInfo, parameterTypeExpression), parameterType);
+                var parameterTypeExpression = new Expression[]
+                {
+                    providerArg,
+                    Expression.Constant(parameterType, typeof(Type)),
+                    Expression.Constant(methodinfo.DeclaringType, typeof(Type))
+                };
+
+                var getServiceCall = Expression.Call(GetServiceInfo, parameterTypeExpression);
+                methodArguments[i] = Expression.Convert(getServiceCall, parameterType);
             }
 
             Expression middlewareInstanceArg = instanceArg;
