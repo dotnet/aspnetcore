@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Server.Kestrel.Http;
@@ -12,11 +13,14 @@ namespace Microsoft.AspNet.Server.Kestrel.Filter
 {
     public class StreamSocketOutput : ISocketOutput
     {
+        private static readonly byte[] _endChunkBytes = Encoding.ASCII.GetBytes("\r\n");
         private static readonly byte[] _nullBuffer = new byte[0];
 
         private readonly Stream _outputStream;
         private readonly MemoryPool2 _memory;
         private MemoryPoolBlock2 _producingBlock;
+
+        private object _writeLock = new object();
 
         public StreamSocketOutput(Stream outputStream, MemoryPool2 memory)
         {
@@ -24,15 +28,29 @@ namespace Microsoft.AspNet.Server.Kestrel.Filter
             _memory = memory;
         }
 
-        void ISocketOutput.Write(ArraySegment<byte> buffer, bool immediate)
+        public void Write(ArraySegment<byte> buffer, bool immediate, bool chunk)
         {
-            _outputStream.Write(buffer.Array ?? _nullBuffer, buffer.Offset, buffer.Count);
+            lock (_writeLock)
+            {
+                if (chunk && buffer.Array != null)
+                {
+                    var beginChunkBytes = ChunkWriter.BeginChunkBytes(buffer.Count);
+                    _outputStream.Write(beginChunkBytes.Array, beginChunkBytes.Offset, beginChunkBytes.Count);
+                }
+
+                _outputStream.Write(buffer.Array ?? _nullBuffer, buffer.Offset, buffer.Count);
+
+                if (chunk && buffer.Array != null)
+                {
+                    _outputStream.Write(_endChunkBytes, 0, _endChunkBytes.Length);
+                }
+            }
         }
 
-        Task ISocketOutput.WriteAsync(ArraySegment<byte> buffer, bool immediate, CancellationToken cancellationToken)
+        public Task WriteAsync(ArraySegment<byte> buffer, bool immediate, bool chunk, CancellationToken cancellationToken)
         {
             // TODO: Use _outputStream.WriteAsync
-            _outputStream.Write(buffer.Array ?? _nullBuffer, buffer.Offset, buffer.Count);
+            Write(buffer, immediate, chunk);
             return TaskUtilities.CompletedTask;
         }
 

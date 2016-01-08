@@ -23,11 +23,9 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
     public abstract partial class Frame : FrameContext, IFrameControl
     {
         private static readonly Encoding _ascii = Encoding.ASCII;
-        private static readonly ArraySegment<byte> _endChunkBytes = CreateAsciiByteArraySegment("\r\n");
         private static readonly ArraySegment<byte> _endChunkedResponseBytes = CreateAsciiByteArraySegment("0\r\n\r\n");
         private static readonly ArraySegment<byte> _continueBytes = CreateAsciiByteArraySegment("HTTP/1.1 100 Continue\r\n\r\n");
         private static readonly ArraySegment<byte> _emptyData = new ArraySegment<byte>(new byte[0]);
-        private static readonly byte[] _hex = Encoding.ASCII.GetBytes("0123456789abcdef");
 
         private static readonly byte[] _bytesConnectionClose = Encoding.ASCII.GetBytes("\r\nConnection: close");
         private static readonly byte[] _bytesConnectionKeepAlive = Encoding.ASCII.GetBytes("\r\nConnection: keep-alive");
@@ -472,45 +470,12 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         private void WriteChunked(ArraySegment<byte> data)
         {
-            SocketOutput.Write(BeginChunkBytes(data.Count), immediate: false);
-            SocketOutput.Write(data, immediate: false);
-            SocketOutput.Write(_endChunkBytes, immediate: true);
+            SocketOutput.Write(data, immediate: false, chunk: true);
         }
 
         private async Task WriteChunkedAsync(ArraySegment<byte> data, CancellationToken cancellationToken)
         {
-            await SocketOutput.WriteAsync(BeginChunkBytes(data.Count), immediate: false, cancellationToken: cancellationToken);
-            await SocketOutput.WriteAsync(data, immediate: false, cancellationToken: cancellationToken);
-            await SocketOutput.WriteAsync(_endChunkBytes, immediate: true, cancellationToken: cancellationToken);
-        }
-
-        public static ArraySegment<byte> BeginChunkBytes(int dataCount)
-        {
-            var bytes = new byte[10]
-            {
-                _hex[((dataCount >> 0x1c) & 0x0f)],
-                _hex[((dataCount >> 0x18) & 0x0f)],
-                _hex[((dataCount >> 0x14) & 0x0f)],
-                _hex[((dataCount >> 0x10) & 0x0f)],
-                _hex[((dataCount >> 0x0c) & 0x0f)],
-                _hex[((dataCount >> 0x08) & 0x0f)],
-                _hex[((dataCount >> 0x04) & 0x0f)],
-                _hex[((dataCount >> 0x00) & 0x0f)],
-                (byte)'\r',
-                (byte)'\n',
-            };
-
-            // Determine the most-significant non-zero nibble
-            int total, shift;
-            total = (dataCount > 0xffff) ? 0x10 : 0x00;
-            dataCount >>= total;
-            shift = (dataCount > 0x00ff) ? 0x08 : 0x00;
-            dataCount >>= shift;
-            total |= shift;
-            total |= (dataCount > 0x000f) ? 0x04 : 0x00;
-
-            var offset = 7 - (total >> 2);
-            return new ArraySegment<byte>(bytes, offset, 10 - offset);
+            await SocketOutput.WriteAsync(data, immediate: false, chunk: true, cancellationToken: cancellationToken);
         }
 
         private void WriteChunkedResponseSuffix()

@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         private readonly IKestrelTrace _log;
         private readonly IThreadPool _threadPool;
 
-        // This locks all access to _tail, _isProducing and _returnFromOnProducingComplete.
+        // This locks all access to _tail and _lastStart.
         // _head does not require a lock, since it is only used in the ctor and uv thread.
         private readonly object _returnLock = new object();
 
@@ -79,6 +79,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         public Task WriteAsync(
             ArraySegment<byte> buffer,
             bool immediate = true,
+            bool chunk = false,
             bool socketShutdownSend = false,
             bool socketDisconnect = false)
         {
@@ -90,7 +91,19 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 if (buffer.Count > 0)
                 {
                     var tail = ProducingStart();
+                    if (chunk)
+                    {
+                        _numBytesPreCompleted += ChunkWriter.WriteBeginChunkBytes(ref tail, buffer.Count);
+                    }
+
                     tail.CopyFrom(buffer);
+
+                    if (chunk)
+                    {
+                        ChunkWriter.WriteEndChunkBytes(ref tail);
+                        _numBytesPreCompleted += 2;
+                    }
+
                     // We do our own accounting below
                     ProducingCompleteNoPreComplete(tail);
                 }
@@ -359,9 +372,9 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             }
         }
 
-        void ISocketOutput.Write(ArraySegment<byte> buffer, bool immediate)
+        void ISocketOutput.Write(ArraySegment<byte> buffer, bool immediate, bool chunk)
         {
-            var task = WriteAsync(buffer, immediate);
+            var task = WriteAsync(buffer, immediate, chunk);
 
             if (task.Status == TaskStatus.RanToCompletion)
             {
@@ -373,9 +386,9 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             }
         }
 
-        Task ISocketOutput.WriteAsync(ArraySegment<byte> buffer, bool immediate, CancellationToken cancellationToken)
+        Task ISocketOutput.WriteAsync(ArraySegment<byte> buffer, bool immediate, bool chunk, CancellationToken cancellationToken)
         {
-            return WriteAsync(buffer, immediate);
+            return WriteAsync(buffer, immediate, chunk);
         }
 
         private static void BytesBetween(MemoryPoolIterator2 start, MemoryPoolIterator2 end, out int bytes, out int buffers)

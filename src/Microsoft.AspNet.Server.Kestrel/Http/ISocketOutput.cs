@@ -13,8 +13,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
     /// </summary>
     public interface ISocketOutput
     {
-        void Write(ArraySegment<byte> buffer, bool immediate = true);
-        Task WriteAsync(ArraySegment<byte> buffer, bool immediate = true, CancellationToken cancellationToken = default(CancellationToken));
+        void Write(ArraySegment<byte> buffer, bool immediate = true, bool chunk = false);
+        Task WriteAsync(ArraySegment<byte> buffer, bool immediate = true, bool chunk = false, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// Returns an iterator pointing to the tail of the response buffer. Response data can be appended
