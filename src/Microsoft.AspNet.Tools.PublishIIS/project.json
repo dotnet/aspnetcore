@@ -1,0 +1,19 @@
+﻿{
+  "name": "publish-iis",
+  "version": "1.0.0-*",
+  "compilationOptions": {
+      "emitEntryPoint": true
+  },
+
+  "dependencies": {
+    "NETStandard.Library": "1.0.0-*",
+    "System.Xml.XDocument": "4.0.11-beta-*",
+    "Microsoft.Extensions.CommandLineUtils": "1.0.0-*"
+  },
+
+  "frameworks": {
+      "dnxcore50": {
+        "Microsoft.NETCore.Platforms": "1.0.0-*"
+       }
+  }
+}
