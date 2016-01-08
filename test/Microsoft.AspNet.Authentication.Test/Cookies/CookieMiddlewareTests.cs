@@ -580,6 +580,61 @@ namespace Microsoft.AspNet.Authentication.Cookies
             Assert.Null(FindClaimValue(transaction5, ClaimTypes.Name));
         }
 
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task ShouldRenewUpdatesIssuedExpiredUtc(bool sliding)
+        {
+            var clock = new TestClock();
+            DateTimeOffset? lastValidateIssuedDate = null;
+            DateTimeOffset? lastExpiresDate = null;
+            var server = CreateServer(options =>
+            {
+                options.SystemClock = clock;
+                options.ExpireTimeSpan = TimeSpan.FromMinutes(10);
+                options.SlidingExpiration = sliding;
+                options.Events = new CookieAuthenticationEvents
+                {
+                    OnValidatePrincipal = ctx =>
+                    {
+                        lastValidateIssuedDate = ctx.Properties.IssuedUtc;
+                        lastExpiresDate = ctx.Properties.ExpiresUtc;
+                        ctx.ShouldRenew = true;
+                        return Task.FromResult(0);
+                    }
+                };
+            },
+            context =>
+                context.Authentication.SignInAsync("Cookies",
+                    new ClaimsPrincipal(new ClaimsIdentity(new GenericIdentity("Alice", "Cookies")))));
+
+            var transaction1 = await SendAsync(server, "http://example.com/testpath");
+
+            var transaction2 = await SendAsync(server, "http://example.com/me/Cookies", transaction1.CookieNameValue);
+            Assert.NotNull(transaction2.SetCookie);
+            Assert.Equal("Alice", FindClaimValue(transaction2, ClaimTypes.Name));
+
+            Assert.NotNull(lastValidateIssuedDate);
+            Assert.NotNull(lastExpiresDate);
+
+            var firstIssueDate = lastValidateIssuedDate;
+            var firstExpiresDate = lastExpiresDate;
+
+            clock.Add(TimeSpan.FromMinutes(1));
+
+            var transaction3 = await SendAsync(server, "http://example.com/me/Cookies", transaction2.CookieNameValue);
+            Assert.NotNull(transaction3.SetCookie);
+            Assert.Equal("Alice", FindClaimValue(transaction3, ClaimTypes.Name));
+
+            clock.Add(TimeSpan.FromMinutes(2));
+
+            var transaction4 = await SendAsync(server, "http://example.com/me/Cookies", transaction3.CookieNameValue);
+            Assert.NotNull(transaction4.SetCookie);
+            Assert.Equal("Alice", FindClaimValue(transaction4, ClaimTypes.Name));
+
+            Assert.NotEqual(lastValidateIssuedDate, firstIssueDate);
+            Assert.NotEqual(firstExpiresDate, lastExpiresDate);
+        }
 
         [Fact]
         public async Task CookieExpirationCanBeOverridenInEvent()

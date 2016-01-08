@@ -21,9 +21,9 @@ namespace Microsoft.AspNet.Authentication.Cookies
         private const string HeaderValueMinusOne = "-1";
         private const string SessionIdClaim = "Microsoft.AspNet.Authentication.Cookies-SessionId";
 
-        private bool _shouldRenew;
-        private DateTimeOffset? _renewIssuedUtc;
-        private DateTimeOffset? _renewExpiresUtc;
+        private bool _shouldRefresh;
+        private DateTimeOffset? _refreshIssuedUtc;
+        private DateTimeOffset? _refreshExpiresUtc;
         private string _sessionKey;
         private Task<AuthenticateResult> _readCookieTask;
 
@@ -35,6 +35,33 @@ namespace Microsoft.AspNet.Authentication.Cookies
                 _readCookieTask = ReadCookieTicket();
             }
             return _readCookieTask;
+        }
+
+        private void CheckForRefresh(AuthenticationTicket ticket)
+        {
+            var currentUtc = Options.SystemClock.UtcNow;
+            var issuedUtc = ticket.Properties.IssuedUtc;
+            var expiresUtc = ticket.Properties.ExpiresUtc;
+            var allowRefresh = ticket.Properties.AllowRefresh ?? true;
+            if (issuedUtc != null && expiresUtc != null && Options.SlidingExpiration && allowRefresh)
+            {
+                var timeElapsed = currentUtc.Subtract(issuedUtc.Value);
+                var timeRemaining = expiresUtc.Value.Subtract(currentUtc);
+
+                if (timeRemaining < timeElapsed)
+                {
+                    RequestRefresh(ticket);
+                }
+            }
+        }
+
+        private void RequestRefresh(AuthenticationTicket ticket)
+        {
+            _shouldRefresh = true;
+            var currentUtc = Options.SystemClock.UtcNow;
+            _refreshIssuedUtc = currentUtc;
+            var timeSpan = ticket.Properties.ExpiresUtc.Value.Subtract(ticket.Properties.IssuedUtc.Value);
+            _refreshExpiresUtc = currentUtc.Add(timeSpan);
         }
 
         private async Task<AuthenticateResult> ReadCookieTicket()
@@ -79,20 +106,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
                 return AuthenticateResult.Fail("Ticket expired");
             }
 
-            var allowRefresh = ticket.Properties.AllowRefresh ?? true;
-            if (issuedUtc != null && expiresUtc != null && Options.SlidingExpiration && allowRefresh)
-            {
-                var timeElapsed = currentUtc.Subtract(issuedUtc.Value);
-                var timeRemaining = expiresUtc.Value.Subtract(currentUtc);
-
-                if (timeRemaining < timeElapsed)
-                {
-                    _shouldRenew = true;
-                    _renewIssuedUtc = currentUtc;
-                    var timeSpan = expiresUtc.Value.Subtract(issuedUtc.Value);
-                    _renewExpiresUtc = currentUtc.Add(timeSpan);
-                }
-            }
+            CheckForRefresh(ticket);
 
             // Finally we have a valid ticket
             return AuthenticateResult.Success(ticket);
@@ -116,7 +130,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
 
             if (context.ShouldRenew)
             {
-                _shouldRenew = true;
+                RequestRefresh(result.Ticket);
             }
 
             return AuthenticateResult.Success(new AuthenticationTicket(context.Principal, context.Properties, Options.AuthenticationScheme));
@@ -144,7 +158,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
         protected override async Task FinishResponseAsync()
         {
             // Only renew if requested, and neither sign in or sign out was called
-            if (!_shouldRenew || SignInAccepted || SignOutAccepted)
+            if (!_shouldRefresh || SignInAccepted || SignOutAccepted)
             {
                 return;
             }
@@ -153,13 +167,13 @@ namespace Microsoft.AspNet.Authentication.Cookies
             var ticket = (await HandleAuthenticateOnceAsync())?.Ticket;
             if (ticket != null)
             {
-                if (_renewIssuedUtc.HasValue)
+                if (_refreshIssuedUtc.HasValue)
                 {
-                    ticket.Properties.IssuedUtc = _renewIssuedUtc;
+                    ticket.Properties.IssuedUtc = _refreshIssuedUtc;
                 }
-                if (_renewExpiresUtc.HasValue)
+                if (_refreshExpiresUtc.HasValue)
                 {
-                    ticket.Properties.ExpiresUtc = _renewExpiresUtc;
+                    ticket.Properties.ExpiresUtc = _refreshExpiresUtc;
                 }
 
                 if (Options.SessionStore != null && _sessionKey != null)
@@ -175,9 +189,9 @@ namespace Microsoft.AspNet.Authentication.Cookies
                 var cookieValue = Options.TicketDataFormat.Protect(ticket, GetTlsTokenBinding());
 
                 var cookieOptions = BuildCookieOptions();
-                if (ticket.Properties.IsPersistent && _renewExpiresUtc.HasValue)
+                if (ticket.Properties.IsPersistent && _refreshExpiresUtc.HasValue)
                 {
-                    cookieOptions.Expires = _renewExpiresUtc.Value.ToUniversalTime().DateTime;
+                    cookieOptions.Expires = _refreshExpiresUtc.Value.ToUniversalTime().DateTime;
                 }
 
                 Options.CookieManager.AppendResponseCookie(
