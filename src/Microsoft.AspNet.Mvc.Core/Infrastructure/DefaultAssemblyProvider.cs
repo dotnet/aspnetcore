@@ -41,7 +41,8 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
             "Microsoft.AspNet.Mvc.Razor",
             "Microsoft.AspNet.Mvc.Razor.Host",
             "Microsoft.AspNet.Mvc.TagHelpers",
-            "Microsoft.AspNet.Mvc.ViewFeatures"
+            "Microsoft.AspNet.Mvc.ViewFeatures",
+            "Microsoft.AspNet.PageExecutionInstrumentation.Interfaces",
         };
 
         /// <inheritdoc />

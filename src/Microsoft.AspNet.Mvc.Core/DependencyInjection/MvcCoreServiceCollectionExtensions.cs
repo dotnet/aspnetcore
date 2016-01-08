@@ -78,15 +78,7 @@ namespace Microsoft.Extensions.DependencyInjection
             // Action Discovery
             //
             // These are consumed only when creating action descriptors, then they can be de-allocated
-            if (PlatformServices.Default?.LibraryManager != null)
-            {
-                services.TryAddTransient<IAssemblyProvider, DefaultAssemblyProvider>();
-            }
-            else
-            {
-                services.TryAddTransient<IAssemblyProvider, DependencyContextAssemblyProvider>();
-            }
-
+            services.TryAddTransient<IAssemblyProvider, DefaultAssemblyProvider>();
             services.TryAddTransient<IControllerTypeProvider, DefaultControllerTypeProvider>();
             services.TryAddEnumerable(
                 ServiceDescriptor.Transient<IApplicationModelProvider, DefaultApplicationModelProvider>());

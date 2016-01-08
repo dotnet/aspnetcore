@@ -119,22 +119,9 @@ namespace Microsoft.Extensions.DependencyInjection
         // Internal for testing.
         internal static void AddRazorViewEngineServices(IServiceCollection services)
         {
-            var compilationServicesAvailible = CompilationServices.Default != null;
-
-            if (compilationServicesAvailible)
+            if (CompilationServices.Default != null)
             {
                 services.TryAddSingleton(CompilationServices.Default.LibraryExporter);
-
-                // This caches compilation related details that are valid across the lifetime of the application.
-                services.TryAddSingleton<ICompilationService, DefaultRoslynCompilationService>();
-            }
-            else
-            {
-                services.TryAddEnumerable(
-                    ServiceDescriptor.Transient<IConfigureOptions<RazorViewEngineOptions>, DependencyContextRazorViewEngineOptionsSetup>());
-
-                // This caches compilation related details that are valid across the lifetime of the application.
-                services.TryAddSingleton<ICompilationService, DependencyContextCompilationService>();
             }
 
             services.TryAddEnumerable(
@@ -154,6 +141,9 @@ namespace Microsoft.Extensions.DependencyInjection
 
             // Caches compilation artifacts across the lifetime of the application.
             services.TryAddSingleton<ICompilerCacheProvider, DefaultCompilerCacheProvider>();
+
+            // This caches compilation related details that are valid across the lifetime of the application.
+            services.TryAddSingleton<ICompilationService, RoslynCompilationService>();
 
             // In the default scenario the following services are singleton by virtue of being initialized as part of
             // creating the singleton RazorViewEngine instance.
