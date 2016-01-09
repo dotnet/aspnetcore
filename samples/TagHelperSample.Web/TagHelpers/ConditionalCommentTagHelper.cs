@@ -23,15 +23,15 @@ namespace TagHelperSample.Web
                 modeModifier = "--";
             }
 
-            output.PreContent.Append("<!");
-            output.PreContent.Append(modeModifier);
-            output.PreContent.Append("[if ");
-            output.PreContent.Append(Condition);
-            output.PreContent.Append("]>");
+            output.PreContent.AppendHtml("<!");
+            output.PreContent.AppendHtml(modeModifier);
+            output.PreContent.AppendHtml("[if ");
+            output.PreContent.AppendHtml(Condition);
+            output.PreContent.AppendHtml("]>");
 
-            output.PostContent.Append("<![endif]");
-            output.PostContent.Append(modeModifier);
-            output.PostContent.Append(">");
+            output.PostContent.AppendHtml("<![endif]");
+            output.PostContent.AppendHtml(modeModifier);
+            output.PostContent.AppendHtml(">");
         }
     }
 }

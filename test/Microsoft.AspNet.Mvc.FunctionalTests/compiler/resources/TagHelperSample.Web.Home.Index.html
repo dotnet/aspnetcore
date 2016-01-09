@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link href="/css/sub/blank.css" rel="stylesheet" data-test="value" />
+    <link href="site.min.css" rel="stylesheet" data-test="value" />
+<meta name="x-stylesheet-fallback-test" content="" class="fallback-test" /><script>!function(a,b,c){var d,e=document,f=e.getElementsByTagName("SCRIPT"),g=f[f.length-1].previousElementSibling,h=e.defaultView&&e.defaultView.getComputedStyle?e.defaultView.getComputedStyle(g):g.currentStyle;if(h&&h[a]!==b)for(d=0;d<c.length;d++)e.write('<link rel="stylesheet" href="'+c[d]+'"/>')}("visibility","hidden",["\/site.css"]);</script>
+    
+</head>
+<body>
+    
+
+
+<script src="/originalXX.js">
+    // 1. By removing the src attribute, the script below will execute and prevent fallback from running
+    // 2. Alternatively fix the type in the value of the src attribute
+    function foo() {
+        return 1;
+    }
+
+    function bar() {
+        document.write("<p>foo is from page</p>");
+    }
+</script>
+<script>(window.foo||document.write("<script src=\"\/fallback.js\"><\/script>"));</script>
+
+<script>bar();</script>
+
+<h2>Index</h2>
+    <div class="form-horizontal">
+            <div class="form-group">
+                <label for="z0__Name">Name</label>
+                <input type="text" disabled="disabled" readonly="readonly" id="z0__Name" name="[0].Name" value="Billy" />
+            </div>
+            <div class="form-group">
+                <label for="z0__DateOfBirth">DateOfBirth</label>
+                <input type="date" disabled="disabled" readonly="readonly" data-val="true" data-val-required="The DateOfBirth field is required." id="z0__DateOfBirth" name="[0].DateOfBirth" value="2000-11-30" />
+            </div>
+            <div class="form-group">
+                <label for="z0__YearsEmployeed">YearsEmployeed</label>
+                <input type="number" disabled="disabled" readonly="readonly" data-val="true" data-val-required="The YearsEmployeed field is required." id="z0__YearsEmployeed" name="[0].YearsEmployeed" value="0" />
+            </div>
+            <div class="form-group">
+                <label for="z0__Blurb">Blurb</label>
+                <textarea rows="4" disabled="disabled" readonly="readonly" id="z0__Blurb" name="[0].Blurb">
+hello</textarea>
+            </div>
+            <p>
+                <a href="/Home/Edit/0">Edit</a>
+            </p>
+            <div class="form-group">
+                <label for="z1__Name">Name</label>
+                <input type="text" disabled="disabled" readonly="readonly" id="z1__Name" name="[1].Name" value="Billy" />
+            </div>
+            <div class="form-group">
+                <label for="z1__DateOfBirth">DateOfBirth</label>
+                <input type="date" disabled="disabled" readonly="readonly" data-val="true" data-val-required="The DateOfBirth field is required." id="z1__DateOfBirth" name="[1].DateOfBirth" value="2000-11-30" />
+            </div>
+            <div class="form-group">
+                <label for="z1__YearsEmployeed">YearsEmployeed</label>
+                <input type="number" disabled="disabled" readonly="readonly" data-val="true" data-val-required="The YearsEmployeed field is required." id="z1__YearsEmployeed" name="[1].YearsEmployeed" value="0" />
+            </div>
+            <div class="form-group">
+                <label for="z1__Blurb">Blurb</label>
+                <textarea rows="4" disabled="disabled" readonly="readonly" id="z1__Blurb" name="[1].Blurb">
+hello</textarea>
+            </div>
+            <p>
+                <a href="/Home/Edit/1">Edit</a>
+            </p>
+    </div>
+<p>
+    <a href="/Home/Create">Create New</a>
+</p>
+
+</body>
+</html>
