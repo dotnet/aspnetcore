@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures.Logging
 {
     public static class DefaultViewComponentInvokerLoggerExtensions
     {
-        private static readonly double TimestampToTicks = Stopwatch.Frequency / 10000000.0;
+        private static readonly double TimestampToTicks = TimeSpan.TicksPerSecond / (double)Stopwatch.Frequency;
         private static readonly string[] EmptyArguments =
 #if NET451
             new string[0];

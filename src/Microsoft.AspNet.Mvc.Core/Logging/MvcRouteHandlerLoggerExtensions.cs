@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.Mvc.Logging
 {
     internal static class MvcRouteHandlerLoggerExtensions
     {
-        private static readonly double TimestampToTicks = Stopwatch.Frequency / 10000000.0;
+        private static readonly double TimestampToTicks = TimeSpan.TicksPerSecond / (double)Stopwatch.Frequency;
 
         private static readonly Action<ILogger, string, Exception> _actionExecuting;
         private static readonly Action<ILogger, string, double, Exception> _actionExecuted;
