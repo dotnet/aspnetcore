@@ -9,9 +9,11 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Hosting;
+using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.Abstractions;
 using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNet.Mvc.Razor;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.AspNet.Mvc.TagHelpers.Internal;
@@ -279,7 +281,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var output = MakeTagHelperOutput("link");
             var hostingEnvironment = MakeHostingEnvironment();
             var viewContext = MakeViewContext();
-            var globbingUrlBuilder = new Mock<GlobbingUrlBuilder>();
+            var globbingUrlBuilder = new Mock<GlobbingUrlBuilder>(
+                new TestFileProvider(),
+                Mock.Of<IMemoryCache>(),
+                PathString.Empty);
             globbingUrlBuilder.Setup(g => g.BuildUrlList(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
                 .Returns(new[] { "/common.css" });
 
@@ -373,7 +378,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var output = MakeTagHelperOutput("link");
             var hostingEnvironment = MakeHostingEnvironment();
             var viewContext = MakeViewContext();
-            var globbingUrlBuilder = new Mock<GlobbingUrlBuilder>();
+            var globbingUrlBuilder = new Mock<GlobbingUrlBuilder>(
+                new TestFileProvider(),
+                Mock.Of<IMemoryCache>(),
+                PathString.Empty);
             globbingUrlBuilder.Setup(g => g.BuildUrlList(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
                 .Returns(new[] { "/common.css" });
 
@@ -597,7 +605,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             });
             var hostingEnvironment = MakeHostingEnvironment();
             var viewContext = MakeViewContext();
-            var globbingUrlBuilder = new Mock<GlobbingUrlBuilder>();
+            var globbingUrlBuilder = new Mock<GlobbingUrlBuilder>(
+                new TestFileProvider(),
+                Mock.Of<IMemoryCache>(),
+                PathString.Empty);
             globbingUrlBuilder.Setup(g => g.BuildUrlList(null, "**/*.css", null))
                 .Returns(new[] { "/base.css" });
 
@@ -640,7 +651,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             });
             var hostingEnvironment = MakeHostingEnvironment();
             var viewContext = MakeViewContext();
-            var globbingUrlBuilder = new Mock<GlobbingUrlBuilder>();
+            var globbingUrlBuilder = new Mock<GlobbingUrlBuilder>(
+                new TestFileProvider(),
+                Mock.Of<IMemoryCache>(),
+                PathString.Empty);
             globbingUrlBuilder.Setup(g => g.BuildUrlList(null, "**/*.css", null))
                 .Returns(new[] { "/base.css" });
 
@@ -761,7 +775,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             });
             var hostingEnvironment = MakeHostingEnvironment();
             var viewContext = MakeViewContext();
-            var globbingUrlBuilder = new Mock<GlobbingUrlBuilder>();
+            var globbingUrlBuilder = new Mock<GlobbingUrlBuilder>(
+                new TestFileProvider(),
+                Mock.Of<IMemoryCache>(),
+                PathString.Empty);
             globbingUrlBuilder.Setup(g => g.BuildUrlList(null, "**/*.css", null))
                 .Returns(new[] { "/base.css" });
 

@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
         {
             // Arrange
             var fileProvider = MakeFileProvider();
-            IMemoryCache cache = null;
+            var cache = new MemoryCache(new MemoryCacheOptions());
             var requestPathBase = PathString.Empty;
             var globbingUrlBuilder = new GlobbingUrlBuilder(fileProvider, cache, requestPathBase);
 
@@ -38,7 +38,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
         {
             // Arrange
             var fileProvider = MakeFileProvider(MakeDirectoryContents("site.css", "blank.css"));
-            IMemoryCache cache = null;
+            var cache = new MemoryCache(new MemoryCacheOptions());
             var requestPathBase = PathString.Empty;
             var globbingUrlBuilder = new GlobbingUrlBuilder(fileProvider, cache, requestPathBase);
 
@@ -210,7 +210,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
         {
             // Arrange
             var fileProvider = MakeFileProvider(dirStructure);
-            IMemoryCache cache = null;
+            var cache = new MemoryCache(new MemoryCacheOptions());
             var requestPathBase = PathString.Empty;
             var globbingUrlBuilder = new GlobbingUrlBuilder(fileProvider, cache, requestPathBase);
 
@@ -230,7 +230,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
         {
             // Arrange
             var fileProvider = MakeFileProvider(MakeDirectoryContents("site.css", "blank.css"));
-            IMemoryCache cache = null;
+            var cache = new MemoryCache(new MemoryCacheOptions());
             var requestPathBase = new PathString(pathBase);
             var globbingUrlBuilder = new GlobbingUrlBuilder(fileProvider, cache, requestPathBase);
 
@@ -277,10 +277,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
             Mock.Get(fileProvider).Setup(f => f.Watch(It.IsAny<string>())).Returns(changeToken.Object);
             var cache = MakeCache();
             Mock.Get(cache).Setup(c => c.Set(
-                /*key*/ It.IsAny<string>(),
-                /*value*/ It.IsAny<object>(),
+                /*key*/ It.IsAny<object>(),
+                /*value*/ It.IsAny<List<string>>(),
                 /*options*/ It.IsAny<MemoryCacheEntryOptions>()))
-                .Returns(new object())
+                .Returns((object key, object value, MemoryCacheEntryOptions options) => value)
                 .Verifiable();
             var requestPathBase = PathString.Empty;
             var globbingUrlBuilder = new GlobbingUrlBuilder(fileProvider, cache, requestPathBase);
@@ -339,7 +339,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
         {
             // Arrange
             var fileProvider = MakeFileProvider(MakeDirectoryContents("site.css", "blank.js", "site2.txt", "site.js"));
-            IMemoryCache cache = null;
+            var cache = new MemoryCache(new MemoryCacheOptions());
             var requestPathBase = PathString.Empty;
             var globbingUrlBuilder = new GlobbingUrlBuilder(fileProvider, cache, requestPathBase);
 
@@ -363,7 +363,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
         {
             // Arrange
             var fileProvider = MakeFileProvider(MakeDirectoryContents("site.css", "blank.css"));
-            IMemoryCache cache = null;
+            var cache = new MemoryCache(new MemoryCacheOptions());
             var requestPathBase = PathString.Empty;
             var includePatterns = new List<string>();
             var excludePatterns = new List<string>();
@@ -391,7 +391,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
             // Arrange
             var leadingSlashes = $"{prefix}{prefix}";
             var fileProvider = MakeFileProvider(MakeDirectoryContents("site.css", "blank.css"));
-            IMemoryCache cache = null;
+            var cache = new MemoryCache(new MemoryCacheOptions());
             var requestPathBase = PathString.Empty;
             var includePatterns = new List<string>();
             var excludePatterns = new List<string>();
@@ -448,6 +448,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
             var fileProvider = new Mock<IFileProvider>(MockBehavior.Strict);
             fileProvider.Setup(fp => fp.GetDirectoryContents(string.Empty))
                 .Returns(MakeDirectoryContents(rootNode, fileProvider));
+            fileProvider.Setup(fp => fp.Watch(It.IsAny<string>()))
+                .Returns(new TestFileChangeToken());
 
             return fileProvider.Object;
         }
@@ -494,13 +496,15 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
             var fileProvider = new Mock<IFileProvider>();
             fileProvider.Setup(fp => fp.GetDirectoryContents(It.IsAny<string>()))
                 .Returns(directoryContents);
+            fileProvider.Setup(fp => fp.Watch(It.IsAny<string>()))
+                .Returns(new TestFileChangeToken());
             return fileProvider.Object;
         }
 
         private static IMemoryCache MakeCache(object result = null)
         {
             var cache = new Mock<IMemoryCache>();
-            cache.Setup(c => c.TryGetValue(It.IsAny<string>(), out result))
+            cache.Setup(c => c.TryGetValue(It.IsAny<object>(), out result))
                 .Returns(result != null);
             return cache.Object;
         }

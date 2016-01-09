@@ -21,6 +21,10 @@
     "Microsoft.Extensions.PropertyHelper.Sources": {
       "version": "1.0.0-*",
       "type": "build"
+    },
+    "Microsoft.Extensions.HashCodeCombiner.Sources": {
+      "version": "1.0.0-*",
+      "type": "build"
     }
   },
   "frameworks": {

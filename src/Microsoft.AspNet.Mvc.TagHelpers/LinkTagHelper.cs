@@ -2,14 +2,16 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
+using System.Text;
 using System.Text.Encodings.Web;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Mvc.Razor.TagHelpers;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.AspNet.Mvc.TagHelpers.Internal;
+using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.AspNet.Razor.TagHelpers;
 using Microsoft.Extensions.Caching.Memory;
 
@@ -288,8 +290,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             // Build a <link /> tag for each matched href.
             var urls = GlobbingUrlBuilder.BuildUrlList(null, HrefInclude, HrefExclude);
-            foreach (var url in urls)
+            for (var i = 0; i < urls.Count; i++)
             {
+                var url = urls[i];
+
                 // "url" values come from bound attributes and globbing. Must always be non-null.
                 Debug.Assert(url != null);
 
@@ -307,45 +311,70 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         private void BuildFallbackBlock(TagHelperContent builder)
         {
             EnsureGlobbingUrlBuilder();
-            var fallbackHrefs =
-                GlobbingUrlBuilder.BuildUrlList(FallbackHref, FallbackHrefInclude, FallbackHrefExclude).ToArray();
+            var fallbackHrefs = GlobbingUrlBuilder.BuildUrlList(
+                FallbackHref,
+                FallbackHrefInclude,
+                FallbackHrefExclude);
 
-            if (fallbackHrefs.Length > 0)
+            if (fallbackHrefs.Count == 0)
             {
-                if (AppendVersion == true)
-                {
-                    for (var i = 0; i < fallbackHrefs.Length; i++)
-                    {
-                        // fallbackHrefs come from bound attributes and globbing. Must always be non-null.
-                        Debug.Assert(fallbackHrefs[i] != null);
+                return;
+            }
 
-                        fallbackHrefs[i] = _fileVersionProvider.AddFileVersionToPath(fallbackHrefs[i]);
-                    }
+            builder.AppendHtml(HtmlString.NewLine);
+
+            // Build the <meta /> tag that's used to test for the presence of the stylesheet
+            builder
+                .AppendHtml("<meta name=\"x-stylesheet-fallback-test\" content=\"\" class=\"")
+                .Append(FallbackTestClass)
+                .AppendHtml("\" />");
+
+            // Build the <script /> tag that checks the effective style of <meta /> tag above and renders the extra
+            // <link /> tag to load the fallback stylesheet if the test CSS property value is found to be false,
+            // indicating that the primary stylesheet failed to load.
+            // GetEmbeddedJavaScript returns JavaScript to which we add '"{0}","{1}",{2});'
+            builder
+                .AppendHtml("<script>")
+                .AppendHtml(JavaScriptResources.GetEmbeddedJavaScript(FallbackJavaScriptResourceName))
+                .AppendHtml("\"")
+                .AppendHtml(JavaScriptEncoder.Encode(FallbackTestProperty))
+                .AppendHtml("\",\"")
+                .AppendHtml(JavaScriptEncoder.Encode(FallbackTestValue))
+                .AppendHtml("\",");
+
+            AppendFallbackHrefs(builder, fallbackHrefs);
+            builder.AppendHtml("</script>");
+        }
+
+        private void AppendFallbackHrefs(TagHelperContent builder, IReadOnlyList<string> fallbackHrefs)
+        {
+            builder.AppendHtml("[");
+            var firstAdded = false;
+            // Perf: Avoid allocating enumerator
+            for (var i = 0; i < fallbackHrefs.Count; i++)
+            {
+                if (firstAdded)
+                {
+                    builder.AppendHtml(",\"");
+                }
+                else
+                {
+                    builder.AppendHtml("\"");
+                    firstAdded = true;
                 }
 
-                builder.AppendHtml(HtmlString.NewLine);
+                // fallbackHrefs come from bound attributes and globbing. Must always be non-null.
+                Debug.Assert(fallbackHrefs[i] != null);
+                var valueToWrite = fallbackHrefs[i];
+                if (AppendVersion == true)
+                {
+                    valueToWrite = _fileVersionProvider.AddFileVersionToPath(fallbackHrefs[i]);
+                }
 
-                // Build the <meta /> tag that's used to test for the presence of the stylesheet
-                builder
-                    .AppendHtml("<meta name=\"x-stylesheet-fallback-test\" content=\"\" class=\"")
-                    .Append(FallbackTestClass)
-                    .AppendHtml("\" />");
-
-                // Build the <script /> tag that checks the effective style of <meta /> tag above and renders the extra
-                // <link /> tag to load the fallback stylesheet if the test CSS property value is found to be false,
-                // indicating that the primary stylesheet failed to load.
-                // GetEmbeddedJavaScript returns JavaScript to which we add '"{0}","{1}",{2});'
-                builder
-                    .AppendHtml("<script>")
-                    .AppendHtml(JavaScriptResources.GetEmbeddedJavaScript(FallbackJavaScriptResourceName))
-                    .AppendHtml("\"")
-                    .AppendHtml(JavaScriptEncoder.Encode(FallbackTestProperty))
-                    .AppendHtml("\",\"")
-                    .AppendHtml(JavaScriptEncoder.Encode(FallbackTestValue))
-                    .AppendHtml("\",")
-                    .AppendHtml(JavaScriptStringArrayEncoder.Encode(JavaScriptEncoder, fallbackHrefs))
-                    .AppendHtml(");</script>");
+                builder.AppendHtml(JavaScriptEncoder.Encode(valueToWrite));
+                builder.AppendHtml("\"");
             }
+            builder.AppendHtml("]);");
         }
 
         private void EnsureGlobbingUrlBuilder()
