@@ -301,6 +301,7 @@ namespace Microsoft.AspNet.Mvc.Filters
             var serviceCollection = new ServiceCollection();
             if (registerServices != null)
             {
+                serviceCollection.AddOptions();
                 serviceCollection.AddLogging();
                 registerServices(serviceCollection);
             }

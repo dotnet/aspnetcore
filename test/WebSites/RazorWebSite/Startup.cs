@@ -43,21 +43,21 @@ namespace RazorWebSite
 
         public void Configure(IApplicationBuilder app)
         {
-            app.UseRequestLocalization(options =>
+            app.UseRequestLocalization(new RequestLocalizationOptions
             {
-                options.DefaultRequestCulture = new RequestCulture("en-GB", "en-US");
-                options.SupportedCultures = new List<CultureInfo>
+                DefaultRequestCulture = new RequestCulture("en-GB", "en-US"),
+                SupportedCultures = new List<CultureInfo>
                 {
                     new CultureInfo("fr"),
                     new CultureInfo("en-GB"),
                     new CultureInfo("en-US"),
-                };
-                options.SupportedUICultures = new List<CultureInfo>
+                },
+                SupportedUICultures = new List<CultureInfo>
                 {
                     new CultureInfo("fr"),
                     new CultureInfo("en-GB"),
                     new CultureInfo("en-US"),
-                };
+                }
             });
 
             app.UseMvcWithDefaultRoute();

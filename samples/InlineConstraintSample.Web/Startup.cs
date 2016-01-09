@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using InlineConstraintSample.Web.Constraints;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting;
@@ -25,11 +26,11 @@ namespace InlineConstraintSample.Web
 
         public void Configure(IApplicationBuilder app)
         {
-            app.UseRequestLocalization(localizationOptions =>
+            app.UseRequestLocalization(new RequestLocalizationOptions
             {
                 // Ignore ambient and client locale. Use same values as ReplaceCultureAttribute / CultureReplacerMiddleware.
-                localizationOptions.DefaultRequestCulture = new RequestCulture("en-GB", "en-US");
-                localizationOptions.RequestCultureProviders.Clear();
+                DefaultRequestCulture = new RequestCulture("en-GB", "en-US"),
+                RequestCultureProviders = new List<IRequestCultureProvider>()
             });
 
             app.UseMvc();

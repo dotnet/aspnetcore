@@ -22,19 +22,19 @@ namespace LocalizationSample.Web
 
         public void Configure(IApplicationBuilder app)
         {
-            app.UseRequestLocalization(options =>
+            app.UseRequestLocalization(new RequestLocalizationOptions
             {
-                options.DefaultRequestCulture = new RequestCulture("en-US");
-                options.SupportedCultures = new List<CultureInfo>
+                DefaultRequestCulture = new RequestCulture("en-US"),
+                SupportedCultures = new List<CultureInfo>
                 {
                     new CultureInfo("fr"),
                     new CultureInfo("en-GB"),
-                };
-                options.SupportedUICultures = new List<CultureInfo>
+                },
+                SupportedUICultures = new List<CultureInfo>
                 {
                     new CultureInfo("fr"),
                     new CultureInfo("en-GB"),
-                };
+                }
             });
 
             app.UseMvcWithDefaultRoute();
