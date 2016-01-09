@@ -133,10 +133,10 @@ namespace MusicStore
             app.UseIdentity();
 
             // Create an Azure Active directory application and copy paste the following
-            app.UseOpenIdConnectAuthentication(options =>
+            app.UseOpenIdConnectAuthentication(new OpenIdConnectOptions
             {
-                options.Authority = "https://login.windows.net/[tenantName].onmicrosoft.com";
-                options.ClientId = "[ClientId]";
+                Authority = "https://login.windows.net/[tenantName].onmicrosoft.com",
+                ClientId = "[ClientId]"
             });
 
             // Add MVC to the request pipeline

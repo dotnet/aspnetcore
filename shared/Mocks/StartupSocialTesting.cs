@@ -128,67 +128,64 @@ namespace MusicStore
             // Add cookie-based authentication to the request pipeline
             app.UseIdentity();
 
-            app.UseFacebookAuthentication(options =>
+            app.UseFacebookAuthentication(new FacebookOptions
             {
-                options.AppId = "[AppId]";
-                options.AppSecret = "[AppSecret]";
-                options.Events = new OAuthEvents()
+                AppId = "[AppId]",
+                AppSecret = "[AppSecret]",
+                Events = new OAuthEvents()
                 {
                     OnCreatingTicket = TestFacebookEvents.OnCreatingTicket,
                     OnTicketReceived = TestFacebookEvents.OnTicketReceived,
                     OnRedirectToAuthorizationEndpoint = TestFacebookEvents.RedirectToAuthorizationEndpoint
-                };
-                options.BackchannelHttpHandler = new FacebookMockBackChannelHttpHandler();
-                options.StateDataFormat = new CustomStateDataFormat();
-                options.Scope.Add("email");
-                options.Scope.Add("read_friendlists");
-                options.Scope.Add("user_checkins");
+                },
+                BackchannelHttpHandler = new FacebookMockBackChannelHttpHandler(),
+                StateDataFormat = new CustomStateDataFormat(),
+                Scope = { "email", "read_friendlists", "user_checkins" }
             });
 
-            app.UseGoogleAuthentication(options =>
+            app.UseGoogleAuthentication(new GoogleOptions
             {
-                options.ClientId = "[ClientId]";
-                options.ClientSecret = "[ClientSecret]";
-                options.AccessType = "offline";
-                options.Events = new OAuthEvents()
+                ClientId = "[ClientId]",
+                ClientSecret = "[ClientSecret]",
+                AccessType = "offline",
+                Events = new OAuthEvents()
                 {
                     OnCreatingTicket = TestGoogleEvents.OnCreatingTicket,
                     OnTicketReceived = TestGoogleEvents.OnTicketReceived,
                     OnRedirectToAuthorizationEndpoint = TestGoogleEvents.RedirectToAuthorizationEndpoint
-                };
-                options.StateDataFormat = new CustomStateDataFormat();
-                options.BackchannelHttpHandler = new GoogleMockBackChannelHttpHandler();
+                },
+                StateDataFormat = new CustomStateDataFormat(),
+                BackchannelHttpHandler = new GoogleMockBackChannelHttpHandler()
             });
 
-            app.UseTwitterAuthentication(options =>
+            app.UseTwitterAuthentication(new TwitterOptions
             {
-                options.ConsumerKey = "[ConsumerKey]";
-                options.ConsumerSecret = "[ConsumerSecret]";
-                options.Events = new TwitterEvents()
+                ConsumerKey = "[ConsumerKey]",
+                ConsumerSecret = "[ConsumerSecret]",
+                Events = new TwitterEvents()
                 {
                     OnCreatingTicket = TestTwitterEvents.OnCreatingTicket,
                     OnTicketReceived = TestTwitterEvents.OnTicketReceived,
                     OnRedirectToAuthorizationEndpoint = TestTwitterEvents.RedirectToAuthorizationEndpoint
-                };
-                options.StateDataFormat = new CustomTwitterStateDataFormat();
-                options.BackchannelHttpHandler = new TwitterMockBackChannelHttpHandler();
+                },
+                StateDataFormat = new CustomTwitterStateDataFormat(),
+                BackchannelHttpHandler = new TwitterMockBackChannelHttpHandler()
             });
 
-            app.UseMicrosoftAccountAuthentication(options =>
+            app.UseMicrosoftAccountAuthentication(new MicrosoftAccountOptions
             {
-                options.DisplayName = "MicrosoftAccount - Requires project changes";
-                options.ClientId = "[ClientId]";
-                options.ClientSecret = "[ClientSecret]";
-                options.Events = new OAuthEvents()
+                DisplayName = "MicrosoftAccount - Requires project changes",
+                ClientId = "[ClientId]",
+                ClientSecret = "[ClientSecret]",
+                Events = new OAuthEvents()
                 {
                     OnCreatingTicket = TestMicrosoftAccountEvents.OnCreatingTicket,
                     OnTicketReceived = TestMicrosoftAccountEvents.OnTicketReceived,
                     OnRedirectToAuthorizationEndpoint = TestMicrosoftAccountEvents.RedirectToAuthorizationEndpoint
-                };
-                options.BackchannelHttpHandler = new MicrosoftAccountMockBackChannelHandler();
-                options.StateDataFormat = new CustomStateDataFormat();
-                options.Scope.Add("wl.basic");
-                options.Scope.Add("wl.signin");
+                },
+                BackchannelHttpHandler = new MicrosoftAccountMockBackChannelHandler(),
+                StateDataFormat = new CustomStateDataFormat(),
+                Scope = { "wl.basic", "wl.signin" }
             });
 
             // Add MVC to the request pipeline

@@ -158,22 +158,22 @@ namespace MusicStore
             // Add cookie-based authentication to the request pipeline
             app.UseIdentity();
 
-            app.UseFacebookAuthentication(options =>
+            app.UseFacebookAuthentication(new FacebookOptions
             {
-                options.AppId = "550624398330273";
-                options.AppSecret = "10e56a291d6b618da61b1e0dae3a8954";
+                AppId = "550624398330273",
+                AppSecret = "10e56a291d6b618da61b1e0dae3a8954"
             });
 
-            app.UseGoogleAuthentication(options =>
+            app.UseGoogleAuthentication(new GoogleOptions
             {
-                options.ClientId = "995291875932-0rt7417v5baevqrno24kv332b7d6d30a.apps.googleusercontent.com";
-                options.ClientSecret = "J_AT57H5KH_ItmMdu0r6PfXm";
+                ClientId = "995291875932-0rt7417v5baevqrno24kv332b7d6d30a.apps.googleusercontent.com",
+                ClientSecret = "J_AT57H5KH_ItmMdu0r6PfXm"
             });
 
-            app.UseTwitterAuthentication(options =>
+            app.UseTwitterAuthentication(new TwitterOptions
             {
-                options.ConsumerKey = "lDSPIu480ocnXYZ9DumGCDw37";
-                options.ConsumerSecret = "fpo0oWRNc3vsZKlZSq1PyOSoeXlJd7NnG4Rfc94xbFXsdcc3nH";
+                ConsumerKey = "lDSPIu480ocnXYZ9DumGCDw37",
+                ConsumerSecret = "fpo0oWRNc3vsZKlZSq1PyOSoeXlJd7NnG4Rfc94xbFXsdcc3nH"
             });
 
             // The MicrosoftAccount service has restrictions that prevent the use of
@@ -192,11 +192,11 @@ namespace MusicStore
 
             // The sample app can then be run via:
             // dnx . web
-            app.UseMicrosoftAccountAuthentication(options =>
+            app.UseMicrosoftAccountAuthentication(new MicrosoftAccountOptions
             {
-                options.DisplayName = "MicrosoftAccount - Requires project changes";
-                options.ClientId = "000000004012C08A";
-                options.ClientSecret = "GaMQ2hCnqAC6EcDLnXsAeBVIJOLmeutL";
+                DisplayName = "MicrosoftAccount - Requires project changes",
+                ClientId = "000000004012C08A",
+                ClientSecret = "GaMQ2hCnqAC6EcDLnXsAeBVIJOLmeutL"
             });
 
             // Add MVC to the request pipeline
