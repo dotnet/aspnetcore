@@ -54,15 +54,15 @@ namespace Microsoft.AspNet.Http
         public abstract PathString Path { get; set; }
 
         /// <summary>
-        /// Gets or set the query string.
+        /// Gets or set the raw query string used to create the query collection in Request.Query.
         /// </summary>
-        /// <returns>The query string.</returns>
+        /// <returns>The raw query string.</returns>
         public abstract QueryString QueryString { get; set; }
 
         /// <summary>
-        /// Gets the query value collection parsed from RequestQueryString.
+        /// Gets the query value collection parsed from Request.QueryString.
         /// </summary>
-        /// <returns>The query value collection parsed from RequestQueryString.</returns>
+        /// <returns>The query value collection parsed from Request.QueryString.</returns>
         public abstract IQueryCollection Query { get; set; }
 
         /// <summary>
