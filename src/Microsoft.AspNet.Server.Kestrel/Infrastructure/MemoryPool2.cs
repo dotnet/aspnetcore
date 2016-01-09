@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 
 namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
 {
@@ -76,7 +77,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
                 return MemoryPoolBlock2.Create(
                     new ArraySegment<byte>(new byte[minimumSize]),
                     dataPtr: IntPtr.Zero,
-                    pool: null,
+                    pool: this,
                     slab: null);
             }
 
@@ -137,8 +138,13 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
         /// <param name="block">The block to return. It must have been acquired by calling Lease on the same memory pool instance.</param>
         public void Return(MemoryPoolBlock2 block)
         {
-            block.Reset();
-            _blocks.Enqueue(block);
+            Debug.Assert(block.Pool == this, "Returned block was leased from this pool");
+
+            if (block.Slab != null && block.Slab.IsActive)
+            {
+                block.Reset();
+                _blocks.Enqueue(block);
+            }
         }
 
         protected virtual void Dispose(bool disposing)
