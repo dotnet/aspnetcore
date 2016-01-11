@@ -42,11 +42,11 @@ namespace Microsoft.AspNet.Server.Testing
             EnvironmentVariables.Add(new KeyValuePair<string, string>("ASPNET_DETAILEDERRORS", "true"));
         }
 
-        public ServerType ServerType { get; private set; }
+        public ServerType ServerType { get; }
 
-        public RuntimeFlavor RuntimeFlavor { get; private set; }
+        public RuntimeFlavor RuntimeFlavor { get; }
 
-        public RuntimeArchitecture RuntimeArchitecture { get; private set; }
+        public RuntimeArchitecture RuntimeArchitecture { get; }
 
         /// <summary>
         /// Suggested base url for the deployed application. The final deployed url could be
@@ -76,8 +76,6 @@ namespace Microsoft.AspNet.Server.Testing
         /// Passes the --no-source option when publishing.
         /// </summary>
         public bool PublishWithNoSource { get; set; }
-
-        public string DnxRuntime { get; set; }
 
         /// <summary>
         /// Environment variables to be set before starting the host.

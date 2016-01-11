@@ -2,11 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
-using Microsoft.AspNet.Testing;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNet.Server.Testing
@@ -28,7 +26,7 @@ namespace Microsoft.AspNet.Server.Testing
             // Start timer
             StartTimer();
 
-            DeploymentParameters.DnxRuntime = PopulateChosenRuntimeInformation();
+            PickRuntime();
 
             if (DeploymentParameters.PublishApplicationBeforeDeployment)
             {
@@ -55,7 +53,7 @@ namespace Microsoft.AspNet.Server.Testing
                 commandName = "run";
             }
 
-            var dnxPath = Path.Combine(ChosenRuntimePath, DnxCommandName);
+            var dnxPath = Path.Combine(TargetRuntimeBinPath, DnxCommandName);
             var dnxArgs = $"-p \"{DeploymentParameters.ApplicationPath}\" {commandName} " +
                           $"--server.urls {DeploymentParameters.ApplicationBaseUriHint} " +
                           $"--server {(DeploymentParameters.ServerType == ServerType.WebListener ? "Microsoft.AspNet.Server.WebListener" : "Microsoft.AspNet.Server.Kestrel")}";

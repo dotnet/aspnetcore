@@ -1,12 +1,13 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if NET451
+#if DNX451
+
 using System;
-using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Sockets;
 using System.Threading;
-using System.Xml;
 using Microsoft.Extensions.Logging;
 using Microsoft.Web.Administration;
 
@@ -36,10 +37,10 @@ namespace Microsoft.AspNet.Server.Testing
 
             _application = new IISApplication(DeploymentParameters, Logger);
 
-            DeploymentParameters.DnxRuntime = PopulateChosenRuntimeInformation();
+            PickRuntime();
 
             // Publish to IIS root\application folder.
-            DnuPublish(publishRoot: _application.WebSiteRootFolder);
+            DnuPublish();
 
             // Drop a json file instead of setting environment variable.
             SetAspEnvironmentWithJson();
@@ -59,17 +60,9 @@ namespace Microsoft.AspNet.Server.Testing
                 WebRootLocation = DeploymentParameters.ApplicationPath,
                 DeploymentParameters = DeploymentParameters,
                 // Accomodate the vdir name.
-                ApplicationBaseUri = new UriBuilder(Uri.UriSchemeHttp, "localhost", IISApplication.Port, _application.VirtualDirectoryName).Uri.AbsoluteUri + "/",
+                ApplicationBaseUri = new UriBuilder(Uri.UriSchemeHttp, "localhost", _application.Port).Uri.AbsoluteUri + "/",
                 HostShutdownToken = _hostShutdownToken.Token
             };
-        }
-
-        private void SetAspEnvironmentWithJson()
-        {
-            // Drop a hosting.json with Hosting:Environment information.
-            Logger.LogInformation("Creating hosting.json file with Hosting:Environment.");
-            var jsonFile = Path.Combine(DeploymentParameters.ApplicationPath, "hosting.json");
-            File.WriteAllText(jsonFile, string.Format("{ \"Hosting:Environment\":\"{0}\" }", DeploymentParameters.EnvironmentName));
         }
 
         public override void Dispose()
@@ -83,6 +76,8 @@ namespace Microsoft.AspNet.Server.Testing
                 }
 
                 TriggerHostShutdown(_hostShutdownToken);
+
+                Thread.Sleep(TimeSpan.FromSeconds(3));
             }
 
             CleanPublishedOutput();
@@ -91,94 +86,79 @@ namespace Microsoft.AspNet.Server.Testing
             StopTimer();
         }
 
+        private void SetAspEnvironmentWithJson()
+        {
+            ////S Drop a hosting.json with Hosting:Environment information.
+            // Logger.LogInformation("Creating hosting.json file with Hosting:Environment.");
+            // var jsonFile = Path.Combine(DeploymentParameters.ApplicationPath, "hosting.json");
+            // File.WriteAllText(jsonFile, string.Format("{ \"Hosting:Environment\":\"{0}\" }", DeploymentParameters.EnvironmentName));
+        }
+
         private class IISApplication
         {
-            private const string WebSiteName = "ASPNETTESTRUNS";
-
             private readonly ServerManager _serverManager = new ServerManager();
             private readonly DeploymentParameters _deploymentParameters;
             private readonly ILogger _logger;
-            private ApplicationPool _applicationPool;
-            private Application _application;
-            private Site _website;
-
-            public string VirtualDirectoryName { get; set; }
-
-            // Always create website with the same port.
-            public const int Port = 5100;
-
-            public string WebSiteRootFolder
-            {
-                get
-                {
-                    return Path.Combine(
-                        Environment.GetEnvironmentVariable("SystemDrive") + @"\",
-                        "inetpub",
-                        WebSiteName);
-                }
-            }
 
             public IISApplication(DeploymentParameters deploymentParameters, ILogger logger)
             {
                 _deploymentParameters = deploymentParameters;
                 _logger = logger;
+
+                WebSiteName = CreateTestSiteName();
+                Port = FindFreePort();
             }
+
+            public int Port { get; }
+
+            public string WebSiteName { get; }
+
+            public string WebSiteRootFolder => $"{Environment.GetEnvironmentVariable("SystemDrive")}\\inetpub\\{WebSiteName}";
 
             public void Deploy()
             {
-                VirtualDirectoryName = new DirectoryInfo(_deploymentParameters.ApplicationPath).Parent.Name;
-                _applicationPool = CreateAppPool(VirtualDirectoryName);
-                _application = Website.Applications.Add("/" + VirtualDirectoryName, _deploymentParameters.ApplicationPath);
-                _application.ApplicationPoolName = _applicationPool.Name;
+                _serverManager.Sites.Add(WebSiteName, _deploymentParameters.ApplicationPath, Port);
                 _serverManager.CommitChanges();
-            }
-
-            private Site Website
-            {
-                get
-                {
-                    _website = _serverManager.Sites.Where(s => s.Name == WebSiteName).FirstOrDefault();
-                    if (_website == null)
-                    {
-                        _website = _serverManager.Sites.Add(WebSiteName, WebSiteRootFolder, Port);
-                    }
-
-                    return _website;
-                }
-            }
-
-            private ApplicationPool CreateAppPool(string appPoolName)
-            {
-                var applicationPool = _serverManager.ApplicationPools.Add(appPoolName);
-                applicationPool.ManagedRuntimeVersion = string.Empty;
-
-                applicationPool.Enable32BitAppOnWin64 = (_deploymentParameters.RuntimeArchitecture == RuntimeArchitecture.x86);
-                _logger.LogInformation("Created {bit} application pool '{name}' with runtime version {runtime}.",
-                    _deploymentParameters.RuntimeArchitecture, applicationPool.Name,
-                    string.IsNullOrEmpty(applicationPool.ManagedRuntimeVersion) ? "that is default" : applicationPool.ManagedRuntimeVersion);
-                return applicationPool;
             }
 
             public void StopAndDeleteAppPool()
             {
-                _logger.LogInformation("Stopping application pool '{name}' and deleting application.", _applicationPool.Name);
-
-                if (_applicationPool != null)
+                if (string.IsNullOrEmpty(WebSiteName))
                 {
-                    _applicationPool.Stop();
+                    return;
                 }
 
-                // Remove the application from website.
-                if (_application != null)
+                var siteToRemove = _serverManager.Sites.FirstOrDefault(site => site.Name == WebSiteName);
+                if (siteToRemove != null)
                 {
-                    _application = Website.Applications.Where(a => a.Path == _application.Path).FirstOrDefault();
-                    Website.Applications.Remove(_application);
-                    _serverManager.ApplicationPools.Remove(_serverManager.ApplicationPools[_applicationPool.Name]);
+                    siteToRemove.Stop();
+                    _serverManager.Sites.Remove(siteToRemove);
                     _serverManager.CommitChanges();
-                    _logger.LogInformation("Successfully stopped application pool '{name}' and deleted application from IIS.", _applicationPool.Name);
+                }
+            }
+
+            private static int FindFreePort()
+            {
+                using (var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
+                {
+                    socket.Bind(new IPEndPoint(IPAddress.Loopback, 0));
+                    return ((IPEndPoint)socket.LocalEndPoint).Port;
+                }
+            }
+
+            private string CreateTestSiteName()
+            {
+                if (!string.IsNullOrEmpty(_deploymentParameters.SiteName))
+                {
+                    return $"{_deploymentParameters.SiteName}{DateTime.Now.ToString("yyyyMMddHHmmss")}"; 
+                }
+                else
+                {
+                    return $"testsite{DateTime.Now.ToString("yyyyMMddHHmmss")}";                
                 }
             }
         }
     }
 }
+
 #endif
