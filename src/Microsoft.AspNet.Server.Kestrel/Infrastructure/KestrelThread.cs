@@ -7,9 +7,9 @@ using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Hosting;
+using Microsoft.AspNet.Server.Kestrel.Http;
 using Microsoft.AspNet.Server.Kestrel.Infrastructure;
 using Microsoft.AspNet.Server.Kestrel.Networking;
-using Microsoft.AspNet.Server.Kestrel.Http;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNet.Server.Kestrel
