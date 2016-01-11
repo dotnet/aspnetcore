@@ -27,8 +27,6 @@ namespace Microsoft.AspNet.Antiforgery.FunctionalTests
             var response = await Client.GetAsync("http://localhost/Index.html");
 
             // Assert
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-
             var cookie = RetrieveAntiforgeryCookie(response);
             Assert.NotNull(cookie.Value);
 
@@ -40,6 +38,9 @@ namespace Microsoft.AspNet.Antiforgery.FunctionalTests
         public async Task PostItem_NeedsHeader()
         {
             // Arrange
+            var httpResponse = await Client.GetAsync("http://localhost");
+            var cookie = RetrieveAntiforgeryCookie(httpResponse);
+
             var httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, "http://localhost/api/items");
 
             // Act
@@ -49,15 +50,14 @@ namespace Microsoft.AspNet.Antiforgery.FunctionalTests
             });
 
             // Assert
-            Assert.Contains("The required antiforgery cookie \"3Cs-jwHTMFk\" is not present.", exception.Message);
+            Assert.Contains($"The required antiforgery cookie \"{cookie.Key}\" is not present.", exception.Message);
         }
 
         [Fact]
         public async Task PostItem_XSRFWorks()
         {
             // Arrange
-            var content = new StringContent("{'name': 'Todoitem'}");
-            var httpResponse = await Client.GetAsync("http://localhost/Index.html");
+            var httpResponse = await Client.GetAsync("/Index.html");
 
             var cookie = RetrieveAntiforgeryCookie(httpResponse);
             var token = RetrieveAntiforgeryToken(httpResponse);
@@ -71,7 +71,6 @@ namespace Microsoft.AspNet.Antiforgery.FunctionalTests
             var response = await Client.SendAsync(httpRequestMessage);
 
             // Assert
-            Assert.Equal(HttpStatusCode.OK, httpResponse.StatusCode);
             Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
         }
 

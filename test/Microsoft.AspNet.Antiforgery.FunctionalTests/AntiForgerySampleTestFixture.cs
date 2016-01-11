@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.Antiforgery.FunctionalTests
             var builder = new WebApplicationBuilder()
                 .UseConfiguration(configurationBuilder.Build())
                 .UseStartup(typeof(AntiforgerySample.Startup))
-                .UseApplicationBasePath("../../samples/AntiforgerySample");
+                .UseApplicationBasePath("../../../../samples/AntiforgerySample");
 
             _server = new TestServer(builder);
 
