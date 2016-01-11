@@ -143,7 +143,7 @@ namespace Microsoft.AspNet.Mvc
 
             if (_charBufferCount == _charBufferSize)
             {
-                FlushInternal();
+                FlushInternal(flushEncoder: false);
             }
 
             _charBuffer[_charBufferCount] = value;
@@ -166,7 +166,7 @@ namespace Microsoft.AspNet.Mvc
             {
                 if (_charBufferCount == _charBufferSize)
                 {
-                    FlushInternal();
+                    FlushInternal(flushEncoder: false);
                 }
 
                 CopyToCharBuffer(values, ref index, ref count);
@@ -191,7 +191,7 @@ namespace Microsoft.AspNet.Mvc
             {
                 if (_charBufferCount == _charBufferSize)
                 {
-                    FlushInternal();
+                    FlushInternal(flushEncoder: false);
                 }
 
                 CopyToCharBuffer(value, ref index, ref count);
@@ -207,7 +207,7 @@ namespace Microsoft.AspNet.Mvc
 
             if (_charBufferCount == _charBufferSize)
             {
-                await FlushInternalAsync();
+                await FlushInternalAsync(flushEncoder: false);
             }
 
             _charBuffer[_charBufferCount] = value;
@@ -230,7 +230,7 @@ namespace Microsoft.AspNet.Mvc
             {
                 if (_charBufferCount == _charBufferSize)
                 {
-                    await FlushInternalAsync();
+                    await FlushInternalAsync(flushEncoder: false);
                 }
 
                 CopyToCharBuffer(values, ref index, ref count);
@@ -255,7 +255,7 @@ namespace Microsoft.AspNet.Mvc
             {
                 if (_charBufferCount == _charBufferSize)
                 {
-                    await FlushInternalAsync();
+                    await FlushInternalAsync(flushEncoder: false);
                 }
 
                 CopyToCharBuffer(value, ref index, ref count);
@@ -272,7 +272,7 @@ namespace Microsoft.AspNet.Mvc
                 throw new ObjectDisposedException("stream");
             }
 
-            FlushInternal();
+            FlushInternal(flushEncoder: true);
         }
 
         public override Task FlushAsync()
@@ -282,7 +282,7 @@ namespace Microsoft.AspNet.Mvc
                 throw new ObjectDisposedException("stream");
             }
 
-            return FlushInternalAsync();
+            return FlushInternalAsync(flushEncoder: true);
         }
 
         protected override void Dispose(bool disposing)
@@ -291,7 +291,7 @@ namespace Microsoft.AspNet.Mvc
             {
                 try
                 {
-                    FlushInternal();
+                    FlushInternal(flushEncoder: true);
                 }
                 finally
                 {
@@ -314,7 +314,7 @@ namespace Microsoft.AspNet.Mvc
 
         // Note: our FlushInternal method does NOT flush the underlying stream. This would result in
         // chunking.
-        private void FlushInternal()
+        private void FlushInternal(bool flushEncoder)
         {
             if (_charBufferCount == 0)
             {
@@ -327,7 +327,7 @@ namespace Microsoft.AspNet.Mvc
                 _charBufferCount,
                 _byteBuffer,
                 0,
-                flush: true);
+                flush: flushEncoder);
 
             if (count > 0)
             {
@@ -339,7 +339,7 @@ namespace Microsoft.AspNet.Mvc
 
         // Note: our FlushInternalAsync method does NOT flush the underlying stream. This would result in
         // chunking.
-        private async Task FlushInternalAsync()
+        private async Task FlushInternalAsync(bool flushEncoder)
         {
             if (_charBufferCount == 0)
             {
@@ -352,7 +352,7 @@ namespace Microsoft.AspNet.Mvc
                 _charBufferCount,
                 _byteBuffer,
                 0,
-                flush: true);
+                flush: flushEncoder);
 
             if (count > 0)
             {
