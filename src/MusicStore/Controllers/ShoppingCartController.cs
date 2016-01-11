@@ -1,10 +1,8 @@
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Antiforgery;
 using Microsoft.AspNet.Mvc;
 using Microsoft.Data.Entity;
-using Microsoft.Extensions.Primitives;
 using MusicStore.Models;
 using MusicStore.ViewModels;
 
@@ -59,28 +57,11 @@ namespace MusicStore.Controllers
         //
         // AJAX: /ShoppingCart/RemoveFromCart/5
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> RemoveFromCart(
-            [FromServices] IAntiforgery antiforgery,
             int id,
             CancellationToken requestAborted)
         {
-            var cookieToken = string.Empty;
-            var formToken = string.Empty;
-            StringValues tokenHeaders;
-            string[] tokens = null;
-
-            if (HttpContext.Request.Headers.TryGetValue("RequestVerificationToken", out tokenHeaders))
-            {
-                tokens = tokenHeaders.First().Split(':');
-                if (tokens != null && tokens.Length == 2)
-                {
-                    cookieToken = tokens[0];
-                    formToken = tokens[1];
-                }
-            }
-
-            antiforgery.ValidateTokens(HttpContext, new AntiforgeryTokenSet(formToken, cookieToken));
-
             // Retrieve the current user's shopping cart
             var cart = ShoppingCart.GetCart(DbContext, HttpContext);
 

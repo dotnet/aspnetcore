@@ -6,10 +6,9 @@
 
 @functions
 {
-    public string GetAntiXsrfToken()
+    public string GetAntiXsrfRequestToken()
     {
-        var tokens = Xsrf.GetTokens(Context);
-        return tokens.CookieToken + ":" + tokens.RequestToken;
+        return Xsrf.GetAndStoreTokens(Context).RequestToken;
     }
 }
 
@@ -26,10 +25,12 @@
                     // Perform the ajax post
                     $.ajax(PostToUrl, {
                         type: "post",
-                        data: { "id": recordToDelete },
+                        data: {
+                            "id": recordToDelete
+                        },
                         dataType: "json",
                         headers: {
-                            "RequestVerificationToken": '@GetAntiXsrfToken()'
+                            "RequestVerificationToken": '@GetAntiXsrfRequestToken()'
                         }
                     }).done(function (data) {
                         // Successful requests get here

@@ -188,7 +188,7 @@ namespace MusicStore.Controllers
             controller.ControllerContext.HttpContext = httpContext;
 
             // Act
-            var result = await controller.RemoveFromCart(antiForgery, cartItemId, CancellationToken.None);
+            var result = await controller.RemoveFromCart(cartItemId, CancellationToken.None);
 
             // Assert
             var jsonResult = Assert.IsType<JsonResult>(result);
