@@ -1,4 +1,5 @@
 {
+  "testRunner": "xunit",
   "commands": {
     "test": "xunit.runner.aspnet"
   },
@@ -14,6 +15,9 @@
         "System.DirectoryServices": "",
         "System.Net.Http": "",
         "System.Net.Http.WebRequest": ""
+      },
+      "dependencies": {
+        "xunit.runner.console": "2.1.0"
       }
     },
     "dnxcore50": {
@@ -21,7 +25,8 @@
         "System.Net.Http": "4.0.1-*",
         "System.Net.Http.WinHttpHandler": "4.0.0-*",
         "System.Net.Requests": "4.0.11-*",
-        "System.Net.WebSockets.Client": "4.0.0-*"
+        "System.Net.WebSockets.Client": "4.0.0-*",
+        "xunit.runner.aspnet": "2.0.0-aspnet-*"
       }
     }
   }
