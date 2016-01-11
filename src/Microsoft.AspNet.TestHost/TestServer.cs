@@ -29,6 +29,14 @@ namespace Microsoft.AspNet.TestHost
 
         public Uri BaseAddress { get; set; } = new Uri("http://localhost/");
 
+        public IWebApplication Application
+        {
+            get
+            {
+                return _appInstance;
+            }
+        }
+
         IFeatureCollection IServer.Features { get; }
 
         public HttpMessageHandler CreateHandler()

@@ -31,6 +31,21 @@ namespace Microsoft.AspNet.TestHost
             new TestServer(new WebApplicationBuilder().Configure(app => { }));
         }
 
+        [Fact]
+        public void ApplicationServicesAvailableFromTestServer()
+        {
+            var testService = new TestService();
+            var builder = new WebApplicationBuilder()
+                .Configure(app => { })
+                .ConfigureServices(services =>
+                {
+                    services.AddSingleton(testService);
+                });
+            var server = new TestServer(builder);
+
+            Assert.Equal(testService, server.Application.Services.GetRequiredService<TestService>());
+        }
+
         [ConditionalFact]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Hangs randomly (issue #507)")]
         public async Task RequestServicesAutoCreated()
