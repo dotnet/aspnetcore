@@ -20,6 +20,34 @@ namespace Microsoft.AspNet.Server.KestrelTests
             _pool.Dispose();
         }
 
+        [Fact]
+        public void FindFirstByte()
+        {
+            var bytes = new byte[] {
+                0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+                0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff };
+            for (int i = 0; i < Vector<byte>.Count; i++)
+            {
+                Vector<byte> vector = new Vector<byte>(bytes);
+                Assert.Equal(i, MemoryPoolIterator2.FindFirstEqualByte(ref vector));
+                bytes[i] = 0;
+            }
+        }
+
+        [Fact]
+        public void _FindFirstByte()
+        {
+            var bytes = new byte[] {
+                0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+                0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff };
+            for (int i = 0; i < Vector<byte>.Count; i++)
+            {
+                Vector<byte> vector = new Vector<byte>(bytes);
+                Assert.Equal(i, MemoryPoolIterator2.FindFirstEqualByteSlow(ref vector));
+                bytes[i] = 0;
+            }
+        }
+
         [Theory]
         [InlineData("a", "a", 'a', 0)]
         [InlineData("ab", "a", 'a', 0)]

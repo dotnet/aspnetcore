@@ -9,7 +9,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
 {
     public struct MemoryPoolIterator2
     {
-        private readonly static int _vectorSpan = Vector<byte>.Count; 
+        private static readonly int _vectorSpan = Vector<byte>.Count;
 
         private MemoryPoolBlock2 _block;
         private int _index;
@@ -203,7 +203,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
                 long nextLong;
                 fixed (byte* ptr = &_block.Next.Array[_block.Next.Start])
                 {
-                    nextLong = *(long*)(ptr );
+                    nextLong = *(long*)(ptr);
                 }
 
                 return (blockLong >> (sizeof(long) - blockBytes) * 8) | (nextLong << (sizeof(long) - nextBytes) * 8);
@@ -537,7 +537,37 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
             }
         }
 
-        private static int FindFirstEqualByte(ref Vector<byte> byteEquals)
+        /// <summary>
+        /// Find first byte
+        /// </summary>
+        /// <param  name="byteEquals"></param >
+        /// <returns>The first index of the result vector</returns>
+        /// <exception cref="InvalidOperationException">byteEquals = 0</exception>
+        internal static int FindFirstEqualByte(ref Vector<byte> byteEquals)
+        {
+            if (!BitConverter.IsLittleEndian) return FindFirstEqualByteSlow(ref byteEquals);
+
+            // Quasi-tree search
+            var vector64 = Vector.AsVectorInt64(byteEquals);
+            for (var i = 0; i < Vector<long>.Count; i++)
+            {
+                var longValue = vector64[i];
+                if (longValue == 0) continue;
+
+                return (i << 3) +
+                    ((longValue & 0x00000000ffffffff) > 0
+                        ? (longValue & 0x000000000000ffff) > 0
+                            ? (longValue & 0x00000000000000ff) > 0 ? 0 : 1
+                            : (longValue & 0x0000000000ff0000) > 0 ? 2 : 3
+                        : (longValue & 0x0000ffff00000000) > 0
+                            ? (longValue & 0x000000ff00000000) > 0 ? 4 : 5
+                            : (longValue & 0x00ff000000000000) > 0 ? 6 : 7);
+            }
+            throw new InvalidOperationException();
+        }
+
+        // Internal for testing
+        internal static int FindFirstEqualByteSlow(ref Vector<byte> byteEquals)
         {
             // Quasi-tree search
             var vector64 = Vector.AsVectorInt64(byteEquals);
