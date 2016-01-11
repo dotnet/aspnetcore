@@ -29,3 +29,5 @@ node_modules
 project.lock.json
 .vs/
 launchSettings.json
+.build/
+.testPublish/

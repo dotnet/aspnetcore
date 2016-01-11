@@ -10,14 +10,11 @@ addons:
     - libssl-dev
     - libunwind8
     - zlib1g
-before_install:
-  - if test "$TRAVIS_OS_NAME" == "osx"; then brew update; brew install icu4c; fi
-env:
-  - KOREBUILD_DNU_RESTORE_CORECLR=true KOREBUILD_TEST_DNXCORE=true
 mono:
   - 4.0.5
 os:
   - linux
   - osx
+osx_image: xcode7.1
 script:
-  - ./build.sh --quiet verify
+  - ./build.sh verify
