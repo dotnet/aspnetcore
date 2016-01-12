@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.23107.0
+VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{04B1EDB6-E967-4D25-89B9-E6F8304038CD}"
 EndProject
@@ -25,9 +25,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{C74B
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "IISSample", "samples\IISSample\IISSample.xproj", "{E4E2BDC4-A9C6-4AE9-B429-032EC83EDE64}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Tools.PublishIIS", "src\Microsoft.AspNet.Tools.PublishIIS\Microsoft.AspNet.Tools.PublishIIS.xproj", "{D459A568-7404-43FA-91B0-D7F5D5EC6D14}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "dotnet-publish-iis.Tests", "test\dotnet-publish-iis.Tests\dotnet-publish-iis.Tests.xproj", "{CFB3AF72-0AF6-44CB-8815-6E4052C7B5A0}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Tools.PublishIIS.Tests", "test\Microsoft.AspNet.Tools.PublishIIS.Tests\Microsoft.AspNet.Tools.PublishIIS.Tests.xproj", "{0482DB54-67DD-4948-B6BD-BAF12BA83021}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "dotnet-publish-iis", "src\dotnet-publish-iis\dotnet-publish-iis.xproj", "{E492AEF2-42C1-4399-B718-A6934EBB36AB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -55,14 +55,14 @@ Global
 		{E4E2BDC4-A9C6-4AE9-B429-032EC83EDE64}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E4E2BDC4-A9C6-4AE9-B429-032EC83EDE64}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E4E2BDC4-A9C6-4AE9-B429-032EC83EDE64}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D459A568-7404-43FA-91B0-D7F5D5EC6D14}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D459A568-7404-43FA-91B0-D7F5D5EC6D14}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D459A568-7404-43FA-91B0-D7F5D5EC6D14}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D459A568-7404-43FA-91B0-D7F5D5EC6D14}.Release|Any CPU.Build.0 = Release|Any CPU
-		{0482DB54-67DD-4948-B6BD-BAF12BA83021}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0482DB54-67DD-4948-B6BD-BAF12BA83021}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0482DB54-67DD-4948-B6BD-BAF12BA83021}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0482DB54-67DD-4948-B6BD-BAF12BA83021}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CFB3AF72-0AF6-44CB-8815-6E4052C7B5A0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CFB3AF72-0AF6-44CB-8815-6E4052C7B5A0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CFB3AF72-0AF6-44CB-8815-6E4052C7B5A0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CFB3AF72-0AF6-44CB-8815-6E4052C7B5A0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E492AEF2-42C1-4399-B718-A6934EBB36AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E492AEF2-42C1-4399-B718-A6934EBB36AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E492AEF2-42C1-4399-B718-A6934EBB36AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E492AEF2-42C1-4399-B718-A6934EBB36AB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -73,7 +73,7 @@ Global
 		{A83A33D1-3D29-403C-9750-5811AC7B4025} = {EF30B533-D715-421A-92B7-92FEF460AC9C}
 		{E27453AD-9CA0-49A2-94FA-96337D77677D} = {EF30B533-D715-421A-92B7-92FEF460AC9C}
 		{E4E2BDC4-A9C6-4AE9-B429-032EC83EDE64} = {C74B8F36-FD2F-45C9-9B8A-00E7CF0126A9}
-		{D459A568-7404-43FA-91B0-D7F5D5EC6D14} = {04B1EDB6-E967-4D25-89B9-E6F8304038CD}
-		{0482DB54-67DD-4948-B6BD-BAF12BA83021} = {EF30B533-D715-421A-92B7-92FEF460AC9C}
+		{CFB3AF72-0AF6-44CB-8815-6E4052C7B5A0} = {EF30B533-D715-421A-92B7-92FEF460AC9C}
+		{E492AEF2-42C1-4399-B718-A6934EBB36AB} = {04B1EDB6-E967-4D25-89B9-E6F8304038CD}
 	EndGlobalSection
 EndGlobal

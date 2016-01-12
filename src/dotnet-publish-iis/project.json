@@ -1,5 +1,5 @@
 ﻿{
-  "name": "publish-iis",
+  "name": "dotnet-publish-iis",
   "version": "1.0.0-*",
   "compilationOptions": {
       "emitEntryPoint": true

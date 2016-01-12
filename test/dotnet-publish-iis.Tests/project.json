@@ -1,7 +1,7 @@
 {
   "dependencies": {
     "xunit": "2.1.0",
-    "Microsoft.AspNet.Tools.PublishIIS" : ""
+    "dotnet-publish-iis" : ""
   },
 
   "frameworks": {
