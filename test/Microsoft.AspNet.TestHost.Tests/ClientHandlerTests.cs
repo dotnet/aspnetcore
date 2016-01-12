@@ -5,13 +5,19 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.Hosting;
+using Microsoft.AspNet.Hosting.Internal;
 using Microsoft.AspNet.Hosting.Server;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Testing.xunit;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Xunit;
 using Context = Microsoft.AspNet.Hosting.Internal.HostingApplication.Context;
 
@@ -267,6 +273,48 @@ namespace Microsoft.AspNet.TestHost
             public Task ProcessRequestAsync(Context context)
             {
                 return _application(context.HttpContext);
+            }
+        }
+
+
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Hangs randomly (issue #507)")]
+        public async Task ClientHandlerCreateContextWithDefaultRequestParameters()
+        {
+            // This logger will attempt to access information from HttpRequest once the HttpContext is created
+            var logger = new VerifierLogger();
+            var builder = new WebApplicationBuilder()
+                            .ConfigureServices(services =>
+                            {
+                                services.AddSingleton<ILogger<WebApplication>>(logger);
+                            })
+                            .Configure(app =>
+                            {
+                                app.Run(context =>
+                                {
+                                    return Task.FromResult(0);
+                                });
+                            });
+            var server = new TestServer(builder);
+
+            // The HttpContext will be created and the logger will make sure that the HttpRequest exists and contains reasonable values
+            var result = await server.CreateClient().GetStringAsync("/");
+        }
+
+        private class VerifierLogger : ILogger<WebApplication>
+        {
+            public IDisposable BeginScopeImpl(object state) => new NoopDispoasble();
+
+            public bool IsEnabled(LogLevel logLevel) => true;
+
+            // This call verifies that fields of HttpRequest are accessed and valid
+            public void Log(LogLevel logLevel, int eventId, object state, Exception exception, Func<object, Exception, string> formatter) => formatter(state, exception);
+
+            class NoopDispoasble : IDisposable
+            {
+                public void Dispose()
+                {
+                }
             }
         }
     }

@@ -11,21 +11,17 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting;
+using Microsoft.AspNet.Hosting.Internal;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Testing.xunit;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Xunit;
 
 namespace Microsoft.AspNet.TestHost
 {
     public class TestClientTests
     {
-        private readonly TestServer _server;
-
-        public TestClientTests()
-        {
-            _server = new TestServer(new WebApplicationBuilder().Configure(app => app.Run(ctx => Task.FromResult(0))));
-        }
-
         [ConditionalFact]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Hangs randomly (issue #507)")]
         public async Task GetAsyncWorks()
@@ -134,6 +130,8 @@ namespace Microsoft.AspNet.TestHost
         public async Task WebSocketWorks()
         {
             // Arrange
+            // This logger will attempt to access information from HttpRequest once the HttpContext is createds
+            var logger = new VerifierLogger(); 
             RequestDelegate appDelegate = async ctx =>
             {
                 if (ctx.WebSockets.IsWebSocketRequest)
@@ -156,14 +154,20 @@ namespace Microsoft.AspNet.TestHost
                     }
                 }
             };
-            var builder = new WebApplicationBuilder().Configure(app =>
-            {
-                app.Run(appDelegate);
-            });
+            var builder = new WebApplicationBuilder()
+                .ConfigureServices(services =>
+                {
+                    services.AddSingleton<ILogger<WebApplication>>(logger);
+                })
+                .Configure(app =>
+                {
+                    app.Run(appDelegate);
+                });
             var server = new TestServer(builder);
 
             // Act
             var client = server.CreateWebSocketClient();
+            // The HttpContext will be created and the logger will make sure that the HttpRequest exists and contains reasonable values
             var clientSocket = await client.ConnectAsync(new System.Uri("http://localhost"), CancellationToken.None);
             var hello = Encoding.UTF8.GetBytes("hello");
             await clientSocket.SendAsync(new System.ArraySegment<byte>(hello), WebSocketMessageType.Text, true, CancellationToken.None);
@@ -190,6 +194,24 @@ namespace Microsoft.AspNet.TestHost
             Assert.Equal(WebSocketState.Closed, clientSocket.State);
 
             clientSocket.Dispose();
+        }
+
+
+        private class VerifierLogger : ILogger<WebApplication>
+        {
+            public IDisposable BeginScopeImpl(object state) => new NoopDispoasble();
+
+            public bool IsEnabled(LogLevel logLevel) => true;
+
+            // This call verifies that fields of HttpRequest are accessed and valid
+            public void Log(LogLevel logLevel, int eventId, object state, Exception exception, Func<object, Exception, string> formatter) => formatter(state, exception);
+
+            class NoopDispoasble : IDisposable
+            {
+                public void Dispose()
+                {
+                }
+            }
         }
 
         [ConditionalFact]

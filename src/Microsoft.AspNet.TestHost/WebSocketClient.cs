@@ -98,11 +98,13 @@ namespace Microsoft.AspNet.TestHost
                 _application = application;
 
                 // HttpContext
-                Context = _application.CreateContext(new FeatureCollection());
+                var contextFeatures = new FeatureCollection();
+                contextFeatures.Set<IHttpRequestFeature>(new RequestFeature());
+                contextFeatures.Set<IHttpResponseFeature>(new ResponseFeature());
+                Context = _application.CreateContext(contextFeatures);
                 var httpContext = Context.HttpContext;
 
                 // Request
-                httpContext.Features.Set<IHttpRequestFeature>(new RequestFeature());
                 var request = httpContext.Request;
                 request.Protocol = "HTTP/1.1";
                 var scheme = uri.Scheme;
@@ -130,7 +132,6 @@ namespace Microsoft.AspNet.TestHost
                 request.Body = Stream.Null;
 
                 // Response
-                httpContext.Features.Set<IHttpResponseFeature>(new ResponseFeature());
                 var response = httpContext.Response;
                 response.Body = Stream.Null;
                 response.StatusCode = 200;

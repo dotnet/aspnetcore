@@ -124,12 +124,13 @@ namespace Microsoft.AspNet.TestHost
                     request.Headers.Host = request.RequestUri.GetComponents(UriComponents.HostAndPort, UriFormat.UriEscaped);
                 }
 
-                Context = application.CreateContext(new FeatureCollection());
+                var contextFeatures = new FeatureCollection();
+                contextFeatures.Set<IHttpRequestFeature>(new RequestFeature());
+                _responseFeature = new ResponseFeature();
+                contextFeatures.Set<IHttpResponseFeature>(_responseFeature);
+                Context = application.CreateContext(contextFeatures);
                 var httpContext = Context.HttpContext;
 
-                httpContext.Features.Set<IHttpRequestFeature>(new RequestFeature());
-                _responseFeature = new ResponseFeature();
-                httpContext.Features.Set<IHttpResponseFeature>(_responseFeature);
                 var serverRequest = httpContext.Request;
                 serverRequest.Protocol = "HTTP/" + request.Version.ToString(2);
                 serverRequest.Scheme = request.RequestUri.Scheme;
