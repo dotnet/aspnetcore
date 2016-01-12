@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.Server.Testing
             PickRuntime();
 
             // Publish to IIS root\application folder.
-            DnuPublish();
+            DnuPublish(publishRoot: _application.WebSiteRootFolder);
 
             // Drop a json file instead of setting environment variable.
             SetAspEnvironmentWithJson();
