@@ -8,6 +8,7 @@ namespace MusicStore
         {
             var application = new WebApplicationBuilder()
                 .UseConfiguration(WebApplicationConfiguration.GetDefault(args))
+                .UseIISPlatformHandlerUrl()
                 .UseStartup("MusicStore")
                 .Build();
 
