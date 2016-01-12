@@ -11,6 +11,7 @@ namespace TestSites
         {
             var application = new WebApplicationBuilder()
                 .UseConfiguration(WebApplicationConfiguration.GetDefault(args))
+                .UseIISPlatformHandlerUrl()
                 .UseStartup("TestSites")
                 .Build();
 
