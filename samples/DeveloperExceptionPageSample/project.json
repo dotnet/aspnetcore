@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "Microsoft.AspNet.Diagnostics": "1.0.0-*",
+    "Microsoft.AspNet.IISPlatformHandler": "1.0.0-*",
     "Microsoft.AspNet.Server.Kestrel": "1.0.0-*"
   },
   "compilationOptions": {
