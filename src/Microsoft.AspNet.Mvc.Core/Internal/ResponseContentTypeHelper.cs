@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using System.Text;
+using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Formatters;
 
 namespace Microsoft.AspNet.Mvc.Internal
