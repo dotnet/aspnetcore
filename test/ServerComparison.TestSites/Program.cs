@@ -11,6 +11,7 @@ namespace ServerComparison.TestSites
         {
             var application = new WebApplicationBuilder()
                 .UseConfiguration(WebApplicationConfiguration.GetDefault(args))
+                .UseIISPlatformHandlerUrl()
                 .UseStartup("ServerComparison.TestSites")
                 .Build();
 
