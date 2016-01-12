@@ -11,6 +11,14 @@ namespace Microsoft.AspNet.Hosting.Tests
     public class WebApplicationConfigurationTests
     {
         [Fact]
+        public void DefaultCapturesStartupErrors()
+        {
+            var config = new WebApplicationOptions(WebApplicationConfiguration.GetDefault());
+
+            Assert.True(config.CaptureStartupErrors);
+        }
+
+        [Fact]
         public void ReadsParametersCorrectly()
         {
             var parameters = new Dictionary<string, string>()

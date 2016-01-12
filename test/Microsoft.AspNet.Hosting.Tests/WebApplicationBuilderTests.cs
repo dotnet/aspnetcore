@@ -124,6 +124,29 @@ namespace Microsoft.AspNet.Hosting
         }
 
         [Fact]
+        public void CaptureStartupErrorsByDefault()
+        {
+            var applicationBuilder = new WebApplicationBuilder()
+                .UseServer(new TestServer())
+                .UseStartup<StartupBoom>();
+
+            // This should not throw
+            applicationBuilder.Build();
+        }
+
+        [Fact]
+        public void UseCaptureStartupErrorsHonored()
+        {
+            var applicationBuilder = new WebApplicationBuilder()
+                .UseCaptureStartupErrors(false)
+                .UseServer(new TestServer())
+                .UseStartup<StartupBoom>();
+
+            var exception = Assert.Throws<InvalidOperationException>(() => applicationBuilder.Build());
+            Assert.Equal("A public method named 'ConfigureProduction' or 'Configure' could not be found in the 'Microsoft.AspNet.Hosting.Fakes.StartupBoom' type.", exception.Message);
+        }
+
+        [Fact]
         public void UseEnvironmentIsNotOverriden()
         {
             var vals = new Dictionary<string, string>

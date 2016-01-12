@@ -1,4 +1,8 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System.Collections.Generic;
+using Microsoft.Extensions.Configuration;
 
 namespace Microsoft.AspNet.Hosting
 {
@@ -11,9 +15,15 @@ namespace Microsoft.AspNet.Hosting
 
         public static IConfiguration GetDefault(string[] args)
         {
+            var defaultSettings = new Dictionary<string, string>
+            {
+                { WebApplicationDefaults.CaptureStartupErrorsKey, "true" }
+            };
+
             // We are adding all environment variables first and then adding the ASPNET_ ones
             // with the prefix removed to unify with the command line and config file formats
             var configBuilder = new ConfigurationBuilder()
+                .AddInMemoryCollection(defaultSettings)
                 .AddJsonFile(WebApplicationDefaults.HostingJsonFile, optional: true)
                 .AddEnvironmentVariables()
                 .AddEnvironmentVariables(prefix: WebApplicationDefaults.EnvironmentVariablesPrefix);

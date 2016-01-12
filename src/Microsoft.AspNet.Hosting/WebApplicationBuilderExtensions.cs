@@ -13,6 +13,11 @@ namespace Microsoft.AspNet.Hosting
     {
         private static readonly string ServerUrlsSeparator = ";";
 
+        public static IWebApplicationBuilder UseCaptureStartupErrors(this IWebApplicationBuilder applicationBuilder, bool captureStartupError)
+        {
+            return applicationBuilder.UseSetting(WebApplicationDefaults.CaptureStartupErrorsKey, captureStartupError ? "true" : "false");
+        }
+
         public static IWebApplicationBuilder UseStartup<TStartup>(this IWebApplicationBuilder applicationBuilder) where TStartup : class
         {
             return applicationBuilder.UseStartup(typeof(TStartup));
