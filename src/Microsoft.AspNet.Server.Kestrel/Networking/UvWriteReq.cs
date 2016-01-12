@@ -66,7 +66,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
                 for (var index = 0; index < nBuffers; index++)
                 {
                     var blockStart = block == start.Block ? start.Index : block.Data.Offset;
-                    var blockEnd = block == end.Block ? end.Index : block.Data.Offset + block.Data.Count;
+                    var blockEnd = block == end.Block ? end.Index : block.BlockEndOffset;
 
                     // create and pin each segment being written
                     pBuffers[index] = Libuv.buf_init(

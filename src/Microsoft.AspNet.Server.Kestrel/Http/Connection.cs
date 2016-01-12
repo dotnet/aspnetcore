@@ -144,7 +144,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
             return handle.Libuv.buf_init(
                 result.Pin() + result.End,
-                result.Data.Offset + result.Data.Count - result.End);
+                result.BlockEndOffset - result.End);
         }
 
         private static void ReadCallback(UvStreamHandle handle, int status, object state)
