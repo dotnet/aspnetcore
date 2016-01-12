@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -24,9 +25,9 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             buffer.Append("Hello world");
 
             // Assert
-            var segment = Assert.Single(buffer.BufferSegments);
-            Assert.Equal(1, buffer.CurrentCount);
-            Assert.Equal("Hello world", segment[0].Value);
+            var page = Assert.Single(buffer.Pages);
+            Assert.Equal(1, page.Count);
+            Assert.Equal("Hello world", page.Buffer[0].Value);
         }
 
         [Fact]
@@ -40,9 +41,9 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             buffer.AppendHtml(content);
 
             // Assert
-            var segment = Assert.Single(buffer.BufferSegments);
-            Assert.Equal(1, buffer.CurrentCount);
-            Assert.Same(content, segment[0].Value);
+            var page = Assert.Single(buffer.Pages);
+            Assert.Equal(1, page.Count);
+            Assert.Same(content, page.Buffer[0].Value);
         }
 
         [Fact]
@@ -56,14 +57,14 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             buffer.AppendHtml(value);
 
             // Assert
-            var segment = Assert.Single(buffer.BufferSegments);
-            Assert.Equal(1, buffer.CurrentCount);
-            var htmlString = Assert.IsType<HtmlString>(segment[0].Value);
+            var page = Assert.Single(buffer.Pages);
+            Assert.Equal(1, page.Count);
+            var htmlString = Assert.IsType<HtmlString>(page.Buffer[0].Value);
             Assert.Equal("Hello world", htmlString.ToString());
         }
 
         [Fact]
-        public void Append_CreatesNewSegments_WhenCurrentSegmentIsFull()
+        public void Append_CreatesNewPages_WhenCurrentPageIsFull()
         {
             // Arrange
             var buffer = new ViewBuffer(new TestViewBufferScope(), "some-name");
@@ -78,12 +79,12 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             buffer.Append("world");
 
             // Assert
-            Assert.Equal(2, buffer.CurrentCount);
-            Assert.Collection(buffer.BufferSegments,
-                segment => Assert.Equal(expected, segment.Select(v => v.Value)),
-                segment =>
+            Assert.Equal(2, buffer.Pages.Count);
+            Assert.Collection(buffer.Pages,
+                page => Assert.Equal(expected, page.Buffer.Select(v => v.Value)),
+                page =>
                 {
-                    var array = segment;
+                    var array = page.Buffer;
                     Assert.Equal("Hello", array[0].Value);
                     Assert.Equal("world", array[1].Value);
                 });
@@ -106,9 +107,9 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             buffer.Append("world");
 
             // Assert
-            var segment = Assert.Single(buffer.BufferSegments);
-            Assert.Equal(1, buffer.CurrentCount);
-            Assert.Equal("world", segment[0].Value);
+            var page = Assert.Single(buffer.Pages);
+            Assert.Equal(1, page.Count);
+            Assert.Equal("world", page.Buffer[0].Value);
         }
 
         [Fact]
@@ -223,6 +224,221 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 
             // Assert
             Assert.Equal(expected, writer.ToString());
+        }
+
+        [Fact]
+        public void AppendHtml_ViewBuffer_TakesPage_IfOriginalIsEmpty()
+        {
+            // Arrange
+            var scope = new TestViewBufferScope(4);
+
+            var original = new ViewBuffer(scope, "original");
+            var other = new ViewBuffer(scope, "other");
+
+            other.Append("Hi");
+
+            var page = other.Pages[0];
+
+            // Act
+            original.AppendHtml(other);
+
+            // Assert
+            Assert.Empty(other.Pages); // Page was taken
+            Assert.Same(page, Assert.Single(original.Pages));
+        }
+
+        [Fact]
+        public void AppendHtml_ViewBuffer_TakesPage_IfCurrentPageInOriginalIsFull()
+        {
+            // Arrange
+            var scope = new TestViewBufferScope(4);
+
+            var original = new ViewBuffer(scope, "original");
+            var other = new ViewBuffer(scope, "other");
+
+            for (var i = 0; i < 4; i++)
+            {
+                original.Append($"original-{i}");
+            }
+
+            other.Append("Hi");
+
+            var page = other.Pages[0];
+
+            // Act
+            original.AppendHtml(other);
+
+            // Assert
+            Assert.Empty(other.Pages); // Page was taken
+            Assert.Equal(2, original.Pages.Count);
+            Assert.Same(page, original.Pages[1]);
+        }
+
+        [Fact]
+        public void AppendHtml_ViewBuffer_TakesPage_IfCurrentPageDoesNotHaveCapacity()
+        {
+            // Arrange
+            var scope = new TestViewBufferScope(4);
+
+            var original = new ViewBuffer(scope, "original");
+            var other = new ViewBuffer(scope, "other");
+
+            for (var i = 0; i < 3; i++)
+            {
+                original.Append($"original-{i}");
+            }
+
+            // With two items, we'd try to copy the items, but there's no room in the current page.
+            // So we just take over the page.
+            for (var i = 0; i < 2; i++)
+            {
+                other.Append($"other-{i}");
+            }
+
+            var page = other.Pages[0];
+
+            // Act
+            original.AppendHtml(other);
+
+            // Assert
+            Assert.Empty(other.Pages); // Page was taken
+            Assert.Equal(2, original.Pages.Count);
+            Assert.Same(page, original.Pages[1]);
+        }
+
+        [Fact]
+        public void AppendHtml_ViewBuffer_CopiesItems_IfCurrentPageHasRoom()
+        {
+            // Arrange
+            var scope = new TestViewBufferScope(4);
+
+            var original = new ViewBuffer(scope, "original");
+            var other = new ViewBuffer(scope, "other");
+
+            for (var i = 0; i < 2; i++)
+            {
+                original.Append($"original-{i}");
+            }
+
+            // With two items, this is half full so we try to copy the items.
+            for (var i = 0; i < 2; i++)
+            {
+                other.Append($"other-{i}");
+            }
+
+            var page = other.Pages[0];
+
+            // Act
+            original.AppendHtml(other);
+
+            // Assert
+            Assert.Empty(other.Pages); // Other is cleared
+            Assert.Contains(page.Buffer, scope.ReturnedBuffers); // Buffer was returned
+
+            Assert.Collection(
+                Assert.Single(original.Pages).Buffer,
+                item => Assert.Equal("original-0", item.Value),
+                item => Assert.Equal("original-1", item.Value),
+                item => Assert.Equal("other-0", item.Value),
+                item => Assert.Equal("other-1", item.Value));
+        }
+
+        [Fact]
+        public void AppendHtml_ViewBuffer_CanAddToTakenPage()
+        {
+            // Arrange
+            var scope = new TestViewBufferScope(4);
+
+            var original = new ViewBuffer(scope, "original");
+            var other = new ViewBuffer(scope, "other");
+
+            for (var i = 0; i < 3; i++)
+            {
+                original.Append($"original-{i}");
+            }
+
+            // More than half full, so we take the page
+            for (var i = 0; i < 3; i++)
+            {
+                other.Append($"other-{i}");
+            }
+
+            var page = other.Pages[0];
+            original.AppendHtml(other);
+
+            // Act
+            original.Append("after-merge");
+
+            // Assert
+            Assert.Empty(other.Pages); // Other is cleared
+
+            Assert.Equal(2, original.Pages.Count);
+            Assert.Collection(
+                original.Pages[0].Buffer,
+                item => Assert.Equal("original-0", item.Value),
+                item => Assert.Equal("original-1", item.Value),
+                item => Assert.Equal("original-2", item.Value),
+                item => Assert.Null(item.Value));
+            Assert.Collection(
+                original.Pages[1].Buffer,
+                item => Assert.Equal("other-0", item.Value),
+                item => Assert.Equal("other-1", item.Value),
+                item => Assert.Equal("other-2", item.Value),
+                item => Assert.Equal("after-merge", item.Value));
+        }
+
+        [Fact]
+        public void AppendHtml_ViewBuffer_MultiplePages()
+        {
+            // Arrange
+            var scope = new TestViewBufferScope(4);
+
+            var original = new ViewBuffer(scope, "original");
+            var other = new ViewBuffer(scope, "other");
+
+            for (var i = 0; i < 2; i++)
+            {
+                original.Append($"original-{i}");
+            }
+            
+            for (var i = 0; i < 9; i++)
+            {
+                other.Append($"other-{i}");
+            }
+
+            var pages = new List<ViewBufferPage>(other.Pages);
+
+            // Act
+            original.AppendHtml(other);
+
+            // Assert
+            Assert.Empty(other.Pages); // Other is cleared
+
+            Assert.Equal(4, original.Pages.Count);
+            Assert.Collection(
+                original.Pages[0].Buffer,
+                item => Assert.Equal("original-0", item.Value),
+                item => Assert.Equal("original-1", item.Value),
+                item => Assert.Null(item.Value),
+                item => Assert.Null(item.Value));
+            Assert.Collection(
+                original.Pages[1].Buffer,
+                item => Assert.Equal("other-0", item.Value),
+                item => Assert.Equal("other-1", item.Value),
+                item => Assert.Equal("other-2", item.Value),
+                item => Assert.Equal("other-3", item.Value));
+            Assert.Collection(
+                original.Pages[2].Buffer,
+                item => Assert.Equal("other-4", item.Value),
+                item => Assert.Equal("other-5", item.Value),
+                item => Assert.Equal("other-6", item.Value),
+                item => Assert.Equal("other-7", item.Value));
+            Assert.Collection(
+                original.Pages[3].Buffer,
+                item => Assert.Equal("other-8", item.Value),
+                item => Assert.Null(item.Value),
+                item => Assert.Null(item.Value),
+                item => Assert.Null(item.Value));
         }
     }
 }

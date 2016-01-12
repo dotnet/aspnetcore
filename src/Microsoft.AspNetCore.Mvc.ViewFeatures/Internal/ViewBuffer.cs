@@ -2,9 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Html;
@@ -35,17 +37,14 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 
             _bufferScope = bufferScope;
             _name = name;
+
+            Pages = new List<ViewBufferPage>();
         }
 
         /// <summary>
         /// Gets the backing buffer.
         /// </summary>
-        public IList<ViewBufferValue[]> BufferSegments { get; private set; }
-
-        /// <summary>
-        /// Gets the count of entries in the last element of <see cref="BufferSegments"/>.
-        /// </summary>
-        public int CurrentCount { get; private set; }
+        public IList<ViewBufferPage> Pages { get; }
 
         /// <inheritdoc />
         public IHtmlContentBuilder Append(string unencoded)
@@ -67,7 +66,48 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
                 return this;
             }
 
-            AppendValue(new ViewBufferValue(content));
+            // Perf: special case ViewBuffers so we can 'combine' them.
+            var otherBuffer = content as ViewBuffer;
+            if (otherBuffer == null)
+            {
+                AppendValue(new ViewBufferValue(content));
+                return this;
+            }
+
+            for (var i = 0; i < otherBuffer.Pages.Count; i++)
+            {
+                var otherPage = otherBuffer.Pages[i];
+                var currentPage = Pages.Count == 0 ? null : Pages[Pages.Count - 1];
+
+                // If the other page is less or equal to than half full, let's copy it's to the current page if
+                // possible.
+                var isLessThanHalfFull = 2 * otherPage.Count <= otherPage.Capacity;
+                if (isLessThanHalfFull &&
+                    currentPage != null &&
+                    currentPage.Capacity - currentPage.Count >= otherPage.Count)
+                {
+                    // We have room, let's copy the items.
+                    Array.Copy(
+                        sourceArray: otherPage.Buffer,
+                        sourceIndex: 0,
+                        destinationArray: currentPage.Buffer,
+                        destinationIndex: currentPage.Count,
+                        length: otherPage.Count);
+
+                    currentPage.Count += otherPage.Count;
+
+                    // Now we can return this page, and it can be reused in the scope of this request.
+                    _bufferScope.ReturnSegment(otherPage.Buffer);
+                }
+                else
+                {
+                    // Otherwise, let's just take the the page from the other buffer.
+                    Pages.Add(otherPage);
+                }
+
+            }
+
+            otherBuffer.Clear();
             return this;
         }
 
@@ -86,35 +126,37 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 
         private void AppendValue(ViewBufferValue value)
         {
-            ViewBufferValue[] segment;
-            if (BufferSegments == null)
+            var page = GetCurrentPage();
+            page.Append(value);
+        }
+
+        private ViewBufferPage GetCurrentPage()
+        {
+            ViewBufferPage page;
+            if (Pages.Count == 0)
             {
-                BufferSegments = new List<ViewBufferValue[]>(1);
-                segment = _bufferScope.GetSegment();
-                BufferSegments.Add(segment);
+                page = new ViewBufferPage(_bufferScope.GetSegment());
+                Pages.Add(page);
             }
             else
             {
-                segment = BufferSegments[BufferSegments.Count - 1];
-                if (CurrentCount == segment.Length)
+                page = Pages[Pages.Count - 1];
+                if (page.IsFull)
                 {
-                    segment = _bufferScope.GetSegment();
-                    BufferSegments.Add(segment);
-                    CurrentCount = 0;
+                    page = new ViewBufferPage(_bufferScope.GetSegment());
+                    Pages.Add(page);
                 }
             }
 
-            segment[CurrentCount] = value;
-            CurrentCount++;
+            return page;
         }
 
         /// <inheritdoc />
         public IHtmlContentBuilder Clear()
         {
-            if (BufferSegments != null)
+            if (Pages != null)
             {
-                CurrentCount = 0;
-                BufferSegments = null;
+                Pages.Clear();
             }
 
             return this;
@@ -123,7 +165,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
         /// <inheritdoc />
         public void WriteTo(TextWriter writer, HtmlEncoder encoder)
         {
-            if (BufferSegments == null)
+            if (Pages == null)
             {
                 return;
             }
@@ -135,14 +177,12 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
                 return;
             }
 
-            for (var i = 0; i < BufferSegments.Count; i++)
+            for (var i = 0; i < Pages.Count; i++)
             {
-                var segment = BufferSegments[i];
-                var count = i == BufferSegments.Count - 1 ? CurrentCount : segment.Length;
-
-                for (var j = 0; j < count; j++)
+                var page = Pages[i];
+                for (var j = 0; j < page.Count; j++)
                 {
-                    var value = segment[j];
+                    var value = page.Buffer[j];
 
                     var valueAsString = value.Value as string;
                     if (valueAsString != null)
@@ -169,7 +209,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
         /// <returns>A <see cref="Task"/> which will complete once content has been written.</returns>
         public async Task WriteToAsync(TextWriter writer, HtmlEncoder encoder)
         {
-            if (BufferSegments == null)
+            if (Pages == null)
             {
                 return;
             }
@@ -181,14 +221,12 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
                 return;
             }
 
-            for (var i = 0; i < BufferSegments.Count; i++)
+            for (var i = 0; i < Pages.Count; i++)
             {
-                var segment = BufferSegments[i];
-                var count = i == BufferSegments.Count - 1 ? CurrentCount : segment.Length;
-
-                for (var j = 0; j < count; j++)
+                var page = Pages[i];
+                for (var j = 0; j < page.Count; j++)
                 {
-                    var value = segment[j];
+                    var value = page.Buffer[j];
 
                     var valueAsString = value.Value as string;
                     if (valueAsString != null)
@@ -208,6 +246,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
                     if (valueAsHtmlContent != null)
                     {
                         valueAsHtmlContent.WriteTo(writer, encoder);
+                        await writer.FlushAsync();
                         continue;
                     }
                 }

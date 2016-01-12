@@ -98,15 +98,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// <inheritdoc />
         public override void Write(IHtmlContent value)
         {
-            var htmlTextWriter = TargetWriter as HtmlTextWriter;
-            if (htmlTextWriter == null)
-            {
-                value.WriteTo(TargetWriter, HtmlEncoder);
-            }
-            else
-            {
-                htmlTextWriter.Write(value);
-            }
+            // Perf: We don't special case 'TargetWriter is HtmlTextWriter' here, because want to delegate to the 
+            // IHtmlContent if it wants to 'flatten' itself or not. This is an important optimization for TagHelpers.
+            value.WriteTo(TargetWriter, HtmlEncoder);
         }
 
         /// <inheritdoc />

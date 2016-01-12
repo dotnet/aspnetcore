@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -233,7 +234,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             if (bodyWriter.IsBuffering)
             {
                 // Only copy buffered content to the Output if we're currently buffering.
-                await bodyWriter.Buffer.WriteToAsync(context.Writer, _htmlEncoder);
+                using (var writer = _bufferScope.CreateWriter(context.Writer))
+                {
+                    await bodyWriter.Buffer.WriteToAsync(writer, _htmlEncoder);
+                }
             }
         }
 
