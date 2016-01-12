@@ -58,31 +58,6 @@ namespace Microsoft.Extensions.DependencyInjection
             return builder;
         }
 
-        public static IMvcCoreBuilder AddPrecompiledRazorViews(
-            this IMvcCoreBuilder builder,
-            params Assembly[] assemblies)
-        {
-            if (builder == null)
-            {
-                throw new ArgumentNullException(nameof(builder));
-            }
-
-            if (assemblies == null)
-            {
-                throw new ArgumentNullException(nameof(assemblies));
-            }
-
-            AddRazorViewEngine(builder);
-
-            builder.Services.Replace(
-                ServiceDescriptor.Singleton<ICompilerCacheProvider>(serviceProvider =>
-                    ActivatorUtilities.CreateInstance<PrecompiledViewsCompilerCacheProvider>(
-                        serviceProvider,
-                        assemblies.AsEnumerable())));
-
-            return builder;
-        }
-
         /// <summary>
         /// Adds an initialization callback for a given <typeparamref name="TTagHelper"/>.
         /// </summary>

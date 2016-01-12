@@ -1,9 +1,0 @@
-@{
-string message =
-#if DNX451
-    "Value set inside DNX451 " + GetType().Assembly.FullName;
-#elif DNXCORE50
-    "Value set inside DNXCORE50 " + System.Reflection.IntrospectionExtensions.GetTypeInfo(GetType()).Assembly.FullName;
-#endif
-}
-@message 

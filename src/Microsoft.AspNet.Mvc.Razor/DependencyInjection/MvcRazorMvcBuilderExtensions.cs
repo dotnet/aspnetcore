@@ -73,28 +73,5 @@ namespace Microsoft.Extensions.DependencyInjection
 
             return builder;
         }
-
-        public static IMvcBuilder AddPrecompiledRazorViews(
-            this IMvcBuilder builder,
-            params Assembly[] assemblies)
-        {
-            if (builder == null)
-            {
-                throw new ArgumentNullException(nameof(builder));
-            }
-
-            if (assemblies == null)
-            {
-                throw new ArgumentNullException(nameof(assemblies));
-            }
-
-            builder.Services.Replace(
-                ServiceDescriptor.Singleton<ICompilerCacheProvider>(serviceProvider =>
-                    ActivatorUtilities.CreateInstance<PrecompiledViewsCompilerCacheProvider>(
-                        serviceProvider,
-                        assemblies.AsEnumerable())));
-
-            return builder;
-        }
     }
 }
