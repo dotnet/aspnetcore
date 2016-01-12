@@ -107,24 +107,6 @@ namespace Microsoft.AspNet.Hosting
         }
 
         [Fact]
-        public void CanSpecifyPortConfig()
-        {
-            var vals = new Dictionary<string, string>
-            {
-                { "Server", "Microsoft.AspNet.Hosting.Tests" },
-                { "HTTP_PLATFORM_PORT", "abc123" }
-            };
-
-            var builder = new ConfigurationBuilder()
-                .AddInMemoryCollection(vals);
-            var config = builder.Build();
-            var application = CreateBuilder(config).Build();
-            application.Start();
-            Assert.NotNull(application.Services.GetService<IHostingEnvironment>());
-            Assert.Equal("http://localhost:abc123", application.ServerFeatures.Get<IServerAddressesFeature>().Addresses.First());
-        }
-
-        [Fact]
         public void CanDefaultAddresseIfNotConfigured()
         {
             var vals = new Dictionary<string, string>

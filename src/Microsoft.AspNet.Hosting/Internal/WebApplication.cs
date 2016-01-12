@@ -21,9 +21,6 @@ namespace Microsoft.AspNet.Hosting.Internal
 {
     public class WebApplication : IWebApplication
     {
-        // This is defined by IIS's HttpPlatformHandler.
-        private static readonly string ServerPort = "HTTP_PLATFORM_PORT";
-
         private readonly IServiceCollection _applicationServiceCollection;
         private readonly IStartupLoader _startupLoader;
         private readonly ApplicationLifetime _applicationLifetime;
@@ -223,19 +220,10 @@ namespace Microsoft.AspNet.Hosting.Internal
 
                 Server = ServerFactory.CreateServer(_config);
                 var addresses = Server.Features?.Get<IServerAddressesFeature>()?.Addresses;
-                if (addresses != null && !addresses.IsReadOnly)
+                if (addresses != null && !addresses.IsReadOnly && addresses.Count == 0)
                 {
-                    var port = _config[ServerPort];
-                    if (!string.IsNullOrEmpty(port))
-                    {
-                        addresses.Add("http://localhost:" + port);
-                    }
-
                     // Provide a default address if there aren't any configured.
-                    if (addresses.Count == 0)
-                    {
-                        addresses.Add("http://localhost:5000");
-                    }
+                    addresses.Add("http://localhost:5000");
                 }
             }
         }
