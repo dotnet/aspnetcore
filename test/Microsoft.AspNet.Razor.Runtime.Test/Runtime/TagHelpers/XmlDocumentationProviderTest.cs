@@ -13,8 +13,10 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 {
     public class XmlDocumentationProviderTest
     {
-        public static readonly string XmlTestFileLocation =
-            Directory.GetCurrentDirectory() + "/TestFiles/NotLocalized/TagHelperDocumentation.xml";
+        private static readonly string TestRoot =
+            Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), "..", ".."));
+        private static readonly string XmlTestFileLocation =
+            TestRoot + "/TestFiles/NotLocalized/TagHelperDocumentation.xml";
         private static readonly TypeInfo DocumentedTagHelperTypeInfo = typeof(DocumentedTagHelper).GetTypeInfo();
         private static readonly PropertyInfo DocumentedTagHelperSummaryPropertyInfo =
             DocumentedTagHelperTypeInfo.GetProperty(nameof(DocumentedTagHelper.SummaryProperty));

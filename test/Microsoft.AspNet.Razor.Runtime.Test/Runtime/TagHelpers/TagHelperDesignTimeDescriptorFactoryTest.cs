@@ -32,14 +32,15 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
         // These test assemblies don't really exist. They are used to look up corresponding XML for a fake assembly
         // which is based on the DocumentedTagHelper type.
+        public static readonly string TestRoot =
+            Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), "..", ".."));
         public static readonly string DocumentedAssemblyLocation =
-            Directory.GetCurrentDirectory() +
-            string.Format("{0}TestFiles{0}NotLocalized{0}TagHelperDocumentation.dll", Path.DirectorySeparatorChar);
+            Path.Combine(TestRoot, "TestFiles", "NotLocalized", "TagHelperDocumentation.dll");
         public static readonly string LocalizedDocumentedAssemblyLocation =
-            Directory.GetCurrentDirectory() +
-            string.Format("{0}TestFiles{0}Localized{0}TagHelperDocumentation.dll", Path.DirectorySeparatorChar);
+            Path.Combine(TestRoot, "TestFiles", "Localized", "TagHelperDocumentation.dll");
         public static readonly string DocumentedAssemblyCodeBase =
-            "file:" + new string(Path.DirectorySeparatorChar, 3) +
+            "file:" +
+            new string(Path.DirectorySeparatorChar, 3) +
             DocumentedAssemblyLocation.TrimStart(Path.DirectorySeparatorChar);
 
         public static TheoryData OutputElementHintData

@@ -13,11 +13,12 @@ addons:
 before_install:
   - if test "$TRAVIS_OS_NAME" == "osx"; then brew update; brew install icu4c; fi
 env:
-  - KOREBUILD_DNU_RESTORE_CORECLR=true MONO_THREADS_PER_CPU=2000 KOREBUILD_TEST_DNXCORE=true
+  - MONO_THREADS_PER_CPU=2000
 mono:
   - 4.0.5
 os:
   - linux
   - osx
+osx_image: xcode7.1
 script:
   - ./build.sh --quiet verify
