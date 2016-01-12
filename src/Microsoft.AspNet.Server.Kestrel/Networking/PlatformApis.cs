@@ -3,6 +3,7 @@
 
 using System;
 using System.Runtime.InteropServices;
+using Microsoft.Extensions.PlatformAbstractions;
 
 namespace Microsoft.AspNet.Server.Kestrel.Networking
 {
@@ -10,7 +11,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
     {
         static PlatformApis()
         {
-#if DOTNET5_4 || DNXCORE50
+#if DOTNET5_4
             IsWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
             IsDarwin = RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
 #else
@@ -24,11 +25,15 @@ namespace Microsoft.AspNet.Server.Kestrel.Networking
                 IsDarwin = string.Equals(GetUname(), "Darwin", StringComparison.Ordinal);
             }
 #endif
+
+            IsMono = PlatformServices.Default.Runtime.RuntimeType == "Mono";
         }
 
         public static bool IsWindows { get; }
 
         public static bool IsDarwin { get; }
+
+        public static bool IsMono { get; }
 
         [DllImport("libc")]
         static extern int uname(IntPtr buf);

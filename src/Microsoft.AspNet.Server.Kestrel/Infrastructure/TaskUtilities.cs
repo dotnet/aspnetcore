@@ -7,7 +7,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
 {
     public static class TaskUtilities
     {
-#if DOTNET5_4 || DNXCORE50
+#if DOTNET5_4
         public static Task CompletedTask = Task.CompletedTask;
 #else
         public static Task CompletedTask = Task.FromResult<object>(null);
