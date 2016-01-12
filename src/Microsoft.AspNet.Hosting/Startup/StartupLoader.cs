@@ -43,7 +43,10 @@ namespace Microsoft.AspNet.Hosting.Startup
             var environmentName = _hostingEnv.EnvironmentName;
             if (string.IsNullOrEmpty(startupAssemblyName))
             {
-                throw new ArgumentException("Value cannot be null or empty.", nameof(startupAssemblyName));
+                throw new ArgumentException(
+                    string.Format("A startup method, startup type or startup assembly is required. If specifying an assembly, '{0}' cannot be null or empty.", 
+                    nameof(startupAssemblyName)), 
+                    nameof(startupAssemblyName));
             }
 
             var assembly = Assembly.Load(new AssemblyName(startupAssemblyName));
