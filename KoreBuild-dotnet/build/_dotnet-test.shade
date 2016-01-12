@@ -44,7 +44,7 @@ projectFile=''
                 
                 var runnerExe = Path.Combine(publishFolder, "dotnet-test-xunit.exe");
                 var targetTestDll = Path.Combine(publishFolder, projectName + ".dll");
-                Exec(runnerExe, targetTestDll);
+                Exec(runnerExe, targetTestDll + " " + testArgs);
             }
         }
     }
