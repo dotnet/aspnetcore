@@ -26,3 +26,5 @@ project.lock.json
 *.*sdf
 *.ipch
 .vs/
+.build/
+.testPublish/
