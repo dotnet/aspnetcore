@@ -10,8 +10,7 @@
         ],
         "packages": {
             "Microsoft.AspNet.Razor": { },
-            "Microsoft.AspNet.Razor.Runtime": { },
-            "Microsoft.AspNet.Razor.Runtime.Precompilation": { }
+            "Microsoft.AspNet.Razor.Runtime": { }
         }
     },
     "adx-nonshipping": { // Packages written by the ADX team but that don't ship on NuGet.org (thus, no need to scan anything in them)
