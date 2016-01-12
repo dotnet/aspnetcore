@@ -345,6 +345,60 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
             Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(result));
         }
 
+        [Fact]
+        public void Password_UsesSpecifiedExpressionForNames_IgnoresExpressionValue()
+        {
+            // Arrange
+            var metadataProvider = new EmptyModelMetadataProvider();
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(new ViewDataDictionary<TestModel>(metadataProvider));
+            helper.ViewContext.ClientValidationEnabled = false;
+            helper.ViewData.Model = new TestModel { Property1 = "propValue" };
+
+            // Act
+            var passwordResult = helper.Password("Property1");
+
+            // Assert
+            Assert.Equal(
+                "<input id=\"HtmlEncode[[Property1]]\" name=\"HtmlEncode[[Property1]]\" type=\"HtmlEncode[[password]]\" />",
+                HtmlContentUtilities.HtmlContentToString(passwordResult));
+        }
+
+        [Fact]
+        public void PasswordFor_UsesSpecifiedExpressionForNames_IgnoresExpressionValue()
+        {
+            // Arrange
+            var metadataProvider = new EmptyModelMetadataProvider();
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(new ViewDataDictionary<TestModel>(metadataProvider));
+            helper.ViewContext.ClientValidationEnabled = false;
+            helper.ViewData.Model = new TestModel { Property1 = "propValue" };
+
+            // Act
+            var passwordForResult = helper.PasswordFor(m => m.Property1);
+
+            // Assert
+            Assert.Equal(
+                "<input id=\"HtmlEncode[[Property1]]\" name=\"HtmlEncode[[Property1]]\" type=\"HtmlEncode[[password]]\" />",
+                HtmlContentUtilities.HtmlContentToString(passwordForResult));
+        }
+
+        [Fact]
+        public void Password_UsesSpecifiedValue()
+        {
+            // Arrange
+            var metadataProvider = new EmptyModelMetadataProvider();
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(new ViewDataDictionary<TestModel>(metadataProvider));
+            helper.ViewContext.ClientValidationEnabled = false;
+            helper.ViewData.Model = new TestModel { Property1 = "propValue" };
+
+            // Act
+            var passwordResult = helper.Password("Property1", value: "myvalue");
+
+            // Assert
+            Assert.Equal(
+                "<input id=\"HtmlEncode[[Property1]]\" name=\"HtmlEncode[[Property1]]\" type=\"HtmlEncode[[password]]\" value=\"HtmlEncode[[myvalue]]\" />",
+                HtmlContentUtilities.HtmlContentToString(passwordResult));
+        }
+
         private static ViewDataDictionary<PasswordModel> GetViewDataWithNullModelAndNonEmptyViewData()
         {
             return new ViewDataDictionary<PasswordModel>(new EmptyModelMetadataProvider())
@@ -396,6 +450,11 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
             public string Property5 { get; set; }
 
             public List<string> Property6 { get; } = new List<string>();
+        }
+
+        private class TestModel
+        {
+            public string Property1 { get; set; }
         }
     }
 }

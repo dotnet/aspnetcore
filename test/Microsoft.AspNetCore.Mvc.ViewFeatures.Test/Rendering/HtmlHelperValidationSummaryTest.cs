@@ -335,6 +335,156 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
             Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(result));
         }
 
+        [Fact]
+        public void ValidationSummary_UsesValuesFromModelState()
+        {
+            // Arrange
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper();
+            helper.ViewData.ModelState.AddModelError("Property1", "Error for Property1");
+
+            // Act
+            var validationSummaryResult = helper.ValidationSummary();
+
+            // Assert
+            Assert.Equal(
+                "<div class=\"HtmlEncode[[validation-summary-errors]]\" data-valmsg-summary=\"HtmlEncode[[true]]\">" +
+                "<ul><li>HtmlEncode[[Error for Property1]]</li>\r\n</ul></div>",
+                HtmlContentUtilities.HtmlContentToString(validationSummaryResult));
+        }
+
+        [Fact]
+        public void ValidationSummary_ExcludesPropertyErrors()
+        {
+            // Arrange
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper();
+            helper.ViewData.ModelState.AddModelError("Property1", "Error for Property1");
+
+            // Act
+            var validationSummaryResult = helper.ValidationSummary(excludePropertyErrors: true);
+
+            // Assert
+            Assert.Equal(
+                "<div class=\"HtmlEncode[[validation-summary-errors]]\"><ul><li style=\"display:none\"></li>\r\n</ul></div>",
+                HtmlContentUtilities.HtmlContentToString(validationSummaryResult));
+        }
+
+        [Fact]
+        public void ValidationSummary_UsesSpecifiedMessage()
+        {
+            // Arrange
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper();
+            helper.ViewData.ModelState.AddModelError("Property1", "Error for Property1");
+
+            // Act
+            var validationSummaryResult = helper.ValidationSummary(message: "Custom Message");
+
+            // Assert
+            Assert.Equal(
+                "<div class=\"HtmlEncode[[validation-summary-errors]]\" data-valmsg-summary=\"HtmlEncode[[true]]\">" +
+                "<span>HtmlEncode[[Custom Message]]</span>\r\n<ul><li>HtmlEncode[[Error for Property1]]</li>\r\n</ul></div>",
+                HtmlContentUtilities.HtmlContentToString(validationSummaryResult));
+        }
+
+        [Fact]
+        public void ValidationSummary_UsesSpecifiedTag()
+        {
+            // Arrange
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper();
+            helper.ViewData.ModelState.AddModelError("Property1", "Error for Property1");
+
+            // Act
+            var validationSummaryResult = helper.ValidationSummary(message: "Custom Message", tag: "div");
+
+            // Assert
+            Assert.Equal(
+                "<div class=\"HtmlEncode[[validation-summary-errors]]\" data-valmsg-summary=\"HtmlEncode[[true]]\">" +
+                "<div>HtmlEncode[[Custom Message]]</div>\r\n<ul><li>HtmlEncode[[Error for Property1]]</li>\r\n</ul></div>",
+                HtmlContentUtilities.HtmlContentToString(validationSummaryResult));
+        }
+
+        [Fact]
+        public void ValidationSummary_UsesSpecifiedMessageAndExcludesPropertyErrors()
+        {
+            // Arrange
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper();
+            helper.ViewData.ModelState.AddModelError("Property1", "Error for Property1");
+
+            // Act
+            var validationSummaryResult = helper.ValidationSummary(excludePropertyErrors: true, message: "Custom Message");
+
+            // Assert
+            Assert.Equal(
+                "<div class=\"HtmlEncode[[validation-summary-errors]]\"><span>HtmlEncode[[Custom Message]]</span>\r\n<ul><li style=\"display:none\"></li>\r\n</ul></div>",
+                HtmlContentUtilities.HtmlContentToString(validationSummaryResult));
+        }
+
+        [Fact]
+        public void ValidationSummary_UsesSpecifiedHtmlAttributes()
+        {
+            // Arrange
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper();
+            helper.ViewData.ModelState.AddModelError("Property1", "Error for Property1");
+
+            // Act
+            var validationSummaryResult = helper.ValidationSummary(message: "Custom Message", htmlAttributes: new { attr="value" });
+
+            // Assert
+            Assert.Equal(
+                "<div attr=\"HtmlEncode[[value]]\" class=\"HtmlEncode[[validation-summary-errors]]\" data-valmsg-summary=\"HtmlEncode[[true]]\">" +
+                "<span>HtmlEncode[[Custom Message]]</span>\r\n<ul><li>HtmlEncode[[Error for Property1]]</li>\r\n</ul></div>",
+                HtmlContentUtilities.HtmlContentToString(validationSummaryResult));
+        }
+
+        [Fact]
+        public void ValidationSummary_UsesSpecifiedHtmlAttributesAndTag()
+        {
+            // Arrange
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper();
+            helper.ViewData.ModelState.AddModelError("Property1", "Error for Property1");
+
+            // Act
+            var validationSummaryResult = helper.ValidationSummary(message: "Custom Message", htmlAttributes: new { attr = "value" }, tag: "div");
+
+            // Assert
+            Assert.Equal(
+                "<div attr=\"HtmlEncode[[value]]\" class=\"HtmlEncode[[validation-summary-errors]]\" data-valmsg-summary=\"HtmlEncode[[true]]\">" +
+                "<div>HtmlEncode[[Custom Message]]</div>\r\n<ul><li>HtmlEncode[[Error for Property1]]</li>\r\n</ul></div>",
+                HtmlContentUtilities.HtmlContentToString(validationSummaryResult));
+        }
+
+        [Fact]
+        public void ValidationSummary_UsesSpecifiedUsesSpecifiedTagAndExcludesPropertyErrors()
+        {
+            // Arrange
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper();
+            helper.ViewData.ModelState.AddModelError("Property1", "Error for Property1");
+
+            // Act
+            var validationSummaryResult = helper.ValidationSummary(excludePropertyErrors: true, message: "Custom Message", tag: "div");
+
+            // Assert
+            Assert.Equal(
+                "<div class=\"HtmlEncode[[validation-summary-errors]]\"><div>HtmlEncode[[Custom Message]]</div>\r\n<ul><li style=\"display:none\"></li>\r\n</ul></div>",
+                HtmlContentUtilities.HtmlContentToString(validationSummaryResult));
+        }
+
+        [Fact]
+        public void ValidationSummary_UsesSpecifiedUsesSpecifiedHtmlAttributesAndExcludesPropertyErrors()
+        {
+            // Arrange
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper();
+            helper.ViewData.ModelState.AddModelError("Property1", "Error for Property1");
+
+            // Act
+            var validationSummaryResult = helper.ValidationSummary(excludePropertyErrors: true, message: "Custom Message", htmlAttributes: new { attr = "value" });
+
+            // Assert
+            Assert.Equal(
+                "<div attr=\"HtmlEncode[[value]]\" class=\"HtmlEncode[[validation-summary-errors]]\"><span>HtmlEncode[[Custom Message]]</span>\r\n" +
+                "<ul><li style=\"display:none\"></li>\r\n</ul></div>",
+                HtmlContentUtilities.HtmlContentToString(validationSummaryResult));
+        }
+
         // Adds errors for various parts of the model, including the root.
         private void AddMultipleErrors(ModelStateDictionary modelState)
         {
