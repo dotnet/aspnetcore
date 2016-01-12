@@ -48,3 +48,4 @@
 *.fsproj text=auto
 *.dbproj text=auto
 *.sln text=auto eol=crlf
+*.sh eol=lf
