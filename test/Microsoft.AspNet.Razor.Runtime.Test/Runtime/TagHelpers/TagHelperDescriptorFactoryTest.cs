@@ -12,7 +12,7 @@ using Xunit;
 
 namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 {
-    public abstract class TagHelperDescriptorFactoryTest
+    public class TagHelperDescriptorFactoryTest
     {
         protected static readonly AssemblyName TagHelperDescriptorFactoryTestAssembly =
             typeof(TagHelperDescriptorFactoryTest).GetTypeInfo().Assembly.GetName();
@@ -93,7 +93,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             // Act
             var descriptors = factory.CreateDescriptors(
                 AssemblyName,
-                GetTypeInfo(tagHelperType),
+                tagHelperType,
                 errorSink: errorSink);
 
             // Assert
@@ -182,7 +182,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             // Act
             var descriptors = factory.CreateDescriptors(
                 AssemblyName,
-                GetTypeInfo(tagHelperType),
+                tagHelperType,
                 errorSink: errorSink);
 
             // Assert
@@ -252,7 +252,6 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             }
         }
 
-        public abstract ITypeInfo GetTypeInfo(Type tagHelperType);
 
         [Theory]
         [MemberData(nameof(RestrictChildrenData))]
@@ -267,7 +266,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             // Act
             var descriptors = factory.CreateDescriptors(
                 AssemblyName,
-                GetTypeInfo(tagHelperType),
+                tagHelperType,
                 errorSink: errorSink);
 
             // Assert
@@ -356,7 +355,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             // Act
             var descriptors = factory.CreateDescriptors(
                 AssemblyName,
-                GetTypeInfo(tagHelperType),
+                tagHelperType,
                 errorSink: errorSink);
 
             // Assert
@@ -592,7 +591,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             // Act
             var descriptors = factory.CreateDescriptors(
                 AssemblyName,
-                GetTypeInfo(tagHelperType),
+                tagHelperType,
                 errorSink);
 
             // Assert
@@ -794,7 +793,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             // Act
             var descriptors = factory.CreateDescriptors(
                 AssemblyName,
-                GetTypeInfo(tagHelperType),
+                tagHelperType,
                 errorSink: errorSink);
 
             // Assert
@@ -843,7 +842,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             // Act
             var descriptors = factory.CreateDescriptors(
                 AssemblyName,
-                GetTypeInfo(tagHelperType),
+                tagHelperType,
                 errorSink: errorSink);
 
             // Assert
@@ -880,7 +879,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             // Act
             var descriptors = factory.CreateDescriptors(
                 AssemblyName,
-                GetTypeInfo(typeof(OverriddenAttributeTagHelper)),
+                typeof(OverriddenAttributeTagHelper),
                 errorSink: errorSink);
 
             // Assert
@@ -914,7 +913,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             // Act
             var descriptors = factory.CreateDescriptors(
                 AssemblyName,
-                GetTypeInfo(typeof(InheritedOverriddenAttributeTagHelper)),
+                typeof(InheritedOverriddenAttributeTagHelper),
                 errorSink: errorSink);
 
             // Assert
@@ -948,7 +947,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             // Act
             var descriptors = factory.CreateDescriptors(
                 AssemblyName,
-                GetTypeInfo(typeof(InheritedNotOverriddenAttributeTagHelper)),
+                typeof(InheritedNotOverriddenAttributeTagHelper),
                 errorSink: errorSink);
             // Assert
             Assert.Empty(errorSink.Errors);
@@ -978,7 +977,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             // Act
             var descriptors = factory.CreateDescriptors(
                 AssemblyName,
-                GetTypeInfo(typeof(InheritedSingleAttributeTagHelper)),
+                typeof(InheritedSingleAttributeTagHelper),
                 errorSink: errorSink);
 
             // Assert
@@ -1006,7 +1005,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             // Act
             var descriptors = factory.CreateDescriptors(
                 AssemblyName,
-                GetTypeInfo(typeof(SingleAttributeTagHelper)),
+                typeof(SingleAttributeTagHelper),
                 errorSink: new ErrorSink());
 
             // Assert
@@ -1035,7 +1034,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             // Act
             var descriptors = factory.CreateDescriptors(
                 AssemblyName,
-                GetTypeInfo(typeof(MissingAccessorTagHelper)),
+                typeof(MissingAccessorTagHelper),
                 errorSink: errorSink);
 
             // Assert
@@ -1064,7 +1063,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             // Act
             var descriptors = factory.CreateDescriptors(
                 AssemblyName,
-                GetTypeInfo(typeof(NonPublicAccessorTagHelper)),
+                typeof(NonPublicAccessorTagHelper),
                 errorSink: errorSink);
 
             // Assert
@@ -1096,7 +1095,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             // Act
             var descriptors = factory.CreateDescriptors(
                 AssemblyName,
-                GetTypeInfo(typeof(NotBoundAttributeTagHelper)),
+                typeof(NotBoundAttributeTagHelper),
                 errorSink: errorSink);
 
             // Assert
@@ -1115,7 +1114,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             // Act
             var descriptors = factory.CreateDescriptors(
                 AssemblyName,
-                GetTypeInfo(typeof(DuplicateAttributeNameTagHelper)),
+                typeof(DuplicateAttributeNameTagHelper),
                 errorSink: errorSink);
 
             // Assert
@@ -1164,7 +1163,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             // Act
             var descriptors = factory.CreateDescriptors(
                 AssemblyName,
-                GetTypeInfo(typeof(MultiTagTagHelper)),
+                typeof(MultiTagTagHelper),
                 errorSink: errorSink);
 
             // Assert
@@ -1196,7 +1195,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             // Act
             var descriptors = factory.CreateDescriptors(
                 AssemblyName,
-                GetTypeInfo(typeof(InheritedMultiTagTagHelper)),
+                typeof(InheritedMultiTagTagHelper),
                 errorSink: errorSink);
 
             // Assert
@@ -1226,7 +1225,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             // Act
             var descriptors = factory.CreateDescriptors(
                 AssemblyName,
-                GetTypeInfo(typeof(DuplicateTagNameTagHelper)),
+                typeof(DuplicateTagNameTagHelper),
                 errorSink: errorSink);
 
             // Assert
@@ -1256,7 +1255,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             // Act
             var descriptors = factory.CreateDescriptors(
                 AssemblyName,
-                GetTypeInfo(typeof(OverrideNameTagHelper)),
+                typeof(OverrideNameTagHelper),
                 errorSink: errorSink);
 
             // Assert
@@ -1444,7 +1443,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             // Act
             var descriptors = factory.CreateDescriptors(
                 AssemblyName,
-                GetTypeInfo(type),
+                type,
                 errorSink: errorSink);
 
             // Assert
@@ -1694,7 +1693,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             // Act
             var result = TagHelperDescriptorFactory.ValidateTagHelperAttributeDescriptor(
                 descriptor,
-                GetTypeInfo(typeof(MultiTagTagHelper)),
+                typeof(MultiTagTagHelper),
                 errorSink);
 
             // Assert
@@ -1736,7 +1735,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             // Act
             var result = TagHelperDescriptorFactory.ValidateTagHelperAttributeDescriptor(
                 descriptor,
-                GetTypeInfo(typeof(MultiTagTagHelper)),
+                typeof(MultiTagTagHelper),
                 errorSink);
 
             // Assert
@@ -1782,7 +1781,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             // Act
             var result = TagHelperDescriptorFactory.ValidateTagHelperAttributeDescriptor(
                 descriptor,
-                GetTypeInfo(typeof(MultiTagTagHelper)),
+                typeof(MultiTagTagHelper),
                 errorSink);
 
             // Assert
@@ -1837,7 +1836,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             // Act
             var result = TagHelperDescriptorFactory.ValidateTagHelperAttributeDescriptor(
                 descriptor,
-                GetTypeInfo(typeof(MultiTagTagHelper)),
+                typeof(MultiTagTagHelper),
                 errorSink);
 
             // Assert
@@ -1924,6 +1923,145 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             // Assert
             Assert.Equal(expectedErrors, errorSink.Errors);
         }
+
+        [Fact]
+        public void CreateDescriptors_BuildsDescriptorsFromSimpleTypes()
+        {
+            // Arrange
+            var errorSink = new ErrorSink();
+            var objectAssemblyName = typeof(object).GetTypeInfo().Assembly.GetName().Name;
+            var expectedDescriptor =
+                CreateTagHelperDescriptor("object", "System.Object", objectAssemblyName);
+            var factory = new TagHelperDescriptorFactory(designTime: false);
+
+            // Act
+            var descriptors = factory.CreateDescriptors(
+                objectAssemblyName,
+                typeof(object),
+                errorSink: errorSink);
+
+            // Assert
+            Assert.Empty(errorSink.Errors);
+            var descriptor = Assert.Single(descriptors);
+            Assert.Equal(expectedDescriptor, descriptor, CaseSensitiveTagHelperDescriptorComparer.Default);
+        }
+
+        [Theory]
+        [MemberData(nameof(TagHelperWithPrefixData))]
+        public void CreateDescriptors_WithPrefixes_ReturnsExpectedAttributeDescriptors(
+            Type tagHelperType,
+            IEnumerable<TagHelperAttributeDescriptor> expectedAttributeDescriptors,
+            string[] expectedErrorMessages)
+        {
+            // Arrange
+            var errorSink = new ErrorSink();
+            var factory = new TagHelperDescriptorFactory(designTime: false);
+
+            // Act
+            var descriptors = factory.CreateDescriptors(
+                AssemblyName,
+                tagHelperType,
+                errorSink: errorSink);
+
+            // Assert
+            var errors = errorSink.Errors.ToArray();
+            Assert.Equal(expectedErrorMessages.Length, errors.Length);
+
+            for (var i = 0; i < errors.Length; i++)
+            {
+                Assert.Equal(0, errors[i].Length);
+                Assert.Equal(SourceLocation.Zero, errors[i].Location);
+                Assert.Equal(expectedErrorMessages[i], errors[i].Message, StringComparer.Ordinal);
+            }
+
+            var descriptor = Assert.Single(descriptors);
+            Assert.Equal(
+                expectedAttributeDescriptors,
+                descriptor.Attributes,
+                TagHelperAttributeDescriptorComparer.Default);
+        }
+
+        // TagHelperDesignTimeDescriptors are not created in CoreCLR.
+#if !DNXCORE50
+        public static TheoryData OutputElementHintData
+        {
+            get
+            {
+                // tagHelperType, expectedDescriptors
+                return new TheoryData<Type, TagHelperDescriptor[]>
+                {
+                    {
+                        typeof(OutputElementHintTagHelper),
+                        new[]
+                        {
+                            new TagHelperDescriptor
+                            {
+                                TagName = "output-element-hint",
+                                TypeName = typeof(OutputElementHintTagHelper).FullName,
+                                AssemblyName = AssemblyName,
+                                DesignTimeDescriptor = new TagHelperDesignTimeDescriptor
+                                {
+                                    OutputElementHint = "strong"
+                                }
+                            }
+                        }
+                    },
+                    {
+                        typeof(MulitpleDescriptorTagHelperWithOutputElementHint),
+                        new[]
+                        {
+                            new TagHelperDescriptor
+                            {
+                                TagName = "a",
+                                TypeName = typeof(MulitpleDescriptorTagHelperWithOutputElementHint).FullName,
+                                AssemblyName = AssemblyName,
+                                DesignTimeDescriptor = new TagHelperDesignTimeDescriptor
+                                {
+                                    OutputElementHint = "div"
+                                }
+                            },
+                            new TagHelperDescriptor
+                            {
+                                TagName = "p",
+                                TypeName = typeof(MulitpleDescriptorTagHelperWithOutputElementHint).FullName,
+                                AssemblyName = AssemblyName,
+                                DesignTimeDescriptor = new TagHelperDesignTimeDescriptor
+                                {
+                                    OutputElementHint = "div"
+                                }
+                            }
+                        }
+                    }
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(OutputElementHintData))]
+        public void CreateDescriptors_CreatesDesignTimeDescriptorsWithOutputElementHint(
+            Type tagHelperType,
+            TagHelperDescriptor[] expectedDescriptors)
+        {
+            // Arrange
+            var errorSink = new ErrorSink();
+            var factory = new TagHelperDescriptorFactory(designTime: true);
+
+            // Act
+            var descriptors = factory.CreateDescriptors(
+                AssemblyName,
+                tagHelperType,
+                errorSink: errorSink);
+
+            // Assert
+            Assert.Empty(errorSink.Errors);
+
+            // We don't care about order. Mono returns reflected attributes differently so we need to ensure order
+            // doesn't matter by sorting.
+            descriptors = descriptors.OrderBy(descriptor => descriptor.TagName);
+
+            Assert.Equal(expectedDescriptors, descriptors, CaseSensitiveTagHelperDescriptorComparer.Default);
+        }
+#endif
 
         private static TheoryData<string, string[]> GetInvalidNameOrPrefixData(
             Func<string, string, string> onNameError,

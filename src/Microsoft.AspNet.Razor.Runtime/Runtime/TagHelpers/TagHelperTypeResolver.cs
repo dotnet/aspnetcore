@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
     /// </summary>
     public class TagHelperTypeResolver
     {
-        private static readonly ITypeInfo ITagHelperTypeInfo = new RuntimeTypeInfo(typeof(ITagHelper).GetTypeInfo());
+        private static readonly TypeInfo ITagHelperTypeInfo = typeof(ITagHelper).GetTypeInfo();
 
         /// <summary>
         /// Locates valid <see cref="ITagHelper"/> types from the <see cref="Assembly"/> named <paramref name="name"/>.
@@ -25,8 +25,8 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// </param>
         /// <param name="errorSink">The <see cref="ErrorSink"/> used to record errors found when resolving
         /// <see cref="ITagHelper"/> types.</param>
-        /// <returns>An <see cref="IEnumerable{ITypeInfo}"/> of valid <see cref="ITagHelper"/> types.</returns>
-        public IEnumerable<ITypeInfo> Resolve(
+        /// <returns>An <see cref="IEnumerable{Type}"/> of valid <see cref="ITagHelper"/> types.</returns>
+        public IEnumerable<Type> Resolve(
             string name,
             SourceLocation documentLocation,
             ErrorSink errorSink)
@@ -44,15 +44,15 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                     Resources.TagHelperTypeResolver_TagHelperAssemblyNameCannotBeEmptyOrNull,
                     errorLength);
 
-                return Enumerable.Empty<ITypeInfo>();
+                return Type.EmptyTypes;
             }
 
             var assemblyName = new AssemblyName(name);
 
-            IEnumerable<ITypeInfo> libraryTypes;
+            IEnumerable<TypeInfo> libraryTypes;
             try
             {
-                libraryTypes = GetTopLevelExportedTypes(assemblyName);
+                libraryTypes = GetExportedTypes(assemblyName);
             }
             catch (Exception ex)
             {
@@ -63,31 +63,10 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                         ex.Message),
                     name.Length);
 
-                return Enumerable.Empty<ITypeInfo>();
+                return Type.EmptyTypes;
             }
 
-            return libraryTypes.Where(IsTagHelper);
-        }
-
-        /// <summary>
-        /// Returns all non-nested exported types from the given <paramref name="assemblyName"/>
-        /// </summary>
-        /// <param name="assemblyName">The <see cref="AssemblyName"/> to get <see cref="ITypeInfo"/>s from.</param>
-        /// <returns>
-        /// An <see cref="IEnumerable{ITypeInfo}"/> of types exported from the given <paramref name="assemblyName"/>.
-        /// </returns>
-        protected virtual IEnumerable<ITypeInfo> GetTopLevelExportedTypes(AssemblyName assemblyName)
-        {
-            if (assemblyName == null)
-            {
-                throw new ArgumentNullException(nameof(assemblyName));
-            }
-
-            var exportedTypeInfos = GetExportedTypes(assemblyName);
-
-            return exportedTypeInfos
-                .Where(typeInfo => !typeInfo.IsNested)
-                .Select(typeInfo => new RuntimeTypeInfo(typeInfo));
+            return libraryTypes.Where(IsTagHelper).Select(t => t.AsType());
         }
 
         /// <summary>
@@ -105,12 +84,14 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         }
 
         // Internal for testing.
-        internal virtual bool IsTagHelper(ITypeInfo typeInfo)
+        internal virtual bool IsTagHelper(TypeInfo typeInfo)
         {
-            return typeInfo.IsPublic &&
-                   !typeInfo.IsAbstract &&
-                   !typeInfo.IsGenericType &&
-                   typeInfo.ImplementsInterface(ITagHelperTypeInfo);
+            return
+                !typeInfo.IsNested &&
+                typeInfo.IsPublic &&
+                !typeInfo.IsAbstract &&
+                !typeInfo.IsGenericType &&
+                ITagHelperTypeInfo.IsAssignableFrom(typeInfo);
         }
     }
 }

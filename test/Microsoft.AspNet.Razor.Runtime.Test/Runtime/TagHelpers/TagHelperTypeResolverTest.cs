@@ -66,13 +66,11 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             Assert.Collection(types,
                 type =>
                 {
-                    var typeInfo = Assert.IsType<RuntimeTypeInfo>(type);
-                    Assert.Equal(typeof(Valid_PlainTagHelper).GetTypeInfo(), typeInfo.TypeInfo);
+                    Assert.Equal(typeof(Valid_PlainTagHelper), type);
                 },
                 type =>
                 {
-                    var typeInfo = Assert.IsType<RuntimeTypeInfo>(type);
-                    Assert.Equal(typeof(Valid_InheritedTagHelper).GetTypeInfo(), typeInfo.TypeInfo);
+                    Assert.Equal(typeof(Valid_InheritedTagHelper), type);
                 });
         }
 
