@@ -23,6 +23,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         private readonly UvStreamHandle _socket;
         private Frame _frame;
         private ConnectionFilterContext _filterContext;
+        private LibuvStream _libuvStream;
         private readonly long _connectionId;
 
         private readonly SocketInput _rawSocketInput;
@@ -70,11 +71,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             }
             else
             {
-                var libuvStream = new LibuvStream(_rawSocketInput, _rawSocketOutput);
+                _libuvStream = new LibuvStream(_rawSocketInput, _rawSocketOutput);
 
                 _filterContext = new ConnectionFilterContext
                 {
-                    Connection = libuvStream,
+                    Connection = _libuvStream,
                     Address = ServerAddress
                 };
 
@@ -124,10 +125,18 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         private void ApplyConnectionFilter()
         {
-            var filteredStreamAdapter = new FilteredStreamAdapter(_filterContext.Connection, Memory2, Log, ThreadPool);
+            if (_filterContext.Connection != _libuvStream)
+            {
+                var filteredStreamAdapter = new FilteredStreamAdapter(_filterContext.Connection, Memory2, Log, ThreadPool);
 
-            SocketInput = filteredStreamAdapter.SocketInput;
-            SocketOutput = filteredStreamAdapter.SocketOutput;
+                SocketInput = filteredStreamAdapter.SocketInput;
+                SocketOutput = filteredStreamAdapter.SocketOutput;
+            }
+            else
+            {
+                SocketInput = _rawSocketInput;
+                SocketOutput = _rawSocketOutput;
+            }
 
             _frame = CreateFrame();
             _frame.Start();

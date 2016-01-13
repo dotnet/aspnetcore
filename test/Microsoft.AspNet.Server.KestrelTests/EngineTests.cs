@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Linq;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -13,7 +13,7 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Server.Kestrel;
 using Microsoft.AspNet.Server.Kestrel.Filter;
-using Microsoft.AspNet.Server.Kestrel.Http;
+using Microsoft.AspNet.Server.Kestrel.Infrastructure;
 using Microsoft.AspNet.Testing.xunit;
 using Microsoft.Extensions.Logging;
 using Xunit;
@@ -37,7 +37,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
                     {
                         new TestServiceContext
                         {
-                            ConnectionFilter = new NoOpConnectionFilter()
+                            ConnectionFilter = new PassThroughConnectionFilter()
                         }
                     }
                 };
@@ -1175,6 +1175,15 @@ namespace Microsoft.AspNet.Server.KestrelTests
                 {
                     ApplicationErrorsLogged++;
                 }
+            }
+        }
+
+        private class PassThroughConnectionFilter : IConnectionFilter
+        {
+            public Task OnConnectionAsync(ConnectionFilterContext context)
+            {
+                context.Connection = new LoggingStream(context.Connection, new TestApplicationErrorLogger());
+                return TaskUtilities.CompletedTask;
             }
         }
     }
