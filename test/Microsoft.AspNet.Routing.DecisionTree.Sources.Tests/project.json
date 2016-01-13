@@ -9,12 +9,25 @@
       "version": "1.0.0-*"
     },
     "Microsoft.AspNet.Testing": "1.0.0-*",
-    "xunit.runner.aspnet": "2.0.0-aspnet-*"
+    "xunit": "2.1.0"
   },
   "frameworks": {
-    "dnxcore50": { },
-    "dnx451": { }
+    "dnxcore50": {
+      "dependencies": {
+        "xunit.runner.aspnet": "2.0.0-aspnet-*"
+      }
+    },
+    "dnx451": {
+      "frameworkAssemblies": {
+        "System.Runtime": "",
+        "System.Threading.Tasks": ""
+      },
+      "dependencies": {
+        "xunit.runner.console": "2.1.0"
+      }
+    }
   },
+  "testRunner": "xunit",
   "commands": {
     "test": "xunit.runner.aspnet"
   }
