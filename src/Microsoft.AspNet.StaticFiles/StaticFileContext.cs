@@ -140,7 +140,7 @@ namespace Microsoft.AspNet.StaticFiles
 
                 DateTimeOffset last = _fileInfo.LastModified;
                 // Truncate to the second.
-                _lastModified = new DateTimeOffset(last.Year, last.Month, last.Day, last.Hour, last.Minute, last.Second, last.Offset);
+                _lastModified = new DateTimeOffset(last.Year, last.Month, last.Day, last.Hour, last.Minute, last.Second, last.Offset).ToUniversalTime();
 
                 long etagHash = _lastModified.ToFileTime() ^ _length;
                 _etag = new EntityTagHeaderValue('\"' + Convert.ToString(etagHash, 16) + '\"');

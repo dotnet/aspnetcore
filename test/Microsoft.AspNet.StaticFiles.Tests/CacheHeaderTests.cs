@@ -138,6 +138,8 @@ namespace Microsoft.AspNet.StaticFiles
 
             HttpResponseMessage response = await server.CreateClient().GetAsync("http://localhost/SubFolder/extra.xml");
             Assert.NotNull(response.Content.Headers.LastModified);
+            // Verify that DateTimeOffset is UTC
+            Assert.Equal(response.Content.Headers.LastModified.Value.Offset, TimeSpan.Zero);
         }
 
         // 13.3.4
@@ -234,7 +236,7 @@ namespace Microsoft.AspNet.StaticFiles
         //   Modified) response.
 
         [Fact]
-        public async Task IfModifiedSinceDateEqualsLastModifiedShouldReturn304()
+        public async Task IfModifiedSinceDateGreaterThanLastModifiedShouldReturn304()
         {
             TestServer server = StaticFilesTestServer.Create(app => app.UseFileServer());
 
@@ -244,10 +246,27 @@ namespace Microsoft.AspNet.StaticFiles
 
             HttpResponseMessage res2 = await server
                 .CreateRequest("/SubFolder/extra.xml")
-                .And(req => req.Headers.IfModifiedSince = res1.Content.Headers.LastModified)
+                .And(req => req.Headers.IfModifiedSince = DateTimeOffset.Now)
                 .GetAsync();
 
             Assert.Equal(HttpStatusCode.NotModified, res2.StatusCode);
+        }
+
+        [Fact]
+        public async Task IfModifiedSinceDateLessThanLastModifiedShouldReturn200()
+        {
+            TestServer server = StaticFilesTestServer.Create(app => app.UseFileServer());
+
+            HttpResponseMessage res1 = await server
+                .CreateRequest("/SubFolder/extra.xml")
+                .GetAsync();
+
+            HttpResponseMessage res2 = await server
+                .CreateRequest("/SubFolder/extra.xml")
+                .And(req => req.Headers.IfModifiedSince = DateTimeOffset.MinValue)
+                .GetAsync();
+
+            Assert.Equal(HttpStatusCode.OK, res2.StatusCode);
         }
     }
 }
