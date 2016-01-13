@@ -27,6 +27,48 @@ namespace Microsoft.AspNet.Mvc.Formatters
             }
         }
 
+        [Fact]
+        public void CanWriteResult_SetsAcceptContentType()
+        {
+            // Arrange
+            var formatter = new StringOutputFormatter();
+            var expectedContentType = new StringSegment("application/json");
+
+            var context = new OutputFormatterWriteContext(
+                new DefaultHttpContext(),
+                new TestHttpResponseStreamWriterFactory().CreateWriter,
+                typeof(string),
+                "Thisisastring");
+            context.ContentType = expectedContentType;
+
+            // Act
+            var result = formatter.CanWriteResult(context);
+
+            // Assert
+            Assert.True(result);
+            Assert.Equal(expectedContentType, context.ContentType);
+        }
+
+        [Fact]
+        public void CanWriteResult_DefaultContentType()
+        {
+            // Arrange
+            var formatter = new StringOutputFormatter();
+
+            var context = new OutputFormatterWriteContext(
+                new DefaultHttpContext(),
+                new TestHttpResponseStreamWriterFactory().CreateWriter,
+                typeof(string),
+                "Thisisastring");
+
+            // Act
+            var result = formatter.CanWriteResult(context);
+
+            // Assert
+            Assert.True(result);
+            Assert.Equal(new StringSegment("text/plain; charset=utf-8"), context.ContentType);
+        }
+
         [Theory]
         [MemberData(nameof(OutputFormatterContextValues))]
         public void CanWriteResult_ReturnsTrueForStringTypes(
@@ -35,9 +77,7 @@ namespace Microsoft.AspNet.Mvc.Formatters
             bool expectedCanWriteResult)
         {
             // Arrange
-            var expectedContentType = expectedCanWriteResult ?
-                new StringSegment("text/plain") :
-                new StringSegment("application/json");
+            var expectedContentType = new StringSegment("application/json");
 
             var formatter = new StringOutputFormatter();
             var type = useDeclaredTypeAsString ? typeof(string) : typeof(object);
@@ -47,7 +87,7 @@ namespace Microsoft.AspNet.Mvc.Formatters
                 new TestHttpResponseStreamWriterFactory().CreateWriter,
                 type,
                 value);
-            context.ContentType = new StringSegment("application/json");
+            context.ContentType = expectedContentType;
 
             // Act
             var result = formatter.CanWriteResult(context);

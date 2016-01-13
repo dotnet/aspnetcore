@@ -350,7 +350,27 @@ END:VCARD
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        public async Task ObjectResult_WithStringReturnType_WritesTextPlainFormat(bool matchFormatterOnObjectType)
+        public async Task ObjectResult_WithStringReturnType_DefaultToTextPlain(bool matchFormatterOnObjectType)
+        {
+            // Arrange
+            var targetUri = "http://localhost/FallbackOnTypeBasedMatch/ReturnString?matchFormatterOnObjectType=true" +
+                matchFormatterOnObjectType;
+            var request = new HttpRequestMessage(HttpMethod.Get, targetUri);
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("text/plain", response.Content.Headers.ContentType.MediaType);
+            var actualBody = await response.Content.ReadAsStringAsync();
+            Assert.Equal("Hello World!", actualBody);
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task ObjectResult_WithStringReturnType_SetsMediaTypeToAccept(bool matchFormatterOnObjectType)
         {
             // Arrange
             var targetUri = "http://localhost/FallbackOnTypeBasedMatch/ReturnString?matchFormatterOnObjectType=" +
@@ -363,7 +383,7 @@ END:VCARD
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            Assert.Equal("text/plain", response.Content.Headers.ContentType.MediaType);
+            Assert.Equal("application/json", response.Content.Headers.ContentType.MediaType);
             var actualBody = await response.Content.ReadAsStringAsync();
             Assert.Equal("Hello World!", actualBody);
         }
