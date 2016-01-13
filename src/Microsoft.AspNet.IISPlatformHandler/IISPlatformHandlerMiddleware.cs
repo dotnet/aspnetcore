@@ -3,13 +3,16 @@
 
 using System;
 using System.Globalization;
+using System.Security.Cryptography.X509Certificates;
 using System.Security.Principal;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Http.Features.Authentication;
 using Microsoft.AspNet.Http.Features.Authentication.Internal;
 using Microsoft.Extensions.Internal;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 
@@ -18,15 +21,21 @@ namespace Microsoft.AspNet.IISPlatformHandler
     public class IISPlatformHandlerMiddleware
     {
         private const string XIISWindowsAuthToken = "X-IIS-WindowsAuthToken";
+        private const string MSPlatformHandlerClientCert = "MS-PLATFORM-HANDLER-CLIENTCERT";
 
         private readonly RequestDelegate _next;
         private readonly IISPlatformHandlerOptions _options;
+        private readonly ILogger _logger;
 
-        public IISPlatformHandlerMiddleware(RequestDelegate next, IOptions<IISPlatformHandlerOptions> options)
+        public IISPlatformHandlerMiddleware(RequestDelegate next, ILoggerFactory loggerFactory, IOptions<IISPlatformHandlerOptions> options)
         {
             if (next == null)
             {
                 throw new ArgumentNullException(nameof(next));
+            }
+            if (loggerFactory == null)
+            {
+                throw new ArgumentNullException(nameof(loggerFactory));
             }
             if (options == null)
             {
@@ -35,10 +44,20 @@ namespace Microsoft.AspNet.IISPlatformHandler
 
             _next = next;
             _options = options.Value;
+            _logger = loggerFactory.CreateLogger<IISPlatformHandlerMiddleware>();
         }
 
         public async Task Invoke(HttpContext httpContext)
         {
+            if (_options.FlowClientCertificate)
+            {
+                var header = httpContext.Request.Headers[MSPlatformHandlerClientCert];
+                if (!StringValues.IsNullOrEmpty(header))
+                {
+                    httpContext.Features.Set<ITlsConnectionFeature>(new ForwardedTlsConnectionFeature(_logger, header));
+                }
+            }
+
             if (_options.FlowWindowsAuthentication)
             {
                 var winPrincipal = UpdateUser(httpContext);

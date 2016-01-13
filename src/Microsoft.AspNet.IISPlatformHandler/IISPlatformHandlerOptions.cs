@@ -23,6 +23,11 @@ namespace Microsoft.AspNet.Builder
         public bool FlowWindowsAuthentication { get; set; } = true;
 
         /// <summary>
+        /// Populates the ITLSConnectionFeature if the MS-PLATFORM-HANDLER-CLIENTCERT request header is present.
+        /// </summary>
+        public bool FlowClientCertificate { get; set; } = true;
+
+        /// <summary>
         /// Additional information about the authentication type which is made available to the application.
         /// </summary>
         public IList<AuthenticationDescription> AuthenticationDescriptions { get; } = new List<AuthenticationDescription>()

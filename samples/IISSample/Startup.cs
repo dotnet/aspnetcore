@@ -26,10 +26,15 @@ namespace IISSample
                 await context.Response.WriteAsync("User - " + context.User.Identity.Name + Environment.NewLine);
                 await context.Response.WriteAsync("PathBase: " + context.Request.PathBase.Value + Environment.NewLine);
                 await context.Response.WriteAsync("Path: " + context.Request.Path.Value + Environment.NewLine);
+                await context.Response.WriteAsync("ClientCert: " + context.Connection.ClientCertificate + Environment.NewLine);
+
+                await context.Response.WriteAsync(Environment.NewLine + "Headers:" + Environment.NewLine);
                 foreach (var header in context.Request.Headers)
                 {
                     await context.Response.WriteAsync(header.Key + ": " + header.Value + Environment.NewLine);
                 }
+
+                await context.Response.WriteAsync(Environment.NewLine + "Environment Variables:" + Environment.NewLine);
                 var vars = Environment.GetEnvironmentVariables();
                 foreach (var key in vars.Keys)
                 {
