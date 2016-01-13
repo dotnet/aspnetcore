@@ -93,7 +93,7 @@ namespace Microsoft.AspNet.Server.Testing
 
         protected void DnuPublish(string publishRoot = null)
         {
-            DeploymentParameters.PublishedApplicationRootPath = Path.Combine(publishRoot ?? Path.GetTempPath(), Guid.NewGuid().ToString());
+            DeploymentParameters.PublishedApplicationRootPath = publishRoot ?? Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
 
             var noSource = DeploymentParameters.PublishWithNoSource ? "--no-source" : string.Empty;
             var command = DeploymentParameters.Command ?? "web";

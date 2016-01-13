@@ -8,6 +8,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
+using Microsoft.AspNet.Server.Testing.Common;
 using Microsoft.Extensions.Logging;
 using Microsoft.Web.Administration;
 
@@ -45,10 +46,12 @@ namespace Microsoft.AspNet.Server.Testing
             // Drop a json file instead of setting environment variable.
             SetAspEnvironmentWithJson();
 
+            var uri = FreePortHelper.FindFreeUrl(DeploymentParameters.ApplicationBaseUriHint);
+
             lock (_syncObject)
             {
                 // To prevent modifying the IIS setup concurrently.
-                _application.Deploy();
+                _application.Deploy(uri);
             }
 
             // Warm up time for IIS setup.
@@ -60,7 +63,7 @@ namespace Microsoft.AspNet.Server.Testing
                 WebRootLocation = DeploymentParameters.ApplicationPath,
                 DeploymentParameters = DeploymentParameters,
                 // Accomodate the vdir name.
-                ApplicationBaseUri = new UriBuilder(Uri.UriSchemeHttp, "localhost", _application.Port).Uri.AbsoluteUri + "/",
+                ApplicationBaseUri = uri.ToString(),
                 HostShutdownToken = _hostShutdownToken.Token
             };
         }
@@ -104,20 +107,16 @@ namespace Microsoft.AspNet.Server.Testing
             {
                 _deploymentParameters = deploymentParameters;
                 _logger = logger;
-
                 WebSiteName = CreateTestSiteName();
-                Port = FindFreePort();
             }
-
-            public int Port { get; }
 
             public string WebSiteName { get; }
 
             public string WebSiteRootFolder => $"{Environment.GetEnvironmentVariable("SystemDrive")}\\inetpub\\{WebSiteName}";
 
-            public void Deploy()
+            public void Deploy(Uri uri)
             {
-                _serverManager.Sites.Add(WebSiteName, _deploymentParameters.ApplicationPath, Port);
+                _serverManager.Sites.Add(WebSiteName, _deploymentParameters.ApplicationPath, uri.Port);
                 _serverManager.CommitChanges();
             }
 
@@ -136,25 +135,15 @@ namespace Microsoft.AspNet.Server.Testing
                     _serverManager.CommitChanges();
                 }
             }
-
-            private static int FindFreePort()
-            {
-                using (var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
-                {
-                    socket.Bind(new IPEndPoint(IPAddress.Loopback, 0));
-                    return ((IPEndPoint)socket.LocalEndPoint).Port;
-                }
-            }
-
             private string CreateTestSiteName()
             {
                 if (!string.IsNullOrEmpty(_deploymentParameters.SiteName))
                 {
-                    return $"{_deploymentParameters.SiteName}{DateTime.Now.ToString("yyyyMMddHHmmss")}"; 
+                    return $"{_deploymentParameters.SiteName}{DateTime.Now.ToString("yyyyMMddHHmmss")}";
                 }
                 else
                 {
-                    return $"testsite{DateTime.Now.ToString("yyyyMMddHHmmss")}";                
+                    return $"testsite{DateTime.Now.ToString("yyyyMMddHHmmss")}";
                 }
             }
         }

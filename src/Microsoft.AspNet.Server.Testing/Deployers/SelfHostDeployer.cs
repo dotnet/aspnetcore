@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNet.Server.Testing.Common;
 
 namespace Microsoft.AspNet.Server.Testing
 {
@@ -33,19 +34,20 @@ namespace Microsoft.AspNet.Server.Testing
                 DnuPublish();
             }
 
+            var uri = FreePortHelper.FindFreeUrl(DeploymentParameters.ApplicationBaseUriHint);
             // Launch the host process.
-            var hostExitToken = StartSelfHost();
+            var hostExitToken = StartSelfHost(uri);
 
             return new DeploymentResult
             {
                 WebRootLocation = DeploymentParameters.ApplicationPath,
                 DeploymentParameters = DeploymentParameters,
-                ApplicationBaseUri = DeploymentParameters.ApplicationBaseUriHint,
+                ApplicationBaseUri = uri.ToString(),
                 HostShutdownToken = hostExitToken
             };
         }
 
-        private CancellationToken StartSelfHost()
+        private CancellationToken StartSelfHost(Uri uri)
         {
             var commandName = DeploymentParameters.Command;
             if (string.IsNullOrEmpty(commandName))
@@ -55,7 +57,7 @@ namespace Microsoft.AspNet.Server.Testing
 
             var dnxPath = Path.Combine(TargetRuntimeBinPath, DnxCommandName);
             var dnxArgs = $"-p \"{DeploymentParameters.ApplicationPath}\" {commandName} " +
-                          $"--server.urls {DeploymentParameters.ApplicationBaseUriHint} " +
+                          $"--server.urls {uri} " +
                           $"--server {(DeploymentParameters.ServerType == ServerType.WebListener ? "Microsoft.AspNet.Server.WebListener" : "Microsoft.AspNet.Server.Kestrel")}";
 
             Logger.LogInformation($"Executing {dnxPath} {dnxArgs}");

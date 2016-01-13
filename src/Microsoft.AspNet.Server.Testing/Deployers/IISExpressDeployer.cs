@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNet.Server.Testing.Common;
 
 namespace Microsoft.AspNet.Server.Testing
 {
@@ -35,20 +36,21 @@ namespace Microsoft.AspNet.Server.Testing
                 DnuPublish();
             }
 
+            var uri = FreePortHelper.FindFreeUrl(DeploymentParameters.ApplicationBaseUriHint);
             // Launch the host process.
-            var hostExitToken = StartIISExpress();
+            var hostExitToken = StartIISExpress(uri);
 
             return new DeploymentResult
             {
                 WebRootLocation = DeploymentParameters.ApplicationPath,
                 DeploymentParameters = DeploymentParameters,
                 // Right now this works only for urls like http://localhost:5001/. Does not work for http://localhost:5001/subpath.
-                ApplicationBaseUri = DeploymentParameters.ApplicationBaseUriHint,
+                ApplicationBaseUri = uri.ToString(),
                 HostShutdownToken = hostExitToken
             };
         }
 
-        private CancellationToken StartIISExpress()
+        private CancellationToken StartIISExpress(Uri uri)
         {
             if (!string.IsNullOrWhiteSpace(DeploymentParameters.ApplicationHostConfigTemplateContent))
             {
@@ -58,7 +60,7 @@ namespace Microsoft.AspNet.Server.Testing
                 DeploymentParameters.ApplicationHostConfigTemplateContent =
                     DeploymentParameters.ApplicationHostConfigTemplateContent
                         .Replace("[ApplicationPhysicalPath]", DeploymentParameters.ApplicationPath)
-                        .Replace("[PORT]", new Uri(DeploymentParameters.ApplicationBaseUriHint).Port.ToString());
+                        .Replace("[PORT]", uri.Port.ToString());
 
                 DeploymentParameters.ApplicationHostConfigLocation = Path.GetTempFileName();
 
@@ -72,7 +74,7 @@ namespace Microsoft.AspNet.Server.Testing
             }
 
             var parameters = string.IsNullOrWhiteSpace(DeploymentParameters.ApplicationHostConfigLocation) ?
-                            string.Format("/port:{0} /path:\"{1}\" /trace:error", new Uri(DeploymentParameters.ApplicationBaseUriHint).Port, webroot) :
+                            string.Format("/port:{0} /path:\"{1}\" /trace:error", uri.Port, webroot) :
                             string.Format("/site:{0} /config:{1} /trace:error", DeploymentParameters.SiteName, DeploymentParameters.ApplicationHostConfigLocation);
 
             var iisExpressPath = GetIISExpressPath();
