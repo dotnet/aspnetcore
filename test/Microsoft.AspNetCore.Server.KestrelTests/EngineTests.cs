@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             testContext.App = App;
             var engine = new KestrelEngine(testContext);
             engine.Start(1);
-            var address = ServerAddress.FromUrl("http://localhost:54321/");
+            var address = ServerAddress.FromUrl($"http://localhost:{TestServer.GetNextPort()}/");
             var started = engine.CreateServer(address);
             started.Dispose();
             engine.Dispose();
@@ -109,15 +109,16 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Test hangs after execution on Mono.")]
         public void ConnectionCanReadAndWrite(TestServiceContext testContext)
         {
+            var port = TestServer.GetNextPort();
             testContext.App = App;
             var engine = new KestrelEngine(testContext);
             engine.Start(1);
-            var address = ServerAddress.FromUrl("http://localhost:54321/");
+            var address = ServerAddress.FromUrl($"http://localhost:{port}/");
             var started = engine.CreateServer(address);
 
             Console.WriteLine("Started");
             var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            socket.Connect(new IPEndPoint(IPAddress.Loopback, 54321));
+            socket.Connect(new IPEndPoint(IPAddress.Loopback, port));
             socket.Send(Encoding.ASCII.GetBytes("POST / HTTP/1.0\r\n\r\nHello World"));
             socket.Shutdown(SocketShutdown.Send);
             var buffer = new byte[8192];
@@ -139,7 +140,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         {
             using (var server = new TestServer(App, testContext))
             {
-                using (var connection = new TestConnection())
+                using (var connection = new TestConnection(server.Port))
                 {
                     await connection.SendEnd(
                         "POST / HTTP/1.0",
@@ -161,7 +162,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         {
             using (var server = new TestServer(AppChunked, testContext))
             {
-                using (var connection = new TestConnection())
+                using (var connection = new TestConnection(server.Port))
                 {
                     await connection.SendEnd(
                         "GET / HTTP/1.1",
@@ -207,7 +208,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                     testContext))
             {
 
-                using (var connection = new TestConnection())
+                using (var connection = new TestConnection(server.Port))
                 {
                     var requestData =
                         Enumerable.Repeat("GET / HTTP/1.1\r\n", loopCount)
@@ -250,7 +251,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                     testContext))
             {
 
-                using (var connection = new TestConnection())
+                using (var connection = new TestConnection(server.Port))
                 {
                     var requestData =
                         Enumerable.Repeat("GET / HTTP/1.1\r\n", loopCount)
@@ -276,7 +277,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         {
             using (var server = new TestServer(App, testContext))
             {
-                using (var connection = new TestConnection())
+                using (var connection = new TestConnection(server.Port))
                 {
                     await connection.Send(
                         "POST / HTTP/1.0",
@@ -298,7 +299,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         {
             using (var server = new TestServer(App, testContext))
             {
-                using (var connection = new TestConnection())
+                using (var connection = new TestConnection(server.Port))
                 {
                     await connection.Send(
                         "POST / HTTP/1.0",
@@ -320,7 +321,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         {
             using (var server = new TestServer(AppChunked, testContext))
             {
-                using (var connection = new TestConnection())
+                using (var connection = new TestConnection(server.Port))
                 {
                     await connection.SendEnd(
                         "GET / HTTP/1.0",
@@ -350,7 +351,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         {
             using (var server = new TestServer(App, testContext))
             {
-                using (var connection = new TestConnection())
+                using (var connection = new TestConnection(server.Port))
                 {
                     await connection.SendEnd(
                         "GET / HTTP/1.0",
@@ -381,7 +382,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         {
             using (var server = new TestServer(AppChunked, testContext))
             {
-                using (var connection = new TestConnection())
+                using (var connection = new TestConnection(server.Port))
                 {
                     await connection.SendEnd(
                         "POST / HTTP/1.0",
@@ -413,7 +414,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         {
             using (var server = new TestServer(AppChunked, testContext))
             {
-                using (var connection = new TestConnection())
+                using (var connection = new TestConnection(server.Port))
                 {
                     await connection.SendEnd(
                         "POST / HTTP/1.0",
@@ -446,7 +447,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         {
             using (var server = new TestServer(AppChunked, testContext))
             {
-                using (var connection = new TestConnection())
+                using (var connection = new TestConnection(server.Port))
                 {
                     await connection.Send(
                         "POST / HTTP/1.1",
@@ -474,11 +475,12 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             using (var server = new TestServer(App, testContext))
             {
                 var socket = new Socket(SocketType.Stream, ProtocolType.Tcp);
-                socket.Connect(IPAddress.Loopback, 54321);
+                socket.Connect(IPAddress.Loopback, server.Port);
+                await Task.Delay(200);
                 socket.Dispose();
 
                 await Task.Delay(200);
-                using (var connection = new TestConnection())
+                using (var connection = new TestConnection(server.Port))
                 {
                     await connection.SendEnd(
                         "GET / HTTP/1.0",
@@ -497,7 +499,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         {
             using (var server = new TestServer(EmptyApp, testContext))
             {
-                using (var connection = new TestConnection())
+                using (var connection = new TestConnection(server.Port))
                 {
                     await connection.SendEnd(
                         "GET / HTTP/1.1",
@@ -526,7 +528,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         {
             using (var server = new TestServer(EmptyApp, testContext))
             {
-                using (var connection = new TestConnection())
+                using (var connection = new TestConnection(server.Port))
                 {
                     await connection.SendEnd(
                         "GET / HTTP/1.1",
@@ -540,7 +542,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "");
                 }
 
-                using (var connection = new TestConnection())
+                using (var connection = new TestConnection(server.Port))
                 {
                     await connection.SendEnd(
                         "GET / HTTP/1.0",
@@ -561,7 +563,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         {
             using (var server = new TestServer(EmptyApp, testContext))
             {
-                using (var connection = new TestConnection())
+                using (var connection = new TestConnection(server.Port))
                 {
                     await connection.SendEnd(
                         "HEAD / HTTP/1.1",
@@ -593,7 +595,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 }
             }, testContext))
             {
-                using (var connection = new TestConnection())
+                using (var connection = new TestConnection(server.Port))
                 {
                     await connection.SendEnd(
                         "POST / HTTP/1.1",
@@ -654,7 +656,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 throw new Exception();
             }, testContext))
             {
-                using (var connection = new TestConnection())
+                using (var connection = new TestConnection(server.Port))
                 {
                     await connection.SendEnd(
                         "GET / HTTP/1.1",
@@ -713,7 +715,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 throw new Exception();
             }, testContext))
             {
-                using (var connection = new TestConnection())
+                using (var connection = new TestConnection(server.Port))
                 {
                     await connection.Send(
                         "GET / HTTP/1.1",
@@ -756,7 +758,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 throw new Exception();
             }, testContext))
             {
-                using (var connection = new TestConnection())
+                using (var connection = new TestConnection(server.Port))
                 {
                     await connection.Send(
                         "GET / HTTP/1.1",
@@ -781,7 +783,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         {
             using (var server = new TestServer(AppChunked, testContext))
             {
-                using (var connection = new TestConnection())
+                using (var connection = new TestConnection(server.Port))
                 {
                     await connection.SendEnd(
                         "GET / HTTP/1.1",
@@ -809,14 +811,14 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         {
             using (var server = new TestServer(AppChunked, testContext))
             {
-                using (var connection = new TestConnection())
+                using (var connection = new TestConnection(server.Port))
                 {
                     await connection.SendEnd(
                         "GET /");
                     await connection.ReceiveEnd();
                 }
 
-                using (var connection = new TestConnection())
+                using (var connection = new TestConnection(server.Port))
                 {
                     await connection.SendEnd(
                         "GET / HTTP/1.1",
@@ -829,7 +831,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "");
                 }
 
-                using (var connection = new TestConnection())
+                using (var connection = new TestConnection(server.Port))
                 {
                     await connection.SendEnd(
                         "GET / HTTP/1.1",
@@ -884,7 +886,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 failedWriteCount++;
             }, testContext))
             {
-                using (var connection = new TestConnection())
+                using (var connection = new TestConnection(server.Port))
                 {
                     await connection.SendEnd(
                         "GET / HTTP/1.1",
@@ -950,7 +952,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 await response.Body.WriteAsync(Encoding.ASCII.GetBytes("Hello World"), 0, 11);
             }, testContext))
             {
-                using (var connection = new TestConnection())
+                using (var connection = new TestConnection(server.Port))
                 {
                     await connection.Send(
                         "GET / HTTP/1.1",
@@ -988,7 +990,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 await response.Body.WriteAsync(Encoding.ASCII.GetBytes("Hello World"), 0, 11);
             }, testContext))
             {
-                using (var connection = new TestConnection())
+                using (var connection = new TestConnection(server.Port))
                 {
                     await connection.SendEnd(
                         "POST / HTTP/1.1",
@@ -1063,7 +1065,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 }
             }, testContext))
             {
-                using (var connection = new TestConnection())
+                using (var connection = new TestConnection(server.Port))
                 {
                     // Never send the body so CopyToAsync always fails.
                     await connection.Send(
@@ -1134,7 +1136,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 writeTcs.SetException(new Exception("This shouldn't be reached."));
             }, testContext))
             {
-                using (var connection = new TestConnection())
+                using (var connection = new TestConnection(server.Port))
                 {
                     await connection.Send(
                         "POST / HTTP/1.1",

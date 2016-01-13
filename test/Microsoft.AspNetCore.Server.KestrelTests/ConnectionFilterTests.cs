@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
             using (var server = new TestServer(App, serviceContext))
             {
-                using (var connection = new TestConnection())
+                using (var connection = new TestConnection(server.Port))
                 {
                     // "?" changes to "!"
                     await connection.SendEnd(sendString);
@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
             using (var server = new TestServer(App, serviceContext))
             {
-                using (var connection = new TestConnection())
+                using (var connection = new TestConnection(server.Port))
                 {
                     await connection.SendEnd(
                         "POST / HTTP/1.0",
@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
             using (var server = new TestServer(App, serviceContext))
             {
-                using (var connection = new TestConnection())
+                using (var connection = new TestConnection(server.Port))
                 {
                     try
                     {

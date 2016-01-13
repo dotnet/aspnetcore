@@ -1,18 +1,23 @@
 using System;
 using System.IO;
 using System.Linq;
+using Microsoft.Extensions.PlatformAbstractions;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.LibuvCopier
 {
     public class Program
     {
-        public void Main(string[] args)
+        public static void Main(string[] args)
         {
             try
             {
-                var packagesFolder = Environment.GetEnvironmentVariable("DNX_PACKAGES") ??
-                                     Path.Combine(GetHome(), ".nuget", "packages");
+                var packagesFolder = Environment.GetEnvironmentVariable("NUGET_PACKAGES");
+
+                if (string.IsNullOrEmpty(packagesFolder))
+                {
+                    packagesFolder = Path.Combine(GetHome(), ".nuget", "packages");
+                }
 
                 packagesFolder = Environment.ExpandEnvironmentVariables(packagesFolder);
 
@@ -39,12 +44,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.LibuvCopier
         }
 
         // Copied from DNX's DnuEnvironment.cs
-        private string GetHome()
+        private static string GetHome()
         {
 #if DNX451
             return Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 #else
-            var runtimeEnv = Extensions.PlatformAbstractions.PlatformServices.Default.Runtime;
+            var runtimeEnv = PlatformServices.Default.Runtime;
             if (runtimeEnv.OperatingSystem == "Windows")
             {
                 return Environment.GetEnvironmentVariable("USERPROFILE") ??

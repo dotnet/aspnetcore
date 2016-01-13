@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 await response.Body.WriteAsync(Encoding.ASCII.GetBytes("World!"), 0, 6);
             }))
             {
-                using (var connection = new TestConnection())
+                using (var connection = new TestConnection(server.Port))
                 {
                     await connection.SendEnd(
                         "GET / HTTP/1.1",
@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 await response.Body.WriteAsync(Encoding.ASCII.GetBytes("World!"), 0, 6);
             }))
             {
-                using (var connection = new TestConnection())
+                using (var connection = new TestConnection(server.Port))
                 {
                     await connection.SendEnd(
                         "GET / HTTP/1.1",
@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 await response.Body.WriteAsync(new byte[0], 0, 0);
             }))
             {
-                using (var connection = new TestConnection())
+                using (var connection = new TestConnection(server.Port))
                 {
                     await connection.SendEnd(
                         "GET / HTTP/1.1",
@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 throw new Exception();
             }))
             {
-                using (var connection = new TestConnection())
+                using (var connection = new TestConnection(server.Port))
                 {
                     // SendEnd is not called, so it isn't the client closing the connection.
                     // client closing the connection.
@@ -150,7 +150,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 throw new Exception();
             }))
             {
-                using (var connection = new TestConnection())
+                using (var connection = new TestConnection(server.Port))
                 {
                     // SendEnd is not called, so it isn't the client closing the connection.
                     await connection.Send(
@@ -186,7 +186,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 await response.Body.WriteAsync(Encoding.ASCII.GetBytes("World!"), 0, 6);
             }))
             {
-                using (var connection = new TestConnection())
+                using (var connection = new TestConnection(server.Port))
                 {
                     await connection.SendEnd(
                         "GET / HTTP/1.1",

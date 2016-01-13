@@ -5,3 +5,5 @@ build_script:
 clone_depth: 1
 test: off
 deploy: off
+environment:
+  NO_PARALLEL_TEST_PROJECTS: Microsoft.AspNetCore.Server.Kestrel.FunctionalTests

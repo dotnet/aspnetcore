@@ -1,14 +1,19 @@
 {
     "version": "1.0.0-*",
     "dependencies": {
-        "xunit.runner.aspnet": "2.0.0-aspnet-*",
         "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*",
         "Microsoft.AspNetCore.Server.Kestrel.Https": "1.0.0-*",
         "Microsoft.AspNetCore.Testing": "1.0.0-*",
-        "System.Net.Http": "4.0.1-*"
+        "Microsoft.NETCore.Platforms": "1.0.1-*",
+        "System.Net.Http": "4.0.1-*",
+        "xunit": "2.1.0"
     },
     "frameworks": {
-        "dnx451": { },
+        "dnx451": {
+            "dependencies": {
+                "xunit.runner.console": "2.1.0"
+            }
+        },
         "dnxcore50": {
             "dependencies": {
                 "System.Diagnostics.TraceSource": "4.0.0-*",
@@ -16,16 +21,21 @@
                 "System.IO": "4.1.0-*",
                 "System.Net.Http.WinHttpHandler": "4.0.0-*",
                 "System.Net.Sockets": "4.1.0-*",
-                "System.Runtime.Handles": "4.0.1-*"
-            }
+                "System.Runtime.Handles": "4.0.1-*",
+                "xunit.runner.aspnet": "2.0.0-aspnet-*"
+            },
+            "imports": "portable-net45+win8"
         }
     },
     "compilationOptions": {
         "allowUnsafe": true,
         "keyFile": "../../tools/Key.snk"
     },
+    "testRunner": "xunit",
     "commands": {
-        "run": "Microsoft.AspNetCore.Server.KestrelTests",
-        "test": "xunit.runner.aspnet -parallel none"
-    }
+        "test": "xunit.runner.aspnet"
+    },
+    "content": [
+        "TestResources/testCert.pfx"
+    ]
 }

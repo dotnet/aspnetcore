@@ -76,7 +76,8 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             loop.Init(_uv);
             var tcp = new UvTcpHandle(_logger);
             tcp.Init(loop);
-            var address = ServerAddress.FromUrl("http://localhost:54321/");
+            var port = TestServer.GetNextPort();
+            var address = ServerAddress.FromUrl($"http://localhost:{port}/");
             tcp.Bind(address);
             tcp.Listen(10, (stream, status, error, state) =>
             {
@@ -96,11 +97,11 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 await Task.Factory.FromAsync(
                     socket.BeginConnect,
                     socket.EndConnect,
-                    new IPEndPoint(IPAddress.Loopback, 54321),
+                    new IPEndPoint(IPAddress.Loopback, port),
                     null,
                     TaskCreationOptions.None);
 #else
-                await socket.ConnectAsync(new IPEndPoint(IPAddress.Loopback, 54321));
+                await socket.ConnectAsync(new IPEndPoint(IPAddress.Loopback, port));
 #endif
                 socket.Dispose();
             });
@@ -117,7 +118,8 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             loop.Init(_uv);
             var tcp = new UvTcpHandle(_logger);
             tcp.Init(loop);
-            var address = ServerAddress.FromUrl("http://localhost:54321/");
+            var port = TestServer.GetNextPort();
+            var address = ServerAddress.FromUrl($"http://localhost:{port}/");
             tcp.Bind(address);
             tcp.Listen(10, (_, status, error, state) =>
             {
@@ -149,7 +151,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 await Task.Factory.FromAsync(
                     socket.BeginConnect,
                     socket.EndConnect,
-                    new IPEndPoint(IPAddress.Loopback, 54321),
+                    new IPEndPoint(IPAddress.Loopback, port),
                     null,
                     TaskCreationOptions.None);
                 await Task.Factory.FromAsync(
@@ -160,7 +162,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                     null,
                     TaskCreationOptions.None);
 #else
-                await socket.ConnectAsync(new IPEndPoint(IPAddress.Loopback, 54321));
+                await socket.ConnectAsync(new IPEndPoint(IPAddress.Loopback, port));
                 await socket.SendAsync(new[] { new ArraySegment<byte>(new byte[] { 1, 2, 3, 4, 5 }) },
                                        SocketFlags.None);
 #endif
@@ -178,7 +180,8 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             loop.Init(_uv);
             var tcp = new UvTcpHandle(_logger);
             tcp.Init(loop);
-            var address = ServerAddress.FromUrl("http://localhost:54321/");
+            var port = TestServer.GetNextPort();
+            var address = ServerAddress.FromUrl($"http://localhost:{port}/");
             tcp.Bind(address);
             tcp.Listen(10, (_, status, error, state) =>
             {
@@ -235,7 +238,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 await Task.Factory.FromAsync(
                     socket.BeginConnect,
                     socket.EndConnect,
-                    new IPEndPoint(IPAddress.Loopback, 54321),
+                    new IPEndPoint(IPAddress.Loopback, port),
                     null,
                     TaskCreationOptions.None);
                 await Task.Factory.FromAsync(
@@ -246,7 +249,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                     null,
                     TaskCreationOptions.None);
 #else
-                await socket.ConnectAsync(new IPEndPoint(IPAddress.Loopback, 54321));
+                await socket.ConnectAsync(new IPEndPoint(IPAddress.Loopback, port));
                 await socket.SendAsync(new[] { new ArraySegment<byte>(new byte[] { 1, 2, 3, 4, 5 }) },
                                        SocketFlags.None);
 #endif

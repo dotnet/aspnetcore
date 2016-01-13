@@ -64,11 +64,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         {
             get
             {
+                var port1 = PortManager.GetPort();
+                var port2 = PortManager.GetPort();
                 var dataset = new TheoryData<string, string[]>();
-                dataset.Add("8787", new[] { "http://localhost:8787/" });
-                dataset.Add("8787;8788", new[] { "http://localhost:8787/", "http://localhost:8788/" });
-                dataset.Add("http://127.0.0.1:8787/", new[] { "http://127.0.0.1:8787/", });
-                dataset.Add("http://localhost:8787/base/path", new[] { "http://localhost:8787/base/path" });
+                dataset.Add($"{port1}", new[] { $"http://localhost:{port1}/" });
+                dataset.Add($"{port1};{port2}", new[] { $"http://localhost:{port1}/", $"http://localhost:{port2}/" });
+                dataset.Add($"http://127.0.0.1:{port1}/", new[] { $"http://127.0.0.1:{port1}/", });
+                dataset.Add($"http://localhost:{port1}/base/path", new[] { $"http://localhost:{port1}/base/path" });
 
                 return dataset;
             }
@@ -78,14 +80,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         {
             get
             {
+                var port = PortManager.GetPort();
                 var dataset = new TheoryData<string, string[]>();
-                dataset.Add("http://*:8787/", new[] { "http://localhost:8787/", "http://127.0.0.1:8787/", "http://[::1]:8787/" });
-                dataset.Add("http://localhost:8787/", new[] { "http://localhost:8787/", "http://127.0.0.1:8787/",
+                dataset.Add($"http://*:{port}/", new[] { $"http://localhost:{port}/", $"http://127.0.0.1:{port}/", $"http://[::1]:{port}/" });
+                dataset.Add($"http://localhost:{port}/", new[] { $"http://localhost:{port}/", $"http://127.0.0.1:{port}/",
                     /* // https://github.com/aspnet/KestrelHttpServer/issues/231
-                    "http://[::1]:8787/"
+                    $"http://[::1]:{port}/"
                     */ });
-                dataset.Add("http://[::1]:8787/", new[] { "http://[::1]:8787/", });
-                dataset.Add("http://127.0.0.1:8787/;http://[::1]:8787/", new[] { "http://127.0.0.1:8787/", "http://[::1]:8787/" });
+                dataset.Add($"http://[::1]:{port}/", new[] { $"http://[::1]:{port}/", });
+                dataset.Add($"http://127.0.0.1:{port}/;http://[::1]:{port}/", new[] { $"http://127.0.0.1:{port}/", $"http://[::1]:{port}/" });
 
                 return dataset;
             }

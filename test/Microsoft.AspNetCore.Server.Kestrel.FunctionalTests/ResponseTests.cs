@@ -23,10 +23,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Test hangs after execution on mono.")]
         public async Task LargeDownload()
         {
+            var port = PortManager.GetPort();
             var config = new ConfigurationBuilder()
                 .AddInMemoryCollection(new Dictionary<string, string>
                 {
-                    { "server.urls", "http://localhost:8792/" }
+                    { "server.urls", $"http://localhost:{port}/" }
                 })
                 .Build();
 
@@ -58,7 +59,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                 using (var client = new HttpClient())
                 {
-                    var response = await client.GetAsync("http://localhost:8792/");
+                    var response = await client.GetAsync($"http://localhost:{port}/");
                     response.EnsureSuccessStatusCode();
                     var responseBody = await response.Content.ReadAsStreamAsync();
 
@@ -83,10 +84,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Test hangs after execution on mono.")]
         public async Task IgnoreNullHeaderValues(string headerName, StringValues headerValue, string expectedValue)
         {
+            var port = PortManager.GetPort();
             var config = new ConfigurationBuilder()
                 .AddInMemoryCollection(new Dictionary<string, string>
                 {
-                    { "server.urls", "http://localhost:8793/" }
+                    { "server.urls", $"http://localhost:{port}/" }
                 })
                 .Build();
 
@@ -109,7 +111,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                 using (var client = new HttpClient())
                 {
-                    var response = await client.GetAsync("http://localhost:8793/");
+                    var response = await client.GetAsync($"http://localhost:{port}/");
                     response.EnsureSuccessStatusCode();
 
                     var headers = response.Headers;
@@ -131,10 +133,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Test hangs after execution on mono.")]
         public async Task OnCompleteCalledEvenWhenOnStartingNotCalled()
         {
+            var port = PortManager.GetPort();
             var config = new ConfigurationBuilder()
                 .AddInMemoryCollection(new Dictionary<string, string>
                 {
-                    { "server.urls", "http://localhost:8794/" }
+                    { "server.urls", $"http://localhost:{port}/" }
                 })
                 .Build();
 
@@ -162,7 +165,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                 using (var client = new HttpClient())
                 {
-                    var response = await client.GetAsync("http://localhost:8794/");
+                    var response = await client.GetAsync($"http://localhost:{port}/");
 
                     Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
                     Assert.False(onStartingCalled);

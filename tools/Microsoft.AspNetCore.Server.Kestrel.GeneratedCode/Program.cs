@@ -5,7 +5,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.GeneratedCode
 {
     public class Program
     {
-        public int Main(string[] args)
+        public static int Main(string[] args)
         {
             var text0 = KnownHeaders.GeneratedFile();
             var text1 = FrameFeatureCollection.GeneratedFile();

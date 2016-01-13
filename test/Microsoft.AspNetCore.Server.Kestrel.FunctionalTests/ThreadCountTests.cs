@@ -16,10 +16,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
     {
         public async Task ZeroToTenThreads(int threadCount)
         {
+            var port = PortManager.GetPort();
             var config = new ConfigurationBuilder()
                 .AddInMemoryCollection(new Dictionary<string, string>
                 {
-                    { "server.urls", "http://localhost:8790/" }
+                    { "server.urls", $"http://localhost:{port}/" }
                 })
                 .Build();
 
@@ -46,7 +47,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     var requestTasks = new List<Task<string>>();
                     for (int i = 0; i < 20; i++)
                     {
-                        var requestTask = client.GetStringAsync("http://localhost:8790/");
+                        var requestTask = client.GetStringAsync($"http://localhost:{port}/");
                         requestTasks.Add(requestTask);
                     }
                     

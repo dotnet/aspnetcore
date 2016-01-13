@@ -18,65 +18,66 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
     public class PathBaseTests
     {
         [ConditionalTheory]
-        [InlineData("http://localhost:8791/base", "http://localhost:8791/base", "/base", "")]
-        [InlineData("http://localhost:8791/base", "http://localhost:8791/base/", "/base", "/")]
-        [InlineData("http://localhost:8791/base", "http://localhost:8791/base/something", "/base", "/something")]
-        [InlineData("http://localhost:8791/base", "http://localhost:8791/base/something/", "/base", "/something/")]
-        [InlineData("http://localhost:8791/base/more", "http://localhost:8791/base/more", "/base/more", "")]
-        [InlineData("http://localhost:8791/base/more", "http://localhost:8791/base/more/something", "/base/more", "/something")]
-        [InlineData("http://localhost:8791/base/more", "http://localhost:8791/base/more/something/", "/base/more", "/something/")]
+        [InlineData("/base", "/base", "/base", "")]
+        [InlineData("/base", "/base/", "/base", "/")]
+        [InlineData("/base", "/base/something", "/base", "/something")]
+        [InlineData("/base", "/base/something/", "/base", "/something/")]
+        [InlineData("/base/more", "/base/more", "/base/more", "")]
+        [InlineData("/base/more", "/base/more/something", "/base/more", "/something")]
+        [InlineData("/base/more", "/base/more/something/", "/base/more", "/something/")]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Test hangs after execution on Mono.")]
-        public Task RequestPathBaseIsServerPathBase(string registerAddress, string requestAddress, string expectedPathBase, string expectedPath)
+        public Task RequestPathBaseIsServerPathBase(string registerPathBase, string requestPath, string expectedPathBase, string expectedPath)
         {
-            return TestPathBase(registerAddress, requestAddress, expectedPathBase, expectedPath);
+            return TestPathBase(registerPathBase, requestPath, expectedPathBase, expectedPath);
         }
 
         [ConditionalTheory]
-        [InlineData("http://localhost:8791", "http://localhost:8791/", "", "/")]
-        [InlineData("http://localhost:8791", "http://localhost:8791/something", "", "/something")]
-        [InlineData("http://localhost:8791/", "http://localhost:8791/", "", "/")]
-        [InlineData("http://localhost:8791/base", "http://localhost:8791/", "", "/")]
-        [InlineData("http://localhost:8791/base", "http://localhost:8791/something", "", "/something")]
-        [InlineData("http://localhost:8791/base", "http://localhost:8791/baseandsomething", "", "/baseandsomething")]
-        [InlineData("http://localhost:8791/base", "http://localhost:8791/ba", "", "/ba")]
-        [InlineData("http://localhost:8791/base", "http://localhost:8791/ba/se", "", "/ba/se")]
+        [InlineData("", "/", "", "/")]
+        [InlineData("", "/something", "", "/something")]
+        [InlineData("/", "/", "", "/")]
+        [InlineData("/base", "/", "", "/")]
+        [InlineData("/base", "/something", "", "/something")]
+        [InlineData("/base", "/baseandsomething", "", "/baseandsomething")]
+        [InlineData("/base", "/ba", "", "/ba")]
+        [InlineData("/base", "/ba/se", "", "/ba/se")]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Test hangs after execution on Mono.")]
-        public Task DefaultPathBaseIsEmpty(string registerAddress, string requestAddress, string expectedPathBase, string expectedPath)
+        public Task DefaultPathBaseIsEmpty(string registerPathBase, string requestPath, string expectedPathBase, string expectedPath)
         {
-            return TestPathBase(registerAddress, requestAddress, expectedPathBase, expectedPath);
+            return TestPathBase(registerPathBase, requestPath, expectedPathBase, expectedPath);
         }
 
         [ConditionalTheory]
-        [InlineData("http://localhost:8791", "http://localhost:8791/", "", "/")]
-        [InlineData("http://localhost:8791/", "http://localhost:8791/", "", "/")]
-        [InlineData("http://localhost:8791/base", "http://localhost:8791/base/", "/base", "/")]
-        [InlineData("http://localhost:8791/base/", "http://localhost:8791/base", "/base", "")]
-        [InlineData("http://localhost:8791/base/", "http://localhost:8791/base/", "/base", "/")]
+        [InlineData("", "/", "", "/")]
+        [InlineData("/", "/", "", "/")]
+        [InlineData("/base", "/base/", "/base", "/")]
+        [InlineData("/base/", "/base", "/base", "")]
+        [InlineData("/base/", "/base/", "/base", "/")]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Test hangs after execution on Mono.")]
-        public Task PathBaseNeverEndsWithSlash(string registerAddress, string requestAddress, string expectedPathBase, string expectedPath)
+        public Task PathBaseNeverEndsWithSlash(string registerPathBase, string requestPath, string expectedPathBase, string expectedPath)
         {
-            return TestPathBase(registerAddress, requestAddress, expectedPathBase, expectedPath);
+            return TestPathBase(registerPathBase, requestPath, expectedPathBase, expectedPath);
         }
 
         [ConditionalFact]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Test hangs after execution on Mono.")]
         public Task PathBaseAndPathPreserveRequestCasing()
         {
-            return TestPathBase("http://localhost:8791/base", "http://localhost:8791/Base/Something", "/Base", "/Something");
+            return TestPathBase("/base", "/Base/Something", "/Base", "/Something");
         }
 
         [ConditionalFact]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Test hangs after execution on Mono.")]
         public Task PathBaseCanHaveUTF8Characters()
         {
-            return TestPathBase("http://localhost:8791/b♫se", "http://localhost:8791/b♫se/something", "/b♫se", "/something");
+            return TestPathBase("/b♫se", "/b♫se/something", "/b♫se", "/something");
         }
 
-        private async Task TestPathBase(string registerAddress, string requestAddress, string expectedPathBase, string expectedPath)
+        private async Task TestPathBase(string registerPathBase, string requestPath, string expectedPathBase, string expectedPath)
         {
+            var port = PortManager.GetPort();
             var config = new ConfigurationBuilder().AddInMemoryCollection(
                 new Dictionary<string, string> {
-                    { "server.urls", registerAddress }
+                    { "server.urls", $"http://localhost:{port}{registerPathBase}" }
                 }).Build();
 
             var builder = new WebHostBuilder()
@@ -100,7 +101,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                 using (var client = new HttpClient())
                 {
-                    var response = await client.GetAsync(requestAddress);
+                    var response = await client.GetAsync($"http://localhost:{port}{requestPath}");
                     response.EnsureSuccessStatusCode();
 
                     var responseText = await response.Content.ReadAsStringAsync();

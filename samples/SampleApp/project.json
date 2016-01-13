@@ -9,15 +9,13 @@
     "emitEntryPoint": true
   },
   "frameworks": {
-    "dnx451": {
-    },
+    "dnx451": { },
     "dnxcore50": {
       "dependencies": {
+        "NETStandard.Library": "1.0.0-*",
         "System.Console": "4.0.0-*"
       }
     }
   },
-  "commands": {
-    "web": "SampleApp"
-  }
+  "content": [ "hosting.json" ]
 }

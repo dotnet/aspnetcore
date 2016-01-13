@@ -25,10 +25,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Test hangs after execution on Mono.")]
         public async Task LargeUpload()
         {
+            var port = PortManager.GetPort();
             var config = new ConfigurationBuilder()
                 .AddInMemoryCollection(new Dictionary<string, string>
                 {
-                    { "server.urls", "http://localhost:8791/" }
+                    { "server.urls", $"http://localhost:{port}/" }
                 })
                 .Build();
 
@@ -69,7 +70,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         bytes[i] = (byte)i;
                     }
 
-                    var response = await client.PostAsync("http://localhost:8791/", new ByteArrayContent(bytes));
+                    var response = await client.PostAsync($"http://localhost:{port}/", new ByteArrayContent(bytes));
                     response.EnsureSuccessStatusCode();
                     var sizeString = await response.Content.ReadAsStringAsync();
                     Assert.Equal(sizeString, bytes.Length.ToString(CultureInfo.InvariantCulture));
@@ -78,12 +79,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
 
         [ConditionalTheory]
-        [InlineData("127.0.0.1", "127.0.0.1", "8792")]
-        [InlineData("localhost", "127.0.0.1", "8792")]
+        [InlineData("127.0.0.1", "127.0.0.1")]
+        [InlineData("localhost", "127.0.0.1")]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Test hangs after execution on Mono.")]
-        public Task RemoteIPv4Address(string requestAddress, string expectAddress, string port)
+        public Task RemoteIPv4Address(string requestAddress, string expectAddress)
         {
-            return TestRemoteIPAddress("localhost", requestAddress, expectAddress, port);
+            return TestRemoteIPAddress("localhost", requestAddress, expectAddress);
         }
 
         [ConditionalFact]
@@ -91,16 +92,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [IPv6SupportedCondition]
         public Task RemoteIPv6Address()
         {
-            return TestRemoteIPAddress("[::1]", "[::1]", "::1", "8793");
+            return TestRemoteIPAddress("[::1]", "[::1]", "::1");
         }
 
         [ConditionalFact]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Test hangs after execution on Mono.")]
         public async Task DoesNotHangOnConnectionCloseRequest()
         {
+            var port = PortManager.GetPort();
             var config = new ConfigurationBuilder().AddInMemoryCollection(
                 new Dictionary<string, string> {
-                    { "server.urls", "http://localhost:8794" }
+                    { "server.urls", $"http://localhost:{port}" }
                 }).Build();
 
             var builder = new WebHostBuilder()
@@ -123,7 +125,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 client.DefaultRequestHeaders.Connection.Clear();
                 client.DefaultRequestHeaders.Connection.Add("close");
 
-                var response = await client.GetAsync("http://localhost:8794/");
+                var response = await client.GetAsync($"http://localhost:{port}/");
                 response.EnsureSuccessStatusCode();
             }
         }
@@ -132,9 +134,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Test hangs after execution on Mono.")]
         public async Task RequestPathIsNormalized()
         {
+            var port = PortManager.GetPort();
             var config = new ConfigurationBuilder().AddInMemoryCollection(
                 new Dictionary<string, string> {
-                    { "server.urls", "http://localhost:8795/\u0041\u030A" }
+                    { "server.urls", $"http://localhost:{port}/\u0041\u030A" }
                 }).Build();
 
             var builder = new WebHostBuilder()
@@ -157,7 +160,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                 using (var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
                 {
-                    socket.Connect(new IPEndPoint(IPAddress.Loopback, 8795));
+                    socket.Connect(new IPEndPoint(IPAddress.Loopback, port));
                     socket.Send(Encoding.ASCII.GetBytes("GET /%41%CC%8A/A/../B/%41%CC%8A HTTP/1.1\r\n\r\n"));
                     socket.Shutdown(SocketShutdown.Send);
 
@@ -179,8 +182,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }
         }
 
-        private async Task TestRemoteIPAddress(string registerAddress, string requestAddress, string expectAddress, string port)
+        private async Task TestRemoteIPAddress(string registerAddress, string requestAddress, string expectAddress)
         {
+            var port = PortManager.GetPort();
             var config = new ConfigurationBuilder().AddInMemoryCollection(
                 new Dictionary<string, string> {
                     { "server.urls", $"http://{registerAddress}:{port}" }

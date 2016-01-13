@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Threading;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel;
 using Microsoft.AspNetCore.Server.Kestrel.Http;
@@ -13,8 +14,11 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
     /// </summary>
     public class TestServer : IDisposable
     {
+        private static int _nextPort = 9001;
+
         private KestrelEngine _engine;
         private IDisposable _server;
+        ServerAddress _address;
 
         public TestServer(RequestDelegate app)
             : this(app, new TestServiceContext())
@@ -22,14 +26,16 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         }
 
         public TestServer(RequestDelegate app, ServiceContext context)
-            : this(app, context, "http://localhost:54321/")
+            : this(app, context, $"http://localhost:{GetNextPort()}/")
         {
         }
+
+        public int Port => _address.Port;
+
         public TestServer(RequestDelegate app, ServiceContext context, string serverAddress)
         {
             Create(app, context, serverAddress);
         }
-
 
         public void Create(RequestDelegate app, ServiceContext context, string serverAddress)
         {
@@ -39,14 +45,19 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             };
             _engine = new KestrelEngine(context);
             _engine.Start(1);
-            _server = _engine.CreateServer(
-                ServerAddress.FromUrl(serverAddress));
+            _address = ServerAddress.FromUrl(serverAddress);
+            _server = _engine.CreateServer(_address);
         }
 
         public void Dispose()
         {
             _server.Dispose();
             _engine.Dispose();
+        }
+
+        public static int GetNextPort()
+        {
+            return Interlocked.Increment(ref _nextPort);
         }
     }
 }

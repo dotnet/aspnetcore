@@ -1,14 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Dnx.Compilation.CSharp;
 using System.Text;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.GeneratedCode
 {
     // This project can output the Class library as a NuGet Package.
     // To enable this option, right-click on the project and select the Properties menu item. In the Build tab select "Produce outputs on build".
-    public class KnownHeaders : ICompileModule
+    public class KnownHeaders
     {
         static string Each<T>(IEnumerable<T> values, Func<T, string> formatter)
         {
@@ -73,11 +72,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.GeneratedCode
                 return $"(({array}[{offset / count}] & {mask}{suffix}) == {comp}{suffix})";
             }
         }
-        public virtual void BeforeCompile(BeforeCompileContext context)
-        {
-            var syntaxTree = Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(GeneratedFile());
-            context.Compilation = context.Compilation.AddSyntaxTrees(syntaxTree);
-        }
+        
         public static string GeneratedFile()
         {
             var commonHeaders = new[]
@@ -487,9 +482,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         }}
     }}
 ")}}}";
-        }
-        public virtual void AfterCompile(AfterCompileContext context)
-        {
         }
     }
 }

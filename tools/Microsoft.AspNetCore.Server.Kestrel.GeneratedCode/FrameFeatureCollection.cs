@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.Dnx.Compilation.CSharp;
 using Microsoft.AspNetCore.Http.Features.Internal;
 using Microsoft.AspNetCore.Http.Features.Authentication;
 
@@ -10,17 +9,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.GeneratedCode
 {
     // This project can output the Class library as a NuGet Package.
     // To enable this option, right-click on the project and select the Properties menu item. In the Build tab select "Produce outputs on build".
-    public class FrameFeatureCollection : ICompileModule
+    public class FrameFeatureCollection
     {
         static string Each<T>(IEnumerable<T> values, Func<T, string> formatter)
         {
             return values.Select(formatter).Aggregate((a, b) => a + b);
-        }
-
-        public virtual void BeforeCompile(BeforeCompileContext context)
-        {
-            var syntaxTree = Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(GeneratedFile());
-            context.Compilation = context.Compilation.AddSyntaxTrees(syntaxTree);
         }
 
         public static string GeneratedFile()
@@ -128,10 +121,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
     }}
 }}
 ";
-        }
-
-        public virtual void AfterCompile(AfterCompileContext context)
-        {
         }
     }
 }

@@ -1,27 +1,23 @@
 {
     "version": "1.0.0-*",
-
+    "compilationOptions": {
+        "emitEntryPoint": true
+    },
     "dependencies": {
-        "Microsoft.Dnx.Compilation.CSharp.Abstractions": "1.0.0-*",
         "Microsoft.AspNetCore.Http.Features": "1.0.0-*",
         "Microsoft.AspNetCore.Hosting": "1.0.0-*"
     },
-
-    "commands": {
-        "run": "Microsoft.AspNetCore.Server.Kestrel.GeneratedCode"
-    },
-
     "frameworks": {
+        "dnxcore50": {
+            "dependencies": {
+                "NETStandard.Library": "1.0.0-*"
+            }
+        },
         "dnx451": {
             "frameworkAssemblies": {
                 "System.Runtime": "",
                 "System.Text.Encoding": "",
                 "System.Threading.Tasks": ""
-            }
-        },
-        "dnxcore50": {
-            "dependencies": {
-                "System.Console": "4.0.0-*"
             }
         }
     }

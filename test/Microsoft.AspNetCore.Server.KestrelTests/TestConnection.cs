@@ -21,15 +21,15 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         private NetworkStream _stream;
         private StreamReader _reader;
 
-        public TestConnection()
+        public TestConnection(int port)
         {
-            Create();
+            Create(port);
         }
 
-        public void Create()
+        public void Create(int port)
         {
             _socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            _socket.Connect(new IPEndPoint(IPAddress.Loopback, 54321));
+            _socket.Connect(new IPEndPoint(IPAddress.Loopback, port));
 
             _stream = new NetworkStream(_socket, false);
             _reader = new StreamReader(_stream, Encoding.ASCII);
