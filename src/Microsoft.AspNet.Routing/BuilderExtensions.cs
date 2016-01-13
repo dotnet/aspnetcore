@@ -3,6 +3,8 @@
 
 using System;
 using Microsoft.AspNet.Routing;
+using Microsoft.AspNet.Routing.Internal;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNet.Builder
 {
@@ -27,6 +29,14 @@ namespace Microsoft.AspNet.Builder
             if (router == null)
             {
                 throw new ArgumentNullException(nameof(router));
+            }
+
+            if (builder.ApplicationServices.GetService(typeof(RoutingMarkerService)) == null)
+            {
+                throw new InvalidOperationException(Resources.FormatUnableToFindServices(
+                    nameof(IServiceCollection),
+                    nameof(RoutingServiceCollectionExtensions.AddRouting),
+                    "ConfigureServices(...)"));
             }
 
             return builder.UseMiddleware<RouterMiddleware>(router);

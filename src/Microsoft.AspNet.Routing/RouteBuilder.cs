@@ -4,6 +4,8 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.Routing.Internal;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNet.Routing
 {
@@ -19,6 +21,14 @@ namespace Microsoft.AspNet.Routing
             if (applicationBuilder == null)
             {
                 throw new ArgumentNullException(nameof(applicationBuilder));
+            }
+
+            if (applicationBuilder.ApplicationServices.GetService(typeof(RoutingMarkerService)) == null)
+            {
+                throw new InvalidOperationException(Resources.FormatUnableToFindServices(
+                    nameof(IServiceCollection),
+                    nameof(RoutingServiceCollectionExtensions.AddRouting),
+                    "ConfigureServices(...)"));
             }
 
             ApplicationBuilder = applicationBuilder;

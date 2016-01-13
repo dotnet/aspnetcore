@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNet.Builder;
+using Microsoft.AspNet.Routing.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -112,6 +113,7 @@ namespace Microsoft.AspNet.Routing.Tests
         {
             var services = new ServiceCollection();
             services.AddSingleton<IInlineConstraintResolver>(_inlineConstraintResolver);
+            services.AddSingleton<RoutingMarkerService>();
 
             var applicationBuilder = Mock.Of<IApplicationBuilder>();
             applicationBuilder.ApplicationServices = services.BuildServiceProvider();

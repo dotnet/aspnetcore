@@ -34,6 +34,8 @@ namespace Microsoft.Extensions.DependencyInjection
                 return provider.Create<UriBuildingContext>(new UriBuilderContextPooledObjectPolicy(encoder));
             });
 
+            services.TryAddSingleton(typeof(RoutingMarkerService));
+
             if (configureOptions != null)
             {
                 services.Configure(configureOptions);
