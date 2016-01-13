@@ -70,7 +70,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var assemblyProvider = new StaticAssemblyProvider();
             assemblyProvider.CandidateAssemblies.Add(startupAssembly);
             services.AddSingleton<IAssemblyProvider>(assemblyProvider);
-            services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
         }
     }
 }
