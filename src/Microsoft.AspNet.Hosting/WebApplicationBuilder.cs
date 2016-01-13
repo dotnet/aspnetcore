@@ -17,7 +17,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.PlatformAbstractions;
-using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNet.Hosting
 {
@@ -38,12 +37,20 @@ namespace Microsoft.AspNet.Hosting
         // Only one of these should be set
         private IServerFactory _serverFactory;
 
-        private Dictionary<string, string> _settings = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        private IDictionary<string, string> _settings = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
         public WebApplicationBuilder()
         {
             _hostingEnvironment = new HostingEnvironment();
             _loggerFactory = new LoggerFactory();
+        }
+
+        public IDictionary<string, string> Settings
+        {
+            get
+            {
+                return _settings;
+            }
         }
 
         public IWebApplicationBuilder UseSetting(string key, string value)

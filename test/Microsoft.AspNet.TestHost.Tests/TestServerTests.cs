@@ -30,6 +30,34 @@ namespace Microsoft.AspNet.TestHost
             new TestServer(new WebApplicationBuilder().Configure(app => { }));
         }
 
+
+        [Fact]
+        public void DoesNotCaptureStartupErrorsByDefault()
+        {
+            var builder = new WebApplicationBuilder()
+                .Configure(app =>
+                {
+                    throw new InvalidOperationException();
+                });
+
+            Assert.Throws<InvalidOperationException>(() => new TestServer(builder));
+        }
+
+
+        [Fact]
+        public void CaptureStartupErrorsSettingPreserved()
+        {
+            var builder = new WebApplicationBuilder()
+                .UseCaptureStartupErrors(true)
+                .Configure(app =>
+                {
+                    throw new InvalidOperationException();
+                });
+
+            // Does not throw
+            new TestServer(builder);
+        }
+
         [Fact]
         public void ApplicationServicesAvailableFromTestServer()
         {

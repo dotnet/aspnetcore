@@ -22,6 +22,11 @@ namespace Microsoft.AspNet.TestHost
 
         public TestServer(IWebApplicationBuilder builder)
         {
+            if (!builder.Settings.ContainsKey(WebApplicationDefaults.CaptureStartupErrorsKey))
+            {
+                builder.UseCaptureStartupErrors(false);
+            }
+
             var application = builder.UseServer(this).Build();
             application.Start();
             _appInstance = application;

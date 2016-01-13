@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting.Server;
 using Microsoft.Extensions.Configuration;
@@ -12,6 +13,8 @@ namespace Microsoft.AspNet.Hosting
     public interface IWebApplicationBuilder
     {
         IWebApplication Build();
+
+        IDictionary<string, string> Settings { get; }
 
         IWebApplicationBuilder UseConfiguration(IConfiguration configuration);
 
