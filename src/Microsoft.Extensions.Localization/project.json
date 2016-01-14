@@ -20,7 +20,7 @@
     "dotnet5.4": {
       "dependencies": {
         "System.Collections.Concurrent": "4.0.11-*",
-        "System.Resources.ReaderWriter": "4.0.0-*"
+        "System.Resources.Reader": "4.0.0-*"
       }
     }
   }
