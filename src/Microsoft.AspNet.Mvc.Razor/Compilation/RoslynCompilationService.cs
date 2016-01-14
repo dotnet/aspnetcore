@@ -56,6 +56,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Compilation
         /// <param name="host">The <see cref="IMvcRazorHost"/> that was used to generate the code.</param>
         /// <param name="optionsAccessor">Accessor to <see cref="RazorViewEngineOptions"/>.</param>
         /// <param name="fileProviderAccessor">The <see cref="IRazorViewEngineFileProviderAccessor"/>.</param>
+        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
         public RoslynCompilationService(
             IApplicationEnvironment environment,
             IMvcRazorHost host,
