@@ -13,9 +13,9 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
-    public class TagHelperSampleTest : IClassFixture<MvcTestFixture<TagHelperSample.Web.Startup>>
+    public class TagHelperSampleTest : IClassFixture<MvcSampleFixture<TagHelperSample.Web.Startup>>
     {
-        public TagHelperSampleTest(MvcTestFixture<TagHelperSample.Web.Startup> fixture)
+        public TagHelperSampleTest(MvcSampleFixture<TagHelperSample.Web.Startup> fixture)
         {
             Client = fixture.Client;
         }

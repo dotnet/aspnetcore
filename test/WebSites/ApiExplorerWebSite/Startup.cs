@@ -46,6 +46,7 @@ namespace ApiExplorerWebSite
         {
             var host = new WebHostBuilder()
                 .UseDefaultConfiguration(args)
+                .UseServer("Microsoft.AspNetCore.Server.Kestrel")
                 .UseStartup<Startup>()
                 .Build();
 

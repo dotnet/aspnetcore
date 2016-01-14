@@ -7,11 +7,28 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using Microsoft.Extensions.DependencyModel;
+using Microsoft.Extensions.PlatformAbstractions;
 
 namespace Microsoft.AspNetCore.Mvc.Infrastructure
 {
+    /// <summary>
+    /// An <see cref="IAssemblyProvider"/> that uses <see cref="DependencyContext"/> to discover assemblies that may
+    /// contain Mvc specific types such as controllers, and view components.
+    /// </summary>
     public class DependencyContextAssemblyProvider : IAssemblyProvider
     {
+        private readonly DependencyContext _dependencyContext;
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="DependencyContextAssemblyProvider"/>.
+        /// </summary>
+        /// <param name="environment">The <see cref="IApplicationEnvironment"/>.</param>
+        public DependencyContextAssemblyProvider(IApplicationEnvironment environment)
+        {
+            var applicationAssembly = Assembly.Load(new AssemblyName(environment.ApplicationName));
+            _dependencyContext = DependencyContext.Load(applicationAssembly);
+        }
+
         /// <summary>
         /// Gets the set of assembly names that are used as root for discovery of
         /// MVC controllers, view components and views.

@@ -18,7 +18,9 @@
   },
   "frameworks": {
     "net451": {},
-    "dotnet5.6": {}
+    "dotnet5.6": {
+      "imports": "portable-net45+win8"
+    }
   },
   "exclude": [
     "wwwroot",

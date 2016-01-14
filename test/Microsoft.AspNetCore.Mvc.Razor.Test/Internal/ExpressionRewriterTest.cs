@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -566,9 +567,19 @@ public class Person
 
         private IEnumerable<MetadataReference> GetReferences()
         {
-            var libraryExporter = CompilationServices.Default.LibraryExporter;
-            var environment = PlatformServices.Default.Application;
+            var libraryExporter = CompilationServices.Default?.LibraryExporter;
+            if (libraryExporter == null)
+            {
+                var types = new[]
+                {
+                   typeof(System.Linq.Expressions.Expression),
+                   typeof(string),
+                };
 
+                return types.Select(t => MetadataReference.CreateFromFile(t.GetTypeInfo().Assembly.Location));
+            }
+
+            var environment = PlatformServices.Default.Application;
             var references = new List<MetadataReference>();
 
             var libraryExports = libraryExporter.GetAllExports(environment.ApplicationName);

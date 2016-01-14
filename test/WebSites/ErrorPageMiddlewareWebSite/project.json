@@ -3,7 +3,8 @@
     "web": "ErrorPageMiddlewareWebSite"
   },
   "compilationOptions": {
-    "emitEntryPoint": true
+    "emitEntryPoint": true,
+    "preserveCompilationContext": true
   },
   "dependencies": {
     "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*",
@@ -14,7 +15,9 @@
     "Microsoft.NETCore.Platforms": "1.0.1-*"
   },
   "frameworks": {
-    "dnx451": {},
-    "dnxcore50": {}
+    "net451": {},
+    "dnxcore50": {
+      "imports": "portable-net451+win8"
+    }
   }
 }

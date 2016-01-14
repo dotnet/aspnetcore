@@ -42,6 +42,7 @@ namespace FormatFilterSample.Web
             var host = new WebHostBuilder()
                 .UseDefaultConfiguration(args)
                 .UseIISPlatformHandlerUrl()
+                .UseServer("Microsoft.AspNetCore.Server.Kestrel")
                 .UseStartup<Startup>()
                 .Build();
 

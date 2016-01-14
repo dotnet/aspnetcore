@@ -9,9 +9,9 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
     public class MvcEncodedTestFixture<TStartup> : MvcTestFixture<TStartup>
     {
-        protected override void InitializeServices(IServiceCollection services)
+        protected override void InitializeServices(IServiceCollection services, string relativePath)
         {
-            base.InitializeServices(services);
+            base.InitializeServices(services, relativePath);
             services.AddTransient<HtmlEncoder, HtmlTestEncoder>();
             services.AddTransient<JavaScriptEncoder, JavaScriptTestEncoder>();
             services.AddTransient<UrlEncoder, UrlTestEncoder>();

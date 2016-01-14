@@ -1,13 +1,16 @@
 {
-    "dependencies": {
-        "Microsoft.AspNetCore.Http": "1.0.0-*",
-        "Microsoft.AspNetCore.Http.Extensions": "1.0.0-*",
-        "Microsoft.AspNetCore.Testing": "1.0.0-*",
-        "Microsoft.Extensions.Configuration": "1.0.0-*",
-        "Microsoft.Extensions.DependencyInjection": "1.0.0-*"
-    },
-    "frameworks": {
-        "dnx451": { },
-        "dnxcore50": { }
+  "dependencies": {
+    "Microsoft.AspNetCore.Http": "1.0.0-*",
+    "Microsoft.AspNetCore.Http.Extensions": "1.0.0-*",
+    "Microsoft.AspNetCore.Testing": "1.0.0-*",
+    "Microsoft.Extensions.Configuration": "1.0.0-*",
+    "Microsoft.Extensions.DependencyInjection": "1.0.0-*",
+    "Microsoft.NETCore.Platforms": "1.0.1-*"
+  },
+  "frameworks": {
+    "net451": { },
+    "dnxcore50": { 
+      "imports": "portable-net451+win8"
     }
+  }
 }

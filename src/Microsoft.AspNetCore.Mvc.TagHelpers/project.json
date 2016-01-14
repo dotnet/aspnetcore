@@ -30,6 +30,7 @@
   "frameworks": {
     "net451": {},
     "dotnet5.6": {
+    "imports": "portable-net45+win8",
       "dependencies": {
         "System.Security.Cryptography.Algorithms": "4.0.0-*"
       }

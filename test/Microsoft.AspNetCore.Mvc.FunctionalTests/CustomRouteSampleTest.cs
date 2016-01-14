@@ -8,9 +8,9 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
-    public class CustomRouteSampleTest : IClassFixture<MvcTestFixture<CustomRouteSample.Web.Startup>>
+    public class CustomRouteSampleTest : IClassFixture<MvcSampleFixture<CustomRouteSample.Web.Startup>>
     {
-        public CustomRouteSampleTest(MvcTestFixture<CustomRouteSample.Web.Startup> fixture)
+        public CustomRouteSampleTest(MvcSampleFixture<CustomRouteSample.Web.Startup> fixture)
         {
             Client = fixture.Client;
         }

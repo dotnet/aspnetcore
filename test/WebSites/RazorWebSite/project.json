@@ -3,7 +3,8 @@
     "web": "RazorWebSite"
   },
   "compilationOptions": {
-    "emitEntryPoint": true
+    "emitEntryPoint": true,
+    "preserveCompilationContext": true
   },
   "dependencies": {
     "Microsoft.AspNetCore.Localization": "1.0.0-*",
@@ -15,10 +16,10 @@
     "Microsoft.NETCore.Platforms": "1.0.1-*"
   },
   "frameworks": {
-    "dnx451": {
+    "net451": {
       "compilationOptions": {
         "define": [
-          "DNX451_CUSTOM_DEFINE"
+          "NET451_CUSTOM_DEFINE"
         ]
       }
     },
@@ -27,7 +28,8 @@
         "define": [
           "DNXCORE50_CUSTOM_DEFINE"
         ]
-      }
+      },
+      "imports": "portable-net451+win8"
     }
   }
 }

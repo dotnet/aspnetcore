@@ -9,13 +9,13 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
-    public class FormatFilterSampleTest : IClassFixture<MvcTestFixture<FormatFilterSample.Web.Startup>>
+    public class FormatFilterSampleTest : IClassFixture<MvcSampleFixture<FormatFilterSample.Web.Startup>>
     {
         // Typical accept header sent by Chrome browser
         private const string ChromeAcceptHeader = "text/html,application/xhtml+xml," +
                 "application/xml;q=0.9,image/webp,*/*;q=0.8";
 
-        public FormatFilterSampleTest(MvcTestFixture<FormatFilterSample.Web.Startup> fixture)
+        public FormatFilterSampleTest(MvcSampleFixture<FormatFilterSample.Web.Startup> fixture)
         {
             Client = fixture.Client;
         }

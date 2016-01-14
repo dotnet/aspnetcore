@@ -50,15 +50,25 @@
     "UrlHelperSample.Web": "1.0.0",
     "VersioningWebSite": "1.0.0",
     "WebApiCompatShimWebSite": "1.0.0",
-    "XmlFormattersWebSite": "1.0.0",
-    "xunit.runner.aspnet": "2.0.0-aspnet-*"
+    "XmlFormattersWebSite": "1.0.0"
   },
+  "testRunner": "xunit",
   "commands": {
     "test": "xunit.runner.aspnet"
   },
   "frameworks": {
-    "dnx451": {},
-    "dnxcore50": {}
+    "dnx451": {
+      "dependencies": {
+        "xunit.runner.aspnet": "2.0.0-aspnet-*"
+      },
+    },
+    "net451": { },
+    "dnxcore50": {
+      "dependencies": {
+        "xunit.runner.aspnet": "2.0.0-aspnet-*"
+      },
+      "imports": "portable-net451+win8"
+    }
   },
   "exclude": [
     "wwwroot",

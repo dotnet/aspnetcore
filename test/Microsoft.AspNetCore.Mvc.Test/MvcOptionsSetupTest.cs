@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Reflection;
 using System.Xml;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Hosting;
@@ -251,6 +252,9 @@ namespace Microsoft.AspNetCore.Mvc
             serviceCollection.AddSingleton(Mock.Of<ICompilerOptionsProvider>());
             serviceCollection.AddSingleton(Mock.Of<IHostingEnvironment>());
             var applicationEnvironment = new Mock<IApplicationEnvironment>();
+
+            applicationEnvironment.SetupGet(e => e.ApplicationName)
+                .Returns(typeof(MvcOptionsSetupTest).GetTypeInfo().Assembly.GetName().Name);
 
             // ApplicationBasePath is used to set up a PhysicalFileProvider which requires
             // a real directory.

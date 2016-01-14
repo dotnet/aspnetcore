@@ -3,42 +3,41 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Mvc.Razor;
+using System.Linq;
+using System.Reflection;
 using Microsoft.CodeAnalysis;
-using Microsoft.Extensions.Options;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.DependencyModel;
+using Microsoft.Extensions.Options;
+using Microsoft.Extensions.PlatformAbstractions;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 {
     /// <summary>
-    /// Sets up compilation and parse option default options for <see cref="RazorViewEngineOptions"/> using <see cref="DependencyContext"/>
+    /// Sets up compilation and parse option default options for <see cref="RazorViewEngineOptions"/> using
+    /// <see cref="DependencyContext"/>
     /// </summary>
     public class DependencyContextRazorViewEngineOptionsSetup : ConfigureOptions<RazorViewEngineOptions>
     {
         /// <summary>
         /// Initializes a new instance of <see cref="DependencyContextRazorViewEngineOptionsSetup"/>.
         /// </summary>
-        public DependencyContextRazorViewEngineOptionsSetup() : this(DependencyContext.Default)
+        public DependencyContextRazorViewEngineOptionsSetup(IApplicationEnvironment applicationEnvironment)
+            : base(options => ConfigureRazor(options, applicationEnvironment))
         {
         }
 
-        /// <summary>
-        /// Initializes a new instance of <see cref="DependencyContextRazorViewEngineOptionsSetup"/>.
-        /// </summary>
-        /// <param name="dependencyContext"><see cref="DependencyContext"/> to use as compilation and parse option source.</param>
-        public DependencyContextRazorViewEngineOptionsSetup(DependencyContext dependencyContext) : base(options => ConfigureRazor(options, dependencyContext))
+        private static void ConfigureRazor(RazorViewEngineOptions options, IApplicationEnvironment applicationEnvironment)
         {
-        }
-
-        private static void ConfigureRazor(RazorViewEngineOptions options, DependencyContext dependencyContext)
-        {
-            var compilationOptions = dependencyContext.CompilationOptions;
+            var applicationAssembly = Assembly.Load(new AssemblyName(applicationEnvironment.ApplicationName));
+            var dependencyContext = DependencyContext.Load(applicationAssembly);
+            var compilationOptions = dependencyContext?.CompilationOptions ?? Extensions.DependencyModel.CompilationOptions.Default;
 
             SetParseOptions(options, compilationOptions);
             SetCompilationOptions(options, compilationOptions);
         }
 
-        private static void SetCompilationOptions(RazorViewEngineOptions options, Microsoft.Extensions.DependencyModel.CompilationOptions compilationOptions)
+        private static void SetCompilationOptions(RazorViewEngineOptions options, Extensions.DependencyModel.CompilationOptions compilationOptions)
         {
             var roslynOptions = options.CompilationOptions;
 
@@ -58,31 +57,39 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 
             if (compilationOptions.Optimize.HasValue)
             {
-                var optimizationLevel = compilationOptions.Optimize.Value ? OptimizationLevel.Debug : OptimizationLevel.Release;
+                var optimizationLevel = compilationOptions.Optimize.Value
+                    ? OptimizationLevel.Debug
+                    : OptimizationLevel.Release;
                 roslynOptions = roslynOptions.WithOptimizationLevel(optimizationLevel);
             }
 
             if (compilationOptions.WarningsAsErrors.HasValue)
             {
-                var reportDiagnostic = compilationOptions.WarningsAsErrors.Value ? ReportDiagnostic.Error : ReportDiagnostic.Default;
+                var reportDiagnostic = compilationOptions.WarningsAsErrors.Value
+                    ? ReportDiagnostic.Error
+                    : ReportDiagnostic.Default;
                 roslynOptions = roslynOptions.WithGeneralDiagnosticOption(reportDiagnostic);
             }
 
             options.CompilationOptions = roslynOptions;
         }
 
-        private static void SetParseOptions(RazorViewEngineOptions options, Microsoft.Extensions.DependencyModel.CompilationOptions compilationOptions)
+        private static void SetParseOptions(
+            RazorViewEngineOptions options,
+            Extensions.DependencyModel.CompilationOptions compilationOptions)
         {
-            var roslynParseOptions = options.ParseOptions;
-            roslynParseOptions = roslynParseOptions.WithPreprocessorSymbols(compilationOptions.Defines);
+            var parseOptions = options.ParseOptions;
+            parseOptions = parseOptions.WithPreprocessorSymbols(
+                parseOptions.PreprocessorSymbolNames.Concat(compilationOptions.Defines));
 
-            var languageVersion = roslynParseOptions.LanguageVersion;
-            if (Enum.TryParse(compilationOptions.LanguageVersion, ignoreCase: true, result: out languageVersion))
+            LanguageVersion languageVersion;
+            if (!string.IsNullOrEmpty(compilationOptions.LanguageVersion) &&
+                Enum.TryParse(compilationOptions.LanguageVersion, ignoreCase: true, result: out languageVersion))
             {
-                roslynParseOptions = roslynParseOptions.WithLanguageVersion(languageVersion);
+                parseOptions = parseOptions.WithLanguageVersion(languageVersion);
             }
 
-            options.ParseOptions = roslynParseOptions;
+            options.ParseOptions = parseOptions;
         }
     }
 }

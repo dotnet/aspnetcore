@@ -22,10 +22,10 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public async Task CompilationOptions_AreUsedByViewsAndPartials()
         {
             // Arrange
-#if DNX451
+#if NET451 || DNX451
             var expected =
-@"This method is running from DNX451
-This method is only defined in DNX451";
+@"This method is running from NET451
+This method is only defined in NET451";
 #elif DNXCORE50
             var expected =
 @"This method is running from DNXCORE50

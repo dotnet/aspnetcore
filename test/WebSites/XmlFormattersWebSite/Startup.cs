@@ -82,6 +82,7 @@ namespace XmlFormattersWebSite
             var host = new WebHostBuilder()
                 .UseDefaultConfiguration(args)
                 .UseStartup<Startup>()
+                .UseServer("Microsoft.AspNetCore.Server.Kestrel")
                 .Build();
 
             host.Run();

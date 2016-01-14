@@ -13,9 +13,9 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
-    public class JsonPatchSampleTest : IClassFixture<MvcTestFixture<JsonPatchSample.Web.Startup>>
+    public class JsonPatchSampleTest : IClassFixture<MvcSampleFixture<JsonPatchSample.Web.Startup>>
     {
-        public JsonPatchSampleTest(MvcTestFixture<JsonPatchSample.Web.Startup> fixture)
+        public JsonPatchSampleTest(MvcSampleFixture<JsonPatchSample.Web.Startup> fixture)
         {
             Client = fixture.Client;
         }

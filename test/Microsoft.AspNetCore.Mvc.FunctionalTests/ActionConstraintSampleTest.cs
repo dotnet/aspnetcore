@@ -8,9 +8,9 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
-    public class ActionConstraintSampleTest : IClassFixture<MvcTestFixture<ActionConstraintSample.Web.Startup>>
+    public class ActionConstraintSampleTest : IClassFixture<MvcSampleFixture<ActionConstraintSample.Web.Startup>>
     {
-        public ActionConstraintSampleTest(MvcTestFixture<ActionConstraintSample.Web.Startup> fixture)
+        public ActionConstraintSampleTest(MvcSampleFixture<ActionConstraintSample.Web.Startup> fixture)
         {
             Client = fixture.Client;
         }

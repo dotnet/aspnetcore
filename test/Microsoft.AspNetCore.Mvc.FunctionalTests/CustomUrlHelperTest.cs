@@ -15,11 +15,11 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
     /// 1. Based on configuration, generate Content urls pointing to local or a CDN server
     /// 2. Based on configuration, generate lower case urls
     /// </summary>
-    public class CustomUrlHelperTests : IClassFixture<MvcTestFixture<UrlHelperSample.Web.Startup>>
+    public class CustomUrlHelperTests : IClassFixture<MvcSampleFixture<UrlHelperSample.Web.Startup>>
     {
         private const string _cdnServerBaseUrl = "http://cdn.contoso.com";
 
-        public CustomUrlHelperTests(MvcTestFixture<UrlHelperSample.Web.Startup> fixture)
+        public CustomUrlHelperTests(MvcSampleFixture<UrlHelperSample.Web.Startup> fixture)
         {
             Client = fixture.Client;
         }

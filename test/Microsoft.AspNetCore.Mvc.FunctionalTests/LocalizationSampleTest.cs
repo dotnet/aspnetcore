@@ -11,9 +11,9 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
-    public class LocalizationSampleTest : IClassFixture<MvcTestFixture<LocalizationSample.Web.Startup>>
+    public class LocalizationSampleTest : IClassFixture<MvcSampleFixture<LocalizationSample.Web.Startup>>
     {
-        public LocalizationSampleTest(MvcTestFixture<LocalizationSample.Web.Startup> fixture)
+        public LocalizationSampleTest(MvcSampleFixture<LocalizationSample.Web.Startup> fixture)
         {
             Client = fixture.Client;
         }

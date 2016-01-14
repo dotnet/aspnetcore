@@ -1,6 +1,7 @@
 {
   "compilationOptions": {
-    "emitEntryPoint": true
+    "emitEntryPoint": true,
+    "preserveCompilationContext": true
   },
   "commands": {
     "web": "XmlFormattersWebSite"
@@ -14,8 +15,9 @@
     "Microsoft.NETCore.Platforms": "1.0.1-*"
   },
   "frameworks": {
-    "dnx451": {},
+    "net451": {},
     "dnxcore50": {
+      "imports": "portable-net451+win8",
       "dependencies": {
         "System.Linq.Queryable": "4.0.1-*"
       }

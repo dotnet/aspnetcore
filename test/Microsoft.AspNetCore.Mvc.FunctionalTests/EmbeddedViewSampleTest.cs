@@ -7,9 +7,9 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
-    public class EmbeddedViewSampleTest : IClassFixture<MvcTestFixture<EmbeddedViewSample.Web.Startup>>
+    public class EmbeddedViewSampleTest : IClassFixture<MvcSampleFixture<EmbeddedViewSample.Web.Startup>>
     {
-        public EmbeddedViewSampleTest(MvcTestFixture<EmbeddedViewSample.Web.Startup> fixture)
+        public EmbeddedViewSampleTest(MvcSampleFixture<EmbeddedViewSample.Web.Startup> fixture)
         {
             Client = fixture.Client;
         }

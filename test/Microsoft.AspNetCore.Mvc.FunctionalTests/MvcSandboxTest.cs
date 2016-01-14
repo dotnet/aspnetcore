@@ -8,9 +8,9 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
-    public class MvcSandboxTest : IClassFixture<MvcTestFixture<MvcSandbox.Startup>>
+    public class MvcSandboxTest : IClassFixture<MvcSampleFixture<MvcSandbox.Startup>>
     {
-        public MvcSandboxTest(MvcTestFixture<MvcSandbox.Startup> fixture)
+        public MvcSandboxTest(MvcSampleFixture<MvcSandbox.Startup> fixture)
         {
             Client = fixture.Client;
         }

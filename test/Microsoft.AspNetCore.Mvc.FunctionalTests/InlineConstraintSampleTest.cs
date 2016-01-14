@@ -11,9 +11,9 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
-    public class InlineConstraintSampleTest : IClassFixture<MvcTestFixture<InlineConstraintSample.Web.Startup>>
+    public class InlineConstraintSampleTest : IClassFixture<MvcSampleFixture<InlineConstraintSample.Web.Startup>>
     {
-        public InlineConstraintSampleTest(MvcTestFixture<InlineConstraintSample.Web.Startup> fixture)
+        public InlineConstraintSampleTest(MvcSampleFixture<InlineConstraintSample.Web.Startup> fixture)
         {
             Client = fixture.Client;
         }

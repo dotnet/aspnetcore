@@ -8,9 +8,9 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
-    public class SubAreaTests : IClassFixture<MvcTestFixture<MvcSubAreaSample.Web.Startup>>
+    public class SubAreaTests : IClassFixture<MvcSampleFixture<MvcSubAreaSample.Web.Startup>>
     {
-        public SubAreaTests(MvcTestFixture<MvcSubAreaSample.Web.Startup> fixture)
+        public SubAreaTests(MvcSampleFixture<MvcSubAreaSample.Web.Startup> fixture)
         {
             Client = fixture.Client;
         }

@@ -28,6 +28,7 @@
       }
     },
     "dotnet5.4": {
+      "imports": "portable-net451+win8",
       "dependencies": {
         "System.Net.Http": "4.0.1-*",
         "System.Runtime.Serialization.Xml": "4.1.0-*",

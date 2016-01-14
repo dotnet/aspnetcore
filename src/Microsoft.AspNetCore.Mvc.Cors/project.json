@@ -15,6 +15,8 @@
   },
   "frameworks": {
     "net451": {},
-    "dotnet5.4": {}
+    "dotnet5.4": {
+      "imports": "portable-net451+win8"
+    }
   }
 }

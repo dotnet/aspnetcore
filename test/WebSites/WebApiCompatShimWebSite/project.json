@@ -1,6 +1,7 @@
 {
   "compilationOptions": {
-    "emitEntryPoint": true
+    "emitEntryPoint": true,
+    "preserveCompilationContext": true
   },
   "commands": {
     "web": "WebApiCompatShimWebSite"
@@ -14,7 +15,9 @@
     "Microsoft.NETCore.Platforms": "1.0.1-*"
   },
   "frameworks": {
-    "dnx451": {},
-    "dnxcore50": {}
+    "net451": {},
+    "dnxcore50": {
+      "imports": "portable-net451+win8"
+    }
   }
 }
