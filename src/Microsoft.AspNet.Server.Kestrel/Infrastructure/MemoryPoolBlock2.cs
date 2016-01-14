@@ -53,11 +53,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
         public byte[] Array => Data.Array;
 
         /// <summary>
-        /// Fixed end offset of the block
-        /// </summary>
-        public int BlockEndOffset { get; private set; }
-
-        /// <summary>
         /// The Start represents the offset into Array where the range of "active" bytes begins. At the point when the block is leased
         /// the Start is guaranteed to be equal to Array.Offset. The value of Start may be assigned anywhere between Data.Offset and
         /// Data.Offset + Data.Count, and must be equal to or less than End.
@@ -149,7 +144,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
                 Slab = slab,
                 Start = data.Offset,
                 End = data.Offset,
-                BlockEndOffset = data.Offset + data.Count
             };
         }
 

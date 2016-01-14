@@ -248,7 +248,7 @@ namespace Microsoft.AspNet.Server.KestrelTests
 
                 Assert.Null(block1.Next);
 
-                end.CopyFrom(buffer, 0, buffer.Length);
+                end.CopyFrom(new ArraySegment<byte>(buffer));
 
                 Assert.NotNull(block1.Next);
 

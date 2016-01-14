@@ -722,52 +722,46 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
             CopyFrom(buffer.Array, buffer.Offset, buffer.Count);
         }
 
-        public unsafe void CopyFrom(byte[] data, int offset, int count)
+        public void CopyFrom(byte[] data, int offset, int count)
         {
             Debug.Assert(_block != null);
             Debug.Assert(_block.Next == null);
             Debug.Assert(_block.End == _index);
-            
+
+            var pool = _block.Pool;
             var block = _block;
             var blockIndex = _index;
-            var bytesLeftInBlock = block.BlockEndOffset - blockIndex;
 
-            if (bytesLeftInBlock >= count)
-            {
-                _index = blockIndex + count;
-                Buffer.BlockCopy(data, offset, block.Array, blockIndex, count);
-                block.End = _index;
-                return;
-            }
+            var bufferIndex = offset;
+            var remaining = count;
+            var bytesLeftInBlock = block.Data.Offset + block.Data.Count - blockIndex;
 
-            do
+            while (remaining > 0)
             {
                 if (bytesLeftInBlock == 0)
                 {
-                    var nextBlock = block.Pool.Lease();
-                    blockIndex = nextBlock.Data.Offset;
-                    bytesLeftInBlock = nextBlock.Data.Count;
+                    var nextBlock = pool.Lease();
+                    block.End = blockIndex;
                     block.Next = nextBlock;
                     block = nextBlock;
+
+                    blockIndex = block.Data.Offset;
+                    bytesLeftInBlock = block.Data.Count;
                 }
 
-                if (count > bytesLeftInBlock)
-                {
-                    count -= bytesLeftInBlock;
-                    Buffer.BlockCopy(data, offset, block.Array, blockIndex, bytesLeftInBlock);
-                    offset += bytesLeftInBlock;
-                    block.End = blockIndex + bytesLeftInBlock;
-                    bytesLeftInBlock = 0;
-                }
-                else
-                {
-                    _index = blockIndex + count;
-                    Buffer.BlockCopy(data, offset, block.Array, blockIndex, count);
-                    block.End = _index;
-                    _block = block;
-                    return;
-                }
-            } while (true);
+                var bytesToCopy = remaining < bytesLeftInBlock ? remaining : bytesLeftInBlock;
+
+                Buffer.BlockCopy(data, bufferIndex, block.Array, blockIndex, bytesToCopy);
+
+                blockIndex += bytesToCopy;
+                bufferIndex += bytesToCopy;
+                remaining -= bytesToCopy;
+                bytesLeftInBlock -= bytesToCopy;
+            }
+
+            block.End = blockIndex;
+            _block = block;
+            _index = blockIndex;
         }
 
         public unsafe void CopyFromAscii(string data)
@@ -776,123 +770,64 @@ namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
             Debug.Assert(_block.Next == null);
             Debug.Assert(_block.End == _index);
 
+            var pool = _block.Pool;
             var block = _block;
             var blockIndex = _index;
-            var count = data.Length;
+            var length = data.Length;
 
-            var blockRemaining = block.BlockEndOffset - blockIndex;
+            var bytesLeftInBlock = block.Data.Offset + block.Data.Count - blockIndex;
+            var bytesLeftInBlockMinusSpan = bytesLeftInBlock - 3;
 
-            fixed (char* pInput = data)
+            fixed (char* pData = data)
             {
-                if (blockRemaining >= count)
+                var input = pData;
+                var inputEnd = pData + length;
+                var inputEndMinusSpan = inputEnd - 3;
+
+                while (input < inputEnd)
                 {
-                    _index = blockIndex + count;
-
-                    fixed (byte* pOutput = &block.Data.Array[blockIndex])
+                    if (bytesLeftInBlock == 0)
                     {
-                        CopyFromAscii(pInput, pOutput, count);
-                    }
-
-                    block.End = _index;
-                    return;
-                }
-
-                var input = pInput;
-                do
-                {
-                    if (blockRemaining == 0)
-                    {
-                        var nextBlock = block.Pool.Lease();
-                        blockIndex = nextBlock.Data.Offset;
-                        blockRemaining = nextBlock.Data.Count;
+                        var nextBlock = pool.Lease();
+                        block.End = blockIndex;
                         block.Next = nextBlock;
                         block = nextBlock;
+
+                        blockIndex = block.Data.Offset;
+                        bytesLeftInBlock = block.Data.Count;
+                        bytesLeftInBlockMinusSpan = bytesLeftInBlock - 3;
                     }
 
-                    if (count > blockRemaining)
+                    fixed (byte* pOutput = &block.Data.Array[block.End])
                     {
-                        count -= blockRemaining;
+                        //this line is needed to allow output be an register var 
+                        var output = pOutput;
 
-                        fixed (byte* pOutput = &block.Data.Array[blockIndex])
+                        var copied = 0;
+                        for (; input < inputEndMinusSpan && copied < bytesLeftInBlockMinusSpan; copied += 4)
                         {
-                            CopyFromAscii(input, pOutput, blockRemaining);
+                            *(output) = (byte)*(input);
+                            *(output + 1) = (byte)*(input + 1);
+                            *(output + 2) = (byte)*(input + 2);
+                            *(output + 3) = (byte)*(input + 3);
+                            output += 4;
+                            input += 4;
+                        }
+                        for (; input < inputEnd && copied < bytesLeftInBlock; copied++)
+                        {
+                            *(output++) = (byte)*(input++);
                         }
 
-                        block.End = blockIndex + blockRemaining;
-                        input += blockRemaining;
-                        blockRemaining = 0;
+                        blockIndex += copied;
+                        bytesLeftInBlockMinusSpan -= copied;
+                        bytesLeftInBlock -= copied;
                     }
-                    else
-                    {
-                        _index = blockIndex + count;
+                }
+            }
 
-                        fixed (byte* pOutput = &block.Data.Array[blockIndex])
-                        {
-                            CopyFromAscii(input, pOutput, count);
-                        }
-
-                        block.End = _index;
-                        _block = block;
-                        return;
-                    }
-                } while (true);
-            }
-        }
-
-        private unsafe static void CopyFromAscii(char* pInput, byte* pOutput, int count)
-        {
-            var i = 0;
-            //these line is needed to allow input/output be an register var 
-            var input = pInput;
-            var output = pOutput;
-
-            while (i < count - 11)
-            {
-                i += 12;
-                *(output) = (byte)*(input);
-                *(output + 1) = (byte)*(input + 1);
-                *(output + 2) = (byte)*(input + 2);
-                *(output + 3) = (byte)*(input + 3);
-                *(output + 4) = (byte)*(input + 4);
-                *(output + 5) = (byte)*(input + 5);
-                *(output + 6) = (byte)*(input + 6);
-                *(output + 7) = (byte)*(input + 7);
-                *(output + 8) = (byte)*(input + 8);
-                *(output + 9) = (byte)*(input + 9);
-                *(output + 10) = (byte)*(input + 10);
-                *(output + 11) = (byte)*(input + 11);
-                output += 12;
-                input += 12;
-            }
-            if (i < count - 5)
-            {
-                i += 6;
-                *(output) = (byte)*(input);
-                *(output + 1) = (byte)*(input + 1);
-                *(output + 2) = (byte)*(input + 2);
-                *(output + 3) = (byte)*(input + 3);
-                *(output + 4) = (byte)*(input + 4);
-                *(output + 5) = (byte)*(input + 5);
-                output += 6;
-                input += 6;
-            }
-            if (i < count - 3)
-            {
-                i += 4;
-                *(output) = (byte)*(input);
-                *(output + 1) = (byte)*(input + 1);
-                *(output + 2) = (byte)*(input + 2);
-                *(output + 3) = (byte)*(input + 3);
-                output += 4;
-                input += 4;
-            }
-            while (i < count)
-            {
-                i++;
-                *output = (byte)*input;
-                output++;
-                input++;
-            }
+            block.End = blockIndex;
+            _block = block;
+            _index = blockIndex;
         }
     }
 }
