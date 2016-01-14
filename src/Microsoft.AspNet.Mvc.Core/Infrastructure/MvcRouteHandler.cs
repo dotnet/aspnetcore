@@ -119,10 +119,6 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
 
             var services = context.RequestServices;
 
-            // Verify if AddMvc was done before calling UseMvc
-            // We use the MvcMarkerService to make sure if all the services were added.
-            MvcServicesHelper.ThrowIfMvcNotRegistered(services);
-
             // The IActionContextAccessor is optional. We want to avoid the overhead of using CallContext
             // if possible.
             _actionContextAccessor = services.GetService<IActionContextAccessor>();

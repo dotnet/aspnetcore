@@ -208,7 +208,7 @@
     <value>An unescaped '[' token is not allowed inside of a replacement token. Use '[[' to escape.</value>
   </data>
   <data name="UnableToFindServices" xml:space="preserve">
-    <value>Unable to find the required services. Please add all the required services by calling '{0}' inside the call to '{1}' or '{2}' in the application startup code.</value>
+    <value>Unable to find the required services. Please add all the required services by calling '{0}.{1}' inside the call to '{2}' in the application startup code.</value>
   </data>
   <data name="AttributeRoute_DuplicateNames_Item" xml:space="preserve">
     <value>Action: '{0}' - Template: '{1}'</value>

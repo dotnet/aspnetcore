@@ -2,10 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.Infrastructure;
 using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.AspNet.Routing;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNet.Builder
 {
@@ -77,7 +79,13 @@ namespace Microsoft.AspNet.Builder
 
             // Verify if AddMvc was done before calling UseMvc
             // We use the MvcMarkerService to make sure if all the services were added.
-            MvcServicesHelper.ThrowIfMvcNotRegistered(app.ApplicationServices);
+            if (app.ApplicationServices.GetService(typeof(MvcMarkerService)) == null)
+            {
+                throw new InvalidOperationException(Resources.FormatUnableToFindServices(
+                    nameof(IServiceCollection),
+                    "AddMvc",
+                    "ConfigureServices(...)"));
+            }
 
             var routes = new RouteBuilder(app)
             {
