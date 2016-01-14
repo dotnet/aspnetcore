@@ -1,0 +1,96 @@
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System.IO;
+using System.Xml;
+using System.Xml.Linq;
+using Microsoft.Extensions.Configuration;
+using Microsoft.DotNet.ProjectModel;
+
+namespace Microsoft.AspNet.Tools.PublishIIS
+{
+    public class PublishIISCommand
+    {
+        private readonly string _publishFolder;
+        private readonly string _projectPath;
+        private readonly string _webRoot;
+
+        public PublishIISCommand(string publishFolder, string projectPath, string webRoot)
+        {
+            _publishFolder = publishFolder;
+            _projectPath = projectPath;
+            _webRoot = webRoot;
+        }
+
+        public int Run()
+        {
+            var applicationBasePath = GetApplicationBasePath();
+            var webRoot = GetWebRoot(applicationBasePath);
+
+            XDocument webConfigXml = null;
+            var webConfigPath = Path.Combine(_publishFolder, webRoot, "web.config");
+            if (File.Exists(webConfigPath))
+            {
+                try
+                {
+                    webConfigXml = XDocument.Load(webConfigPath);
+                }
+                catch (XmlException) { }
+            }
+
+            var applicationName = Path.ChangeExtension(GetApplicationName(applicationBasePath), "exe");
+            var transformedConfig = WebConfigTransform.Transform(webConfigXml, applicationName);
+
+            using (var f = new FileStream(webConfigPath, FileMode.Create))
+            {
+                transformedConfig.Save(f);
+            }
+
+            return 0;
+        }
+
+        private string GetApplicationBasePath()
+        {
+            if (!string.IsNullOrEmpty(_projectPath))
+            {
+                var fullProjectPath = Path.GetFullPath(_projectPath);
+
+                return Path.GetFileName(fullProjectPath) == "project.json"
+                    ? Path.GetDirectoryName(fullProjectPath)
+                    : fullProjectPath;
+            }
+
+            return Directory.GetCurrentDirectory();
+        }
+
+        private string GetApplicationName(string applicationBasePath)
+        {
+            return ProjectReader.GetProject(Path.Combine(applicationBasePath, "project.json")).Name;
+        }
+
+        private string GetWebRoot(string applicationBasePath)
+        {
+            if (!string.IsNullOrEmpty(_webRoot))
+            {
+                return _webRoot;
+            }
+
+            var builder = new ConfigurationBuilder()
+                .AddJsonFile(Path.Combine(applicationBasePath, "hosting.json"), optional: true);
+
+            var webroot = builder.Build()["webroot"];
+
+            if (!string.IsNullOrEmpty(webroot))
+            {
+                return webroot;
+            }
+
+            if (Directory.Exists(Path.Combine(applicationBasePath, "wwwroot")))
+            {
+                return "wwwroot";
+            }
+
+            return string.Empty;
+        }
+    }
+}

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using System.Linq;
 using System.Xml.Linq;
 
@@ -56,7 +57,7 @@ namespace Microsoft.AspNet.Tools.PublishIIS
 
         private static void TransformHttpPlatform(XElement httpPlatformElement, string appName)
         {
-            httpPlatformElement.SetAttributeValue("processPath", $@"..\wwwroot\{appName}");
+            httpPlatformElement.SetAttributeValue("processPath", Path.Combine("..", appName));
             SetAttributeValueIfEmpty(httpPlatformElement, "stdoutLogEnabled", "false");
             SetAttributeValueIfEmpty(httpPlatformElement, "startupTimeLimit", "3600");
         }

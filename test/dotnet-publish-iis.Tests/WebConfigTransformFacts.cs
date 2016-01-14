@@ -1,7 +1,6 @@
 using Xunit;
 using System.Linq;
 using System.Xml.Linq;
-using Microsoft.AspNet.Tools.PublishIIS;
 
 namespace Microsoft.AspNet.Tools.PublishIIS.Tests
 {
@@ -13,7 +12,7 @@ namespace Microsoft.AspNet.Tools.PublishIIS.Tests
     <handlers>
       <add name=""httpPlatformHandler"" path=""*"" verb=""*"" modules=""httpPlatformHandler"" resourceType=""Unspecified""/>
     </handlers>
-    <httpPlatform processPath=""..\wwwroot\test.exe"" stdoutLogEnabled=""false"" startupTimeLimit=""3600""/>
+    <httpPlatform processPath=""..\test.exe"" stdoutLogEnabled=""false"" startupTimeLimit=""3600""/>
   </system.webServer>
 </configuration>");
 
@@ -71,7 +70,7 @@ namespace Microsoft.AspNet.Tools.PublishIIS.Tests
                 (string)WebConfigTransform.Transform(WebConfigTemplate, "app.exe")
                     .Descendants("httpPlatform").Single().Attribute("processPath");
 
-            Assert.Equal(@"..\wwwroot\app.exe", newProcessPath);
+            Assert.Equal(@"..\app.exe", newProcessPath);
         }
 
         [Fact]
@@ -94,7 +93,7 @@ namespace Microsoft.AspNet.Tools.PublishIIS.Tests
             input.Descendants("httpPlatform").Single().Add(envVarsElement);
 
             Assert.True(XNode.DeepEquals(envVarsElement,
-                WebConfigTransform.Transform(input, "app.exe").Descendants("httpPlatform").Single().Elements().Single()));
+                WebConfigTransform.Transform(input, "app.exe").Descendants("httpPlatform").Elements().Single()));
         }
 
         private bool VerifyMissingElementCreated(params string[] elementNames)
