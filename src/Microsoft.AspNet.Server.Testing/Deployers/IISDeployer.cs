@@ -5,8 +5,6 @@
 
 using System;
 using System.Linq;
-using System.Net;
-using System.Net.Sockets;
 using System.Threading;
 using Microsoft.AspNet.Server.Testing.Common;
 using Microsoft.Extensions.Logging;
@@ -46,7 +44,7 @@ namespace Microsoft.AspNet.Server.Testing
             // Drop a json file instead of setting environment variable.
             SetAspEnvironmentWithJson();
 
-            var uri = FreePortHelper.FindFreeUrl(DeploymentParameters.ApplicationBaseUriHint);
+            var uri = TestUriHelper.BuildTestUri();
 
             lock (_syncObject)
             {

@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.Server.Testing
                 DnuPublish();
             }
 
-            var uri = FreePortHelper.FindFreeUrl(DeploymentParameters.ApplicationBaseUriHint);
+            var uri = TestUriHelper.BuildTestUri(DeploymentParameters.ApplicationBaseUriHint);
             // Launch the host process.
             var hostExitToken = StartIISExpress(uri);
 

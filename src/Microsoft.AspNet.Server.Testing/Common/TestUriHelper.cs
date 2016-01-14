@@ -7,16 +7,29 @@ using System.Net.Sockets;
 
 namespace Microsoft.AspNet.Server.Testing.Common
 {
-    public static class FreePortHelper
+    public static class TestUriHelper
     {
-        public static Uri FindFreeUrl(string urlHint)
+        public static Uri BuildTestUri()
         {
-            var uriHint = new Uri(urlHint);
-            var builder = new UriBuilder(uriHint)
+            return new UriBuilder("http", "localhost", FindFreePort()).Uri;
+        }
+
+        public static Uri BuildTestUri(string hint)
+        {
+            if (string.IsNullOrEmpty(hint))
             {
-                Port = FindFreePort(uriHint.Port)
-            };
-            return builder.Uri;
+                return BuildTestUri();
+            }
+            else
+            {
+                var uriHint = new Uri(hint);
+                return new UriBuilder(uriHint) { Port = FindFreePort(uriHint.Port) }.Uri;
+            }
+        }
+
+        public static int FindFreePort()
+        {
+            return FindFreePort(0);
         }
 
         public static int FindFreePort(int initialPort)
@@ -31,6 +44,7 @@ namespace Microsoft.AspNet.Server.Testing.Common
                 {
                     socket.Bind(new IPEndPoint(IPAddress.Loopback, 0));
                 }
+
                 return ((IPEndPoint)socket.LocalEndPoint).Port;
             }
         }
