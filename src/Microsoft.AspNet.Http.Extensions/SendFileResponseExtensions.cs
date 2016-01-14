@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Http.Extensions;
 using Microsoft.AspNet.Http.Features;
 
 namespace Microsoft.AspNet.Http
@@ -96,10 +97,7 @@ namespace Microsoft.AspNet.Http
             {
                 fileStream.Seek(offset, SeekOrigin.Begin);
 
-                // TODO: Use buffer pool
-                var buffer = new byte[bufferSize];
-
-                await StreamCopyOperation.CopyToAsync(fileStream, buffer, outputStream, length, cancel);
+                await StreamCopyOperation.CopyToAsync(fileStream, outputStream, length, cancel);
             }
         }
     }

@@ -11,7 +11,8 @@
   },
   "dependencies": {
     "Microsoft.AspNet.Http.Abstractions": "1.0.0-*",
-    "Microsoft.Net.Http.Headers": "1.0.0-*"
+    "Microsoft.Net.Http.Headers": "1.0.0-*",
+    "System.Buffers": "4.0.0-*"
   },
   "frameworks": {
     "net451": {},
