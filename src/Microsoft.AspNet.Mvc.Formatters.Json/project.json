@@ -15,8 +15,7 @@
     "Microsoft.Extensions.ClosedGenericMatcher.Sources": {
       "version": "1.0.0-*",
       "type": "build"
-    },
-    "Newtonsoft.Json": "8.0.1"
+    }
   },
   "frameworks": {
     "net451": {},
