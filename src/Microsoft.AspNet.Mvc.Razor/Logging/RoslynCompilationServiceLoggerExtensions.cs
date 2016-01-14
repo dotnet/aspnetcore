@@ -9,7 +9,7 @@ namespace Microsoft.AspNet.Mvc.Logging
 {
     public static class RoslynCompilationServiceLoggerExtensions
     {
-        private static readonly double TimestampToTicks = Stopwatch.Frequency / 10000000.0;
+        private static readonly double TimestampToTicks = TimeSpan.TicksPerSecond / (double)Stopwatch.Frequency;
         private static readonly Action<ILogger, string, Exception> _generatedCodeToAssemblyCompilationStart;
         private static readonly Action<ILogger, string, double, Exception> _generatedCodeToAssemblyCompilationEnd;
 
