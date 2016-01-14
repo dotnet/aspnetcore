@@ -59,7 +59,7 @@ namespace Microsoft.AspNet.Identity
         /// Gets or sets the scheme used to identify application authentication cookies.
         /// </summary>
         /// <value>The scheme used to identify application authentication cookies.</value>
-        public string ApplicationCookieAuthenticationScheme { get; set; } = ApplicationCookieAuthenticationType;
+        public string ApplicationCookieAuthenticationScheme { get; set; } = typeof(IdentityCookieOptions).Namespace + ".Application";
 
         /// <summary>
         /// Gets or sets the scheme used to identify external authentication cookies.
@@ -78,11 +78,5 @@ namespace Microsoft.AspNet.Identity
         /// </summary>
         /// <value>The scheme used to identify remember me application authentication cookies.</value>        
         public string TwoFactorRememberMeCookieAuthenticationScheme { get; set; } = typeof(IdentityCookieOptions).Namespace + ".TwoFactorRemeberMe";
-
-        /// <summary>
-        /// Gets or sets the authentication type used when constructing an <see cref="ClaimsIdentity"/> from an application cookie.
-        /// </summary>
-        /// <value>The authentication type used when constructing an <see cref="ClaimsIdentity"/> from an application cookie.</value>
-        public static string ApplicationCookieAuthenticationType { get; set; } = typeof(IdentityCookieOptions).Namespace + ".Application";
     }
 }

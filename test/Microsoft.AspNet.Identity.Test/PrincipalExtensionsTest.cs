@@ -12,55 +12,11 @@ namespace Microsoft.AspNet.Identity.Test
         public const string ExternalAuthenticationScheme = "TestExternalAuth";
 
         [Fact]
-        public void IdentityNullCheckTest()
-        {
-            ClaimsPrincipal p = null;
-            Assert.Throws<ArgumentNullException>("principal", () => p.GetUserId());
-            Assert.Throws<ArgumentNullException>("principal", () => p.GetUserName());
-            Assert.Throws<ArgumentNullException>("principal", () => p.FindFirstValue(null));
-        }
-
-        [Fact]
-        public void UserNameAndIdTest()
-        {
-            var p = CreateTestExternalIdentity();
-            Assert.Equal("NameIdentifier", p.GetUserId());
-            Assert.Equal("Name", p.GetUserName());
-        }
-
-        [Fact]
         public void IdentityExtensionsFindFirstValueNullIfUnknownTest()
         {
             var id = CreateTestExternalIdentity();
             Assert.Null(id.FindFirstValue("bogus"));
         }
-
-        [Fact]
-        public void IsSignedInWithDefaultAppAuthenticationType()
-        {
-            var id = CreateAppIdentity();
-            Assert.True(id.IsSignedIn());
-        }
-
-        [Fact]
-        public void IsSignedInFalseWithWrongAppAuthenticationType()
-        {
-            var id = CreateAppIdentity("bogus");
-            Assert.False(id.IsSignedIn());
-        }
-
-        private static ClaimsPrincipal CreateAppIdentity(string authType = null)
-        {
-            authType = authType ?? new IdentityCookieOptions().ApplicationCookieAuthenticationScheme;
-            return new ClaimsPrincipal(new ClaimsIdentity(
-                new[]
-                {
-                    new Claim(ClaimTypes.NameIdentifier, "NameIdentifier"),
-                    new Claim(ClaimTypes.Name, "Name")
-                },
-                authType));
-        }
-
 
         private static ClaimsPrincipal CreateTestExternalIdentity()
         {

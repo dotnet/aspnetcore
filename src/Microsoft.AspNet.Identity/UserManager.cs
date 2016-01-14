@@ -301,6 +301,46 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
+        /// Returns the Name claim value if present otherwise returns null.
+        /// </summary>
+        /// <param name="principal">The <see cref="ClaimsPrincipal"/> instance.</param>
+        /// <returns>The Name claim value, or null if the claim is not present.</returns>
+        /// <remarks>The Name claim is identified by <see cref="ClaimsIdentity.DefaultNameClaimType"/>.</remarks>
+        public virtual string GetUserName(ClaimsPrincipal principal)
+        {
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
+            return principal.FindFirstValue(Options.ClaimsIdentity.UserNameClaimType);
+        }
+
+        /// <summary>
+        /// Returns the User ID claim value if present otherwise returns null.
+        /// </summary>
+        /// <param name="principal">The <see cref="ClaimsPrincipal"/> instance.</param>
+        /// <returns>The User ID claim value, or null if the claim is not present.</returns>
+        /// <remarks>The User ID claim is identified by <see cref="ClaimTypes.NameIdentifier"/>.</remarks>
+        public virtual string GetUserId(ClaimsPrincipal principal)
+        {
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
+            return principal.FindFirstValue(Options.ClaimsIdentity.UserIdClaimType);
+        }
+
+        public virtual Task<TUser> GetUserAsync(ClaimsPrincipal principal)
+        {
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
+            var id = GetUserId(principal);
+            return id == null ? Task.FromResult<TUser>(null) : FindByIdAsync(id);
+        }
+
+        /// <summary>
         /// Generates a value suitable for use in concurrency tracking.
         /// </summary>
         /// <param name="user">The user to generate the stamp for.</param>

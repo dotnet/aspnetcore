@@ -1,92 +1,92 @@
-﻿@model IdentitySample.Models.LoginViewModel
-@using System.Collections.Generic
+﻿@using System.Collections.Generic
 @using Microsoft.AspNet.Http
 @using Microsoft.AspNet.Http.Authentication
+@model LoginViewModel
+@inject SignInManager<ApplicationUser> SignInManager
 
 @{
-    //TODO: Until we have a way to specify the layout page at application level.
-    Layout = "/Views/Shared/_Layout.cshtml";
-    ViewBag.Title = "Log in";
+    ViewData["Title"] = "Log in";
 }
 
-<h2>@ViewBag.Title.</h2>
+<h2>@ViewData["Title"].</h2>
 <div class="row">
     <div class="col-md-8">
-        <section id="loginForm">
-            @using (Html.BeginForm("Login", "Account", new { ReturnUrl = ViewBag.ReturnUrl }, FormMethod.Post, new { @class = "form-horizontal", role = "form" }))
-            {
-                @Html.AntiForgeryToken()
+        <section>
+            <form asp-controller="Account" asp-action="Login" asp-route-returnurl="@ViewData["ReturnUrl"]" method="post" class="form-horizontal" role="form">
                 <h4>Use a local account to log in.</h4>
                 <hr />
-                @Html.ValidationSummary(true)
+                <div asp-validation-summary="All" class="text-danger"></div>
                 <div class="form-group">
-                    @Html.LabelFor(m => m.UserName, new { @class = "col-md-2 control-label" })
+                    <label asp-for="Email" class="col-md-2 control-label"></label>
                     <div class="col-md-10">
-                        @Html.TextBoxFor(m => m.UserName, new { @class = "form-control" })
-                        @Html.ValidationMessageFor(m => m.UserName)
+                        <input asp-for="Email" class="form-control" />
+                        <span asp-validation-for="Email" class="text-danger"></span>
                     </div>
                 </div>
                 <div class="form-group">
-                    @Html.LabelFor(m => m.Password, new { @class = "col-md-2 control-label" })
+                    <label asp-for="Password" class="col-md-2 control-label"></label>
                     <div class="col-md-10">
-                        @Html.PasswordFor(m => m.Password, new { @class = "form-control" })
-                        @Html.ValidationMessageFor(m => m.Password)
+                        <input asp-for="Password" class="form-control" />
+                        <span asp-validation-for="Password" class="text-danger"></span>
                     </div>
                 </div>
                 <div class="form-group">
                     <div class="col-md-offset-2 col-md-10">
                         <div class="checkbox">
-                            @Html.CheckBoxFor(m => m.RememberMe)
-                            @Html.LabelFor(m => m.RememberMe)
+                            <label asp-for="RememberMe">
+                                <input asp-for="RememberMe" />
+                                @Html.DisplayNameFor(m => m.RememberMe)
+                            </label>
                         </div>
                     </div>
                 </div>
                 <div class="form-group">
                     <div class="col-md-offset-2 col-md-10">
-                        <input type="submit" value="Log in" class="btn btn-default" />
+                        <button type="submit" class="btn btn-default">Log in</button>
                     </div>
                 </div>
                 <p>
-                    @Html.ActionLink("Register a new user?", "Register")
+                    <a asp-action="Register" asp-route-returnurl="@ViewData["ReturnUrl"]">Register as a new user?</a>
                 </p>
                 <p>
-                    @Html.ActionLink("Forget your password?", "ForgotPassword")
+                    <a asp-action="ForgotPassword">Forgot your password?</a>
                 </p>
-            }
+            </form>
         </section>
     </div>
     <div class="col-md-4">
-        <section id="socialLoginForm">
+        <section>
             <h4>Use another service to log in.</h4>
             <hr />
             @{
-                if (ViewBag.LoginProviders.Count == 0) {
+                var loginProviders = SignInManager.GetExternalAuthenticationSchemes().ToList();
+                if (loginProviders.Count == 0)
+                {
                     <div>
                         <p>
-                            There are no external authentication services configured. See <a href="http://go.microsoft.com/fwlink/?LinkId=313242">this article</a>
+                            There are no external authentication services configured. See <a href="http://go.microsoft.com/fwlink/?LinkID=532715">this article</a>
                             for details on setting up this ASP.NET application to support logging in via external services.
                         </p>
                     </div>
                 }
-                else {
-                    using (Html.BeginForm("ExternalLogin", "Account", new { ReturnUrl = ViewBag.ReturnUrl })) {
-                        @Html.AntiForgeryToken()
-                        <div id="socialLoginList">
+                else
+                {
+                    <form asp-controller="Account" asp-action="ExternalLogin" asp-route-returnurl="@ViewData["ReturnUrl"]" method="post" class="form-horizontal" role="form">
+                        <div>
                             <p>
-                                @foreach (AuthenticationDescription p in ViewBag.LoginProviders) {
-                                    <button type="submit" class="btn btn-default" id="@p.AuthenticationScheme" name="provider" value="@p.AuthenticationScheme" title="Log in using your @p.DisplayName account">@p.AuthenticationScheme</button>
+                                @foreach (var provider in loginProviders)
+                                {
+                                    <button type="submit" class="btn btn-default" name="provider" value="@provider.AuthenticationScheme" title="Log in using your @provider.DisplayName account">@provider.AuthenticationScheme</button>
                                 }
                             </p>
                         </div>
-                    }
+                    </form>
                 }
             }
         </section>
     </div>
 </div>
+
 @section Scripts {
-    @*TODO : Until script helpers are available, adding script references manually*@
-    @*@Scripts.Render("~/bundles/jqueryval")*@
-    <script src="@Url.Content("~/Scripts/jquery.validate.js")"></script>
-    <script src="@Url.Content("~/Scripts/jquery.validate.unobtrusive.js")"></script>
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
 }

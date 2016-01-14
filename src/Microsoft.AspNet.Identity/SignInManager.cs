@@ -97,6 +97,21 @@ namespace Microsoft.AspNet.Identity
         public virtual async Task<ClaimsPrincipal> CreateUserPrincipalAsync(TUser user) => await ClaimsFactory.CreateAsync(user);
 
         /// <summary>
+        /// Returns true if the principal has an identity with the application cookie identity
+        /// </summary>
+        /// <param name="principal">The <see cref="ClaimsPrincipal"/> instance.</param>
+        /// <returns>True if the user is logged in with identity.</returns>
+        public virtual bool IsSignedIn(ClaimsPrincipal principal)
+        {
+            if (principal == null)
+            {
+                throw new ArgumentNullException(nameof(principal));
+            }
+            return principal?.Identities != null &&
+                principal.Identities.Any(i => i.AuthenticationType == Options.Cookies.ApplicationCookieAuthenticationScheme);
+        }
+
+        /// <summary>
         /// Returns a flag indicating whether the specified user can sign in.
         /// </summary>
         /// <param name="user">The user whose sign-in status should be returned.</param>
@@ -184,9 +199,13 @@ namespace Microsoft.AspNet.Identity
         /// <param name="userId">The ID for the user.</param>
         /// <returns>The task object representing the asynchronous operation. The task will contain the <typeparamref name="TUser"/>
         /// if the stamp matches the persisted value, otherwise it will return false.</returns>
-        public virtual async Task<TUser> ValidateSecurityStampAsync(ClaimsPrincipal principal, string userId)
+        public virtual async Task<TUser> ValidateSecurityStampAsync(ClaimsPrincipal principal)
         {
-            var user = await UserManager.FindByIdAsync(userId);
+            if (principal == null)
+            {
+                return null;
+            }
+            var user = await UserManager.GetUserAsync(principal);
             if (user != null && UserManager.SupportsUserSecurityStamp)
             {
                 var securityStamp =

@@ -12,51 +12,6 @@ namespace System.Security.Claims
     public static class PrincipalExtensions
     {
         /// <summary>
-        /// Returns the Name claim value if present otherwise returns null.
-        /// </summary>
-        /// <param name="principal">The <see cref="ClaimsPrincipal"/> instance this method extends.</param>
-        /// <returns>The Name claim value, or null if the claim is not present.</returns>
-        /// <remarks>The Name claim is identified by <see cref="ClaimsIdentity.DefaultNameClaimType"/>.</remarks>
-        public static string GetUserName(this ClaimsPrincipal principal)
-        {
-            if (principal == null)
-            {
-                throw new ArgumentNullException(nameof(principal));
-            }
-            return principal.FindFirstValue(ClaimsIdentity.DefaultNameClaimType);
-        }
-
-        /// <summary>
-        /// Returns the User ID claim value if present otherwise returns null.
-        /// </summary>
-        /// <param name="principal">The <see cref="ClaimsPrincipal"/> instance this method extends.</param>
-        /// <returns>The User ID claim value, or null if the claim is not present.</returns>
-        /// <remarks>The User ID claim is identified by <see cref="ClaimTypes.NameIdentifier"/>.</remarks>
-        public static string GetUserId(this ClaimsPrincipal principal)
-        {
-            if (principal == null)
-            {
-                throw new ArgumentNullException(nameof(principal));
-            }
-            return principal.FindFirstValue(ClaimTypes.NameIdentifier);
-        }
-
-        /// <summary>
-        /// Returns true if the principal has an identity with the application cookie identity
-        /// </summary>
-        /// <param name="principal">The <see cref="ClaimsPrincipal"/> instance this method extends.</param>
-        /// <returns>True if the user is logged in with identity.</returns>
-        public static bool IsSignedIn(this ClaimsPrincipal principal)
-        {
-            if (principal == null)
-            {
-                throw new ArgumentNullException(nameof(principal));
-            }
-            return principal?.Identities != null && 
-                principal.Identities.Any(i => i.AuthenticationType == IdentityCookieOptions.ApplicationCookieAuthenticationType);
-        }
-
-        /// <summary>
         /// Returns the value for the first claim of the specified type otherwise null the claim is not present.
         /// </summary>
         /// <param name="principal">The <see cref="ClaimsPrincipal"/> instance this method extends.</param>

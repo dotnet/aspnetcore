@@ -1,110 +1,130 @@
-using System.IO;
-using IdentitySample.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.DataProtection;
 using Microsoft.AspNet.Hosting;
-using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.Data.Entity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-#if DNX451
-using NLog.Config;
-using NLog.Targets;
-#endif
+using IdentitySample.Models;
+using IdentitySample.Services;
+using Microsoft.AspNet.Identity;
+using Microsoft.AspNet.DataProtection;
+using System.IO;
 
-namespace IdentitySamples
+namespace IdentitySample
 {
-    public partial class Startup
+    public class Startup
     {
-        public Startup()
+        public Startup(IHostingEnvironment env)
         {
-            /*
-            * Below code demonstrates usage of multiple configuration sources. For instance a setting say 'setting1' is found in both the registered sources,
-            * then the later source will win. By this way a Local config can be overridden by a different setting while deployed remotely.
-            */
+            // Set up configuration sources.
             var builder = new ConfigurationBuilder()
-                .AddJsonFile("LocalConfig.json")
-                .AddEnvironmentVariables(); //All environment variables in the process's context flow in as configuration values.
+                .AddJsonFile("appsettings.json")
+                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true);
 
+            if (env.IsDevelopment())
+            {
+                // For more details on using the user secret store see http://go.microsoft.com/fwlink/?LinkID=532709
+                builder.AddUserSecrets();
+            }
+
+            builder.AddEnvironmentVariables();
             Configuration = builder.Build();
         }
 
-        public IConfiguration Configuration { get; private set; }
+        public IConfigurationRoot Configuration { get; set; }
 
+        // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            // Add framework services.
             services.AddEntityFramework()
-                    .AddSqlServer()
-                    .AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(Configuration["Data:IdentityConnection:ConnectionString"]));
-            services.Configure<IdentityDbContextOptions>(options =>
-            {
-                options.DefaultAdminUserName = Configuration["DefaultAdminUsername"];
-                options.DefaultAdminPassword = Configuration["DefaultAdminPassword"];
-            });
+                .AddSqlServer()
+                .AddDbContext<ApplicationDbContext>(options =>
+                    options.UseSqlServer(Configuration["Data:DefaultConnection:ConnectionString"]));
 
-            services.AddIdentity<ApplicationUser, IdentityRole>(
-                options => {
-                    options.Cookies.ApplicationCookieAuthenticationScheme = "ApplicationCookie";
-                    options.Cookies.ApplicationCookie.AuthenticationScheme = IdentityCookieOptions.ApplicationCookieAuthenticationType = "ApplicationCookie";
-                    options.Cookies.ApplicationCookie.DataProtectionProvider = new DataProtectionProvider(new DirectoryInfo("C:\\Github\\Identity\\artifacts"));
-                    options.Cookies.ApplicationCookie.CookieName = "Interop";
-                })
-                    .AddEntityFrameworkStores<ApplicationDbContext>()
-                    .AddDefaultTokenProviders();
+            services.AddIdentity<ApplicationUser, IdentityRole>(options => {
+                options.Cookies.ApplicationCookieAuthenticationScheme = "ApplicationCookie";
+                options.Cookies.ApplicationCookie.AuthenticationScheme = "ApplicationCookie";
+                options.Cookies.ApplicationCookie.DataProtectionProvider = new DataProtectionProvider(new DirectoryInfo("C:\\Github\\Identity\\artifacts"));
+                options.Cookies.ApplicationCookie.CookieName = "Interop";
+            })
+                .AddEntityFrameworkStores<ApplicationDbContext>()
+                .AddDefaultTokenProviders();
 
             services.AddMvc();
+
+            // Add application services.
+            services.AddTransient<IEmailSender, AuthMessageSender>();
+            services.AddTransient<ISmsSender, AuthMessageSender>();
         }
 
-        public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
+        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
-#if DNX451
-            var config = new LoggingConfiguration();
+            loggerFactory.AddConsole(Configuration.GetSection("Logging"));
+            loggerFactory.AddDebug();
 
-            // Step 2. Create targets and add them to the configuration
-            var consoleTarget = new ColoredConsoleTarget();
-            config.AddTarget("console", consoleTarget);
-            consoleTarget.Layout = @"${date:format=HH\\:MM\\:ss} ${ndc} ${logger} ${message} ";
-            var rule1 = new LoggingRule("*", NLog.LogLevel.Debug, consoleTarget);
-            config.LoggingRules.Add(rule1);
+            if (env.IsDevelopment())
+            {
+                app.UseDeveloperExceptionPage();
+                app.UseDatabaseErrorPage();
+            }
+            else
+            {
+                app.UseExceptionHandler("/Home/Error");
 
-            loggerFactory.AddNLog(new global::NLog.LogFactory(config));
-#endif
-            app.UseDeveloperExceptionPage()
-               .UseStaticFiles()
-               .UseIdentity()
+                // For more details on creating database during deployment see http://go.microsoft.com/fwlink/?LinkID=615859
+                try
+                {
+                    using (var serviceScope = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>()
+                        .CreateScope())
+                    {
+                        serviceScope.ServiceProvider.GetService<ApplicationDbContext>()
+                             .Database.Migrate();
+                    }
+                }
+                catch { }
+            }
+            app.UseStaticFiles();
+
+            app.UseIdentity()
                .UseFacebookAuthentication(new FacebookOptions
                {
                    AppId = "901611409868059",
                    AppSecret = "4aa3c530297b1dcebc8860334b39668b"
                })
-               .UseGoogleAuthentication(new GoogleOptions
-               {
-                   ClientId = "514485782433-fr3ml6sq0imvhi8a7qir0nb46oumtgn9.apps.googleusercontent.com",
-                   ClientSecret = "V2nDD9SkFbvLTqAUBWBBxYAL"
-               })
-               .UseTwitterAuthentication(new TwitterOptions
-               {
-                   ConsumerKey = "BSdJJ0CrDuvEhpkchnukXZBUv",
-                   ConsumerSecret = "xKUNuKhsRdHD03eLn67xhPAyE1wFFEndFo1X2UJaK2m1jdAxf4"
-               })
-               .UseMvc(routes =>
+                .UseGoogleAuthentication(new GoogleOptions
                 {
-                    routes.MapRoute(
-                        name: "default",
-                        template: "{controller}/{action}/{id?}",
-                        defaults: new { controller = "Home", action = "Index" });
+                    ClientId = "514485782433-fr3ml6sq0imvhi8a7qir0nb46oumtgn9.apps.googleusercontent.com",
+                    ClientSecret = "V2nDD9SkFbvLTqAUBWBBxYAL"
+                })
+                .UseTwitterAuthentication(new TwitterOptions
+                {
+                    ConsumerKey = "BSdJJ0CrDuvEhpkchnukXZBUv",
+                    ConsumerSecret = "xKUNuKhsRdHD03eLn67xhPAyE1wFFEndFo1X2UJaK2m1jdAxf4"
                 });
+            // To configure external authentication please see http://go.microsoft.com/fwlink/?LinkID=532715
 
-            //Populates the Admin user and role
-            SampleData.InitializeIdentityDatabaseAsync(app.ApplicationServices).Wait();
+            app.UseMvc(routes =>
+            {
+                routes.MapRoute(
+                    name: "default",
+                    template: "{controller=Home}/{action=Index}/{id?}");
+            });
         }
 
+        // Entry point for the application.
         public static void Main(string[] args)
         {
+            var config = WebApplicationConfiguration.GetDefault(args);
+
             var application = new WebApplicationBuilder()
-                .UseConfiguration(WebApplicationConfiguration.GetDefault(args))
+                .UseConfiguration(config)
                 .UseStartup<Startup>()
                 .Build();
 

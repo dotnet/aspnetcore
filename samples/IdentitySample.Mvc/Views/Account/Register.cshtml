@@ -1,46 +1,42 @@
-﻿@model IdentitySample.Models.RegisterViewModel
+﻿@model RegisterViewModel
 @{
-    //TODO: Until we have a way to specify the layout page at application level.
-    Layout = "/Views/Shared/_Layout.cshtml";
-    ViewBag.Title = "Register";
+    ViewData["Title"] = "Register";
 }
 
-<h2>@ViewBag.Title.</h2>
+<h2>@ViewData["Title"].</h2>
 
-@using (Html.BeginForm("Register", "Account", FormMethod.Post, new { @class = "form-horizontal", role = "form" }))
-{
-    @Html.AntiForgeryToken()
+<form asp-controller="Account" asp-action="Register" asp-route-returnurl="@ViewData["ReturnUrl"]" method="post" class="form-horizontal" role="form">
     <h4>Create a new account.</h4>
     <hr />
-    @Html.ValidationSummary()
+    <div asp-validation-summary="All" class="text-danger"></div>
     <div class="form-group">
-        @Html.LabelFor(m => m.Email, new { @class = "col-md-2 control-label" })
+        <label asp-for="Email" class="col-md-2 control-label"></label>
         <div class="col-md-10">
-            @Html.TextBoxFor(m => m.Email, new { @class = "form-control" })
+            <input asp-for="Email" class="form-control" />
+            <span asp-validation-for="Email" class="text-danger"></span>
         </div>
     </div>
     <div class="form-group">
-        @Html.LabelFor(m => m.Password, new { @class = "col-md-2 control-label" })
+        <label asp-for="Password" class="col-md-2 control-label"></label>
         <div class="col-md-10">
-            @Html.PasswordFor(m => m.Password, new { @class = "form-control" })
+            <input asp-for="Password" class="form-control" />
+            <span asp-validation-for="Password" class="text-danger"></span>
         </div>
     </div>
     <div class="form-group">
-        @Html.LabelFor(m => m.ConfirmPassword, new { @class = "col-md-2 control-label" })
+        <label asp-for="ConfirmPassword" class="col-md-2 control-label"></label>
         <div class="col-md-10">
-            @Html.PasswordFor(m => m.ConfirmPassword, new { @class = "form-control" })
+            <input asp-for="ConfirmPassword" class="form-control" />
+            <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
         </div>
     </div>
     <div class="form-group">
         <div class="col-md-offset-2 col-md-10">
-            <input type="submit" class="btn btn-default" value="Register" />
+            <button type="submit" class="btn btn-default">Register</button>
         </div>
     </div>
-}
+</form>
 
 @section Scripts {
-    @*TODO : Until script helpers are available, adding script references manually*@
-    @*@Scripts.Render("~/bundles/jqueryval")*@
-    <script src="@Url.Content("~/Scripts/jquery.validate.js")"></script>
-    <script src="@Url.Content("~/Scripts/jquery.validate.unobtrusive.js")"></script>
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
 }

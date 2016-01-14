@@ -339,8 +339,7 @@ namespace Microsoft.AspNet.Identity.Test
             }
             // REVIEW: auth changes we lost the ability to mock is persistent
             //var properties = new AuthenticationProperties { IsPersistent = isPersistent };
-            auth.Setup(a => a.AuthenticateAsync(It.Is<AuthenticateContext>(c => c.AuthenticationScheme == IdentityCookieOptions.ApplicationCookieAuthenticationType)))
-                
+            auth.Setup(a => a.AuthenticateAsync(It.Is<AuthenticateContext>(c => c.AuthenticationScheme == new IdentityCookieOptions().ApplicationCookieAuthenticationScheme)))
                 .Returns(Task.FromResult(0)).Verifiable();
             var manager = SetupUserManager(user);
             var signInManager = new Mock<SignInManager<TestUser>>(manager.Object,
@@ -503,15 +502,15 @@ namespace Microsoft.AspNet.Identity.Test
         public async Task SignOutCallsContextResponseSignOut(string authenticationScheme)
         {
             // Setup
-            var manager = MockHelpers.MockUserManager<TestUser>();
+            var manager = MockHelpers.TestUserManager<TestUser>();
+            manager.Options.Cookies.ApplicationCookieAuthenticationScheme = authenticationScheme;
             var context = new Mock<HttpContext>();
             var auth = new Mock<AuthenticationManager>();
             context.Setup(c => c.Authentication).Returns(auth.Object).Verifiable();
             auth.Setup(a => a.SignOutAsync(authenticationScheme)).Returns(Task.FromResult(0)).Verifiable();
-            auth.Setup(a => a.SignOutAsync(manager.Object.Options.Cookies.TwoFactorUserIdCookieAuthenticationScheme)).Returns(Task.FromResult(0)).Verifiable();
-            auth.Setup(a => a.SignOutAsync(manager.Object.Options.Cookies.ExternalCookieAuthenticationScheme)).Returns(Task.FromResult(0)).Verifiable();
-            IdentityCookieOptions.ApplicationCookieAuthenticationType = authenticationScheme;
-            var helper = SetupSignInManager(manager.Object, context.Object);
+            auth.Setup(a => a.SignOutAsync(manager.Options.Cookies.TwoFactorUserIdCookieAuthenticationScheme)).Returns(Task.FromResult(0)).Verifiable();
+            auth.Setup(a => a.SignOutAsync(manager.Options.Cookies.ExternalCookieAuthenticationScheme)).Returns(Task.FromResult(0)).Verifiable();
+            var helper = SetupSignInManager(manager, context.Object, null, manager.Options);
 
             // Act
             await helper.SignOutAsync();
@@ -630,7 +629,7 @@ namespace Microsoft.AspNet.Identity.Test
 
         private static void SetupSignIn(Mock<AuthenticationManager> auth, string userId = null, bool? isPersistent = null, string loginProvider = null)
         {
-            auth.Setup(a => a.SignInAsync(IdentityCookieOptions.ApplicationCookieAuthenticationType,
+            auth.Setup(a => a.SignInAsync(new IdentityCookieOptions().ApplicationCookieAuthenticationScheme,
                 It.Is<ClaimsPrincipal>(id =>
                     (userId == null || id.FindFirstValue(ClaimTypes.NameIdentifier) == userId) &&
                     (loginProvider == null || id.FindFirstValue(ClaimTypes.AuthenticationMethod) == loginProvider)),

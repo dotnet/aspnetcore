@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Authentication.Cookies;
 using Microsoft.AspNet.Builder;
@@ -17,6 +16,23 @@ namespace Microsoft.AspNet.Identity
     /// <typeparam name="TUser">The type encapsulating a user.</typeparam>
     public class SecurityStampValidator<TUser> : ISecurityStampValidator where TUser : class
     {
+        private readonly SignInManager<TUser> _signInManager;
+        private readonly IdentityOptions _options;
+
+        public SecurityStampValidator(IOptions<IdentityOptions> options, SignInManager<TUser> signInManager)
+        {
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+            if (signInManager == null)
+            {
+                throw new ArgumentNullException(nameof(signInManager));
+            }
+            _signInManager = signInManager;
+            _options = options.Value;
+        }
+
         /// <summary>
         /// Validates a security stamp of an identity as an asynchronous operation, and rebuilds the identity if the validation succeeds, otherwise rejects
         /// the identity.
@@ -25,19 +41,34 @@ namespace Microsoft.AspNet.Identity
         /// <returns>The <see cref="Task"/> that represents the asynchronous validation operation.</returns>
         public virtual async Task ValidateAsync(CookieValidatePrincipalContext context)
         {
-            var manager = context.HttpContext.RequestServices.GetRequiredService<SignInManager<TUser>>();
-            var userId = context.Principal.GetUserId();
-            var user = await manager.ValidateSecurityStampAsync(context.Principal, userId);
-            if (user != null)
+            var currentUtc = DateTimeOffset.UtcNow;
+            if (context.Options != null && context.Options.SystemClock != null)
             {
-                // REVIEW: note we lost login authenticaiton method
-                context.ReplacePrincipal(await manager.CreateUserPrincipalAsync(user));
-                context.ShouldRenew = true;
+                currentUtc = context.Options.SystemClock.UtcNow;
             }
-            else
+            var issuedUtc = context.Properties.IssuedUtc;
+
+            // Only validate if enough time has elapsed
+            var validate = (issuedUtc == null);
+            if (issuedUtc != null)
             {
-                context.RejectPrincipal();
-                await manager.SignOutAsync();
+                var timeElapsed = currentUtc.Subtract(issuedUtc.Value);
+                validate = timeElapsed > _options.SecurityStampValidationInterval;
+            }
+            if (validate)
+            {
+                var user = await _signInManager.ValidateSecurityStampAsync(context.Principal);
+                if (user != null)
+                {
+                    // REVIEW: note we lost login authenticaiton method
+                    context.ReplacePrincipal(await _signInManager.CreateUserPrincipalAsync(user));
+                    context.ShouldRenew = true;
+                }
+                else
+                {
+                    context.RejectPrincipal();
+                    await _signInManager.SignOutAsync();
+                }
             }
         }
     }
@@ -56,32 +87,13 @@ namespace Microsoft.AspNet.Identity
         /// <returns>The <see cref="Task"/> that represents the asynchronous validation operation.</returns>
         public static Task ValidatePrincipalAsync(CookieValidatePrincipalContext context)
         {
-            var currentUtc = DateTimeOffset.UtcNow;
-            if (context.Options != null && context.Options.SystemClock != null)
-            {
-                currentUtc = context.Options.SystemClock.UtcNow;
-            }
-            var issuedUtc = context.Properties.IssuedUtc;
-
             if (context.HttpContext.RequestServices == null)
             {
-                throw new InvalidOperationException("TODO: RequestServices is null, missing Use[Request]Services?");
+                throw new InvalidOperationException("RequestServices is null.");
             }
 
-            // Only validate if enough time has elapsed
-            var validate = (issuedUtc == null);
-            if (issuedUtc != null)
-            {
-                var timeElapsed = currentUtc.Subtract(issuedUtc.Value);
-                var accessor = context.HttpContext.RequestServices.GetRequiredService<IOptions<IdentityOptions>>();
-                validate = timeElapsed > accessor.Value.SecurityStampValidationInterval;
-            }
-            if (validate)
-            {
-                var validator = context.HttpContext.RequestServices.GetRequiredService<ISecurityStampValidator>();
-                return validator.ValidateAsync(context);
-            }
-            return Task.FromResult(0);
+            var validator = context.HttpContext.RequestServices.GetRequiredService<ISecurityStampValidator>();
+            return validator.ValidateAsync(context);
         }
     }
 }

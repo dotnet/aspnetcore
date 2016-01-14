@@ -6,8 +6,10 @@
   "version": "1.0.0-*",
   "dependencies": {
     "Microsoft.AspNet.Mvc": "6.0.0-*",
+    "Microsoft.AspNet.Mvc.TagHelpers": "6.0.0-*",
     "Microsoft.AspNet.DataProtection.Extensions": "1.0.0-*",
     "Microsoft.AspNet.Diagnostics": "1.0.0-*",
+    "Microsoft.AspNet.Diagnostics.Entity": "7.0.0-*",
     "Microsoft.AspNet.Identity": "3.0.0-*",
     "Microsoft.AspNet.Identity.EntityFramework": "3.0.0-*",
     "Microsoft.AspNet.Authentication.Cookies": "1.0.0-*",
@@ -21,7 +23,9 @@
     "EntityFramework.MicrosoftSqlServer": "7.0.0-*",
     "Microsoft.Extensions.Configuration.EnvironmentVariables": "1.0.0-*",
     "Microsoft.Extensions.Configuration.Json": "1.0.0-*",
-    "Microsoft.Extensions.Logging.Console": "1.0.0-*"
+    "Microsoft.Extensions.Configuration.UserSecrets": "1.0.0-*",
+    "Microsoft.Extensions.Logging.Console": "1.0.0-*",
+    "Microsoft.Extensions.Logging.Debug": "1.0.0-*"
   },
   "compilationOptions": {
     "emitEntryPoint": true
@@ -29,14 +33,16 @@
   "commands": {
     "web": "IdentitySample.Mvc"
   },
-  "webroot": ".",
   "frameworks": {
-    "dnx451": {
-      "dependencies": {
-        "Microsoft.Extensions.Logging.NLog": "1.0.0-*"
-      }
-    },
-    "dnxcore50": {
-    }
+    "dnx451": { },
+    "dnxcore50": { }
+  },
+
+  "exclude": [
+    "wwwroot",
+    "node_modules"
+  ],
+  "scripts": {
+    "prepublish": [ "npm install", "bower install", "gulp clean", "gulp min" ]
   }
 }

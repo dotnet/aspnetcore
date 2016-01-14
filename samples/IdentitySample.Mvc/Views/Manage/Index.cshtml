@@ -1,79 +1,79 @@
-﻿@model IdentitySample.Models.IndexViewModel
+﻿@model IndexViewModel
 @{
-    //TODO: Until we have a way to specify the layout page at application level.
-    Layout = "/Views/Shared/_Layout.cshtml";
-    ViewBag.Title = "Manage your account";
+    ViewData["Title"] = "Manage your account";
 }
 
-<h2>@ViewBag.Title.</h2>
-<p class="text-success">@ViewBag.StatusMessage</p>
-<div class="row">
-    <div class="col-md-8">
-        <p>
-            @(Model.HasPassword ? Html.ActionLink("Change your password", "ChangePassword") 
-                : Html.ActionLink("Set your password", "SetPassword"))
-        </p>
-        <p>
-            Phone Number: @(Model.PhoneNumber ?? "None") [
-            @if (Model.PhoneNumber != null)
+<h2>@ViewData["Title"].</h2>
+<p class="text-success">@ViewData["StatusMessage"]</p>
+<div>
+    <h4>Change your account settings</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>Password:</dt>
+        <dd>
+            [
+            @if (Model.HasPassword)
             {
-                @Html.ActionLink("Change", "AddPhoneNumber")
-                @: &nbsp;|&nbsp;
-                @Html.ActionLink("Remove", "RemovePhoneNumber")
+                <a asp-controller="Manage" asp-action="ChangePassword">Change</a>
             }
             else
             {
-                @Html.ActionLink("Add", "AddPhoneNumber")
+                <a asp-controller="Manage" asp-action="SetPassword">Create</a>
             }
             ]
-        </p>
-        <p>
-            External Logins: @Model.Logins.Count
-            @Html.ActionLink("[Manage]", "ManageLogins")
-        </p>
-        @if (Model.TwoFactor)
-        {
-            using (Html.BeginForm("DisableTFA", "Manage", FormMethod.Post, new {@class = "form-horizontal", role = "form"}))
-            {
-                 @Html.AntiForgeryToken()
-                 <p>
-                     Two factor is currently enabled:
-                     <input type="submit" value="Disable" class="btn btn-default"/>
-                 </p>
-            }
-        }
-        else
-        {
-            using (Html.BeginForm("EnableTFA", "Manage", FormMethod.Post, new {@class = "form-horizontal", role = "form"}))
-            {
-                @Html.AntiForgeryToken()
-                <p>
-                    Two factor is currently disabled:
-                    <input type="submit" value="Enable" class="btn btn-default"/>
-                </p>
-            }
-        }
-        @if (Model.BrowserRemembered)
-        {
-            using (Html.BeginForm("ForgetBrowser", "Manage", FormMethod.Post, new {@class = "form-horizontal", role = "form"}))
-            {
-                @Html.AntiForgeryToken()
-                <p>
-                    Browser is curently remembered for two factor:
-                    <input type="submit" value="Forget Browser" class="btn btn-default" />
-                </p>
-            }
-        }
-        else
-        {
-            using (Html.BeginForm("RememberBrowser", "Manage", FormMethod.Post, new {@class = "form-horizontal", role = "form"}))
-            {
-                @Html.AntiForgeryToken()
-                <p>
-                    Browser is curently not remembered for two factor:
-                    <input type="submit" value="Remember Browser" class="btn btn-default"/>
-                </p>
-            }
-        }
-    </div>
+        </dd>
+        <dt>External Logins:</dt>
+        <dd>
+
+            @Model.Logins.Count [ <a asp-controller="Manage" asp-action="ManageLogins">Manage</a> ]
+        </dd>
+
+
+        <dt>Phone Number:</dt>
+        <dd>
+            <p>
+                Phone Numbers can used as a second factor of verification in two-factor authentication.
+                See <a href="http://go.microsoft.com/fwlink/?LinkID=532713">this article</a>
+                for details on setting up this ASP.NET application to support two-factor authentication using SMS.
+            </p>
+            @*@(Model.PhoneNumber ?? "None") [
+                @if (Model.PhoneNumber != null)
+                {
+                    <a asp-controller="Manage" asp-action="AddPhoneNumber">Change</a>
+                        @: &nbsp;|&nbsp;
+                        <a asp-controller="Manage" asp-action="RemovePhoneNumber">Remove</a>
+                }
+                else
+                {
+                    <a asp-controller="Manage" asp-action="AddPhoneNumber">Add</a>
+                }
+                ]*@
+        </dd>
+
+        <dt>Two-Factor Authentication:</dt>
+        <dd>
+            <p>
+                There are no two-factor authentication providers configured. See <a href="http://go.microsoft.com/fwlink/?LinkID=532713">this article</a>
+                for setting up this application to support two-factor authentication.
+            </p>
+            @*@if (Model.TwoFactor)
+                {
+                    <form asp-controller="Manage" asp-action="DisableTwoFactorAuthentication" method="post" class="form-horizontal" role="form">
+                        <text>
+                            Enabled
+                            <button type="submit" class="btn btn-link">Disable</button>
+                        </text>
+                    </form>
+                }
+                else
+                {
+                    <form asp-controller="Manage" asp-action="EnableTwoFactorAuthentication" method="post" class="form-horizontal" role="form">
+                        <text>
+                            Disabled
+                            <button type="submit" class="btn btn-link">Enable</button>
+                        </text>
+                    </form>
+                }*@
+        </dd>
+    </dl>
 </div>
