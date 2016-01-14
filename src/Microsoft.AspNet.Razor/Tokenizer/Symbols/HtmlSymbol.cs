@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.Razor.Tokenizer.Symbols
     {
         // Helper constructor
         public HtmlSymbol(int offset, int line, int column, string content, HtmlSymbolType type)
-            : this(new SourceLocation(offset, line, column), content, type, Enumerable.Empty<RazorError>())
+            : this(new SourceLocation(offset, line, column), content, type, RazorError.EmptyArray)
         {
             if (content == null)
             {
@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.Razor.Tokenizer.Symbols
         }
 
         public HtmlSymbol(SourceLocation start, string content, HtmlSymbolType type)
-            : base(start, content, type, Enumerable.Empty<RazorError>())
+            : base(start, content, type, RazorError.EmptyArray)
         {
             if (content == null)
             {
@@ -34,7 +34,7 @@ namespace Microsoft.AspNet.Razor.Tokenizer.Symbols
             int column,
             string content,
             HtmlSymbolType type,
-            IEnumerable<RazorError> errors)
+            IReadOnlyList<RazorError> errors)
             : base(new SourceLocation(offset, line, column), content, type, errors)
         {
             if (content == null)
@@ -47,7 +47,7 @@ namespace Microsoft.AspNet.Razor.Tokenizer.Symbols
             SourceLocation start,
             string content,
             HtmlSymbolType type,
-            IEnumerable<RazorError> errors)
+            IReadOnlyList<RazorError> errors)
             : base(start, content, type, errors)
         {
             if (content == null)

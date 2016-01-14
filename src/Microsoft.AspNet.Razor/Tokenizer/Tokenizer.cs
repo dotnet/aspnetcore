@@ -90,7 +90,7 @@ namespace Microsoft.AspNet.Razor.Tokenizer
             CurrentState = StartState;
         }
 
-        protected abstract TSymbol CreateSymbol(SourceLocation start, string content, TSymbolType type, IEnumerable<RazorError> errors);
+        protected abstract TSymbol CreateSymbol(SourceLocation start, string content, TSymbolType type, IReadOnlyList<RazorError> errors);
 
         protected TSymbol Single(TSymbolType type)
         {
@@ -115,7 +115,14 @@ namespace Microsoft.AspNet.Razor.Tokenizer
             TSymbol sym = null;
             if (HaveContent)
             {
-                sym = CreateSymbol(start, Buffer.ToString(), type, CurrentErrors.ToArray());
+                // Perf: Don't allocate a new errors array unless necessary.
+                var errors = CurrentErrors.Count == 0 ? RazorError.EmptyArray : new RazorError[CurrentErrors.Count];
+                for (var i = 0; i < CurrentErrors.Count; i++)
+                {
+                    errors[i] = CurrentErrors[i];
+                }
+
+                sym = CreateSymbol(start, Buffer.ToString(), type, errors);
             }
             StartSymbol();
             return sym;

@@ -9,6 +9,8 @@ namespace Microsoft.AspNet.Razor
 {
     public class RazorError : IEquatable<RazorError>
     {
+        internal static readonly RazorError[] EmptyArray = new RazorError[0];
+
         internal const int DefaultErrorLength = 1;
 
         /// <summary>

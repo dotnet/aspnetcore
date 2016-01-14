@@ -72,7 +72,7 @@ namespace Microsoft.AspNet.Razor.Tokenizer
             get { return CSharpSymbolType.RazorCommentStar; }
         }
 
-        protected override CSharpSymbol CreateSymbol(SourceLocation start, string content, CSharpSymbolType type, IEnumerable<RazorError> errors)
+        protected override CSharpSymbol CreateSymbol(SourceLocation start, string content, CSharpSymbolType type, IReadOnlyList<RazorError> errors)
         {
             return new CSharpSymbol(start, content, type, errors);
         }

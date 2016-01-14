@@ -80,7 +80,7 @@ namespace Microsoft.AspNet.Razor.Parser
             return new CSharpTokenizer(source);
         }
 
-        protected override CSharpSymbol CreateSymbol(SourceLocation location, string content, CSharpSymbolType type, IEnumerable<RazorError> errors)
+        protected override CSharpSymbol CreateSymbol(SourceLocation location, string content, CSharpSymbolType type, IReadOnlyList<RazorError> errors)
         {
             return new CSharpSymbol(location, content, type, errors);
         }

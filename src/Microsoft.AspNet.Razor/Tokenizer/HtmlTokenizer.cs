@@ -59,7 +59,7 @@ namespace Microsoft.AspNet.Razor.Tokenizer
             }
         }
 
-        protected override HtmlSymbol CreateSymbol(SourceLocation start, string content, HtmlSymbolType type, IEnumerable<RazorError> errors)
+        protected override HtmlSymbol CreateSymbol(SourceLocation start, string content, HtmlSymbolType type, IReadOnlyList<RazorError> errors)
         {
             return new HtmlSymbol(start, content, type, errors);
         }

@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.Razor.Tokenizer.Symbols
             SourceLocation start,
             string content,
             TType type,
-            IEnumerable<RazorError> errors)
+            IReadOnlyList<RazorError> errors)
         {
             if (content == null)
             {
@@ -32,7 +32,7 @@ namespace Microsoft.AspNet.Razor.Tokenizer.Symbols
 
         public string Content { get; }
 
-        public IEnumerable<RazorError> Errors { get; }
+        public IReadOnlyList<RazorError> Errors { get; }
 
         public TType Type { get; }
 

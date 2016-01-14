@@ -129,7 +129,7 @@ namespace Microsoft.AspNet.Razor.Parser
             }
         }
 
-        protected override HtmlSymbol CreateSymbol(SourceLocation location, string content, HtmlSymbolType type, IEnumerable<RazorError> errors)
+        protected override HtmlSymbol CreateSymbol(SourceLocation location, string content, HtmlSymbolType type, IReadOnlyList<RazorError> errors)
         {
             return new HtmlSymbol(location, content, type, errors);
         }

@@ -138,7 +138,7 @@ namespace Microsoft.AspNet.Razor.Test.Tokenizer
                 SourceLocation start,
                 string content,
                 CSharpSymbolType type,
-                IEnumerable<RazorError> errors)
+                IReadOnlyList<RazorError> errors)
             {
                 throw new NotImplementedException();
             }
