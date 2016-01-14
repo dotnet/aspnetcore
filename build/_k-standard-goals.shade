@@ -193,8 +193,8 @@ default NUGET_FEED = 'https://api.nuget.org/v3/index.json'
 
 #nuget-verify target='package' if='File.Exists(PACKAGELIST_JSON_FILENAME) && ShouldVerifyNupkgs' description='Verify if all the packages are generated properly'
   var commandsDirectory = '${Path.Combine(BASE_DIR, "commands")}'
-  exec program='cmd' commandline='/C dnu commands install --source ${DNX_TOOLS_FEED} --source ${NUGET_FEED} NuGetPackageVerifier --packages "${commandsDirectory}"'
-  exec program='cmd' commandline='/C ${Path.Combine(commandsDirectory, "nugetverify")} "${BUILD_DIR}" "${Path.Combine(BASE_DIR, PACKAGELIST_JSON_FILENAME)}"'
+  exec program='.build/NuGet.exe' commandline='install -ExcludeVersion -pre NuGetPackageVerifier -Source ${DNX_TOOLS_FEED} -out ${commandsDirectory}'
+  exec program='${Path.Combine(commandsDirectory, "NuGetPackageVerifier", "NuGetPackageVerifier.exe")}' commandline='"${BUILD_DIR}" "${Path.Combine(BASE_DIR, PACKAGELIST_JSON_FILENAME)}"'
   @{
     if (Directory.Exists(commandsDirectory))
     {
