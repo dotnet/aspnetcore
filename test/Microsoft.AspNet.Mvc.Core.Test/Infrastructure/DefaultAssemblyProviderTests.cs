@@ -1,11 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNet.Http;
 using Microsoft.Extensions.PlatformAbstractions;
-using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit;
 
@@ -107,14 +107,13 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
         {
             // Arrange
             var provider = new MvcAssembliesTestingProvider();
-
-            var expected = provider.LoadableReferenceAssemblies;
+            var expected = provider.LoadableReferenceAssemblies.OrderBy(p => p, StringComparer.Ordinal);
 
             // Act
-            var referenceAssemblies = provider.ReferenceAssemblies;
+            var referenceAssemblies = provider.ReferenceAssemblies.OrderBy(p => p, StringComparer.Ordinal);
 
             // Assert
-            Assert.True(expected.SetEquals(referenceAssemblies));
+            Assert.Equal(expected, referenceAssemblies);
         }
 
         private static ILibraryManager CreateLibraryManager()
@@ -236,7 +235,6 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
                 // The following assemblies are not reachable from Microsoft.AspNet.Mvc
                 mvcAssemblies.Add("Microsoft.AspNet.Mvc.TagHelpers");
                 mvcAssemblies.Add("Microsoft.AspNet.Mvc.Formatters.Xml");
-                mvcAssemblies.Add("Microsoft.AspNet.PageExecutionInstrumentation.Interfaces");
 
                 return mvcAssemblies;
             }

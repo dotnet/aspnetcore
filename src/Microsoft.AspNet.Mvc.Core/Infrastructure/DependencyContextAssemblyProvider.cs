@@ -6,19 +6,12 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using Microsoft.Extensions.PlatformAbstractions;
+using Microsoft.Extensions.DependencyModel;
 
 namespace Microsoft.AspNet.Mvc.Infrastructure
 {
-    public class DefaultAssemblyProvider : IAssemblyProvider
+    public class DependencyContextAssemblyProvider : IAssemblyProvider
     {
-        private readonly ILibraryManager _libraryManager;
-
-        public DefaultAssemblyProvider(ILibraryManager libraryManager)
-        {
-            _libraryManager = libraryManager;
-        }
-
         /// <summary>
         /// Gets the set of assembly names that are used as root for discovery of
         /// MVC controllers, view components and views.
@@ -49,8 +42,9 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
         {
             get
             {
-                return GetCandidateLibraries().SelectMany(l => l.Assemblies)
-                                              .Select(Load);
+                return GetCandidateLibraries()
+                    .SelectMany(l => l.Assemblies)
+                    .Select(Load);
             }
         }
 
@@ -60,29 +54,25 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
         /// while ignoring MVC assemblies.
         /// </summary>
         /// <returns>A set of <see cref="Library"/>.</returns>
-        protected virtual IEnumerable<Library> GetCandidateLibraries()
+        protected virtual IEnumerable<RuntimeLibrary> GetCandidateLibraries()
         {
             if (ReferenceAssemblies == null)
             {
-                return Enumerable.Empty<Library>();
+                return Enumerable.Empty<RuntimeLibrary>();
             }
 
-            // GetReferencingLibraries returns the transitive closure of referencing assemblies
-            // for a given assembly.
-            return ReferenceAssemblies.SelectMany(_libraryManager.GetReferencingLibraries)
-                                      .Distinct()
-                                      .Where(IsCandidateLibrary);
+            return DependencyContext.Default.RuntimeLibraries.Where(IsCandidateLibrary);
         }
 
-        private static Assembly Load(AssemblyName assemblyName)
+        private static Assembly Load(RuntimeAssembly assembly)
         {
-            return Assembly.Load(assemblyName);
+            return Assembly.Load(assembly.Name);
         }
 
-        private bool IsCandidateLibrary(Library library)
+        private bool IsCandidateLibrary(RuntimeLibrary library)
         {
             Debug.Assert(ReferenceAssemblies != null);
-            return !ReferenceAssemblies.Contains(library.Name);
+            return library.Dependencies.Any(dependency => ReferenceAssemblies.Contains(dependency.Name));
         }
     }
 }
