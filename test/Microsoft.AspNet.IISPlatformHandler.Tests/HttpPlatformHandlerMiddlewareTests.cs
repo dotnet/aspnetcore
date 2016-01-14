@@ -49,7 +49,7 @@ namespace Microsoft.AspNet.IISPlatformHandler
                 {
                     app.UseIISPlatformHandler(new IISPlatformHandlerOptions
                     {
-                        FlowWindowsAuthentication = false
+                        ForwardWindowsAuthentication = false
                     });
                     app.Run(context =>
                     {

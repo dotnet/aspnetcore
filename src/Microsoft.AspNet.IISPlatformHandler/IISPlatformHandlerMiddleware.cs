@@ -3,7 +3,6 @@
 
 using System;
 using System.Globalization;
-using System.Security.Cryptography.X509Certificates;
 using System.Security.Principal;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
@@ -20,7 +19,8 @@ namespace Microsoft.AspNet.IISPlatformHandler
 {
     public class IISPlatformHandlerMiddleware
     {
-        private const string XIISWindowsAuthToken = "X-IIS-WindowsAuthToken";
+        private const string XIISWindowsAuthToken = "X-IIS-WindowsAuthToken"; // TODO: Legacy, remove before RTW
+        private const string MSPlatformHandlerWinAuthToken = "MS-PLATFORM-HANDLER-WINAUTHTOKEN";
         private const string MSPlatformHandlerClientCert = "MS-PLATFORM-HANDLER-CLIENTCERT";
 
         private readonly RequestDelegate _next;
@@ -49,7 +49,7 @@ namespace Microsoft.AspNet.IISPlatformHandler
 
         public async Task Invoke(HttpContext httpContext)
         {
-            if (_options.FlowClientCertificate)
+            if (_options.ForwardClientCertificate)
             {
                 var header = httpContext.Request.Headers[MSPlatformHandlerClientCert];
                 if (!StringValues.IsNullOrEmpty(header))
@@ -58,7 +58,7 @@ namespace Microsoft.AspNet.IISPlatformHandler
                 }
             }
 
-            if (_options.FlowWindowsAuthentication)
+            if (_options.ForwardWindowsAuthentication)
             {
                 var winPrincipal = UpdateUser(httpContext);
                 var handler = new AuthenticationHandler(httpContext, _options, winPrincipal);
@@ -80,11 +80,18 @@ namespace Microsoft.AspNet.IISPlatformHandler
 
         private WindowsPrincipal UpdateUser(HttpContext httpContext)
         {
-            var xIISWindowsAuthToken = httpContext.Request.Headers[XIISWindowsAuthToken];
+            var tokenHeader = httpContext.Request.Headers[MSPlatformHandlerWinAuthToken];
+
+            if (StringValues.IsNullOrEmpty(tokenHeader))
+            {
+                // TODO: Legacy, remove before RTW
+                tokenHeader = httpContext.Request.Headers[XIISWindowsAuthToken];
+            }
+
             int hexHandle;
             WindowsPrincipal winPrincipal = null;
-            if (!StringValues.IsNullOrEmpty(xIISWindowsAuthToken)
-                && int.TryParse(xIISWindowsAuthToken, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out hexHandle))
+            if (!StringValues.IsNullOrEmpty(tokenHeader)
+                && int.TryParse(tokenHeader, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out hexHandle))
             {
                 // Always create the identity if the handle exists, we need to dispose it so it does not leak.
                 var handle = new IntPtr(hexHandle);
