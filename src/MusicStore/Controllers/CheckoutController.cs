@@ -48,7 +48,7 @@ namespace MusicStore.Controllers
                 }
                 else
                 {
-                    order.Username = HttpContext.User.GetUserName();
+                    order.Username = HttpContext.User.Identity.Name;
                     order.OrderDate = DateTime.Now;
 
                     //Add the Order
@@ -81,7 +81,7 @@ namespace MusicStore.Controllers
             // Validate customer owns this order
             bool isValid = await dbContext.Orders.AnyAsync(
                 o => o.OrderId == id &&
-                o.Username == HttpContext.User.GetUserName());
+                o.Username == HttpContext.User.Identity.Name);
 
             if (isValid)
             {

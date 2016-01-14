@@ -121,7 +121,7 @@ namespace MusicStore
                 // administrator. But this can be changed to suit the needs.
                 var identity = (ClaimsIdentity)context.User.Identity;
 
-                if (context.User.GetUserName() == Environment.GetEnvironmentVariable("USERDOMAIN") + "\\"
+                if (context.User.Identity.Name == Environment.GetEnvironmentVariable("USERDOMAIN") + "\\"
                     + Environment.GetEnvironmentVariable("USERNAME"))
                 {
                     identity.AddClaim(new Claim("ManageStore", "Allowed"));

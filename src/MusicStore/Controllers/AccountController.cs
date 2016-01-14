@@ -395,7 +395,7 @@ namespace MusicStore.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> ExternalLoginConfirmation(ExternalLoginConfirmationViewModel model, string returnUrl = null)
         {
-            if (User.IsSignedIn())
+            if (SignInManager.IsSignedIn(User))
             {
                 return RedirectToAction("Index", "Manage");
             }
@@ -476,9 +476,9 @@ namespace MusicStore.Controllers
             }
         }
 
-        private async Task<ApplicationUser> GetCurrentUserAsync()
+        private Task<ApplicationUser> GetCurrentUserAsync()
         {
-            return await UserManager.FindByIdAsync(HttpContext.User.GetUserId());
+            return UserManager.GetUserAsync(HttpContext.User);
         }
 
         private ActionResult RedirectToLocal(string returnUrl)
