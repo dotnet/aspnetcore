@@ -107,23 +107,16 @@ namespace Microsoft.AspNet.Identity.Test
             Assert.Equal(1001, options.Lockout.MaxFailedAccessAttempts);
         }
 
-        public class PasswordsNegativeLengthSetup : ConfigureOptions<IdentityOptions>
-        {
-            public PasswordsNegativeLengthSetup() 
-                : base(options => options.Password.RequiredLength = -1)
-            { }
-        }
-
         [Fact]
         public void CanCustomizeIdentityOptions()
         {
             var services = new ServiceCollection()
-                .ConfigureOptions<PasswordsNegativeLengthSetup>();
+                .Configure<IdentityOptions>(options => options.Password.RequiredLength = -1);
             services.AddIdentity<TestUser,TestRole>();
             var serviceProvider = services.BuildServiceProvider();
 
             var setup = serviceProvider.GetRequiredService<IConfigureOptions<IdentityOptions>>();
-            Assert.IsType(typeof(PasswordsNegativeLengthSetup), setup);
+            Assert.NotNull(setup);
             var optionsGetter = serviceProvider.GetRequiredService<IOptions<IdentityOptions>>();
             Assert.NotNull(optionsGetter);
             var myOptions = optionsGetter.Value;
