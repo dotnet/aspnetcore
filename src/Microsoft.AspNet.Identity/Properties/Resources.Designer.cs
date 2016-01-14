@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// An unknown failure has occured.
+        /// An unknown failure has occurred.
         /// </summary>
         internal static string DefaultError
         {
@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// An unknown failure has occured.
+        /// An unknown failure has occurred.
         /// </summary>
         internal static string FormatDefaultError()
         {
@@ -299,19 +299,19 @@ namespace Microsoft.AspNet.Identity
         }
 
         /// <summary>
-        /// Passwords must have at least one non letter and non digit character.
+        /// Passwords must have at least one non alphanumeric character.
         /// </summary>
-        internal static string PasswordRequiresNonLetterAndDigit
+        internal static string PasswordRequiresNonAlphanumeric
         {
-            get { return GetString("PasswordRequiresNonLetterAndDigit"); }
+            get { return GetString("PasswordRequiresNonAlphanumeric"); }
         }
 
         /// <summary>
-        /// Passwords must have at least one non letter and non digit character.
+        /// Passwords must have at least one non alphanumeric character.
         /// </summary>
-        internal static string FormatPasswordRequiresNonLetterAndDigit()
+        internal static string FormatPasswordRequiresNonAlphanumeric()
         {
-            return GetString("PasswordRequiresNonLetterAndDigit");
+            return GetString("PasswordRequiresNonAlphanumeric");
         }
 
         /// <summary>

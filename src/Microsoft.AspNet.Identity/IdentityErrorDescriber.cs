@@ -233,12 +233,12 @@ namespace Microsoft.AspNet.Identity
         /// </summary>
         /// <param name="length">The length that is not long enough.</param>
         /// <returns>An <see cref="IdentityError"/> indicating a password entered does not contain a non-alphanumeric character.</returns>
-        public virtual IdentityError PasswordRequiresNonLetterAndDigit()
+        public virtual IdentityError PasswordRequiresNonAlphanumeric()
         {
             return new IdentityError
             {
-                Code = nameof(PasswordRequiresNonLetterAndDigit),
-                Description = Resources.PasswordRequiresNonLetterAndDigit
+                Code = nameof(PasswordRequiresNonAlphanumeric),
+                Description = Resources.PasswordRequiresNonAlphanumeric
             };
         }
 

@@ -52,9 +52,9 @@ namespace Microsoft.AspNet.Identity
             {
                 errors.Add(Describer.PasswordTooShort(options.RequiredLength));
             }
-            if (options.RequireNonLetterOrDigit && password.All(IsLetterOrDigit))
+            if (options.RequireNonAlphanumeric && password.All(IsLetterOrDigit))
             {
-                errors.Add(Describer.PasswordRequiresNonLetterAndDigit());
+                errors.Add(Describer.PasswordRequiresNonAlphanumeric());
             }
             if (options.RequireDigit && !password.Any(IsDigit))
             {

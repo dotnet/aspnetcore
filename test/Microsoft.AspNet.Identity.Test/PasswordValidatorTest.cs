@@ -45,7 +45,7 @@ namespace Microsoft.AspNet.Identity.Test
             var manager = MockHelpers.TestUserManager<TestUser>();
             var valid = new PasswordValidator<TestUser>();
             manager.Options.Password.RequireUppercase = false;
-            manager.Options.Password.RequireNonLetterOrDigit = false;
+            manager.Options.Password.RequireNonAlphanumeric = false;
             manager.Options.Password.RequireLowercase = false;
             manager.Options.Password.RequireDigit = false;
             IdentityResultAssert.IsFailure(await valid.ValidateAsync(manager, null, input), error);
@@ -59,7 +59,7 @@ namespace Microsoft.AspNet.Identity.Test
             var manager = MockHelpers.TestUserManager<TestUser>();
             var valid = new PasswordValidator<TestUser>();
             manager.Options.Password.RequireUppercase = false;
-            manager.Options.Password.RequireNonLetterOrDigit = false;
+            manager.Options.Password.RequireNonAlphanumeric = false;
             manager.Options.Password.RequireLowercase = false;
             manager.Options.Password.RequireDigit = false;
             IdentityResultAssert.IsSuccess(await valid.ValidateAsync(manager, null, input));
@@ -73,12 +73,12 @@ namespace Microsoft.AspNet.Identity.Test
             var manager = MockHelpers.TestUserManager<TestUser>();
             var valid = new PasswordValidator<TestUser>();
             manager.Options.Password.RequireUppercase = false;
-            manager.Options.Password.RequireNonLetterOrDigit = true;
+            manager.Options.Password.RequireNonAlphanumeric = true;
             manager.Options.Password.RequireLowercase = false;
             manager.Options.Password.RequireDigit = false;
             manager.Options.Password.RequiredLength = 0;
             IdentityResultAssert.IsFailure(await valid.ValidateAsync(manager, null, input),
-                "Passwords must have at least one non letter and non digit character.");
+                "Passwords must have at least one non alphanumeric character.");
         }
 
         [Theory]
@@ -90,7 +90,7 @@ namespace Microsoft.AspNet.Identity.Test
             var manager = MockHelpers.TestUserManager<TestUser>();
             var valid = new PasswordValidator<TestUser>();
             manager.Options.Password.RequireUppercase = false;
-            manager.Options.Password.RequireNonLetterOrDigit = true;
+            manager.Options.Password.RequireNonAlphanumeric = true;
             manager.Options.Password.RequireLowercase = false;
             manager.Options.Password.RequireDigit = false;
             manager.Options.Password.RequiredLength = 0;
@@ -106,7 +106,7 @@ namespace Microsoft.AspNet.Identity.Test
         [InlineData("aB1@df", Errors.None)]
         public async Task UberMixedRequiredTests(string input, Errors errorMask)
         {
-            const string alphaError = "Passwords must have at least one non letter and non digit character.";
+            const string alphaError = "Passwords must have at least one non alphanumeric character.";
             const string upperError = "Passwords must have at least one uppercase ('A'-'Z').";
             const string lowerError = "Passwords must have at least one lowercase ('a'-'z').";
             const string digitError = "Passwords must have at least one digit ('0'-'9').";

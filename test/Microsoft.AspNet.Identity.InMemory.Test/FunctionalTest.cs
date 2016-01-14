@@ -42,7 +42,7 @@ namespace Microsoft.AspNet.Identity.InMemory
             var server = CreateServer(services => services.Configure<IdentityOptions>(options =>
             {
                 options.Password.RequireUppercase = false;
-                options.Password.RequireNonLetterOrDigit = false;
+                options.Password.RequireNonAlphanumeric = false;
                 options.Password.RequireDigit = false;
             }));
 

@@ -17,13 +17,13 @@ namespace Microsoft.AspNet.Identity
         public int RequiredLength { get; set; } = 6;
 
         /// <summary>
-        /// Gets or sets a flag indicating if passwords must contain a digit or other non-alphabetical character.
+        /// Gets or sets a flag indicating if passwords must contain a non-alphanumeric character.
         /// </summary>
-        /// <value>True if passwords must contain a digit or other non-alphabetical character, otherwise false.</value>
+        /// <value>True if passwords must contain a non-alphanumeric character, otherwise false.</value>
         /// <remarks>
         /// This defaults to true.
         /// </remarks>
-        public bool RequireNonLetterOrDigit { get; set; } = true;
+        public bool RequireNonAlphanumeric { get; set; } = true;
 
         /// <summary>
         /// Gets or sets a flag indicating if passwords must contain a lower case ASCII character.

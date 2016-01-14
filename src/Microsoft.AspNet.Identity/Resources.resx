@@ -189,9 +189,9 @@
     <value>Passwords must have at least one lowercase ('a'-'z').</value>
     <comment>Error when passwords do not have a lowercase letter</comment>
   </data>
-  <data name="PasswordRequiresNonLetterAndDigit" xml:space="preserve">
-    <value>Passwords must have at least one non letter and non digit character.</value>
-    <comment>Error when password does not have enough letter or digit characters</comment>
+  <data name="PasswordRequiresNonAlphanumeric" xml:space="preserve">
+    <value>Passwords must have at least one non alphanumeric character.</value>
+    <comment>Error when password does not have enough non alphanumeric characters</comment>
   </data>
   <data name="PasswordRequiresUpper" xml:space="preserve">
     <value>Passwords must have at least one uppercase ('A'-'Z').</value>

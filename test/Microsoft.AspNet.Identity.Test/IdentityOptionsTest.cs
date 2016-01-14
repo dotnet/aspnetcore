@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.Identity.Test
 
             Assert.True(options.Password.RequireDigit);
             Assert.True(options.Password.RequireLowercase);
-            Assert.True(options.Password.RequireNonLetterOrDigit);
+            Assert.True(options.Password.RequireNonAlphanumeric);
             Assert.True(options.Password.RequireUppercase);
             Assert.Equal(6, options.Password.RequiredLength);
 
@@ -53,7 +53,7 @@ namespace Microsoft.AspNet.Identity.Test
                 {"identity:claimsidentity:securitystampclaimtype", securityStampClaimType},
                 {"identity:user:requireUniqueEmail", "true"},
                 {"identity:password:RequiredLength", "10"},
-                {"identity:password:RequireNonLetterOrDigit", "false"},
+                {"identity:password:RequireNonAlphanumeric", "false"},
                 {"identity:password:RequireUpperCase", "false"},
                 {"identity:password:RequireDigit", "false"},
                 {"identity:password:RequireLowerCase", "false"},
@@ -79,7 +79,7 @@ namespace Microsoft.AspNet.Identity.Test
             Assert.Equal("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@", options.User.AllowedUserNameCharacters);
             Assert.False(options.Password.RequireDigit);
             Assert.False(options.Password.RequireLowercase);
-            Assert.False(options.Password.RequireNonLetterOrDigit);
+            Assert.False(options.Password.RequireNonAlphanumeric);
             Assert.False(options.Password.RequireUppercase);
             Assert.Equal(10, options.Password.RequiredLength);
             Assert.False(options.Lockout.AllowedForNewUsers);
@@ -129,7 +129,7 @@ namespace Microsoft.AspNet.Identity.Test
             var myOptions = optionsGetter.Value;
             Assert.True(myOptions.Password.RequireLowercase);
             Assert.True(myOptions.Password.RequireDigit);
-            Assert.True(myOptions.Password.RequireNonLetterOrDigit);
+            Assert.True(myOptions.Password.RequireNonAlphanumeric);
             Assert.True(myOptions.Password.RequireUppercase);
             Assert.Equal(-1, myOptions.Password.RequiredLength);
         }
