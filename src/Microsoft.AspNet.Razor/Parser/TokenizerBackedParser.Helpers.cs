@@ -23,8 +23,10 @@ namespace Microsoft.AspNet.Razor.Parser
         [Conditional("DEBUG")]
         internal void Assert(TSymbolType expectedType)
         {
-            Debug.Assert(!EndOfFile && Equals(CurrentSymbol.Type, expectedType));
+            Debug.Assert(!EndOfFile && SymbolTypeEquals(CurrentSymbol.Type, expectedType));
         }
+
+        abstract protected bool SymbolTypeEquals(TSymbolType x, TSymbolType y);
 
         protected internal void PutBack(TSymbol symbol)
         {
@@ -147,12 +149,12 @@ namespace Microsoft.AspNet.Razor.Parser
 
         protected internal bool NextIs(TSymbolType type)
         {
-            return NextIs(sym => sym != null && Equals(type, sym.Type));
+            return NextIs(sym => sym != null && SymbolTypeEquals(type, sym.Type));
         }
 
         protected internal bool NextIs(params TSymbolType[] types)
         {
-            return NextIs(sym => sym != null && types.Any(t => Equals(t, sym.Type)));
+            return NextIs(sym => sym != null && types.Any(t => SymbolTypeEquals(t, sym.Type)));
         }
 
         protected internal bool NextIs(Func<TSymbol, bool> condition)
@@ -168,12 +170,12 @@ namespace Microsoft.AspNet.Razor.Parser
 
         protected internal bool Was(TSymbolType type)
         {
-            return PreviousSymbol != null && Equals(PreviousSymbol.Type, type);
+            return PreviousSymbol != null && SymbolTypeEquals(PreviousSymbol.Type, type);
         }
 
         protected internal bool At(TSymbolType type)
         {
-            return !EndOfFile && CurrentSymbol != null && Equals(CurrentSymbol.Type, type);
+            return !EndOfFile && CurrentSymbol != null && SymbolTypeEquals(CurrentSymbol.Type, type);
         }
 
         protected internal bool AcceptAndMoveNext()
@@ -219,7 +221,7 @@ namespace Microsoft.AspNet.Razor.Parser
         {
             foreach (TSymbolType type in types)
             {
-                if (CurrentSymbol == null || !Equals(CurrentSymbol.Type, type))
+                if (CurrentSymbol == null || !SymbolTypeEquals(CurrentSymbol.Type, type))
                 {
                     return false;
                 }
@@ -380,44 +382,44 @@ namespace Microsoft.AspNet.Razor.Parser
 
         protected internal void AcceptWhile(TSymbolType type)
         {
-            AcceptWhile(sym => Equals(type, sym.Type));
+            AcceptWhile(sym => SymbolTypeEquals(type, sym.Type));
         }
 
         // We want to avoid array allocations and enumeration where possible, so we use the same technique as string.Format
         protected internal void AcceptWhile(TSymbolType type1, TSymbolType type2)
         {
-            AcceptWhile(sym => Equals(type1, sym.Type) || Equals(type2, sym.Type));
+            AcceptWhile(sym => SymbolTypeEquals(type1, sym.Type) || SymbolTypeEquals(type2, sym.Type));
         }
 
         protected internal void AcceptWhile(TSymbolType type1, TSymbolType type2, TSymbolType type3)
         {
-            AcceptWhile(sym => Equals(type1, sym.Type) || Equals(type2, sym.Type) || Equals(type3, sym.Type));
+            AcceptWhile(sym => SymbolTypeEquals(type1, sym.Type) || SymbolTypeEquals(type2, sym.Type) || SymbolTypeEquals(type3, sym.Type));
         }
 
         protected internal void AcceptWhile(params TSymbolType[] types)
         {
-            AcceptWhile(sym => types.Any(expected => Equals(expected, sym.Type)));
+            AcceptWhile(sym => types.Any(expected => SymbolTypeEquals(expected, sym.Type)));
         }
 
         protected internal void AcceptUntil(TSymbolType type)
         {
-            AcceptWhile(sym => !Equals(type, sym.Type));
+            AcceptWhile(sym => !SymbolTypeEquals(type, sym.Type));
         }
 
         // We want to avoid array allocations and enumeration where possible, so we use the same technique as string.Format
         protected internal void AcceptUntil(TSymbolType type1, TSymbolType type2)
         {
-            AcceptWhile(sym => !Equals(type1, sym.Type) && !Equals(type2, sym.Type));
+            AcceptWhile(sym => !SymbolTypeEquals(type1, sym.Type) && !SymbolTypeEquals(type2, sym.Type));
         }
 
         protected internal void AcceptUntil(TSymbolType type1, TSymbolType type2, TSymbolType type3)
         {
-            AcceptWhile(sym => !Equals(type1, sym.Type) && !Equals(type2, sym.Type) && !Equals(type3, sym.Type));
+            AcceptWhile(sym => !SymbolTypeEquals(type1, sym.Type) && !SymbolTypeEquals(type2, sym.Type) && !SymbolTypeEquals(type3, sym.Type));
         }
 
         protected internal void AcceptUntil(params TSymbolType[] types)
         {
-            AcceptWhile(sym => types.All(expected => !Equals(expected, sym.Type)));
+            AcceptWhile(sym => types.All(expected => !SymbolTypeEquals(expected, sym.Type)));
         }
 
         protected internal void AcceptWhile(Func<TSymbol, bool> condition)

@@ -105,7 +105,7 @@ namespace Microsoft.AspNet.Razor.Parser
                     // Whitespace here is invalid (according to the spec)
                     OptionalBangEscape();
                     Optional(HtmlSymbolType.Text);
-                    AcceptAll(HtmlSymbolType.WhiteSpace);
+                    Optional(HtmlSymbolType.WhiteSpace);
                     Optional(HtmlSymbolType.CloseAngle);
                 }
 

@@ -62,6 +62,8 @@ namespace Microsoft.AspNet.Razor.Parser
             get { return CSharpLanguageCharacteristics.Instance; }
         }
 
+        protected override bool SymbolTypeEquals(CSharpSymbolType x, CSharpSymbolType y) => x == y;
+
         protected void MapDirectives(Action handler, params string[] directives)
         {
             foreach (string directive in directives)

@@ -48,6 +48,8 @@ namespace Microsoft.AspNet.Razor.Parser
             get { return HtmlLanguageCharacteristics.Instance; }
         }
 
+        protected override bool SymbolTypeEquals(HtmlSymbolType x, HtmlSymbolType y) => x == y;
+
         public override void BuildSpan(SpanBuilder span, SourceLocation start, string content)
         {
             span.Kind = SpanKind.Markup;
