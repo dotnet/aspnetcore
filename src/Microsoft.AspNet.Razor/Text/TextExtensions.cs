@@ -25,10 +25,7 @@ namespace Microsoft.AspNet.Razor.Text
         public static LookaheadToken BeginLookahead(this ITextBuffer self)
         {
             var start = self.Position;
-            return new LookaheadToken(() =>
-            {
-                self.Position = start;
-            });
+            return new LookaheadToken(self);
         }
 
         public static string ReadToEnd(this ITextBuffer self)

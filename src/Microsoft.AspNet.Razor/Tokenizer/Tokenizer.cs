@@ -165,7 +165,7 @@ namespace Microsoft.AspNet.Razor.Tokenizer
 
         protected char Peek()
         {
-            using (LookaheadToken lookahead = Source.BeginLookahead())
+            using (var lookahead = Source.BeginLookahead())
             {
                 MoveNext();
                 return CurrentCharacter;
@@ -250,7 +250,7 @@ namespace Microsoft.AspNet.Razor.Tokenizer
                 oldBuffer = Buffer.ToString();
             }
 
-            using (LookaheadToken lookahead = Source.BeginLookahead())
+            using (var lookahead = Source.BeginLookahead())
             {
                 for (int i = 0; i < expected.Length; i++)
                 {

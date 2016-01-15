@@ -78,7 +78,7 @@ namespace Microsoft.AspNet.Razor.Test.Tokenizer
         public void After_Accepting_Lookahead_Tokenizer_Returns_Next_Token()
         {
             var tokenizer = new HtmlTokenizer(new SeekableTextReader(new StringReader("<foo>")));
-            using (LookaheadToken lookahead = tokenizer.Source.BeginLookahead())
+            using (var lookahead = tokenizer.Source.BeginLookahead())
             {
                 Assert.Equal(new HtmlSymbol(0, 0, 0, "<", HtmlSymbolType.OpenAngle), tokenizer.NextSymbol());
                 Assert.Equal(new HtmlSymbol(1, 0, 1, "foo", HtmlSymbolType.Text), tokenizer.NextSymbol());

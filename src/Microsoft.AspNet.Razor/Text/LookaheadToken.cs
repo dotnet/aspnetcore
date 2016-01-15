@@ -5,14 +5,19 @@ using System;
 
 namespace Microsoft.AspNet.Razor.Text
 {
-    public class LookaheadToken : IDisposable
+    public struct LookaheadToken : IDisposable
     {
-        private Action _cancelAction;
+        private readonly ITextBuffer _buffer;
+        private readonly int _position;
+
         private bool _accepted;
 
-        public LookaheadToken(Action cancelAction)
+        public LookaheadToken(ITextBuffer buffer)
         {
-            _cancelAction = cancelAction;
+            _buffer = buffer;
+            _position = buffer.Position;
+
+            _accepted = false;
         }
 
         public void Accept()
@@ -22,15 +27,9 @@ namespace Microsoft.AspNet.Razor.Text
 
         public void Dispose()
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
             if (!_accepted)
             {
-                _cancelAction();
+                _buffer.Position = _position;
             }
         }
     }
