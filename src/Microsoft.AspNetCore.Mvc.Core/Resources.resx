@@ -313,12 +313,6 @@
   <data name="UrlNotLocal" xml:space="preserve">
     <value>The supplied URL is not local. A URL with an absolute path is considered local if it does not have a host/authority part. URLs using virtual paths ('~/') are also local.</value>
   </data>
-  <data name="HttpRequestStreamReader_StreamNotReadable" xml:space="preserve">
-    <value>The stream must support reading.</value>
-  </data>
-  <data name="HttpResponseStreamWriter_StreamNotWritable" xml:space="preserve">
-    <value>The stream must support writing.</value>
-  </data>
   <data name="FormatFormatterMappings_GetMediaTypeMappingForFormat_InvalidFormat" xml:space="preserve">
     <value>The argument '{0}' is invalid. Empty or null formats are not supported.</value>
   </data>
