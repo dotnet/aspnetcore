@@ -39,7 +39,8 @@ projectFile=''
                 configs.Keys.Where(k => k.StartsWith("dnx", StringComparison.OrdinalIgnoreCase));
 
             var runnerFolder = Path.GetFullPath(Path.Combine(KoreBuildFolderPath, "build", "xunit.runner.console", "tools"));
-
+            var xunitCoreFolder = Path.GetFullPath(Path.Combine(KoreBuildFolderPath, "build", "xunit.core", "build", "_desktop"));
+            
             foreach (var framework in targetFrameworks)
             {
                 if (!framework.StartsWith("dnxcore"))
@@ -53,6 +54,11 @@ projectFile=''
                     var publishFolder = Path.Combine(projectFolder, ".testPublish", framework);
                     DotnetPublish(projectFile, publishFolder, framework);
                     Copy(runnerFolder, publishFolder, "*.*", true);
+                    
+                    // Copy xunit.execution.desktop. This is required in order to load the binding
+                    // redirects for dlls. See this thread for more details:
+                    // https://github.com/xunit/xunit/issues/732
+                    Copy(xunitCoreFolder, publishFolder, "*.*", true);
 
                     var targetTestDll = projectName + ".dll";
 

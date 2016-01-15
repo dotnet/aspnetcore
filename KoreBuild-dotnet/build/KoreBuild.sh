@@ -43,6 +43,9 @@ fi
 if [ ! -d $thisDir/xunit.runner.console ]; then
     mono $nugetPath install xunit.runner.console -ExcludeVersion -o $thisDir -nocache -pre
 fi
+if [ ! -d $thisDir/xunit.core ]; then
+    mono $nugetPath install xunit.core -ExcludeVersion -o $thisDir -nocache -pre
+fi
 # Need to set this variable because by default the install script
 # requires sudo
 export DOTNET_INSTALL_DIR=~/.dotnet

@@ -18,6 +18,10 @@ IF NOT EXIST xunit.runner.console  (
     "%NUGET_PATH%" install xunit.runner.console -ExcludeVersion -Source https://api.nuget.org/v3/index.json -o %~dp0
 )
 
+IF NOT EXIST xunit.core  (
+    "%NUGET_PATH%" install xunit.core -ExcludeVersion -Source https://api.nuget.org/v3/index.json -o %~dp0
+)
+
 SET DOTNET_LOCAL_INSTALL_FOLDER=%LOCALAPPDATA%\Microsoft\dotnet\cli
 SET DOTNET_LOCAL_INSTALL_FOLDER_BIN=%DOTNET_LOCAL_INSTALL_FOLDER%\bin
 
