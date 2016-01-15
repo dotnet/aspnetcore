@@ -6,6 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting.Fakes;
@@ -30,7 +31,8 @@ namespace Microsoft.AspNet.Hosting
         private IFeatureCollection _featuresSupportedByThisHost = NewFeatureCollection();
         private IFeatureCollection _instanceFeaturesSupportedByThisHost;
 
-        public IFeatureCollection Features {
+        public IFeatureCollection Features
+        {
             get
             {
                 var features = new FeatureCollection();
@@ -154,6 +156,34 @@ namespace Microsoft.AspNet.Hosting
             Assert.Equal(0, _startInstances[0].DisposeCalls);
 
             app.Dispose();
+
+            Assert.Equal(1, _startInstances[0].DisposeCalls);
+        }
+
+        [Fact]
+        public void WebApplicationShutsDownWhenTokenTriggers()
+        {
+            var app = CreateBuilder()
+                .UseServer((IServerFactory)this)
+                .UseStartup("Microsoft.AspNet.Hosting.Tests")
+                .Build();
+
+            var lifetime = app.Services.GetRequiredService<IApplicationLifetime>();
+
+            var cts = new CancellationTokenSource();
+
+            Task.Run(() => app.Run(cts.Token));
+
+            // Wait on the app to be started
+            lifetime.ApplicationStarted.WaitHandle.WaitOne();
+
+            Assert.Equal(1, _startInstances.Count);
+            Assert.Equal(0, _startInstances[0].DisposeCalls);
+
+            cts.Cancel();
+
+            // Wait on the app to shutdown
+            lifetime.ApplicationStopped.WaitHandle.WaitOne();
 
             Assert.Equal(1, _startInstances[0].DisposeCalls);
         }

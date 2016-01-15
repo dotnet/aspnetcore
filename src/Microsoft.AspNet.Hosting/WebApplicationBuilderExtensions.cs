@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Threading;
 using Microsoft.AspNet.Hosting.Server;
 using Microsoft.AspNet.Server.Features;
 using Microsoft.Extensions.Configuration;
@@ -106,6 +107,32 @@ namespace Microsoft.AspNet.Hosting
         /// <param name="application"></param>
         public static void Run(this IWebApplication application)
         {
+            using (var cts = new CancellationTokenSource())
+            {
+                Console.CancelKeyPress += (sender, eventArgs) =>
+                {
+                    cts.Cancel();
+
+                    // Don't terminate the process immediately, wait for the Main thread to exit gracefully.
+                    eventArgs.Cancel = true;
+                };
+
+                application.Run(cts.Token, "Application started. Press Ctrl+C to shut down.");
+            }
+        }
+
+        /// <summary>
+        /// Runs a web application and block the calling thread until token is triggered or shutdown is triggered
+        /// </summary>
+        /// <param name="application"></param>
+        /// <param name="token">The token to trigger shutdown</param>
+        public static void Run(this IWebApplication application, CancellationToken token)
+        {
+            application.Run(token, shutdownMessage: null);
+        }
+
+        private static void Run(this IWebApplication application, CancellationToken token, string shutdownMessage)
+        {
             using (application)
             {
                 application.Start();
@@ -124,15 +151,16 @@ namespace Microsoft.AspNet.Hosting
                     }
                 }
 
-                Console.WriteLine("Application started. Press Ctrl+C to shut down.");
-
-                Console.CancelKeyPress += (sender, eventArgs) =>
+                if (!string.IsNullOrEmpty(shutdownMessage))
                 {
-                    applicationLifetime.StopApplication();
+                    Console.WriteLine(shutdownMessage);
+                }
 
-                    // Don't terminate the process immediately, wait for the Main thread to exit gracefully.
-                    eventArgs.Cancel = true;
-                };
+                token.Register(state =>
+                {
+                    ((IApplicationLifetime)state).StopApplication();
+                },
+                applicationLifetime);
 
                 applicationLifetime.ApplicationStopping.WaitHandle.WaitOne();
             }

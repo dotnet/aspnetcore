@@ -233,8 +233,8 @@ namespace Microsoft.AspNet.Hosting.Internal
             _logger?.Shutdown();
             _applicationLifetime.StopApplication();
             Server?.Dispose();
-            _applicationLifetime.NotifyStopped();
             (_applicationServices as IDisposable)?.Dispose();
+            _applicationLifetime.NotifyStopped();
         }
 
         private class Disposable : IDisposable
