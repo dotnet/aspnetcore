@@ -531,7 +531,7 @@ namespace Microsoft.AspNet.Razor.Test.Framework
 
         private class IgnoreOutputBlock : Block
         {
-            public IgnoreOutputBlock() : base(BlockType.Template, Enumerable.Empty<SyntaxTreeNode>(), null) { }
+            public IgnoreOutputBlock() : base(BlockType.Template, new SyntaxTreeNode[0], null) { }
         }
     }
 }

@@ -20,7 +20,21 @@ namespace Microsoft.AspNet.Razor.Parser
         protected override bool CanRewrite(Block block)
         {
             var gen = block.ChunkGenerator as AttributeBlockChunkGenerator;
-            return gen != null && block.Children.Any() && block.Children.All(IsLiteralAttributeValue);
+            if (gen != null && block.Children.Count > 0)
+            {
+                // Perf: Avoid allocating an enumerator.
+                for (var i = 0; i < block.Children.Count; i++)
+                {
+                    if (!IsLiteralAttributeValue(block.Children[i]))
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+
+            return false;
         }
 
         protected override SyntaxTreeNode RewriteBlock(BlockBuilder parent, Block block)

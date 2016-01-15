@@ -15,22 +15,17 @@ namespace Microsoft.AspNet.Razor.Test.Framework
     {
         private const BlockType ThisBlockType = BlockType.Statement;
 
-        public StatementBlock(IParentChunkGenerator chunkGenerator, IEnumerable<SyntaxTreeNode> children)
+        public StatementBlock(IParentChunkGenerator chunkGenerator, IReadOnlyList<SyntaxTreeNode> children)
             : base(ThisBlockType, children, chunkGenerator)
         {
         }
 
         public StatementBlock(IParentChunkGenerator chunkGenerator, params SyntaxTreeNode[] children)
-            : this(chunkGenerator, (IEnumerable<SyntaxTreeNode>)children)
+            : this(chunkGenerator, (IReadOnlyList<SyntaxTreeNode>)children)
         {
         }
 
         public StatementBlock(params SyntaxTreeNode[] children)
-            : this(ParentChunkGenerator.Null, children)
-        {
-        }
-
-        public StatementBlock(IEnumerable<SyntaxTreeNode> children)
             : this(ParentChunkGenerator.Null, children)
         {
         }
@@ -40,22 +35,17 @@ namespace Microsoft.AspNet.Razor.Test.Framework
     {
         private const BlockType ThisBlockType = BlockType.Directive;
 
-        public DirectiveBlock(IParentChunkGenerator chunkGenerator, IEnumerable<SyntaxTreeNode> children)
+        public DirectiveBlock(IParentChunkGenerator chunkGenerator, IReadOnlyList<SyntaxTreeNode> children)
             : base(ThisBlockType, children, chunkGenerator)
         {
         }
 
         public DirectiveBlock(IParentChunkGenerator chunkGenerator, params SyntaxTreeNode[] children)
-            : this(chunkGenerator, (IEnumerable<SyntaxTreeNode>)children)
+            : this(chunkGenerator, (IReadOnlyList<SyntaxTreeNode>)children)
         {
         }
 
         public DirectiveBlock(params SyntaxTreeNode[] children)
-            : this(ParentChunkGenerator.Null, children)
-        {
-        }
-
-        public DirectiveBlock(IEnumerable<SyntaxTreeNode> children)
             : this(ParentChunkGenerator.Null, children)
         {
         }
@@ -65,22 +55,17 @@ namespace Microsoft.AspNet.Razor.Test.Framework
     {
         private const BlockType ThisBlockType = BlockType.Functions;
 
-        public FunctionsBlock(IParentChunkGenerator chunkGenerator, IEnumerable<SyntaxTreeNode> children)
+        public FunctionsBlock(IParentChunkGenerator chunkGenerator, IReadOnlyList<SyntaxTreeNode> children)
             : base(ThisBlockType, children, chunkGenerator)
         {
         }
 
         public FunctionsBlock(IParentChunkGenerator chunkGenerator, params SyntaxTreeNode[] children)
-            : this(chunkGenerator, (IEnumerable<SyntaxTreeNode>)children)
+            : this(chunkGenerator, (IReadOnlyList<SyntaxTreeNode>)children)
         {
         }
 
         public FunctionsBlock(params SyntaxTreeNode[] children)
-            : this(ParentChunkGenerator.Null, children)
-        {
-        }
-
-        public FunctionsBlock(IEnumerable<SyntaxTreeNode> children)
             : this(ParentChunkGenerator.Null, children)
         {
         }
@@ -90,22 +75,17 @@ namespace Microsoft.AspNet.Razor.Test.Framework
     {
         private const BlockType ThisBlockType = BlockType.Expression;
 
-        public ExpressionBlock(IParentChunkGenerator chunkGenerator, IEnumerable<SyntaxTreeNode> children)
+        public ExpressionBlock(IParentChunkGenerator chunkGenerator, IReadOnlyList<SyntaxTreeNode> children)
             : base(ThisBlockType, children, chunkGenerator)
         {
         }
 
         public ExpressionBlock(IParentChunkGenerator chunkGenerator, params SyntaxTreeNode[] children)
-            : this(chunkGenerator, (IEnumerable<SyntaxTreeNode>)children)
+            : this(chunkGenerator, (IReadOnlyList<SyntaxTreeNode>)children)
         {
         }
 
         public ExpressionBlock(params SyntaxTreeNode[] children)
-            : this(new ExpressionChunkGenerator(), children)
-        {
-        }
-
-        public ExpressionBlock(IEnumerable<SyntaxTreeNode> children)
             : this(new ExpressionChunkGenerator(), children)
         {
         }
@@ -128,27 +108,22 @@ namespace Microsoft.AspNet.Razor.Test.Framework
         public MarkupBlock(
             BlockType blockType,
             IParentChunkGenerator chunkGenerator,
-            IEnumerable<SyntaxTreeNode> children)
+            IReadOnlyList<SyntaxTreeNode> children)
             : base(blockType, children, chunkGenerator)
         {
         }
 
-        public MarkupBlock(IParentChunkGenerator chunkGenerator, IEnumerable<SyntaxTreeNode> children)
+        public MarkupBlock(IParentChunkGenerator chunkGenerator, IReadOnlyList<SyntaxTreeNode> children)
             : this(ThisBlockType, chunkGenerator, children)
         {
         }
 
         public MarkupBlock(IParentChunkGenerator chunkGenerator, params SyntaxTreeNode[] children)
-            : this(chunkGenerator, (IEnumerable<SyntaxTreeNode>)children)
+            : this(chunkGenerator, (IReadOnlyList<SyntaxTreeNode>)children)
         {
         }
 
         public MarkupBlock(params SyntaxTreeNode[] children)
-            : this(ParentChunkGenerator.Null, children)
-        {
-        }
-
-        public MarkupBlock(IEnumerable<SyntaxTreeNode> children)
             : this(ParentChunkGenerator.Null, children)
         {
         }
@@ -221,13 +196,13 @@ namespace Microsoft.AspNet.Razor.Test.Framework
     {
         private const BlockType ThisBlockType = BlockType.Section;
 
-        public SectionBlock(IParentChunkGenerator chunkGenerator, IEnumerable<SyntaxTreeNode> children)
+        public SectionBlock(IParentChunkGenerator chunkGenerator, IReadOnlyList<SyntaxTreeNode> children)
             : base(ThisBlockType, children, chunkGenerator)
         {
         }
 
         public SectionBlock(IParentChunkGenerator chunkGenerator, params SyntaxTreeNode[] children)
-            : this(chunkGenerator, (IEnumerable<SyntaxTreeNode>)children)
+            : this(chunkGenerator, (IReadOnlyList<SyntaxTreeNode>)children)
         {
         }
 
@@ -236,7 +211,7 @@ namespace Microsoft.AspNet.Razor.Test.Framework
         {
         }
 
-        public SectionBlock(IEnumerable<SyntaxTreeNode> children)
+        public SectionBlock(IReadOnlyList<SyntaxTreeNode> children)
             : this(ParentChunkGenerator.Null, children)
         {
         }
@@ -246,13 +221,13 @@ namespace Microsoft.AspNet.Razor.Test.Framework
     {
         private const BlockType ThisBlockType = BlockType.Template;
 
-        public TemplateBlock(IParentChunkGenerator chunkGenerator, IEnumerable<SyntaxTreeNode> children)
+        public TemplateBlock(IParentChunkGenerator chunkGenerator, IReadOnlyList<SyntaxTreeNode> children)
             : base(ThisBlockType, children, chunkGenerator)
         {
         }
 
         public TemplateBlock(IParentChunkGenerator chunkGenerator, params SyntaxTreeNode[] children)
-            : this(chunkGenerator, (IEnumerable<SyntaxTreeNode>)children)
+            : this(chunkGenerator, (IReadOnlyList<SyntaxTreeNode>)children)
         {
         }
 
@@ -261,7 +236,7 @@ namespace Microsoft.AspNet.Razor.Test.Framework
         {
         }
 
-        public TemplateBlock(IEnumerable<SyntaxTreeNode> children)
+        public TemplateBlock(IReadOnlyList<SyntaxTreeNode> children)
             : this(new TemplateBlockChunkGenerator(), children)
         {
         }
@@ -271,13 +246,13 @@ namespace Microsoft.AspNet.Razor.Test.Framework
     {
         private const BlockType ThisBlockType = BlockType.Comment;
 
-        public CommentBlock(IParentChunkGenerator chunkGenerator, IEnumerable<SyntaxTreeNode> children)
+        public CommentBlock(IParentChunkGenerator chunkGenerator, IReadOnlyList<SyntaxTreeNode> children)
             : base(ThisBlockType, children, chunkGenerator)
         {
         }
 
         public CommentBlock(IParentChunkGenerator chunkGenerator, params SyntaxTreeNode[] children)
-            : this(chunkGenerator, (IEnumerable<SyntaxTreeNode>)children)
+            : this(chunkGenerator, (IReadOnlyList<SyntaxTreeNode>)children)
         {
         }
 
@@ -286,7 +261,7 @@ namespace Microsoft.AspNet.Razor.Test.Framework
         {
         }
 
-        public CommentBlock(IEnumerable<SyntaxTreeNode> children)
+        public CommentBlock(IReadOnlyList<SyntaxTreeNode> children)
             : this(new RazorCommentChunkGenerator(), children)
         {
         }

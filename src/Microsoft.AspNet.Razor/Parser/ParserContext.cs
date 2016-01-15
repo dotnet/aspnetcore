@@ -253,7 +253,7 @@ namespace Microsoft.AspNet.Razor.Parser
             }
 
             return new ParserResults(_blockStack.Pop().Build(),
-                                     // TagHelperDescriptors are not found by default. The RazorParser is responsible 
+                                     // TagHelperDescriptors are not found by default. The RazorParser is responsible
                                      // for identifying TagHelperDescriptors and rebuilding ParserResults.
                                      tagHelperDescriptors: Enumerable.Empty<TagHelperDescriptor>(),
                                      errorSink: _errorSink);

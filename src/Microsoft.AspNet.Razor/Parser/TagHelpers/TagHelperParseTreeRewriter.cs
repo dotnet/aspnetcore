@@ -302,8 +302,19 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
         private IEnumerable<string> GetAttributeNames(Block tagBlock)
         {
             // Need to calculate how many children we should take that represent the attributes.
-            var childrenOffset = IsPartialTag(tagBlock) ? 1 : 2;
-            var attributeChildren = tagBlock.Children.Skip(1).Take(tagBlock.Children.Count() - childrenOffset);
+            var childrenOffset = IsPartialTag(tagBlock) ? 0 : 1;
+            var childCount = tagBlock.Children.Count - childrenOffset;
+
+            if (childCount <= 1)
+            {
+                return Enumerable.Empty<string>();
+            }
+
+            var attributeChildren = new List<SyntaxTreeNode>(childCount - 1);
+            for (var i = 1; i < childCount; i++)
+            {
+                attributeChildren.Add(tagBlock.Children[i]);
+            }
             var attributeNames = new List<string>();
 
             foreach (var child in attributeChildren)
@@ -637,9 +648,9 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
 
         private static string GetTagName(Block tagBlock)
         {
-            var child = tagBlock.Children.First();
+            var child = tagBlock.Children[0];
 
-            if (tagBlock.Type != BlockType.Tag || !tagBlock.Children.Any() || !(child is Span))
+            if (tagBlock.Type != BlockType.Tag || tagBlock.Children.Count == 0|| !(child is Span))
             {
                 return null;
             }

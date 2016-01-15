@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.Razor.Parser.SyntaxTree
         }
 
         public BlockType? Type { get; set; }
-        public IList<SyntaxTreeNode> Children { get; private set; }
+        public List<SyntaxTreeNode> Children { get; private set; }
         public IParentChunkGenerator ChunkGenerator { get; set; }
 
         public virtual Block Build()

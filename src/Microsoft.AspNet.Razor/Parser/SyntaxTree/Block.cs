@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Razor.Parser.SyntaxTree
             source.Reset();
         }
 
-        protected Block(BlockType? type, IEnumerable<SyntaxTreeNode> contents, IParentChunkGenerator generator)
+        protected Block(BlockType? type, IReadOnlyList<SyntaxTreeNode> contents, IParentChunkGenerator generator)
         {
             if (type == null)
             {
@@ -30,14 +30,15 @@ namespace Microsoft.AspNet.Razor.Parser.SyntaxTree
             Children = contents;
             ChunkGenerator = generator;
 
-            foreach (SyntaxTreeNode node in Children)
+            // Perf: Avoid allocating an enumerator.
+            for (var i = 0; i < Children.Count; i++)
             {
-                node.Parent = this;
+                Children[i].Parent = this;
             }
         }
 
         // A Test constructor
-        internal Block(BlockType type, IEnumerable<SyntaxTreeNode> contents, IParentChunkGenerator generator)
+        internal Block(BlockType type, IReadOnlyList<SyntaxTreeNode> contents, IParentChunkGenerator generator)
         {
             Type = type;
             ChunkGenerator = generator;
@@ -46,7 +47,7 @@ namespace Microsoft.AspNet.Razor.Parser.SyntaxTree
 
         public BlockType Type { get; }
 
-        public IEnumerable<SyntaxTreeNode> Children { get; }
+        public IReadOnlyList<SyntaxTreeNode> Children { get; }
 
         public IParentChunkGenerator ChunkGenerator { get; }
 
@@ -133,9 +134,10 @@ namespace Microsoft.AspNet.Razor.Parser.SyntaxTree
 
         public virtual IEnumerable<Span> Flatten()
         {
-            // Create an enumerable that flattens the tree for use by syntax highlighters, etc.
-            foreach (SyntaxTreeNode element in Children)
+            // Perf: Avoid allocating an enumerator.
+            for (var i = 0; i < Children.Count; i++)
             {
+                var element = Children[i];
                 var span = element as Span;
                 if (span != null)
                 {

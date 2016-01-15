@@ -14,9 +14,11 @@ namespace Microsoft.AspNet.Razor.Parser
         public virtual void VisitBlock(Block block)
         {
             VisitStartBlock(block);
-            foreach (SyntaxTreeNode node in block.Children)
+
+            // Perf: Avoid allocating an enumerator.
+            for (var i = 0; i < block.Children.Count; i++)
             {
-                node.Accept(this);
+                block.Children[i].Accept(this);
             }
             VisitEndBlock(block);
         }
