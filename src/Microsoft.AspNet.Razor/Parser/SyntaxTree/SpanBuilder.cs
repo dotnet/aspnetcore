@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using Microsoft.AspNet.Razor.Editor;
 using Microsoft.AspNet.Razor.Chunks.Generators;
@@ -13,7 +12,7 @@ namespace Microsoft.AspNet.Razor.Parser.SyntaxTree
 {
     public class SpanBuilder
     {
-        private IList<ISymbol> _symbols = new List<ISymbol>();
+        private List<ISymbol> _symbols;
         private SourceLocationTracker _tracker = new SourceLocationTracker();
 
         public SpanBuilder(Span original)
@@ -31,11 +30,20 @@ namespace Microsoft.AspNet.Razor.Parser.SyntaxTree
         }
 
         public SourceLocation Start { get; set; }
+
         public SpanKind Kind { get; set; }
 
-        public ReadOnlyCollection<ISymbol> Symbols
+        public IReadOnlyList<ISymbol> Symbols
         {
-            get { return new ReadOnlyCollection<ISymbol>(_symbols); }
+            get
+            {
+                if (_symbols == null)
+                {
+                    _symbols = new List<ISymbol>();
+                }
+
+                return _symbols;
+            }
         }
 
         public SpanEditHandler EditHandler { get; set; }
@@ -43,7 +51,10 @@ namespace Microsoft.AspNet.Razor.Parser.SyntaxTree
 
         public void Reset()
         {
-            _symbols = new List<ISymbol>();
+            // Need to potentially allocate a new list because Span.ReplaceWith takes ownership
+            // of the original list.
+            _symbols = null;
+
             EditHandler = SpanEditHandler.CreateDefault(s => Enumerable.Empty<ISymbol>());
             ChunkGenerator = SpanChunkGenerator.Null;
             Start = SourceLocation.Zero;
@@ -65,6 +76,11 @@ namespace Microsoft.AspNet.Razor.Parser.SyntaxTree
             if (symbol == null)
             {
                 return;
+            }
+
+            if (_symbols == null)
+            {
+                _symbols = new List<ISymbol>();
             }
 
             if (_symbols.Count == 0)

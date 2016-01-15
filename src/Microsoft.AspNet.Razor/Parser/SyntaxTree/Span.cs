@@ -16,6 +16,7 @@ namespace Microsoft.AspNet.Razor.Parser.SyntaxTree
     public class Span : SyntaxTreeNode
     {
         private static readonly int TypeHashCode = typeof(Span).GetHashCode();
+        private string _content;
         private SourceLocation _start;
 
         public Span(SpanBuilder builder)
@@ -24,7 +25,7 @@ namespace Microsoft.AspNet.Razor.Parser.SyntaxTree
         }
 
         public SpanKind Kind { get; protected set; }
-        public IEnumerable<ISymbol> Symbols { get; protected set; }
+        public IReadOnlyList<ISymbol> Symbols { get; protected set; }
 
         // Allow test code to re-link spans
         public Span Previous { get; protected internal set; }
@@ -48,7 +49,25 @@ namespace Microsoft.AspNet.Razor.Parser.SyntaxTree
             get { return _start; }
         }
 
-        public string Content { get; private set; }
+        public string Content
+        {
+            get
+            {
+                if (_content == null)
+                {
+                    var builder = new StringBuilder();
+                    for (var i = 0; i < Symbols.Count; i++)
+                    {
+                        var symbol = Symbols[i];
+                        builder.Append(symbol.Content);
+                    }
+
+                    _content = builder.ToString();
+                }
+
+                return _content;
+            }
+        }
 
         public void Change(Action<SpanBuilder> changes)
         {
@@ -59,19 +78,15 @@ namespace Microsoft.AspNet.Razor.Parser.SyntaxTree
 
         public void ReplaceWith(SpanBuilder builder)
         {
-            Debug.Assert(!builder.Symbols.Any() || builder.Symbols.All(s => s != null));
-
             Kind = builder.Kind;
             Symbols = builder.Symbols;
             EditHandler = builder.EditHandler;
             ChunkGenerator = builder.ChunkGenerator ?? SpanChunkGenerator.Null;
             _start = builder.Start;
+            _content = null;
 
             // Since we took references to the values in SpanBuilder, clear its references out
             builder.Reset();
-
-            // Calculate other properties
-            Content = Symbols.Aggregate(new StringBuilder(), (sb, sym) => sb.Append(sym.Content), sb => sb.ToString());
         }
 
         /// <summary>

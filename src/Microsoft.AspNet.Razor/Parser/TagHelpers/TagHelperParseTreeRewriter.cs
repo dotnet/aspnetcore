@@ -647,8 +647,9 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
             EnsureTagBlock(tagBlock);
 
             var childSpan = (Span)tagBlock.Children.First();
+
             // We grab the symbol that could be forward slash
-            var relevantSymbol = (HtmlSymbol)childSpan.Symbols.Take(2).Last();
+            var relevantSymbol = (HtmlSymbol)childSpan.Symbols[childSpan.Symbols.Count == 1 ? 0 : 1];
 
             return relevantSymbol.Type == HtmlSymbolType.ForwardSlash;
         }
