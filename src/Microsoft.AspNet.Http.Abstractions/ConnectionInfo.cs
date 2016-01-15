@@ -18,8 +18,6 @@ namespace Microsoft.AspNet.Http
 
         public abstract int LocalPort { get; set; }
 
-        public abstract bool IsLocal { get; set; }
-
         public abstract X509Certificate2 ClientCertificate { get; set; }
 
         public abstract Task<X509Certificate2> GetClientCertificateAsync(CancellationToken cancellationToken = new CancellationToken());

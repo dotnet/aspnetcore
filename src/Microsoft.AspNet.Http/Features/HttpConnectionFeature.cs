@@ -11,8 +11,6 @@ namespace Microsoft.AspNet.Http.Features.Internal
         {
         }
 
-        public bool IsLocal { get; set; }
-
         public IPAddress LocalIpAddress { get; set; }
 
         public int LocalPort { get; set; }

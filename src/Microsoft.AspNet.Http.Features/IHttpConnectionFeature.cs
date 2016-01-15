@@ -11,6 +11,5 @@ namespace Microsoft.AspNet.Http.Features
         IPAddress LocalIpAddress { get; set; }
         int RemotePort { get; set; }
         int LocalPort { get; set; }
-        bool IsLocal { get; set; }
     }
 }

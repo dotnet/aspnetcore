@@ -190,12 +190,6 @@ namespace Microsoft.AspNet.Owin
             set { Prop(OwinConstants.CommonKeys.LocalPort, value.ToString(CultureInfo.InvariantCulture)); }
         }
 
-        bool IHttpConnectionFeature.IsLocal
-        {
-            get { return Prop<bool>(OwinConstants.CommonKeys.IsLocal); }
-            set { Prop(OwinConstants.CommonKeys.LocalPort, value); }
-        }
-
         private bool SupportsSendFile
         {
             get

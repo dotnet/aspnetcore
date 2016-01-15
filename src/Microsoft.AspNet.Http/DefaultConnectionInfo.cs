@@ -59,12 +59,6 @@ namespace Microsoft.AspNet.Http.Internal
             set { HttpConnectionFeature.LocalPort = value; }
         }
 
-        public override bool IsLocal
-        {
-            get { return HttpConnectionFeature.IsLocal; }
-            set { HttpConnectionFeature.IsLocal = value; }
-        }
-
         public override X509Certificate2 ClientCertificate
         {
             get { return TlsConnectionFeature.ClientCertificate; }
