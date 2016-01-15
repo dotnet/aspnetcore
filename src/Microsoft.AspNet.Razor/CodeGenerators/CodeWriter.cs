@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO;
 using System.Text;
 
 namespace Microsoft.AspNet.Razor.CodeGenerators
@@ -10,32 +9,21 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
     public class CodeWriter : IDisposable
     {
         private static readonly char[] NewLineCharacters = new char[] { '\r', '\n' };
-        private readonly StringWriter _writer = new StringWriter();
-        private bool _newLine;
+
         private string _cache = string.Empty;
-        private bool _dirty = false;
+        private bool _dirty;
 
         private int _absoluteIndex;
         private int _currentLineIndex;
         private int _currentLineCharacterIndex;
 
-        public StringBuilder Builder => _writer.GetStringBuilder();
-
-        public string LastWrite { get; private set; }
+        public StringBuilder Builder { get; } = new StringBuilder();
 
         public int CurrentIndent { get; private set; }
 
-        public string NewLine
-        {
-            get
-            {
-                return _writer.NewLine;
-            }
-            set
-            {
-                _writer.NewLine = value;
-            }
-        }
+        public bool IsAfterNewLine { get; private set; }
+
+        public string NewLine { get; set; } = Environment.NewLine;
 
         public CodeWriter ResetIndent()
         {
@@ -65,16 +53,15 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
 
         public CodeWriter Indent(int size)
         {
-            if (_newLine)
+            if (IsAfterNewLine)
             {
-                _writer.Write(new string(' ', size));
-                Flush();
+                Builder.Append(' ', size);
 
                 _currentLineCharacterIndex += size;
                 _absoluteIndex += size;
 
                 _dirty = true;
-                _newLine = false;
+                IsAfterNewLine = false;
             }
 
             return this;
@@ -82,35 +69,42 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
 
         public CodeWriter Write(string data)
         {
-            Indent(CurrentIndent);
-
-            _writer.Write(data);
-            Flush();
-
-            LastWrite = data;
-            _dirty = true;
-            _newLine = false;
-
-            if (data == null || data.Length == 0)
+            if (data == null)
             {
                 return this;
             }
 
-            _absoluteIndex += data.Length;
+            return Write(data, 0, data.Length);
+        }
+
+        public CodeWriter Write(string data, int index, int count)
+        {
+            if (data == null || count == 0)
+            {
+                return this;
+            }
+
+            Indent(CurrentIndent);
+
+            Builder.Append(data, index, count);
+
+            _dirty = true;
+            IsAfterNewLine = false;
+
+            _absoluteIndex += count;
 
             // The data string might contain a partial newline where the previously
             // written string has part of the newline.
-            var i = 0;
+            var i = index;
             int? trailingPartStart = null;
-            var builder = _writer.GetStringBuilder();
 
             if (
                 // Check the last character of the previous write operation.
-                builder.Length - data.Length - 1 >= 0 &&
-                builder[builder.Length - data.Length - 1] == '\r' &&
+                Builder.Length - count - 1 >= 0 &&
+                Builder[Builder.Length - count - 1] == '\r' &&
 
                 // Check the first character of the current write operation.
-                builder[builder.Length - data.Length] == '\n')
+                Builder[Builder.Length - count] == '\n')
             {
                 // This is newline that's spread across two writes. Skip the first character of the
                 // current write operation.
@@ -133,7 +127,7 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
 
                 // We might have stopped at a \r, so check if it's followed by \n and then advance the index to
                 // start the next search after it.
-                if (data.Length > i &&
+                if (count > i &&
                     data[i - 1] == '\r' &&
                     data[i] == '\n')
                 {
@@ -147,12 +141,12 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
             if (trailingPartStart == null)
             {
                 // No newlines, just add the length of the data buffer
-                _currentLineCharacterIndex += data.Length;
+                _currentLineCharacterIndex += count;
             }
             else
             {
                 // Newlines found, add the trailing part of 'data'
-                _currentLineCharacterIndex += (data.Length - trailingPartStart.Value);
+                _currentLineCharacterIndex += (count - trailingPartStart.Value);
             }
 
             return this;
@@ -160,17 +154,14 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
 
         public CodeWriter WriteLine()
         {
-            LastWrite = _writer.NewLine;
-
-            _writer.WriteLine();
-            Flush();
+            Builder.Append(NewLine);
 
             _currentLineIndex++;
             _currentLineCharacterIndex = 0;
-            _absoluteIndex += _writer.NewLine.Length;
+            _absoluteIndex += NewLine.Length;
 
             _dirty = true;
-            _newLine = true;
+            IsAfterNewLine = true;
 
             return this;
         }
@@ -180,18 +171,11 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
             return Write(data).WriteLine();
         }
 
-        public CodeWriter Flush()
-        {
-            _writer.Flush();
-
-            return this;
-        }
-
         public string GenerateCode()
         {
             if (_dirty)
             {
-                _cache = _writer.ToString();
+                _cache = Builder.ToString();
                 _dirty = false;
             }
 
@@ -207,7 +191,7 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
         {
             if (disposing)
             {
-                _writer.Dispose();
+                Builder.Clear();
             }
         }
 

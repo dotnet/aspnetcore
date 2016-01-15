@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using Microsoft.AspNet.Razor.Chunks.Generators;
@@ -14,6 +15,19 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
     public class CSharpCodeWriter : CodeWriter
     {
         private const string InstanceMethodFormat = "{0}.{1}";
+
+        private static readonly char[] CStyleStringLiteralEscapeChars = new char[]
+        {
+            '\r',
+            '\t',
+            '\"',
+            '\'',
+            '\\',
+            '\0',
+            '\n',
+            '\u2028',
+            '\u2029',
+        };
 
         public CSharpCodeWriter()
         {
@@ -195,8 +209,7 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
                 file = location.FilePath;
             }
 
-            if (!string.IsNullOrEmpty(LastWrite) &&
-                !LastWrite.EndsWith(NewLine, StringComparison.Ordinal))
+            if (Builder.Length >= NewLine.Length && !IsAfterNewLine)
             {
                 WriteLine();
             }
@@ -445,17 +458,22 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
         {
             Write("@\"");
 
-            foreach (char c in literal)
+            // We need to find the index of each '"' (double-quote) to escape it.
+            var start = 0;
+            int end;
+            while ((end = literal.IndexOf('\"', start)) > -1)
             {
-                if (c == '\"')
-                {
-                    Write("\"\"");
-                }
-                else
-                {
-                    Write(c.ToString());
-                }
+                Write(literal, start, end - start);
+
+                Write("\"\"");
+
+                start = end + 1;
             }
+
+            Debug.Assert(end == -1); // We've hit all of the double-quotes.
+
+            // Write the remainder after the last double-quote.
+            Write(literal, start, literal.Length - start);
 
             Write("\"");
         }
@@ -464,9 +482,15 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
         {
             // From CSharpCodeGenerator.QuoteSnippetStringCStyle in CodeDOM
             Write("\"");
-            for (int i = 0; i < literal.Length; i++)
+
+            // We need to find the index of each escapable character to escape it.
+            var start = 0;
+            int end;
+            while ((end = literal.IndexOfAny(CStyleStringLiteralEscapeChars, start)) > -1)
             {
-                switch (literal[i])
+                Write(literal, start, end - start);
+
+                switch (literal[end])
                 {
                     case '\r':
                         Write("\\r");
@@ -492,13 +516,21 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
                     case '\u2028':
                     case '\u2029':
                         Write("\\u");
-                        Write(((int)literal[i]).ToString("X4", CultureInfo.InvariantCulture));
+                        Write(((int)literal[end]).ToString("X4", CultureInfo.InvariantCulture));
                         break;
                     default:
-                        Write(literal[i].ToString());
+                        Debug.Assert(false, "Unknown escape character.");
                         break;
                 }
+
+                start = end + 1;
             }
+
+            Debug.Assert(end == -1); // We've hit all of chars that need escaping.
+
+            // Write the remainder after the last escaped char.
+            Write(literal, start, literal.Length - start);
+
             Write("\"");
         }
 
