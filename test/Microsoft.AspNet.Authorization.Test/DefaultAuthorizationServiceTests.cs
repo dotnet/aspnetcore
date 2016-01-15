@@ -905,13 +905,13 @@ namespace Microsoft.AspNet.Authorization.Test
         }
 
         [Fact]
-        public async Task CanAuthorizeWithDelegateRequirement()
+        public async Task CanAuthorizeWithAssertionRequirement()
         {
             var authorizationService = BuildAuthorizationService(services =>
             {
                 services.AddAuthorization(options =>
                 {
-                    options.AddPolicy("Basic", policy => policy.RequireDelegate((context, req) => context.Succeed(req)));
+                    options.AddPolicy("Basic", policy => policy.RequireAssertion(context => true));
                 });
             });
             var user = new ClaimsPrincipal();

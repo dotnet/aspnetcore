@@ -123,14 +123,19 @@ namespace Microsoft.AspNet.Authorization
             return this;
         }
 
-        public AuthorizationPolicyBuilder RequireDelegate(Action<AuthorizationContext, DelegateRequirement> handler)
+        /// <summary>
+        /// Requires that this Function returns true
+        /// </summary>
+        /// <param name="assert">Function that must return true</param>
+        /// <returns></returns>
+        public AuthorizationPolicyBuilder RequireAssertion(Func<AuthorizationContext, bool> assert)
         {
-            if (handler == null)
+            if (assert == null)
             {
-                throw new ArgumentNullException(nameof(handler));
+                throw new ArgumentNullException(nameof(assert));
             }
 
-            Requirements.Add(new DelegateRequirement(handler));
+            Requirements.Add(new AssertionRequirement(assert));
             return this;
         }
 
