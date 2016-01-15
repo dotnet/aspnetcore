@@ -9,7 +9,7 @@
     "url": "git://github.com/aspnet/mvc"
   },
   "dependencies": {
-    "Newtonsoft.Json": "8.0.1"
+    "Newtonsoft.Json": "8.0.2"
   },
   "frameworks": {
     "net451": {},
