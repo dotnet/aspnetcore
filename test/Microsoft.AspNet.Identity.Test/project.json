@@ -10,22 +10,28 @@
     "Microsoft.AspNet.Testing": "1.0.0-*",
     "Microsoft.Extensions.Configuration": "1.0.0-*",
     "Microsoft.Extensions.Options.ConfigurationExtensions": "1.0.0-*",
-    "xunit.runner.aspnet": "2.0.0-aspnet-*"
+    "xunit": "2.1.0-*"
   },
   "compile": "../Shared/*.cs",
   "frameworks": {
     "dnx451": {
+       "frameworkAssemblies": {
+          "System.Threading.Tasks": ""
+      },
       "dependencies": {
-        "Moq": "4.2.1312.1622"
+        "Moq": "4.2.1312.1622",
+        "xunit.runner.console": "2.1.0"
       }
     },
     "dnxcore50": {
       "dependencies": {
         "moq.netcore": "4.4.0-beta8",
-        "System.Xml.ReaderWriter": "4.0.10-*"
+        "System.Xml.ReaderWriter": "4.0.10-*",
+        "xunit.runner.aspnet": "2.0.0-aspnet-*"
       }
     }
   },
+  "testRunner": "xunit",
   "commands": {
     "test": "xunit.runner.aspnet"
   }

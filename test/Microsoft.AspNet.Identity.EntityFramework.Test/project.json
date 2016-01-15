@@ -3,6 +3,9 @@
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk"
   },
+  "content": [
+      "config.json"
+  ],
   "dependencies": {
     "EntityFramework.InMemory": "7.0.0-*",
     "EntityFramework.MicrosoftSqlServer": "7.0.0-*",
@@ -12,21 +15,27 @@
     "Microsoft.AspNet.Identity.EntityFramework": "3.0.0-*",
     "Microsoft.AspNet.TestHost": "1.0.0-*",
     "Microsoft.AspNet.Testing": "1.0.0-*",
-    "xunit.runner.aspnet": "2.0.0-aspnet-*"
+    "xunit": "2.1.0"
   },
   "compile": "../Shared/*.cs",
   "frameworks": {
     "dnx451": {
+      "frameworkAssemblies": {
+          "System.Threading.Tasks": ""
+      },
       "dependencies": {
-        "Moq": "4.2.1312.1622"
+        "Moq": "4.2.1312.1622",
+         "xunit.runner.console": "2.1.0"
       }
     },
     "dnxcore50": {
       "dependencies": {
-        "moq.netcore": "4.4.0-beta8"
+        "moq.netcore": "4.4.0-beta8",
+        "xunit.runner.aspnet": "2.0.0-aspnet-*"
       }
     }
   },
+  "testRunner": "xunit",
   "commands": {
     "test": "xunit.runner.aspnet"
   }
