@@ -1084,7 +1084,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 }
             }
 
-            await Assert.ThrowsAsync<IOException>(async () => await readTcs.Task);
+            await Assert.ThrowsAsync<TaskCanceledException>(async () => await readTcs.Task);
 
             // The cancellation token for only the last request should be triggered.
             var abortedRequestId = await registrationTcs.Task;
@@ -1096,6 +1096,12 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Test hangs after execution on Mono.")]
         public async Task FailedWritesResultInAbortedRequest(ServiceContext testContext)
         {
+            const int resetEventTimeout = 2000;
+            // This should match _maxBytesPreCompleted in SocketOutput
+            const int maxBytesPreCompleted = 65536;
+            // Ensure string is long enough to disable write-behind buffering
+            var largeString = new string('a', maxBytesPreCompleted + 1);
+
             var writeTcs = new TaskCompletionSource<object>();
             var registrationWh = new ManualResetEventSlim();
             var connectionCloseWh = new ManualResetEventSlim();
@@ -1119,7 +1125,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                     // Ensure write is long enough to disable write-behind buffering
                     for (int i = 0; i < 10; i++)
                     {
-                        await response.WriteAsync(new string('a', 65537));
+                        await response.WriteAsync(largeString).ConfigureAwait(false);
                     }
                 }
                 catch (Exception ex)
@@ -1127,7 +1133,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                     writeTcs.SetException(ex);
 
                     // Give a chance for RequestAborted to trip before the app completes
-                    registrationWh.Wait(1000);
+                    registrationWh.Wait(resetEventTimeout);
 
                     throw;
                 }
@@ -1141,16 +1147,16 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "POST / HTTP/1.1",
                         "Content-Length: 5",
                         "",
-                        "Hello");
+                        "Hello").ConfigureAwait(false);
                     // Don't wait to receive the response. Just close the socket.
                 }
 
                 connectionCloseWh.Set();
 
                 // Write failed
-                await Assert.ThrowsAsync<IOException>(async () => await writeTcs.Task);
+                await Assert.ThrowsAsync<TaskCanceledException>(async () => await writeTcs.Task);
                 // RequestAborted tripped
-                Assert.True(registrationWh.Wait(200));
+                Assert.True(registrationWh.Wait(resetEventTimeout));
             }
         }
 

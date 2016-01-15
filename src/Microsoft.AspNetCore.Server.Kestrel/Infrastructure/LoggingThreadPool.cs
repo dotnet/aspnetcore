@@ -12,6 +12,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
         private readonly IKestrelTrace _log;
 
         private readonly WaitCallback _runAction;
+        private readonly WaitCallback _cancelTcs;
         private readonly WaitCallback _completeTcs;
 
         public LoggingThreadPool(IKestrelTrace log)
@@ -42,6 +43,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
                     _log.ApplicationError(e);
                 }
             };
+
+            _cancelTcs = (o) =>
+            {
+                try
+                {
+                    ((TaskCompletionSource<object>)o).TrySetCanceled();
+                }
+                catch (Exception e)
+                {
+                    _log.ApplicationError(e);
+                }
+            };
         }
 
         public void Run(Action action)
@@ -52,6 +65,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
         public void Complete(TaskCompletionSource<object> tcs)
         {
             ThreadPool.QueueUserWorkItem(_completeTcs, tcs);
+        }
+
+        public void Cancel(TaskCompletionSource<object> tcs)
+        {
+            ThreadPool.QueueUserWorkItem(_cancelTcs, tcs);
         }
 
         public void Error(TaskCompletionSource<object> tcs, Exception ex)

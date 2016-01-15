@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         private static void TestConcurrentFaultedTask(Task t)
         {
             Assert.True(t.IsFaulted);
-            Assert.IsType(typeof(System.IO.IOException), t.Exception.InnerException);
+            Assert.IsType(typeof(System.InvalidOperationException), t.Exception.InnerException);
             Assert.Equal(t.Exception.InnerException.Message, "Concurrent reads are not supported.");
         }
 

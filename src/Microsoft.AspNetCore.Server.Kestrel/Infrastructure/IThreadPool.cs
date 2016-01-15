@@ -9,6 +9,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
     public interface IThreadPool
     {
         void Complete(TaskCompletionSource<object> tcs);
+        void Cancel(TaskCompletionSource<object> tcs);
         void Error(TaskCompletionSource<object> tcs, Exception ex);
         void Run(Action action);
     }

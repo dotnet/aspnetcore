@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 var completedWh = new ManualResetEventSlim();
 
                 // Act
-                socketOutput.WriteAsync(buffer).ContinueWith(
+                socketOutput.WriteAsync(buffer, default(CancellationToken)).ContinueWith(
                     (t) =>
                     {
                         Assert.Null(t.Exception);
@@ -101,14 +101,14 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 };
 
                 // Act 
-                socketOutput.WriteAsync(buffer).ContinueWith(onCompleted);
+                socketOutput.WriteAsync(buffer, default(CancellationToken)).ContinueWith(onCompleted);
                 // Assert
                 // The first write should pre-complete since it is <= _maxBytesPreCompleted.
                 Assert.True(completedWh.Wait(1000));
                 // Arrange
                 completedWh.Reset();
                 // Act
-                socketOutput.WriteAsync(buffer).ContinueWith(onCompleted);
+                socketOutput.WriteAsync(buffer, default(CancellationToken)).ContinueWith(onCompleted);
                 // Assert 
                 // Too many bytes are already pre-completed for the second write to pre-complete.
                 Assert.False(completedWh.Wait(1000));
@@ -162,28 +162,28 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 };
 
                 // Act 
-                socketOutput.WriteAsync(halfBuffer, false).ContinueWith(onCompleted);
+                socketOutput.WriteAsync(halfBuffer, default(CancellationToken), false).ContinueWith(onCompleted);
                 // Assert
                 // The first write should pre-complete since it is not immediate.
                 Assert.True(completedWh.Wait(1000));
                 // Arrange
                 completedWh.Reset();
                 // Act 
-                socketOutput.WriteAsync(halfBuffer).ContinueWith(onCompleted);
+                socketOutput.WriteAsync(halfBuffer, default(CancellationToken)).ContinueWith(onCompleted);
                 // Assert
                 // The second write should pre-complete since it is <= _maxBytesPreCompleted.
                 Assert.True(completedWh.Wait(1000));
                 // Arrange
                 completedWh.Reset();
                 // Act 
-                socketOutput.WriteAsync(halfBuffer, false).ContinueWith(onCompleted);
+                socketOutput.WriteAsync(halfBuffer, default(CancellationToken), false).ContinueWith(onCompleted);
                 // Assert
                 // The third write should pre-complete since it is not immediate, even though too many.
                 Assert.True(completedWh.Wait(1000));
                 // Arrange
                 completedWh.Reset();
                 // Act
-                socketOutput.WriteAsync(halfBuffer).ContinueWith(onCompleted);
+                socketOutput.WriteAsync(halfBuffer, default(CancellationToken)).ContinueWith(onCompleted);
                 // Assert 
                 // Too many bytes are already pre-completed for the fourth write to pre-complete.
                 Assert.False(completedWh.Wait(1000));
@@ -195,6 +195,116 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 // Assert
                 // Finishing the first write should allow the second write to pre-complete.
                 Assert.True(completedWh.Wait(1000));
+            }
+        }
+
+        [Fact]
+        public async Task OnlyWritesRequestingCancellationAreErroredOnCancellation()
+        {
+            // This should match _maxBytesPreCompleted in SocketOutput
+            var maxBytesPreCompleted = 65536;
+            var completeQueue = new Queue<Action<int>>();
+
+            // Arrange
+            var mockLibuv = new MockLibuv
+            {
+                OnWrite = (socket, buffers, triggerCompleted) =>
+                {
+                    completeQueue.Enqueue(triggerCompleted);
+                    return 0;
+                }
+            };
+
+            using (var kestrelEngine = new KestrelEngine(mockLibuv, new TestServiceContext()))
+            using (var memory = new MemoryPool2())
+            {
+                kestrelEngine.Start(count: 1);
+
+                var kestrelThread = kestrelEngine.Threads[0];
+                var socket = new MockSocket(kestrelThread.Loop.ThreadId, new TestKestrelTrace());
+                var trace = new KestrelTrace(new TestKestrelTrace());
+                var ltp = new LoggingThreadPool(trace);
+                ISocketOutput socketOutput = new SocketOutput(kestrelThread, socket, memory, null, 0, trace, ltp, new Queue<UvWriteReq>());
+
+                var bufferSize = maxBytesPreCompleted;
+
+                var data = new byte[bufferSize];
+                var fullBuffer = new ArraySegment<byte>(data, 0, bufferSize);
+
+                var cts = new CancellationTokenSource();
+
+                // Act 
+                var task1Success = socketOutput.WriteAsync(fullBuffer, cancellationToken: cts.Token);
+                // task1 should complete sucessfully as < _maxBytesPreCompleted
+
+                // First task is completed and sucessful
+                Assert.True(task1Success.IsCompleted);
+                Assert.False(task1Success.IsCanceled);
+                Assert.False(task1Success.IsFaulted);
+
+                task1Success.GetAwaiter().GetResult();
+
+                // following tasks should wait.
+
+                var task2Throw = socketOutput.WriteAsync(fullBuffer, cancellationToken: cts.Token);
+                var task3Success = socketOutput.WriteAsync(fullBuffer, cancellationToken: default(CancellationToken));
+
+                // Give time for tasks to perculate
+                await Task.Delay(2000).ConfigureAwait(false);
+
+                // Second task is not completed
+                Assert.False(task2Throw.IsCompleted);
+                Assert.False(task2Throw.IsCanceled);
+                Assert.False(task2Throw.IsFaulted);
+
+                // Third task is not completed 
+                Assert.False(task3Success.IsCompleted);
+                Assert.False(task3Success.IsCanceled);
+                Assert.False(task3Success.IsFaulted);
+
+                cts.Cancel();
+
+                // Give time for tasks to perculate
+                await Task.Delay(2000).ConfigureAwait(false);
+
+                // Second task is now cancelled
+                Assert.True(task2Throw.IsCompleted);
+                Assert.True(task2Throw.IsCanceled);
+                Assert.False(task2Throw.IsFaulted);
+
+                // Third task is now completed 
+                Assert.True(task3Success.IsCompleted);
+                Assert.False(task3Success.IsCanceled);
+                Assert.False(task3Success.IsFaulted);
+
+                // Fourth task immediately cancels as the token is cancelled 
+                var task4Throw = socketOutput.WriteAsync(fullBuffer, cancellationToken: cts.Token);
+
+                Assert.True(task4Throw.IsCompleted);
+                Assert.True(task4Throw.IsCanceled);
+                Assert.False(task4Throw.IsFaulted);
+
+                Assert.Throws<TaskCanceledException>(() => task4Throw.GetAwaiter().GetResult());
+
+                var task5Success = socketOutput.WriteAsync(fullBuffer, cancellationToken: default(CancellationToken));
+                // task5 should complete immedately
+                
+                Assert.True(task5Success.IsCompleted);
+                Assert.False(task5Success.IsCanceled);
+                Assert.False(task5Success.IsFaulted);
+
+                cts = new CancellationTokenSource();
+
+                var task6Throw = socketOutput.WriteAsync(fullBuffer, cancellationToken: cts.Token);
+                // task6 should complete immedately but not cancel as its cancelation token isn't set
+
+                Assert.True(task6Throw.IsCompleted);
+                Assert.False(task6Throw.IsCanceled);
+                Assert.False(task6Throw.IsFaulted);
+
+                Assert.Throws<TaskCanceledException>(() => task6Throw.GetAwaiter().GetResult());
+
+                Assert.True(true);
             }
         }
 
@@ -247,7 +357,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 };
 
                 // Act (Pre-complete the maximum number of bytes in preparation for the rest of the test)
-                socketOutput.WriteAsync(buffer).ContinueWith(onCompleted);
+                socketOutput.WriteAsync(buffer, default(CancellationToken)).ContinueWith(onCompleted);
                 // Assert
                 // The first write should pre-complete since it is <= _maxBytesPreCompleted.
                 Assert.True(completedWh.Wait(1000));
@@ -257,8 +367,8 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 onWriteWh.Reset();
 
                 // Act
-                socketOutput.WriteAsync(buffer).ContinueWith(onCompleted);
-                socketOutput.WriteAsync(buffer).ContinueWith(onCompleted2);
+                socketOutput.WriteAsync(buffer, default(CancellationToken)).ContinueWith(onCompleted);
+                socketOutput.WriteAsync(buffer, default(CancellationToken)).ContinueWith(onCompleted2);
 
                 Assert.True(onWriteWh.Wait(1000));
                 completeQueue.Dequeue()(0);
@@ -320,7 +430,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 socketOutput.ProducingComplete(end);
 
                 // A call to Write is required to ensure a write is scheduled
-                socketOutput.WriteAsync(default(ArraySegment<byte>));
+                socketOutput.WriteAsync(default(ArraySegment<byte>), default(CancellationToken));
 
                 Assert.True(nBufferWh.Wait(1000));
                 Assert.Equal(2, nBuffers);

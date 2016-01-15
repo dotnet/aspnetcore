@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         private bool _requestProcessingStarted;
         private Task _requestProcessingTask;
         protected volatile bool _requestProcessingStopping; // volatile, see: https://msdn.microsoft.com/en-us/library/x13ttww7.aspx
-        protected volatile bool _requestAborted;
+        protected int _requestAborted;
         protected CancellationTokenSource _abortedCts;
         protected CancellationToken? _manuallySetRequestAbortToken;
 
@@ -167,7 +167,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 var cts = _abortedCts;
                 return
                     cts != null ? cts.Token :
-                    _requestAborted ? new CancellationToken(true) :
+                    (Volatile.Read(ref _requestAborted) == 1) ? new CancellationToken(true) :
                     RequestAbortedSource.Token;
             }
             set
@@ -185,7 +185,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 // Get the abort token, lazily-initializing it if necessary.
                 // Make sure it's canceled if an abort request already came in.
                 var cts = LazyInitializer.EnsureInitialized(ref _abortedCts, () => new CancellationTokenSource());
-                if (_requestAborted)
+                if (Volatile.Read(ref _requestAborted) == 1)
                 {
                     cts.Cancel();
                 }
@@ -288,24 +288,31 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         /// </summary>
         public void Abort()
         {
-            _requestProcessingStopping = true;
-            _requestAborted = true;
+            if (Interlocked.CompareExchange(ref _requestAborted, 1, 0) == 0)
+            {
+                _requestProcessingStopping = true;
 
-            _requestBody?.Abort();
-            _responseBody?.Abort();
+                _requestBody?.Abort();
+                _responseBody?.Abort();
 
-            try
-            {
-                ConnectionControl.End(ProduceEndType.SocketDisconnect);
-                SocketInput.AbortAwaiting();
-                RequestAbortedSource.Cancel();
-            }
-            catch (Exception ex)
-            {
-                Log.LogError("Abort", ex);
-            }
-            finally
-            {
+                try
+                {
+                    ConnectionControl.End(ProduceEndType.SocketDisconnect);
+                    SocketInput.AbortAwaiting();
+                }
+                catch (Exception ex)
+                {
+                    Log.LogError("Abort", ex);
+                }
+
+                try
+                {
+                    RequestAbortedSource.Cancel();
+                }
+                catch (Exception ex)
+                {
+                    Log.LogError("Abort", ex);
+                }
                 _abortedCts = null;
             }
         }

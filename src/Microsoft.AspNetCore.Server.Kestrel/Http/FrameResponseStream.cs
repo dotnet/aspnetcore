@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Server.Kestrel.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Http
 {
@@ -37,16 +38,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
         public override void Flush()
         {
-            ValidateState();
+            ValidateState(CancellationToken.None);
 
             _context.FrameControl.Flush();
         }
 
         public override Task FlushAsync(CancellationToken cancellationToken)
         {
-            ValidateState();
-
-            return _context.FrameControl.FlushAsync(cancellationToken);
+            var task = ValidateState(cancellationToken);
+            if (task == null)
+            {
+                return _context.FrameControl.FlushAsync(cancellationToken);
+            }
+            return task;
         }
 
         public override long Seek(long offset, SeekOrigin origin)
@@ -66,16 +70,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
         public override void Write(byte[] buffer, int offset, int count)
         {
-            ValidateState();
+            ValidateState(CancellationToken.None);
 
             _context.FrameControl.Write(new ArraySegment<byte>(buffer, offset, count));
         }
 
         public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
-            ValidateState();
-
-            return _context.FrameControl.WriteAsync(new ArraySegment<byte>(buffer, offset, count), cancellationToken);
+            var task = ValidateState(cancellationToken);
+            if (task == null)
+            {
+                return _context.FrameControl.WriteAsync(new ArraySegment<byte>(buffer, offset, count), cancellationToken);
+            }
+            return task;
         }
 
         public Stream StartAcceptingWrites()
@@ -112,24 +119,36 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         public void Abort()
         {
             // We don't want to throw an ODE until the app func actually completes.
-            // If the request is aborted, we throw an IOException instead.
             if (_state != FrameStreamState.Closed)
             {
                 _state = FrameStreamState.Aborted;
             }
         }
 
-        private void ValidateState()
+        private Task ValidateState(CancellationToken cancellationToken)
         {
             switch (_state)
             {
                 case FrameStreamState.Open:
-                    return;
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        return TaskUtilities.GetCancelledTask(cancellationToken);
+                    }
+                    break;
                 case FrameStreamState.Closed:
                     throw new ObjectDisposedException(nameof(FrameResponseStream));
                 case FrameStreamState.Aborted:
-                    throw new IOException("The request has been aborted.");
+                    if (cancellationToken.CanBeCanceled)
+                    {
+                        // Aborted state only throws on write if cancellationToken requests it
+                        return TaskUtilities.GetCancelledTask(
+                            cancellationToken.IsCancellationRequested ? 
+                            cancellationToken : 
+                            new CancellationToken(true));
+                    }
+                    break;
             }
+            return null;
         }
     }
 }

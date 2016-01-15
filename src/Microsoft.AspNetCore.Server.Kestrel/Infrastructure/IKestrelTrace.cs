@@ -29,6 +29,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
 
         void ConnectionWriteCallback(long connectionId, int status);
 
+        void ConnectionError(long connectionId, Exception ex);
+
+        void ConnectionDisconnectedWrite(long connectionId, int count, Exception ex);
+
         void ApplicationError(Exception ex);
     }
 }

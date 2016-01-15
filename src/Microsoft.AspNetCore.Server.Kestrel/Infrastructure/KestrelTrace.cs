@@ -21,6 +21,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel
         private static readonly Action<ILogger, long, int, Exception> _connectionWroteFin;
         private static readonly Action<ILogger, long, Exception> _connectionKeepAlive;
         private static readonly Action<ILogger, long, Exception> _connectionDisconnect;
+        private static readonly Action<ILogger, long, Exception> _connectionError;
+        private static readonly Action<ILogger, long, int, Exception> _connectionDisconnectedWrite;
 
         protected readonly ILogger _logger;
 
@@ -39,6 +41,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel
             // ConnectionWrite: Reserved: 11
             // ConnectionWriteCallback: Reserved: 12
             // ApplicationError: Reserved: 13 - LoggerMessage.Define overload not present 
+            _connectionError = LoggerMessage.Define<long>(LogLevel.Information, 14, @"Connection id ""{ConnectionId}"" communication error");
+            _connectionDisconnectedWrite = LoggerMessage.Define<long, int>(LogLevel.Debug, 15, @"Connection id ""{ConnectionId}"" write of ""{count}"" bytes to disconnected client.");
         }
 
         public KestrelTrace(ILogger logger)
@@ -112,6 +116,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel
         public virtual void ApplicationError(Exception ex)
         {
             _logger.LogError(13, "An unhandled exception was thrown by the application.", ex);
+        }
+
+        public virtual void ConnectionError(long connectionId, Exception ex)
+        {
+            _connectionError(_logger, connectionId, ex);
+        }
+
+        public virtual void ConnectionDisconnectedWrite(long connectionId, int count, Exception ex)
+        {
+            _connectionDisconnectedWrite(_logger, connectionId, count, ex);
         }
 
         public virtual void Log(LogLevel logLevel, int eventId, object state, Exception exception, Func<object, Exception, string> formatter)

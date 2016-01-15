@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Server.Kestrel.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Http
 {
@@ -51,8 +52,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
         public override int Read(byte[] buffer, int offset, int count)
         {
-            ValidateState();
-
             // ValueTask uses .GetAwaiter().GetResult() if necessary
             return ReadAsync(buffer, offset, count).Result;
         }
@@ -60,7 +59,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 #if NET451
         public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
         {
-            ValidateState();
+            ValidateState(CancellationToken.None);
 
             var task = ReadAsync(buffer, offset, count, CancellationToken.None, state);
             if (callback != null)
@@ -77,7 +76,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
         private Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken, object state)
         {
-            ValidateState();
+            ValidateState(cancellationToken);
 
             var tcs = new TaskCompletionSource<int>(state);
             var task = _body.ReadAsync(new ArraySegment<byte>(buffer, offset, count), cancellationToken);
@@ -103,10 +102,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
         public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
-            ValidateState();
-
-            // Needs .AsTask to match Stream's Async method return types
-            return _body.ReadAsync(new ArraySegment<byte>(buffer, offset, count), cancellationToken).AsTask();
+            var task = ValidateState(cancellationToken);
+            if (task == null)
+            {
+                // Needs .AsTask to match Stream's Async method return types
+                return _body.ReadAsync(new ArraySegment<byte>(buffer, offset, count), cancellationToken).AsTask();
+            }
+            return task;
         }
 
         public override void Write(byte[] buffer, int offset, int count)
@@ -149,24 +151,29 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         public void Abort()
         {
             // We don't want to throw an ODE until the app func actually completes.
-            // If the request is aborted, we throw an IOException instead.
+            // If the request is aborted, we throw an TaskCanceledException instead.
             if (_state != FrameStreamState.Closed)
             {
                 _state = FrameStreamState.Aborted;
             }
         }
 
-        private void ValidateState()
+        private Task<int> ValidateState(CancellationToken cancellationToken)
         {
             switch (_state)
             {
                 case FrameStreamState.Open:
-                    return;
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        return TaskUtilities.GetCancelledZeroTask();
+                    }
+                    break;
                 case FrameStreamState.Closed:
                     throw new ObjectDisposedException(nameof(FrameRequestStream));
                 case FrameStreamState.Aborted:
-                    throw new IOException("The request has been aborted.");
+                    return TaskUtilities.GetCancelledZeroTask();
             }
+            return null;
         }
     }
 }
