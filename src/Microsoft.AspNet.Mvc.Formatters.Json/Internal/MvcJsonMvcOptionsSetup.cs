@@ -4,6 +4,7 @@
 using System.Buffers;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json;
@@ -11,13 +12,29 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNet.Mvc.Formatters.Json.Internal
 {
+    /// <summary>
+    /// Sets up JSON formatter options for <see cref="MvcOptions"/>.
+    /// </summary>
     public class MvcJsonMvcOptionsSetup : ConfigureOptions<MvcOptions>
     {
+        /// <summary>
+        /// Intiailizes a new instance of <see cref="MvcJsonMvcOptionsSetup"/>.
+        /// </summary>
+        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
+        /// <param name="jsonOptions"></param>
+        /// <param name="charPool"></param>
+        /// <param name="objectPoolProvider"></param>
         public MvcJsonMvcOptionsSetup(
             ILoggerFactory loggerFactory,
             IOptions<MvcJsonOptions> jsonOptions,
-            ArrayPool<char> charPool)
-            : base((options) => ConfigureMvc(options, jsonOptions.Value.SerializerSettings, loggerFactory, charPool))
+            ArrayPool<char> charPool,
+            ObjectPoolProvider objectPoolProvider)
+            : base((options) => ConfigureMvc(
+                options,
+                jsonOptions.Value.SerializerSettings,
+                loggerFactory,
+                charPool,
+                objectPoolProvider))
         {
         }
 
@@ -25,15 +42,26 @@ namespace Microsoft.AspNet.Mvc.Formatters.Json.Internal
             MvcOptions options,
             JsonSerializerSettings serializerSettings,
             ILoggerFactory loggerFactory,
-            ArrayPool<char> charPool)
+            ArrayPool<char> charPool,
+            ObjectPoolProvider objectPoolProvider)
         {
-            var jsonInputLogger = loggerFactory.CreateLogger<JsonInputFormatter>();
-            var jsonInputPatchLogger = loggerFactory.CreateLogger<JsonPatchInputFormatter>();
 
             options.OutputFormatters.Add(new JsonOutputFormatter(serializerSettings, charPool));
-            options.InputFormatters.Add(new JsonInputFormatter(jsonInputLogger, serializerSettings, charPool));
-            options.InputFormatters.Add(new JsonPatchInputFormatter(jsonInputPatchLogger, serializerSettings, charPool));
-            
+
+            var jsonInputLogger = loggerFactory.CreateLogger<JsonInputFormatter>();
+            options.InputFormatters.Add(new JsonInputFormatter(
+                jsonInputLogger,
+                serializerSettings,
+                charPool,
+                objectPoolProvider));
+
+            var jsonInputPatchLogger = loggerFactory.CreateLogger<JsonPatchInputFormatter>();
+            options.InputFormatters.Add(new JsonPatchInputFormatter(
+                jsonInputPatchLogger,
+                serializerSettings,
+                charPool,
+                objectPoolProvider));
+
             options.FormatterMappings.SetMediaTypeMappingForFormat("json", MediaTypeHeaderValue.Parse("application/json"));
 
             options.ModelMetadataDetailsProviders.Add(new ValidationExcludeFilter(typeof(JToken)));

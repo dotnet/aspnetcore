@@ -4,47 +4,88 @@
 using System;
 using System.Buffers;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Mvc.Formatters.Internal;
 using Microsoft.AspNet.Mvc.Formatters.Json.Internal;
 using Microsoft.AspNet.Mvc.Formatters.Json.Logging;
 using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.ObjectPool;
 using Newtonsoft.Json;
 
 namespace Microsoft.AspNet.Mvc.Formatters
 {
+    /// <summary>
+    /// An <see cref="InputFormatter"/> for JSON content.
+    /// </summary>
     public class JsonInputFormatter : InputFormatter
     {
         private readonly IArrayPool<char> _charPool;
         private readonly ILogger _logger;
-
+        private readonly ObjectPoolProvider _objectPoolProvider;
+        private ObjectPool<JsonSerializer> _jsonSerializerPool;
         private JsonSerializerSettings _serializerSettings;
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="JsonInputFormatter"/>.
+        /// </summary>
+        /// <param name="logger">The <see cref="ILogger"/>.</param>
         public JsonInputFormatter(ILogger logger)
-            : this(logger, SerializerSettingsProvider.CreateSerializerSettings(), ArrayPool<char>.Shared)
+            : this(logger, SerializerSettingsProvider.CreateSerializerSettings())
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="JsonInputFormatter"/>.
+        /// </summary>
+        /// <param name="logger">The <see cref="ILogger"/>.</param>
+        /// <param name="serializerSettings">The <see cref="JsonSerializerSettings"/>.</param>
         public JsonInputFormatter(ILogger logger, JsonSerializerSettings serializerSettings)
-            : this(logger, serializerSettings, ArrayPool<char>.Shared)
+            : this(
+                  logger,
+                  serializerSettings,
+                  ArrayPool<char>.Shared,
+                  new DefaultObjectPoolProvider())
         {
         }
 
-        public JsonInputFormatter(ILogger logger, JsonSerializerSettings serializerSettings, ArrayPool<char> charPool)
+        /// <summary>
+        /// Initializes a new instance of <see cref="JsonInputFormatter"/>.
+        /// </summary>
+        /// <param name="logger">The <see cref="ILogger"/>.</param>
+        /// <param name="serializerSettings">The <see cref="JsonSerializerSettings"/>.</param>
+        /// <param name="charPool">The <see cref="ArrayPool{char}"/>.</param>
+        /// <param name="objectPoolProvider">The <see cref="ObjectPoolProvider"/>.</param>
+        public JsonInputFormatter(
+            ILogger logger,
+            JsonSerializerSettings serializerSettings,
+            ArrayPool<char> charPool,
+            ObjectPoolProvider objectPoolProvider)
         {
-            if (serializerSettings == null)
-            {
-                throw new ArgumentNullException(nameof(serializerSettings));
-            }
-
             if (logger == null)
             {
                 throw new ArgumentNullException(nameof(logger));
             }
 
+            if (serializerSettings == null)
+            {
+                throw new ArgumentNullException(nameof(serializerSettings));
+            }
+
+            if (charPool == null)
+            {
+                throw new ArgumentNullException(nameof(charPool));
+            }
+
+            if (objectPoolProvider == null)
+            {
+                throw new ArgumentNullException(nameof(objectPoolProvider));
+            }
+
             _logger = logger;
             _serializerSettings = serializerSettings;
             _charPool = new JsonArrayPool<char>(charPool);
+            _objectPoolProvider = objectPoolProvider;
 
             SupportedEncodings.Add(UTF8EncodingWithoutBOM);
             SupportedEncodings.Add(UTF16EncodingLittleEndian);
@@ -56,6 +97,10 @@ namespace Microsoft.AspNet.Mvc.Formatters
         /// <summary>
         /// Gets or sets the <see cref="JsonSerializerSettings"/> used to configure the <see cref="JsonSerializer"/>.
         /// </summary>
+        /// <remarks>
+        /// Any modifications to the <see cref="JsonSerializerSettings"/> object after this
+        /// <see cref="JsonInputFormatter"/> has been used will have no effect.
+        /// </remarks>
         public JsonSerializerSettings SerializerSettings
         {
             get
@@ -135,7 +180,6 @@ namespace Microsoft.AspNet.Mvc.Formatters
                     var type = context.ModelType;
                     var jsonSerializer = CreateJsonSerializer();
                     jsonSerializer.Error += errorHandler;
-
                     object model;
                     try
                     {
@@ -143,8 +187,9 @@ namespace Microsoft.AspNet.Mvc.Formatters
                     }
                     finally
                     {
-                        // Clean up the error handler in case CreateJsonSerializer() reuses a serializer
+                        // Clean up the error handler since CreateJsonSerializer() pools instances.
                         jsonSerializer.Error -= errorHandler;
+                        ReleaseJsonSerializer(jsonSerializer);
                     }
 
                     if (successful)
@@ -160,11 +205,31 @@ namespace Microsoft.AspNet.Mvc.Formatters
         /// <summary>
         /// Called during deserialization to get the <see cref="JsonSerializer"/>.
         /// </summary>
-        /// <returns>The <see cref="JsonSerializer"/> used during serialization and deserialization.</returns>
+        /// <returns>The <see cref="JsonSerializer"/> used during deserialization.</returns>
+        /// <remarks>
+        /// This method works in tandem with <see cref="ReleaseJsonSerializer(JsonSerializer)"/> to
+        /// manage the lifetimes of <see cref="JsonSerializer"/> instances.
+        /// </remarks>
         protected virtual JsonSerializer CreateJsonSerializer()
         {
-            return JsonSerializer.Create(SerializerSettings);
+            if (_jsonSerializerPool == null)
+            {
+                _jsonSerializerPool = _objectPoolProvider.Create<JsonSerializer>();
+            }
+
+            return _jsonSerializerPool.Get();
         }
+
+        /// <summary>
+        /// Releases the <paramref name="serializer"/> instance.
+        /// </summary>
+        /// <param name="serializer">The <see cref="JsonSerializer"/> to release.</param>
+        /// <remarks>
+        /// This method works in tandem with <see cref="ReleaseJsonSerializer(JsonSerializer)"/> to
+        /// manage the lifetimes of <see cref="JsonSerializer"/> instances.
+        /// </remarks>
+        protected virtual void ReleaseJsonSerializer(JsonSerializer serializer)
+            => _jsonSerializerPool.Return(serializer);
 
         private ModelMetadata GetPathMetadata(ModelMetadata metadata, string path)
         {

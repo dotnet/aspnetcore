@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.JsonPatch;
 using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.ObjectPool;
 using Newtonsoft.Json;
 
 namespace Microsoft.AspNet.Mvc.Formatters
@@ -15,15 +16,20 @@ namespace Microsoft.AspNet.Mvc.Formatters
     public class JsonPatchInputFormatter : JsonInputFormatter
     {
         public JsonPatchInputFormatter(ILogger logger)
-            : this(logger, SerializerSettingsProvider.CreateSerializerSettings(), ArrayPool<char>.Shared)
+            : this(
+                  logger,
+                  SerializerSettingsProvider.CreateSerializerSettings(),
+                  ArrayPool<char>.Shared,
+                  new DefaultObjectPoolProvider())
         {
         }
 
         public JsonPatchInputFormatter(
             ILogger logger,
             JsonSerializerSettings serializerSettings,
-            ArrayPool<char> charPool)
-            : base(logger, serializerSettings, charPool)
+            ArrayPool<char> charPool,
+            ObjectPoolProvider objectPoolProvider)
+            : base(logger, serializerSettings, charPool, objectPoolProvider)
         {
             // Clear all values and only include json-patch+json value.
             SupportedMediaTypes.Clear();
