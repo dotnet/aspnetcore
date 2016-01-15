@@ -7,17 +7,21 @@ using System.Diagnostics;
 #if DEBUG
 using System.Globalization;
 #endif
-using System.Linq;
 using System.Text;
 using Microsoft.AspNet.Razor.Text;
 using Microsoft.AspNet.Razor.Tokenizer.Symbols;
 
 namespace Microsoft.AspNet.Razor.Tokenizer
 {
-    public abstract partial class Tokenizer<TSymbol, TSymbolType> : StateMachine<TSymbol>, ITokenizer
+    [DebuggerDisplay("{DebugDisplay}")]
+    public abstract partial class Tokenizer<TSymbol, TSymbolType> : ITokenizer
         where TSymbolType : struct
         where TSymbol : SymbolBase<TSymbolType>
     {
+#if DEBUG
+        private StringBuilder _read = new StringBuilder();
+#endif
+
         protected Tokenizer(ITextDocument source)
         {
             if (source == null)
@@ -30,6 +34,12 @@ namespace Microsoft.AspNet.Razor.Tokenizer
             CurrentErrors = new List<RazorError>();
             StartSymbol();
         }
+
+        protected abstract int StartState { get; }
+
+        protected int? CurrentState { get; set; }
+
+        protected TSymbol CurrentSymbol { get; private set; }
 
         public TextDocumentReader Source { get; private set; }
 
@@ -67,6 +77,10 @@ namespace Microsoft.AspNet.Razor.Tokenizer
 
         protected SourceLocation CurrentStart { get; private set; }
 
+        protected abstract TSymbol CreateSymbol(SourceLocation start, string content, TSymbolType type, IReadOnlyList<RazorError> errors);
+
+        protected abstract StateResult Dispatch();
+
         public virtual TSymbol NextSymbol()
         {
             // Post-Condition: Buffer should be empty at the start of Next()
@@ -77,12 +91,38 @@ namespace Microsoft.AspNet.Razor.Tokenizer
             {
                 return null;
             }
-            var sym = Turn();
+
+            var symbol = Turn();
 
             // Post-Condition: Buffer should be empty at the end of Next()
             Debug.Assert(Buffer.Length == 0);
 
-            return sym;
+            return symbol;
+        }
+
+        protected virtual TSymbol Turn()
+        {
+            if (CurrentState != null)
+            {
+                // Run until we get into the stop state or have a result.
+                do
+                {
+                    var next = Dispatch();
+
+                    CurrentState = next.State;
+                    CurrentSymbol = next.Result;
+                }
+                while (CurrentState != null && CurrentSymbol == null); 
+
+                if (CurrentState == null)
+                {
+                    return default(TSymbol); // Terminated
+                }
+
+                return CurrentSymbol;
+            }
+
+            return default(TSymbol);
         }
 
         public void Reset()
@@ -90,7 +130,65 @@ namespace Microsoft.AspNet.Razor.Tokenizer
             CurrentState = StartState;
         }
 
-        protected abstract TSymbol CreateSymbol(SourceLocation start, string content, TSymbolType type, IReadOnlyList<RazorError> errors);
+        /// <summary>
+        /// Returns a result indicating that the machine should stop executing and return null output.
+        /// </summary>
+        protected StateResult Stop()
+        {
+            return default(StateResult);
+        }
+
+        /// <summary>
+        /// Returns a result indicating that this state has no output and the machine should immediately invoke the specified state
+        /// </summary>
+        /// <remarks>
+        /// By returning no output, the state machine will invoke the next state immediately, before returning
+        /// controller to the caller of <see cref="Turn"/>
+        /// </remarks>
+        protected StateResult Transition(int state)
+        {
+            return new StateResult(state, result: null);
+        }
+
+        /// <summary>
+        /// Returns a result containing the specified output and indicating that the next call to
+        /// <see cref="Turn"/> should invoke the provided state.
+        /// </summary>
+        protected StateResult Transition(int state, TSymbol result)
+        {
+            return new StateResult(state, result);
+        }
+
+        protected StateResult Transition(RazorCommentTokenizerState state)
+        {
+            return new StateResult((int)state, result: null);
+        }
+
+        protected StateResult Transition(RazorCommentTokenizerState state, TSymbol result)
+        {
+            return new StateResult((int)state, result);
+        }
+
+        /// <summary>
+        /// Returns a result indicating that this state has no output and the machine should remain in this state
+        /// </summary>
+        /// <remarks>
+        /// By returning no output, the state machine will re-invoke the current state again before returning
+        /// controller to the caller of <see cref="Turn"/>
+        /// </remarks>
+        protected StateResult Stay()
+        {
+            return new StateResult(CurrentState, result: null);
+        }
+
+        /// <summary>
+        /// Returns a result containing the specified output and indicating that the next call to
+        /// <see cref="Turn"/> should re-invoke the current state.
+        /// </summary>
+        protected StateResult Stay(TSymbol result)
+        {
+            return new StateResult(CurrentState, result);
+        }
 
         protected TSymbol Single(TSymbolType type)
         {
@@ -179,9 +277,10 @@ namespace Microsoft.AspNet.Razor.Tokenizer
                 // We've been moved since last time we were asked for a symbol... reset the state
                 return Transition(StartState);
             }
+
             AssertCurrent('*');
             TakeCurrent();
-            return Transition(EndSymbol(RazorCommentStarType), RazorCommentBody);
+            return Transition(1002, EndSymbol(RazorCommentStarType));
         }
 
         protected StateResult RazorCommentBody()
@@ -189,42 +288,43 @@ namespace Microsoft.AspNet.Razor.Tokenizer
             TakeUntil(c => c == '*');
             if (CurrentCharacter == '*')
             {
-                var star = CurrentCharacter;
-                var start = CurrentLocation;
-                MoveNext();
-                if (!EndOfFile && CurrentCharacter == '@')
+                if (Peek() == '@')
                 {
-                    State next = () =>
-                    {
-                        Buffer.Append(star);
-                        return Transition(EndSymbol(start, RazorCommentStarType), () =>
-                        {
-                            if (CurrentCharacter != '@')
-                            {
-                                // We've been moved since last time we were asked for a symbol... reset the state
-                                return Transition(StartState);
-                            }
-                            TakeCurrent();
-                            return Transition(EndSymbol(RazorCommentTransitionType), StartState);
-                        });
-                    };
-
                     if (HaveContent)
                     {
-                        return Transition(EndSymbol(RazorCommentType), next);
+                        return Transition(
+                            RazorCommentTokenizerState.StarAfterRazorCommentBody,
+                            EndSymbol(RazorCommentType));
                     }
                     else
                     {
-                        return Transition(next);
+                        return Transition(RazorCommentTokenizerState.StarAfterRazorCommentBody);
                     }
                 }
                 else
                 {
-                    Buffer.Append(star);
+                    TakeCurrent();
                     return Stay();
                 }
             }
-            return Transition(EndSymbol(RazorCommentType), StartState);
+
+            return Transition(StartState, EndSymbol(RazorCommentType));
+        }
+
+        protected StateResult StarAfterRazorCommentBody()
+        {
+            AssertCurrent('*');
+            TakeCurrent();
+            return Transition(
+                RazorCommentTokenizerState.AtSymbolAfterRazorCommentBody,
+                EndSymbol(RazorCommentStarType));
+        }
+
+        protected StateResult AtSymbolAfterRazorCommentBody()
+        {
+            AssertCurrent('@');
+            TakeCurrent();
+            return Transition(StartState, EndSymbol(RazorCommentTransitionType));
         }
 
         /// <summary>
@@ -235,7 +335,7 @@ namespace Microsoft.AspNet.Razor.Tokenizer
             Func<char, char> filter = c => c;
             if (!caseSensitive)
             {
-                filter = Char.ToLowerInvariant;
+                filter = char.ToLowerInvariant;
             }
 
             if (expected.Length == 0 || filter(CurrentCharacter) != filter(expected[0]))
@@ -298,14 +398,8 @@ namespace Microsoft.AspNet.Razor.Tokenizer
         {
             return (ISymbol)NextSymbol();
         }
-    }
 
 #if DEBUG
-    [DebuggerDisplay("{DebugDisplay}")]
-    public partial class Tokenizer<TSymbol, TSymbolType>
-    {
-        private StringBuilder _read = new StringBuilder();
-
         public string DebugDisplay
         {
             get { return string.Format(CultureInfo.InvariantCulture, "[{0}] [{1}] [{2}]", _read.ToString(), CurrentCharacter, Remaining); }
@@ -320,6 +414,28 @@ namespace Microsoft.AspNet.Razor.Tokenizer
                 return remaining;
             }
         }
-    }
 #endif
+
+        protected enum RazorCommentTokenizerState
+        {
+            AfterRazorCommentTransition = 1000,
+            EscapedRazorCommentTransition,
+            RazorCommentBody,
+            StarAfterRazorCommentBody,
+            AtSymbolAfterRazorCommentBody,
+        }
+
+        protected struct StateResult
+        {
+            public StateResult(int? state, TSymbol result)
+            {
+                State = state;
+                Result = result;
+            }
+
+            public int? State { get; }
+
+            public TSymbol Result { get; }
+        }
+    }
 }

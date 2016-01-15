@@ -126,7 +126,7 @@ namespace Microsoft.AspNet.Razor.Test.Tokenizer
                 }
             }
 
-            protected override State StartState
+            protected override int StartState
             {
                 get
                 {
@@ -139,6 +139,11 @@ namespace Microsoft.AspNet.Razor.Test.Tokenizer
                 string content,
                 CSharpSymbolType type,
                 IReadOnlyList<RazorError> errors)
+            {
+                throw new NotImplementedException();
+            }
+
+            protected override StateResult Dispatch()
             {
                 throw new NotImplementedException();
             }

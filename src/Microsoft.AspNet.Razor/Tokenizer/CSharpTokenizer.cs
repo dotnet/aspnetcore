@@ -17,12 +17,7 @@ namespace Microsoft.AspNet.Razor.Tokenizer
         public CSharpTokenizer(ITextDocument source)
             : base(source)
         {
-            if (source == null)
-            {
-                throw new ArgumentNullException(nameof(source));
-            }
-
-            CurrentState = Data;
+            base.CurrentState = StartState;
 
             _operatorHandlers = new Dictionary<char, Func<CSharpSymbolType>>()
             {
@@ -52,10 +47,9 @@ namespace Microsoft.AspNet.Razor.Tokenizer
             };
         }
 
-        protected override State StartState
-        {
-            get { return Data; }
-        }
+        protected override int StartState => (int)CSharpTokenizerState.Data;
+
+        private new CSharpTokenizerState? CurrentState => (CSharpTokenizerState?)base.CurrentState;
 
         public override CSharpSymbolType RazorCommentType
         {
@@ -70,6 +64,36 @@ namespace Microsoft.AspNet.Razor.Tokenizer
         public override CSharpSymbolType RazorCommentStarType
         {
             get { return CSharpSymbolType.RazorCommentStar; }
+        }
+
+        protected override StateResult Dispatch()
+        {
+            switch (CurrentState)
+            {
+                case CSharpTokenizerState.Data:
+                    return Data();
+                case CSharpTokenizerState.BlockComment:
+                    return BlockComment();
+                case CSharpTokenizerState.QuotedCharacterLiteral:
+                    return QuotedCharacterLiteral();
+                case CSharpTokenizerState.QuotedStringLiteral:
+                    return QuotedStringLiteral();
+                case CSharpTokenizerState.VerbatimStringLiteral:
+                    return VerbatimStringLiteral();
+                case CSharpTokenizerState.AfterRazorCommentTransition:
+                    return AfterRazorCommentTransition();
+                case CSharpTokenizerState.EscapedRazorCommentTransition:
+                    return EscapedRazorCommentTransition();
+                case CSharpTokenizerState.RazorCommentBody:
+                    return RazorCommentBody();
+                case CSharpTokenizerState.StarAfterRazorCommentBody:
+                    return StarAfterRazorCommentBody();
+                case CSharpTokenizerState.AtSymbolAfterRazorCommentBody:
+                    return AtSymbolAfterRazorCommentBody();
+                default:
+                    Debug.Fail("Invalid TokenizerState");
+                    return default(StateResult);
+            }
         }
 
         protected override CSharpSymbol CreateSymbol(SourceLocation start, string content, CSharpSymbolType type, IReadOnlyList<RazorError> errors)
@@ -100,7 +124,7 @@ namespace Microsoft.AspNet.Razor.Tokenizer
             {
                 return Identifier();
             }
-            else if (Char.IsDigit(CurrentCharacter))
+            else if (char.IsDigit(CurrentCharacter))
             {
                 return NumericLiteral();
             }
@@ -110,12 +134,12 @@ namespace Microsoft.AspNet.Razor.Tokenizer
                     return AtSymbol();
                 case '\'':
                     TakeCurrent();
-                    return Transition(() => QuotedLiteral('\'', CSharpSymbolType.CharacterLiteral));
+                    return Transition(CSharpTokenizerState.QuotedCharacterLiteral);
                 case '"':
                     TakeCurrent();
-                    return Transition(() => QuotedLiteral('"', CSharpSymbolType.StringLiteral));
+                    return Transition(CSharpTokenizerState.QuotedStringLiteral);
                 case '.':
-                    if (Char.IsDigit(Peek()))
+                    if (char.IsDigit(Peek()))
                     {
                         return RealLiteral();
                     }
@@ -130,7 +154,7 @@ namespace Microsoft.AspNet.Razor.Tokenizer
                     else if (CurrentCharacter == '*')
                     {
                         TakeCurrent();
-                        return Transition(BlockComment);
+                        return Transition(CSharpTokenizerState.BlockComment);
                     }
                     else if (CurrentCharacter == '=')
                     {
@@ -152,22 +176,29 @@ namespace Microsoft.AspNet.Razor.Tokenizer
             if (CurrentCharacter == '"')
             {
                 TakeCurrent();
-                return Transition(VerbatimStringLiteral);
+                return Transition(CSharpTokenizerState.VerbatimStringLiteral);
             }
             else if (CurrentCharacter == '*')
             {
-                return Transition(EndSymbol(CSharpSymbolType.RazorCommentTransition), AfterRazorCommentTransition);
+                return Transition(
+                    CSharpTokenizerState.AfterRazorCommentTransition,
+                    EndSymbol(CSharpSymbolType.RazorCommentTransition));
             }
             else if (CurrentCharacter == '@')
             {
                 // Could be escaped comment transition
-                return Transition(EndSymbol(CSharpSymbolType.Transition), () =>
-                {
-                    TakeCurrent();
-                    return Transition(EndSymbol(CSharpSymbolType.Transition), Data);
-                });
+                return Transition(
+                    CSharpTokenizerState.EscapedRazorCommentTransition,
+                    EndSymbol(CSharpSymbolType.Transition));
             }
+
             return Stay(EndSymbol(CSharpSymbolType.Transition));
+        }
+
+        private StateResult EscapedRazorCommentTransition()
+        {
+            TakeCurrent();
+            return Transition(CSharpTokenizerState.Data, EndSymbol(CSharpSymbolType.Transition));
         }
 
         private CSharpSymbolType Operator()
@@ -274,8 +305,12 @@ namespace Microsoft.AspNet.Razor.Tokenizer
                         CurrentStart,
                         length: 1 /* end of file */));
             }
-            return Transition(EndSymbol(CSharpSymbolType.StringLiteral), Data);
+            return Transition(CSharpTokenizerState.Data, EndSymbol(CSharpSymbolType.StringLiteral));
         }
+
+        private StateResult QuotedCharacterLiteral() => QuotedLiteral('\'', CSharpSymbolType.CharacterLiteral);
+
+        private StateResult QuotedStringLiteral() => QuotedLiteral('\"', CSharpSymbolType.StringLiteral);
 
         private StateResult QuotedLiteral(char quote, CSharpSymbolType literalType)
         {
@@ -303,7 +338,7 @@ namespace Microsoft.AspNet.Razor.Tokenizer
             {
                 TakeCurrent(); // No-op if at EOF
             }
-            return Transition(EndSymbol(literalType), Data);
+            return Transition(CSharpTokenizerState.Data, EndSymbol(literalType));
         }
 
         // CSharp Spec §2.3.2
@@ -317,7 +352,7 @@ namespace Microsoft.AspNet.Razor.Tokenizer
                         RazorResources.ParseError_BlockComment_Not_Terminated,
                         CurrentStart,
                         length: 1 /* end of file */));
-                return Transition(EndSymbol(CSharpSymbolType.Comment), Data);
+                return Transition(CSharpTokenizerState.Data, EndSymbol(CSharpSymbolType.Comment));
             }
             if (CurrentCharacter == '*')
             {
@@ -325,7 +360,7 @@ namespace Microsoft.AspNet.Razor.Tokenizer
                 if (CurrentCharacter == '/')
                 {
                     TakeCurrent();
-                    return Transition(EndSymbol(CSharpSymbolType.Comment), Data);
+                    return Transition(CSharpTokenizerState.Data, EndSymbol(CSharpSymbolType.Comment));
                 }
             }
             return Stay();
@@ -431,19 +466,45 @@ namespace Microsoft.AspNet.Razor.Tokenizer
             Debug.Assert(CSharpHelpers.IsIdentifierStart(CurrentCharacter));
             TakeCurrent();
             TakeUntil(c => !CSharpHelpers.IsIdentifierPart(c));
-            CSharpSymbol sym = null;
+            CSharpSymbol symbol = null;
             if (HaveContent)
             {
-                var kwd = CSharpKeywordDetector.SymbolTypeForIdentifier(Buffer.ToString());
+                var keyword = CSharpKeywordDetector.SymbolTypeForIdentifier(Buffer.ToString());
                 var type = CSharpSymbolType.Identifier;
-                if (kwd != null)
+                if (keyword != null)
                 {
                     type = CSharpSymbolType.Keyword;
                 }
-                sym = new CSharpSymbol(CurrentStart, Buffer.ToString(), type) { Keyword = kwd };
+                symbol = new CSharpSymbol(CurrentStart, Buffer.ToString(), type) { Keyword = keyword };
             }
             StartSymbol();
-            return Stay(sym);
+            return Stay(symbol);
+        }
+
+        private StateResult Transition(CSharpTokenizerState state)
+        {
+            return Transition((int)state, result: null);
+        }
+
+        private StateResult Transition(CSharpTokenizerState state, CSharpSymbol result)
+        {
+            return Transition((int)state, result);
+        }
+
+        private enum CSharpTokenizerState
+        {
+            Data,
+            BlockComment,
+            QuotedCharacterLiteral,
+            QuotedStringLiteral,
+            VerbatimStringLiteral,
+
+            // Razor Comments - need to be the same for HTML and CSharp
+            AfterRazorCommentTransition = RazorCommentTokenizerState.AfterRazorCommentTransition,
+            EscapedRazorCommentTransition = RazorCommentTokenizerState.EscapedRazorCommentTransition,
+            RazorCommentBody = RazorCommentTokenizerState.RazorCommentBody,
+            StarAfterRazorCommentBody = RazorCommentTokenizerState.StarAfterRazorCommentBody,
+            AtSymbolAfterRazorCommentBody = RazorCommentTokenizerState.AtSymbolAfterRazorCommentBody,
         }
     }
 }

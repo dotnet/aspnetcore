@@ -18,18 +18,12 @@ namespace Microsoft.AspNet.Razor.Tokenizer
         public HtmlTokenizer(ITextDocument source)
             : base(source)
         {
-            if (source == null)
-            {
-                throw new ArgumentNullException(nameof(source));
-            }
-
-            CurrentState = Data;
+            base.CurrentState = StartState;
         }
 
-        protected override State StartState
-        {
-            get { return Data; }
-        }
+        protected override int StartState => (int)HtmlTokenizerState.Data;
+
+        private new HtmlTokenizerState? CurrentState => (HtmlTokenizerState?)base.CurrentState;
 
         public override HtmlSymbolType RazorCommentType
         {
@@ -50,11 +44,11 @@ namespace Microsoft.AspNet.Razor.Tokenizer
         {
             using (SeekableTextReader reader = new SeekableTextReader(content))
             {
-                var tok = new HtmlTokenizer(reader);
-                HtmlSymbol sym;
-                while ((sym = tok.NextSymbol()) != null)
+                var tokenizer = new HtmlTokenizer(reader);
+                HtmlSymbol symbol;
+                while ((symbol = tokenizer.NextSymbol()) != null)
                 {
-                    yield return sym;
+                    yield return symbol;
                 }
             }
         }
@@ -62,6 +56,30 @@ namespace Microsoft.AspNet.Razor.Tokenizer
         protected override HtmlSymbol CreateSymbol(SourceLocation start, string content, HtmlSymbolType type, IReadOnlyList<RazorError> errors)
         {
             return new HtmlSymbol(start, content, type, errors);
+        }
+
+        protected override StateResult Dispatch()
+        {
+            switch (CurrentState)
+            {
+                case HtmlTokenizerState.Data:
+                    return Data();
+                case HtmlTokenizerState.Text:
+                    return Text();
+                case HtmlTokenizerState.AfterRazorCommentTransition:
+                    return AfterRazorCommentTransition();
+                case HtmlTokenizerState.EscapedRazorCommentTransition:
+                    return EscapedRazorCommentTransition();
+                case HtmlTokenizerState.RazorCommentBody:
+                    return RazorCommentBody();
+                case HtmlTokenizerState.StarAfterRazorCommentBody:
+                    return StarAfterRazorCommentBody();
+                case HtmlTokenizerState.AtSymbolAfterRazorCommentBody:
+                    return AtSymbolAfterRazorCommentBody();
+                default:
+                    Debug.Fail("Invalid TokenizerState");
+                    return default(StateResult);
+            }
         }
 
         // http://dev.w3.org/html5/spec/Overview.html#data-state
@@ -80,17 +98,18 @@ namespace Microsoft.AspNet.Razor.Tokenizer
                 TakeCurrent();
                 if (CurrentCharacter == '*')
                 {
-                    return Transition(EndSymbol(HtmlSymbolType.RazorCommentTransition), AfterRazorCommentTransition);
+                    return Transition(
+                        HtmlTokenizerState.AfterRazorCommentTransition,
+                        EndSymbol(HtmlSymbolType.RazorCommentTransition));
                 }
                 else if (CurrentCharacter == '@')
                 {
                     // Could be escaped comment transition
-                    return Transition(EndSymbol(HtmlSymbolType.Transition), () =>
-                    {
-                        TakeCurrent();
-                        return Transition(EndSymbol(HtmlSymbolType.Transition), Data);
-                    });
+                    return Transition(
+                        HtmlTokenizerState.EscapedRazorCommentTransition,
+                        EndSymbol(HtmlSymbolType.Transition));
                 }
+
                 return Stay(EndSymbol(HtmlSymbolType.Transition));
             }
             else if (AtSymbol())
@@ -99,8 +118,14 @@ namespace Microsoft.AspNet.Razor.Tokenizer
             }
             else
             {
-                return Transition(Text);
+                return Transition(HtmlTokenizerState.Text);
             }
+        }
+
+        private StateResult EscapedRazorCommentTransition()
+        {
+            TakeCurrent();
+            return Transition(HtmlTokenizerState.Data, EndSymbol(HtmlSymbolType.Transition));
         }
 
         private StateResult Text()
@@ -123,7 +148,7 @@ namespace Microsoft.AspNet.Razor.Tokenizer
             }
 
             // Output the Text token and return to the Data state to tokenize the next character (if there is one)
-            return Transition(EndSymbol(HtmlSymbolType.Text), Data);
+            return Transition(HtmlTokenizerState.Data, EndSymbol(HtmlSymbolType.Text));
         }
 
         private HtmlSymbol Symbol()
@@ -206,6 +231,29 @@ namespace Microsoft.AspNet.Razor.Tokenizer
                    CurrentCharacter == '\'' ||
                    CurrentCharacter == '@' ||
                    (CurrentCharacter == '-' && Peek() == '-');
+        }
+
+        private StateResult Transition(HtmlTokenizerState state)
+        {
+            return Transition((int)state, result: null);
+        }
+
+        private StateResult Transition(HtmlTokenizerState state, HtmlSymbol result)
+        {
+            return Transition((int)state, result);
+        }
+
+        private enum HtmlTokenizerState
+        {
+            Data,
+            Text,
+
+            // Razor Comments - need to be the same for HTML and CSharp
+            AfterRazorCommentTransition = RazorCommentTokenizerState.AfterRazorCommentTransition,
+            EscapedRazorCommentTransition = RazorCommentTokenizerState.EscapedRazorCommentTransition,
+            RazorCommentBody = RazorCommentTokenizerState.RazorCommentBody,
+            StarAfterRazorCommentBody = RazorCommentTokenizerState.StarAfterRazorCommentBody,
+            AtSymbolAfterRazorCommentBody = RazorCommentTokenizerState.AtSymbolAfterRazorCommentBody,
         }
     }
 }
