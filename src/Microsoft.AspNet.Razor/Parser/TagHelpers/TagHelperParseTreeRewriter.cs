@@ -324,12 +324,25 @@ namespace Microsoft.AspNet.Razor.Parser.TagHelpers.Internal
                     childSpan = child as Span;
                 }
 
-                var attributeName = childSpan
-                    .Content
-                    .Split(separator: new[] { '=' }, count: 2)[0]
-                    .TrimStart();
+                var start = 0;
+                for (; start < childSpan.Content.Length; start++)
+                {
+                    if (!char.IsWhiteSpace(childSpan.Content[start]))
+                    {
+                        break;
+                    }
+                }
 
-                attributeNames.Add(attributeName);
+                var end = 0;
+                for (end = start; end < childSpan.Content.Length; end++)
+                {
+                    if (childSpan.Content[end] == '=')
+                    {
+                        break;
+                    }
+                }
+
+                attributeNames.Add(childSpan.Content.Substring(start, end - start));
             }
 
             return attributeNames;
