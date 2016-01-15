@@ -99,18 +99,23 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         }
 
         [Theory]
-        [InlineData(null, "<input />")]
-        [InlineData(true, "<input />")]
-        [InlineData(false, "")]
+        [InlineData(null, FormMethod.Post, "<input />")]
+        [InlineData(true, FormMethod.Post, "<input />")]
+        [InlineData(false, FormMethod.Post, "")]
+        [InlineData(null, FormMethod.Get, "")]
+        [InlineData(true, FormMethod.Get, "<input />")]
+        [InlineData(false, FormMethod.Get, "")]
         public async Task ProcessAsync_GeneratesAntiforgeryCorrectly(
             bool? antiforgery,
+            FormMethod method,
             string expectedPostContent)
         {
             // Arrange
             var viewContext = CreateViewContext();
+            var expectedAttribute = new TagHelperAttribute("method", method.ToString().ToLowerInvariant());
             var context = new TagHelperContext(
                 allAttributes: new ReadOnlyTagHelperAttributeList<IReadOnlyTagHelperAttribute>(
-                    Enumerable.Empty<IReadOnlyTagHelperAttribute>()),
+                    new ReadOnlyTagHelperAttributeList<IReadOnlyTagHelperAttribute>(new List<IReadOnlyTagHelperAttribute> { expectedAttribute })),
                 items: new Dictionary<object, object>(),
                 uniqueId: "test");
             var output = new TagHelperOutput(
@@ -140,6 +145,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 Action = "Index",
                 Antiforgery = antiforgery,
                 ViewContext = viewContext,
+                Method = method.ToString().ToLowerInvariant()
             };
 
             // Act
@@ -148,7 +154,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             // Assert
             Assert.Equal("form", output.TagName);
             Assert.Equal(TagMode.StartTagAndEndTag, output.TagMode);
-            Assert.Empty(output.Attributes);
+            var attribute = Assert.Single(output.Attributes);
+            Assert.Equal(expectedAttribute, attribute);
             Assert.Empty(output.PreContent.GetContent());
             Assert.True(output.Content.IsEmpty);
             Assert.Equal(expectedPostContent, output.PostContent.GetContent());

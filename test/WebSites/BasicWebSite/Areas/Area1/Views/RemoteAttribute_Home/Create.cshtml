@@ -8,7 +8,7 @@
 }
 
 <h2>@ViewBag.Title</h2>
-@using (Html.BeginForm(FormMethod.Post, htmlAttributes: null, suppressAntiforgery: true))
+@using (Html.BeginForm(FormMethod.Post, htmlAttributes: null, antiforgery: false))
 {
     <div class="form-horizontal">
         <h4>Person</h4>

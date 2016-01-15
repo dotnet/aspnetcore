@@ -288,7 +288,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             string controllerName,
             object routeValues,
             FormMethod method,
-            bool suppressAntiforgery,
+            bool? antiforgery,
             object htmlAttributes)
         {
             // Push the new FormContext; MvcForm.GenerateEndForm() does the corresponding pop.
@@ -297,7 +297,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                 CanRenderAtEndOfForm = true
             };
 
-            return GenerateForm(actionName, controllerName, routeValues, method, suppressAntiforgery, htmlAttributes);
+            return GenerateForm(actionName, controllerName, routeValues, method, antiforgery, htmlAttributes);
         }
 
         /// <inheritdoc />
@@ -305,7 +305,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             string routeName,
             object routeValues,
             FormMethod method,
-            bool suppressAntiforgery,
+            bool? antiforgery,
             object htmlAttributes)
         {
             // Push the new FormContext; MvcForm.GenerateEndForm() does the corresponding pop.
@@ -314,7 +314,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                 CanRenderAtEndOfForm = true
             };
 
-            return GenerateRouteForm(routeName, routeValues, method, suppressAntiforgery, htmlAttributes);
+            return GenerateRouteForm(routeName, routeValues, method, antiforgery, htmlAttributes);
         }
 
         /// <inheritdoc />
@@ -871,9 +871,11 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         /// <see cref="IDictionary{string, object}"/> instance containing the route parameters.
         /// </param>
         /// <param name="method">The HTTP method for processing the form, either GET or POST.</param>
-        /// <param name="suppressAntiforgery">
-        /// If <c>true</c>, suppresses the generation an &lt;input&gt; of type "hidden" with an antiforgery token. By
-        /// default &lt;form&gt; elements will automatically include an antiforgery token.
+        /// <param name="antiforgery">
+        /// If <c>true</c>, &lt;form&gt; elements will include an antiforgery token.
+        /// If <c>false</c>, suppresses the generation an &lt;input&gt; of type "hidden" with an antiforgery token.
+        /// If <c>null</c>, &lt;form&gt; elements will include an antiforgery token only if
+        /// <paramref name="method"/> is not <see cref="FormMethod.Get"/>.
         /// </param>
         /// <param name="htmlAttributes">
         /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
@@ -890,7 +892,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             string controllerName,
             object routeValues,
             FormMethod method,
-            bool suppressAntiforgery,
+            bool? antiforgery,
             object htmlAttributes)
         {
             var tagBuilder = _htmlGenerator.GenerateForm(
@@ -906,7 +908,8 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                 tagBuilder.WriteTo(ViewContext.Writer, _htmlEncoder);
             }
 
-            if (!suppressAntiforgery)
+            var shouldGenerateAntiforgery = antiforgery.HasValue ? antiforgery.Value : method != FormMethod.Get;
+            if (shouldGenerateAntiforgery)
             {
                 ViewContext.FormContext.EndOfFormContent.Add(_htmlGenerator.GenerateAntiforgery(ViewContext));
                 ViewContext.FormContext.HasAntiforgeryToken = true;
@@ -927,9 +930,11 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         /// <see cref="IDictionary{string, object}"/> instance containing the route parameters.
         /// </param>
         /// <param name="method">The HTTP method for processing the form, either GET or POST.</param>
-        /// <param name="suppressAntiforgery">
-        /// If <c>true</c>, suppresses the generation an &lt;input&gt; of type "hidden" with an antiforgery token. By
-        /// default &lt;form&gt; elements will automatically include an antiforgery token.
+        /// <param name="antiforgery">
+        /// If <c>true</c>, &lt;form&gt; elements will include an antiforgery token.
+        /// If <c>false</c>, suppresses the generation an &lt;input&gt; of type "hidden" with an antiforgery token.
+        /// If <c>null</c>, &lt;form&gt; elements will include an antiforgery token only if
+        /// <paramref name="method"/> is not <see cref="FormMethod.Get"/>.
         /// </param>
         /// <param name="htmlAttributes">
         /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
@@ -945,7 +950,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             string routeName,
             object routeValues,
             FormMethod method,
-            bool suppressAntiforgery,
+            bool? antiforgery,
             object htmlAttributes)
         {
             var tagBuilder = _htmlGenerator.GenerateRouteForm(
@@ -960,7 +965,8 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                 tagBuilder.WriteTo(ViewContext.Writer, _htmlEncoder);
             }
 
-            if (!suppressAntiforgery)
+            var shouldGenerateAntiforgery = antiforgery.HasValue ? antiforgery.Value : method != FormMethod.Get;
+            if (shouldGenerateAntiforgery)
             {
                 ViewContext.FormContext.EndOfFormContent.Add(_htmlGenerator.GenerateAntiforgery(ViewContext));
                 ViewContext.FormContext.HasAntiforgeryToken = true;

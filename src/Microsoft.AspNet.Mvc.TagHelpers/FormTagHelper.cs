@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.ViewFeatures;
 using Microsoft.AspNet.Razor.TagHelpers;
@@ -68,7 +69,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         /// <summary>
         /// Whether the antiforgery token should be generated.
         /// </summary>
-        /// <value>Defaults to <c>false</c> if user provides an <c>action</c> attribute; <c>true</c> otherwise.</value>
+        /// <value>Defaults to <c>false</c> if user provides an <c>action</c> attribute
+        /// or if the <c>method</c> is <see cref="FormMethod.Get"/>; <c>true</c> otherwise.</value>
         [HtmlAttributeName(AntiforgeryAttributeName)]
         public bool? Antiforgery { get; set; }
 
@@ -80,6 +82,13 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         /// </remarks>
         [HtmlAttributeName(RouteAttributeName)]
         public string Route { get; set; }
+
+        /// <summary>
+        /// The HTTP method to use.
+        /// </summary>
+        /// <remarks>Passed through to the generated HTML in all cases.</remarks>
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public string Method { get; set; }
 
         /// <summary>
         /// Additional parameters for the route.
@@ -121,6 +130,10 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             if (output == null)
             {
                 throw new ArgumentNullException(nameof(output));
+            }
+            if (Method != null)
+            {
+                output.CopyHtmlAttribute(nameof(Method), context);
             }
 
             var antiforgeryDefault = true;
@@ -194,6 +207,11 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 {
                     output.MergeAttributes(tagBuilder);
                     output.PostContent.AppendHtml(tagBuilder.InnerHtml);
+                }
+
+                if (string.Equals(Method, FormMethod.Get.ToString(), StringComparison.OrdinalIgnoreCase))
+                {
+                    antiforgeryDefault = false;
                 }
             }
 
