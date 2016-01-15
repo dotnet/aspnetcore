@@ -48,8 +48,9 @@ fi
 export DOTNET_INSTALL_DIR=~/.dotnet
 export PATH=~/.dotnet/bin:$PATH
 export DOTNET_HOME=DOTNET_INSTALL_DIR
-export KOREBUILD_FOLDER=$koreBuildFolder
-source $thisDir/dotnet-install.sh
+export KOREBUILD_FOLDER="$(dirname $thisDir)"
+chmod +x $thisDir/dotnet-install.sh
+$thisDir/dotnet-install.sh
 # ==== Temporary ====
 if ! type dnvm > /dev/null 2>&1; then
     source $thisDir/dnvm.sh
