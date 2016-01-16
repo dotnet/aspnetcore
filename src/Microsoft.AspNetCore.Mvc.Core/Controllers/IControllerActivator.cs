@@ -13,7 +13,13 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
         /// <summary>
         /// Creates a controller.
         /// </summary>
-        /// <param name="context">The <see cref="ActionContext"/> for the executing action.</param>
-        object Create(ActionContext context, Type controllerType);
+        /// <param name="context">The <see cref="ControllerContext"/> for the executing action.</param>
+        object Create(ControllerContext context);
+
+        /// <summary>
+        /// Releases a controller.
+        /// </summary>
+        /// <param name="controller">The controller to release.</param>
+        void Release(ControllerContext context, object controller);
     }
 }

@@ -83,11 +83,16 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
         protected override void ReleaseInstance(object instance)
         {
-            _controllerFactory.ReleaseController(instance);
+            _controllerFactory.ReleaseController(Context, instance);
         }
 
         protected override async Task<IActionResult> InvokeActionAsync(ActionExecutingContext actionExecutingContext)
         {
+            if (actionExecutingContext == null)
+            {
+                throw new ArgumentNullException(nameof(actionExecutingContext));
+            }
+
             var actionMethodInfo = _descriptor.MethodInfo;
             var arguments = ControllerActionExecutor.PrepareArguments(
                 actionExecutingContext.ActionArguments,

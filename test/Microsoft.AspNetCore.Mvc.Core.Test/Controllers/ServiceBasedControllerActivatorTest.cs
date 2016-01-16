@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Reflection;
 using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Routing;
@@ -26,12 +27,16 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
                 RequestServices = serviceProvider.Object
             };
             var activator = new ServiceBasedControllerActivator();
-            var actionContext = new ActionContext(httpContext,
-                                                  new RouteData(),
-                                                  new ActionDescriptor());
+            var context = new ControllerContext(new ActionContext(
+                httpContext,
+                new RouteData(),
+                new ControllerActionDescriptor
+                {
+                    ControllerTypeInfo = typeof(DIController).GetTypeInfo()
+                }));
 
             // Act
-            var instance = activator.Create(actionContext, typeof(DIController));
+            var instance = activator.Create(context);
 
             // Assert
             Assert.Same(controller, instance);
@@ -44,19 +49,26 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
             // Arrange
             var expected = "No service for type '" + typeof(DIController) + "' has been registered.";
             var controller = new DIController();
-            var serviceProvider = new Mock<IServiceProvider>();
+
             var httpContext = new DefaultHttpContext
             {
-                RequestServices = serviceProvider.Object
+                RequestServices = Mock.Of<IServiceProvider>()
             };
+
             var activator = new ServiceBasedControllerActivator();
-            var actionContext = new ActionContext(httpContext,
-                                                  new RouteData(),
-                                                  new ActionDescriptor());
+            var context = new ControllerContext(
+                new ActionContext(
+                httpContext,
+                new RouteData(),
+                new ControllerActionDescriptor
+                {
+                    ControllerTypeInfo = typeof(DIController).GetTypeInfo()
+                }));
 
             // Act and Assert
             var ex = Assert.Throws<InvalidOperationException>(
-                        () => activator.Create(actionContext, typeof(DIController)));
+                () => activator.Create(context));
+
             Assert.Equal(expected, ex.Message);
         }
 

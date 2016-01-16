@@ -31,6 +31,16 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
             IControllerActivator controllerActivator,
             IEnumerable<IControllerPropertyActivator> propertyActivators)
         {
+            if (controllerActivator == null)
+            {
+                throw new ArgumentNullException(nameof(controllerActivator));
+            }
+
+            if (propertyActivators == null)
+            {
+                throw new ArgumentNullException(nameof(propertyActivators));
+            }
+
             _controllerActivator = controllerActivator;
             _propertyActivators = propertyActivators.ToArray();
         }
@@ -61,20 +71,7 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
                     nameof(ControllerContext)));
             }
 
-            var controllerType = context.ActionDescriptor.ControllerTypeInfo.AsType();
-            var controllerTypeInfo = controllerType.GetTypeInfo();
-            if (controllerTypeInfo.IsValueType ||
-                controllerTypeInfo.IsInterface ||
-                controllerTypeInfo.IsAbstract ||
-                (controllerTypeInfo.IsGenericType && controllerTypeInfo.IsGenericTypeDefinition))
-            {
-                var message = Resources.FormatValueInterfaceAbstractOrOpenGenericTypesCannotBeActivated(
-                    controllerType.FullName, 
-                    GetType().FullName);
-                throw new InvalidOperationException(message);
-            }
-
-            var controller = _controllerActivator.Create(context, controllerType);
+            var controller = _controllerActivator.Create(context);
             foreach (var propertyActivator in _propertyActivators)
             {
                 propertyActivator.Activate(context, controller);
@@ -84,14 +81,19 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
         }
 
         /// <inheritdoc />
-        public virtual void ReleaseController(object controller)
+        public virtual void ReleaseController(ControllerContext context, object controller)
         {
-            var disposableController = controller as IDisposable;
-
-            if (disposableController != null)
+            if (context == null)
             {
-                disposableController.Dispose();
+                throw new ArgumentNullException(nameof(context));
             }
+
+            if (controller == null)
+            {
+                throw new ArgumentNullException(nameof(controller));
+            }
+
+            _controllerActivator.Release(context, controller);
         }
     }
 }

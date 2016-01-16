@@ -13,19 +13,21 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
     public class ServiceBasedControllerActivator : IControllerActivator
     {
         /// <inheritdoc />
-        public object Create(ActionContext actionContext, Type controllerType)
+        public object Create(ControllerContext actionContext)
         {
             if (actionContext == null)
             {
                 throw new ArgumentNullException(nameof(actionContext));
             }
 
-            if (controllerType == null)
-            {
-                throw new ArgumentNullException(nameof(controllerType));
-            }
+            var controllerType = actionContext.ActionDescriptor.ControllerTypeInfo.AsType();
 
             return actionContext.HttpContext.RequestServices.GetRequiredService(controllerType);
+        }
+
+        /// <inheritdoc />
+        public virtual void Release(ControllerContext context, object controller)
+        {
         }
     }
 }
