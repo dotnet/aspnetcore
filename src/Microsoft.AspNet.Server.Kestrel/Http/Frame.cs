@@ -233,15 +233,6 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             httpConnectionFeature.LocalIpAddress = _localEndPoint?.Address;
             httpConnectionFeature.LocalPort = _localEndPoint?.Port ?? 0;
 
-            if (_remoteEndPoint != null && _localEndPoint != null)
-            {
-                httpConnectionFeature.IsLocal = _remoteEndPoint.Address.Equals(_localEndPoint.Address);
-            }
-            else
-            {
-                httpConnectionFeature.IsLocal = false;
-            }
-
             _prepareRequest?.Invoke(this);
 
             _manuallySetRequestAbortToken = null;

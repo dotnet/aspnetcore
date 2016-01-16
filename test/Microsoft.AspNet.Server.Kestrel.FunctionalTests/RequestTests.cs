@@ -145,8 +145,7 @@ namespace Microsoft.AspNet.Server.Kestrel.FunctionalTests
                             RemoteIPAddress = connection.RemoteIpAddress?.ToString(),
                             RemotePort = connection.RemotePort,
                             LocalIPAddress = connection.LocalIpAddress?.ToString(),
-                            LocalPort = connection.LocalPort,
-                            IsLocal = connection.IsLocal
+                            LocalPort = connection.LocalPort
                         }));
                     });
                 });
@@ -165,7 +164,6 @@ namespace Microsoft.AspNet.Server.Kestrel.FunctionalTests
                 var facts = JsonConvert.DeserializeObject<JObject>(connectionFacts);
                 Assert.Equal(expectAddress, facts["RemoteIPAddress"].Value<string>());
                 Assert.NotEmpty(facts["RemotePort"].Value<string>());
-                Assert.True(facts["IsLocal"].Value<bool>());
             }
         }
     }

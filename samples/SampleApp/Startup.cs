@@ -54,7 +54,6 @@ namespace SampleApp
                 var connectionFeature = context.Connection;
                 Console.WriteLine($"Peer: {connectionFeature.RemoteIpAddress?.ToString()} {connectionFeature.RemotePort}");
                 Console.WriteLine($"Sock: {connectionFeature.LocalIpAddress?.ToString()} {connectionFeature.LocalPort}");
-                Console.WriteLine($"IsLocal: {connectionFeature.IsLocal}");
 
                 context.Response.ContentLength = 11;
                 context.Response.ContentType = "text/plain";
