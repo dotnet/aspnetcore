@@ -3,6 +3,10 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http.Internal;
+using Microsoft.AspNetCore.Mvc.Internal;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.ViewComponents
@@ -13,33 +17,114 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
         public void DefaultViewComponentActivator_ActivatesViewComponentContext()
         {
             // Arrange
-            var activator = new DefaultViewComponentActivator();
+            var expectedInstance = new TestViewComponent();
 
-            var context = new ViewComponentContext();
-            var instance = new TestViewComponent();
+            var typeActivator = new Mock<ITypeActivatorCache>();
+            typeActivator
+                .Setup(ta => ta.CreateInstance<object>(It.IsAny<IServiceProvider>(), It.IsAny<Type>()))
+                .Returns(expectedInstance);
+
+            var activator = new DefaultViewComponentActivator(typeActivator.Object);
+
+            var context = CreateContext(typeof(TestViewComponent));
+            expectedInstance.ViewComponentContext = context;
 
             // Act
-            activator.Activate(instance, context);
+            var instance = activator.Create(context) as ViewComponent;
 
             // Assert
+            Assert.NotNull(instance);
             Assert.Same(context, instance.ViewComponentContext);
+        }
+
+        [Theory]
+        [InlineData(typeof(int))]
+        [InlineData(typeof(OpenGenericType<>))]
+        [InlineData(typeof(AbstractType))]
+        [InlineData(typeof(InterfaceType))]
+        public void Create_ThrowsIfControllerCannotBeActivated(Type type)
+        {
+            // Arrange
+            var actionDescriptor = new ViewComponentDescriptor
+            {
+                Type = type
+            };
+
+            var context = new ViewComponentContext
+            {
+                ViewComponentDescriptor = actionDescriptor,
+                ViewContext = new ViewContext
+                {
+                    HttpContext = new DefaultHttpContext()
+                    {
+                        RequestServices = Mock.Of<IServiceProvider>()
+                    },
+                }
+            };
+
+            var activator = new DefaultViewComponentActivator(new TypeActivatorCache());
+
+            // Act and Assert
+            var exception = Assert.Throws<InvalidOperationException>(() => activator.Create(context));
+            Assert.Equal(
+                $"The type '{type.FullName}' cannot be activated by '{typeof(DefaultViewComponentActivator).FullName}' " +
+                "because it is either a value type, an interface, an abstract class or an open generic type.",
+                exception.Message);
         }
 
         [Fact]
         public void DefaultViewComponentActivator_ActivatesViewComponentContext_IgnoresNonPublic()
         {
             // Arrange
-            var activator = new DefaultViewComponentActivator();
+            var expectedInstance = new VisibilityViewComponent();
 
-            var context = new ViewComponentContext();
-            var instance = new VisibilityViewComponent();
+            var typeActivator = new Mock<ITypeActivatorCache>();
+            typeActivator
+                .Setup(ta => ta.CreateInstance<object>(It.IsAny<IServiceProvider>(), It.IsAny<Type>()))
+                .Returns(expectedInstance);
+
+            var activator = new DefaultViewComponentActivator(typeActivator.Object);
+
+            var context = CreateContext(typeof(VisibilityViewComponent));
+            expectedInstance.ViewComponentContext = context;
 
             // Act
-            activator.Activate(instance, context);
+            var instance = activator.Create(context) as VisibilityViewComponent;
 
             // Assert
+            Assert.NotNull(instance);
             Assert.Same(context, instance.ViewComponentContext);
             Assert.Null(instance.C);
+        }
+
+        private static ViewComponentContext CreateContext(Type componentType)
+        {
+            return new ViewComponentContext
+            {
+                ViewComponentDescriptor = new ViewComponentDescriptor
+                {
+                    Type = componentType
+                },
+                ViewContext = new ViewContext
+                {
+                    HttpContext = new DefaultHttpContext
+                    {
+                        RequestServices = Mock.Of<IServiceProvider>()
+                    }
+                }
+            };
+        }
+
+        private class OpenGenericType<T> : Controller
+        {
+        }
+
+        private abstract class AbstractType : Controller
+        {
+        }
+
+        private interface InterfaceType
+        {
         }
 
         private class TestViewComponent : ViewComponent

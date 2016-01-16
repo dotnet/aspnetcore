@@ -10,19 +10,31 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
 {
     public class DefaultViewComponentInvokerFactory : IViewComponentInvokerFactory
     {
-        private readonly ITypeActivatorCache _typeActivatorCache;
-        private readonly IViewComponentActivator _viewComponentActivator;
+        private readonly IViewComponentFactory _viewComponentFactory;
         private readonly ILogger _logger;
         private readonly DiagnosticSource _diagnosticSource;
 
         public DefaultViewComponentInvokerFactory(
-            ITypeActivatorCache typeActivatorCache,
-            IViewComponentActivator viewComponentActivator,
+            IViewComponentFactory viewComponentFactory,
             DiagnosticSource diagnosticSource,
             ILoggerFactory loggerFactory)
         {
-            _typeActivatorCache = typeActivatorCache;
-            _viewComponentActivator = viewComponentActivator;
+            if (viewComponentFactory == null)
+            {
+                throw new ArgumentNullException(nameof(viewComponentFactory));
+            }
+
+            if (diagnosticSource == null)
+            {
+                throw new ArgumentNullException(nameof(diagnosticSource));
+            }
+
+            if (loggerFactory == null)
+            {
+                throw new ArgumentNullException(nameof(loggerFactory));
+            }
+
+            _viewComponentFactory = viewComponentFactory;
             _diagnosticSource = diagnosticSource;
 
             _logger = loggerFactory.CreateLogger<DefaultViewComponentInvoker>();
@@ -40,8 +52,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
             }
 
             return new DefaultViewComponentInvoker(
-                _typeActivatorCache,
-                _viewComponentActivator,
+                _viewComponentFactory,
                 _diagnosticSource,
                 _logger);
         }

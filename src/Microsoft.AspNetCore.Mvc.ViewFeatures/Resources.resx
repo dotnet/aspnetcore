@@ -277,4 +277,7 @@
   <data name="ViewComponent_AmbiguousMethods" xml:space="preserve">
     <value>View component '{0}' must have exactly one public method named '{1}' or '{2}'.</value>
   </data>
+  <data name="ValueInterfaceAbstractOrOpenGenericTypesCannotBeActivated" xml:space="preserve">
+    <value>The type '{0}' cannot be activated by '{1}' because it is either a value type, an interface, an abstract class or an open generic type.</value>
+  </data>
 </root>

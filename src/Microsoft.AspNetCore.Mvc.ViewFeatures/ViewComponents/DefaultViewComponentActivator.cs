@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Concurrent;
 using System.Reflection;
-using Microsoft.Extensions.Internal;
+using Microsoft.AspNetCore.Mvc.Internal;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 
 namespace Microsoft.AspNetCore.Mvc.ViewComponents
 {
@@ -18,49 +18,71 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
     /// </remarks>
     public class DefaultViewComponentActivator : IViewComponentActivator
     {
-        private readonly Func<Type, PropertyActivator<ViewComponentContext>[]> _getPropertiesToActivate;
-        private readonly ConcurrentDictionary<Type, PropertyActivator<ViewComponentContext>[]> _injectActions;
+        private readonly ITypeActivatorCache _typeActivatorCache;
 
         /// <summary>
         /// Initializes a new instance of <see cref="DefaultViewComponentActivator"/> class.
         /// </summary>
-        public DefaultViewComponentActivator()
+        /// <param name="typeActivatorCache">
+        /// The <see cref="ITypeActivatorCache"/> used to create new view component instances.
+        /// </param>
+        public DefaultViewComponentActivator(ITypeActivatorCache typeActivatorCache)
         {
-            _injectActions = new ConcurrentDictionary<Type, PropertyActivator<ViewComponentContext>[]>();
-            _getPropertiesToActivate = type =>
-                PropertyActivator<ViewComponentContext>.GetPropertiesToActivate(
-                    type,
-                    typeof(ViewComponentContextAttribute),
-                    CreateActivateInfo);
+            if (typeActivatorCache == null)
+            {
+                throw new ArgumentNullException(nameof(typeActivatorCache));
+            }
+
+            _typeActivatorCache = typeActivatorCache;
         }
 
         /// <inheritdoc />
-        public virtual void Activate(object viewComponent, ViewComponentContext context)
+        public virtual object Create(ViewComponentContext context)
         {
-            if (viewComponent == null)
-            {
-                throw new ArgumentNullException(nameof(viewComponent));
-            }
-
             if (context == null)
             {
                 throw new ArgumentNullException(nameof(context));
             }
 
-            var propertiesToActivate = _injectActions.GetOrAdd(
-                viewComponent.GetType(),
-                _getPropertiesToActivate);
+            var componentType = context.ViewComponentDescriptor.Type.GetTypeInfo();
 
-            for (var i = 0; i < propertiesToActivate.Length; i++)
+            if (componentType.IsValueType ||
+                componentType.IsInterface ||
+                componentType.IsAbstract ||
+                (componentType.IsGenericType && componentType.IsGenericTypeDefinition))
             {
-                var activateInfo = propertiesToActivate[i];
-                activateInfo.Activate(viewComponent, context);
+                var message = Resources.FormatValueInterfaceAbstractOrOpenGenericTypesCannotBeActivated(
+                    componentType.FullName,
+                    GetType().FullName);
+
+                throw new InvalidOperationException(message);
             }
+
+            var viewComponent = _typeActivatorCache.CreateInstance<object>(
+                context.ViewContext.HttpContext.RequestServices,
+                context.ViewComponentDescriptor.Type);
+
+            return viewComponent;
         }
 
-        private PropertyActivator<ViewComponentContext> CreateActivateInfo(PropertyInfo property)
+        /// <inheritdoc />
+        public virtual void Release(ViewComponentContext context, object viewComponent)
         {
-            return new PropertyActivator<ViewComponentContext>(property, context => context);
+            if (context == null)
+            {
+                throw new InvalidOperationException(nameof(context));
+            }
+
+            if (viewComponent == null)
+            {
+                throw new InvalidOperationException(nameof(viewComponent));
+            }
+
+            var disposable = viewComponent as IDisposable;
+            if (disposable != null)
+            {
+                disposable.Dispose();
+            }
         }
     }
 }

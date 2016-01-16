@@ -525,6 +525,7 @@ namespace Microsoft.AspNetCore.Mvc
             services.AddSingleton<IViewComponentInvokerFactory, DefaultViewComponentInvokerFactory>();
             services.AddSingleton<ITypeActivatorCache, TypeActivatorCache>();
             services.AddSingleton<IViewComponentActivator, DefaultViewComponentActivator>();
+            services.AddSingleton<IViewComponentFactory, DefaultViewComponentFactory>();
             services.AddSingleton<IViewComponentDescriptorProvider>(new FixedSetViewComponentDescriptorProvider(descriptors));
             services.AddSingleton<IModelMetadataProvider, EmptyModelMetadataProvider>();
             services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
@@ -573,6 +574,16 @@ namespace Microsoft.AspNetCore.Mvc
             }
         }
 
+        private static string ReadBody(HttpResponse response)
+        {
+            response.Body.Seek(0, SeekOrigin.Begin);
+
+            using (var reader = new StreamReader(response.Body))
+            {
+                return reader.ReadToEnd();
+            }
+        }
+
         private class TextViewComponent : ViewComponent
         {
             public HtmlString Invoke(string name)
@@ -586,16 +597,6 @@ namespace Microsoft.AspNetCore.Mvc
             public Task<HtmlString> InvokeAsync(string name)
             {
                 return Task.FromResult(new HtmlString("Hello-Async, " + name));
-            }
-        }
-
-        private static string ReadBody(HttpResponse response)
-        {
-            response.Body.Seek(0, SeekOrigin.Begin);
-
-            using (var reader = new StreamReader(response.Body))
-            {
-                return reader.ReadToEnd();
             }
         }
     }

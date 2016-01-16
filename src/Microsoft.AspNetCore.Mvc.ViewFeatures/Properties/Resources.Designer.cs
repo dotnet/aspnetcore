@@ -858,6 +858,22 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             return string.Format(CultureInfo.CurrentCulture, GetString("ViewComponent_AmbiguousMethods"), p0, p1, p2);
         }
 
+        /// <summary>
+        /// The type '{0}' cannot be activated by '{1}' because it is either a value type, an interface, an abstract class or an open generic type.
+        /// </summary>
+        internal static string ValueInterfaceAbstractOrOpenGenericTypesCannotBeActivated
+        {
+            get { return GetString("ValueInterfaceAbstractOrOpenGenericTypesCannotBeActivated"); }
+        }
+
+        /// <summary>
+        /// The type '{0}' cannot be activated by '{1}' because it is either a value type, an interface, an abstract class or an open generic type.
+        /// </summary>
+        internal static string FormatValueInterfaceAbstractOrOpenGenericTypesCannotBeActivated(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("ValueInterfaceAbstractOrOpenGenericTypesCannotBeActivated"), p0, p1);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);
