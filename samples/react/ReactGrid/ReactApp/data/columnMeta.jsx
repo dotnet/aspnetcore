@@ -7,7 +7,7 @@ class RowActionsComponent extends React.Component {
     }
 }
 
-var columnMeta = [
+export const columnMeta = [
   {
     "columnName": "id",
     "order": 1,
@@ -58,6 +58,3 @@ var columnMeta = [
     "customComponent": RowActionsComponent
   }
 ];
-
-export var columnMeta;
-

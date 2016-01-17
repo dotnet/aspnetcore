@@ -4,9 +4,11 @@ var React = require('react');
 var ReactDOMServer = require('react-dom/server');
 var createMemoryHistory = require('history/lib/createMemoryHistory');
 var babelCore = require('babel-core');
-var babelConfig = {};
+var babelConfig = {
+    presets: ["es2015", "react"]
+};
 
-var origJsLoader = require.extensions['.js']; 
+var origJsLoader = require.extensions['.js'];
 require.extensions['.js'] = loadViaBabel;
 require.extensions['.jsx'] = loadViaBabel;
 
@@ -20,7 +22,7 @@ function findReactComponent(options) {
         }
         return loadedModule[options.exportName];
     } else if (typeof loadedModule === 'function') {
-        // Otherwise, if the module itself is a function, assume that is the component 
+        // Otherwise, if the module itself is a function, assume that is the component
         return loadedModule;
     } else if (typeof loadedModule.default === 'function') {
         // Otherwise, if the module has a default export which is a function, assume that is the component
@@ -33,11 +35,11 @@ function findReactComponent(options) {
 function loadViaBabel(module, filename) {
     // Assume that all the app's own code is ES2015+ (optionally with JSX), but that none of the node_modules are.
     // The distinction is important because ES2015+ forces strict mode, and it may break ES3/5 if you try to run it in strict
-    // mode when the developer didn't expect that (e.g., current versions of underscore.js can't be loaded in strict mode). 
+    // mode when the developer didn't expect that (e.g., current versions of underscore.js can't be loaded in strict mode).
     var useBabel = filename.indexOf('node_modules') < 0;
     if (useBabel) {
         var transformedFile = babelCore.transformFileSync(filename, babelConfig);
-        return module._compile(transformedFile.code, filename);        
+        return module._compile(transformedFile.code, filename);
     } else {
         return origJsLoader.apply(this, arguments);
     }

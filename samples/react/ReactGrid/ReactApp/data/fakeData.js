@@ -1,4 +1,4 @@
-var fakeData =  [
+export const fakeData =  [
   {
     "id": 0,
     "name": "Mayer Leonard",
@@ -2484,6 +2484,3 @@ var fakeData =  [
     "favoriteNumber": 1
   }
 ];
-
-export var fakeData;
-
