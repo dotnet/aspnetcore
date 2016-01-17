@@ -6,28 +6,28 @@ using Microsoft.Extensions.Configuration;
 
 namespace Microsoft.AspNet.Hosting.Internal
 {
-    public class WebApplicationOptions
+    public class WebHostOptions
     {
         private const string OldEnvironmentKey = "ENV";
 
-        public WebApplicationOptions()
+        public WebHostOptions()
         {
         }
 
-        public WebApplicationOptions(IConfiguration configuration)
+        public WebHostOptions(IConfiguration configuration)
         {
             if (configuration == null)
             {
                 throw new ArgumentNullException(nameof(configuration));
             }
 
-            Application = configuration[WebApplicationDefaults.ApplicationKey];
-            DetailedErrors = ParseBool(configuration, WebApplicationDefaults.DetailedErrorsKey);
-            CaptureStartupErrors = ParseBool(configuration, WebApplicationDefaults.CaptureStartupErrorsKey);
-            Environment = configuration[WebApplicationDefaults.EnvironmentKey] ?? configuration[OldEnvironmentKey];
-            ServerFactoryLocation = configuration[WebApplicationDefaults.ServerKey];
-            WebRoot = configuration[WebApplicationDefaults.WebRootKey];
-            ApplicationBasePath = configuration[WebApplicationDefaults.ApplicationBaseKey];
+            Application = configuration[WebHostDefaults.ApplicationKey];
+            DetailedErrors = ParseBool(configuration, WebHostDefaults.DetailedErrorsKey);
+            CaptureStartupErrors = ParseBool(configuration, WebHostDefaults.CaptureStartupErrorsKey);
+            Environment = configuration[WebHostDefaults.EnvironmentKey] ?? configuration[OldEnvironmentKey];
+            ServerFactoryLocation = configuration[WebHostDefaults.ServerKey];
+            WebRoot = configuration[WebHostDefaults.WebRootKey];
+            ApplicationBasePath = configuration[WebHostDefaults.ApplicationBaseKey];
         }
 
         public string Application { get; set; }

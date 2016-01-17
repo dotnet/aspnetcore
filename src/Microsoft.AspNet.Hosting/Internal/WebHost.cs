@@ -19,17 +19,17 @@ using Microsoft.Extensions.PlatformAbstractions;
 
 namespace Microsoft.AspNet.Hosting.Internal
 {
-    public class WebApplication : IWebApplication
+    public class WebHost : IWebHost
     {
         private readonly IServiceCollection _applicationServiceCollection;
         private readonly IStartupLoader _startupLoader;
         private readonly ApplicationLifetime _applicationLifetime;
-        private readonly WebApplicationOptions _options;
+        private readonly WebHostOptions _options;
         private readonly IConfiguration _config;
 
         private IServiceProvider _applicationServices;
         private RequestDelegate _application;
-        private ILogger<WebApplication> _logger;
+        private ILogger<WebHost> _logger;
 
         // Only one of these should be set
         internal string StartupAssemblyName { get; set; }
@@ -41,10 +41,10 @@ namespace Microsoft.AspNet.Hosting.Internal
         internal string ServerFactoryLocation { get; set; }
         private IServer Server { get; set; }
 
-        public WebApplication(
+        public WebHost(
             IServiceCollection appServices,
             IStartupLoader startupLoader,
-            WebApplicationOptions options,
+            WebHostOptions options,
             IConfiguration config)
         {
             if (appServices == null)
@@ -99,7 +99,7 @@ namespace Microsoft.AspNet.Hosting.Internal
         {
             Initialize();
 
-            _logger = _applicationServices.GetRequiredService<ILogger<WebApplication>>();
+            _logger = _applicationServices.GetRequiredService<ILogger<WebHost>>();
             var diagnosticSource = _applicationServices.GetRequiredService<DiagnosticSource>();
             var httpContextFactory = _applicationServices.GetRequiredService<IHttpContextFactory>();
 
@@ -183,7 +183,7 @@ namespace Microsoft.AspNet.Hosting.Internal
 
                 // Write errors to standard out so they can be retrieved when not in development mode.
                 Console.Out.WriteLine("Application startup exception: " + ex.ToString());
-                var logger = _applicationServices.GetRequiredService<ILogger<WebApplication>>();
+                var logger = _applicationServices.GetRequiredService<ILogger<WebHost>>();
                 logger.ApplicationError(ex);
 
                 // Generate an HTML error page.

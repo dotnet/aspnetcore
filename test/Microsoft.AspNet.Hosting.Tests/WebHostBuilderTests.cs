@@ -18,27 +18,27 @@ using Xunit;
 
 namespace Microsoft.AspNet.Hosting
 {
-    public class WebApplicationBuilderTests
+    public class WebHostBuilderTests
     {
         [Fact]
         public void Build_honors_UseStartup_with_string()
         {
-            var builder = CreateWebApplicationBuilder().UseServer(new TestServer());
+            var builder = CreateWebHostBuilder().UseServer(new TestServer());
 
-            var application = (WebApplication)builder.UseStartup("MyStartupAssembly").Build();
+            var host = (WebHost)builder.UseStartup("MyStartupAssembly").Build();
 
-            Assert.Equal("MyStartupAssembly", application.StartupAssemblyName);
+            Assert.Equal("MyStartupAssembly", host.StartupAssemblyName);
         }
 
         [Fact]
         public async Task StartupMissing_Fallback()
         {
-            var builder = CreateWebApplicationBuilder();
+            var builder = CreateWebHostBuilder();
             var server = new TestServer();
-            var application = builder.UseServer(server).UseStartup("MissingStartupAssembly").Build();
-            using (application)
+            var host = builder.UseServer(server).UseStartup("MissingStartupAssembly").Build();
+            using (host)
             {
-                application.Start();
+                host.Start();
                 await AssertResponseContains(server.RequestDelegate, "MissingStartupAssembly");
             }
         }
@@ -46,12 +46,12 @@ namespace Microsoft.AspNet.Hosting
         [Fact]
         public async Task StartupStaticCtorThrows_Fallback()
         {
-            var builder = CreateWebApplicationBuilder();
+            var builder = CreateWebHostBuilder();
             var server = new TestServer();
-            var application = builder.UseServer(server).UseStartup<StartupStaticCtorThrows>().Build();
-            using (application)
+            var host = builder.UseServer(server).UseStartup<StartupStaticCtorThrows>().Build();
+            using (host)
             {
-                application.Start();
+                host.Start();
                 await AssertResponseContains(server.RequestDelegate, "Exception from static constructor");
             }
         }
@@ -59,12 +59,12 @@ namespace Microsoft.AspNet.Hosting
         [Fact]
         public async Task StartupCtorThrows_Fallback()
         {
-            var builder = CreateWebApplicationBuilder();
+            var builder = CreateWebHostBuilder();
             var server = new TestServer();
-            var application = builder.UseServer(server).UseStartup<StartupCtorThrows>().Build();
-            using (application)
+            var host = builder.UseServer(server).UseStartup<StartupCtorThrows>().Build();
+            using (host)
             {
-                application.Start();
+                host.Start();
                 await AssertResponseContains(server.RequestDelegate, "Exception from constructor");
             }
         }
@@ -72,12 +72,12 @@ namespace Microsoft.AspNet.Hosting
         [Fact]
         public async Task StartupCtorThrows_TypeLoadException()
         {
-            var builder = CreateWebApplicationBuilder();
+            var builder = CreateWebHostBuilder();
             var server = new TestServer();
-            var application = builder.UseServer(server).UseStartup<StartupThrowTypeLoadException>().Build();
-            using (application)
+            var host = builder.UseServer(server).UseStartup<StartupThrowTypeLoadException>().Build();
+            using (host)
             {
-                application.Start();
+                host.Start();
                 await AssertResponseContains(server.RequestDelegate, "Message from the LoaderException</span>");
             }
         }
@@ -85,13 +85,13 @@ namespace Microsoft.AspNet.Hosting
         [Fact]
         public async Task IApplicationLifetimeRegisteredEvenWhenStartupCtorThrows_Fallback()
         {
-            var builder = CreateWebApplicationBuilder();
+            var builder = CreateWebHostBuilder();
             var server = new TestServer();
-            var application = builder.UseServer(server).UseStartup<StartupCtorThrows>().Build();
-            using (application)
+            var host = builder.UseServer(server).UseStartup<StartupCtorThrows>().Build();
+            using (host)
             {
-                application.Start();
-                var service = application.Services.GetServices<IApplicationLifetime>();
+                host.Start();
+                var service = host.Services.GetServices<IApplicationLifetime>();
                 Assert.NotNull(service);
                 await AssertResponseContains(server.RequestDelegate, "Exception from constructor");
             }
@@ -100,12 +100,12 @@ namespace Microsoft.AspNet.Hosting
         [Fact]
         public async Task StartupConfigureServicesThrows_Fallback()
         {
-            var builder = CreateWebApplicationBuilder();
+            var builder = CreateWebHostBuilder();
             var server = new TestServer();
-            var application = builder.UseServer(server).UseStartup<StartupConfigureServicesThrows>().Build();
-            using (application)
+            var host = builder.UseServer(server).UseStartup<StartupConfigureServicesThrows>().Build();
+            using (host)
             {
-                application.Start();
+                host.Start();
                 await AssertResponseContains(server.RequestDelegate, "Exception from ConfigureServices");
             }
         }
@@ -113,12 +113,12 @@ namespace Microsoft.AspNet.Hosting
         [Fact]
         public async Task StartupConfigureThrows_Fallback()
         {
-            var builder = CreateWebApplicationBuilder();
+            var builder = CreateWebHostBuilder();
             var server = new TestServer();
-            var application = builder.UseServer(server).UseStartup<StartupConfigureServicesThrows>().Build();
-            using (application)
+            var host = builder.UseServer(server).UseStartup<StartupConfigureServicesThrows>().Build();
+            using (host)
             {
-                application.Start();
+                host.Start();
                 await AssertResponseContains(server.RequestDelegate, "Exception from Configure");
             }
         }
@@ -126,23 +126,23 @@ namespace Microsoft.AspNet.Hosting
         [Fact]
         public void CaptureStartupErrorsByDefault()
         {
-            var applicationBuilder = new WebApplicationBuilder()
+            var hostBuilder = new WebHostBuilder()
                 .UseServer(new TestServer())
                 .UseStartup<StartupBoom>();
 
             // This should not throw
-            applicationBuilder.Build();
+            hostBuilder.Build();
         }
 
         [Fact]
         public void UseCaptureStartupErrorsHonored()
         {
-            var applicationBuilder = new WebApplicationBuilder()
+            var hostBuilder = new WebHostBuilder()
                 .UseCaptureStartupErrors(false)
                 .UseServer(new TestServer())
                 .UseStartup<StartupBoom>();
 
-            var exception = Assert.Throws<InvalidOperationException>(() => applicationBuilder.Build());
+            var exception = Assert.Throws<InvalidOperationException>(() => hostBuilder.Build());
             Assert.Equal("A public method named 'ConfigureProduction' or 'Configure' could not be found in the 'Microsoft.AspNet.Hosting.Fakes.StartupBoom' type.", exception.Message);
         }
 
@@ -158,14 +158,14 @@ namespace Microsoft.AspNet.Hosting
             var config = builder.Build();
 
             var expected = "MY_TEST_ENVIRONMENT";
-            var application = new WebApplicationBuilder()
+            var host = new WebHostBuilder()
                 .UseConfiguration(config)
                 .UseEnvironment(expected)
                 .UseServer(new TestServer())
                 .UseStartup("Microsoft.AspNet.Hosting.Tests")
                 .Build();
 
-            Assert.Equal(expected, application.Services.GetService<IHostingEnvironment>().EnvironmentName);
+            Assert.Equal(expected, host.Services.GetService<IHostingEnvironment>().EnvironmentName);
         }
 
         [Fact]
@@ -180,14 +180,14 @@ namespace Microsoft.AspNet.Hosting
             var config = builder.Build();
 
             var expected = "MY_TEST_ENVIRONMENT";
-            var application = new WebApplicationBuilder()
+            var host = new WebHostBuilder()
                 .UseConfiguration(config)
                 .UseEnvironment(expected)
                 .UseServer(new TestServer())
                 .UseStartup("Microsoft.AspNet.Hosting.Tests")
                 .Build();
 
-            application.Dispose();
+            host.Dispose();
         }
 
         [Fact]
@@ -201,17 +201,17 @@ namespace Microsoft.AspNet.Hosting
                 .AddInMemoryCollection(vals);
             var config = builder.Build();
 
-            var application = new WebApplicationBuilder()
+            var host = new WebHostBuilder()
                 .UseConfiguration(config)
                 .UseApplicationBasePath("/foo/bar")
                 .UseServer(new TestServer())
                 .UseStartup("Microsoft.AspNet.Hosting.Tests")
                 .Build();
 
-            Assert.Equal("/foo/bar", application.Services.GetService<IApplicationEnvironment>().ApplicationBasePath);
+            Assert.Equal("/foo/bar", host.Services.GetService<IApplicationEnvironment>().ApplicationBasePath);
         }
 
-        private IWebApplicationBuilder CreateWebApplicationBuilder()
+        private IWebHostBuilder CreateWebHostBuilder()
         {
             var vals = new Dictionary<string, string>
             {
@@ -221,7 +221,7 @@ namespace Microsoft.AspNet.Hosting
             var builder = new ConfigurationBuilder()
                 .AddInMemoryCollection(vals);
             var config = builder.Build();
-            return new WebApplicationBuilder().UseConfiguration(config);
+            return new WebHostBuilder().UseConfiguration(config);
         }
 
         private async Task AssertResponseContains(RequestDelegate app, string expectedText)

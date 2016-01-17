@@ -27,15 +27,13 @@ namespace SampleStartups
         // Entry point for the application.
         public static void Main(string[] args)
         {
-            var config = WebApplicationConfiguration.GetDefault(args);
-
-            var application = new WebApplicationBuilder()
-                .UseConfiguration(config)
+            var host = new WebHostBuilder()
+                .UseDefaultConfiguration(args)
                 .UseStartup<StartupConfigureAddresses>()
                 .UseUrls("http://localhost:5000", "http://localhost:5001")
                 .Build();
 
-            application.Run();
+            host.Run();
         }
     }
 }

@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNet.Hosting
 {
-    public static class WebApplicationDefaults
+    public static class WebHostDefaults
     {
         public static readonly string ApplicationKey = "application";
         public static readonly string DetailedErrorsKey = "detailedErrors";

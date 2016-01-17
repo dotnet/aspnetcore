@@ -13,7 +13,7 @@ namespace SampleStartups
     {
         public static void Main(string[] args)
         {
-            var application = new WebApplicationBuilder()
+            var host = new WebHostBuilder()
                 .UseServer("Microsoft.AspNet.Server.Kestrel") // Set the server manually
                 .UseApplicationBasePath(Directory.GetCurrentDirectory()) // Override the application base with the current directory
                 .UseUrls("http://*:1000", "https://*:902")
@@ -35,7 +35,7 @@ namespace SampleStartups
                 })
                 .Build();
 
-            application.Run();
+            host.Run();
         }
     }
 

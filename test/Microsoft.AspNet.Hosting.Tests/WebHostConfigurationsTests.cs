@@ -8,12 +8,12 @@ using Xunit;
 
 namespace Microsoft.AspNet.Hosting.Tests
 {
-    public class WebApplicationConfigurationTests
+    public class WebHostConfigurationTests
     {
         [Fact]
         public void DefaultCapturesStartupErrors()
         {
-            var config = new WebApplicationOptions(WebApplicationConfiguration.GetDefault());
+            var config = new WebHostOptions(WebHostConfiguration.GetDefault());
 
             Assert.True(config.CaptureStartupErrors);
         }
@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.Hosting.Tests
                 { "captureStartupErrors", "true" }
             };
 
-            var config = new WebApplicationOptions(new ConfigurationBuilder().AddInMemoryCollection(parameters).Build());
+            var config = new WebHostOptions(new ConfigurationBuilder().AddInMemoryCollection(parameters).Build());
 
             Assert.Equal("wwwroot", config.WebRoot);
             Assert.Equal("Microsoft.AspNet.Server.Kestrel", config.ServerFactoryLocation);
@@ -45,7 +45,7 @@ namespace Microsoft.AspNet.Hosting.Tests
         public void ReadsOldEnvKey()
         {
             var parameters = new Dictionary<string, string>() { { "ENV", "Development" } };
-            var config = new WebApplicationOptions(new ConfigurationBuilder().AddInMemoryCollection(parameters).Build());
+            var config = new WebHostOptions(new ConfigurationBuilder().AddInMemoryCollection(parameters).Build());
 
             Assert.Equal("Development", config.Environment);
         }
@@ -56,7 +56,7 @@ namespace Microsoft.AspNet.Hosting.Tests
         public void AllowsNumberForDetailedErrors(string value, bool expected)
         {
             var parameters = new Dictionary<string, string>() { { "detailedErrors", value } };
-            var config = new WebApplicationOptions(new ConfigurationBuilder().AddInMemoryCollection(parameters).Build());
+            var config = new WebHostOptions(new ConfigurationBuilder().AddInMemoryCollection(parameters).Build());
 
             Assert.Equal(expected, config.DetailedErrors);
         }

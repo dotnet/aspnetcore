@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.TestHost
             var expected = "GET Response";
             RequestDelegate appDelegate = ctx =>
                 ctx.Response.WriteAsync(expected);
-            var builder = new WebApplicationBuilder().Configure(app => app.Run(appDelegate));
+            var builder = new WebHostBuilder().Configure(app => app.Run(appDelegate));
             var server = new TestServer(builder);
             var client = server.CreateClient();
 
@@ -53,7 +53,7 @@ namespace Microsoft.AspNet.TestHost
                 Assert.Equal("/", ctx.Request.Path.Value);
                 return ctx.Response.WriteAsync(expected);
             };
-            var builder = new WebApplicationBuilder().Configure(app => app.Run(appDelegate));
+            var builder = new WebHostBuilder().Configure(app => app.Run(appDelegate));
             var server = new TestServer(builder);
             var client = server.CreateClient();
 
@@ -76,7 +76,7 @@ namespace Microsoft.AspNet.TestHost
                 Assert.Equal("/", ctx.Request.Path.Value);
                 return ctx.Response.WriteAsync(expected);
             };
-            var builder = new WebApplicationBuilder().Configure(app => app.Run(appDelegate));
+            var builder = new WebHostBuilder().Configure(app => app.Run(appDelegate));
             var server = new TestServer(builder);
             var client = server.CreateClient();
 
@@ -94,7 +94,7 @@ namespace Microsoft.AspNet.TestHost
             // Arrange
             RequestDelegate appDelegate = ctx =>
                 ctx.Response.WriteAsync(new StreamReader(ctx.Request.Body).ReadToEnd() + " PUT Response");
-            var builder = new WebApplicationBuilder().Configure(app => app.Run(appDelegate));
+            var builder = new WebHostBuilder().Configure(app => app.Run(appDelegate));
             var server = new TestServer(builder);
             var client = server.CreateClient();
 
@@ -113,7 +113,7 @@ namespace Microsoft.AspNet.TestHost
             // Arrange
             RequestDelegate appDelegate = async ctx =>
                 await ctx.Response.WriteAsync(new StreamReader(ctx.Request.Body).ReadToEnd() + " POST Response");
-            var builder = new WebApplicationBuilder().Configure(app => app.Run(appDelegate));
+            var builder = new WebHostBuilder().Configure(app => app.Run(appDelegate));
             var server = new TestServer(builder);
             var client = server.CreateClient();
 
@@ -154,10 +154,10 @@ namespace Microsoft.AspNet.TestHost
                     }
                 }
             };
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .ConfigureServices(services =>
                 {
-                    services.AddSingleton<ILogger<WebApplication>>(logger);
+                    services.AddSingleton<ILogger<WebHost>>(logger);
                 })
                 .Configure(app =>
                 {
@@ -197,7 +197,7 @@ namespace Microsoft.AspNet.TestHost
         }
 
 
-        private class VerifierLogger : ILogger<WebApplication>
+        private class VerifierLogger : ILogger<WebHost>
         {
             public IDisposable BeginScopeImpl(object state) => new NoopDispoasble();
 
@@ -227,7 +227,7 @@ namespace Microsoft.AspNet.TestHost
                     websocket.Dispose();
                 }
             };
-            var builder = new WebApplicationBuilder().Configure(app =>
+            var builder = new WebHostBuilder().Configure(app =>
             {
                 app.Run(appDelegate);
             });
@@ -261,7 +261,7 @@ namespace Microsoft.AspNet.TestHost
                     }
                 }
             };
-            var builder = new WebApplicationBuilder().Configure(app =>
+            var builder = new WebHostBuilder().Configure(app =>
             {
                 app.Run(appDelegate);
             });
@@ -310,7 +310,7 @@ namespace Microsoft.AspNet.TestHost
             };
 
             // Act
-            var builder = new WebApplicationBuilder().Configure(app => app.Run(appDelegate));
+            var builder = new WebHostBuilder().Configure(app => app.Run(appDelegate));
             var server = new TestServer(builder);
             var client = server.CreateClient();
             var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost:12345");
@@ -342,7 +342,7 @@ namespace Microsoft.AspNet.TestHost
             };
 
             // Act
-            var builder = new WebApplicationBuilder().Configure(app => app.Run(appDelegate));
+            var builder = new WebHostBuilder().Configure(app => app.Run(appDelegate));
             var server = new TestServer(builder);
             var client = server.CreateClient();
             var cts = new CancellationTokenSource();

@@ -6,7 +6,7 @@ using Microsoft.Extensions.Configuration;
 
 namespace Microsoft.AspNet.Hosting
 {
-    public class WebApplicationConfiguration
+    public class WebHostConfiguration
     {
         public static IConfiguration GetDefault()
         {
@@ -17,16 +17,16 @@ namespace Microsoft.AspNet.Hosting
         {
             var defaultSettings = new Dictionary<string, string>
             {
-                { WebApplicationDefaults.CaptureStartupErrorsKey, "true" }
+                { WebHostDefaults.CaptureStartupErrorsKey, "true" }
             };
 
             // We are adding all environment variables first and then adding the ASPNET_ ones
             // with the prefix removed to unify with the command line and config file formats
             var configBuilder = new ConfigurationBuilder()
                 .AddInMemoryCollection(defaultSettings)
-                .AddJsonFile(WebApplicationDefaults.HostingJsonFile, optional: true)
+                .AddJsonFile(WebHostDefaults.HostingJsonFile, optional: true)
                 .AddEnvironmentVariables()
-                .AddEnvironmentVariables(prefix: WebApplicationDefaults.EnvironmentVariablesPrefix);
+                .AddEnvironmentVariables(prefix: WebHostDefaults.EnvironmentVariablesPrefix);
 
             if (args != null)
             {

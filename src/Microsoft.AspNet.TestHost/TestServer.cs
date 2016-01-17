@@ -16,29 +16,29 @@ namespace Microsoft.AspNet.TestHost
     {
         private const string DefaultEnvironmentName = "Development";
         private const string ServerName = nameof(TestServer);
-        private IWebApplication _appInstance;
+        private IWebHost _hostInstance;
         private bool _disposed = false;
         private IHttpApplication<Context> _application;
 
-        public TestServer(IWebApplicationBuilder builder)
+        public TestServer(IWebHostBuilder builder)
         {
-            if (!builder.Settings.ContainsKey(WebApplicationDefaults.CaptureStartupErrorsKey))
+            if (!builder.Settings.ContainsKey(WebHostDefaults.CaptureStartupErrorsKey))
             {
                 builder.UseCaptureStartupErrors(false);
             }
 
-            var application = builder.UseServer(this).Build();
-            application.Start();
-            _appInstance = application;
+            var host = builder.UseServer(this).Build();
+            host.Start();
+            _hostInstance = host;
         }
 
         public Uri BaseAddress { get; set; } = new Uri("http://localhost/");
 
-        public IWebApplication Application
+        public IWebHost Host
         {
             get
             {
-                return _appInstance;
+                return _hostInstance;
             }
         }
 
@@ -76,7 +76,7 @@ namespace Microsoft.AspNet.TestHost
             if (!_disposed)
             {
                 _disposed = true;
-                _appInstance.Dispose();
+                _hostInstance.Dispose();
             }
         }
 

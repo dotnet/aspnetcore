@@ -7,9 +7,9 @@ using Microsoft.AspNet.Http.Features;
 namespace Microsoft.AspNet.Hosting
 {
     /// <summary>
-    /// Represents a configured web application
+    /// Represents a configured web host
     /// </summary>
-    public interface IWebApplication : IDisposable
+    public interface IWebHost : IDisposable
     {
         /// <summary>
         /// The <see cref="IFeatureCollection"/> exposed by the configured server.
@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Hosting
         IFeatureCollection ServerFeatures { get; }
 
         /// <summary>
-        /// The <see cref="IServiceProvider"/> for the application.
+        /// The <see cref="IServiceProvider"/> for the host.
         /// </summary>
         IServiceProvider Services { get; }
 

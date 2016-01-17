@@ -6,37 +6,37 @@ using System.ServiceProcess;
 namespace Microsoft.AspNet.Hosting.WindowsServices
 {
     /// <summary>
-    ///     Extensions to <see cref="IWebApplication" for hosting inside a Windows service. />
+    ///     Extensions to <see cref="IWebHost" for hosting inside a Windows service. />
     /// </summary>
-    public static class WebApplicationExtensions
+    public static class WebHostWindowsServiceExtensions
     {
         /// <summary>
         ///     Runs the specified web application inside a Windows service and blocks until the service is stopped.
         /// </summary>
-        /// <param name="application">An instance of the <see cref="IWebApplication"/> to host in the Windows service.</param>
+        /// <param name="host">An instance of the <see cref="IWebHost"/> to host in the Windows service.</param>
         /// <example>
-        ///     This example shows how to use <see cref="WebApplicationService.Run"/>.
+        ///     This example shows how to use <see cref="WebHostService.Run"/>.
         ///     <code>
         ///         public class Program
         ///         {
         ///             public static void Main(string[] args)
         ///             {
-        ///                 var config = WebApplicationConfiguration.GetDefault(args);
+        ///                 var config = WebHostConfiguration.GetDefault(args);
         ///                 
-        ///                 var application = new WebApplicationBuilder()
+        ///                 var host = new WebHostBuilder()
         ///                     .UseConfiguration(config)
         ///                     .Build();
         ///          
         ///                 // This call will block until the service is stopped.
-        ///                 application.RunAsService();
+        ///                 host.RunAsService();
         ///             }
         ///         }
         ///     </code>
         /// </example>
-        public static void RunAsService(this IWebApplication application)
+        public static void RunAsService(this IWebHost host)
         {
-            var webApplicationService = new WebApplicationService(application);
-            ServiceBase.Run(webApplicationService);
+            var webHostService = new WebHostService(host);
+            ServiceBase.Run(webHostService);
         }
     }
 }

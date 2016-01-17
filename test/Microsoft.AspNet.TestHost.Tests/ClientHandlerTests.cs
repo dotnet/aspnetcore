@@ -283,10 +283,10 @@ namespace Microsoft.AspNet.TestHost
         {
             // This logger will attempt to access information from HttpRequest once the HttpContext is created
             var logger = new VerifierLogger();
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                             .ConfigureServices(services =>
                             {
-                                services.AddSingleton<ILogger<WebApplication>>(logger);
+                                services.AddSingleton<ILogger<WebHost>>(logger);
                             })
                             .Configure(app =>
                             {
@@ -301,7 +301,7 @@ namespace Microsoft.AspNet.TestHost
             var result = await server.CreateClient().GetStringAsync("/");
         }
 
-        private class VerifierLogger : ILogger<WebApplication>
+        private class VerifierLogger : ILogger<WebHost>
         {
             public IDisposable BeginScopeImpl(object state) => new NoopDispoasble();
 

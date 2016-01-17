@@ -1,7 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.ServiceProcess;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -10,25 +9,25 @@ namespace Microsoft.AspNet.Hosting.WindowsServices
     /// <summary>
     ///     Provides an implementation of a Windows service that hosts ASP.NET.
     /// </summary>
-    public class WebApplicationService : ServiceBase
+    public class WebHostService : ServiceBase
     {
-        private IWebApplication _application;
+        private IWebHost _host;
         private bool _stopRequestedByWindows;
 
         /// <summary>
-        /// Creates an instance of <c>WebApplicationService</c> which hosts the specified web application.
+        /// Creates an instance of <c>WebHostService</c> which hosts the specified web application.
         /// </summary>
-        /// <param name="application">The web application to host in the Windows service.</param>
-        public WebApplicationService(IWebApplication application)
+        /// <param name="host">The configured web host containing the web application to host in the Windows service.</param>
+        public WebHostService(IWebHost host)
         {
-            _application = application;
+            _host = host;
         }
 
         protected sealed override void OnStart(string[] args)
         {
             OnStarting(args);
 
-            _application
+            _host
                 .Services
                 .GetRequiredService<IApplicationLifetime>()
                 .ApplicationStopped
@@ -40,7 +39,7 @@ namespace Microsoft.AspNet.Hosting.WindowsServices
                     }
                 });
 
-            _application.Start();
+            _host.Start();
 
             OnStarted();
         }
@@ -49,7 +48,7 @@ namespace Microsoft.AspNet.Hosting.WindowsServices
         {
             _stopRequestedByWindows = true;
             OnStopping();
-            _application?.Dispose();
+            _host?.Dispose();
             OnStopped();
         }
 

@@ -11,7 +11,7 @@ namespace SampleStartups
 {
     public class StartupExternallyControlled
     {
-        private IWebApplication _application;
+        private IWebHost _host;
         private readonly List<string> _urls = new List<string>();
 
         // This method gets called by the runtime. Use this method to add services to the container.
@@ -35,14 +35,14 @@ namespace SampleStartups
 
         public void Start()
         {
-            _application = new WebApplicationBuilder()
+            _host = new WebHostBuilder()
                     .UseStartup<StartupExternallyControlled>()
                     .Start(_urls.ToArray());
         }
 
         public void Stop()
         {
-            _application.Dispose();
+            _host.Dispose();
         }
 
         public void AddUrl(string url)

@@ -20,13 +20,16 @@ using Microsoft.Extensions.PlatformAbstractions;
 
 namespace Microsoft.AspNet.Hosting
 {
-    public class WebApplicationBuilder : IWebApplicationBuilder
+    /// <summary>
+    /// A builder for <see cref="IWebHost"/>
+    /// </summary>
+    public class WebHostBuilder : IWebHostBuilder
     {
         private readonly IHostingEnvironment _hostingEnvironment;
         private readonly ILoggerFactory _loggerFactory;
 
         private IConfiguration _config;
-        private WebApplicationOptions _options;
+        private WebHostOptions _options;
 
         private Action<IServiceCollection> _configureServices;
 
@@ -39,12 +42,16 @@ namespace Microsoft.AspNet.Hosting
 
         private IDictionary<string, string> _settings = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
-        public WebApplicationBuilder()
+        public WebHostBuilder()
         {
             _hostingEnvironment = new HostingEnvironment();
             _loggerFactory = new LoggerFactory();
         }
 
+        /// <summary>
+        /// Gets the raw settings to be used by the web host. Values specified here will override 
+        /// the configuration set by <see cref="UseConfiguration(IConfiguration)"/>.
+        /// </summary>
         public IDictionary<string, string> Settings
         {
             get
@@ -53,19 +60,36 @@ namespace Microsoft.AspNet.Hosting
             }
         }
 
-        public IWebApplicationBuilder UseSetting(string key, string value)
+        /// <summary>
+        /// Add or replace a setting in <see cref="Settings"/>.
+        /// </summary>
+        /// <param name="key">The key of the setting to add or replace.</param>
+        /// <param name="value">The value of the setting to add or replace.</param>
+        /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
+        public IWebHostBuilder UseSetting(string key, string value)
         {
             _settings[key] = value;
             return this;
         }
 
-        public IWebApplicationBuilder UseConfiguration(IConfiguration configuration)
+        /// <summary>
+        /// Specify the <see cref="IConfiguration"/> to be used by the web host. If no configuration is
+        /// provided to the builder, the default configuration will be used. 
+        /// </summary>
+        /// <param name="configuration">The <see cref="IConfiguration"/> to be used.</param>
+        /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
+        public IWebHostBuilder UseConfiguration(IConfiguration configuration)
         {
             _config = configuration;
             return this;
         }
 
-        public IWebApplicationBuilder UseServer(IServerFactory factory)
+        /// <summary>
+        /// Specify the <see cref="IServerFactory"/> to be used by the web host.
+        /// </summary>
+        /// <param name="factory">The <see cref="IServerFactory"/> to be used.</param>
+        /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
+        public IWebHostBuilder UseServer(IServerFactory factory)
         {
             if (factory == null)
             {
@@ -76,7 +100,12 @@ namespace Microsoft.AspNet.Hosting
             return this;
         }
 
-        public IWebApplicationBuilder UseStartup(Type startupType)
+        /// <summary>
+        /// Specify the startup type to be used by the web host. 
+        /// </summary>
+        /// <param name="startupType">The <see cref="Type"/> to be used.</param>
+        /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
+        public IWebHostBuilder UseStartup(Type startupType)
         {
             if (startupType == null)
             {
@@ -87,13 +116,23 @@ namespace Microsoft.AspNet.Hosting
             return this;
         }
 
-        public IWebApplicationBuilder ConfigureServices(Action<IServiceCollection> configureServices)
+        /// <summary>
+        /// Specify the delegate that is used to configure the services of the web application.
+        /// </summary>
+        /// <param name="configureServices">The delegate that configures the <see cref="IServiceCollection"/>.</param>
+        /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
+        public IWebHostBuilder ConfigureServices(Action<IServiceCollection> configureServices)
         {
             _configureServices = configureServices;
             return this;
         }
 
-        public IWebApplicationBuilder Configure(Action<IApplicationBuilder> configureApp)
+        /// <summary>
+        /// Specify the startup method to be used to configure the web application. 
+        /// </summary>
+        /// <param name="configureApplication">The delegate that configures the <see cref="IApplicationBuilder"/>.</param>
+        /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
+        public IWebHostBuilder Configure(Action<IApplicationBuilder> configureApp)
         {
             if (configureApp == null)
             {
@@ -104,13 +143,21 @@ namespace Microsoft.AspNet.Hosting
             return this;
         }
 
-        public IWebApplicationBuilder ConfigureLogging(Action<ILoggerFactory> configureLogging)
+        /// <summary>
+        /// Configure the provided <see cref="ILoggerFactory"/> which will be available as a hosting service. 
+        /// </summary>
+        /// <param name="configureLogging">The delegate that configures the <see cref="ILoggerFactory"/>.</param>
+        /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
+        public IWebHostBuilder ConfigureLogging(Action<ILoggerFactory> configureLogging)
         {
             configureLogging(_loggerFactory);
             return this;
         }
 
-        public IWebApplication Build()
+        /// <summary>
+        /// Builds the required services and an <see cref="IWebHost"/> which hosts a web application.
+        /// </summary>
+        public IWebHost Build()
         {
             var hostingServices = BuildHostingServices();
 
@@ -122,26 +169,26 @@ namespace Microsoft.AspNet.Hosting
             // Initialize the hosting environment
             _hostingEnvironment.Initialize(appEnvironment.ApplicationBasePath, _options, _config);
 
-            var application = new WebApplication(hostingServices, startupLoader, _options, _config);
+            var host = new WebHost(hostingServices, startupLoader, _options, _config);
 
             // Only one of these should be set, but they are used in priority
-            application.ServerFactory = _serverFactory;
-            application.ServerFactoryLocation = _options.ServerFactoryLocation;
+            host.ServerFactory = _serverFactory;
+            host.ServerFactoryLocation = _options.ServerFactoryLocation;
 
             // Only one of these should be set, but they are used in priority
-            application.Startup = _startup;
-            application.StartupType = _startupType;
-            application.StartupAssemblyName = _options.Application;
+            host.Startup = _startup;
+            host.StartupType = _startupType;
+            host.StartupAssemblyName = _options.Application;
 
-            application.Initialize();
+            host.Initialize();
 
-            return application;
+            return host;
         }
 
         private IServiceCollection BuildHostingServices()
         {
             // Apply the configuration settings
-            var configuration = _config ?? WebApplicationConfiguration.GetDefault();
+            var configuration = _config ?? WebHostConfiguration.GetDefault();
 
             var mergedConfiguration = new ConfigurationBuilder()
                                 .Add(new IncludedConfigurationProvider(configuration))
@@ -149,7 +196,7 @@ namespace Microsoft.AspNet.Hosting
                                 .Build();
 
             _config = mergedConfiguration;
-            _options = new WebApplicationOptions(_config);
+            _options = new WebHostOptions(_config);
 
             var services = new ServiceCollection();
             services.AddSingleton(_hostingEnvironment);

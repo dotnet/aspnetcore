@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Hosting
         /// of the "Hosting:Environment" (on Windows) or "Hosting__Environment" (on Linux &amp; OS X) environment variable.
         /// </summary>
         // This must be settable!
-        string EnvironmentName { get; set;  }
+        string EnvironmentName { get; set; }
 
         /// <summary>
         /// Gets or sets the absolute path to the directory that contains the web-servable application content files.

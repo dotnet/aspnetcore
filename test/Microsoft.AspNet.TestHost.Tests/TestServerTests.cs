@@ -27,14 +27,14 @@ namespace Microsoft.AspNet.TestHost
         {
             // Arrange
             // Act & Assert (Does not throw)
-            new TestServer(new WebApplicationBuilder().Configure(app => { }));
+            new TestServer(new WebHostBuilder().Configure(app => { }));
         }
 
 
         [Fact]
         public void DoesNotCaptureStartupErrorsByDefault()
         {
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     throw new InvalidOperationException();
@@ -47,7 +47,7 @@ namespace Microsoft.AspNet.TestHost
         [Fact]
         public void CaptureStartupErrorsSettingPreserved()
         {
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .UseCaptureStartupErrors(true)
                 .Configure(app =>
                 {
@@ -62,7 +62,7 @@ namespace Microsoft.AspNet.TestHost
         public void ApplicationServicesAvailableFromTestServer()
         {
             var testService = new TestService();
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app => { })
                 .ConfigureServices(services =>
                 {
@@ -70,14 +70,14 @@ namespace Microsoft.AspNet.TestHost
                 });
             var server = new TestServer(builder);
 
-            Assert.Equal(testService, server.Application.Services.GetRequiredService<TestService>());
+            Assert.Equal(testService, server.Host.Services.GetRequiredService<TestService>());
         }
 
         [ConditionalFact]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Hangs randomly (issue #507)")]
         public async Task RequestServicesAutoCreated()
         {
-            var builder = new WebApplicationBuilder().Configure(app =>
+            var builder = new WebHostBuilder().Configure(app =>
             {
                 app.Run(context =>
                 {
@@ -114,7 +114,7 @@ namespace Microsoft.AspNet.TestHost
         [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Hangs randomly (issue #507)")]
         public async Task CustomServiceProviderSetsApplicationServices()
         {
-            var builder = new WebApplicationBuilder().UseStartup<CustomContainerStartup>();
+            var builder = new WebHostBuilder().UseStartup<CustomContainerStartup>();
             var server = new TestServer(builder);
             string result = await server.CreateClient().GetStringAsync("/path");
             Assert.Equal("ApplicationServicesEqual:True", result);
@@ -157,7 +157,7 @@ namespace Microsoft.AspNet.TestHost
         [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Hangs randomly (issue #507)")]
         public async Task ExistingRequestServicesWillNotBeReplaced()
         {
-            var builder = new WebApplicationBuilder().Configure(app =>
+            var builder = new WebHostBuilder().Configure(app =>
             {
                 app.Run(context =>
                 {
@@ -179,7 +179,7 @@ namespace Microsoft.AspNet.TestHost
         [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Hangs randomly (issue #507)")]
         public async Task CanSetCustomServiceProvider()
         {
-            var builder = new WebApplicationBuilder().Configure(app =>
+            var builder = new WebHostBuilder().Configure(app =>
             {
                 app.Run(context =>
                 {
@@ -229,7 +229,7 @@ namespace Microsoft.AspNet.TestHost
         public async Task ExistingServiceProviderFeatureWillNotBeReplaced()
         {
             var appServices = new ServiceCollection().BuildServiceProvider();
-            var builder = new WebApplicationBuilder().Configure(app =>
+            var builder = new WebHostBuilder().Configure(app =>
             {
                 app.Run(context =>
                 {
@@ -271,7 +271,7 @@ namespace Microsoft.AspNet.TestHost
         [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Hangs randomly (issue #507)")]
         public async Task WillReplaceServiceProviderFeatureWithNullRequestServices()
         {
-            var builder = new WebApplicationBuilder().Configure(app =>
+            var builder = new WebHostBuilder().Configure(app =>
             {
                 app.Run(context =>
                 {
@@ -293,7 +293,7 @@ namespace Microsoft.AspNet.TestHost
         [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Hangs randomly (issue #507)")]
         public async Task CanAccessLogger()
         {
-            var builder = new WebApplicationBuilder().Configure(app =>
+            var builder = new WebHostBuilder().Configure(app =>
             {
                 app.Run(context =>
                 {
@@ -311,7 +311,7 @@ namespace Microsoft.AspNet.TestHost
         [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Hangs randomly (issue #507)")]
         public async Task CanAccessHttpContext()
         {
-            var builder = new WebApplicationBuilder().Configure(app =>
+            var builder = new WebHostBuilder().Configure(app =>
             {
                 app.Run(context =>
                 {
@@ -343,7 +343,7 @@ namespace Microsoft.AspNet.TestHost
         [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Hangs randomly (issue #507)")]
         public async Task CanAddNewHostServices()
         {
-            var builder = new WebApplicationBuilder().Configure(app =>
+            var builder = new WebHostBuilder().Configure(app =>
             {
                 app.Run(context =>
                 {
@@ -366,7 +366,7 @@ namespace Microsoft.AspNet.TestHost
         [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Hangs randomly (issue #507)")]
         public async Task CreateInvokesApp()
         {
-            var builder = new WebApplicationBuilder().Configure(app =>
+            var builder = new WebHostBuilder().Configure(app =>
             {
                 app.Run(context =>
                 {
@@ -383,7 +383,7 @@ namespace Microsoft.AspNet.TestHost
         [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Hangs randomly (issue #507)")]
         public async Task DisposeStreamIgnored()
         {
-            var builder = new WebApplicationBuilder().Configure(app =>
+            var builder = new WebHostBuilder().Configure(app =>
             {
                 app.Run(async context =>
                 {
@@ -402,7 +402,7 @@ namespace Microsoft.AspNet.TestHost
         [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Hangs randomly (issue #507)")]
         public async Task DisposedServerThrows()
         {
-            var builder = new WebApplicationBuilder().Configure(app =>
+            var builder = new WebHostBuilder().Configure(app =>
             {
                 app.Run(async context =>
                 {
@@ -422,7 +422,7 @@ namespace Microsoft.AspNet.TestHost
         [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Hangs randomly (issue #507)")]
         public async Task CancelAborts()
         {
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                                   .Configure(app =>
                                   {
                                       app.Run(context =>
@@ -441,7 +441,7 @@ namespace Microsoft.AspNet.TestHost
         [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Hangs randomly (issue #507)")]
         public async Task CanCreateViaStartupType()
         {
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .UseStartup<TestStartup>();
             var server = new TestServer(builder);
             HttpResponseMessage result = await server.CreateClient().GetAsync("/");
@@ -453,7 +453,7 @@ namespace Microsoft.AspNet.TestHost
         [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Hangs randomly (issue #507)")]
         public async Task CanCreateViaStartupTypeAndSpecifyEnv()
         {
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                             .UseStartup<TestStartup>()
                             .UseEnvironment("Foo");
             var server = new TestServer(builder);
@@ -469,7 +469,7 @@ namespace Microsoft.AspNet.TestHost
         {
             DiagnosticListener diagnosticListener = null;
 
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                             .Configure(app =>
                             {
                                 diagnosticListener = app.ApplicationServices.GetRequiredService<DiagnosticListener>();
@@ -498,7 +498,7 @@ namespace Microsoft.AspNet.TestHost
         public async Task ExceptionDiagnosticAvailable()
         {
             DiagnosticListener diagnosticListener = null;
-            var builder = new WebApplicationBuilder().Configure(app =>
+            var builder = new WebHostBuilder().Configure(app =>
             {
                 diagnosticListener = app.ApplicationServices.GetRequiredService<DiagnosticListener>();
                 app.Run(context =>
