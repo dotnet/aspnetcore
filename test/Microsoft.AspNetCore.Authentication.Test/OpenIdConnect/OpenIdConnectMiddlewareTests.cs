@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Authentication.Tests.OpenIdConnect
             Assert.Contains("expires", firstCookie);
 
             var secondCookie = transaction.SetCookie.Skip(1).First();
-            Assert.Contains(OpenIdConnectDefaults.CookieStatePrefix, secondCookie);
+            Assert.StartsWith(".AspNetCore.Correlation.OpenIdConnect.", secondCookie);
             Assert.Contains("expires", secondCookie);
         }
 

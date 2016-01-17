@@ -212,14 +212,14 @@ namespace Microsoft.AspNetCore.Authentication.Facebook
                 }, handler: null);
 
             var properties = new AuthenticationProperties();
-            var correlationKey = ".AspNetCore.Correlation.Facebook";
+            var correlationKey = ".xsrf";
             var correlationValue = "TestCorrelationId";
             properties.Items.Add(correlationKey, correlationValue);
             properties.RedirectUri = "/me";
             var state = stateFormat.Protect(properties);
             var transaction = await server.SendAsync(
                 "https://example.com/signin-facebook?code=TestCode&state=" + UrlEncoder.Default.Encode(state),
-                correlationKey + "=" + correlationValue);
+                $".AspNetCore.Correlation.Facebook.{correlationValue}=N");
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
             Assert.Equal("/me", transaction.Response.Headers.GetValues("Location").First());
             Assert.Equal(1, finalUserInfoEndpoint.Count(c => c == '?'));

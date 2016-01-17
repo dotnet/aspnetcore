@@ -152,18 +152,18 @@ namespace Microsoft.AspNetCore.Authentication.Tests.MicrosoftAccount
                     }
                 });
             var properties = new AuthenticationProperties();
-            var correlationKey = ".AspNetCore.Correlation.Microsoft";
+            var correlationKey = ".xsrf";
             var correlationValue = "TestCorrelationId";
             properties.Items.Add(correlationKey, correlationValue);
             properties.RedirectUri = "/me";
             var state = stateFormat.Protect(properties);
             var transaction = await server.SendAsync(
                 "https://example.com/signin-microsoft?code=TestCode&state=" + UrlEncoder.Default.Encode(state),
-                correlationKey + "=" + correlationValue);
+                $".AspNetCore.Correlation.Microsoft.{correlationValue}=N");
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
             Assert.Equal("/me", transaction.Response.Headers.GetValues("Location").First());
             Assert.Equal(2, transaction.SetCookie.Count);
-            Assert.Contains(correlationKey, transaction.SetCookie[0]);
+            Assert.Contains($".AspNetCore.Correlation.Microsoft.{correlationValue}", transaction.SetCookie[0]);
             Assert.Contains(".AspNetCore." + TestExtensions.CookieAuthenticationScheme, transaction.SetCookie[1]);
 
             var authCookie = transaction.AuthenticationCookieValue;

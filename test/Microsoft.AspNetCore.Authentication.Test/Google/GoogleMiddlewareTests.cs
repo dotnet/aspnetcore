@@ -111,7 +111,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
                 ClientSecret = "Test Secret"
             });
             var transaction = await server.SendAsync("https://example.com/challenge");
-            Assert.Contains(".AspNetCore.Correlation.Google=", transaction.SetCookie.Single());
+            Assert.Contains(transaction.SetCookie, cookie => cookie.StartsWith(".AspNetCore.Correlation.Google."));
         }
 
         [Fact]
@@ -124,7 +124,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
                 AutomaticChallenge = true
             });
             var transaction = await server.SendAsync("https://example.com/401");
-            Assert.Contains(".AspNetCore.Correlation.Google=", transaction.SetCookie.Single());
+            Assert.Contains(transaction.SetCookie, cookie => cookie.StartsWith(".AspNetCore.Correlation.Google."));
         }
 
         [Fact]
@@ -335,18 +335,18 @@ namespace Microsoft.AspNetCore.Authentication.Google
                 }
             });
             var properties = new AuthenticationProperties();
-            var correlationKey = ".AspNetCore.Correlation.Google";
+            var correlationKey = ".xsrf";
             var correlationValue = "TestCorrelationId";
             properties.Items.Add(correlationKey, correlationValue);
             properties.RedirectUri = "/me";
             var state = stateFormat.Protect(properties);
             var transaction = await server.SendAsync(
                 "https://example.com/signin-google?code=TestCode&state=" + UrlEncoder.Default.Encode(state),
-                correlationKey + "=" + correlationValue);
+                $".AspNetCore.Correlation.Google.{correlationValue}=N");
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
             Assert.Equal("/me", transaction.Response.Headers.GetValues("Location").First());
             Assert.Equal(2, transaction.SetCookie.Count);
-            Assert.Contains(correlationKey, transaction.SetCookie[0]);
+            Assert.Contains($".AspNetCore.Correlation.Google.{correlationValue}", transaction.SetCookie[0]);
             Assert.Contains(".AspNetCore." + TestExtensions.CookieAuthenticationScheme, transaction.SetCookie[1]);
 
             var authCookie = transaction.AuthenticationCookieValue;
@@ -394,7 +394,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
                 } : new OAuthEvents()
             });
             var properties = new AuthenticationProperties();
-            var correlationKey = ".AspNetCore.Correlation.Google";
+            var correlationKey = ".xsrf";
             var correlationValue = "TestCorrelationId";
             properties.Items.Add(correlationKey, correlationValue);
             properties.RedirectUri = "/me";
@@ -402,7 +402,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
             var state = stateFormat.Protect(properties);
             var sendTask = server.SendAsync(
                 "https://example.com/signin-google?code=TestCode&state=" + UrlEncoder.Default.Encode(state),
-                correlationKey + "=" + correlationValue);
+                $".AspNetCore.Correlation.Google.{correlationValue}=N");
             if (redirect)
             {
                 var transaction = await sendTask;
@@ -446,14 +446,14 @@ namespace Microsoft.AspNetCore.Authentication.Google
                 } : new OAuthEvents()
             });
             var properties = new AuthenticationProperties();
-            var correlationKey = ".AspNetCore.Correlation.Google";
+            var correlationKey = ".xsrf";
             var correlationValue = "TestCorrelationId";
             properties.Items.Add(correlationKey, correlationValue);
             properties.RedirectUri = "/me";
             var state = stateFormat.Protect(properties);
             var sendTask = server.SendAsync(
                 "https://example.com/signin-google?code=TestCode&state=" + UrlEncoder.Default.Encode(state),
-                correlationKey + "=" + correlationValue);
+                $".AspNetCore.Correlation.Google.{correlationValue}=N");
             if (redirect)
             {
                 var transaction = await sendTask;
@@ -528,18 +528,18 @@ namespace Microsoft.AspNetCore.Authentication.Google
                 }
             });
             var properties = new AuthenticationProperties();
-            var correlationKey = ".AspNetCore.Correlation.Google";
+            var correlationKey = ".xsrf";
             var correlationValue = "TestCorrelationId";
             properties.Items.Add(correlationKey, correlationValue);
             properties.RedirectUri = "/me";
             var state = stateFormat.Protect(properties);
             var transaction = await server.SendAsync(
                 "https://example.com/signin-google?code=TestCode&state=" + UrlEncoder.Default.Encode(state),
-                correlationKey + "=" + correlationValue);
+                $".AspNetCore.Correlation.Google.{correlationValue}=N");
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
             Assert.Equal("/me", transaction.Response.Headers.GetValues("Location").First());
             Assert.Equal(2, transaction.SetCookie.Count);
-            Assert.Contains(correlationKey, transaction.SetCookie[0]);
+            Assert.Contains($".AspNetCore.Correlation.Google.{correlationValue}", transaction.SetCookie[0]);
             Assert.Contains(".AspNetCore." + TestExtensions.CookieAuthenticationScheme, transaction.SetCookie[1]);
 
             var authCookie = transaction.AuthenticationCookieValue;
@@ -607,17 +607,17 @@ namespace Microsoft.AspNetCore.Authentication.Google
                 }
             });
             var properties = new AuthenticationProperties();
-            var correlationKey = ".AspNetCore.Correlation.Google";
+            var correlationKey = ".xsrf";
             var correlationValue = "TestCorrelationId";
             properties.Items.Add(correlationKey, correlationValue);
             var state = stateFormat.Protect(properties);
             var transaction = await server.SendAsync(
                 "https://example.com/signin-google?code=TestCode&state=" + UrlEncoder.Default.Encode(state),
-                correlationKey + "=" + correlationValue);
+                $".AspNetCore.Correlation.Google.{correlationValue}=N");
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
             Assert.Equal("/", transaction.Response.Headers.GetValues("Location").First());
             Assert.Equal(2, transaction.SetCookie.Count);
-            Assert.Contains(correlationKey, transaction.SetCookie[0]);
+            Assert.Contains($".AspNetCore.Correlation.Google.{correlationValue}", transaction.SetCookie[0]);
             Assert.Contains(".AspNetCore." + TestExtensions.CookieAuthenticationScheme, transaction.SetCookie[1]);
         }
 
@@ -690,7 +690,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
             });
 
             var properties = new AuthenticationProperties();
-            var correlationKey = ".AspNetCore.Correlation.Google";
+            var correlationKey = ".xsrf";
             var correlationValue = "TestCorrelationId";
             properties.Items.Add(correlationKey, correlationValue);
             properties.RedirectUri = "/foo";
@@ -699,7 +699,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
             //Post a message to the Google middleware
             var transaction = await server.SendAsync(
                 "https://example.com/signin-google?code=TestCode&state=" + UrlEncoder.Default.Encode(state),
-                correlationKey + "=" + correlationValue);
+                $".AspNetCore.Correlation.Google.{correlationValue}=N");
 
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
             Assert.Equal("/foo", transaction.Response.Headers.GetValues("Location").First());

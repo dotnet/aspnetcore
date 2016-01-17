@@ -29,11 +29,6 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         public static readonly string CookieNoncePrefix = ".AspNetCore.OpenIdConnect.Nonce.";
 
         /// <summary>
-        /// The prefix used for the state in the cookie.
-        /// </summary>
-        public static readonly string CookieStatePrefix = ".AspNetCore.OpenIdConnect.State.";
-
-        /// <summary>
         /// The property for the RedirectUri that was used when asking for a 'authorizationCode'.
         /// </summary>
         public static readonly string RedirectUriForCodePropertiesKey = "OpenIdConnect.Code.RedirectUri";

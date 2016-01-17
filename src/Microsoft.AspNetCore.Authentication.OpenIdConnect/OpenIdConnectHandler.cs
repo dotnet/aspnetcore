@@ -184,7 +184,10 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
             // order for local RedirectUri
             // 1. challenge.Properties.RedirectUri
             // 2. CurrentUri if RedirectUri is not set)
-            var properties = new AuthenticationProperties(context.Properties);
+            var properties = new AuthenticationProperties(context.Properties)
+            {
+                ExpiresUtc = Options.SystemClock.UtcNow.Add(Options.RemoteAuthenticationTimeout)
+            };
 
             if (string.IsNullOrEmpty(properties.RedirectUri))
             {
@@ -810,7 +813,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                 {
                     HttpOnly = true,
                     Secure = Request.IsHttps,
-                    Expires = DateTime.UtcNow + Options.ProtocolValidator.NonceLifetime
+                    Expires = Options.SystemClock.UtcNow.Add(Options.ProtocolValidator.NonceLifetime)
                 });
         }
 
@@ -855,76 +858,6 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
             }
 
             return null;
-        }
-
-        private void GenerateCorrelationId(AuthenticationProperties properties)
-        {
-            if (properties == null)
-            {
-                throw new ArgumentNullException(nameof(properties));
-            }
-
-            var correlationKey = OpenIdConnectDefaults.CookieStatePrefix;
-
-            var nonceBytes = new byte[32];
-            CryptoRandom.GetBytes(nonceBytes);
-            var correlationId = Base64UrlTextEncoder.Encode(nonceBytes);
-
-            var cookieOptions = new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = Request.IsHttps,
-                Expires = DateTime.UtcNow + Options.ProtocolValidator.NonceLifetime
-            };
-
-            properties.Items[correlationKey] = correlationId;
-
-            Response.Cookies.Append(correlationKey + correlationId, NonceProperty, cookieOptions);
-        }
-
-        private bool ValidateCorrelationId(AuthenticationProperties properties)
-        {
-            if (properties == null)
-            {
-                throw new ArgumentNullException(nameof(properties));
-            }
-
-            var correlationKey = OpenIdConnectDefaults.CookieStatePrefix;
-
-            string correlationId;
-            if (!properties.Items.TryGetValue(
-                correlationKey,
-                out correlationId))
-            {
-                Logger.LogWarning(26, "{0} state property not found.", correlationKey);
-                return false;
-            }
-
-            properties.Items.Remove(correlationKey);
-
-            var cookieName = correlationKey + correlationId;
-
-            var correlationCookie = Request.Cookies[cookieName];
-            if (string.IsNullOrEmpty(correlationCookie))
-            {
-                Logger.LogWarning(27, "{0} cookie not found.", cookieName);
-                return false;
-            }
-
-            var cookieOptions = new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = Request.IsHttps
-            };
-            Response.Cookies.Delete(cookieName, cookieOptions);
-
-            if (!string.Equals(correlationCookie, NonceProperty, StringComparison.Ordinal))
-            {
-                Logger.LogWarning(28, "{0} correlation cookie and state property mismatch.", correlationKey);
-                return false;
-            }
-
-            return true;
         }
 
         private AuthenticationProperties GetPropertiesFromState(string state)

@@ -22,11 +22,10 @@ namespace Microsoft.AspNetCore.Authentication.Tests.OpenIdConnect
                 return "null";
             }
 
-            var encoder = UrlEncoder.Default;
             var sb = new StringBuilder();
             foreach(var item in data.Items)
             {
-                sb.Append(encoder.Encode(item.Key) + " " + encoder.Encode(item.Value) + " ");
+                sb.Append(Uri.EscapeDataString(item.Key) + " " + Uri.EscapeDataString(item.Value) + " ");
             }
 
             return sb.ToString();

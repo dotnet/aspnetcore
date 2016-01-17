@@ -56,6 +56,11 @@ namespace Microsoft.AspNetCore.Builder
         /// </summary>
         public bool SaveTokensAsClaims { get; set; }
 
+        /// <summary>
+        /// Gets or sets the time limit for completing the authentication flow (15 minutes by default).
+        /// </summary>
+        public TimeSpan RemoteAuthenticationTimeout { get; set; } = TimeSpan.FromMinutes(15);
+
         public IRemoteAuthenticationEvents Events = new RemoteAuthenticationEvents();
     }
 }

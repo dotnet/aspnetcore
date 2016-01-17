@@ -2,15 +2,24 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features.Authentication;
+using Microsoft.AspNetCore.Http.Authentication;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Authentication
 {
     public abstract class RemoteAuthenticationHandler<TOptions> : AuthenticationHandler<TOptions> where TOptions : RemoteAuthenticationOptions
     {
+        private const string CorrelationPrefix = ".AspNetCore.Correlation.";
+        private const string CorrelationProperty = ".xsrf";
+        private const string CorrelationMarker = "N";
+
+        private static readonly RandomNumberGenerator CryptoRandom = RandomNumberGenerator.Create();
+
         public override async Task<bool> HandleRequestAsync()
         {
             if (Options.CallbackPath == Request.Path)
@@ -98,6 +107,72 @@ namespace Microsoft.AspNetCore.Authentication
         protected override Task<bool> HandleForbiddenAsync(ChallengeContext context)
         {
             throw new NotSupportedException();
+        }
+
+        protected virtual void GenerateCorrelationId(AuthenticationProperties properties)
+        {
+            if (properties == null)
+            {
+                throw new ArgumentNullException(nameof(properties));
+            }
+
+            var bytes = new byte[32];
+            CryptoRandom.GetBytes(bytes);
+            var correlationId = Base64UrlTextEncoder.Encode(bytes);
+
+            var cookieOptions = new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = Request.IsHttps,
+                Expires = properties.ExpiresUtc
+            };
+
+            properties.Items[CorrelationProperty] = correlationId;
+
+            var cookieName = CorrelationPrefix + Options.AuthenticationScheme + "." + correlationId;
+
+            Response.Cookies.Append(cookieName, CorrelationMarker, cookieOptions);
+        }
+
+        protected virtual bool ValidateCorrelationId(AuthenticationProperties properties)
+        {
+            if (properties == null)
+            {
+                throw new ArgumentNullException(nameof(properties));
+            }
+
+            string correlationId;
+            if (!properties.Items.TryGetValue(CorrelationProperty, out correlationId))
+            {
+                Logger.LogWarning(26, "{0} state property not found.", CorrelationPrefix);
+                return false;
+            }
+
+            properties.Items.Remove(CorrelationProperty);
+
+            var cookieName = CorrelationPrefix + Options.AuthenticationScheme + "." + correlationId;
+
+            var correlationCookie = Request.Cookies[cookieName];
+            if (string.IsNullOrEmpty(correlationCookie))
+            {
+                Logger.LogWarning(27, "'{0}' cookie not found.", cookieName);
+                return false;
+            }
+
+            var cookieOptions = new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = Request.IsHttps
+            };
+            Response.Cookies.Delete(cookieName, cookieOptions);
+
+            if (!string.Equals(correlationCookie, CorrelationMarker, StringComparison.Ordinal))
+            {
+                Logger.LogWarning(28, "The correlation cookie value '{0}' did not match the expected value '{1}'.", cookieName);
+                return false;
+            }
+
+            return true;
         }
     }
 }

@@ -7,15 +7,12 @@ using System.Globalization;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Claims;
-using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Authentication;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Http.Features.Authentication;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using Newtonsoft.Json.Linq;
 
@@ -23,8 +20,6 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
 {
     public class OAuthHandler<TOptions> : RemoteAuthenticationHandler<TOptions> where TOptions : OAuthOptions
     {
-        private static readonly RandomNumberGenerator CryptoRandom = RandomNumberGenerator.Create();
-
         public OAuthHandler(HttpClient backchannel)
         {
             Backchannel = backchannel;
@@ -177,7 +172,11 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
                 throw new ArgumentNullException(nameof(context));
             }
 
-            var properties = new AuthenticationProperties(context.Properties);
+            var properties = new AuthenticationProperties(context.Properties)
+            {
+                ExpiresUtc = Options.SystemClock.UtcNow.Add(Options.RemoteAuthenticationTimeout)
+            };
+
             if (string.IsNullOrEmpty(properties.RedirectUri))
             {
                 properties.RedirectUri = CurrentUri;
@@ -215,72 +214,6 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
         {
             // OAuth2 3.3 space separated
             return string.Join(" ", Options.Scope);
-        }
-
-        protected void GenerateCorrelationId(AuthenticationProperties properties)
-        {
-            if (properties == null)
-            {
-                throw new ArgumentNullException(nameof(properties));
-            }
-
-            var correlationKey = Constants.CorrelationPrefix + Options.AuthenticationScheme;
-
-            var nonceBytes = new byte[32];
-            CryptoRandom.GetBytes(nonceBytes);
-            var correlationId = Base64UrlTextEncoder.Encode(nonceBytes);
-
-            var cookieOptions = new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = Request.IsHttps
-            };
-
-            properties.Items[correlationKey] = correlationId;
-
-            Response.Cookies.Append(correlationKey, correlationId, cookieOptions);
-        }
-
-        protected bool ValidateCorrelationId(AuthenticationProperties properties)
-        {
-            if (properties == null)
-            {
-                throw new ArgumentNullException(nameof(properties));
-            }
-
-            var correlationKey = Constants.CorrelationPrefix + Options.AuthenticationScheme;
-            var correlationCookie = Request.Cookies[correlationKey];
-            if (string.IsNullOrEmpty(correlationCookie))
-            {
-                Logger.LogWarning("{0} cookie not found.", correlationKey);
-                return false;
-            }
-
-            var cookieOptions = new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = Request.IsHttps
-            };
-            Response.Cookies.Delete(correlationKey, cookieOptions);
-
-            string correlationExtra;
-            if (!properties.Items.TryGetValue(
-                correlationKey,
-                out correlationExtra))
-            {
-                Logger.LogWarning("{0} state property not found.", correlationKey);
-                return false;
-            }
-
-            properties.Items.Remove(correlationKey);
-
-            if (!string.Equals(correlationCookie, correlationExtra, StringComparison.Ordinal))
-            {
-                Logger.LogWarning("{0} correlation cookie and state property mismatch.", correlationKey);
-                return false;
-            }
-
-            return true;
         }
     }
 }

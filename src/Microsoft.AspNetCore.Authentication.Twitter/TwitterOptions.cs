@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.ComponentModel;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Twitter;
 using Microsoft.AspNetCore.Http;
@@ -50,5 +51,11 @@ namespace Microsoft.AspNetCore.Builder
             get { return (ITwitterEvents)base.Events; }
             set { base.Events = value; }
         }
+
+        /// <summary>
+        /// For testing purposes only.
+        /// </summary>
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public ISystemClock SystemClock { get; set; } = new SystemClock();
     }
 }
