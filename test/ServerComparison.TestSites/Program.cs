@@ -9,13 +9,13 @@ namespace ServerComparison.TestSites
     {
         public static void Main(string[] args)
         {
-            var application = new WebApplicationBuilder()
-                .UseConfiguration(WebApplicationConfiguration.GetDefault(args))
+            var host = new WebHostBuilder()
+                .UseDefaultConfiguration(args)
                 .UseIISPlatformHandlerUrl()
                 .UseStartup("ServerComparison.TestSites")
                 .Build();
 
-            application.Run();
+            host.Run();
         }
     }
 }
