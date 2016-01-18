@@ -24,12 +24,12 @@ namespace TagHelpersWebSite
 
         public static void Main(string[] args)
         {
-            var application = new WebApplicationBuilder()
-                .UseConfiguration(WebApplicationConfiguration.GetDefault(args))
+            var host = new WebHostBuilder()
+                .UseDefaultConfiguration(args)
                 .UseStartup<Startup>()
                 .Build();
 
-            application.Run();
+            host.Run();
         }
     }
 }

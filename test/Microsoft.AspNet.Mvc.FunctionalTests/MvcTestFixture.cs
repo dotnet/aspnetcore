@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // (DefaultRequestCulture) is consistent regardless of system configuration or personal preferences.
             using (new CultureReplacer())
             {
-                var builder = new WebApplicationBuilder()
+                var builder = new WebHostBuilder()
                     .ConfigureServices(InitializeServices)
                     .UseStartup(typeof(TStartup));
 
