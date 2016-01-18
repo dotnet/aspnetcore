@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.Cors.Infrastructure
         public async Task CorsRequest_MatchPolicy_SetsResponseHeaders()
         {
             // Arrange
-            var appBuilder = new WebApplicationBuilder()
+            var hostBuilder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     app.UseCors(builder =>
@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.Cors.Infrastructure
                 })
                 .ConfigureServices(services => services.AddCors());
 
-            using (var server = new TestServer(appBuilder))
+            using (var server = new TestServer(hostBuilder))
             {
                 // Act
                 // Actual request.
@@ -63,7 +63,7 @@ namespace Microsoft.AspNet.Cors.Infrastructure
             policy.Headers.Add("Header1");
             policy.ExposedHeaders.Add("AllowedHeader");
 
-            var appBuilder = new WebApplicationBuilder()
+            var hostBuilder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     app.UseCors("customPolicy");
@@ -80,7 +80,7 @@ namespace Microsoft.AspNet.Cors.Infrastructure
                     });
                 });
 
-            using (var server = new TestServer(appBuilder))
+            using (var server = new TestServer(hostBuilder))
             {
                 // Act
                 // Preflight request.
@@ -101,7 +101,7 @@ namespace Microsoft.AspNet.Cors.Infrastructure
         public async Task PreFlightRequest_DoesNotMatchPolicy_DoesNotSetHeaders()
         {
             // Arrange
-            var appBuilder = new WebApplicationBuilder()
+            var hostBuilder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     app.UseCors(builder =>
@@ -116,7 +116,7 @@ namespace Microsoft.AspNet.Cors.Infrastructure
                 })
                 .ConfigureServices(services => services.AddCors());
 
-            using (var server = new TestServer(appBuilder))
+            using (var server = new TestServer(hostBuilder))
             {
                 // Act
                 // Preflight request.
@@ -135,7 +135,7 @@ namespace Microsoft.AspNet.Cors.Infrastructure
         public async Task CorsRequest_DoesNotMatchPolicy_DoesNotSetHeaders()
         {
             // Arrange
-            var appBuilder = new WebApplicationBuilder()
+            var hostBuilder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     app.UseCors(builder =>
@@ -150,7 +150,7 @@ namespace Microsoft.AspNet.Cors.Infrastructure
                 })
                 .ConfigureServices(services => services.AddCors());
 
-            using (var server = new TestServer(appBuilder))
+            using (var server = new TestServer(hostBuilder))
             {
                 // Act
                 // Actual request.
