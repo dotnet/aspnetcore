@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.Antiforgery.FunctionalTests
                 new KeyValuePair<string, string>("webroot", "wwwroot")
             });
 
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .UseConfiguration(configurationBuilder.Build())
                 .UseStartup(typeof(AntiforgerySample.Startup))
                 .UseApplicationBasePath("../../../../samples/AntiforgerySample");
