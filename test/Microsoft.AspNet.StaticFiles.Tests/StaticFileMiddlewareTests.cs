@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.StaticFiles
         [Fact]
         public async Task ReturnsNotFoundWithoutWwwroot()
         {
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app => app.UseStaticFiles());
             var server = new TestServer(builder);
 

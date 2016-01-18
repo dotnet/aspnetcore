@@ -15,13 +15,14 @@ namespace Microsoft.AspNet.StaticFiles
     {
         public static TestServer Create(Action<IApplicationBuilder> configureApp, Action<IServiceCollection> configureServices = null)
         {
-            var configurationBuilder = new ConfigurationBuilder();
-            configurationBuilder.AddInMemoryCollection(new []
-            {
-                new KeyValuePair<string, string>("webroot", ".")
-            });
-            var builder = new WebApplicationBuilder()
-                .UseConfiguration(configurationBuilder.Build())
+            var configuration = new ConfigurationBuilder()
+                .AddInMemoryCollection(new []
+                {
+                    new KeyValuePair<string, string>("webroot", ".")
+                })
+                .Build();
+            var builder = new WebHostBuilder()
+                .UseConfiguration(configuration)
                 .Configure(configureApp)
                 .ConfigureServices(configureServices);
             return new TestServer(builder);

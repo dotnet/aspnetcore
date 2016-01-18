@@ -25,13 +25,13 @@ namespace StaticFilesSample
 
         public static void Main(string[] args)
         {
-            var application = new WebApplicationBuilder()
-                .UseConfiguration(WebApplicationConfiguration.GetDefault(args))
+            var host = new WebHostBuilder()
+                .UseDefaultConfiguration(args)
                 .UseIISPlatformHandlerUrl()
                 .UseStartup<Startup>()
                 .Build();
 
-            application.Run();
+            host.Run();
         }
     }
 }
