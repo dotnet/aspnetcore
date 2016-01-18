@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Hosting
         /// </summary>
         /// <param name="app"></param>
         /// <returns></returns>
-        public static IWebApplicationBuilder UseIISPlatformHandlerUrl(this IWebApplicationBuilder app)
+        public static IWebHostBuilder UseIISPlatformHandlerUrl(this IWebHostBuilder app)
         {
             if (app == null)
             {
@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.Hosting
             if (!string.IsNullOrEmpty(port))
             {
                 var address = "http://localhost:" + port + path;
-                app.UseSetting(WebApplicationDefaults.ServerUrlsKey, address);
+                app.UseSetting(WebHostDefaults.ServerUrlsKey, address);
             }
 
             return app;

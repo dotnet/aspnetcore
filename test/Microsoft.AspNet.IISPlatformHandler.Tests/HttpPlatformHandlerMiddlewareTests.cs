@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.IISPlatformHandler
         {
             var assertsExecuted = false;
 
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     app.UseIISPlatformHandler();
@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.IISPlatformHandler
         {
             var assertsExecuted = false;
 
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     app.UseIISPlatformHandler(new IISPlatformHandlerOptions
