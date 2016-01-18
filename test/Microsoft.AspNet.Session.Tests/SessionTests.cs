@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Session
         [Fact]
         public async Task ReadingEmptySessionDoesNotCreateCookie()
         {
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     app.UseSession();
@@ -57,7 +57,7 @@ namespace Microsoft.AspNet.Session
         [Fact]
         public async Task SettingAValueCausesTheCookieToBeCreated()
         {
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     app.UseSession();
@@ -90,7 +90,7 @@ namespace Microsoft.AspNet.Session
         [Fact]
         public async Task SessionCanBeAccessedOnTheNextRequest()
         {
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     app.UseSession();
@@ -132,7 +132,7 @@ namespace Microsoft.AspNet.Session
         [Fact]
         public async Task RemovedItemCannotBeAccessedAgain()
         {
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     app.UseSession();
@@ -184,7 +184,7 @@ namespace Microsoft.AspNet.Session
         [Fact]
         public async Task ClearedItemsCannotBeAccessedAgain()
         {
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     app.UseSession();
@@ -237,7 +237,7 @@ namespace Microsoft.AspNet.Session
         {
             var sink = new TestSink();
             var loggerFactory = new TestLoggerFactory(sink, enabled: true);
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     app.UseSession();
@@ -273,7 +273,7 @@ namespace Microsoft.AspNet.Session
         {
             var sink = new TestSink();
             var loggerFactory = new TestLoggerFactory(sink, enabled: true);
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     app.UseSession();
@@ -327,7 +327,7 @@ namespace Microsoft.AspNet.Session
         public async Task RefreshesSession_WhenSessionData_IsNotModified()
         {
             var clock = new TestClock();
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     app.UseSession();
@@ -385,7 +385,7 @@ namespace Microsoft.AspNet.Session
         [Fact]
         public async Task SessionFeature_IsUnregistered_WhenResponseGoingOut()
         {
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     app.Use(async (httpContext, next) =>
@@ -420,7 +420,7 @@ namespace Microsoft.AspNet.Session
         [Fact]
         public async Task SessionFeature_IsUnregistered_WhenResponseGoingOut_AndAnUnhandledExcetionIsThrown()
         {
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     app.Use(async (httpContext, next) =>
@@ -465,7 +465,7 @@ namespace Microsoft.AspNet.Session
             // Arrange, Act & Assert
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
             {
-                var builder = new WebApplicationBuilder()
+                var builder = new WebHostBuilder()
                     .Configure(app =>
                     {
                         app.UseSession();
@@ -489,7 +489,7 @@ namespace Microsoft.AspNet.Session
         [Fact]
         public async Task SessionKeys_AreCaseSensitive()
         {
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     app.UseSession();
