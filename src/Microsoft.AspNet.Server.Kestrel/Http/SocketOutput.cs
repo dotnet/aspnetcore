@@ -48,7 +48,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
         private int _numBytesPreCompleted = 0;
         private Exception _lastWriteError;
         private WriteContext _nextWriteContext;
-        private readonly Queue<TaskCompletionSource<object>> _tasksPending;
+        private readonly Queue<WaitingTask> _tasksPending;
         private readonly Queue<WriteContext> _writeContextPool;
         private readonly Queue<UvWriteReq> _writeReqPool;
 
@@ -68,7 +68,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             _connectionId = connectionId;
             _log = log;
             _threadPool = threadPool;
-            _tasksPending = new Queue<TaskCompletionSource<object>>(_initialTaskQueues);
+            _tasksPending = new Queue<WaitingTask>(_initialTaskQueues);
             _writeContextPool = new Queue<WriteContext>(_maxPooledWriteContexts);
             _writeReqPool = writeReqPool;
 
@@ -81,7 +81,8 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             bool immediate = true,
             bool chunk = false,
             bool socketShutdownSend = false,
-            bool socketDisconnect = false)
+            bool socketDisconnect = false,
+            bool isSync = false)
         {
             TaskCompletionSource<object> tcs = null;
             var scheduleWrite = false;
@@ -147,7 +148,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 {
                     // immediate write, which is not eligable for instant completion above
                     tcs = new TaskCompletionSource<object>(buffer.Count);
-                    _tasksPending.Enqueue(tcs);
+                    _tasksPending.Enqueue(new WaitingTask() {
+                                            CompletionSource = tcs,
+                                            BytesToWrite = buffer.Count,
+                                            IsSync = isSync
+                                          });
                 }
 
                 if (!_writePending && immediate)
@@ -316,21 +321,35 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             // This allows large writes to complete once they've actually finished.
             var bytesLeftToBuffer = _maxBytesPreCompleted - _numBytesPreCompleted;
             while (_tasksPending.Count > 0 &&
-                   (int)(_tasksPending.Peek().Task.AsyncState) <= bytesLeftToBuffer)
+                   (_tasksPending.Peek().BytesToWrite) <= bytesLeftToBuffer)
             {
-                var tcs = _tasksPending.Dequeue();
-                var bytesToWrite = (int)tcs.Task.AsyncState;
+                var waitingTask = _tasksPending.Dequeue();
+                var bytesToWrite = waitingTask.BytesToWrite;
 
                 _numBytesPreCompleted += bytesToWrite;
                 bytesLeftToBuffer -= bytesToWrite;
 
                 if (_lastWriteError == null)
                 {
-                    _threadPool.Complete(tcs);
+                    if (waitingTask.IsSync)
+                    {
+                        waitingTask.CompletionSource.TrySetResult(null);
+                    }
+                    else
+                    {
+                        _threadPool.Complete(waitingTask.CompletionSource);
+                    }
                 }
                 else
                 {
-                    _threadPool.Error(tcs, _lastWriteError);
+                    if (waitingTask.IsSync)
+                    {
+                        waitingTask.CompletionSource.TrySetException(_lastWriteError);
+                    }
+                    else
+                    {
+                        _threadPool.Error(waitingTask.CompletionSource, _lastWriteError);
+                    }
                 }
             }
 
@@ -374,16 +393,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
         void ISocketOutput.Write(ArraySegment<byte> buffer, bool immediate, bool chunk)
         {
-            var task = WriteAsync(buffer, immediate, chunk);
-
-            if (task.Status == TaskStatus.RanToCompletion)
-            {
-                return;
-            }
-            else
-            {
-                task.GetAwaiter().GetResult();
-            }
+            WriteAsync(buffer, immediate, chunk, isSync: true).GetAwaiter().GetResult();
         }
 
         Task ISocketOutput.WriteAsync(ArraySegment<byte> buffer, bool immediate, bool chunk, CancellationToken cancellationToken)
@@ -633,6 +643,13 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
 
                 ShutdownSendStatus = 0;
             }
+        }
+
+        private struct WaitingTask
+        {
+            public bool IsSync;
+            public int BytesToWrite;
+            public TaskCompletionSource<object> CompletionSource;
         }
     }
 }

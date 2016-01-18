@@ -421,7 +421,7 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 {
                     return;
                 }
-                WriteChunkedAsync(data, RequestAborted).GetAwaiter().GetResult();
+                WriteChunked(data);
             }
             else
             {
@@ -466,6 +466,11 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             {
                 await SocketOutput.WriteAsync(data, immediate: true, cancellationToken: cancellationToken);
             }
+        }
+
+        private void WriteChunked(ArraySegment<byte> data)
+        {
+            SocketOutput.Write(data, immediate: false, chunk: true);
         }
 
         private Task WriteChunkedAsync(ArraySegment<byte> data, CancellationToken cancellationToken)
