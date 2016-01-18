@@ -121,14 +121,12 @@ namespace IdentitySample
         // Entry point for the application.
         public static void Main(string[] args)
         {
-            var config = WebApplicationConfiguration.GetDefault(args);
-
-            var application = new WebApplicationBuilder()
-                .UseConfiguration(config)
+            var host = new WebHostBuilder()
+                .UseDefaultConfiguration(args)
                 .UseStartup<Startup>()
                 .Build();
 
-            application.Run();
+            host.Run();
         }
     }
 }

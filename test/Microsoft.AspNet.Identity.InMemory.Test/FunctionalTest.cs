@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.Identity.InMemory
         [Fact]
         public void UseIdentityThrowsWithoutAddIdentity()
         {
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app => app.UseIdentity());
             Assert.Throws<InvalidOperationException>(() => new TestServer(builder));
         }
@@ -182,7 +182,7 @@ namespace Microsoft.AspNet.Identity.InMemory
 
         private static TestServer CreateServer(Action<IServiceCollection> configureServices = null, Func<HttpContext, Task> testpath = null, Uri baseAddress = null)
         {
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     app.UseIdentity();
