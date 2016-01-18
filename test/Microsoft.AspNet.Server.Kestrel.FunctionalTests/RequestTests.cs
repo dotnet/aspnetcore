@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.Server.Kestrel.FunctionalTests
                 })
                 .Build();
 
-            var applicationBuilder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .UseConfiguration(config)
                 .UseServer("Microsoft.AspNet.Server.Kestrel")
                 .Configure(app =>
@@ -54,9 +54,9 @@ namespace Microsoft.AspNet.Server.Kestrel.FunctionalTests
                     });
                 });
 
-            using (var app = applicationBuilder.Build())
+            using (var host = builder.Build())
             {
-                app.Start();
+                host.Start();
 
                 using (var client = new HttpClient())
                 {
@@ -100,7 +100,7 @@ namespace Microsoft.AspNet.Server.Kestrel.FunctionalTests
                     { "server.urls", "http://localhost:8791" }
                 }).Build();
 
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .UseConfiguration(config)
                 .UseServer("Microsoft.AspNet.Server.Kestrel")
                 .Configure(app =>
@@ -112,10 +112,10 @@ namespace Microsoft.AspNet.Server.Kestrel.FunctionalTests
                     });
                 });
 
-            using (var app = builder.Build())
+            using (var host = builder.Build())
             using (var client = new HttpClient())
             {
-                app.Start();
+                host.Start();
 
                 client.DefaultRequestHeaders.Connection.Clear();
                 client.DefaultRequestHeaders.Connection.Add("close");
@@ -132,7 +132,7 @@ namespace Microsoft.AspNet.Server.Kestrel.FunctionalTests
                     { "server.urls", $"http://{registerAddress}:{port}" }
                 }).Build();
 
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .UseConfiguration(config)
                 .UseServer("Microsoft.AspNet.Server.Kestrel")
                 .Configure(app =>
@@ -151,10 +151,10 @@ namespace Microsoft.AspNet.Server.Kestrel.FunctionalTests
                     });
                 });
 
-            using (var app = builder.Build())
+            using (var host = builder.Build())
             using (var client = new HttpClient())
             {
-                app.Start();
+                host.Start();
 
                 var response = await client.GetAsync($"http://{requestAddress}:{port}/");
                 response.EnsureSuccessStatusCode();

@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.Server.Kestrel.FunctionalTests
                 })
                 .Build();
 
-            var applicationBuilder = new WebApplicationBuilder()
+            var hostBuilder = new WebHostBuilder()
                 .UseConfiguration(config)
                 .UseServer("Microsoft.AspNet.Server.Kestrel")
                 .Configure(app =>
@@ -36,9 +36,9 @@ namespace Microsoft.AspNet.Server.Kestrel.FunctionalTests
                     });
                 });            
 
-            using (var app = applicationBuilder.Build())
+            using (var host = hostBuilder.Build())
             {
-                app.Start();
+                host.Start();
 
                 using (var client = new HttpClient())
                 {
