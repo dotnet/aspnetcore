@@ -854,7 +854,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
         [Fact]
         public async Task MapWillNotAffectChallenge()
         {
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     app.UseCookieAuthentication(new CookieAuthenticationOptions
@@ -878,7 +878,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
         [Fact]
         public async Task ChallengeDoesNotSet401OnUnauthorized()
         {
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     app.UseCookieAuthentication();
@@ -897,7 +897,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
         [Fact]
         public async Task UseCookieWithInstanceDoesntUseSharedOptions()
         {
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     app.UseCookieAuthentication(new CookieAuthenticationOptions
@@ -919,7 +919,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
         [Fact]
         public async Task MapWithSignInOnlyRedirectToReturnUrlOnLoginPath()
         {
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     app.UseCookieAuthentication(new CookieAuthenticationOptions
@@ -940,7 +940,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
         [Fact]
         public async Task MapWillNotAffectSignInRedirectToReturnUrl()
         {
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     app.UseCookieAuthentication(new CookieAuthenticationOptions
@@ -965,7 +965,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
         [Fact]
         public async Task MapWithSignOutOnlyRedirectToReturnUrlOnLogoutPath()
         {
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     app.UseCookieAuthentication(new CookieAuthenticationOptions
@@ -985,7 +985,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
         [Fact]
         public async Task MapWillNotAffectSignOutRedirectToReturnUrl()
         {
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     app.UseCookieAuthentication(new CookieAuthenticationOptions
@@ -1009,7 +1009,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
         [Fact]
         public async Task MapWillNotAffectAccessDenied()
         {
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     app.UseCookieAuthentication(new CookieAuthenticationOptions
@@ -1031,7 +1031,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
         [Fact]
         public async Task NestedMapWillNotAffectLogin()
         {
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
                     app.Map("/base", map =>
                     {
@@ -1055,7 +1055,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
         [Fact]
         public async Task NestedMapWillNotAffectAccessDenied()
         {
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
                     app.Map("/base", map =>
                     {
@@ -1080,7 +1080,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
         {
 
             var dp = new NoOpDataProtector();
-            var builder1 = new WebApplicationBuilder()
+            var builder1 = new WebHostBuilder()
                 .Configure(app =>
                 {
                     app.UseCookieAuthentication(new CookieAuthenticationOptions
@@ -1099,7 +1099,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
             var transaction = await SendAsync(server1, "http://example.com/stuff");
             Assert.NotNull(transaction.SetCookie);
 
-            var builder2 = new WebApplicationBuilder()
+            var builder2 = new WebHostBuilder()
                 .Configure(app =>
                 {
                     app.UseCookieAuthentication(new CookieAuthenticationOptions
@@ -1162,7 +1162,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
 
         private static TestServer CreateServer(CookieAuthenticationOptions options, Func<HttpContext, Task> testpath = null, Uri baseAddress = null, ClaimsTransformationOptions claimsTransform = null)
         {
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     app.UseCookieAuthentication(options);

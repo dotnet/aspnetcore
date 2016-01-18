@@ -152,7 +152,7 @@ namespace Microsoft.AspNet.Authentication.Twitter
 
         private static TestServer CreateServer(TwitterOptions options, Func<HttpContext, bool> handler = null)
         {
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     app.UseCookieAuthentication(new CookieAuthenticationOptions

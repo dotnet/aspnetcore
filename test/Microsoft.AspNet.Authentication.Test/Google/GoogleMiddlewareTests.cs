@@ -757,7 +757,7 @@ namespace Microsoft.AspNet.Authentication.Google
 
         private static TestServer CreateServer(GoogleOptions options, Func<HttpContext, Task> testpath = null)
         {
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     app.UseCookieAuthentication(new CookieAuthenticationOptions

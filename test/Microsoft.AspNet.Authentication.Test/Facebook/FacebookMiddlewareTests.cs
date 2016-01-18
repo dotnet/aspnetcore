@@ -229,7 +229,7 @@ namespace Microsoft.AspNet.Authentication.Facebook
 
         private static TestServer CreateServer(Action<IApplicationBuilder> configure, Action<IServiceCollection> configureServices, Func<HttpContext, bool> handler)
         {
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     if (configure != null)

@@ -52,7 +52,7 @@ namespace Microsoft.Owin.Security.Interop
 
             var transaction = await SendAsync(interopServer, "http://example.com");
 
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     app.UseCookieAuthentication(new AspNet.Builder.CookieAuthenticationOptions
@@ -88,7 +88,7 @@ namespace Microsoft.Owin.Security.Interop
                 "Microsoft.AspNet.Authentication.Cookies.CookieAuthenticationMiddleware", // full name of the ASP.NET 5 type
                 CookieAuthenticationDefaults.AuthenticationType, "v2");
 
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     app.UseCookieAuthentication(new AspNet.Builder.CookieAuthenticationOptions

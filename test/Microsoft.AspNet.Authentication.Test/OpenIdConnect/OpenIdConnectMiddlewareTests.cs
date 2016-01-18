@@ -377,7 +377,7 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
 
         private static TestServer CreateServer(OpenIdConnectOptions options, Func<HttpContext, Task> handler = null, AuthenticationProperties properties = null)
         {
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     app.UseCookieAuthentication(new CookieAuthenticationOptions

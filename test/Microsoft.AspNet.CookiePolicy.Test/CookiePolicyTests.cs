@@ -145,7 +145,7 @@ namespace Microsoft.AspNet.CookiePolicy.Test
         [Fact]
         public async Task CookiePolicyCanHijackAppend()
         {
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     app.UseCookiePolicy(new CookiePolicyOptions
@@ -175,7 +175,7 @@ namespace Microsoft.AspNet.CookiePolicy.Test
         [Fact]
         public async Task CookiePolicyCanHijackDelete()
         {
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
             {
                 app.UseCookiePolicy(new CookiePolicyOptions
@@ -203,7 +203,7 @@ namespace Microsoft.AspNet.CookiePolicy.Test
         [Fact]
         public async Task CookiePolicyCallsCookieFeature()
         {
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
             {
                 app.Use(next => context =>
@@ -282,7 +282,7 @@ namespace Microsoft.AspNet.CookiePolicy.Test
             RequestDelegate configureSetup,
             params RequestTest[] tests)
         {
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
             {
                 app.Map(path, map =>

@@ -98,7 +98,7 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
 
         private static TestServer CreateServer(OpenIdConnectOptions options, UrlEncoder encoder, OpenIdConnectHandler handler = null)
         {
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     app.UseMiddleware<OpenIdConnectMiddlewareForTestingAuthenticate>(Options.Create(options), encoder, handler);

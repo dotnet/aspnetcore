@@ -535,7 +535,7 @@ namespace Microsoft.AspNet.Authentication.JwtBearer
 
         private static TestServer CreateServer(JwtBearerOptions options, Func<HttpContext, bool> handler = null)
         {
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     if (options != null)

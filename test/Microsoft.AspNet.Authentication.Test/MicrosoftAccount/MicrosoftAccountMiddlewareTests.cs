@@ -174,7 +174,7 @@ namespace Microsoft.AspNet.Authentication.Tests.MicrosoftAccount
 
         private static TestServer CreateServer(MicrosoftAccountOptions options)
         {
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     app.UseCookieAuthentication(new CookieAuthenticationOptions
