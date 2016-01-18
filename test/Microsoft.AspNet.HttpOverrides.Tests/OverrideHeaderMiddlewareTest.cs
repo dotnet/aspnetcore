@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.HttpOverrides
         {
             var assertsExecuted = false;
 
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     app.UseOverrideHeaders(new OverrideHeaderOptions
@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.HttpOverrides
         {
             var assertsExecuted = false;
 
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     app.UseOverrideHeaders(new OverrideHeaderOptions
@@ -71,7 +71,7 @@ namespace Microsoft.AspNet.HttpOverrides
         {
             var assertsExecuted = false;
 
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     app.UseOverrideHeaders(new OverrideHeaderOptions
@@ -98,7 +98,7 @@ namespace Microsoft.AspNet.HttpOverrides
         {
             var assertsExecuted = false;
 
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     app.UseOverrideHeaders(new OverrideHeaderOptions
@@ -132,7 +132,7 @@ namespace Microsoft.AspNet.HttpOverrides
         {
             var assertsExecuted = false;
 
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     app.UseOverrideHeaders(new OverrideHeaderOptions
@@ -163,7 +163,7 @@ namespace Microsoft.AspNet.HttpOverrides
         {
             var assertsExecuted = false;
 
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     app.UseOverrideHeaders(new OverrideHeaderOptions
@@ -194,7 +194,7 @@ namespace Microsoft.AspNet.HttpOverrides
         {
             var assertsExecuted = false;
 
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     app.UseOverrideHeaders(new OverrideHeaderOptions

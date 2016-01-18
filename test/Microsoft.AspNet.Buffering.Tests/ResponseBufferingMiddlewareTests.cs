@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.Buffering.Tests
         [Fact]
         public async Task BufferResponse_SetsContentLength()
         {
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     app.UseResponseBuffering();
@@ -48,7 +48,7 @@ namespace Microsoft.AspNet.Buffering.Tests
         [Fact]
         public async Task BufferResponseWithManualContentLength_NotReplaced()
         {
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     app.UseResponseBuffering();
@@ -76,7 +76,7 @@ namespace Microsoft.AspNet.Buffering.Tests
         [Fact]
         public async Task Seek_AllowsResttingBuffer()
         {
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     app.UseResponseBuffering();
@@ -122,7 +122,7 @@ namespace Microsoft.AspNet.Buffering.Tests
         [Fact]
         public async Task SetPosition_AllowsResttingBuffer()
         {
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     app.UseResponseBuffering();
@@ -166,7 +166,7 @@ namespace Microsoft.AspNet.Buffering.Tests
         [Fact]
         public async Task SetLength_AllowsResttingBuffer()
         {
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     app.UseResponseBuffering();
@@ -210,7 +210,7 @@ namespace Microsoft.AspNet.Buffering.Tests
         [Fact]
         public async Task DisableBufferingViaFeature()
         {
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     app.UseResponseBuffering();
@@ -244,7 +244,7 @@ namespace Microsoft.AspNet.Buffering.Tests
         [Fact]
         public async Task DisableBufferingViaFeatureAfterFirstWrite_Flushes()
         {
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     app.UseResponseBuffering();
@@ -283,7 +283,7 @@ namespace Microsoft.AspNet.Buffering.Tests
         [Fact]
         public async Task FlushDisablesBuffering()
         {
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     app.UseResponseBuffering();

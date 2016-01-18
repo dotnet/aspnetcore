@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.HttpOverrides
         public async Task XHttpMethodOverrideHeaderAvaiableChangesRequestMethod()
         {
             var assertsExecuted = false;
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     app.UseHttpMethodOverride();
@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.HttpOverrides
         public async Task XHttpMethodOverrideHeaderUnavaiableDoesntChangeRequestMethod()
         {
             var assertsExecuted = false;
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     app.UseHttpMethodOverride();
@@ -62,7 +62,7 @@ namespace Microsoft.AspNet.HttpOverrides
         public async Task XHttpMethodOverrideFromGetRequestDoesntChangeMethodType()
         {
             var assertsExecuted = false;
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     app.UseHttpMethodOverride();
@@ -85,7 +85,7 @@ namespace Microsoft.AspNet.HttpOverrides
         public async Task FormFieldAvailableChangesRequestMethod()
         {
             var assertsExecuted = false;
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     app.UseHttpMethodOverride(new HttpMethodOverrideOptions()
@@ -116,7 +116,7 @@ namespace Microsoft.AspNet.HttpOverrides
         public async Task FormFieldUnavailableDoesNotChangeRequestMethod()
         {
             var assertsExecuted = false;
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     app.UseHttpMethodOverride(new HttpMethodOverrideOptions()
@@ -146,7 +146,7 @@ namespace Microsoft.AspNet.HttpOverrides
         public async Task FormFieldEmptyDoesNotChangeRequestMethod()
         {
             var assertsExecuted = false;
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     app.UseHttpMethodOverride(new HttpMethodOverrideOptions()
