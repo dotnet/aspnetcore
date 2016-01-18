@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Html;
 using Microsoft.AspNet.Http.Internal;
@@ -41,7 +42,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             {
                 v.HtmlEncoder = new HtmlTestEncoder();
                 v.Write("Hello Prefix");
-                v.StartTagHelperWritingScope();
+                v.StartTagHelperWritingScope(encoder: null);
                 v.Write("Hello from Output");
                 v.ViewContext.Writer.Write("Hello from view context writer");
                 var scopeValue = v.EndTagHelperWritingScope();
@@ -54,8 +55,10 @@ namespace Microsoft.AspNet.Mvc.Razor
             var pageOutput = page.Output.ToString();
 
             // Assert
-            Assert.Equal("HtmlEncode[[Hello Prefix]]HtmlEncode[[From Scope: ]]HtmlEncode[[Hello from Output]]" +
-                "Hello from view context writer", pageOutput);
+            Assert.Equal(
+                "HtmlEncode[[Hello Prefix]]HtmlEncode[[From Scope: ]]HtmlEncode[[Hello from Output]]" +
+                "Hello from view context writer",
+                pageOutput);
         }
 
         [Fact]
@@ -67,7 +70,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             {
                 v.HtmlEncoder = new HtmlTestEncoder();
                 v.Write("Hello Prefix");
-                v.StartTagHelperWritingScope();
+                v.StartTagHelperWritingScope(encoder: null);
                 v.Write("Hello In Scope");
                 var scopeValue = v.EndTagHelperWritingScope();
                 v.Write("From Scope: ");
@@ -91,10 +94,10 @@ namespace Microsoft.AspNet.Mvc.Razor
             {
                 v.HtmlEncoder = new HtmlTestEncoder();
                 v.Write("Hello Prefix");
-                v.StartTagHelperWritingScope();
+                v.StartTagHelperWritingScope(encoder: null);
                 v.Write("Hello In Scope Pre Nest");
 
-                v.StartTagHelperWritingScope();
+                v.StartTagHelperWritingScope(encoder: null);
                 v.Write("Hello In Nested Scope");
                 var scopeValue1 = v.EndTagHelperWritingScope();
 
@@ -108,36 +111,85 @@ namespace Microsoft.AspNet.Mvc.Razor
 
             // Act
             await page.ExecuteAsync();
-            var pageOutput = page.Output.ToString();
 
             // Assert
-            Assert.Equal("HtmlEncode[[Hello Prefix]]HtmlEncode[[From Scopes: ]]HtmlEncode[[Hello In Scope Pre Nest]]" +
-                "HtmlEncode[[Hello In Scope Post Nest]]HtmlEncode[[Hello In Nested Scope]]", pageOutput);
+            var pageOutput = page.Output.ToString();
+            Assert.Equal(
+                "HtmlEncode[[Hello Prefix]]HtmlEncode[[From Scopes: ]]HtmlEncode[[Hello In Scope Pre Nest]]" +
+                "HtmlEncode[[Hello In Scope Post Nest]]HtmlEncode[[Hello In Nested Scope]]",
+                pageOutput);
         }
 
         [Fact]
-        public async Task StartNewWritingScope_CannotFlushInWritingScope()
+        public async Task StartTagHelperWritingScope_CannotFlushInWritingScope()
         {
             // Arrange
             var viewContext = CreateViewContext();
             var page = CreatePage(async v =>
             {
                 v.Path = "/Views/TestPath/Test.cshtml";
-                v.StartTagHelperWritingScope();
+                v.StartTagHelperWritingScope(encoder: null);
                 await v.FlushAsync();
             });
 
+            // Act & Assert
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => page.ExecuteAsync());
+            Assert.Equal(
+                "The FlushAsync operation cannot be performed while " +
+                "inside a writing scope in '/Views/TestPath/Test.cshtml'.",
+                ex.Message);
+        }
+
+        public static TheoryData<HtmlEncoder> HtmlEncoderData
+        {
+            get
+            {
+                return new TheoryData<HtmlEncoder>
+                {
+                    HtmlEncoder.Default,
+                    NullHtmlEncoder.Default,
+                    new HtmlTestEncoder(),
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(HtmlEncoderData))]
+        public async Task StartTagHelperWritingScope_SetsHtmlEncoder(HtmlEncoder encoder)
+        {
+            // Arrange
+            var page = CreatePage(v =>
+            {
+                v.StartTagHelperWritingScope(encoder);
+            });
+
             // Act
-            var ex = await Assert.ThrowsAsync<InvalidOperationException>(
-                                () => page.ExecuteAsync());
+            await page.ExecuteAsync();
 
             // Assert
-            Assert.Equal("The FlushAsync operation cannot be performed while " +
-                "inside a writing scope in '/Views/TestPath/Test.cshtml'.", ex.Message);
+            Assert.Same(encoder, page.HtmlEncoder);
         }
 
         [Fact]
-        public async Task StartNewWritingScope_CannotEndWritingScopeWhenNoWritingScope()
+        public async Task StartTagHelperWritingScope_DoesNotSetHtmlEncoderToNull()
+        {
+            // Arrange
+            var page = CreatePage(v =>
+            {
+                v.StartTagHelperWritingScope(encoder: null);
+            });
+            var originalEncoder = page.HtmlEncoder;
+
+            // Act
+            await page.ExecuteAsync();
+
+            // Assert
+            Assert.NotNull(originalEncoder);
+            Assert.Same(originalEncoder, page.HtmlEncoder);
+        }
+
+        [Fact]
+        public async Task EndTagHelperWritingScope_CannotEndWritingScopeWhenNoWritingScope()
         {
             // Arrange
             var viewContext = CreateViewContext();
@@ -146,11 +198,8 @@ namespace Microsoft.AspNet.Mvc.Razor
                 v.EndTagHelperWritingScope();
             });
 
-            // Act
-            var ex = await Assert.ThrowsAsync<InvalidOperationException>(
-                                () => page.ExecuteAsync());
-
-            // Assert
+            // Act & Assert
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => page.ExecuteAsync());
             Assert.Equal("There is no active writing scope to end.", ex.Message);
         }
 
@@ -159,12 +208,10 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             // Arrange
             var viewContext = CreateViewContext();
-
-            // Act
             var page = CreatePage(v =>
             {
                 v.HtmlEncoder = new HtmlTestEncoder();
-                v.StartTagHelperWritingScope();
+                v.StartTagHelperWritingScope(encoder: null);
                 v.Write("Hello World!");
                 var returnValue = v.EndTagHelperWritingScope();
 
@@ -172,6 +219,8 @@ namespace Microsoft.AspNet.Mvc.Razor
                 var content = Assert.IsType<DefaultTagHelperContent>(returnValue);
                 Assert.Equal("HtmlEncode[[Hello World!]]", content.GetContent());
             });
+
+            // Act & Assert
             await page.ExecuteAsync();
         }
 
@@ -186,11 +235,8 @@ namespace Microsoft.AspNet.Mvc.Razor
                 v.DefineSection("qux", _nullRenderAsyncDelegate);
             });
 
-            // Act
-            var ex = await Assert.ThrowsAsync<InvalidOperationException>(
-                                () => page.ExecuteAsync());
-
-            // Assert
+            // Act & Assert
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => page.ExecuteAsync());
             Assert.Equal("Section 'qux' is already defined.", ex.Message);
         }
 
@@ -227,10 +273,8 @@ namespace Microsoft.AspNet.Mvc.Razor
                 ex = Assert.Throws<InvalidOperationException>(() => v.RenderSection("bar"));
             });
 
-            // Act
+            // Act & Assert
             await page.ExecuteAsync();
-
-            // Assert
             Assert.Equal("RenderSection invocation in '/Views/TestPath/Test.cshtml' is invalid. " +
                 "RenderSection can only be called from a layout page.",
                 ex.Message);
@@ -250,10 +294,8 @@ namespace Microsoft.AspNet.Mvc.Razor
                 { "baz", _nullRenderAsyncDelegate }
             };
 
-            // Act
+            // Act & Assert
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => page.ExecuteAsync());
-
-            // Assert
             Assert.Equal("Section 'bar' is not defined in path '/Views/TestPath/Test.cshtml'.", ex.Message);
         }
 
@@ -265,9 +307,9 @@ namespace Microsoft.AspNet.Mvc.Razor
             {
                 v.Path = "/Views/TestPath/Test.cshtml";
             });
-
-            // Act and Assert
             page.ExecuteAsync();
+
+            // Act & Assert
             ExceptionAssert.Throws<InvalidOperationException>(() => page.IsSectionDefined("foo"),
                 "IsSectionDefined invocation in '/Views/TestPath/Test.cshtml' is invalid." +
                 " IsSectionDefined can only be called from a layout page.");
@@ -337,12 +379,12 @@ namespace Microsoft.AspNet.Mvc.Razor
                 { "header", _nullRenderAsyncDelegate }
             };
 
-            // Act
+            // Act & Assert
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(page.ExecuteAsync);
-
-            // Assert
-            Assert.Equal("RenderSectionAsync invocation in '/Views/TestPath/Test.cshtml' is invalid." +
-                " The section 'header' has already been rendered.", ex.Message);
+            Assert.Equal(
+                "RenderSectionAsync invocation in '/Views/TestPath/Test.cshtml' is invalid." +
+                " The section 'header' has already been rendered.",
+                ex.Message);
         }
 
         [Fact]
@@ -361,12 +403,12 @@ namespace Microsoft.AspNet.Mvc.Razor
                 { "header", _nullRenderAsyncDelegate }
             };
 
-            // Act
+            // Act & Assert
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(page.ExecuteAsync);
-
-            // Assert
-            Assert.Equal("RenderSectionAsync invocation in '/Views/TestPath/Test.cshtml' is invalid." +
-                " The section 'header' has already been rendered.", ex.Message);
+            Assert.Equal(
+                "RenderSectionAsync invocation in '/Views/TestPath/Test.cshtml' is invalid." +
+                " The section 'header' has already been rendered.",
+                ex.Message);
         }
 
         [Fact]
@@ -385,12 +427,12 @@ namespace Microsoft.AspNet.Mvc.Razor
                 { "header", _nullRenderAsyncDelegate }
             };
 
-            // Act
+            // Act & Assert
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(page.ExecuteAsync);
-
-            // Assert
-            Assert.Equal("RenderSectionAsync invocation in '/Views/TestPath/Test.cshtml' is invalid." +
-                " The section 'header' has already been rendered.", ex.Message);
+            Assert.Equal(
+                "RenderSectionAsync invocation in '/Views/TestPath/Test.cshtml' is invalid." +
+                " The section 'header' has already been rendered.",
+                ex.Message);
         }
 
         [Fact]
@@ -404,12 +446,12 @@ namespace Microsoft.AspNet.Mvc.Razor
                 await v.RenderSectionAsync("header");
             });
 
-            // Act
+            // Act & Assert
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(page.ExecuteAsync);
-
-            // Assert
-            Assert.Equal("RenderSectionAsync invocation in '/Views/TestPath/Test.cshtml' is invalid. " +
-                "RenderSectionAsync can only be called from a layout page.", ex.Message);
+            Assert.Equal(
+                "RenderSectionAsync invocation in '/Views/TestPath/Test.cshtml' is invalid. " +
+                "RenderSectionAsync can only be called from a layout page.",
+                ex.Message);
         }
 
         [Fact]
@@ -422,12 +464,10 @@ namespace Microsoft.AspNet.Mvc.Razor
             });
             page.Path = path;
             page.BodyContent = new HtmlString("some content");
-
-            // Act
             await page.ExecuteAsync();
-            var ex = Assert.Throws<InvalidOperationException>(() => page.EnsureRenderedBodyOrSections());
 
-            // Assert
+            // Act & Assert
+            var ex = Assert.Throws<InvalidOperationException>(() => page.EnsureRenderedBodyOrSections());
             Assert.Equal($"RenderBody has not been called for the page at '{path}'.", ex.Message);
         }
 
@@ -446,14 +486,14 @@ namespace Microsoft.AspNet.Mvc.Razor
             {
                 { sectionName, _nullRenderAsyncDelegate }
             };
-
-            // Act
             await page.ExecuteAsync();
-            var ex = Assert.Throws<InvalidOperationException>(() => page.EnsureRenderedBodyOrSections());
 
-            // Assert
-            Assert.Equal("The following sections have been defined but have not been rendered by the page at " +
-                $"'{path}': '{sectionName}'.", ex.Message);
+            // Act & Assert
+            var ex = Assert.Throws<InvalidOperationException>(() => page.EnsureRenderedBodyOrSections());
+            Assert.Equal(
+                "The following sections have been defined but have not been rendered by the page at " +
+                $"'{path}': '{sectionName}'.",
+                ex.Message);
         }
 
         [Fact]
@@ -474,7 +514,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 { sectionB, _nullRenderAsyncDelegate },
             };
 
-            // Act and Assert
+            // Act & Assert (does not throw)
             await page.ExecuteAsync();
             page.EnsureRenderedBodyOrSections();
         }
@@ -593,7 +633,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 await p.FlushAsync();
             }, context);
 
-            // Act and Assert
+            // Act & Assert
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => page.ExecuteAsync());
             Assert.Equal(expected, ex.Message);
         }
@@ -923,7 +963,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 items: new Dictionary<object, object>(),
                 uniqueId: string.Empty,
                 executeChildContentAsync: () => Task.FromResult(result: true),
-                startTagHelperWritingScope: () => { },
+                startTagHelperWritingScope: _ => { },
                 endTagHelperWritingScope: () => new DefaultTagHelperContent());
 
             // Act
@@ -964,7 +1004,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 items: new Dictionary<object, object>(),
                 uniqueId: string.Empty,
                 executeChildContentAsync: () => Task.FromResult(result: true),
-                startTagHelperWritingScope: () => { },
+                startTagHelperWritingScope: _ => { },
                 endTagHelperWritingScope: () => new DefaultTagHelperContent());
 
             // Act
@@ -992,7 +1032,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 items: new Dictionary<object, object>(),
                 uniqueId: string.Empty,
                 executeChildContentAsync: () => Task.FromResult(result: true),
-                startTagHelperWritingScope: () => { },
+                startTagHelperWritingScope: _ => { },
                 endTagHelperWritingScope: () => new DefaultTagHelperContent());
 
             // Act

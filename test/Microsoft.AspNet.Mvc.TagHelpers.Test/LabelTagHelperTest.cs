@@ -201,7 +201,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var output = new TagHelperOutput(
                 expectedTagName,
                 htmlAttributes,
-                getChildContentAsync: useCachedResult =>
+                getChildContentAsync: (useCachedResult, encoder) =>
                 {
                     var tagHelperContent = new DefaultTagHelperContent();
                     tagHelperContent.AppendHtml(tagHelperOutputContent.OriginalChildContent);

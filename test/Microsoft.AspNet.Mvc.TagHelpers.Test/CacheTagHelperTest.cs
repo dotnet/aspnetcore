@@ -740,7 +740,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var tagHelperOutput = new TagHelperOutput(
                 "cache",
                 new TagHelperAttributeList { { "attr", "value" } },
-                getChildContentAsync: useCachedResult =>
+                getChildContentAsync: (useCachedResult, encoder) =>
                 {
                     TagHelperContent tagHelperContent;
                     if (!cache.TryGetValue("key1", out tagHelperContent))
@@ -806,7 +806,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             return new TagHelperOutput(
                 tagName,
                 attributes,
-                getChildContentAsync: useCachedResult =>
+                getChildContentAsync: (useCachedResult, encoder) =>
                 {
                     var tagHelperContent = new DefaultTagHelperContent();
                     tagHelperContent.SetHtmlContent(childContent);

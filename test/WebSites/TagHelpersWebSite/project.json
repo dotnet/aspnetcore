@@ -1,6 +1,8 @@
 {
   "compilationOptions": {
-    "emitEntryPoint": true
+    "allowUnsafe": true,
+    "emitEntryPoint": true,
+    "warningsAsErrors": true
   },
   "commands": {
     "web": "TagHelpersWebSite"

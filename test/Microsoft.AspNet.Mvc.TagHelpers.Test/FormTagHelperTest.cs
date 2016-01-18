@@ -49,7 +49,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 {
                     { "id", "myform" },
                 },
-                getChildContentAsync: useCachedResult =>
+                getChildContentAsync: (useCachedResult, encoder) =>
                 {
                     var tagHelperContent = new DefaultTagHelperContent();
                     tagHelperContent.SetContent("Something Else");
@@ -116,7 +116,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var output = new TagHelperOutput(
                 "form",
                 attributes: new TagHelperAttributeList(),
-                getChildContentAsync: useCachedResult =>
+                getChildContentAsync: (useCachedResult, encoder) =>
                 {
                     var tagHelperContent = new DefaultTagHelperContent();
                     tagHelperContent.SetContent("Something");
@@ -168,7 +168,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var output = new TagHelperOutput(
                 "form",
                 attributes: new TagHelperAttributeList(),
-                getChildContentAsync: useCachedResult =>
+                getChildContentAsync: (useCachedResult, encoder) =>
                 {
                     var tagHelperContent = new DefaultTagHelperContent();
                     tagHelperContent.SetContent("Something");
@@ -239,7 +239,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var output = new TagHelperOutput(
                 "form",
                 attributes: new TagHelperAttributeList(),
-                getChildContentAsync: useCachedResult =>
+                getChildContentAsync: (useCachedResult, encoder) =>
                 {
                     var tagHelperContent = new DefaultTagHelperContent();
                     tagHelperContent.SetContent("Something");
@@ -290,7 +290,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var output = new TagHelperOutput(
                 "form",
                 attributes: new TagHelperAttributeList(),
-                getChildContentAsync: useCachedResult =>
+                getChildContentAsync: (useCachedResult, encoder) =>
                 {
                     var tagHelperContent = new DefaultTagHelperContent();
                     tagHelperContent.SetContent("Something");
@@ -357,7 +357,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 {
                     { "aCTiON", "my-action" },
                 },
-                getChildContentAsync: useCachedResult =>
+                getChildContentAsync: (useCachedResult, encoder) =>
                 {
                     var tagHelperContent = new DefaultTagHelperContent();
                     tagHelperContent.SetContent("Something");
@@ -397,7 +397,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 {
                     { "action", "my-action" },
                 },
-                getChildContentAsync: _ => Task.FromResult<TagHelperContent>(null));
+                getChildContentAsync: (useCachedResult, encoder) => Task.FromResult<TagHelperContent>(null));
             if (propertyName == "asp-route-")
             {
                 formTagHelper.RouteValues.Add("name", "value");
@@ -438,7 +438,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var output = new TagHelperOutput(
                 "form",
                 attributes: new TagHelperAttributeList(),
-                getChildContentAsync: _ => Task.FromResult<TagHelperContent>(null));
+                getChildContentAsync: (useCachedResult, encoder) => Task.FromResult<TagHelperContent>(null));
             var expectedErrorMessage = "Cannot determine an 'action' attribute for <form>. A <form> with a specified " +
                 "'asp-route' must not have an 'asp-action' or 'asp-controller' attribute.";
 

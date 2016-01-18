@@ -47,7 +47,7 @@ namespace Microsoft.AspNet.Mvc.Razor.TagHelpers
                 {
                     { "href", url }
                 },
-                getChildContentAsync: _ => Task.FromResult<TagHelperContent>(null));
+                getChildContentAsync: (useCachedResult, encoder) => Task.FromResult<TagHelperContent>(null));
             var urlHelperMock = new Mock<IUrlHelper>();
             urlHelperMock
                 .Setup(urlHelper => urlHelper.Content(It.IsAny<string>()))
@@ -103,7 +103,7 @@ namespace Microsoft.AspNet.Mvc.Razor.TagHelpers
                 {
                     { "href", url }
                 },
-                getChildContentAsync: _ => Task.FromResult<TagHelperContent>(null));
+                getChildContentAsync: (useCachedResult, encoder) => Task.FromResult<TagHelperContent>(null));
             var urlHelperMock = new Mock<IUrlHelper>();
             urlHelperMock
                 .Setup(urlHelper => urlHelper.Content(It.IsAny<string>()))
@@ -158,7 +158,7 @@ namespace Microsoft.AspNet.Mvc.Razor.TagHelpers
                 {
                     { "href", url }
                 },
-                getChildContentAsync: _ => Task.FromResult<TagHelperContent>(null));
+                getChildContentAsync: (useCachedResult, encoder) => Task.FromResult<TagHelperContent>(null));
             var urlHelperMock = new Mock<IUrlHelper>();
             urlHelperMock
                 .Setup(urlHelper => urlHelper.Content(It.IsAny<string>()))
@@ -213,7 +213,7 @@ namespace Microsoft.AspNet.Mvc.Razor.TagHelpers
                 {
                     { "href", url }
                 },
-                getChildContentAsync: _ => Task.FromResult<TagHelperContent>(null));
+                getChildContentAsync: (useCachedResult, encoder) => Task.FromResult<TagHelperContent>(null));
             var urlHelperMock = new Mock<IUrlHelper>();
             urlHelperMock
                 .Setup(urlHelper => urlHelper.Content(It.IsAny<string>()))
@@ -251,7 +251,7 @@ namespace Microsoft.AspNet.Mvc.Razor.TagHelpers
                 {
                     { "href", true }
                 },
-                getChildContentAsync: _ => Task.FromResult<TagHelperContent>(null));
+                getChildContentAsync: (useCachedResult, encoder) => Task.FromResult<TagHelperContent>(null));
             var tagHelper = new UrlResolutionTagHelper(urlHelperFactory: null, htmlEncoder: null);
 
             var context = new TagHelperContext(
@@ -288,7 +288,7 @@ namespace Microsoft.AspNet.Mvc.Razor.TagHelpers
                 {
                     { "href", new HtmlString(relativeUrl) }
                 },
-                getChildContentAsync: _ => Task.FromResult<TagHelperContent>(null));
+                getChildContentAsync: (useCachedResult, encoder) => Task.FromResult<TagHelperContent>(null));
             var urlHelperMock = new Mock<IUrlHelper>();
             urlHelperMock
                 .Setup(urlHelper => urlHelper.Content(It.IsAny<string>()))

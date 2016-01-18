@@ -30,8 +30,7 @@ namespace Microsoft.AspNet.Mvc.Razor
     public abstract class RazorPage : IRazorPage
     {
         private readonly HashSet<string> _renderedSections = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        private readonly Stack<HtmlContentWrapperTextWriter> _writerScopes;
-        private TextWriter _originalWriter;
+        private readonly Stack<TagHelperScopeInfo> _tagHelperScopes = new Stack<TagHelperScopeInfo>();
         private IUrlHelper _urlHelper;
         private ITagHelperActivator _tagHelperActivator;
         private ITypeActivatorCache _typeActivatorCache;
@@ -44,7 +43,6 @@ namespace Microsoft.AspNet.Mvc.Razor
         public RazorPage()
         {
             SectionWriters = new Dictionary<string, RenderAsyncDelegate>(StringComparer.OrdinalIgnoreCase);
-            _writerScopes = new Stack<HtmlContentWrapperTextWriter>();
         }
 
         /// <summary>
@@ -62,7 +60,8 @@ namespace Microsoft.AspNet.Mvc.Razor
         public string Layout { get; set; }
 
         /// <summary>
-        /// Gets the <see cref="HtmlEncoder"/> to be used for encoding HTML.
+        /// Gets the <see cref="System.Text.Encodings.Web.HtmlEncoder"/> to use when this <see cref="RazorPage"/>
+        /// handles non-<see cref="IHtmlContent"/> C# expressions.
         /// </summary>
         [RazorInject]
         public HtmlEncoder HtmlEncoder { get; set; }
@@ -116,7 +115,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         public IDictionary<string, RenderAsyncDelegate> PreviousSectionWriters { get; set; }
 
         /// <inheritdoc />
-        public IDictionary<string, RenderAsyncDelegate> SectionWriters { get; private set; }
+        public IDictionary<string, RenderAsyncDelegate> SectionWriters { get; }
 
         /// <inheritdoc />
         public abstract Task ExecuteAsync();
@@ -201,28 +200,31 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         /// <summary>
-        /// Starts a new writing scope.
+        /// Starts a new writing scope and optionally overrides <see cref="HtmlEncoder"/> within that scope.
         /// </summary>
+        /// <param name="encoder">
+        /// The <see cref="System.Text.Encodings.Web.HtmlEncoder"/> to use when this <see cref="RazorPage"/> handles
+        /// non-<see cref="IHtmlContent"/> C# expressions. If <c>null</c>, does not change <see cref="HtmlEncoder"/>.
+        /// </param>
         /// <remarks>
         /// All writes to the <see cref="Output"/> or <see cref="ViewContext.Writer"/> after calling this method will
         /// be buffered until <see cref="EndTagHelperWritingScope"/> is called.
         /// </remarks>
-        public void StartTagHelperWritingScope()
+        public void StartTagHelperWritingScope(HtmlEncoder encoder)
         {
-            // If there isn't a base writer take the ViewContext.Writer
-            if (_originalWriter == null)
-            {
-                _originalWriter = ViewContext.Writer;
-            }
+            _tagHelperScopes.Push(new TagHelperScopeInfo(HtmlEncoder, ViewContext.Writer));
 
-            var buffer = new ViewBuffer(BufferScope, Path);
-            var writer = new HtmlContentWrapperTextWriter(buffer, _originalWriter.Encoding);
+            // If passed an HtmlEncoder, override the property.
+            if (encoder != null)
+            {
+                HtmlEncoder = encoder;
+            }
 
             // We need to replace the ViewContext's Writer to ensure that all content (including content written
             // from HTML helpers) is redirected.
+            var buffer = new ViewBuffer(BufferScope, Path);
+            var writer = new HtmlContentWrapperTextWriter(buffer, ViewContext.Writer.Encoding);
             ViewContext.Writer = writer;
-
-            _writerScopes.Push(writer);
         }
 
         /// <summary>
@@ -231,28 +233,21 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <returns>The buffered <see cref="TagHelperContent"/>.</returns>
         public TagHelperContent EndTagHelperWritingScope()
         {
-            if (_writerScopes.Count == 0)
+            if (_tagHelperScopes.Count == 0)
             {
                 throw new InvalidOperationException(Resources.RazorPage_ThereIsNoActiveWritingScopeToEnd);
             }
 
-            var writer = _writerScopes.Pop();
-            Debug.Assert(writer == ViewContext.Writer);
-
-            if (_writerScopes.Count > 0)
-            {
-                ViewContext.Writer = _writerScopes.Peek();
-            }
-            else
-            {
-                ViewContext.Writer = _originalWriter;
-
-                // No longer a base writer
-                _originalWriter = null;
-            }
-
+            // Get the content written during the current scope.
+            var writer = ViewContext.Writer as HtmlContentWrapperTextWriter;
             var tagHelperContent = new DefaultTagHelperContent();
-            tagHelperContent.AppendHtml(writer.ContentBuilder);
+            tagHelperContent.AppendHtml(writer?.ContentBuilder);
+
+            // Restore previous scope.
+            var scopeInfo = _tagHelperScopes.Pop();
+            HtmlEncoder = scopeInfo.Encoder;
+            ViewContext.Writer = scopeInfo.Writer;
+
             return tagHelperContent;
         }
 
@@ -290,7 +285,9 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// Writes the specified <paramref name="value"/> with HTML encoding to given <paramref name="writer"/>.
         /// </summary>
         /// <param name="writer">The <see cref="TextWriter"/> instance to write to.</param>
-        /// <param name="encoder">The <see cref="HtmlEncoder"/> to use when encoding <paramref name="value"/>.</param>
+        /// <param name="encoder">
+        /// The <see cref="System.Text.Encodings.Web.HtmlEncoder"/> to use when encoding <paramref name="value"/>.
+        /// </param>
         /// <param name="value">The <see cref="object"/> to write.</param>
         /// <remarks>
         /// <paramref name="value"/>s of type <see cref="IHtmlContent"/> are written using
@@ -825,9 +822,8 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// </remarks>
         public async Task<HtmlString> FlushAsync()
         {
-            // If there are active writing scopes then we should throw. Cannot flush content that has the potential to
-            // change.
-            if (_writerScopes.Count > 0)
+            // If there are active scopes, then we should throw. Cannot flush content that has the potential to change.
+            if (_tagHelperScopes.Count > 0)
             {
                 throw new InvalidOperationException(
                     Resources.FormatRazorPage_CannotFlushWhileInAWritingScope(nameof(FlushAsync), Path));
@@ -999,6 +995,19 @@ namespace Microsoft.AspNet.Mvc.Razor
             public int AttributeValuesCount { get; }
 
             public bool Suppressed { get; set; }
+        }
+
+        private struct TagHelperScopeInfo
+        {
+            public TagHelperScopeInfo(HtmlEncoder encoder, TextWriter writer)
+            {
+                Encoder = encoder;
+                Writer = writer;
+            }
+
+            public HtmlEncoder Encoder { get; }
+
+            public TextWriter Writer { get; }
         }
     }
 }

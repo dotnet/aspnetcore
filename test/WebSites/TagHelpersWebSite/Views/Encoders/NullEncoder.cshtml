@@ -1,0 +1,9 @@
+﻿@addTagHelper TagHelpersWebSite.TagHelpers.NullEncoderTagHelper, TagHelpersWebSite
+
+@{
+    var count = 0;
+    var innerCount = 0;
+}
+
+<pre>@($"Outer knows <b>{ ++count } < 4</b>")
+<inner>@($"Inner knows <b>{ ++innerCount } < 4</b>")</inner></pre>

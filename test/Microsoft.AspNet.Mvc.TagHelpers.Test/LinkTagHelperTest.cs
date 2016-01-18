@@ -844,7 +844,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             return new TagHelperOutput(
                 tagName,
                 attributes,
-                getChildContentAsync: (_) => Task.FromResult<TagHelperContent>(new DefaultTagHelperContent()));
+                getChildContentAsync: (useCachedResult, encoder) => Task.FromResult<TagHelperContent>(
+                    new DefaultTagHelperContent()));
         }
 
         private static IHostingEnvironment MakeHostingEnvironment()

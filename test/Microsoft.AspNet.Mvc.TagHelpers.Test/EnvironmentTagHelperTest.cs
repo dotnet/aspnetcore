@@ -143,7 +143,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers.Test
             return new TagHelperOutput(
                 tagName,
                 attributes,
-                getChildContentAsync: useCachedResult =>
+                getChildContentAsync: (useCachedResult, encoder) =>
                 {
                     var tagHelperContent = new DefaultTagHelperContent();
                     tagHelperContent.SetContent(childContent);

@@ -408,7 +408,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var output = new TagHelperOutput(
                 expectedTagHelperOutput.TagName,
                 originalAttributes,
-                getChildContentAsync: useCachedResult =>
+                getChildContentAsync: (useCachedResult, encoder) =>
                 {
                     // GetChildContentAsync should not be invoked since we are setting the content below.
                     Assert.True(false);
@@ -478,7 +478,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var output = new TagHelperOutput(
                 originalTagName,
                 originalAttributes,
-                getChildContentAsync: useCachedResult =>
+                getChildContentAsync: (useCachedResult, encoder) =>
                 {
                     var tagHelperContent = new DefaultTagHelperContent();
                     tagHelperContent.SetContent(originalContent);
@@ -542,7 +542,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var output = new TagHelperOutput(
                 originalTagName,
                 originalAttributes,
-                getChildContentAsync: useCachedResult =>
+                getChildContentAsync: (useCachedResult, encoder) =>
                 {
                     var tagHelperContent = new DefaultTagHelperContent();
                     tagHelperContent.SetContent(originalContent);
@@ -574,7 +574,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var tagHelperOutput = new TagHelperOutput(
                 tagName,
                 attributes,
-                getChildContentAsync: (_) => Task.FromResult<TagHelperContent>(new DefaultTagHelperContent()));
+                getChildContentAsync: (useCachedResult, encoder) => Task.FromResult<TagHelperContent>(
+                    new DefaultTagHelperContent()));
             tagHelperOutput.Content.SetContent(content);
 
             return tagHelperOutput;

@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 {
                     { "id", "myanchor" },
                 },
-                getChildContentAsync: useCachedResult =>
+                getChildContentAsync: (useCachedResult, encoder) =>
                 {
                     var tagHelperContent = new DefaultTagHelperContent();
                     tagHelperContent.SetContent("Something Else");
@@ -99,7 +99,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var output = new TagHelperOutput(
                 "a",
                 attributes: new TagHelperAttributeList(),
-                getChildContentAsync: useCachedResult =>
+                getChildContentAsync: (useCachedResult, encoder) =>
                 {
                     var tagHelperContent = new DefaultTagHelperContent();
                     tagHelperContent.SetContent("Something");
@@ -148,7 +148,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var output = new TagHelperOutput(
                 "a",
                 attributes: new TagHelperAttributeList(),
-                getChildContentAsync: useCachedResult =>
+                getChildContentAsync: (useCachedResult, encoder) =>
                 {
                     var tagHelperContent = new DefaultTagHelperContent();
                     tagHelperContent.SetContent("Something");
@@ -209,7 +209,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
                 {
                     { "href", "http://www.contoso.com" }
                 },
-                getChildContentAsync: _ => Task.FromResult<TagHelperContent>(null));
+                getChildContentAsync: (useCachedResult, encoder) => Task.FromResult<TagHelperContent>(null));
             if (propertyName == "asp-route-")
             {
                 anchorTagHelper.RouteValues.Add("name", "value");
@@ -255,7 +255,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var output = new TagHelperOutput(
                 "a",
                 attributes: new TagHelperAttributeList(),
-                getChildContentAsync: _ => Task.FromResult<TagHelperContent>(null));
+                getChildContentAsync: (useCachedResult, encoder) => Task.FromResult<TagHelperContent>(null));
             var expectedErrorMessage = "Cannot determine an 'href' attribute for <a>. An <a> with a specified " +
                 "'asp-route' must not have an 'asp-action' or 'asp-controller' attribute.";
 

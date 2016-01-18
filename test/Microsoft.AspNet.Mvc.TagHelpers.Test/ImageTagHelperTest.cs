@@ -54,7 +54,8 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var output = new TagHelperOutput(
                 "img",
                 outputAttributes,
-                getChildContentAsync: (_) => Task.FromResult<TagHelperContent>(new DefaultTagHelperContent()));
+                getChildContentAsync: (useCachedResult, encoder) => Task.FromResult<TagHelperContent>(
+                    new DefaultTagHelperContent()));
             var hostingEnvironment = MakeHostingEnvironment();
             var viewContext = MakeViewContext();
             var urlHelper = new Mock<IUrlHelper>();
@@ -294,7 +295,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             return new TagHelperOutput(
                 "img",
                 attributes,
-                getChildContentAsync: useCachedResult =>
+                getChildContentAsync: (useCachedResult, encoder) =>
                 {
                     var tagHelperContent = new DefaultTagHelperContent();
                     tagHelperContent.SetContent(default(string));

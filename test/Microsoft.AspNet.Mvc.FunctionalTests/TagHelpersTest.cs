@@ -255,5 +255,32 @@ page:<root>root-content</root>"
                 ignoreLineEndingDifferences: true);
 #endif
         }
+
+        [Theory]
+        [InlineData("Index")]
+        [InlineData("CustomEncoder")]
+        [InlineData("NullEncoder")]
+        [InlineData("TwoEncoders")]
+        [InlineData("ThreeEncoders")]
+        public async Task EncodersPages_ReturnExpectedContent(string actionName)
+        {
+            // Arrange
+            var outputFile = $"compiler/resources/TagHelpersWebSite.Encoders.{ actionName }.html";
+            var expectedContent =
+                await ResourceFile.ReadResourceAsync(_resourcesAssembly, outputFile, sourceFile: false);
+
+            // Act
+            var response = await Client.GetAsync($"/Encoders/{ actionName }");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+#if GENERATE_BASELINES
+            ResourceFile.UpdateFile(_resourcesAssembly, outputFile, expectedContent, responseContent);
+#else
+            Assert.Equal(expectedContent, responseContent, ignoreLineEndingDifferences: true);
+#endif
+        }
     }
 }

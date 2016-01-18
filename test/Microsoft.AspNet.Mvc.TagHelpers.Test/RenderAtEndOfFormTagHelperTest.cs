@@ -51,7 +51,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var tagHelperOutput = new TagHelperOutput(
                 tagName: "form",
                 attributes: new TagHelperAttributeList(),
-                getChildContentAsync: (useCachedResult) =>
+                getChildContentAsync: (useCachedResult, encoder) =>
                 {
                     Assert.True(viewContext.FormContext.CanRenderAtEndOfForm);
                     foreach (var item in tagBuilderList)
@@ -103,7 +103,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
                     return Task.FromResult(true);
                 },
-                startTagHelperWritingScope: () => { },
+                startTagHelperWritingScope: _ => { },
                 endTagHelperWritingScope: () => new DefaultTagHelperContent());
 
             // This TagHelper will pre-execute the child content forcing the body to be cached.
