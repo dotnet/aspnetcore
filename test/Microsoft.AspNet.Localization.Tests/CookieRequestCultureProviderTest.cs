@@ -19,7 +19,7 @@ namespace Microsoft.Extensions.Localization.Tests
         [Fact]
         public async void GetCultureInfoFromPersistentCookie()
         {
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     var options = new RequestLocalizationOptions
@@ -63,7 +63,7 @@ namespace Microsoft.Extensions.Localization.Tests
         [Fact]
         public async void GetDefaultCultureInfoIfCultureKeysAreMissingOrInvalid()
         {
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     var options = new RequestLocalizationOptions
@@ -102,7 +102,7 @@ namespace Microsoft.Extensions.Localization.Tests
         [Fact]
         public async void GetDefaultCultureInfoIfCookieDoesNotExist()
         {
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     var options = new RequestLocalizationOptions

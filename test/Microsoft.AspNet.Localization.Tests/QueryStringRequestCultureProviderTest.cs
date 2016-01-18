@@ -18,7 +18,7 @@ namespace Microsoft.Extensions.Localization.Tests
         [Fact]
         public async void GetCultureInfoFromQueryString()
         {
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     app.UseRequestLocalization(new RequestLocalizationOptions
@@ -53,7 +53,7 @@ namespace Microsoft.Extensions.Localization.Tests
         [Fact]
         public async void GetDefaultCultureInfoIfCultureKeysAreMissing()
         {
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     app.UseRequestLocalization(new RequestLocalizationOptions
@@ -80,7 +80,7 @@ namespace Microsoft.Extensions.Localization.Tests
         [Fact]
         public async void GetDefaultCultureInfoIfCultureIsInSupportedCultureList()
         {
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     app.UseRequestLocalization(new RequestLocalizationOptions
@@ -114,7 +114,7 @@ namespace Microsoft.Extensions.Localization.Tests
         [Fact]
         public async void GetDefaultCultureInfoIfUICultureIsNotInSupportedList()
         {
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     app.UseRequestLocalization(new RequestLocalizationOptions
@@ -148,7 +148,7 @@ namespace Microsoft.Extensions.Localization.Tests
         [Fact]
         public async void GetSameCultureInfoIfCultureKeyIsMissing()
         {
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     app.UseRequestLocalization(new RequestLocalizationOptions
@@ -183,7 +183,7 @@ namespace Microsoft.Extensions.Localization.Tests
         [Fact]
         public async void GetSameCultureInfoIfUICultureKeyIsMissing()
         {
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     app.UseRequestLocalization(new RequestLocalizationOptions
@@ -218,7 +218,7 @@ namespace Microsoft.Extensions.Localization.Tests
         [Fact]
         public async void GetCultureInfoFromQueryStringWithCustomKeys()
         {
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     var options = new RequestLocalizationOptions
@@ -258,7 +258,7 @@ namespace Microsoft.Extensions.Localization.Tests
         [Fact]
         public async void GetTheRightCultureInfoRegardlessOfCultureNameCasing()
         {
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     var options = new RequestLocalizationOptions

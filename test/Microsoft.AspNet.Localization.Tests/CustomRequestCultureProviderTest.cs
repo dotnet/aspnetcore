@@ -20,7 +20,7 @@ namespace Microsoft.Extensions.Localization.Tests
         [Fact]
         public async void CustomRequestCultureProviderThatGetsCultureInfoFromUrl()
         {
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     var options = new RequestLocalizationOptions

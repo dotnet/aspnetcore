@@ -17,7 +17,7 @@ namespace Microsoft.Extensions.Localization.Tests
         [Fact]
         public async void GetFallbackLanguage_ReturnsFirstNonNullCultureFromSupportedCultureList()
         {
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     app.UseRequestLocalization(new RequestLocalizationOptions
@@ -51,7 +51,7 @@ namespace Microsoft.Extensions.Localization.Tests
         [Fact]
         public async void GetFallbackLanguage_ReturnsFromSupportedCulture_AcceptLanguageListContainsSupportedCultures()
         {
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     app.UseRequestLocalization(new RequestLocalizationOptions
@@ -84,7 +84,7 @@ namespace Microsoft.Extensions.Localization.Tests
         [Fact]
         public async void GetFallbackLanguage_ReturnsDefault_AcceptLanguageListDoesnotContainSupportedCultures()
         {
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     app.UseRequestLocalization(new RequestLocalizationOptions
@@ -118,7 +118,7 @@ namespace Microsoft.Extensions.Localization.Tests
         [Fact]
         public async void OmitDefaultRequestCultureShouldNotThrowNullReferenceException_And_ShouldGetTheRightCulture()
         {
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     app.UseRequestLocalization(new RequestLocalizationOptions
