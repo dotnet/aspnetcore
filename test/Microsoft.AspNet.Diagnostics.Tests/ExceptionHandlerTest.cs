@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.Diagnostics
         [InlineData(HttpStatusCode.InternalServerError)]
         public async Task OnlyHandles_UnhandledExceptions(HttpStatusCode expectedStatusCode)
         {
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     app.UseExceptionHandler("/handle-errors");
@@ -59,7 +59,7 @@ namespace Microsoft.AspNet.Diagnostics
         [Fact]
         public async Task DoesNotHandle_UnhandledExceptions_WhenResponseAlreadyStarted()
         {
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     app.Use(async (httpContext, next) =>
@@ -108,7 +108,7 @@ namespace Microsoft.AspNet.Diagnostics
         public async Task ClearsResponseBuffer_BeforeRequestIsReexecuted()
         {
             var expectedResponseBody = "New response body";
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     // add response buffering
@@ -180,7 +180,7 @@ namespace Microsoft.AspNet.Diagnostics
         {
             var expiresTime = DateTime.UtcNow.AddDays(5).ToString("R");
             var expectedResponseBody = "Handled error in a custom way.";
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     app.UseExceptionHandler("/handle-errors");
@@ -230,7 +230,7 @@ namespace Microsoft.AspNet.Diagnostics
         {
             var expiresTime = DateTime.UtcNow.AddDays(10).ToString("R");
             var expectedResponseBody = "Hello world!";
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     app.UseExceptionHandler("/handle-errors");
@@ -280,7 +280,7 @@ namespace Microsoft.AspNet.Diagnostics
         public async Task DoesNotClearCacheHeaders_WhenResponseHasAlreadyStarted()
         {
             var expiresTime = DateTime.UtcNow.AddDays(10).ToString("R");
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     app.Use(async (httpContext, next) =>
@@ -350,7 +350,7 @@ namespace Microsoft.AspNet.Diagnostics
             // Arrange
             DiagnosticListener diagnosticListener = null;
 
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     diagnosticListener = app.ApplicationServices.GetRequiredService<DiagnosticListener>();

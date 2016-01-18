@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
         [Fact]
         public async Task Non_migration_requests_pass_thru()
         {
-            var builder = new WebApplicationBuilder().Configure(app => app
+            var builder = new WebHostBuilder().Configure(app => app
                 .UseMigrationsEndPoint()
                 .UseMiddleware<SuccessMiddleware>());
             var server = new TestServer(builder);
@@ -73,7 +73,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
 
                 var path = useCustomPath ? new PathString("/EndPoints/ApplyMyMigrations") : MigrationsEndPointOptions.DefaultPath;
 
-                var builder = new WebApplicationBuilder()
+                var builder = new WebHostBuilder()
                     .Configure(app =>
                     {
                         if (useCustomPath)
@@ -125,7 +125,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
         [Fact]
         public async Task Context_type_not_specified()
         {
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     app.UseMigrationsEndPoint();
@@ -145,7 +145,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
         [Fact]
         public async Task Invalid_context_type_specified()
         {
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     app.UseMigrationsEndPoint();
@@ -169,7 +169,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
         [Fact]
         public async Task Context_not_registered_in_services()
         {
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app => app.UseMigrationsEndPoint())
                 .ConfigureServices(services => services.AddEntityFramework().AddSqlServer());
             var server = new TestServer(builder);
@@ -196,7 +196,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
                 var optionsBuilder = new DbContextOptionsBuilder();
                 optionsBuilder.UseSqlServer(database.ConnectionString);
 
-                var builder = new WebApplicationBuilder()
+                var builder = new WebHostBuilder()
                     .Configure(app => app.UseMigrationsEndPoint())
                     .ConfigureServices(services =>
                     {

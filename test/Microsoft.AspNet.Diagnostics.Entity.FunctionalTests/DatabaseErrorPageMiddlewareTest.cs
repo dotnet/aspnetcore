@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
         [Fact]
         public async Task Successful_requests_pass_thru()
         {
-            var builder = new WebApplicationBuilder().Configure(app => app
+            var builder = new WebHostBuilder().Configure(app => app
                 .UseDatabaseErrorPage()
                 .UseMiddleware<SuccessMiddleware>());
             var server = new TestServer(builder);
@@ -55,7 +55,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
         [Fact]
         public async Task Non_database_exceptions_pass_thru()
         {
-            var builder = new WebApplicationBuilder().Configure(app => app
+            var builder = new WebHostBuilder().Configure(app => app
                 .UseDatabaseErrorPage()
                 .UseMiddleware<ExceptionMiddleware>());
             var server = new TestServer(builder);
@@ -255,7 +255,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
 
             using (var database = SqlServerTestStore.CreateScratch())
             {
-                var builder = new WebApplicationBuilder()
+                var builder = new WebHostBuilder()
                     .Configure(app =>
                     {
                         app.UseDatabaseErrorPage(new DatabaseErrorPageOptions
@@ -293,7 +293,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
             {
                 var logProvider = new TestLoggerProvider();
 
-                var builder = new WebApplicationBuilder()
+                var builder = new WebHostBuilder()
                     .Configure(app =>
                     {
                         app.UseDatabaseErrorPage();
@@ -411,7 +411,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
         {
             using (var database = SqlServerTestStore.CreateScratch())
             {
-                var builder = new WebApplicationBuilder()
+                var builder = new WebHostBuilder()
                     .Configure(app =>
                     {
                         app.UseDatabaseErrorPage();

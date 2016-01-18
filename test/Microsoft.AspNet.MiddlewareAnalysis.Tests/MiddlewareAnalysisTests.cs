@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.MiddlewareAnalysis
         {
             DiagnosticListener diagnosticListener = null;
 
-            var builder = new WebApplicationBuilder()
+            var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
                     diagnosticListener = app.ApplicationServices.GetRequiredService<DiagnosticListener>();
