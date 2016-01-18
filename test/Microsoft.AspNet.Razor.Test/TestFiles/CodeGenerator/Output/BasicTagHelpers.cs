@@ -52,7 +52,7 @@ namespace TestOutput
                 __tagHelperExecutionContext.Add(__TestNamespace_InputTagHelper);
                 __TestNamespace_InputTagHelper2 = CreateTagHelper<global::TestNamespace.InputTagHelper2>();
                 __tagHelperExecutionContext.Add(__TestNamespace_InputTagHelper2);
-                StartTagHelperWritingScope();
+                StartTagHelperWritingScope(null);
                 WriteLiteral("2000 + ");
 #line 6 "BasicTagHelpers.cshtml"
                                 Write(ViewBag.DefaultInterval);

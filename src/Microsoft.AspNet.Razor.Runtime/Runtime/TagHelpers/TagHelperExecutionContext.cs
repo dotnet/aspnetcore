@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Razor.TagHelpers;
 
@@ -15,9 +16,10 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
     {
         private readonly List<ITagHelper> _tagHelpers;
         private readonly Func<Task> _executeChildContentAsync;
-        private readonly Action _startTagHelperWritingScope;
+        private readonly Action<HtmlEncoder> _startTagHelperWritingScope;
         private readonly Func<TagHelperContent> _endTagHelperWritingScope;
         private TagHelperContent _childContent;
+        private Dictionary<HtmlEncoder, TagHelperContent> _perEncoderChildContent;
 
         /// <summary>
         /// Internal for testing purposes only.
@@ -28,7 +30,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                    items: new Dictionary<object, object>(),
                    uniqueId: string.Empty,
                    executeChildContentAsync: async () => await Task.FromResult(result: true),
-                   startTagHelperWritingScope: () => { },
+                   startTagHelperWritingScope: _ => { },
                    endTagHelperWritingScope: () => new DefaultTagHelperContent())
         {
         }
@@ -42,7 +44,10 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// <see cref="ITagHelper"/>s</param>
         /// <param name="uniqueId">An identifier unique to the HTML element this context is for.</param>
         /// <param name="executeChildContentAsync">A delegate used to execute the child content asynchronously.</param>
-        /// <param name="startTagHelperWritingScope">A delegate used to start a writing scope in a Razor page.</param>
+        /// <param name="startTagHelperWritingScope">
+        /// A delegate used to start a writing scope in a Razor page and optionally override the page's
+        /// <see cref="HtmlEncoder"/> within that scope.
+        /// </param>
         /// <param name="endTagHelperWritingScope">A delegate used to end a writing scope in a Razor page.</param>
         public TagHelperExecutionContext(
             string tagName,
@@ -50,7 +55,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             IDictionary<object, object> items,
             string uniqueId,
             Func<Task> executeChildContentAsync,
-            Action startTagHelperWritingScope,
+            Action<HtmlEncoder> startTagHelperWritingScope,
             Func<TagHelperContent> endTagHelperWritingScope)
         {
             if (tagName == null)
@@ -224,23 +229,57 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         }
 
         /// <summary>
-        /// Execute and retrieve the rendered child content asynchronously.
+        /// Executes children asynchronously with the given <paramref name="encoder"/> in scope and returns their
+        /// rendered content.
         /// </summary>
+        /// <param name="useCachedResult">
+        /// If <c>true</c>, multiple calls with the same <see cref="HtmlEncoder"/> will not cause children to
+        /// re-execute; returns cached content.
+        /// </param>
+        /// <param name="encoder">
+        /// The <see cref="HtmlEncoder"/> to use when the page handles
+        /// non-<see cref="Microsoft.AspNet.Html.IHtmlContent"/> C# expressions. If <c>null</c>, executes children with
+        /// the page's current <see cref="HtmlEncoder"/>.
+        /// </param>
         /// <returns>A <see cref="Task"/> that on completion returns the rendered child content.</returns>
-        /// <remarks>
-        /// Child content is only executed once. Successive calls to this method or successive executions of the
-        /// returned <see cref="Task{TagHelperContent}"/> return a cached result.
-        /// </remarks>
-        public async Task<TagHelperContent> GetChildContentAsync(bool useCachedResult)
+        public async Task<TagHelperContent> GetChildContentAsync(bool useCachedResult, HtmlEncoder encoder)
         {
-            if (!useCachedResult || _childContent == null)
+            // Get cached content for this encoder.
+            TagHelperContent childContent;
+            if (encoder == null)
             {
-                _startTagHelperWritingScope();
-                await _executeChildContentAsync();
-                _childContent = _endTagHelperWritingScope();
+                childContent = _childContent;
+            }
+            else
+            {
+                if (_perEncoderChildContent == null)
+                {
+                    childContent = null;
+                    _perEncoderChildContent = new Dictionary<HtmlEncoder, TagHelperContent>();
+                }
+                else
+                {
+                    _perEncoderChildContent.TryGetValue(encoder, out childContent);
+                }
             }
 
-            return new DefaultTagHelperContent().SetContent(_childContent);
+            if (!useCachedResult || childContent == null)
+            {
+                _startTagHelperWritingScope(encoder);
+                await _executeChildContentAsync();
+                childContent = _endTagHelperWritingScope();
+
+                if (encoder == null)
+                {
+                    _childContent = childContent;
+                }
+                else
+                {
+                    _perEncoderChildContent[encoder] = childContent;
+                }
+            }
+
+            return new DefaultTagHelperContent().SetContent(childContent);
         }
     }
 }

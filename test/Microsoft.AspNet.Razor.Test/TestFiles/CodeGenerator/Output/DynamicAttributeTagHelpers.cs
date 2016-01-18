@@ -103,7 +103,7 @@ WriteTo(__razor_attribute_value_writer, string.Empty);
             , StartTagHelperWritingScope, EndTagHelperWritingScope);
             __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
             __tagHelperExecutionContext.Add(__TestNamespace_InputTagHelper);
-            StartTagHelperWritingScope();
+            StartTagHelperWritingScope(null);
             WriteLiteral("prefix ");
 #line 7 "DynamicAttributeTagHelpers.cshtml"
          WriteLiteral(DateTime.Now);
@@ -136,7 +136,7 @@ AddHtmlAttributeValue(" ", 210, DateTime.Now, 211, 14, false);
             , StartTagHelperWritingScope, EndTagHelperWritingScope);
             __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
             __tagHelperExecutionContext.Add(__TestNamespace_InputTagHelper);
-            StartTagHelperWritingScope();
+            StartTagHelperWritingScope(null);
 #line 9 "DynamicAttributeTagHelpers.cshtml"
   WriteLiteral(long.MinValue);
 

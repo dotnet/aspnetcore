@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Razor.TagHelpers;
 using Microsoft.Extensions.Internal;
@@ -31,7 +32,10 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// <param name="tagMode">HTML syntax of the element in the Razor source.</param>
         /// <param name="uniqueId">An identifier unique to the HTML element this scope is for.</param>
         /// <param name="executeChildContentAsync">A delegate used to execute the child content asynchronously.</param>
-        /// <param name="startTagHelperWritingScope">A delegate used to start a writing scope in a Razor page.</param>
+        /// <param name="startTagHelperWritingScope">
+        /// A delegate used to start a writing scope in a Razor page and optionally override the page's
+        /// <see cref="HtmlEncoder"/> within that scope.
+        /// </param>
         /// <param name="endTagHelperWritingScope">A delegate used to end a writing scope in a Razor page.</param>
         /// <returns>A <see cref="TagHelperExecutionContext"/> to use.</returns>
         public TagHelperExecutionContext Begin(
@@ -39,7 +43,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             TagMode tagMode,
             string uniqueId,
             Func<Task> executeChildContentAsync,
-            Action startTagHelperWritingScope,
+            Action<HtmlEncoder> startTagHelperWritingScope,
             Func<TagHelperContent> endTagHelperWritingScope)
         {
             if (tagName == null)

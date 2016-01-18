@@ -119,7 +119,7 @@ namespace TestOutput
                     __tagHelperExecutionContext.Add(__TestNamespace_InputTagHelper);
                     __TestNamespace_InputTagHelper2 = CreateTagHelper<global::TestNamespace.InputTagHelper2>();
                     __tagHelperExecutionContext.Add(__TestNamespace_InputTagHelper2);
-                    StartTagHelperWritingScope();
+                    StartTagHelperWritingScope(null);
 #line 16 "ComplexTagHelpers.cshtml"
                                  WriteLiteral(checkbox);
 
@@ -163,7 +163,7 @@ namespace TestOutput
                 __tagHelperExecutionContext.Add(__TestNamespace_InputTagHelper);
                 __TestNamespace_InputTagHelper2 = CreateTagHelper<global::TestNamespace.InputTagHelper2>();
                 __tagHelperExecutionContext.Add(__TestNamespace_InputTagHelper2);
-                StartTagHelperWritingScope();
+                StartTagHelperWritingScope(null);
 #line 17 "ComplexTagHelpers.cshtml"
                   WriteLiteral(true ? "checkbox" : "anything");
 
@@ -188,7 +188,7 @@ namespace TestOutput
                 __tagHelperExecutionContext.Add(__TestNamespace_InputTagHelper);
                 __TestNamespace_InputTagHelper2 = CreateTagHelper<global::TestNamespace.InputTagHelper2>();
                 __tagHelperExecutionContext.Add(__TestNamespace_InputTagHelper2);
-                StartTagHelperWritingScope();
+                StartTagHelperWritingScope(null);
 #line 18 "ComplexTagHelpers.cshtml"
                               if(true) {
 

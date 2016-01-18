@@ -44,7 +44,7 @@ namespace TestOutput
             __tagHelperExecutionContext.Add(__TestNamespace_InputTagHelper);
             __TestNamespace_InputTagHelper2 = CreateTagHelper<global::TestNamespace.InputTagHelper2>();
             __tagHelperExecutionContext.Add(__TestNamespace_InputTagHelper2);
-            StartTagHelperWritingScope();
+            StartTagHelperWritingScope(null);
 #line 6 "EscapedTagHelpers.cshtml"
                                       WriteLiteral(DateTime.Now);
 

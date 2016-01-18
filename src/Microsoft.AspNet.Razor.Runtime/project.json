@@ -2,8 +2,9 @@
   "description": "Runtime components for rendering Razor pages.",
   "version": "4.0.0-*",
   "compilationOptions": {
-    "warningsAsErrors": true,
-    "keyFile": "../../tools/Key.snk"
+    "allowUnsafe": true,
+    "keyFile": "../../tools/Key.snk",
+    "warningsAsErrors": true
   },
   "repository": {
     "type": "git",

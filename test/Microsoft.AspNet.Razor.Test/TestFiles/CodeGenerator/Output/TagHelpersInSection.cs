@@ -76,7 +76,7 @@ namespace TestOutput
                 , StartTagHelperWritingScope, EndTagHelperWritingScope);
                 __TestNamespace_MyTagHelper = CreateTagHelper<global::TestNamespace.MyTagHelper>();
                 __tagHelperExecutionContext.Add(__TestNamespace_MyTagHelper);
-                StartTagHelperWritingScope();
+                StartTagHelperWritingScope(null);
                 WriteLiteral("Current Time: ");
 #line 9 "TagHelpersInSection.cshtml"
                                       WriteLiteral(DateTime.Now);

@@ -172,7 +172,7 @@ __TestNamespace_InputTagHelper2.IntDictionaryProperty["salt"] = 37;
             __TestNamespace_InputTagHelper2.StringDictionaryProperty["paprika"] = "another string";
             __tagHelperExecutionContext.AddTagHelperAttribute("string-prefix-paprika", __TestNamespace_InputTagHelper2.StringDictionaryProperty["paprika"]);
             __TestNamespace_InputTagHelper1.StringDictionaryProperty["paprika"] = __TestNamespace_InputTagHelper2.StringDictionaryProperty["paprika"];
-            StartTagHelperWritingScope();
+            StartTagHelperWritingScope(null);
             WriteLiteral("literate ");
 #line 21 "PrefixedAttributeTagHelpers.cshtml"
                              WriteLiteral(literate);

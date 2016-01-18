@@ -43,7 +43,7 @@ __TestNamespace_PTagHelper.Age = 1337;
 #line default
 #line hidden
             __tagHelperExecutionContext.AddTagHelperAttribute("age", __TestNamespace_PTagHelper.Age);
-            StartTagHelperWritingScope();
+            StartTagHelperWritingScope(null);
 #line 7 "TagHelpersWithWeirdlySpacedAttributes.cshtml"
              Write(true);
 

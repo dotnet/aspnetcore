@@ -167,7 +167,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
             Assert.Equal(tagMode, executionContext.TagMode);
         }
 
-    [Fact]
+        [Fact]
         public void End_ReturnsParentExecutionContext()
         {
             // Arrange
@@ -228,7 +228,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 tagMode,
                 uniqueId: string.Empty,
                 executeChildContentAsync: async () => await Task.FromResult(result: true),
-                startTagHelperWritingScope: () => { },
+                startTagHelperWritingScope: _ => { },
                 endTagHelperWritingScope: () => new DefaultTagHelperContent());
         }
     }

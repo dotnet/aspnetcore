@@ -8,8 +8,8 @@ using System.Globalization;
 using System.Linq;
 using Microsoft.AspNet.Razor.Chunks;
 using Microsoft.AspNet.Razor.CodeGenerators.Visitors;
-using Microsoft.AspNet.Razor.TagHelpers;
 using Microsoft.AspNet.Razor.Compilation.TagHelpers;
+using Microsoft.AspNet.Razor.TagHelpers;
 
 namespace Microsoft.AspNet.Razor.CodeGenerators
 {
@@ -659,7 +659,7 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
                 // Scopes are a runtime feature.
                 if (!_designTimeMode)
                 {
-                    _writer.WriteMethodInvocation(_tagHelperContext.StartTagHelperWritingScopeMethodName);
+                    _writer.WriteMethodInvocation(_tagHelperContext.StartTagHelperWritingScopeMethodName, "null");
                 }
 
                 var visitor = htmlEncodeValues ? _bodyVisitor : _literalBodyVisitor;
@@ -668,8 +668,9 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
                 // Scopes are a runtime feature.
                 if (!_designTimeMode)
                 {
-                    _writer.WriteStartAssignment(StringValueBufferVariableName)
-                           .WriteMethodInvocation(_tagHelperContext.EndTagHelperWritingScopeMethodName);
+                    _writer
+                        .WriteStartAssignment(StringValueBufferVariableName)
+                        .WriteMethodInvocation(_tagHelperContext.EndTagHelperWritingScopeMethodName);
                 }
             }
             finally
@@ -708,7 +709,7 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
                     StringValueBufferVariableName,
                     _tagHelperContext.TagHelperContentGetContentMethodName,
                     endLine: false,
-                    parameters: new string[] { _tagHelperContext.HtmlEncoderPropertyName });
+                    parameters: _tagHelperContext.HtmlEncoderPropertyName);
             }
         }
 
