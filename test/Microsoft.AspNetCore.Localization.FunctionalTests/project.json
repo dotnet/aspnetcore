@@ -13,6 +13,8 @@
   },
   "frameworks": {
     "dnx451": { },
-    "dnxcore50": { }
+    "dnxcore50": {
+      "imports": "portable-net451+win8"
+    }
   }
 }

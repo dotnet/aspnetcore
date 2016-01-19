@@ -10,8 +10,6 @@ addons:
     - libssl-dev
     - libunwind8
     - zlib1g
-env:
-  - KOREBUILD_DNU_RESTORE_CORECLR=true KOREBUILD_TEST_DNXCORE=true
 install:
   - curl -sSL https://github.com/libuv/libuv/archive/v1.4.2.tar.gz | tar zxfv - -C /tmp && cd /tmp/libuv-1.4.2/
   - sh autogen.sh
@@ -22,5 +20,9 @@ install:
   - cd $OLDPWD
 mono:
   - 4.0.5
+os:
+  - linux
+  - osx
+osx_image: xcode7.1
 script:
   - ./build.sh --quiet verify

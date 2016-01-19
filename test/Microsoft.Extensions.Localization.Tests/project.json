@@ -17,6 +17,7 @@
       }
     },
     "dnxcore50": {
+      "imports": "portable-net451+win8",
       "dependencies": {
         "moq.netcore": "4.4.0-beta8",
         "System.Resources.Writer": "4.0.0-*"
