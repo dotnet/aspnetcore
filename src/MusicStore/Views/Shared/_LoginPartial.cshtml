@@ -1,11 +1,15 @@
-﻿@using System.Security.Claims
+﻿@using Microsoft.AspNet.Identity
+@using MusicStore.Models
 
-@if (User.IsSignedIn())
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
+@if (SignInManager.IsSignedIn(User))
 {
     <form asp-controller="Account" asp-action="LogOff" method="post" id="logoutForm" class="navbar-right">
         <ul class="nav navbar-nav navbar-right">
             <li>
-                <a asp-controller="Manage" asp-action="Index" title="Manage">Hello @User.GetUserName()!</a>
+                <a asp-controller="Manage" asp-action="Index" title="Manage">Hello @UserManager.GetUserName(User)!</a>
             </li>
             <li><a href="javascript:document.getElementById('logoutForm').submit()">Log off</a></li>
         </ul>
@@ -16,7 +20,7 @@ else if (User.Identity.IsAuthenticated)
     //This code block necessary only for NTLM authentication
     <ul class="nav navbar-nav navbar-right">
         <li>
-            <p class="nav navbar-text navbar-right">Hello, @User.GetUserName()!</p>
+            <p class="nav navbar-text navbar-right">Hello, @UserManager.GetUserName(User)!</p>
         </li>
     </ul>
 }
