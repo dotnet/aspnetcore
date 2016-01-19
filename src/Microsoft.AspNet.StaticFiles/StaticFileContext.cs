@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Extensions;
 using Microsoft.AspNet.Http.Features;
 using Microsoft.AspNet.Http.Headers;
 using Microsoft.AspNet.StaticFiles.Infrastructure;
