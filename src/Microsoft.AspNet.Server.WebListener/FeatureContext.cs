@@ -65,7 +65,6 @@ namespace Microsoft.AspNet.Server.WebListener
         private IPAddress _localIpAddress;
         private int? _remotePort;
         private int? _localPort;
-        private bool? _isLocal;
         private string _requestId;
         private X509Certificate2 _clientCert;
         private ClaimsPrincipal _user;
@@ -217,19 +216,6 @@ namespace Microsoft.AspNet.Server.WebListener
                 return _scheme;
             }
             set { _scheme = value; }
-        }
-
-        bool IHttpConnectionFeature.IsLocal
-        {
-            get
-            {
-                if (_isLocal == null)
-                {
-                    _isLocal = Request.IsLocal;
-                }
-                return _isLocal.Value;
-            }
-            set { _isLocal = value; }
         }
 
         IPAddress IHttpConnectionFeature.LocalIpAddress

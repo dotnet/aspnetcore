@@ -294,14 +294,6 @@ namespace Microsoft.Net.Http.Server
             get { return _path; }
         }
 
-        public bool IsLocal
-        {
-            get
-            {
-                return LocalEndPoint.GetIPAddress().Equals(RemoteEndPoint.GetIPAddress());
-            }
-        }
-
         public bool IsSecureConnection
         {
             get

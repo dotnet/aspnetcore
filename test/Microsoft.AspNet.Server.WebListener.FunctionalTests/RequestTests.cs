@@ -59,7 +59,6 @@ namespace Microsoft.AspNet.Server.WebListener
                     Assert.NotEqual(0, connectionInfo.RemotePort);
                     Assert.Equal("::1", connectionInfo.LocalIpAddress.ToString());
                     Assert.NotEqual(0, connectionInfo.LocalPort);
-                    Assert.True(connectionInfo.IsLocal);
 
                     // Trace identifier
                     var requestIdentifierFeature = httpContext.Features.Get<IHttpRequestIdentifierFeature>();

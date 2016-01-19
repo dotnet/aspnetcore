@@ -39,7 +39,6 @@ namespace Microsoft.Net.Http.Server
                 Assert.NotEqual(0, request.RemotePort);
                 Assert.Equal("::1", request.LocalIpAddress.ToString());
                 Assert.NotEqual(0, request.LocalPort);
-                Assert.True(request.IsLocal);
 
                 // Note: Response keys are validated in the ResponseTests
 

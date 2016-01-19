@@ -30,7 +30,6 @@ namespace HelloWorld
 
                     // Request
                     // context.Request.ProtocolVersion
-                    // context.Request.IsLocal
                     // context.Request.Headers
                     // context.Request.Method
                     // context.Request.Body
