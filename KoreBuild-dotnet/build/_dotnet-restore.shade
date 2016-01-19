@@ -10,6 +10,6 @@ restoreDir=''
 default currentDir = '${ Directory.GetCurrentDirectory() }'
 default restoreDir = '${ currentDir }'
 
-default restore_options=' ${ E("KOREBUILD_DOTNET_RESTORE_OPTIONS") }
+default restore_options=' ${ E("KOREBUILD_DOTNET_RESTORE_OPTIONS") } '
 
 dotnet command='restore${ restore_options }' workingDir='${ restoreDir }'
