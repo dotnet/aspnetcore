@@ -20,12 +20,11 @@ namespace Microsoft.AspNet.Hosting
                 { WebHostDefaults.CaptureStartupErrorsKey, "true" }
             };
 
-            // We are adding all environment variables first and then adding the ASPNET_ ones
-            // with the prefix removed to unify with the command line and config file formats
+            // Setup the default locations for finding hosting configuration options
+            // hosting.json, ASPNET_ prefixed env variables and command line arguments
             var configBuilder = new ConfigurationBuilder()
                 .AddInMemoryCollection(defaultSettings)
                 .AddJsonFile(WebHostDefaults.HostingJsonFile, optional: true)
-                .AddEnvironmentVariables()
                 .AddEnvironmentVariables(prefix: WebHostDefaults.EnvironmentVariablesPrefix);
 
             if (args != null)
