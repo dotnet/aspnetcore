@@ -111,6 +111,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                 MissingBindRequiredValueAccessor = name => $"A value for the '{ name }' property was not provided.",
                 MissingKeyOrValueAccessor = () => $"A value is required.",
                 ValueMustNotBeNullAccessor = value => $"The value '{ value }' is invalid.",
+                AttemptedValueIsInvalidAccessor = (value, name) => $"The value '{ value }' is not valid for { name }.",
+                UnknownValueIsInvalidAccessor = name => $"The supplied value is invalid for { name }.",
+                ValueIsInvalidAccessor = value => $"The value '{ value }' is invalid.",
             };
         }
 

@@ -676,7 +676,12 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         /// <inheritdoc />
         public IHtmlContent ValidationMessage(string expression, string message, object htmlAttributes, string tag)
         {
-            return GenerateValidationMessage(expression, message, htmlAttributes, tag);
+            return GenerateValidationMessage(
+                modelExplorer: null,
+                expression: expression,
+                message: message,
+                tag: tag,
+                htmlAttributes: htmlAttributes);
         }
 
         /// <inheritdoc />
@@ -1135,17 +1140,19 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         }
 
         protected virtual IHtmlContent GenerateValidationMessage(
+            ModelExplorer modelExplorer,
             string expression,
             string message,
-            object htmlAttributes,
-            string tag)
+            string tag,
+            object htmlAttributes)
         {
             var tagBuilder = _htmlGenerator.GenerateValidationMessage(
                 ViewContext,
-                expression: expression,
-                message: message,
-                tag: tag,
-                htmlAttributes: htmlAttributes);
+                modelExplorer,
+                expression,
+                message,
+                tag,
+                htmlAttributes);
             if (tagBuilder == null)
             {
                 return HtmlString.Empty;

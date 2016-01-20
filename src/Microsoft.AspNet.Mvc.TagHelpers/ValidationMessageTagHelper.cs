@@ -64,11 +64,13 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
             if (For != null)
             {
-                var tagBuilder = Generator.GenerateValidationMessage(ViewContext,
-                                                                     For.Name,
-                                                                     message: null,
-                                                                     tag: null,
-                                                                     htmlAttributes: null);
+                var tagBuilder = Generator.GenerateValidationMessage(
+                    ViewContext,
+                    For.ModelExplorer,
+                    For.Name,
+                    message: null,
+                    tag: null,
+                    htmlAttributes: null);
 
                 if (tagBuilder != null)
                 {

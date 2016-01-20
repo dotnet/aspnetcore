@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.AspNet.Mvc.ModelBinding.Metadata;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
@@ -737,6 +738,38 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         }
 
         [Fact]
+        public void ModelStateDictionary_AddsCustomErrorMessage_WhenModelStateNotSet()
+        {
+            // Arrange
+            var expected = "Hmm, the supplied value is not valid for Length.";
+            var dictionary = new ModelStateDictionary();
+
+            var messageProvider = new ModelBindingMessageProvider
+            {
+                MissingBindRequiredValueAccessor = name => "Unexpected MissingBindRequiredValueAccessor use",
+                MissingKeyOrValueAccessor = () => "Unexpected MissingKeyOrValueAccessor use",
+                ValueMustNotBeNullAccessor = value => "Unexpected ValueMustNotBeNullAccessor use",
+                AttemptedValueIsInvalidAccessor =
+                    (value, name) => "Unexpected InvalidValueWithKnownAttemptedValueAccessor use",
+                UnknownValueIsInvalidAccessor = name => $"Hmm, the supplied value is not valid for { name }.",
+                ValueIsInvalidAccessor = value => "Unexpected InvalidValueWithUnknownModelErrorAccessor use",
+            };
+            var bindingMetadataProvider = new DefaultBindingMetadataProvider(messageProvider);
+            var compositeProvider = new DefaultCompositeMetadataDetailsProvider(new[] { bindingMetadataProvider });
+            var provider = new DefaultModelMetadataProvider(compositeProvider);
+            var metadata = provider.GetMetadataForProperty(typeof(string), nameof(string.Length));
+
+            // Act
+            dictionary.TryAddModelError("key", new FormatException(), metadata);
+
+            // Assert
+            var entry = Assert.Single(dictionary);
+            Assert.Equal("key", entry.Key);
+            var error = Assert.Single(entry.Value.Errors);
+            Assert.Equal(expected, error.ErrorMessage);
+        }
+
+        [Fact]
         public void ModelStateDictionary_ReturnSpecificErrorMessage_WhenModelStateSet()
         {
             // Arrange
@@ -751,6 +784,39 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
 
             // Assert
             var error = Assert.Single(dictionary["key"].Errors);
+            Assert.Equal(expected, error.ErrorMessage);
+        }
+
+        [Fact]
+        public void ModelStateDictionary_AddsCustomErrorMessage_WhenModelStateSet()
+        {
+            // Arrange
+            var expected = "Hmm, the value 'some value' is not valid for Length.";
+            var dictionary = new ModelStateDictionary();
+            dictionary.SetModelValue("key", new string[] { "some value" }, "some value");
+
+            var messageProvider = new ModelBindingMessageProvider
+            {
+                MissingBindRequiredValueAccessor = name => "Unexpected MissingBindRequiredValueAccessor use",
+                MissingKeyOrValueAccessor = () => "Unexpected MissingKeyOrValueAccessor use",
+                ValueMustNotBeNullAccessor = value => "Unexpected ValueMustNotBeNullAccessor use",
+                AttemptedValueIsInvalidAccessor =
+                    (value, name) => $"Hmm, the value '{ value }' is not valid for { name }.",
+                UnknownValueIsInvalidAccessor = name => "Unexpected InvalidValueWithUnknownAttemptedValueAccessor use",
+                ValueIsInvalidAccessor = value => "Unexpected InvalidValueWithUnknownModelErrorAccessor use",
+            };
+            var bindingMetadataProvider = new DefaultBindingMetadataProvider(messageProvider);
+            var compositeProvider = new DefaultCompositeMetadataDetailsProvider(new[] { bindingMetadataProvider });
+            var provider = new DefaultModelMetadataProvider(compositeProvider);
+            var metadata = provider.GetMetadataForProperty(typeof(string), nameof(string.Length));
+
+            // Act
+            dictionary.TryAddModelError("key", new FormatException(), metadata);
+
+            // Assert
+            var entry = Assert.Single(dictionary);
+            Assert.Equal("key", entry.Key);
+            var error = Assert.Single(entry.Value.Errors);
             Assert.Equal(expected, error.ErrorMessage);
         }
 

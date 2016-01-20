@@ -3,27 +3,44 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Microsoft.AspNet.Mvc.ModelBinding;
 
 namespace Microsoft.AspNet.Mvc.ViewFeatures.Internal
 {
-    internal static class ValidationHelpers
+    public static class ValidationHelpers
     {
-        public static string GetUserErrorMessageOrDefault(ModelError modelError, ModelStateEntry entry)
+        public static string GetModelErrorMessageOrDefault(ModelError modelError)
         {
+            Debug.Assert(modelError != null);
+
             if (!string.IsNullOrEmpty(modelError.ErrorMessage))
             {
                 return modelError.ErrorMessage;
             }
 
-            if (entry == null)
+            // Default in the ValidationSummary case is no error message.
+            return string.Empty;
+        }
+
+        public static string GetModelErrorMessageOrDefault(
+            ModelError modelError,
+            ModelStateEntry containingEntry,
+            ModelExplorer modelExplorer)
+        {
+            Debug.Assert(modelError != null);
+            Debug.Assert(containingEntry != null);
+            Debug.Assert(modelExplorer != null);
+
+            if (!string.IsNullOrEmpty(modelError.ErrorMessage))
             {
-                return string.Empty;
+                return modelError.ErrorMessage;
             }
 
-            var attemptedValue = entry.AttemptedValue ?? "null";
-            return Resources.FormatCommon_ValueNotValidForProperty(attemptedValue);
+            // Default in the ValidationMessage case is a fallback error message.
+            var attemptedValue = containingEntry.AttemptedValue ?? "null";
+            return modelExplorer.Metadata.ModelBindingMessageProvider.ValueIsInvalidAccessor(attemptedValue);
         }
 
         // Returns non-null list of model states, which caller will render in order provided.

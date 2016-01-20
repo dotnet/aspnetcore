@@ -69,8 +69,8 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         /// Generate a &lt;input type="checkbox".../&gt; element.
         /// </summary>
         /// <param name="viewContext">The <see cref="ViewContext"/> instance for the current scope.</param>
-        /// <param name="modelExplorer">The <see cref="ModelExplorer"/> for the model.</param>
-        /// <param name="expression">The model expression.</param>
+        /// <param name="modelExplorer">The <see cref="ModelExplorer"/> for the <paramref name="expression"/>.</param>
+        /// <param name="expression">Expression name, relative to the current model.</param>
         /// <param name="isChecked">The initial state of the checkbox element.</param>
         /// <param name="htmlAttributes">
         /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
@@ -323,8 +323,36 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             string format,
             object htmlAttributes);
 
+        /// <summary>
+        /// Generate a <paramref name="tag"/> element if the <paramref name="viewContext"/>'s
+        /// <see cref="ActionContext.ModelState"/> contains an error for the <paramref name="expression"/>.
+        /// </summary>
+        /// <param name="viewContext">A <see cref="ViewContext"/> instance for the current scope.</param>
+        /// <param name="modelExplorer">The <see cref="ModelExplorer"/> for the <paramref name="expression"/>.</param>
+        /// <param name="expression">Expression name, relative to the current model.</param>
+        /// <param name="message">
+        /// The message to be displayed. If <c>null</c> or empty, method extracts an error string from the
+        /// <see cref="ModelBinding.ModelStateDictionary"/> object. Message will always be visible but client-side
+        /// validation may update the associated CSS class.
+        /// </param>
+        /// <param name="tag">
+        /// The tag to wrap the <paramref name="message"/> in the generated HTML. Its default value is
+        /// <see cref="ViewContext.ValidationMessageElement"/>.
+        /// </param>
+        /// <param name="htmlAttributes">
+        /// An <see cref="object"/> that contains the HTML attributes for the element. Alternatively, an
+        /// <see cref="IDictionary{string, object}"/> instance containing the HTML attributes.
+        /// </param>
+        /// <returns>
+        /// A <see cref="TagBuilder"/> containing a <paramref name="tag"/> element if the
+        /// <paramref name="viewContext"/>'s <see cref="ActionContext.ModelState"/> contains an error for the
+        /// <paramref name="expression"/> or (as a placeholder) if client-side validation is enabled. <c>null</c> if
+        /// the <paramref name="expression"/> is valid and client-side validation is disabled.
+        /// </returns>
+        /// <remarks><see cref="ViewContext.ValidationMessageElement"/> is <c>"span"</c> by default.</remarks>
         TagBuilder GenerateValidationMessage(
             ViewContext viewContext,
+            ModelExplorer modelExplorer,
             string expression,
             string message,
             string tag,

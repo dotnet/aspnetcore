@@ -40,6 +40,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
                     MissingBindRequiredValueAccessor = Resources.FormatModelBinding_MissingBindRequiredMember,
                     MissingKeyOrValueAccessor = Resources.FormatKeyValuePair_BothKeyAndValueMustBePresent,
                     ValueMustNotBeNullAccessor = Resources.FormatModelBinding_NullValueNotValid,
+                    AttemptedValueIsInvalidAccessor = Resources.FormatModelState_AttemptedValueIsInvalid,
+                    UnknownValueIsInvalidAccessor = Resources.FormatModelState_UnknownValueIsInvalid,
+                    ValueIsInvalidAccessor = Resources.FormatHtmlGeneration_ValueIsInvalid,
                 };
             }
         }

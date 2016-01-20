@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.Abstractions;
-using Microsoft.AspNet.Mvc.Controllers;
 using Microsoft.AspNet.Mvc.ModelBinding;
 #if !DNXCORE50
 using Microsoft.AspNet.Testing.xunit;
@@ -250,6 +249,64 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             Assert.Equal("The value 'abcd' is not valid for Int32.", error.ErrorMessage);
         }
 
+        [Fact]
+        public async Task BindParameter_NonConvertableValue_GetsCustomErrorMessage()
+        {
+            // Arrange
+            var parameterType = typeof(int);
+            var metadataProvider = new TestModelMetadataProvider();
+            metadataProvider
+                .ForType(parameterType)
+                .BindingDetails(binding =>
+                {
+                    // A real details provider could customize message based on BindingMetadataProviderContext.
+                    binding.ModelBindingMessageProvider.AttemptedValueIsInvalidAccessor =
+                        (value, name) => $"Hmm, '{ value }' is not a valid value for '{ name }'.";
+                });
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder(metadataProvider);
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "Parameter1",
+                BindingInfo = new BindingInfo(),
+                ParameterType = parameterType
+            };
+
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(request =>
+            {
+                request.QueryString = QueryString.Create("Parameter1", "abcd");
+            });
+
+            var modelState = operationContext.ActionContext.ModelState;
+
+            // Act
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext);
+
+            // Assert
+
+            // ModelBindingResult
+            Assert.False(modelBindingResult.IsModelSet);
+
+            // Model
+            Assert.Null(modelBindingResult.Model);
+
+            // ModelState
+            Assert.False(modelState.IsValid);
+            Assert.Equal(1, modelState.Count);
+            Assert.Equal(1, modelState.ErrorCount);
+
+            var key = Assert.Single(modelState.Keys);
+            Assert.Equal("Parameter1", key);
+
+            var entry = modelState[key];
+            Assert.Equal("abcd", entry.RawValue);
+            Assert.Equal("abcd", entry.AttemptedValue);
+            Assert.Equal(ModelValidationState.Invalid, entry.ValidationState);
+
+            var error = Assert.Single(entry.Errors);
+            Assert.Null(error.Exception);
+            Assert.Equal($"Hmm, 'abcd' is not a valid value for 'Int32'.", error.ErrorMessage);
+        }
+
 #if DNXCORE50
         [Theory]
 #else
@@ -306,12 +363,12 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             var metadataProvider = new TestModelMetadataProvider();
             metadataProvider
                 .ForType(parameterType)
-                .BindingDetails((Action<ModelBinding.Metadata.BindingMetadata>)(binding =>
+                .BindingDetails(binding =>
                 {
                     // A real details provider could customize message based on BindingMetadataProviderContext.
                     binding.ModelBindingMessageProvider.ValueMustNotBeNullAccessor =
                         value => $"Hurts when '{ value }' is provided.";
-                }));
+                });
             var argumentBinder = ModelBindingTestHelper.GetArgumentBinder(metadataProvider);
 
             var parameter = new ParameterDescriptor

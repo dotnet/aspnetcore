@@ -688,6 +688,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         /// <inheritdoc />
         public virtual TagBuilder GenerateValidationMessage(
             ViewContext viewContext,
+            ModelExplorer modelExplorer,
             string expression,
             string message,
             string tag,
@@ -754,8 +755,12 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             }
             else if (modelError != null)
             {
+                modelExplorer = modelExplorer ?? ExpressionMetadataProvider.FromStringExpression(
+                    expression,
+                    viewContext.ViewData,
+                    _metadataProvider);
                 tagBuilder.InnerHtml.SetContent(
-                    ValidationHelpers.GetUserErrorMessageOrDefault(modelError, entry));
+                    ValidationHelpers.GetModelErrorMessageOrDefault(modelError, entry, modelExplorer));
             }
 
             if (formContext != null)
@@ -818,7 +823,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                 for (var i = 0; i < modelState.Errors.Count; i++)
                 {
                     var modelError = modelState.Errors[i];
-                    var errorText = ValidationHelpers.GetUserErrorMessageOrDefault(modelError, entry: null);
+                    var errorText = ValidationHelpers.GetModelErrorMessageOrDefault(modelError);
 
                     if (!string.IsNullOrEmpty(errorText))
                     {

@@ -80,7 +80,10 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             }
 
             var modelExplorer = GetModelExplorer(expression);
-            return GenerateCheckBox(modelExplorer, GetExpressionName(expression), isChecked: null,
+            return GenerateCheckBox(
+                modelExplorer,
+                GetExpressionName(expression),
+                isChecked: null,
                 htmlAttributes: htmlAttributes);
         }
 
@@ -96,10 +99,13 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                 throw new ArgumentNullException(nameof(expression));
             }
 
-            var modelExplorer = ExpressionMetadataProvider.FromLambdaExpression(expression, ViewData, MetadataProvider);
-
-            return GenerateDropDown(modelExplorer, ExpressionHelper.GetExpressionText(expression), selectList,
-                optionLabel, htmlAttributes);
+            var modelExplorer = GetModelExplorer(expression);
+            return GenerateDropDown(
+                modelExplorer,
+                GetExpressionName(expression),
+                selectList,
+                optionLabel,
+                htmlAttributes);
         }
 
         /// <inheritdoc />
@@ -114,14 +120,12 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                 throw new ArgumentNullException(nameof(expression));
             }
 
-            var modelExplorer = ExpressionMetadataProvider.FromLambdaExpression(expression,
-                                                                           ViewData,
-                                                                           MetadataProvider);
-
-            return GenerateDisplay(modelExplorer,
-                                   htmlFieldName ?? ExpressionHelper.GetExpressionText(expression),
-                                   templateName,
-                                   additionalViewData);
+            var modelExplorer = GetModelExplorer(expression);
+            return GenerateDisplay(
+                modelExplorer,
+                htmlFieldName ?? GetExpressionName(expression),
+                templateName,
+                additionalViewData);
         }
 
         /// <inheritdoc />
@@ -133,7 +137,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             }
 
             var modelExplorer = GetModelExplorer(expression);
-            return GenerateDisplayName(modelExplorer, ExpressionHelper.GetExpressionText(expression));
+            return GenerateDisplayName(modelExplorer, GetExpressionName(expression));
         }
 
         /// <inheritdoc />
@@ -182,11 +186,10 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                 throw new ArgumentNullException(nameof(expression));
             }
 
-            var modelExplorer = ExpressionMetadataProvider.FromLambdaExpression(expression, ViewData, MetadataProvider);
-
+            var modelExplorer = GetModelExplorer(expression);
             return GenerateEditor(
                 modelExplorer,
-                htmlFieldName ?? ExpressionHelper.GetExpressionText(expression),
+                htmlFieldName ?? GetExpressionName(expression),
                 templateName,
                 additionalViewData);
         }
@@ -233,11 +236,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             }
 
             var modelExplorer = GetModelExplorer(expression);
-            return GenerateLabel(
-                modelExplorer,
-                ExpressionHelper.GetExpressionText(expression),
-                labelText,
-                htmlAttributes);
+            return GenerateLabel(modelExplorer, GetExpressionName(expression), labelText, htmlAttributes);
         }
 
         /// <inheritdoc />
@@ -252,7 +251,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             }
 
             var modelExplorer = GetModelExplorer(expression);
-            var name = ExpressionHelper.GetExpressionText(expression);
+            var name = GetExpressionName(expression);
 
             return GenerateListBox(modelExplorer, name, selectList, htmlAttributes);
         }
@@ -365,7 +364,8 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                 throw new ArgumentNullException(nameof(expression));
             }
 
-            var modelExplorer = ExpressionMetadataProvider.FromLambdaExpression(expression, ViewData, MetadataProvider);
+            var modelExplorer =
+                ExpressionMetadataProvider.FromLambdaExpression(expression, ViewData, MetadataProvider);
             if (modelExplorer == null)
             {
                 var expressionName = GetExpressionName(expression);
@@ -387,10 +387,13 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
                 throw new ArgumentNullException(nameof(expression));
             }
 
-            return GenerateValidationMessage(ExpressionHelper.GetExpressionText(expression),
+            var modelExplorer = GetModelExplorer(expression);
+            return GenerateValidationMessage(
+                modelExplorer,
+                GetExpressionName(expression),
                 message,
-                htmlAttributes,
-                tag);
+                tag,
+                htmlAttributes);
         }
 
         /// <inheritdoc />
@@ -402,11 +405,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             }
 
             var modelExplorer = GetModelExplorer(expression);
-            return GenerateValue(
-                ExpressionHelper.GetExpressionText(expression),
-                modelExplorer.Model,
-                format,
-                useViewData: false);
+            return GenerateValue(GetExpressionName(expression), modelExplorer.Model, format, useViewData: false);
         }
     }
 }

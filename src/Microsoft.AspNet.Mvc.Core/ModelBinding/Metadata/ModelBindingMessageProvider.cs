@@ -13,6 +13,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
         private Func<string, string> _missingBindRequiredValueAccessor;
         private Func<string> _missingKeyOrValueAccessor;
         private Func<string, string> _valueMustNotBeNullAccessor;
+        private Func<string, string, string> _attemptedValueIsInvalidAccessor;
+        private Func<string, string> _unknownValueIsInvalidAccessor;
+        private Func<string, string> _valueIsInvalidAccessor;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ModelBindingMessageProvider"/> class.
@@ -36,6 +39,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
             MissingBindRequiredValueAccessor = originalProvider.MissingBindRequiredValueAccessor;
             MissingKeyOrValueAccessor = originalProvider.MissingKeyOrValueAccessor;
             ValueMustNotBeNullAccessor = originalProvider.ValueMustNotBeNullAccessor;
+            AttemptedValueIsInvalidAccessor = originalProvider.AttemptedValueIsInvalidAccessor;
+            UnknownValueIsInvalidAccessor = originalProvider.UnknownValueIsInvalidAccessor;
+            ValueIsInvalidAccessor = originalProvider.ValueIsInvalidAccessor;
         }
 
         /// <inheritdoc/>
@@ -89,6 +95,60 @@ namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
                 }
 
                 _valueMustNotBeNullAccessor = value;
+            }
+        }
+
+        /// <inheritdoc/>
+        public Func<string, string, string> AttemptedValueIsInvalidAccessor
+        {
+            get
+            {
+                return _attemptedValueIsInvalidAccessor;
+            }
+            set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
+
+                _attemptedValueIsInvalidAccessor = value;
+            }
+        }
+
+        /// <inheritdoc/>
+        public Func<string, string> UnknownValueIsInvalidAccessor
+        {
+            get
+            {
+                return _unknownValueIsInvalidAccessor;
+            }
+            set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
+
+                _unknownValueIsInvalidAccessor = value;
+            }
+        }
+
+        /// <inheritdoc/>
+        public Func<string, string> ValueIsInvalidAccessor
+        {
+            get
+            {
+                return _valueIsInvalidAccessor;
+            }
+            set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
+
+                _valueIsInvalidAccessor = value;
             }
         }
     }

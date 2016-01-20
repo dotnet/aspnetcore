@@ -699,22 +699,6 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
         }
 
         /// <summary>
-        /// The value '{0}' is invalid.
-        /// </summary>
-        internal static string Common_ValueNotValidForProperty
-        {
-            get { return GetString("Common_ValueNotValidForProperty"); }
-        }
-
-        /// <summary>
-        /// The value '{0}' is invalid.
-        /// </summary>
-        internal static string FormatCommon_ValueNotValidForProperty(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("Common_ValueNotValidForProperty"), p0);
-        }
-
-        /// <summary>
         /// No URL for remote validation could be found.
         /// </summary>
         internal static string RemoteAttribute_NoUrlFound

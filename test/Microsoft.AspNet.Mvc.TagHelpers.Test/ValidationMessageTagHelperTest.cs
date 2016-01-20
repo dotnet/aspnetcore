@@ -93,16 +93,22 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         {
             // Arrange
             var expectedViewContext = CreateViewContext();
+            var modelExpression = CreateModelExpression("Hello");
             var generator = new Mock<IHtmlGenerator>();
             generator
-                .Setup(mock =>
-                    mock.GenerateValidationMessage(expectedViewContext, "Hello", null, null, null))
+                .Setup(mock => mock.GenerateValidationMessage(
+                    expectedViewContext,
+                    modelExpression.ModelExplorer,
+                    modelExpression.Name,
+                    null,
+                    null,
+                    null))
                 .Returns(new TagBuilder("span"))
                 .Verifiable();
 
             var validationMessageTagHelper = new ValidationMessageTagHelper(generator.Object)
             {
-                For = CreateModelExpression("Hello")
+                For = modelExpression,
             };
             var expectedPreContent = "original pre-content";
             var expectedContent = "original content";
@@ -155,6 +161,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var setup = generator
                 .Setup(mock => mock.GenerateValidationMessage(
                     It.IsAny<ViewContext>(),
+                    It.IsAny<ModelExplorer>(),
                     It.IsAny<string>(),
                     It.IsAny<string>(),
                     It.IsAny<string>(),
@@ -214,6 +221,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var setup = generator
                 .Setup(mock => mock.GenerateValidationMessage(
                     It.IsAny<ViewContext>(),
+                    It.IsAny<ModelExplorer>(),
                     It.IsAny<string>(),
                     It.IsAny<string>(),
                     It.IsAny<string>(),

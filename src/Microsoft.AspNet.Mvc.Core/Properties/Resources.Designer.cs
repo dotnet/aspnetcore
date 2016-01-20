@@ -475,7 +475,7 @@ namespace Microsoft.AspNet.Mvc.Core
         }
 
         /// <summary>
-        /// Unable to find the required services. Please add all the required services by calling '{0}.{1}' inside the call to '{4}' in the application startup code.
+        /// Unable to find the required services. Please add all the required services by calling '{0}.{1}' inside the call to '{2}' in the application startup code.
         /// </summary>
         internal static string UnableToFindServices
         {
@@ -483,11 +483,11 @@ namespace Microsoft.AspNet.Mvc.Core
         }
 
         /// <summary>
-        /// Unable to find the required services. Please add all the required services by calling '{0}.{1}' inside the call to '{4}' in the application startup code.
+        /// Unable to find the required services. Please add all the required services by calling '{0}.{1}' inside the call to '{2}' in the application startup code.
         /// </summary>
-        internal static string FormatUnableToFindServices(object p0, object p1, object p4)
+        internal static string FormatUnableToFindServices(object p0, object p1, object p2)
         {
-            return string.Format(CultureInfo.CurrentCulture, GetString("UnableToFindServices"), p0, p1, p4);
+            return string.Format(CultureInfo.CurrentCulture, GetString("UnableToFindServices"), p0, p1, p2);
         }
 
         /// <summary>
@@ -1064,6 +1064,54 @@ namespace Microsoft.AspNet.Mvc.Core
         internal static string FormatAcceptHeaderParser_ParseAcceptHeader_InvalidValues(object p0)
         {
             return string.Format(CultureInfo.CurrentCulture, GetString("AcceptHeaderParser_ParseAcceptHeader_InvalidValues"), p0);
+        }
+
+        /// <summary>
+        /// The value '{0}' is not valid for {1}.
+        /// </summary>
+        internal static string ModelState_AttemptedValueIsInvalid
+        {
+            get { return GetString("ModelState_AttemptedValueIsInvalid"); }
+        }
+
+        /// <summary>
+        /// The value '{0}' is not valid for {1}.
+        /// </summary>
+        internal static string FormatModelState_AttemptedValueIsInvalid(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("ModelState_AttemptedValueIsInvalid"), p0, p1);
+        }
+
+        /// <summary>
+        /// The supplied value is invalid for {0}.
+        /// </summary>
+        internal static string ModelState_UnknownValueIsInvalid
+        {
+            get { return GetString("ModelState_UnknownValueIsInvalid"); }
+        }
+
+        /// <summary>
+        /// The supplied value is invalid for {0}.
+        /// </summary>
+        internal static string FormatModelState_UnknownValueIsInvalid(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("ModelState_UnknownValueIsInvalid"), p0);
+        }
+
+        /// <summary>
+        /// The value '{0}' is invalid.
+        /// </summary>
+        internal static string HtmlGeneration_ValueIsInvalid
+        {
+            get { return GetString("HtmlGeneration_ValueIsInvalid"); }
+        }
+
+        /// <summary>
+        /// The value '{0}' is invalid.
+        /// </summary>
+        internal static string FormatHtmlGeneration_ValueIsInvalid(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("HtmlGeneration_ValueIsInvalid"), p0);
         }
 
         private static string GetString(string name, params string[] formatterNames)

@@ -168,10 +168,4 @@
   <data name="BindingSource_MustBeGreedy" xml:space="preserve">
     <value>The provided binding source '{0}' is not a greedy data source. '{1}' only supports greedy data sources.</value>
   </data>
-  <data name="ModelError_InvalidValue_GenericMessage" xml:space="preserve">
-    <value>The supplied value is invalid for {0}.</value>
-  </data>
-  <data name="ModelError_InvalidValue_MessageWithModelValue" xml:space="preserve">
-    <value>The value '{0}' is not valid for {1}.</value>
-  </data>
 </root>

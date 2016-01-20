@@ -165,12 +165,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             // Act and assert
             var ex = Assert.Throws<ArgumentException>(
                 "expression",
-                () => htmlGenerator.GenerateValidationMessage(
-                    viewContext,
-                    null,
-                    "Message",
-                    "tag",
-                    null));
+                () => htmlGenerator.GenerateValidationMessage(viewContext, null, null, "Message", "tag", null));
 
             Assert.Equal(expected, ex.Message);
         }
