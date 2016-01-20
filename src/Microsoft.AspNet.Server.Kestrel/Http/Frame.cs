@@ -464,14 +464,14 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
             SocketOutput.Write(data, immediate: false, chunk: true);
         }
 
-        private async Task WriteChunkedAsync(ArraySegment<byte> data, CancellationToken cancellationToken)
+        private Task WriteChunkedAsync(ArraySegment<byte> data, CancellationToken cancellationToken)
         {
-            await SocketOutput.WriteAsync(data, immediate: false, chunk: true, cancellationToken: cancellationToken);
+            return SocketOutput.WriteAsync(data, immediate: false, chunk: true, cancellationToken: cancellationToken);
         }
 
-        private void WriteChunkedResponseSuffix()
+        private Task WriteChunkedResponseSuffix()
         {
-            SocketOutput.Write(_endChunkedResponseBytes, immediate: true);
+            return SocketOutput.WriteAsync(_endChunkedResponseBytes, immediate: true);
         }
 
         private static ArraySegment<byte> CreateAsciiByteArraySegment(string text)
@@ -562,26 +562,36 @@ namespace Microsoft.AspNet.Server.Kestrel.Http
                 return ProduceEndAwaited();
             }
 
-            WriteSuffix();
-
-            return TaskUtilities.CompletedTask;
+            return WriteSuffix();
         }
 
         private async Task ProduceEndAwaited()
         {
             await ProduceStart(immediate: true, appCompleted: true);
 
-            WriteSuffix();
+            await WriteSuffix();
         }
 
-        private void WriteSuffix()
+        private Task WriteSuffix()
         {
             // _autoChunk should be checked after we are sure ProduceStart() has been called
             // since ProduceStart() may set _autoChunk to true.
             if (_autoChunk)
             {
-                WriteChunkedResponseSuffix();
+                return WriteAutoChunkSuffixAwaited();
             }
+
+            if (_keepAlive)
+            {
+                ConnectionControl.End(ProduceEndType.ConnectionKeepAlive);
+            }
+
+            return TaskUtilities.CompletedTask;
+        }
+
+        private async Task WriteAutoChunkSuffixAwaited()
+        {
+            await WriteChunkedResponseSuffix();
 
             if (_keepAlive)
             {
