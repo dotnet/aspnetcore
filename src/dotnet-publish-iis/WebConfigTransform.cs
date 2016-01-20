@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Tools.PublishIIS
 {
     public static class WebConfigTransform
     {
-        public static XDocument Transform(XDocument webConfig, string appName)
+        public static XDocument Transform(XDocument webConfig, string appName, bool configureForAzure)
         {
             const string HandlersElementName = "handlers";
             const string httpPlatformElementName = "httpPlatform";
@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Tools.PublishIIS
             var webServerSection = GetOrCreateChild(webConfig.Root, "system.webServer");
 
             TransformHandlers(GetOrCreateChild(webServerSection, HandlersElementName));
-            TransformHttpPlatform(GetOrCreateChild(webServerSection, httpPlatformElementName), appName);
+            TransformHttpPlatform(GetOrCreateChild(webServerSection, httpPlatformElementName), appName, configureForAzure);
 
             // make sure that the httpPlatform element is after handlers element
             var httpPlatformElement = webServerSection.Element(HandlersElementName)
@@ -55,11 +55,14 @@ namespace Microsoft.AspNetCore.Tools.PublishIIS
             SetAttributeValueIfEmpty(platformHandlerElement, "resourceType", "Unspecified");
         }
 
-        private static void TransformHttpPlatform(XElement httpPlatformElement, string appName)
+        private static void TransformHttpPlatform(XElement httpPlatformElement, string appName, bool configureForAzure)
         {
-            httpPlatformElement.SetAttributeValue("processPath", Path.Combine("..", appName));
+            var appPath = Path.Combine(configureForAzure ? @"%home%\site" : "..", appName);
+            var logPath = Path.Combine(configureForAzure ? @"\\?\%home%\LogFiles" : @"..\logs", "stdout.log");
+
+            httpPlatformElement.SetAttributeValue("processPath", appPath);
             SetAttributeValueIfEmpty(httpPlatformElement, "stdoutLogEnabled", "false");
-            SetAttributeValueIfEmpty(httpPlatformElement, "stdoutLogFile", @"..\logs\stdout.log");
+            SetAttributeValueIfEmpty(httpPlatformElement, "stdoutLogFile", logPath);
             SetAttributeValueIfEmpty(httpPlatformElement, "startupTimeLimit", "3600");
         }
 

@@ -1,11 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
 using System.Xml;
 using System.Xml.Linq;
-using Microsoft.Extensions.Configuration;
 using Microsoft.DotNet.ProjectModel;
+using Microsoft.Extensions.Configuration;
 
 namespace Microsoft.AspNetCore.Tools.PublishIIS
 {
@@ -39,7 +40,7 @@ namespace Microsoft.AspNetCore.Tools.PublishIIS
             }
 
             var applicationName = Path.ChangeExtension(GetApplicationName(applicationBasePath), "exe");
-            var transformedConfig = WebConfigTransform.Transform(webConfigXml, applicationName);
+            var transformedConfig = WebConfigTransform.Transform(webConfigXml, applicationName, ConfigureForAzure());
 
             using (var f = new FileStream(webConfigPath, FileMode.Create))
             {
@@ -91,6 +92,14 @@ namespace Microsoft.AspNetCore.Tools.PublishIIS
             }
 
             return string.Empty;
+        }
+
+        private static bool ConfigureForAzure()
+        {
+            var configureForAzureValue = Environment.GetEnvironmentVariable("DOTNET_CONFIGURE_AZURE");
+            return string.Equals(configureForAzureValue, "true", StringComparison.Ordinal) ||
+                string.Equals(configureForAzureValue, "1", StringComparison.Ordinal) ||
+                !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("WEBSITE_SITE_NAME"));
         }
     }
 }

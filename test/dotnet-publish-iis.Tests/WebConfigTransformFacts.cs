@@ -19,13 +19,15 @@ namespace Microsoft.AspNetCore.Tools.PublishIIS.Tests
         [Fact]
         public void WebConfigTransform_creates_new_config_if_one_does_not_exist()
         {
-            Assert.True(XNode.DeepEquals(WebConfigTemplate, WebConfigTransform.Transform(null, "test.exe")));
+            Assert.True(XNode.DeepEquals(WebConfigTemplate,
+                    WebConfigTransform.Transform(null, "test.exe", configureForAzure: false)));
         }
 
         [Fact]
         public void WebConfigTransform_creates_new_config_if_one_has_unexpected_format()
         {
-            Assert.True(XNode.DeepEquals(WebConfigTemplate, WebConfigTransform.Transform(XDocument.Parse("<unexpected />"), "test.exe")));
+            Assert.True(XNode.DeepEquals(WebConfigTemplate,
+                WebConfigTransform.Transform(XDocument.Parse("<unexpected />"), "test.exe", configureForAzure: false)));
         }
 
         [Theory]
@@ -42,7 +44,8 @@ namespace Microsoft.AspNetCore.Tools.PublishIIS.Tests
                 input.Descendants(elementName).Remove();
             }
 
-            Assert.True(XNode.DeepEquals(WebConfigTemplate, WebConfigTransform.Transform(input, "test.exe")));
+            Assert.True(XNode.DeepEquals(WebConfigTemplate,
+                WebConfigTransform.Transform(input, "test.exe", configureForAzure: false)));
         }
 
         [Theory]
@@ -59,7 +62,7 @@ namespace Microsoft.AspNetCore.Tools.PublishIIS.Tests
             var input = new XDocument(WebConfigTemplate);
             input.Descendants(elementName).Single().SetAttributeValue(attributeName, attributeValue);
 
-            var output = WebConfigTransform.Transform(input, "test.exe");
+            var output = WebConfigTransform.Transform(input, "test.exe", configureForAzure: false);
             Assert.Equal(attributeValue, (string)output.Descendants(elementName).Single().Attribute(attributeName));
         }
 
@@ -67,7 +70,7 @@ namespace Microsoft.AspNetCore.Tools.PublishIIS.Tests
         public void WebConfigTransform_overwrites_processPath()
         {
             var newProcessPath =
-                (string)WebConfigTransform.Transform(WebConfigTemplate, "app.exe")
+                (string)WebConfigTransform.Transform(WebConfigTemplate, "app.exe", configureForAzure: false)
                     .Descendants("httpPlatform").Single().Attribute("processPath");
 
             Assert.Equal(@"..\app.exe", newProcessPath);
@@ -79,7 +82,8 @@ namespace Microsoft.AspNetCore.Tools.PublishIIS.Tests
             var input = new XDocument(WebConfigTemplate);
             input.Descendants("add").Single().SetAttributeValue("name", "httpplatformhandler");
 
-            Assert.True(XNode.DeepEquals(WebConfigTemplate, WebConfigTransform.Transform(input, "test.exe")));
+            Assert.True(XNode.DeepEquals(WebConfigTemplate,
+                WebConfigTransform.Transform(input, "test.exe", configureForAzure: false)));
         }
 
         [Fact]
@@ -93,7 +97,8 @@ namespace Microsoft.AspNetCore.Tools.PublishIIS.Tests
             input.Descendants("httpPlatform").Single().Add(envVarsElement);
 
             Assert.True(XNode.DeepEquals(envVarsElement,
-                WebConfigTransform.Transform(input, "app.exe").Descendants("httpPlatform").Elements().Single()));
+                WebConfigTransform.Transform(input, "app.exe", configureForAzure: false)
+                    .Descendants("httpPlatform").Elements().Single()));
         }
 
         [Fact]
@@ -104,7 +109,8 @@ namespace Microsoft.AspNetCore.Tools.PublishIIS.Tests
 
             Assert.Equal(
                 "false",
-                (string)WebConfigTransform.Transform(input, "test.exe").Descendants().Attributes("stdoutLogEnabled").Single());
+                (string)WebConfigTransform.Transform(input, "test.exe", configureForAzure: false)
+                    .Descendants().Attributes("stdoutLogEnabled").Single());
         }
 
         [Theory]
@@ -124,7 +130,8 @@ namespace Microsoft.AspNetCore.Tools.PublishIIS.Tests
 
             Assert.Equal(
                 @"..\logs\stdout.log",
-                (string)WebConfigTransform.Transform(input, "test.exe").Descendants().Attributes("stdoutLogFile").Single());
+                (string)WebConfigTransform.Transform(input, "test.exe", configureForAzure: false)
+                    .Descendants().Attributes("stdoutLogFile").Single());
         }
 
         [Theory]
@@ -145,7 +152,20 @@ namespace Microsoft.AspNetCore.Tools.PublishIIS.Tests
 
             Assert.Equal(
                 "mylog.txt",
-                (string)WebConfigTransform.Transform(input, "test.exe").Descendants().Attributes("stdoutLogFile").Single());
+                (string)WebConfigTransform.Transform(input, "test.exe", configureForAzure: false)
+                    .Descendants().Attributes("stdoutLogFile").Single());
+        }
+
+        [Fact]
+        public void WebConfigTransform_correctly_configures_for_Azure()
+        {
+            var input = new XDocument(WebConfigTemplate);
+            input.Descendants("httpPlatform").Attributes().Remove();
+
+            Assert.True(XNode.DeepEquals(
+                XDocument.Parse(@"<httpPlatform processPath=""%home%\site\test.exe"" stdoutLogEnabled=""false""
+                    stdoutLogFile=""\\?\%home%\LogFiles\stdout.log"" startupTimeLimit=""3600""/>").Root,
+                WebConfigTransform.Transform(input, "test.exe", configureForAzure: true).Descendants("httpPlatform").Single()));
         }
 
         private bool VerifyMissingElementCreated(params string[] elementNames)
@@ -156,7 +176,8 @@ namespace Microsoft.AspNetCore.Tools.PublishIIS.Tests
                 input.Descendants(elementName).Remove();
             }
 
-            return XNode.DeepEquals(WebConfigTemplate, WebConfigTransform.Transform(input, "test.exe"));
+            return XNode.DeepEquals(WebConfigTemplate,
+                WebConfigTransform.Transform(input, "test.exe", configureForAzure: false));
         }
     }
 }
