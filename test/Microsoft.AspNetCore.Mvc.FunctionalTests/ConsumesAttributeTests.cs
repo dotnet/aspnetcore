@@ -32,11 +32,11 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
             // Act
             var response = await Client.SendAsync(request);
-            var product = JsonConvert.DeserializeObject<Product>(await response.Content.ReadAsStringAsync());
+            var body = await response.Content.ReadAsStringAsync();
 
             // Assert
-            Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-            Assert.Null(product);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("CreateProduct_Product_Text", body);
         }
 
         [Fact]
@@ -49,11 +49,11 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
             // Act
             var response = await Client.SendAsync(request);
-            var product = JsonConvert.DeserializeObject<Product>(await response.Content.ReadAsStringAsync());
+            var body = await response.Content.ReadAsStringAsync();
 
             // Assert
-            Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-            Assert.Null(product);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("ConsumesAttribute_PassThrough_Product_Json", body);
         }
 
         [Theory]

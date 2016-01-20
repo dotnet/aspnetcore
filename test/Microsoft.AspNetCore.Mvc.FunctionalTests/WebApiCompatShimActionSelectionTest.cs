@@ -3,6 +3,7 @@
 
 using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Xunit;
@@ -290,9 +291,6 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         [InlineData("GET", "api/Admin/Test?name=mario&ssn=123456", "GetUserByNameAndSsn")]
         [InlineData("GET", "api/Admin/Test?name=mario&ssn=123456&age=3", "GetUserByNameAgeAndSsn")]
         [InlineData("GET", "api/Admin/Test/5?random=9", "GetUser")]
-        [InlineData("POST", "api/Admin/Test", "PostUser")]
-        [InlineData("POST", "api/Admin/Test?name=mario&age=10", "PostUserByNameAndAge")]
-
         // Note: Normally the following would not match DeleteUserByIdAndOptName because it has 'id' and 'age' as parameters while the DeleteUserByIdAndOptName action has 'id' and 'name'.
         // However, because the default value is provided on action parameter 'name', having the 'id' in the request was enough to match the action.
         [InlineData("DELETE", "api/Admin/Test/6?age=10", "DeleteUserByIdAndOptName")]
@@ -317,6 +315,25 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         {
             // Arrange
             var request = new HttpRequestMessage(new HttpMethod(httpMethod), "http://localhost/" + requestUrl);
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            var data = Assert.Single(response.Headers.GetValues("ActionSelection"));
+            var result = JsonConvert.DeserializeObject<ActionSelectionResult>(data);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(expectedActionName, result.ActionName);
+        }
+
+        [Theory]
+        [InlineData("api/Admin/Test", "PostUser")]
+        [InlineData("api/Admin/Test?name=mario&age=10", "PostUserByNameAndAge")]
+        public async Task LegacyActionSelection_OverloadedAction_WithUnnamedAction(string requestUrl, string expectedActionName)
+        {
+            // Arrange
+            var request = new HttpRequestMessage(HttpMethod.Post, "http://localhost/" + requestUrl);
+            request.Content = new StringContent("{}", Encoding.UTF8, "application/json");
 
             // Act
             var response = await Client.SendAsync(request);
@@ -378,7 +395,6 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         [InlineData("GET", "api/Blog/Test/GetUser/4?id=3", "GetUser")]
         [InlineData("GET", "api/Blog/Test/GetUserByNameAgeAndSsn?name=user&age=90&ssn=123456789", "GetUserByNameAgeAndSsn")]
         [InlineData("GET", "api/Blog/Test/GetUserByNameAndSsn?name=user&ssn=123456789", "GetUserByNameAndSsn")]
-        [InlineData("POST", "api/Blog/Test/PostUserByNameAndAddress?name=user", "PostUserByNameAndAddress")]
         public async Task LegacyActionSelection_RouteWithActionName(string httpMethod, string requestUrl, string expectedActionName)
         {
             // Arrange
@@ -394,6 +410,25 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(expectedActionName, result.ActionName);
         }
 
+        [Fact]
+        public async Task LegacyActionSelection_RouteWithActionName()
+        {
+            // Arrange
+            var request = new HttpRequestMessage(
+                HttpMethod.Post,
+                "http://localhost/api/Blog/Test/PostUserByNameAndAddress?name=user");
+            request.Content = new StringContent("{}", Encoding.UTF8, "application/json");
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            var data = Assert.Single(response.Headers.GetValues("ActionSelection"));
+            var result = JsonConvert.DeserializeObject<ActionSelectionResult>(data);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("PostUserByNameAndAddress", result.ActionName);
+        }
+
         [Theory]
         [InlineData("GET", "api/Blog/Test/getusers", "GetUsers")]
         [InlineData("GET", "api/Blog/Test/getuseR/1", "GetUser")]
@@ -401,7 +436,6 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         [InlineData("GET", "api/Blog/Test/GetUser/4?Id=3", "GetUser")]
         [InlineData("GET", "api/Blog/Test/GetUserByNameAgeandSsn?name=user&age=90&ssn=123456789", "GetUserByNameAgeAndSsn")]
         [InlineData("GET", "api/Blog/Test/getUserByNameAndSsn?name=user&ssn=123456789", "GetUserByNameAndSsn")]
-        [InlineData("POST", "api/Blog/Test/PostUserByNameAndAddress?name=user", "PostUserByNameAndAddress")]
         public async Task LegacyActionSelection_RouteWithActionName_Casing(string httpMethod, string requestUrl, string expectedActionName)
         {
             // Arrange
@@ -415,6 +449,25 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var result = JsonConvert.DeserializeObject<ActionSelectionResult>(data);
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal(expectedActionName, result.ActionName);
+        }
+
+        [Fact]
+        public async Task LegacyActionSelection_RouteWithActionName_Casing()
+        {
+            // Arrange
+            var request = new HttpRequestMessage(
+                HttpMethod.Post,
+                "http://localhost/api/Blog/Test/PostUserByNameAndAddress?name=user");
+            request.Content = new StringContent("{}", Encoding.UTF8, "application/json");
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            var data = Assert.Single(response.Headers.GetValues("ActionSelection"));
+            var result = JsonConvert.DeserializeObject<ActionSelectionResult>(data);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("PostUserByNameAndAddress", result.ActionName);
         }
 
         [Theory]
@@ -438,19 +491,36 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(expectedActionName, result.ActionName);
         }
 
-
         [Theory]
         [InlineData("GET", "api/Admin/ParameterAttribute/2", "GetUser")]
         [InlineData("GET", "api/Admin/ParameterAttribute?id=2", "GetUser")]
         [InlineData("GET", "api/Admin/ParameterAttribute?myId=2", "GetUserByMyId")]
-        [InlineData("POST", "api/Admin/ParameterAttribute/3?name=user", "PostUserNameFromUri")]
-        [InlineData("POST", "api/Admin/ParameterAttribute/3", "PostUserNameFromBody")]
         [InlineData("DELETE", "api/Admin/ParameterAttribute/3?name=user", "DeleteUserWithNullableIdAndName")]
         [InlineData("DELETE", "api/Admin/ParameterAttribute?address=userStreet", "DeleteUser")]
         public async Task LegacyActionSelection_ModelBindingParameterAttribute_AreAppliedWhenSelectingActions(string httpMethod, string requestUrl, string expectedActionName)
         {
             // Arrange
             var request = new HttpRequestMessage(new HttpMethod(httpMethod), "http://localhost/" + requestUrl);
+            request.Content = new StringContent("{}", Encoding.UTF8, "application/json");
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            var data = Assert.Single(response.Headers.GetValues("ActionSelection"));
+            var result = JsonConvert.DeserializeObject<ActionSelectionResult>(data);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(expectedActionName, result.ActionName);
+        }
+
+        [Theory]
+        [InlineData("api/Admin/ParameterAttribute/3?name=user", "PostUserNameFromUri")]
+        [InlineData("api/Admin/ParameterAttribute/3", "PostUserNameFromBody")]
+        public async Task LegacyActionSelection_Post_ModelBindingParameterAttribute_AreAppliedWhenSelectingActions(string requestUrl, string expectedActionName)
+        {
+            // Arrange
+            var request = new HttpRequestMessage(HttpMethod.Post, "http://localhost/" + requestUrl);
+            request.Content = new StringContent("{}", Encoding.UTF8, "application/json");
 
             // Act
             var response = await Client.SendAsync(request);

@@ -203,7 +203,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             // Key is empty because this was a top-level binding.
             var entry = Assert.Single(bindingContext.ModelState);
             Assert.Equal(string.Empty, entry.Key);
-            var errorMessage = Assert.Single(entry.Value.Errors).ErrorMessage;
+            var errorMessage = Assert.Single(entry.Value.Errors).Exception.Message;
             Assert.Equal("Unsupported content type 'text/xyz'.", errorMessage);
         }
 

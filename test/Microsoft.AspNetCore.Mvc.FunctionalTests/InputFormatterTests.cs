@@ -60,47 +60,6 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Theory]
-        [InlineData("", true)]
-        [InlineData(null, true)]
-        [InlineData("invalid", true)]
-        [InlineData("application/custom", true)]
-        [InlineData("image/jpg", true)]
-        [InlineData("", false)]
-        [InlineData(null, false)]
-        [InlineData("invalid", false)]
-        [InlineData("application/custom", false)]
-        [InlineData("image/jpg", false)]
-        public async Task ModelStateErrorValidation_NoInputFormatterFound_ForGivenContentType(
-            string requestContentType,
-            bool filterHandlesModelStateError)
-        {
-            // Arrange
-            var actionName = filterHandlesModelStateError ? "ActionFilterHandlesError" : "ActionHandlesError";
-            var expectedSource = filterHandlesModelStateError ? "filter" : "action";
-            var input = "{\"SampleInt\":10}";
-            var content = new StringContent(input);
-            content.Headers.Clear();
-            content.Headers.TryAddWithoutValidation("Content-Type", requestContentType);
-
-            // Act
-            var request = new HttpRequestMessage(HttpMethod.Post, "http://localhost/InputFormatter/" + actionName);
-            request.Headers.Accept.Add(MediaTypeWithQualityHeaderValue.Parse("application/json"));
-            request.Content = content;
-            var response = await Client.SendAsync(request);
-
-            var responseBody = await response.Content.ReadAsStringAsync();
-            var result = JsonConvert.DeserializeObject<FormatterWebSite.ErrorInfo>(responseBody);
-
-            // Assert
-            Assert.Equal(1, result.Errors.Count);
-            Assert.Equal("Unsupported content type '" + requestContentType + "'.",
-                         result.Errors[0]);
-            Assert.Equal(actionName, result.ActionName);
-            Assert.Equal("dummy", result.ParameterName);
-            Assert.Equal(expectedSource, result.Source);
-        }
-
-        [Theory]
         [InlineData("application/json", "{\"SampleInt\":10}", 10)]
         [InlineData("application/json", "{}", 0)]
         public async Task JsonInputFormatter_IsModelStateValid_ForValidContentType(
@@ -154,13 +113,11 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(expected, responseBody);
         }
 
-        [Theory]
-        [InlineData("{\"SampleInt\":10}")]
-        [InlineData("{}")]
-        [InlineData("")]
-        public async Task JsonInputFormatter_IsModelStateInvalid_ForEmptyContentType(string jsonInput)
+        [Fact]
+        public async Task JsonInputFormatter_Returns415UnsupportedMediaType_ForEmptyContentType()
         {
             // Arrange
+            var jsonInput = "{\"SampleInt\":10}";
             var content = new StringContent(jsonInput, Encoding.UTF8, "application/json");
             content.Headers.Clear();
 
@@ -169,7 +126,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var responseBody = await response.Content.ReadAsStringAsync();
 
             // Assert
-            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+            Assert.Equal(HttpStatusCode.UnsupportedMediaType, response.StatusCode);
         }
 
         [Theory]
@@ -225,7 +182,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var responseBody = await response.Content.ReadAsStringAsync();
 
             // Assert
-            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+            Assert.Equal(HttpStatusCode.UnsupportedMediaType, response.StatusCode);
         }
     }
 }

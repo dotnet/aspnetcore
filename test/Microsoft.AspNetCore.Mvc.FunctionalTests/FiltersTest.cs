@@ -552,7 +552,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                 "<SampleInt>10</SampleInt>" +
                 "</DummyClass>";
 
-            // There's nothing that can deserialize the body, so the result contains the default value.
+            // There's nothing that can deserialize the body, so the result is UnsupportedMediaType.
             var request = new HttpRequestMessage(HttpMethod.Post, "http://localhost/Json");
             request.Content = new StringContent(input, Encoding.UTF8, "application/xml");
 
@@ -560,8 +560,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var response = await Client.SendAsync(request);
 
             // Assert
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            Assert.Equal("\"0\"", await response.Content.ReadAsStringAsync());
+            Assert.Equal(HttpStatusCode.UnsupportedMediaType, response.StatusCode);
         }
     }
 }

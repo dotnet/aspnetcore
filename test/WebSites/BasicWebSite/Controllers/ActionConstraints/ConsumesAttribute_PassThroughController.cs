@@ -10,9 +10,9 @@ namespace BasicWebSite.Controllers.ActionConstraints
     public class ConsumesAttribute_PassThroughController : Controller
     {
         [Consumes("application/json")]
-        public Product CreateProduct([FromBody] Product_Json jsonInput)
+        public IActionResult CreateProduct(Product_Json jsonInput)
         {
-            return jsonInput;
+            return Content("ConsumesAttribute_PassThrough_Product_Json");
         }
     }
 }
