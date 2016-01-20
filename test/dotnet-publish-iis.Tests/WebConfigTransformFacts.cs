@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Tools.PublishIIS.Tests
     <handlers>
       <add name=""httpPlatformHandler"" path=""*"" verb=""*"" modules=""httpPlatformHandler"" resourceType=""Unspecified""/>
     </handlers>
-    <httpPlatform processPath=""..\test.exe"" stdoutLogEnabled=""false"" startupTimeLimit=""3600""/>
+    <httpPlatform processPath=""..\test.exe"" stdoutLogEnabled=""false"" stdoutLogFile=""..\logs\stdout.log"" startupTimeLimit=""3600""/>
   </system.webServer>
 </configuration>");
 
@@ -94,6 +94,58 @@ namespace Microsoft.AspNetCore.Tools.PublishIIS.Tests
 
             Assert.True(XNode.DeepEquals(envVarsElement,
                 WebConfigTransform.Transform(input, "app.exe").Descendants("httpPlatform").Elements().Single()));
+        }
+
+        [Fact]
+        public void WebConfigTransform_adds_stdoutLogEnabled_if_attribute_is_missing()
+        {
+            var input = new XDocument(WebConfigTemplate);
+            input.Descendants("httpPlatform").Attributes("stdoutLogEnabled").Remove();
+
+            Assert.Equal(
+                "false",
+                (string)WebConfigTransform.Transform(input, "test.exe").Descendants().Attributes("stdoutLogEnabled").Single());
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("false")]
+        [InlineData("true")]
+        public void WebConfigTransform_adds_stdoutLogFile_if_attribute_is_missing(string stdoutLogFile)
+        {
+            var input = new XDocument(WebConfigTemplate);
+
+            var httpPlatformElement = input.Descendants("httpPlatform").Single();
+            httpPlatformElement.Attribute("stdoutLogEnabled").Remove();
+            if (stdoutLogFile != null)
+            {
+                httpPlatformElement.SetAttributeValue("stdoutLogEnabled", stdoutLogFile);
+            }
+
+            Assert.Equal(
+                @"..\logs\stdout.log",
+                (string)WebConfigTransform.Transform(input, "test.exe").Descendants().Attributes("stdoutLogFile").Single());
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("true")]
+        [InlineData("false")]
+        public void WebConfigTransform_does_not_change_existing_stdoutLogEnabled(string stdoutLogEnabledValue)
+        {
+            var input = new XDocument(WebConfigTemplate);
+            var httpPlatformElement = input.Descendants("httpPlatform").Single();
+
+            httpPlatformElement.SetAttributeValue("stdoutLogFile", "mylog.txt");
+            httpPlatformElement.Attributes("stdoutLogEnabled").Remove();
+            if (stdoutLogEnabledValue != null)
+            {
+                input.Descendants("httpPlatform").Single().SetAttributeValue("stdoutLogEnabled", stdoutLogEnabledValue);
+            }
+
+            Assert.Equal(
+                "mylog.txt",
+                (string)WebConfigTransform.Transform(input, "test.exe").Descendants().Attributes("stdoutLogFile").Single());
         }
 
         private bool VerifyMissingElementCreated(params string[] elementNames)

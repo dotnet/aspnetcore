@@ -59,6 +59,7 @@ namespace Microsoft.AspNetCore.Tools.PublishIIS
         {
             httpPlatformElement.SetAttributeValue("processPath", Path.Combine("..", appName));
             SetAttributeValueIfEmpty(httpPlatformElement, "stdoutLogEnabled", "false");
+            SetAttributeValueIfEmpty(httpPlatformElement, "stdoutLogFile", @"..\logs\stdout.log");
             SetAttributeValueIfEmpty(httpPlatformElement, "startupTimeLimit", "3600");
         }
 
