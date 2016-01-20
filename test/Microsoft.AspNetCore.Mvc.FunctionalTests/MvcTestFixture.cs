@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
         protected virtual void InitializeServices(IServiceCollection services)
         {
-            var libraryManager = PlatformServices.Default.LibraryManager;
+            var libraryManager = DnxPlatformServices.Default.LibraryManager;
 
             // When an application executes in a regular context, the application base path points to the root
             // directory where the application is located, for example .../samples/MvcSample.Web. However, when

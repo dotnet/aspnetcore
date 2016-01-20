@@ -249,7 +249,6 @@ namespace Microsoft.AspNetCore.Mvc
             serviceCollection.AddSingleton(Mock.Of<ILibraryManager>());
             serviceCollection.AddSingleton(Mock.Of<ILibraryExporter>());
             serviceCollection.AddSingleton(Mock.Of<ICompilerOptionsProvider>());
-            serviceCollection.AddSingleton(Mock.Of<IAssemblyLoadContextAccessor>());
             serviceCollection.AddSingleton(Mock.Of<IHostingEnvironment>());
             var applicationEnvironment = new Mock<IApplicationEnvironment>();
 

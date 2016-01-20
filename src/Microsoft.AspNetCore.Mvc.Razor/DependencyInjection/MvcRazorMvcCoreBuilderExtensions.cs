@@ -145,9 +145,9 @@ namespace Microsoft.Extensions.DependencyInjection
             // Consumed by the Cache tag helper to cache results across the lifetime of the application.
             services.TryAddSingleton<IMemoryCache, MemoryCache>();
 
-            if (PlatformServices.Default?.AssemblyLoadContextAccessor != null)
+            if (DnxPlatformServices.Default?.AssemblyLoadContextAccessor != null)
             {
-                services.TryAddSingleton(PlatformServices.Default.AssemblyLoadContextAccessor);
+                services.TryAddSingleton(DnxPlatformServices.Default.AssemblyLoadContextAccessor);
             }
         }
     }

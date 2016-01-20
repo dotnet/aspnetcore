@@ -61,9 +61,9 @@ namespace Microsoft.Extensions.DependencyInjection
             //
             // RuntimeServices
             //
-            if (PlatformServices.Default?.LibraryManager != null)
+            if (DnxPlatformServices.Default?.LibraryManager != null)
             {
-                services.TryAddSingleton(PlatformServices.Default.LibraryManager);
+                services.TryAddSingleton(DnxPlatformServices.Default.LibraryManager);
             }
 
             //
@@ -78,7 +78,7 @@ namespace Microsoft.Extensions.DependencyInjection
             // Action Discovery
             //
             // These are consumed only when creating action descriptors, then they can be de-allocated
-            if (PlatformServices.Default?.LibraryManager != null)
+            if (DnxPlatformServices.Default?.LibraryManager != null)
             {
                 services.TryAddTransient<IAssemblyProvider, DefaultAssemblyProvider>();
             }
