@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Diagnostics
             }
             catch (Exception ex)
             {
-                _logger.LogError("An unhandled exception has occurred while executing the request", ex);
+                _logger.LogError(0, ex, "An unhandled exception has occurred while executing the request");
 
                 if (context.Response.HasStarted)
                 {
@@ -99,7 +99,7 @@ namespace Microsoft.AspNetCore.Diagnostics
                 catch (Exception ex2)
                 {
                     // If there's a Exception while generating the error page, re-throw the original exception.
-                    _logger.LogError("An exception was thrown attempting to display the error page.", ex2);
+                    _logger.LogError(0, ex2, "An exception was thrown attempting to display the error page.");
                 }
                 throw;
             }

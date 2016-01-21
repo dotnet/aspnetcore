@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.FunctionalTests.H
                 get { return _messages; }
             }
 
-            public void Log(LogLevel logLevel, int eventId, object state, Exception exception, Func<object, Exception, string> formatter)
+            public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
             {
                 _messages.Add(formatter(state, exception));
             }

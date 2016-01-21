@@ -19,8 +19,8 @@ namespace Microsoft.AspNetCore.Diagnostics.Elm
             _store = store;
         }
 
-        public void Log(LogLevel logLevel, int eventId, object state, Exception exception, 
-                          Func<object, Exception, string> formatter)
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, 
+                          Func<TState, Exception, string> formatter)
         {
             if (!IsEnabled(logLevel) || (state == null && exception == null))
             {
@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Diagnostics.Elm
             {
                 ActivityContext = GetCurrentActivityContext(),
                 Name = _name,
-                EventID = eventId,
+                EventID = eventId.Id,
                 Severity = logLevel,
                 Exception = exception,
                 State = state,

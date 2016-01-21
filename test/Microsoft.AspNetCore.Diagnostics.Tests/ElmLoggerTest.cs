@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Diagnostics.Tests
             var store = t.Item2;
 
             // Act
-            logger.Log(LogLevel.Information, 0, null, null, null);
+            logger.Log<object>(LogLevel.Information, 0, null, null, null);
 
             // Assert
             Assert.Empty(store.GetActivities());

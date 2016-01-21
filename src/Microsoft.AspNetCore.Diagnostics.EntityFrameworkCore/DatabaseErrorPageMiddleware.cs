@@ -132,7 +132,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
                 }
                 catch (Exception e)
                 {
-                    _logger.LogError(Strings.DatabaseErrorPageMiddleware_Exception, e);
+                    _logger.LogError(0, e, Strings.DatabaseErrorPageMiddleware_Exception);
                 }
 
                 throw;

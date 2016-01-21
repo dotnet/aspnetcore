@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
 #endif
         }
 
-        public virtual void Log(LogLevel logLevel, int eventId, [CanBeNull] object state, [CanBeNull] Exception exception, [CanBeNull] Func<object, Exception, string> formatter)
+        public virtual void Log<TState>(LogLevel logLevel, EventId eventId, [CanBeNull] TState state, [CanBeNull] Exception exception, [CanBeNull] Func<TState, Exception, string> formatter)
         {
             var errorState = state as DatabaseErrorLogState;
             if (errorState != null && exception != null && LastError != null)
