@@ -3,7 +3,7 @@
 
 using System;
 using Microsoft.AspNet.Mvc.ActionConstraints;
-using Microsoft.AspNet.Mvc.Infrastructure;
+using Microsoft.AspNet.Mvc.Routing;
 
 namespace ActionConstraintSample.Web
 {

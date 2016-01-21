@@ -150,7 +150,7 @@ namespace Microsoft.AspNet.Mvc.Internal
         private static FilterCache CreateCache(params IFilterProvider[] providers)
         {
             var services = CreateServices();
-            var descriptorProvider = new DefaultActionDescriptorCollectionProvider(services);
+            var descriptorProvider = new ActionDescriptorCollectionProvider(services);
             return new FilterCache(descriptorProvider, providers);
         }
     }

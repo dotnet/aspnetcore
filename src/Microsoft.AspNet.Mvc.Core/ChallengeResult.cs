@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Authentication;
-using Microsoft.AspNet.Mvc.Logging;
+using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 

@@ -92,12 +92,12 @@ namespace Microsoft.Extensions.DependencyInjection
                 ServiceDescriptor.Transient<IApplicationModelProvider, DefaultApplicationModelProvider>());
             services.TryAddEnumerable(
                 ServiceDescriptor.Transient<IActionDescriptorProvider, ControllerActionDescriptorProvider>());
-            services.TryAddSingleton<IActionDescriptorCollectionProvider, DefaultActionDescriptorCollectionProvider>();
+            services.TryAddSingleton<IActionDescriptorCollectionProvider, ActionDescriptorCollectionProvider>();
 
             //
             // Action Selection
             //
-            services.TryAddSingleton<IActionSelector, DefaultActionSelector>();
+            services.TryAddSingleton<IActionSelector, ActionSelector>();
 
             // Performs caching
             services.TryAddSingleton<IActionSelectorDecisionTreeProvider, ActionSelectorDecisionTreeProvider>();
@@ -126,7 +126,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 ServiceDescriptor.Transient<IActionInvokerProvider, ControllerActionInvokerProvider>());
 
             // These are stateless
-            services.TryAddSingleton<IControllerActionArgumentBinder, DefaultControllerActionArgumentBinder>();
+            services.TryAddSingleton<IControllerActionArgumentBinder, ControllerArgumentBinder>();
             services.TryAddSingleton<FilterCache>();
             services.TryAddEnumerable(
                 ServiceDescriptor.Singleton<IFilterProvider, DefaultFilterProvider>());
@@ -147,7 +147,7 @@ namespace Microsoft.Extensions.DependencyInjection
             // Random Infrastructure
             //
             services.TryAddSingleton<MvcMarkerService, MvcMarkerService>();
-            services.TryAddSingleton<ITypeActivatorCache, DefaultTypeActivatorCache>();
+            services.TryAddSingleton<ITypeActivatorCache, TypeActivatorCache>();
             services.TryAddSingleton<IUrlHelperFactory, UrlHelperFactory>();
             services.TryAddSingleton<IHttpRequestStreamReaderFactory, MemoryPoolHttpRequestStreamReaderFactory>();
             services.TryAddSingleton<IHttpResponseStreamWriterFactory, MemoryPoolHttpResponseStreamWriterFactory>();

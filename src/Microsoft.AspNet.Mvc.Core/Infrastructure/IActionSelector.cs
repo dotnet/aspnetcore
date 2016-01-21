@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
         /// </summary>
         /// <param name="context">The <see cref="RouteContext"/> for the current request.</param>
         /// <returns>An <see cref="ActionDescriptor"/> or <c>null</c> if no action can be selected.</returns>
-        /// <exception cref="AmbiguousActionException">
+        /// <exception cref="Internal.AmbiguousActionException">
         /// Thrown when action selection results in an ambiguity.
         /// </exception>
         ActionDescriptor Select(RouteContext context);

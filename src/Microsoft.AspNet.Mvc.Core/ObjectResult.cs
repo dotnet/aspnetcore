@@ -4,7 +4,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Formatters;
-using Microsoft.AspNet.Mvc.Infrastructure;
+using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNet.Mvc

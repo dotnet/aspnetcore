@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Abstractions;
 using Microsoft.AspNet.Mvc.Infrastructure;
+using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.AspNet.Routing;
 using Moq;
 using Xunit;
@@ -176,7 +177,7 @@ namespace Microsoft.AspNet.Mvc.Routing
 
             context.Setup(o => o.RequestServices
                                .GetService(typeof(IActionDescriptorCollectionProvider)))
-                   .Returns(new DefaultActionDescriptorCollectionProvider(context.Object.RequestServices));
+                   .Returns(new ActionDescriptorCollectionProvider(context.Object.RequestServices));
             return context.Object;
         }
 

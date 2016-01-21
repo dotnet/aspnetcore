@@ -14,6 +14,7 @@ using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.Abstractions;
 using Microsoft.AspNet.Mvc.Formatters;
 using Microsoft.AspNet.Mvc.Infrastructure;
+using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.TestCommon;
@@ -522,7 +523,7 @@ namespace Microsoft.AspNet.Mvc
             services.AddSingleton<IViewComponentSelector, DefaultViewComponentSelector>();
             services.AddSingleton<IViewComponentDescriptorCollectionProvider, DefaultViewComponentDescriptorCollectionProvider>();
             services.AddSingleton<IViewComponentInvokerFactory, DefaultViewComponentInvokerFactory>();
-            services.AddSingleton<ITypeActivatorCache, DefaultTypeActivatorCache>();
+            services.AddSingleton<ITypeActivatorCache, TypeActivatorCache>();
             services.AddSingleton<IViewComponentActivator, DefaultViewComponentActivator>();
             services.AddSingleton<IViewComponentDescriptorProvider>(new FixedSetViewComponentDescriptorProvider(descriptors));
             services.AddSingleton<IModelMetadataProvider, EmptyModelMetadataProvider>();

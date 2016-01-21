@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNet.Mvc.ModelBinding.Metadata;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Moq;

@@ -4,6 +4,7 @@
 using System;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.Filters;
+using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
@@ -118,14 +119,13 @@ namespace Microsoft.AspNet.Mvc
 
             // ResponseCacheFilter cannot take any null values. Hence, if there are any null values,
             // the properties convert them to their defaults and are passed on.
-            return new ResponseCacheFilter(
-                new CacheProfile
-                {
-                    Duration = _duration,
-                    Location = _location,
-                    NoStore = _noStore,
-                    VaryByHeader = VaryByHeader
-                });
+            return new ResponseCacheFilter(new CacheProfile
+            {
+                Duration = _duration,
+                Location = _location,
+                NoStore = _noStore,
+                VaryByHeader = VaryByHeader
+            });
         }
     }
 }

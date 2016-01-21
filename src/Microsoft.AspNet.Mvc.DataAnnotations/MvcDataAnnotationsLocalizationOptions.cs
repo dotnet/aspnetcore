@@ -4,7 +4,7 @@
 using System;
 using Microsoft.Extensions.Localization;
 
-namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
+namespace Microsoft.AspNet.Mvc.DataAnnotations
 {
     /// <summary>
     /// Provides programmatic configuration for DataAnnotations localization in the MVC framework.

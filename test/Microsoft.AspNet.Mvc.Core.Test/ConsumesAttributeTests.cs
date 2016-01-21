@@ -9,6 +9,7 @@ using Microsoft.AspNet.Mvc.Abstractions;
 using Microsoft.AspNet.Mvc.ActionConstraints;
 using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.AspNet.Mvc.Formatters;
+using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.AspNet.Routing;
 using Microsoft.Net.Http.Headers;
 using Moq;

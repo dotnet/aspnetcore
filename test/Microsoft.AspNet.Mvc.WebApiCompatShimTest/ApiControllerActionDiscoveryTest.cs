@@ -11,6 +11,7 @@ using Microsoft.AspNet.Mvc.ActionConstraints;
 using Microsoft.AspNet.Mvc.ApplicationModels;
 using Microsoft.AspNet.Mvc.Controllers;
 using Microsoft.AspNet.Mvc.Infrastructure;
+using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.WebApiCompatShim;
 using Microsoft.Extensions.Options;
@@ -85,14 +86,14 @@ namespace System.Web.Http
                 a => a.RouteConstraints.Any(rc => rc.RouteKey == "action" && rc.RouteValue == "GetAll"));
             Assert.Equal(
                 new string[] { "GET" },
-                Assert.Single(action.ActionConstraints.OfType<HttpMethodConstraint>()).HttpMethods);
+                Assert.Single(action.ActionConstraints.OfType<HttpMethodActionConstraint>()).HttpMethods);
 
             action = Assert.Single(
                 actions,
                 a => a.RouteConstraints.Any(rc => rc.RouteKey == "action" && rc.RouteValue == ""));
             Assert.Equal(
                 new string[] { "GET" },
-                Assert.Single(action.ActionConstraints.OfType<HttpMethodConstraint>()).HttpMethods);
+                Assert.Single(action.ActionConstraints.OfType<HttpMethodActionConstraint>()).HttpMethods);
         }
 
         [Fact]
@@ -121,14 +122,14 @@ namespace System.Web.Http
                 a => a.RouteConstraints.Any(rc => rc.RouteKey == "action" && rc.RouteValue == "Edit"));
             Assert.Equal(
                 new string[] { "POST" },
-                Assert.Single(action.ActionConstraints.OfType<HttpMethodConstraint>()).HttpMethods);
+                Assert.Single(action.ActionConstraints.OfType<HttpMethodActionConstraint>()).HttpMethods);
 
             action = Assert.Single(
                 actions,
                 a => a.RouteConstraints.Any(rc => rc.RouteKey == "action" && rc.RouteValue == ""));
             Assert.Equal(
                 new string[] { "POST" },
-                Assert.Single(action.ActionConstraints.OfType<HttpMethodConstraint>()).HttpMethods);
+                Assert.Single(action.ActionConstraints.OfType<HttpMethodActionConstraint>()).HttpMethods);
         }
 
         [Fact]
@@ -157,14 +158,14 @@ namespace System.Web.Http
                 a => a.RouteConstraints.Any(rc => rc.RouteKey == "action" && rc.RouteValue == "Delete"));
             Assert.Equal(
                 new string[] { "PUT" },
-                Assert.Single(action.ActionConstraints.OfType<HttpMethodConstraint>()).HttpMethods);
+                Assert.Single(action.ActionConstraints.OfType<HttpMethodActionConstraint>()).HttpMethods);
 
             action = Assert.Single(
                 actions,
                 a => a.RouteConstraints.Any(rc => rc.RouteKey == "action" && rc.RouteValue == ""));
             Assert.Equal(
                 new string[] { "PUT" },
-                Assert.Single(action.ActionConstraints.OfType<HttpMethodConstraint>()).HttpMethods);
+                Assert.Single(action.ActionConstraints.OfType<HttpMethodActionConstraint>()).HttpMethods);
         }
 
         // The method name is used to infer a verb, not the action name
@@ -194,14 +195,14 @@ namespace System.Web.Http
                 a => a.RouteConstraints.Any(rc => rc.RouteKey == "action" && rc.RouteValue == "GetOptions"));
             Assert.Equal(
                 new string[] { "OPTIONS" },
-                Assert.Single(action.ActionConstraints.OfType<HttpMethodConstraint>()).HttpMethods);
+                Assert.Single(action.ActionConstraints.OfType<HttpMethodActionConstraint>()).HttpMethods);
 
             action = Assert.Single(
                 actions,
                 a => a.RouteConstraints.Any(rc => rc.RouteKey == "action" && rc.RouteValue == ""));
             Assert.Equal(
                 new string[] { "OPTIONS" },
-                Assert.Single(action.ActionConstraints.OfType<HttpMethodConstraint>()).HttpMethods);
+                Assert.Single(action.ActionConstraints.OfType<HttpMethodActionConstraint>()).HttpMethods);
         }
 
         [Fact]

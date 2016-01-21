@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Abstractions;
 using Microsoft.AspNet.Mvc.Infrastructure;
+using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.ViewEngines;
@@ -66,7 +67,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         {
             var activator = new RazorPageActivator(new EmptyModelMetadataProvider());
             var serviceProvider = new Mock<IServiceProvider>();
-            var typeActivator = new DefaultTypeActivatorCache();
+            var typeActivator = new TypeActivatorCache();
             var myService = new MyService();
             serviceProvider.Setup(mock => mock.GetService(typeof(MyService)))
                            .Returns(myService);

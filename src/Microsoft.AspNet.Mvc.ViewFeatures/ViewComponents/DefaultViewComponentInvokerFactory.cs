@@ -3,7 +3,7 @@
 
 using System;
 using System.Diagnostics;
-using Microsoft.AspNet.Mvc.Infrastructure;
+using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNet.Mvc.ViewComponents

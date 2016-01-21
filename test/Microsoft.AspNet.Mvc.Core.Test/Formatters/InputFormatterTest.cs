@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNet.Mvc.ModelBinding.Metadata;
 using Microsoft.Net.Http.Headers;
 using Xunit;
 

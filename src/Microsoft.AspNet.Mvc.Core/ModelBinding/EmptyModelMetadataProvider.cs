@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNet.Mvc.Core;
+using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.AspNet.Mvc.ModelBinding.Metadata;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding

@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding

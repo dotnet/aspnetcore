@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.Formatters;
-using Microsoft.AspNet.Mvc.Infrastructure;
+using Microsoft.AspNet.Mvc.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding
 {

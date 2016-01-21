@@ -3,7 +3,7 @@
 
 using System;
 using Microsoft.AspNet.Mvc.DataAnnotations;
-using Microsoft.AspNet.Mvc.ModelBinding.Validation;
+using Microsoft.AspNet.Mvc.DataAnnotations.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;

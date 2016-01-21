@@ -5,6 +5,7 @@ using System;
 using System.Reflection;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.Infrastructure;
+using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Moq;
@@ -66,7 +67,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
                     RequestServices = GetServices(),
                 },
             };
-            var factory = CreateControllerFactory(new DefaultControllerActivator(new DefaultTypeActivatorCache()));
+            var factory = CreateControllerFactory(new DefaultControllerActivator(new TypeActivatorCache()));
 
             // Act
             var result = factory.CreateController(context);
@@ -93,7 +94,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
                     RequestServices = GetServices(),
                 },
             };
-            var factory = CreateControllerFactory(new DefaultControllerActivator(new DefaultTypeActivatorCache()));
+            var factory = CreateControllerFactory(new DefaultControllerActivator(new TypeActivatorCache()));
 
             // Act
             var result = factory.CreateController(context);
@@ -120,7 +121,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
                     RequestServices = GetServices(),
                 },
             };
-            var factory = CreateControllerFactory(new DefaultControllerActivator(new DefaultTypeActivatorCache()));
+            var factory = CreateControllerFactory(new DefaultControllerActivator(new TypeActivatorCache()));
 
             // Act
             var result = factory.CreateController(context);
@@ -147,7 +148,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
                     RequestServices = GetServices(),
                 },
             };
-            var factory = CreateControllerFactory(new DefaultControllerActivator(new DefaultTypeActivatorCache()));
+            var factory = CreateControllerFactory(new DefaultControllerActivator(new TypeActivatorCache()));
 
             // Act
             var result = factory.CreateController(context);
@@ -175,7 +176,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
                     RequestServices = GetServices(),
                 },
             };
-            var factory = CreateControllerFactory(new DefaultControllerActivator(new DefaultTypeActivatorCache()));
+            var factory = CreateControllerFactory(new DefaultControllerActivator(new TypeActivatorCache()));
 
             // Act and Assert
             var exception = Assert.Throws<InvalidOperationException>(() => factory.CreateController(context));
@@ -206,7 +207,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
                     RequestServices = GetServices(),
                 },
             };
-            var factory = CreateControllerFactory(new DefaultControllerActivator(new DefaultTypeActivatorCache()));
+            var factory = CreateControllerFactory(new DefaultControllerActivator(new TypeActivatorCache()));
 
             // Act and Assert
             var exception = Assert.Throws<InvalidOperationException>(() => factory.CreateController(context));

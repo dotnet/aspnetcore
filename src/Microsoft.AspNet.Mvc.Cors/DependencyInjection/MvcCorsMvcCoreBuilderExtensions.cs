@@ -4,7 +4,7 @@
 using System;
 using Microsoft.AspNet.Cors.Infrastructure;
 using Microsoft.AspNet.Mvc.ApplicationModels;
-using Microsoft.AspNet.Mvc.Cors;
+using Microsoft.AspNet.Mvc.Cors.Internal;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Microsoft.Extensions.DependencyInjection

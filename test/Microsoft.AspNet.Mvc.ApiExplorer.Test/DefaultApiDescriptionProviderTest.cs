@@ -13,6 +13,7 @@ using Microsoft.AspNet.Mvc.ApiExplorer;
 using Microsoft.AspNet.Mvc.Controllers;
 using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.AspNet.Mvc.Formatters;
+using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.AspNet.Routing;
@@ -105,8 +106,8 @@ namespace Microsoft.AspNet.Mvc.Description
             var action = CreateActionDescriptor();
             action.ActionConstraints = new List<IActionConstraintMetadata>()
             {
-                new ActionConstraints.HttpMethodConstraint(new string[] { "PUT", "POST" }),
-                new ActionConstraints.HttpMethodConstraint(new string[] { "GET" }),
+                new HttpMethodActionConstraint(new string[] { "PUT", "POST" }),
+                new HttpMethodActionConstraint(new string[] { "GET" }),
             };
 
             // Act

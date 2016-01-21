@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Xml;
+using Microsoft.AspNet.Mvc.Internal;
 using Moq;
 using Xunit;
 

@@ -3,6 +3,8 @@
 
 using System.Collections.Generic;
 using Microsoft.AspNet.Mvc.DataAnnotations;
+using Microsoft.AspNet.Mvc.DataAnnotations.Internal;
+using Microsoft.AspNet.Mvc.Internal;
 
 namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
 {

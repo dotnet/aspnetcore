@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.DataAnnotations;
+using Microsoft.AspNet.Mvc.DataAnnotations.Internal;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Moq;
 using Xunit;

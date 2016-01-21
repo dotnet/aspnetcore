@@ -13,6 +13,7 @@ using Microsoft.AspNet.Antiforgery;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.Abstractions;
 using Microsoft.AspNet.Mvc.DataAnnotations;
+using Microsoft.AspNet.Mvc.DataAnnotations.Internal;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.AspNet.Mvc.Routing;

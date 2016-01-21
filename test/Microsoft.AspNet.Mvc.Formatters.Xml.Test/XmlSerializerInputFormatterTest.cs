@@ -12,6 +12,7 @@ using System.Xml;
 using System.Xml.Serialization;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNet.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNet.Testing;
 using Microsoft.AspNet.Testing.xunit;
 using Moq;

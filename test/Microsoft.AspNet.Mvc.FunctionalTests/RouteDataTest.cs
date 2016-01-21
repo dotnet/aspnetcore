@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Infrastructure;
+using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Routing.Template;

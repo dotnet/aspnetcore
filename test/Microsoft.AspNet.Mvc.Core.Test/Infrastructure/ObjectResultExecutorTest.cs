@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
@@ -18,7 +17,7 @@ using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.Infrastructure
+namespace Microsoft.AspNet.Mvc.Internal
 {
     public class ObjectResultExecutorTest
     {

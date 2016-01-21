@@ -4,7 +4,7 @@
 using System.Collections.Generic;
 using Microsoft.AspNet.Mvc.Abstractions;
 
-namespace Microsoft.AspNet.Mvc.Routing
+namespace Microsoft.AspNet.Mvc.Internal
 {
     /// <summary>
     /// A data structure that retrieves a list of <see cref="ActionDescriptor"/> matches based on the values

@@ -10,6 +10,7 @@ using Microsoft.AspNet.Mvc.Abstractions;
 using Microsoft.AspNet.Mvc.ActionConstraints;
 using Microsoft.AspNet.Mvc.Controllers;
 using Microsoft.AspNet.Mvc.Formatters;
+using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Routing.Template;
@@ -263,7 +264,7 @@ namespace Microsoft.AspNet.Mvc.ApiExplorer
         {
             if (action.ActionConstraints != null && action.ActionConstraints.Count > 0)
             {
-                return action.ActionConstraints.OfType<HttpMethodConstraint>().SelectMany(c => c.HttpMethods);
+                return action.ActionConstraints.OfType<HttpMethodActionConstraint>().SelectMany(c => c.HttpMethods);
             }
             else
             {

@@ -11,6 +11,7 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.Abstractions;
 using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNet.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNet.Mvc.Razor.Internal;
 using Microsoft.AspNet.Mvc.Rendering;
 using Microsoft.AspNet.Mvc.ViewEngines;

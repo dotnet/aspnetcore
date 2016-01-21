@@ -7,6 +7,7 @@ using System.Reflection;
 using Microsoft.AspNet.Mvc.ActionConstraints;
 using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.AspNet.Mvc.Infrastructure;
+using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.AspNet.Mvc.Routing;
 using Xunit;
 
@@ -60,7 +61,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
                     new MyFilterAttribute(),
                 });
 
-            controller.ActionConstraints.Add(new HttpMethodConstraint(new string[] { "GET" }));
+            controller.ActionConstraints.Add(new HttpMethodActionConstraint(new string[] { "GET" }));
             controller.Application = new ApplicationModel();
             controller.ControllerName = "cool";
             controller.Filters.Add(new MyFilterAttribute());

@@ -1,0 +1,19 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using Microsoft.AspNet.Mvc.ModelBinding.Validation;
+
+namespace Microsoft.AspNet.Mvc.DataAnnotations.Internal
+{
+    public class ModelClientValidationRegexRule : ModelClientValidationRule
+    {
+        private const string RegexValidationType = "regex";
+        private const string RegexValidationRuleName = "pattern";
+
+        public ModelClientValidationRegexRule(string errorMessage, string pattern)
+            : base(RegexValidationType, errorMessage)
+        {
+            ValidationParameters.Add(RegexValidationRuleName, pattern);
+        }
+    }
+}

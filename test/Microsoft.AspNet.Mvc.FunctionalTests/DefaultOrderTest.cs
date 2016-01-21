@@ -10,6 +10,7 @@ using Microsoft.AspNet.Mvc.ActionConstraints;
 using Microsoft.AspNet.Mvc.ApiExplorer;
 using Microsoft.AspNet.Mvc.Controllers;
 using Microsoft.AspNet.Mvc.Filters;
+using Microsoft.AspNet.Mvc.Internal;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests

@@ -4,6 +4,7 @@
 using System;
 using System.Globalization;
 using System.Text;
+using Microsoft.AspNet.Mvc.Formatters.Internal;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Primitives;
 

@@ -4,7 +4,7 @@
 using System;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.Abstractions;
-using Microsoft.AspNet.Mvc.Infrastructure;
+using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.AspNet.Routing;
 using Moq;
 using Xunit;
@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
         public void Create_CreatesInstancesOfTypes(Type type)
         {
             // Arrange
-            var activator = new DefaultControllerActivator(new DefaultTypeActivatorCache());
+            var activator = new DefaultControllerActivator(new TypeActivatorCache());
             var serviceProvider = new Mock<IServiceProvider>(MockBehavior.Strict);
 
             var httpContext = new DefaultHttpContext
@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
         public void Create_TypeActivatesTypesWithServices()
         {
             // Arrange
-            var activator = new DefaultControllerActivator(new DefaultTypeActivatorCache());
+            var activator = new DefaultControllerActivator(new TypeActivatorCache());
             var serviceProvider = new Mock<IServiceProvider>(MockBehavior.Strict);
             var testService = new TestService();
             serviceProvider.Setup(s => s.GetService(typeof(TestService)))

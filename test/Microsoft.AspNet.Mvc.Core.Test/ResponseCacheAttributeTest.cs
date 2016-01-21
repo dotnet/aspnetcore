@@ -7,6 +7,7 @@ using System.Linq;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.Abstractions;
 using Microsoft.AspNet.Mvc.Filters;
+using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.AspNet.Routing;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;

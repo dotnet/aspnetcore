@@ -7,7 +7,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Mvc.Diagnostics;
-using Microsoft.AspNet.Mvc.Infrastructure;
+using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.AspNet.Mvc.Logging;
 using Microsoft.AspNet.Mvc.ViewEngines;
 using Microsoft.AspNet.Mvc.ViewFeatures.Logging;

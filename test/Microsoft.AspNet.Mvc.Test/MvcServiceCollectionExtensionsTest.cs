@@ -11,6 +11,7 @@ using Microsoft.AspNet.Mvc.ApiExplorer;
 using Microsoft.AspNet.Mvc.ApplicationModels;
 using Microsoft.AspNet.Mvc.Controllers;
 using Microsoft.AspNet.Mvc.Cors;
+using Microsoft.AspNet.Mvc.Cors.Internal;
 using Microsoft.AspNet.Mvc.DataAnnotations.Internal;
 using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.AspNet.Mvc.Formatters.Json.Internal;

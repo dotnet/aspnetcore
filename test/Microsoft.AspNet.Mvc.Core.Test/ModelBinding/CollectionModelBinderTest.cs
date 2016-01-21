@@ -7,11 +7,13 @@ using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http.Internal;
+using Microsoft.AspNet.Mvc.Internal;
+using Microsoft.AspNet.Mvc.ModelBinding.Test;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.ModelBinding.Test
+namespace Microsoft.AspNet.Mvc.ModelBinding
 {
     public class CollectionModelBinderTest
     {

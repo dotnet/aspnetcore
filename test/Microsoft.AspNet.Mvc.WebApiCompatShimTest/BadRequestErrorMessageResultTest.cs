@@ -16,6 +16,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit;
+using Microsoft.AspNet.Mvc.Internal;
 
 namespace System.Web.Http
 {

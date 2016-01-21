@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.AspNet.Mvc.Core;
-using Microsoft.AspNet.Mvc.Infrastructure;
+using Microsoft.AspNet.Mvc.Routing;
 
 namespace Microsoft.AspNet.Mvc.ApplicationModels
 {

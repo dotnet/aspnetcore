@@ -4,6 +4,7 @@
 using System.IO;
 using System.Text;
 using Microsoft.AspNet.Mvc.Infrastructure;
+using Microsoft.AspNet.Mvc.Internal;
 
 namespace Microsoft.AspNet.Mvc
 {

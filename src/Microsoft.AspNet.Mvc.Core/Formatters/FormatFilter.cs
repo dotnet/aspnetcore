@@ -5,6 +5,7 @@ using System;
 using System.Linq;
 using Microsoft.AspNet.Mvc.ApiExplorer;
 using Microsoft.AspNet.Mvc.Filters;
+using Microsoft.AspNet.Mvc.Formatters.Internal;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNet.Mvc.Formatters

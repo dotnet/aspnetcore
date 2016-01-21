@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.Controllers;
+using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.AspNet.Mvc.ModelBinding;
 using Microsoft.AspNet.Mvc.ModelBinding.Validation;
 using Microsoft.AspNet.Routing;
@@ -40,7 +41,7 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             };
         }
 
-        public static DefaultControllerActionArgumentBinder GetArgumentBinder(MvcOptions options = null)
+        public static ControllerArgumentBinder GetArgumentBinder(MvcOptions options = null)
         {
             if (options == null)
             {
@@ -54,9 +55,9 @@ namespace Microsoft.AspNet.Mvc.IntegrationTests
             }
         }
 
-        public static DefaultControllerActionArgumentBinder GetArgumentBinder(IModelMetadataProvider metadataProvider)
+        public static ControllerArgumentBinder GetArgumentBinder(IModelMetadataProvider metadataProvider)
         {
-            return new DefaultControllerActionArgumentBinder(
+            return new ControllerArgumentBinder(
                 metadataProvider,
                 GetObjectValidator(metadataProvider));
         }

@@ -8,6 +8,7 @@ using Microsoft.AspNet.Http.Internal;
 using Microsoft.AspNet.Mvc.Abstractions;
 using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.AspNet.Mvc.Formatters;
+using Microsoft.AspNet.Mvc.Formatters.Internal;
 using Microsoft.AspNet.Mvc.TestCommon;
 using Microsoft.AspNet.Routing;
 using Microsoft.Extensions.Primitives;

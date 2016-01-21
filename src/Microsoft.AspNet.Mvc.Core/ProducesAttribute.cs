@@ -8,6 +8,7 @@ using Microsoft.AspNet.Mvc.ApiExplorer;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.AspNet.Mvc.Formatters;
+using Microsoft.AspNet.Mvc.Formatters.Internal;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 

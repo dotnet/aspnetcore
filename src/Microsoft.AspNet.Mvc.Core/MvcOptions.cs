@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.Mvc
 
         /// <summary>
         /// Gets a Dictionary of CacheProfile Names, <see cref="CacheProfile"/> which are pre-defined settings for
-        /// <see cref="ResponseCacheFilter"/>.
+        /// response caching.
         /// </summary>
         public IDictionary<string, CacheProfile> CacheProfiles { get; }
 

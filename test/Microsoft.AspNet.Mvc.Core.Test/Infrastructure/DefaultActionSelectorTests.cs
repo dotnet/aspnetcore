@@ -11,6 +11,7 @@ using Microsoft.AspNet.Mvc.Abstractions;
 using Microsoft.AspNet.Mvc.ActionConstraints;
 using Microsoft.AspNet.Mvc.ApplicationModels;
 using Microsoft.AspNet.Mvc.Controllers;
+using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.AspNet.Routing;
 using Microsoft.Extensions.DependencyInjection;
@@ -59,7 +60,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
             {
                 ActionConstraints = new List<IActionConstraintMetadata>()
                 {
-                    new HttpMethodConstraint(new string[] { "POST" }),
+                    new HttpMethodActionConstraint(new string[] { "POST" }),
                 },
                 Parameters = new List<ParameterDescriptor>(),
             };
@@ -518,7 +519,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
 
             serviceContainer.AddSingleton(typeof(IEnumerable<IActionDescriptorProvider>), list);
 
-            var actionDescriptorCollectionProvider = new DefaultActionDescriptorCollectionProvider(
+            var actionDescriptorCollectionProvider = new ActionDescriptorCollectionProvider(
                 serviceContainer.BuildServiceProvider());
             var decisionTreeProvider = new ActionSelectorDecisionTreeProvider(actionDescriptorCollectionProvider);
 
@@ -527,7 +528,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
                 new DefaultActionConstraintProvider(),
             };
 
-            var defaultActionSelector = new DefaultActionSelector(
+            var defaultActionSelector = new ActionSelector(
                 decisionTreeProvider,
                 actionConstraintProviders,
                 NullLoggerFactory.Instance);
@@ -595,7 +596,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
                 .Where(a => a.RouteConstraints.Any(c => c.RouteKey == "action" && comparer.Equals(c.RouteValue, action)));
         }
 
-        private static DefaultActionSelector CreateSelector(IReadOnlyList<ActionDescriptor> actions, ILoggerFactory loggerFactory = null)
+        private static ActionSelector CreateSelector(IReadOnlyList<ActionDescriptor> actions, ILoggerFactory loggerFactory = null)
         {
             loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
 
@@ -611,7 +612,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
                     new BooleanConstraintProvider(),
                 };
 
-            return new DefaultActionSelector(
+            return new ActionSelector(
                 decisionTreeProvider,
                 actionConstraintProviders,
                 loggerFactory);

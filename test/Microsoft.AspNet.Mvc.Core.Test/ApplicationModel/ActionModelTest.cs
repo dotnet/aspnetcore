@@ -4,10 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using Microsoft.AspNet.Mvc.Abstractions;
-using Microsoft.AspNet.Mvc.ActionConstraints;
 using Microsoft.AspNet.Mvc.Filters;
-using Microsoft.AspNet.Mvc.Infrastructure;
+using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.AspNet.Mvc.Routing;
 using Xunit;
 
@@ -55,7 +53,7 @@ namespace Microsoft.AspNet.Mvc.ApplicationModels
                     new MyFilterAttribute(),
                 });
 
-            action.ActionConstraints.Add(new HttpMethodConstraint(new string[] { "GET" }));
+            action.ActionConstraints.Add(new HttpMethodActionConstraint(new string[] { "GET" }));
             action.ActionName = "Edit";
 
             action.Controller = new ControllerModel(typeof(TestController).GetTypeInfo(),

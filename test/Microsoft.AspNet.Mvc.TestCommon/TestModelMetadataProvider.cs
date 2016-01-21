@@ -4,6 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using Microsoft.AspNet.Mvc.DataAnnotations.Internal;
+using Microsoft.AspNet.Mvc.Internal;
 using Microsoft.AspNet.Mvc.ModelBinding.Metadata;
 using Xunit;
 
