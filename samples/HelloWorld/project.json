@@ -13,7 +13,7 @@
                 "System.Collections": "4.0.11-*",
                 "System.Console": "4.0.0-*",
                 "System.Globalization": "4.0.11-*",
-                "System.IO": "4.0.11-*",
+                "System.IO": "4.1.0-*",
                 "System.Runtime": "4.0.21-*",
                 "System.Threading.Tasks": "4.0.11-*"
             }
