@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.IISPlatformHandler
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogWarning("Failed to read the client certificate.", ex);
+                        _logger.LogWarning(0, ex, "Failed to read the client certificate.");
                     }
                 }
                 return _certificate;
