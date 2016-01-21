@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc.ViewComponents;
@@ -192,7 +193,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             _viewNotFound(logger, viewName, searchedLocations, null);
         }
 
-        private class ViewComponentLogScope : ILogValues
+        private class ViewComponentLogScope : IReadOnlyList<KeyValuePair<string, object>>
         {
             private readonly ViewComponentDescriptor _descriptor;
 
@@ -201,18 +202,46 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
                 _descriptor = descriptor;
             }
 
-            public IEnumerable<KeyValuePair<string, object>> GetValues()
+            public KeyValuePair<string, object> this[int index]
             {
-                return new KeyValuePair<string, object>[]
+                get
                 {
-                    new KeyValuePair<string, object>("ViewComponentName", _descriptor.DisplayName),
-                    new KeyValuePair<string, object>("ViewComponentId", _descriptor.Id),
-                };
+                    if (index == 0)
+                    {
+                        return new KeyValuePair<string, object>("ViewComponentName", _descriptor.DisplayName);
+                    }
+                    else if (index == 1)
+                    {
+                        return new KeyValuePair<string, object>("ViewComponentId", _descriptor.Id);
+                    }
+                    throw new IndexOutOfRangeException(nameof(index));
+                }
+            }
+
+            public int Count
+            {
+                get
+                {
+                    return 2;
+                }
+            }
+
+            public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
+            {
+                for (int i = 0; i < Count; ++i)
+                {
+                    yield return this[i];
+                }
             }
 
             public override string ToString()
             {
                 return _descriptor.DisplayName;
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return GetEnumerator();
             }
         }
     }

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -368,7 +369,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             _redirectToRouteResultExecuting(logger, destination, routeName, null);
         }
 
-        private class ActionLogScope : ILogValues
+        private class ActionLogScope : IReadOnlyList<KeyValuePair<string, object>>
         {
             private readonly ActionDescriptor _action;
 
@@ -382,13 +383,36 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 _action = action;
             }
 
-            public IEnumerable<KeyValuePair<string, object>> GetValues()
+            public KeyValuePair<string, object> this[int index]
             {
-                return new KeyValuePair<string, object>[]
+                get
                 {
-                    new KeyValuePair<string, object>("ActionId", _action.Id),
-                    new KeyValuePair<string, object>("ActionName", _action.DisplayName),
-                };
+                    if (index == 0)
+                    {
+                        return new KeyValuePair<string, object>("ActionId", _action.Id);
+                    }
+                    else if (index == 1)
+                    {
+                        return new KeyValuePair<string, object>("ActionName", _action.DisplayName);
+                    }
+                    throw new IndexOutOfRangeException(nameof(index));
+                 }
+            }
+
+            public int Count
+            {
+                get
+                {
+                    return 2;
+                }
+            }
+
+            public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
+            {
+                for (int i = 0; i < Count; ++i)
+                {
+                    yield return this[i];
+                }
             }
 
             public override string ToString()
@@ -396,6 +420,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 // We don't include the _action.Id here because it's just an opaque guid, and if
                 // you have text logging, you can already use the requestId for correlation.
                 return _action.DisplayName;
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return GetEnumerator();
             }
         }
     }
