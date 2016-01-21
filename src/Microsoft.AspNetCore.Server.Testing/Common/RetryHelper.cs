@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Server.Testing
                 {
                     if (retry == retryCount - 1)
                     {
-                        logger.LogError("Failed to connect, retry limit exceeded.", exception);
+                        logger.LogError(0, exception, "Failed to connect, retry limit exceeded.");
                         throw;
                     }
                     else

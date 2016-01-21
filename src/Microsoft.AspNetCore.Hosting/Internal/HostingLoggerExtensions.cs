@@ -2,8 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics;
+using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
@@ -52,7 +53,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             logger.LogError(
                 eventId: LoggerEventIds.ApplicationStartupException,
                 message: "Application startup exception",
-                error: exception);
+                exception: exception);
         }
 
         public static void Starting(this ILogger logger)
@@ -61,7 +62,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             {
                 logger.LogDebug(
                    eventId: LoggerEventIds.Starting,
-                   data: "Hosting starting");
+                   message: "Hosting starting");
             }
         }
 
@@ -71,7 +72,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             {
                 logger.LogDebug(
                     eventId: LoggerEventIds.Started,
-                    data: "Hosting started");
+                    message: "Hosting started");
             }
         }
 
@@ -81,17 +82,40 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             {
                 logger.LogDebug(
                     eventId: LoggerEventIds.Shutdown,
-                    data: "Hosting shutdown");
+                    message: "Hosting shutdown");
             }
         }
 
 
-        private class HostingLogScope : ILogValues
+        private class HostingLogScope : IReadOnlyList<KeyValuePair<string, object>>
         {
             private readonly HttpContext _httpContext;
 
             private string _cachedToString;
-            private IEnumerable<KeyValuePair<string, object>> _cachedGetValues;
+
+            public int Count
+            {
+                get
+                {
+                    return 2;
+                }
+            }
+
+            public KeyValuePair<string, object> this[int index]
+            {
+                get
+                {
+                    if (index == 0)
+                    {
+                        return new KeyValuePair<string, object>("RequestId", _httpContext.TraceIdentifier);
+                    }
+                    else if (index == 1)
+                    {
+                        return new KeyValuePair<string, object>("RequestPath", _httpContext.Request.Path.ToString());
+                    }
+                    throw new IndexOutOfRangeException(nameof(index));
+                }
+            }
 
             public HostingLogScope(HttpContext httpContext)
             {
@@ -108,29 +132,65 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                 return _cachedToString;
             }
 
-            public IEnumerable<KeyValuePair<string, object>> GetValues()
+            public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
             {
-                if (_cachedGetValues == null)
+                for (int i = 0; i < Count; ++i)
                 {
-                    _cachedGetValues = new[]
-                    {
-                        new KeyValuePair<string, object>("RequestId", _httpContext.TraceIdentifier),
-                        new KeyValuePair<string, object>("RequestPath", _httpContext.Request.Path.ToString()),
-                    };
+                    yield return this[i];
                 }
+            }
 
-                return _cachedGetValues;
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return GetEnumerator();
             }
         }
 
-        private class HostingRequestStarting : ILogValues
+        private class HostingRequestStarting : IReadOnlyList<KeyValuePair<string, object>>
         {
             internal static readonly Func<object, Exception, string> Callback = (state, exception) => ((HostingRequestStarting)state).ToString();
 
             private readonly HttpRequest _request;
 
             private string _cachedToString;
-            private IEnumerable<KeyValuePair<string, object>> _cachedGetValues;
+
+            public int Count
+            {
+                get
+                {
+                    return 9;
+                }
+            }
+
+            public KeyValuePair<string, object> this[int index]
+            {
+                get
+                {
+                    switch (index)
+                    {
+                        case 0:
+                            return new KeyValuePair<string, object>("Protocol", _request.Protocol);
+                        case 1:
+                            return new KeyValuePair<string, object>("Method", _request.Method);
+                        case 2:
+                            return new KeyValuePair<string, object>("ContentType", _request.ContentType);
+                        case 3:
+                            return new KeyValuePair<string, object>("ContentLength", _request.ContentLength);
+                        case 4:
+                            return new KeyValuePair<string, object>("Scheme", _request.Scheme.ToString());
+                        case 5:
+                            return new KeyValuePair<string, object>("Host", _request.Host.ToString());
+                        case 6:
+                            return new KeyValuePair<string, object>("PathBase", _request.PathBase.ToString());
+                        case 7:
+                            return new KeyValuePair<string, object>("Path", _request.Path.ToString());
+                        case 8:
+                            return new KeyValuePair<string, object>("QueryString", _request.QueryString.ToString());
+                        default:
+                            throw new IndexOutOfRangeException(nameof(index));
+                    }
+                }
+            }
 
             public HostingRequestStarting(HttpContext httpContext)
             {
@@ -147,37 +207,54 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                 return _cachedToString;
             }
 
-            public IEnumerable<KeyValuePair<string, object>> GetValues()
+            public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
             {
-                if (_cachedGetValues == null)
+                for (int i = 0; i < Count; ++i)
                 {
-                    _cachedGetValues = new[]
-                    {
-                        new KeyValuePair<string, object>("Protocol", _request.Protocol),
-                        new KeyValuePair<string, object>("Method", _request.Method),
-                        new KeyValuePair<string, object>("ContentType", _request.ContentType),
-                        new KeyValuePair<string, object>("ContentLength", _request.ContentLength),
-                        new KeyValuePair<string, object>("Scheme", _request.Scheme.ToString()),
-                        new KeyValuePair<string, object>("Host", _request.Host.ToString()),
-                        new KeyValuePair<string, object>("PathBase", _request.PathBase.ToString()),
-                        new KeyValuePair<string, object>("Path", _request.Path.ToString()),
-                        new KeyValuePair<string, object>("QueryString", _request.QueryString.ToString()),
-                    };
+                    yield return this[i];
                 }
+            }
 
-                return _cachedGetValues;
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return GetEnumerator();
             }
         }
 
-        private class HostingRequestFinished
+        private class HostingRequestFinished : IReadOnlyList<KeyValuePair<string, object>>
         {
             internal static readonly Func<object, Exception, string> Callback = (state, exception) => ((HostingRequestFinished)state).ToString();
 
             private readonly HttpContext _httpContext;
             private readonly TimeSpan _elapsed;
-
-            private IEnumerable<KeyValuePair<string, object>> _cachedGetValues;
+            
             private string _cachedToString;
+
+            public int Count
+            {
+                get
+                {
+                    return 3;
+                }
+            }
+
+            public KeyValuePair<string, object> this[int index]
+            {
+                get
+                {
+                    switch (index)
+                    {
+                        case 0:
+                            return new KeyValuePair<string, object>("ElapsedMilliseconds", _elapsed.TotalMilliseconds);
+                        case 1:
+                            return new KeyValuePair<string, object>("StatusCode", _httpContext.Response.StatusCode);
+                        case 2:
+                            return new KeyValuePair<string, object>("ContentType", _httpContext.Response.ContentType);
+                        default:
+                            throw new IndexOutOfRangeException(nameof(index));
+                    }
+                }
+            }
 
             public HostingRequestFinished(HttpContext httpContext, TimeSpan elapsed)
             {
@@ -195,19 +272,17 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                 return _cachedToString;
             }
 
-            public IEnumerable<KeyValuePair<string, object>> GetValues()
+            public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
             {
-                if (_cachedGetValues == null)
+                for (int i = 0; i < Count; ++i)
                 {
-                    _cachedGetValues = new[]
-                    {
-                        new KeyValuePair<string, object>("ElapsedMilliseconds", _elapsed.TotalMilliseconds),
-                        new KeyValuePair<string, object>("StatusCode", _httpContext.Response.StatusCode),
-                        new KeyValuePair<string, object>("ContentType", _httpContext.Response.ContentType),
-                    };
+                    yield return this[i];
                 }
+            }
 
-                return _cachedGetValues;
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return GetEnumerator();
             }
         }
     }

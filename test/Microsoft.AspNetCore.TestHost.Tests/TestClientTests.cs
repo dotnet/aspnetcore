@@ -204,7 +204,7 @@ namespace Microsoft.AspNetCore.TestHost
             public bool IsEnabled(LogLevel logLevel) => true;
 
             // This call verifies that fields of HttpRequest are accessed and valid
-            public void Log(LogLevel logLevel, int eventId, object state, Exception exception, Func<object, Exception, string> formatter) => formatter(state, exception);
+            public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter) => formatter(state, exception);
 
             class NoopDispoasble : IDisposable
             {
