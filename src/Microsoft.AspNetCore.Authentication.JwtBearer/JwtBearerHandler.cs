@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
                         }
                         catch (Exception ex)
                         {
-                            Logger.LogInformation("Failed to validate the token: " + token, ex);
+                            Logger.LogInformation(0, ex, "Failed to validate the token: " + token);
 
                             // Refresh the configuration for exceptions that may be caused by key rollovers. The user can also request a refresh in the event.
                             if (Options.RefreshOnIssuerKeyNotFound && ex.GetType().Equals(typeof(SecurityTokenSignatureKeyNotFoundException)))
@@ -181,7 +181,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
             }
             catch (Exception ex)
             {
-                Logger.LogError("Exception occurred while processing message", ex);
+                Logger.LogError(0, ex, "Exception occurred while processing message");
 
                 var authenticationFailedContext = new AuthenticationFailedContext(Context, Options)
                 {
