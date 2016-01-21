@@ -30,6 +30,8 @@ namespace VersioningWebSite
             set { _order = value; }
         }
 
+        public bool IsReusable => true;
+
         public IActionConstraint CreateInstance(IServiceProvider services)
         {
             return new VersionRangeValidator(_minVersion, _maxVersion) { Order = _order ?? 0 };

@@ -18,6 +18,12 @@ namespace Microsoft.AspNet.Mvc.ActionConstraints
     public interface IActionConstraintFactory : IActionConstraintMetadata
     {
         /// <summary>
+        /// Gets a value that indicates if the result of <see cref="CreateInstance(IServiceProvider)"/>
+        /// can be reused across requests.
+        /// </summary>
+        bool IsReusable { get; }
+
+        /// <summary>
         /// Creates a new <see cref="IActionConstraint"/>.
         /// </summary>
         /// <param name="services">The per-request services.</param>

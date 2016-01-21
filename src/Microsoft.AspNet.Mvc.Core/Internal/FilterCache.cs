@@ -5,7 +5,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Threading;
 using Microsoft.AspNet.Mvc.Abstractions;
 using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.AspNet.Mvc.Infrastructure;
@@ -100,8 +99,8 @@ namespace Microsoft.AspNet.Mvc.Internal
                 return entry.Filters;
             }
 
-            var items = new List<FilterItem>(entry.Items.Length);
-            for (var i = 0; i < entry.Items.Length; i++)
+            var items = new List<FilterItem>(entry.Items.Count);
+            for (var i = 0; i < entry.Items.Count; i++)
             {
                 var item = entry.Items[i];
                 if (item.IsReusable)
@@ -188,26 +187,13 @@ namespace Microsoft.AspNet.Mvc.Internal
 
             public CacheEntry(List<FilterItem> items)
             {
-                Items = new FilterItem[items.Count];
-                for (var i = 0; i < Items.Length; i++)
-                {
-                    var item = items[i];
-                    if (item.IsReusable)
-                    {
-                        Items[i] = item;
-                    }
-                    else
-                    {
-                        Items[i] = new FilterItem(item.Descriptor);
-                    }
-                }
-
+                Items = items;
                 Filters = null;
             }
 
             public IFilterMetadata[] Filters { get; }
 
-            public FilterItem[] Items { get; }
+            public List<FilterItem> Items { get; }
         }
     }
 }

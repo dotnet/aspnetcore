@@ -530,7 +530,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
 
             var defaultActionSelector = new ActionSelector(
                 decisionTreeProvider,
-                actionConstraintProviders,
+                GetActionConstraintCache(actionConstraintProviders),
                 NullLoggerFactory.Instance);
 
             return defaultActionSelector.Select(context);
@@ -614,7 +614,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
 
             return new ActionSelector(
                 decisionTreeProvider,
-                actionConstraintProviders,
+                GetActionConstraintCache(actionConstraintProviders),
                 loggerFactory);
         }
 
@@ -680,6 +680,13 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
             return actionDescriptor;
         }
 
+        private static ActionConstraintCache GetActionConstraintCache(IActionConstraintProvider[] actionConstraintProviders = null)
+        {
+            var services = new ServiceCollection().BuildServiceProvider();
+            var descriptorProvider = new ActionDescriptorCollectionProvider(services);
+            return new ActionConstraintCache(descriptorProvider, actionConstraintProviders.AsEnumerable() ?? new List<IActionConstraintProvider>());
+        }
+
         private class BooleanConstraint : IActionConstraint
         {
             public bool Pass { get; set; }
@@ -695,6 +702,8 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
         private class ConstraintFactory : IActionConstraintFactory
         {
             public IActionConstraint Constraint { get; set; }
+
+            public bool IsReusable => true;
 
             public IActionConstraint CreateInstance(IServiceProvider services)
             {

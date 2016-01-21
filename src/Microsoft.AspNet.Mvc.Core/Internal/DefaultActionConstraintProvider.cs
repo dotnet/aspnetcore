@@ -53,6 +53,7 @@ namespace Microsoft.AspNet.Mvc.Internal
             if (constraint != null)
             {
                 item.Constraint = constraint;
+                item.IsReusable = true;
                 return;
             }
 
@@ -60,6 +61,7 @@ namespace Microsoft.AspNet.Mvc.Internal
             if (factory != null)
             {
                 item.Constraint = factory.CreateInstance(services);
+                item.IsReusable = factory.IsReusable;
                 return;
             }
         }

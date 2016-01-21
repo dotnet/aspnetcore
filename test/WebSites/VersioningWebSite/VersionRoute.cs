@@ -26,6 +26,8 @@ namespace VersioningWebSite
         // We filter out (5), (5], [5) manually after we do the parsing.
         private static readonly Regex _versionParser = new Regex(@"^(?<lb>[\(\[])?(?<range>\d+(-\d+)?)(?<hb>[\)\]])?$");
 
+        public bool IsReusable => true;
+
         public VersionRoute(string template)
             : base(template)
         {

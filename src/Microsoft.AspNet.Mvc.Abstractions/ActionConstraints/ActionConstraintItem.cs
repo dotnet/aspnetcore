@@ -34,5 +34,10 @@ namespace Microsoft.AspNet.Mvc.ActionConstraints
         /// The <see cref="IActionConstraintMetadata"/> instance.
         /// </summary>
         public IActionConstraintMetadata Metadata { get; private set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether or not <see cref="Constraint"/> can be reused across requests.
+        /// </summary>
+        public bool IsReusable { get; set; }
     }
 }

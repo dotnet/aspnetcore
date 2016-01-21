@@ -17,6 +17,8 @@ namespace BasicWebSite
         private readonly ConcurrentDictionary<Type, ObjectFactory> _constraintCache =
                new ConcurrentDictionary<Type, ObjectFactory>();
 
+        public bool IsReusable => false;
+
         public RequestScopedActionConstraintAttribute(string requestId)
         {
             _requestId = requestId;

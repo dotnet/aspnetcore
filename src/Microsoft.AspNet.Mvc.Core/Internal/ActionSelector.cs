@@ -4,13 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Abstractions;
 using Microsoft.AspNet.Mvc.ActionConstraints;
 using Microsoft.AspNet.Mvc.Core;
 using Microsoft.AspNet.Mvc.Infrastructure;
 using Microsoft.AspNet.Mvc.Logging;
-using Microsoft.AspNet.Mvc.Routing;
 using Microsoft.AspNet.Routing;
 using Microsoft.Extensions.Logging;
 
@@ -22,7 +20,7 @@ namespace Microsoft.AspNet.Mvc.Internal
     public class ActionSelector : IActionSelector
     {
         private readonly IActionSelectorDecisionTreeProvider _decisionTreeProvider;
-        private readonly IActionConstraintProvider[] _actionConstraintProviders;
+        private readonly ActionConstraintCache _actionConstraintCache;
         private ILogger _logger;
 
         /// <summary>
@@ -33,12 +31,12 @@ namespace Microsoft.AspNet.Mvc.Internal
         /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
         public ActionSelector(
             IActionSelectorDecisionTreeProvider decisionTreeProvider,
-            IEnumerable<IActionConstraintProvider> actionConstraintProviders,
+            ActionConstraintCache actionConstraintCache,
             ILoggerFactory loggerFactory)
         {
             _decisionTreeProvider = decisionTreeProvider;
-            _actionConstraintProviders = actionConstraintProviders.OrderBy(item => item.Order).ToArray();
             _logger = loggerFactory.CreateLogger<ActionSelector>();
+            _actionConstraintCache = actionConstraintCache;
         }
 
         /// <inheritdoc />
@@ -58,7 +56,7 @@ namespace Microsoft.AspNet.Mvc.Internal
             for (var i = 0; i < matchingRouteConstraints.Count; i++)
             {
                 var action = matchingRouteConstraints[i];
-                var constraints = GetConstraints(context.HttpContext, action);
+                var constraints = _actionConstraintCache.GetActionConstraints(context.HttpContext, action);
                 candidates.Add(new ActionSelectorCandidate(action, constraints));
             }
 
@@ -216,57 +214,6 @@ namespace Microsoft.AspNet.Mvc.Internal
             {
                 return EvaluateActionConstraints(context, actionsWithoutConstraint, order);
             }
-        }
-
-        private IReadOnlyList<IActionConstraint> GetConstraints(HttpContext httpContext, ActionDescriptor action)
-        {
-            if (action.ActionConstraints == null || action.ActionConstraints.Count == 0)
-            {
-                return null;
-            }
-
-            var items = new List<ActionConstraintItem>(action.ActionConstraints.Count);
-            for (var i = 0; i < action.ActionConstraints.Count; i++)
-            {
-                items.Add(new ActionConstraintItem(action.ActionConstraints[i]));
-            }
-
-            var context = new ActionConstraintProviderContext(httpContext, action, items);
-            for (var i = 0; i < _actionConstraintProviders.Length; i++)
-            {
-                _actionConstraintProviders[i].OnProvidersExecuting(context);
-            }
-
-            for (var i = _actionConstraintProviders.Length - 1; i >= 0; i--)
-            {
-                _actionConstraintProviders[i].OnProvidersExecuted(context);
-            }
-
-            var count = 0;
-            for (var i = 0; i < context.Results.Count; i++)
-            {
-                if (context.Results[i].Constraint != null)
-                {
-                    count++;
-                }
-            }
-
-            if (count == 0)
-            {
-                return null;
-            }
-
-            var results = new IActionConstraint[count];
-            for (int i = 0, j = 0; i < context.Results.Count; i++)
-            {
-                var constraint = context.Results[i].Constraint;
-                if (constraint != null)
-                {
-                    results[j++] = constraint;
-                }
-            }
-
-            return results;
         }
     }
 }

@@ -98,6 +98,7 @@ namespace Microsoft.Extensions.DependencyInjection
             // Action Selection
             //
             services.TryAddSingleton<IActionSelector, ActionSelector>();
+            services.TryAddSingleton<ActionConstraintCache>();
 
             // Performs caching
             services.TryAddSingleton<IActionSelectorDecisionTreeProvider, ActionSelectorDecisionTreeProvider>();
