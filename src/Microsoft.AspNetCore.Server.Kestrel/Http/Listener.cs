@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             var listener = (Listener) state;
             if (error != null)
             {
-                listener.Log.LogError("Listener.ConnectionCallback ", error);
+                listener.Log.LogError(0, error, "Listener.ConnectionCallback");
             }
             else
             {

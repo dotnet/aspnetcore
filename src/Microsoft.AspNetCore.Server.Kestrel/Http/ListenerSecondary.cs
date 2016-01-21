@@ -112,7 +112,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     Exception ex;
                     Thread.Loop.Libuv.Check(status, out ex);
-                    Log.LogError("DispatchPipe.ReadStart", ex);
+                    Log.LogError(0, ex, "DispatchPipe.ReadStart");
                 }
 
                 DispatchPipe.Dispose();
@@ -132,7 +132,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             }
             catch (UvException ex)
             {
-                Log.LogError("DispatchPipe.Accept", ex);
+                Log.LogError(0, ex, "DispatchPipe.Accept");
                 acceptSocket.Dispose();
                 return;
             }

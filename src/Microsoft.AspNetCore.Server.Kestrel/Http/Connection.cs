@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
                         if (task.IsFaulted)
                         {
-                            connection.Log.LogError("ConnectionFilter.OnConnection", task.Exception);
+                            connection.Log.LogError(0, task.Exception, "ConnectionFilter.OnConnection");
                             connection.ConnectionControl.End(ProduceEndType.SocketDisconnect);
                         }
                         else if (task.IsCanceled)
@@ -103,7 +103,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 }
                 catch (Exception ex)
                 {
-                    Log.LogError("ConnectionFilter.OnConnection", ex);
+                    Log.LogError(0, ex, "ConnectionFilter.OnConnection");
                     ConnectionControl.End(ProduceEndType.SocketDisconnect);
                 }
             }

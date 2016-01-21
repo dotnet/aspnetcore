@@ -115,7 +115,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel
 
         public virtual void ApplicationError(Exception ex)
         {
-            _logger.LogError(13, "An unhandled exception was thrown by the application.", ex);
+            _logger.LogError(13, ex, "An unhandled exception was thrown by the application.");
         }
 
         public virtual void ConnectionError(long connectionId, Exception ex)
@@ -128,7 +128,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel
             _connectionDisconnectedWrite(_logger, connectionId, count, ex);
         }
 
-        public virtual void Log(LogLevel logLevel, int eventId, object state, Exception exception, Func<object, Exception, string> formatter)
+        public virtual void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
         {
             _logger.Log(logLevel, eventId, state, exception, formatter);
         }

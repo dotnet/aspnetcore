@@ -177,7 +177,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Networking
             }
             catch (Exception ex)
             {
-                req._log.LogError("UvWriteCb", ex);
+                req._log.LogError(0, ex, "UvWriteCb");
                 throw;
             }
         }

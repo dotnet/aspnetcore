@@ -653,7 +653,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                     }
                     catch (Exception ex)
                     {
-                        Self._log.LogError("SocketOutput.OnWriteCompleted", ex);
+                        Self._log.LogError(0, ex, "SocketOutput.OnWriteCompleted");
                     }
                 }
             }

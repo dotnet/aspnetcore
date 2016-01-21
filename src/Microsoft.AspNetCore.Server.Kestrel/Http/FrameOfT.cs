@@ -140,7 +140,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             }
             catch (Exception ex)
             {
-                Log.LogWarning("Connection processing ended abnormally", ex);
+                Log.LogWarning(0, ex, "Connection processing ended abnormally");
             }
             finally
             {
@@ -163,7 +163,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 }
                 catch (Exception ex)
                 {
-                    Log.LogWarning("Connection shutdown abnormally", ex);
+                    Log.LogWarning(0, ex, "Connection shutdown abnormally");
                 }
             }
         }

@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Filter
         {
             if (copyAsyncTask.IsFaulted)
             {
-                _log.LogError("FilteredStreamAdapter.CopyToAsync", copyAsyncTask.Exception);
+                _log.LogError(0, copyAsyncTask.Exception, "FilteredStreamAdapter.CopyToAsync");
             }
             else if (copyAsyncTask.IsCanceled)
             {
@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Filter
             }
             catch (Exception ex)
             {
-                _log.LogError("FilteredStreamAdapter.OnStreamClose", ex);
+                _log.LogError(0, ex, "FilteredStreamAdapter.OnStreamClose");
             }
         }
     }

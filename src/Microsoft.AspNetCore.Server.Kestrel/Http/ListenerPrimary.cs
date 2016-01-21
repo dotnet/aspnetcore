@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             catch (UvException ex)
             {
                 dispatchPipe.Dispose();
-                Log.LogError("ListenerPrimary.OnListenPipe", ex);
+                Log.LogError(0, ex, "ListenerPrimary.OnListenPipe");
                 return;
             }
 

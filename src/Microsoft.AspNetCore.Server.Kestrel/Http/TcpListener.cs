@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             }
             catch (UvException ex)
             {
-                Log.LogError("TcpListener.OnConnection", ex);
+                Log.LogError(0, ex, "TcpListener.OnConnection");
                 acceptSocket.Dispose();
                 return;
             }

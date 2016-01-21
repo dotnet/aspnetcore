@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Networking
             }
             catch (Exception ex)
             {
-                req._log.LogError("UvConnectRequest", ex);
+                req._log.LogError(0, ex, "UvConnectRequest");
                 throw;
             }
         }

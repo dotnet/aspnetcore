@@ -1167,10 +1167,10 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 return true;
             }
 
-            public void Log(LogLevel logLevel, int eventId, object state, Exception exception, Func<object, Exception, string> formatter)
+            public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
             {
                 // Application errors are logged using 13 as the eventId.
-                if (eventId == 13)
+                if (eventId.Id == 13)
                 {
                     ApplicationErrorsLogged++;
                 }

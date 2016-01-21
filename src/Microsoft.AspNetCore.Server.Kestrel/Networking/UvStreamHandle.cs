@@ -133,7 +133,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Networking
             }
             catch (Exception ex)
             {
-                stream._log.LogError("UvConnectionCb", ex);
+                stream._log.LogError(0, ex, "UvConnectionCb");
                 throw;
             }
         }
@@ -147,7 +147,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Networking
             }
             catch (Exception ex)
             {
-                stream._log.LogError("UvAllocCb", ex);
+                stream._log.LogError(0, ex, "UvAllocCb");
                 buf = stream.Libuv.buf_init(IntPtr.Zero, 0);
                 throw;
             }
@@ -163,7 +163,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Networking
             }
             catch (Exception ex)
             {
-                stream._log.LogError("UbReadCb", ex);
+                stream._log.LogError(0, ex, "UbReadCb");
                 throw;
             }
         }

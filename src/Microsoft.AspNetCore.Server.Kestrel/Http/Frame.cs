@@ -302,7 +302,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 }
                 catch (Exception ex)
                 {
-                    Log.LogError("Abort", ex);
+                    Log.LogError(0, ex, "Abort");
                 }
 
                 try
@@ -311,7 +311,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 }
                 catch (Exception ex)
                 {
-                    Log.LogError("Abort", ex);
+                    Log.LogError(0, ex, "Abort");
                 }
                 _abortedCts = null;
             }

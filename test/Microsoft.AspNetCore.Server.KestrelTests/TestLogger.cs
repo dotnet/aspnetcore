@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
         public class TestLogger : ILogger
         {
-            public void Log(LogLevel logLevel, int eventId, object state, Exception exception, Func<object, Exception, string> formatter)
+            public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
             {
 #if false
                 Console.WriteLine($"Log {logLevel}[{eventId}]: {formatter(state, exception)} {exception?.Message}");

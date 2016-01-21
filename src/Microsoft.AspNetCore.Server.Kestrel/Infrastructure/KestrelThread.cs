@@ -333,7 +333,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                     }
                     else
                     {
-                        _log.LogError("KestrelThread.DoPostWork", ex);
+                        _log.LogError(0, ex, "KestrelThread.DoPostWork");
                         throw;
                     }
                 }
@@ -362,7 +362,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                 }
                 catch (Exception ex)
                 {
-                    _log.LogError("KestrelThread.DoPostCloseHandle", ex);
+                    _log.LogError(0, ex, "KestrelThread.DoPostCloseHandle");
                     throw;
                 }
             }
