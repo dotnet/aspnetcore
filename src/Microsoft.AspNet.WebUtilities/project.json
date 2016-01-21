@@ -22,7 +22,7 @@
     "dotnet5.4": {
       "dependencies": {
         "System.Collections": "4.0.11-*",
-        "System.IO": "4.0.11-*",
+        "System.IO": "4.1.0-*",
         "System.IO.FileSystem": "4.0.1-*"
       }
     }
