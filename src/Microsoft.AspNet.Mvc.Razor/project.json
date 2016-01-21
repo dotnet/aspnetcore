@@ -38,7 +38,7 @@
         "System.Threading.Tasks": ""
       }
     },
-    "dotnet5.5": {
+    "dotnet5.6": {
       "dependencies": {
         "System.Text.Encoding": "4.0.11-*",
         "System.Runtime.Loader": "4.0.0-*",

@@ -29,7 +29,7 @@
   },
   "frameworks": {
     "net451": {},
-    "dotnet5.5": {
+    "dotnet5.6": {
       "dependencies": {
         "System.Security.Cryptography.Algorithms": "4.0.0-*"
       }
