@@ -12,11 +12,16 @@ namespace AutobahnTestClient
 {
     public class Program
     {
-        public async Task Main(string[] args)
+        public static void Main(string[] args)
+        {
+            new Program().Run(args).Wait();
+        }
+        
+        private async Task Run(string[] args)
         {
             try
             {
-                string serverAddress = "ws://localhost:9001";
+                string serverAddress = "ws://localhost:5000";
                 string agent =
                     "ManagedWebSockets";
                     // "NativeWebSockets";

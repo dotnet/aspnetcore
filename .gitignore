@@ -25,3 +25,5 @@ nuget.exe
 *.sln.ide
 project.lock.json
 /.vs/
+.testPublish/
+.build/

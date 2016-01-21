@@ -1,9 +1,9 @@
 {
+  "compilationOptions": {
+    "emitEntryPoint": true
+  },
   "dependencies": {
     "Microsoft.AspNetCore.WebSockets.Client": "0.1.0-*"
-  },
-  "commands": {
-    "run": "run"
   },
   "frameworks": {
     "dnx451": {}
