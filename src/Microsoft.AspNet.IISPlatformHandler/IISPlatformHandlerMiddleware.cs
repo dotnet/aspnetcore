@@ -105,7 +105,8 @@ namespace Microsoft.AspNet.IISPlatformHandler
 
                 if (_options.AutomaticAuthentication)
                 {
-                    var existingPrincipal = httpContext.User;
+                    // Don't get it from httpContext.User, that always returns a non-null anonymous user by default.
+                    var existingPrincipal = httpContext.Features.Get<IHttpAuthenticationFeature>()?.User;
                     if (existingPrincipal != null)
                     {
                         httpContext.User = SecurityHelper.MergeUserPrincipal(existingPrincipal, winPrincipal);
