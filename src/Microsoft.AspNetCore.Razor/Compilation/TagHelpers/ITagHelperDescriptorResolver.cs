@@ -3,7 +3,7 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.AspNet.Razor.Compilation.TagHelpers
+namespace Microsoft.AspNetCore.Razor.Compilation.TagHelpers
 {
     /// <summary>
     /// Contract used to resolve <see cref="TagHelperDescriptor"/>s.

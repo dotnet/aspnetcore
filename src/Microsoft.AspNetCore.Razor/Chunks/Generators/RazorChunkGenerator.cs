@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNet.Razor.Parser;
-using Microsoft.AspNet.Razor.Parser.SyntaxTree;
+using Microsoft.AspNetCore.Razor.Parser;
+using Microsoft.AspNetCore.Razor.Parser.SyntaxTree;
 
-namespace Microsoft.AspNet.Razor.Chunks.Generators
+namespace Microsoft.AspNetCore.Razor.Chunks.Generators
 {
     public class RazorChunkGenerator : ParserVisitor
     {

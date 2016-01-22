@@ -4,18 +4,18 @@
 using System;
 using System.Threading;
 using System.Web.WebPages.TestUtils;
-using Microsoft.AspNet.Razor.Editor;
-using Microsoft.AspNet.Razor.Parser;
-using Microsoft.AspNet.Razor.Parser.SyntaxTree;
-using Microsoft.AspNet.Razor.TagHelpers;
-using Microsoft.AspNet.Razor.Test.Framework;
-using Microsoft.AspNet.Razor.Test.Generator;
-using Microsoft.AspNet.Razor.Test.Utils;
-using Microsoft.AspNet.Razor.Text;
-using Microsoft.AspNet.Testing;
+using Microsoft.AspNetCore.Razor.Editor;
+using Microsoft.AspNetCore.Razor.Parser;
+using Microsoft.AspNetCore.Razor.Parser.SyntaxTree;
+using Microsoft.AspNetCore.Razor.TagHelpers;
+using Microsoft.AspNetCore.Razor.Test.Framework;
+using Microsoft.AspNetCore.Razor.Test.Generator;
+using Microsoft.AspNetCore.Razor.Test.Utils;
+using Microsoft.AspNetCore.Razor.Text;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 
-namespace Microsoft.AspNet.Razor.Test.Editor
+namespace Microsoft.AspNetCore.Razor.Test.Editor
 {
     public class RazorEditorParserTest
     {

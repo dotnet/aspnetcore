@@ -6,7 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace Microsoft.AspNet.Razor.Parser
+namespace Microsoft.AspNetCore.Razor.Parser
 {
     internal static class TextReaderExtensions
     {

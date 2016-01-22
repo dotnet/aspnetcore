@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 #if !DNXCORE50
@@ -6,10 +6,10 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Reflection;
-using Microsoft.AspNet.Razor.TagHelpers;
+using Microsoft.AspNetCore.Razor.TagHelpers;
 using Xunit;
 
-namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
+namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
 {
     public class XmlDocumentationProviderTest
     {
@@ -43,12 +43,12 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 {
                     {
                         $"T:{fullTypeName}",
-                        "The summary for <see cref=\"T:Microsoft.AspNet.Razor.TagHelpers." +
+                        "The summary for <see cref=\"T:Microsoft.AspNetCore.Razor.TagHelpers." +
                         "DocumentedTagHelper\" />."
                     },
                     {
                         $"P:{fullTypeName}.{DocumentedTagHelperSummaryPropertyInfo.Name}",
-                        "This <see cref=\"P:Microsoft.AspNet.Razor.TagHelpers.DocumentedTagHelper." +
+                        "This <see cref=\"P:Microsoft.AspNetCore.Razor.TagHelpers.DocumentedTagHelper." +
                         "SummaryProperty\" /> is of type <see cref=\"T:System.String\" />."
                     },
                     {
@@ -88,7 +88,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                 {
                     {
                         $"T:{fullTypeName}",
-                        "Inherits from <see cref=\"T:Microsoft.AspNet.Razor.TagHelpers.TagHelper\" />."
+                        "Inherits from <see cref=\"T:Microsoft.AspNetCore.Razor.TagHelpers.TagHelper\" />."
                     },
                     {
                         $"P:{fullTypeName}.{DocumentedTagHelperSummaryPropertyInfo.Name}",
@@ -96,13 +96,13 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                     },
                     {
                         $"P:{fullTypeName}.{DocumentedTagHelperRemarksPropertyInfo.Name}",
-                        "The <see cref=\"P:Microsoft.AspNet.Razor.TagHelpers.DocumentedTagHelper." +
+                        "The <see cref=\"P:Microsoft.AspNetCore.Razor.TagHelpers.DocumentedTagHelper." +
                         "SummaryProperty\" /> may be <c>null</c>."
                     },
                     {
                         $"P:{fullTypeName}.{DocumentedTagHelperRemarksSummaryPropertyInfo.Name}",
-                        "<see cref=\"P:Microsoft.AspNet.Razor.TagHelpers.DocumentedTagHelper." +
-                        "SummaryProperty\" /><see cref=\"P:Microsoft.AspNet.Razor.TagHelpers." +
+                        "<see cref=\"P:Microsoft.AspNetCore.Razor.TagHelpers.DocumentedTagHelper." +
+                        "SummaryProperty\" /><see cref=\"P:Microsoft.AspNetCore.Razor.TagHelpers." +
                         "DocumentedTagHelper.RemarksProperty\" />"
                     }
                 };

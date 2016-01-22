@@ -1,33 +1,33 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 #if !DNXCORE50
 using System;
 using System.IO;
 using System.Reflection;
-using Microsoft.AspNet.Razor.Compilation.TagHelpers;
-using Microsoft.AspNet.Razor.TagHelpers;
-using Microsoft.AspNet.Razor.Test.Internal;
-using Microsoft.AspNet.Testing;
+using Microsoft.AspNetCore.Razor.Compilation.TagHelpers;
+using Microsoft.AspNetCore.Razor.TagHelpers;
+using Microsoft.AspNetCore.Razor.Test.Internal;
+using Microsoft.AspNetCore.Testing;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
+namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
 {
     public class TagHelperDesignTimeDescriptorFactoryTest
     {
-        private const string TypeSummary = "The summary for <see cref=\"T:Microsoft.AspNet.Razor." +
+        private const string TypeSummary = "The summary for <see cref=\"T:Microsoft.AspNetCore.Razor." +
             "TagHelpers.DocumentedTagHelper\" />.";
-        private const string TypeRemarks = "Inherits from <see cref=\"T:Microsoft.AspNet.Razor." +
+        private const string TypeRemarks = "Inherits from <see cref=\"T:Microsoft.AspNetCore.Razor." +
             "TagHelpers.TagHelper\" />.";
-        private const string PropertySummary = "This <see cref=\"P:Microsoft.AspNet.Razor." +
+        private const string PropertySummary = "This <see cref=\"P:Microsoft.AspNetCore.Razor." +
             "TagHelpers.DocumentedTagHelper.SummaryProperty\" /> is of type <see cref=\"T:System.String\" />.";
-        private const string PropertyRemarks = "The <see cref=\"P:Microsoft.AspNet.Razor." +
+        private const string PropertyRemarks = "The <see cref=\"P:Microsoft.AspNetCore.Razor." +
             "TagHelpers.DocumentedTagHelper.SummaryProperty\" /> may be <c>null</c>.";
         private const string PropertyWithSummaryAndRemarks_Summary = "This is a complex <see cref=\"T:System." +
             "Collections.Generic.IDictionary`2\" />.";
-        private const string PropertyWithSummaryAndRemarks_Remarks = "<see cref=\"P:Microsoft.AspNet.Razor." +
-            "TagHelpers.DocumentedTagHelper.SummaryProperty\" /><see cref=\"P:Microsoft.AspNet.Razor" +
+        private const string PropertyWithSummaryAndRemarks_Remarks = "<see cref=\"P:Microsoft.AspNetCore.Razor." +
+            "TagHelpers.DocumentedTagHelper.SummaryProperty\" /><see cref=\"P:Microsoft.AspNetCore.Razor" +
             ".TagHelpers.DocumentedTagHelper.RemarksProperty\" />";
 
         // These test assemblies don't really exist. They are used to look up corresponding XML for a fake assembly

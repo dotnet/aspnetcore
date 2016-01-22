@@ -8,12 +8,12 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
-using Microsoft.AspNet.Razor.CodeGenerators;
-using Microsoft.AspNet.Razor.Parser.SyntaxTree;
-using Microsoft.AspNet.Razor.Text;
-using Microsoft.AspNet.Razor.Utils;
+using Microsoft.AspNetCore.Razor.CodeGenerators;
+using Microsoft.AspNetCore.Razor.Parser.SyntaxTree;
+using Microsoft.AspNetCore.Razor.Text;
+using Microsoft.AspNetCore.Razor.Utils;
 
-namespace Microsoft.AspNet.Razor.Editor
+namespace Microsoft.AspNetCore.Razor.Editor
 {
     internal class BackgroundParser : IDisposable
     {

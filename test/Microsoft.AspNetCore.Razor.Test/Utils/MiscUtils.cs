@@ -8,7 +8,7 @@ using System.Threading;
 #endif
 using Xunit;
 
-namespace Microsoft.AspNet.Razor.Test.Utils
+namespace Microsoft.AspNetCore.Razor.Test.Utils
 {
     class MiscUtils
     {

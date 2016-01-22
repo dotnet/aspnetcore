@@ -5,9 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Razor.TagHelpers;
+using Microsoft.AspNetCore.Razor.TagHelpers;
 
-namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
+namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
 {
     /// <summary>
     /// Class used to store information about a <see cref="ITagHelper"/>'s execution lifetime.
@@ -238,7 +238,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
         /// </param>
         /// <param name="encoder">
         /// The <see cref="HtmlEncoder"/> to use when the page handles
-        /// non-<see cref="Microsoft.AspNet.Html.IHtmlContent"/> C# expressions. If <c>null</c>, executes children with
+        /// non-<see cref="Microsoft.AspNetCore.Html.IHtmlContent"/> C# expressions. If <c>null</c>, executes children with
         /// the page's current <see cref="HtmlEncoder"/>.
         /// </param>
         /// <returns>A <see cref="Task"/> that on completion returns the rendered child content.</returns>

@@ -3,12 +3,12 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNet.Razor.Chunks.Generators;
-using Microsoft.AspNet.Razor.CodeGenerators;
-using Microsoft.AspNet.Razor.Compilation.TagHelpers;
-using Microsoft.AspNet.Razor.Parser;
+using Microsoft.AspNetCore.Razor.Chunks.Generators;
+using Microsoft.AspNetCore.Razor.CodeGenerators;
+using Microsoft.AspNetCore.Razor.Compilation.TagHelpers;
+using Microsoft.AspNetCore.Razor.Parser;
 
-namespace Microsoft.AspNet.Razor
+namespace Microsoft.AspNetCore.Razor
 {
     /// <summary>
     /// Defines the environment in which a Razor template will live

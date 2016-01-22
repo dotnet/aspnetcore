@@ -1,16 +1,16 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNet.Razor.Chunks;
-using Microsoft.AspNet.Razor.Chunks.Generators;
-using Microsoft.AspNet.Razor.CodeGenerators;
-using Microsoft.AspNet.Razor.CodeGenerators.Visitors;
-using Microsoft.AspNet.Razor.Parser.SyntaxTree;
-using Microsoft.AspNet.Razor.Parser.TagHelpers;
-using Microsoft.AspNet.Razor.TagHelpers;
-using Microsoft.AspNet.Razor.Compilation.TagHelpers;
+using Microsoft.AspNetCore.Razor.Chunks;
+using Microsoft.AspNetCore.Razor.Chunks.Generators;
+using Microsoft.AspNetCore.Razor.CodeGenerators;
+using Microsoft.AspNetCore.Razor.CodeGenerators.Visitors;
+using Microsoft.AspNetCore.Razor.Parser.SyntaxTree;
+using Microsoft.AspNetCore.Razor.Parser.TagHelpers;
+using Microsoft.AspNetCore.Razor.TagHelpers;
+using Microsoft.AspNetCore.Razor.Compilation.TagHelpers;
 using Xunit;
 
-namespace Microsoft.AspNet.Razor.Test.Generator
+namespace Microsoft.AspNetCore.Razor.Test.Generator
 {
     public class CSharpTagHelperRenderingUnitTest
     {

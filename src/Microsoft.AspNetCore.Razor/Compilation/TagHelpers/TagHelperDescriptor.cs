@@ -4,9 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNet.Razor.TagHelpers;
+using Microsoft.AspNetCore.Razor.TagHelpers;
 
-namespace Microsoft.AspNet.Razor.Compilation.TagHelpers
+namespace Microsoft.AspNetCore.Razor.Compilation.TagHelpers
 {
     /// <summary>
     /// A metadata class describing a tag helper.

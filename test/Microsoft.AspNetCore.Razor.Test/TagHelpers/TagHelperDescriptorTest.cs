@@ -1,14 +1,14 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Linq;
-using Microsoft.AspNet.Razor.TagHelpers;
-using Microsoft.AspNet.Razor.Test.Internal;
+using Microsoft.AspNetCore.Razor.TagHelpers;
+using Microsoft.AspNetCore.Razor.Test.Internal;
 using Newtonsoft.Json;
 using Xunit;
 
-namespace Microsoft.AspNet.Razor.Compilation.TagHelpers
+namespace Microsoft.AspNetCore.Razor.Compilation.TagHelpers
 {
     public class TagHelperDescriptorTest
     {

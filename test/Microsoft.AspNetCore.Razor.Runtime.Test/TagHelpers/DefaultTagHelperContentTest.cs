@@ -6,7 +6,7 @@ using System.IO;
 using Microsoft.Extensions.WebEncoders.Testing;
 using Xunit;
 
-namespace Microsoft.AspNet.Razor.TagHelpers
+namespace Microsoft.AspNetCore.Razor.TagHelpers
 {
     public class DefaultTagHelperContentTest
     {

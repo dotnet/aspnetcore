@@ -3,7 +3,7 @@
 
 using System.IO;
 
-namespace Microsoft.AspNet.Razor.Text
+namespace Microsoft.AspNetCore.Razor.Text
 {
     public class TextDocumentReader : TextReader, ITextDocument
     {

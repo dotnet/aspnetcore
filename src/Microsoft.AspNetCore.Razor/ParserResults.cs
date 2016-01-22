@@ -4,10 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNet.Razor.Parser.SyntaxTree;
-using Microsoft.AspNet.Razor.Compilation.TagHelpers;
+using Microsoft.AspNetCore.Razor.Parser.SyntaxTree;
+using Microsoft.AspNetCore.Razor.Compilation.TagHelpers;
 
-namespace Microsoft.AspNet.Razor
+namespace Microsoft.AspNetCore.Razor
 {
     /// <summary>
     /// Represents the results of parsing a Razor document

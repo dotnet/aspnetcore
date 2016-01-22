@@ -5,12 +5,12 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using Microsoft.AspNet.Razor.Parser.SyntaxTree;
-using Microsoft.AspNet.Razor.TagHelpers;
-using Microsoft.AspNet.Razor.Compilation.TagHelpers;
+using Microsoft.AspNetCore.Razor.Parser.SyntaxTree;
+using Microsoft.AspNetCore.Razor.TagHelpers;
+using Microsoft.AspNetCore.Razor.Compilation.TagHelpers;
 using Microsoft.Extensions.Internal;
 
-namespace Microsoft.AspNet.Razor.Parser.TagHelpers
+namespace Microsoft.AspNetCore.Razor.Parser.TagHelpers
 {
     /// <summary>
     /// A <see cref="Block"/> that reprents a special HTML element.

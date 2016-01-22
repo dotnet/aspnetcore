@@ -2,11 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNet.Razor.Chunks;
-using Microsoft.AspNet.Razor.Parser;
-using Microsoft.AspNet.Razor.Parser.SyntaxTree;
+using Microsoft.AspNetCore.Razor.Chunks;
+using Microsoft.AspNetCore.Razor.Parser;
+using Microsoft.AspNetCore.Razor.Parser.SyntaxTree;
 
-namespace Microsoft.AspNet.Razor.CodeGenerators.Visitors
+namespace Microsoft.AspNetCore.Razor.CodeGenerators.Visitors
 {
     /// <summary>
     /// <see cref="CodeVisitor{CSharpCodeWriter}"/> that writes code for a non-<see langword="string"/> tag helper

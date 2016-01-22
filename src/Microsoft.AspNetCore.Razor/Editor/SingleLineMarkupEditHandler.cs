@@ -3,10 +3,10 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNet.Razor.Parser.SyntaxTree;
-using Microsoft.AspNet.Razor.Tokenizer.Symbols;
+using Microsoft.AspNetCore.Razor.Parser.SyntaxTree;
+using Microsoft.AspNetCore.Razor.Tokenizer.Symbols;
 
-namespace Microsoft.AspNet.Razor.Editor
+namespace Microsoft.AspNetCore.Razor.Editor
 {
     public class SingleLineMarkupEditHandler : SpanEditHandler
     {

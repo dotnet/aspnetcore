@@ -7,7 +7,7 @@ using System.Diagnostics;
 using System.Globalization;
 #endif
 
-namespace Microsoft.AspNet.Razor.Editor
+namespace Microsoft.AspNetCore.Razor.Editor
 {
     internal static class RazorEditorTrace
     {

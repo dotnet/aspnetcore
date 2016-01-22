@@ -3,11 +3,11 @@
 
 using System;
 using System.Globalization;
-using Microsoft.AspNet.Razor.Parser.SyntaxTree;
-using Microsoft.AspNet.Razor.Text;
+using Microsoft.AspNetCore.Razor.Parser.SyntaxTree;
+using Microsoft.AspNetCore.Razor.Text;
 using Microsoft.Extensions.Internal;
 
-namespace Microsoft.AspNet.Razor.Chunks.Generators
+namespace Microsoft.AspNetCore.Razor.Chunks.Generators
 {
     public class AttributeBlockChunkGenerator : ParentChunkGenerator
     {

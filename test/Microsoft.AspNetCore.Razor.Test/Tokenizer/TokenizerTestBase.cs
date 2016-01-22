@@ -5,12 +5,12 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
-using Microsoft.AspNet.Razor.Text;
-using Microsoft.AspNet.Razor.Tokenizer;
-using Microsoft.AspNet.Razor.Tokenizer.Symbols;
+using Microsoft.AspNetCore.Razor.Text;
+using Microsoft.AspNetCore.Razor.Tokenizer;
+using Microsoft.AspNetCore.Razor.Tokenizer.Symbols;
 using Xunit;
 
-namespace Microsoft.AspNet.Razor.Test.Tokenizer
+namespace Microsoft.AspNetCore.Razor.Test.Tokenizer
 {
     public abstract class TokenizerTestBase<TSymbol, TSymbolType>
         where TSymbolType : struct

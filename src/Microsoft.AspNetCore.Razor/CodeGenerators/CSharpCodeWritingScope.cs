@@ -4,7 +4,7 @@
 using System;
 using System.Linq;
 
-namespace Microsoft.AspNet.Razor.CodeGenerators
+namespace Microsoft.AspNetCore.Razor.CodeGenerators
 {
     public struct CSharpCodeWritingScope : IDisposable
     {

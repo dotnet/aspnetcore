@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using Xunit;
 
-namespace Microsoft.AspNet.Razor.CodeGenerators
+namespace Microsoft.AspNetCore.Razor.CodeGenerators
 {
     public class CodeWriterTest
     {

@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNet.Razor.Parser;
+using Microsoft.AspNetCore.Razor.Parser;
 
-namespace Microsoft.AspNet.Razor.Text
+namespace Microsoft.AspNetCore.Razor.Text
 {
     public class SourceLocationTracker
     {

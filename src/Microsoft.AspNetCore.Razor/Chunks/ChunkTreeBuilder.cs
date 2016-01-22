@@ -3,9 +3,9 @@
 
 using System.Collections.Generic;
 using System.Diagnostics;
-using Microsoft.AspNet.Razor.Parser.SyntaxTree;
+using Microsoft.AspNetCore.Razor.Parser.SyntaxTree;
 
-namespace Microsoft.AspNet.Razor.Chunks
+namespace Microsoft.AspNetCore.Razor.Chunks
 {
     public class ChunkTreeBuilder
     {

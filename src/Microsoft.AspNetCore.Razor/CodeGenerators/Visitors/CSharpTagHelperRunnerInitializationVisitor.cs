@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNet.Razor.Chunks;
+using Microsoft.AspNetCore.Razor.Chunks;
 
-namespace Microsoft.AspNet.Razor.CodeGenerators.Visitors
+namespace Microsoft.AspNetCore.Razor.CodeGenerators.Visitors
 {
     /// <summary>
     /// The <see cref="CodeVisitor{T}"/> that generates the code to initialize the TagHelperRunner.

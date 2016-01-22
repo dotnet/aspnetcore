@@ -7,12 +7,12 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
-using Microsoft.AspNet.Razor.Chunks.Generators;
-using Microsoft.AspNet.Razor.CodeGenerators;
-using Microsoft.AspNet.Razor.Parser;
-using Microsoft.AspNet.Razor.Text;
+using Microsoft.AspNetCore.Razor.Chunks.Generators;
+using Microsoft.AspNetCore.Razor.CodeGenerators;
+using Microsoft.AspNetCore.Razor.Parser;
+using Microsoft.AspNetCore.Razor.Text;
 
-namespace Microsoft.AspNet.Razor
+namespace Microsoft.AspNetCore.Razor
 {
     /// <summary>
     /// Entry-point to the Razor Template Engine

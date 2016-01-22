@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Microsoft.AspNet.Razor.TagHelpers
+namespace Microsoft.AspNetCore.Razor.TagHelpers
 {
     /// <summary>
     /// Contains information related to the execution of <see cref="ITagHelper"/>s.

@@ -5,11 +5,11 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using Microsoft.AspNet.Razor.Chunks.Generators;
-using Microsoft.AspNet.Razor.Text;
+using Microsoft.AspNetCore.Razor.Chunks.Generators;
+using Microsoft.AspNetCore.Razor.Text;
 using Microsoft.Extensions.Internal;
 
-namespace Microsoft.AspNet.Razor.Parser.SyntaxTree
+namespace Microsoft.AspNetCore.Razor.Parser.SyntaxTree
 {
     public class Block : SyntaxTreeNode
     {

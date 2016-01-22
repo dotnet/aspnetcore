@@ -4,10 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNet.Razor.Parser.SyntaxTree;
-using Microsoft.AspNet.Razor.Text;
+using Microsoft.AspNetCore.Razor.Parser.SyntaxTree;
+using Microsoft.AspNetCore.Razor.Text;
 
-namespace Microsoft.AspNet.Razor.Tokenizer.Symbols
+namespace Microsoft.AspNetCore.Razor.Tokenizer.Symbols
 {
     public static class SymbolExtensions
     {

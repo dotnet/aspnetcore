@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNet.Razor
+namespace Microsoft.AspNetCore.Razor
 {
     // Flags:
     //  Provisional, ContextChanged, Accepted, Rejected

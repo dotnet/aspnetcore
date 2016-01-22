@@ -4,7 +4,7 @@
 using System;
 using System.IO;
 
-namespace Microsoft.AspNet.Razor.Text
+namespace Microsoft.AspNetCore.Razor.Text
 {
     public abstract class LookaheadTextReader : TextReader
     {

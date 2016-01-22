@@ -5,10 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Razor.Chunks;
-using Microsoft.AspNet.Razor.CodeGenerators.Visitors;
+using Microsoft.AspNetCore.Razor.Chunks;
+using Microsoft.AspNetCore.Razor.CodeGenerators.Visitors;
 
-namespace Microsoft.AspNet.Razor.CodeGenerators
+namespace Microsoft.AspNetCore.Razor.CodeGenerators
 {
     public class CSharpCodeGenerator : CodeGenerator
     {

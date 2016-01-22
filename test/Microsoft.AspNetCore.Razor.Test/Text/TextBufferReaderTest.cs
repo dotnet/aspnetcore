@@ -3,10 +3,10 @@
 
 using System;
 using System.Web.WebPages.TestUtils;
-using Microsoft.AspNet.Razor.Text;
+using Microsoft.AspNetCore.Razor.Text;
 using Xunit;
 
-namespace Microsoft.AspNet.Razor.Test.Text
+namespace Microsoft.AspNetCore.Razor.Test.Text
 {
     public class TextBufferReaderTest : LookaheadTextReaderTestBase
     {

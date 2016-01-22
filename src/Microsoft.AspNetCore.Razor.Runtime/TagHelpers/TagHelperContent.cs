@@ -4,9 +4,9 @@
 using System;
 using System.IO;
 using System.Text.Encodings.Web;
-using Microsoft.AspNet.Html;
+using Microsoft.AspNetCore.Html;
 
-namespace Microsoft.AspNet.Razor.TagHelpers
+namespace Microsoft.AspNetCore.Razor.TagHelpers
 {
     /// <summary>
     /// Abstract class used to buffer content returned by <see cref="ITagHelper"/>s.

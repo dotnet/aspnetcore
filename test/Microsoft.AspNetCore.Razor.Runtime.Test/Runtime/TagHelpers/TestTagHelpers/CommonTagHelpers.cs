@@ -3,7 +3,7 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.AspNet.Razor.TagHelpers
+namespace Microsoft.AspNetCore.Razor.TagHelpers
 {
     public class Valid_PlainTagHelper : TagHelper
     {

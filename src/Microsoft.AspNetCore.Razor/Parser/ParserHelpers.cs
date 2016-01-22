@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 
-namespace Microsoft.AspNet.Razor.Parser
+namespace Microsoft.AspNetCore.Razor.Parser
 {
     public static class ParserHelpers
     {

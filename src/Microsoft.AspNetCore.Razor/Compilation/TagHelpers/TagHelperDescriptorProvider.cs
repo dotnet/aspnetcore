@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Microsoft.AspNet.Razor.Compilation.TagHelpers
+namespace Microsoft.AspNetCore.Razor.Compilation.TagHelpers
 {
     /// <summary>
     /// Enables retrieval of <see cref="TagHelperDescriptor"/>'s.

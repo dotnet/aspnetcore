@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNet.Razor.Editor
+namespace Microsoft.AspNetCore.Razor.Editor
 {
     /// <summary>
     /// Used within <see cref="F:SpanEditHandler.EditorHints"/>.

@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-namespace Microsoft.AspNet.Razor.CodeGenerators
+namespace Microsoft.AspNetCore.Razor.CodeGenerators
 {
     /// <summary>
     /// Contains necessary information for the tag helper code generation process.
@@ -29,10 +29,10 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
             MarkAsHtmlEncodedMethodName = "Html.Raw";
             StartTagHelperWritingScopeMethodName = "StartTagHelperWritingScope";
             EndTagHelperWritingScopeMethodName = "EndTagHelperWritingScope";
-            RunnerTypeName = "Microsoft.AspNet.Razor.Runtime.TagHelperRunner";
-            ScopeManagerTypeName = "Microsoft.AspNet.Razor.Runtime.TagHelperScopeManager";
-            ExecutionContextTypeName = "Microsoft.AspNet.Razor.Runtime.TagHelperExecutionContext";
-            TagHelperContentTypeName = "Microsoft.AspNet.Razor.TagHelperContent";
+            RunnerTypeName = "Microsoft.AspNetCore.Razor.Runtime.TagHelperRunner";
+            ScopeManagerTypeName = "Microsoft.AspNetCore.Razor.Runtime.TagHelperScopeManager";
+            ExecutionContextTypeName = "Microsoft.AspNetCore.Razor.Runtime.TagHelperExecutionContext";
+            TagHelperContentTypeName = "Microsoft.AspNetCore.Razor.TagHelperContent";
             TagHelperContentGetContentMethodName = "GetContent";
             HtmlEncoderPropertyName = "HtmlEncoder";
             TagHelperOutputIsContentModifiedPropertyName = "IsContentModified";

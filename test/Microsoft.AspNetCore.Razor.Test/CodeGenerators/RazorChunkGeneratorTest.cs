@@ -6,12 +6,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using Microsoft.AspNet.Razor.CodeGenerators;
-using Microsoft.AspNet.Razor.Test.Utils;
-using Microsoft.AspNet.Testing;
+using Microsoft.AspNetCore.Razor.CodeGenerators;
+using Microsoft.AspNetCore.Razor.Test.Utils;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 
-namespace Microsoft.AspNet.Razor.Test.Generator
+namespace Microsoft.AspNetCore.Razor.Test.Generator
 {
     public abstract class RazorCodeGeneratorTest<TLanguage>
         where TLanguage : RazorCodeLanguage, new()
@@ -194,7 +194,7 @@ namespace Microsoft.AspNet.Razor.Test.Generator
             var textOutput = results.GeneratedCode;
 #if GENERATE_BASELINES
             var outputFile = string.Format(
-                @"test\Microsoft.AspNet.Razor.Test\TestFiles\CodeGenerator\Output\{0}.{1}",
+                @"test\Microsoft.AspNetCore.Razor.Test\TestFiles\CodeGenerator\Output\{0}.{1}",
                 baselineName,
                 BaselineExtension);
 

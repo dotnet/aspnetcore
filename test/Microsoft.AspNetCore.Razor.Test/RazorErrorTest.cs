@@ -5,7 +5,7 @@ using System;
 using Newtonsoft.Json;
 using Xunit;
 
-namespace Microsoft.AspNet.Razor
+namespace Microsoft.AspNetCore.Razor
 {
     public class RazorErrorTest
     {

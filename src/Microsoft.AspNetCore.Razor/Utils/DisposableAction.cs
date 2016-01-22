@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNet.Razor.Utils
+namespace Microsoft.AspNetCore.Razor.Utils
 {
     internal class DisposableAction : IDisposable
     {

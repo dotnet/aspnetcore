@@ -3,10 +3,10 @@
 
 using System;
 using System.Diagnostics;
-using Microsoft.AspNet.Razor.Text;
-using Microsoft.AspNet.Razor.Tokenizer.Symbols;
+using Microsoft.AspNetCore.Razor.Text;
+using Microsoft.AspNetCore.Razor.Tokenizer.Symbols;
 
-namespace Microsoft.AspNet.Razor.Tokenizer
+namespace Microsoft.AspNetCore.Razor.Tokenizer
 {
     public class TokenizerView<TTokenizer, TSymbol, TSymbolType>
         where TSymbolType : struct

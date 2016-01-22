@@ -4,7 +4,7 @@
 using System.Diagnostics;
 using System.IO;
 
-namespace Microsoft.AspNet.Razor.Test.Utils
+namespace Microsoft.AspNetCore.Razor.Test.Utils
 {
     public static class BaselineWriter
     {

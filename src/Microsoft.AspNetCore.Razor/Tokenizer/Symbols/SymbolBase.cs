@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using Microsoft.Extensions.Internal;
 
-namespace Microsoft.AspNet.Razor.Tokenizer.Symbols
+namespace Microsoft.AspNetCore.Razor.Tokenizer.Symbols
 {
     public abstract class SymbolBase<TType> : ISymbol
         where TType : struct

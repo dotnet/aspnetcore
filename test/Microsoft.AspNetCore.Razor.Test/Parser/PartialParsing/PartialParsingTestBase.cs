@@ -4,14 +4,14 @@
 using System;
 using System.Threading;
 using System.Web.WebPages.TestUtils;
-using Microsoft.AspNet.Razor.CodeGenerators;
-using Microsoft.AspNet.Razor.Parser.SyntaxTree;
-using Microsoft.AspNet.Razor.Test.Framework;
-using Microsoft.AspNet.Razor.Test.Utils;
-using Microsoft.AspNet.Razor.Text;
+using Microsoft.AspNetCore.Razor.CodeGenerators;
+using Microsoft.AspNetCore.Razor.Parser.SyntaxTree;
+using Microsoft.AspNetCore.Razor.Test.Framework;
+using Microsoft.AspNetCore.Razor.Test.Utils;
+using Microsoft.AspNetCore.Razor.Text;
 using Xunit;
 
-namespace Microsoft.AspNet.Razor.Test.Parser.PartialParsing
+namespace Microsoft.AspNetCore.Razor.Test.Parser.PartialParsing
 {
     public abstract class PartialParsingTestBase<TLanguage>
         where TLanguage : RazorCodeLanguage, new()

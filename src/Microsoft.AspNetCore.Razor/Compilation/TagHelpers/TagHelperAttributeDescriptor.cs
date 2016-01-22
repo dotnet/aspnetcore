@@ -4,7 +4,7 @@
 using System;
 using System.Reflection;
 
-namespace Microsoft.AspNet.Razor.Compilation.TagHelpers
+namespace Microsoft.AspNetCore.Razor.Compilation.TagHelpers
 {
     /// <summary>
     /// A metadata class describing a tag helper attribute.

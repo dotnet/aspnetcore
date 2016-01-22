@@ -3,7 +3,7 @@
 
 using Xunit;
 
-namespace Microsoft.AspNet.Razor.Chunks.Generators
+namespace Microsoft.AspNetCore.Razor.Chunks.Generators
 {
     public class AddImportChunkGeneratorTest
     {

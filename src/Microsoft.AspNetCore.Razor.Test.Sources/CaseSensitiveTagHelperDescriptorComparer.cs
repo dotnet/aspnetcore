@@ -4,11 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNet.Razor.Compilation.TagHelpers;
+using Microsoft.AspNetCore.Razor.Compilation.TagHelpers;
 using Microsoft.Extensions.Internal;
 using Xunit;
 
-namespace Microsoft.AspNet.Razor.Test.Internal
+namespace Microsoft.AspNetCore.Razor.Test.Internal
 {
     internal class CaseSensitiveTagHelperDescriptorComparer : TagHelperDescriptorComparer
     {

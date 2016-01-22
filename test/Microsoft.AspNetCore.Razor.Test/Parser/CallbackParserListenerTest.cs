@@ -3,13 +3,13 @@
 
 using System;
 using System.Threading;
-using Microsoft.AspNet.Razor.Parser;
-using Microsoft.AspNet.Razor.Parser.SyntaxTree;
-using Microsoft.AspNet.Razor.Test.Framework;
+using Microsoft.AspNetCore.Razor.Parser;
+using Microsoft.AspNetCore.Razor.Parser.SyntaxTree;
+using Microsoft.AspNetCore.Razor.Test.Framework;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.Razor.Test.Parser
+namespace Microsoft.AspNetCore.Razor.Test.Parser
 {
     public class CallbackParserListenerTest
     {

@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNet.Razor.TagHelpers
+namespace Microsoft.AspNetCore.Razor.TagHelpers
 {
     /// <summary>
     /// An HTML tag helper attribute.

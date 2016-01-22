@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNet.Razor.Tokenizer.Symbols;
+using Microsoft.AspNetCore.Razor.Tokenizer.Symbols;
 using Xunit;
 
-namespace Microsoft.AspNet.Razor.Test.Tokenizer
+namespace Microsoft.AspNetCore.Razor.Test.Tokenizer
 {
     public class CSharpTokenizerLiteralTest : CSharpTokenizerTestBase
     {

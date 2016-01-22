@@ -3,13 +3,13 @@
 
 using System;
 using System.Web.WebPages.TestUtils;
-using Microsoft.AspNet.Razor.Parser;
-using Microsoft.AspNet.Razor.Parser.SyntaxTree;
-using Microsoft.AspNet.Razor.Test.Framework;
-using Microsoft.AspNet.Razor.Text;
+using Microsoft.AspNetCore.Razor.Parser;
+using Microsoft.AspNetCore.Razor.Parser.SyntaxTree;
+using Microsoft.AspNetCore.Razor.Test.Framework;
+using Microsoft.AspNetCore.Razor.Text;
 using Xunit;
 
-namespace Microsoft.AspNet.Razor.Test.Parser.PartialParsing
+namespace Microsoft.AspNetCore.Razor.Test.Parser.PartialParsing
 {
     public class CSharpPartialParsingTest : PartialParsingTestBase<CSharpRazorCodeLanguage>
     {

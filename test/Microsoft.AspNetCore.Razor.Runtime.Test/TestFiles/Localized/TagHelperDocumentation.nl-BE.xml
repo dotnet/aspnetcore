@@ -1,33 +1,33 @@
 <?xml version="1.0"?>
 <doc>
   <assembly>
-    <name>Microsoft.AspNet.Razor.Runtime.Test</name>
+    <name>Microsoft.AspNetCore.Razor.Runtime.Test</name>
   </assembly>
   <members>
-    <member name="T:Microsoft.AspNet.Razor.TagHelpers.DocumentedTagHelper">
+    <member name="T:Microsoft.AspNetCore.Razor.TagHelpers.DocumentedTagHelper">
       <summary>
-        nl-BE: The summary for <see cref="T:Microsoft.AspNet.Razor.TagHelpers.DocumentedTagHelper" />.
+        nl-BE: The summary for <see cref="T:Microsoft.AspNetCore.Razor.TagHelpers.DocumentedTagHelper" />.
       </summary>
       <remarks>
-        nl-BE: Inherits from <see cref="T:Microsoft.AspNet.Razor.TagHelpers.TagHelper" />.
+        nl-BE: Inherits from <see cref="T:Microsoft.AspNetCore.Razor.TagHelpers.TagHelper" />.
       </remarks>
     </member>
-    <member name="P:Microsoft.AspNet.Razor.TagHelpers.DocumentedTagHelper.SummaryProperty">
+    <member name="P:Microsoft.AspNetCore.Razor.TagHelpers.DocumentedTagHelper.SummaryProperty">
       <summary>
-        nl-BE: This <see cref="P:Microsoft.AspNet.Razor.TagHelpers.DocumentedTagHelper.SummaryProperty" /> is of type <see cref="T:System.String" />.
+        nl-BE: This <see cref="P:Microsoft.AspNetCore.Razor.TagHelpers.DocumentedTagHelper.SummaryProperty" /> is of type <see cref="T:System.String" />.
       </summary>
     </member>
-    <member name="P:Microsoft.AspNet.Razor.TagHelpers.DocumentedTagHelper.RemarksProperty">
+    <member name="P:Microsoft.AspNetCore.Razor.TagHelpers.DocumentedTagHelper.RemarksProperty">
       <remarks>
-        nl-BE: The <see cref="P:Microsoft.AspNet.Razor.TagHelpers.DocumentedTagHelper.SummaryProperty" /> may be <c>null</c>.
+        nl-BE: The <see cref="P:Microsoft.AspNetCore.Razor.TagHelpers.DocumentedTagHelper.SummaryProperty" /> may be <c>null</c>.
       </remarks>
     </member>
-    <member name="P:Microsoft.AspNet.Razor.TagHelpers.DocumentedTagHelper.RemarksAndSummaryProperty">
+    <member name="P:Microsoft.AspNetCore.Razor.TagHelpers.DocumentedTagHelper.RemarksAndSummaryProperty">
       <summary>
         nl-BE: This is a complex <see cref="T:System.Collections.Generic.IDictionary`2" />.
       </summary>
       <remarks>
-        nl-BE: <see cref="P:Microsoft.AspNet.Razor.TagHelpers.DocumentedTagHelper.SummaryProperty" /><see cref="P:Microsoft.AspNet.Razor.TagHelpers.DocumentedTagHelper.RemarksProperty" />
+        nl-BE: <see cref="P:Microsoft.AspNetCore.Razor.TagHelpers.DocumentedTagHelper.SummaryProperty" /><see cref="P:Microsoft.AspNetCore.Razor.TagHelpers.DocumentedTagHelper.RemarksProperty" />
       </remarks>
     </member>
   </members>

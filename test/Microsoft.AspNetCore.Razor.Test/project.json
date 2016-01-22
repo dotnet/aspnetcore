@@ -2,12 +2,12 @@
   "version": "1.0.0",
   "resource": "TestFiles/**/*",
   "dependencies": {
-    "Microsoft.AspNet.Razor": "4.0.0-*",
-    "Microsoft.AspNet.Razor.Test.Sources": {
+    "Microsoft.AspNetCore.Razor": "4.0.0-*",
+    "Microsoft.AspNetCore.Razor.Test.Sources": {
       "version": "4.0.0-*",
       "type": "build"
     },
-    "Microsoft.AspNet.Testing": "1.0.0-*",
+    "Microsoft.AspNetCore.Testing": "1.0.0-*",
     "xunit": "2.1.0"
   },
   "testRunner": "xunit",

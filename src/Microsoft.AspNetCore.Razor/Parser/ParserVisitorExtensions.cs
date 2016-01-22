@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNet.Razor.Parser
+namespace Microsoft.AspNetCore.Razor.Parser
 {
     public static class ParserVisitorExtensions
     {

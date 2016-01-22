@@ -3,7 +3,7 @@
 
 using System.Text;
 
-namespace Microsoft.AspNet.Razor.Text
+namespace Microsoft.AspNetCore.Razor.Text
 {
     internal static class TextExtensions
     {

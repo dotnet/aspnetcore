@@ -3,12 +3,12 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNet.Razor.Editor;
-using Microsoft.AspNet.Razor.Text;
-using Microsoft.AspNet.Razor.Tokenizer.Symbols;
+using Microsoft.AspNetCore.Razor.Editor;
+using Microsoft.AspNetCore.Razor.Text;
+using Microsoft.AspNetCore.Razor.Tokenizer.Symbols;
 using Microsoft.Extensions.Internal;
 
-namespace Microsoft.AspNet.Razor.Parser.SyntaxTree
+namespace Microsoft.AspNetCore.Razor.Parser.SyntaxTree
 {
     public class AutoCompleteEditHandler : SpanEditHandler
     {

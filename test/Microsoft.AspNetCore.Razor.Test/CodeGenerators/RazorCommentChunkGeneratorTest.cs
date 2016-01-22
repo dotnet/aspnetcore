@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Linq;
-using Microsoft.AspNet.Razor.Compilation.TagHelpers;
+using Microsoft.AspNetCore.Razor.Compilation.TagHelpers;
 using Xunit;
 
-namespace Microsoft.AspNet.Razor.Chunks.Generators
+namespace Microsoft.AspNetCore.Razor.Chunks.Generators
 {
     // Really tests underlying ParentChunkGenerator
     public class RazorCommentChunkGeneratorTest

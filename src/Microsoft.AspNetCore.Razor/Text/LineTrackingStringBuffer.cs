@@ -5,9 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
-using Microsoft.AspNet.Razor.Parser;
+using Microsoft.AspNetCore.Razor.Parser;
 
-namespace Microsoft.AspNet.Razor.Text
+namespace Microsoft.AspNetCore.Razor.Text
 {
     internal class LineTrackingStringBuffer
     {

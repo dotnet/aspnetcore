@@ -9,7 +9,7 @@ using System.Reflection;
 using System.Text;
 using System.Xml.Linq;
 
-namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
+namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
 {
     /// <summary>
     /// Extracts summary and remarks XML documentation from an XML documentation file.

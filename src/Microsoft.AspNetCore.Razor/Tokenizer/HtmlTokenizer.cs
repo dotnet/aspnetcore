@@ -4,11 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using Microsoft.AspNet.Razor.Parser;
-using Microsoft.AspNet.Razor.Text;
-using Microsoft.AspNet.Razor.Tokenizer.Symbols;
+using Microsoft.AspNetCore.Razor.Parser;
+using Microsoft.AspNetCore.Razor.Text;
+using Microsoft.AspNetCore.Razor.Tokenizer.Symbols;
 
-namespace Microsoft.AspNet.Razor.Tokenizer
+namespace Microsoft.AspNetCore.Razor.Tokenizer
 {
     // Tokenizer _loosely_ based on http://dev.w3.org/html5/spec/Overview.html#tokenization
     public class HtmlTokenizer : Tokenizer<HtmlSymbol, HtmlSymbolType>

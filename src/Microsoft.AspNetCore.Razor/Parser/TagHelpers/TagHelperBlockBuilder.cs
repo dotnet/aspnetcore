@@ -2,12 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using Microsoft.AspNet.Razor.Chunks.Generators;
-using Microsoft.AspNet.Razor.Parser.SyntaxTree;
-using Microsoft.AspNet.Razor.TagHelpers;
-using Microsoft.AspNet.Razor.Compilation.TagHelpers;
+using Microsoft.AspNetCore.Razor.Chunks.Generators;
+using Microsoft.AspNetCore.Razor.Parser.SyntaxTree;
+using Microsoft.AspNetCore.Razor.TagHelpers;
+using Microsoft.AspNetCore.Razor.Compilation.TagHelpers;
 
-namespace Microsoft.AspNet.Razor.Parser.TagHelpers
+namespace Microsoft.AspNetCore.Razor.Parser.TagHelpers
 {
     /// <summary>
     /// A <see cref="BlockBuilder"/> used to create <see cref="TagHelperBlock"/>s.

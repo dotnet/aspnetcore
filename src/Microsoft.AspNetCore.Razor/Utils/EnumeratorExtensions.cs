@@ -4,7 +4,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Microsoft.AspNet.Razor.Utils
+namespace Microsoft.AspNetCore.Razor.Utils
 {
     internal static class EnumeratorExtensions
     {

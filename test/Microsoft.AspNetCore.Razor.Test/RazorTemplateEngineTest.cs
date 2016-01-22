@@ -6,14 +6,14 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Web.WebPages.TestUtils;
-using Microsoft.AspNet.Razor.Chunks.Generators;
-using Microsoft.AspNet.Razor.CodeGenerators;
-using Microsoft.AspNet.Razor.Parser;
-using Microsoft.AspNet.Razor.Text;
+using Microsoft.AspNetCore.Razor.Chunks.Generators;
+using Microsoft.AspNetCore.Razor.CodeGenerators;
+using Microsoft.AspNetCore.Razor.Parser;
+using Microsoft.AspNetCore.Razor.Text;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.Razor.Test
+namespace Microsoft.AspNetCore.Razor.Test
 {
     public class RazorTemplateEngineTest
     {

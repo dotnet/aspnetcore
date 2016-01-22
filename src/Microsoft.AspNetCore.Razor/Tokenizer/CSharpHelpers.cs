@@ -4,7 +4,7 @@
 using System;
 using System.Globalization;
 
-namespace Microsoft.AspNet.Razor.Tokenizer
+namespace Microsoft.AspNetCore.Razor.Tokenizer
 {
     public static class CSharpHelpers
     {

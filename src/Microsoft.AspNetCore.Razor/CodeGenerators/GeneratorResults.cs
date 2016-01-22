@@ -3,11 +3,11 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNet.Razor.Chunks;
-using Microsoft.AspNet.Razor.Parser.SyntaxTree;
-using Microsoft.AspNet.Razor.Compilation.TagHelpers;
+using Microsoft.AspNetCore.Razor.Chunks;
+using Microsoft.AspNetCore.Razor.Parser.SyntaxTree;
+using Microsoft.AspNetCore.Razor.Compilation.TagHelpers;
 
-namespace Microsoft.AspNet.Razor.CodeGenerators
+namespace Microsoft.AspNetCore.Razor.CodeGenerators
 {
     /// <summary>
     /// The results of parsing and generating code for a Razor document.

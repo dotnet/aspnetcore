@@ -4,10 +4,10 @@
 using System;
 using System.Diagnostics;
 using System.Globalization;
-using Microsoft.AspNet.Razor.Chunks;
-using Microsoft.AspNet.Razor.Parser.SyntaxTree;
+using Microsoft.AspNetCore.Razor.Chunks;
+using Microsoft.AspNetCore.Razor.Parser.SyntaxTree;
 
-namespace Microsoft.AspNet.Razor.CodeGenerators.Visitors
+namespace Microsoft.AspNetCore.Razor.CodeGenerators.Visitors
 {
     public class CSharpDesignTimeCodeVisitor : CodeVisitor<CSharpCodeWriter>
     {

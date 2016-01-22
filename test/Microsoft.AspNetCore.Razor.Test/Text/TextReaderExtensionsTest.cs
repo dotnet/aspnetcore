@@ -3,10 +3,10 @@
 
 using System;
 using System.IO;
-using Microsoft.AspNet.Razor.Parser;
+using Microsoft.AspNetCore.Razor.Parser;
 using Xunit;
 
-namespace Microsoft.AspNet.Razor.Test.Text
+namespace Microsoft.AspNetCore.Razor.Test.Text
 {
     public class TextReaderExtensionsTest
     {

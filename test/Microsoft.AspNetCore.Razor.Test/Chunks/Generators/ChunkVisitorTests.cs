@@ -1,13 +1,13 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNet.Razor.CodeGenerators;
-using Microsoft.AspNet.Razor.CodeGenerators.Visitors;
+using Microsoft.AspNetCore.Razor.CodeGenerators;
+using Microsoft.AspNetCore.Razor.CodeGenerators.Visitors;
 using Moq;
 using Moq.Protected;
 using Xunit;
 
-namespace Microsoft.AspNet.Razor.Chunks.Generators
+namespace Microsoft.AspNetCore.Razor.Chunks.Generators
 {
     public class ChunkVisitorTests
     {

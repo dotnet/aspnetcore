@@ -3,9 +3,9 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNet.Razor.Tokenizer.Symbols;
+using Microsoft.AspNetCore.Razor.Tokenizer.Symbols;
 
-namespace Microsoft.AspNet.Razor.Tokenizer
+namespace Microsoft.AspNetCore.Razor.Tokenizer
 {
     internal static class CSharpKeywordDetector
     {

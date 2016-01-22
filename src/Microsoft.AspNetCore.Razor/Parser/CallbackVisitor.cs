@@ -3,9 +3,9 @@
 
 using System;
 using System.Threading;
-using Microsoft.AspNet.Razor.Parser.SyntaxTree;
+using Microsoft.AspNetCore.Razor.Parser.SyntaxTree;
 
-namespace Microsoft.AspNet.Razor.Parser
+namespace Microsoft.AspNetCore.Razor.Parser
 {
     public class CallbackVisitor : ParserVisitor
     {

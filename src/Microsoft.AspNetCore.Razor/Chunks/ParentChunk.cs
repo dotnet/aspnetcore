@@ -3,7 +3,7 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.AspNet.Razor.Chunks
+namespace Microsoft.AspNetCore.Razor.Chunks
 {
     public class ParentChunk : Chunk
     {

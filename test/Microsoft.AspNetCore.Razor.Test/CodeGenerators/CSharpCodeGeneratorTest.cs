@@ -4,14 +4,14 @@
 #if GENERATE_BASELINES
 using System;
 #endif
-using Microsoft.AspNet.Razor.Parser.SyntaxTree;
-using Microsoft.AspNet.Razor.Test;
-using Microsoft.AspNet.Razor.Test.Generator;
-using Microsoft.AspNet.Razor.Test.Utils;
+using Microsoft.AspNetCore.Razor.Parser.SyntaxTree;
+using Microsoft.AspNetCore.Razor.Test;
+using Microsoft.AspNetCore.Razor.Test.Generator;
+using Microsoft.AspNetCore.Razor.Test.Utils;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.Razor.CodeGenerators
+namespace Microsoft.AspNetCore.Razor.CodeGenerators
 {
     public class CSharpCodeGeneratorTest
     {
@@ -56,7 +56,7 @@ namespace Microsoft.AspNet.Razor.CodeGenerators
             if (!string.Equals(expectedOutput, result.Code, StringComparison.Ordinal))
             {
                 BaselineWriter.WriteBaseline(
-                    @"test\Microsoft.AspNet.Razor.Test\TestFiles\CodeGenerator\Output\CSharpCodeGenerator.cs",
+                    @"test\Microsoft.AspNetCore.Razor.Test\TestFiles\CodeGenerator\Output\CSharpCodeGenerator.cs",
                     result.Code);
             }
 #else

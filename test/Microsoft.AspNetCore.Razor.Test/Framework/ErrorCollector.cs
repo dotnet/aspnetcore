@@ -3,9 +3,9 @@
 
 using System;
 using System.Text;
-using Microsoft.AspNet.Razor.Utils;
+using Microsoft.AspNetCore.Razor.Utils;
 
-namespace Microsoft.AspNet.Razor.Test.Framework
+namespace Microsoft.AspNetCore.Razor.Test.Framework
 {
     public class ErrorCollector
     {

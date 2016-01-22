@@ -5,13 +5,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Microsoft.AspNet.Razor.Compilation.TagHelpers;
-using Microsoft.AspNet.Razor.Parser;
-using Microsoft.AspNet.Razor.TagHelpers;
-using Microsoft.AspNet.Razor.Test.Internal;
+using Microsoft.AspNetCore.Razor.Compilation.TagHelpers;
+using Microsoft.AspNetCore.Razor.Parser;
+using Microsoft.AspNetCore.Razor.TagHelpers;
+using Microsoft.AspNetCore.Razor.Test.Internal;
 using Xunit;
 
-namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
+namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
 {
     public class TagHelperDescriptorResolverTest : TagHelperTypeResolverTest
     {
@@ -150,7 +150,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                             },
                             new TagHelperDirectiveDescriptor
                             {
-                                DirectiveText = "Microsoft.AspNet.Razor.TagHelpers.Valid_P*, " + assemblyA,
+                                DirectiveText = "Microsoft.AspNetCore.Razor.TagHelpers.Valid_P*, " + assemblyA,
                                 Location = directiveLocation1,
                                 DirectiveType = TagHelperDirectiveType.AddTagHelper
                             }
@@ -182,7 +182,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                             },
                             new TagHelperDirectiveDescriptor
                             {
-                                DirectiveText = "Microsoft.AspNet.Razor.TagHelpers.Valid_Plain*, " + assemblyA,
+                                DirectiveText = "Microsoft.AspNetCore.Razor.TagHelpers.Valid_Plain*, " + assemblyA,
                                 Location = directiveLocation1,
                                 DirectiveType = TagHelperDirectiveType.AddTagHelper
                             },
@@ -452,7 +452,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                         {
                             CreateTagHelperDirectiveDescriptor("", TagHelperDirectiveType.TagHelperPrefix),
                             CreateTagHelperDirectiveDescriptor(
-                                "Microsoft.AspNet.Razor.TagHelpers.Valid_Plain*, " + assemblyA,
+                                "Microsoft.AspNetCore.Razor.TagHelpers.Valid_Plain*, " + assemblyA,
                                 TagHelperDirectiveType.AddTagHelper),
                         },
                         new [] { Valid_PlainTagHelperDescriptor }
@@ -463,7 +463,7 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                         {
                             CreateTagHelperDirectiveDescriptor("th:", TagHelperDirectiveType.TagHelperPrefix),
                             CreateTagHelperDirectiveDescriptor(
-                                "Microsoft.AspNet.Razor.TagHelpers.Valid_Plain*, " + assemblyA,
+                                "Microsoft.AspNetCore.Razor.TagHelpers.Valid_Plain*, " + assemblyA,
                                 TagHelperDirectiveType.AddTagHelper),
                         },
                         new [] { CreatePrefixedValidPlainDescriptor("th:") }
@@ -487,10 +487,10 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                         {
                             CreateTagHelperDirectiveDescriptor("th-", TagHelperDirectiveType.TagHelperPrefix),
                             CreateTagHelperDirectiveDescriptor(
-                                "Microsoft.AspNet.Razor.TagHelpers.Valid_Plain*, " + assemblyA,
+                                "Microsoft.AspNetCore.Razor.TagHelpers.Valid_Plain*, " + assemblyA,
                                 TagHelperDirectiveType.AddTagHelper),
                             CreateTagHelperDirectiveDescriptor(
-                                "Microsoft.AspNet.Razor.TagHelpers.Valid_Inherited*, " + assemblyA,
+                                "Microsoft.AspNetCore.Razor.TagHelpers.Valid_Inherited*, " + assemblyA,
                                 TagHelperDirectiveType.AddTagHelper)
                         },
                         new []
@@ -505,10 +505,10 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
                         {
                             CreateTagHelperDirectiveDescriptor("", TagHelperDirectiveType.TagHelperPrefix),
                             CreateTagHelperDirectiveDescriptor(
-                                "Microsoft.AspNet.Razor.TagHelpers.Valid_Plain*, " + assemblyA,
+                                "Microsoft.AspNetCore.Razor.TagHelpers.Valid_Plain*, " + assemblyA,
                                 TagHelperDirectiveType.AddTagHelper),
                             CreateTagHelperDirectiveDescriptor(
-                                "Microsoft.AspNet.Razor.TagHelpers.Valid_Inherited*, " + assemblyA,
+                                "Microsoft.AspNetCore.Razor.TagHelpers.Valid_Inherited*, " + assemblyA,
                                 TagHelperDirectiveType.AddTagHelper)
                         },
                         new [] { Valid_PlainTagHelperDescriptor, Valid_InheritedTagHelperDescriptor }
@@ -1092,13 +1092,13 @@ namespace Microsoft.AspNet.Razor.Runtime.TagHelpers
 
             // Act
             var descriptors = tagHelperDescriptorResolver.Resolve(
-                "Microsoft.AspNet.Razor.Runtime.Test.TagHelpers.Invalid_AbstractTagHelper, " + AssemblyName,
-                "Microsoft.AspNet.Razor.Runtime.Test.TagHelpers.Invalid_GenericTagHelper`, " + AssemblyName,
-                "Microsoft.AspNet.Razor.Runtime.Test.TagHelpers.Invalid_NestedPublicTagHelper, " + AssemblyName,
-                "Microsoft.AspNet.Razor.Runtime.Test.TagHelpers.Invalid_NestedInternalTagHelper, " + AssemblyName,
-                "Microsoft.AspNet.Razor.Runtime.Test.TagHelpers.Invalid_PrivateTagHelper, " + AssemblyName,
-                "Microsoft.AspNet.Razor.Runtime.Test.TagHelpers.Invalid_ProtectedTagHelper, " + AssemblyName,
-                "Microsoft.AspNet.Razor.Runtime.Test.TagHelpers.Invalid_InternalTagHelper, " + AssemblyName);
+                "Microsoft.AspNetCore.Razor.Runtime.Test.TagHelpers.Invalid_AbstractTagHelper, " + AssemblyName,
+                "Microsoft.AspNetCore.Razor.Runtime.Test.TagHelpers.Invalid_GenericTagHelper`, " + AssemblyName,
+                "Microsoft.AspNetCore.Razor.Runtime.Test.TagHelpers.Invalid_NestedPublicTagHelper, " + AssemblyName,
+                "Microsoft.AspNetCore.Razor.Runtime.Test.TagHelpers.Invalid_NestedInternalTagHelper, " + AssemblyName,
+                "Microsoft.AspNetCore.Razor.Runtime.Test.TagHelpers.Invalid_PrivateTagHelper, " + AssemblyName,
+                "Microsoft.AspNetCore.Razor.Runtime.Test.TagHelpers.Invalid_ProtectedTagHelper, " + AssemblyName,
+                "Microsoft.AspNetCore.Razor.Runtime.Test.TagHelpers.Invalid_InternalTagHelper, " + AssemblyName);
 
             // Assert
             Assert.Empty(descriptors);

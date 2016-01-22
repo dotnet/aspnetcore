@@ -5,9 +5,9 @@ using System;
 using System.IO;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Html;
+using Microsoft.AspNetCore.Html;
 
-namespace Microsoft.AspNet.Razor.TagHelpers
+namespace Microsoft.AspNetCore.Razor.TagHelpers
 {
     /// <summary>
     /// Class used to represent the output of an <see cref="ITagHelper"/>.
@@ -184,7 +184,7 @@ namespace Microsoft.AspNet.Razor.TagHelpers
         /// </summary>
         /// <remarks>
         /// MVC will HTML encode <see cref="string"/> values when generating the start tag. It will not HTML encode
-        /// a <c>Microsoft.AspNet.Mvc.Rendering.HtmlString</c> instance. MVC converts most other types to a
+        /// a <c>Microsoft.AspNetCore.Mvc.Rendering.HtmlString</c> instance. MVC converts most other types to a
         /// <see cref="string"/>, then HTML encodes the result.
         /// </remarks>
         public TagHelperAttributeList Attributes { get; }

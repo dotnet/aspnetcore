@@ -5,10 +5,10 @@ using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.Text;
-using Microsoft.AspNet.Razor.Parser.SyntaxTree;
+using Microsoft.AspNetCore.Razor.Parser.SyntaxTree;
 using Microsoft.Extensions.Internal;
 
-namespace Microsoft.AspNet.Razor.Text
+namespace Microsoft.AspNetCore.Razor.Text
 {
     public struct TextChange
     {

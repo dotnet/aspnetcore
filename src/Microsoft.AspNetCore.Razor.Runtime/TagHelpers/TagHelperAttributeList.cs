@@ -3,9 +3,9 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNet.Razor.Runtime;
+using Microsoft.AspNetCore.Razor.Runtime;
 
-namespace Microsoft.AspNet.Razor.TagHelpers
+namespace Microsoft.AspNetCore.Razor.TagHelpers
 {
     /// <summary>
     /// A collection of <see cref="TagHelperAttribute"/>s.

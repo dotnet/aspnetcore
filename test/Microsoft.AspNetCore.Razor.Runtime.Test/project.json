@@ -5,12 +5,12 @@
     "keyFile": "../../tools/Key.snk"
   },
   "dependencies": {
-    "Microsoft.AspNet.Razor.Runtime": "4.0.0-*",
-    "Microsoft.AspNet.Razor.Test.Sources": {
+    "Microsoft.AspNetCore.Razor.Runtime": "4.0.0-*",
+    "Microsoft.AspNetCore.Razor.Test.Sources": {
       "version": "4.0.0-*",
       "type": "build"
     },
-    "Microsoft.AspNet.Testing": "1.0.0-*",
+    "Microsoft.AspNetCore.Testing": "1.0.0-*",
     "Microsoft.Extensions.WebEncoders": "1.0.0-*",
     "xunit": "2.1.0"
   },

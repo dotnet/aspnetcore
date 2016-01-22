@@ -6,7 +6,7 @@ using System.Diagnostics;
 using System.Globalization;
 using Microsoft.Extensions.Internal;
 
-namespace Microsoft.AspNet.Razor.Text
+namespace Microsoft.AspNetCore.Razor.Text
 {
     [DebuggerDisplay("({Location})\"{Value}\"")]
     public class LocationTagged<TValue> : IFormattable

@@ -5,9 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using Microsoft.AspNet.Razor.Utils;
+using Microsoft.AspNetCore.Razor.Utils;
 
-namespace Microsoft.AspNet.Razor.Text
+namespace Microsoft.AspNetCore.Razor.Text
 {
     public class BufferingTextReader : LookaheadTextReader
     {

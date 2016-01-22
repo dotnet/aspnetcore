@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNet.Razor.Parser.SyntaxTree
+namespace Microsoft.AspNetCore.Razor.Parser.SyntaxTree
 {
     [Flags]
     public enum AcceptedCharacters

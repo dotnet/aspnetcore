@@ -5,11 +5,11 @@ using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using Microsoft.AspNet.Razor.Editor;
-using Microsoft.AspNet.Razor.Parser.SyntaxTree;
-using Microsoft.AspNet.Razor.Text;
+using Microsoft.AspNetCore.Razor.Editor;
+using Microsoft.AspNetCore.Razor.Parser.SyntaxTree;
+using Microsoft.AspNetCore.Razor.Text;
 
-namespace Microsoft.AspNet.Razor
+namespace Microsoft.AspNetCore.Razor
 {
     /// <summary>
     /// Parser used by editors to avoid reparsing the entire document on each text change.

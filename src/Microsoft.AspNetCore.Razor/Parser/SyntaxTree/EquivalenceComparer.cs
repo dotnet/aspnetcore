@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Microsoft.AspNet.Razor.Parser.SyntaxTree
+namespace Microsoft.AspNetCore.Razor.Parser.SyntaxTree
 {
     internal class EquivalenceComparer : IEqualityComparer<SyntaxTreeNode>
     {

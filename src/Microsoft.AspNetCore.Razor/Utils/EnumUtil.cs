@@ -3,7 +3,7 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.AspNet.Razor.Utils
+namespace Microsoft.AspNetCore.Razor.Utils
 {
     internal static class EnumUtil
     {

@@ -7,9 +7,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Text.Encodings.Web;
-using Microsoft.AspNet.Html;
+using Microsoft.AspNetCore.Html;
 
-namespace Microsoft.AspNet.Razor.TagHelpers
+namespace Microsoft.AspNetCore.Razor.TagHelpers
 {
     /// <summary>
     /// Default concrete <see cref="TagHelperContent"/>.

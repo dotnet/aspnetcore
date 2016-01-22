@@ -3,9 +3,9 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNet.Razor.Chunks;
+using Microsoft.AspNetCore.Razor.Chunks;
 
-namespace Microsoft.AspNet.Razor.CodeGenerators.Visitors
+namespace Microsoft.AspNetCore.Razor.CodeGenerators.Visitors
 {
     public class CSharpTagHelperFieldDeclarationVisitor : CodeVisitor<CSharpCodeWriter>
     {
