@@ -3,7 +3,7 @@
   "dependencies": {
     "Microsoft.AspNetCore.IISPlatformHandler": "1.0.0-*",
     "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*",
-    "Microsoft.AspNetCore.Server.WebListener": "1.0.0-*",
+    "Microsoft.AspNetCore.Server.WebListener": "0.1.0-*",
     "Microsoft.AspNetCore.WebUtilities": "1.0.0-*",
     "Microsoft.Extensions.Configuration.EnvironmentVariables": "1.0.0-*",
     "Microsoft.Extensions.Configuration.Json": "1.0.0-*",
@@ -11,7 +11,7 @@
     "xunit.runner.aspnet": "2.0.0-aspnet-*"
   },
   "frameworks": {
-    "dnx451": { },
+    "dnx451": {},
     "dnxcore50": {
       "dependencies": {
         "System.Net.Primitives": "4.0.11-*",
