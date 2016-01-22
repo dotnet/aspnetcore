@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0-*",
+  "version": "0.1.0-*",
   "description": "Client for communicating over web sockets.",
   "repository": {
     "type": "git",
@@ -10,9 +10,9 @@
     "keyFile": "../../tools/Key.snk"
   },
   "dependencies": {
-    "Microsoft.AspNetCore.WebSockets.Protocol": "1.0.0-*"
+    "Microsoft.AspNetCore.WebSockets.Protocol": "0.1.0-*"
   },
   "frameworks": {
-    "net451": { }
+    "net451": {}
   }
 }

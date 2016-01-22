@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0-*",
+  "version": "0.1.0-*",
   "compilationOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk"
@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "Microsoft.AspNetCore.Http.Extensions": "1.0.0-*",
-    "Microsoft.AspNetCore.WebSockets.Protocol": "1.0.0-*",
+    "Microsoft.AspNetCore.WebSockets.Protocol": "0.1.0-*",
     "Microsoft.Extensions.Options": "1.0.0-*"
   },
   "frameworks": {
