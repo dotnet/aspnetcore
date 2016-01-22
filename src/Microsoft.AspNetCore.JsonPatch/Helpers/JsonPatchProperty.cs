@@ -4,7 +4,7 @@
 using System;
 using Newtonsoft.Json.Serialization;
 
-namespace Microsoft.AspNet.JsonPatch
+namespace Microsoft.AspNetCore.JsonPatch
 {
     /// <summary>
     /// Metadata for JsonProperty.

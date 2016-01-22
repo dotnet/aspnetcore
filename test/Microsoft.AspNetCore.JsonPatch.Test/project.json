@@ -3,8 +3,8 @@
     "warningsAsErrors": true
   },
   "dependencies": {
-    "Microsoft.AspNet.JsonPatch": "1.0.0-*",
-    "Microsoft.AspNet.Testing": "1.0.0-*",
+    "Microsoft.AspNetCore.JsonPatch": "1.0.0-*",
+    "Microsoft.AspNetCore.Testing": "1.0.0-*",
     "Newtonsoft.Json": "6.0.6",
     "xunit.runner.aspnet": "2.0.0-aspnet-*"
   },

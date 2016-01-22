@@ -4,13 +4,13 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using Microsoft.AspNet.JsonPatch.Exceptions;
-using Microsoft.AspNet.JsonPatch.Operations;
+using Microsoft.AspNetCore.JsonPatch.Exceptions;
+using Microsoft.AspNetCore.JsonPatch.Operations;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 
-namespace Microsoft.AspNet.JsonPatch.Converters
+namespace Microsoft.AspNetCore.JsonPatch.Converters
 {
     public class TypedJsonPatchDocumentConverter : JsonPatchDocumentConverter
     {

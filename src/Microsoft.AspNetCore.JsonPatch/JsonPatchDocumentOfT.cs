@@ -4,14 +4,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
-using Microsoft.AspNet.JsonPatch.Adapters;
-using Microsoft.AspNet.JsonPatch.Converters;
-using Microsoft.AspNet.JsonPatch.Helpers;
-using Microsoft.AspNet.JsonPatch.Operations;
+using Microsoft.AspNetCore.JsonPatch.Adapters;
+using Microsoft.AspNetCore.JsonPatch.Converters;
+using Microsoft.AspNetCore.JsonPatch.Helpers;
+using Microsoft.AspNetCore.JsonPatch.Operations;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
-namespace Microsoft.AspNet.JsonPatch
+namespace Microsoft.AspNetCore.JsonPatch
 {
     // Implementation details: the purpose of this type of patch document is to ensure we can do type-checking
     // when producing a JsonPatchDocument.  However, we cannot send this "typed" over the wire, as that would require

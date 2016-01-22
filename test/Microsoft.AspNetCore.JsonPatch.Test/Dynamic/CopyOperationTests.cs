@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -6,7 +6,7 @@ using System.Dynamic;
 using Newtonsoft.Json;
 using Xunit;
 
-namespace Microsoft.AspNet.JsonPatch.Test.Dynamic
+namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
 {
     public class CopyOperationTests
     {

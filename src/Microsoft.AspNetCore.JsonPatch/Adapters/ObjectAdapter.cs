@@ -5,13 +5,13 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
-using Microsoft.AspNet.JsonPatch.Exceptions;
-using Microsoft.AspNet.JsonPatch.Helpers;
-using Microsoft.AspNet.JsonPatch.Operations;
+using Microsoft.AspNetCore.JsonPatch.Exceptions;
+using Microsoft.AspNetCore.JsonPatch.Helpers;
+using Microsoft.AspNetCore.JsonPatch.Operations;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
-namespace Microsoft.AspNet.JsonPatch.Adapters
+namespace Microsoft.AspNetCore.JsonPatch.Adapters
 {
     /// <inheritdoc />
     public class ObjectAdapter : IObjectAdapter

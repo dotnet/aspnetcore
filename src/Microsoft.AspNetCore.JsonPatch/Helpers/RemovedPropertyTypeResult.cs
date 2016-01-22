@@ -1,9 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 
-namespace Microsoft.AspNet.JsonPatch.Helpers
+namespace Microsoft.AspNetCore.JsonPatch.Helpers
 {
     /// <summary>
     /// Return value for Remove operation.  The combination tells us what to do next (if this operation

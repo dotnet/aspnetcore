@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNet.JsonPatch.Operations;
+using Microsoft.AspNetCore.JsonPatch.Operations;
 
-namespace Microsoft.AspNet.JsonPatch
+namespace Microsoft.AspNetCore.JsonPatch
 {
     /// <summary>
     /// Captures error message and the related entity and the operation that caused it.

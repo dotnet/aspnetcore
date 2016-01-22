@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNet.JsonPatch.Adapters;
+using Microsoft.AspNetCore.JsonPatch.Adapters;
 
-namespace Microsoft.AspNet.JsonPatch.Operations
+namespace Microsoft.AspNetCore.JsonPatch.Operations
 {
     public class Operation<TModel> : Operation where TModel : class
     {

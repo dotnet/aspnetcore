@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNet.JsonPatch.Operations;
+using Microsoft.AspNetCore.JsonPatch.Operations;
 
-namespace Microsoft.AspNet.JsonPatch.Exceptions
+namespace Microsoft.AspNetCore.JsonPatch.Exceptions
 {
     public class JsonPatchException : Exception 
     {

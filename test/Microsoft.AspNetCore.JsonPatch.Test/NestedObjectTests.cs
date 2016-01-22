@@ -3,11 +3,11 @@
 
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using Microsoft.AspNet.JsonPatch.Exceptions;
+using Microsoft.AspNetCore.JsonPatch.Exceptions;
 using Newtonsoft.Json;
 using Xunit;
 
-namespace Microsoft.AspNet.JsonPatch.Test
+namespace Microsoft.AspNetCore.JsonPatch.Test
 {
     public class NestedObjectTests
     {

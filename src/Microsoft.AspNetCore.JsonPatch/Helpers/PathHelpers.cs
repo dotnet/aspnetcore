@@ -1,9 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNet.JsonPatch.Exceptions;
+using Microsoft.AspNetCore.JsonPatch.Exceptions;
 
-namespace Microsoft.AspNet.JsonPatch.Helpers
+namespace Microsoft.AspNetCore.JsonPatch.Helpers
 {
     internal static class PathHelpers
     {

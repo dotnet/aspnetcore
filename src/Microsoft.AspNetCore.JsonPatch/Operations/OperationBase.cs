@@ -4,7 +4,7 @@
 using System;
 using Newtonsoft.Json;
 
-namespace Microsoft.AspNet.JsonPatch.Operations
+namespace Microsoft.AspNetCore.JsonPatch.Operations
 {
     public class OperationBase
     {
