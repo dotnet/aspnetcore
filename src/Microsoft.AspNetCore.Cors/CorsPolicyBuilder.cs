@@ -4,7 +4,7 @@
 using System;
 using System.Linq;
 
-namespace Microsoft.AspNet.Cors.Infrastructure
+namespace Microsoft.AspNetCore.Cors.Infrastructure
 {
     /// <summary>
     /// Exposes methods to build a policy.

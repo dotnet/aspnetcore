@@ -4,16 +4,16 @@
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Hosting;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Internal;
-using Microsoft.AspNet.TestHost;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Internal;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.Cors.Infrastructure
+namespace Microsoft.AspNetCore.Cors.Infrastructure
 {
     public class CorsMiddlewareTests
     {

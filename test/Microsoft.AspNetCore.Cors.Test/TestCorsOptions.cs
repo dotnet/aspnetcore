@@ -3,7 +3,7 @@
 
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNet.Cors.Infrastructure
+namespace Microsoft.AspNetCore.Cors.Infrastructure
 {
     public class TestCorsOptions : IOptions<CorsOptions>
     {

@@ -7,7 +7,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Microsoft.AspNet.Cors.Infrastructure
+namespace Microsoft.AspNetCore.Cors.Infrastructure
 {
     public class CorsMiddlewareFunctionalTests : IClassFixture<CorsTestFixture<CorsMiddlewareWebSite.Startup>>
     {

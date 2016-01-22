@@ -1,4 +1,4 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.24720.0
@@ -12,9 +12,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{F32074C7-087C-46CC-A913-422BFD2D6E0A}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Cors", "src\Microsoft.AspNet.Cors\Microsoft.AspNet.Cors.xproj", "{41349FCD-D1C4-47A6-82D0-D16D00A8D59D}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Cors", "src\Microsoft.AspNetCore.Cors\Microsoft.AspNetCore.Cors.xproj", "{41349FCD-D1C4-47A6-82D0-D16D00A8D59D}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Cors.Test", "test\Microsoft.AspNet.Cors.Test\Microsoft.AspNet.Cors.Test.xproj", "{F05BE96F-F869-4408-A480-96935B4835EE}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Cors.Test", "test\Microsoft.AspNetCore.Cors.Test\Microsoft.AspNetCore.Cors.Test.xproj", "{F05BE96F-F869-4408-A480-96935B4835EE}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WebSites", "WebSites", "{538380BF-0D4C-4E30-8F41-E75C4B1C01FA}"
 EndProject

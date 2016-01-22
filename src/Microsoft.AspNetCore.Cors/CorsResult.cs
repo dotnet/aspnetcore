@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Microsoft.AspNet.Cors.Infrastructure
+namespace Microsoft.AspNetCore.Cors.Infrastructure
 {
     /// <summary>
     /// Results returned by <see cref="ICorsService"/>.

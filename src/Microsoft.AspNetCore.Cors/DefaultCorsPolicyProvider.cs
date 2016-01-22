@@ -3,10 +3,10 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNet.Cors.Infrastructure
+namespace Microsoft.AspNetCore.Cors.Infrastructure
 {
     /// <inheritdoc />
     public class DefaultCorsPolicyProvider : ICorsPolicyProvider

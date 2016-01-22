@@ -5,11 +5,11 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using Microsoft.AspNet.Http;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.AspNet.Cors.Infrastructure
+namespace Microsoft.AspNetCore.Cors.Infrastructure
 {
     /// <summary>
     /// Default implementation of <see cref="ICorsService"/>.

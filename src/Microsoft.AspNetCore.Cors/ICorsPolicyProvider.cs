@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http;
+using Microsoft.AspNetCore.Http;
 
-namespace Microsoft.AspNet.Cors.Infrastructure
+namespace Microsoft.AspNetCore.Cors.Infrastructure
 {
     /// <summary>
     /// A type which can provide a <see cref="CorsPolicy"/> for a particular <see cref="HttpContext"/>.

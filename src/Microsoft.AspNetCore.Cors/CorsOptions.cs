@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Microsoft.AspNet.Cors.Infrastructure
+namespace Microsoft.AspNetCore.Cors.Infrastructure
 {
     /// <summary>
     /// Provides programmatic configuration for Cors.

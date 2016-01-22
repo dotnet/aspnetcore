@@ -4,7 +4,7 @@
 using System;
 using Xunit;
 
-namespace Microsoft.AspNet.Cors.Infrastructure
+namespace Microsoft.AspNetCore.Cors.Infrastructure
 {
     public class CorsResultTest
     {
