@@ -1,6 +1,6 @@
-﻿#if TESTING
-using Microsoft.AspNet.Authentication;
-using Microsoft.AspNet.Http.Authentication;
+#if TESTING
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Http.Authentication;
 using Newtonsoft.Json;
 
 namespace MusicStore.Mocks.Common

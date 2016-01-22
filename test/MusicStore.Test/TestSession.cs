@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http.Features;
+using Microsoft.AspNetCore.Http.Features;
 
 namespace MusicStore.Controllers
 {

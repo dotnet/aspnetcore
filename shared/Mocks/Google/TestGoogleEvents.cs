@@ -1,12 +1,12 @@
-﻿#if TESTING
+#if TESTING
 using System;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Authentication;
-using Microsoft.AspNet.Authentication.Google;
-using Microsoft.AspNet.Authentication.OAuth;
-using Microsoft.AspNet.Identity;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.Authentication.OAuth;
+using Microsoft.AspNetCore.Identity;
 using MusicStore.Mocks.Common;
 
 namespace MusicStore.Mocks.Google

@@ -1,11 +1,11 @@
 #if TESTING
 using System;
-using Microsoft.AspNet.Authentication.OpenIdConnect;
-using Microsoft.AspNet.Authorization;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Diagnostics.Entity;
-using Microsoft.AspNet.Identity.EntityFramework;
-using Microsoft.Data.Entity;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.PlatformAbstractions;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;

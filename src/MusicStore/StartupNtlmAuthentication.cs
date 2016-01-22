@@ -1,8 +1,8 @@
 using System;
 using System.Security.Claims;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Http.Features;
-using Microsoft.Data.Entity;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -15,7 +15,7 @@ namespace MusicStore
 {
     /// <summary>
     /// To make runtime to load an environment based startup class, specify the environment by the following ways:
-    /// 1. Drop a Microsoft.AspNet.Hosting.ini file in the wwwroot folder
+    /// 1. Drop a Microsoft.AspNetCore.Hosting.ini file in the wwwroot folder
     /// 2. Add a setting in the ini file named 'ASPNET_ENV' with value of the format 'Startup[EnvironmentName]'.
     ///    For example: To load a Startup class named 'StartupNtlmAuthentication' the value of the env should be
     ///    'NtlmAuthentication' (eg. ASPNET_ENV=NtlmAuthentication). Runtime adds a 'Startup' prefix to this and
@@ -26,7 +26,7 @@ namespace MusicStore
     /// 1. Set the environment variable named SET ASPNET_ENV=NtlmAuthentication
     /// 2. For selfhost based servers pass in a command line variable named --env with this value. Eg:
     /// "commands": {
-    ///    "web": "Microsoft.AspNet.Hosting --server Microsoft.AspNet.Server.WebListener
+    ///    "web": "Microsoft.AspNetCore.Hosting --server Microsoft.AspNetCore.Server.WebListener
     ///           --server.urls http://localhost:5002 --ASPNET_ENV NtlmAuthentication",
     ///  },
     /// </summary>

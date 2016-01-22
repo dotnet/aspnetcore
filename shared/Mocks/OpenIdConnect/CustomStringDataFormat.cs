@@ -1,5 +1,5 @@
-﻿#if TESTING
-using Microsoft.AspNet.Authentication;
+#if TESTING
+using Microsoft.AspNetCore.Authentication;
 
 namespace MusicStore.Mocks.OpenIdConnect
 {

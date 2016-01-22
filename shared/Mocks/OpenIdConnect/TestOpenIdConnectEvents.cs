@@ -1,9 +1,9 @@
-﻿#if TESTING
+#if TESTING
 using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Authentication.OpenIdConnect;
-using Microsoft.AspNet.Http;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.AspNetCore.Http;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using MusicStore.Mocks.Common;
 
