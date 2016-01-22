@@ -356,11 +356,6 @@ namespace Microsoft.Net.Http.Server
             _responseState = ResponseState.StartedSending;
             var reasonPhrase = GetReasonPhrase(StatusCode);
 
-            if (RequestContext.Logger.IsEnabled(LogLevel.Debug))
-            {
-                RequestContext.Logger.LogDebug(new SendResponseLogContext(this));
-            }
-
             /*
             if (m_BoundaryType==BoundaryType.Raw) {
                 use HTTP_SEND_RESPONSE_FLAG_RAW_HEADER;
@@ -821,57 +816,6 @@ namespace Microsoft.Net.Http.Server
                         String.Format(Resources.Warning_ExceptionInOnResponseCompletedAction, nameof(OnCompleted)),
                         ex);
                 }
-            }
-        }
-
-        private class SendResponseLogContext : ILogValues
-        {
-            private readonly Response _response;
-
-            internal SendResponseLogContext(Response response)
-            {
-                _response = response;
-            }
-
-            public string Protocol { get { return "HTTP/1.1"; } } // HTTP.SYS only allows 1.1 responses.
-            public string StatusCode { get { return _response.StatusCode.ToString(CultureInfo.InvariantCulture); } }
-            public string ReasonPhrase { get { return _response.ReasonPhrase ?? _response.GetReasonPhrase(_response.StatusCode); } }
-            public IEnumerable Headers { get { return new HeadersLogStructure(_response.Headers); } }
-
-            public IEnumerable<KeyValuePair<string, object>> GetValues()
-            {
-                return new[]
-                {
-                    new KeyValuePair<string, object>("Protocol", Protocol),
-                    new KeyValuePair<string, object>("StatusCode", StatusCode),
-                    new KeyValuePair<string, object>("ReasonPhrase", ReasonPhrase),
-                    new KeyValuePair<string, object>("Headers", Headers),
-                };
-            }
-
-            public override string ToString()
-            {
-                // HTTP/1.1 200 OK
-                var responseBuilder = new StringBuilder("Sending Response: ");
-                responseBuilder.Append(Protocol);
-                responseBuilder.Append(" ");
-                responseBuilder.Append(StatusCode);
-                responseBuilder.Append(" ");
-                responseBuilder.Append(ReasonPhrase);
-                responseBuilder.Append("; Headers: { ");
-
-                foreach (var header in _response.Headers)
-                {
-                    foreach (var value in header.Value)
-                    {
-                        responseBuilder.Append(header.Key);
-                        responseBuilder.Append(": ");
-                        responseBuilder.Append(value);
-                        responseBuilder.Append("; ");
-                    }
-                }
-                responseBuilder.Append("}");
-                return responseBuilder.ToString();
             }
         }
     }

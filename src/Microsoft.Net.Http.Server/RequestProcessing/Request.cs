@@ -150,11 +150,6 @@ namespace Microsoft.Net.Http.Server
             GetTlsTokenBindingInfo();
 
             // TODO: Verbose log parameters
-
-            if (_requestContext.Logger.IsEnabled(LogLevel.Debug))
-            {
-                RequestContext.Logger.LogDebug(new ReceiveRequestLogContext(this));
-            }
         }
 
         internal SslStatus SslStatus
@@ -531,64 +526,6 @@ namespace Microsoft.Net.Http.Server
             if (_nativeStream == null || _nativeStream == Stream.Null)
             {
                 _nativeStream = new RequestStream(RequestContext);
-            }
-        }
-
-        private class ReceiveRequestLogContext : ILogValues
-        {
-            private readonly Request _request;
-
-            internal ReceiveRequestLogContext(Request request)
-            {
-                _request = request;
-            }
-
-            public string Method { get { return _request.Method; } }
-            public string PathBase { get { return _request.PathBase; } }
-            public string Path { get { return _request.Path; } }
-            public string Query { get { return _request.QueryString; } }
-            public string Protocol { get { return "HTTP/" + _request.ProtocolVersion.ToString(2); } }
-            public IEnumerable Headers { get { return new HeadersLogStructure(_request.Headers); } }
-
-            public IEnumerable<KeyValuePair<string, object>> GetValues()
-            {
-                return new[]
-                {
-                    new KeyValuePair<string, object>("Method", Method),
-                    new KeyValuePair<string, object>("PathBase", PathBase),
-                    new KeyValuePair<string, object>("Path", Path),
-                    new KeyValuePair<string, object>("Query", Query),
-                    new KeyValuePair<string, object>("Protocol", Protocol),
-                    new KeyValuePair<string, object>("Headers", Headers),
-                };
-            }
-
-            public override string ToString()
-            {
-                var requestBuilder = new StringBuilder("Received request: ");
-
-                // GET /path?query HTTP/1.1
-                requestBuilder.Append(Method);
-                requestBuilder.Append(" ");
-                requestBuilder.Append(PathBase);
-                requestBuilder.Append(Path);
-                requestBuilder.Append(Query);
-                requestBuilder.Append(" ");
-                requestBuilder.Append(Protocol);
-                requestBuilder.Append("; Headers: { ");
-
-                foreach (var header in _request.Headers)
-                {
-                    foreach (var value in header.Value)
-                    {
-                        requestBuilder.Append(header.Key);
-                        requestBuilder.Append(": ");
-                        requestBuilder.Append(value);
-                        requestBuilder.Append("; ");
-                    }
-                }
-                requestBuilder.Append("}");
-                return requestBuilder.ToString();
             }
         }
     }
