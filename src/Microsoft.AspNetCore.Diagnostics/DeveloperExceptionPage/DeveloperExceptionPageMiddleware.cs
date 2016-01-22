@@ -9,16 +9,16 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Diagnostics.Views;
-using Microsoft.AspNet.Http;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics.Views;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.PlatformAbstractions;
-using StackFrame = Microsoft.AspNet.Diagnostics.Views.StackFrame;
+using StackFrame = Microsoft.AspNetCore.Diagnostics.Views.StackFrame;
 
-namespace Microsoft.AspNet.Diagnostics
+namespace Microsoft.AspNetCore.Diagnostics
 {
     /// <summary>
     /// Captures synchronous and asynchronous exceptions from the pipeline and generates HTML error responses.
@@ -89,9 +89,9 @@ namespace Microsoft.AspNet.Diagnostics
 
                     await DisplayException(context, ex);
 
-                    if (_diagnosticSource.IsEnabled("Microsoft.AspNet.Diagnostics.UnhandledException"))
+                    if (_diagnosticSource.IsEnabled("Microsoft.AspNetCore.Diagnostics.UnhandledException"))
                     {
-                        _diagnosticSource.Write("Microsoft.AspNet.Diagnostics.UnhandledException", new { httpContext = context, exception = ex });
+                        _diagnosticSource.Write("Microsoft.AspNetCore.Diagnostics.UnhandledException", new { httpContext = context, exception = ex });
                     }
 
                     return;

@@ -7,11 +7,11 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Diagnostics.Entity.Views;
-using Microsoft.AspNet.Testing.xunit;
+using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Views;
+using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
-namespace Microsoft.Data.Entity
+namespace Microsoft.EntityFrameworkCore
 {
     public abstract class ApiConsistencyTestBase
     {

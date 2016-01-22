@@ -1,6 +1,6 @@
 using System;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Hosting;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 
 namespace DeveloperExceptionPageSample
 {

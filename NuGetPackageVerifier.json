@@ -9,10 +9,10 @@
             "StrictSemanticVersionValidationRule"
         ],
         "packages": {
-            "Microsoft.AspNet.Diagnostics": { },
-            "Microsoft.AspNet.Diagnostics.Abstractions": { },
-            "Microsoft.AspNet.Diagnostics.Elm": { },
-            "Microsoft.AspNet.Diagnostics.Entity": { }
+            "Microsoft.AspNetCore.Diagnostics": { },
+            "Microsoft.AspNetCore.Diagnostics.Abstractions": { },
+            "Microsoft.AspNetCore.Diagnostics.Elm": { },
+            "Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore": { }
         }
     },
     "adx-nonshipping": {

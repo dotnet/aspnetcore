@@ -3,9 +3,9 @@
     "warningsAsErrors": true
   },
   "dependencies": {
-    "EntityFramework.InMemory": "7.0.0-*",
-    "Microsoft.AspNet.Diagnostics.Entity": "7.0.0-*",
-    "Microsoft.AspNet.Testing": "1.0.0-*",
+    "Microsoft.EntityFrameworkCore.InMemory": "7.0.0-*",
+    "Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore": "7.0.0-*",
+    "Microsoft.AspNetCore.Testing": "1.0.0-*",
     "xunit": "2.1.0"
   },
   "compile": [ "../Shared/ApiConsistencyTestBase.cs", "../Shared/TestHelpers.cs" ],

@@ -1,6 +1,6 @@
-﻿using System;
+using System;
 
-namespace Microsoft.AspNet.Diagnostics.Views
+namespace Microsoft.AspNetCore.Diagnostics.Views
 {
     public class AttributeValue
     {

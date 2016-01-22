@@ -1,10 +1,10 @@
 using System;
 using System.Text.Encodings.Web;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Diagnostics;
-using Microsoft.AspNet.Hosting;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Features;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 
 namespace ExceptionHandlerSample
 {

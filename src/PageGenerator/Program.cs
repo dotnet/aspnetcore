@@ -5,8 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Microsoft.AspNet.Razor;
-using Microsoft.AspNet.Razor.CodeGenerators;
+using Microsoft.AspNetCore.Razor;
+using Microsoft.AspNetCore.Razor.CodeGenerators;
 
 namespace PageGenerator
 {
@@ -61,7 +61,7 @@ namespace PageGenerator
             var fileNameNoExtension = Path.GetFileNameWithoutExtension(fileName);
             var codeLang = new CSharpRazorCodeLanguage();
             var host = new RazorEngineHost(codeLang);
-            host.DefaultBaseClass = "Microsoft.AspNet.Diagnostics.Views.BaseView";
+            host.DefaultBaseClass = "Microsoft.AspNetCore.Diagnostics.Views.BaseView";
             host.GeneratedClassContext = new GeneratedClassContext(
                 executeMethodName: GeneratedClassContext.DefaultExecuteMethodName,
                 writeMethodName: GeneratedClassContext.DefaultWriteMethodName,

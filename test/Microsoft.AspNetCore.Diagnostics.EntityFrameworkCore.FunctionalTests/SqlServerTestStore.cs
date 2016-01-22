@@ -4,10 +4,10 @@
 using System;
 using System.Data.SqlClient;
 using System.Threading;
-using Microsoft.AspNet.Diagnostics.Entity.FunctionalTests.Helpers;
-using Microsoft.Data.Entity;
+using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.FunctionalTests.Helpers;
+using Microsoft.EntityFrameworkCore;
 
-namespace Microsoft.AspNet.Diagnostics.Entity.Tests
+namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
 {
     public class SqlServerTestStore : IDisposable
     {
@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.Diagnostics.Entity.Tests
 
         public static SqlServerTestStore CreateScratch()
         {
-            var name = "Microsoft.AspNet.Diagnostics.Entity.FunctionalTests.Scratch_" + Interlocked.Increment(ref _scratchCount);
+            var name = "Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.FunctionalTests.Scratch_" + Interlocked.Increment(ref _scratchCount);
             var db = new SqlServerTestStore(name);
             return db;
         }

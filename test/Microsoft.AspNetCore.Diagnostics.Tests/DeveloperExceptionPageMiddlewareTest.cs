@@ -11,10 +11,10 @@ using System.Runtime.Versioning;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Hosting;
-using Microsoft.AspNet.TestHost;
-using Microsoft.AspNet.Testing;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.PlatformAbstractions;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,9 +22,9 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using Xunit;
-using StackFrame = Microsoft.AspNet.Diagnostics.Views.StackFrame;
+using StackFrame = Microsoft.AspNetCore.Diagnostics.Views.StackFrame;
 
-namespace Microsoft.AspNet.Diagnostics
+namespace Microsoft.AspNetCore.Diagnostics
 {
     public class DeveloperExceptionPageMiddlewareTest
     {

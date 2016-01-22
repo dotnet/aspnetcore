@@ -4,13 +4,13 @@
 using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Http;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNet.Diagnostics
+namespace Microsoft.AspNetCore.Diagnostics
 {
     public class ExceptionHandlerMiddleware
     {
@@ -71,9 +71,9 @@ namespace Microsoft.AspNet.Diagnostics
 
                     await _options.ExceptionHandler(context);
 
-                    if (_diagnosticSource.IsEnabled("Microsoft.AspNet.Diagnostics.HandledException"))
+                    if (_diagnosticSource.IsEnabled("Microsoft.AspNetCore.Diagnostics.HandledException"))
                     {
-                        _diagnosticSource.Write("Microsoft.AspNet.Diagnostics.HandledException", new { httpContext = context, exception = ex });
+                        _diagnosticSource.Write("Microsoft.AspNetCore.Diagnostics.HandledException", new { httpContext = context, exception = ex });
                     }
 
                     // TODO: Optional re-throw? We'll re-throw the original exception by default if the error handler throws.

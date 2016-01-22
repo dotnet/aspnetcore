@@ -3,13 +3,13 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Diagnostics.Views;
-using Microsoft.AspNet.Http;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics.Views;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.PlatformAbstractions;
 
-namespace Microsoft.AspNet.Diagnostics
+namespace Microsoft.AspNetCore.Diagnostics
 {
     /// <summary>
     /// Displays information about the packages used by the application at runtime

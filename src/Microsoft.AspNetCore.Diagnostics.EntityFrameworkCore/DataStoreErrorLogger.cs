@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using JetBrains.Annotations;
-using Microsoft.AspNet.Diagnostics.Entity.Utilities;
-using Microsoft.Data.Entity.Storage;
+using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Utilities;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
 using System;
 #if DOTNET5_4
@@ -12,7 +12,7 @@ using System.Threading;
 using System.Runtime.Remoting.Messaging;
 #endif
 
-namespace Microsoft.AspNet.Diagnostics.Entity
+namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
 {
     public class DataStoreErrorLogger : ILogger
     {

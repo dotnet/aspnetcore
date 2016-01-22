@@ -4,7 +4,7 @@
 using System;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNet.Diagnostics.Elm
+namespace Microsoft.AspNetCore.Diagnostics.Elm
 {
     public class ElmLogger : ILogger
     {

@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNet.Diagnostics.Entity.FunctionalTests.Helpers
+namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.FunctionalTests.Helpers
 {
     public class PlatformHelper
     {

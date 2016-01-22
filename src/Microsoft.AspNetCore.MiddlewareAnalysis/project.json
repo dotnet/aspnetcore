@@ -10,7 +10,7 @@
     "url": "git://github.com/aspnet/diagnostics"
   },
   "dependencies": {
-    "Microsoft.AspNet.Hosting.Abstractions": "1.0.0-*",
+    "Microsoft.AspNetCore.Hosting.Abstractions": "1.0.0-*",
     "Microsoft.Extensions.DependencyInjection.Abstractions": "1.0.0-*",
     "System.Diagnostics.DiagnosticSource": "4.0.0-*"
   },

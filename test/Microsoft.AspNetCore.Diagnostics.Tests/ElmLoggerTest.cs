@@ -5,11 +5,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using Microsoft.AspNet.Diagnostics.Elm;
+using Microsoft.AspNetCore.Diagnostics.Elm;
 using Microsoft.Extensions.Logging;
 using Xunit;
 
-namespace Microsoft.AspNet.Diagnostics.Tests
+namespace Microsoft.AspNetCore.Diagnostics.Tests
 {
     public class ElmLoggerTest
     {

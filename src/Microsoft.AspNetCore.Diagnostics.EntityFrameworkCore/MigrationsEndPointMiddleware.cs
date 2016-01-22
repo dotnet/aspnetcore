@@ -5,14 +5,14 @@ using System;
 using System.Net;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Diagnostics.Entity.Utilities;
-using Microsoft.AspNet.Http;
-using Microsoft.Data.Entity;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Utilities;
+using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNet.Diagnostics.Entity
+namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
 {
     /// <summary>
     /// Processes requests to execute migrations operations. The middleware will listen for requests to the path configured in the supplied options.

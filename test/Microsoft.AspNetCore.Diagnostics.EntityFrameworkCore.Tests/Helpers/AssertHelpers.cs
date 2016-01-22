@@ -4,7 +4,7 @@
 using System;
 using Xunit;
 
-namespace Microsoft.AspNet.Diagnostics.Entity.Tests.Helpers
+namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests.Helpers
 {
     public static class AssertHelpers
     {

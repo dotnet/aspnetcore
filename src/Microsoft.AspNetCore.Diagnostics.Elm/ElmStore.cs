@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Microsoft.AspNet.Diagnostics.Elm
+namespace Microsoft.AspNetCore.Diagnostics.Elm
 {
     public class ElmStore
     {

@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNet.Diagnostics.Entity;
+using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNet.Builder
+namespace Microsoft.AspNetCore.Builder
 {
     /// <summary>
     /// <see cref="IApplicationBuilder"/> extension methods for the <see cref="MigrationsEndPointMiddleware"/>.

@@ -1,4 +1,4 @@
-namespace Microsoft.AspNet.Diagnostics.Elm.Views
+namespace Microsoft.AspNetCore.Diagnostics.Elm.Views
 {
 #line 1 "LogPage.cshtml"
 using System
@@ -25,19 +25,19 @@ using System.Linq
 #line hidden
     ;
 #line 5 "LogPage.cshtml"
-using Microsoft.AspNet.Diagnostics.Elm.Views
+using Microsoft.AspNetCore.Diagnostics.Elm.Views
 
 #line default
 #line hidden
     ;
 #line 6 "LogPage.cshtml"
-using Microsoft.AspNet.Diagnostics.Elm
+using Microsoft.AspNetCore.Diagnostics.Elm
 
 #line default
 #line hidden
     ;
 #line 7 "LogPage.cshtml"
-using Microsoft.AspNet.Diagnostics.Views
+using Microsoft.AspNetCore.Diagnostics.Views
 
 #line default
 #line hidden
@@ -50,7 +50,7 @@ using Microsoft.Extensions.Logging
     ;
     using System.Threading.Tasks;
 
-    public class LogPage : Microsoft.AspNet.Diagnostics.Views.BaseView
+    public class LogPage : Microsoft.AspNetCore.Diagnostics.Views.BaseView
     {
 #line 11 "LogPage.cshtml"
 

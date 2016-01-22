@@ -1,4 +1,4 @@
-namespace Microsoft.AspNet.Diagnostics.Entity.Views
+namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Views
 {
 #line 1 "DatabaseErrorPage.cshtml"
 using System
@@ -13,20 +13,20 @@ using System.Linq
 #line hidden
     ;
 #line 3 "DatabaseErrorPage.cshtml"
-using Microsoft.AspNet.Diagnostics.Entity
+using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
 
 #line default
 #line hidden
     ;
 #line 4 "DatabaseErrorPage.cshtml"
-using Microsoft.AspNet.Diagnostics.Entity.Views
+using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Views
 
 #line default
 #line hidden
     ;
     using System.Threading.Tasks;
 
-    public class DatabaseErrorPage : Microsoft.AspNet.Diagnostics.Views.BaseView
+    public class DatabaseErrorPage : Microsoft.AspNetCore.Diagnostics.Views.BaseView
     {
 #line 11 "DatabaseErrorPage.cshtml"
 

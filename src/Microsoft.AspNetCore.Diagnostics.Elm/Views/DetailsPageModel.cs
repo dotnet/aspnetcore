@@ -1,6 +1,6 @@
-﻿using System;
+using System;
 
-namespace Microsoft.AspNet.Diagnostics.Elm.Views
+namespace Microsoft.AspNetCore.Diagnostics.Elm.Views
 {
     public class DetailsPageModel
     {

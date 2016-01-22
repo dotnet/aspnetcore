@@ -3,11 +3,11 @@
 
 
 using System;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Diagnostics;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNet.Builder
+namespace Microsoft.AspNetCore.Builder
 {
     /// <summary>
     /// IApplicationBuilder extensions for the WelcomePageMiddleware.

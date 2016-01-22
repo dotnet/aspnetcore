@@ -4,11 +4,11 @@
 using System;
 using System.Globalization;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Diagnostics;
-using Microsoft.AspNet.Http;
+using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNet.Builder
+namespace Microsoft.AspNetCore.Builder
 {
     public static class StatusCodePagesExtensions
     {

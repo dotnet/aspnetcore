@@ -1,4 +1,4 @@
-namespace Microsoft.AspNet.Diagnostics.Elm.Views
+namespace Microsoft.AspNetCore.Diagnostics.Elm.Views
 {
 #line 1 "DetailsPage.cshtml"
 using System
@@ -19,19 +19,19 @@ using System.Linq
 #line hidden
     ;
 #line 4 "DetailsPage.cshtml"
-using Microsoft.AspNet.Diagnostics.Elm
+using Microsoft.AspNetCore.Diagnostics.Elm
 
 #line default
 #line hidden
     ;
 #line 5 "DetailsPage.cshtml"
-using Microsoft.AspNet.Diagnostics.Views
+using Microsoft.AspNetCore.Diagnostics.Views
 
 #line default
 #line hidden
     ;
 #line 6 "DetailsPage.cshtml"
-using Microsoft.AspNet.Diagnostics.Elm.Views
+using Microsoft.AspNetCore.Diagnostics.Elm.Views
 
 #line default
 #line hidden
@@ -44,7 +44,7 @@ using Microsoft.Extensions.Logging
     ;
     using System.Threading.Tasks;
 
-    public class DetailsPage : Microsoft.AspNet.Diagnostics.Views.BaseView
+    public class DetailsPage : Microsoft.AspNetCore.Diagnostics.Views.BaseView
     {
 #line 10 "DetailsPage.cshtml"
 

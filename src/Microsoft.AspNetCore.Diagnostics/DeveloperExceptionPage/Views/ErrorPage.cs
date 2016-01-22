@@ -1,4 +1,4 @@
-namespace Microsoft.AspNet.Diagnostics.Views
+namespace Microsoft.AspNetCore.Diagnostics.Views
 {
 #line 1 "ErrorPage.cshtml"
 using System
@@ -25,20 +25,20 @@ using System.Net
 #line hidden
     ;
 #line 5 "ErrorPage.cshtml"
-using Microsoft.AspNet.Diagnostics.Views
+using Microsoft.AspNetCore.Diagnostics.Views
 
 #line default
 #line hidden
     ;
 #line 6 "ErrorPage.cshtml"
-using Microsoft.AspNet.Diagnostics
+using Microsoft.AspNetCore.Diagnostics
 
 #line default
 #line hidden
     ;
     using System.Threading.Tasks;
 
-    public class ErrorPage : Microsoft.AspNet.Diagnostics.Views.BaseView
+    public class ErrorPage : Microsoft.AspNetCore.Diagnostics.Views.BaseView
     {
 #line 8 "ErrorPage.cshtml"
 

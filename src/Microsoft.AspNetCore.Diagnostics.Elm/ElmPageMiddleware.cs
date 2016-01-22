@@ -3,14 +3,14 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Diagnostics.Elm.Views;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Diagnostics.Elm.Views;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Linq;
 
-namespace Microsoft.AspNet.Diagnostics.Elm
+namespace Microsoft.AspNetCore.Diagnostics.Elm
 {
     /// <summary>
     /// Enables viewing logs captured by the <see cref="ElmCaptureMiddleware"/>.

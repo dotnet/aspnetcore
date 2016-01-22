@@ -5,7 +5,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Microsoft.AspNet.Diagnostics.Views
+namespace Microsoft.AspNetCore.Diagnostics.Views
 {
     /// <summary>
     /// Detailed exception stack information used to generate a view

@@ -6,7 +6,7 @@ using System.Runtime.Remoting.Messaging;
 using System.Threading;
 #endif
 
-namespace Microsoft.AspNet.Diagnostics.Elm
+namespace Microsoft.AspNetCore.Diagnostics.Elm
 {
     public class ElmScope
     {

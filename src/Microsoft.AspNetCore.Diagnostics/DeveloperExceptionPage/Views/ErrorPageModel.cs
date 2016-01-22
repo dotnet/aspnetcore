@@ -3,11 +3,11 @@
 
 
 using System.Collections.Generic;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Http;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.AspNet.Diagnostics.Views
+namespace Microsoft.AspNetCore.Diagnostics.Views
 {
     /// <summary>
     /// Holds data to be displayed on the error page.

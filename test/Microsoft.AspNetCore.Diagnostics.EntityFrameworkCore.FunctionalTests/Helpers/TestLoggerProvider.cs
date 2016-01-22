@@ -5,7 +5,7 @@ using System;
 using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 
-namespace Microsoft.AspNet.Diagnostics.Entity.FunctionalTests.Helpers
+namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.FunctionalTests.Helpers
 {
     public class TestLoggerProvider : ILoggerProvider
     {

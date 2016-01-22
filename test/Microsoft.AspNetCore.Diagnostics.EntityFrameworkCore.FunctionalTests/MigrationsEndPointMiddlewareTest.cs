@@ -7,20 +7,20 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Diagnostics.Entity.Tests.Helpers;
-using Microsoft.AspNet.Hosting;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.TestHost;
-using Microsoft.AspNet.Testing.xunit;
-using Microsoft.Data.Entity;
-using Microsoft.Data.Entity.Infrastructure;
-using Microsoft.Data.Entity.Migrations;
-using Microsoft.Data.Entity.Storage;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests.Helpers;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
-namespace Microsoft.AspNet.Diagnostics.Entity.Tests
+namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
 {
     public class MigrationsEndPointMiddlewareTest
     {

@@ -1,16 +1,16 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Hosting;
-using Microsoft.AspNet.TestHost;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
-namespace Microsoft.AspNet.MiddlewareAnalysis
+namespace Microsoft.AspNetCore.MiddlewareAnalysis
 {
     public class MiddlewareAnalysisTests
     {
@@ -39,15 +39,15 @@ namespace Microsoft.AspNet.MiddlewareAnalysis
             await server.CreateClient().GetAsync(string.Empty);
 
             // "Microsoft.AspnNet.Hosting.RequestServicesContainerMiddleware","Microsoft.AspnNet.Diagnostics.DeveloperExceptionPageMiddleware",
-            // "Microsoft.AspNet.MiddlewareAnalysis.MiddlewareAnalysisTests.+<>c"
+            // "Microsoft.AspNetCore.MiddlewareAnalysis.MiddlewareAnalysisTests.+<>c"
             Assert.Equal(3, listener.MiddlewareStarting.Count);
-            Assert.Equal("Microsoft.AspNet.MiddlewareAnalysis.MiddlewareAnalysisTests+<>c", listener.MiddlewareStarting[2]);
+            Assert.Equal("Microsoft.AspNetCore.MiddlewareAnalysis.MiddlewareAnalysisTests+<>c", listener.MiddlewareStarting[2]);
             // reversed "RunInlineMiddleware"
             Assert.Equal(1, listener.MiddlewareException.Count);
-            Assert.Equal("Microsoft.AspNet.MiddlewareAnalysis.MiddlewareAnalysisTests+<>c", listener.MiddlewareException[0]);
+            Assert.Equal("Microsoft.AspNetCore.MiddlewareAnalysis.MiddlewareAnalysisTests+<>c", listener.MiddlewareException[0]);
             // reversed "Microsoft.AspnNet.Diagnostics.DeveloperExceptionPageMiddleware","Microsoft.AspnNet.Hosting.RequestServicesContainerMiddleware"
             Assert.Equal(2, listener.MiddlewareFinished.Count);
-            Assert.Equal("Microsoft.AspNet.Diagnostics.DeveloperExceptionPageMiddleware", listener.MiddlewareFinished[0]);
+            Assert.Equal("Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddleware", listener.MiddlewareFinished[0]);
         }
     }
 }

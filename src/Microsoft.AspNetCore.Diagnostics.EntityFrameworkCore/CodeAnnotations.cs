@@ -99,7 +99,7 @@ namespace JetBrains.Annotations
     }
 }
 
-namespace Microsoft.Data.Entity.Relational.Utilities
+namespace Microsoft.EntityFrameworkCore.Relational.Utilities
 {
     internal sealed class ValidatedNotNullAttribute : Attribute
     {

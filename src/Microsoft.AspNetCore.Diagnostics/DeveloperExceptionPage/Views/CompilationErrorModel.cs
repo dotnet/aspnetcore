@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using Microsoft.AspNet.Builder;
+using Microsoft.AspNetCore.Builder;
 
-namespace Microsoft.AspNet.Diagnostics.Views
+namespace Microsoft.AspNetCore.Diagnostics.Views
 {
     /// <summary>
     /// Holds data to be displayed on the compilation error page.

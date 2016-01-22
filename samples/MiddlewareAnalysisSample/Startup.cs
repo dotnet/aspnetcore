@@ -1,8 +1,8 @@
 using System;
 using System.Diagnostics;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Hosting;
-using Microsoft.AspNet.Http;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DiagnosticAdapter;
 using Microsoft.Extensions.Logging;
@@ -96,19 +96,19 @@ namespace MiddlewareAnaysisSample
 
         public class TestDiagnosticListener
         {
-            [DiagnosticName("Microsoft.AspNet.MiddlewareAnalysis.MiddlewareStarting")]
+            [DiagnosticName("Microsoft.AspNetCore.MiddlewareAnalysis.MiddlewareStarting")]
             public virtual void OnMiddlewareStarting(HttpContext httpContext, string name)
             {
                 Console.WriteLine($"MiddlewareStarting: {name}; {httpContext.Request.Path}");
             }
 
-            [DiagnosticName("Microsoft.AspNet.MiddlewareAnalysis.MiddlewareException")]
+            [DiagnosticName("Microsoft.AspNetCore.MiddlewareAnalysis.MiddlewareException")]
             public virtual void OnMiddlewareException(Exception exception, string name)
             {
                 Console.WriteLine($"MiddlewareException: {name}; {exception.Message}");
             }
 
-            [DiagnosticName("Microsoft.AspNet.MiddlewareAnalysis.MiddlewareFinished")]
+            [DiagnosticName("Microsoft.AspNetCore.MiddlewareAnalysis.MiddlewareFinished")]
             public virtual void OnMiddlewareFinished(HttpContext httpContext, string name)
             {
                 Console.WriteLine($"MiddlewareFinished: {name}; {httpContext.Response.StatusCode}");

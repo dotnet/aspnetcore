@@ -1,10 +1,10 @@
 {
   "dependencies": {
-    "EntityFramework.MicrosoftSqlServer": "7.0.0-*",
-    "Microsoft.AspNet.Diagnostics.Entity": "7.0.0-*",
-    "Microsoft.AspNet.Diagnostics.Entity.Tests": "1.0.0",
-    "Microsoft.AspNet.TestHost": "1.0.0-*",
-    "Microsoft.AspNet.Testing": "1.0.0-*",
+    "Microsoft.EntityFrameworkCore.SqlServer": "7.0.0-*",
+    "Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore": "7.0.0-*",
+    "Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests": "1.0.0",
+    "Microsoft.AspNetCore.TestHost": "1.0.0-*",
+    "Microsoft.AspNetCore.Testing": "1.0.0-*",
     "xunit": "2.1.0"
   },
   "testRunner": "xunit",

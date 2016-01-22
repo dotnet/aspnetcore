@@ -1,11 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Diagnostics.Entity.Tests.Helpers;
-using Microsoft.AspNet.Diagnostics.Entity.Views;
-using Microsoft.AspNet.Http;
-using Microsoft.Data.Entity;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests.Helpers;
+using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Views;
+using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using Moq;
 using System;
 using System.IO;
@@ -13,7 +13,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Microsoft.AspNet.Diagnostics.Entity.Tests
+namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
 {
     public class DatabaseErrorPageTest
     {

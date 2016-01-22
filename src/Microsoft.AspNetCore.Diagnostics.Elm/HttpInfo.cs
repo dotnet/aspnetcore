@@ -3,9 +3,9 @@
 
 using System;
 using System.Security.Claims;
-using Microsoft.AspNet.Http;
+using Microsoft.AspNetCore.Http;
 
-namespace Microsoft.AspNet.Diagnostics.Elm
+namespace Microsoft.AspNetCore.Diagnostics.Elm
 {
     public class HttpInfo
     {

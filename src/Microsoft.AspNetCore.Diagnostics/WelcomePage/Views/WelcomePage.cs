@@ -1,4 +1,4 @@
-namespace Microsoft.AspNet.Diagnostics.Views
+namespace Microsoft.AspNetCore.Diagnostics.Views
 {
 #line 1 "WelcomePage.cshtml"
 using System
@@ -7,14 +7,14 @@ using System
 #line hidden
     ;
 #line 2 "WelcomePage.cshtml"
-using Microsoft.AspNet.Diagnostics
+using Microsoft.AspNetCore.Diagnostics
 
 #line default
 #line hidden
     ;
     using System.Threading.Tasks;
 
-    public class WelcomePage : Microsoft.AspNet.Diagnostics.Views.BaseView
+    public class WelcomePage : Microsoft.AspNetCore.Diagnostics.Views.BaseView
     {
         #line hidden
         public WelcomePage()

@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNet.Diagnostics
+namespace Microsoft.AspNetCore.Diagnostics
 {
     public interface IExceptionHandlerFeature
     {

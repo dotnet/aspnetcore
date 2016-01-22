@@ -3,7 +3,7 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.AspNet.Diagnostics
+namespace Microsoft.AspNetCore.Diagnostics
 {
     /// <summary>
     /// Specifies the contract for an exception representing compilation failure.

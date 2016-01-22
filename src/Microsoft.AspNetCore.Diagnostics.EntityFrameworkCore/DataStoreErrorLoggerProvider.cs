@@ -4,7 +4,7 @@
 using System;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNet.Diagnostics.Entity
+namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
 {
     public class DataStoreErrorLoggerProvider : ILoggerProvider
     {

@@ -1,8 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNet.Hosting;
-using Microsoft.AspNet.MiddlewareAnalysis;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.MiddlewareAnalysis;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Microsoft.Extensions.DependencyInjection

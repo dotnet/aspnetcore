@@ -3,7 +3,7 @@
 
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNet.Diagnostics.Elm
+namespace Microsoft.AspNetCore.Diagnostics.Elm
 {
     /// <summary>
     /// Options for viewing elm logs.

@@ -1,4 +1,4 @@
-namespace Microsoft.AspNet.Diagnostics.Views
+namespace Microsoft.AspNetCore.Diagnostics.Views
 {
 #line 1 "CompilationErrorPage.cshtml"
 using System
@@ -25,14 +25,14 @@ using System.Net
 #line hidden
     ;
 #line 5 "CompilationErrorPage.cshtml"
-using Microsoft.AspNet.Diagnostics
+using Microsoft.AspNetCore.Diagnostics
 
 #line default
 #line hidden
     ;
     using System.Threading.Tasks;
 
-    public class CompilationErrorPage : Microsoft.AspNet.Diagnostics.Views.BaseView
+    public class CompilationErrorPage : Microsoft.AspNetCore.Diagnostics.Views.BaseView
     {
 #line 7 "CompilationErrorPage.cshtml"
 

@@ -5,13 +5,13 @@ using System;
 using System.Linq;
 using System.Reflection;
 
-namespace Microsoft.AspNet.Diagnostics.Entity.Tests.Helpers
+namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests.Helpers
 {
     public class StringsHelpers
     {
         public static string GetResourceString(string stringName, params object[] parameters)
         {
-            var strings = typeof(DatabaseErrorPageMiddleware).GetTypeInfo().Assembly.GetType("Microsoft.AspNet.Diagnostics.Entity.Strings").GetTypeInfo();
+            var strings = typeof(DatabaseErrorPageMiddleware).GetTypeInfo().Assembly.GetType("Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Strings").GetTypeInfo();
             var method = strings.GetDeclaredMethods(stringName).Single();
             return (string)method.Invoke(null, parameters);
         }

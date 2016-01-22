@@ -4,12 +4,12 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Diagnostics.Views;
-using Microsoft.AspNet.Http;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics.Views;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNet.Diagnostics
+namespace Microsoft.AspNetCore.Diagnostics
 {
     /// <summary>
     /// This middleware provides a default web page for new applications.

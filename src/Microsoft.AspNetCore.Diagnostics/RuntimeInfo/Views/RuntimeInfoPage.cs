@@ -1,4 +1,4 @@
-namespace Microsoft.AspNet.Diagnostics.Views
+namespace Microsoft.AspNetCore.Diagnostics.Views
 {
 #line 1 "RuntimeInfoPage.cshtml"
 using System
@@ -19,13 +19,13 @@ using System.Linq
 #line hidden
     ;
 #line 4 "RuntimeInfoPage.cshtml"
-using Microsoft.AspNet.Diagnostics
+using Microsoft.AspNetCore.Diagnostics
 
 #line default
 #line hidden
     ;
 #line 5 "RuntimeInfoPage.cshtml"
-using Microsoft.AspNet.Diagnostics.Views
+using Microsoft.AspNetCore.Diagnostics.Views
 
 #line default
 #line hidden
@@ -37,7 +37,7 @@ using Microsoft.Extensions.PlatformAbstractions;
 #line hidden
     using System.Threading.Tasks;
 
-    public class RuntimeInfoPage : Microsoft.AspNet.Diagnostics.Views.BaseView
+    public class RuntimeInfoPage : Microsoft.AspNetCore.Diagnostics.Views.BaseView
     {
 #line 9 "RuntimeInfoPage.cshtml"
 

@@ -10,9 +10,9 @@
     "url": "git://github.com/aspnet/diagnostics"
   },
   "dependencies": {
-    "Microsoft.AspNet.Diagnostics.Abstractions": "1.0.0-*",
-    "Microsoft.AspNet.Http.Extensions": "1.0.0-*",
-    "Microsoft.AspNet.WebUtilities": "1.0.0-*",
+    "Microsoft.AspNetCore.Diagnostics.Abstractions": "1.0.0-*",
+    "Microsoft.AspNetCore.Http.Extensions": "1.0.0-*",
+    "Microsoft.AspNetCore.WebUtilities": "1.0.0-*",
     "Microsoft.Extensions.FileProviders.Physical": "1.0.0-*",
     "Microsoft.Extensions.Logging.Abstractions": "1.0.0-*",
     "Microsoft.Extensions.Options": "1.0.0-*",

@@ -1,12 +1,12 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNet.Http;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DiagnosticAdapter;
 
-namespace Microsoft.AspNet.MiddlewareAnalysis
+namespace Microsoft.AspNetCore.MiddlewareAnalysis
 {
     public class TestDiagnosticListener
     {
@@ -14,19 +14,19 @@ namespace Microsoft.AspNet.MiddlewareAnalysis
         public IList<string> MiddlewareFinished { get; } = new List<string>();
         public IList<string> MiddlewareException { get; } = new List<string>();
 
-        [DiagnosticName("Microsoft.AspNet.MiddlewareAnalysis.MiddlewareStarting")]
+        [DiagnosticName("Microsoft.AspNetCore.MiddlewareAnalysis.MiddlewareStarting")]
         public virtual void OnMiddlewareStarting(HttpContext httpContext, string name)
         {
             MiddlewareStarting.Add(name);
         }
 
-        [DiagnosticName("Microsoft.AspNet.MiddlewareAnalysis.MiddlewareException")]
+        [DiagnosticName("Microsoft.AspNetCore.MiddlewareAnalysis.MiddlewareException")]
         public virtual void OnMiddlewareException(Exception exception, string name)
         {
             MiddlewareException.Add(name);
         }
 
-        [DiagnosticName("Microsoft.AspNet.MiddlewareAnalysis.MiddlewareFinished")]
+        [DiagnosticName("Microsoft.AspNetCore.MiddlewareAnalysis.MiddlewareFinished")]
         public virtual void OnMiddlewareFinished(HttpContext httpContext, string name)
         {
             MiddlewareFinished.Add(name);

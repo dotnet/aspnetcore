@@ -5,18 +5,18 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Diagnostics.Entity.Utilities;
-using Microsoft.AspNet.Diagnostics.Entity.Views;
-using Microsoft.AspNet.Http;
-using Microsoft.Data.Entity;
-using Microsoft.Data.Entity.Infrastructure;
-using Microsoft.Data.Entity.Migrations;
-using Microsoft.Data.Entity.Storage;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Utilities;
+using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Views;
+using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNet.Diagnostics.Entity
+namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
 {
     /// <summary>
     /// Captures synchronous and asynchronous database related exceptions from the pipeline that may be resolved using Entity Framework

@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNet.Diagnostics.Entity.Tests
+namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
 {
 	public class Blog
     {

@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using JetBrains.Annotations;
 
-namespace Microsoft.AspNet.Diagnostics.Entity.Utilities
+namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Utilities
 {
     [DebuggerStepThrough]
     internal static class Check

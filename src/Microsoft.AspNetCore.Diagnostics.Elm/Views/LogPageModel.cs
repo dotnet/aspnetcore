@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
-using Microsoft.AspNet.Http;
+using System.Collections.Generic;
+using Microsoft.AspNetCore.Http;
 
-namespace Microsoft.AspNet.Diagnostics.Elm.Views
+namespace Microsoft.AspNetCore.Diagnostics.Elm.Views
 {
     public class LogPageModel
     {

@@ -8,7 +8,7 @@ use-standard-lifecycle
 k-standard-goals
 
 #generatepages target='initialize'
-	k command='run ../Microsoft.AspNet.Diagnostics' dnxDir='src/PageGenerator'
+	k command='run ../Microsoft.AspNetCore.Diagnostics' dnxDir='src/PageGenerator'
 
 #xml-docs-test .clean .build-compile description='Check generated XML documentation files for errors' target='package'
   k-xml-docs-test
