@@ -1,5 +1,5 @@
-﻿This test server is for use in testing client side implementations of the WebSocekt protocol. It is currently implemented to test 
-Microsoft.AspNet.WebSockets.Client.WebSocketClient and System.Net.WebSockets.ClientWebSocket.
+This test server is for use in testing client side implementations of the WebSocekt protocol. It is currently implemented to test 
+Microsoft.AspNetCore.WebSockets.Client.WebSocketClient and System.Net.WebSockets.ClientWebSocket.
 
 See http://autobahn.ws/ to download and install the test framework.
 

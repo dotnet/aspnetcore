@@ -9,9 +9,9 @@ using System.Net;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNet.WebSockets.Protocol;
+using Microsoft.AspNetCore.WebSockets.Protocol;
 
-namespace Microsoft.AspNet.WebSockets.Client
+namespace Microsoft.AspNetCore.WebSockets.Client
 {
     public class WebSocketClient
     {

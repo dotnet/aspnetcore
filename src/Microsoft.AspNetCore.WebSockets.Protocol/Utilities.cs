@@ -4,7 +4,7 @@
 using System;
 using System.Net.WebSockets;
 
-namespace Microsoft.AspNet.WebSockets.Protocol
+namespace Microsoft.AspNetCore.WebSockets.Protocol
 {
     public static class Utilities
     {

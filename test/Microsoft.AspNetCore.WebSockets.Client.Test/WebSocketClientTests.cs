@@ -6,10 +6,10 @@ using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Testing.xunit;
+using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
-namespace Microsoft.AspNet.WebSockets.Client.Test
+namespace Microsoft.AspNetCore.WebSockets.Client.Test
 {
     public class WebSocketClientTests
     {

@@ -1,8 +1,8 @@
 {
   "exclude": "wwwroot/**/*",
   "dependencies": {
-    "Microsoft.AspNet.WebSockets.Server": "1.0.0-*",
-    "Microsoft.AspNet.Server.Kestrel": "1.0.0-*"
+    "Microsoft.AspNetCore.WebSockets.Server": "1.0.0-*",
+    "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*"
   },
   "compilationOptions": {
     "emitEntryPoint": true

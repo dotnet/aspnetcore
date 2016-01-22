@@ -3,12 +3,12 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Hosting;
-using Microsoft.AspNet.Http;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 
-namespace Microsoft.AspNet.WebSockets.Client.Test
+namespace Microsoft.AspNetCore.WebSockets.Client.Test
 {
     public class KestrelWebSocketHelpers
     {
@@ -47,7 +47,7 @@ namespace Microsoft.AspNet.WebSockets.Client.Test
 
             var host = new WebHostBuilder()
                 .UseConfiguration(config)
-                .UseServer("Microsoft.AspNet.Server.Kestrel")
+                .UseServer("Microsoft.AspNetCore.Server.Kestrel")
                 .Configure(startup)
                 .Build();
 

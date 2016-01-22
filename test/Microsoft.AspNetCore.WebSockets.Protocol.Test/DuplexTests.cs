@@ -8,7 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Microsoft.AspNet.WebSockets.Protocol.Test
+namespace Microsoft.AspNetCore.WebSockets.Protocol.Test
 {
     public class DuplexTests
     {

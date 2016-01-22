@@ -8,7 +8,7 @@ using System.Net.WebSockets;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNet.WebSockets.Protocol
+namespace Microsoft.AspNetCore.WebSockets.Protocol
 {
     public class FrameHeader
     {

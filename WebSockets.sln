@@ -1,4 +1,4 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.22216.0
@@ -11,17 +11,17 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{C45106D0-7
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{9E55FC5B-FD9C-4266-AB24-F3AA649D7C8B}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.WebSockets.Protocol", "src\Microsoft.AspNet.WebSockets.Protocol\Microsoft.AspNet.WebSockets.Protocol.xproj", "{E0C10DEC-3339-4A47-85BC-3100C5D34AD4}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.WebSockets.Protocol", "src\Microsoft.AspNetCore.WebSockets.Protocol\Microsoft.AspNetCore.WebSockets.Protocol.xproj", "{E0C10DEC-3339-4A47-85BC-3100C5D34AD4}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.WebSockets.Protocol.Test", "test\Microsoft.AspNet.WebSockets.Protocol.Test\Microsoft.AspNet.WebSockets.Protocol.Test.xproj", "{62A07A24-4D06-4DDA-B6BF-02D0C9CB7D32}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.WebSockets.Protocol.Test", "test\Microsoft.AspNetCore.WebSockets.Protocol.Test\Microsoft.AspNetCore.WebSockets.Protocol.Test.xproj", "{62A07A24-4D06-4DDA-B6BF-02D0C9CB7D32}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "TestClient", "test\TestClient\TestClient.xproj", "{8C8EAC01-DC49-4C5E-B348-E4E46FE675F9}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.WebSockets.Client", "src\Microsoft.AspNet.WebSockets.Client\Microsoft.AspNet.WebSockets.Client.xproj", "{4A1C4875-AE21-4A78-979A-F0E4DF5EB518}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.WebSockets.Client", "src\Microsoft.AspNetCore.WebSockets.Client\Microsoft.AspNetCore.WebSockets.Client.xproj", "{4A1C4875-AE21-4A78-979A-F0E4DF5EB518}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.WebSockets.Client.Test", "test\Microsoft.AspNet.WebSockets.Client.Test\Microsoft.AspNet.WebSockets.Client.Test.xproj", "{6604D154-817F-4BC5-BE95-FF7E851179D9}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.WebSockets.Client.Test", "test\Microsoft.AspNetCore.WebSockets.Client.Test\Microsoft.AspNetCore.WebSockets.Client.Test.xproj", "{6604D154-817F-4BC5-BE95-FF7E851179D9}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.WebSockets.Server", "src\Microsoft.AspNet.WebSockets.Server\Microsoft.AspNet.WebSockets.Server.xproj", "{78A097D0-C0A4-4AED-93E2-84A65392FB52}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.WebSockets.Server", "src\Microsoft.AspNetCore.WebSockets.Server\Microsoft.AspNetCore.WebSockets.Server.xproj", "{78A097D0-C0A4-4AED-93E2-84A65392FB52}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{86E1ADA2-631C-484F-906C-2D0BCF628E65}"
 	ProjectSection(SolutionItems) = preProject

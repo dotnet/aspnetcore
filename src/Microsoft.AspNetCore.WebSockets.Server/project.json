@@ -10,8 +10,8 @@
     "url": "git://github.com/aspnet/websockets"
   },
   "dependencies": {
-    "Microsoft.AspNet.Http.Extensions": "1.0.0-*",
-    "Microsoft.AspNet.WebSockets.Protocol": "1.0.0-*",
+    "Microsoft.AspNetCore.Http.Extensions": "1.0.0-*",
+    "Microsoft.AspNetCore.WebSockets.Protocol": "1.0.0-*",
     "Microsoft.Extensions.Options": "1.0.0-*"
   },
   "frameworks": {

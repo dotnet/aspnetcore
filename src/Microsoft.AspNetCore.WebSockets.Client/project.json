@@ -10,7 +10,7 @@
     "keyFile": "../../tools/Key.snk"
   },
   "dependencies": {
-    "Microsoft.AspNet.WebSockets.Protocol": "1.0.0-*"
+    "Microsoft.AspNetCore.WebSockets.Protocol": "1.0.0-*"
   },
   "frameworks": {
     "net451": { }

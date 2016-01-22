@@ -1,6 +1,6 @@
 {
     "dependencies": {
-        "Microsoft.AspNet.WebSockets.Protocol": "1.0.0-*",
+        "Microsoft.AspNetCore.WebSockets.Protocol": "1.0.0-*",
         "xunit.runner.aspnet": "2.0.0-aspnet-*"
     },
     "frameworks": {

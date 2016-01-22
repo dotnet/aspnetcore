@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace Microsoft.AspNet.WebSockets.Protocol
+namespace Microsoft.AspNetCore.WebSockets.Protocol
 {
     public static class HandshakeHelpers
     {

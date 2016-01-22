@@ -11,7 +11,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNet.WebSockets.Protocol
+namespace Microsoft.AspNetCore.WebSockets.Protocol
 {
     // https://tools.ietf.org/html/rfc6455
     public class CommonWebSocket : WebSocket

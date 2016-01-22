@@ -5,7 +5,7 @@ using System;
 using System.Text;
 using Xunit;
 
-namespace Microsoft.AspNet.WebSockets.Protocol.Test
+namespace Microsoft.AspNetCore.WebSockets.Protocol.Test
 {
     public class Utf8ValidationTests
     {

@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNet.Builder
+namespace Microsoft.AspNetCore.Builder
 {
     /// <summary>
     /// Configuration options for the WebSocketMiddleware
