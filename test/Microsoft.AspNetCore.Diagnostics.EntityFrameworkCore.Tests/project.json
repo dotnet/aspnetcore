@@ -3,12 +3,15 @@
     "warningsAsErrors": true
   },
   "dependencies": {
-    "Microsoft.EntityFrameworkCore.InMemory": "7.0.0-*",
-    "Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore": "7.0.0-*",
+    "Microsoft.EntityFrameworkCore.InMemory": "1.0.0-*",
+    "Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore": "1.0.0-*",
     "Microsoft.AspNetCore.Testing": "1.0.0-*",
     "xunit": "2.1.0"
   },
-  "compile": [ "../Shared/ApiConsistencyTestBase.cs", "../Shared/TestHelpers.cs" ],
+  "compile": [
+    "../Shared/ApiConsistencyTestBase.cs",
+    "../Shared/TestHelpers.cs"
+  ],
   "testRunner": "xunit",
   "commands": {
     "test": "xunit.runner.aspnet"

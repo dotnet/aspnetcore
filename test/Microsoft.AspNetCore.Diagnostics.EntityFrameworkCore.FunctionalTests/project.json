@@ -1,7 +1,7 @@
 {
   "dependencies": {
-    "Microsoft.EntityFrameworkCore.SqlServer": "7.0.0-*",
-    "Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore": "7.0.0-*",
+    "Microsoft.EntityFrameworkCore.SqlServer": "1.0.0-*",
+    "Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore": "1.0.0-*",
     "Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests": "1.0.0",
     "Microsoft.AspNetCore.TestHost": "1.0.0-*",
     "Microsoft.AspNetCore.Testing": "1.0.0-*",
@@ -13,7 +13,7 @@
   },
   "frameworks": {
     "dnx451": {
-     "frameworkAssemblies": {
+      "frameworkAssemblies": {
         "System.Runtime": "",
         "System.Threading.Tasks": ""
       },
@@ -21,7 +21,7 @@
         "xunit.runner.console": "2.1.0"
       }
     },
-    "dnxcore50": { 
+    "dnxcore50": {
       "dependencies": {
         "xunit.runner.aspnet": "2.0.0-aspnet-*"
       }

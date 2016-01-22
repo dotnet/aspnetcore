@@ -4,7 +4,7 @@
     "keyFile": "../../tools/Key.snk"
   },
   "dependencies": {
-    "Microsoft.AspNetCore.Diagnostics.Elm": "1.0.0-*",
+    "Microsoft.AspNetCore.Diagnostics.Elm": "0.1.0-*",
     "Microsoft.AspNetCore.TestHost": "1.0.0-*",
     "Microsoft.AspNetCore.Testing": "1.0.0-*",
     "Microsoft.Extensions.DependencyInjection": "1.0.0-*",
@@ -12,7 +12,6 @@
     "Microsoft.Extensions.FileProviders.Embedded": "1.0.0-*",
     "xunit": "2.1.0"
   },
-
   "frameworks": {
     "dnx451": {
       "frameworkAssemblies": {
@@ -31,12 +30,14 @@
       }
     }
   },
- "testRunner": "xunit",
+  "testRunner": "xunit",
   "commands": {
     "test": "xunit.runner.aspnet"
   },
   "content": [
-    "TestFiles/**/*"  
+    "TestFiles/**/*"
   ],
-  "resource": [ "Resources/**" ]
+  "resource": [
+    "Resources/**"
+  ]
 }

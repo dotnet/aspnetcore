@@ -1,15 +1,17 @@
 {
   "dependencies": {
-    "Microsoft.AspNetCore.Diagnostics": "",
+    "Microsoft.AspNetCore.Diagnostics": "1.0.0-*",
     "Microsoft.AspNetCore.IISPlatformHandler": "1.0.0-*",
     "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*"
   },
   "compilationOptions": {
     "emitEntryPoint": true
   },
-  "commands": { "web": "WelcomePageSample" },
+  "commands": {
+    "web": "WelcomePageSample"
+  },
   "frameworks": {
-    "dnx451": { },
-    "dnxcore50": { }
+    "dnx451": {},
+    "dnxcore50": {}
   }
 }

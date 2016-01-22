@@ -1,5 +1,5 @@
 {
-  "version": "7.0.0-*",
+  "version": "1.0.0-*",
   "description": "ASP.NET 5 Middleware for Entity Framework error pages.",
   "repository": {
     "type": "git",
@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "Microsoft.AspNetCore.Diagnostics": "1.0.0-*",
-    "Microsoft.EntityFrameworkCore.Relational": "7.0.0-*"
+    "Microsoft.EntityFrameworkCore.Relational": "1.0.0-*"
   },
   "compile": [
     "..\\Shared\\*.cs"
