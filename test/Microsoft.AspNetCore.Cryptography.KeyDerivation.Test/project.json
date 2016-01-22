@@ -2,7 +2,7 @@
   "dependencies": {
     "Microsoft.AspNetCore.Cryptography.Internal": "1.0.0-*",
     "Microsoft.AspNetCore.Cryptography.KeyDerivation": "1.0.0-*",
-    "Microsoft.AspNetCore.DataProtection.Test.Shared": "",
+    "Microsoft.AspNetCore.DataProtection.Test.Shared": "1.0.0-*",
     "Microsoft.AspNetCore.Testing": "1.0.0-*",
     "xunit": "2.1.0"
   },
@@ -12,7 +12,7 @@
         "xunit.runner.console": "2.1.0"
       }
     },
-    "dnxcore50": { 
+    "dnxcore50": {
       "dependencies": {
         "xunit.runner.aspnet": "2.0.0-aspnet-*"
       }

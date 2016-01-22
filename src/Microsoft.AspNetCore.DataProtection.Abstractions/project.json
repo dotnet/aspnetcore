@@ -8,7 +8,7 @@
   "dependencies": {
     "Microsoft.AspNetCore.DataProtection.Sources": {
       "type": "build",
-      "version": ""
+      "version": "1.0.0-*"
     },
     "Microsoft.Extensions.PlatformAbstractions": "1.0.0-*"
   },

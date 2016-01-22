@@ -3,7 +3,7 @@
     "Microsoft.AspNetCore.DataProtection": "1.0.0-*",
     "Microsoft.AspNetCore.DataProtection.Test.Shared": {
       "type": "build",
-      "version": ""
+      "version": "1.0.0-*"
     },
     "Microsoft.AspNetCore.Testing": "1.0.0-*",
     "Microsoft.Extensions.DependencyInjection": "1.0.0-*",

@@ -4,7 +4,7 @@
     "Microsoft.AspNetCore.DataProtection.Extensions": "1.0.0-*",
     "Microsoft.AspNetCore.DataProtection.Test.Shared": {
       "type": "build",
-      "version": ""
+      "version": "1.0.0-*"
     },
     "Microsoft.AspNetCore.Testing": "1.0.0-*",
     "xunit": "2.1.0"
