@@ -10,7 +10,7 @@
     "url": "git://github.com/aspnet/basicmiddleware"
   },
   "dependencies": {
-    "Microsoft.AspNet.Http.Extensions": "1.0.0-*",
+    "Microsoft.AspNetCore.Http.Extensions": "1.0.0-*",
     "Microsoft.Extensions.Options": "1.0.0-*"
   },
   "frameworks": {

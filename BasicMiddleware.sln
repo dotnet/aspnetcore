@@ -1,24 +1,24 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.HttpOverrides", "src\Microsoft.AspNet.HttpOverrides\Microsoft.AspNet.HttpOverrides.xproj", "{517308C3-B477-4B01-B461-CAB9C10B6928}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.HttpOverrides", "src\Microsoft.AspNetCore.HttpOverrides\Microsoft.AspNetCore.HttpOverrides.xproj", "{517308C3-B477-4B01-B461-CAB9C10B6928}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{A5076D28-FA7E-4606-9410-FEDD0D603527}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{8437B0F3-3894-4828-A945-A9187F37631D}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.HttpOverrides.Tests", "test\Microsoft.AspNet.HttpOverrides.Tests\Microsoft.AspNet.HttpOverrides.Tests.xproj", "{D6341B92-3416-4F11-8DF4-CB274296175F}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.HttpOverrides.Tests", "test\Microsoft.AspNetCore.HttpOverrides.Tests\Microsoft.AspNetCore.HttpOverrides.Tests.xproj", "{D6341B92-3416-4F11-8DF4-CB274296175F}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{99B72A07-32D6-434D-B44D-D064E3C13E08}"
 	ProjectSection(SolutionItems) = preProject
 		global.json = global.json
 	EndProjectSection
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Buffering", "src\Microsoft.AspNet.Buffering\Microsoft.AspNet.Buffering.xproj", "{2363D0DD-A3BF-437E-9B64-B33AE132D875}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Buffering", "src\Microsoft.AspNetCore.Buffering\Microsoft.AspNetCore.Buffering.xproj", "{2363D0DD-A3BF-437E-9B64-B33AE132D875}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Buffering.Tests", "test\Microsoft.AspNet.Buffering.Tests\Microsoft.AspNet.Buffering.Tests.xproj", "{F5F1D123-9C81-4A9E-8644-AA46B8E578FB}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Buffering.Tests", "test\Microsoft.AspNetCore.Buffering.Tests\Microsoft.AspNetCore.Buffering.Tests.xproj", "{F5F1D123-9C81-4A9E-8644-AA46B8E578FB}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{9587FE9F-5A17-42C4-8021-E87F59CECB98}"
 EndProject

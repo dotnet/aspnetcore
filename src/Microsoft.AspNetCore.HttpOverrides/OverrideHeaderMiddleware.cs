@@ -4,11 +4,11 @@
 using System;
 using System.Net;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Http;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNet.HttpOverrides
+namespace Microsoft.AspNetCore.HttpOverrides
 {
     public class OverrideHeaderMiddleware
     {

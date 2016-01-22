@@ -6,7 +6,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNet.Buffering
+namespace Microsoft.AspNetCore.Buffering
 {
     internal class BufferingWriteStream : Stream
     {

@@ -1,11 +1,11 @@
-﻿{
+{
   "version": "1.0.0-*",
   "compilationOptions": {
     "warningsAsErrors": true
   },
   "dependencies": {
-    "Microsoft.AspNet.Buffering": "1.0.0-*",
-    "Microsoft.AspNet.TestHost": "1.0.0-*",
+    "Microsoft.AspNetCore.Buffering": "1.0.0-*",
+    "Microsoft.AspNetCore.TestHost": "1.0.0-*",
     "xunit": "2.1.0"
   },
   "frameworks": {
