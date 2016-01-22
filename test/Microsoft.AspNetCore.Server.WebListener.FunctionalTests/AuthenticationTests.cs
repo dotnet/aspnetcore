@@ -20,12 +20,12 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http.Features.Authentication;
-using Microsoft.AspNet.Testing.xunit;
+using Microsoft.AspNetCore.Http.Features.Authentication;
+using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 using AuthenticationSchemes = Microsoft.Net.Http.Server.AuthenticationSchemes;
 
-namespace Microsoft.AspNet.Server.WebListener
+namespace Microsoft.AspNetCore.Server.WebListener
 {
     public class AuthenticationTests
     {

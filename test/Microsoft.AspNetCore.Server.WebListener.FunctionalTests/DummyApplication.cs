@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc.
+// Copyright (c) Microsoft Open Technologies, Inc.
 // All Rights Reserved
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,12 +17,12 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Hosting.Server;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Features;
-using Microsoft.AspNet.Http.Internal;
+using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Http.Internal;
 
-namespace Microsoft.AspNet.Server.WebListener
+namespace Microsoft.AspNetCore.Server.WebListener
 {
     internal class DummyApplication : IHttpApplication<HttpContext>
     {

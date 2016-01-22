@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc.
+// Copyright (c) Microsoft Open Technologies, Inc.
 // All Rights Reserved
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,10 +25,10 @@ using System;
 using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http.Features.Authentication;
+using Microsoft.AspNetCore.Http.Features.Authentication;
 using Microsoft.Net.Http.Server;
 
-namespace Microsoft.AspNet.Server.WebListener
+namespace Microsoft.AspNetCore.Server.WebListener
 {
     internal class AuthenticationHandler : IAuthenticationHandler
     {

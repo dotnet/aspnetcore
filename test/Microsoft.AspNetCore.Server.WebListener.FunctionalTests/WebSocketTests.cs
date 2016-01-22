@@ -20,12 +20,12 @@ using System.Net.Http;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Features;
-using Microsoft.AspNet.Testing.xunit;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
-namespace Microsoft.AspNet.Server.WebListener
+namespace Microsoft.AspNetCore.Server.WebListener
 {
     public class WebSocketTests
     {

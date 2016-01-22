@@ -4,10 +4,10 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Microsoft.AspNet.Http;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.AspNet.Server.WebListener
+namespace Microsoft.AspNetCore.Server.WebListener
 {
     /// <summary>
     /// Represents a wrapper for RequestHeaders and ResponseHeaders.
@@ -144,7 +144,7 @@ namespace Microsoft.AspNet.Server.WebListener
         /// <summary>
         /// Copies the <see cref="T:HeaderDictionary" /> elements to a one-dimensional Array instance at the specified index.
         /// </summary>
-        /// <param name="array">The one-dimensional Array that is the destination of the specified objects copied from the <see cref="T:Microsoft.AspNet.Http.Internal.HeaderDictionary" />.</param>
+        /// <param name="array">The one-dimensional Array that is the destination of the specified objects copied from the <see cref="T:Microsoft.AspNetCore.Http.Internal.HeaderDictionary" />.</param>
         /// <param name="arrayIndex">The zero-based index in <paramref name="array" /> at which copying begins.</param>
         public void CopyTo(KeyValuePair<string, StringValues>[] array, int arrayIndex)
         {

@@ -19,11 +19,11 @@ using System;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http.Features;
-using Microsoft.AspNet.Http.Internal;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Http.Internal;
 using Xunit;
 
-namespace Microsoft.AspNet.Server.WebListener
+namespace Microsoft.AspNetCore.Server.WebListener
 {
     public class ResponseTests
     {

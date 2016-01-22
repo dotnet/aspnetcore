@@ -36,13 +36,13 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.AspNet.Hosting.Server;
-using Microsoft.AspNet.Http.Features;
-using Microsoft.AspNet.Server.Features;
+using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Server.Features;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNet.Server.WebListener
+namespace Microsoft.AspNetCore.Server.WebListener
 {
     /// <summary>
     /// Implements the setup process for this server.

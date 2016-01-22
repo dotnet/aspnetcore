@@ -20,12 +20,12 @@ using System.Net.Http;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http.Features;
-using Microsoft.AspNet.Http.Internal;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.Extensions.Primitives;
 using Xunit;
 
-namespace Microsoft.AspNet.Server.WebListener
+namespace Microsoft.AspNetCore.Server.WebListener
 {
     public class RequestHeaderTests
     {

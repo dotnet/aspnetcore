@@ -1,4 +1,4 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.23107.0
@@ -19,9 +19,9 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "SelfHostServer", "samples\S
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Net.WebSockets.Server", "src\Microsoft.Net.WebSockets.Server\Microsoft.Net.WebSockets.Server.xproj", "{E788AEAE-2CB4-4BFA-8746-D0BB7E93A1BB}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Server.WebListener.FunctionalTests", "test\Microsoft.AspNet.Server.WebListener.FunctionalTests\Microsoft.AspNet.Server.WebListener.FunctionalTests.xproj", "{4492FF4C-9032-411D-853F-46B01755E504}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Server.WebListener.FunctionalTests", "test\Microsoft.AspNetCore.Server.WebListener.FunctionalTests\Microsoft.AspNetCore.Server.WebListener.FunctionalTests.xproj", "{4492FF4C-9032-411D-853F-46B01755E504}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Server.WebListener", "src\Microsoft.AspNet.Server.WebListener\Microsoft.AspNet.Server.WebListener.xproj", "{B9F45F9D-D206-47F0-8E5F-54CE2F0BDF92}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Server.WebListener", "src\Microsoft.AspNetCore.Server.WebListener\Microsoft.AspNetCore.Server.WebListener.xproj", "{B9F45F9D-D206-47F0-8E5F-54CE2F0BDF92}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Net.Http.Server.FunctionalTests", "test\Microsoft.Net.Http.Server.FunctionalTests\Microsoft.Net.Http.Server.FunctionalTests.xproj", "{DCB6E0B1-223D-44E6-8696-4767E5B6E6A1}"
 EndProject

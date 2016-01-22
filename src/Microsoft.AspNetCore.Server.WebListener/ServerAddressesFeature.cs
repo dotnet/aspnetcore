@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc.
+// Copyright (c) Microsoft Open Technologies, Inc.
 // All Rights Reserved
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,9 +16,9 @@
 // permissions and limitations under the License.
 
 using System.Collections.Generic;
-using Microsoft.AspNet.Server.Features;
+using Microsoft.AspNetCore.Server.Features;
 
-namespace Microsoft.AspNet.Server.WebListener
+namespace Microsoft.AspNetCore.Server.WebListener
 {
     internal class ServerAddressesFeature : IServerAddressesFeature
     {

@@ -18,11 +18,11 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Microsoft.AspNet.Http.Features;
-using Microsoft.AspNet.Http.Features.Authentication;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Http.Features.Authentication;
 using Microsoft.Net.Http.Server;
 
-namespace Microsoft.AspNet.Server.WebListener
+namespace Microsoft.AspNetCore.Server.WebListener
 {
     internal sealed class StandardFeatureCollection : IFeatureCollection
     {

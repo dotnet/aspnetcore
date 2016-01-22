@@ -16,14 +16,14 @@
 // permissions and limitations under the License.
 
 using System;
-using Microsoft.AspNet.Hosting.Server;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Features;
-using Microsoft.AspNet.Http.Internal;
-using Microsoft.AspNet.Server.Features;
+using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Http.Internal;
+using Microsoft.AspNetCore.Server.Features;
 using Microsoft.Net.Http.Server;
 
-namespace Microsoft.AspNet.Server.WebListener
+namespace Microsoft.AspNetCore.Server.WebListener
 {
     internal static class Utilities
     {

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
+// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
 using System;
 
@@ -8,7 +8,7 @@ namespace Microsoft.Net.Http.Server
     {
         // When tests projects are run in parallel, overlapping port ranges can cause a race condition when looking for free 
         // ports during dynamic port allocation. To avoid this, make sure the port range here is different from the range in 
-        // Microsoft.AspNet.Server.WebListener.
+        // Microsoft.AspNetCore.Server.WebListener.
         private const int BasePort = 8001;
         private const int MaxPort = 11000;
         private static int NextPort = BasePort;

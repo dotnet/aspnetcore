@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc.
+// Copyright (c) Microsoft Open Technologies, Inc.
 // All Rights Reserved
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,13 +21,13 @@ using System.Net.Http;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Hosting.Server;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Features;
+using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Net.Http.Server;
 using Xunit;
 
-namespace Microsoft.AspNet.Server.WebListener
+namespace Microsoft.AspNetCore.Server.WebListener
 {
     public class RequestTests
     {

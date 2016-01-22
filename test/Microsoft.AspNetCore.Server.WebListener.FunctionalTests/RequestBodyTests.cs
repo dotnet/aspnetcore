@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc.
+// Copyright (c) Microsoft Open Technologies, Inc.
 // All Rights Reserved
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,11 +23,11 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http.Features;
-using Microsoft.AspNet.Http.Internal;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Http.Internal;
 using Xunit;
 
-namespace Microsoft.AspNet.Server.WebListener
+namespace Microsoft.AspNetCore.Server.WebListener
 {
     public class RequestBodyTests
     {

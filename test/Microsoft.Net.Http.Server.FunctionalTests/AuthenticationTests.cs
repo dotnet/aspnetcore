@@ -1,10 +1,10 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
+// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
 using System;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Testing.xunit;
+using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
 namespace Microsoft.Net.Http.Server

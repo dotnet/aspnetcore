@@ -23,12 +23,12 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http.Features;
-using Microsoft.AspNet.Http.Internal;
-using Microsoft.AspNet.Testing.xunit;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Http.Internal;
+using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
-namespace Microsoft.AspNet.Server.WebListener
+namespace Microsoft.AspNetCore.Server.WebListener
 {
     public class ResponseBodyTests
     {

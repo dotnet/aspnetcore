@@ -6,7 +6,7 @@
   "dependencies": {
     "Microsoft.Net.Http.Server": "1.0.0-*",
     "Microsoft.Net.WebSockets.Server": "1.0.0-*",
-    "Microsoft.AspNet.Testing": "1.0.0-*",
+    "Microsoft.AspNetCore.Testing": "1.0.0-*",
     "xunit.runner.aspnet": "2.0.0-aspnet-*"
   },
   "frameworks": {

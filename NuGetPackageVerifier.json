@@ -9,7 +9,7 @@
             "StrictSemanticVersionValidationRule"
         ],
         "packages": {
-            "Microsoft.AspNet.Server.WebListener": { },
+            "Microsoft.AspNetCore.Server.WebListener": { },
             "Microsoft.Net.Http.Server": { },
             "Microsoft.Net.WebSockets.Server": { }
         }

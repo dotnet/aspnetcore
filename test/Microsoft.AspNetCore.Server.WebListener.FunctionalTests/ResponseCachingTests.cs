@@ -1,14 +1,14 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
+// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
 using System;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http.Features;
-using Microsoft.AspNet.Http.Internal;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Http.Internal;
 using Xunit;
 
-namespace Microsoft.AspNet.Server.WebListener.FunctionalTests
+namespace Microsoft.AspNetCore.Server.WebListener.FunctionalTests
 {
     public class ResponseCachingTests
     {

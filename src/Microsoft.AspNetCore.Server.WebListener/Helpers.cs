@@ -24,7 +24,7 @@
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNet.Server.WebListener
+namespace Microsoft.AspNetCore.Server.WebListener
 {
     internal static class Helpers
     {

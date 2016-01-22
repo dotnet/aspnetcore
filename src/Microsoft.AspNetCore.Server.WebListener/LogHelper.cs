@@ -25,7 +25,7 @@ using System;
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNet.Server.WebListener
+namespace Microsoft.AspNetCore.Server.WebListener
 {
     internal static class LogHelper
     {

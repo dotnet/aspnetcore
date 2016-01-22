@@ -20,13 +20,13 @@ using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Hosting.Server;
-using Microsoft.AspNet.Http.Features;
-using Microsoft.AspNet.Server.Features;
+using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Server.Features;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Server;
 
-namespace Microsoft.AspNet.Server.WebListener
+namespace Microsoft.AspNetCore.Server.WebListener
 {
     internal class MessagePump : IServer
     {

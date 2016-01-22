@@ -4,8 +4,8 @@
     "test": "xunit.runner.aspnet"
   },
   "dependencies": {
-    "Microsoft.AspNet.Server.WebListener": "1.0.0-*",
-    "Microsoft.AspNet.Testing": "1.0.0-*"
+    "Microsoft.AspNetCore.Server.WebListener": "1.0.0-*",
+    "Microsoft.AspNetCore.Testing": "1.0.0-*"
   },
   "frameworks": {
     "dnx451": {

@@ -21,7 +21,7 @@
 // </copyright>
 //------------------------------------------------------------------------------
 /*
-namespace Microsoft.AspNet.WebSockets
+namespace Microsoft.AspNetCore.WebSockets
 {
     using Microsoft.Net;
     using System;
