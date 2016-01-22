@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -72,29 +73,37 @@ namespace Microsoft.AspNetCore.Http.Features.Internal
         }
 
         /// <summary>
-        /// Saves the contents of the uploaded file.
+        /// Copies the contents of the uploaded file to the <paramref name="target"/> stream.
         /// </summary>
-        /// <param name="path">The path of the file to create.</param>
-        public void SaveAs(string path)
+        /// <param name="target">The stream to copy the file contents to.</param>
+        public void CopyTo(Stream target)
         {
-            using (var fileStream = File.Create(path, DefaultBufferSize))
+            if (target == null)
             {
-                var inputStream = OpenReadStream();
-                inputStream.CopyTo(fileStream, DefaultBufferSize);
+                throw new ArgumentNullException(nameof(target));
+            }
+
+            using (var readStream = OpenReadStream())
+            {
+                readStream.CopyTo(target, DefaultBufferSize);
             }
         }
 
         /// <summary>
-        /// Asynchronously saves the contents of the uploaded file.
+        /// Asynchronously copies the contents of the uploaded file to the <paramref name="target"/> stream.
         /// </summary>
-        /// <param name="path">The path of the file to create.</param>
+        /// <param name="target">The stream to copy the file contents to.</param>
         /// <param name="cancellationToken"></param>
-        public async Task SaveAsAsync(string path, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task CopyToAsync(Stream target, CancellationToken cancellationToken = default(CancellationToken))
         {
-            using (var fileStream = File.Create(path, DefaultBufferSize, FileOptions.Asynchronous))
+            if (target == null)
             {
-                var inputStream = OpenReadStream();
-                await inputStream.CopyToAsync(fileStream, DefaultBufferSize, cancellationToken);
+                throw new ArgumentNullException(nameof(target));
+            }
+
+            using (var readStream = OpenReadStream())
+            {
+                await readStream.CopyToAsync(target, DefaultBufferSize, cancellationToken);
             }
         }
     }

@@ -48,16 +48,16 @@ namespace Microsoft.AspNetCore.Http
         Stream OpenReadStream();
 
         /// <summary>
-        /// Saves the contents of the uploaded file.
+        /// Copies the contents of the uploaded file to the <paramref name="target"/> stream.
         /// </summary>
-        /// <param name="path">The path of the file to create.</param>
-        void SaveAs(string path);
+        /// <param name="target">The stream to copy the file contents to.</param>
+        void CopyTo(Stream target);
 
         /// <summary>
-        /// Asynchronously saves the contents of the uploaded file.
+        /// Asynchronously copies the contents of the uploaded file to the <paramref name="target"/> stream.
         /// </summary>
-        /// <param name="path">The path of the file to create.</param>
+        /// <param name="target">The stream to copy the file contents to.</param>
         /// <param name="cancellationToken"></param>
-        Task SaveAsAsync(string path, CancellationToken cancellationToken = default(CancellationToken));
+        Task CopyToAsync(Stream target, CancellationToken cancellationToken = default(CancellationToken));
     }
 }
