@@ -3,10 +3,10 @@
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.FileProviders;
 
-namespace Microsoft.AspNet.StaticFiles
+namespace Microsoft.AspNetCore.StaticFiles
 {
     /// <summary>
     /// Generates the view for a directory

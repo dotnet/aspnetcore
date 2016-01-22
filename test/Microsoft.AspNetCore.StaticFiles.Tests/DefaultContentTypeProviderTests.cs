@@ -3,7 +3,7 @@
 
 using Xunit;
 
-namespace Microsoft.AspNet.StaticFiles
+namespace Microsoft.AspNetCore.StaticFiles
 {
     public class DefaultContentTypeProviderTests
     {

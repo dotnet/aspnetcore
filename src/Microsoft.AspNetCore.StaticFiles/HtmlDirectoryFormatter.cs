@@ -8,11 +8,11 @@ using System.Linq;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 
-namespace Microsoft.AspNet.StaticFiles
+namespace Microsoft.AspNetCore.StaticFiles
 {
     /// <summary>
     /// Generates an HTML view for a directory.

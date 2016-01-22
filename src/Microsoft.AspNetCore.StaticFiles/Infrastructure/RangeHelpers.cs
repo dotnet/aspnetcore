@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNet.StaticFiles.Infrastructure
+namespace Microsoft.AspNetCore.StaticFiles.Infrastructure
 {
     internal static class RangeHelpers
     {

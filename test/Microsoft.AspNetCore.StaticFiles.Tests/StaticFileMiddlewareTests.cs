@@ -5,15 +5,15 @@ using System;
 using System.IO;
 using System.Net;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Hosting;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.TestHost;
-using Microsoft.AspNet.Testing.xunit;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.FileProviders;
 using Xunit;
 
-namespace Microsoft.AspNet.StaticFiles
+namespace Microsoft.AspNetCore.StaticFiles
 {
     public class StaticFileMiddlewareTests
     {
