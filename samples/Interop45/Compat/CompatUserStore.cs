@@ -1,11 +1,11 @@
-﻿// Copyright (c) Microsoft Corporation, Inc. All rights reserved.
+// Copyright (c) Microsoft Corporation, Inc. All rights reserved.
 // Licensed under the MIT License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Data.Entity;
-using Microsoft.AspNet.Identity.EntityFramework;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
-namespace Microsoft.AspNet.Identity.Compat
+namespace Microsoft.AspNetCore.Identity.Compat
 {
     public class IdentityUserStore<TUser> :
         IdentityUserStore<TUser, IdentityRole, string, IdentityUserLogin, IdentityUserRole, IdentityUserClaim>, IUserStore<TUser>

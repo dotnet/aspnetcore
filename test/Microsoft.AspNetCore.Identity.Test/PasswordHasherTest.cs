@@ -6,7 +6,7 @@ using System.Security.Cryptography;
 using Microsoft.Extensions.Options;
 using Xunit;
 
-namespace Microsoft.AspNet.Identity.Test
+namespace Microsoft.AspNetCore.Identity.Test
 {
     public class PasswordHasherTest
     {

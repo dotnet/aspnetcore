@@ -1,12 +1,12 @@
-﻿// Copyright (c) Microsoft Corporation, Inc. All rights reserved.
+// Copyright (c) Microsoft Corporation, Inc. All rights reserved.
 // Licensed under the MIT License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Data.Common;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
-using Microsoft.AspNet.Identity.EntityFramework;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
-namespace Microsoft.AspNet.Identity.Compat
+namespace Microsoft.AspNetCore.Identity.Compat
 {
     public class IdentityDbContext<TUser> :
         IdentityDbContext<TUser, IdentityRole, string,
@@ -65,7 +65,7 @@ namespace Microsoft.AspNet.Identity.Compat
     }
 
     public class IdentityDbContext<TUser, TRole, TKey, TUserLogin, TUserRole, TUserClaim, TRoleClaim> :
-        EntityFramework.IdentityDbContext<TUser, TRole, TKey, TUserLogin, TUserRole, TUserClaim>
+        Microsoft.EntityFrameworkCore.IdentityDbContext<TUser, TRole, TKey, TUserLogin, TUserRole, TUserClaim>
         where TUser : IdentityUser<TKey, TUserLogin, TUserRole, TUserClaim>
         where TRole : IdentityRole<TKey, TUserRole>
         where TUserLogin : IdentityUserLogin<TKey>

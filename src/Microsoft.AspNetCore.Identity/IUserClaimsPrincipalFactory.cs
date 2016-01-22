@@ -4,7 +4,7 @@
 using System.Security.Claims;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNet.Identity
+namespace Microsoft.AspNetCore.Identity
 {
     /// <summary>
     /// Provides an abstraction for a factory to create a <see cref="ClaimsPrincipal"/> from a user.

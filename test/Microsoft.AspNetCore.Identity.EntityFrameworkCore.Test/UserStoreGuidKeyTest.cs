@@ -5,7 +5,7 @@ using System;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
-namespace Microsoft.AspNet.Identity.EntityFramework.Test
+namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
 {
     public class GuidUser : IdentityUser<Guid>
     {

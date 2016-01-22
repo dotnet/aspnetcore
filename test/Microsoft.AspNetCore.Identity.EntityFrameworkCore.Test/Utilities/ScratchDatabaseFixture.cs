@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNet.Identity.EntityFramework.Test.Utilities;
-using Microsoft.Data.Entity.Internal;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test.Utilities;
+using Microsoft.EntityFrameworkCore.Internal;
 
-namespace Microsoft.AspNet.Identity.EntityFramework.Test
+namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
 {
     public class ScratchDatabaseFixture : IDisposable
     {

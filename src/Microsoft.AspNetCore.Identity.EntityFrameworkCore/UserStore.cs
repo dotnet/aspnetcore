@@ -9,9 +9,9 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Data.Entity;
+using Microsoft.EntityFrameworkCore;
 
-namespace Microsoft.AspNet.Identity.EntityFramework
+namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
 {
     /// <summary>
     /// Creates a new instance of a persistence store for users, using the default implementation

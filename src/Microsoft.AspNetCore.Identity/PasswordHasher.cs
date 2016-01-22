@@ -4,10 +4,10 @@
 using System;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
-using Microsoft.AspNet.Cryptography.KeyDerivation;
+using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNet.Identity
+namespace Microsoft.AspNetCore.Identity
 {
     /// <summary>
     /// Implements the standard Identity password hashing.

@@ -3,7 +3,7 @@
 
 using System.Linq;
 
-namespace Microsoft.AspNet.Identity
+namespace Microsoft.AspNetCore.Identity
 {
     /// <summary>
     /// Provides an abstraction for querying roles in a User store.

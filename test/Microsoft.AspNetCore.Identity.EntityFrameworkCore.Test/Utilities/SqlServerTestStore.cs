@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -7,7 +7,7 @@ using System.Data.SqlClient;
 using System.IO;
 using System.Threading;
 
-namespace Microsoft.AspNet.Identity.EntityFramework.Test.Utilities
+namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test.Utilities
 {
     public class SqlServerTestStore : IDisposable
     {

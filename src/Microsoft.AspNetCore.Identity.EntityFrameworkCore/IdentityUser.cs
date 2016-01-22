@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Microsoft.AspNet.Identity.EntityFramework
+namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
 {
     /// <summary>
     /// The default implementation of <see cref="IdentityUser{TKey}"/> which uses a string as a primary key.

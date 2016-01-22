@@ -5,13 +5,13 @@ using System;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Identity.Test;
-using Microsoft.AspNet.Testing.xunit;
-using Microsoft.AspNet.Testing;
+using Microsoft.AspNetCore.Identity.Test;
+using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
-namespace Microsoft.AspNet.Identity.EntityFramework.Test
+namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
 {
     public class UserStoreTest : UserManagerTestBase<IdentityUser, IdentityRole>, IClassFixture<ScratchDatabaseFixture>
     {

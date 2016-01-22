@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNet.Identity.Test
+namespace Microsoft.AspNetCore.Identity.Test
 {
     public class TestUserLogin : TestUserLogin<string> { }
 

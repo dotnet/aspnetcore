@@ -5,14 +5,14 @@ using System;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Builder.Internal;
-using Microsoft.AspNet.Identity.Test;
-using Microsoft.AspNet.Testing.xunit;
-using Microsoft.Data.Entity;
+using Microsoft.AspNetCore.Builder.Internal;
+using Microsoft.AspNetCore.Identity.Test;
+using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
-namespace Microsoft.AspNet.Identity.EntityFramework.Test
+namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
 {
     public class DefaultPocoTest : IClassFixture<ScratchDatabaseFixture>
     {

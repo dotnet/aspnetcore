@@ -1,7 +1,7 @@
-﻿using System.Security.Claims;
+using System.Security.Claims;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Identity;
-using Microsoft.AspNet.Identity.Compat;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.Compat;
 
 namespace Interop45.Models
 {

@@ -10,8 +10,8 @@
     "url": "git://github.com/aspnet/identity"
   },
   "dependencies": {
-    "Microsoft.AspNet.Identity": "3.0.0-*",
-    "EntityFramework.Relational": "7.0.0-*"
+    "Microsoft.AspNetCore.Identity": "3.0.0-*",
+    "Microsoft.EntityFrameworkCore.Relational": "7.0.0-*"
   },
   "frameworks": {
     "net451": {

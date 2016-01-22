@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNet.Identity
+namespace Microsoft.AspNetCore.Identity
 {
     /// <summary>
     /// Implements <see cref="ILookupNormalizer"/> by converting keys to their upper cased invariant culture representation.

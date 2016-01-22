@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNet.Identity.EntityFramework
+namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
 {
     /// <summary>
     /// Represents a login and its associated provider for a user.

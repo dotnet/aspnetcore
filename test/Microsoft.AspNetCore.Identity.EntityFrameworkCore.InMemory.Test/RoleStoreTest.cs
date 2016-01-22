@@ -3,11 +3,11 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Identity.Test;
+using Microsoft.AspNetCore.Identity.Test;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
-namespace Microsoft.AspNet.Identity.EntityFramework.InMemory.Test
+namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test
 {
     public class RoleStoreTest
     {

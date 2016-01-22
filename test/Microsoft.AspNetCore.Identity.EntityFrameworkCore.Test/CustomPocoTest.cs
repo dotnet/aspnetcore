@@ -4,11 +4,11 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Testing.xunit;
-using Microsoft.Data.Entity;
+using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.EntityFrameworkCore;
 using Xunit;
 
-namespace Microsoft.AspNet.Identity.EntityFramework.Test
+namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
 {
     public class CustomPocoTest : IClassFixture<ScratchDatabaseFixture>
     {

@@ -1,10 +1,10 @@
-﻿// Copyright (c) Microsoft Corporation, Inc. All rights reserved.
+// Copyright (c) Microsoft Corporation, Inc. All rights reserved.
 // Licensed under the MIT License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNet.Identity.EntityFramework;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
-namespace Microsoft.AspNet.Identity.Compat
+namespace Microsoft.AspNetCore.Identity.Compat
 {
     public class IdentityUser : IdentityUser<string, IdentityUserLogin, IdentityUserRole, IdentityUserClaim>
     {
@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.Identity.Compat
     }
 
     public class IdentityUser<TKey, TUserLogin, TUserRole, TUserClaim>
-        : EntityFramework.IdentityUser<TKey, TUserLogin, TUserRole, TUserClaim>
+        : Microsoft.EntityFrameworkCore.IdentityUser<TKey, TUserLogin, TUserRole, TUserClaim>
         where TUserLogin : IdentityUserLogin<TKey>
         where TUserRole : IdentityUserRole<TKey>
         where TUserClaim : IdentityUserClaim<TKey>

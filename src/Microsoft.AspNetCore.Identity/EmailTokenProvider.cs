@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNet.Identity
+namespace Microsoft.AspNetCore.Identity
 {
     /// <summary>
     /// TokenProvider that generates tokens from the user's security stamp and notifies a user via email.

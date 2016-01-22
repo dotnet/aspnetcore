@@ -10,9 +10,9 @@
     "url": "git://github.com/aspnet/identity"
   },
   "dependencies": {
-    "Microsoft.AspNet.Authentication.Cookies": "1.0.0-*",
-    "Microsoft.AspNet.Cryptography.KeyDerivation": "1.0.0-*",
-    "Microsoft.AspNet.Hosting.Abstractions": "1.0.0-*"
+    "Microsoft.AspNetCore.Authentication.Cookies": "1.0.0-*",
+    "Microsoft.AspNetCore.Cryptography.KeyDerivation": "1.0.0-*",
+    "Microsoft.AspNetCore.Hosting.Abstractions": "1.0.0-*"
   },
   "frameworks": {
     "net451": {},

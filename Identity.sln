@@ -1,4 +1,4 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.23107.0
@@ -7,11 +7,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{0F647068-660
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{52D59F18-62D2-4D17-8CF2-BE192445AF8E}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Identity", "src\Microsoft.AspNet.Identity\Microsoft.AspNet.Identity.xproj", "{1729302E-A58E-4652-B639-5B6B68DA2748}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Identity", "src\Microsoft.AspNetCore.Identity\Microsoft.AspNetCore.Identity.xproj", "{1729302E-A58E-4652-B639-5B6B68DA2748}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Identity.Test", "test\Microsoft.AspNet.Identity.Test\Microsoft.AspNet.Identity.Test.xproj", "{2CF3927B-19E4-4866-9BAA-2C131580E7C3}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Identity.Test", "test\Microsoft.AspNetCore.Identity.Test\Microsoft.AspNetCore.Identity.Test.xproj", "{2CF3927B-19E4-4866-9BAA-2C131580E7C3}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Identity.InMemory.Test", "test\Microsoft.AspNet.Identity.InMemory.Test\Microsoft.AspNet.Identity.InMemory.Test.xproj", "{65161409-C4C4-4D63-A73B-231FCFF4D503}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Identity.InMemory.Test", "test\Microsoft.AspNetCore.Identity.InMemory.Test\Microsoft.AspNetCore.Identity.InMemory.Test.xproj", "{65161409-C4C4-4D63-A73B-231FCFF4D503}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{58D94A0E-C2B7-43A7-8826-99ECBB1E0A50}"
 EndProject
@@ -22,11 +22,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		global.json = global.json
 	EndProjectSection
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Identity.EntityFramework.Test", "test\Microsoft.AspNet.Identity.EntityFramework.Test\Microsoft.AspNet.Identity.EntityFramework.Test.xproj", "{37236EA3-915D-46D5-997C-DF513C500E4B}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test", "test\Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test\Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test.xproj", "{37236EA3-915D-46D5-997C-DF513C500E4B}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Identity.EntityFramework.InMemory.Test", "test\Microsoft.AspNet.Identity.EntityFramework.InMemory.Test\Microsoft.AspNet.Identity.EntityFramework.InMemory.Test.xproj", "{EA7EB28F-53B8-4009-9C6B-74DB090CA8DD}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test", "test\Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test\Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test.xproj", "{EA7EB28F-53B8-4009-9C6B-74DB090CA8DD}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Identity.EntityFramework", "src\Microsoft.AspNet.Identity.EntityFramework\Microsoft.AspNet.Identity.EntityFramework.xproj", "{4490894C-3572-4E63-86F1-EE5105CE8A06}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Identity.EntityFrameworkCore", "src\Microsoft.AspNetCore.Identity.EntityFrameworkCore\Microsoft.AspNetCore.Identity.EntityFrameworkCore.xproj", "{4490894C-3572-4E63-86F1-EE5105CE8A06}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Interop45", "samples\Interop45\Interop45.csproj", "{9A46D74F-8347-4821-A888-8DA0844443EF}"
 EndProject

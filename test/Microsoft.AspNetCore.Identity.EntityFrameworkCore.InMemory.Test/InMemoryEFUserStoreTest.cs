@@ -3,10 +3,10 @@
 
 using System;
 using System.Linq.Expressions;
-using Microsoft.AspNet.Identity.Test;
+using Microsoft.AspNetCore.Identity.Test;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNet.Identity.EntityFramework.InMemory.Test
+namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test
 {
     public class InMemoryEFUserStoreTest : UserManagerTestBase<IdentityUser, IdentityRole, string>
     {

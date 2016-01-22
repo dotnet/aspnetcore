@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNet.Identity
+namespace Microsoft.AspNetCore.Identity
 {
     public class TokenProviderDescriptor
     {
