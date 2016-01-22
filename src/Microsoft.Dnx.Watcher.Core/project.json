@@ -5,8 +5,8 @@
     "keyFile": "../../tools/Key.snk"
   },
   "dependencies": {
-    "Microsoft.AspNet.FileProviders.Abstractions": "1.0.0-*",
-    "Microsoft.AspNet.FileProviders.Physical": "1.0.0-*",
+    "Microsoft.Extensions.FileProviders.Abstractions": "1.0.0-*",
+    "Microsoft.Extensions.FileProviders.Physical": "1.0.0-*",
     "Microsoft.Extensions.PlatformAbstractions": "1.0.0-*",
     "Microsoft.Extensions.CompilationAbstractions": "1.0.0-*",
     "Microsoft.Extensions.JsonParser.Sources": {
