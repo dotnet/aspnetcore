@@ -2,10 +2,10 @@
   "version": "1.0.0-*",
 
   "dependencies": {
-    "Microsoft.AspNet.IISPlatformHandler": "1.0.0-*",
-    "Microsoft.AspNet.Server.Kestrel": "1.0.0-*",
-    "Microsoft.AspNet.Server.WebListener": "1.0.0-*",
-    "Microsoft.AspNet.WebUtilities": "1.0.0-*",
+    "Microsoft.AspNetCore.IISPlatformHandler": "1.0.0-*",
+    "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*",
+    "Microsoft.AspNetCore.Server.WebListener": "1.0.0-*",
+    "Microsoft.AspNetCore.WebUtilities": "1.0.0-*",
     "Microsoft.Extensions.Configuration.Json": "1.0.0-*",
     "Microsoft.Extensions.Logging.Console": "1.0.0-*",
     "Microsoft.Net.Http.Headers": "1.0.0-*"

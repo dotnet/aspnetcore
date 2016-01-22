@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Features;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Server;
 
@@ -12,7 +12,7 @@ namespace ServerComparison.TestSites
 {
     /// <summary>
     /// To make runtime to load an environment based startup class, specify the environment by the following ways: 
-    /// 1. Drop a Microsoft.AspNet.Hosting.ini file in the wwwroot folder
+    /// 1. Drop a Microsoft.AspNetCore.Hosting.ini file in the wwwroot folder
     /// 2. Add a setting in the ini file named 'ASPNET_ENV' with value of the format 'Startup[EnvironmentName]'. For example: To load a Startup class named
     /// 'StartupNtlmAuthentication' the value of the env should be 'NtlmAuthentication' (eg. ASPNET_ENV=NtlmAuthentication). Runtime adds a 'Startup' prefix to this and loads 'StartupNtlmAuthentication'. 
     /// If no environment name is specified the default startup class loaded is 'Startup'. 
@@ -20,7 +20,7 @@ namespace ServerComparison.TestSites
     /// 1. Set the environment variable named SET ASPNET_ENV=NtlmAuthentication
     /// 2. For selfhost based servers pass in a command line variable named --env with this value. Eg:
     /// "commands": {
-    ///    "web": "Microsoft.AspNet.Hosting --server Microsoft.AspNet.Server.WebListener --server.urls http://localhost:5002 --ASPNET_ENV NtlmAuthentication",
+    ///    "web": "Microsoft.AspNetCore.Hosting --server Microsoft.AspNetCore.Server.WebListener --server.urls http://localhost:5002 --ASPNET_ENV NtlmAuthentication",
     ///  },
     /// </summary>
     public class StartupNtlmAuthentication
@@ -81,7 +81,7 @@ namespace ServerComparison.TestSites
 
                 if (context.Request.Path.Equals("/Forbidden"))
                 {
-                    return context.Authentication.ForbidAsync(Microsoft.AspNet.Http.Authentication.AuthenticationManager.AutomaticScheme);
+                    return context.Authentication.ForbidAsync(Microsoft.AspNetCore.Http.Authentication.AuthenticationManager.AutomaticScheme);
                 }
 
                 if (context.Request.Path.Equals("/AutoForbid"))
