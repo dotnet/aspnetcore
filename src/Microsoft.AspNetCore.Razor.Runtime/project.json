@@ -1,6 +1,6 @@
 {
   "description": "Runtime components for rendering Razor pages.",
-  "version": "4.0.0-*",
+  "version": "1.0.0-*",
   "compilationOptions": {
     "allowUnsafe": true,
     "keyFile": "../../tools/Key.snk",
@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "Microsoft.AspNetCore.Html.Abstractions": "1.0.0-*",
-    "Microsoft.AspNetCore.Razor": "4.0.0-*",
+    "Microsoft.AspNetCore.Razor": "1.0.0-*",
     "Microsoft.Extensions.ClosedGenericMatcher.Sources": {
       "type": "build",
       "version": "1.0.0-*"

@@ -1,6 +1,6 @@
 {
   "description": "Razor is a markup syntax for adding server-side logic to web pages. This package contains the Razor parser and code generation infrastructure.",
-  "version": "4.0.0-*",
+  "version": "1.0.0-*",
   "compilationOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk"
@@ -16,7 +16,7 @@
     }
   },
   "frameworks": {
-    "net451": { },
+    "net451": {},
     "dotnet5.4": {
       "dependencies": {
         "System.IO.FileSystem": "4.0.1-*",

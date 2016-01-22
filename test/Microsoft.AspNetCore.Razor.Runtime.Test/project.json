@@ -5,9 +5,9 @@
     "keyFile": "../../tools/Key.snk"
   },
   "dependencies": {
-    "Microsoft.AspNetCore.Razor.Runtime": "4.0.0-*",
+    "Microsoft.AspNetCore.Razor.Runtime": "1.0.0-*",
     "Microsoft.AspNetCore.Razor.Test.Sources": {
-      "version": "4.0.0-*",
+      "version": "1.0.0-*",
       "type": "build"
     },
     "Microsoft.AspNetCore.Testing": "1.0.0-*",

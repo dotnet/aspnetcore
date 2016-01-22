@@ -2,9 +2,9 @@
   "version": "1.0.0",
   "resource": "TestFiles/**/*",
   "dependencies": {
-    "Microsoft.AspNetCore.Razor": "4.0.0-*",
+    "Microsoft.AspNetCore.Razor": "1.0.0-*",
     "Microsoft.AspNetCore.Razor.Test.Sources": {
-      "version": "4.0.0-*",
+      "version": "1.0.0-*",
       "type": "build"
     },
     "Microsoft.AspNetCore.Testing": "1.0.0-*",
@@ -33,7 +33,9 @@
     }
   },
   "compilationOptions": {
-    "define": [ "__RemoveThisBitTo__GENERATE_BASELINES" ],
+    "define": [
+      "__RemoveThisBitTo__GENERATE_BASELINES"
+    ],
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk"
   }
