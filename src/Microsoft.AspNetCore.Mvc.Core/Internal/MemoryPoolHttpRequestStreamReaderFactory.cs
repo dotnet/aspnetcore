@@ -5,9 +5,9 @@ using System;
 using System.Buffers;
 using System.IO;
 using System.Text;
-using Microsoft.AspNet.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 
-namespace Microsoft.AspNet.Mvc.Internal
+namespace Microsoft.AspNetCore.Mvc.Internal
 {
     /// <summary>
     /// An <see cref="IHttpRequestStreamReaderFactory"/> that uses pooled buffers.

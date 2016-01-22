@@ -2,14 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNet.Mvc.Core;
-using Microsoft.AspNet.Mvc.Infrastructure;
-using Microsoft.AspNet.Mvc.Internal;
-using Microsoft.AspNet.Mvc.Routing;
-using Microsoft.AspNet.Routing;
+using Microsoft.AspNetCore.Mvc.Core;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.Internal;
+using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNet.Builder
+namespace Microsoft.AspNetCore.Builder
 {
     /// <summary>
     /// Extension methods for <see cref="IApplicationBuilder"/> to add MVC to the request execution pipeline.

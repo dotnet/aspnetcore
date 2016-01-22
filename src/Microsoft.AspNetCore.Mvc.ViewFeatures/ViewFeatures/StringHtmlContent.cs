@@ -5,9 +5,9 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Text.Encodings.Web;
-using Microsoft.AspNet.Html;
+using Microsoft.AspNetCore.Html;
 
-namespace Microsoft.AspNet.Mvc.ViewFeatures
+namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 {
     /// <summary>
     /// String content which gets encoded when written.

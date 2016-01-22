@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNet.Mvc.ApplicationModels
+namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 {
     /// <summary>
     /// A model for ApiExplorer properties associated with a controller or action.

@@ -2,11 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNet.Razor.Chunks;
-using Microsoft.AspNet.Razor.CodeGenerators;
-using Microsoft.AspNet.Razor.CodeGenerators.Visitors;
+using Microsoft.AspNetCore.Razor.Chunks;
+using Microsoft.AspNetCore.Razor.CodeGenerators;
+using Microsoft.AspNetCore.Razor.CodeGenerators.Visitors;
 
-namespace Microsoft.AspNet.Mvc.Razor
+namespace Microsoft.AspNetCore.Mvc.Razor
 {
     public abstract class MvcCSharpChunkVisitor : CodeVisitor<CSharpCodeWriter>
     {

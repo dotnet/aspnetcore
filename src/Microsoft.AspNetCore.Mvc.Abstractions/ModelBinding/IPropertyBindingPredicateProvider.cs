@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNet.Mvc.ModelBinding
+namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
     /// <summary>
     /// Provides a predicate which can determines which model properties should be bound by model binding.

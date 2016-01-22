@@ -5,16 +5,16 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using Microsoft.AspNet.Razor;
-using Microsoft.AspNet.Razor.Chunks.Generators;
-using Microsoft.AspNet.Razor.Editor;
-using Microsoft.AspNet.Razor.Generator;
-using Microsoft.AspNet.Razor.Parser.SyntaxTree;
-using Microsoft.AspNet.Razor.Text;
-using Microsoft.AspNet.Razor.Tokenizer;
-using Microsoft.AspNet.Razor.Tokenizer.Symbols;
+using Microsoft.AspNetCore.Razor;
+using Microsoft.AspNetCore.Razor.Chunks.Generators;
+using Microsoft.AspNetCore.Razor.Editor;
+using Microsoft.AspNetCore.Razor.Generator;
+using Microsoft.AspNetCore.Razor.Parser.SyntaxTree;
+using Microsoft.AspNetCore.Razor.Text;
+using Microsoft.AspNetCore.Razor.Tokenizer;
+using Microsoft.AspNetCore.Razor.Tokenizer.Symbols;
 
-namespace Microsoft.AspNet.Mvc.Razor.Host.Test
+namespace Microsoft.AspNetCore.Mvc.Razor.Host.Test
 {
     public static class SpanFactoryExtensions
     {

@@ -3,11 +3,11 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNet.Mvc.ModelBinding.Validation;
-using Microsoft.AspNet.Mvc.ViewEngines;
-using Microsoft.AspNet.Mvc.ViewFeatures;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using Microsoft.AspNetCore.Mvc.ViewEngines;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 
-namespace Microsoft.AspNet.Mvc
+namespace Microsoft.AspNetCore.Mvc
 {
     /// <summary>
     /// Provides programmatic configuration for views in the MVC framework.

@@ -3,10 +3,10 @@
 
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Mvc.ModelBinding;
-using Microsoft.AspNet.Mvc.ModelBinding.Validation;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
-namespace Microsoft.AspNet.Mvc.WebApiCompatShim
+namespace Microsoft.AspNetCore.Mvc.WebApiCompatShim
 {
     /// <summary>
     /// <see cref="IModelBinder"/> implementation to bind models of type <see cref="HttpRequestMessage"/>.

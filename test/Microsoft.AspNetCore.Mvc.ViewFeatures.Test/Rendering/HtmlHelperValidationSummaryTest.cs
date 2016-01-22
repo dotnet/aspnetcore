@@ -4,11 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using Microsoft.AspNet.Mvc.ModelBinding;
-using Microsoft.AspNet.Mvc.TestCommon;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.TestCommon;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.Rendering
+namespace Microsoft.AspNetCore.Mvc.Rendering
 {
     public class HtmlHelperValidationSummaryTest
     {

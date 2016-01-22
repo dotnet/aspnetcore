@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Net.Http.Formatting;
 using System.Text;
 
-namespace Microsoft.AspNet.Mvc.WebApiCompatShim
+namespace Microsoft.AspNetCore.Mvc.WebApiCompatShim
 {
     public static class FormDataCollectionExtensions
     {

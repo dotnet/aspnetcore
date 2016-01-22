@@ -2,11 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNet.Mvc.Core;
-using Microsoft.AspNet.Mvc.Internal;
-using Microsoft.AspNet.Mvc.ModelBinding.Metadata;
+using Microsoft.AspNetCore.Mvc.Core;
+using Microsoft.AspNetCore.Mvc.Internal;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 
-namespace Microsoft.AspNet.Mvc.ModelBinding
+namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
     public class EmptyModelMetadataProvider : DefaultModelMetadataProvider
     {

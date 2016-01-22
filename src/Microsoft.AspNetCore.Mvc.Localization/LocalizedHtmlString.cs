@@ -1,13 +1,13 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.IO;
 using System.Text;
 using System.Text.Encodings.Web;
-using Microsoft.AspNet.Html;
+using Microsoft.AspNetCore.Html;
 
-namespace Microsoft.AspNet.Mvc.Localization
+namespace Microsoft.AspNetCore.Mvc.Localization
 {
     /// <summary>
     /// An <see cref="IHtmlContent"/> with localized content.

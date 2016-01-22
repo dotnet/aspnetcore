@@ -3,11 +3,11 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNet.Mvc.Rendering;
-using Microsoft.AspNet.Mvc.ViewFeatures;
-using Microsoft.AspNet.Razor.TagHelpers;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.AspNetCore.Razor.TagHelpers;
 
-namespace Microsoft.AspNet.Mvc.TagHelpers
+namespace Microsoft.AspNetCore.Mvc.TagHelpers
 {
     /// <summary>
     /// <see cref="ITagHelper"/> implementation targeting &lt;a&gt; elements.

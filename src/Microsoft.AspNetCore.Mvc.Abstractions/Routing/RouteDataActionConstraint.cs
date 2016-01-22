@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNet.Mvc.Routing
+namespace Microsoft.AspNetCore.Mvc.Routing
 {
     /// <summary>
     /// Constraints an action to a route key and value.

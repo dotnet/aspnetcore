@@ -4,7 +4,7 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNet.Mvc.Internal
+namespace Microsoft.AspNetCore.Mvc.Internal
 {
     public class MvcBuilder : IMvcBuilder
     {

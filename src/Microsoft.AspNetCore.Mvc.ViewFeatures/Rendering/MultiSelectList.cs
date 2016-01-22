@@ -6,9 +6,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using Microsoft.AspNet.Mvc.ViewFeatures;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 
-namespace Microsoft.AspNet.Mvc.Rendering
+namespace Microsoft.AspNetCore.Mvc.Rendering
 {
     /// <summary>
     /// Represents a list that lets users select multiple items.

@@ -4,15 +4,15 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNet.Mvc.Razor.Host;
-using Microsoft.AspNet.Razor;
-using Microsoft.AspNet.Razor.Chunks;
-using Microsoft.AspNet.Razor.Compilation.TagHelpers;
-using Microsoft.AspNet.Razor.Parser;
-using Microsoft.AspNet.Razor.Parser.SyntaxTree;
-using Microsoft.AspNet.Razor.Parser.TagHelpers;
+using Microsoft.AspNetCore.Mvc.Razor.Host;
+using Microsoft.AspNetCore.Razor;
+using Microsoft.AspNetCore.Razor.Chunks;
+using Microsoft.AspNetCore.Razor.Compilation.TagHelpers;
+using Microsoft.AspNetCore.Razor.Parser;
+using Microsoft.AspNetCore.Razor.Parser.SyntaxTree;
+using Microsoft.AspNetCore.Razor.Parser.TagHelpers;
 
-namespace Microsoft.AspNet.Mvc.Razor
+namespace Microsoft.AspNetCore.Mvc.Razor
 {
     /// <summary>
     /// A subtype of <see cref="RazorParser"/> that <see cref="MvcRazorHost"/> uses to support inheritance of tag

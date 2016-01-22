@@ -4,7 +4,7 @@
 using System;
 using Microsoft.CodeAnalysis.CSharp;
 
-namespace Microsoft.AspNet.Mvc.Razor.Compilation
+namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
 {
     /// <summary>
     /// Context object used to pass information about the current Razor page compilation.

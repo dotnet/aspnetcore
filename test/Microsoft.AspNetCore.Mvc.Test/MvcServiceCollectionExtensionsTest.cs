@@ -5,29 +5,29 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Microsoft.AspNet.Mvc.Abstractions;
-using Microsoft.AspNet.Mvc.ActionConstraints;
-using Microsoft.AspNet.Mvc.ApiExplorer;
-using Microsoft.AspNet.Mvc.ApplicationModels;
-using Microsoft.AspNet.Mvc.Controllers;
-using Microsoft.AspNet.Mvc.Cors;
-using Microsoft.AspNet.Mvc.Cors.Internal;
-using Microsoft.AspNet.Mvc.DataAnnotations.Internal;
-using Microsoft.AspNet.Mvc.Filters;
-using Microsoft.AspNet.Mvc.Formatters.Json.Internal;
-using Microsoft.AspNet.Mvc.Internal;
-using Microsoft.AspNet.Mvc.Razor;
-using Microsoft.AspNet.Mvc.Razor.Internal;
-using Microsoft.AspNet.Mvc.ViewFeatures;
-using Microsoft.AspNet.Mvc.ViewFeatures.Internal;
-using Microsoft.AspNet.Routing;
+using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.ActionConstraints;
+using Microsoft.AspNetCore.Mvc.ApiExplorer;
+using Microsoft.AspNetCore.Mvc.ApplicationModels;
+using Microsoft.AspNetCore.Mvc.Controllers;
+using Microsoft.AspNetCore.Mvc.Cors;
+using Microsoft.AspNetCore.Mvc.Cors.Internal;
+using Microsoft.AspNetCore.Mvc.DataAnnotations.Internal;
+using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Mvc.Formatters.Json.Internal;
+using Microsoft.AspNetCore.Mvc.Internal;
+using Microsoft.AspNetCore.Mvc.Razor;
+using Microsoft.AspNetCore.Mvc.Razor.Internal;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc
+namespace Microsoft.AspNetCore.Mvc
 {
     public class MvcServiceCollectionExtensionsTest
     {

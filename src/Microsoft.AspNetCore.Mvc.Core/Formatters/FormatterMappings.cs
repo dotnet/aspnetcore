@@ -3,11 +3,11 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNet.Mvc.Core;
+using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNet.Mvc.Formatters
+namespace Microsoft.AspNetCore.Mvc.Formatters
 {
     /// <summary>
     /// Used to specify mapping between the URL Format and corresponding media type.

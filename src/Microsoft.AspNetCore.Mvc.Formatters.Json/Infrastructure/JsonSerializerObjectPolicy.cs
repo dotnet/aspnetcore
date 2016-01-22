@@ -1,10 +1,10 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.Extensions.ObjectPool;
 using Newtonsoft.Json;
 
-namespace Microsoft.AspNet.Mvc.Formatters.Internal
+namespace Microsoft.AspNetCore.Mvc.Formatters.Internal
 {
     /// <summary>
     /// <see cref="IPooledObjectPolicy{T}"/> for <see cref="JsonSerializer"/>.

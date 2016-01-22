@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using Microsoft.AspNet.Routing;
+using Microsoft.AspNetCore.Routing;
 
-namespace Microsoft.AspNet.Mvc.ApiExplorer
+namespace Microsoft.AspNetCore.Mvc.ApiExplorer
 {
     /// <summary>
     /// A metadata description of routing information for an <see cref="ApiParameterDescription"/>.

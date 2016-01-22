@@ -2,11 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNet.Mvc.Razor;
-using Microsoft.AspNet.Razor.Chunks.Generators;
-using Microsoft.AspNet.Razor.Parser.SyntaxTree;
+using Microsoft.AspNetCore.Mvc.Razor;
+using Microsoft.AspNetCore.Razor.Chunks.Generators;
+using Microsoft.AspNetCore.Razor.Parser.SyntaxTree;
 
-namespace Microsoft.AspNet.Razor.Generator
+namespace Microsoft.AspNetCore.Razor.Generator
 {
     public class ModelChunkGenerator : SpanChunkGenerator
     {

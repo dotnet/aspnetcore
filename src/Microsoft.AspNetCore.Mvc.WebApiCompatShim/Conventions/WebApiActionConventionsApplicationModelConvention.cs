@@ -4,11 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNet.Mvc.ApplicationModels;
-using Microsoft.AspNet.Mvc.Infrastructure;
-using Microsoft.AspNet.Mvc.Routing;
+using Microsoft.AspNetCore.Mvc.ApplicationModels;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.Routing;
 
-namespace Microsoft.AspNet.Mvc.WebApiCompatShim
+namespace Microsoft.AspNetCore.Mvc.WebApiCompatShim
 {
     public class WebApiActionConventionsApplicationModelConvention : IControllerModelConvention
     {

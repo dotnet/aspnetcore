@@ -6,7 +6,7 @@ using System.Linq;
 using System.Reflection;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
+namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
 {
     public class DefaultModelMetadataProviderTest
     {

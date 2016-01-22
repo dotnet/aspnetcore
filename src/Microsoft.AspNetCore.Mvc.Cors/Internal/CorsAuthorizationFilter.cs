@@ -5,12 +5,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Cors.Infrastructure;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Mvc.Filters;
+using Microsoft.AspNetCore.Cors.Infrastructure;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.AspNet.Mvc.Cors.Internal
+namespace Microsoft.AspNetCore.Mvc.Cors.Internal
 {
     /// <summary>
     /// A filter which applies the given <see cref="CorsPolicy"/> and adds appropriate response headers.

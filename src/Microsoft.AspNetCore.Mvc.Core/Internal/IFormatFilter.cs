@@ -1,9 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNet.Mvc.Filters;
+using Microsoft.AspNetCore.Mvc.Filters;
 
-namespace Microsoft.AspNet.Mvc.Formatters.Internal
+namespace Microsoft.AspNetCore.Mvc.Formatters.Internal
 {
     /// <summary>
     ///  A filter which produces a desired content type for the current request. 

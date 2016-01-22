@@ -3,21 +3,21 @@
 
 using System;
 using System.IO;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Internal;
-using Microsoft.AspNet.Mvc.Abstractions;
-using Microsoft.AspNet.Mvc.Internal;
-using Microsoft.AspNet.Mvc.ModelBinding;
-using Microsoft.AspNet.Mvc.Rendering;
-using Microsoft.AspNet.Mvc.ViewEngines;
-using Microsoft.AspNet.Mvc.ViewFeatures;
-using Microsoft.AspNet.Razor.TagHelpers;
-using Microsoft.AspNet.Routing;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Internal;
+using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.Internal;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.ViewEngines;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.AspNetCore.Razor.TagHelpers;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.Razor
+namespace Microsoft.AspNetCore.Mvc.Razor
 {
     public class DefaultTagHelperActivatorTest
     {

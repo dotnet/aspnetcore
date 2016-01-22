@@ -4,12 +4,12 @@
 using System;
 using System.Globalization;
 using System.IO;
-using Microsoft.AspNet.Html;
-using Microsoft.AspNet.Mvc.Formatters;
-using Microsoft.AspNet.Mvc.Rendering;
+using Microsoft.AspNetCore.Html;
+using Microsoft.AspNetCore.Mvc.Formatters;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Newtonsoft.Json;
 
-namespace Microsoft.AspNet.Mvc.ViewFeatures
+namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 {
     /// <summary>
     /// Default implementation of <see cref="IJsonHelper"/>.

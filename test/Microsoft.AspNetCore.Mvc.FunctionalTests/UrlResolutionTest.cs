@@ -6,7 +6,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.FunctionalTests
+namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
     public class UrlResolutionTest :
         IClassFixture<MvcTestFixture<RazorWebSite.Startup>>,

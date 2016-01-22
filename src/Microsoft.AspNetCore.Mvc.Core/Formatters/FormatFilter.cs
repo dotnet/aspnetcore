@@ -3,12 +3,12 @@
 
 using System;
 using System.Linq;
-using Microsoft.AspNet.Mvc.ApiExplorer;
-using Microsoft.AspNet.Mvc.Filters;
-using Microsoft.AspNet.Mvc.Formatters.Internal;
+using Microsoft.AspNetCore.Mvc.ApiExplorer;
+using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Mvc.Formatters.Internal;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNet.Mvc.Formatters
+namespace Microsoft.AspNetCore.Mvc.Formatters
 {
     /// <summary>
     /// A filter which will use the format value in the route data or query string to set the content type on an

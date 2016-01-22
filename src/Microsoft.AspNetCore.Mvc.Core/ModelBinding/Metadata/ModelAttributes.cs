@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-namespace Microsoft.AspNet.Mvc.ModelBinding
+namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
     /// <summary>
     /// Provides access to the  combined list of attributes associated a <see cref="Type"/> or property.

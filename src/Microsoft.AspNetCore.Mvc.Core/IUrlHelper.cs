@@ -1,9 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNet.Mvc.Routing;
+using Microsoft.AspNetCore.Mvc.Routing;
 
-namespace Microsoft.AspNet.Mvc
+namespace Microsoft.AspNetCore.Mvc
 {
     /// <summary>
     /// Defines the contract for the helper to build URLs for ASP.NET MVC within an application.

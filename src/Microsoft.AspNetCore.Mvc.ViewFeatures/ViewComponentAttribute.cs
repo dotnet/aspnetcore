@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNet.Mvc
+namespace Microsoft.AspNetCore.Mvc
 {
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
     public class ViewComponentAttribute : Attribute

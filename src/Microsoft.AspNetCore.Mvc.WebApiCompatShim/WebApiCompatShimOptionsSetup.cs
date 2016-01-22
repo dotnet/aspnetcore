@@ -3,11 +3,11 @@
 
 using System.Net.Http;
 using System.Net.Http.Formatting;
-using Microsoft.AspNet.Mvc.ModelBinding.Validation;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNet.Mvc.WebApiCompatShim
+namespace Microsoft.AspNetCore.Mvc.WebApiCompatShim
 {
     public class WebApiCompatShimOptionsSetup
         : IConfigureOptions<MvcOptions>, IConfigureOptions<WebApiCompatShimOptions>

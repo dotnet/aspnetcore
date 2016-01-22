@@ -4,9 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNet.Mvc.Routing;
+using Microsoft.AspNetCore.Mvc.Routing;
 
-namespace Microsoft.AspNet.Mvc
+namespace Microsoft.AspNetCore.Mvc
 {
     /// <summary>
     /// Specifies what HTTP methods an action supports.

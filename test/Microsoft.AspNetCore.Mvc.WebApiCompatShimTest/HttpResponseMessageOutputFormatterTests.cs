@@ -6,16 +6,16 @@ using System.IO;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Internal;
-using Microsoft.AspNet.Mvc.Formatters;
-using Microsoft.AspNet.Mvc.WebApiCompatShim;
-using Microsoft.AspNet.Testing.xunit;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Internal;
+using Microsoft.AspNetCore.Mvc.Formatters;
+using Microsoft.AspNetCore.Mvc.WebApiCompatShim;
+using Microsoft.AspNetCore.Testing.xunit;
 using Moq;
 using Moq.Protected;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.WebApiCompatShimTest
+namespace Microsoft.AspNetCore.Mvc.WebApiCompatShimTest
 {
     public class HttpResponseMessageOutputFormatterTests
     {

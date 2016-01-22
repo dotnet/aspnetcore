@@ -3,8 +3,8 @@
 
 using System.Collections.Generic;
 using System.Reflection;
-using Microsoft.AspNet.Mvc;
-using Microsoft.AspNet.Mvc.ApplicationModels;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.Extensions.Internal;
 using Xunit;
 

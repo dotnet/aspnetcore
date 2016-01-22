@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http;
+using Microsoft.AspNetCore.Http;
 
-namespace Microsoft.AspNet.Mvc.Formatters
+namespace Microsoft.AspNetCore.Mvc.Formatters
 {
     /// <summary>
     /// A formatter which selects itself when content-negotiation has failed and writes a 406 Not Acceptable response.

@@ -3,11 +3,11 @@
 
 using System;
 using System.Collections.Concurrent;
-using Microsoft.AspNet.Mvc.Controllers;
-using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.Controllers;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Internal;
 
-namespace Microsoft.AspNet.Mvc.ViewFeatures
+namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 {
     public class ViewDataDictionaryControllerPropertyActivator : IControllerPropertyActivator
     {

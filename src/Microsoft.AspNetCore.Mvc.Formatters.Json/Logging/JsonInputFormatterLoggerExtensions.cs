@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNet.Mvc.Formatters.Json.Logging
+namespace Microsoft.AspNetCore.Mvc.Formatters.Json.Logging
 {
     internal static class JsonInputFormatterLoggerExtensions
     {

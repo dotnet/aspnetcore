@@ -5,13 +5,13 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Mvc.ApiExplorer;
-using Microsoft.AspNet.Mvc.Core;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.ApiExplorer;
+using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNet.Mvc.Formatters
+namespace Microsoft.AspNetCore.Mvc.Formatters
 {
     /// <summary>
     /// Writes an object to the output stream.
@@ -251,7 +251,7 @@ namespace Microsoft.AspNet.Mvc.Formatters
         }
 
         /// <summary>
-        /// Sets the headers on <see cref="Microsoft.AspNet.Http.HttpResponse"/> object.
+        /// Sets the headers on <see cref="Microsoft.AspNetCore.Http.HttpResponse"/> object.
         /// </summary>
         /// <param name="context">The formatter context associated with the call.</param>
         public virtual void WriteResponseHeaders(OutputFormatterWriteContext context)

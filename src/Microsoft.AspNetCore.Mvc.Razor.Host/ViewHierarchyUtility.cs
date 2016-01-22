@@ -7,7 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace Microsoft.AspNet.Mvc.Razor
+namespace Microsoft.AspNetCore.Mvc.Razor
 {
     /// <summary>
     /// Contains methods to locate <c>_ViewStart.cshtml</c> and <c>_ViewImports.cshtml</c>

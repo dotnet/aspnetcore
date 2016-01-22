@@ -3,7 +3,7 @@
 
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNet.Mvc.Filters
+namespace Microsoft.AspNetCore.Mvc.Filters
 {
     public interface IAsyncAuthorizationFilter : IFilterMetadata
     {

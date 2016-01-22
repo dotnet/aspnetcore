@@ -5,7 +5,7 @@ using System;
 using System.Collections.Concurrent;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNet.Mvc.Internal
+namespace Microsoft.AspNetCore.Mvc.Internal
 {
     /// <summary>
     /// Caches <see cref="ObjectFactory"/> instances produced by 

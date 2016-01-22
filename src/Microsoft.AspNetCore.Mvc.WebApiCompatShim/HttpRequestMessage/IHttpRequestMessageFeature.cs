@@ -3,7 +3,7 @@
 
 using System.Net.Http;
 
-namespace Microsoft.AspNet.Mvc.WebApiCompatShim
+namespace Microsoft.AspNetCore.Mvc.WebApiCompatShim
 {
     public interface IHttpRequestMessageFeature
     {

@@ -8,20 +8,20 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http.Internal;
-using Microsoft.AspNet.Mvc.Abstractions;
-using Microsoft.AspNet.Mvc.ModelBinding;
-using Microsoft.AspNet.Mvc.Rendering;
-using Microsoft.AspNet.Mvc.ViewComponents;
-using Microsoft.AspNet.Mvc.ViewEngines;
-using Microsoft.AspNet.Mvc.ViewFeatures;
-using Microsoft.AspNet.Routing;
+using Microsoft.AspNetCore.Http.Internal;
+using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.ViewComponents;
+using Microsoft.AspNetCore.Mvc.ViewEngines;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.WebEncoders.Testing;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc
+namespace Microsoft.AspNetCore.Mvc
 {
     public class ViewViewComponentResultTest
     {
@@ -510,7 +510,7 @@ namespace Microsoft.AspNet.Mvc
             ViewDataDictionary viewData,
             object diagnosticListener = null)
         {
-            var diagnosticSource = new DiagnosticListener("Microsoft.AspNet");
+            var diagnosticSource = new DiagnosticListener("Microsoft.AspNetCore");
             if (diagnosticListener == null)
             {
                 diagnosticListener = new TestDiagnosticListener();

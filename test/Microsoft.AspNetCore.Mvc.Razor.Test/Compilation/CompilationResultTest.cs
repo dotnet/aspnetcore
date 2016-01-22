@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Linq;
-using Microsoft.AspNet.Diagnostics;
+using Microsoft.AspNetCore.Diagnostics;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.Razor.Compilation
+namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
 {
     public class CompilationResultTest
     {

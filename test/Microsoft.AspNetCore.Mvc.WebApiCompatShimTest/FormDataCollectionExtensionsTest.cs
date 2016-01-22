@@ -5,7 +5,7 @@ using System.Linq;
 using System.Net.Http.Formatting;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.WebApiCompatShim
+namespace Microsoft.AspNetCore.Mvc.WebApiCompatShim
 {
     public class FormDataCollectionExtensionsTest
     {

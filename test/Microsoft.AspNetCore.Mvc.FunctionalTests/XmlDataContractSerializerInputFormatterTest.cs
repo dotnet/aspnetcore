@@ -10,11 +10,11 @@ using System.Net.Http.Headers;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Testing.xunit;
+using Microsoft.AspNetCore.Testing.xunit;
 using XmlFormattersWebSite;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.FunctionalTests
+namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
     public class XmlDataContractSerializerInputFormatterTest : IClassFixture<MvcTestFixture<XmlFormattersWebSite.Startup>>
     {

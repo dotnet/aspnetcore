@@ -4,7 +4,7 @@
 using System;
 using System.Collections;
 
-namespace Microsoft.AspNet.Mvc.Rendering
+namespace Microsoft.AspNetCore.Mvc.Rendering
 {
     /// <summary>
     /// Represents a list that lets users select a single item.

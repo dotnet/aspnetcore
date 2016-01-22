@@ -3,7 +3,7 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.AspNet.Mvc.ViewComponents
+namespace Microsoft.AspNetCore.Mvc.ViewComponents
 {
     /// <summary>
     /// Discovers the view components in the application.

@@ -3,13 +3,13 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNet.Razor;
-using Microsoft.AspNet.Razor.Chunks.Generators;
-using Microsoft.AspNet.Razor.Editor;
-using Microsoft.AspNet.Razor.Parser.SyntaxTree;
-using Microsoft.AspNet.Razor.Tokenizer.Symbols;
+using Microsoft.AspNetCore.Razor;
+using Microsoft.AspNetCore.Razor.Chunks.Generators;
+using Microsoft.AspNetCore.Razor.Editor;
+using Microsoft.AspNetCore.Razor.Parser.SyntaxTree;
+using Microsoft.AspNetCore.Razor.Tokenizer.Symbols;
 
-namespace Microsoft.AspNet.Mvc.Razor
+namespace Microsoft.AspNetCore.Mvc.Razor
 {
     public class SpanConstructor
     {

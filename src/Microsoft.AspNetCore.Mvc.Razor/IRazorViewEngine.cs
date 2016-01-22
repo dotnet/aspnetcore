@@ -1,9 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNet.Mvc.ViewEngines;
+using Microsoft.AspNetCore.Mvc.ViewEngines;
 
-namespace Microsoft.AspNet.Mvc.Razor
+namespace Microsoft.AspNetCore.Mvc.Razor
 {
     /// <summary>
     /// An <see cref="IViewEngine"/> used to render pages that use the Razor syntax.

@@ -4,10 +4,10 @@
 using System;
 using System.Globalization;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.Internal
+namespace Microsoft.AspNetCore.Mvc.Internal
 {
     public class ElementalValueProviderTest
     {

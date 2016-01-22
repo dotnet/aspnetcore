@@ -3,7 +3,7 @@
 
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNet.Mvc.Formatters
+namespace Microsoft.AspNetCore.Mvc.Formatters
 {
     /// <summary>
     /// Writes an object to the output stream.

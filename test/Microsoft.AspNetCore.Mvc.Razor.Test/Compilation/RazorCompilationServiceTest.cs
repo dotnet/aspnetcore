@@ -3,18 +3,18 @@
 
 using System.IO;
 using System.Linq;
-using Microsoft.AspNet.Razor;
-using Microsoft.AspNet.Razor.Chunks;
-using Microsoft.AspNet.Razor.CodeGenerators;
-using Microsoft.AspNet.Razor.Compilation.TagHelpers;
-using Microsoft.AspNet.Razor.Parser.SyntaxTree;
+using Microsoft.AspNetCore.Razor;
+using Microsoft.AspNetCore.Razor.Chunks;
+using Microsoft.AspNetCore.Razor.CodeGenerators;
+using Microsoft.AspNetCore.Razor.Compilation.TagHelpers;
+using Microsoft.AspNetCore.Razor.Parser.SyntaxTree;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.Razor.Compilation
+namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
 {
     public class RazorCompilationServiceTest
     {

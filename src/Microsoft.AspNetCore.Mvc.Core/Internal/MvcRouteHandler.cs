@@ -4,17 +4,17 @@
 using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Mvc.Abstractions;
-using Microsoft.AspNet.Mvc.Core;
-using Microsoft.AspNet.Mvc.Infrastructure;
-using Microsoft.AspNet.Mvc.Logging;
-using Microsoft.AspNet.Routing;
-using Microsoft.AspNet.Routing.Tree;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.Core;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.Logging;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Routing.Tree;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNet.Mvc.Internal
+namespace Microsoft.AspNetCore.Mvc.Internal
 {
     public class MvcRouteHandler : IRouter
     {

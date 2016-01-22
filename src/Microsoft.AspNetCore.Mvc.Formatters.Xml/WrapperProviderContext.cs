@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNet.Mvc.Formatters.Xml
+namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
 {
     /// <summary>
     /// The context used by an <see cref="IWrapperProvider"/> to wrap or un-wrap types.

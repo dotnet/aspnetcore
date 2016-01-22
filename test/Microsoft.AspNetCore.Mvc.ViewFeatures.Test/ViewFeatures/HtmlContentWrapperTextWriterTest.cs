@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -8,11 +8,11 @@ using System.Linq;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Html;
-using Microsoft.AspNet.Mvc.Rendering;
+using Microsoft.AspNetCore.Html;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.ViewFeatures
+namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 {
     public class HtmlContentWrapperTextWriterTest
     {

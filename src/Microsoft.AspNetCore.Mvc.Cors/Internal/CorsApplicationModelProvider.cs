@@ -3,10 +3,10 @@
 
 using System;
 using System.Linq;
-using Microsoft.AspNet.Cors.Infrastructure;
-using Microsoft.AspNet.Mvc.ApplicationModels;
+using Microsoft.AspNetCore.Cors.Infrastructure;
+using Microsoft.AspNetCore.Mvc.ApplicationModels;
 
-namespace Microsoft.AspNet.Mvc.Cors.Internal
+namespace Microsoft.AspNetCore.Mvc.Cors.Internal
 {
     public class CorsApplicationModelProvider : IApplicationModelProvider
     {

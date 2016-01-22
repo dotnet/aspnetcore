@@ -5,7 +5,7 @@ using System;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.ViewComponents
+namespace Microsoft.AspNetCore.Mvc.ViewComponents
 {
     public class DefaultViewComponentActivatorTests
     {

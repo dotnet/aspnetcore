@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using Microsoft.Extensions.Internal;
 
-namespace Microsoft.AspNet.Mvc.Formatters.Xml
+namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
 {
     /// <summary>
     /// Provides a <see cref="IWrapperProvider"/> for interface types which implement

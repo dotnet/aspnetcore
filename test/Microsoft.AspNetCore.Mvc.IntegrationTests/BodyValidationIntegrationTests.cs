@@ -6,11 +6,11 @@ using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Mvc.Abstractions;
-using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.IntegrationTests
+namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 {
     public class BodyValidationIntegrationTests
     {

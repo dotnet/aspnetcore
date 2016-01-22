@@ -4,16 +4,16 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Mvc.DataAnnotations;
-using Microsoft.AspNet.Mvc.ModelBinding;
-using Microsoft.AspNet.Mvc.ModelBinding.Validation;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.DataAnnotations;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.DataAnnotations.Internal
+namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
 {
     public class DataAnnotationsModelValidatorTest
     {

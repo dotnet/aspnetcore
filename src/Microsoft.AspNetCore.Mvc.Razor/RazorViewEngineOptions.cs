@@ -3,11 +3,11 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNet.Mvc.Razor.Compilation;
+using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.FileProviders;
 
-namespace Microsoft.AspNet.Mvc.Razor
+namespace Microsoft.AspNetCore.Mvc.Razor
 {
     /// <summary>
     /// Provides programmatic configuration for the <see cref="RazorViewEngine"/>.

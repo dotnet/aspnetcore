@@ -1,13 +1,13 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using Microsoft.AspNet.Mvc.ViewComponents;
+using Microsoft.AspNetCore.Mvc.ViewComponents;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNet.Mvc.ViewFeatures.Logging
+namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Logging
 {
     public static class DefaultViewComponentInvokerLoggerExtensions
     {

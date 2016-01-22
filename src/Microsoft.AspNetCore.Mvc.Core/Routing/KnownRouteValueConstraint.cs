@@ -3,13 +3,13 @@
 
 using System;
 using System.Linq;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Mvc.Core;
-using Microsoft.AspNet.Mvc.Infrastructure;
-using Microsoft.AspNet.Routing;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Core;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNet.Mvc.Routing
+namespace Microsoft.AspNetCore.Mvc.Routing
 {
     public class KnownRouteValueConstraint : IRouteConstraint
     {

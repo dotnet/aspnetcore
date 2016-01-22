@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Microsoft.AspNet.Mvc.Routing
+namespace Microsoft.AspNetCore.Mvc.Routing
 {
     /// <summary>
     /// Identifies an action that only supports a given set of HTTP methods.

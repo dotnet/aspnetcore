@@ -1,17 +1,17 @@
 {
   "resource": "TestFiles/**",
   "dependencies": {
-    "Microsoft.AspNet.Mvc.Core": "6.0.0-*",
-    "Microsoft.AspNet.Mvc.DataAnnotations": "6.0.0-*",
-    "Microsoft.AspNet.Mvc.Formatters.Xml": "6.0.0-*",
-    "Microsoft.AspNet.Mvc.Razor": "6.0.0-*",
-    "Microsoft.AspNet.Mvc.Razor.Host": "6.0.0-*",
-    "Microsoft.AspNet.Mvc.TestCommon": {
+    "Microsoft.AspNetCore.Mvc.Core": "6.0.0-*",
+    "Microsoft.AspNetCore.Mvc.DataAnnotations": "6.0.0-*",
+    "Microsoft.AspNetCore.Mvc.Formatters.Xml": "6.0.0-*",
+    "Microsoft.AspNetCore.Mvc.Razor": "6.0.0-*",
+    "Microsoft.AspNetCore.Mvc.Razor.Host": "6.0.0-*",
+    "Microsoft.AspNetCore.Mvc.TestCommon": {
       "version": "6.0.0-*",
       "type": "build"
     },
-    "Microsoft.AspNet.Mvc.ViewFeatures": "6.0.0-*",
-    "Microsoft.AspNet.Testing": "1.0.0-*",
+    "Microsoft.AspNetCore.Mvc.ViewFeatures": "6.0.0-*",
+    "Microsoft.AspNetCore.Testing": "1.0.0-*",
     "xunit.runner.aspnet": "2.0.0-aspnet-*"
   },
   "commands": {

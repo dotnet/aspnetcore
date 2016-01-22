@@ -6,11 +6,11 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 #if !DNXCORE50
-using Microsoft.AspNet.Testing.xunit;
+using Microsoft.AspNetCore.Testing.xunit;
 #endif
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.FunctionalTests
+namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
     /// <summary>
     /// Functional test to verify the error reporting of Razor compilation by diagnostic middleware.

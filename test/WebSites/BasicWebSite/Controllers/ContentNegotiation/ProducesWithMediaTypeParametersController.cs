@@ -3,8 +3,8 @@
 
 using BasicWebSite.Formatters;
 using BasicWebSite.Models;
-using Microsoft.AspNet.Mvc;
-using Microsoft.AspNet.Mvc.Filters;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace BasicWebSite.Controllers.ContentNegotiation
 {

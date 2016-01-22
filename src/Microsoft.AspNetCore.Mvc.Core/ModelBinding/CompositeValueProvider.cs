@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 
-namespace Microsoft.AspNet.Mvc.ModelBinding
+namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
     /// <summary>
     /// Represents a <see cref="IValueProvider"/> whose values come from a collection of <see cref="IValueProvider"/>s.

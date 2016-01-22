@@ -3,7 +3,7 @@
 
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.Routing
+namespace Microsoft.AspNetCore.Mvc.Routing
 {
     public class RouteTemplateProviderAttributesTest
     {

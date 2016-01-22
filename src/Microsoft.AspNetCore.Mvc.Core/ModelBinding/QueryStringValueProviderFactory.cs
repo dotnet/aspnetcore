@@ -5,7 +5,7 @@ using System;
 using System.Globalization;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNet.Mvc.ModelBinding
+namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
     /// <summary>
     /// A <see cref="IValueProviderFactory"/> that creates <see cref="IValueProvider"/> instances that

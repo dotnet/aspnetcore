@@ -3,10 +3,10 @@
 
 using System;
 using System.Globalization;
-using Microsoft.AspNet.Razor.Chunks.Generators;
-using Microsoft.AspNet.Razor.Parser.SyntaxTree;
+using Microsoft.AspNetCore.Razor.Chunks.Generators;
+using Microsoft.AspNetCore.Razor.Parser.SyntaxTree;
 
-namespace Microsoft.AspNet.Mvc.Razor
+namespace Microsoft.AspNetCore.Mvc.Razor
 {
     public class InjectParameterGenerator : SpanChunkGenerator
     {

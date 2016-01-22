@@ -7,7 +7,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 
-namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
+namespace Microsoft.AspNetCore.Mvc.TagHelpers.Internal
 {
     /// <summary>
     /// Methods for loading JavaScript from assembly embedded resources.

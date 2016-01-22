@@ -4,14 +4,14 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Internal;
-using Microsoft.AspNet.Mvc.Abstractions;
-using Microsoft.AspNet.Mvc.Infrastructure;
-using Microsoft.AspNet.Mvc.Routing;
-using Microsoft.AspNet.Routing;
-using Microsoft.AspNet.Routing.Internal;
-using Microsoft.AspNet.Routing.Tree;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Internal;
+using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Routing.Internal;
+using Microsoft.AspNetCore.Routing.Tree;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.ObjectPool;
@@ -19,7 +19,7 @@ using Microsoft.Extensions.WebEncoders.Testing;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.Internal
+namespace Microsoft.AspNetCore.Mvc.Internal
 {
     public class AttributeRouteTest
     {

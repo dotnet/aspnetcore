@@ -3,13 +3,13 @@
 
 using System;
 using System.Linq;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Mvc.Abstractions;
-using Microsoft.AspNet.Routing;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Routing;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.ViewEngines
+namespace Microsoft.AspNetCore.Mvc.ViewEngines
 {
     public class CompositeViewEngineTest
     {

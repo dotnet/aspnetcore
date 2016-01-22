@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNet.Mvc.Formatters.Xml
+namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
 {
     public class Person
     {

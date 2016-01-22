@@ -6,16 +6,16 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 using System.Text.Encodings.Web;
-using Microsoft.AspNet.Hosting;
-using Microsoft.AspNet.Mvc.Razor.TagHelpers;
-using Microsoft.AspNet.Mvc.Rendering;
-using Microsoft.AspNet.Mvc.Routing;
-using Microsoft.AspNet.Mvc.TagHelpers.Internal;
-using Microsoft.AspNet.Mvc.ViewFeatures;
-using Microsoft.AspNet.Razor.TagHelpers;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc.Razor.TagHelpers;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.AspNetCore.Mvc.TagHelpers.Internal;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.Extensions.Caching.Memory;
 
-namespace Microsoft.AspNet.Mvc.TagHelpers
+namespace Microsoft.AspNetCore.Mvc.TagHelpers
 {
     /// <summary>
     /// <see cref="ITagHelper"/> implementation targeting &lt;link&gt; elements that supports fallback href paths.

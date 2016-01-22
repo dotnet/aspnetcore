@@ -4,7 +4,7 @@
 using System.Runtime.Versioning;
 using Microsoft.Extensions.PlatformAbstractions;
 
-namespace Microsoft.AspNet.Mvc.FunctionalTests
+namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
     // An application environment that overrides the base path of the original
     // application environment in order to make it point to the folder of the original web

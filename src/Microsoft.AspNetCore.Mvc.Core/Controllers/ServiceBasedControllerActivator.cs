@@ -4,7 +4,7 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNet.Mvc.Controllers
+namespace Microsoft.AspNetCore.Mvc.Controllers
 {
     /// <summary>
     /// A <see cref="IControllerActivator"/> that retrieves controllers as services from the request's

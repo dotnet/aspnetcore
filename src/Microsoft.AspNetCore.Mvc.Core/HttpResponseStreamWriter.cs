@@ -6,9 +6,9 @@ using System.Buffers;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Mvc.Core;
+using Microsoft.AspNetCore.Mvc.Core;
 
-namespace Microsoft.AspNet.Mvc
+namespace Microsoft.AspNetCore.Mvc
 {
     /// <summary>
     /// Writes to the <see cref="Stream"/> using the supplied <see cref="Encoding"/>.

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -8,7 +8,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Microsoft.AspNet.Mvc.Razor.Compilation
+namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
 {
     /// <summary>
     /// An expression rewriter which can hoist a simple expression lambda into a private field.

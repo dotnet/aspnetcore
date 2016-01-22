@@ -6,15 +6,15 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Microsoft.AspNet.Html;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Mvc.ModelBinding;
-using Microsoft.AspNet.Mvc.Rendering;
-using Microsoft.AspNet.Mvc.ViewEngines;
-using Microsoft.AspNet.Mvc.ViewFeatures.Buffer;
+using Microsoft.AspNetCore.Html;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.ViewEngines;
+using Microsoft.AspNetCore.Mvc.ViewFeatures.Buffer;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNet.Mvc.ViewFeatures.Internal
+namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 {
     public class TemplateRenderer
     {

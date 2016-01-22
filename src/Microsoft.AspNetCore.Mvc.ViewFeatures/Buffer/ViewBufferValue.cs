@@ -1,12 +1,12 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Diagnostics;
 using System.IO;
 using System.Text.Encodings.Web;
-using Microsoft.AspNet.Html;
+using Microsoft.AspNetCore.Html;
 
-namespace Microsoft.AspNet.Mvc.ViewFeatures.Buffer
+namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Buffer
 {
     /// <summary>
     /// Encapsulates a string or <see cref="IHtmlContent"/> value.

@@ -4,7 +4,7 @@
 using System.Linq;
 using System.Net.Http.Formatting;
 
-namespace Microsoft.AspNet.Mvc.WebApiCompatShim
+namespace Microsoft.AspNetCore.Mvc.WebApiCompatShim
 {
     public class WebApiCompatShimOptions
     {

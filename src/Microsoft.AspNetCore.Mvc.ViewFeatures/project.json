@@ -10,12 +10,12 @@
     "keyFile": "../../tools/Key.snk"
   },
   "dependencies": {
-    "Microsoft.AspNet.Antiforgery": "1.0.0-*",
-    "Microsoft.AspNet.Diagnostics.Abstractions": "1.0.0-*",
-    "Microsoft.AspNet.Html.Abstractions": "1.0.0-*",
-    "Microsoft.AspNet.Mvc.Core": "6.0.0-*",
-    "Microsoft.AspNet.Mvc.DataAnnotations": "6.0.0-*",
-    "Microsoft.AspNet.Mvc.Formatters.Json": "6.0.0-*",
+    "Microsoft.AspNetCore.Antiforgery": "1.0.0-*",
+    "Microsoft.AspNetCore.Diagnostics.Abstractions": "1.0.0-*",
+    "Microsoft.AspNetCore.Html.Abstractions": "1.0.0-*",
+    "Microsoft.AspNetCore.Mvc.Core": "6.0.0-*",
+    "Microsoft.AspNetCore.Mvc.DataAnnotations": "6.0.0-*",
+    "Microsoft.AspNetCore.Mvc.Formatters.Json": "6.0.0-*",
     "Microsoft.Extensions.ClosedGenericMatcher.Sources": {
       "version": "1.0.0-*",
       "type": "build"

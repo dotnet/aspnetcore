@@ -7,15 +7,15 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Text.Encodings.Web;
-using Microsoft.AspNet.Mvc.Logging;
-using Microsoft.AspNet.Mvc.Routing;
-using Microsoft.AspNet.Mvc.ViewEngines;
+using Microsoft.AspNetCore.Mvc.Logging;
+using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.AspNet.Mvc.Razor
+namespace Microsoft.AspNetCore.Mvc.Razor
 {
     /// <summary>
     /// Default implementation of <see cref="IRazorViewEngine"/>.

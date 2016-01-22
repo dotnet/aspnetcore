@@ -4,14 +4,14 @@
 using System;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Html;
-using Microsoft.AspNet.Mvc.Rendering;
-using Microsoft.AspNet.Mvc.ViewFeatures;
-using Microsoft.AspNet.Mvc.ViewFeatures.Buffer;
-using Microsoft.AspNet.Mvc.ViewFeatures.Internal;
+using Microsoft.AspNetCore.Html;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.AspNetCore.Mvc.ViewFeatures.Buffer;
+using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
 using Microsoft.Extensions.Internal;
 
-namespace Microsoft.AspNet.Mvc.ViewComponents
+namespace Microsoft.AspNetCore.Mvc.ViewComponents
 {
     /// <summary>
     /// Default implementation for <see cref="IViewComponentHelper"/>.

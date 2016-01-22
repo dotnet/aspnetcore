@@ -1,11 +1,11 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.ComponentModel.DataAnnotations;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.DataAnnotations.Internal
+namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
 {
     public class ValidationAttributeAdapterProviderTest
     {

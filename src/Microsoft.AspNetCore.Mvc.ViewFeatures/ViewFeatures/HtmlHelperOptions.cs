@@ -1,9 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNet.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
-namespace Microsoft.AspNet.Mvc.ViewFeatures
+namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 {
     /// <summary>
     /// Provides programmatic configuration for the HTML helpers and <see cref="ViewContext"/>.

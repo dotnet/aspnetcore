@@ -6,7 +6,7 @@ using Microsoft.Dnx.Compilation.CSharp;
 using Microsoft.Extensions.CompilationAbstractions;
 using Microsoft.Extensions.PlatformAbstractions;
 
-namespace Microsoft.AspNet.Mvc.Razor.Compilation
+namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
 {
     /// <summary>
     /// Extension methods for <see cref="ICompilerOptionsProvider"/>.

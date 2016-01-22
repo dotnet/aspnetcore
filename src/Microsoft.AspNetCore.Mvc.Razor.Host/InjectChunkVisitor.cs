@@ -3,10 +3,10 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNet.Razor.CodeGenerators;
-using Microsoft.AspNet.Razor.CodeGenerators.Visitors;
+using Microsoft.AspNetCore.Razor.CodeGenerators;
+using Microsoft.AspNetCore.Razor.CodeGenerators.Visitors;
 
-namespace Microsoft.AspNet.Mvc.Razor
+namespace Microsoft.AspNetCore.Mvc.Razor
 {
     public class InjectChunkVisitor : MvcCSharpCodeVisitor
     {

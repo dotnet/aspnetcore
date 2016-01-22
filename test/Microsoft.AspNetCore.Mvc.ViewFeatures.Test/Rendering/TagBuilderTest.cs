@@ -3,11 +3,11 @@
 
 using System.Collections.Generic;
 using System.IO;
-using Microsoft.AspNet.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.WebEncoders.Testing;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.Core.Rendering
+namespace Microsoft.AspNetCore.Mvc.Core.Rendering
 {
     public class TagBuilderTest
     {

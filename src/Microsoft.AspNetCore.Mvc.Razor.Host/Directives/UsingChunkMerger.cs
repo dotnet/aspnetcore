@@ -4,9 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNet.Razor.Chunks;
+using Microsoft.AspNetCore.Razor.Chunks;
 
-namespace Microsoft.AspNet.Mvc.Razor.Directives
+namespace Microsoft.AspNetCore.Mvc.Razor.Directives
 {
     /// <summary>
     /// A <see cref="IChunkMerger"/> that merges <see cref="UsingChunk"/> instances.

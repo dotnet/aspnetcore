@@ -3,7 +3,7 @@
 
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNet.Mvc.Formatters.Xml.Internal
+namespace Microsoft.AspNetCore.Mvc.Formatters.Xml.Internal
 {
     /// <summary>
     /// A <see cref="ConfigureOptions{TOptions}"/> implementation which will add the

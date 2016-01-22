@@ -3,10 +3,10 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Mvc.Abstractions;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Abstractions;
 
-namespace Microsoft.AspNet.Mvc.ActionConstraints
+namespace Microsoft.AspNetCore.Mvc.ActionConstraints
 {
     /// <summary>
     /// Context for an action constraint provider.

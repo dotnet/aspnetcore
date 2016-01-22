@@ -6,16 +6,16 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Html;
-using Microsoft.AspNet.Mvc.Controllers;
-using Microsoft.AspNet.Mvc.Diagnostics;
-using Microsoft.AspNet.Mvc.Infrastructure;
-using Microsoft.AspNet.Mvc.Internal;
-using Microsoft.AspNet.Mvc.ViewFeatures;
-using Microsoft.AspNet.Mvc.ViewFeatures.Logging;
+using Microsoft.AspNetCore.Html;
+using Microsoft.AspNetCore.Mvc.Controllers;
+using Microsoft.AspNetCore.Mvc.Diagnostics;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.Internal;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.AspNetCore.Mvc.ViewFeatures.Logging;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNet.Mvc.ViewComponents
+namespace Microsoft.AspNetCore.Mvc.ViewComponents
 {
     /// <summary>
     /// Default implementation for <see cref="IViewComponentInvoker"/>.

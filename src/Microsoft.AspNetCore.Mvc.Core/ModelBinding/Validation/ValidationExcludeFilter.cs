@@ -1,12 +1,12 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Diagnostics;
 using System.Reflection;
-using Microsoft.AspNet.Mvc.ModelBinding.Metadata;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 
-namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
+namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
 {
     /// <summary>
     /// An <see cref="IValidationMetadataProvider"/> which configures <see cref="ModelMetadata.ValidateChildren"/> to

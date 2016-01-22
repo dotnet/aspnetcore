@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNet.Mvc.ModelBinding.Validation;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
-namespace Microsoft.AspNet.Mvc.DataAnnotations.Internal
+namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
 {
     public class ModelClientValidationRangeRule : ModelClientValidationRule
     {

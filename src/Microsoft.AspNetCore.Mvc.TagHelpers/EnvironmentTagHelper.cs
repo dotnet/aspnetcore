@@ -2,11 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNet.Hosting;
-using Microsoft.AspNet.Razor.TagHelpers;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.AspNet.Mvc.TagHelpers
+namespace Microsoft.AspNetCore.Mvc.TagHelpers
 {
     /// <summary>
     /// <see cref="ITagHelper"/> implementation targeting &lt;environment&gt; elements that conditionally renders

@@ -5,7 +5,7 @@ using System.IO;
 using Microsoft.Extensions.WebEncoders.Testing;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.ViewFeatures
+namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 {
     public class StringHtmlContentTest
     {

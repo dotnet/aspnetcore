@@ -6,10 +6,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.ViewComponents
+namespace Microsoft.AspNetCore.Mvc.ViewComponents
 {
     public class DefaultViewComponentDescriptorProviderTest
     {
@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
             // Assert
             var descriptor = Assert.Single(descriptors);
             Assert.Same(typeof(ConventionsViewComponent), descriptor.Type);
-            Assert.Equal("Microsoft.AspNet.Mvc.ViewComponents.Conventions", descriptor.FullName);
+            Assert.Equal("Microsoft.AspNetCore.Mvc.ViewComponents.Conventions", descriptor.FullName);
             Assert.Equal("Conventions", descriptor.ShortName);
             Assert.Same(typeof(ConventionsViewComponent).GetMethod("Invoke"), descriptor.MethodInfo);
         }

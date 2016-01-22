@@ -3,7 +3,7 @@
 
 using System;
 using System.Reflection;
-using Microsoft.AspNet.Mvc.ApplicationModels;
+using Microsoft.AspNetCore.Mvc.ApplicationModels;
 
 namespace ApiExplorerWebSite
 {

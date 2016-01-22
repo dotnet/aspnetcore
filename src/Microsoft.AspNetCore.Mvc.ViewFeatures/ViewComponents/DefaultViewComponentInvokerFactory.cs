@@ -3,10 +3,10 @@
 
 using System;
 using System.Diagnostics;
-using Microsoft.AspNet.Mvc.Internal;
+using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNet.Mvc.ViewComponents
+namespace Microsoft.AspNetCore.Mvc.ViewComponents
 {
     public class DefaultViewComponentInvokerFactory : IViewComponentInvokerFactory
     {

@@ -3,7 +3,7 @@
 
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNet.Mvc.Abstractions
+namespace Microsoft.AspNetCore.Mvc.Abstractions
 {
     public interface IActionInvoker
     {

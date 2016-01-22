@@ -7,13 +7,13 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
-using Microsoft.AspNet.Mvc.Internal;
+using Microsoft.AspNetCore.Mvc.Internal;
 #if DOTNET5_4
 using System.Reflection;
 #endif
 using Microsoft.Extensions.Internal;
 
-namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
+namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
 {
     /// <summary>
     /// A default <see cref="ModelMetadata"/> implementation.

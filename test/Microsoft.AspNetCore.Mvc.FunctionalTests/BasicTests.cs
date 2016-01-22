@@ -13,7 +13,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.FunctionalTests
+namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
     public class BasicTests : IClassFixture<MvcTestFixture<BasicWebSite.Startup>>
     {

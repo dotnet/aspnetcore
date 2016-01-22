@@ -1,14 +1,14 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
 using System.Diagnostics;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Mvc.Abstractions;
-using Microsoft.AspNet.Mvc.Filters;
-using Microsoft.AspNet.Routing;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Routing;
 
-namespace Microsoft.AspNet.Mvc.Internal
+namespace Microsoft.AspNetCore.Mvc.Internal
 {
     public static class MvcCoreDiagnosticSourceExtensions
     {
@@ -18,10 +18,10 @@ namespace Microsoft.AspNet.Mvc.Internal
             HttpContext httpContext,
             RouteData routeData)
         {
-            if (diagnosticSource.IsEnabled("Microsoft.AspNet.Mvc.BeforeAction"))
+            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeAction"))
             {
                 diagnosticSource.Write(
-                    "Microsoft.AspNet.Mvc.BeforeAction",
+                    "Microsoft.AspNetCore.Mvc.BeforeAction",
                     new { actionDescriptor, httpContext = httpContext, routeData = routeData });
             }
         }
@@ -32,10 +32,10 @@ namespace Microsoft.AspNet.Mvc.Internal
             HttpContext httpContext,
             RouteData routeData)
         {
-            if (diagnosticSource.IsEnabled("Microsoft.AspNet.Mvc.AfterAction"))
+            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.AfterAction"))
             {
                 diagnosticSource.Write(
-                    "Microsoft.AspNet.Mvc.AfterAction",
+                    "Microsoft.AspNetCore.Mvc.AfterAction",
                     new { actionDescriptor, httpContext = httpContext, routeData = routeData });
             }
         }
@@ -45,10 +45,10 @@ namespace Microsoft.AspNet.Mvc.Internal
             AuthorizationContext authorizationContext,
             IAsyncAuthorizationFilter filter)
         {
-            if (diagnosticSource.IsEnabled("Microsoft.AspNet.Mvc.BeforeOnAuthorization"))
+            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeOnAuthorization"))
             {
                 diagnosticSource.Write(
-                    "Microsoft.AspNet.Mvc.BeforeOnAuthorization",
+                    "Microsoft.AspNetCore.Mvc.BeforeOnAuthorization",
                     new
                     {
                         actionDescriptor = authorizationContext.ActionDescriptor,
@@ -63,10 +63,10 @@ namespace Microsoft.AspNet.Mvc.Internal
             AuthorizationContext authorizationContext,
             IAsyncAuthorizationFilter filter)
         {
-            if (diagnosticSource.IsEnabled("Microsoft.AspNet.Mvc.AfterOnAuthorization"))
+            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.AfterOnAuthorization"))
             {
                 diagnosticSource.Write(
-                    "Microsoft.AspNet.Mvc.AfterOnAuthorization",
+                    "Microsoft.AspNetCore.Mvc.AfterOnAuthorization",
                     new
                     {
                         actionDescriptor = authorizationContext.ActionDescriptor,
@@ -81,10 +81,10 @@ namespace Microsoft.AspNet.Mvc.Internal
             AuthorizationContext authorizationContext,
             IAuthorizationFilter filter)
         {
-            if (diagnosticSource.IsEnabled("Microsoft.AspNet.Mvc.BeforeOnAuthorization"))
+            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeOnAuthorization"))
             {
                 diagnosticSource.Write(
-                    "Microsoft.AspNet.Mvc.BeforeOnAuthorization",
+                    "Microsoft.AspNetCore.Mvc.BeforeOnAuthorization",
                     new
                     {
                         actionDescriptor = authorizationContext.ActionDescriptor,
@@ -99,10 +99,10 @@ namespace Microsoft.AspNet.Mvc.Internal
             AuthorizationContext authorizationContext,
             IAuthorizationFilter filter)
         {
-            if (diagnosticSource.IsEnabled("Microsoft.AspNet.Mvc.AfterOnAuthorization"))
+            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.AfterOnAuthorization"))
             {
                 diagnosticSource.Write(
-                    "Microsoft.AspNet.Mvc.AfterOnAuthorization",
+                    "Microsoft.AspNetCore.Mvc.AfterOnAuthorization",
                     new
                     {
                         actionDescriptor = authorizationContext.ActionDescriptor,
@@ -117,10 +117,10 @@ namespace Microsoft.AspNet.Mvc.Internal
             ResourceExecutingContext resourceExecutingContext,
             IAsyncResourceFilter filter)
         {
-            if (diagnosticSource.IsEnabled("Microsoft.AspNet.Mvc.BeforeOnResourceExecution"))
+            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeOnResourceExecution"))
             {
                 diagnosticSource.Write(
-                    "Microsoft.AspNet.Mvc.BeforeOnResourceExecution",
+                    "Microsoft.AspNetCore.Mvc.BeforeOnResourceExecution",
                     new
                     {
                         actionDescriptor = resourceExecutingContext.ActionDescriptor,
@@ -136,10 +136,10 @@ namespace Microsoft.AspNet.Mvc.Internal
             ResourceExecutedContext resourceExecutedContext,
             IAsyncResourceFilter filter)
         {
-            if (diagnosticSource.IsEnabled("Microsoft.AspNet.Mvc.AfterOnResourceExecution"))
+            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.AfterOnResourceExecution"))
             {
                 diagnosticSource.Write(
-                    "Microsoft.AspNet.Mvc.AfterOnResourceExecution",
+                    "Microsoft.AspNetCore.Mvc.AfterOnResourceExecution",
                     new
                     {
                         actionDescriptor = actionDescriptor,
@@ -154,10 +154,10 @@ namespace Microsoft.AspNet.Mvc.Internal
             ResourceExecutingContext resourceExecutingContext,
             IResourceFilter filter)
         {
-            if (diagnosticSource.IsEnabled("Microsoft.AspNet.Mvc.BeforeOnResourceExecuting"))
+            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeOnResourceExecuting"))
             {
                 diagnosticSource.Write(
-                    "Microsoft.AspNet.Mvc.BeforeOnResourceExecuting",
+                    "Microsoft.AspNetCore.Mvc.BeforeOnResourceExecuting",
                     new
                     {
                         actionDescriptor = resourceExecutingContext.ActionDescriptor,
@@ -172,10 +172,10 @@ namespace Microsoft.AspNet.Mvc.Internal
             ResourceExecutingContext resourceExecutingContext,
             IResourceFilter filter)
         {
-            if (diagnosticSource.IsEnabled("Microsoft.AspNet.Mvc.AfterOnResourceExecuting"))
+            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.AfterOnResourceExecuting"))
             {
                 diagnosticSource.Write(
-                    "Microsoft.AspNet.Mvc.AfterOnResourceExecuting",
+                    "Microsoft.AspNetCore.Mvc.AfterOnResourceExecuting",
                     new
                     {
                         actionDescriptor = resourceExecutingContext.ActionDescriptor,
@@ -191,10 +191,10 @@ namespace Microsoft.AspNet.Mvc.Internal
             ResourceExecutedContext resourceExecutedContext,
             IResourceFilter filter)
         {
-            if (diagnosticSource.IsEnabled("Microsoft.AspNet.Mvc.BeforeOnResourceExecuted"))
+            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeOnResourceExecuted"))
             {
                 diagnosticSource.Write(
-                    "Microsoft.AspNet.Mvc.BeforeOnResourceExecuted",
+                    "Microsoft.AspNetCore.Mvc.BeforeOnResourceExecuted",
                     new
                     {
                         actionDescriptor = actionDescriptor,
@@ -210,10 +210,10 @@ namespace Microsoft.AspNet.Mvc.Internal
             ResourceExecutedContext resourceExecutedContext,
             IResourceFilter filter)
         {
-            if (diagnosticSource.IsEnabled("Microsoft.AspNet.Mvc.AfterOnResourceExecuted"))
+            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.AfterOnResourceExecuted"))
             {
                 diagnosticSource.Write(
-                    "Microsoft.AspNet.Mvc.AfterOnResourceExecuted",
+                    "Microsoft.AspNetCore.Mvc.AfterOnResourceExecuted",
                     new
                     {
                         actionDescriptor = actionDescriptor,
@@ -228,10 +228,10 @@ namespace Microsoft.AspNet.Mvc.Internal
             ExceptionContext exceptionContext,
             IAsyncExceptionFilter filter)
         {
-            if (diagnosticSource.IsEnabled("Microsoft.AspNet.Mvc.BeforeOnException"))
+            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeOnException"))
             {
                 diagnosticSource.Write(
-                    "Microsoft.AspNet.Mvc.BeforeOnException",
+                    "Microsoft.AspNetCore.Mvc.BeforeOnException",
                     new
                     {
                         actionDescriptor = exceptionContext.ActionDescriptor,
@@ -246,10 +246,10 @@ namespace Microsoft.AspNet.Mvc.Internal
             ExceptionContext exceptionContext,
             IAsyncExceptionFilter filter)
         {
-            if (diagnosticSource.IsEnabled("Microsoft.AspNet.Mvc.AfterOnException"))
+            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.AfterOnException"))
             {
                 diagnosticSource.Write(
-                    "Microsoft.AspNet.Mvc.AfterOnException",
+                    "Microsoft.AspNetCore.Mvc.AfterOnException",
                     new
                     {
                         actionDescriptor = exceptionContext.ActionDescriptor,
@@ -264,10 +264,10 @@ namespace Microsoft.AspNet.Mvc.Internal
             ExceptionContext exceptionContext,
             IExceptionFilter filter)
         {
-            if (diagnosticSource.IsEnabled("Microsoft.AspNet.Mvc.BeforeOnException"))
+            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeOnException"))
             {
                 diagnosticSource.Write(
-                    "Microsoft.AspNet.Mvc.BeforeOnException",
+                    "Microsoft.AspNetCore.Mvc.BeforeOnException",
                     new
                     {
                         actionDescriptor = exceptionContext.ActionDescriptor,
@@ -282,10 +282,10 @@ namespace Microsoft.AspNet.Mvc.Internal
             ExceptionContext exceptionContext,
             IExceptionFilter filter)
         {
-            if (diagnosticSource.IsEnabled("Microsoft.AspNet.Mvc.AfterOnException"))
+            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.AfterOnException"))
             {
                 diagnosticSource.Write(
-                    "Microsoft.AspNet.Mvc.AfterOnException",
+                    "Microsoft.AspNetCore.Mvc.AfterOnException",
                     new
                     {
                         actionDescriptor = exceptionContext.ActionDescriptor,
@@ -300,10 +300,10 @@ namespace Microsoft.AspNet.Mvc.Internal
             ActionExecutingContext actionExecutingContext,
             IAsyncActionFilter filter)
         {
-            if (diagnosticSource.IsEnabled("Microsoft.AspNet.Mvc.BeforeOnActionExecution"))
+            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeOnActionExecution"))
             {
                 diagnosticSource.Write(
-                    "Microsoft.AspNet.Mvc.BeforeOnActionExecution",
+                    "Microsoft.AspNetCore.Mvc.BeforeOnActionExecution",
                     new
                     {
                         actionDescriptor = actionExecutingContext.ActionDescriptor,
@@ -319,10 +319,10 @@ namespace Microsoft.AspNet.Mvc.Internal
             ActionExecutedContext actionExecutedContext,
             IAsyncActionFilter filter)
         {
-            if (diagnosticSource.IsEnabled("Microsoft.AspNet.Mvc.AfterOnActionExecution"))
+            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.AfterOnActionExecution"))
             {
                 diagnosticSource.Write(
-                    "Microsoft.AspNet.Mvc.AfterOnActionExecution",
+                    "Microsoft.AspNetCore.Mvc.AfterOnActionExecution",
                     new
                     {
                         actionDescriptor = actionDescriptor,
@@ -337,10 +337,10 @@ namespace Microsoft.AspNet.Mvc.Internal
             ActionExecutingContext actionExecutingContext,
             IActionFilter filter)
         {
-            if (diagnosticSource.IsEnabled("Microsoft.AspNet.Mvc.BeforeOnActionExecuting"))
+            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeOnActionExecuting"))
             {
                 diagnosticSource.Write(
-                    "Microsoft.AspNet.Mvc.BeforeOnActionExecuting",
+                    "Microsoft.AspNetCore.Mvc.BeforeOnActionExecuting",
                     new
                     {
                         actionDescriptor = actionExecutingContext.ActionDescriptor,
@@ -355,10 +355,10 @@ namespace Microsoft.AspNet.Mvc.Internal
             ActionExecutingContext actionExecutingContext,
             IActionFilter filter)
         {
-            if (diagnosticSource.IsEnabled("Microsoft.AspNet.Mvc.AfterOnActionExecuting"))
+            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.AfterOnActionExecuting"))
             {
                 diagnosticSource.Write(
-                    "Microsoft.AspNet.Mvc.AfterOnActionExecuting",
+                    "Microsoft.AspNetCore.Mvc.AfterOnActionExecuting",
                     new
                     {
                         actionDescriptor = actionExecutingContext.ActionDescriptor,
@@ -374,10 +374,10 @@ namespace Microsoft.AspNet.Mvc.Internal
             ActionExecutedContext actionExecutedContext,
             IActionFilter filter)
         {
-            if (diagnosticSource.IsEnabled("Microsoft.AspNet.Mvc.BeforeOnActionExecuted"))
+            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeOnActionExecuted"))
             {
                 diagnosticSource.Write(
-                    "Microsoft.AspNet.Mvc.BeforeOnActionExecuted",
+                    "Microsoft.AspNetCore.Mvc.BeforeOnActionExecuted",
                     new
                     {
                         actionDescriptor = actionDescriptor,
@@ -393,10 +393,10 @@ namespace Microsoft.AspNet.Mvc.Internal
             ActionExecutedContext actionExecutedContext,
             IActionFilter filter)
         {
-            if (diagnosticSource.IsEnabled("Microsoft.AspNet.Mvc.AfterOnActionExecuted"))
+            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.AfterOnActionExecuted"))
             {
                 diagnosticSource.Write(
-                    "Microsoft.AspNet.Mvc.AfterOnActionExecuted",
+                    "Microsoft.AspNetCore.Mvc.AfterOnActionExecuted",
                     new
                     {
                         actionDescriptor = actionDescriptor,
@@ -412,10 +412,10 @@ namespace Microsoft.AspNet.Mvc.Internal
             IDictionary<string, object> actionArguments,
             object controller)
         {
-            if (diagnosticSource.IsEnabled("Microsoft.AspNet.Mvc.BeforeActionMethod"))
+            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeActionMethod"))
             {
                 diagnosticSource.Write(
-                    "Microsoft.AspNet.Mvc.BeforeActionMethod",
+                    "Microsoft.AspNetCore.Mvc.BeforeActionMethod",
                     new
                     {
                         actionContext = actionContext,
@@ -432,10 +432,10 @@ namespace Microsoft.AspNet.Mvc.Internal
             object controller,
             IActionResult result)
         {
-            if (diagnosticSource.IsEnabled("Microsoft.AspNet.Mvc.AfterActionMethod"))
+            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.AfterActionMethod"))
             {
                 diagnosticSource.Write(
-                    "Microsoft.AspNet.Mvc.AfterActionMethod",
+                    "Microsoft.AspNetCore.Mvc.AfterActionMethod",
                     new
                     {
                         actionContext = actionContext,
@@ -451,10 +451,10 @@ namespace Microsoft.AspNet.Mvc.Internal
             ResultExecutingContext resultExecutingContext,
             IAsyncResultFilter filter)
         {
-            if (diagnosticSource.IsEnabled("Microsoft.AspNet.Mvc.BeforeOnResultExecution"))
+            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeOnResultExecution"))
             {
                 diagnosticSource.Write(
-                    "Microsoft.AspNet.Mvc.BeforeOnResultExecution",
+                    "Microsoft.AspNetCore.Mvc.BeforeOnResultExecution",
                     new
                     {
                         actionDescriptor = resultExecutingContext.ActionDescriptor,
@@ -470,10 +470,10 @@ namespace Microsoft.AspNet.Mvc.Internal
             ResultExecutedContext resultExecutedContext,
             IAsyncResultFilter filter)
         {
-            if (diagnosticSource.IsEnabled("Microsoft.AspNet.Mvc.AfterOnResultExecution"))
+            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.AfterOnResultExecution"))
             {
                 diagnosticSource.Write(
-                    "Microsoft.AspNet.Mvc.AfterOnResultExecution",
+                    "Microsoft.AspNetCore.Mvc.AfterOnResultExecution",
                     new
                     {
                         actionDescriptor = actionDescriptor,
@@ -488,10 +488,10 @@ namespace Microsoft.AspNet.Mvc.Internal
             ResultExecutingContext resultExecutingContext,
             IResultFilter filter)
         {
-            if (diagnosticSource.IsEnabled("Microsoft.AspNet.Mvc.BeforeOnResultExecuting"))
+            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeOnResultExecuting"))
             {
                 diagnosticSource.Write(
-                    "Microsoft.AspNet.Mvc.BeforeOnResultExecuting",
+                    "Microsoft.AspNetCore.Mvc.BeforeOnResultExecuting",
                     new
                     {
                         actionDescriptor = resultExecutingContext.ActionDescriptor,
@@ -506,10 +506,10 @@ namespace Microsoft.AspNet.Mvc.Internal
             ResultExecutingContext resultExecutingContext,
             IResultFilter filter)
         {
-            if (diagnosticSource.IsEnabled("Microsoft.AspNet.Mvc.AfterOnResultExecuting"))
+            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.AfterOnResultExecuting"))
             {
                 diagnosticSource.Write(
-                    "Microsoft.AspNet.Mvc.AfterOnResultExecuting",
+                    "Microsoft.AspNetCore.Mvc.AfterOnResultExecuting",
                     new
                     {
                         actionDescriptor = resultExecutingContext.ActionDescriptor,
@@ -525,10 +525,10 @@ namespace Microsoft.AspNet.Mvc.Internal
             ResultExecutedContext resultExecutedContext,
             IResultFilter filter)
         {
-            if (diagnosticSource.IsEnabled("Microsoft.AspNet.Mvc.BeforeOnResultExecuted"))
+            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeOnResultExecuted"))
             {
                 diagnosticSource.Write(
-                    "Microsoft.AspNet.Mvc.BeforeOnResultExecuted",
+                    "Microsoft.AspNetCore.Mvc.BeforeOnResultExecuted",
                     new
                     {
                         actionDescriptor = actionDescriptor,
@@ -544,10 +544,10 @@ namespace Microsoft.AspNet.Mvc.Internal
             ResultExecutedContext resultExecutedContext,
             IResultFilter filter)
         {
-            if (diagnosticSource.IsEnabled("Microsoft.AspNet.Mvc.AfterOnResultExecuted"))
+            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.AfterOnResultExecuted"))
             {
                 diagnosticSource.Write(
-                    "Microsoft.AspNet.Mvc.AfterOnResultExecuted",
+                    "Microsoft.AspNetCore.Mvc.AfterOnResultExecuted",
                     new
                     {
                         actionDescriptor = actionDescriptor,
@@ -562,10 +562,10 @@ namespace Microsoft.AspNet.Mvc.Internal
             ActionContext actionContext,
             IActionResult result)
         {
-            if (diagnosticSource.IsEnabled("Microsoft.AspNet.Mvc.BeforeActionResult"))
+            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeActionResult"))
             {
                 diagnosticSource.Write(
-                    "Microsoft.AspNet.Mvc.BeforeActionResult",
+                    "Microsoft.AspNetCore.Mvc.BeforeActionResult",
                     new { actionContext = actionContext, result = result });
             }
         }
@@ -575,10 +575,10 @@ namespace Microsoft.AspNet.Mvc.Internal
             ActionContext actionContext,
             IActionResult result)
         {
-            if (diagnosticSource.IsEnabled("Microsoft.AspNet.Mvc.AfterActionResult"))
+            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.AfterActionResult"))
             {
                 diagnosticSource.Write(
-                    "Microsoft.AspNet.Mvc.AfterActionResult",
+                    "Microsoft.AspNetCore.Mvc.AfterActionResult",
                     new { actionContext = actionContext, result = result });
             }
         }

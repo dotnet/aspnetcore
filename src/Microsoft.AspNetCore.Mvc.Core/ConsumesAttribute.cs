@@ -4,16 +4,16 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNet.Mvc.Abstractions;
-using Microsoft.AspNet.Mvc.ActionConstraints;
-using Microsoft.AspNet.Mvc.ApiExplorer;
-using Microsoft.AspNet.Mvc.Core;
-using Microsoft.AspNet.Mvc.Filters;
-using Microsoft.AspNet.Mvc.Formatters;
-using Microsoft.AspNet.Mvc.Internal;
+using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.ActionConstraints;
+using Microsoft.AspNetCore.Mvc.ApiExplorer;
+using Microsoft.AspNetCore.Mvc.Core;
+using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Mvc.Formatters;
+using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNet.Mvc
+namespace Microsoft.AspNetCore.Mvc
 {
     /// <summary>
     /// Specifies the allowed content types which can be used to select the action based on request's content-type.

@@ -4,10 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Mvc.Internal;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Internal;
 
-namespace Microsoft.AspNet.Mvc.ModelBinding
+namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
     /// <summary>
     /// An <see cref="IValueProvider"/> adapter for data stored in an <see cref="IFormCollection"/>.

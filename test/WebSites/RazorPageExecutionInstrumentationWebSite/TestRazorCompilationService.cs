@@ -3,9 +3,9 @@
 
 using System.IO;
 using System.Text;
-using Microsoft.AspNet.Mvc.Razor;
-using Microsoft.AspNet.Mvc.Razor.Compilation;
-using Microsoft.AspNet.Razor.CodeGenerators;
+using Microsoft.AspNetCore.Mvc.Razor;
+using Microsoft.AspNetCore.Mvc.Razor.Compilation;
+using Microsoft.AspNetCore.Razor.CodeGenerators;
 using Microsoft.Extensions.Logging;
 
 namespace RazorPageExecutionInstrumentationWebSite

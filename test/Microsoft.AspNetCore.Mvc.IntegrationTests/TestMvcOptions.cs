@@ -2,18 +2,18 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Buffers;
-using Microsoft.AspNet.Mvc.DataAnnotations;
-using Microsoft.AspNet.Mvc.DataAnnotations.Internal;
-using Microsoft.AspNet.Mvc.Formatters.Json.Internal;
-using Microsoft.AspNet.Mvc.Internal;
-using Microsoft.AspNet.Mvc.ModelBinding;
-using Microsoft.AspNet.Mvc.ModelBinding.Metadata;
+using Microsoft.AspNetCore.Mvc.DataAnnotations;
+using Microsoft.AspNetCore.Mvc.DataAnnotations.Internal;
+using Microsoft.AspNetCore.Mvc.Formatters.Json.Internal;
+using Microsoft.AspNetCore.Mvc.Internal;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNet.Mvc.IntegrationTests
+namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 {
     public class TestMvcOptions : IOptions<MvcOptions>
     {

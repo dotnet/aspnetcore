@@ -4,27 +4,27 @@ namespace Asp
     using System;
     using System.Linq;
     using System.Collections.Generic;
-    using Microsoft.AspNet.Mvc;
-    using Microsoft.AspNet.Mvc.Rendering;
+    using Microsoft.AspNetCore.Mvc;
+    using Microsoft.AspNetCore.Mvc.Rendering;
     using System.Threading.Tasks;
 
-    public class ASPV_TestFiles_Input_InjectWithModel_cshtml : Microsoft.AspNet.Mvc.Razor.RazorPage<MyModel>
+    public class ASPV_TestFiles_Input_InjectWithModel_cshtml : Microsoft.AspNetCore.Mvc.Razor.RazorPage<MyModel>
     {
         #line hidden
         public ASPV_TestFiles_Input_InjectWithModel_cshtml()
         {
         }
         #line hidden
-        [Microsoft.AspNet.Mvc.Razor.Internal.RazorInjectAttribute]
+        [Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute]
         public MyApp MyPropertyName { get; private set; }
-        [Microsoft.AspNet.Mvc.Razor.Internal.RazorInjectAttribute]
+        [Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute]
         public MyService<MyModel> Html { get; private set; }
-        [Microsoft.AspNet.Mvc.Razor.Internal.RazorInjectAttribute]
-        public Microsoft.AspNet.Mvc.IUrlHelper Url { get; private set; }
-        [Microsoft.AspNet.Mvc.Razor.Internal.RazorInjectAttribute]
-        public Microsoft.AspNet.Mvc.IViewComponentHelper Component { get; private set; }
-        [Microsoft.AspNet.Mvc.Razor.Internal.RazorInjectAttribute]
-        public Microsoft.AspNet.Mvc.Rendering.IJsonHelper Json { get; private set; }
+        [Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute]
+        public Microsoft.AspNetCore.Mvc.IUrlHelper Url { get; private set; }
+        [Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute]
+        public Microsoft.AspNetCore.Mvc.IViewComponentHelper Component { get; private set; }
+        [Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute]
+        public Microsoft.AspNetCore.Mvc.Rendering.IJsonHelper Json { get; private set; }
 
         #line hidden
 

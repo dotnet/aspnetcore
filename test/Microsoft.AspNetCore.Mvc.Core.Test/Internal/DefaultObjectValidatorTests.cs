@@ -8,16 +8,16 @@ using System.Linq;
 #if DNXCORE50
 using System.Reflection;
 #endif
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Mvc.ModelBinding;
-using Microsoft.AspNet.Mvc.ModelBinding.Metadata;
-using Microsoft.AspNet.Mvc.ModelBinding.Validation;
-using Microsoft.AspNet.Testing;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.Internal
+namespace Microsoft.AspNetCore.Mvc.Internal
 {
     public class DefaultObjectValidatorTests
     {

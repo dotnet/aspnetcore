@@ -4,7 +4,7 @@
 using System;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.Razor
+namespace Microsoft.AspNetCore.Mvc.Razor
 {
     public class DefaultPrecompiledViewsProviderTest
     {

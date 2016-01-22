@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNet.Mvc.Abstractions
+namespace Microsoft.AspNetCore.Mvc.Abstractions
 {
     /// <summary>
     /// Extension methods for <see cref="ActionDescriptor"/>.

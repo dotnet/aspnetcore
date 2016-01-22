@@ -3,11 +3,11 @@
 
 using System.Collections.Generic;
 using System.IO;
-using Microsoft.AspNet.Mvc.ViewFeatures;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.Rendering
+namespace Microsoft.AspNetCore.Mvc.Rendering
 {
     /// <summary>
     /// Tests the <see cref="IHtmlHelper"/>'s <see cref="IHtmlHelper.BeginForm"/> and

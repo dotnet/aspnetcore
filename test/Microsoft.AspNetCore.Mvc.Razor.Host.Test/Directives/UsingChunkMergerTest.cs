@@ -1,11 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNet.Razor.Chunks;
-using Microsoft.AspNet.Testing;
+using Microsoft.AspNetCore.Razor.Chunks;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.Razor.Directives
+namespace Microsoft.AspNetCore.Mvc.Razor.Directives
 {
     public class UsingChunkMergerTest
     {
@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
             };
 
             // Act
-            merger.VisitChunk(new UsingChunk { Namespace = "Microsoft.AspNet.Mvc" });
+            merger.VisitChunk(new UsingChunk { Namespace = "Microsoft.AspNetCore.Mvc" });
             merger.MergeInheritedChunks(chunkTree, inheritedChunks);
 
             // Assert
@@ -39,12 +39,12 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
             var chunkTree = new ChunkTree();
             var inheritedChunks = new Chunk[]
             {
-                new UsingChunk { Namespace = "Microsoft.AspNet.Mvc" },
+                new UsingChunk { Namespace = "Microsoft.AspNetCore.Mvc" },
                 new InjectChunk("Foo", "Bar")
             };
 
             // Act
-            merger.VisitChunk(new UsingChunk { Namespace = "Microsoft.AspNet.Mvc" });
+            merger.VisitChunk(new UsingChunk { Namespace = "Microsoft.AspNetCore.Mvc" });
             merger.MergeInheritedChunks(chunkTree, inheritedChunks);
 
             // Assert
@@ -60,9 +60,9 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
             var inheritedChunks = new Chunk[]
             {
                 new LiteralChunk(),
-                new UsingChunk { Namespace = "Microsoft.AspNet.Mvc" },
-                new UsingChunk { Namespace = "Microsoft.AspNet.Mvc" },
-                new UsingChunk { Namespace = "Microsoft.AspNet.Mvc.Razor" }
+                new UsingChunk { Namespace = "Microsoft.AspNetCore.Mvc" },
+                new UsingChunk { Namespace = "Microsoft.AspNetCore.Mvc" },
+                new UsingChunk { Namespace = "Microsoft.AspNetCore.Mvc.Razor" }
             };
 
             // Act
@@ -71,9 +71,9 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
             // Assert
             Assert.Equal(2, chunkTree.Children.Count);
             var chunk = Assert.IsType<UsingChunk>(chunkTree.Children[0]);
-            Assert.Equal("Microsoft.AspNet.Mvc", chunk.Namespace);
+            Assert.Equal("Microsoft.AspNetCore.Mvc", chunk.Namespace);
             chunk = Assert.IsType<UsingChunk>(chunkTree.Children[1]);
-            Assert.Equal("Microsoft.AspNet.Mvc.Razor", chunk.Namespace);
+            Assert.Equal("Microsoft.AspNetCore.Mvc.Razor", chunk.Namespace);
         }
 
         [Fact]
@@ -84,8 +84,8 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
             var chunkTree = new ChunkTree();
             var inheritedChunks = new[]
             {
-                new UsingChunk { Namespace = "Microsoft.AspNet.Mvc" },
-                new UsingChunk { Namespace = "Microsoft.AspNet.mvc" }
+                new UsingChunk { Namespace = "Microsoft.AspNetCore.Mvc" },
+                new UsingChunk { Namespace = "Microsoft.AspNetCore.mvc" }
             };
 
             // Act
@@ -94,9 +94,9 @@ namespace Microsoft.AspNet.Mvc.Razor.Directives
             // Assert
             Assert.Equal(2, chunkTree.Children.Count);
             var chunk = Assert.IsType<UsingChunk>(chunkTree.Children[0]);
-            Assert.Equal("Microsoft.AspNet.Mvc", chunk.Namespace);
+            Assert.Equal("Microsoft.AspNetCore.Mvc", chunk.Namespace);
             chunk = Assert.IsType<UsingChunk>(chunkTree.Children[1]);
-            Assert.Equal("Microsoft.AspNet.mvc", chunk.Namespace);
+            Assert.Equal("Microsoft.AspNetCore.mvc", chunk.Namespace);
         }
     }
 }

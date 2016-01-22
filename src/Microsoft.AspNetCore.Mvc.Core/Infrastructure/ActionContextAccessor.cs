@@ -8,7 +8,7 @@ using System.Runtime.Remoting.Messaging;
 using System.Threading;
 #endif
 
-namespace Microsoft.AspNet.Mvc.Infrastructure
+namespace Microsoft.AspNetCore.Mvc.Infrastructure
 {
     public class ActionContextAccessor : IActionContextAccessor
     {

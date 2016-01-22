@@ -8,16 +8,16 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Internal;
-using Microsoft.AspNet.Mvc.Formatters.Xml.Internal;
-using Microsoft.AspNet.Testing.xunit;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Internal;
+using Microsoft.AspNetCore.Mvc.Formatters.Xml.Internal;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.Formatters.Xml
+namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
 {
     public class XmlDataContractSerializerOutputFormatterTest
     {

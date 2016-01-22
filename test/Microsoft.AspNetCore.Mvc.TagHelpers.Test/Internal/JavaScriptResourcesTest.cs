@@ -7,7 +7,7 @@ using System.IO;
 using System.Text;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
+namespace Microsoft.AspNetCore.Mvc.TagHelpers.Internal
 {
     public class JavaScriptResourcesTest
     {

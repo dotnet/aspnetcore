@@ -4,10 +4,10 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Authorization;
-using Microsoft.AspNet.Mvc.Internal;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc.Internal;
 
-namespace Microsoft.AspNet.Mvc.Filters
+namespace Microsoft.AspNetCore.Mvc.Filters
 {
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true, Inherited = true)]
     public abstract class AuthorizationFilterAttribute :

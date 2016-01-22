@@ -6,11 +6,11 @@ using System.Buffers;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Mvc.Formatters.Json.Internal;
-using Microsoft.AspNet.Mvc.Internal;
+using Microsoft.AspNetCore.Mvc.Formatters.Json.Internal;
+using Microsoft.AspNetCore.Mvc.Internal;
 using Newtonsoft.Json;
 
-namespace Microsoft.AspNet.Mvc.Formatters
+namespace Microsoft.AspNetCore.Mvc.Formatters
 {
     /// <summary>
     /// An output formatter that specializes in writing JSON content.

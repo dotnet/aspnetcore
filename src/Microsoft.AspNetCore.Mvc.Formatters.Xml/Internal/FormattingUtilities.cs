@@ -6,7 +6,7 @@ using System.Runtime.Serialization;
 #endif
 using System.Xml;
 
-namespace Microsoft.AspNet.Mvc.Formatters.Xml.Internal
+namespace Microsoft.AspNetCore.Mvc.Formatters.Xml.Internal
 {
     /// <summary>
     /// Contains methods which are used by Xml input formatters.

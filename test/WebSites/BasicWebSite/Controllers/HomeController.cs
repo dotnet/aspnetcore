@@ -3,9 +3,9 @@
 
 using System.Threading.Tasks;
 using BasicWebSite.Models;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Mvc;
-using Microsoft.AspNet.Mvc.Controllers;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Controllers;
 
 namespace BasicWebSite.Controllers
 {

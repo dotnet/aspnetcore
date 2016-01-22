@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Microsoft.AspNet.Mvc.ApiExplorer
+namespace Microsoft.AspNetCore.Mvc.ApiExplorer
 {
     /// <summary>
     /// A cached collection of <see cref="ApiDescriptionGroup" />.

@@ -3,10 +3,10 @@
 
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Testing.xunit;
+using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.FunctionalTests
+namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
     public class FlushPointTest : IClassFixture<MvcTestFixture<RazorWebSite.Startup>>
     {

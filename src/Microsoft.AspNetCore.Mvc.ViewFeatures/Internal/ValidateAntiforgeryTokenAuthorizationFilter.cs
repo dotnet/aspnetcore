@@ -5,13 +5,13 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Antiforgery;
-using Microsoft.AspNet.Mvc.Filters;
-using Microsoft.AspNet.Mvc.Internal;
-using Microsoft.AspNet.Mvc.Logging;
+using Microsoft.AspNetCore.Antiforgery;
+using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Mvc.Internal;
+using Microsoft.AspNetCore.Mvc.Logging;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNet.Mvc.ViewFeatures.Internal
+namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 {
     public class ValidateAntiforgeryTokenAuthorizationFilter : IAsyncAuthorizationFilter, IAntiforgeryPolicy
     {

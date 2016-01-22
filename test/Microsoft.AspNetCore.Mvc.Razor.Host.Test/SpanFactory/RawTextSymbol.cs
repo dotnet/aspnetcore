@@ -3,12 +3,12 @@
 
 using System;
 using System.Globalization;
-using Microsoft.AspNet.Razor;
-using Microsoft.AspNet.Razor.Parser.SyntaxTree;
-using Microsoft.AspNet.Razor.Text;
-using Microsoft.AspNet.Razor.Tokenizer.Symbols;
+using Microsoft.AspNetCore.Razor;
+using Microsoft.AspNetCore.Razor.Parser.SyntaxTree;
+using Microsoft.AspNetCore.Razor.Text;
+using Microsoft.AspNetCore.Razor.Tokenizer.Symbols;
 
-namespace Microsoft.AspNet.Mvc.Razor
+namespace Microsoft.AspNetCore.Mvc.Razor
 {
     internal class RawTextSymbol : ISymbol
     {

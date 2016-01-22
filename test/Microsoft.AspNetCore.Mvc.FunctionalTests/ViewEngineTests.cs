@@ -5,11 +5,11 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Reflection;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Testing;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Net.Http.Headers;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.FunctionalTests
+namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
     public class ViewEngineTests : IClassFixture<MvcTestFixture<RazorWebSite.Startup>>
     {

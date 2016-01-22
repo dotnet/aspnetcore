@@ -5,11 +5,11 @@ using System.IO;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Xml;
-using Microsoft.AspNet.Mvc.ModelBinding;
-using Microsoft.AspNet.Testing;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.Formatters.Xml.Internal
+namespace Microsoft.AspNetCore.Mvc.Formatters.Xml.Internal
 {
     public class SerializableErrorWrapperTests
     {

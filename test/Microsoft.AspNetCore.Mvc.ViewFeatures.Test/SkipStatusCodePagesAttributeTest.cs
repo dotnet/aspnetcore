@@ -1,15 +1,15 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNet.Diagnostics;
-using Microsoft.AspNet.Http.Features;
-using Microsoft.AspNet.Http.Internal;
-using Microsoft.AspNet.Mvc.Abstractions;
-using Microsoft.AspNet.Mvc.Filters;
-using Microsoft.AspNet.Routing;
+using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Http.Internal;
+using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Routing;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.Core.Test
+namespace Microsoft.AspNetCore.Mvc.Core.Test
 {
     public class SkipStatusCodePagesAttributeTest
     {

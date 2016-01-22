@@ -4,7 +4,7 @@
 using System;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.Internal
+namespace Microsoft.AspNetCore.Mvc.Internal
 {
     public class ReferenceEqualityComparerTest
     {

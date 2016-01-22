@@ -6,11 +6,11 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
 
-namespace Microsoft.AspNet.Mvc.Razor
+namespace Microsoft.AspNetCore.Mvc.Razor
 {
     /// <summary>
     /// A <see cref="IViewLocationExpander"/> that adds the language as an extension prefix to view names. Language
-    /// that is getting added as extension prefix comes from <see cref="Microsoft.AspNet.Http.HttpContext"/>.
+    /// that is getting added as extension prefix comes from <see cref="Microsoft.AspNetCore.Http.HttpContext"/>.
     /// </summary>
     /// <example>
     /// For the default case with no areas, views are generated with the following patterns (assuming controller is

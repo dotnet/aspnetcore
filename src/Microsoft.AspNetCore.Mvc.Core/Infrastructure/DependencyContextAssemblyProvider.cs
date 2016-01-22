@@ -8,7 +8,7 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.Extensions.DependencyModel;
 
-namespace Microsoft.AspNet.Mvc.Infrastructure
+namespace Microsoft.AspNetCore.Mvc.Infrastructure
 {
     public class DependencyContextAssemblyProvider : IAssemblyProvider
     {
@@ -22,19 +22,19 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
         // fail this test.
         protected virtual HashSet<string> ReferenceAssemblies { get; } = new HashSet<string>(StringComparer.Ordinal)
         {
-            "Microsoft.AspNet.Mvc",
-            "Microsoft.AspNet.Mvc.Abstractions",
-            "Microsoft.AspNet.Mvc.ApiExplorer",
-            "Microsoft.AspNet.Mvc.Core",
-            "Microsoft.AspNet.Mvc.Cors",
-            "Microsoft.AspNet.Mvc.DataAnnotations",
-            "Microsoft.AspNet.Mvc.Formatters.Json",
-            "Microsoft.AspNet.Mvc.Formatters.Xml",
-            "Microsoft.AspNet.Mvc.Localization",
-            "Microsoft.AspNet.Mvc.Razor",
-            "Microsoft.AspNet.Mvc.Razor.Host",
-            "Microsoft.AspNet.Mvc.TagHelpers",
-            "Microsoft.AspNet.Mvc.ViewFeatures"
+            "Microsoft.AspNetCore.Mvc",
+            "Microsoft.AspNetCore.Mvc.Abstractions",
+            "Microsoft.AspNetCore.Mvc.ApiExplorer",
+            "Microsoft.AspNetCore.Mvc.Core",
+            "Microsoft.AspNetCore.Mvc.Cors",
+            "Microsoft.AspNetCore.Mvc.DataAnnotations",
+            "Microsoft.AspNetCore.Mvc.Formatters.Json",
+            "Microsoft.AspNetCore.Mvc.Formatters.Xml",
+            "Microsoft.AspNetCore.Mvc.Localization",
+            "Microsoft.AspNetCore.Mvc.Razor",
+            "Microsoft.AspNetCore.Mvc.Razor.Host",
+            "Microsoft.AspNetCore.Mvc.TagHelpers",
+            "Microsoft.AspNetCore.Mvc.ViewFeatures"
         };
 
         /// <inheritdoc />

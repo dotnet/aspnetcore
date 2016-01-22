@@ -8,10 +8,10 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Mvc.Core;
+using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.Extensions.Internal;
 
-namespace Microsoft.AspNet.Mvc.Internal
+namespace Microsoft.AspNetCore.Mvc.Internal
 {
     public static class ControllerActionExecutor
     {

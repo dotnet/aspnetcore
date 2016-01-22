@@ -11,10 +11,10 @@ using System.Linq;
 using System.Reflection;
 #endif
 using System.Threading.Tasks;
-using Microsoft.AspNet.Mvc.Internal;
-using Microsoft.AspNet.Mvc.ModelBinding.Validation;
+using Microsoft.AspNetCore.Mvc.Internal;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
-namespace Microsoft.AspNet.Mvc.ModelBinding
+namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
     /// <summary>
     /// <see cref="IModelBinder"/> implementation for binding collection values.

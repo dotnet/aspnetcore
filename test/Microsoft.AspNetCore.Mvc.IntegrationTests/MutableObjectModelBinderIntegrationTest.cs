@@ -6,17 +6,17 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Features.Internal;
-using Microsoft.AspNet.Http.Internal;
-using Microsoft.AspNet.Mvc.Abstractions;
-using Microsoft.AspNet.Mvc.Controllers;
-using Microsoft.AspNet.Mvc.Infrastructure;
-using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features.Internal;
+using Microsoft.AspNetCore.Http.Internal;
+using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.Controllers;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Primitives;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.IntegrationTests
+namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 {
     // Integration tests targeting the behavior of the MutableObjectModelBinder and related classes
     // with other model binders.

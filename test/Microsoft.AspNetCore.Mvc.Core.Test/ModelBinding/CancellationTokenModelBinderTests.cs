@@ -4,10 +4,10 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http.Internal;
+using Microsoft.AspNetCore.Http.Internal;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.ModelBinding.Test
+namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
 {
     public class CancellationTokenModelBinderTests
     {

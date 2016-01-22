@@ -3,9 +3,9 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Html;
+using Microsoft.AspNetCore.Html;
 
-namespace Microsoft.AspNet.Mvc.Rendering
+namespace Microsoft.AspNetCore.Mvc.Rendering
 {
     /// <summary>
     /// Extension methods for <see cref="IViewComponentHelper"/>.

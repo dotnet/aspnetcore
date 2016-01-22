@@ -7,14 +7,14 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Mvc.Rendering;
-using Microsoft.AspNet.Mvc.ViewFeatures.Buffer;
-using Microsoft.AspNet.Testing;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.ViewFeatures.Buffer;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.WebEncoders.Testing;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.Razor.Test
+namespace Microsoft.AspNetCore.Mvc.Razor.Test
 {
     public class RazorTextWriterTest
     {

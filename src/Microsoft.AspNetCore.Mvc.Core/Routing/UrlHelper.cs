@@ -4,10 +4,10 @@
 using System;
 using System.Diagnostics;
 using System.Text;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Routing;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 
-namespace Microsoft.AspNet.Mvc.Routing
+namespace Microsoft.AspNetCore.Mvc.Routing
 {
     /// <summary>
     /// An implementation of <see cref="IUrlHelper"/> that contains methods to

@@ -3,7 +3,7 @@
 
 using System.Globalization;
 
-namespace Microsoft.AspNet.Mvc.ModelBinding
+namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
     public static class ModelNames
     {

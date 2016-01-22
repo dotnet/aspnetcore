@@ -3,9 +3,9 @@
 
 using System;
 using System.Globalization;
-using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
-namespace Microsoft.AspNet.Mvc.Internal
+namespace Microsoft.AspNetCore.Mvc.Internal
 {
     public class ElementalValueProvider : IValueProvider
     {

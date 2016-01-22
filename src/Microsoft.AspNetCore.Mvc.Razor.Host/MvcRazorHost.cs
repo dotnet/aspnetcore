@@ -5,24 +5,24 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Microsoft.AspNet.Mvc.Razor.Directives;
-using Microsoft.AspNet.Mvc.Razor.Internal;
-using Microsoft.AspNet.Razor;
-using Microsoft.AspNet.Razor.Chunks;
-using Microsoft.AspNet.Razor.CodeGenerators;
-using Microsoft.AspNet.Razor.Compilation.TagHelpers;
-using Microsoft.AspNet.Razor.Parser;
-using Microsoft.AspNet.Razor.Runtime.TagHelpers;
-using Microsoft.AspNet.Razor.TagHelpers;
+using Microsoft.AspNetCore.Mvc.Razor.Directives;
+using Microsoft.AspNetCore.Mvc.Razor.Internal;
+using Microsoft.AspNetCore.Razor;
+using Microsoft.AspNetCore.Razor.Chunks;
+using Microsoft.AspNetCore.Razor.CodeGenerators;
+using Microsoft.AspNetCore.Razor.Compilation.TagHelpers;
+using Microsoft.AspNetCore.Razor.Parser;
+using Microsoft.AspNetCore.Razor.Runtime.TagHelpers;
+using Microsoft.AspNetCore.Razor.TagHelpers;
 #if NET451
 using Microsoft.Extensions.FileProviders;
 #endif
 
-namespace Microsoft.AspNet.Mvc.Razor
+namespace Microsoft.AspNetCore.Mvc.Razor
 {
     public class MvcRazorHost : RazorEngineHost, IMvcRazorHost
     {
-        private const string BaseType = "Microsoft.AspNet.Mvc.Razor.RazorPage";
+        private const string BaseType = "Microsoft.AspNetCore.Mvc.Razor.RazorPage";
         private const string HtmlHelperPropertyName = "Html";
 
         private static readonly string[] _defaultNamespaces = new[]
@@ -30,18 +30,18 @@ namespace Microsoft.AspNet.Mvc.Razor
             "System",
             "System.Linq",
             "System.Collections.Generic",
-            "Microsoft.AspNet.Mvc",
-            "Microsoft.AspNet.Mvc.Rendering",
+            "Microsoft.AspNetCore.Mvc",
+            "Microsoft.AspNetCore.Mvc.Rendering",
         };
         private static readonly Chunk[] _defaultInheritedChunks = new Chunk[]
         {
-            new InjectChunk("Microsoft.AspNet.Mvc.Rendering.IHtmlHelper<TModel>", HtmlHelperPropertyName),
-            new InjectChunk("Microsoft.AspNet.Mvc.Rendering.IJsonHelper", "Json"),
-            new InjectChunk("Microsoft.AspNet.Mvc.IViewComponentHelper", "Component"),
-            new InjectChunk("Microsoft.AspNet.Mvc.IUrlHelper", "Url"),
+            new InjectChunk("Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper<TModel>", HtmlHelperPropertyName),
+            new InjectChunk("Microsoft.AspNetCore.Mvc.Rendering.IJsonHelper", "Json"),
+            new InjectChunk("Microsoft.AspNetCore.Mvc.IViewComponentHelper", "Component"),
+            new InjectChunk("Microsoft.AspNetCore.Mvc.IUrlHelper", "Url"),
             new AddTagHelperChunk
             {
-                LookupText = "Microsoft.AspNet.Mvc.Razor.TagHelpers.UrlResolutionTagHelper, Microsoft.AspNet.Mvc.Razor"
+                LookupText = "Microsoft.AspNetCore.Mvc.Razor.TagHelpers.UrlResolutionTagHelper, Microsoft.AspNetCore.Mvc.Razor"
             },
             new SetBaseTypeChunk
             {
@@ -75,7 +75,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 writeLiteralMethodName: "WriteLiteral",
                 writeToMethodName: "WriteTo",
                 writeLiteralToMethodName: "WriteLiteralTo",
-                templateTypeName: "Microsoft.AspNet.Mvc.Razor.HelperResult",
+                templateTypeName: "Microsoft.AspNetCore.Mvc.Razor.HelperResult",
                 defineSectionMethodName: "DefineSection",
                 generatedTagHelperContext: new GeneratedTagHelperContext
                 {
@@ -202,7 +202,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// </summary>
         public virtual string InjectAttribute
         {
-            get { return "Microsoft.AspNet.Mvc.Razor.Internal.RazorInjectAttribute"; }
+            get { return "Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute"; }
         }
 
         /// <summary>
@@ -210,7 +210,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// </summary>
         public virtual string ModelExpressionType
         {
-            get { return "Microsoft.AspNet.Mvc.Rendering.ModelExpression"; }
+            get { return "Microsoft.AspNetCore.Mvc.Rendering.ModelExpression"; }
         }
 
         /// <summary>

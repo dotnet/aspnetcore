@@ -3,10 +3,10 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNet.Razor.TagHelpers;
+using Microsoft.AspNetCore.Razor.TagHelpers;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
+namespace Microsoft.AspNetCore.Mvc.TagHelpers.Internal
 {
     public class AttributeMatcherTest
     {

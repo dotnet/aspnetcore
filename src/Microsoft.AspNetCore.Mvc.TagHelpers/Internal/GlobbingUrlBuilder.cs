@@ -3,14 +3,14 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNet.Http;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.FileSystemGlobbing;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
+namespace Microsoft.AspNetCore.Mvc.TagHelpers.Internal
 {
     /// <summary>
     /// Utility methods for <see cref="AspNet.Razor.TagHelpers.ITagHelper"/>'s that support

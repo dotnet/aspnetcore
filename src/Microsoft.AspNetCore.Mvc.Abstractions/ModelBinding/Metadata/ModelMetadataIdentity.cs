@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNet.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.Abstractions;
 
-namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
+namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
 {
     /// <summary>
     /// A key type which identifies a <see cref="ModelMetadata"/>.

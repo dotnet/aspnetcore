@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNet.Mvc.Logging
+namespace Microsoft.AspNetCore.Mvc.Logging
 {
     internal static class ViewResultExecutorLoggerExtensions
     {

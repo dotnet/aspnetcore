@@ -1,6 +1,6 @@
 {
     "version": "1.0.0",
-    "name": "Microsoft.AspNet.Mvc.TagHelpers",
+    "name": "Microsoft.AspNetCore.Mvc.TagHelpers",
     "private": true,
     "devDependencies": {
         "grunt": "~0.4.5",

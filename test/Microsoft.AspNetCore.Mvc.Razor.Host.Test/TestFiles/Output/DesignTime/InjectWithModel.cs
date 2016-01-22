@@ -2,7 +2,7 @@ namespace Asp
 {
     using System.Threading.Tasks;
 
-    public class ASPV_testfiles_input_injectwithmodel_cshtml : Microsoft.AspNet.Mvc.Razor.RazorPage<MyModel>
+    public class ASPV_testfiles_input_injectwithmodel_cshtml : Microsoft.AspNetCore.Mvc.Razor.RazorPage<MyModel>
     {
         private static object @__o;
         private void @__RazorDesignTimeHelpers__()
@@ -20,7 +20,7 @@ var __modelHelper = default(MyModel);
         {
         }
         #line hidden
-        [Microsoft.AspNet.Mvc.Razor.Internal.RazorInjectAttribute]
+        [Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute]
         public
 #line 2 "testfiles/input/injectwithmodel.cshtml"
         MyApp MyPropertyName
@@ -28,7 +28,7 @@ var __modelHelper = default(MyModel);
 #line default
 #line hidden
         { get; private set; }
-        [Microsoft.AspNet.Mvc.Razor.Internal.RazorInjectAttribute]
+        [Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute]
         public
 #line 3 "testfiles/input/injectwithmodel.cshtml"
         MyService<MyModel> Html
@@ -36,12 +36,12 @@ var __modelHelper = default(MyModel);
 #line default
 #line hidden
         { get; private set; }
-        [Microsoft.AspNet.Mvc.Razor.Internal.RazorInjectAttribute]
-        public Microsoft.AspNet.Mvc.IUrlHelper Url { get; private set; }
-        [Microsoft.AspNet.Mvc.Razor.Internal.RazorInjectAttribute]
-        public Microsoft.AspNet.Mvc.IViewComponentHelper Component { get; private set; }
-        [Microsoft.AspNet.Mvc.Razor.Internal.RazorInjectAttribute]
-        public Microsoft.AspNet.Mvc.Rendering.IJsonHelper Json { get; private set; }
+        [Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute]
+        public Microsoft.AspNetCore.Mvc.IUrlHelper Url { get; private set; }
+        [Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute]
+        public Microsoft.AspNetCore.Mvc.IViewComponentHelper Component { get; private set; }
+        [Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute]
+        public Microsoft.AspNetCore.Mvc.Rendering.IJsonHelper Json { get; private set; }
 
         #line hidden
 

@@ -6,13 +6,13 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Testing;
-using Microsoft.AspNet.Testing.xunit;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.Testing.xunit;
 using Newtonsoft.Json;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.FunctionalTests
+namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
     public class InputObjectValidationTests : IClassFixture<MvcTestFixture<FormatterWebSite.Startup>>
     {

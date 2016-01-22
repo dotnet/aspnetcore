@@ -6,7 +6,7 @@ using System;
 using System.Runtime.Serialization;
 #endif
 
-namespace Microsoft.AspNet.Mvc.Internal
+namespace Microsoft.AspNetCore.Mvc.Internal
 {
     /// <summary>
     /// An exception which indicates multiple matches in action selection.

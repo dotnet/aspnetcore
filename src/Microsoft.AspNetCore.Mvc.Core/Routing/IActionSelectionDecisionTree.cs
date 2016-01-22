@@ -2,13 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using Microsoft.AspNet.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.Abstractions;
 
-namespace Microsoft.AspNet.Mvc.Internal
+namespace Microsoft.AspNetCore.Mvc.Internal
 {
     /// <summary>
     /// A data structure that retrieves a list of <see cref="ActionDescriptor"/> matches based on the values
-    /// supplied for the current request by <see cref="Microsoft.AspNet.Routing.RouteData.Values"/>.
+    /// supplied for the current request by <see cref="Microsoft.AspNetCore.Routing.RouteData.Values"/>.
     /// </summary>
     public interface IActionSelectionDecisionTree
     {

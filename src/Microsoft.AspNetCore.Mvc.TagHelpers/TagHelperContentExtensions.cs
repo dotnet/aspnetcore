@@ -4,12 +4,12 @@
 using System;
 using System.IO;
 using System.Text.Encodings.Web;
-using Microsoft.AspNet.Html;
-using Microsoft.AspNet.Mvc.Razor;
-using Microsoft.AspNet.Mvc.Rendering;
-using Microsoft.AspNet.Razor.TagHelpers;
+using Microsoft.AspNetCore.Html;
+using Microsoft.AspNetCore.Mvc.Razor;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Razor.TagHelpers;
 
-namespace Microsoft.AspNet.Mvc.TagHelpers
+namespace Microsoft.AspNetCore.Mvc.TagHelpers
 {
     /// <summary>
     /// Extension methods for <see cref="TagHelperContent"/>.

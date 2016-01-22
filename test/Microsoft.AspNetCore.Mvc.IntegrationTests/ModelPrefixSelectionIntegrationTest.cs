@@ -3,14 +3,14 @@
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Internal;
-using Microsoft.AspNet.Mvc.Abstractions;
-using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Internal;
+using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Primitives;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.IntegrationTests
+namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 {
     // Integration tests for the decision logic about how a model-name/prefix is selected at the top-level
     // of ModelBinding.

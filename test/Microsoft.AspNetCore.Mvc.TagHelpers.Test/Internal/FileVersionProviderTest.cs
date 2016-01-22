@@ -3,15 +3,15 @@
 
 using System.IO;
 using System.Text;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Mvc.Razor;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Primitives;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
+namespace Microsoft.AspNetCore.Mvc.TagHelpers.Internal
 {
     public class FileVersionProviderTest
     {

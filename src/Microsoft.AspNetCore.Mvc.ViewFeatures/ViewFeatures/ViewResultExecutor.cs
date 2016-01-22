@@ -6,13 +6,13 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Mvc.Internal;
-using Microsoft.AspNet.Mvc.Logging;
-using Microsoft.AspNet.Mvc.ViewEngines;
+using Microsoft.AspNetCore.Mvc.Internal;
+using Microsoft.AspNetCore.Mvc.Logging;
+using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNet.Mvc.ViewFeatures
+namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 {
     /// <summary>
     /// Finds and executes an <see cref="IView"/> for a <see cref="ViewResult"/>.
@@ -99,10 +99,10 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
 
             if (result.Success)
             {
-                if (DiagnosticSource.IsEnabled("Microsoft.AspNet.Mvc.ViewFound"))
+                if (DiagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.ViewFound"))
                 {
                     DiagnosticSource.Write(
-                        "Microsoft.AspNet.Mvc.ViewFound",
+                        "Microsoft.AspNetCore.Mvc.ViewFound",
                         new
                         {
                             actionContext = actionContext,
@@ -117,10 +117,10 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             }
             else
             {
-                if (DiagnosticSource.IsEnabled("Microsoft.AspNet.Mvc.ViewNotFound"))
+                if (DiagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.ViewNotFound"))
                 {
                     DiagnosticSource.Write(
-                        "Microsoft.AspNet.Mvc.ViewNotFound",
+                        "Microsoft.AspNetCore.Mvc.ViewNotFound",
                         new
                         {
                             actionContext = actionContext,

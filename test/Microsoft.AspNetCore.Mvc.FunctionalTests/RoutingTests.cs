@@ -7,11 +7,11 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Routing;
+using Microsoft.AspNetCore.Routing;
 using Newtonsoft.Json;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.FunctionalTests
+namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
     public class RoutingTests : IClassFixture<MvcTestFixture<RoutingWebSite.Startup>>
     {

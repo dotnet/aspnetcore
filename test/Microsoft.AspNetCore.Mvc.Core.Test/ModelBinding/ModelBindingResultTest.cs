@@ -4,7 +4,7 @@
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.ModelBinding.Test
+namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
 {
     public class ModelBindingResultTest
     {

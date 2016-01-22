@@ -10,10 +10,10 @@
     "keyFile": "../../tools/Key.snk"
   },
   "dependencies": {
-    "Microsoft.AspNet.Mvc.Core": "6.0.0-*",
-    "Microsoft.AspNet.Mvc.Formatters.Json": "6.0.0-*",
-    "Microsoft.AspNet.WebApi.Client": "5.2.2",
-    "Microsoft.AspNet.WebUtilities": "1.0.0-*",
+    "Microsoft.AspNetCore.Mvc.Core": "6.0.0-*",
+    "Microsoft.AspNetCore.Mvc.Formatters.Json": "6.0.0-*",
+    "Microsoft.AspNetCore.WebApi.Client": "5.2.2",
+    "Microsoft.AspNetCore.WebUtilities": "1.0.0-*",
     "Microsoft.Extensions.PropertyHelper.Sources": {
       "type": "build",
       "version": "1.0.0-*"

@@ -5,12 +5,12 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Microsoft.AspNet.Razor;
-using Microsoft.AspNet.Razor.Chunks;
-using Microsoft.AspNet.Razor.Parser;
+using Microsoft.AspNetCore.Razor;
+using Microsoft.AspNetCore.Razor.Chunks;
+using Microsoft.AspNetCore.Razor.Parser;
 using Microsoft.Extensions.FileProviders;
 
-namespace Microsoft.AspNet.Mvc.Razor.Directives
+namespace Microsoft.AspNetCore.Mvc.Razor.Directives
 {
     /// <summary>
     /// A utility type for supporting inheritance of directives into a page from applicable <c>_ViewImports</c> pages.

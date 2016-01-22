@@ -7,13 +7,13 @@ using System.ComponentModel;
 using System.IO;
 using System.Reflection;
 using System.Text.Encodings.Web;
-using Microsoft.AspNet.Html;
-using Microsoft.AspNet.Mvc.Rendering;
-using Microsoft.AspNet.Mvc.Routing;
-using Microsoft.AspNet.Mvc.ViewFeatures;
-using Microsoft.AspNet.Razor.TagHelpers;
+using Microsoft.AspNetCore.Html;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.AspNetCore.Razor.TagHelpers;
 
-namespace Microsoft.AspNet.Mvc.Razor.TagHelpers
+namespace Microsoft.AspNetCore.Mvc.Razor.TagHelpers
 {
     /// <summary>
     /// <see cref="ITagHelper"/> implementation targeting elements containing attributes with URL expected values.

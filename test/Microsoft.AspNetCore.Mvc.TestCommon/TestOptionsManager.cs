@@ -4,7 +4,7 @@
 using System.Linq;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNet.Mvc
+namespace Microsoft.AspNetCore.Mvc
 {
     public class TestOptionsManager<T> : OptionsManager<T>
         where T : class, new()

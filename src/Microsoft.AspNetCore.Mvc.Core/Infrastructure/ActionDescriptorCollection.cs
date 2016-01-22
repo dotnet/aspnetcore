@@ -3,9 +3,9 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNet.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.Abstractions;
 
-namespace Microsoft.AspNet.Mvc.Infrastructure
+namespace Microsoft.AspNetCore.Mvc.Infrastructure
 {
     /// <summary>
     /// A cached collection of <see cref="ActionDescriptor" />.

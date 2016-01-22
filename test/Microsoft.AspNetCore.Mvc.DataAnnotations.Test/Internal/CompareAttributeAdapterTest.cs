@@ -2,15 +2,15 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.ComponentModel.DataAnnotations;
-using Microsoft.AspNet.Mvc.ModelBinding;
-using Microsoft.AspNet.Mvc.ModelBinding.Validation;
-using Microsoft.AspNet.Testing;
-using Microsoft.AspNet.Testing.xunit;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Localization;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.DataAnnotations.Internal
+namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
 {
     public class CompareAttributeAdapterTest
     {

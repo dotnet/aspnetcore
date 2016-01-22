@@ -7,7 +7,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Xml.Linq;
 
-namespace Microsoft.AspNet.Mvc.FunctionalTests
+namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
     public static class AntiforgeryTestHelper
     {

@@ -3,10 +3,10 @@
 
 using System.Collections.Generic;
 using System.Globalization;
-using Microsoft.AspNet.Http.Internal;
+using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.AspNet.Mvc.ModelBinding
+namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
     public class QueryStringValueProviderTest : EnumerableValueProviderTest
     {

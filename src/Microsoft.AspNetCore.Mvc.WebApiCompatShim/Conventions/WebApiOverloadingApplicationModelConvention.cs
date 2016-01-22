@@ -3,9 +3,9 @@
 
 using System;
 using System.Linq;
-using Microsoft.AspNet.Mvc.ApplicationModels;
+using Microsoft.AspNetCore.Mvc.ApplicationModels;
 
-namespace Microsoft.AspNet.Mvc.WebApiCompatShim
+namespace Microsoft.AspNetCore.Mvc.WebApiCompatShim
 {
     public class WebApiOverloadingApplicationModelConvention : IActionModelConvention
     {

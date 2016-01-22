@@ -3,12 +3,12 @@
 
 using System;
 using System.Linq;
-using Microsoft.AspNet.Authorization;
-using Microsoft.AspNet.Mvc.ApplicationModels;
-using Microsoft.AspNet.Mvc.Filters;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc.ApplicationModels;
+using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNet.Mvc.Internal
+namespace Microsoft.AspNetCore.Mvc.Internal
 {
     public class AuthorizationApplicationModelProvider : IApplicationModelProvider
     {

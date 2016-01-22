@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.AspNet.Mvc.ModelBinding
+namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
     /// <summary>
     /// Result of an <see cref="IValueProvider.GetValue(string)"/> operation.

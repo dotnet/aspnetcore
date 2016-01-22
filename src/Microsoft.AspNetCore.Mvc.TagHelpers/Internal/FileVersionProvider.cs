@@ -3,12 +3,12 @@
 
 using System;
 using System.Security.Cryptography;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.WebUtilities;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.FileProviders;
 
-namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
+namespace Microsoft.AspNetCore.Mvc.TagHelpers.Internal
 {
     /// <summary>
     /// Provides version hash for a specified file.

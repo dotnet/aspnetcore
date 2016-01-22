@@ -5,7 +5,7 @@ using System.Text.Encodings.Web;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.WebEncoders.Testing;
 
-namespace Microsoft.AspNet.Mvc.FunctionalTests
+namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
     public class MvcEncodedTestFixture<TStartup> : MvcTestFixture<TStartup>
     {

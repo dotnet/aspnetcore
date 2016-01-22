@@ -3,12 +3,12 @@
 
 using System.Globalization;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Mvc.Abstractions;
-using Microsoft.AspNet.Mvc.ModelBinding;
-using Microsoft.AspNet.Testing;
+using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.IntegrationTests
+namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 {
     public class BinderTypeBasedModelBinderIntegrationTest
     {

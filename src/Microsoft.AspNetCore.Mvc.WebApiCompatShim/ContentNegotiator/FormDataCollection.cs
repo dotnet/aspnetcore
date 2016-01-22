@@ -3,7 +3,7 @@
 
 #if DOTNET5_4
 
-using Microsoft.AspNet.WebUtilities;
+using Microsoft.AspNetCore.WebUtilities;
 using System.Collections;
 using System.Collections.Generic;
 

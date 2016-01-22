@@ -3,13 +3,13 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNet.Mvc.Routing;
-using Microsoft.AspNet.Mvc.TestCommon;
+using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.AspNetCore.Mvc.TestCommon;
 using Microsoft.Extensions.Internal;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.Rendering
+namespace Microsoft.AspNetCore.Mvc.Rendering
 {
     /// <summary>
     /// Tests the <see cref="HtmlHelper"/>'s link generation methods.

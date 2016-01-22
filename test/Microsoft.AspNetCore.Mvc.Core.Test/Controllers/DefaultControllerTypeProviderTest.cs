@@ -4,11 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using Microsoft.AspNet.Mvc.DefaultControllerTypeProviderControllers;
-using Microsoft.AspNet.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.DefaultControllerTypeProviderControllers;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.Controllers
+namespace Microsoft.AspNetCore.Mvc.Controllers
 {
     public class DefaultControllerTypeProviderTest
     {
@@ -275,7 +275,7 @@ namespace Microsoft.AspNet.Mvc.Controllers
 // implementation of this class to test it, they are just top level classes. Don't reuse
 // these outside this test - find a better way or use nested classes to keep the tests
 // independent.
-namespace Microsoft.AspNet.Mvc.DefaultControllerTypeProviderControllers
+namespace Microsoft.AspNetCore.Mvc.DefaultControllerTypeProviderControllers
 {
     public abstract class AbstractController : Controller
     {

@@ -3,10 +3,10 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Html;
-using Microsoft.AspNet.Mvc.Internal;
+using Microsoft.AspNetCore.Html;
+using Microsoft.AspNetCore.Mvc.Internal;
 
-namespace Microsoft.AspNet.Mvc.ViewComponents
+namespace Microsoft.AspNetCore.Mvc.ViewComponents
 {
     /// <summary>
     /// An <see cref="IViewComponentResult"/> which writes an <see cref="IHtmlContent"/> when executed.

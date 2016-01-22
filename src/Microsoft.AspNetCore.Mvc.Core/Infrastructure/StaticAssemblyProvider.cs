@@ -4,7 +4,7 @@
 using System.Collections.Generic;
 using System.Reflection;
 
-namespace Microsoft.AspNet.Mvc.Infrastructure
+namespace Microsoft.AspNetCore.Mvc.Infrastructure
 {
     /// <summary>
     /// A <see cref="IAssemblyProvider"/> with a fixed set of candidate assemblies. 

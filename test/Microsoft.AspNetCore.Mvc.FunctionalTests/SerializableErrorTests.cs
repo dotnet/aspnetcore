@@ -6,12 +6,12 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Mvc.Formatters.Xml;
-using Microsoft.AspNet.Testing;
-using Microsoft.AspNet.Testing.xunit;
+using Microsoft.AspNetCore.Mvc.Formatters.Xml;
+using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.FunctionalTests
+namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
     public class SerializableErrorTests : IClassFixture<MvcTestFixture<XmlFormattersWebSite.Startup>>
     {

@@ -6,13 +6,13 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using Microsoft.AspNet.Testing;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.WebEncoders.Testing;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.Localization.Test
+namespace Microsoft.AspNetCore.Mvc.Localization.Test
 {
     public class HtmlLocalizerTest
     {

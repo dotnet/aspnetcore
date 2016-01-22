@@ -5,7 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Microsoft.AspNet.Mvc.Formatters.Xml
+namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
 {
     /// <summary>
     /// Delegates enumeration of elements to the original enumerator and wraps the items

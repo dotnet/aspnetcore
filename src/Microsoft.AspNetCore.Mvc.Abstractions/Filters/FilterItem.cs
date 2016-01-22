@@ -4,7 +4,7 @@
 using System;
 using System.Diagnostics;
 
-namespace Microsoft.AspNet.Mvc.Filters
+namespace Microsoft.AspNetCore.Mvc.Filters
 {
     /// <summary>
     /// Used to associate executable filters with <see cref="IFilterMetadata"/> instances

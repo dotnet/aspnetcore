@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Dynamic;
 
-namespace Microsoft.AspNet.Mvc.ViewFeatures
+namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 {
     public class DynamicViewData : DynamicObject
     {

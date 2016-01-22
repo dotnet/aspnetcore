@@ -8,10 +8,10 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using FiltersWebSite;
-using Microsoft.AspNet.Mvc.Formatters.Xml;
+using Microsoft.AspNetCore.Mvc.Formatters.Xml;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.FunctionalTests
+namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
     public class FiltersTest : IClassFixture<MvcTestFixture<FiltersWebSite.Startup>>
     {

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using RazorPageExecutionInstrumentationWebSite;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.FunctionalTests
+namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
     public class RazorPageExecutionInstrumentationTest : IClassFixture<MvcTestFixture<Startup>>
     {

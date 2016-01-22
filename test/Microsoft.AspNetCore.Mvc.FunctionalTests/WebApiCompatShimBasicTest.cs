@@ -10,12 +10,12 @@ using System.Net.Http.Formatting;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using System.Web.Http;
-using Microsoft.AspNet.Testing;
-using Microsoft.AspNet.Testing.xunit;
+using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.Testing.xunit;
 using Newtonsoft.Json;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.FunctionalTests
+namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
     public class WebApiCompatShimBasicTest : IClassFixture<MvcTestFixture<WebApiCompatShimWebSite.Startup>>
     {

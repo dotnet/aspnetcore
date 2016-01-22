@@ -5,10 +5,10 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Mvc.Formatters.Xml;
+using Microsoft.AspNetCore.Mvc.Formatters.Xml;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.FunctionalTests
+namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
     public class XmlSerializerFormattersWrappingTest : IClassFixture<MvcTestFixture<XmlFormattersWebSite.Startup>>
     {

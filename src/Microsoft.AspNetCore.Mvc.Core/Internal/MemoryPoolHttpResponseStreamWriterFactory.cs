@@ -6,7 +6,7 @@ using System.Buffers;
 using System.IO;
 using System.Text;
 
-namespace Microsoft.AspNet.Mvc.Internal
+namespace Microsoft.AspNetCore.Mvc.Internal
 {
     /// <summary>
     /// An <see cref="IHttpResponseStreamWriterFactory"/> that uses pooled buffers.

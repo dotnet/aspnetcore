@@ -12,7 +12,7 @@ using Microsoft.Extensions.PlatformAbstractions;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.Razor.Compilation
+namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
 {
     public class DefaultRoslynCompilationServiceTest
     {

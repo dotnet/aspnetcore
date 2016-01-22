@@ -4,13 +4,13 @@
 #if !FUNCTIONAL_TESTS
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Routing;
-using Microsoft.AspNet.Mvc.Abstractions;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Mvc.Abstractions;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.Filters
+namespace Microsoft.AspNetCore.Mvc.Filters
 {
     public class CommonFilterTest
     {

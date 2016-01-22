@@ -4,9 +4,9 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Reflection;
-using Microsoft.AspNet.Mvc.Core;
+using Microsoft.AspNetCore.Mvc.Core;
 
-namespace Microsoft.AspNet.Mvc.Filters
+namespace Microsoft.AspNetCore.Mvc.Filters
 {
     public class FilterCollection : Collection<IFilterMetadata>
     {

@@ -10,8 +10,8 @@
     "keyFile": "../../tools/Key.snk"
   },
   "dependencies": {
-    "Microsoft.AspNet.Cors": "6.0.0-*",
-    "Microsoft.AspNet.Mvc.Core": "6.0.0-*"
+    "Microsoft.AspNetCore.Cors": "6.0.0-*",
+    "Microsoft.AspNetCore.Mvc.Core": "6.0.0-*"
   },
   "frameworks": {
     "net451": {},

@@ -5,12 +5,12 @@ using System.Net;
 using System.Net.Http;
 using System.Security.Principal;
 using System.Text;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Mvc;
-using Microsoft.AspNet.Mvc.ModelBinding;
-using Microsoft.AspNet.Mvc.ModelBinding.Validation;
-using Microsoft.AspNet.Mvc.Routing;
-using Microsoft.AspNet.Mvc.WebApiCompatShim;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.AspNetCore.Mvc.WebApiCompatShim;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json;
@@ -30,7 +30,7 @@ namespace System.Web.Http
         private IUrlHelper _urlHelper;
 
         /// <summary>
-        /// Gets the <see cref="Microsoft.AspNet.Mvc.ActionContext"/>.
+        /// Gets the <see cref="Microsoft.AspNetCore.Mvc.ActionContext"/>.
         /// </summary>
         public ActionContext ActionContext => ControllerContext;
 

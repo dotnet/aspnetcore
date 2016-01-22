@@ -5,7 +5,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.Internal
+namespace Microsoft.AspNetCore.Mvc.Internal
 {
     public class NonDisposableStreamTest
     {

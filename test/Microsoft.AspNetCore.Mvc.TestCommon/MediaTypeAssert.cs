@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 using Xunit.Sdk;
 
-namespace Microsoft.AspNet.Mvc.TestCommon
+namespace Microsoft.AspNetCore.Mvc.TestCommon
 {
     public class MediaTypeAssert
     {

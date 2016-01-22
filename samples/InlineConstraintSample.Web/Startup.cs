@@ -3,9 +3,9 @@
 
 using System.Collections.Generic;
 using InlineConstraintSample.Web.Constraints;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Hosting;
-using Microsoft.AspNet.Localization;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace InlineConstraintSample.Web

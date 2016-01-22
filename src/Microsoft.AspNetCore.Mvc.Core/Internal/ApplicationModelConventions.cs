@@ -4,9 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNet.Mvc.ApplicationModels;
+using Microsoft.AspNetCore.Mvc.ApplicationModels;
 
-namespace Microsoft.AspNet.Mvc.Internal
+namespace Microsoft.AspNetCore.Mvc.Internal
 {
     /// <summary>
     /// Applies conventions to a <see cref="ApplicationModel"/>.

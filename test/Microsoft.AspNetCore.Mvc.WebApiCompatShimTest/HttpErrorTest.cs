@@ -4,8 +4,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http.Formatting;
-using Microsoft.AspNet.Mvc.ModelBinding;
-using Microsoft.AspNet.Testing.xunit;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Testing.xunit;
 using Newtonsoft.Json.Linq;
 using Xunit;
 

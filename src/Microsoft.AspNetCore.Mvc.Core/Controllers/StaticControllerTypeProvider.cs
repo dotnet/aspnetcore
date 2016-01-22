@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-namespace Microsoft.AspNet.Mvc.Controllers
+namespace Microsoft.AspNetCore.Mvc.Controllers
 {
     /// <summary>
     /// A <see cref="IControllerTypeProvider"/> with a fixed set of types that are used as controllers. 

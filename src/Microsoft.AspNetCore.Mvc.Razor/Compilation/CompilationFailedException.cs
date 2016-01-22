@@ -4,9 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNet.Diagnostics;
+using Microsoft.AspNetCore.Diagnostics;
 
-namespace Microsoft.AspNet.Mvc.Razor.Compilation
+namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
 {
     /// <summary>
     /// An <see cref="Exception"/> thrown when accessing the result of a failed compilation.

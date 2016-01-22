@@ -3,9 +3,9 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNet.Mvc.Filters;
+using Microsoft.AspNetCore.Mvc.Filters;
 
-namespace Microsoft.AspNet.Mvc.Internal
+namespace Microsoft.AspNetCore.Mvc.Internal
 {
     public class FilterDescriptorOrderComparer : IComparer<FilterDescriptor>
     {

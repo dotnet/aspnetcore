@@ -4,7 +4,7 @@
 using System.Collections.Generic;
 using System.Security.Claims;
 using HtmlGenerationWebSite.Models;
-using Microsoft.AspNet.Mvc;
+using Microsoft.AspNetCore.Mvc;
 
 namespace HtmlGenerationWebSite.Controllers
 {

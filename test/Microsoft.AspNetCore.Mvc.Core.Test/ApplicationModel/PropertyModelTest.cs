@@ -4,10 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.ApplicationModels
+namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 {
     public class PropertyModelTest
     {

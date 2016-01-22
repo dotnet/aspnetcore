@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNet.Mvc.ModelBinding.Metadata
+namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
 {
     /// <summary>
     /// Holds associated metadata objects for a <see cref="DefaultModelMetadata"/>.

@@ -4,10 +4,10 @@
 using System;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Html;
-using Microsoft.AspNet.Mvc.Internal;
+using Microsoft.AspNetCore.Html;
+using Microsoft.AspNetCore.Mvc.Internal;
 
-namespace Microsoft.AspNet.Mvc.ViewFeatures
+namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 {
     /// <summary>
     /// <see cref="HtmlTextWriter"/> implementation which writes to an <see cref="IHtmlContentBuilder"/> instance.

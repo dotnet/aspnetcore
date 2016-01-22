@@ -10,7 +10,7 @@ using System.Xml.Linq;
 using Xunit;
 using Xunit.Sdk;
 
-namespace Microsoft.AspNet.Mvc.Formatters.Xml
+namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
 {
     /// <summary>
     /// Xunit assertions related to Xml content.

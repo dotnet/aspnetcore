@@ -4,9 +4,9 @@
 using System;
 using System.Linq;
 using System.Globalization;
-using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
-namespace Microsoft.AspNet.Mvc.ViewFeatures
+namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 {
     /// <summary>
     /// Extension methods for <see cref="ModelExplorer"/>.

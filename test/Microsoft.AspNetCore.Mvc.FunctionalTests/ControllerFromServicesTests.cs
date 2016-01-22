@@ -6,7 +6,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.FunctionalTests
+namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
     public class ControllerFromServicesTest : IClassFixture<MvcTestFixture<ControllersFromServicesWebSite.Startup>>
     {

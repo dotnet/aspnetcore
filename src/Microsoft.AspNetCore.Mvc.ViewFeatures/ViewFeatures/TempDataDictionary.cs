@@ -4,9 +4,9 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Microsoft.AspNet.Http;
+using Microsoft.AspNetCore.Http;
 
-namespace Microsoft.AspNet.Mvc.ViewFeatures
+namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 {
     /// <inheritdoc />
     public class TempDataDictionary : ITempDataDictionary

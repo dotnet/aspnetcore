@@ -6,9 +6,9 @@ using System.Collections.Generic;
 using System.Reflection;
 #endif
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http;
+using Microsoft.AspNetCore.Http;
 
-namespace Microsoft.AspNet.Mvc.ModelBinding
+namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
     /// <summary>
     /// An <see cref="IModelBinder"/> which binds models from the request headers when a model

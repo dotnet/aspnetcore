@@ -3,9 +3,9 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Mvc.Internal;
+using Microsoft.AspNetCore.Mvc.Internal;
 
-namespace Microsoft.AspNet.Mvc.Filters
+namespace Microsoft.AspNetCore.Mvc.Filters
 {
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true, Inherited = true)]
     public abstract class ExceptionFilterAttribute : Attribute, IAsyncExceptionFilter, IExceptionFilter, IOrderedFilter

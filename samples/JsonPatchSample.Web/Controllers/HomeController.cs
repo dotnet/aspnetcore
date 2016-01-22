@@ -3,8 +3,8 @@
 
 using System.Collections.Generic;
 using JsonPatchSample.Web.Models;
-using Microsoft.AspNet.JsonPatch;
-using Microsoft.AspNet.Mvc;
+using Microsoft.AspNetCore.JsonPatch;
+using Microsoft.AspNetCore.Mvc;
 
 namespace JsonPatchSample.Web.Controllers
 {

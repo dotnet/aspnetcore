@@ -9,21 +9,21 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Antiforgery;
-using Microsoft.AspNet.Html;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Mvc.Infrastructure;
-using Microsoft.AspNet.Mvc.Internal;
-using Microsoft.AspNet.Mvc.Razor.Internal;
-using Microsoft.AspNet.Mvc.Rendering;
-using Microsoft.AspNet.Mvc.Routing;
-using Microsoft.AspNet.Mvc.ViewFeatures;
-using Microsoft.AspNet.Mvc.ViewFeatures.Buffer;
-using Microsoft.AspNet.Razor.Runtime.TagHelpers;
-using Microsoft.AspNet.Razor.TagHelpers;
+using Microsoft.AspNetCore.Antiforgery;
+using Microsoft.AspNetCore.Html;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.Internal;
+using Microsoft.AspNetCore.Mvc.Razor.Internal;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.AspNetCore.Mvc.ViewFeatures.Buffer;
+using Microsoft.AspNetCore.Razor.Runtime.TagHelpers;
+using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNet.Mvc.Razor
+namespace Microsoft.AspNetCore.Mvc.Razor
 {
     /// <summary>
     /// Represents properties and methods that are needed in order to render a view that uses Razor syntax.
@@ -871,7 +871,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         public void BeginContext(int position, int length, bool isLiteral)
         {
-            const string BeginContextEvent = "Microsoft.AspNet.Mvc.Razor.BeginInstrumentationContext";
+            const string BeginContextEvent = "Microsoft.AspNetCore.Mvc.Razor.BeginInstrumentationContext";
 
             if (DiagnosticSource?.IsEnabled(BeginContextEvent) == true)
             {
@@ -890,7 +890,7 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         public void EndContext()
         {
-            const string EndContextEvent = "Microsoft.AspNet.Mvc.Razor.EndInstrumentationContext";
+            const string EndContextEvent = "Microsoft.AspNetCore.Mvc.Razor.EndInstrumentationContext";
 
             if (DiagnosticSource?.IsEnabled(EndContextEvent) == true)
             {

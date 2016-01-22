@@ -5,14 +5,14 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using Microsoft.AspNet.Mvc.Rendering;
-using Microsoft.AspNet.Mvc.ViewEngines;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.PlatformAbstractions;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.Localization.Test
+namespace Microsoft.AspNetCore.Mvc.Localization.Test
 {
     public class ViewLocalizerTest
     {

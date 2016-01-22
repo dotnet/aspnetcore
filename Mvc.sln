@@ -1,4 +1,4 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.24720.0
@@ -9,31 +9,31 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{32285FA4-6B4
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{3BA657BF-28B1-42DA-B5B0-1C4601FCF7B1}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc", "src\Microsoft.AspNet.Mvc\Microsoft.AspNet.Mvc.xproj", "{079EFA1F-0B0A-4853-B27B-5780D111CD85}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Mvc", "src\Microsoft.AspNetCore.Mvc\Microsoft.AspNetCore.Mvc.xproj", "{079EFA1F-0B0A-4853-B27B-5780D111CD85}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.Razor", "src\Microsoft.AspNet.Mvc.Razor\Microsoft.AspNet.Mvc.Razor.xproj", "{314E9AD6-2FFC-4A92-A8AD-510658C64F1E}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Mvc.Razor", "src\Microsoft.AspNetCore.Mvc.Razor\Microsoft.AspNetCore.Mvc.Razor.xproj", "{314E9AD6-2FFC-4A92-A8AD-510658C64F1E}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.Core", "src\Microsoft.AspNet.Mvc.Core\Microsoft.AspNet.Mvc.Core.xproj", "{C48DA9D7-ACB5-4408-AA79-27ECB60A67EF}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Mvc.Core", "src\Microsoft.AspNetCore.Mvc.Core\Microsoft.AspNetCore.Mvc.Core.xproj", "{C48DA9D7-ACB5-4408-AA79-27ECB60A67EF}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.Razor.Test", "test\Microsoft.AspNet.Mvc.Razor.Test\Microsoft.AspNet.Mvc.Razor.Test.xproj", "{3F6E355E-4869-41D9-943B-D54771221A7F}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Mvc.Razor.Test", "test\Microsoft.AspNetCore.Mvc.Razor.Test\Microsoft.AspNetCore.Mvc.Razor.Test.xproj", "{3F6E355E-4869-41D9-943B-D54771221A7F}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.Core.Test", "test\Microsoft.AspNet.Mvc.Core.Test\Microsoft.AspNet.Mvc.Core.Test.xproj", "{A8AA326E-8EE8-4F11-B750-23028E0949D7}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Mvc.Core.Test", "test\Microsoft.AspNetCore.Mvc.Core.Test\Microsoft.AspNetCore.Mvc.Core.Test.xproj", "{A8AA326E-8EE8-4F11-B750-23028E0949D7}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.Razor.Host", "src\Microsoft.AspNet.Mvc.Razor.Host\Microsoft.AspNet.Mvc.Razor.Host.xproj", "{520B3AA4-363A-497C-8C15-80423C5AFC85}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Mvc.Razor.Host", "src\Microsoft.AspNetCore.Mvc.Razor.Host\Microsoft.AspNetCore.Mvc.Razor.Host.xproj", "{520B3AA4-363A-497C-8C15-80423C5AFC85}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.Razor.Host.Test", "test\Microsoft.AspNet.Mvc.Razor.Host.Test\Microsoft.AspNet.Mvc.Razor.Host.Test.xproj", "{7C4F5973-0491-4028-B1DC-A9BA73FF9F77}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Mvc.Razor.Host.Test", "test\Microsoft.AspNetCore.Mvc.Razor.Host.Test\Microsoft.AspNetCore.Mvc.Razor.Host.Test.xproj", "{7C4F5973-0491-4028-B1DC-A9BA73FF9F77}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WebSites", "WebSites", "{16703B76-C9F7-4C75-AE6C-53D92E308E3C}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.FunctionalTests", "test\Microsoft.AspNet.Mvc.FunctionalTests\Microsoft.AspNet.Mvc.FunctionalTests.xproj", "{323D0C04-B518-4A8F-8A8E-3546AD153D34}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Mvc.FunctionalTests", "test\Microsoft.AspNetCore.Mvc.FunctionalTests\Microsoft.AspNetCore.Mvc.FunctionalTests.xproj", "{323D0C04-B518-4A8F-8A8E-3546AD153D34}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "BasicWebSite", "test\WebSites\BasicWebSite\BasicWebSite.xproj", "{34DF1487-12C6-476C-BE0A-F31DF1939AE5}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.TestConfiguration", "test\WebSites\Microsoft.AspNet.Mvc.TestConfiguration\Microsoft.AspNet.Mvc.TestConfiguration.xproj", "{680D75ED-601F-4D86-B01B-1072D0C31B8C}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Mvc.TestConfiguration", "test\WebSites\Microsoft.AspNetCore.Mvc.TestConfiguration\Microsoft.AspNetCore.Mvc.TestConfiguration.xproj", "{680D75ED-601F-4D86-B01B-1072D0C31B8C}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "RoutingWebSite", "test\WebSites\RoutingWebSite\RoutingWebSite.xproj", "{42CDBF4A-E238-4C0F-A416-44588363EB4C}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.Test", "test\Microsoft.AspNet.Mvc.Test\Microsoft.AspNet.Mvc.Test.xproj", "{5F945B82-FE5F-425C-956C-8BC2F2020254}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Mvc.Test", "test\Microsoft.AspNetCore.Mvc.Test\Microsoft.AspNetCore.Mvc.Test.xproj", "{5F945B82-FE5F-425C-956C-8BC2F2020254}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "RazorWebSite", "test\WebSites\RazorWebSite\RazorWebSite.xproj", "{B07CAF59-11ED-40E3-A5DB-E1178F84FA78}"
 EndProject
@@ -58,17 +58,17 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "RazorPageExecutionInstrumen
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ApplicationModelWebSite", "test\WebSites\ApplicationModelWebSite\ApplicationModelWebSite.xproj", "{CAE52CB7-0FAC-4B5B-8251-B0FF837DB657}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.WebApiCompatShim", "src\Microsoft.AspNet.Mvc.WebApiCompatShim\Microsoft.AspNet.Mvc.WebApiCompatShim.xproj", "{23D30B8C-04B1-4577-A604-ED27EA1E4A0E}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Mvc.WebApiCompatShim", "src\Microsoft.AspNetCore.Mvc.WebApiCompatShim\Microsoft.AspNetCore.Mvc.WebApiCompatShim.xproj", "{23D30B8C-04B1-4577-A604-ED27EA1E4A0E}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "WebApiCompatShimWebSite", "test\WebSites\WebApiCompatShimWebSite\WebApiCompatShimWebSite.xproj", "{B2B7BC91-688E-4C1E-A71F-CE948D958DDF}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.WebApiCompatShimTest", "test\Microsoft.AspNet.Mvc.WebApiCompatShimTest\Microsoft.AspNet.Mvc.WebApiCompatShimTest.xproj", "{5DE8E4D9-AACD-4B5F-819F-F091383FB996}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Mvc.WebApiCompatShimTest", "test\Microsoft.AspNetCore.Mvc.WebApiCompatShimTest\Microsoft.AspNetCore.Mvc.WebApiCompatShimTest.xproj", "{5DE8E4D9-AACD-4B5F-819F-F091383FB996}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "TagHelperSample.Web", "samples\TagHelperSample.Web\TagHelperSample.Web.xproj", "{2223120F-D675-40DA-8CD8-11DC14A0B2C7}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.TagHelpers", "src\Microsoft.AspNet.Mvc.TagHelpers\Microsoft.AspNet.Mvc.TagHelpers.xproj", "{B2347320-308E-4D2B-AEC8-005DFA68B0C9}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Mvc.TagHelpers", "src\Microsoft.AspNetCore.Mvc.TagHelpers\Microsoft.AspNetCore.Mvc.TagHelpers.xproj", "{B2347320-308E-4D2B-AEC8-005DFA68B0C9}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.TagHelpers.Test", "test\Microsoft.AspNet.Mvc.TagHelpers.Test\Microsoft.AspNet.Mvc.TagHelpers.Test.xproj", "{860119ED-3DB1-424D-8D0A-30132A8A7D96}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Mvc.TagHelpers.Test", "test\Microsoft.AspNetCore.Mvc.TagHelpers.Test\Microsoft.AspNetCore.Mvc.TagHelpers.Test.xproj", "{860119ED-3DB1-424D-8D0A-30132A8A7D96}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "HtmlGenerationWebSite", "test\WebSites\HtmlGenerationWebSite\HtmlGenerationWebSite.xproj", "{920F8A0E-6F7D-4BBE-84FF-840B89099BE6}"
 EndProject
@@ -82,45 +82,45 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ControllersFromServicesClas
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "UserClassLibrary", "test\WebSites\UserClassLibrary\UserClassLibrary.xproj", "{C651F432-4EBE-41A6-BAD2-3E07CCBA209C}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.TestCommon", "test\Microsoft.AspNet.Mvc.TestCommon\Microsoft.AspNet.Mvc.TestCommon.xproj", "{F504357E-C2E1-4818-BA5C-9A2EAC25FEE5}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Mvc.TestCommon", "test\Microsoft.AspNetCore.Mvc.TestCommon\Microsoft.AspNetCore.Mvc.TestCommon.xproj", "{F504357E-C2E1-4818-BA5C-9A2EAC25FEE5}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "CorsWebSite", "test\WebSites\CorsWebSite\CorsWebSite.xproj", "{94BA134D-04B3-48AA-BA55-5A4DB8640F2D}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.IntegrationTests", "test\Microsoft.AspNet.Mvc.IntegrationTests\Microsoft.AspNet.Mvc.IntegrationTests.xproj", "{864FA09D-1E48-403A-A6C8-4F079D2A30F0}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Mvc.IntegrationTests", "test\Microsoft.AspNetCore.Mvc.IntegrationTests\Microsoft.AspNetCore.Mvc.IntegrationTests.xproj", "{864FA09D-1E48-403A-A6C8-4F079D2A30F0}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.Abstractions", "src\Microsoft.AspNet.Mvc.Abstractions\Microsoft.AspNet.Mvc.Abstractions.xproj", "{1154203C-7579-4525-906E-BC55268421C1}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Mvc.Abstractions", "src\Microsoft.AspNetCore.Mvc.Abstractions\Microsoft.AspNetCore.Mvc.Abstractions.xproj", "{1154203C-7579-4525-906E-BC55268421C1}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.ApiExplorer", "src\Microsoft.AspNet.Mvc.ApiExplorer\Microsoft.AspNet.Mvc.ApiExplorer.xproj", "{A2B72833-5D70-4C42-AE85-E0319926FB8A}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Mvc.ApiExplorer", "src\Microsoft.AspNetCore.Mvc.ApiExplorer\Microsoft.AspNetCore.Mvc.ApiExplorer.xproj", "{A2B72833-5D70-4C42-AE85-E0319926FB8A}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.ApiExplorer.Test", "test\Microsoft.AspNet.Mvc.ApiExplorer.Test\Microsoft.AspNet.Mvc.ApiExplorer.Test.xproj", "{4C2AD8AB-8AC0-46C4-80C6-C5577C7255F6}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Mvc.ApiExplorer.Test", "test\Microsoft.AspNetCore.Mvc.ApiExplorer.Test\Microsoft.AspNetCore.Mvc.ApiExplorer.Test.xproj", "{4C2AD8AB-8AC0-46C4-80C6-C5577C7255F6}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.Abstractions.Test", "test\Microsoft.AspNet.Mvc.Abstractions.Test\Microsoft.AspNet.Mvc.Abstractions.Test.xproj", "{DA000953-7532-4DF5-8DB9-8143DF98D999}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Mvc.Abstractions.Test", "test\Microsoft.AspNetCore.Mvc.Abstractions.Test\Microsoft.AspNetCore.Mvc.Abstractions.Test.xproj", "{DA000953-7532-4DF5-8DB9-8143DF98D999}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.ViewFeatures", "src\Microsoft.AspNet.Mvc.ViewFeatures\Microsoft.AspNet.Mvc.ViewFeatures.xproj", "{3F8B8FC1-9FE4-4788-8991-367113E8D7AD}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Mvc.ViewFeatures", "src\Microsoft.AspNetCore.Mvc.ViewFeatures\Microsoft.AspNetCore.Mvc.ViewFeatures.xproj", "{3F8B8FC1-9FE4-4788-8991-367113E8D7AD}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.Formatters.Json", "src\Microsoft.AspNet.Mvc.Formatters.Json\Microsoft.AspNet.Mvc.Formatters.Json.xproj", "{3FC8D9D6-9352-43A3-8E81-422F270085B7}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Mvc.Formatters.Json", "src\Microsoft.AspNetCore.Mvc.Formatters.Json\Microsoft.AspNetCore.Mvc.Formatters.Json.xproj", "{3FC8D9D6-9352-43A3-8E81-422F270085B7}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.Formatters.Xml", "src\Microsoft.AspNet.Mvc.Formatters.Xml\Microsoft.AspNet.Mvc.Formatters.Xml.xproj", "{42C81540-CD47-4C68-A7A3-2A93B9C3B210}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Mvc.Formatters.Xml", "src\Microsoft.AspNetCore.Mvc.Formatters.Xml\Microsoft.AspNetCore.Mvc.Formatters.Xml.xproj", "{42C81540-CD47-4C68-A7A3-2A93B9C3B210}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.Formatters.Json.Test", "test\Microsoft.AspNet.Mvc.Formatters.Json.Test\Microsoft.AspNet.Mvc.Formatters.Json.Test.xproj", "{493780DA-E696-40FF-BD12-4A5C5736F292}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Mvc.Formatters.Json.Test", "test\Microsoft.AspNetCore.Mvc.Formatters.Json.Test\Microsoft.AspNetCore.Mvc.Formatters.Json.Test.xproj", "{493780DA-E696-40FF-BD12-4A5C5736F292}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.Formatters.Xml.Test", "test\Microsoft.AspNet.Mvc.Formatters.Xml.Test\Microsoft.AspNet.Mvc.Formatters.Xml.Test.xproj", "{22019146-BDFA-442E-8C8E-345FB9644578}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Mvc.Formatters.Xml.Test", "test\Microsoft.AspNetCore.Mvc.Formatters.Xml.Test\Microsoft.AspNetCore.Mvc.Formatters.Xml.Test.xproj", "{22019146-BDFA-442E-8C8E-345FB9644578}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.Cors", "src\Microsoft.AspNet.Mvc.Cors\Microsoft.AspNet.Mvc.Cors.xproj", "{9A07EEA2-942E-4969-9D41-799B6E2D1FF5}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Mvc.Cors", "src\Microsoft.AspNetCore.Mvc.Cors\Microsoft.AspNetCore.Mvc.Cors.xproj", "{9A07EEA2-942E-4969-9D41-799B6E2D1FF5}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.DataAnnotations", "src\Microsoft.AspNet.Mvc.DataAnnotations\Microsoft.AspNet.Mvc.DataAnnotations.xproj", "{2DD786CA-7AF7-437A-B499-801A589B9A1C}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Mvc.DataAnnotations", "src\Microsoft.AspNetCore.Mvc.DataAnnotations\Microsoft.AspNetCore.Mvc.DataAnnotations.xproj", "{2DD786CA-7AF7-437A-B499-801A589B9A1C}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.Cors.Test", "test\Microsoft.AspNet.Mvc.Cors.Test\Microsoft.AspNet.Mvc.Cors.Test.xproj", "{6BB4C20B-24C0-45D6-9E4C-C2620959BDD5}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Mvc.Cors.Test", "test\Microsoft.AspNetCore.Mvc.Cors.Test\Microsoft.AspNetCore.Mvc.Cors.Test.xproj", "{6BB4C20B-24C0-45D6-9E4C-C2620959BDD5}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.DataAnnotations.Test", "test\Microsoft.AspNet.Mvc.DataAnnotations.Test\Microsoft.AspNet.Mvc.DataAnnotations.Test.xproj", "{827DBBCB-F3A9-4BAD-8262-4BD43E28EB3B}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Mvc.DataAnnotations.Test", "test\Microsoft.AspNetCore.Mvc.DataAnnotations.Test\Microsoft.AspNetCore.Mvc.DataAnnotations.Test.xproj", "{827DBBCB-F3A9-4BAD-8262-4BD43E28EB3B}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.ViewFeatures.Test", "test\Microsoft.AspNet.Mvc.ViewFeatures.Test\Microsoft.AspNet.Mvc.ViewFeatures.Test.xproj", "{60873DFA-97B9-419E-BAA3-940FC9B07085}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Mvc.ViewFeatures.Test", "test\Microsoft.AspNetCore.Mvc.ViewFeatures.Test\Microsoft.AspNetCore.Mvc.ViewFeatures.Test.xproj", "{60873DFA-97B9-419E-BAA3-940FC9B07085}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.Localization", "src\Microsoft.AspNet.Mvc.Localization\Microsoft.AspNet.Mvc.Localization.xproj", "{50893B10-5735-4F35-9995-F81DA3F0189E}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Mvc.Localization", "src\Microsoft.AspNetCore.Mvc.Localization\Microsoft.AspNetCore.Mvc.Localization.xproj", "{50893B10-5735-4F35-9995-F81DA3F0189E}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.Localization.Test", "test\Microsoft.AspNet.Mvc.Localization.Test\Microsoft.AspNet.Mvc.Localization.Test.xproj", "{8FC726B5-E766-44E0-8B38-1313B6D8D9A7}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Mvc.Localization.Test", "test\Microsoft.AspNetCore.Mvc.Localization.Test\Microsoft.AspNetCore.Mvc.Localization.Test.xproj", "{8FC726B5-E766-44E0-8B38-1313B6D8D9A7}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.TestDiagnosticListener.Sources", "test\Microsoft.AspNet.Mvc.TestDiagnosticListener.Sources\Microsoft.AspNet.Mvc.TestDiagnosticListener.Sources.xproj", "{9879B5D5-2325-4A81-B4DF-F279FE8FEEB4}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Mvc.TestDiagnosticListener.Sources", "test\Microsoft.AspNetCore.Mvc.TestDiagnosticListener.Sources\Microsoft.AspNetCore.Mvc.TestDiagnosticListener.Sources.xproj", "{9879B5D5-2325-4A81-B4DF-F279FE8FEEB4}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "MvcSandbox", "samples\MvcSandbox\MvcSandbox.xproj", "{14ED4476-9F24-4776-8417-EA6927F6C9C9}"
 EndProject

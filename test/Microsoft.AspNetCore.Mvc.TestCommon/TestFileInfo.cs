@@ -6,7 +6,7 @@ using System.IO;
 using System.Text;
 using Microsoft.Extensions.FileProviders;
 
-namespace Microsoft.AspNet.Mvc.Razor
+namespace Microsoft.AspNetCore.Mvc.Razor
 {
     public class TestFileInfo : IFileInfo
     {

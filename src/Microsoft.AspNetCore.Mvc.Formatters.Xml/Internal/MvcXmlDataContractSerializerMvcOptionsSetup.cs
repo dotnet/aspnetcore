@@ -1,11 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNet.Mvc.ModelBinding.Metadata;
-using Microsoft.AspNet.Mvc.ModelBinding.Validation;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNet.Mvc.Formatters.Xml.Internal
+namespace Microsoft.AspNetCore.Mvc.Formatters.Xml.Internal
 {
     /// <summary>
     /// A <see cref="ConfigureOptions{TOptions}"/> implementation which will add the

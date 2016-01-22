@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.FunctionalTests
+namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
     public class WebApiCompatShimParameterBindingTest : IClassFixture<MvcTestFixture<WebApiCompatShimWebSite.Startup>>
     {

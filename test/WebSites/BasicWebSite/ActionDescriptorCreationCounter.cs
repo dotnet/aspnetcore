@@ -3,7 +3,7 @@
 
 using System;
 using System.Threading;
-using Microsoft.AspNet.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.Abstractions;
 
 namespace BasicWebSite
 {

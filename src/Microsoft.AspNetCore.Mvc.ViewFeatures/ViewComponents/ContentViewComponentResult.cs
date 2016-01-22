@@ -3,9 +3,9 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Mvc.Internal;
+using Microsoft.AspNetCore.Mvc.Internal;
 
-namespace Microsoft.AspNet.Mvc.ViewComponents
+namespace Microsoft.AspNetCore.Mvc.ViewComponents
 {
     /// <summary>
     /// An <see cref="IViewComponentResult"/> which writes text when executed.

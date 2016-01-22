@@ -3,7 +3,7 @@
 
 using System.Net;
 using System.Net.Http;
-using ShimResources = Microsoft.AspNet.Mvc.WebApiCompatShim.Resources;
+using ShimResources = Microsoft.AspNetCore.Mvc.WebApiCompatShim.Resources;
 
 namespace System.Web.Http
 {

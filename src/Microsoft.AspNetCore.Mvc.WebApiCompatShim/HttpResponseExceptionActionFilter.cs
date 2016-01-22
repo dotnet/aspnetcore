@@ -4,9 +4,9 @@
 using System;
 using System.Net.Http;
 using System.Web.Http;
-using Microsoft.AspNet.Mvc.Filters;
+using Microsoft.AspNetCore.Mvc.Filters;
 
-namespace Microsoft.AspNet.Mvc.WebApiCompatShim
+namespace Microsoft.AspNetCore.Mvc.WebApiCompatShim
 {
     /// <summary>
     /// An action filter which sets <see cref="ActionExecutedContext.Result"/> to an <see cref="ObjectResult"/>

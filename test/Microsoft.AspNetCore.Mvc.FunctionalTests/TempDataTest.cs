@@ -7,12 +7,12 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Mvc.ViewFeatures;
-using Microsoft.AspNet.Testing.xunit;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Net.Http.Headers;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.FunctionalTests
+namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
     public class TempDataTest : IClassFixture<MvcTestFixture<BasicWebSite.Startup>>
     {

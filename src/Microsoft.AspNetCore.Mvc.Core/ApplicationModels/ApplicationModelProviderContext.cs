@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 
-namespace Microsoft.AspNet.Mvc.ApplicationModels
+namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 {
     /// <summary>
     /// A context object for <see cref="IApplicationModelProvider"/>.

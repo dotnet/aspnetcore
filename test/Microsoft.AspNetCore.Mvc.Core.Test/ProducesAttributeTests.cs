@@ -4,19 +4,19 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http.Internal;
-using Microsoft.AspNet.Mvc.Abstractions;
-using Microsoft.AspNet.Mvc.Filters;
-using Microsoft.AspNet.Mvc.Formatters;
-using Microsoft.AspNet.Mvc.Formatters.Internal;
-using Microsoft.AspNet.Mvc.TestCommon;
-using Microsoft.AspNet.Routing;
+using Microsoft.AspNetCore.Http.Internal;
+using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Mvc.Formatters;
+using Microsoft.AspNetCore.Mvc.Formatters.Internal;
+using Microsoft.AspNetCore.Mvc.TestCommon;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.Test
+namespace Microsoft.AspNetCore.Mvc.Test
 {
     public class ProducesAttributeTests
     {

@@ -4,9 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using Microsoft.AspNet.Mvc.Internal;
+using Microsoft.AspNetCore.Mvc.Internal;
 
-namespace Microsoft.AspNet.Mvc.ModelBinding.Test
+namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
 {
     public sealed class SimpleValueProvider : Dictionary<string, object>, IValueProvider
     {

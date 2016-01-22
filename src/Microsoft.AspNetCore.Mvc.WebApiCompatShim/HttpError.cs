@@ -6,8 +6,8 @@ using System.Linq;
 using System.Xml;
 using System.Xml.Schema;
 using System.Xml.Serialization;
-using Microsoft.AspNet.Mvc.ModelBinding;
-using ShimResources = Microsoft.AspNet.Mvc.WebApiCompatShim.Resources;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using ShimResources = Microsoft.AspNetCore.Mvc.WebApiCompatShim.Resources;
 
 namespace System.Web.Http
 {

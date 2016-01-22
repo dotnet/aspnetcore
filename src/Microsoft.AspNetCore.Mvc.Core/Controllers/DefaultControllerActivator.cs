@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNet.Mvc.Internal;
+using Microsoft.AspNetCore.Mvc.Internal;
 
-namespace Microsoft.AspNet.Mvc.Controllers
+namespace Microsoft.AspNetCore.Mvc.Controllers
 {
     /// <summary>
     /// <see cref="IControllerActivator"/> that uses type activation to create controllers.

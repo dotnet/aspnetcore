@@ -4,12 +4,12 @@
 using System;
 using System.Globalization;
 using System.Linq;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Mvc.Core;
-using Microsoft.AspNet.Mvc.Filters;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Core;
+using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNet.Mvc.Internal
+namespace Microsoft.AspNetCore.Mvc.Internal
 {
     /// <summary>
     /// An <see cref="IActionFilter"/> which sets the appropriate headers related to response caching.

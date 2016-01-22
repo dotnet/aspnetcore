@@ -5,7 +5,7 @@ using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNet.Mvc.Razor.Internal
+namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 {
     /// <summary>
     /// Configures <see cref="MvcViewOptions"/> to use <see cref="RazorViewEngine"/>.

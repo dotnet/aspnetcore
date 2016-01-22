@@ -4,10 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNet.Mvc.ViewFeatures;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNet.Mvc.ViewEngines
+namespace Microsoft.AspNetCore.Mvc.ViewEngines
 {
     /// <inheritdoc />
     public class CompositeViewEngine : ICompositeViewEngine

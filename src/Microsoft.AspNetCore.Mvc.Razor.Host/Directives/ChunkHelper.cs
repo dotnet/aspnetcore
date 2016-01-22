@@ -3,9 +3,9 @@
 
 using System;
 using System.Linq;
-using Microsoft.AspNet.Razor.Chunks;
+using Microsoft.AspNetCore.Razor.Chunks;
 
-namespace Microsoft.AspNet.Mvc.Razor.Directives
+namespace Microsoft.AspNetCore.Mvc.Razor.Directives
 {
     /// <summary>
     /// Contains helper methods for dealing with Chunks

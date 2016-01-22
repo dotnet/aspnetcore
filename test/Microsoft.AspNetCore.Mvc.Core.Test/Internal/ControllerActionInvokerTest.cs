@@ -8,19 +8,19 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Internal;
-using Microsoft.AspNet.Mvc.Abstractions;
-using Microsoft.AspNet.Mvc.Controllers;
-using Microsoft.AspNet.Mvc.Filters;
-using Microsoft.AspNet.Mvc.Formatters;
-using Microsoft.AspNet.Mvc.Infrastructure;
-using Microsoft.AspNet.Mvc.Internal;
-using Microsoft.AspNet.Mvc.ModelBinding;
-using Microsoft.AspNet.Mvc.ModelBinding.Metadata;
-using Microsoft.AspNet.Mvc.ModelBinding.Validation;
-using Microsoft.AspNet.Routing;
-using Microsoft.AspNet.Testing;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Internal;
+using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.Controllers;
+using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Mvc.Formatters;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.Internal;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
@@ -28,7 +28,7 @@ using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.Internal
+namespace Microsoft.AspNetCore.Mvc.Internal
 {
     public class ControllerActionInvokerTest
     {
@@ -2060,7 +2060,7 @@ namespace Microsoft.AspNet.Mvc.Internal
                 new IModelValidatorProvider[0],
                 new IValueProviderFactory[0],
                 new NullLoggerFactory().CreateLogger<ControllerActionInvoker>(),
-                new DiagnosticListener("Microsoft.AspNet"),
+                new DiagnosticListener("Microsoft.AspNetCore"),
                 maxAllowedErrorsInModelState);
             return invoker;
         }
@@ -2119,7 +2119,7 @@ namespace Microsoft.AspNet.Mvc.Internal
                 new IModelValidatorProvider[0],
                 new IValueProviderFactory[0],
                 new NullLoggerFactory().CreateLogger<ControllerActionInvoker>(),
-                new DiagnosticListener("Microsoft.AspNet"),
+                new DiagnosticListener("Microsoft.AspNetCore"),
                 200);
 
             // Act

@@ -4,7 +4,7 @@
 using System.Collections.Generic;
 using Microsoft.Extensions.DiagnosticAdapter;
 
-namespace Microsoft.AspNet.Mvc
+namespace Microsoft.AspNetCore.Mvc
 {
     public class TestDiagnosticListener
     {
@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Mvc
 
         public OnBeforeActionEventData BeforeAction { get; set; }
 
-        [DiagnosticName("Microsoft.AspNet.Mvc.BeforeAction")]
+        [DiagnosticName("Microsoft.AspNetCore.Mvc.BeforeAction")]
         public virtual void OnBeforeAction(
             IProxyHttpContext httpContext,
             IProxyRouteData routeData,
@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.Mvc
 
         public OnAfterActionEventData AfterAction { get; set; }
 
-        [DiagnosticName("Microsoft.AspNet.Mvc.AfterAction")]
+        [DiagnosticName("Microsoft.AspNetCore.Mvc.AfterAction")]
         public virtual void OnAfterAction(
             IProxyHttpContext httpContext,
             IProxyActionDescriptor actionDescriptor)
@@ -59,7 +59,7 @@ namespace Microsoft.AspNet.Mvc
 
         public OnBeforeActionMethodEventData BeforeActionMethod { get; set; }
 
-        [DiagnosticName("Microsoft.AspNet.Mvc.BeforeActionMethod")]
+        [DiagnosticName("Microsoft.AspNetCore.Mvc.BeforeActionMethod")]
         public virtual void OnBeforeActionMethod(
             IProxyActionContext actionContext,
             IReadOnlyDictionary<string, object> arguments)
@@ -79,7 +79,7 @@ namespace Microsoft.AspNet.Mvc
 
         public OnAfterActionMethodEventData AfterActionMethod { get; set; }
 
-        [DiagnosticName("Microsoft.AspNet.Mvc.AfterActionMethod")]
+        [DiagnosticName("Microsoft.AspNetCore.Mvc.AfterActionMethod")]
         public virtual void OnAfterActionMethod(
             IProxyActionContext actionContext,
             IProxyActionResult result)
@@ -99,7 +99,7 @@ namespace Microsoft.AspNet.Mvc
 
         public OnBeforeActionResultEventData BeforeActionResult { get; set; }
 
-        [DiagnosticName("Microsoft.AspNet.Mvc.BeforeActionResult")]
+        [DiagnosticName("Microsoft.AspNetCore.Mvc.BeforeActionResult")]
         public virtual void OnBeforeActionResult(IProxyActionContext actionContext, IProxyActionResult result)
         {
             BeforeActionResult = new OnBeforeActionResultEventData()
@@ -117,7 +117,7 @@ namespace Microsoft.AspNet.Mvc
 
         public OnAfterActionResultEventData AfterActionResult { get; set; }
 
-        [DiagnosticName("Microsoft.AspNet.Mvc.AfterActionResult")]
+        [DiagnosticName("Microsoft.AspNetCore.Mvc.AfterActionResult")]
         public virtual void OnAfterActionResult(IProxyActionContext actionContext, IProxyActionResult result)
         {
             AfterActionResult = new OnAfterActionResultEventData()
@@ -138,7 +138,7 @@ namespace Microsoft.AspNet.Mvc
 
         public OnViewFoundEventData ViewFound { get; set; }
 
-        [DiagnosticName("Microsoft.AspNet.Mvc.ViewFound")]
+        [DiagnosticName("Microsoft.AspNetCore.Mvc.ViewFound")]
         public virtual void OnViewFound(
             IProxyActionContext actionContext,
             bool isMainPage,
@@ -167,7 +167,7 @@ namespace Microsoft.AspNet.Mvc
 
         public OnViewNotFoundEventData ViewNotFound { get; set; }
 
-        [DiagnosticName("Microsoft.AspNet.Mvc.ViewNotFound")]
+        [DiagnosticName("Microsoft.AspNetCore.Mvc.ViewNotFound")]
         public virtual void OnViewNotFound(
             IProxyActionContext actionContext,
             bool isMainPage,
@@ -193,7 +193,7 @@ namespace Microsoft.AspNet.Mvc
 
         public OnBeforeViewEventData BeforeView { get; set; }
 
-        [DiagnosticName("Microsoft.AspNet.Mvc.BeforeView")]
+        [DiagnosticName("Microsoft.AspNetCore.Mvc.BeforeView")]
         public virtual void OnBeforeView(IProxyView view, IProxyViewContext viewContext)
         {
             BeforeView = new OnBeforeViewEventData()
@@ -211,7 +211,7 @@ namespace Microsoft.AspNet.Mvc
 
         public OnAfterViewEventData AfterView { get; set; }
 
-        [DiagnosticName("Microsoft.AspNet.Mvc.AfterView")]
+        [DiagnosticName("Microsoft.AspNetCore.Mvc.AfterView")]
         public virtual void OnAfterView(IProxyView view, IProxyViewContext viewContext)
         {
             AfterView = new OnAfterViewEventData()
@@ -232,7 +232,7 @@ namespace Microsoft.AspNet.Mvc
 
         public OnBeforeViewComponentEventData BeforeViewComponent { get; set; }
 
-        [DiagnosticName("Microsoft.AspNet.Mvc.BeforeViewComponent")]
+        [DiagnosticName("Microsoft.AspNetCore.Mvc.BeforeViewComponent")]
         public virtual void OnBeforeViewComponent(
             IProxyActionDescriptor actionDescriptor,
             IProxyViewComponentContext viewComponentContext,
@@ -259,7 +259,7 @@ namespace Microsoft.AspNet.Mvc
 
         public OnAfterViewComponentEventData AfterViewComponent { get; set; }
 
-        [DiagnosticName("Microsoft.AspNet.Mvc.AfterViewComponent")]
+        [DiagnosticName("Microsoft.AspNetCore.Mvc.AfterViewComponent")]
         public virtual void OnAfterViewComponent(
             IProxyActionDescriptor actionDescriptor,
             IProxyViewComponentContext viewComponentContext,
@@ -286,7 +286,7 @@ namespace Microsoft.AspNet.Mvc
 
         public OnViewComponentBeforeViewExecuteEventData ViewComponentBeforeViewExecute { get; set; }
 
-        [DiagnosticName("Microsoft.AspNet.Mvc.ViewComponentBeforeViewExecute")]
+        [DiagnosticName("Microsoft.AspNetCore.Mvc.ViewComponentBeforeViewExecute")]
         public virtual void OnViewComponentBeforeViewExecute(
             IProxyActionDescriptor actionDescriptor,
             IProxyViewComponentContext viewComponentContext,
@@ -311,7 +311,7 @@ namespace Microsoft.AspNet.Mvc
 
         public OnViewComponentAfterViewExecuteEventData ViewComponentAfterViewExecute { get; set; }
 
-        [DiagnosticName("Microsoft.AspNet.Mvc.ViewComponentAfterViewExecute")]
+        [DiagnosticName("Microsoft.AspNetCore.Mvc.ViewComponentAfterViewExecute")]
         public virtual void OnViewComponentAfterViewExecute(
             IProxyActionDescriptor actionDescriptor,
             IProxyViewComponentContext viewComponentContext,
@@ -347,7 +347,7 @@ namespace Microsoft.AspNet.Mvc
 
         public List<object> PageInstrumentationData { get; set; } = new List<object>();
 
-        [DiagnosticName("Microsoft.AspNet.Mvc.Razor.BeginInstrumentationContext")]
+        [DiagnosticName("Microsoft.AspNetCore.Mvc.Razor.BeginInstrumentationContext")]
         public virtual void OnBeginPageInstrumentationContext(
             IProxyHttpContext httpContext,
             string path,
@@ -365,7 +365,7 @@ namespace Microsoft.AspNet.Mvc
             });
         }
 
-        [DiagnosticName("Microsoft.AspNet.Mvc.Razor.EndInstrumentationContext")]
+        [DiagnosticName("Microsoft.AspNetCore.Mvc.Razor.EndInstrumentationContext")]
         public virtual void OnEndPageInstrumentationContext(
             IProxyHttpContext httpContext,
             string path,

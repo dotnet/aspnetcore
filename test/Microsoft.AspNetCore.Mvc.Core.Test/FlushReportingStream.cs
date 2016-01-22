@@ -5,7 +5,7 @@ using System.IO;
 using System.Threading;
 using Moq;
 
-namespace Microsoft.AspNet.Mvc
+namespace Microsoft.AspNetCore.Mvc
 {
     public static class FlushReportingStream
     {

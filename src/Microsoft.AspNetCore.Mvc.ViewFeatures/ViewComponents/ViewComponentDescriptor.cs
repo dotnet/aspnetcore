@@ -5,7 +5,7 @@ using System;
 using System.Diagnostics;
 using System.Reflection;
 
-namespace Microsoft.AspNet.Mvc.ViewComponents
+namespace Microsoft.AspNetCore.Mvc.ViewComponents
 {
     /// <summary>
     /// A descriptor for a view component.

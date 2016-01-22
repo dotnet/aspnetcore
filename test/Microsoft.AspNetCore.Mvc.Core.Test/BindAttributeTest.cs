@@ -2,11 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNet.Http.Internal;
+using Microsoft.AspNetCore.Http.Internal;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.ModelBinding
+namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
     public class BindAttributeTest
     {
@@ -15,9 +15,9 @@ namespace Microsoft.AspNet.Mvc.ModelBinding
         {
             // Arrange
             var expected =
-                "The type 'Microsoft.AspNet.Mvc.ModelBinding.BindAttributeTest+UnrelatedType' " +
+                "The type 'Microsoft.AspNetCore.Mvc.ModelBinding.BindAttributeTest+UnrelatedType' " +
                 "does not implement the interface " +
-                "'Microsoft.AspNet.Mvc.ModelBinding.IPropertyBindingPredicateProvider'." +
+                "'Microsoft.AspNetCore.Mvc.ModelBinding.IPropertyBindingPredicateProvider'." +
                 Environment.NewLine +
                 "Parameter name: predicateProviderType";
 

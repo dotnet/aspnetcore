@@ -5,9 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
-namespace Microsoft.AspNet.Mvc.ViewFeatures.Internal
+namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 {
     public static class ValidationHelpers
     {

@@ -6,11 +6,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using Microsoft.AspNet.Mvc.ActionConstraints;
-using Microsoft.AspNet.Mvc.Filters;
-using Microsoft.AspNet.Mvc.Routing;
+using Microsoft.AspNetCore.Mvc.ActionConstraints;
+using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Mvc.Routing;
 
-namespace Microsoft.AspNet.Mvc.ApplicationModels
+namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 {
     [DebuggerDisplay("Name={ControllerName}, Type={ControllerType.Name}," +
                      " Routes: {AttributeRoutes.Count}, Filters: {Filters.Count}")]

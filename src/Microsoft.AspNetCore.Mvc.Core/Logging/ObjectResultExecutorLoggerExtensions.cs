@@ -3,11 +3,11 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNet.Mvc.Formatters;
-using Microsoft.AspNet.Mvc.Formatters.Internal;
+using Microsoft.AspNetCore.Mvc.Formatters;
+using Microsoft.AspNetCore.Mvc.Formatters.Internal;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNet.Mvc.Logging
+namespace Microsoft.AspNetCore.Mvc.Logging
 {
     internal static class ObjectResultExecutorLoggerExtensions
     {

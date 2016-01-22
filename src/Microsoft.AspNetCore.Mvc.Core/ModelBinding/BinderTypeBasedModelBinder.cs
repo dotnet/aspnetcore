@@ -4,10 +4,10 @@
 using System;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Mvc.Core;
+using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNet.Mvc.ModelBinding
+namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
     /// <summary>
     /// An <see cref="IModelBinder"/> which can bind a model based on the value of 

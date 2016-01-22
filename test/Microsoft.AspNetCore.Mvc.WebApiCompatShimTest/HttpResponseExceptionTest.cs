@@ -4,10 +4,10 @@
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
-using Microsoft.AspNet.Testing;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.WebApiCompatShim
+namespace Microsoft.AspNetCore.Mvc.WebApiCompatShim
 {
     public class HttpResponseExceptionTest
     {

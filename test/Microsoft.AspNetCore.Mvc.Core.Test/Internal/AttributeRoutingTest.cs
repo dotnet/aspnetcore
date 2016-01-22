@@ -8,13 +8,13 @@ using System.Text.Encodings.Web;
 using System.Reflection;
 #endif
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http.Internal;
-using Microsoft.AspNet.Mvc.Abstractions;
-using Microsoft.AspNet.Mvc.Controllers;
-using Microsoft.AspNet.Mvc.Infrastructure;
-using Microsoft.AspNet.Mvc.Routing;
-using Microsoft.AspNet.Routing;
-using Microsoft.AspNet.Routing.Tree;
+using Microsoft.AspNetCore.Http.Internal;
+using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.Controllers;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Routing.Tree;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
@@ -23,7 +23,7 @@ using Microsoft.Extensions.WebEncoders.Testing;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.Internal
+namespace Microsoft.AspNetCore.Mvc.Internal
 {
     public class AttributeRoutingTest
     {
@@ -128,7 +128,7 @@ namespace Microsoft.AspNet.Mvc.Internal
             var actionMethod = controllerType.GetMethod("Index");
 
             var action = new ControllerActionDescriptor();
-            action.DisplayName = "Microsoft.AspNet.Mvc.Routing.AttributeRoutingTest+HomeController.Index";
+            action.DisplayName = "Microsoft.AspNetCore.Mvc.Routing.AttributeRoutingTest+HomeController.Index";
             action.MethodInfo = actionMethod;
             action.RouteConstraints = new List<RouteDataActionConstraint>()
             {
@@ -143,7 +143,7 @@ namespace Microsoft.AspNet.Mvc.Internal
             var expectedMessage =
                 "The following errors occurred with attribute routing information:" + Environment.NewLine +
                 Environment.NewLine +
-                "For action: 'Microsoft.AspNet.Mvc.Routing.AttributeRoutingTest+HomeController.Index'" + Environment.NewLine +
+                "For action: 'Microsoft.AspNetCore.Mvc.Routing.AttributeRoutingTest+HomeController.Index'" + Environment.NewLine +
                 "Error: The attribute route '{controller}/{action}' cannot contain a parameter named '{controller}'. " +
                 "Use '[controller]' in the route template to insert the value 'Home'.";
 

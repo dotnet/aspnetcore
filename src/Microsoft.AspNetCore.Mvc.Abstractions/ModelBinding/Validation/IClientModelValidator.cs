@@ -3,7 +3,7 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
+namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
 {
     public interface IClientModelValidator
     {

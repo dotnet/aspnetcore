@@ -3,7 +3,7 @@
 
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNet.Mvc.ViewFeatures.Internal
+namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 {
     /// <summary>
     /// Sets up default options for <see cref="MvcOptions"/>.

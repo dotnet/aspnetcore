@@ -4,10 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using Microsoft.AspNet.Mvc.ActionConstraints;
+using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.AspNet.Mvc.Internal
+namespace Microsoft.AspNetCore.Mvc.Internal
 {
     public class HttpMethodActionConstraint : IActionConstraint
     {

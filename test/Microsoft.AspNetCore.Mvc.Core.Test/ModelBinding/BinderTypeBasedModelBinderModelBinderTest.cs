@@ -3,13 +3,13 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http.Internal;
-using Microsoft.AspNet.Mvc.ModelBinding.Validation;
+using Microsoft.AspNetCore.Http.Internal;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.ModelBinding.Test
+namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
 {
     public class BinderTypeBasedModelBinderModelBinderTest
     {

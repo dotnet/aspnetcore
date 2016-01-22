@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNet.Mvc.Razor.Internal
+namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 {
     public class RazorPathNormalizer
     {

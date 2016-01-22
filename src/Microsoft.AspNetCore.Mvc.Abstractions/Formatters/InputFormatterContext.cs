@@ -4,10 +4,10 @@
 using System;
 using System.IO;
 using System.Text;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
-namespace Microsoft.AspNet.Mvc.Formatters
+namespace Microsoft.AspNetCore.Mvc.Formatters
 {
     /// <summary>
     /// A context object used by an input formatter for deserializing the request body into an object.

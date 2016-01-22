@@ -3,10 +3,10 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Mvc.Core;
-using Microsoft.AspNet.Mvc.Filters;
+using Microsoft.AspNetCore.Mvc.Core;
+using Microsoft.AspNetCore.Mvc.Filters;
 
-namespace Microsoft.AspNet.Mvc.Internal
+namespace Microsoft.AspNetCore.Mvc.Internal
 {
     /// <summary>
     /// A filter implementation which delegates to the controller for result filter interfaces.

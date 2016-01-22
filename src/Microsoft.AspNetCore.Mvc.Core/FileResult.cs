@@ -3,14 +3,14 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Mvc.Logging;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNet.Mvc
+namespace Microsoft.AspNetCore.Mvc
 {
     /// <summary>
     /// Represents an <see cref="ActionResult"/> that when executed will

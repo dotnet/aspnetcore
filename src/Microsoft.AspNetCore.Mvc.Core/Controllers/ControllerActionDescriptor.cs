@@ -4,9 +4,9 @@
 using System;
 using System.Diagnostics;
 using System.Reflection;
-using Microsoft.AspNet.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.Abstractions;
 
-namespace Microsoft.AspNet.Mvc.Controllers
+namespace Microsoft.AspNetCore.Mvc.Controllers
 {
     [DebuggerDisplay("{DisplayName}")]
     public class ControllerActionDescriptor : ActionDescriptor

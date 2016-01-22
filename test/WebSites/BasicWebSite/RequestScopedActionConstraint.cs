@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Concurrent;
-using Microsoft.AspNet.Mvc.ActionConstraints;
+using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace BasicWebSite

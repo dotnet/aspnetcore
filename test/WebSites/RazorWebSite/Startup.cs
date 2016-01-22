@@ -3,10 +3,10 @@
 
 using System.Collections.Generic;
 using System.Globalization;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Hosting;
-using Microsoft.AspNet.Localization;
-using Microsoft.AspNet.Mvc.Razor;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Localization;
+using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace RazorWebSite
@@ -29,7 +29,7 @@ namespace RazorWebSite
                 .AddViewOptions(options =>
                 {
                     options.HtmlHelperOptions.ClientValidationEnabled = false;
-                    options.HtmlHelperOptions.Html5DateRenderingMode = Microsoft.AspNet.Mvc.Rendering.Html5DateRenderingMode.Rfc3339;
+                    options.HtmlHelperOptions.Html5DateRenderingMode = Microsoft.AspNetCore.Mvc.Rendering.Html5DateRenderingMode.Rfc3339;
                     options.HtmlHelperOptions.IdAttributeDotReplacement = "!";
                     options.HtmlHelperOptions.ValidationMessageElement = "validationMessageElement";
                     options.HtmlHelperOptions.ValidationSummaryMessageElement = "validationSummaryElement";

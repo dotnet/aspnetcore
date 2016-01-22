@@ -3,9 +3,9 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNet.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 
-namespace Microsoft.AspNet.Mvc.ApiExplorer
+namespace Microsoft.AspNetCore.Mvc.ApiExplorer
 {
     /// <inheritdoc />
     public class ApiDescriptionGroupCollectionProvider : IApiDescriptionGroupCollectionProvider

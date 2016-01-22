@@ -5,9 +5,9 @@ using System;
 using System.IO;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Html;
+using Microsoft.AspNetCore.Html;
 
-namespace Microsoft.AspNet.Mvc.Razor
+namespace Microsoft.AspNetCore.Mvc.Razor
 {
     /// <summary>
     /// Represents a deferred write operation in a <see cref="RazorPage"/>.

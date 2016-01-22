@@ -5,10 +5,10 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNet.Mvc.Controllers;
+using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.Extensions.Internal;
 
-namespace Microsoft.AspNet.Mvc.Internal
+namespace Microsoft.AspNetCore.Mvc.Internal
 {
     public class DefaultControllerPropertyActivator : IControllerPropertyActivator
     {

@@ -7,10 +7,10 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Reflection;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Testing;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.Internal
+namespace Microsoft.AspNetCore.Mvc.Internal
 {
     public class ControllerActionExecutorTests
     {

@@ -4,7 +4,7 @@
 using System;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNet.Mvc.DataAnnotations.Internal
+namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
 {
     /// <summary>
     /// Sets up default options for <see cref="MvcDataAnnotationsLocalizationOptions"/>.

@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using Microsoft.Extensions.Localization;
 
-namespace Microsoft.AspNet.Mvc.Localization
+namespace Microsoft.AspNetCore.Mvc.Localization
 {
     /// <summary>
     /// An <see cref="IHtmlLocalizer"/> implementation that provides localized HTML content for the specified type

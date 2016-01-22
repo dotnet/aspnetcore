@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNet.Mvc.Localization
+namespace Microsoft.AspNetCore.Mvc.Localization
 {
     /// <summary>
     /// A factory that creates <see cref="IHtmlLocalizer"/> instances.

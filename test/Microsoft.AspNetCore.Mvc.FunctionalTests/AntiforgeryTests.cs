@@ -6,10 +6,10 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Antiforgery;
+using Microsoft.AspNetCore.Antiforgery;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.FunctionalTests
+namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
     public class AntiforgeryTests : IClassFixture<MvcTestFixture<BasicWebSite.Startup>>
     {

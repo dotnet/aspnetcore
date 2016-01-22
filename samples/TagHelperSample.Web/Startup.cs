@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Hosting;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using TagHelperSample.Web.Services;
@@ -23,7 +23,7 @@ namespace TagHelperSample.Web
         public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
         {
             loggerFactory.AddConsole((name, logLevel) =>
-                name.StartsWith("Microsoft.AspNet.Mvc.TagHelpers", StringComparison.OrdinalIgnoreCase)
+                name.StartsWith("Microsoft.AspNetCore.Mvc.TagHelpers", StringComparison.OrdinalIgnoreCase)
                 || (name.StartsWith("Microsoft.Net.Http.Server.WebListener", StringComparison.OrdinalIgnoreCase)
                     && logLevel >= LogLevel.Information));
 

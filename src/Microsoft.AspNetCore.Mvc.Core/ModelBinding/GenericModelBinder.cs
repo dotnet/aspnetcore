@@ -10,7 +10,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Internal;
 
-namespace Microsoft.AspNet.Mvc.ModelBinding
+namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
     public class GenericModelBinder : IModelBinder
     {

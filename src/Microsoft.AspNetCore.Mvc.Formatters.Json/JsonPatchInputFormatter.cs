@@ -5,13 +5,13 @@ using System;
 using System.Buffers;
 using System.Reflection;
 using System.Threading.Tasks;
-using Microsoft.AspNet.JsonPatch;
-using Microsoft.AspNet.Mvc.Internal;
+using Microsoft.AspNetCore.JsonPatch;
+using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ObjectPool;
 using Newtonsoft.Json;
 
-namespace Microsoft.AspNet.Mvc.Formatters
+namespace Microsoft.AspNetCore.Mvc.Formatters
 {
     public class JsonPatchInputFormatter : JsonInputFormatter
     {

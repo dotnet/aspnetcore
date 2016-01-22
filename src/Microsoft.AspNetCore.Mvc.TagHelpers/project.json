@@ -10,7 +10,7 @@
     "keyFile": "../../tools/Key.snk"
   },
   "dependencies": {
-    "Microsoft.AspNet.Mvc.Razor": "6.0.0-*",
+    "Microsoft.AspNetCore.Mvc.Razor": "6.0.0-*",
     "Microsoft.Extensions.Caching.Memory": "1.0.0-*",
     "Microsoft.Extensions.FileSystemGlobbing": "1.0.0-*",
     "Microsoft.Extensions.Logging.Abstractions": {

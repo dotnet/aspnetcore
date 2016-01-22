@@ -6,13 +6,13 @@ using System.Collections.Generic;
 #if NET451
 using System.ComponentModel;
 #endif
-using Microsoft.AspNet.Mvc.Abstractions;
-using Microsoft.AspNet.Mvc.Infrastructure;
-using Microsoft.AspNet.Mvc.Routing;
-using Microsoft.AspNet.Routing;
-using Microsoft.AspNet.Routing.DecisionTree;
+using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Routing.DecisionTree;
 
-namespace Microsoft.AspNet.Mvc.Internal
+namespace Microsoft.AspNetCore.Mvc.Internal
 {
     /// <inheritdoc />
     public class ActionSelectionDecisionTree : IActionSelectionDecisionTree

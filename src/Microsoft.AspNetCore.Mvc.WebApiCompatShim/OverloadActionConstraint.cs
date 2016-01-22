@@ -7,12 +7,12 @@ using System.ComponentModel;
 using System.Linq;
 using System.Net.Http.Formatting;
 using System.Reflection;
-using Microsoft.AspNet.Mvc.Abstractions;
-using Microsoft.AspNet.Mvc.ActionConstraints;
-using Microsoft.AspNet.Mvc.ModelBinding;
-using Microsoft.AspNet.Routing;
+using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.ActionConstraints;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Routing;
 
-namespace Microsoft.AspNet.Mvc.WebApiCompatShim
+namespace Microsoft.AspNetCore.Mvc.WebApiCompatShim
 {
     public class OverloadActionConstraint : IActionConstraint
     {

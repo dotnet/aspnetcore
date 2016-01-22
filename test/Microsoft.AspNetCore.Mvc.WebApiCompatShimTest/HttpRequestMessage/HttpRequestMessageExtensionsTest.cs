@@ -4,10 +4,10 @@
 using System.Collections.Generic;
 using System.Net.Http.Formatting;
 using System.Net.Http.Headers;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Internal;
-using Microsoft.AspNet.Mvc.WebApiCompatShim;
-using Microsoft.AspNet.Testing;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Internal;
+using Microsoft.AspNetCore.Mvc.WebApiCompatShim;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;

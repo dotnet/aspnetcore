@@ -3,7 +3,7 @@
 
 using System.IO;
 using System.Text;
-using Microsoft.AspNet.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.PlatformAbstractions;
 
 namespace FilesWebSite

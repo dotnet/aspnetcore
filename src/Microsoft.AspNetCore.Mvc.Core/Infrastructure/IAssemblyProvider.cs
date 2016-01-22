@@ -4,7 +4,7 @@
 using System.Collections.Generic;
 using System.Reflection;
 
-namespace Microsoft.AspNet.Mvc.Infrastructure
+namespace Microsoft.AspNetCore.Mvc.Infrastructure
 {
     /// <summary>
     /// Specifies the contract for discovering assemblies that may contain Mvc specific types such as controllers,

@@ -4,12 +4,12 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http.Authentication;
-using Microsoft.AspNet.Mvc.Internal;
+using Microsoft.AspNetCore.Http.Authentication;
+using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNet.Mvc
+namespace Microsoft.AspNetCore.Mvc
 {
     /// <summary>
     /// An <see cref="ActionResult"/> that on execution invokes <see cref="AuthenticationManager.ChallengeAsync"/>.

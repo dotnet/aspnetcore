@@ -4,7 +4,7 @@
 using System.Diagnostics.Contracts;
 using System.Text;
 
-namespace Microsoft.AspNet.Mvc.Formatters.Internal
+namespace Microsoft.AspNetCore.Mvc.Formatters.Internal
 {
     public static class HttpTokenParsingRules
     {

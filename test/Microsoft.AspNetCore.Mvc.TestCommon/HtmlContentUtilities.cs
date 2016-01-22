@@ -3,10 +3,10 @@
 
 using System.IO;
 using System.Text.Encodings.Web;
-using Microsoft.AspNet.Html;
+using Microsoft.AspNetCore.Html;
 using Microsoft.Extensions.WebEncoders.Testing;
 
-namespace Microsoft.AspNet.Mvc.TestCommon
+namespace Microsoft.AspNetCore.Mvc.TestCommon
 {
     public class HtmlContentUtilities
     {

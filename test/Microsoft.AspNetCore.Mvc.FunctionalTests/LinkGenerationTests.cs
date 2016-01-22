@@ -7,10 +7,10 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Reflection;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Testing;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.FunctionalTests
+namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
     public class LinkGenerationTests : IClassFixture<MvcTestFixture<BasicWebSite.Startup>>
     {

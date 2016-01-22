@@ -3,9 +3,9 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNet.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.Abstractions;
 
-namespace Microsoft.AspNet.Mvc.ActionConstraints
+namespace Microsoft.AspNetCore.Mvc.ActionConstraints
 {
     /// <summary>
     /// A candidate action for action selection.

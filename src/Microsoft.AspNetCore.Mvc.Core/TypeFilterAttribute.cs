@@ -4,10 +4,10 @@
 using System;
 using System.Diagnostics;
 using System.Linq;
-using Microsoft.AspNet.Mvc.Filters;
+using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNet.Mvc
+namespace Microsoft.AspNetCore.Mvc
 {
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true, Inherited = true)]
     [DebuggerDisplay("TypeFilter: Type={ImplementationType} Order={Order}")]

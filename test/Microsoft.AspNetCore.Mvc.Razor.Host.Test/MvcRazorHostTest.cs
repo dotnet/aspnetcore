@@ -11,18 +11,18 @@ using System.Reflection;
 #if GENERATE_BASELINES
 using System.Text;
 #endif
-using Microsoft.AspNet.Mvc.Razor.Directives;
-using Microsoft.AspNet.Mvc.Razor.Internal;
-using Microsoft.AspNet.Razor;
-using Microsoft.AspNet.Razor.Chunks;
-using Microsoft.AspNet.Razor.Chunks.Generators;
-using Microsoft.AspNet.Razor.CodeGenerators;
-using Microsoft.AspNet.Razor.CodeGenerators.Visitors;
-using Microsoft.AspNet.Razor.Parser;
-using Microsoft.AspNet.Testing;
+using Microsoft.AspNetCore.Mvc.Razor.Directives;
+using Microsoft.AspNetCore.Mvc.Razor.Internal;
+using Microsoft.AspNetCore.Razor;
+using Microsoft.AspNetCore.Razor.Chunks;
+using Microsoft.AspNetCore.Razor.Chunks.Generators;
+using Microsoft.AspNetCore.Razor.CodeGenerators;
+using Microsoft.AspNetCore.Razor.CodeGenerators.Visitors;
+using Microsoft.AspNetCore.Razor.Parser;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.Razor
+namespace Microsoft.AspNetCore.Mvc.Razor
 {
     public class MvcRazorHostTest
     {
@@ -604,7 +604,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 return new TestCSharpCodeGenerator(
                     context,
                     DefaultModel,
-                    "Microsoft.AspNet.Mvc.Razor.Internal.RazorInjectAttribute",
+                    "Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute",
                     new GeneratedTagHelperAttributeContext
                     {
                         ModelExpressionTypeName = ModelExpressionType,
@@ -657,7 +657,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                 return new TestCSharpCodeGenerator(
                     context,
                     DefaultModel,
-                    "Microsoft.AspNet.Mvc.Razor.Internal.RazorInjectAttribute",
+                    "Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute",
                     new GeneratedTagHelperAttributeContext
                     {
                         ModelExpressionTypeName = ModelExpressionType,

@@ -5,10 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
-using Microsoft.AspNet.Testing;
-using Microsoft.AspNet.Razor;
+using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.Razor;
 
-namespace Microsoft.AspNet.Mvc
+namespace Microsoft.AspNetCore.Mvc
 {
     public static class PlatformNormalizer
     {

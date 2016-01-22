@@ -4,16 +4,16 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNet.Razor;
-using Microsoft.AspNet.Razor.Chunks.Generators;
-using Microsoft.AspNet.Razor.CodeGenerators;
-using Microsoft.AspNet.Razor.Generator;
-using Microsoft.AspNet.Razor.Parser;
-using Microsoft.AspNet.Razor.Parser.SyntaxTree;
-using Microsoft.AspNet.Razor.Text;
+using Microsoft.AspNetCore.Razor;
+using Microsoft.AspNetCore.Razor.Chunks.Generators;
+using Microsoft.AspNetCore.Razor.CodeGenerators;
+using Microsoft.AspNetCore.Razor.Generator;
+using Microsoft.AspNetCore.Razor.Parser;
+using Microsoft.AspNetCore.Razor.Parser.SyntaxTree;
+using Microsoft.AspNetCore.Razor.Text;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.Razor
+namespace Microsoft.AspNetCore.Mvc.Razor
 {
     public class MvcCSharpRazorCodeParserTest
     {
@@ -268,8 +268,8 @@ namespace Microsoft.AspNet.Mvc.Razor
 
         [Theory]
         [InlineData("IMyService Service", "IMyService", "Service")]
-        [InlineData("  Microsoft.AspNet.Mvc.IHtmlHelper<MyNullableModel[]?>  MyHelper  ",
-                    "Microsoft.AspNet.Mvc.IHtmlHelper<MyNullableModel[]?>", "MyHelper")]
+        [InlineData("  Microsoft.AspNetCore.Mvc.IHtmlHelper<MyNullableModel[]?>  MyHelper  ",
+                    "Microsoft.AspNetCore.Mvc.IHtmlHelper<MyNullableModel[]?>", "MyHelper")]
         [InlineData("    TestService    @class ", "TestService", "@class")]
         public void ParseInjectKeyword_InfersTypeAndPropertyName(
             string injectStatement,
@@ -304,17 +304,17 @@ namespace Microsoft.AspNet.Mvc.Razor
         [Theory]
         [InlineData("IMyService Service;", "IMyService", "Service")]
         [InlineData("IMyService Service;;", "IMyService", "Service")]
-        [InlineData("  Microsoft.AspNet.Mvc.IHtmlHelper<MyNullableModel[]?>  MyHelper;  ",
-                    "Microsoft.AspNet.Mvc.IHtmlHelper<MyNullableModel[]?>", "MyHelper")]
-        [InlineData("  Microsoft.AspNet.Mvc.IHtmlHelper<MyNullableModel[]?>  MyHelper;  ;  ",
-                    "Microsoft.AspNet.Mvc.IHtmlHelper<MyNullableModel[]?>", "MyHelper")]
+        [InlineData("  Microsoft.AspNetCore.Mvc.IHtmlHelper<MyNullableModel[]?>  MyHelper;  ",
+                    "Microsoft.AspNetCore.Mvc.IHtmlHelper<MyNullableModel[]?>", "MyHelper")]
+        [InlineData("  Microsoft.AspNetCore.Mvc.IHtmlHelper<MyNullableModel[]?>  MyHelper;  ;  ",
+                    "Microsoft.AspNetCore.Mvc.IHtmlHelper<MyNullableModel[]?>", "MyHelper")]
         [InlineData("    TestService    @class; ; ", "TestService", "@class")]
         [InlineData("IMyService Service  ;", "IMyService", "Service")]
         [InlineData("IMyService Service  ;  ;", "IMyService", "Service")]
-        [InlineData("  Microsoft.AspNet.Mvc.IHtmlHelper<MyNullableModel[]?>  MyHelper  ;  ",
-                    "Microsoft.AspNet.Mvc.IHtmlHelper<MyNullableModel[]?>", "MyHelper")]
-        [InlineData("  Microsoft.AspNet.Mvc.IHtmlHelper<MyNullableModel[]?>  MyHelper  ;  ;  ",
-                    "Microsoft.AspNet.Mvc.IHtmlHelper<MyNullableModel[]?>", "MyHelper")]
+        [InlineData("  Microsoft.AspNetCore.Mvc.IHtmlHelper<MyNullableModel[]?>  MyHelper  ;  ",
+                    "Microsoft.AspNetCore.Mvc.IHtmlHelper<MyNullableModel[]?>", "MyHelper")]
+        [InlineData("  Microsoft.AspNetCore.Mvc.IHtmlHelper<MyNullableModel[]?>  MyHelper  ;  ;  ",
+                    "Microsoft.AspNetCore.Mvc.IHtmlHelper<MyNullableModel[]?>", "MyHelper")]
         [InlineData("    TestService    @class  ; ", "TestService", "@class")]
         [InlineData("    TestService    @class  ; ; ", "TestService", "@class")]
         public void ParseInjectKeyword_AllowsOptionalTrailingSemicolon(

@@ -4,18 +4,18 @@
 using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Mvc.Abstractions;
-using Microsoft.AspNet.Mvc.Internal;
-using Microsoft.AspNet.Routing;
-using Microsoft.AspNet.Routing.Tree;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.Internal;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Routing.Tree;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.Infrastructure
+namespace Microsoft.AspNetCore.Mvc.Infrastructure
 {
     public class MvcRouteHandlerTests
     {
@@ -202,7 +202,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
                 optionsAccessor = new TestOptionsManager<MvcOptions>();
             }
 
-            var diagnosticSource = new DiagnosticListener("Microsoft.AspNet");
+            var diagnosticSource = new DiagnosticListener("Microsoft.AspNetCore");
             if (diagnosticListener != null)
             {
                 diagnosticSource.SubscribeWithAdapter(diagnosticListener);

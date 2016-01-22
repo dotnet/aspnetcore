@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNet.Mvc.ActionConstraints
+namespace Microsoft.AspNetCore.Mvc.ActionConstraints
 {
     /// <summary>
     /// A factory for <see cref="IActionConstraint"/>.

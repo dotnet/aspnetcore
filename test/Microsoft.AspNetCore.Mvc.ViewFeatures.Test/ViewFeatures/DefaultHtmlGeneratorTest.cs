@@ -6,19 +6,19 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Encodings.Web;
-using Microsoft.AspNet.Antiforgery;
-using Microsoft.AspNet.Http.Internal;
-using Microsoft.AspNet.Mvc.Abstractions;
-using Microsoft.AspNet.Mvc.ModelBinding;
-using Microsoft.AspNet.Mvc.Rendering;
-using Microsoft.AspNet.Mvc.Routing;
-using Microsoft.AspNet.Mvc.ViewEngines;
-using Microsoft.AspNet.Routing;
+using Microsoft.AspNetCore.Antiforgery;
+using Microsoft.AspNetCore.Http.Internal;
+using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.AspNetCore.Mvc.ViewEngines;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.ViewFeatures
+namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 {
     public class DefaultHtmlGeneratorTest
     {
@@ -75,7 +75,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             var modelExplorer = metadataProvider.GetModelExplorerForType(typeof(string), model: null);
 
             var expected = "The name of an HTML field cannot be null or empty. Instead use methods " +
-                "Microsoft.AspNet.Mvc.Rendering.IHtmlHelper.Editor or Microsoft.AspNet.Mvc.Rendering." +
+                "Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper.Editor or Microsoft.AspNetCore.Mvc.Rendering." +
                 "IHtmlHelper`1.EditorFor with a non-empty htmlFieldName argument value." +
                 Environment.NewLine + "Parameter name: expression";
 
@@ -101,7 +101,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             var modelExplorer = metadataProvider.GetModelExplorerForType(typeof(string), model: null);
 
             var expected = "The name of an HTML field cannot be null or empty. Instead use methods " +
-                "Microsoft.AspNet.Mvc.Rendering.IHtmlHelper.Editor or Microsoft.AspNet.Mvc.Rendering." +
+                "Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper.Editor or Microsoft.AspNetCore.Mvc.Rendering." +
                 "IHtmlHelper`1.EditorFor with a non-empty htmlFieldName argument value." +
                 Environment.NewLine + "Parameter name: expression";
 
@@ -130,7 +130,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             var modelExplorer = metadataProvider.GetModelExplorerForType(typeof(string), model: null);
 
             var expected = "The name of an HTML field cannot be null or empty. Instead use methods " +
-                "Microsoft.AspNet.Mvc.Rendering.IHtmlHelper.Editor or Microsoft.AspNet.Mvc.Rendering." +
+                "Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper.Editor or Microsoft.AspNetCore.Mvc.Rendering." +
                 "IHtmlHelper`1.EditorFor with a non-empty htmlFieldName argument value." +
                 Environment.NewLine + "Parameter name: expression";
 
@@ -158,7 +158,7 @@ namespace Microsoft.AspNet.Mvc.ViewFeatures
             var modelExplorer = metadataProvider.GetModelExplorerForType(typeof(string), model: null);
 
             var expected = "The name of an HTML field cannot be null or empty. Instead use methods " +
-                "Microsoft.AspNet.Mvc.Rendering.IHtmlHelper.Editor or Microsoft.AspNet.Mvc.Rendering." +
+                "Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper.Editor or Microsoft.AspNetCore.Mvc.Rendering." +
                 "IHtmlHelper`1.EditorFor with a non-empty htmlFieldName argument value." +
                 Environment.NewLine + "Parameter name: expression";
 

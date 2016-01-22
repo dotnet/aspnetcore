@@ -4,14 +4,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
-using Microsoft.AspNet.Mvc.ModelBinding;
-using Microsoft.AspNet.Mvc.ModelBinding.Metadata;
-using Microsoft.AspNet.Mvc.Rendering;
-using Microsoft.AspNet.Testing;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Testing;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.Core
+namespace Microsoft.AspNetCore.Mvc.Core
 {
     /// <summary>
     /// Test the <see cref="HtmlHelperNameExtensions" /> class.

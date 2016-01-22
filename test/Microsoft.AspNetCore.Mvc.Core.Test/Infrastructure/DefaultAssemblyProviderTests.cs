@@ -4,12 +4,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNet.Http;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.PlatformAbstractions;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.Infrastructure
+namespace Microsoft.AspNetCore.Mvc.Infrastructure
 {
     public class DefaultAssemblyProviderTests
     {
@@ -21,9 +21,9 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
             manager.Setup(f => f.GetReferencingLibraries(It.IsAny<string>()))
                    .Returns(new[]
                    {
-                        new Library("Microsoft.AspNet.Mvc.Core"),
-                        new Library("Microsoft.AspNet.Mvc"),
-                        new Library("Microsoft.AspNet.Mvc.Abstractions"),
+                        new Library("Microsoft.AspNetCore.Mvc.Core"),
+                        new Library("Microsoft.AspNetCore.Mvc"),
+                        new Library("Microsoft.AspNetCore.Mvc.Abstractions"),
                         new Library("SomeRandomAssembly"),
                    })
                    .Verifiable();
@@ -45,11 +45,11 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
             var manager = new Mock<ILibraryManager>();
             manager.Setup(f => f.GetReferencingLibraries(It.IsAny<string>()))
                   .Returns(Enumerable.Empty<Library>());
-            manager.Setup(f => f.GetReferencingLibraries("Microsoft.AspNet.Mvc.Core"))
+            manager.Setup(f => f.GetReferencingLibraries("Microsoft.AspNetCore.Mvc.Core"))
                    .Returns(new[] { new Library("Foo") });
-            manager.Setup(f => f.GetReferencingLibraries("Microsoft.AspNet.Mvc.Abstractions"))
+            manager.Setup(f => f.GetReferencingLibraries("Microsoft.AspNetCore.Mvc.Abstractions"))
                    .Returns(new[] { new Library("Bar") });
-            manager.Setup(f => f.GetReferencingLibraries("Microsoft.AspNet.Mvc"))
+            manager.Setup(f => f.GetReferencingLibraries("Microsoft.AspNetCore.Mvc"))
                    .Returns(new[] { new Library("Baz") });
             var provider = new TestAssemblyProvider(manager.Object);
 
@@ -100,7 +100,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
         }
 
         // This test verifies DefaultAssemblyProvider.ReferenceAssemblies reflects the actual loadable assemblies
-        // of the libraries that Microsoft.AspNet.Mvc dependes on.
+        // of the libraries that Microsoft.AspNetCore.Mvc dependes on.
         // If we add or remove dependencies, this test should be changed together.
         [Fact]
         public void ReferenceAssemblies_ReturnsLoadableReferenceAssemblies()
@@ -121,7 +121,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
             var manager = new Mock<ILibraryManager>();
             manager.Setup(f => f.GetReferencingLibraries(It.IsAny<string>()))
                   .Returns(Enumerable.Empty<Library>());
-            manager.Setup(f => f.GetReferencingLibraries("Microsoft.AspNet.Mvc.Core"))
+            manager.Setup(f => f.GetReferencingLibraries("Microsoft.AspNetCore.Mvc.Core"))
                    .Returns(new[] { new Library("Baz") });
             manager.Setup(f => f.GetReferencingLibraries("MyAssembly"))
                    .Returns(new[] { new Library("Foo") });
@@ -179,7 +179,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
         private class MvcAssembliesTestingProvider : DefaultAssemblyProvider
         {
             private static readonly ILibraryManager _libraryManager = GetLibraryManager();
-            private static readonly string _mvcName = "Microsoft.AspNet.Mvc";
+            private static readonly string _mvcName = "Microsoft.AspNetCore.Mvc";
 
             public MvcAssembliesTestingProvider() : base(_libraryManager)
             { }
@@ -223,7 +223,7 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
             {
                 var exceptionalAssebmlies = new string[]
                 {
-                    "Microsoft.AspNet.Mvc.WebApiCompatShim",
+                    "Microsoft.AspNetCore.Mvc.WebApiCompatShim",
                 };
 
                 var mvcAssemblies = assemblies
@@ -232,9 +232,9 @@ namespace Microsoft.AspNet.Mvc.Infrastructure
                     .Except(exceptionalAssebmlies)
                     .ToList();
 
-                // The following assemblies are not reachable from Microsoft.AspNet.Mvc
-                mvcAssemblies.Add("Microsoft.AspNet.Mvc.TagHelpers");
-                mvcAssemblies.Add("Microsoft.AspNet.Mvc.Formatters.Xml");
+                // The following assemblies are not reachable from Microsoft.AspNetCore.Mvc
+                mvcAssemblies.Add("Microsoft.AspNetCore.Mvc.TagHelpers");
+                mvcAssemblies.Add("Microsoft.AspNetCore.Mvc.Formatters.Xml");
 
                 return mvcAssemblies;
             }

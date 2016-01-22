@@ -5,13 +5,13 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq.Expressions;
-using Microsoft.AspNet.Mvc.ModelBinding;
-using Microsoft.AspNet.Mvc.TestCommon;
-using Microsoft.AspNet.Mvc.ViewFeatures;
-using Microsoft.AspNet.Testing;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.TestCommon;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.Rendering
+namespace Microsoft.AspNetCore.Mvc.Rendering
 {
     public class HtmlHelperHiddenTest
     {
@@ -405,7 +405,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
                 { "class", "some-class"}
             };
             var expected = "The name of an HTML field cannot be null or empty. Instead use methods " +
-                "Microsoft.AspNet.Mvc.Rendering.IHtmlHelper.Editor or Microsoft.AspNet.Mvc.Rendering." +
+                "Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper.Editor or Microsoft.AspNetCore.Mvc.Rendering." +
                 "IHtmlHelper`1.EditorFor with a non-empty htmlFieldName argument value." +
                 Environment.NewLine + "Parameter name: expression";
 

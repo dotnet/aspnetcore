@@ -10,13 +10,13 @@
     "keyFile": "../../tools/Key.snk"
   },
   "dependencies": {
-    "Microsoft.AspNet.Mvc.ApiExplorer": "6.0.0-*",
-    "Microsoft.AspNet.Mvc.Cors": "6.0.0-*",
-    "Microsoft.AspNet.Mvc.DataAnnotations": "6.0.0-*",
-    "Microsoft.AspNet.Mvc.Formatters.Json": "6.0.0-*",
-    "Microsoft.AspNet.Mvc.Localization": "6.0.0-*",
-    "Microsoft.AspNet.Mvc.Razor": "6.0.0-*",
-    "Microsoft.AspNet.Mvc.ViewFeatures": "6.0.0-*",
+    "Microsoft.AspNetCore.Mvc.ApiExplorer": "6.0.0-*",
+    "Microsoft.AspNetCore.Mvc.Cors": "6.0.0-*",
+    "Microsoft.AspNetCore.Mvc.DataAnnotations": "6.0.0-*",
+    "Microsoft.AspNetCore.Mvc.Formatters.Json": "6.0.0-*",
+    "Microsoft.AspNetCore.Mvc.Localization": "6.0.0-*",
+    "Microsoft.AspNetCore.Mvc.Razor": "6.0.0-*",
+    "Microsoft.AspNetCore.Mvc.ViewFeatures": "6.0.0-*",
     "Microsoft.Extensions.Caching.Memory": "1.0.0-*",
     "Microsoft.Extensions.DependencyInjection": "1.0.0-*",
     "Microsoft.Extensions.PropertyHelper.Sources": {

@@ -1,6 +1,6 @@
 {
   "compile": [
-    "../Microsoft.AspNet.Mvc.Formatters.Xml.Test/XmlAssert.cs"
+    "../Microsoft.AspNetCore.Mvc.Formatters.Xml.Test/XmlAssert.cs"
   ],
   "compilationOptions": {
     "define": [ "__RemoveThisBitTo__GENERATE_BASELINES", "FUNCTIONAL_TESTS" ],
@@ -24,15 +24,15 @@
     "InlineConstraintSample.Web": "1.0.0",
     "JsonPatchSample.Web": "1.0.0",
     "LocalizationSample.Web": "1.0.0",
-    "Microsoft.AspNet.Mvc": "6.0.0-*",
-    "Microsoft.AspNet.Mvc.Formatters.Xml": "6.0.0-*",
-    "Microsoft.AspNet.Mvc.TestCommon": {
+    "Microsoft.AspNetCore.Mvc": "6.0.0-*",
+    "Microsoft.AspNetCore.Mvc.Formatters.Xml": "6.0.0-*",
+    "Microsoft.AspNetCore.Mvc.TestCommon": {
       "version": "6.0.0-*",
       "type": "build"
     },
-    "Microsoft.AspNet.Mvc.TestConfiguration": "1.0.0",
-    "Microsoft.AspNet.TestHost": "1.0.0-*",
-    "Microsoft.AspNet.WebUtilities": "1.0.0-*",
+    "Microsoft.AspNetCore.Mvc.TestConfiguration": "1.0.0",
+    "Microsoft.AspNetCore.TestHost": "1.0.0-*",
+    "Microsoft.AspNetCore.WebUtilities": "1.0.0-*",
     "Microsoft.Extensions.Configuration.Json": "1.0.0-*",
     "Microsoft.Extensions.Logging.Testing": "1.0.0-*",
     "MvcSandbox": "1.0.0",

@@ -4,15 +4,15 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNet.Razor;
-using Microsoft.AspNet.Razor.Chunks.Generators;
-using Microsoft.AspNet.Razor.Generator;
-using Microsoft.AspNet.Razor.Parser;
-using Microsoft.AspNet.Razor.Parser.SyntaxTree;
-using Microsoft.AspNet.Razor.Text;
+using Microsoft.AspNetCore.Razor;
+using Microsoft.AspNetCore.Razor.Chunks.Generators;
+using Microsoft.AspNetCore.Razor.Generator;
+using Microsoft.AspNetCore.Razor.Parser;
+using Microsoft.AspNetCore.Razor.Parser.SyntaxTree;
+using Microsoft.AspNetCore.Razor.Text;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.Razor.Host.Test
+namespace Microsoft.AspNetCore.Mvc.Razor.Host.Test
 {
     public class MvcRazorCodeParserTest
     {

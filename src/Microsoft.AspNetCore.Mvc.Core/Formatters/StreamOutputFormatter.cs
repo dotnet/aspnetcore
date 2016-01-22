@@ -4,9 +4,9 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http.Features;
+using Microsoft.AspNetCore.Http.Features;
 
-namespace Microsoft.AspNet.Mvc.Formatters
+namespace Microsoft.AspNetCore.Mvc.Formatters
 {
     /// <summary>
     /// Always copies the stream to the response, regardless of requested content type.

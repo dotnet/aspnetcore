@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
-namespace Microsoft.AspNet.Mvc.Internal
+namespace Microsoft.AspNetCore.Mvc.Internal
 {
     internal class ReferenceEqualityComparer : IEqualityComparer<object>
     {

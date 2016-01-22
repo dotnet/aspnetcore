@@ -10,12 +10,12 @@
     "keyFile": "../../tools/Key.snk"
   },
   "dependencies": {
-    "Microsoft.AspNet.Authorization": "1.0.0-*",
-    "Microsoft.AspNet.Hosting.Abstractions": "1.0.0-*",
-    "Microsoft.AspNet.Mvc.Abstractions": "6.0.0-*",
-    "Microsoft.AspNet.Http": "1.0.0-*",
-    "Microsoft.AspNet.Routing": "1.0.0-*",
-    "Microsoft.AspNet.Routing.DecisionTree.Sources": {
+    "Microsoft.AspNetCore.Authorization": "1.0.0-*",
+    "Microsoft.AspNetCore.Hosting.Abstractions": "1.0.0-*",
+    "Microsoft.AspNetCore.Mvc.Abstractions": "6.0.0-*",
+    "Microsoft.AspNetCore.Http": "1.0.0-*",
+    "Microsoft.AspNetCore.Routing": "1.0.0-*",
+    "Microsoft.AspNetCore.Routing.DecisionTree.Sources": {
       "type": "build",
       "version": "1.0.0-*"
     },

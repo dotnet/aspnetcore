@@ -10,8 +10,8 @@
     "keyFile": "../../tools/Key.snk"
   },
   "dependencies": {
-    "Microsoft.AspNet.Mvc.Razor.Host": "6.0.0-*",
-    "Microsoft.AspNet.Mvc.ViewFeatures": "6.0.0-*",
+    "Microsoft.AspNetCore.Mvc.Razor.Host": "6.0.0-*",
+    "Microsoft.AspNetCore.Mvc.ViewFeatures": "6.0.0-*",
     "Microsoft.Extensions.FileProviders.Composite": "1.0.0-*",
     "Microsoft.Extensions.HashCodeCombiner.Sources": {
       "version": "1.0.0-*",

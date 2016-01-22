@@ -3,12 +3,12 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Cors.Infrastructure;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Mvc.Filters;
+using Microsoft.AspNetCore.Cors.Infrastructure;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.AspNet.Mvc.Cors.Internal
+namespace Microsoft.AspNetCore.Mvc.Cors.Internal
 {
     /// <summary>
     /// An <see cref="ICorsAuthorizationFilter"/> which ensures that an action does not run for a pre-flight request.

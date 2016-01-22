@@ -3,10 +3,10 @@
 
 using System;
 using System.Text.Encodings.Web;
-using Microsoft.AspNet.Html;
+using Microsoft.AspNetCore.Html;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNet.Mvc.Rendering
+namespace Microsoft.AspNetCore.Mvc.Rendering
 {
     /// <summary>
     /// An HTML form element in an MVC view.

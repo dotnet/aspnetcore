@@ -5,14 +5,14 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.IO;
-using Microsoft.AspNet.Mvc.ModelBinding;
-using Microsoft.AspNet.Mvc.TestCommon;
-using Microsoft.AspNet.Mvc.ViewFeatures;
-using Microsoft.AspNet.Routing;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.TestCommon;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.WebEncoders.Testing;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.Rendering
+namespace Microsoft.AspNetCore.Mvc.Rendering
 {
     public class HtmlHelperCheckBoxTest
     {
@@ -94,7 +94,7 @@ namespace Microsoft.AspNet.Mvc.Rendering
         {
             // Arrange
             var expected = "The name of an HTML field cannot be null or empty. Instead use methods " +
-                "Microsoft.AspNet.Mvc.Rendering.IHtmlHelper.Editor or Microsoft.AspNet.Mvc.Rendering." +
+                "Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper.Editor or Microsoft.AspNetCore.Mvc.Rendering." +
                 "IHtmlHelper`1.EditorFor with a non-empty htmlFieldName argument value." +
                 Environment.NewLine + "Parameter name: expression";
 

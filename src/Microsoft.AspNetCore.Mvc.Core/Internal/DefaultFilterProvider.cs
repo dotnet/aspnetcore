@@ -3,10 +3,10 @@
 
 using System;
 using System.Diagnostics;
-using Microsoft.AspNet.Mvc.Core;
-using Microsoft.AspNet.Mvc.Filters;
+using Microsoft.AspNetCore.Mvc.Core;
+using Microsoft.AspNetCore.Mvc.Filters;
 
-namespace Microsoft.AspNet.Mvc.Internal
+namespace Microsoft.AspNetCore.Mvc.Internal
 {
     public class DefaultFilterProvider : IFilterProvider
     {

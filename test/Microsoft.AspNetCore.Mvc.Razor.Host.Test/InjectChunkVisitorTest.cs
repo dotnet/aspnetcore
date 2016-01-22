@@ -2,15 +2,15 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNet.Mvc.Razor.Directives;
-using Microsoft.AspNet.Razor;
-using Microsoft.AspNet.Razor.Chunks;
-using Microsoft.AspNet.Razor.Chunks.Generators;
-using Microsoft.AspNet.Razor.CodeGenerators;
-using Microsoft.AspNet.Razor.Parser.SyntaxTree;
+using Microsoft.AspNetCore.Mvc.Razor.Directives;
+using Microsoft.AspNetCore.Razor;
+using Microsoft.AspNetCore.Razor.Chunks;
+using Microsoft.AspNetCore.Razor.Chunks.Generators;
+using Microsoft.AspNetCore.Razor.CodeGenerators;
+using Microsoft.AspNetCore.Razor.Parser.SyntaxTree;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.Razor
+namespace Microsoft.AspNetCore.Mvc.Razor
 {
     public class InjectChunkVisitorTest
     {
@@ -71,7 +71,7 @@ public MyType2 @MyPropertyName2 { get; private set; }
         {
             // Arrange
             var expected = string.Join(Environment.NewLine,
-@"[Microsoft.AspNet.Mvc.Razor.Internal.RazorInjectAttribute]",
+@"[Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute]",
 @"public",
 @"#line 1 """"",
 @"MyType1 MyPropertyName1",
@@ -79,7 +79,7 @@ public MyType2 @MyPropertyName2 { get; private set; }
 @"#line default",
 @"#line hidden",
 @"{ get; private set; }",
-@"[Microsoft.AspNet.Mvc.Razor.Internal.RazorInjectAttribute]",
+@"[Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute]",
 @"public",
 @"#line 1 """"",
 @"MyType2 @MyPropertyName2",
@@ -92,7 +92,7 @@ public MyType2 @MyPropertyName2 { get; private set; }
             var context = CreateContext();
             context.Host.DesignTimeMode = true;
 
-            var visitor = new InjectChunkVisitor(writer, context, "Microsoft.AspNet.Mvc.Razor.Internal.RazorInjectAttribute");
+            var visitor = new InjectChunkVisitor(writer, context, "Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute");
             var factory = SpanFactory.CreateCsHtml();
             var node = (Span)factory.Code("Some code")
                                     .As(new InjectParameterGenerator("MyType", "MyPropertyName"));
@@ -114,7 +114,7 @@ public MyType2 @MyPropertyName2 { get; private set; }
         public void Visit_WithDesignTimeHost_GeneratesPropertiesAndLinePragmas_ForPartialInjectChunks()
         {
             // Arrange
-            var expected = @"[Microsoft.AspNet.Mvc.Razor.Internal.RazorInjectAttribute]
+            var expected = @"[Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute]
 public
 #line 1 """"
 MyType1
@@ -127,7 +127,7 @@ MyType1
             var context = CreateContext();
             context.Host.DesignTimeMode = true;
 
-            var visitor = new InjectChunkVisitor(writer, context, "Microsoft.AspNet.Mvc.Razor.Internal.RazorInjectAttribute");
+            var visitor = new InjectChunkVisitor(writer, context, "Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute");
             var factory = SpanFactory.CreateCsHtml();
             var node = (Span)factory.Code("Some code")
                                     .As(new InjectParameterGenerator("MyType", "MyPropertyName"));

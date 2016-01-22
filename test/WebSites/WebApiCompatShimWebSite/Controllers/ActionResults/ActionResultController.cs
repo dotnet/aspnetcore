@@ -6,7 +6,7 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Web.Http;
-using Microsoft.AspNet.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 
 namespace WebApiCompatShimWebSite

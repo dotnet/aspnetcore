@@ -1,12 +1,12 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Builder;
+using Microsoft.AspNetCore.Builder;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.Core.Builder
+namespace Microsoft.AspNetCore.Mvc.Core.Builder
 {
     public class MvcApplicationBuilderExtensionsTest
     {

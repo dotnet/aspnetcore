@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNet.Razor.Chunks;
+using Microsoft.AspNetCore.Razor.Chunks;
 
-namespace Microsoft.AspNet.Mvc.Razor.Directives
+namespace Microsoft.AspNetCore.Mvc.Razor.Directives
 {
     /// <summary>
     /// Contains <see cref="AspNet.Razor.Chunks.ChunkTree"/> information.

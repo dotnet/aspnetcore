@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.ExceptionServices;
 
-namespace Microsoft.AspNet.Mvc.Filters
+namespace Microsoft.AspNetCore.Mvc.Filters
 {
     public class ExceptionContext : FilterContext
     {

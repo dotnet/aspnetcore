@@ -6,7 +6,7 @@ using System.Reflection;
 using Microsoft.Extensions.Internal;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.ViewFeatures.Internal
+namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 {
     public class HtmlAttributePropertyHelperTest
     {

@@ -8,7 +8,7 @@ using System.Reflection;
 using System.Threading;
 using Microsoft.Extensions.Internal;
 
-namespace Microsoft.AspNet.Mvc.ViewFeatures
+namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 {
     public static class TryGetValueProvider
     {

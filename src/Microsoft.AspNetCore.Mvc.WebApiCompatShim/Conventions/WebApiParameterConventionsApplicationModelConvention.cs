@@ -7,10 +7,10 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Web.Http;
-using Microsoft.AspNet.Mvc.ApplicationModels;
-using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ApplicationModels;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
-namespace Microsoft.AspNet.Mvc.WebApiCompatShim
+namespace Microsoft.AspNetCore.Mvc.WebApiCompatShim
 {
     public class WebApiParameterConventionsApplicationModelConvention : IActionModelConvention
     {

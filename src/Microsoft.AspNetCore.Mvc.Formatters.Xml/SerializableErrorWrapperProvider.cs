@@ -3,10 +3,10 @@
 
 using System;
 
-namespace Microsoft.AspNet.Mvc.Formatters.Xml
+namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
 {
     /// <summary>
-    /// Wraps the object of type <see cref="Microsoft.AspNet.Mvc.SerializableError"/>.
+    /// Wraps the object of type <see cref="Microsoft.AspNetCore.Mvc.SerializableError"/>.
     /// </summary>
     public class SerializableErrorWrapperProvider : IWrapperProvider
     {

@@ -1,4 +1,4 @@
-﻿{
+{
   "compilationOptions": {
     "emitEntryPoint": true
   },
@@ -6,9 +6,9 @@
     "web": "JsonPatchSample.Web"
   },
   "dependencies": {
-    "Microsoft.AspNet.IISPlatformHandler": "1.0.0-*",
-    "Microsoft.AspNet.Mvc": "6.0.0-*",
-    "Microsoft.AspNet.Server.Kestrel": "1.0.0-*"
+    "Microsoft.AspNetCore.IISPlatformHandler": "1.0.0-*",
+    "Microsoft.AspNetCore.Mvc": "6.0.0-*",
+    "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*"
   },
   "frameworks": {
     "dnx451": { },

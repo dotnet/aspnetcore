@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text.Encodings.Web;
-using Microsoft.AspNet.Mvc.Razor;
+using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Localization;
@@ -13,7 +13,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.Extensions.WebEncoders.Testing;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.Localization.Internal
+namespace Microsoft.AspNetCore.Mvc.Localization.Internal
 {
     public class MvcLocalizationServicesTest
     {

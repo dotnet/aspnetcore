@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
+namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
 {
     /// <summary>
     /// Aggregate of <see cref="IModelValidatorProvider"/>s that delegates to its underlying providers.

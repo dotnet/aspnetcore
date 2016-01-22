@@ -5,7 +5,7 @@ using System;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.FileSystemGlobbing.Abstractions;
 
-namespace Microsoft.AspNet.Mvc.TagHelpers.Internal
+namespace Microsoft.AspNetCore.Mvc.TagHelpers.Internal
 {
     public class FileProviderGlobbingFile : FileInfoBase
     {

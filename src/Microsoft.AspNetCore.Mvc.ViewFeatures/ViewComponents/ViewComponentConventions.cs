@@ -4,7 +4,7 @@
 using System;
 using System.Reflection;
 
-namespace Microsoft.AspNet.Mvc.ViewComponents
+namespace Microsoft.AspNetCore.Mvc.ViewComponents
 {
     public static class ViewComponentConventions
     {

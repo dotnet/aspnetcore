@@ -6,11 +6,11 @@ using System.ComponentModel.DataAnnotations;
 #if DOTNET5_4
 using System.Reflection;
 #endif
-using Microsoft.AspNet.Mvc.ModelBinding.Validation;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNet.Mvc.DataAnnotations.Internal
+namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
 {
     /// <summary>
     /// An implementation of <see cref="IModelValidatorProvider"/> which provides validators

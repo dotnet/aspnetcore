@@ -4,11 +4,11 @@
 using System;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Mvc.Internal;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.AspNet.Mvc.Formatters
+namespace Microsoft.AspNetCore.Mvc.Formatters
 {
     /// <summary>
     /// Always writes a string value to the response, regardless of requested content type.

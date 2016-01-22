@@ -4,7 +4,7 @@
 using System;
 using System.Reflection;
 
-namespace Microsoft.AspNet.Mvc.ViewFeatures
+namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 {
     public class ViewDataInfo
     {

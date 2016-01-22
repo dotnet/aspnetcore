@@ -3,9 +3,9 @@
 
 using System.Collections.Generic;
 using System.Diagnostics;
-using Microsoft.AspNet.Mvc.Filters;
+using Microsoft.AspNetCore.Mvc.Filters;
 
-namespace Microsoft.AspNet.Mvc.ApplicationModels
+namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 {
     [DebuggerDisplay("ApplicationModel: Controllers: {Controllers.Count}, Filters: {Filters.Count}")]
     public class ApplicationModel : IPropertyModel, IFilterModel, IApiExplorerModel

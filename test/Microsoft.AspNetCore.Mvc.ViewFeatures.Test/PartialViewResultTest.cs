@@ -5,20 +5,20 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Internal;
-using Microsoft.AspNet.Mvc.Abstractions;
-using Microsoft.AspNet.Mvc.ModelBinding;
-using Microsoft.AspNet.Mvc.Rendering;
-using Microsoft.AspNet.Mvc.ViewEngines;
-using Microsoft.AspNet.Mvc.ViewFeatures;
-using Microsoft.AspNet.Routing;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Internal;
+using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.ViewEngines;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Testing;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc
+namespace Microsoft.AspNetCore.Mvc
 {
     // These tests cover the logic included in PartialViewResult.ExecuteResultAsync - see PartialViewResultExecutorTest
     // and ViewExecutorTest for more comprehensive tests.
@@ -200,7 +200,7 @@ namespace Microsoft.AspNet.Mvc
                 new TestHttpResponseStreamWriterFactory(),
                 new CompositeViewEngine(options),
                 new TempDataDictionaryFactory(new SessionStateTempDataProvider()),
-                new DiagnosticListener("Microsoft.AspNet"),
+                new DiagnosticListener("Microsoft.AspNetCore"),
                 NullLoggerFactory.Instance);
 
             var services = new ServiceCollection();

@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using Microsoft.Extensions.Localization;
 
-namespace Microsoft.AspNet.Mvc.Localization
+namespace Microsoft.AspNetCore.Mvc.Localization
 {
     /// <summary>
     /// Represents a type that that does HTML-aware localization of strings, by HTML encoding arguments that are

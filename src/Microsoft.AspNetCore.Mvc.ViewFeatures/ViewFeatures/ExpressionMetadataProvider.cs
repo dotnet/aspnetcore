@@ -5,9 +5,9 @@ using System;
 using System.Globalization;
 using System.Linq.Expressions;
 using System.Reflection;
-using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
-namespace Microsoft.AspNet.Mvc.ViewFeatures
+namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 {
     public static class ExpressionMetadataProvider
     {

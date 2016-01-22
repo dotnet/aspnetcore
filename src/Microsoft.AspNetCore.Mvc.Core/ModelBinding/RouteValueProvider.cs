@@ -3,10 +3,10 @@
 
 using System;
 using System.Globalization;
-using Microsoft.AspNet.Mvc.Internal;
-using Microsoft.AspNet.Routing;
+using Microsoft.AspNetCore.Mvc.Internal;
+using Microsoft.AspNetCore.Routing;
 
-namespace Microsoft.AspNet.Mvc.ModelBinding
+namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
     /// <summary>
     /// An <see cref="IValueProvider"/> adapter for data stored in an <see cref="RouteValueDictionary"/>.

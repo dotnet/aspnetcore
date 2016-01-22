@@ -5,16 +5,16 @@ using System;
 using System.IO;
 using System.Net.Http;
 using System.Reflection;
-using Microsoft.AspNet.Hosting;
-using Microsoft.AspNet.Mvc.Infrastructure;
-using Microsoft.AspNet.TestHost;
-using Microsoft.AspNet.Testing;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.PlatformAbstractions;
 
-namespace Microsoft.AspNet.Mvc.FunctionalTests
+namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
     public class MvcTestFixture<TStartup> : IDisposable
     {

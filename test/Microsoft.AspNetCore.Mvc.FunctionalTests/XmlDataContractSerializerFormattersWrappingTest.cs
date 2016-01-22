@@ -5,11 +5,11 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Mvc.Formatters.Xml;
-using Microsoft.AspNet.Testing.xunit;
+using Microsoft.AspNetCore.Mvc.Formatters.Xml;
+using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.FunctionalTests
+namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
     public class XmlDataContractSerializerFormattersWrappingTest : IClassFixture<MvcTestFixture<XmlFormattersWebSite.Startup>>
     {
@@ -202,7 +202,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var result = await response.Content.ReadAsStringAsync();
             XmlAssert.Equal(
                 "<ArrayOfSerializableErrorWrapper xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\"" +
-                " xmlns=\"http://schemas.datacontract.org/2004/07/Microsoft.AspNet.Mvc.Formatters.Xml\"><SerializableErrorWrapper>" +
+                " xmlns=\"http://schemas.datacontract.org/2004/07/Microsoft.AspNetCore.Mvc.Formatters.Xml\"><SerializableErrorWrapper>" +
                 "<key1>key1-error</key1><key2>key2-error</key2></SerializableErrorWrapper><SerializableErrorWrapper>" +
                 "<key3>key1-error</key3><key4>key2-error</key4></SerializableErrorWrapper>" +
                 "</ArrayOfSerializableErrorWrapper>",

@@ -3,7 +3,7 @@
 
 using System.Linq;
 
-namespace Microsoft.AspNet.Mvc.ViewComponents
+namespace Microsoft.AspNetCore.Mvc.ViewComponents
 {
     /// <summary>
     /// A default implementation of <see cref="IViewComponentDescriptorCollectionProvider"/>

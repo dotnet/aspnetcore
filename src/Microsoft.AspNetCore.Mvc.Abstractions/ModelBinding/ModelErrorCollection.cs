@@ -4,7 +4,7 @@
 using System;
 using System.Collections.ObjectModel;
 
-namespace Microsoft.AspNet.Mvc.ModelBinding
+namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
     public class ModelErrorCollection : Collection<ModelError>
     {

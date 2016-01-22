@@ -3,9 +3,9 @@
 
 using System;
 using System.IO;
-using Microsoft.AspNet.Razor.CodeGenerators;
+using Microsoft.AspNetCore.Razor.CodeGenerators;
 
-namespace Microsoft.AspNet.Mvc.Razor
+namespace Microsoft.AspNetCore.Mvc.Razor
 {
     /// <summary>
     /// Specifies the contracts for a Razor host that parses Razor files and generates C# code.

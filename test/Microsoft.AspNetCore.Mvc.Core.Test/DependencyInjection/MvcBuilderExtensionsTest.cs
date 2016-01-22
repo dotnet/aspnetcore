@@ -3,13 +3,13 @@
 
 using System.Linq;
 using System.Reflection;
-using Microsoft.AspNet.Mvc.Controllers;
-using Microsoft.AspNet.Mvc.MvcServiceCollectionExtensionsTestControllers;
+using Microsoft.AspNetCore.Mvc.Controllers;
+using Microsoft.AspNetCore.Mvc.MvcServiceCollectionExtensionsTestControllers;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc
+namespace Microsoft.AspNetCore.Mvc
 {
     public class MvcBuilderExtensionsTest
     {
@@ -58,9 +58,9 @@ namespace Microsoft.AspNet.Mvc
 // implementation of this class to test it, they are just top level classes. Don't reuse
 // these outside this test - find a better way or use nested classes to keep the tests
 // independent.
-namespace Microsoft.AspNet.Mvc.MvcServiceCollectionExtensionsTestControllers
+namespace Microsoft.AspNetCore.Mvc.MvcServiceCollectionExtensionsTestControllers
 {
-    public class ControllerTypeA : Microsoft.AspNet.Mvc.Controller
+    public class ControllerTypeA : Microsoft.AspNetCore.Mvc.Controller
     {
 
     }

@@ -2,11 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using Microsoft.AspNet.Mvc.WebApiCompatShim;
-using Microsoft.AspNet.Routing;
-using Microsoft.AspNet.Routing.Constraints;
+using Microsoft.AspNetCore.Mvc.WebApiCompatShim;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Routing.Constraints;
 
-namespace Microsoft.AspNet.Builder
+namespace Microsoft.AspNetCore.Builder
 {
     public static class WebApiCompatShimRouteBuilderExtensions
     {

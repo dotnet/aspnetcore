@@ -1,12 +1,12 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Diagnostics;
-using Microsoft.AspNet.Mvc.Abstractions;
-using Microsoft.AspNet.Mvc.ViewComponents;
-using Microsoft.AspNet.Mvc.ViewEngines;
+using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.ViewComponents;
+using Microsoft.AspNetCore.Mvc.ViewEngines;
 
-namespace Microsoft.AspNet.Mvc.Diagnostics
+namespace Microsoft.AspNetCore.Mvc.Diagnostics
 {
     public static class ViewComponentDiagnosticSourceExtensions
     {
@@ -15,10 +15,10 @@ namespace Microsoft.AspNet.Mvc.Diagnostics
             ViewComponentContext context,
             object viewComponent)
         {
-            if (diagnosticSource.IsEnabled("Microsoft.AspNet.Mvc.BeforeViewComponent"))
+            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeViewComponent"))
             {
                 diagnosticSource.Write(
-                "Microsoft.AspNet.Mvc.BeforeViewComponent",
+                "Microsoft.AspNetCore.Mvc.BeforeViewComponent",
                 new
                 {
                     actionDescriptor = context.ViewContext.ActionDescriptor,
@@ -34,10 +34,10 @@ namespace Microsoft.AspNet.Mvc.Diagnostics
             IViewComponentResult result,
             object viewComponent)
         {
-            if (diagnosticSource.IsEnabled("Microsoft.AspNet.Mvc.AfterViewComponent"))
+            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.AfterViewComponent"))
             {
                 diagnosticSource.Write(
-                "Microsoft.AspNet.Mvc.AfterViewComponent",
+                "Microsoft.AspNetCore.Mvc.AfterViewComponent",
                 new
                 {
                     actionDescriptor = context.ViewContext.ActionDescriptor,
@@ -53,10 +53,10 @@ namespace Microsoft.AspNet.Mvc.Diagnostics
             ViewComponentContext context,
             IView view)
         {
-            if (diagnosticSource.IsEnabled("Microsoft.AspNet.Mvc.ViewComponentBeforeViewExecute"))
+            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.ViewComponentBeforeViewExecute"))
             {
                 diagnosticSource.Write(
-                    "Microsoft.AspNet.Mvc.ViewComponentBeforeViewExecute",
+                    "Microsoft.AspNetCore.Mvc.ViewComponentBeforeViewExecute",
                     new
                     {
                         actionDescriptor = context.ViewContext.ActionDescriptor,
@@ -71,10 +71,10 @@ namespace Microsoft.AspNet.Mvc.Diagnostics
             ViewComponentContext context,
             IView view)
         {
-            if (diagnosticSource.IsEnabled("Microsoft.AspNet.Mvc.ViewComponentAfterViewExecute"))
+            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.ViewComponentAfterViewExecute"))
             {
                 diagnosticSource.Write(
-                    "Microsoft.AspNet.Mvc.ViewComponentAfterViewExecute",
+                    "Microsoft.AspNetCore.Mvc.ViewComponentAfterViewExecute",
                     new
                     {
                         actionDescriptor = context.ViewContext.ActionDescriptor,

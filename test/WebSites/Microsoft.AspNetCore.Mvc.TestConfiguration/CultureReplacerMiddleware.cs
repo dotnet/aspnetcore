@@ -2,11 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Testing;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Testing;
 
-namespace Microsoft.AspNet.Mvc.TestConfiguration
+namespace Microsoft.AspNetCore.Mvc.TestConfiguration
 {
     /// <summary>
     /// A middleware that ensures web sites run in a consistent culture. Currently useful for tests that format dates,

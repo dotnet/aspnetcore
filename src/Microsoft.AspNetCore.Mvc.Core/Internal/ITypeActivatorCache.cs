@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNet.Mvc.Internal
+namespace Microsoft.AspNetCore.Mvc.Internal
 {
     /// <summary>
     /// Caches <see cref="Microsoft.Extensions.DependencyInjection.ObjectFactory"/> instances produced by 

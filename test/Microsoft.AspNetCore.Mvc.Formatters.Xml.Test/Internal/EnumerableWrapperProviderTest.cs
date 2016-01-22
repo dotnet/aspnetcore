@@ -6,7 +6,7 @@ using System.Linq;
 using System.Collections.Generic;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.Formatters.Xml.Internal
+namespace Microsoft.AspNetCore.Mvc.Formatters.Xml.Internal
 {
     public class EnumerableWrapperProviderTest
     {

@@ -3,10 +3,10 @@
 
 using System;
 using System.Reflection;
-using Microsoft.AspNet.Mvc.ViewComponentConventionsTestClasses;
+using Microsoft.AspNetCore.Mvc.ViewComponentConventionsTestClasses;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.ViewComponents
+namespace Microsoft.AspNetCore.Mvc.ViewComponents
 {
     public class ViewComponentConventionsTest
     {
@@ -55,7 +55,7 @@ namespace Microsoft.AspNet.Mvc.ViewComponents
 }
 
 // These types need to be public/non-nested for validity of the test
-namespace Microsoft.AspNet.Mvc.ViewComponentConventionsTestClasses
+namespace Microsoft.AspNetCore.Mvc.ViewComponentConventionsTestClasses
 {
     public class PublicClass : ViewComponent
     {

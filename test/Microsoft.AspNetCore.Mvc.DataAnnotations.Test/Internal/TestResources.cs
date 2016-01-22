@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Globalization;
-using Microsoft.AspNet.Mvc.DataAnnotations.Test;
+using Microsoft.AspNetCore.Mvc.DataAnnotations.Test;
 
-namespace Microsoft.AspNet.Mvc.ModelBinding
+namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
     // Wrap resources to make them available as public properties for [Display]. That attribute does not support
     // internal properties.

@@ -5,12 +5,12 @@ using System.Collections.Generic;
 using System.Net.Http.Formatting;
 using System.Net.Http.Headers;
 using System.Web.Http;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Mvc.ModelBinding;
-using Microsoft.AspNet.Mvc.WebApiCompatShim;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.WebApiCompatShim;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using ShimResources = Microsoft.AspNet.Mvc.WebApiCompatShim.Resources;
+using ShimResources = Microsoft.AspNetCore.Mvc.WebApiCompatShim.Resources;
 
 namespace System.Net.Http
 {

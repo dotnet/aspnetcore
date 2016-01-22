@@ -3,7 +3,7 @@
 
 using System.Net;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Mvc;
+using Microsoft.AspNetCore.Mvc;
 
 namespace System.Web.Http
 {

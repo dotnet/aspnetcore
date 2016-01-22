@@ -4,7 +4,7 @@
 using System;
 using Microsoft.Extensions.FileProviders;
 
-namespace Microsoft.AspNet.Mvc.Razor.Compilation
+namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
 {
     /// <summary>
     /// A container type that represents <see cref="IFileInfo"/> along with the application base relative path

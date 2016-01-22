@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Features.Internal;
-using Microsoft.AspNet.Http.Internal;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features.Internal;
+using Microsoft.AspNetCore.Http.Internal;
 
 namespace HtmlGenerationWebSite.Models
 {

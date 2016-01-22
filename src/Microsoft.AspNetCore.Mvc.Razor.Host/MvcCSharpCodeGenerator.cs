@@ -3,11 +3,11 @@
 
 using System;
 using System.IO;
-using Microsoft.AspNet.Mvc.Razor.Directives;
-using Microsoft.AspNet.Razor.CodeGenerators;
-using Microsoft.AspNet.Razor.CodeGenerators.Visitors;
+using Microsoft.AspNetCore.Mvc.Razor.Directives;
+using Microsoft.AspNetCore.Razor.CodeGenerators;
+using Microsoft.AspNetCore.Razor.CodeGenerators.Visitors;
 
-namespace Microsoft.AspNet.Mvc.Razor
+namespace Microsoft.AspNetCore.Mvc.Razor
 {
     public class MvcCSharpCodeGenerator : CSharpCodeGenerator
     {

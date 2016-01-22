@@ -4,12 +4,12 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Hosting;
-using Microsoft.AspNet.Razor.TagHelpers;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Razor.TagHelpers;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.TagHelpers.Test
+namespace Microsoft.AspNetCore.Mvc.TagHelpers.Test
 {
     public class EnvironmentTagHelperTest
     {

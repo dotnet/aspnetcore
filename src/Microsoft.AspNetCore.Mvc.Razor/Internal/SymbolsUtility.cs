@@ -4,7 +4,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace Microsoft.AspNet.Mvc.Razor.Internal
+namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 {
     /// <summary>
     /// Utility type for determining if a platform supports symbol file generation.

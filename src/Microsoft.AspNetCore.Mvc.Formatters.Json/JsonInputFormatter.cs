@@ -4,16 +4,16 @@
 using System;
 using System.Buffers;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Mvc.Formatters.Internal;
-using Microsoft.AspNet.Mvc.Formatters.Json.Internal;
-using Microsoft.AspNet.Mvc.Formatters.Json.Logging;
-using Microsoft.AspNet.Mvc.Internal;
-using Microsoft.AspNet.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.Formatters.Internal;
+using Microsoft.AspNetCore.Mvc.Formatters.Json.Internal;
+using Microsoft.AspNetCore.Mvc.Formatters.Json.Logging;
+using Microsoft.AspNetCore.Mvc.Internal;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ObjectPool;
 using Newtonsoft.Json;
 
-namespace Microsoft.AspNet.Mvc.Formatters
+namespace Microsoft.AspNetCore.Mvc.Formatters
 {
     /// <summary>
     /// An <see cref="InputFormatter"/> for JSON content.

@@ -9,11 +9,11 @@ using System.Linq;
 using System.Reflection;
 #endif
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Mvc.ModelBinding.Validation;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNet.Mvc.ModelBinding
+namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
     /// <summary>
     /// <see cref="IModelBinder"/> implementation to bind posted files to <see cref="IFormFile"/>.

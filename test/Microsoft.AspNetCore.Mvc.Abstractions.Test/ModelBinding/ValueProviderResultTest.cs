@@ -4,7 +4,7 @@
 using Microsoft.Extensions.Primitives;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.ModelBinding
+namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
     public class ValueProviderResultTest
     {

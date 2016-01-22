@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Buffers;
-using Microsoft.AspNet.Mvc.ModelBinding.Validation;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
@@ -10,7 +10,7 @@ using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Microsoft.AspNet.Mvc.Formatters.Json.Internal
+namespace Microsoft.AspNetCore.Mvc.Formatters.Json.Internal
 {
     /// <summary>
     /// Sets up JSON formatter options for <see cref="MvcOptions"/>.

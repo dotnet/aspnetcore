@@ -6,8 +6,8 @@
     "keyFile": "../../tools/Key.snk"
   },
   "dependencies": {
-    "Microsoft.AspNet.Localization": "1.0.0-*",
-    "Microsoft.AspNet.Mvc.Razor": "6.0.0-*",
+    "Microsoft.AspNetCore.Localization": "1.0.0-*",
+    "Microsoft.AspNetCore.Mvc.Razor": "6.0.0-*",
     "Microsoft.Extensions.DependencyInjection": "1.0.0-*",
     "Microsoft.Extensions.Localization": "1.0.0-*",
     "Microsoft.Extensions.PropertyHelper.Sources": {

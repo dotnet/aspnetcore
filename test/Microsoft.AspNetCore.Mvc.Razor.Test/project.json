@@ -4,25 +4,25 @@
     "keyFile": "../../tools/Key.snk"
   },
   "compile": [
-    "../Microsoft.AspNet.Mvc.Razor.Host.Test/TestFileProvider.cs",
-    "../Microsoft.AspNet.Mvc.Razor.Host.Test/TestFileInfo.cs",
-    "../Microsoft.AspNet.Mvc.Razor.Host.Test/TestFileTrigger.cs",
-    "../Microsoft.AspNet.Mvc.ViewFeatures.Test/TestViewBufferScope.cs"
+    "../Microsoft.AspNetCore.Mvc.Razor.Host.Test/TestFileProvider.cs",
+    "../Microsoft.AspNetCore.Mvc.Razor.Host.Test/TestFileInfo.cs",
+    "../Microsoft.AspNetCore.Mvc.Razor.Host.Test/TestFileTrigger.cs",
+    "../Microsoft.AspNetCore.Mvc.ViewFeatures.Test/TestViewBufferScope.cs"
   ],
   "dependencies": {
-    "Microsoft.AspNet.Http": "1.0.0-*",
-    "Microsoft.AspNet.Mvc.DataAnnotations": "6.0.0-*",
-    "Microsoft.AspNet.Mvc.Formatters.Xml": "6.0.0-*",
-    "Microsoft.AspNet.Mvc.Razor": "6.0.0-*",
-    "Microsoft.AspNet.Mvc.TestCommon": {
+    "Microsoft.AspNetCore.Http": "1.0.0-*",
+    "Microsoft.AspNetCore.Mvc.DataAnnotations": "6.0.0-*",
+    "Microsoft.AspNetCore.Mvc.Formatters.Xml": "6.0.0-*",
+    "Microsoft.AspNetCore.Mvc.Razor": "6.0.0-*",
+    "Microsoft.AspNetCore.Mvc.TestCommon": {
       "version": "6.0.0-*",
       "type": "build"
     },
-    "Microsoft.AspNet.Mvc.TestDiagnosticListener.Sources": {
+    "Microsoft.AspNetCore.Mvc.TestDiagnosticListener.Sources": {
       "version": "6.0.0-*",
       "type": "build"
     },
-    "Microsoft.AspNet.Testing": "1.0.0-*",
+    "Microsoft.AspNetCore.Testing": "1.0.0-*",
     "Microsoft.Dnx.Runtime": "1.0.0-*",
     "Microsoft.Extensions.DependencyInjection": "1.0.0-*",
     "Microsoft.Extensions.DiagnosticAdapter": "1.0.0-*",

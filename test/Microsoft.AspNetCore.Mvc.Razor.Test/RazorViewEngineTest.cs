@@ -4,12 +4,12 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
-using Microsoft.AspNet.Http.Internal;
-using Microsoft.AspNet.Mvc.Abstractions;
-using Microsoft.AspNet.Mvc.Routing;
-using Microsoft.AspNet.Mvc.ViewEngines;
-using Microsoft.AspNet.Routing;
-using Microsoft.AspNet.Testing;
+using Microsoft.AspNetCore.Http.Internal;
+using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.AspNetCore.Mvc.ViewEngines;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Options;
@@ -18,7 +18,7 @@ using Microsoft.Extensions.WebEncoders.Testing;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.Razor.Test
+namespace Microsoft.AspNetCore.Mvc.Razor.Test
 {
     public class RazorViewEngineTest
     {

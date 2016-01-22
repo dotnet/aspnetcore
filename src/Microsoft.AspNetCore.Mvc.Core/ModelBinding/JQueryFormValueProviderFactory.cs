@@ -6,12 +6,12 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Mvc.Core;
-using Microsoft.AspNet.Mvc.Internal;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Core;
+using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.AspNet.Mvc.ModelBinding
+namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
     /// <summary>
     /// A <see cref="IValueProviderFactory"/> for <see cref="JQueryFormValueProvider"/>.

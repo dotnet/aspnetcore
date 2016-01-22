@@ -7,12 +7,12 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Text;
-using Microsoft.AspNet.Mvc.Rendering;
-using Microsoft.AspNet.Mvc.ViewFeatures.Internal;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.PlatformAbstractions;
 
-namespace Microsoft.AspNet.Mvc.Localization
+namespace Microsoft.AspNetCore.Mvc.Localization
 {
     /// <summary>
     /// An <see cref="IViewLocalizer"/> implementation that derives the resource location from the executing view's

@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNet.Mvc.ApplicationModels;
+using Microsoft.AspNetCore.Mvc.ApplicationModels;
 
 namespace Microsoft.Extensions.DependencyInjection
 {

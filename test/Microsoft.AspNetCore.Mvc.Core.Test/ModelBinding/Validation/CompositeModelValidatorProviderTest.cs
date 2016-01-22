@@ -5,7 +5,7 @@ using System.Linq;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.Mvc.ModelBinding.Validation
+namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
 {
     public class CompositeModelValidatorProviderTest
     {

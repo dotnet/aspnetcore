@@ -6,12 +6,12 @@
     "emitEntryPoint": true
   },
   "dependencies": {
-    "Microsoft.AspNet.Mvc": "6.0.0-*",
-    "Microsoft.AspNet.Mvc.Formatters.Xml": "6.0.0-*",
-    "Microsoft.AspNet.Mvc.TestConfiguration": "1.0.0",
-    "Microsoft.AspNet.Server.Kestrel": "1.0.0-*",
-    "Microsoft.AspNet.Session": "1.0.0-*",
-    "Microsoft.AspNet.StaticFiles": "1.0.0-*"
+    "Microsoft.AspNetCore.Mvc": "6.0.0-*",
+    "Microsoft.AspNetCore.Mvc.Formatters.Xml": "6.0.0-*",
+    "Microsoft.AspNetCore.Mvc.TestConfiguration": "1.0.0",
+    "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*",
+    "Microsoft.AspNetCore.Session": "1.0.0-*",
+    "Microsoft.AspNetCore.StaticFiles": "1.0.0-*"
   },
   "frameworks": {
     "dnx451": { },

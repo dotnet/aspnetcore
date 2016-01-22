@@ -1,12 +1,12 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
 using System.Diagnostics;
-using Microsoft.AspNet.Mvc.Rendering;
-using Microsoft.AspNet.Mvc.ViewEngines;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.ViewEngines;
 
-namespace Microsoft.AspNet.Mvc.Diagnostics
+namespace Microsoft.AspNetCore.Mvc.Diagnostics
 {
     public static class ViewExecutorDiagnosticSourceExtensions
     {
@@ -15,10 +15,10 @@ namespace Microsoft.AspNet.Mvc.Diagnostics
             IView view,
             ViewContext viewContext)
         {
-            if (diagnosticSource.IsEnabled("Microsoft.AspNet.Mvc.BeforeView"))
+            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeView"))
             {
                 diagnosticSource.Write(
-                    "Microsoft.AspNet.Mvc.BeforeView",
+                    "Microsoft.AspNetCore.Mvc.BeforeView",
                     new { view = view, viewContext = viewContext, });
             }
         }
@@ -28,10 +28,10 @@ namespace Microsoft.AspNet.Mvc.Diagnostics
             IView view,
             ViewContext viewContext)
         {
-            if (diagnosticSource.IsEnabled("Microsoft.AspNet.Mvc.AfterView"))
+            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.AfterView"))
             {
                 diagnosticSource.Write(
-                    "Microsoft.AspNet.Mvc.AfterView",
+                    "Microsoft.AspNetCore.Mvc.AfterView",
                     new { view = view, viewContext = viewContext, });
             }
         }
@@ -44,10 +44,10 @@ namespace Microsoft.AspNet.Mvc.Diagnostics
             string viewName,
             IView view)
         {
-            if (diagnosticSource.IsEnabled("Microsoft.AspNet.Mvc.ViewFound"))
+            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.ViewFound"))
             {
                 diagnosticSource.Write(
-                    "Microsoft.AspNet.Mvc.ViewFound",
+                    "Microsoft.AspNetCore.Mvc.ViewFound",
                     new
                     {
                         actionContext = actionContext,
@@ -67,10 +67,10 @@ namespace Microsoft.AspNet.Mvc.Diagnostics
             string viewName,
             IEnumerable<string> searchedLocations)
         {
-            if (diagnosticSource.IsEnabled("Microsoft.AspNet.Mvc.ViewNotFound"))
+            if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.ViewNotFound"))
             {
                 diagnosticSource.Write(
-                    "Microsoft.AspNet.Mvc.ViewNotFound",
+                    "Microsoft.AspNetCore.Mvc.ViewNotFound",
                     new
                     {
                         actionContext = actionContext,

@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.AspNet.Mvc.Razor.Compilation
+namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
 {
     /// <summary>
     /// Result of <see cref="ICompilerCache"/>.

@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
-using Microsoft.AspNet.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
-namespace Microsoft.AspNet.Mvc.ViewEngines
+namespace Microsoft.AspNetCore.Mvc.ViewEngines
 {
     /// <summary>
     /// Specifies the contract for a view.

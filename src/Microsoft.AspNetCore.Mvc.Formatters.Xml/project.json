@@ -10,7 +10,7 @@
     "keyFile": "../../tools/Key.snk"
   },
   "dependencies": {
-    "Microsoft.AspNet.Mvc.Core": "6.0.0-*",
+    "Microsoft.AspNetCore.Mvc.Core": "6.0.0-*",
     "Microsoft.Extensions.ClosedGenericMatcher.Sources": {
       "version": "1.0.0-*",
       "type": "build"
