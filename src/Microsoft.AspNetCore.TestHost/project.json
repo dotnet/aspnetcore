@@ -10,7 +10,7 @@
     "url": "git://github.com/aspnet/hosting"
   },
   "dependencies": {
-    "Microsoft.AspNet.Hosting": "1.0.0-*"
+    "Microsoft.AspNetCore.Hosting": "1.0.0-*"
   },
   "frameworks": {
     "net451": {

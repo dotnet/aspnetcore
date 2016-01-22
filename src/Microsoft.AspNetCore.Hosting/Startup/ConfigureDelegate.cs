@@ -3,10 +3,10 @@
 
 using System;
 using System.Reflection;
-using Microsoft.AspNet.Builder;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNet.Hosting.Startup
+namespace Microsoft.AspNetCore.Hosting.Startup
 {
     // TODO: replace all Action<IApplicationBuilder> eventually with this
     public delegate void ConfigureDelegate(IApplicationBuilder builder);

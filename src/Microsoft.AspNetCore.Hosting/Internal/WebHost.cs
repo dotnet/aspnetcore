@@ -6,18 +6,18 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
-using Microsoft.AspNet.Hosting.Builder;
-using Microsoft.AspNet.Hosting.Server;
-using Microsoft.AspNet.Hosting.Startup;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Features;
-using Microsoft.AspNet.Server.Features;
+using Microsoft.AspNetCore.Hosting.Builder;
+using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Hosting.Startup;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Server.Features;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.PlatformAbstractions;
 
-namespace Microsoft.AspNet.Hosting.Internal
+namespace Microsoft.AspNetCore.Hosting.Internal
 {
     public class WebHost : IWebHost
     {

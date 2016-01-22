@@ -8,7 +8,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNet.TestHost
+namespace Microsoft.AspNetCore.TestHost
 {
     // This steam accepts writes from the server/app, buffers them internally, and returns the data via Reads
     // when requested by the client.

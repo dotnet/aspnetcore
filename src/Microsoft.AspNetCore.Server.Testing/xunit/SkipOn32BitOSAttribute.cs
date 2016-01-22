@@ -3,9 +3,9 @@
 
 using System;
 using System.IO;
-using Microsoft.AspNet.Testing.xunit;
+using Microsoft.AspNetCore.Testing.xunit;
 
-namespace Microsoft.AspNet.Server.Testing
+namespace Microsoft.AspNetCore.Server.Testing
 {
     /// <summary>
     /// Skips a 64 bit test if the current Windows OS is 32-bit.

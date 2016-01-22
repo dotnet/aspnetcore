@@ -3,11 +3,11 @@
 
 using System;
 using System.IO;
-using Microsoft.AspNet.Hosting.Internal;
+using Microsoft.AspNetCore.Hosting.Internal;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.FileProviders;
 
-namespace Microsoft.AspNet.Hosting.Internal
+namespace Microsoft.AspNetCore.Hosting.Internal
 {
     public static class HostingEnvironmentExtensions
     {

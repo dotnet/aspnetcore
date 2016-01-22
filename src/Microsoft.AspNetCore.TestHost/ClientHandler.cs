@@ -10,12 +10,12 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Hosting.Server;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Features;
-using Context = Microsoft.AspNet.Hosting.Internal.HostingApplication.Context;
+using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
+using Context = Microsoft.AspNetCore.Hosting.Internal.HostingApplication.Context;
 
-namespace Microsoft.AspNet.TestHost
+namespace Microsoft.AspNetCore.TestHost
 {
     /// <summary>
     /// This adapts HttpRequestMessages to ASP.NET requests, dispatches them through the pipeline, and returns the

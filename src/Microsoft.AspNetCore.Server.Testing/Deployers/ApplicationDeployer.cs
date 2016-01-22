@@ -6,11 +6,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
-using Microsoft.AspNet.Testing;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.PlatformAbstractions;
 
-namespace Microsoft.AspNet.Server.Testing
+namespace Microsoft.AspNetCore.Server.Testing
 {
     /// <summary>
     /// Abstract base class of all deployers with implementation of some of the common helpers.

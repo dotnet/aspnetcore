@@ -5,18 +5,18 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Hosting.Fakes;
-using Microsoft.AspNet.Hosting.Internal;
-using Microsoft.AspNet.Hosting.Server;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Features;
-using Microsoft.AspNet.Http.Internal;
+using Microsoft.AspNetCore.Hosting.Fakes;
+using Microsoft.AspNetCore.Hosting.Internal;
+using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.PlatformAbstractions;
 using Xunit;
 
-namespace Microsoft.AspNet.Hosting
+namespace Microsoft.AspNetCore.Hosting
 {
     public class WebHostBuilderTests
     {
@@ -143,7 +143,7 @@ namespace Microsoft.AspNet.Hosting
                 .UseStartup<StartupBoom>();
 
             var exception = Assert.Throws<InvalidOperationException>(() => hostBuilder.Build());
-            Assert.Equal("A public method named 'ConfigureProduction' or 'Configure' could not be found in the 'Microsoft.AspNet.Hosting.Fakes.StartupBoom' type.", exception.Message);
+            Assert.Equal("A public method named 'ConfigureProduction' or 'Configure' could not be found in the 'Microsoft.AspNetCore.Hosting.Fakes.StartupBoom' type.", exception.Message);
         }
 
         [Fact]
@@ -162,7 +162,7 @@ namespace Microsoft.AspNet.Hosting
                 .UseConfiguration(config)
                 .UseEnvironment(expected)
                 .UseServer(new TestServer())
-                .UseStartup("Microsoft.AspNet.Hosting.Tests")
+                .UseStartup("Microsoft.AspNetCore.Hosting.Tests")
                 .Build();
 
             Assert.Equal(expected, host.Services.GetService<IHostingEnvironment>().EnvironmentName);
@@ -184,7 +184,7 @@ namespace Microsoft.AspNet.Hosting
                 .UseConfiguration(config)
                 .UseEnvironment(expected)
                 .UseServer(new TestServer())
-                .UseStartup("Microsoft.AspNet.Hosting.Tests")
+                .UseStartup("Microsoft.AspNetCore.Hosting.Tests")
                 .Build();
 
             host.Dispose();
@@ -205,7 +205,7 @@ namespace Microsoft.AspNet.Hosting
                 .UseConfiguration(config)
                 .UseApplicationBasePath("/foo/bar")
                 .UseServer(new TestServer())
-                .UseStartup("Microsoft.AspNet.Hosting.Tests")
+                .UseStartup("Microsoft.AspNetCore.Hosting.Tests")
                 .Build();
 
             Assert.Equal("/foo/bar", host.Services.GetService<IApplicationEnvironment>().ApplicationBasePath);

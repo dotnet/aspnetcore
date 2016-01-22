@@ -2,11 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Builder.Internal;
-using Microsoft.AspNet.Http.Features;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Builder.Internal;
+using Microsoft.AspNetCore.Http.Features;
 
-namespace Microsoft.AspNet.Hosting.Builder
+namespace Microsoft.AspNetCore.Hosting.Builder
 {
     public class ApplicationBuilderFactory : IApplicationBuilderFactory
     {

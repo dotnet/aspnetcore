@@ -6,9 +6,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using Microsoft.Extensions.Logging;
-using Microsoft.AspNet.Server.Testing.Common;
+using Microsoft.AspNetCore.Server.Testing.Common;
 
-namespace Microsoft.AspNet.Server.Testing
+namespace Microsoft.AspNetCore.Server.Testing
 {
     /// <summary>
     /// Deployer for WebListener and Kestrel.
@@ -58,7 +58,7 @@ namespace Microsoft.AspNet.Server.Testing
             var dnxPath = Path.Combine(TargetRuntimeBinPath, DnxCommandName);
             var dnxArgs = $"-p \"{DeploymentParameters.ApplicationPath}\" {commandName} " +
                           $"--server.urls {uri} " +
-                          $"--server {(DeploymentParameters.ServerType == ServerType.WebListener ? "Microsoft.AspNet.Server.WebListener" : "Microsoft.AspNet.Server.Kestrel")}";
+                          $"--server {(DeploymentParameters.ServerType == ServerType.WebListener ? "Microsoft.AspNetCore.Server.WebListener" : "Microsoft.AspNetCore.Server.Kestrel")}";
 
             Logger.LogInformation($"Executing {dnxPath} {dnxArgs}");
 

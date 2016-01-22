@@ -4,7 +4,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.FileProviders;
 
-namespace Microsoft.AspNet.Hosting
+namespace Microsoft.AspNetCore.Hosting
 {
     /// <summary>
     /// Provides information about the web hosting environment an application is running in.

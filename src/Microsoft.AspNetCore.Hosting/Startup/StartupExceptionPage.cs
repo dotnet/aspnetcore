@@ -15,7 +15,7 @@ using System.Text.Encodings.Web;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.PlatformAbstractions;
 
-namespace Microsoft.AspNet.Hosting.Startup
+namespace Microsoft.AspNetCore.Hosting.Startup
 {
     internal static class StartupExceptionPage
     {

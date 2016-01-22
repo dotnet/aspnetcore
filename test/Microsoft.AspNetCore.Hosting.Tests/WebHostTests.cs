@@ -8,14 +8,14 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Hosting.Fakes;
-using Microsoft.AspNet.Hosting.Server;
-using Microsoft.AspNet.Hosting.Startup;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Features;
-using Microsoft.AspNet.Server.Features;
-using Microsoft.AspNet.Testing.xunit;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting.Fakes;
+using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Hosting.Startup;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Server.Features;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -23,7 +23,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using Xunit;
 
-namespace Microsoft.AspNet.Hosting
+namespace Microsoft.AspNetCore.Hosting
 {
     public class WebHostTests : IServerFactory, IServer
     {
@@ -81,7 +81,7 @@ namespace Microsoft.AspNet.Hosting
         {
             var vals = new Dictionary<string, string>
             {
-                { "server", "Microsoft.AspNet.Hosting.Tests" }
+                { "server", "Microsoft.AspNetCore.Hosting.Tests" }
             };
 
             var builder = new ConfigurationBuilder()
@@ -97,7 +97,7 @@ namespace Microsoft.AspNet.Hosting
         {
             var vals = new Dictionary<string, string>
             {
-                { "Server", "Microsoft.AspNet.Hosting.Tests" }
+                { "Server", "Microsoft.AspNetCore.Hosting.Tests" }
             };
 
             var builder = new ConfigurationBuilder()
@@ -113,7 +113,7 @@ namespace Microsoft.AspNet.Hosting
         {
             var vals = new Dictionary<string, string>
             {
-                { "Server", "Microsoft.AspNet.Hosting.Tests" }
+                { "Server", "Microsoft.AspNetCore.Hosting.Tests" }
             };
 
             var builder = new ConfigurationBuilder()
@@ -130,7 +130,7 @@ namespace Microsoft.AspNet.Hosting
         {
             var vals = new Dictionary<string, string>
             {
-                { "Server", "Microsoft.AspNet.Hosting.Tests" }
+                { "Server", "Microsoft.AspNetCore.Hosting.Tests" }
             };
 
             var builder = new ConfigurationBuilder()
@@ -140,7 +140,7 @@ namespace Microsoft.AspNet.Hosting
             host.Start();
             var hostingEnvironment = host.Services.GetService<IHostingEnvironment>();
             Assert.NotNull(hostingEnvironment.Configuration);
-            Assert.Equal("Microsoft.AspNet.Hosting.Tests", hostingEnvironment.Configuration["Server"]);
+            Assert.Equal("Microsoft.AspNetCore.Hosting.Tests", hostingEnvironment.Configuration["Server"]);
         }
 
         [Fact]
@@ -148,7 +148,7 @@ namespace Microsoft.AspNet.Hosting
         {
             var host = CreateBuilder()
                 .UseServer((IServerFactory)this)
-                .UseStartup("Microsoft.AspNet.Hosting.Tests")
+                .UseStartup("Microsoft.AspNetCore.Hosting.Tests")
                 .Start();
 
             Assert.NotNull(host);
@@ -165,7 +165,7 @@ namespace Microsoft.AspNet.Hosting
         {
             var host = CreateBuilder()
                 .UseServer((IServerFactory)this)
-                .UseStartup("Microsoft.AspNet.Hosting.Tests")
+                .UseStartup("Microsoft.AspNetCore.Hosting.Tests")
                 .Build();
 
             var lifetime = host.Services.GetRequiredService<IApplicationLifetime>();
@@ -198,7 +198,7 @@ namespace Microsoft.AspNet.Hosting
                     s.AddTransient<IFakeService, FakeService>();
                     s.AddSingleton<IFakeSingletonService, FakeService>();
                 })
-                .UseStartup("Microsoft.AspNet.Hosting.Tests")
+                .UseStartup("Microsoft.AspNetCore.Hosting.Tests")
                 .Build();
 
             host.Start();
@@ -236,7 +236,7 @@ namespace Microsoft.AspNet.Hosting
         {
             var host = CreateBuilder()
                 .UseServer((IServerFactory)this)
-                .UseStartup("Microsoft.AspNet.Hosting.Tests")
+                .UseStartup("Microsoft.AspNetCore.Hosting.Tests")
                 .UseEnvironment("WithHostingEnvironment")
                 .Build();
 
@@ -257,7 +257,7 @@ namespace Microsoft.AspNet.Hosting
                     services.AddTransient<IStartupLoader, TestLoader>();
                 })
                 .UseServer((IServerFactory)this)
-                .UseStartup("Microsoft.AspNet.Hosting.Tests");
+                .UseStartup("Microsoft.AspNetCore.Hosting.Tests");
 
             Assert.Throws<NotImplementedException>(() => builder.Build());
         }
@@ -491,7 +491,7 @@ namespace Microsoft.AspNet.Hosting
 
         private IWebHostBuilder CreateBuilder(IConfiguration config = null)
         {
-            return new WebHostBuilder().UseConfiguration(config ?? new ConfigurationBuilder().Build()).UseStartup("Microsoft.AspNet.Hosting.Tests");
+            return new WebHostBuilder().UseConfiguration(config ?? new ConfigurationBuilder().Build()).UseStartup("Microsoft.AspNetCore.Hosting.Tests");
         }
 
         public void Start<TContext>(IHttpApplication<TContext> application)

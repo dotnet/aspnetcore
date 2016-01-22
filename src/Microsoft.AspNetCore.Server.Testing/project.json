@@ -10,7 +10,7 @@
     "url": "git://github.com/aspnet/hosting"
   },
   "dependencies": {
-    "Microsoft.AspNet.Testing": "1.0.0-*",
+    "Microsoft.AspNetCore.Testing": "1.0.0-*",
     "Microsoft.Extensions.Logging.Abstractions": "1.0.0-*",
     "Microsoft.Extensions.PlatformAbstractions": "1.0.0-*"
   },

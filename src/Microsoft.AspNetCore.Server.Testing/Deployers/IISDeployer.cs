@@ -6,11 +6,11 @@
 using System;
 using System.Linq;
 using System.Threading;
-using Microsoft.AspNet.Server.Testing.Common;
+using Microsoft.AspNetCore.Server.Testing.Common;
 using Microsoft.Extensions.Logging;
 using Microsoft.Web.Administration;
 
-namespace Microsoft.AspNet.Server.Testing
+namespace Microsoft.AspNetCore.Server.Testing
 {
     /// <summary>
     /// Deployer for IIS.

@@ -5,20 +5,20 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.Versioning;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Hosting.Builder;
-using Microsoft.AspNet.Hosting.Internal;
-using Microsoft.AspNet.Hosting.Server;
-using Microsoft.AspNet.Hosting.Startup;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Internal;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting.Builder;
+using Microsoft.AspNetCore.Hosting.Internal;
+using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Hosting.Startup;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.PlatformAbstractions;
 
-namespace Microsoft.AspNet.Hosting
+namespace Microsoft.AspNetCore.Hosting
 {
     /// <summary>
     /// A builder for <see cref="IWebHost"/>
@@ -210,7 +210,7 @@ namespace Microsoft.AspNet.Hosting
             services.AddLogging();
             services.AddOptions();
 
-            var diagnosticSource = new DiagnosticListener("Microsoft.AspNet");
+            var diagnosticSource = new DiagnosticListener("Microsoft.AspNetCore");
             services.AddSingleton<DiagnosticSource>(diagnosticSource);
             services.AddSingleton<DiagnosticListener>(diagnosticSource);
 

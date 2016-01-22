@@ -1,14 +1,14 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.IO;
-using Microsoft.AspNet.Hosting.Internal;
+using Microsoft.AspNetCore.Hosting.Internal;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.FileProviders;
 using Xunit;
 
-namespace Microsoft.AspNet.Hosting.Tests
+namespace Microsoft.AspNetCore.Hosting.Tests
 {
     public class HostingEnvironmentExtensionsTests
     {

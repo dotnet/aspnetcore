@@ -4,7 +4,7 @@
 using System;
 using System.Threading;
 
-namespace Microsoft.AspNet.Hosting.Internal
+namespace Microsoft.AspNetCore.Hosting.Internal
 {
     /// <summary>
     /// Allows consumers to perform cleanup during a graceful shutdown.

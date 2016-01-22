@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace Microsoft.AspNet.Server.Testing
+namespace Microsoft.AspNetCore.Server.Testing
 {
     /// <summary>
     /// Parameters to control application deployment.

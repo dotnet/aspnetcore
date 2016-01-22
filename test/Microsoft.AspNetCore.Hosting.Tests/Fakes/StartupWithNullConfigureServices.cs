@@ -1,8 +1,8 @@
 using System;
-using Microsoft.AspNet.Builder;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNet.Hosting.Fakes
+namespace Microsoft.AspNetCore.Hosting.Fakes
 {
     public class StartupWithNullConfigureServices
     {

@@ -3,7 +3,7 @@
 
 using Microsoft.Extensions.Configuration;
 
-namespace Microsoft.AspNet.Hosting.Server
+namespace Microsoft.AspNetCore.Hosting.Server
 {
     /// <summary>
     /// Represents a factory for creating servers.

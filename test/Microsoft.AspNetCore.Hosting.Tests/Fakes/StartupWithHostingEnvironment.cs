@@ -1,7 +1,7 @@
-﻿using System;
-using Microsoft.AspNet.Builder;
+using System;
+using Microsoft.AspNetCore.Builder;
 
-namespace Microsoft.AspNet.Hosting.Tests.Fakes
+namespace Microsoft.AspNetCore.Hosting.Tests.Fakes
 {
     public class StartupWithHostingEnvironment
     {

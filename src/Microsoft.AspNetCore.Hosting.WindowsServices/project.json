@@ -1,4 +1,4 @@
-﻿{
+{
     "version": "1.0.0-*",
     "description": "ASP.NET 5 core hosting infrastructure and startup logic for web applications running within a Windows service.",
     "repository": {
@@ -10,7 +10,7 @@
         "keyFile": "../../tools/Key.snk"
     },
     "dependencies": {
-        "Microsoft.AspNet.Hosting": "1.0.0-*"
+        "Microsoft.AspNetCore.Hosting": "1.0.0-*"
     },
     "frameworks": {
         "net451": {

@@ -1,16 +1,16 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Hosting;
-using Microsoft.AspNet.Hosting.Server;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Features;
-using Context = Microsoft.AspNet.Hosting.Internal.HostingApplication.Context;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
+using Context = Microsoft.AspNetCore.Hosting.Internal.HostingApplication.Context;
 
-namespace Microsoft.AspNet.TestHost
+namespace Microsoft.AspNetCore.TestHost
 {
     public class TestServer : IServer
     {

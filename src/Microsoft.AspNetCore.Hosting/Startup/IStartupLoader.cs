@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Microsoft.AspNet.Hosting.Startup
+namespace Microsoft.AspNetCore.Hosting.Startup
 {
     public interface IStartupLoader
     {

@@ -9,11 +9,11 @@
             "StrictSemanticVersionValidationRule"
         ],
         "packages": {
-            "Microsoft.AspNet.Hosting": { },
-            "Microsoft.AspNet.Hosting.Abstractions": { },
-            "Microsoft.AspNet.Hosting.Server.Abstractions": { },
-            "Microsoft.AspNet.Server.Testing": { },
-            "Microsoft.AspNet.TestHost": { }
+            "Microsoft.AspNetCore.Hosting": { },
+            "Microsoft.AspNetCore.Hosting.Abstractions": { },
+            "Microsoft.AspNetCore.Hosting.Server.Abstractions": { },
+            "Microsoft.AspNetCore.Server.Testing": { },
+            "Microsoft.AspNetCore.TestHost": { }
         }
     },
     "Default": { // Rules to run for packages not listed in any other set.

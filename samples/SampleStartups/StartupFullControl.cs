@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using System.IO;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Hosting;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -14,7 +14,7 @@ namespace SampleStartups
         public static void Main(string[] args)
         {
             var host = new WebHostBuilder()
-                .UseServer("Microsoft.AspNet.Server.Kestrel") // Set the server manually
+                .UseServer("Microsoft.AspNetCore.Server.Kestrel") // Set the server manually
                 .UseApplicationBasePath(Directory.GetCurrentDirectory()) // Override the application base with the current directory
                 .UseUrls("http://*:1000", "https://*:902")
                 .UseEnvironment("Development")

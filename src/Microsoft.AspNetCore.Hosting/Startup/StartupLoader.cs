@@ -8,7 +8,7 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNet.Hosting.Startup
+namespace Microsoft.AspNetCore.Hosting.Startup
 {
     public class StartupLoader : IStartupLoader
     {

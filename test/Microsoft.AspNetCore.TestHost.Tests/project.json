@@ -4,8 +4,8 @@
     "keyFile": "../../tools/Key.snk"
   },
   "dependencies": {
-    "Microsoft.AspNet.Testing": "1.0.0-*",
-    "Microsoft.AspNet.TestHost": "1.0.0-*",
+    "Microsoft.AspNetCore.Testing": "1.0.0-*",
+    "Microsoft.AspNetCore.TestHost": "1.0.0-*",
     "Microsoft.Extensions.DiagnosticAdapter": "1.0.0-*",
     "xunit": "2.1.0"
   },

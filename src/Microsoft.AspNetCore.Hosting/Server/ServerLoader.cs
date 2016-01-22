@@ -6,7 +6,7 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNet.Hosting.Server
+namespace Microsoft.AspNetCore.Hosting.Server
 {
     public class ServerLoader : IServerLoader
     {

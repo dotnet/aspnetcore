@@ -7,18 +7,18 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Hosting;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Features.Internal;
-using Microsoft.AspNet.Http.Internal;
-using Microsoft.AspNet.Testing.xunit;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features.Internal;
+using Microsoft.AspNetCore.Http.Internal;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DiagnosticAdapter;
 using Xunit;
 
-namespace Microsoft.AspNet.TestHost
+namespace Microsoft.AspNetCore.TestHost
 {
     public class TestServerTests
     {
@@ -530,7 +530,7 @@ namespace Microsoft.AspNet.TestHost
 
             public OnBeginRequestEventData BeginRequest { get; set; }
 
-            [DiagnosticName("Microsoft.AspNet.Hosting.BeginRequest")]
+            [DiagnosticName("Microsoft.AspNetCore.Hosting.BeginRequest")]
             public virtual void OnBeginRequest(IProxyHttpContext httpContext)
             {
                 BeginRequest = new OnBeginRequestEventData()
@@ -546,7 +546,7 @@ namespace Microsoft.AspNet.TestHost
 
             public OnEndRequestEventData EndRequest { get; set; }
 
-            [DiagnosticName("Microsoft.AspNet.Hosting.EndRequest")]
+            [DiagnosticName("Microsoft.AspNetCore.Hosting.EndRequest")]
             public virtual void OnEndRequest(IProxyHttpContext httpContext)
             {
                 EndRequest = new OnEndRequestEventData()
@@ -563,7 +563,7 @@ namespace Microsoft.AspNet.TestHost
 
             public OnUnhandledExceptionEventData UnhandledException { get; set; }
 
-            [DiagnosticName("Microsoft.AspNet.Hosting.UnhandledException")]
+            [DiagnosticName("Microsoft.AspNetCore.Hosting.UnhandledException")]
             public virtual void OnUnhandledException(IProxyHttpContext httpContext, IProxyException exception)
             {
                 UnhandledException = new OnUnhandledExceptionEventData()

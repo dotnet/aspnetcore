@@ -3,9 +3,9 @@
 
 using System;
 using System.Diagnostics;
-using Microsoft.AspNet.Testing.xunit;
+using Microsoft.AspNetCore.Testing.xunit;
 
-namespace Microsoft.AspNet.Server.Testing
+namespace Microsoft.AspNetCore.Server.Testing
 {
     /// <summary>
     /// Skips a test if the DNX used to run the test is CoreClr.

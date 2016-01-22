@@ -6,9 +6,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using Microsoft.Extensions.Logging;
-using Microsoft.AspNet.Server.Testing.Common;
+using Microsoft.AspNetCore.Server.Testing.Common;
 
-namespace Microsoft.AspNet.Server.Testing
+namespace Microsoft.AspNetCore.Server.Testing
 {
     /// <summary>
     /// Deployment helper for IISExpress.

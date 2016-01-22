@@ -2,11 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using Microsoft.AspNet.Hosting.Internal;
+using Microsoft.AspNetCore.Hosting.Internal;
 using Microsoft.Extensions.Configuration;
 using Xunit;
 
-namespace Microsoft.AspNet.Hosting.Tests
+namespace Microsoft.AspNetCore.Hosting.Tests
 {
     public class WebHostConfigurationTests
     {
@@ -24,7 +24,7 @@ namespace Microsoft.AspNet.Hosting.Tests
             var parameters = new Dictionary<string, string>()
             {
                 { "webroot", "wwwroot"},
-                { "server", "Microsoft.AspNet.Server.Kestrel"},
+                { "server", "Microsoft.AspNetCore.Server.Kestrel"},
                 { "application", "MyProjectReference"},
                 { "environment", "Development"},
                 { "detailederrors", "true"},
@@ -34,7 +34,7 @@ namespace Microsoft.AspNet.Hosting.Tests
             var config = new WebHostOptions(new ConfigurationBuilder().AddInMemoryCollection(parameters).Build());
 
             Assert.Equal("wwwroot", config.WebRoot);
-            Assert.Equal("Microsoft.AspNet.Server.Kestrel", config.ServerFactoryLocation);
+            Assert.Equal("Microsoft.AspNetCore.Server.Kestrel", config.ServerFactoryLocation);
             Assert.Equal("MyProjectReference", config.Application);
             Assert.Equal("Development", config.Environment);
             Assert.True(config.CaptureStartupErrors);

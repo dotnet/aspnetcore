@@ -3,7 +3,7 @@
 
 using Xunit;
 
-namespace Microsoft.AspNet.TestHost
+namespace Microsoft.AspNetCore.TestHost
 {
     public class ResponseFeatureTests
     {

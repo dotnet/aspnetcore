@@ -4,7 +4,7 @@
 using System;
 using System.IO;
 
-namespace Microsoft.AspNet.Hosting
+namespace Microsoft.AspNetCore.Hosting
 {
     /// <summary>
     /// Extension methods for <see cref="IHostingEnvironment"/>.

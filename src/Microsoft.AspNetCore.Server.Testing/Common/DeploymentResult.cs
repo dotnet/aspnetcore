@@ -3,7 +3,7 @@
 
 using System.Threading;
 
-namespace Microsoft.AspNet.Server.Testing
+namespace Microsoft.AspNetCore.Server.Testing
 {
     /// <summary>
     /// Result of a deployment.

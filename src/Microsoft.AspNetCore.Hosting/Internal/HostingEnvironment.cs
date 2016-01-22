@@ -4,11 +4,11 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.FileProviders;
 
-namespace Microsoft.AspNet.Hosting.Internal
+namespace Microsoft.AspNetCore.Hosting.Internal
 {
     public class HostingEnvironment : IHostingEnvironment
     {
-        public string EnvironmentName { get; set; } = Microsoft.AspNet.Hosting.EnvironmentName.Production;
+        public string EnvironmentName { get; set; } = Microsoft.AspNetCore.Hosting.EnvironmentName.Production;
 
         public string WebRootPath { get; set; }
 

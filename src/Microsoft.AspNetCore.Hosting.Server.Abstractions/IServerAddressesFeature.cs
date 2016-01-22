@@ -1,9 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
 
-namespace Microsoft.AspNet.Server.Features
+namespace Microsoft.AspNetCore.Server.Features
 {
     public interface IServerAddressesFeature
     {
