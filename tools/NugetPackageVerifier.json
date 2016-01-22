@@ -118,6 +118,8 @@
                     "bin\\lib\\Microsoft.Dnx.Tooling\\Newtonsoft.Json.dll": "We don't sign 3rd party DLLs"
                 }
             },
+            "dotnet-sql-cache": { },
+            "dotnet-user-secrets": { },
             "Microsoft.AspNetCore.Antiforgery": { },
             "Microsoft.AspNetCore.Authentication": { },
             "Microsoft.AspNetCore.Authentication.Cookies": { },
@@ -232,7 +234,6 @@
             "Microsoft.Extensions.Caching.Abstractions": { },
             "Microsoft.Extensions.Caching.Memory": { },
             "Microsoft.Extensions.Caching.Redis": { },
-            "Microsoft.Extensions.Caching.SqlConfig": { },
             "Microsoft.Extensions.Caching.SqlServer": { },
             "Microsoft.Extensions.CodeGeneration": { },
             "Microsoft.Extensions.CodeGeneration.Core": { },
@@ -275,7 +276,6 @@
             "Microsoft.Extensions.Options": { },
             "Microsoft.Extensions.PlatformAbstractions": { },
             "Microsoft.Extensions.Primitives": { },
-            "Microsoft.Extensions.SecretManager": { },
             "Microsoft.Extensions.WebEncoders": { },
             "Microsoft.Net.Http.Headers": { },
             "Microsoft.Net.Http.Server": { },

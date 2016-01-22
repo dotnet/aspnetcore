@@ -53,6 +53,8 @@
                          $(DropSource)**\Microsoft.Data.Sqlite*.nupkg;
                          $(DropSource)**\Microsoft.VisualStudio.Web.BrowserLink*.nupkg;
                          $(DropSource)**\dnx*.nupkg;
+                         $(DropSource)**\dotnet-sql-cache.nupkg;
+                         $(DropSource)**\dotnet-user-secrets.nupkg;
                          $(DropSource)**\KoreBuild*.nupkg;
                          $(DropSource)**\Microsoft.AspNetCore*.nupkg;
                          $(DropSource)**\Microsoft.Dnx*.nupkg;
@@ -91,6 +93,8 @@
                          $(UnsignedPackagesPath)**\Microsoft.Data.Sqlite*.dll;
                          $(UnsignedPackagesPath)**\Microsoft.VisualStudio.Web.BrowserLink*.dll;
                          $(UnsignedPackagesPath)**\dnx*.dll;
+                         $(UnsignedPackagesPath)**\dotnet-sql-cache.dll;
+                         $(UnsignedPackagesPath)**\dotnet-user-secrets.dll;
                          $(UnsignedPackagesPath)**\Microsoft.AspNetCore*.dll;
                          $(UnsignedPackagesPath)**\Microsoft.Dnx*.dll;
                          $(UnsignedPackagesPath)**\Microsoft.Extensions*.dll;
@@ -176,6 +180,8 @@
                                  $(UnsignedPackagesPath)**\dnvm.*.nuspec;
                                  $(UnsignedPackagesPath)**\KoreBuild*.nuspec;
                                  $(UnsignedPackagesPath)**\dnx*.nuspec;
+                                 $(UnsignedPackagesPath)**\dotnet-sql-cache.nuspec;
+                                 $(UnsignedPackagesPath)**\dotnet-user-secrets.nuspec;
                                  $(UnsignedPackagesPath)**\Microsoft.AspNetCore*.nuspec;
                                  $(UnsignedPackagesPath)**\Microsoft.Dnx.*.nuspec;
                                  $(UnsignedPackagesPath)**\Microsoft.Extensions.*.nuspec;
@@ -190,6 +196,8 @@
                                  $(UnsignedSymbolPackagesPath)**\dnvm.*.nuspec;
                                  $(UnsignedSymbolPackagesPath)**\KoreBuild*.nuspec;
                                  $(UnsignedSymbolPackagesPath)**\dnx*.nuspec;
+                                 $(UnsignedSymbolPackagesPath)**\dotnet-sql-cache.nuspec;
+                                 $(UnsignedSymbolPackagesPath)**\dotnet-user-secrets.nuspec;
                                  $(UnsignedSymbolPackagesPath)**\Microsoft.AspNetCore*.nuspec;
                                  $(UnsignedSymbolPackagesPath)**\Microsoft.Dnx.*.nuspec;
                                  $(UnsignedSymbolPackagesPath)**\Microsoft.Extensions.*.nuspec;
@@ -301,6 +309,8 @@
             <PoliCheckPackages Include="$(SymbolPackagePath)Microsoft.EntityFrameworkCore.*.symbols.nupkg;
                                         $(SymbolPackagePath)Microsoft.Data.Sqlite.*.symbols.nupkg;
                                         $(SymbolPackagePath)dnx*.symbols.nupkg;
+                                        $(SymbolPackagePath)dotnet-sql-cache.symbols.nupkg;
+                                        $(SymbolPackagePath)dotnet-user-secrets.symbols.nupkg;
                                         $(SymbolPackagePath)Microsoft.AspNetCore*.symbols.nupkg;
                                         $(SymbolPackagePath)Microsoft.Dnx*.symbols.nupkg;
                                         $(SymbolPackagePath)Microsoft.Extensions*.symbols.nupkg;
