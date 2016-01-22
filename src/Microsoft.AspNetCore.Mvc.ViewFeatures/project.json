@@ -1,6 +1,6 @@
 {
   "description": "View Rendering features for the MVC runtime",
-  "version": "6.0.0-*",
+  "version": "1.0.0-*",
   "repository": {
     "type": "git",
     "url": "git://github.com/aspnet/mvc"
@@ -13,9 +13,9 @@
     "Microsoft.AspNetCore.Antiforgery": "1.0.0-*",
     "Microsoft.AspNetCore.Diagnostics.Abstractions": "1.0.0-*",
     "Microsoft.AspNetCore.Html.Abstractions": "1.0.0-*",
-    "Microsoft.AspNetCore.Mvc.Core": "6.0.0-*",
-    "Microsoft.AspNetCore.Mvc.DataAnnotations": "6.0.0-*",
-    "Microsoft.AspNetCore.Mvc.Formatters.Json": "6.0.0-*",
+    "Microsoft.AspNetCore.Mvc.Core": "1.0.0-*",
+    "Microsoft.AspNetCore.Mvc.DataAnnotations": "1.0.0-*",
+    "Microsoft.AspNetCore.Mvc.Formatters.Json": "1.0.0-*",
     "Microsoft.Extensions.ClosedGenericMatcher.Sources": {
       "version": "1.0.0-*",
       "type": "build"

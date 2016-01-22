@@ -1,6 +1,6 @@
 {
   "description": "The core abstractions of ASP.NET MVC.",
-  "version": "6.0.0-*",
+  "version": "1.0.0-*",
   "repository": {
     "type": "git",
     "url": "git://github.com/aspnet/mvc"

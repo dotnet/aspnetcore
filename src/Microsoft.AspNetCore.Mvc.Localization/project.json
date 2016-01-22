@@ -1,13 +1,13 @@
 {
   "description": "Features that enable globalization & localization of MVC applications.",
-  "version": "6.0.0-*",
+  "version": "1.0.0-*",
   "compilationOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk"
   },
   "dependencies": {
     "Microsoft.AspNetCore.Localization": "1.0.0-*",
-    "Microsoft.AspNetCore.Mvc.Razor": "6.0.0-*",
+    "Microsoft.AspNetCore.Mvc.Razor": "1.0.0-*",
     "Microsoft.Extensions.DependencyInjection": "1.0.0-*",
     "Microsoft.Extensions.Localization": "1.0.0-*",
     "Microsoft.Extensions.PropertyHelper.Sources": {

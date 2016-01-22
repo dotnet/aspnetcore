@@ -3,7 +3,10 @@
     "../Microsoft.AspNetCore.Mvc.Formatters.Xml.Test/XmlAssert.cs"
   ],
   "compilationOptions": {
-    "define": [ "__RemoveThisBitTo__GENERATE_BASELINES", "FUNCTIONAL_TESTS" ],
+    "define": [
+      "__RemoveThisBitTo__GENERATE_BASELINES",
+      "FUNCTIONAL_TESTS"
+    ],
     "warningsAsErrors": true
   },
   "dependencies": {
@@ -24,10 +27,10 @@
     "InlineConstraintSample.Web": "1.0.0",
     "JsonPatchSample.Web": "1.0.0",
     "LocalizationSample.Web": "1.0.0",
-    "Microsoft.AspNetCore.Mvc": "6.0.0-*",
-    "Microsoft.AspNetCore.Mvc.Formatters.Xml": "6.0.0-*",
+    "Microsoft.AspNetCore.Mvc": "1.0.0-*",
+    "Microsoft.AspNetCore.Mvc.Formatters.Xml": "1.0.0-*",
     "Microsoft.AspNetCore.Mvc.TestCommon": {
-      "version": "6.0.0-*",
+      "version": "1.0.0-*",
       "type": "build"
     },
     "Microsoft.AspNetCore.Mvc.TestConfiguration": "1.0.0",
@@ -53,8 +56,8 @@
     "test": "xunit.runner.aspnet"
   },
   "frameworks": {
-    "dnx451": { },
-    "dnxcore50": { }
+    "dnx451": {},
+    "dnxcore50": {}
   },
   "exclude": [
     "wwwroot",

@@ -1,6 +1,6 @@
 {
   "description": "CORS features for the core MVC runtime",
-  "version": "6.0.0-*",
+  "version": "1.0.0-*",
   "repository": {
     "type": "git",
     "url": "git://github.com/aspnet/mvc"
@@ -10,8 +10,8 @@
     "keyFile": "../../tools/Key.snk"
   },
   "dependencies": {
-    "Microsoft.AspNetCore.Cors": "6.0.0-*",
-    "Microsoft.AspNetCore.Mvc.Core": "6.0.0-*"
+    "Microsoft.AspNetCore.Cors": "1.0.0-*",
+    "Microsoft.AspNetCore.Mvc.Core": "1.0.0-*"
   },
   "frameworks": {
     "net451": {},

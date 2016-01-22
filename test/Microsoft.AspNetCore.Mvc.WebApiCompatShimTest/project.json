@@ -4,7 +4,7 @@
   },
   "dependencies": {
     "Microsoft.AspNetCore.Http": "1.0.0-*",
-    "Microsoft.AspNetCore.Mvc.WebApiCompatShim": "6.0.0-*",
+    "Microsoft.AspNetCore.Mvc.WebApiCompatShim": "1.0.0-*",
     "Microsoft.AspNetCore.Testing": "1.0.0-*",
     "Microsoft.Extensions.Logging.Testing": "1.0.0-*",
     "Microsoft.Extensions.DependencyInjection": "1.0.0-*",

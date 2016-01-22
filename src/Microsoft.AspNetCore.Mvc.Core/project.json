@@ -1,6 +1,6 @@
 {
   "description": "The core runtime components of ASP.NET MVC.",
-  "version": "6.0.0-*",
+  "version": "1.0.0-*",
   "repository": {
     "type": "git",
     "url": "git://github.com/aspnet/mvc"
@@ -12,7 +12,7 @@
   "dependencies": {
     "Microsoft.AspNetCore.Authorization": "1.0.0-*",
     "Microsoft.AspNetCore.Hosting.Abstractions": "1.0.0-*",
-    "Microsoft.AspNetCore.Mvc.Abstractions": "6.0.0-*",
+    "Microsoft.AspNetCore.Mvc.Abstractions": "1.0.0-*",
     "Microsoft.AspNetCore.Http": "1.0.0-*",
     "Microsoft.AspNetCore.Routing": "1.0.0-*",
     "Microsoft.AspNetCore.Routing.DecisionTree.Sources": {

@@ -1,6 +1,6 @@
 {
   "description": "Provides compatibility in ASP.NET MVC with ASP.NET Web API 2 to simplify migration of existing Web API implementations.",
-  "version": "6.0.0-*",
+  "version": "1.0.0-*",
   "repository": {
     "type": "git",
     "url": "git://github.com/aspnet/mvc"
@@ -10,9 +10,9 @@
     "keyFile": "../../tools/Key.snk"
   },
   "dependencies": {
-    "Microsoft.AspNetCore.Mvc.Core": "6.0.0-*",
-    "Microsoft.AspNetCore.Mvc.Formatters.Json": "6.0.0-*",
-    "Microsoft.AspNetCore.WebApi.Client": "5.2.2",
+    "Microsoft.AspNetCore.Mvc.Core": "1.0.0-*",
+    "Microsoft.AspNetCore.Mvc.Formatters.Json": "1.0.0-*",
+    "Microsoft.AspNet.WebApi.Client": "5.2.2",
     "Microsoft.AspNetCore.WebUtilities": "1.0.0-*",
     "Microsoft.Extensions.PropertyHelper.Sources": {
       "type": "build",

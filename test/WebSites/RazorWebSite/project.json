@@ -7,8 +7,8 @@
   },
   "dependencies": {
     "Microsoft.AspNetCore.Localization": "1.0.0-*",
-    "Microsoft.AspNetCore.Mvc": "6.0.0-*",
-    "Microsoft.AspNetCore.Mvc.Localization": "6.0.0-*",
+    "Microsoft.AspNetCore.Mvc": "1.0.0-*",
+    "Microsoft.AspNetCore.Mvc.Localization": "1.0.0-*",
     "Microsoft.AspNetCore.Mvc.TestConfiguration": "1.0.0",
     "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*",
     "Microsoft.AspNetCore.StaticFiles": "1.0.0-*"
@@ -16,12 +16,16 @@
   "frameworks": {
     "dnx451": {
       "compilationOptions": {
-        "define": [ "DNX451_CUSTOM_DEFINE" ]
+        "define": [
+          "DNX451_CUSTOM_DEFINE"
+        ]
       }
     },
     "dnxcore50": {
       "compilationOptions": {
-        "define": [ "DNXCORE50_CUSTOM_DEFINE" ]
+        "define": [
+          "DNXCORE50_CUSTOM_DEFINE"
+        ]
       }
     }
   }

@@ -4,10 +4,10 @@
   },
   "dependencies": {
     "Microsoft.AspNetCore.Http": "1.0.0-*",
-    "Microsoft.AspNetCore.Mvc": "6.0.0-*",
-    "Microsoft.AspNetCore.Mvc.Formatters.Xml": "6.0.0-*",
+    "Microsoft.AspNetCore.Mvc": "1.0.0-*",
+    "Microsoft.AspNetCore.Mvc.Formatters.Xml": "1.0.0-*",
     "Microsoft.AspNetCore.Mvc.TestCommon": {
-      "version": "6.0.0-*",
+      "version": "1.0.0-*",
       "type": "build"
     },
     "Microsoft.AspNetCore.Testing": "1.0.0-*",

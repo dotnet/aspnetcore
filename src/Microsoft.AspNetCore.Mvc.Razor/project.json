@@ -1,6 +1,6 @@
 {
   "description": "The Razor view engine for ASP.NET MVC.",
-  "version": "6.0.0-*",
+  "version": "1.0.0-*",
   "repository": {
     "type": "git",
     "url": "git://github.com/aspnet/mvc"
@@ -10,8 +10,8 @@
     "keyFile": "../../tools/Key.snk"
   },
   "dependencies": {
-    "Microsoft.AspNetCore.Mvc.Razor.Host": "6.0.0-*",
-    "Microsoft.AspNetCore.Mvc.ViewFeatures": "6.0.0-*",
+    "Microsoft.AspNetCore.Mvc.Razor.Host": "1.0.0-*",
+    "Microsoft.AspNetCore.Mvc.ViewFeatures": "1.0.0-*",
     "Microsoft.Extensions.FileProviders.Composite": "1.0.0-*",
     "Microsoft.Extensions.HashCodeCombiner.Sources": {
       "version": "1.0.0-*",

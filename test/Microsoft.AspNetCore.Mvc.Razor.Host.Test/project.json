@@ -1,16 +1,16 @@
 {
   "resource": "TestFiles/**",
   "dependencies": {
-    "Microsoft.AspNetCore.Mvc.Core": "6.0.0-*",
-    "Microsoft.AspNetCore.Mvc.DataAnnotations": "6.0.0-*",
-    "Microsoft.AspNetCore.Mvc.Formatters.Xml": "6.0.0-*",
-    "Microsoft.AspNetCore.Mvc.Razor": "6.0.0-*",
-    "Microsoft.AspNetCore.Mvc.Razor.Host": "6.0.0-*",
+    "Microsoft.AspNetCore.Mvc.Core": "1.0.0-*",
+    "Microsoft.AspNetCore.Mvc.DataAnnotations": "1.0.0-*",
+    "Microsoft.AspNetCore.Mvc.Formatters.Xml": "1.0.0-*",
+    "Microsoft.AspNetCore.Mvc.Razor": "1.0.0-*",
+    "Microsoft.AspNetCore.Mvc.Razor.Host": "1.0.0-*",
     "Microsoft.AspNetCore.Mvc.TestCommon": {
-      "version": "6.0.0-*",
+      "version": "1.0.0-*",
       "type": "build"
     },
-    "Microsoft.AspNetCore.Mvc.ViewFeatures": "6.0.0-*",
+    "Microsoft.AspNetCore.Mvc.ViewFeatures": "1.0.0-*",
     "Microsoft.AspNetCore.Testing": "1.0.0-*",
     "xunit.runner.aspnet": "2.0.0-aspnet-*"
   },
@@ -18,7 +18,9 @@
     "test": "xunit.runner.aspnet"
   },
   "compilationOptions": {
-    "define": [ "__RemoveThisBitTo__GENERATE_BASELINES" ],
+    "define": [
+      "__RemoveThisBitTo__GENERATE_BASELINES"
+    ],
     "keyFile": "../../tools/Key.snk"
   },
   "frameworks": {

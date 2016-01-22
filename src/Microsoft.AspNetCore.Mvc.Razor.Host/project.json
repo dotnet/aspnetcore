@@ -1,6 +1,6 @@
 {
   "description": "Design time hosting infrastructure for the ASP.NET MVC Razor view engine.",
-  "version": "6.0.0-*",
+  "version": "1.0.0-*",
   "repository": {
     "type": "git",
     "url": "git://github.com/aspnet/mvc"
@@ -10,7 +10,7 @@
     "keyFile": "../../tools/Key.snk"
   },
   "dependencies": {
-    "Microsoft.AspNetCore.Razor.Runtime": "4.0.0-*",
+    "Microsoft.AspNetCore.Razor.Runtime": "1.0.0-*",
     "Microsoft.Extensions.Caching.Memory": "1.0.0-*",
     "Microsoft.Extensions.FileProviders.Physical": "1.0.0-*",
     "Microsoft.Extensions.PropertyHelper.Sources": {

@@ -1,6 +1,6 @@
 {
   "description": "Contains a default set of Tag Helpers for building ASP.NET MVC applications.",
-  "version": "6.0.0-*",
+  "version": "1.0.0-*",
   "repository": {
     "type": "git",
     "url": "git://github.com/aspnet/mvc"
@@ -10,7 +10,7 @@
     "keyFile": "../../tools/Key.snk"
   },
   "dependencies": {
-    "Microsoft.AspNetCore.Mvc.Razor": "6.0.0-*",
+    "Microsoft.AspNetCore.Mvc.Razor": "1.0.0-*",
     "Microsoft.Extensions.Caching.Memory": "1.0.0-*",
     "Microsoft.Extensions.FileSystemGlobbing": "1.0.0-*",
     "Microsoft.Extensions.Logging.Abstractions": {
