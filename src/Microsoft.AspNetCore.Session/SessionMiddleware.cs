@@ -4,13 +4,13 @@
 using System;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Features;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNet.Session
+namespace Microsoft.AspNetCore.Session
 {
     /// <summary>
     /// Enables the session state for the application.

@@ -6,7 +6,7 @@
     "url": "git://github.com/aspnet/session"
   },
   "dependencies": {
-    "Microsoft.AspNet.Http.Abstractions": "1.0.0-*",
+    "Microsoft.AspNetCore.Http.Abstractions": "1.0.0-*",
     "Microsoft.Extensions.Caching.Abstractions": "1.0.0-*",
     "Microsoft.Extensions.Logging.Abstractions": "1.0.0-*",
     "Microsoft.Extensions.Options": "1.0.0-*"

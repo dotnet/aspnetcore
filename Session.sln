@@ -1,4 +1,4 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.22625.0
@@ -7,9 +7,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{E9D63F97-6
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{A189F10C-3A9C-4F81-83D0-32E5FE50DAD8}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Session", "src\Microsoft.AspNet.Session\Microsoft.AspNet.Session.xproj", "{71802736-F640-4733-9671-02D267EDD76A}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Session", "src\Microsoft.AspNetCore.Session\Microsoft.AspNetCore.Session.xproj", "{71802736-F640-4733-9671-02D267EDD76A}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Session.Tests", "test\Microsoft.AspNet.Session.Tests\Microsoft.AspNet.Session.Tests.xproj", "{8C131A0A-BC1A-4CF3-8B77-8813FBFE5639}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Session.Tests", "test\Microsoft.AspNetCore.Session.Tests\Microsoft.AspNetCore.Session.Tests.xproj", "{8C131A0A-BC1A-4CF3-8B77-8813FBFE5639}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{94E80ED2-9F27-40AC-A9EF-C707BDFAA3BE}"
 EndProject

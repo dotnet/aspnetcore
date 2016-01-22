@@ -1,7 +1,7 @@
 {
   "dependencies": {
-    "Microsoft.AspNet.Session": "1.0.0-*",
-    "Microsoft.AspNet.TestHost": "1.0.0-*",
+    "Microsoft.AspNetCore.Session": "1.0.0-*",
+    "Microsoft.AspNetCore.TestHost": "1.0.0-*",
     "Microsoft.Extensions.Caching.Memory": "1.0.0-*",
     "Microsoft.Extensions.Logging.Testing": "1.0.0-*",
     "xunit": "2.1.0"

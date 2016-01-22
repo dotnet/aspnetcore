@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-namespace Microsoft.AspNet.Session
+namespace Microsoft.AspNetCore.Session
 {
     // A byte[] equality comparer based on the SipHash-2-4 algorithm. Key differences:
     // (a) we output 32-bit hashes instead of 64-bit hashes, and
@@ -9,7 +9,7 @@ namespace Microsoft.AspNet.Session
     //     and aren't returned to user code.
     //
     // Derived from the implementation in SignalR and modified to address byte[] instead of string. This derived version is not for cryptographic use, just hash codes.
-    // https://github.com/aspnet/SignalR-Server/blob/75f74169c81a51780f195d06b798302b2d76dbde/src/Microsoft.AspNet.SignalR.Server/Infrastructure/SipHashBasedStringEqualityComparer.cs
+    // https://github.com/aspnet/SignalR-Server/blob/75f74169c81a51780f195d06b798302b2d76dbde/src/Microsoft.AspNetCore.SignalR.Server/Infrastructure/SipHashBasedStringEqualityComparer.cs
     // Derivative work of https://github.com/tanglebones/ch-siphash.
     internal static class SipHash
     {

@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNet.Session;
+using Microsoft.AspNetCore.Session;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNet.Builder
+namespace Microsoft.AspNetCore.Builder
 {
     /// <summary>
     /// Extension methods for adding the <see cref="SessionMiddleware"/> to an application.
