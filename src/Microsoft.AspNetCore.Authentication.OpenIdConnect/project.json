@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0-*",
+  "version": "0.1.0-*",
   "description": "ASP.NET 5 middleware that enables an application to support the OpenID Connect authentication workflow.",
   "repository": {
     "type": "git",
@@ -14,7 +14,7 @@
     "Microsoft.IdentityModel.Protocols.OpenIdConnect": "2.0.0-*"
   },
   "frameworks": {
-    "net451": { },
-    "dotnet54": { }
+    "net451": {},
+    "dotnet54": {}
   }
 }
