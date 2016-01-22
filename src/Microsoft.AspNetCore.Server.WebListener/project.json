@@ -1,17 +1,17 @@
 {
-  "version": "1.0.0-*",
+  "version": "0.1.0-*",
   "description": "ASP.NET 5 self-host web server.",
   "dependencies": {
     "Microsoft.AspNetCore.Hosting": "1.0.0-*",
     "Microsoft.Net.Http.Headers": "1.0.0-*",
-    "Microsoft.Net.Http.Server": "1.0.0-*"
+    "Microsoft.Net.Http.Server": "0.1.0-*"
   },
   "compilationOptions": {
     "allowUnsafe": true,
     "keyFile": "../../tools/Key.snk"
   },
   "frameworks": {
-    "net451": { },
+    "net451": {},
     "dotnet5.4": {
       "dependencies": {
         "System.Security.Claims": "4.0.1-*"

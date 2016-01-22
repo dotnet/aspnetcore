@@ -1,14 +1,16 @@
 {
   "dependencies": {
-    "Microsoft.AspNetCore.Server.WebListener": "1.0.0-*",
+    "Microsoft.AspNetCore.Server.WebListener": "0.1.0-*",
     "Microsoft.Extensions.Logging.Console": "1.0.0-*"
   },
   "compilationOptions": {
     "emitEntryPoint": true
   },
-  "commands": { "web": "SelfHostServer" },
+  "commands": {
+    "web": "SelfHostServer"
+  },
   "frameworks": {
-    "dnx451": { },
-    "dnxcore50": { }
+    "dnx451": {},
+    "dnxcore50": {}
   }
 }
