@@ -3,12 +3,12 @@
 
 using System;
 using System.Security.Cryptography;
-using Microsoft.AspNet.Cryptography.Cng;
-using Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationModel;
-using Microsoft.AspNet.DataProtection.Managed;
+using Microsoft.AspNetCore.Cryptography.Cng;
+using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
+using Microsoft.AspNetCore.DataProtection.Managed;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption
+namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
 {
     /// <summary>
     /// Options for configuring an authenticated encryption mechanism which uses

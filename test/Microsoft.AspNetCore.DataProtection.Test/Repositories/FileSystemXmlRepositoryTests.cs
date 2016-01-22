@@ -5,10 +5,10 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
-using Microsoft.AspNet.Testing.xunit;
+using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
-namespace Microsoft.AspNet.DataProtection.Repositories
+namespace Microsoft.AspNetCore.DataProtection.Repositories
 {
     public class FileSystemXmlRepositoryTests
     {

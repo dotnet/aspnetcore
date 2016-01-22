@@ -1,9 +1,9 @@
 {
   "dependencies": {
-    "Microsoft.AspNet.Cryptography.Internal": "1.0.0-*",
-    "Microsoft.AspNet.Cryptography.KeyDerivation": "1.0.0-*",
-    "Microsoft.AspNet.DataProtection.Test.Shared": "",
-    "Microsoft.AspNet.Testing": "1.0.0-*",
+    "Microsoft.AspNetCore.Cryptography.Internal": "1.0.0-*",
+    "Microsoft.AspNetCore.Cryptography.KeyDerivation": "1.0.0-*",
+    "Microsoft.AspNetCore.DataProtection.Test.Shared": "",
+    "Microsoft.AspNetCore.Testing": "1.0.0-*",
     "xunit": "2.1.0"
   },
   "frameworks": {

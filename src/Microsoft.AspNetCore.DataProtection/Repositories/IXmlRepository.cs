@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Xml.Linq;
 
-namespace Microsoft.AspNet.DataProtection.Repositories
+namespace Microsoft.AspNetCore.DataProtection.Repositories
 {
     /// <summary>
     /// The basic interface for storing and retrieving XML elements.

@@ -4,7 +4,7 @@
 using System;
 using System.ComponentModel;
 
-namespace Microsoft.AspNet.DataProtection.Infrastructure
+namespace Microsoft.AspNetCore.DataProtection.Infrastructure
 {
     /// <summary>
     /// Provides information used to discriminate applications.

@@ -2,12 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNet.DataProtection.Test.Shared;
-using Microsoft.AspNet.Testing.xunit;
+using Microsoft.AspNetCore.DataProtection.Test.Shared;
+using Microsoft.AspNetCore.Testing.xunit;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.DataProtection.Cng.Internal
+namespace Microsoft.AspNetCore.DataProtection.Cng.Internal
 {
     public unsafe class CngAuthenticatedEncryptorBaseTests
     {

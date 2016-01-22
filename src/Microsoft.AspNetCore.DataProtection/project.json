@@ -6,9 +6,9 @@
     "url": "git://github.com/aspnet/dataprotection"
   },
   "dependencies": {
-    "Microsoft.AspNet.Cryptography.Internal": "1.0.0-*",
-    "Microsoft.AspNet.DataProtection.Abstractions": "1.0.0-*",
-    "Microsoft.AspNet.DataProtection.Sources": {
+    "Microsoft.AspNetCore.Cryptography.Internal": "1.0.0-*",
+    "Microsoft.AspNetCore.DataProtection.Abstractions": "1.0.0-*",
+    "Microsoft.AspNetCore.DataProtection.Sources": {
       "type": "build",
       "version": ""
     },

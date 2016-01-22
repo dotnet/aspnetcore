@@ -4,11 +4,11 @@
 using System;
 using System.Security.Cryptography;
 using System.Text;
-using Microsoft.AspNet.DataProtection.Test.Shared;
-using Microsoft.AspNet.Testing.xunit;
+using Microsoft.AspNetCore.DataProtection.Test.Shared;
+using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
-namespace Microsoft.AspNet.DataProtection.SP800_108
+namespace Microsoft.AspNetCore.DataProtection.SP800_108
 {
     public unsafe class SP800_108Tests
     {

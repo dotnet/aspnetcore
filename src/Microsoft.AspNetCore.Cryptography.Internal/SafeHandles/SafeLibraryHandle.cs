@@ -10,7 +10,7 @@ using Microsoft.Win32.SafeHandles;
 using System.Runtime.ConstrainedExecution;
 #endif
 
-namespace Microsoft.AspNet.Cryptography.SafeHandles
+namespace Microsoft.AspNetCore.Cryptography.SafeHandles
 {
     /// <summary>
     /// Represents a handle to a Windows module (DLL).

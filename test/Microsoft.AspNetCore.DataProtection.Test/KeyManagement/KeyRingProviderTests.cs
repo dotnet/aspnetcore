@@ -6,16 +6,16 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNet.DataProtection.AuthenticatedEncryption;
-using Microsoft.AspNet.DataProtection.KeyManagement.Internal;
-using Microsoft.AspNet.Testing;
+using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
+using Microsoft.AspNetCore.DataProtection.KeyManagement.Internal;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit;
 
 using static System.FormattableString;
 
-namespace Microsoft.AspNet.DataProtection.KeyManagement
+namespace Microsoft.AspNetCore.DataProtection.KeyManagement
 {
     public class KeyRingProviderTests
     {

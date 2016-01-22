@@ -3,11 +3,11 @@
 
 using System;
 using System.Xml.Linq;
-using Microsoft.AspNet.Cryptography;
-using Microsoft.AspNet.DataProtection.Cng;
+using Microsoft.AspNetCore.Cryptography;
+using Microsoft.AspNetCore.DataProtection.Cng;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNet.DataProtection.XmlEncryption
+namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
 {
     /// <summary>
     /// An <see cref="IXmlDecryptor"/> that decrypts XML elements that were encrypted with <see cref="DpapiXmlEncryptor"/>.

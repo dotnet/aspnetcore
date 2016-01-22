@@ -4,7 +4,7 @@
 using System;
 using System.Xml.Linq;
 
-namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationModel
+namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel
 {
     /// <summary>
     /// A descriptor which can create an authenticated encryption system based upon the

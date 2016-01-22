@@ -4,10 +4,10 @@
 using System;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using Microsoft.AspNet.Cryptography.SafeHandles;
+using Microsoft.AspNetCore.Cryptography.SafeHandles;
 using Xunit;
 
-namespace Microsoft.AspNet.Cryptography
+namespace Microsoft.AspNetCore.Cryptography
 {
     public unsafe class UnsafeBufferUtilTests
     {

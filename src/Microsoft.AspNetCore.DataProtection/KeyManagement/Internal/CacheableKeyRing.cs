@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 
-namespace Microsoft.AspNet.DataProtection.KeyManagement.Internal
+namespace Microsoft.AspNetCore.DataProtection.KeyManagement.Internal
 {
     /// <summary>
     /// Wraps both a keyring and its expiration policy.

@@ -6,7 +6,7 @@ using System.Security.Cryptography;
 using System.Xml.Linq;
 using Xunit;
 
-namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationModel
+namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel
 {
     public class ManagedAuthenticatedEncryptorDescriptorDeserializerTests
     {

@@ -7,7 +7,7 @@ using System.Linq;
 using System.Xml.Linq;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNet.DataProtection.Repositories
+namespace Microsoft.AspNetCore.DataProtection.Repositories
 {
     /// <summary>
     /// An ephemeral XML repository backed by process memory. This class must not be used for

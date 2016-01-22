@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationModel
+namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel
 {
     internal static class ConfigurationCommon
     {

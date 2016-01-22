@@ -4,9 +4,9 @@
 using System;
 using System.ComponentModel;
 using System.IO;
-using Microsoft.AspNet.DataProtection.AuthenticatedEncryption;
-using Microsoft.AspNet.DataProtection.KeyManagement;
-using Microsoft.AspNet.DataProtection.XmlEncryption;
+using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
+using Microsoft.AspNetCore.DataProtection.KeyManagement;
+using Microsoft.AspNetCore.DataProtection.XmlEncryption;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Win32;
@@ -15,7 +15,7 @@ using Microsoft.Win32;
 using System.Security.Cryptography.X509Certificates;
 #endif
 
-namespace Microsoft.AspNet.DataProtection
+namespace Microsoft.AspNetCore.DataProtection
 {
     /// <summary>
     /// Provides access to configuration for the data protection system, which allows the

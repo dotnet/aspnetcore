@@ -3,12 +3,12 @@
 
 using System;
 using System.Text;
-using Microsoft.AspNet.Cryptography.KeyDerivation.PBKDF2;
-using Microsoft.AspNet.DataProtection.Test.Shared;
-using Microsoft.AspNet.Testing.xunit;
+using Microsoft.AspNetCore.Cryptography.KeyDerivation.PBKDF2;
+using Microsoft.AspNetCore.DataProtection.Test.Shared;
+using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
-namespace Microsoft.AspNet.Cryptography.KeyDerivation
+namespace Microsoft.AspNetCore.Cryptography.KeyDerivation
 {
     public class Pbkdf2Tests
     {

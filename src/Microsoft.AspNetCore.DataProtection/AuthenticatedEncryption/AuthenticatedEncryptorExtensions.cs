@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNet.Cryptography;
+using Microsoft.AspNetCore.Cryptography;
 
-namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption
+namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
 {
     internal static class AuthenticatedEncryptorExtensions
     {

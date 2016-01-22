@@ -4,14 +4,14 @@
 using System;
 using System.Security.Principal;
 using System.Xml.Linq;
-using Microsoft.AspNet.Cryptography;
-using Microsoft.AspNet.Cryptography.SafeHandles;
-using Microsoft.AspNet.DataProtection.Cng;
+using Microsoft.AspNetCore.Cryptography;
+using Microsoft.AspNetCore.Cryptography.SafeHandles;
+using Microsoft.AspNetCore.DataProtection.Cng;
 using Microsoft.Extensions.Logging;
 
 using static System.FormattableString;
 
-namespace Microsoft.AspNet.DataProtection.XmlEncryption
+namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
 {
     /// <summary>
     /// A class that can encrypt XML elements using Windows DPAPI:NG.

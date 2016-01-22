@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption
+namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
 {
     /// <summary>
     /// Specifies a symmetric encryption algorithm to use for providing confidentiality

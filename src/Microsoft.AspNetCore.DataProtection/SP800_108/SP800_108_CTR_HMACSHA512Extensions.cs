@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNet.Cryptography;
+using Microsoft.AspNetCore.Cryptography;
 
-namespace Microsoft.AspNet.DataProtection.SP800_108
+namespace Microsoft.AspNetCore.DataProtection.SP800_108
 {
     internal unsafe static class SP800_108_CTR_HMACSHA512Extensions
     {

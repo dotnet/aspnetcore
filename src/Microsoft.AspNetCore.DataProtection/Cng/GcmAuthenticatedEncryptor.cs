@@ -2,14 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNet.Cryptography;
-using Microsoft.AspNet.Cryptography.Cng;
-using Microsoft.AspNet.Cryptography.SafeHandles;
-using Microsoft.AspNet.DataProtection.AuthenticatedEncryption;
-using Microsoft.AspNet.DataProtection.Cng.Internal;
-using Microsoft.AspNet.DataProtection.SP800_108;
+using Microsoft.AspNetCore.Cryptography;
+using Microsoft.AspNetCore.Cryptography.Cng;
+using Microsoft.AspNetCore.Cryptography.SafeHandles;
+using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
+using Microsoft.AspNetCore.DataProtection.Cng.Internal;
+using Microsoft.AspNetCore.DataProtection.SP800_108;
 
-namespace Microsoft.AspNet.DataProtection.Cng
+namespace Microsoft.AspNetCore.DataProtection.Cng
 {
     // GCM is defined in NIST SP 800-38D (http://csrc.nist.gov/publications/nistpubs/800-38D/SP-800-38D.pdf).
     // Heed closely the uniqueness requirements called out in Sec. 8: the probability that the GCM encryption

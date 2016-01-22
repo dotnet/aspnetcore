@@ -6,7 +6,7 @@ using System.ComponentModel;
 using System.Configuration;
 using System.Security.Cryptography;
 
-namespace Microsoft.AspNet.DataProtection.SystemWeb
+namespace Microsoft.AspNetCore.DataProtection.SystemWeb
 {
     /// <summary>
     /// A <see cref="DataProtector"/> that can be used by ASP.NET 4.x to interact with ASP.NET 5's

@@ -4,13 +4,13 @@
 using System;
 using System.Runtime.CompilerServices;
 using System.Threading;
-using Microsoft.AspNet.Cryptography.SafeHandles;
+using Microsoft.AspNetCore.Cryptography.SafeHandles;
 
 #if !DOTNET5_4
 using System.Runtime.ConstrainedExecution;
 #endif
 
-namespace Microsoft.AspNet.Cryptography
+namespace Microsoft.AspNetCore.Cryptography
 {
     internal unsafe static class UnsafeBufferUtil
     {

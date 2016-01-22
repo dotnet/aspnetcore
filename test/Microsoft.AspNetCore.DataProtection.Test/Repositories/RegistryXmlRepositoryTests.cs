@@ -4,12 +4,12 @@
 using System;
 using System.Linq;
 using System.Xml.Linq;
-using Microsoft.AspNet.Testing.xunit;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.PlatformAbstractions;
 using Microsoft.Win32;
 using Xunit;
 
-namespace Microsoft.AspNet.DataProtection.Repositories
+namespace Microsoft.AspNetCore.DataProtection.Repositories
 {
     public class RegistryXmlRepositoryTests
     {

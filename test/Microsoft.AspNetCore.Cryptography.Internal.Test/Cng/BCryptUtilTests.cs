@@ -3,11 +3,11 @@
 
 using System;
 using System.Linq;
-using Microsoft.AspNet.DataProtection.Test.Shared;
-using Microsoft.AspNet.Testing.xunit;
+using Microsoft.AspNetCore.DataProtection.Test.Shared;
+using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
-namespace Microsoft.AspNet.Cryptography.Cng
+namespace Microsoft.AspNetCore.Cryptography.Cng
 {
     public unsafe class BCryptUtilTests
     {

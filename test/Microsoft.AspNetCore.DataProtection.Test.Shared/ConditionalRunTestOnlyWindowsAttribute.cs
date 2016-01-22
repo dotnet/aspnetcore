@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNet.Cryptography.Cng;
-using Microsoft.AspNet.Testing.xunit;
+using Microsoft.AspNetCore.Cryptography.Cng;
+using Microsoft.AspNetCore.Testing.xunit;
 
-namespace Microsoft.AspNet.DataProtection.Test.Shared
+namespace Microsoft.AspNetCore.DataProtection.Test.Shared
 {
     public class ConditionalRunTestOnlyOnWindowsAttribute : Attribute, ITestCondition
     {

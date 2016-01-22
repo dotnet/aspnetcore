@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNet.DataProtection.Cng
+namespace Microsoft.AspNetCore.DataProtection.Cng
 {
     internal unsafe interface IBCryptGenRandom
     {

@@ -4,7 +4,7 @@
 using System;
 using System.Xml.Linq;
 
-namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationModel
+namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel
 {
     internal unsafe static class SecretExtensions
     {

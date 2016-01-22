@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNet.Cryptography.KeyDerivation.PBKDF2;
+using Microsoft.AspNetCore.Cryptography.KeyDerivation.PBKDF2;
 
-namespace Microsoft.AspNet.Cryptography.KeyDerivation
+namespace Microsoft.AspNetCore.Cryptography.KeyDerivation
 {
     /// <summary>
     /// Provides algorithms for performing key derivation.

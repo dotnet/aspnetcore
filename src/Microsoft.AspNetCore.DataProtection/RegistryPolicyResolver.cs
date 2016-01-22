@@ -6,13 +6,13 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
-using Microsoft.AspNet.Cryptography;
-using Microsoft.AspNet.DataProtection.AuthenticatedEncryption;
-using Microsoft.AspNet.DataProtection.KeyManagement;
+using Microsoft.AspNetCore.Cryptography;
+using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
+using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Win32;
 
-namespace Microsoft.AspNet.DataProtection
+namespace Microsoft.AspNetCore.DataProtection
 {
     /// <summary>
     /// A type which allows reading policy from the system registry.
@@ -85,7 +85,7 @@ namespace Microsoft.AspNet.DataProtection
         /// </summary>
         public static ServiceDescriptor[] ResolveDefaultPolicy()
         {
-            RegistryKey subKey = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\DotNetPackages\Microsoft.AspNet.DataProtection");
+            RegistryKey subKey = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\DotNetPackages\Microsoft.AspNetCore.DataProtection");
             if (subKey != null)
             {
                 using (subKey)

@@ -5,10 +5,10 @@ using System;
 using System.Configuration;
 using System.Web;
 using System.Web.Configuration;
-using Microsoft.AspNet.DataProtection.Infrastructure;
+using Microsoft.AspNetCore.DataProtection.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNet.DataProtection.SystemWeb
+namespace Microsoft.AspNetCore.DataProtection.SystemWeb
 {
     /// <summary>
     /// Allows controlling the configuration of the ASP.NET 5 Data Protection system.

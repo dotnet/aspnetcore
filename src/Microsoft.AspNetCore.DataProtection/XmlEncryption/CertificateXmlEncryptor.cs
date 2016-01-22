@@ -8,11 +8,11 @@ using System.Security.Cryptography.X509Certificates;
 using System.Security.Cryptography.Xml;
 using System.Xml;
 using System.Xml.Linq;
-using Microsoft.AspNet.Cryptography;
+using Microsoft.AspNetCore.Cryptography;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNet.DataProtection.XmlEncryption
+namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
 {
     /// <summary>
     /// An <see cref="IXmlEncryptor"/> that can perform XML encryption by using an X.509 certificate.

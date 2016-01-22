@@ -5,11 +5,11 @@ using System;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using Microsoft.AspNet.DataProtection.Test.Shared;
-using Microsoft.AspNet.Testing.xunit;
+using Microsoft.AspNetCore.DataProtection.Test.Shared;
+using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
-namespace Microsoft.AspNet.DataProtection.Managed
+namespace Microsoft.AspNetCore.DataProtection.Managed
 {
     public class ManagedAuthenticatedEncryptorTests
     {

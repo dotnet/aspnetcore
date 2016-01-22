@@ -4,7 +4,7 @@
 using System;
 using System.Security.Cryptography;
 
-namespace Microsoft.AspNet.DataProtection
+namespace Microsoft.AspNetCore.DataProtection
 {
     internal static class ExceptionExtensions
     {

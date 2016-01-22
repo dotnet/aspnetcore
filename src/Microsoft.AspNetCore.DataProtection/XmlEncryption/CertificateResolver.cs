@@ -6,7 +6,7 @@
 using System;
 using System.Security.Cryptography.X509Certificates;
 
-namespace Microsoft.AspNet.DataProtection.XmlEncryption
+namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
 {
     /// <summary>
     /// A default implementation of <see cref="ICertificateResolver"/> that looks in the current user

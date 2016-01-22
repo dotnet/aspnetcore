@@ -5,7 +5,7 @@ using System;
 using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
 
-namespace Microsoft.AspNet.Cryptography.SafeHandles
+namespace Microsoft.AspNetCore.Cryptography.SafeHandles
 {
     /// <summary>
     /// Represents a handle returned by LocalAlloc.

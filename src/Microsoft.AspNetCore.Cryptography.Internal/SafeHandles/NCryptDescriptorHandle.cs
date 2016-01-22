@@ -4,7 +4,7 @@
 using System;
 using Microsoft.Win32.SafeHandles;
 
-namespace Microsoft.AspNet.Cryptography.SafeHandles
+namespace Microsoft.AspNetCore.Cryptography.SafeHandles
 {
     internal unsafe sealed class NCryptDescriptorHandle : SafeHandleZeroOrMinusOneIsInvalid
     {

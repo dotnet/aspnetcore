@@ -2,13 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNet.Cryptography.Cng;
-using Microsoft.AspNet.DataProtection.AuthenticatedEncryption;
-using Microsoft.AspNet.DataProtection.KeyManagement;
-using Microsoft.AspNet.DataProtection.KeyManagement.Internal;
+using Microsoft.AspNetCore.Cryptography.Cng;
+using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
+using Microsoft.AspNetCore.DataProtection.KeyManagement;
+using Microsoft.AspNetCore.DataProtection.KeyManagement.Internal;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNet.DataProtection
+namespace Microsoft.AspNetCore.DataProtection
 {
     /// <summary>
     /// An <see cref="IDataProtectionProvider"/> that is transient.

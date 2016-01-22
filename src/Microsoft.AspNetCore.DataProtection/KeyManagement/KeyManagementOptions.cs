@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNet.DataProtection.KeyManagement
+namespace Microsoft.AspNetCore.DataProtection.KeyManagement
 {
     /// <summary>
     /// Options that control how an <see cref="IKeyManager"/> should behave.

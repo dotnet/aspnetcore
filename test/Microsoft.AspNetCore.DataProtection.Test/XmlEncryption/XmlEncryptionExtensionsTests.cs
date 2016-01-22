@@ -4,12 +4,12 @@
 using System;
 using System.Linq;
 using System.Xml.Linq;
-using Microsoft.AspNet.DataProtection.Internal;
+using Microsoft.AspNetCore.DataProtection.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.DataProtection.XmlEncryption
+namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
 {
     public class XmlEncryptionExtensionsTests
     {

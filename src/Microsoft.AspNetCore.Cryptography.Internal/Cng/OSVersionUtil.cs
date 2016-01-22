@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNet.Cryptography.SafeHandles;
+using Microsoft.AspNetCore.Cryptography.SafeHandles;
 
-namespace Microsoft.AspNet.Cryptography.Cng
+namespace Microsoft.AspNetCore.Cryptography.Cng
 {
     internal static class OSVersionUtil
     {

@@ -5,7 +5,7 @@ using System;
 using System.IO;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNet.DataProtection
+namespace Microsoft.AspNetCore.DataProtection
 {
     /// <summary>
     /// A simple implementation of an <see cref="IDataProtectionProvider"/> where keys are stored

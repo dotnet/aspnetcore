@@ -4,15 +4,15 @@
 using System;
 using System.Globalization;
 using System.Security.Cryptography;
-using Microsoft.AspNet.DataProtection.Extensions;
+using Microsoft.AspNetCore.DataProtection.Extensions;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.DataProtection
+namespace Microsoft.AspNetCore.DataProtection
 {
     public class TimeLimitedDataProtectorTests
     {
-        private const string TimeLimitedPurposeString = "Microsoft.AspNet.DataProtection.TimeLimitedDataProtector.v1";
+        private const string TimeLimitedPurposeString = "Microsoft.AspNetCore.DataProtection.TimeLimitedDataProtector.v1";
 
         [Fact]
         public void Protect_LifetimeSpecified()

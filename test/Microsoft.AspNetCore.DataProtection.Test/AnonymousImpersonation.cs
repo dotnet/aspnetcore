@@ -5,10 +5,10 @@
 using System;
 using System.Runtime.ConstrainedExecution;
 using System.Runtime.InteropServices;
-using Microsoft.AspNet.Cryptography;
+using Microsoft.AspNetCore.Cryptography;
 using Microsoft.Win32.SafeHandles;
 
-namespace Microsoft.AspNet.DataProtection
+namespace Microsoft.AspNetCore.DataProtection
 {
     /// <summary>
     /// Helpers for working with the anonymous Windows identity.

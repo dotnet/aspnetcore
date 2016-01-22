@@ -2,13 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNet.Cryptography;
-using Microsoft.AspNet.DataProtection.KeyManagement.Internal;
-using Microsoft.AspNet.DataProtection.Repositories;
-using Microsoft.AspNet.DataProtection.XmlEncryption;
+using Microsoft.AspNetCore.Cryptography;
+using Microsoft.AspNetCore.DataProtection.KeyManagement.Internal;
+using Microsoft.AspNetCore.DataProtection.Repositories;
+using Microsoft.AspNetCore.DataProtection.XmlEncryption;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNet.DataProtection.KeyManagement
+namespace Microsoft.AspNetCore.DataProtection.KeyManagement
 {
     internal sealed class DefaultKeyServices : IDefaultKeyServices
     {

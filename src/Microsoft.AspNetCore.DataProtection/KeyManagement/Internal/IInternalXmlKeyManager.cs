@@ -3,9 +3,9 @@
 
 using System;
 using System.Xml.Linq;
-using Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationModel;
+using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 
-namespace Microsoft.AspNet.DataProtection.KeyManagement.Internal
+namespace Microsoft.AspNetCore.DataProtection.KeyManagement.Internal
 {
     public interface IInternalXmlKeyManager
     {

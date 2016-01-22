@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNet.DataProtection.Internal
+namespace Microsoft.AspNetCore.DataProtection.Internal
 {
     /// <summary>
     /// An interface into <see cref="Activator.CreateInstance{T}"/> that also supports

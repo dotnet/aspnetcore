@@ -4,7 +4,7 @@
 using System;
 using System.Xml.Linq;
 
-namespace Microsoft.AspNet.DataProtection
+namespace Microsoft.AspNetCore.DataProtection
 {
     /// <summary>
     /// Contains XLinq constants.

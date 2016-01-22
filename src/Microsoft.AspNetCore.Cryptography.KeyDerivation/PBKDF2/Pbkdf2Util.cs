@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNet.Cryptography.Cng;
+using Microsoft.AspNetCore.Cryptography.Cng;
 
-namespace Microsoft.AspNet.Cryptography.KeyDerivation.PBKDF2
+namespace Microsoft.AspNetCore.Cryptography.KeyDerivation.PBKDF2
 {
     /// <summary>
     /// Internal base class used for abstracting away the PBKDF2 implementation since the implementation is OS-specific.

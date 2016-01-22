@@ -5,15 +5,15 @@ using System;
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
-using Microsoft.AspNet.Cryptography.Cng;
-using Microsoft.AspNet.Cryptography.SafeHandles;
-using Microsoft.AspNet.DataProtection.Cng;
-using Microsoft.AspNet.DataProtection.Managed;
-using Microsoft.AspNet.DataProtection.Test.Shared;
-using Microsoft.AspNet.Testing.xunit;
+using Microsoft.AspNetCore.Cryptography.Cng;
+using Microsoft.AspNetCore.Cryptography.SafeHandles;
+using Microsoft.AspNetCore.DataProtection.Cng;
+using Microsoft.AspNetCore.DataProtection.Managed;
+using Microsoft.AspNetCore.DataProtection.Test.Shared;
+using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
-namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationModel
+namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel
 {
     public class AuthenticatedEncryptorDescriptorTests
     {

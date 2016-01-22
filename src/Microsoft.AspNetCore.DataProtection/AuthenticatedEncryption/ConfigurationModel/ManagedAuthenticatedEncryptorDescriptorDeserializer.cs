@@ -5,7 +5,7 @@ using System;
 using System.Security.Cryptography;
 using System.Xml.Linq;
 
-namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationModel
+namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel
 {
     /// <summary>
     /// A class that can deserialize an <see cref="XElement"/> that represents the serialized version

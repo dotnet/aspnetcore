@@ -6,7 +6,7 @@
     "url": "git://github.com/aspnet/dataprotection"
   },
   "dependencies": {
-    "Microsoft.AspNet.DataProtection.Sources": {
+    "Microsoft.AspNetCore.DataProtection.Sources": {
       "type": "build",
       "version": ""
     },

@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNet.DataProtection.Managed
+namespace Microsoft.AspNetCore.DataProtection.Managed
 {
     internal interface IManagedGenRandom
     {

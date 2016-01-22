@@ -4,11 +4,11 @@
 using System;
 using System.IO;
 using System.Security.Cryptography;
-using Microsoft.AspNet.Cryptography;
-using Microsoft.AspNet.DataProtection.AuthenticatedEncryption;
-using Microsoft.AspNet.DataProtection.SP800_108;
+using Microsoft.AspNetCore.Cryptography;
+using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
+using Microsoft.AspNetCore.DataProtection.SP800_108;
 
-namespace Microsoft.AspNet.DataProtection.Managed
+namespace Microsoft.AspNetCore.DataProtection.Managed
 {
     // An encryptor which does Encrypt(CBC) + HMAC using SymmetricAlgorithm and HashAlgorithm.
     // The payloads produced by this encryptor should be compatible with the payloads

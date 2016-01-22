@@ -6,7 +6,7 @@ using System.Globalization;
 using System.Text;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNet.DataProtection
+namespace Microsoft.AspNetCore.DataProtection
 {
     internal sealed class StringLoggerFactory : ILoggerFactory
     {

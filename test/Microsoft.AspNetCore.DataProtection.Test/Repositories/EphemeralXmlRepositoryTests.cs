@@ -5,7 +5,7 @@ using System;
 using System.Xml.Linq;
 using Xunit;
 
-namespace Microsoft.AspNet.DataProtection.Repositories
+namespace Microsoft.AspNetCore.DataProtection.Repositories
 {
     public class EphemeralXmlRepositoryTests
     {

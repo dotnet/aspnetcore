@@ -3,7 +3,7 @@
 
 using System.Xml.Linq;
 
-namespace Microsoft.AspNet.DataProtection.XmlEncryption
+namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
 {
     /// <summary>
     /// The basic interface for decrypting an XML element.

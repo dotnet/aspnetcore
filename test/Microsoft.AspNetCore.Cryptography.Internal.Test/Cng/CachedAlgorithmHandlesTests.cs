@@ -3,12 +3,12 @@
 
 using System;
 using System.Text;
-using Microsoft.AspNet.Cryptography.SafeHandles;
-using Microsoft.AspNet.DataProtection.Test.Shared;
-using Microsoft.AspNet.Testing.xunit;
+using Microsoft.AspNetCore.Cryptography.SafeHandles;
+using Microsoft.AspNetCore.DataProtection.Test.Shared;
+using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
-namespace Microsoft.AspNet.Cryptography.Cng
+namespace Microsoft.AspNetCore.Cryptography.Cng
 {
     // This class tests both the properties and the output of hash algorithms.
     // It only tests the properties of the encryption algorithms.

@@ -14,7 +14,7 @@ var BUILD_DIR_Local = '${Path.Combine(ROOT_Local, "build")}'
 #build-compile target='compile' if='IsLinux'
   @{
     var projectFiles = Files.Include("src/**/project.json")
-        .Exclude("src/Microsoft.AspNet.DataProtection.SystemWeb/project.json")
+        .Exclude("src/Microsoft.AspNetCore.DataProtection.SystemWeb/project.json")
         .ToList();
         
     projectFiles.ForEach(projectFile => DotnetPack(projectFile, BUILD_DIR_Local, Configuration_Local));

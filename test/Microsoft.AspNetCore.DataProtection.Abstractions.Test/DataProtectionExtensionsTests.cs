@@ -5,14 +5,14 @@ using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
-using Microsoft.AspNet.DataProtection.Infrastructure;
-using Microsoft.AspNet.DataProtection.Abstractions;
-using Microsoft.AspNet.Testing;
+using Microsoft.AspNetCore.DataProtection.Infrastructure;
+using Microsoft.AspNetCore.DataProtection.Abstractions;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.PlatformAbstractions;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.DataProtection
+namespace Microsoft.AspNetCore.DataProtection
 {
     public class DataProtectionExtensionsTests
     {

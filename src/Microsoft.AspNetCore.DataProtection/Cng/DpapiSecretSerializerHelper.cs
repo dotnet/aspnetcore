@@ -7,10 +7,10 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
-using Microsoft.AspNet.Cryptography;
-using Microsoft.AspNet.Cryptography.SafeHandles;
+using Microsoft.AspNetCore.Cryptography;
+using Microsoft.AspNetCore.Cryptography.SafeHandles;
 
-namespace Microsoft.AspNet.DataProtection.Cng
+namespace Microsoft.AspNetCore.DataProtection.Cng
 {
     internal unsafe static class DpapiSecretSerializerHelper
     {

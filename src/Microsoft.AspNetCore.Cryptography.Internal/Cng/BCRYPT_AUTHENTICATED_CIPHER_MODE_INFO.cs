@@ -4,7 +4,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace Microsoft.AspNet.Cryptography.Cng
+namespace Microsoft.AspNetCore.Cryptography.Cng
 {
     // http://msdn.microsoft.com/en-us/library/windows/desktop/cc562981(v=vs.85).aspx
     [StructLayout(LayoutKind.Sequential)]

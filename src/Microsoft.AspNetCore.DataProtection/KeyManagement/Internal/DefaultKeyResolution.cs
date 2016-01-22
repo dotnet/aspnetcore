@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNet.DataProtection.KeyManagement.Internal
+namespace Microsoft.AspNetCore.DataProtection.KeyManagement.Internal
 {
     public struct DefaultKeyResolution
     {

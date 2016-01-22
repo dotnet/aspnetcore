@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNet.Cryptography.SafeHandles
+namespace Microsoft.AspNetCore.Cryptography.SafeHandles
 {
     internal sealed class BCryptKeyHandle : BCryptHandle
     {

@@ -1,37 +1,37 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.22710.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{5FCB2DA3-5395-47F5-BCEE-E0EA319448EA}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.DataProtection", "src\Microsoft.AspNet.DataProtection\Microsoft.AspNet.DataProtection.xproj", "{1E570CD4-6F12-44F4-961E-005EE2002BC2}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.DataProtection", "src\Microsoft.AspNetCore.DataProtection\Microsoft.AspNetCore.DataProtection.xproj", "{1E570CD4-6F12-44F4-961E-005EE2002BC2}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{60336AB3-948D-4D15-A5FB-F32A2B91E814}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.DataProtection.Test", "test\Microsoft.AspNet.DataProtection.Test\Microsoft.AspNet.DataProtection.Test.xproj", "{7A637185-2BA1-437D-9D4C-7CC4F94CF7BF}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.DataProtection.Test", "test\Microsoft.AspNetCore.DataProtection.Test\Microsoft.AspNetCore.DataProtection.Test.xproj", "{7A637185-2BA1-437D-9D4C-7CC4F94CF7BF}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Cryptography.Internal", "src\Microsoft.AspNet.Cryptography.Internal\Microsoft.AspNet.Cryptography.Internal.xproj", "{E2779976-A28C-4365-A4BB-4AD854FAF23E}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Cryptography.Internal", "src\Microsoft.AspNetCore.Cryptography.Internal\Microsoft.AspNetCore.Cryptography.Internal.xproj", "{E2779976-A28C-4365-A4BB-4AD854FAF23E}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Cryptography.KeyDerivation", "src\Microsoft.AspNet.Cryptography.KeyDerivation\Microsoft.AspNet.Cryptography.KeyDerivation.xproj", "{421F0383-34B1-402D-807B-A94542513ABA}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Cryptography.KeyDerivation", "src\Microsoft.AspNetCore.Cryptography.KeyDerivation\Microsoft.AspNetCore.Cryptography.KeyDerivation.xproj", "{421F0383-34B1-402D-807B-A94542513ABA}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Cryptography.KeyDerivation.Test", "test\Microsoft.AspNet.Cryptography.KeyDerivation.Test\Microsoft.AspNet.Cryptography.KeyDerivation.Test.xproj", "{42C97F52-8D56-46BD-A712-4F22BED157A7}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Cryptography.KeyDerivation.Test", "test\Microsoft.AspNetCore.Cryptography.KeyDerivation.Test\Microsoft.AspNetCore.Cryptography.KeyDerivation.Test.xproj", "{42C97F52-8D56-46BD-A712-4F22BED157A7}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Cryptography.Internal.Test", "test\Microsoft.AspNet.Cryptography.Internal.Test\Microsoft.AspNet.Cryptography.Internal.Test.xproj", "{37053D5F-5B61-47CE-8B72-298CE007FFB0}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Cryptography.Internal.Test", "test\Microsoft.AspNetCore.Cryptography.Internal.Test\Microsoft.AspNetCore.Cryptography.Internal.Test.xproj", "{37053D5F-5B61-47CE-8B72-298CE007FFB0}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.DataProtection.Abstractions", "src\Microsoft.AspNet.DataProtection.Abstractions\Microsoft.AspNet.DataProtection.Abstractions.xproj", "{4B115BDE-B253-46A6-97BF-A8B37B344FF2}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.DataProtection.Abstractions", "src\Microsoft.AspNetCore.DataProtection.Abstractions\Microsoft.AspNetCore.DataProtection.Abstractions.xproj", "{4B115BDE-B253-46A6-97BF-A8B37B344FF2}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.DataProtection.Abstractions.Test", "test\Microsoft.AspNet.DataProtection.Abstractions.Test\Microsoft.AspNet.DataProtection.Abstractions.Test.xproj", "{FF650A69-DEE4-4B36-9E30-264EE7CFB478}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.DataProtection.Abstractions.Test", "test\Microsoft.AspNetCore.DataProtection.Abstractions.Test\Microsoft.AspNetCore.DataProtection.Abstractions.Test.xproj", "{FF650A69-DEE4-4B36-9E30-264EE7CFB478}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.DataProtection.Test.Shared", "test\Microsoft.AspNet.DataProtection.Test.Shared\Microsoft.AspNet.DataProtection.Test.Shared.xproj", "{4F14BA2A-4F04-4676-8586-EC380977EE2E}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.DataProtection.Test.Shared", "test\Microsoft.AspNetCore.DataProtection.Test.Shared\Microsoft.AspNetCore.DataProtection.Test.Shared.xproj", "{4F14BA2A-4F04-4676-8586-EC380977EE2E}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.DataProtection.Sources", "src\Microsoft.AspNet.DataProtection.Sources\Microsoft.AspNet.DataProtection.Sources.xproj", "{3277BB22-033F-4010-8131-A515B910CAAD}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.DataProtection.Sources", "src\Microsoft.AspNetCore.DataProtection.Sources\Microsoft.AspNetCore.DataProtection.Sources.xproj", "{3277BB22-033F-4010-8131-A515B910CAAD}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.DataProtection.SystemWeb", "src\Microsoft.AspNet.DataProtection.SystemWeb\Microsoft.AspNet.DataProtection.SystemWeb.xproj", "{E3552DEB-4173-43AE-BF69-3C10DFF3BAB6}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.DataProtection.SystemWeb", "src\Microsoft.AspNetCore.DataProtection.SystemWeb\Microsoft.AspNetCore.DataProtection.SystemWeb.xproj", "{E3552DEB-4173-43AE-BF69-3C10DFF3BAB6}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.DataProtection.Extensions.Test", "test\Microsoft.AspNet.DataProtection.Extensions.Test\Microsoft.AspNet.DataProtection.Extensions.Test.xproj", "{04AA8E60-A053-4D50-89FE-E76C3DF45200}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.DataProtection.Extensions.Test", "test\Microsoft.AspNetCore.DataProtection.Extensions.Test\Microsoft.AspNetCore.DataProtection.Extensions.Test.xproj", "{04AA8E60-A053-4D50-89FE-E76C3DF45200}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.DataProtection.Extensions", "src\Microsoft.AspNet.DataProtection.Extensions\Microsoft.AspNet.DataProtection.Extensions.xproj", "{BF8681DB-C28B-441F-BD92-0DCFE9537A9F}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.DataProtection.Extensions", "src\Microsoft.AspNetCore.DataProtection.Extensions\Microsoft.AspNetCore.DataProtection.Extensions.xproj", "{BF8681DB-C28B-441F-BD92-0DCFE9537A9F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

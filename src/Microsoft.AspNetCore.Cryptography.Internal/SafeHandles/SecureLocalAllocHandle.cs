@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 using System.Runtime.ConstrainedExecution;
 #endif
 
-namespace Microsoft.AspNet.Cryptography.SafeHandles
+namespace Microsoft.AspNetCore.Cryptography.SafeHandles
 {
     /// <summary>
     /// Represents a handle returned by LocalAlloc.

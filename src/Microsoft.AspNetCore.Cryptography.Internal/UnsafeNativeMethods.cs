@@ -8,15 +8,15 @@ using System.Runtime.InteropServices;
 using System.Security;
 using System.Security.Cryptography;
 using System.Threading;
-using Microsoft.AspNet.Cryptography.Cng;
-using Microsoft.AspNet.Cryptography.SafeHandles;
+using Microsoft.AspNetCore.Cryptography.Cng;
+using Microsoft.AspNetCore.Cryptography.SafeHandles;
 using Microsoft.Win32.SafeHandles;
 
 #if !DOTNET5_4
 using System.Runtime.ConstrainedExecution;
 #endif
 
-namespace Microsoft.AspNet.Cryptography
+namespace Microsoft.AspNetCore.Cryptography
 {
 #if !DOTNET5_4
     [SuppressUnmanagedCodeSecurity]

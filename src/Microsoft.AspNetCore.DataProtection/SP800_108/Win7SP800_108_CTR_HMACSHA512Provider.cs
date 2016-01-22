@@ -2,11 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNet.Cryptography;
-using Microsoft.AspNet.Cryptography.Cng;
-using Microsoft.AspNet.Cryptography.SafeHandles;
+using Microsoft.AspNetCore.Cryptography;
+using Microsoft.AspNetCore.Cryptography.Cng;
+using Microsoft.AspNetCore.Cryptography.SafeHandles;
 
-namespace Microsoft.AspNet.DataProtection.SP800_108
+namespace Microsoft.AspNetCore.DataProtection.SP800_108
 {
     internal unsafe sealed class Win7SP800_108_CTR_HMACSHA512Provider : ISP800_108_CTR_HMACSHA512Provider
     {

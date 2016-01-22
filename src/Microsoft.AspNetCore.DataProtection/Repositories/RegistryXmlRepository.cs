@@ -11,7 +11,7 @@ using Microsoft.Win32;
 
 using static System.FormattableString;
 
-namespace Microsoft.AspNet.DataProtection.Repositories
+namespace Microsoft.AspNetCore.DataProtection.Repositories
 {
     /// <summary>
     /// An XML repository backed by the Windows registry.

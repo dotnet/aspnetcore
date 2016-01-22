@@ -1,8 +1,8 @@
 {
   "dependencies": {
-    "Microsoft.AspNet.Cryptography.Internal": "1.0.0-*",
-    "Microsoft.AspNet.DataProtection.Abstractions": "1.0.0-*",
-    "Microsoft.AspNet.Testing": "1.0.0-*",
+    "Microsoft.AspNetCore.Cryptography.Internal": "1.0.0-*",
+    "Microsoft.AspNetCore.DataProtection.Abstractions": "1.0.0-*",
+    "Microsoft.AspNetCore.Testing": "1.0.0-*",
     "xunit": "2.1.0"
   },
   "frameworks": {

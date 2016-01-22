@@ -5,11 +5,11 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using Microsoft.AspNet.DataProtection.Infrastructure;
-using Microsoft.AspNet.DataProtection.Abstractions;
+using Microsoft.AspNetCore.DataProtection.Infrastructure;
+using Microsoft.AspNetCore.DataProtection.Abstractions;
 using Microsoft.Extensions.PlatformAbstractions;
 
-namespace Microsoft.AspNet.DataProtection
+namespace Microsoft.AspNetCore.DataProtection
 {
     /// <summary>
     /// Helpful extension methods for data protection APIs.

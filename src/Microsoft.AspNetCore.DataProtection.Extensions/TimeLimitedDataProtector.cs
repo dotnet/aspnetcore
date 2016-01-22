@@ -4,9 +4,9 @@
 using System;
 using System.Security.Cryptography;
 using System.Threading;
-using Microsoft.AspNet.DataProtection.Extensions;
+using Microsoft.AspNetCore.DataProtection.Extensions;
 
-namespace Microsoft.AspNet.DataProtection
+namespace Microsoft.AspNetCore.DataProtection
 {
     /// <summary>
     /// Wraps an existing <see cref="IDataProtector"/> and appends a purpose that allows
@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.DataProtection
     /// </summary>
     internal sealed class TimeLimitedDataProtector : ITimeLimitedDataProtector
     {
-        private const string MyPurposeString = "Microsoft.AspNet.DataProtection.TimeLimitedDataProtector.v1";
+        private const string MyPurposeString = "Microsoft.AspNetCore.DataProtection.TimeLimitedDataProtector.v1";
 
         private readonly IDataProtector _innerProtector;
         private IDataProtector _innerProtectorWithTimeLimitedPurpose; // created on-demand

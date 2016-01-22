@@ -11,7 +11,7 @@ using System;
 using System.Xml.Linq;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNet.DataProtection.XmlEncryption
+namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
 {
     internal sealed class EncryptedXmlDecryptor : IXmlDecryptor
     {

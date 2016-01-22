@@ -3,9 +3,9 @@
 
 using System;
 using System.Security.Cryptography;
-using Microsoft.AspNet.Cryptography;
+using Microsoft.AspNetCore.Cryptography;
 
-namespace Microsoft.AspNet.DataProtection.Managed
+namespace Microsoft.AspNetCore.DataProtection.Managed
 {
     internal static class HashAlgorithmExtensions
     {

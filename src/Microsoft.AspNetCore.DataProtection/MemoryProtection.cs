@@ -3,9 +3,9 @@
 
 using System;
 using System.Runtime.InteropServices;
-using Microsoft.AspNet.Cryptography;
+using Microsoft.AspNetCore.Cryptography;
 
-namespace Microsoft.AspNet.DataProtection
+namespace Microsoft.AspNetCore.DataProtection
 {
     /// <summary>
     /// Wrappers around CryptProtectMemory / CryptUnprotectMemory.

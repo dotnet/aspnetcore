@@ -5,7 +5,7 @@ using System;
 using System.Reflection;
 using System.Xml.Linq;
 
-namespace Microsoft.AspNet.DataProtection.XmlEncryption
+namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
 {
     /// <summary>
     /// Wraps an <see cref="XElement"/> that contains a blob of encrypted XML

@@ -3,9 +3,9 @@
 
 using System;
 using System.Xml.Linq;
-using Microsoft.AspNet.DataProtection.Repositories;
+using Microsoft.AspNetCore.DataProtection.Repositories;
 
-namespace Microsoft.AspNet.DataProtection.KeyManagement
+namespace Microsoft.AspNetCore.DataProtection.KeyManagement
 {
     /// <summary>
     /// The basic interface for implementing a key escrow sink.

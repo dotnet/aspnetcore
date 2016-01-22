@@ -3,11 +3,11 @@
 
 using System;
 using System.Threading;
-using Microsoft.AspNet.DataProtection.KeyManagement.Internal;
+using Microsoft.AspNetCore.DataProtection.KeyManagement.Internal;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.DataProtection.KeyManagement
+namespace Microsoft.AspNetCore.DataProtection.KeyManagement
 {
     public class CacheableKeyRingTests
     {

@@ -5,7 +5,7 @@ using System;
 using System.Linq;
 using System.Xml.Linq;
 
-namespace Microsoft.AspNet.DataProtection.XmlEncryption
+namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
 {
     /// <summary>
     /// An <see cref="IXmlDecryptor"/> that decrypts XML elements with a null decryptor.

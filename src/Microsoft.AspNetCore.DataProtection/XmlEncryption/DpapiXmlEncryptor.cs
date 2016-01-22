@@ -4,11 +4,11 @@
 using System;
 using System.Security.Principal;
 using System.Xml.Linq;
-using Microsoft.AspNet.Cryptography;
-using Microsoft.AspNet.DataProtection.Cng;
+using Microsoft.AspNetCore.Cryptography;
+using Microsoft.AspNetCore.DataProtection.Cng;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNet.DataProtection.XmlEncryption
+namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
 {
     /// <summary>
     /// An <see cref="IXmlEncryptor"/> that encrypts XML by using Windows DPAPI.

@@ -5,10 +5,10 @@ using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.Security.Cryptography;
-using Microsoft.AspNet.Cryptography.Cng;
-using Microsoft.AspNet.Cryptography.Internal;
+using Microsoft.AspNetCore.Cryptography.Cng;
+using Microsoft.AspNetCore.Cryptography.Internal;
 
-namespace Microsoft.AspNet.Cryptography.SafeHandles
+namespace Microsoft.AspNetCore.Cryptography.SafeHandles
 {
     /// <summary>
     /// Represents a handle to a BCrypt algorithm provider from which keys and hashes can be created.

@@ -6,14 +6,14 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
-using Microsoft.AspNet.Cryptography.Cng;
-using Microsoft.AspNet.Cryptography.Internal;
+using Microsoft.AspNetCore.Cryptography.Cng;
+using Microsoft.AspNetCore.Cryptography.Internal;
 
 #if !DOTNET5_4
 using System.Runtime.ConstrainedExecution;
 #endif
 
-namespace Microsoft.AspNet.Cryptography
+namespace Microsoft.AspNetCore.Cryptography
 {
     internal unsafe static class CryptoUtil
     {

@@ -5,10 +5,10 @@ using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text;
-using Microsoft.AspNet.Cryptography.Cng;
-using Microsoft.AspNet.Cryptography.SafeHandles;
+using Microsoft.AspNetCore.Cryptography.Cng;
+using Microsoft.AspNetCore.Cryptography.SafeHandles;
 
-namespace Microsoft.AspNet.Cryptography.KeyDerivation.PBKDF2
+namespace Microsoft.AspNetCore.Cryptography.KeyDerivation.PBKDF2
 {
     /// <summary>
     /// A PBKDF2 provider which utilizes the Win8 API BCryptKeyDerivation.

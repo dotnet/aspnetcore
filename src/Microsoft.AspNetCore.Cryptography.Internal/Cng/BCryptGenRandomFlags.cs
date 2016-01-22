@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNet.Cryptography.Cng
+namespace Microsoft.AspNetCore.Cryptography.Cng
 {
     // from bcrypt.h
     [Flags]

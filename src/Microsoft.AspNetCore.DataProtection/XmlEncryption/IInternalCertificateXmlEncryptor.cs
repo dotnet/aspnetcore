@@ -7,7 +7,7 @@ using System;
 using System.Xml;
 using System.Security.Cryptography.Xml;
 
-namespace Microsoft.AspNet.DataProtection.XmlEncryption
+namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
 {
     /// <summary>
     /// Internal implementation details of <see cref="CertificateXmlEncryptor"/> for unit testing.

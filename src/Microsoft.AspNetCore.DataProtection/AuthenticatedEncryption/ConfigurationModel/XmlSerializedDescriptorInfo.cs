@@ -5,7 +5,7 @@ using System;
 using System.Reflection;
 using System.Xml.Linq;
 
-namespace Microsoft.AspNet.DataProtection.AuthenticatedEncryption.ConfigurationModel
+namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel
 {
     /// <summary>
     /// Wraps an <see cref="XElement"/> that contains the XML-serialized representation of an

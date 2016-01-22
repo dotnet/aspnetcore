@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNet.Cryptography.KeyDerivation.PBKDF2
+namespace Microsoft.AspNetCore.Cryptography.KeyDerivation.PBKDF2
 {
     /// <summary>
     /// Internal interface used for abstracting away the PBKDF2 implementation since the implementation is OS-specific.

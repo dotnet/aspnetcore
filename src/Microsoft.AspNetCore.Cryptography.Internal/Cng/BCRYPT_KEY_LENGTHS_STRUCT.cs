@@ -3,9 +3,9 @@
 
 using System;
 using System.Runtime.InteropServices;
-using Microsoft.AspNet.Cryptography.Internal;
+using Microsoft.AspNetCore.Cryptography.Internal;
 
-namespace Microsoft.AspNet.Cryptography.Cng
+namespace Microsoft.AspNetCore.Cryptography.Cng
 {
     // http://msdn.microsoft.com/en-us/library/windows/desktop/aa375525(v=vs.85).aspx
     [StructLayout(LayoutKind.Sequential)]
