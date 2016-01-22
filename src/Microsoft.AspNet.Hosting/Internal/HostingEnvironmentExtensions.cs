@@ -3,9 +3,9 @@
 
 using System;
 using System.IO;
-using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Hosting.Internal;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.FileProviders;
 
 namespace Microsoft.AspNet.Hosting.Internal
 {
