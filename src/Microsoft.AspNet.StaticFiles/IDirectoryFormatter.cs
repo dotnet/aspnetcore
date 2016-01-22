@@ -3,8 +3,8 @@
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Http;
+using Microsoft.Extensions.FileProviders;
 
 namespace Microsoft.AspNet.StaticFiles
 {
