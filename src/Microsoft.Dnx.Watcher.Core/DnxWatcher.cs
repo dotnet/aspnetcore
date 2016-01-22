@@ -19,6 +19,8 @@ namespace Microsoft.Dnx.Watcher.Core
 
         private readonly ILogger _logger;
 
+        public bool ExitOnChange { get; set; }
+
         public DnxWatcher(
             Func<string, IFileWatcher> fileWatcherFactory,
             Func<IProcessWatcher> processWatcherFactory,
@@ -88,6 +90,11 @@ namespace Microsoft.Dnx.Watcher.Core
                             _logger.LogError($"dnx exit code: {dnxExitCode}");
                         }
 
+                        if (ExitOnChange)
+                        {
+                            break;
+                        }
+
                         _logger.LogInformation("Waiting for a file to change before restarting dnx...");
                         // Now wait for a file to change before restarting dnx
                         await WaitForProjectFileToChangeAsync(project, cancellationToken);
@@ -97,6 +104,11 @@ namespace Microsoft.Dnx.Watcher.Core
                         // This is a file watcher task
                         string changedFile = fileWatchingTask.Result;
                         _logger.LogInformation($"File changed: {fileWatchingTask.Result}");
+
+                        if (ExitOnChange)
+                        {
+                            break;
+                        }
                     }
                 }
             }

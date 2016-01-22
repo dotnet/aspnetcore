@@ -77,9 +77,14 @@ namespace Microsoft.Dnx.Watcher
                 CommandOptionType.SingleValue);
 
             var workingDirArg = app.Option(
-                "--workingDir <DIR>",
+                "--working-dir <DIR>",
                 "The working directory for DNX. Defaults to the current directory.",
                 CommandOptionType.SingleValue);
+
+            var exitOnChangeArg = app.Option(
+                "--exit-on-change",
+                "The watcher will exit when a file change is detected instead of restarting the process.",
+                CommandOptionType.NoValue);
 
             // This option is here just to be displayed in help
             // it will not be parsed because it is removed before the code is executed
@@ -104,6 +109,8 @@ namespace Microsoft.Dnx.Watcher
                     Directory.GetCurrentDirectory();
 
                 var watcher = DnxWatcher.CreateDefault(_loggerFactory);
+                watcher.ExitOnChange = exitOnChangeArg.HasValue();
+
                 try
                 {
                     watcher.WatchAsync(projectToRun, dnxArgs, workingDir, cancellationToken).Wait();
