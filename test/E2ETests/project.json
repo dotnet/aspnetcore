@@ -1,28 +1,28 @@
 {
-    "compilationOptions": {
-        "warningsAsErrors": true
-    },
-    "compile": [
-        "../../shared/**/*.cs"
-    ],
-    "commands": {
-        "test": "xunit.runner.aspnet"
-    },
-    "dependencies": {
-        "Microsoft.AspNetCore.Authentication.OpenIdConnect": "1.0.0-*",
-        "Microsoft.AspNetCore.Server.Testing": "1.0.0-*",
-        "Microsoft.AspNetCore.WebUtilities": "1.0.0-*",
-        "Microsoft.Extensions.Configuration.EnvironmentVariables": "1.0.0-*",
-        "Microsoft.Extensions.Logging.Console": "1.0.0-*",
-        "xunit.runner.aspnet": "2.0.0-aspnet-*"
-    },
-    "frameworks": {
-        "dnxcore50": {
-            "dependencies": {
-                "System.Data.SqlClient": "4.0.0-*",
-                "System.Net.Http": "4.0.1-*",
-                "System.Xml.XmlDocument": "4.0.0-*"
-            }
-        }
+  "compilationOptions": {
+    "warningsAsErrors": true
+  },
+  "compile": [
+    "../../shared/**/*.cs"
+  ],
+  "commands": {
+    "test": "xunit.runner.aspnet"
+  },
+  "dependencies": {
+    "Microsoft.AspNetCore.Authentication.OpenIdConnect": "0.1.0-*",
+    "Microsoft.AspNetCore.Server.Testing": "1.0.0-*",
+    "Microsoft.AspNetCore.WebUtilities": "1.0.0-*",
+    "Microsoft.Extensions.Configuration.EnvironmentVariables": "1.0.0-*",
+    "Microsoft.Extensions.Logging.Console": "1.0.0-*",
+    "xunit.runner.aspnet": "2.0.0-aspnet-*"
+  },
+  "frameworks": {
+    "dnxcore50": {
+      "dependencies": {
+        "System.Data.SqlClient": "4.0.0-*",
+        "System.Net.Http": "4.0.1-*",
+        "System.Xml.XmlDocument": "4.0.0-*"
+      }
     }
+  }
 }
