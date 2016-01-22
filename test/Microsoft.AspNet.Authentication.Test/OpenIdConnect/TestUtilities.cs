@@ -27,9 +27,9 @@ namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
             {
                 return new OpenIdConnectConfiguration()
                 {
-                    AuthorizationEndpoint = @"https://login.windows.net/common/oauth2/authorize",
-                    EndSessionEndpoint = @"https://login.windows.net/common/oauth2/endsessionendpoint",
-                    TokenEndpoint = @"https://login.windows.net/common/oauth2/token",
+                    AuthorizationEndpoint = @"https://login.microsoftonline.com/common/oauth2/authorize",
+                    EndSessionEndpoint = @"https://login.microsoftonline.com/common/oauth2/endsessionendpoint",
+                    TokenEndpoint = @"https://login.microsoftonline.com/common/oauth2/token",
                 };
             }
         }

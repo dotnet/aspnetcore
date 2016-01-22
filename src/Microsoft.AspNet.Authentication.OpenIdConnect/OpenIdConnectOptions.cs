@@ -48,18 +48,11 @@ namespace Microsoft.AspNet.Builder
         public OpenIdConnectOptions(string authenticationScheme)
         {
             AuthenticationScheme = authenticationScheme;
+            AutomaticChallenge = true;
             DisplayName = OpenIdConnectDefaults.Caption;
             CallbackPath = new PathString("/signin-oidc");
             Events = new OpenIdConnectEvents();
         }
-
-        /// <summary>
-        /// Gets or sets the expected audience for any received JWT token.
-        /// </summary>
-        /// <value>
-        /// The expected audience for any received JWT token.
-        /// </value>
-        public string Audience { get; set; }
 
         /// <summary>
         /// Gets or sets the Authority to use when making OpenIdConnect calls.
@@ -141,7 +134,7 @@ namespace Microsoft.AspNet.Builder
         /// <summary>
         /// Gets or sets the method used to redirect the user agent to the identity provider.
         /// </summary>
-        public OpenIdConnectRedirectBehavior AuthenticationMethod { get; set; }
+        public OpenIdConnectRedirectBehavior AuthenticationMethod { get; set; } = OpenIdConnectRedirectBehavior.RedirectGet;
 
         /// <summary>
         /// Gets or sets the 'resource'.
@@ -190,5 +183,13 @@ namespace Microsoft.AspNet.Builder
         /// This is disabled by default.
         /// </summary>
         public bool UseTokenLifetime { get; set; }
+
+        /// <summary>
+        /// Indicates if requests to the CallbackPath may also be for other components. If enabled the middleware will pass
+        /// requests through that do not contain OpenIdConnect authentication responses. Disabling this and setting the
+        /// CallbackPath to a dedicated endpoint may provide better error handling.
+        /// This is disabled by default.
+        /// </summary>
+        public bool SkipUnrecognizedRequests { get; set; } = false;
     }
 }

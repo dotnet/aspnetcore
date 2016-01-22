@@ -11,7 +11,7 @@ namespace Microsoft.AspNet.Builder
     public class RemoteAuthenticationOptions : AuthenticationOptions
     {
         /// <summary>
-        /// Gets or sets timeout value in milliseconds for back channel communications with Twitter.
+        /// Gets or sets timeout value in milliseconds for back channel communications with the remote provider.
         /// </summary>
         /// <value>
         /// The back channel timeout.
@@ -50,7 +50,7 @@ namespace Microsoft.AspNet.Builder
 
         /// <summary>
         /// Defines whether access and refresh tokens should be stored in the
-        /// <see cref="ClaimsPrincipal"/> after a successful authentication.
+        /// <see cref="ClaimsPrincipal"/> after a successful authorization with the remote provider.
         /// This property is set to <c>false</c> by default to reduce
         /// the size of the final authentication cookie.
         /// </summary>

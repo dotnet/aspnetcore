@@ -26,7 +26,8 @@ namespace OpenIdConnectSample
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddAuthentication(sharedOptions => sharedOptions.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme);
+            services.AddAuthentication(sharedOptions =>
+                sharedOptions.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme);
         }
 
         public void Configure(IApplicationBuilder app, ILoggerFactory loggerfactory)

@@ -84,21 +84,29 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
                 // 1. properties.Redirect
                 // 2. Options.PostLogoutRedirectUri
                 var properties = new AuthenticationProperties(signout.Properties);
-                if (!string.IsNullOrEmpty(properties.RedirectUri))
+                var logoutRedirectUri = properties.RedirectUri;
+                if (!string.IsNullOrEmpty(logoutRedirectUri))
                 {
-                    message.PostLogoutRedirectUri = properties.RedirectUri;
+                    // Relative to PathBase
+                    if (logoutRedirectUri.StartsWith("/", StringComparison.Ordinal))
+                    {
+                        logoutRedirectUri = BuildRedirectUri(logoutRedirectUri);
+                    }
+                    message.PostLogoutRedirectUri = logoutRedirectUri;
                 }
                 else if (!string.IsNullOrEmpty(Options.PostLogoutRedirectUri))
                 {
-                    message.PostLogoutRedirectUri = Options.PostLogoutRedirectUri;
+                    logoutRedirectUri = Options.PostLogoutRedirectUri;
+                    // Relative to PathBase
+                    if (logoutRedirectUri.StartsWith("/", StringComparison.Ordinal))
+                    {
+                        logoutRedirectUri = BuildRedirectUri(logoutRedirectUri);
+                    }
+                    message.PostLogoutRedirectUri = logoutRedirectUri;
                 }
 
-                if (!string.IsNullOrEmpty(Options.SignInScheme))
-                {
-                    var principal = await Context.Authentication.AuthenticateAsync(Options.SignInScheme);
-
-                    message.IdTokenHint = principal?.FindFirst(OpenIdConnectParameterNames.IdToken)?.Value;
-                }
+                var principal = await Context.Authentication.AuthenticateAsync(Options.SignInScheme);
+                message.IdTokenHint = principal?.FindFirst(OpenIdConnectParameterNames.IdToken)?.Value;
 
                 var redirectContext = new RedirectContext(Context, Options, properties)
                 {
@@ -308,6 +316,11 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
                 // See http://openid.net/specs/oauth-v2-multiple-response-types-1_0.html#Security
                 if (!string.IsNullOrEmpty(message.IdToken) || !string.IsNullOrEmpty(message.AccessToken))
                 {
+                    if (Options.SkipUnrecognizedRequests)
+                    {
+                        // Not for us?
+                        return AuthenticateResult.Skip();
+                    }
                     return AuthenticateResult.Fail("An OpenID Connect response cannot contain an " +
                             "identity token or an access token when using response_mode=query");
                 }
@@ -325,6 +338,11 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
 
             if (message == null)
             {
+                if (Options.SkipUnrecognizedRequests)
+                {
+                    // Not for us?
+                    return AuthenticateResult.Skip();
+                }
                 return AuthenticateResult.Fail("No message.");
             }
 
@@ -344,7 +362,11 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
                 // Fail if state is missing, it's required for the correlation id.
                 if (string.IsNullOrEmpty(message.State))
                 {
-                    // This wasn't a valid ODIC message, it may not have been intended for us.
+                    // This wasn't a valid OIDC message, it may not have been intended for us.
+                    if (Options.SkipUnrecognizedRequests)
+                    {
+                        return AuthenticateResult.Skip();
+                    }
                     Logger.LogDebug(11, "message.State is null or empty.");
                     return AuthenticateResult.Fail(Resources.MessageStateIsNullOrEmpty);
                 }
@@ -353,7 +375,12 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
                 var properties = Options.StateDataFormat.Unprotect(Uri.UnescapeDataString(message.State));
                 if (properties == null)
                 {
-                    Logger.LogError(12, "Unable to unprotect the message.State.");
+                    if (Options.SkipUnrecognizedRequests)
+                    {
+                        // Not for us?
+                        return AuthenticateResult.Skip();
+                    }
+                    Logger.LogError(12, "Unable to read the message.State.");
                     return AuthenticateResult.Fail(Resources.MessageStateIsInvalid);
                 }
 
@@ -516,7 +543,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
             if (Options.SaveTokensAsClaims)
             {
                 // Persist the tokens extracted from the token response.
-                SaveTokens(ticket.Principal, tokenEndpointResponse, saveRefreshToken: true);
+                SaveTokens(ticket.Principal, tokenEndpointResponse, jwt.Issuer, saveRefreshToken: true);
             }
 
             if (Options.GetClaimsFromUserInfoEndpoint)
@@ -582,7 +609,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
                 {
                     // TODO: call SaveTokens with the token response and set
                     // saveRefreshToken to true when the hybrid flow is fully implemented.
-                    SaveTokens(ticket.Principal, message, saveRefreshToken: false);
+                    SaveTokens(ticket.Principal, message, jwt.Issuer, saveRefreshToken: false);
                 }
             }
             // Implicit Flow
@@ -594,7 +621,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
                     // response, since it's not a valid parameter when using the implicit flow.
                     // See http://openid.net/specs/openid-connect-core-1_0.html#Authentication
                     // and https://tools.ietf.org/html/rfc6749#section-4.2.2.
-                    SaveTokens(ticket.Principal, message, saveRefreshToken: false);
+                    SaveTokens(ticket.Principal, message, jwt.Issuer, saveRefreshToken: false);
                 }
             }
 
@@ -709,7 +736,7 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
             {
                 JToken value;
                 var claimValue = user.TryGetValue(pair.Key, out value) ? value.ToString() : null;
-                identity.AddClaim(new Claim(pair.Key, claimValue, ClaimValueTypes.String, Options.ClaimsIssuer));
+                identity.AddClaim(new Claim(pair.Key, claimValue, ClaimValueTypes.String, jwt.Issuer));
             }
 
             return ticket;
@@ -721,38 +748,38 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         /// <param name="principal">The principal in which tokens are saved.</param>
         /// <param name="message">The OpenID Connect response.</param>
         /// <param name="saveRefreshToken">A <see cref="bool"/> indicating whether the refresh token should be stored.</param>
-        private void SaveTokens(ClaimsPrincipal principal, OpenIdConnectMessage message, bool saveRefreshToken)
+        private void SaveTokens(ClaimsPrincipal principal, OpenIdConnectMessage message, string issuer, bool saveRefreshToken)
         {
             var identity = (ClaimsIdentity)principal.Identity;
 
             if (!string.IsNullOrEmpty(message.AccessToken))
             {
                 identity.AddClaim(new Claim(OpenIdConnectParameterNames.AccessToken, message.AccessToken,
-                                            ClaimValueTypes.String, Options.ClaimsIssuer));
+                                            ClaimValueTypes.String, issuer));
             }
 
             if (!string.IsNullOrEmpty(message.IdToken))
             {
                 identity.AddClaim(new Claim(OpenIdConnectParameterNames.IdToken, message.IdToken,
-                                            ClaimValueTypes.String, Options.ClaimsIssuer));
+                                            ClaimValueTypes.String, issuer));
             }
 
             if (saveRefreshToken && !string.IsNullOrEmpty(message.RefreshToken))
             {
                 identity.AddClaim(new Claim(OpenIdConnectParameterNames.RefreshToken, message.RefreshToken,
-                                            ClaimValueTypes.String, Options.ClaimsIssuer));
+                                            ClaimValueTypes.String, issuer));
             }
 
             if (!string.IsNullOrEmpty(message.TokenType))
             {
                 identity.AddClaim(new Claim(OpenIdConnectParameterNames.TokenType, message.TokenType,
-                                            ClaimValueTypes.String, Options.ClaimsIssuer));
+                                            ClaimValueTypes.String, issuer));
             }
 
             if (!string.IsNullOrEmpty(message.ExpiresIn))
             {
                 identity.AddClaim(new Claim(OpenIdConnectParameterNames.ExpiresIn, message.ExpiresIn,
-                                            ClaimValueTypes.String, Options.ClaimsIssuer));
+                                            ClaimValueTypes.String, issuer));
             }
         }
 
