@@ -3,14 +3,14 @@
 
 using System;
 using System.IO;
-using Microsoft.AspNet.DataProtection;
-using Microsoft.AspNet.WebUtilities;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.WebUtilities;
 
-namespace Microsoft.AspNet.Antiforgery
+namespace Microsoft.AspNetCore.Antiforgery
 {
     public class DefaultAntiforgeryTokenSerializer : IAntiforgeryTokenSerializer
     {
-        private static readonly string Purpose = "Microsoft.AspNet.Antiforgery.AntiforgeryToken.v1";
+        private static readonly string Purpose = "Microsoft.AspNetCore.Antiforgery.AntiforgeryToken.v1";
 
         private readonly IDataProtector _cryptoSystem;
         private const byte TokenVersion = 0x01;

@@ -5,9 +5,9 @@ using System;
 using System.Diagnostics;
 using System.Security.Claims;
 using System.Security.Principal;
-using Microsoft.AspNet.Http;
+using Microsoft.AspNetCore.Http;
 
-namespace Microsoft.AspNet.Antiforgery
+namespace Microsoft.AspNetCore.Antiforgery
 {
     public class DefaultAntiforgeryTokenGenerator : IAntiforgeryTokenGenerator
     {

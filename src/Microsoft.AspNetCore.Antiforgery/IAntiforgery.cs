@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
-using Microsoft.AspNet.Html;
-using Microsoft.AspNet.Http;
+using Microsoft.AspNetCore.Html;
+using Microsoft.AspNetCore.Http;
 
-namespace Microsoft.AspNet.Antiforgery
+namespace Microsoft.AspNetCore.Antiforgery
 {
     /// <summary>
     /// Provides access to the antiforgery system, which provides protection against

@@ -7,7 +7,7 @@ using System.Security.Claims;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.Antiforgery
+namespace Microsoft.AspNetCore.Antiforgery
 {
     public class DefaultClaimUidExtractorTest
     {

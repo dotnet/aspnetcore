@@ -4,11 +4,11 @@
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using Microsoft.AspNet.DataProtection;
-using Microsoft.AspNet.WebUtilities;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNet.Antiforgery
+namespace Microsoft.AspNetCore.Antiforgery
 {
     public class AntiforgeryOptionsSetup : ConfigureOptions<AntiforgeryOptions>
     {

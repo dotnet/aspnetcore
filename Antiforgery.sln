@@ -1,4 +1,4 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.24720.0
@@ -7,15 +7,15 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{71D070C4-B32
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{6EDD8B57-4DE8-4246-A6A3-47ECD92740B4}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Antiforgery", "src\Microsoft.AspNet.Antiforgery\Microsoft.AspNet.Antiforgery.xproj", "{46FB03FB-7A44-4106-BDDE-D6F5417544AB}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Antiforgery", "src\Microsoft.AspNetCore.Antiforgery\Microsoft.AspNetCore.Antiforgery.xproj", "{46FB03FB-7A44-4106-BDDE-D6F5417544AB}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Antiforgery.Test", "test\Microsoft.AspNet.Antiforgery.Test\Microsoft.AspNet.Antiforgery.Test.xproj", "{415E83F8-6002-47E4-AA8E-CD5169C06F28}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Antiforgery.Test", "test\Microsoft.AspNetCore.Antiforgery.Test\Microsoft.AspNetCore.Antiforgery.Test.xproj", "{415E83F8-6002-47E4-AA8E-CD5169C06F28}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{D8C46ADF-E40A-4B48-ADE9-E1FA80466FE3}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "AntiforgerySample", "samples\AntiforgerySample\AntiforgerySample.xproj", "{AF9E0784-5EDB-494F-B46C-1A8DA785C49C}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Antiforgery.FunctionalTests", "test\Microsoft.AspNet.Antiforgery.FunctionalTests\Microsoft.AspNet.Antiforgery.FunctionalTests.xproj", "{8B288810-5A96-4AF5-9836-8BA2D2953203}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Antiforgery.FunctionalTests", "test\Microsoft.AspNetCore.Antiforgery.FunctionalTests\Microsoft.AspNetCore.Antiforgery.FunctionalTests.xproj", "{8B288810-5A96-4AF5-9836-8BA2D2953203}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

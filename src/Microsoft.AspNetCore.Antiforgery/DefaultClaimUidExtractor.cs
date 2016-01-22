@@ -8,7 +8,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Security.Cryptography;
 
-namespace Microsoft.AspNet.Antiforgery
+namespace Microsoft.AspNetCore.Antiforgery
 {
     /// <summary>
     /// Default implementation of <see cref="IClaimUidExtractor"/>.

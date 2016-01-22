@@ -4,11 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
-using Microsoft.AspNet.Hosting;
-using Microsoft.AspNet.TestHost;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 
-namespace Microsoft.AspNet.Antiforgery.FunctionalTests
+namespace Microsoft.AspNetCore.Antiforgery.FunctionalTests
 {
     public class AntiForgerySampleTestFixture : IDisposable
     {

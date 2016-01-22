@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNet.Antiforgery
+namespace Microsoft.AspNetCore.Antiforgery
 {
     /// <summary>
     /// The antiforgery token pair (cookie and request token) for a request.

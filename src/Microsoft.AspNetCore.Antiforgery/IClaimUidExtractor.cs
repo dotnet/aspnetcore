@@ -3,7 +3,7 @@
 
 using System.Security.Claims;
 
-namespace Microsoft.AspNet.Antiforgery
+namespace Microsoft.AspNetCore.Antiforgery
 {
     /// <summary>
     /// This interface can extract unique identifers for a claims-based identity.

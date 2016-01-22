@@ -10,10 +10,10 @@
     "url": "git://github.com/aspnet/antiforgery"
   },
   "dependencies": {
-    "Microsoft.AspNet.DataProtection": "1.0.0-*",
-    "Microsoft.AspNet.Html.Abstractions": "1.0.0-*",
-    "Microsoft.AspNet.Http.Abstractions": "1.0.0-*",
-    "Microsoft.AspNet.WebUtilities": "1.0.0-*"
+    "Microsoft.AspNetCore.DataProtection": "1.0.0-*",
+    "Microsoft.AspNetCore.Html.Abstractions": "1.0.0-*",
+    "Microsoft.AspNetCore.Http.Abstractions": "1.0.0-*",
+    "Microsoft.AspNetCore.WebUtilities": "1.0.0-*"
   },
   "frameworks": {
     "dotnet5.4": { },

@@ -9,7 +9,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Microsoft.AspNet.Antiforgery.FunctionalTests
+namespace Microsoft.AspNetCore.Antiforgery.FunctionalTests
 {
     public class AntiforgerySampleTests : IClassFixture<AntiForgerySampleTestFixture>
     {

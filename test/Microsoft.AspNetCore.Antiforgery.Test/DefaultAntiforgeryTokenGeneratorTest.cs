@@ -4,11 +4,11 @@
 using System;
 using System.Security.Claims;
 using System.Security.Cryptography;
-using Microsoft.AspNet.Http.Internal;
+using Microsoft.AspNetCore.Http.Internal;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.Antiforgery
+namespace Microsoft.AspNetCore.Antiforgery
 {
     public class DefaultAntiforgeryTokenGeneratorProviderTest
     {

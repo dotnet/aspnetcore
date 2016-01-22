@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNet.Antiforgery
+namespace Microsoft.AspNetCore.Antiforgery
 {
     /// <summary>
     /// Provides programmatic configuration for the antiforgery token system.
