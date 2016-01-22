@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using System.IO;
 
-namespace Microsoft.AspNet.Server.Kestrel.GeneratedCode
+namespace Microsoft.AspNetCore.Server.Kestrel.GeneratedCode
 {
     public class Program
     {

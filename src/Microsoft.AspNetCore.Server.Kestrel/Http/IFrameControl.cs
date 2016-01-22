@@ -5,7 +5,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNet.Server.Kestrel.Http
+namespace Microsoft.AspNetCore.Server.Kestrel.Http
 {
     public interface IFrameControl
     {

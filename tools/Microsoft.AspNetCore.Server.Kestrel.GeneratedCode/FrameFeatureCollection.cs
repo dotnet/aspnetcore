@@ -1,12 +1,12 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNet.Http.Features;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Dnx.Compilation.CSharp;
-using Microsoft.AspNet.Http.Features.Internal;
-using Microsoft.AspNet.Http.Features.Authentication;
+using Microsoft.AspNetCore.Http.Features.Internal;
+using Microsoft.AspNetCore.Http.Features.Authentication;
 
-namespace Microsoft.AspNet.Server.Kestrel.GeneratedCode
+namespace Microsoft.AspNetCore.Server.Kestrel.GeneratedCode
 {
     // This project can output the Class library as a NuGet Package.
     // To enable this option, right-click on the project and select the Properties menu item. In the Build tab select "Produce outputs on build".
@@ -60,7 +60,7 @@ namespace Microsoft.AspNet.Server.Kestrel.GeneratedCode
             var allFeatures = alwaysFeatures.Concat(commonFeatures).Concat(sometimesFeatures).Concat(rareFeatures);
 
             // NOTE: This list MUST always match the set of feature interfaces implemented by Frame.
-            // See also: src/Microsoft.AspNet.Server.Kestrel/Http/Frame.FeatureCollection.cs
+            // See also: src/Microsoft.AspNetCore.Server.Kestrel/Http/Frame.FeatureCollection.cs
             var implementedFeatures = new[]
             {
                 typeof(IHttpRequestFeature),
@@ -74,7 +74,7 @@ namespace Microsoft.AspNet.Server.Kestrel.GeneratedCode
 using System;
 using System.Collections.Generic;
 
-namespace Microsoft.AspNet.Server.Kestrel.Http 
+namespace Microsoft.AspNetCore.Server.Kestrel.Http 
 {{
     public partial class Frame
     {{{Each(allFeatures, feature => $@"

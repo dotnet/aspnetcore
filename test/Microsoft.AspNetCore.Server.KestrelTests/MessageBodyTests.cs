@@ -4,10 +4,10 @@
 using System;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Server.Kestrel.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Http;
 using Xunit;
 
-namespace Microsoft.AspNet.Server.KestrelTests
+namespace Microsoft.AspNetCore.Server.KestrelTests
 {
     /// <summary>
     /// Summary description for MessageBodyTests

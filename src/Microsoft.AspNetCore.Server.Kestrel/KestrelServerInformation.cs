@@ -4,11 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using Microsoft.AspNet.Server.Features;
-using Microsoft.AspNet.Server.Kestrel.Filter;
+using Microsoft.AspNetCore.Server.Features;
+using Microsoft.AspNetCore.Server.Kestrel.Filter;
 using Microsoft.Extensions.Configuration;
 
-namespace Microsoft.AspNet.Server.Kestrel
+namespace Microsoft.AspNetCore.Server.Kestrel
 {
     public class KestrelServerInformation : IKestrelServerInformation, IServerAddressesFeature
     {

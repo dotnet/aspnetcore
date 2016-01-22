@@ -3,10 +3,10 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Server.Kestrel.Networking;
+using Microsoft.AspNetCore.Server.Kestrel.Networking;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNet.Server.Kestrel.Http
+namespace Microsoft.AspNetCore.Server.Kestrel.Http
 {
     /// <summary>
     /// Base class for listeners in Kestrel. Listens for incoming connections

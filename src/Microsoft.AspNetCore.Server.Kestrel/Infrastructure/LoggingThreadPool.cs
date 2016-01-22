@@ -5,7 +5,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
+namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
 {
     public class LoggingThreadPool : IThreadPool
     {

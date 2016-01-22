@@ -3,10 +3,10 @@
 
 using System;
 using System.Runtime.InteropServices;
-using Microsoft.AspNet.Server.Kestrel.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Infrastructure;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNet.Server.Kestrel.Networking
+namespace Microsoft.AspNetCore.Server.Kestrel.Networking
 {
     public abstract class UvStreamHandle : UvHandle
     {

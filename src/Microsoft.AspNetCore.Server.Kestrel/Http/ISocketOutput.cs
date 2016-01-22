@@ -4,9 +4,9 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Server.Kestrel.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Infrastructure;
 
-namespace Microsoft.AspNet.Server.Kestrel.Http
+namespace Microsoft.AspNetCore.Server.Kestrel.Http
 {
     /// <summary>
     ///   Operations performed for buffered socket output

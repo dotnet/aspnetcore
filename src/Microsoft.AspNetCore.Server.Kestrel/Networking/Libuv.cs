@@ -4,7 +4,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace Microsoft.AspNet.Server.Kestrel.Networking
+namespace Microsoft.AspNetCore.Server.Kestrel.Networking
 {
     public class Libuv
     {

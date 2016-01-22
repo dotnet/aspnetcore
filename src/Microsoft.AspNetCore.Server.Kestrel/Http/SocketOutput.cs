@@ -7,11 +7,11 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Server.Kestrel.Infrastructure;
-using Microsoft.AspNet.Server.Kestrel.Networking;
+using Microsoft.AspNetCore.Server.Kestrel.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Networking;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNet.Server.Kestrel.Http
+namespace Microsoft.AspNetCore.Server.Kestrel.Http
 {
     public class SocketOutput : ISocketOutput
     {

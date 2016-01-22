@@ -3,7 +3,7 @@
 
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
+namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
 {
     public static class TaskUtilities
     {

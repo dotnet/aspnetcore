@@ -6,12 +6,12 @@ using System.Net;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Server.Kestrel;
-using Microsoft.AspNet.Server.Kestrel.Infrastructure;
-using Microsoft.AspNet.Server.Kestrel.Networking;
+using Microsoft.AspNetCore.Server.Kestrel;
+using Microsoft.AspNetCore.Server.Kestrel.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Networking;
 using Xunit;
 
-namespace Microsoft.AspNet.Server.KestrelTests
+namespace Microsoft.AspNetCore.Server.KestrelTests
 {
     /// <summary>
     /// Summary description for NetworkingTests

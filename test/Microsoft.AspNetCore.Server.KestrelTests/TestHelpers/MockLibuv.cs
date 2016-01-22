@@ -1,8 +1,8 @@
 using System;
 using System.Threading;
-using Microsoft.AspNet.Server.Kestrel.Networking;
+using Microsoft.AspNetCore.Server.Kestrel.Networking;
 
-namespace Microsoft.AspNet.Server.KestrelTests.TestHelpers
+namespace Microsoft.AspNetCore.Server.KestrelTests.TestHelpers
 {
     public class MockLibuv : Libuv
     {

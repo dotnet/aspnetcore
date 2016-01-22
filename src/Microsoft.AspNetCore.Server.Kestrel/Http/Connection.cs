@@ -4,12 +4,12 @@
 using System;
 using System.Net;
 using System.Threading;
-using Microsoft.AspNet.Server.Kestrel.Filter;
-using Microsoft.AspNet.Server.Kestrel.Infrastructure;
-using Microsoft.AspNet.Server.Kestrel.Networking;
+using Microsoft.AspNetCore.Server.Kestrel.Filter;
+using Microsoft.AspNetCore.Server.Kestrel.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Networking;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNet.Server.Kestrel.Http
+namespace Microsoft.AspNetCore.Server.Kestrel.Http
 {
     public class Connection : ConnectionContext, IConnectionControl
     {

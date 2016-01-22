@@ -5,9 +5,9 @@ using System;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading;
-using Microsoft.AspNet.Server.Kestrel.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Infrastructure;
 
-namespace Microsoft.AspNet.Server.Kestrel.Http
+namespace Microsoft.AspNetCore.Server.Kestrel.Http
 {
     public class SocketInput : ICriticalNotifyCompletion
     {

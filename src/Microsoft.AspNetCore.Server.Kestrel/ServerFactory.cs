@@ -2,14 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNet.Hosting;
-using Microsoft.AspNet.Hosting.Server;
-using Microsoft.AspNet.Http.Features;
-using Microsoft.AspNet.Server.Features;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Server.Features;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNet.Server.Kestrel
+namespace Microsoft.AspNetCore.Server.Kestrel
 {
     /// <summary>
     /// Summary description for ServerFactory
@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.Server.Kestrel
             var serverFeatures = new FeatureCollection();
             serverFeatures.Set<IKestrelServerInformation>(information);
             serverFeatures.Set<IServerAddressesFeature>(information);
-            return new KestrelServer(serverFeatures, _appLifetime, _loggerFactory.CreateLogger("Microsoft.AspNet.Server.Kestrel"));
+            return new KestrelServer(serverFeatures, _appLifetime, _loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel"));
         }
     }
 }

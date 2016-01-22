@@ -1,11 +1,11 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.23107.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Server.Kestrel", "src\Microsoft.AspNet.Server.Kestrel\Microsoft.AspNet.Server.Kestrel.xproj", "{F510611A-3BEE-4B88-A613-5F4A74ED82A1}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Server.Kestrel", "src\Microsoft.AspNetCore.Server.Kestrel\Microsoft.AspNetCore.Server.Kestrel.xproj", "{F510611A-3BEE-4B88-A613-5F4A74ED82A1}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Server.KestrelTests", "test\Microsoft.AspNet.Server.KestrelTests\Microsoft.AspNet.Server.KestrelTests.xproj", "{37F3BFB2-6454-49E5-9D7F-581BF755CCFE}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Server.KestrelTests", "test\Microsoft.AspNetCore.Server.KestrelTests\Microsoft.AspNetCore.Server.KestrelTests.xproj", "{37F3BFB2-6454-49E5-9D7F-581BF755CCFE}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{7972A5D6-3385-4127-9277-428506DD44FF}"
 	ProjectSection(SolutionItems) = preProject
@@ -25,17 +25,17 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{8A3D
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "LargeResponseApp", "samples\LargeResponseApp\LargeResponseApp.xproj", "{B35D4D31-E74C-4646-8A11-7A7A40F0021E}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Server.Kestrel.GeneratedCode", "tools\Microsoft.AspNet.Server.Kestrel.GeneratedCode\Microsoft.AspNet.Server.Kestrel.GeneratedCode.xproj", "{BD2D4D29-1BD9-40D0-BB31-337D5416B63C}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Server.Kestrel.GeneratedCode", "tools\Microsoft.AspNetCore.Server.Kestrel.GeneratedCode\Microsoft.AspNetCore.Server.Kestrel.GeneratedCode.xproj", "{BD2D4D29-1BD9-40D0-BB31-337D5416B63C}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{327F7880-D9AF-46BD-B45C-3B7E34A01DFD}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.StandardsPolice", "tools\Microsoft.StandardsPolice\Microsoft.StandardsPolice.xproj", "{82295647-7C1C-4671-BAB6-0FEF58F949EC}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Server.Kestrel.LibuvCopier", "tools\Microsoft.AspNet.Server.Kestrel.LibuvCopier\Microsoft.AspNet.Server.Kestrel.LibuvCopier.xproj", "{8CBA6FE3-3CC9-4420-8AA3-123E983734C2}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Server.Kestrel.LibuvCopier", "tools\Microsoft.AspNetCore.Server.Kestrel.LibuvCopier\Microsoft.AspNetCore.Server.Kestrel.LibuvCopier.xproj", "{8CBA6FE3-3CC9-4420-8AA3-123E983734C2}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Server.Kestrel.Https", "src\Microsoft.AspNet.Server.Kestrel.Https\Microsoft.AspNet.Server.Kestrel.Https.xproj", "{5F64B3C3-0C2E-431A-B820-A81BBFC863DA}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Server.Kestrel.Https", "src\Microsoft.AspNetCore.Server.Kestrel.Https\Microsoft.AspNetCore.Server.Kestrel.Https.xproj", "{5F64B3C3-0C2E-431A-B820-A81BBFC863DA}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Server.Kestrel.FunctionalTests", "test\Microsoft.AspNet.Server.Kestrel.FunctionalTests\Microsoft.AspNet.Server.Kestrel.FunctionalTests.xproj", "{9559A5F1-080C-4909-B6CF-7E4B3DC55748}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Server.Kestrel.FunctionalTests", "test\Microsoft.AspNetCore.Server.Kestrel.FunctionalTests\Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.xproj", "{9559A5F1-080C-4909-B6CF-7E4B3DC55748}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

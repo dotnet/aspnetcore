@@ -1,12 +1,12 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Security.Cryptography.X509Certificates;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Http.Features;
-using Microsoft.AspNet.Server.Kestrel.Https;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Server.Kestrel.Https;
 
-namespace Microsoft.AspNet.Server.Kestrel.Filter
+namespace Microsoft.AspNetCore.Server.Kestrel.Filter
 {
     public static class HttpsApplicationBuilderExtensions
     {

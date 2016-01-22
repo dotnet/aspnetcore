@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
+namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
 {
     /// <summary>
     /// Block tracking object used by the byte buffer memory pool. A slab is a large allocation which is divided into smaller blocks. The

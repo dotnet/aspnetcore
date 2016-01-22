@@ -4,11 +4,11 @@
 using System;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Hosting;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Server.Kestrel;
-using Microsoft.AspNet.Server.Kestrel.Filter;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Server.Kestrel;
+using Microsoft.AspNetCore.Server.Kestrel.Filter;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.PlatformAbstractions;
 
@@ -26,7 +26,7 @@ namespace SampleApp
 
             var testCertPath = Path.Combine(
                 env.ApplicationBasePath,
-                @"../../test/Microsoft.AspNet.Server.KestrelTests/TestResources/testCert.pfx");
+                @"../../test/Microsoft.AspNetCore.Server.KestrelTests/TestResources/testCert.pfx");
 
             if (File.Exists(testCertPath))
             {

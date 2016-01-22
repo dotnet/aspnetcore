@@ -1,20 +1,20 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
 using System.Globalization;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Hosting;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Testing.xunit;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
-namespace Microsoft.AspNet.Server.Kestrel.FunctionalTests
+namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 {
     public class RequestTests
     {
@@ -31,7 +31,7 @@ namespace Microsoft.AspNet.Server.Kestrel.FunctionalTests
 
             var builder = new WebHostBuilder()
                 .UseConfiguration(config)
-                .UseServer("Microsoft.AspNet.Server.Kestrel")
+                .UseServer("Microsoft.AspNetCore.Server.Kestrel")
                 .Configure(app =>
                 {
                     app.Run(async context =>
@@ -102,7 +102,7 @@ namespace Microsoft.AspNet.Server.Kestrel.FunctionalTests
 
             var builder = new WebHostBuilder()
                 .UseConfiguration(config)
-                .UseServer("Microsoft.AspNet.Server.Kestrel")
+                .UseServer("Microsoft.AspNetCore.Server.Kestrel")
                 .Configure(app =>
                 {
                     app.Run(async context =>
@@ -134,7 +134,7 @@ namespace Microsoft.AspNet.Server.Kestrel.FunctionalTests
 
             var builder = new WebHostBuilder()
                 .UseConfiguration(config)
-                .UseServer("Microsoft.AspNet.Server.Kestrel")
+                .UseServer("Microsoft.AspNetCore.Server.Kestrel")
                 .Configure(app =>
                 {
                     app.Run(async context =>

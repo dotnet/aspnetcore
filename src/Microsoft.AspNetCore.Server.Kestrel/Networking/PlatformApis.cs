@@ -5,7 +5,7 @@ using System;
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.PlatformAbstractions;
 
-namespace Microsoft.AspNet.Server.Kestrel.Networking
+namespace Microsoft.AspNetCore.Server.Kestrel.Networking
 {
     public static class PlatformApis
     {

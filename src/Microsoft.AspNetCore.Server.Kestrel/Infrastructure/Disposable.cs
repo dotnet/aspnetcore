@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNet.Server.Kestrel
+namespace Microsoft.AspNetCore.Server.Kestrel
 {
     /// <summary>
     /// Summary description for Disposable

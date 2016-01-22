@@ -2,9 +2,9 @@
     "version": "1.0.0-*",
     "dependencies": {
         "xunit.runner.aspnet": "2.0.0-aspnet-*",
-        "Microsoft.AspNet.Server.Kestrel": "1.0.0-*",
-        "Microsoft.AspNet.Server.Kestrel.Https": "1.0.0-*",
-        "Microsoft.AspNet.Testing": "1.0.0-*",
+        "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*",
+        "Microsoft.AspNetCore.Server.Kestrel.Https": "1.0.0-*",
+        "Microsoft.AspNetCore.Testing": "1.0.0-*",
         "System.Net.Http": "4.0.1-*"
     },
     "frameworks": {
@@ -23,7 +23,7 @@
         "keyFile": "../../tools/Key.snk"
     },
     "commands": {
-        "run": "Microsoft.AspNet.Server.KestrelTests",
+        "run": "Microsoft.AspNetCore.Server.KestrelTests",
         "test": "xunit.runner.aspnet -parallel none"
     }
 }

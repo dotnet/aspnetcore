@@ -5,9 +5,9 @@ using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
-using Microsoft.AspNet.Server.Kestrel.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Infrastructure;
 
-namespace Microsoft.AspNet.Server.Kestrel.Networking
+namespace Microsoft.AspNetCore.Server.Kestrel.Networking
 {
     /// <summary>
     /// Summary description for UvMemory

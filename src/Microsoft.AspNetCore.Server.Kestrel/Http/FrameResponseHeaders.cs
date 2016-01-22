@@ -3,10 +3,10 @@
 
 using System.Collections;
 using System.Collections.Generic;
-using Microsoft.AspNet.Server.Kestrel.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Infrastructure;
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.AspNet.Server.Kestrel.Http
+namespace Microsoft.AspNetCore.Server.Kestrel.Http
 {
     public partial class FrameResponseHeaders : FrameHeaders
     {

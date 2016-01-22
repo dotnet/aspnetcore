@@ -5,7 +5,7 @@ using Microsoft.Extensions.Primitives;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Microsoft.AspNet.Server.Kestrel.Http
+namespace Microsoft.AspNetCore.Server.Kestrel.Http
 {
     public partial class FrameRequestHeaders : FrameHeaders
     {

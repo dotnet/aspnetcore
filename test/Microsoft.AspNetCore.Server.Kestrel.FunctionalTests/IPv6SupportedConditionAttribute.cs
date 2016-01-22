@@ -4,9 +4,9 @@
 using System;
 using System.Net;
 using System.Net.Sockets;
-using Microsoft.AspNet.Testing.xunit;
+using Microsoft.AspNetCore.Testing.xunit;
 
-namespace Microsoft.AspNet.Server.Kestrel.FunctionalTests
+namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 {
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
     public class IPv6SupportedConditionAttribute : Attribute, ITestCondition

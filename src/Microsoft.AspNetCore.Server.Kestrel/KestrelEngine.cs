@@ -3,11 +3,11 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Server.Kestrel.Http;
-using Microsoft.AspNet.Server.Kestrel.Networking;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Networking;
 
-namespace Microsoft.AspNet.Server.Kestrel
+namespace Microsoft.AspNetCore.Server.Kestrel
 {
     public class KestrelEngine : ServiceContext, IDisposable
     {

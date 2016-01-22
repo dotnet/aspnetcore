@@ -2,10 +2,10 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Microsoft.AspNet.Server.Kestrel.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Infrastructure;
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.AspNet.Server.Kestrel.Http 
+namespace Microsoft.AspNetCore.Server.Kestrel.Http 
 {
 
     public partial class FrameRequestHeaders

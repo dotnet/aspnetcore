@@ -1,7 +1,7 @@
 using System;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNet.Server.Kestrel.Infrastructure
+namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
 {
     public interface IKestrelTrace : ILogger
     {

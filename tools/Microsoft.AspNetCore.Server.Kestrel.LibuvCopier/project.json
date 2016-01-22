@@ -1,6 +1,6 @@
 {
   "version": "1.0.0-*",
-  "description": "Microsoft.AspNet.Server.Kestrel.LibuvCopier Console Application",
+  "description": "Microsoft.AspNetCore.Server.Kestrel.LibuvCopier Console Application",
   "authors": [ "pawelka" ],
   "tags": [ "" ],
   "projectUrl": "",
@@ -12,7 +12,7 @@
   },
 
   "commands": {
-    "Microsoft.AspNet.Server.Kestrel.LibuvCopier": "Microsoft.AspNet.Server.Kestrel.LibuvCopier"
+    "Microsoft.AspNetCore.Server.Kestrel.LibuvCopier": "Microsoft.AspNetCore.Server.Kestrel.LibuvCopier"
   },
 
   "frameworks": {

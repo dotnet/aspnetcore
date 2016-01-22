@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Linq;
 using Newtonsoft.Json.Linq;
 
-namespace Microsoft.AspNet.Server.Kestrel.LibuvCopier
+namespace Microsoft.AspNetCore.Server.Kestrel.LibuvCopier
 {
     public class Program
     {
@@ -41,7 +41,7 @@ namespace Microsoft.AspNet.Server.Kestrel.LibuvCopier
                 var lockJson = JObject.Parse(File.ReadAllText("project.lock.json"));
 
                 foreach (var libuvLib in lockJson["libraries"].OfType<JProperty>().Where(
-                    p => p.Name.StartsWith("Microsoft.AspNet.Internal.libuv", StringComparison.Ordinal)))
+                    p => p.Name.StartsWith("Microsoft.AspNetCore.Internal.libuv", StringComparison.Ordinal)))
                 {
                     foreach (var filePath in libuvLib.Value["files"].Select(v => v.Value<string>()))
                     {

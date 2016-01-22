@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Linq;
-using Microsoft.AspNet.Server.Kestrel.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Infrastructure;
 using System.Numerics;
 using Xunit;
 
-namespace Microsoft.AspNet.Server.KestrelTests
+namespace Microsoft.AspNetCore.Server.KestrelTests
 {
     public class MemoryPoolBlock2Tests
     {

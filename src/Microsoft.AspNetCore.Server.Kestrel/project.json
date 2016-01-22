@@ -6,7 +6,7 @@
     "url": "git://github.com/aspnet/kestrelhttpserver"
   },
   "dependencies": {
-    "Microsoft.AspNet.Hosting": "1.0.0-*",
+    "Microsoft.AspNetCore.Hosting": "1.0.0-*",
     "Microsoft.Extensions.Logging.Abstractions": "1.0.0-*",
     "Microsoft.Extensions.PlatformAbstractions": "1.0.0-*",
     "System.Numerics.Vectors": "4.1.1-*",
@@ -14,11 +14,11 @@
       "version": "1.0.0-*",
       "type": "build"
     },
-    "Microsoft.AspNet.Internal.libuv-Darwin": {
+    "Microsoft.AspNetCore.Internal.libuv-Darwin": {
       "version": "1.0.0-*",
       "type": "build"
     },
-    "Microsoft.AspNet.Internal.libuv-Windows": {
+    "Microsoft.AspNetCore.Internal.libuv-Windows": {
       "version": "1.0.0-*",
       "type": "build"
     },
@@ -53,12 +53,12 @@
   },
   "scripts": {
     "prepare": [
-      "dnu restore ../../tools/Microsoft.AspNet.Server.Kestrel.GeneratedCode",
-      "dnx -p ../../tools/Microsoft.AspNet.Server.Kestrel.GeneratedCode run Http/FrameHeaders.Generated.cs Http/Frame.Generated.cs"
+      "dnu restore ../../tools/Microsoft.AspNetCore.Server.Kestrel.GeneratedCode",
+      "dnx -p ../../tools/Microsoft.AspNetCore.Server.Kestrel.GeneratedCode run Http/FrameHeaders.Generated.cs Http/Frame.Generated.cs"
     ],
     "postrestore": [
-      "dnu restore ../../tools/Microsoft.AspNet.Server.Kestrel.LibuvCopier",
-      "dnx -p ../../tools/Microsoft.AspNet.Server.Kestrel.LibuvCopier run"
+      "dnu restore ../../tools/Microsoft.AspNetCore.Server.Kestrel.LibuvCopier",
+      "dnx -p ../../tools/Microsoft.AspNetCore.Server.Kestrel.LibuvCopier run"
     ]
   },
   "packInclude": {

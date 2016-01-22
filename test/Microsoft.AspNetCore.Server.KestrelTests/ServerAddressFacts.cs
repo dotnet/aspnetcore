@@ -1,7 +1,7 @@
-﻿using Microsoft.AspNet.Server.Kestrel;
+using Microsoft.AspNetCore.Server.Kestrel;
 using Xunit;
 
-namespace Microsoft.AspNet.Server.KestrelTests
+namespace Microsoft.AspNetCore.Server.KestrelTests
 {
     public class ServerAddressFacts
     {

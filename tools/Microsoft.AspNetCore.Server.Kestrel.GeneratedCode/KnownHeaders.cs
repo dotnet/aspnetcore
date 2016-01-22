@@ -4,7 +4,7 @@ using System.Linq;
 using Microsoft.Dnx.Compilation.CSharp;
 using System.Text;
 
-namespace Microsoft.AspNet.Server.Kestrel.GeneratedCode
+namespace Microsoft.AspNetCore.Server.Kestrel.GeneratedCode
 {
     // This project can output the Class library as a NuGet Package.
     // To enable this option, right-click on the project and select the Properties menu item. In the Build tab select "Produce outputs on build".
@@ -205,10 +205,10 @@ namespace Microsoft.AspNet.Server.Kestrel.GeneratedCode
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Microsoft.AspNet.Server.Kestrel.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Infrastructure;
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.AspNet.Server.Kestrel.Http 
+namespace Microsoft.AspNetCore.Server.Kestrel.Http 
 {{
 {Each(loops, loop => $@"
     public partial class {loop.ClassName}
