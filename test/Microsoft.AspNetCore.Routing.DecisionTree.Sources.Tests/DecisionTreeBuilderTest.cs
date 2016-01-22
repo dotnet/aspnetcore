@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using Xunit;
 
-namespace Microsoft.AspNet.Routing.DecisionTree
+namespace Microsoft.AspNetCore.Routing.DecisionTree
 {
     public class DecisionTreeBuilderTest
     {

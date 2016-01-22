@@ -3,7 +3,7 @@
 
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNet.Routing
+namespace Microsoft.AspNetCore.Routing
 {
     public interface IRouter
     {

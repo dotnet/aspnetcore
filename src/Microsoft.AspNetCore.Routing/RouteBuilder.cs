@@ -3,11 +3,11 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Routing.Internal;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNet.Routing
+namespace Microsoft.AspNetCore.Routing
 {
     public class RouteBuilder : IRouteBuilder
     {

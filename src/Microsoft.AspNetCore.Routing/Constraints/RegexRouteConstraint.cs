@@ -4,9 +4,9 @@
 using System;
 using System.Globalization;
 using System.Text.RegularExpressions;
-using Microsoft.AspNet.Http;
+using Microsoft.AspNetCore.Http;
 
-namespace Microsoft.AspNet.Routing.Constraints
+namespace Microsoft.AspNetCore.Routing.Constraints
 {
     public class RegexRouteConstraint : IRouteConstraint
     {

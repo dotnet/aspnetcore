@@ -1,4 +1,4 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.24711.0
@@ -9,9 +9,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{C3AD
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{95359B4B-4C85-4B44-A75B-0621905C4CF6}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Routing", "src\Microsoft.AspNet.Routing\Microsoft.AspNet.Routing.xproj", "{1EE54D32-6CED-4206-ACF5-3DC1DD39D228}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Routing", "src\Microsoft.AspNetCore.Routing\Microsoft.AspNetCore.Routing.xproj", "{1EE54D32-6CED-4206-ACF5-3DC1DD39D228}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Routing.Tests", "test\Microsoft.AspNet.Routing.Tests\Microsoft.AspNet.Routing.Tests.xproj", "{636D79ED-7B32-487C-BDA5-D2A1AAA97371}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Routing.Tests", "test\Microsoft.AspNetCore.Routing.Tests\Microsoft.AspNetCore.Routing.Tests.xproj", "{636D79ED-7B32-487C-BDA5-D2A1AAA97371}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "RoutingSample.Web", "samples\RoutingSample.Web\RoutingSample.Web.xproj", "{DB94E647-C73A-4F52-A126-AA7544CCF33B}"
 EndProject
@@ -20,17 +20,17 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		global.json = global.json
 	EndProjectSection
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Routing.DecisionTree.Sources", "src\Microsoft.AspNet.Routing.DecisionTree.Sources\Microsoft.AspNet.Routing.DecisionTree.Sources.xproj", "{ABD5AA59-6000-4A3D-A54F-4B636F725AE8}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Routing.DecisionTree.Sources", "src\Microsoft.AspNetCore.Routing.DecisionTree.Sources\Microsoft.AspNetCore.Routing.DecisionTree.Sources.xproj", "{ABD5AA59-6000-4A3D-A54F-4B636F725AE8}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Routing.DecisionTree.Sources.Tests", "test\Microsoft.AspNet.Routing.DecisionTree.Sources.Tests\Microsoft.AspNet.Routing.DecisionTree.Sources.Tests.xproj", "{09C2933C-23AC-41B7-994D-E8A5184A629C}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Routing.DecisionTree.Sources.Tests", "test\Microsoft.AspNetCore.Routing.DecisionTree.Sources.Tests\Microsoft.AspNetCore.Routing.DecisionTree.Sources.Tests.xproj", "{09C2933C-23AC-41B7-994D-E8A5184A629C}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Routing.Abstractions", "src\Microsoft.AspNet.Routing.Abstractions\Microsoft.AspNet.Routing.Abstractions.xproj", "{ED253B01-24F1-43D1-AA0B-079391E105A9}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Routing.Abstractions", "src\Microsoft.AspNetCore.Routing.Abstractions\Microsoft.AspNetCore.Routing.Abstractions.xproj", "{ED253B01-24F1-43D1-AA0B-079391E105A9}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Mvc.Routing.Abstractions.Tests", "test\Microsoft.AspNet.Mvc.Routing.Abstractions.Tests\Microsoft.AspNet.Mvc.Routing.Abstractions.Tests.xproj", "{741B0B05-CE96-473B-B962-6B0A347DF79A}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Mvc.Routing.Abstractions.Tests", "test\Microsoft.AspNetCore.Mvc.Routing.Abstractions.Tests\Microsoft.AspNetCore.Mvc.Routing.Abstractions.Tests.xproj", "{741B0B05-CE96-473B-B962-6B0A347DF79A}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Routing.Extensions", "src\Microsoft.AspNet.Routing.Extensions\Microsoft.AspNet.Routing.Extensions.xproj", "{579C3FD2-DFFA-4B64-BFC3-130C11F3568F}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Routing.Extensions", "src\Microsoft.AspNetCore.Routing.Extensions\Microsoft.AspNetCore.Routing.Extensions.xproj", "{579C3FD2-DFFA-4B64-BFC3-130C11F3568F}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Routing.Extensions.Tests", "test\Microsoft.AspNet.Routing.Extensions.Tests\Microsoft.AspNet.Routing.Extensions.Tests.xproj", "{FD0151B4-7153-49A8-9D90-62A252420230}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Routing.Extensions.Tests", "test\Microsoft.AspNetCore.Routing.Extensions.Tests\Microsoft.AspNetCore.Routing.Extensions.Tests.xproj", "{FD0151B4-7153-49A8-9D90-62A252420230}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -6,7 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Microsoft.Extensions.Internal;
 
-namespace Microsoft.AspNet.Routing
+namespace Microsoft.AspNetCore.Routing
 {
     /// <summary>
     /// An <see cref="IDictionary{string, object}"/> type for route values.

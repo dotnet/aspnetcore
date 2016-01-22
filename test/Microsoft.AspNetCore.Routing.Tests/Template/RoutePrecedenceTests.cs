@@ -6,7 +6,7 @@ using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.Routing.Template
+namespace Microsoft.AspNetCore.Routing.Template
 {
     public class RoutePrecedenceTests
     {

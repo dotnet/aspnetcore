@@ -3,10 +3,10 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNet.Routing.DecisionTree;
-using Microsoft.AspNet.Routing.Tree;
+using Microsoft.AspNetCore.Routing.DecisionTree;
+using Microsoft.AspNetCore.Routing.Tree;
 
-namespace Microsoft.AspNet.Routing.Internal
+namespace Microsoft.AspNetCore.Routing.Internal
 {
     // A decision tree that matches link generation entries based on route data.
     public class LinkGenerationDecisionTree

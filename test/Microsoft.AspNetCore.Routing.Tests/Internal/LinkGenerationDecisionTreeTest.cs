@@ -3,12 +3,12 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNet.Http.Internal;
-using Microsoft.AspNet.Routing.Template;
-using Microsoft.AspNet.Routing.Tree;
+using Microsoft.AspNetCore.Http.Internal;
+using Microsoft.AspNetCore.Routing.Template;
+using Microsoft.AspNetCore.Routing.Tree;
 using Xunit;
 
-namespace Microsoft.AspNet.Routing.Internal.Routing
+namespace Microsoft.AspNetCore.Routing.Internal.Routing
 {
     public class LinkGenerationDecisionTreeTest
     {

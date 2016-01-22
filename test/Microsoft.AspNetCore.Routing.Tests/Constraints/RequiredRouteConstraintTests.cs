@@ -1,12 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Routing.Constraints;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing.Constraints;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.Routing.Tests
+namespace Microsoft.AspNetCore.Routing.Tests
 {
     public class RequiredRouteConstraintTests
     {

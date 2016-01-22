@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNet.Http;
+using Microsoft.AspNetCore.Http;
 
-namespace Microsoft.AspNet.Routing.Constraints
+namespace Microsoft.AspNetCore.Routing.Constraints
 {
     /// <summary>
     /// Defines a constraint on an optional parameter. If the parameter is present, then it is constrained by InnerConstraint. 

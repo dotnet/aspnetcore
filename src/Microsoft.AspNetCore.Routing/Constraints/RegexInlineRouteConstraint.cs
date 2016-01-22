@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-namespace Microsoft.AspNet.Routing.Constraints
+namespace Microsoft.AspNetCore.Routing.Constraints
 {
     /// <summary>
     /// Represents a regex constraint which can be used as an inlineConstraint.

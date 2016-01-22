@@ -5,19 +5,19 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Internal;
-using Microsoft.AspNet.Routing.Constraints;
-using Microsoft.AspNet.Routing.Internal;
-using Microsoft.AspNet.Testing;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Internal;
+using Microsoft.AspNetCore.Routing.Constraints;
+using Microsoft.AspNetCore.Routing.Internal;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.Routing
+namespace Microsoft.AspNetCore.Routing
 {
     public class RouteTest
     {

@@ -5,14 +5,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Encodings.Web;
-using Microsoft.AspNet.Routing.Internal;
+using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.WebEncoders.Testing;
 using Xunit;
 
-namespace Microsoft.AspNet.Routing.Template.Tests
+namespace Microsoft.AspNetCore.Routing.Template.Tests
 {
     public class TemplateBinderTests
     {

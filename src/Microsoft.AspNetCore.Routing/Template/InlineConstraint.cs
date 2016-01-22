@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNet.Routing.Template
+namespace Microsoft.AspNetCore.Routing.Template
 {
     /// <summary>
     /// The parsed representation of an inline constraint in a route parameter.

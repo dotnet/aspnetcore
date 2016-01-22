@@ -4,11 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNet.Routing
+namespace Microsoft.AspNetCore.Routing
 {
     public class RouteCollection : IRouteCollection
     {

@@ -1,19 +1,19 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Routing.Internal;
-using Microsoft.AspNet.Routing.Logging;
-using Microsoft.AspNet.Routing.Template;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing.Internal;
+using Microsoft.AspNetCore.Routing.Logging;
+using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ObjectPool;
 
-namespace Microsoft.AspNet.Routing
+namespace Microsoft.AspNetCore.Routing
 {
     public abstract class RouteBase : IRouter, INamedRouter
     {

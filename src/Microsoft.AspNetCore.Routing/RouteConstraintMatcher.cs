@@ -3,11 +3,11 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Routing.Logging;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing.Logging;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNet.Routing
+namespace Microsoft.AspNetCore.Routing
 {
     public static class RouteConstraintMatcher
     {

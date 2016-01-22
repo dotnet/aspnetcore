@@ -3,7 +3,7 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.AspNet.Routing.DecisionTree
+namespace Microsoft.AspNetCore.Routing.DecisionTree
 {
     // Data structure representing a node in a decision tree. These are created in DecisionTreeBuilder
     // and walked to find a set of items matching some input criteria.

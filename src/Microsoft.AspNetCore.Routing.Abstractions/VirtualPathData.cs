@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNet.Routing
+namespace Microsoft.AspNetCore.Routing
 {
     /// <summary>
     /// Represents information about the route and virtual path that are the result of

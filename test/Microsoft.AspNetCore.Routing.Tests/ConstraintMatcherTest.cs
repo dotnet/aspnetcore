@@ -2,13 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Routing.Logging;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.Routing
+namespace Microsoft.AspNetCore.Routing
 {
     public class ConstraintMatcherTest
     {

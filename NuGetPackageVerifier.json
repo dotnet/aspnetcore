@@ -9,15 +9,15 @@
             "StrictSemanticVersionValidationRule"
         ],
         "packages": {
-            "Microsoft.AspNet.Routing.Abstractions": { },
-            "Microsoft.AspNet.Routing.Extensions": { },
-            "Microsoft.AspNet.Routing": { }
+            "Microsoft.AspNetCore.Routing.Abstractions": { },
+            "Microsoft.AspNetCore.Routing.Extensions": { },
+            "Microsoft.AspNetCore.Routing": { }
         }
     },
     "adx-nonshipping": {
         "rules": [],
         "packages": {
-            "Microsoft.AspNet.Routing.DecisionTree.Sources": { }
+            "Microsoft.AspNetCore.Routing.DecisionTree.Sources": { }
         }
     },
     "Default": { // Rules to run for packages not listed in any other set.

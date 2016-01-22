@@ -4,12 +4,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Routing.Constraints;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing.Constraints;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.Routing.Tests
+namespace Microsoft.AspNetCore.Routing.Tests
 {
     public class BoolRouteConstraintTests
     {

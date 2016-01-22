@@ -1,14 +1,14 @@
-﻿{
+{
   "compilationOptions": {
     "warningsAsErrors": true
   },
   "dependencies": {
-    "Microsoft.AspNet.Routing": "1.0.0-*",
-    "Microsoft.AspNet.Routing.DecisionTree.Sources": {
+    "Microsoft.AspNetCore.Routing": "1.0.0-*",
+    "Microsoft.AspNetCore.Routing.DecisionTree.Sources": {
       "type": "build",
       "version": "1.0.0-*"
     },
-    "Microsoft.AspNet.Testing": "1.0.0-*",
+    "Microsoft.AspNetCore.Testing": "1.0.0-*",
     "xunit": "2.1.0"
   },
   "frameworks": {

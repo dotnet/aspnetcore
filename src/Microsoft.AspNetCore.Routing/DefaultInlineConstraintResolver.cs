@@ -8,7 +8,7 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNet.Routing
+namespace Microsoft.AspNetCore.Routing
 {
     /// <summary>
     /// The default implementation of <see cref="IInlineConstraintResolver"/>. Resolves constraints by parsing

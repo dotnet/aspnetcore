@@ -1,11 +1,11 @@
-﻿{
+{
   "compilationOptions": {
     "warningsAsErrors": true
   },
   "dependencies": {
-    "Microsoft.AspNet.Http": "1.0.0-*",
-    "Microsoft.AspNet.Routing.Extensions": "1.0.0-*",
-    "Microsoft.AspNet.Testing": "1.0.0-*",
+    "Microsoft.AspNetCore.Http": "1.0.0-*",
+    "Microsoft.AspNetCore.Routing.Extensions": "1.0.0-*",
+    "Microsoft.AspNetCore.Testing": "1.0.0-*",
     "Microsoft.Extensions.DependencyInjection": "1.0.0-*",
     "Microsoft.Extensions.Logging.Testing": "1.0.0-*",
     "xunit": "2.1.0"

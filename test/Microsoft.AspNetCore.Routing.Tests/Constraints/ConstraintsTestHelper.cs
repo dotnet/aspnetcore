@@ -3,10 +3,10 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNet.Http;
+using Microsoft.AspNetCore.Http;
 using Moq;
 
-namespace Microsoft.AspNet.Routing.Tests
+namespace Microsoft.AspNetCore.Routing.Tests
 {
     public class ConstraintsTestHelper
     {

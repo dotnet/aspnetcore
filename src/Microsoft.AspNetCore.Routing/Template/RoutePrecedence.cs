@@ -5,7 +5,7 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 
-namespace Microsoft.AspNet.Routing.Template
+namespace Microsoft.AspNetCore.Routing.Template
 {
     /// <summary>
     /// Computes precedence for an attribute route template.

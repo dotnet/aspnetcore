@@ -3,10 +3,10 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNet.Routing.Constraints;
+using Microsoft.AspNetCore.Routing.Constraints;
 using Xunit;
 
-namespace Microsoft.AspNet.Routing.Tests
+namespace Microsoft.AspNetCore.Routing.Tests
 {
     public class GuidRouteConstraintTests
     {

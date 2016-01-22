@@ -1,10 +1,10 @@
-﻿{
+{
   "compilationOptions": {
     "warningsAsErrors": true
   },
   "dependencies": {
-    "Microsoft.AspNet.Routing.Abstractions": "1.0.0-*",
-    "Microsoft.AspNet.Testing": "1.0.0-*",
+    "Microsoft.AspNetCore.Routing.Abstractions": "1.0.0-*",
+    "Microsoft.AspNetCore.Testing": "1.0.0-*",
     "xunit": "2.1.0"
   },
   "frameworks": {

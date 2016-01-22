@@ -6,9 +6,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Routing.Internal;
-using Microsoft.AspNet.Routing.Template;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing.Internal;
+using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.ObjectPool;
@@ -17,7 +17,7 @@ using Microsoft.Extensions.WebEncoders.Testing;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.Routing.Tree
+namespace Microsoft.AspNetCore.Routing.Tree
 {
     public class TreeRouterTest
     {

@@ -4,10 +4,10 @@
 using System;
 using System.Linq;
 using System.Collections.Generic;
-using Microsoft.AspNet.Testing;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 
-namespace Microsoft.AspNet.Routing.Tests
+namespace Microsoft.AspNetCore.Routing.Tests
 {
     public class RouteValueDictionaryTests
     {

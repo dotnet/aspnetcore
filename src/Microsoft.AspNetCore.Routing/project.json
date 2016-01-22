@@ -10,9 +10,9 @@
     "keyFile": "../../tools/Key.snk"
   },
   "dependencies": {
-    "Microsoft.AspNet.Http.Extensions": "1.0.0-*",
-    "Microsoft.AspNet.Routing.Abstractions": "1.0.0-*",
-    "Microsoft.AspNet.Routing.DecisionTree.Sources": {
+    "Microsoft.AspNetCore.Http.Extensions": "1.0.0-*",
+    "Microsoft.AspNetCore.Routing.Abstractions": "1.0.0-*",
+    "Microsoft.AspNetCore.Routing.DecisionTree.Sources": {
       "type": "build",
       "version": "1.0.0-*"
     },

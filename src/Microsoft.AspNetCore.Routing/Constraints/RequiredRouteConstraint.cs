@@ -3,9 +3,9 @@
 
 using System;
 using System.Globalization;
-using Microsoft.AspNet.Http;
+using Microsoft.AspNetCore.Http;
 
-namespace Microsoft.AspNet.Routing.Constraints
+namespace Microsoft.AspNetCore.Routing.Constraints
 {
     /// <summary>
     /// Constraints a route parameter that must have a value.

@@ -2,11 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNet.Routing;
-using Microsoft.AspNet.Routing.Internal;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNet.Builder
+namespace Microsoft.AspNetCore.Builder
 {
     /// <summary>
     /// Extension methods for adding the <see cref="RouterMiddleware"/> middleware to an <see cref="IApplicationBuilder"/>.

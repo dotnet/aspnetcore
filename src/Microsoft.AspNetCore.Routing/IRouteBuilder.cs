@@ -3,9 +3,9 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNet.Builder;
+using Microsoft.AspNetCore.Builder;
 
-namespace Microsoft.AspNet.Routing
+namespace Microsoft.AspNetCore.Routing
 {
     /// <summary>
     /// Defines a contract for a route builder in an application. A route builder specifies the routes for

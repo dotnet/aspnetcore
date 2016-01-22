@@ -4,7 +4,7 @@
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.Routing
+namespace Microsoft.AspNetCore.Routing
 {
     public class VirtualPathDataTests
     {

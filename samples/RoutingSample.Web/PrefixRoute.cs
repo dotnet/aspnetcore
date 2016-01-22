@@ -3,7 +3,7 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Routing;
+using Microsoft.AspNetCore.Routing;
 
 namespace RoutingSample.Web
 {

@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using Microsoft.AspNet.Routing.Template;
+using Microsoft.AspNetCore.Routing.Template;
 
-namespace Microsoft.AspNet.Routing.Tree
+namespace Microsoft.AspNetCore.Routing.Tree
 {
     /// <summary>
     /// Used to build an <see cref="TreeRouter"/>. Represents an individual URL-matching route that will be

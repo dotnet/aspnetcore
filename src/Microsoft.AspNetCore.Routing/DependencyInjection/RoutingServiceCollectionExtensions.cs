@@ -3,8 +3,8 @@
 
 using System;
 using System.Text.Encodings.Web;
-using Microsoft.AspNet.Routing;
-using Microsoft.AspNet.Routing.Internal;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.ObjectPool;
 

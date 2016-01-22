@@ -3,9 +3,9 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNet.Routing.Constraints;
+using Microsoft.AspNetCore.Routing.Constraints;
 
-namespace Microsoft.AspNet.Routing
+namespace Microsoft.AspNetCore.Routing
 {
     /// <summary>
     /// A builder for produding a mapping of keys to see <see cref="IRouteConstraint"/>.

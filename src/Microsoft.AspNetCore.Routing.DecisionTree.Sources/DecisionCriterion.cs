@@ -3,7 +3,7 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.AspNet.Routing.DecisionTree
+namespace Microsoft.AspNetCore.Routing.DecisionTree
 {
     internal class DecisionCriterion<TItem>
     {

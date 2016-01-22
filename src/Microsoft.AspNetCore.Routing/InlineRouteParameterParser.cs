@@ -3,9 +3,9 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNet.Routing.Template;
+using Microsoft.AspNetCore.Routing.Template;
 
-namespace Microsoft.AspNet.Routing
+namespace Microsoft.AspNetCore.Routing
 {
     public static class InlineRouteParameterParser
     {

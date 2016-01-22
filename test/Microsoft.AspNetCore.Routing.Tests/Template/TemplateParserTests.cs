@@ -4,13 +4,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNet.Testing;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNet.Routing.Template.Tests
+namespace Microsoft.AspNetCore.Routing.Template.Tests
 {
     public class TemplateRouteParserTests
     {

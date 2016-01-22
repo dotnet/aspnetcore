@@ -4,10 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Routing.Internal;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing.Internal;
 
-namespace Microsoft.AspNet.Routing.Template
+namespace Microsoft.AspNetCore.Routing.Template
 {
     public class TemplateMatcher
     {

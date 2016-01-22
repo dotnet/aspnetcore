@@ -6,10 +6,10 @@ using System.Collections;
 using System.Diagnostics;
 using System.Globalization;
 using System.Text.Encodings.Web;
-using Microsoft.AspNet.Routing.Internal;
+using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.Extensions.ObjectPool;
 
-namespace Microsoft.AspNet.Routing.Template
+namespace Microsoft.AspNetCore.Routing.Template
 {
     public class TemplateBinder
     {

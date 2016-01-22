@@ -1,4 +1,4 @@
-﻿{
+{
   "description": "ASP.NET 5 extension methods for routing requests to application logic and for generating links.",
   "version": "1.0.0-*",
   "repository": {
@@ -10,7 +10,7 @@
     "keyFile": "../../tools/Key.snk"
   },
   "dependencies": {
-    "Microsoft.AspNet.Routing": "1.0.0-*"
+    "Microsoft.AspNetCore.Routing": "1.0.0-*"
   },
   "frameworks": {
     "net451": { },

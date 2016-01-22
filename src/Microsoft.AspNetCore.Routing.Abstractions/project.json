@@ -1,4 +1,4 @@
-﻿{
+{
   "description": "ASP.NET 5 abstractions for routing requests to application logic and for generating links.",
   "version": "1.0.0-*",
   "repository": {
@@ -10,7 +10,7 @@
     "keyFile": "../../tools/Key.snk"
   },
   "dependencies": {
-    "Microsoft.AspNet.Http.Abstractions": "1.0.0-*",
+    "Microsoft.AspNetCore.Http.Abstractions": "1.0.0-*",
     "Microsoft.Extensions.PropertyHelper.Sources": {
       "type": "build",
       "version": "1.0.0-*"
