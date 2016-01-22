@@ -2,7 +2,7 @@
   "version": "1.0.0-*",
   "dependencies": {
     "CorsMiddlewareWebSite": "1.0.0-*",
-    "Microsoft.AspNetCore.Cors": "6.0.0-*",
+    "Microsoft.AspNetCore.Cors": "1.0.0-*",
     "Microsoft.AspNetCore.TestHost": "1.0.0-*",
     "Microsoft.Extensions.Logging.Testing": "1.0.0-*",
     "xunit": "2.1.0"
