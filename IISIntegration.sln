@@ -1,4 +1,4 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.24720.0
@@ -11,13 +11,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		NuGet.Config = NuGet.Config
 	EndProjectSection
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.IISPlatformHandler", "src\Microsoft.AspNet.IISPlatformHandler\Microsoft.AspNet.IISPlatformHandler.xproj", "{ABE53415-83CE-4AF0-AF67-E52160C7862B}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.IISPlatformHandler", "src\Microsoft.AspNetCore.IISPlatformHandler\Microsoft.AspNetCore.IISPlatformHandler.xproj", "{ABE53415-83CE-4AF0-AF67-E52160C7862B}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{EF30B533-D715-421A-92B7-92FEF460AC9C}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.IISPlatformHandler.Tests", "test\Microsoft.AspNet.IISPlatformHandler.Tests\Microsoft.AspNet.IISPlatformHandler.Tests.xproj", "{FBBBE015-1CE3-454B-9647-23F8073FB7AB}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.IISPlatformHandler.Tests", "test\Microsoft.AspNetCore.IISPlatformHandler.Tests\Microsoft.AspNetCore.IISPlatformHandler.Tests.xproj", "{FBBBE015-1CE3-454B-9647-23F8073FB7AB}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.IISPlatformHandler.FunctionalTests", "test\Microsoft.AspNet.IISPlatformHandler.FunctionalTests\Microsoft.AspNet.IISPlatformHandler.FunctionalTests.xproj", "{A83A33D1-3D29-403C-9750-5811AC7B4025}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.IISPlatformHandler.FunctionalTests", "test\Microsoft.AspNetCore.IISPlatformHandler.FunctionalTests\Microsoft.AspNetCore.IISPlatformHandler.FunctionalTests.xproj", "{A83A33D1-3D29-403C-9750-5811AC7B4025}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "TestSites", "test\TestSites\TestSites.xproj", "{E27453AD-9CA0-49A2-94FA-96337D77677D}"
 EndProject

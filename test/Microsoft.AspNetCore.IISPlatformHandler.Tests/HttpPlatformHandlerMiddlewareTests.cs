@@ -1,15 +1,15 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Hosting;
-using Microsoft.AspNet.Http.Features.Authentication;
-using Microsoft.AspNet.TestHost;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http.Features.Authentication;
+using Microsoft.AspNetCore.TestHost;
 using Xunit;
 
-namespace Microsoft.AspNet.IISPlatformHandler
+namespace Microsoft.AspNetCore.IISPlatformHandler
 {
     public class HttpPlatformHandlerMiddlewareTests
     {
@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.IISPlatformHandler
                     {
                         var auth = (IHttpAuthenticationFeature)context.Features[typeof(IHttpAuthenticationFeature)];
                         Assert.NotNull(auth);
-                        Assert.Equal("Microsoft.AspNet.IISPlatformHandler.AuthenticationHandler", auth.Handler.GetType().FullName);
+                        Assert.Equal("Microsoft.AspNetCore.IISPlatformHandler.AuthenticationHandler", auth.Handler.GetType().FullName);
                         assertsExecuted = true;
                         return Task.FromResult(0);
                     });

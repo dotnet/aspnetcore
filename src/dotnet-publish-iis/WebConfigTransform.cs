@@ -6,7 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Xml.Linq;
 
-namespace Microsoft.AspNet.Tools.PublishIIS
+namespace Microsoft.AspNetCore.Tools.PublishIIS
 {
     public static class WebConfigTransform
     {

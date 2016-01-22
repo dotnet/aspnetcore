@@ -5,13 +5,13 @@ using System;
 using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Server.Testing;
-using Microsoft.AspNet.Testing.xunit;
+using Microsoft.AspNetCore.Server.Testing;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging;
 using Xunit;
 using Xunit.Sdk;
 
-namespace Microsoft.AspNet.IISPlatformHandler.FunctionalTests
+namespace Microsoft.AspNetCore.IISPlatformHandler.FunctionalTests
 {
     // Uses ports ranging 5061 - 5069.
     public class HelloWorldTests

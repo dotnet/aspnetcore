@@ -5,17 +5,17 @@ using System;
 using System.Globalization;
 using System.Security.Principal;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Features;
-using Microsoft.AspNet.Http.Features.Authentication;
-using Microsoft.AspNet.Http.Features.Authentication.Internal;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Http.Features.Authentication;
+using Microsoft.AspNetCore.Http.Features.Authentication.Internal;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.AspNet.IISPlatformHandler
+namespace Microsoft.AspNetCore.IISPlatformHandler
 {
     public class IISPlatformHandlerMiddleware
     {

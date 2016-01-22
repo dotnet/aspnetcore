@@ -6,13 +6,13 @@ using System.IO;
 using System.Net.Http;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Server.Testing;
-using Microsoft.AspNet.Testing.xunit;
+using Microsoft.AspNetCore.Server.Testing;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging;
 using Xunit;
 using Xunit.Sdk;
 
-namespace Microsoft.AspNet.IISPlatformHandler.FunctionalTests
+namespace Microsoft.AspNetCore.IISPlatformHandler.FunctionalTests
 {
     // IisExpress preregisteres 44300-44399 ports.
     public class HttpsTest

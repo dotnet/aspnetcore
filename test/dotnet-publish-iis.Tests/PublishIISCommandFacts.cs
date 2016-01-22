@@ -1,10 +1,10 @@
-﻿using Xunit;
+using Xunit;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
 using System;
 
-namespace Microsoft.AspNet.Tools.PublishIIS.Tests
+namespace Microsoft.AspNetCore.Tools.PublishIIS.Tests
 {
     public class PublishIISCommandFacts
     {

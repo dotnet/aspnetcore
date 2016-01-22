@@ -2,7 +2,7 @@ using Xunit;
 using System.Linq;
 using System.Xml.Linq;
 
-namespace Microsoft.AspNet.Tools.PublishIIS.Tests
+namespace Microsoft.AspNetCore.Tools.PublishIIS.Tests
 {
     public class WebConfigTransformFacts
     {

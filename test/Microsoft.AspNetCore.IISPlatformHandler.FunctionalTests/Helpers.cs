@@ -3,7 +3,7 @@
 
 using System.IO;
 
-namespace Microsoft.AspNet.IISPlatformHandler.FunctionalTests
+namespace Microsoft.AspNetCore.IISPlatformHandler.FunctionalTests
 {
     public class Helpers
     {
