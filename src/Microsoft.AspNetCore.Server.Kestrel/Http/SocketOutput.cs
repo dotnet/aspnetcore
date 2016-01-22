@@ -294,12 +294,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         {
             lock (_contextLock)
             {
-                // Abort the connection for any failed write
-                // Queued on threadpool so get it in as first op.
-                _connection.Abort();
-                _cancelled = true;
+                if (!_cancelled)
+                {
+                    // Abort the connection for any failed write
+                    // Queued on threadpool so get it in as first op.
+                    _connection.Abort();
+                    _cancelled = true;
 
-                CompleteAllWrites();
+                    CompleteAllWrites();
+
+                    _log.ConnectionError(_connectionId, new TaskCanceledException("Write operation canceled. Aborting connection."));
+                }
             }
         }
 
@@ -434,16 +439,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         private void CompleteAllWrites()
         {
             // Called inside _contextLock
-            var writesToComplete = _tasksPending.Count > 0;
             var bytesLeftToBuffer = _maxBytesPreCompleted - _numBytesPreCompleted;
             while (_tasksPending.Count > 0)
             {
                 CompleteNextWrite(ref bytesLeftToBuffer);
-            }
-
-            if (writesToComplete)
-            {
-                _log.ConnectionError(_connectionId, new TaskCanceledException("Connetcion"));
             }
         }
 
