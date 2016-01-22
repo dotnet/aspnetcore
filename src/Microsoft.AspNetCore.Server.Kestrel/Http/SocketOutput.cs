@@ -370,15 +370,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             // completed writes that we haven't triggered callbacks for yet.
             _numBytesPreCompleted -= bytesWritten;
 
-            CompleteFinishedWrites(status);
-
-            if (error != null)
+            if (error == null)
             {
-                _log.ConnectionError(_connectionId, error);
+                CompleteFinishedWrites(status);
+                _log.ConnectionWriteCallback(_connectionId, status);
             }
             else
             {
-                _log.ConnectionWriteCallback(_connectionId, status);
+                CompleteAllWrites();
+                _log.ConnectionError(_connectionId, error);
             }
         }
 
