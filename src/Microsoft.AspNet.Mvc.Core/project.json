@@ -11,7 +11,6 @@
   },
   "dependencies": {
     "Microsoft.AspNet.Authorization": "1.0.0-*",
-    "Microsoft.AspNet.FileProviders.Abstractions": "1.0.0-*",
     "Microsoft.AspNet.Hosting.Abstractions": "1.0.0-*",
     "Microsoft.AspNet.Mvc.Abstractions": "6.0.0-*",
     "Microsoft.AspNet.Http": "1.0.0-*",
@@ -20,6 +19,7 @@
       "type": "build",
       "version": "1.0.0-*"
     },
+    "Microsoft.Extensions.FileProviders.Abstractions": "1.0.0-*",
     "Microsoft.Extensions.PlatformAbstractions": "1.0.0-*",
     "Microsoft.Extensions.DependencyModel": "1.0.0-*",
     "Microsoft.Extensions.ClosedGenericMatcher.Sources": {

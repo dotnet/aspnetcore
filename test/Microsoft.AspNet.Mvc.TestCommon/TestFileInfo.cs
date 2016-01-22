@@ -4,7 +4,7 @@
 using System;
 using System.IO;
 using System.Text;
-using Microsoft.AspNet.FileProviders;
+using Microsoft.Extensions.FileProviders;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {

@@ -14,13 +14,13 @@ using System.Runtime.Loader;
 #endif
 using System.Runtime.Versioning;
 using Microsoft.AspNet.Diagnostics;
-using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Mvc.Logging;
 using Microsoft.AspNet.Mvc.Razor.Internal;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Emit;
 using Microsoft.Dnx.Compilation.CSharp;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.PlatformAbstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Logging;

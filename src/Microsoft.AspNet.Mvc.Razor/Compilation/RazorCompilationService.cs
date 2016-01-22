@@ -7,10 +7,10 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Microsoft.AspNet.Diagnostics;
-using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Mvc.Logging;
 using Microsoft.AspNet.Razor;
 using Microsoft.AspNet.Razor.CodeGenerators;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 

@@ -3,10 +3,10 @@
 
 using System.Reflection;
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Hosting;
 using Microsoft.AspNet.Mvc.Razor;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 
 namespace EmbeddedViewSample.Web
 {

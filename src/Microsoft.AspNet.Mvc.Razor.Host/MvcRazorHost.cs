@@ -5,9 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-#if NET451
-using Microsoft.AspNet.FileProviders;
-#endif
 using Microsoft.AspNet.Mvc.Razor.Directives;
 using Microsoft.AspNet.Mvc.Razor.Internal;
 using Microsoft.AspNet.Razor;
@@ -17,6 +14,9 @@ using Microsoft.AspNet.Razor.Compilation.TagHelpers;
 using Microsoft.AspNet.Razor.Parser;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
 using Microsoft.AspNet.Razor.TagHelpers;
+#if NET451
+using Microsoft.Extensions.FileProviders;
+#endif
 
 namespace Microsoft.AspNet.Mvc.Razor
 {

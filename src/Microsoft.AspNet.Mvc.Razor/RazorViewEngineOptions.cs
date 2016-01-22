@@ -3,9 +3,9 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Mvc.Razor.Compilation;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.Extensions.FileProviders;
 
 namespace Microsoft.AspNet.Mvc.Razor
 {

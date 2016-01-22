@@ -3,10 +3,10 @@
 
 using System.IO;
 using System.Text;
-using Microsoft.AspNet.FileProviders;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Mvc.Razor;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Primitives;
 using Moq;
 using Xunit;
