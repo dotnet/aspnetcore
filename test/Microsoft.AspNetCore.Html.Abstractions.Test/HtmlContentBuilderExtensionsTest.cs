@@ -6,11 +6,11 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Text.Encodings.Web;
-using Microsoft.AspNet.Testing;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.WebEncoders.Testing;
 using Xunit;
 
-namespace Microsoft.AspNet.Html.Test
+namespace Microsoft.AspNetCore.Html.Test
 {
     public class HtmlContentBuilderExtensionsTest
     {

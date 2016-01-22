@@ -4,7 +4,7 @@
 using System.IO;
 using System.Text.Encodings.Web;
 
-namespace Microsoft.AspNet.Html
+namespace Microsoft.AspNetCore.Html
 {
     /// <summary>
     /// HTML content which can be written to a TextWriter.

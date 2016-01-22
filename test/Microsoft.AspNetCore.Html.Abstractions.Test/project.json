@@ -4,8 +4,8 @@
     "keyFile": "../../tools/Key.snk"
   },
   "dependencies": {
-    "Microsoft.AspNet.Html.Abstractions": "1.0.0-*",
-    "Microsoft.AspNet.Testing": "1.0.0-*",
+    "Microsoft.AspNetCore.Html.Abstractions": "1.0.0-*",
+    "Microsoft.AspNetCore.Testing": "1.0.0-*",
     "Microsoft.Extensions.WebEncoders": "1.0.0-*",
     "xunit": "2.1.0"
   },

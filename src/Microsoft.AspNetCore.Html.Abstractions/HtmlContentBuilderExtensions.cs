@@ -7,7 +7,7 @@ using System.Globalization;
 using System.IO;
 using System.Text.Encodings.Web;
 
-namespace Microsoft.AspNet.Html
+namespace Microsoft.AspNetCore.Html
 {
     /// <summary>
     /// Extension methods for <see cref="IHtmlContentBuilder"/>.
