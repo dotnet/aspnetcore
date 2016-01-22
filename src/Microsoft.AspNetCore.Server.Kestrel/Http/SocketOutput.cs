@@ -45,6 +45,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         // The number of write operations that have been scheduled so far
         // but have not completed.
         private bool _writePending = false;
+        private bool _cancelled = false;
         private int _numBytesPreCompleted = 0;
         private Exception _lastWriteError;
         private WriteContext _nextWriteContext;
@@ -90,7 +91,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
             lock (_contextLock)
             {
-                if (_lastWriteError != null || _socket.IsClosed)
+                if (_socket.IsClosed)
                 {
                     _log.ConnectionDisconnectedWrite(_connectionId, buffer.Count, _lastWriteError);
 
@@ -164,7 +165,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         if (cancellationToken.IsCancellationRequested)
                         {
                             _connection.Abort();
-
+                            _cancelled = true;
                             return TaskUtilities.GetCancelledTask(cancellationToken);
                         }
                         else
@@ -295,7 +296,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             {
                 // Abort the connection for any failed write
                 // Queued on threadpool so get it in as first op.
-                _connection?.Abort();
+                _connection.Abort();
+                _cancelled = true;
 
                 CompleteAllWrites();
             }
@@ -346,9 +348,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         }
 
         // This may called on the libuv event loop
-        // This is always called with the _contextLock already acquired
         private void OnWriteCompleted(WriteContext writeContext)
         {
+            // Called inside _contextLock
             var bytesWritten = writeContext.ByteCount;
             var status = writeContext.WriteStatus;
             var error = writeContext.WriteError;
@@ -358,6 +360,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 // Abort the connection for any failed write
                 // Queued on threadpool so get it in as first op.
                 _connection.Abort();
+                _cancelled = true;
                 _lastWriteError = error;
             }
 
@@ -381,6 +384,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
         private void CompleteNextWrite(ref int bytesLeftToBuffer)
         {
+            // Called inside _contextLock
             var waitingTask = _tasksPending.Dequeue();
             var bytesToWrite = waitingTask.BytesToWrite;
 
@@ -416,6 +420,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
         private void CompleteFinishedWrites(int status)
         {
+            // Called inside _contextLock
             // bytesLeftToBuffer can be greater than _maxBytesPreCompleted
             // This allows large writes to complete once they've actually finished.
             var bytesLeftToBuffer = _maxBytesPreCompleted - _numBytesPreCompleted;
@@ -428,6 +433,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
         private void CompleteAllWrites()
         {
+            // Called inside _contextLock
             var writesToComplete = _tasksPending.Count > 0;
             var bytesLeftToBuffer = _maxBytesPreCompleted - _numBytesPreCompleted;
             while (_tasksPending.Count > 0)
@@ -468,7 +474,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
         private void PoolWriteContext(WriteContext writeContext)
         {
-            // called inside _contextLock
+            // Called inside _contextLock
             if (_writeContextPool.Count < _maxPooledWriteContexts)
             {
                 writeContext.Reset();
@@ -485,8 +491,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         {
             if (cancellationToken.IsCancellationRequested)
             {
-                _connection?.Abort();
+                _connection.Abort();
+                _cancelled = true;
                 return TaskUtilities.GetCancelledTask(cancellationToken);
+            }
+            else if (_cancelled)
+            {
+                return TaskUtilities.CompletedTask;
             }
 
             return WriteAsync(buffer, cancellationToken, immediate, chunk);

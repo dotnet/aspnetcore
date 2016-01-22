@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             }
         }
 
-        public void Abort()
+        public virtual void Abort()
         {
             if (_frame != null)
             {

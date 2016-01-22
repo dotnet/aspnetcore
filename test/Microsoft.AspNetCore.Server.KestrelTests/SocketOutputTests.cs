@@ -224,7 +224,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 var socket = new MockSocket(kestrelThread.Loop.ThreadId, new TestKestrelTrace());
                 var trace = new KestrelTrace(new TestKestrelTrace());
                 var ltp = new LoggingThreadPool(trace);
-                ISocketOutput socketOutput = new SocketOutput(kestrelThread, socket, memory, null, 0, trace, ltp, new Queue<UvWriteReq>());
+                ISocketOutput socketOutput = new SocketOutput(kestrelThread, socket, memory, new MockConnection(socket), 0, trace, ltp, new Queue<UvWriteReq>());
 
                 var bufferSize = maxBytesPreCompleted;
 
@@ -302,7 +302,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 Assert.False(task6Throw.IsCanceled);
                 Assert.False(task6Throw.IsFaulted);
 
-                Assert.Throws<TaskCanceledException>(() => task6Throw.GetAwaiter().GetResult());
+                task6Throw.GetAwaiter().GetResult();
 
                 Assert.True(true);
             }
