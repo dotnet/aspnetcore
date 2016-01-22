@@ -5,11 +5,11 @@
   },
   "dependencies": {
     "Microsoft.AspNet.Diagnostics.Elm": "1.0.0-*",
-    "Microsoft.AspNet.FileProviders.Embedded": "1.0.0-*",
     "Microsoft.AspNet.TestHost": "1.0.0-*",
     "Microsoft.AspNet.Testing": "1.0.0-*",
     "Microsoft.Extensions.DependencyInjection": "1.0.0-*",
     "Microsoft.Extensions.DiagnosticAdapter": "1.0.0-*",
+    "Microsoft.Extensions.FileProviders.Embedded": "1.0.0-*",
     "xunit": "2.1.0"
   },
 
