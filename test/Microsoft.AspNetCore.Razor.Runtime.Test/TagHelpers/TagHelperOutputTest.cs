@@ -4,8 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Razor.Runtime.TagHelpers;
 using Microsoft.Extensions.WebEncoders.Testing;
 using Xunit;
@@ -990,6 +992,34 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
             Assert.Equal(expected, writer.ToString(), StringComparer.Ordinal);
         }
 
+        // This tests a separate code path that's used by THO when the writer is an HtmlTextWriter.
+        // The output should be the same, but we do some specific perf optimizations on this path.
+        [Theory]
+        [MemberData(nameof(WriteTagHelper_InputData))]
+        public void WriteTo_WritesFormattedTagHelper_HtmlTextWriter(TagHelperOutput output, string expected)
+        {
+            // Arrange
+            var inner = new StringWriter();
+            var testEncoder = new HtmlTestEncoder();
+            var writer = new MockHtmlTextWriter(inner, testEncoder);
+
+            var tagHelperExecutionContext = new TagHelperExecutionContext(
+                tagName: output.TagName,
+                tagMode: output.TagMode,
+                items: new Dictionary<object, object>(),
+                uniqueId: string.Empty,
+                executeChildContentAsync: () => Task.FromResult(result: true),
+                startTagHelperWritingScope: _ => { },
+                endTagHelperWritingScope: () => new DefaultTagHelperContent());
+            tagHelperExecutionContext.Output = output;
+
+            // Act
+            output.WriteTo(writer, testEncoder);
+
+            // Assert
+            Assert.Equal(expected, inner.ToString(), StringComparer.Ordinal);
+        }
+
         private static TagHelperOutput GetTagHelperOutput(
             string tagName,
             TagHelperAttributeList attributes,
@@ -1035,6 +1065,30 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
             }
 
             return output;
+        }
+
+        private class MockHtmlTextWriter : HtmlTextWriter
+        {
+            private readonly HtmlEncoder _encoder;
+            private readonly TextWriter _inner;
+
+            public MockHtmlTextWriter(TextWriter inner, HtmlEncoder encoder)
+            {
+                _inner = inner;
+                _encoder = encoder;
+            }
+
+            public override Encoding Encoding => _inner.Encoding;
+
+            public override void Write(IHtmlContent value)
+            {
+                value.WriteTo(_inner, _encoder);
+            }
+
+            public override void Write(char value)
+            {
+                _inner.Write(value);
+            }
         }
     }
 }

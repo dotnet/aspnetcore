@@ -283,14 +283,14 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
 
             if (!isTagNameNullOrWhitespace)
             {
-                writer.Write('<');
+                writer.Write("<");
                 writer.Write(TagName);
 
                 // Perf: Avoid allocating enumerator
                 for (var i = 0; i < Attributes.Count; i++)
                 {
                     var attribute = Attributes[i];
-                    writer.Write(' ');
+                    writer.Write(" ");
                     writer.Write(attribute.Name);
 
                     if (attribute.Minimized)
@@ -309,10 +309,9 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
                         using (var stringWriter = new StringWriter())
                         {
                             htmlContent.WriteTo(stringWriter, encoder);
+                            stringWriter.GetStringBuilder().Replace("\"", "&quot;");
 
                             var stringValue = stringWriter.ToString();
-                            stringValue = stringValue.Replace("\"", "&quot;");
-
                             writer.Write(stringValue);
                         }
                     }
@@ -321,7 +320,7 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
                         encoder.Encode(writer, value.ToString());
                     }
 
-                    writer.Write('"');
+                    writer.Write("\"");
                 }
 
                 if (TagMode == TagMode.SelfClosing)
@@ -329,7 +328,7 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
                     writer.Write(" /");
                 }
 
-                writer.Write('>');
+                writer.Write(">");
             }
 
             if (isTagNameNullOrWhitespace || TagMode == TagMode.StartTagAndEndTag)
