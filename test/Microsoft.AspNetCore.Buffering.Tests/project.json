@@ -4,13 +4,13 @@
     "warningsAsErrors": true
   },
   "dependencies": {
-    "Microsoft.AspNetCore.Buffering": "1.0.0-*",
+    "Microsoft.AspNetCore.Buffering": "0.1.0-*",
     "Microsoft.AspNetCore.TestHost": "1.0.0-*",
     "xunit": "2.1.0"
   },
   "frameworks": {
     "dnx451": {
-     "frameworkAssemblies": {
+      "frameworkAssemblies": {
         "System.Runtime": "",
         "System.Threading.Tasks": ""
       },
@@ -18,7 +18,7 @@
         "xunit.runner.console": "2.1.0"
       }
     },
-    "dnxcore50": { 
+    "dnxcore50": {
       "dependencies": {
         "xunit.runner.aspnet": "2.0.0-aspnet-*"
       }
