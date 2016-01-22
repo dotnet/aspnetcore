@@ -8,7 +8,7 @@
     "Microsoft.AspNetCore.Authentication.Cookies": "1.0.0-*",
     "Microsoft.AspNetCore.Hosting": "1.0.0-*",
     "Microsoft.AspNetCore.Http": "1.0.0-*",
-    "Microsoft.AspNetCore.Identity": "3.0.0-*",
+    "Microsoft.AspNetCore.Identity": "1.0.0-*",
     "Microsoft.AspNetCore.TestHost": "1.0.0-*",
     "Microsoft.AspNetCore.Testing": "1.0.0-*",
     "xunit": "2.1.0"
@@ -17,11 +17,11 @@
   "frameworks": {
     "dnx451": {
       "frameworkAssemblies": {
-          "System.Threading.Tasks": ""
+        "System.Threading.Tasks": ""
       },
       "dependencies": {
         "Moq": "4.2.1312.1622",
-         "xunit.runner.console": "2.1.0"
+        "xunit.runner.console": "2.1.0"
       }
     },
     "dnxcore50": {

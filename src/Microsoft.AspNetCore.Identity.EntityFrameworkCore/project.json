@@ -1,6 +1,6 @@
 {
   "description": "ASP.NET Identity providers that use Entity Framework.",
-  "version": "3.0.0-*",
+  "version": "1.0.0-*",
   "compilationOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk"
@@ -10,8 +10,8 @@
     "url": "git://github.com/aspnet/identity"
   },
   "dependencies": {
-    "Microsoft.AspNetCore.Identity": "3.0.0-*",
-    "Microsoft.EntityFrameworkCore.Relational": "7.0.0-*"
+    "Microsoft.AspNetCore.Identity": "1.0.0-*",
+    "Microsoft.EntityFrameworkCore.Relational": "1.0.0-*"
   },
   "frameworks": {
     "net451": {

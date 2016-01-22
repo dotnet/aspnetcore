@@ -1,6 +1,6 @@
 {
   "description": "Core implementation for ASP.NET Identity.",
-  "version": "3.0.0-*",
+  "version": "1.0.0-*",
   "compilationOptions": {
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk"
@@ -17,8 +17,7 @@
   "frameworks": {
     "net451": {},
     "dotnet5.4": {
-      "dependencies": {
-      }
+      "dependencies": {}
     }
   }
 }
