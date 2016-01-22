@@ -5,12 +5,12 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Authentication.OAuth;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Http.Authentication;
+using Microsoft.AspNetCore.Authentication.OAuth;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http.Authentication;
 using Newtonsoft.Json.Linq;
 
-namespace Microsoft.AspNet.Authentication.MicrosoftAccount
+namespace Microsoft.AspNetCore.Authentication.MicrosoftAccount
 {
     internal class MicrosoftAccountHandler : OAuthHandler<MicrosoftAccountOptions>
     {

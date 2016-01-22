@@ -5,7 +5,7 @@ using System;
 using System.Net.Http;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNet.Authentication
+namespace Microsoft.AspNetCore.Authentication
 {
     public class TestHttpMessageHandler : HttpMessageHandler
     {

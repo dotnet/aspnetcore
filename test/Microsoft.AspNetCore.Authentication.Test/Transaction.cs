@@ -6,7 +6,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Xml.Linq;
 
-namespace Microsoft.AspNet.Authentication
+namespace Microsoft.AspNetCore.Authentication
 {
     public class Transaction
     {

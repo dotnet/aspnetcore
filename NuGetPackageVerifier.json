@@ -9,17 +9,17 @@
             "StrictSemanticVersionValidationRule"
         ],
         "packages": {
-            "Microsoft.AspNet.Authentication": { },
-            "Microsoft.AspNet.Authentication.Cookies": { },
-            "Microsoft.AspNet.Authentication.Facebook": { },
-            "Microsoft.AspNet.Authentication.Google": { },
-            "Microsoft.AspNet.Authentication.JwtBearer": { },
-            "Microsoft.AspNet.Authentication.MicrosoftAccount": { },
-            "Microsoft.AspNet.Authentication.OAuth": { },
-            "Microsoft.AspNet.Authentication.OpenIdConnect": { },
-            "Microsoft.AspNet.Authentication.Twitter": { },
-            "Microsoft.AspNet.Authorization": { },
-            "Microsoft.AspNet.CookiePolicy": { }
+            "Microsoft.AspNetCore.Authentication": { },
+            "Microsoft.AspNetCore.Authentication.Cookies": { },
+            "Microsoft.AspNetCore.Authentication.Facebook": { },
+            "Microsoft.AspNetCore.Authentication.Google": { },
+            "Microsoft.AspNetCore.Authentication.JwtBearer": { },
+            "Microsoft.AspNetCore.Authentication.MicrosoftAccount": { },
+            "Microsoft.AspNetCore.Authentication.OAuth": { },
+            "Microsoft.AspNetCore.Authentication.OpenIdConnect": { },
+            "Microsoft.AspNetCore.Authentication.Twitter": { },
+            "Microsoft.AspNetCore.Authorization": { },
+            "Microsoft.AspNetCore.CookiePolicy": { }
         }
     },
     "Default": { // Rules to run for packages not listed in any other set.

@@ -4,7 +4,7 @@
 using System;
 using System.Linq;
 using System.Security.Claims;
-using Microsoft.AspNet.Authentication;
+using Microsoft.AspNetCore.Authentication;
 using Xunit;
 
 namespace Microsoft.Owin.Security.Interop.Test

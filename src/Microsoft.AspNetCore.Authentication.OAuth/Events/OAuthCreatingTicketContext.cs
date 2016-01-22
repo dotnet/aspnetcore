@@ -5,11 +5,11 @@ using System;
 using System.Globalization;
 using System.Net.Http;
 using System.Security.Claims;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Http;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json.Linq;
 
-namespace Microsoft.AspNet.Authentication.OAuth
+namespace Microsoft.AspNetCore.Authentication.OAuth
 {
     /// <summary>
     /// Contains information about the login session as well as the user <see cref="System.Security.Claims.ClaimsIdentity"/>.

@@ -3,8 +3,8 @@
     "warningsAsErrors": true
   },
   "dependencies": {
-    "Microsoft.AspNet.CookiePolicy": "1.0.0-*",
-    "Microsoft.AspNet.TestHost": "1.0.0-*",
+    "Microsoft.AspNetCore.CookiePolicy": "1.0.0-*",
+    "Microsoft.AspNetCore.TestHost": "1.0.0-*",
     "Microsoft.Extensions.DependencyInjection": "1.0.0-*",
     "xunit": "2.1.0"
   },

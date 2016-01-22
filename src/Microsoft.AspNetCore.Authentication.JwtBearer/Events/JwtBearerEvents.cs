@@ -3,12 +3,12 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http;
+using Microsoft.AspNetCore.Http;
 
 /// <summary>
 /// Specifies events which the <see cref="JwtBearerAuthenticationMiddleware"></see> invokes to enable developer control over the authentication process. />
 /// </summary>
-namespace Microsoft.AspNet.Authentication.JwtBearer
+namespace Microsoft.AspNetCore.Authentication.JwtBearer
 {
     /// <summary>
     /// OpenIdConnect bearer token middleware events.

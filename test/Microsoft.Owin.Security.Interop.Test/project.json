@@ -1,10 +1,10 @@
-﻿{
+{
   "compilationOptions": {
     "warningsAsErrors": true
   },
   "dependencies": {
-    "Microsoft.AspNet.Authentication.Cookies": "1.0.0-*",
-    "Microsoft.AspNet.TestHost": "1.0.0-*",
+    "Microsoft.AspNetCore.Authentication.Cookies": "1.0.0-*",
+    "Microsoft.AspNetCore.TestHost": "1.0.0-*",
     "Microsoft.Owin.Security.Cookies": "3.0.1",
     "Microsoft.Owin.Security.Interop": "1.0.0-*",
     "Microsoft.Owin.Testing": "3.0.1",

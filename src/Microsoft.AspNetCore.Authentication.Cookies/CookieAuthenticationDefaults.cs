@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.AspNet.Http;
+using Microsoft.AspNetCore.Http;
 
-namespace Microsoft.AspNet.Authentication.Cookies
+namespace Microsoft.AspNetCore.Authentication.Cookies
 {
     /// <summary>
     /// Default values related to cookie-based authentication middleware
@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Authentication.Cookies
         /// <summary>
         /// The prefix used to provide a default CookieAuthenticationOptions.CookieName
         /// </summary>
-        public static readonly string CookiePrefix = ".AspNet.";
+        public static readonly string CookiePrefix = ".AspNetCore.";
 
         /// <summary>
         /// The default value used by CookieAuthenticationMiddleware for the

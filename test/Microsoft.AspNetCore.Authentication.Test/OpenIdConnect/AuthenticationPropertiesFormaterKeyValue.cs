@@ -4,9 +4,9 @@
 using System;
 using System.Text;
 using System.Text.Encodings.Web;
-using Microsoft.AspNet.Http.Authentication;
+using Microsoft.AspNetCore.Http.Authentication;
 
-namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
+namespace Microsoft.AspNetCore.Authentication.Tests.OpenIdConnect
 {
     /// <summary>
     /// This formatter creates an easy to read string of the format: "'key1' 'value1' ..."

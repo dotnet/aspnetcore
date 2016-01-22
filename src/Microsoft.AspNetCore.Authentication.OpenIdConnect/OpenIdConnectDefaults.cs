@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-namespace Microsoft.AspNet.Authentication.OpenIdConnect
+namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
 {
     /// <summary>
     /// Default values related to OpenIdConnect authentication middleware
@@ -26,12 +26,12 @@ namespace Microsoft.AspNet.Authentication.OpenIdConnect
         /// <summary>
         /// The prefix used to for the nonce in the cookie.
         /// </summary>
-        public static readonly string CookieNoncePrefix = ".AspNet.OpenIdConnect.Nonce.";
+        public static readonly string CookieNoncePrefix = ".AspNetCore.OpenIdConnect.Nonce.";
 
         /// <summary>
         /// The prefix used for the state in the cookie.
         /// </summary>
-        public static readonly string CookieStatePrefix = ".AspNet.OpenIdConnect.State.";
+        public static readonly string CookieStatePrefix = ".AspNetCore.OpenIdConnect.State.";
 
         /// <summary>
         /// The property for the RedirectUri that was used when asking for a 'authorizationCode'.

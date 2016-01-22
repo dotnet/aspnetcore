@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 
-namespace Microsoft.AspNet.Authorization
+namespace Microsoft.AspNetCore.Authorization
 {
     /// <summary>
     /// Contains authorization information used by <see cref="IAuthorizationHandler"/>.

@@ -4,7 +4,7 @@
 using System;
 using System.Linq;
 
-namespace Microsoft.AspNet.Authorization.Infrastructure
+namespace Microsoft.AspNetCore.Authorization.Infrastructure
 {
     /// <summary>
     /// Requirement that ensures a specific Name

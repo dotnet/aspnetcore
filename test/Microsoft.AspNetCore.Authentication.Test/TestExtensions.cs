@@ -9,10 +9,10 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.TestHost;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.TestHost;
 
-namespace Microsoft.AspNet.Authentication
+namespace Microsoft.AspNetCore.Authentication
 {
     public static class TestExtensions
     {

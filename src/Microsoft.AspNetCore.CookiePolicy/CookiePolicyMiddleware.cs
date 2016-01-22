@@ -3,12 +3,12 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Features.Internal;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features.Internal;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNet.CookiePolicy
+namespace Microsoft.AspNetCore.CookiePolicy
 {
     public class CookiePolicyMiddleware
     {

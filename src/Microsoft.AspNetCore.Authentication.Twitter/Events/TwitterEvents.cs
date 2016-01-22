@@ -4,7 +4,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNet.Authentication.Twitter
+namespace Microsoft.AspNetCore.Authentication.Twitter
 {
     /// <summary>
     /// Default <see cref="ITwitterEvents"/> implementation.

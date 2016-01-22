@@ -3,15 +3,15 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Hosting;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Features;
-using Microsoft.AspNet.Http.Features.Internal;
-using Microsoft.AspNet.TestHost;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Http.Features.Internal;
+using Microsoft.AspNetCore.TestHost;
 using Xunit;
 
-namespace Microsoft.AspNet.CookiePolicy.Test
+namespace Microsoft.AspNetCore.CookiePolicy.Test
 {
     public class CookiePolicyTests
     {

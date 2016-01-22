@@ -3,11 +3,11 @@
 
 using System;
 using System.Security.Claims;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Authentication;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Authentication;
 
-namespace Microsoft.AspNet.Authentication.Cookies
+namespace Microsoft.AspNetCore.Authentication.Cookies
 {
     /// <summary>
     /// Context object passed to the ICookieAuthenticationProvider method ValidatePrincipal.

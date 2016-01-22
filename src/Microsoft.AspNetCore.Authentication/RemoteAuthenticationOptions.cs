@@ -3,10 +3,10 @@
 
 using System;
 using System.Net.Http;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Authentication;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authentication;
 
-namespace Microsoft.AspNet.Builder
+namespace Microsoft.AspNetCore.Builder
 {
     public class RemoteAuthenticationOptions : AuthenticationOptions
     {

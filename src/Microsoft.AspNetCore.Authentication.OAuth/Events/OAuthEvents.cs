@@ -4,7 +4,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNet.Authentication.OAuth
+namespace Microsoft.AspNetCore.Authentication.OAuth
 {
     /// <summary>
     /// Default <see cref="IOAuthEvents"/> implementation.

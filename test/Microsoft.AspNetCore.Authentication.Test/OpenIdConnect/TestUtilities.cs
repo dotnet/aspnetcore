@@ -4,7 +4,7 @@
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
-namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
+namespace Microsoft.AspNetCore.Authentication.Tests.OpenIdConnect
 {
     /// <summary>
     /// These utilities are designed to test openidconnect related flows

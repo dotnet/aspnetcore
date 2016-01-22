@@ -4,9 +4,9 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using Microsoft.AspNet.Http.Authentication;
+using Microsoft.AspNetCore.Http.Authentication;
 
-namespace Microsoft.AspNet.Authentication.Twitter
+namespace Microsoft.AspNetCore.Authentication.Twitter
 {
     /// <summary>
     /// Serializes and deserializes Twitter request and access tokens so that they can be used by other application components.

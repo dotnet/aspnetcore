@@ -4,13 +4,13 @@
 using System;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.AspNet.Authentication;
-using Microsoft.AspNet.Authentication.Cookies;
-using Microsoft.AspNet.DataProtection;
-using Microsoft.AspNet.Http;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNet.Builder
+namespace Microsoft.AspNetCore.Builder
 {
     /// <summary>
     /// Contains the options used by the CookiesAuthenticationMiddleware
@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.Builder
         }
 
         /// <summary>
-        /// Determines the cookie name used to persist the identity. The default value is ".AspNet.Cookies".
+        /// Determines the cookie name used to persist the identity. The default value is ".AspNetCore.Cookies".
         /// This value should be changed if you change the name of the AuthenticationScheme, especially if your
         /// system uses the cookie authentication middleware multiple times.
         /// </summary>

@@ -2,11 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 
-namespace Microsoft.AspNet.Authentication.OAuth
+namespace Microsoft.AspNetCore.Authentication.OAuth
 {
     internal static class Constants
     {
         internal const string SecurityAuthenticate = "security.Authenticate";
-        internal const string CorrelationPrefix = ".AspNet.Correlation.";
+        internal const string CorrelationPrefix = ".AspNetCore.Correlation.";
     }
 }

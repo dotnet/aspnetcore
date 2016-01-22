@@ -9,7 +9,7 @@ using System.Text.Encodings.Web;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Xunit;
 
-namespace Microsoft.AspNet.Authentication.Tests.OpenIdConnect
+namespace Microsoft.AspNetCore.Authentication.Tests.OpenIdConnect
 {
     /// <summary>
     /// This helper class is used to check that query string parameters are as expected.

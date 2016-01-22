@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Microsoft.AspNet.Authorization
+namespace Microsoft.AspNetCore.Authorization
 {
     public class AuthorizationPolicy
     {

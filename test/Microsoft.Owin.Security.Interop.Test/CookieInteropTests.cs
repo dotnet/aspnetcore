@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
@@ -9,10 +9,10 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.DataProtection;
-using Microsoft.AspNet.Hosting;
-using Microsoft.AspNet.Http;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Owin.Security.Cookies;
 using Microsoft.Owin.Testing;
@@ -31,7 +31,7 @@ namespace Microsoft.Owin.Security.Interop
 
             var dataProtection = new DataProtectionProvider(new DirectoryInfo("..\\..\\artifacts"));
             var dataProtector = dataProtection.CreateProtector(
-                "Microsoft.AspNet.Authentication.Cookies.CookieAuthenticationMiddleware", // full name of the ASP.NET 5 type
+                "Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationMiddleware", // full name of the ASP.NET 5 type
                 CookieAuthenticationDefaults.AuthenticationType, "v2");
 
             var interopServer = TestServer.Create(app =>
@@ -85,7 +85,7 @@ namespace Microsoft.Owin.Security.Interop
 
             var dataProtection = new DataProtectionProvider(new DirectoryInfo("..\\..\\artifacts"));
             var dataProtector = dataProtection.CreateProtector(
-                "Microsoft.AspNet.Authentication.Cookies.CookieAuthenticationMiddleware", // full name of the ASP.NET 5 type
+                "Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationMiddleware", // full name of the ASP.NET 5 type
                 CookieAuthenticationDefaults.AuthenticationType, "v2");
 
             var builder = new WebHostBuilder()

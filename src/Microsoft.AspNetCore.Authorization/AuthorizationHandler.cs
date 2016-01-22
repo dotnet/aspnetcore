@@ -4,7 +4,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNet.Authorization
+namespace Microsoft.AspNetCore.Authorization
 {
     public abstract class AuthorizationHandler<TRequirement> : IAuthorizationHandler
         where TRequirement : IAuthorizationRequirement

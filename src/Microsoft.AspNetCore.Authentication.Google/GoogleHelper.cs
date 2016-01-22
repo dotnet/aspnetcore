@@ -5,7 +5,7 @@ using System;
 using Microsoft.Extensions.Internal;
 using Newtonsoft.Json.Linq;
 
-namespace Microsoft.AspNet.Authentication.Google
+namespace Microsoft.AspNetCore.Authentication.Google
 {
     /// <summary>
     /// Contains static methods that allow to extract user's information from a <see cref="JObject"/>

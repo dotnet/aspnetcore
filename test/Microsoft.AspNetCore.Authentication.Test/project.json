@@ -3,15 +3,15 @@
     "warningsAsErrors": true
   },
   "dependencies": {
-    "Microsoft.AspNet.Authentication.Cookies": "1.0.0-*",
-    "Microsoft.AspNet.Authentication.Facebook": "1.0.0-*",
-    "Microsoft.AspNet.Authentication.Google": "1.0.0-*",
-    "Microsoft.AspNet.Authentication.JwtBearer": "1.0.0-*",
-    "Microsoft.AspNet.Authentication.MicrosoftAccount": "1.0.0-*",
-    "Microsoft.AspNet.Authentication.OpenIdConnect": "1.0.0-*",
-    "Microsoft.AspNet.Authentication.Twitter": "1.0.0-*",
-    "Microsoft.AspNet.TestHost": "1.0.0-*",
-    "Microsoft.AspNet.Testing": "1.0.0-*",
+    "Microsoft.AspNetCore.Authentication.Cookies": "1.0.0-*",
+    "Microsoft.AspNetCore.Authentication.Facebook": "1.0.0-*",
+    "Microsoft.AspNetCore.Authentication.Google": "1.0.0-*",
+    "Microsoft.AspNetCore.Authentication.JwtBearer": "1.0.0-*",
+    "Microsoft.AspNetCore.Authentication.MicrosoftAccount": "1.0.0-*",
+    "Microsoft.AspNetCore.Authentication.OpenIdConnect": "1.0.0-*",
+    "Microsoft.AspNetCore.Authentication.Twitter": "1.0.0-*",
+    "Microsoft.AspNetCore.TestHost": "1.0.0-*",
+    "Microsoft.AspNetCore.Testing": "1.0.0-*",
     "xunit": "2.1.0"
   },
   "frameworks": {

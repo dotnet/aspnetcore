@@ -3,14 +3,14 @@
 
 using System;
 using System.Text.Encodings.Web;
-using Microsoft.AspNet.Authentication.OAuth;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.DataProtection;
-using Microsoft.AspNet.Http;
+using Microsoft.AspNetCore.Authentication.OAuth;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNet.Authentication.MicrosoftAccount
+namespace Microsoft.AspNetCore.Authentication.MicrosoftAccount
 {
     /// <summary>
     /// An ASP.NET middleware for authenticating users using the Microsoft Account service.

@@ -9,7 +9,7 @@ using Microsoft.Owin.Security.DataHandler.Serializer;
 
 namespace Microsoft.Owin.Security.Interop
 {
-    // This MUST be kept in sync with Microsoft.AspNet.Authentication.DataHandler.TicketSerializer
+    // This MUST be kept in sync with Microsoft.AspNetCore.Authentication.DataHandler.TicketSerializer
     public class AspNetTicketSerializer : IDataSerializer<AuthenticationTicket>
     {
         private const string DefaultStringPlaceholder = "\0";

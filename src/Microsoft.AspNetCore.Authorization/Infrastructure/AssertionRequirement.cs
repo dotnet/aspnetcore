@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNet.Authorization.Infrastructure
+namespace Microsoft.AspNetCore.Authorization.Infrastructure
 {
     public class AssertionRequirement : AuthorizationHandler<AssertionRequirement>, IAuthorizationRequirement
     {

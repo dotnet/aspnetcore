@@ -3,9 +3,9 @@
 
 using System;
 using System.Security.Claims;
-using Microsoft.AspNet.Http.Authentication;
+using Microsoft.AspNetCore.Http.Authentication;
 
-namespace Microsoft.AspNet.Authentication
+namespace Microsoft.AspNetCore.Authentication
 {
     /// <summary>
     /// Contains user identity information as well as additional authentication state.

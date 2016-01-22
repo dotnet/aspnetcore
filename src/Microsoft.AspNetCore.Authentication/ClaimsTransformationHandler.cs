@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http.Features.Authentication;
+using Microsoft.AspNetCore.Http.Features.Authentication;
 
-namespace Microsoft.AspNet.Authentication
+namespace Microsoft.AspNetCore.Authentication
 {
     /// <summary>
     /// Handler that applies ClaimsTransformation to authentication

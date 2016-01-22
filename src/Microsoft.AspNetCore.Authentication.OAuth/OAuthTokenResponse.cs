@@ -4,7 +4,7 @@
 using System;
 using Newtonsoft.Json.Linq;
 
-namespace Microsoft.AspNet.Authentication.OAuth
+namespace Microsoft.AspNetCore.Authentication.OAuth
 {
     public class OAuthTokenResponse
     {

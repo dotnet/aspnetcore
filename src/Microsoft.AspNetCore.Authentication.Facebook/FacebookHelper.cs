@@ -4,7 +4,7 @@
 using System;
 using Newtonsoft.Json.Linq;
 
-namespace Microsoft.AspNet.Authentication.Facebook
+namespace Microsoft.AspNetCore.Authentication.Facebook
 {
     /// <summary>
     /// Contains static methods that allow to extract user's information from a <see cref="JObject"/>

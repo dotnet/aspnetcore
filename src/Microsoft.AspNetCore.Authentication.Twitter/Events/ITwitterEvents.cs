@@ -3,7 +3,7 @@
 
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNet.Authentication.Twitter
+namespace Microsoft.AspNetCore.Authentication.Twitter
 {
     /// <summary>
     /// Specifies callback methods which the <see cref="TwitterMiddleware"></see> invokes to enable developer control over the authentication process. />

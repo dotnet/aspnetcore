@@ -1,4 +1,4 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.23107.0
@@ -22,33 +22,33 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "CookieSessionSample", "samp
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "OpenIdConnectSample", "samples\OpenIdConnectSample\OpenIdConnectSample.xproj", "{BEF0F5C3-EF4E-4649-9C49-D5E279A3CA2B}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Authentication.Cookies", "src\Microsoft.AspNet.Authentication.Cookies\Microsoft.AspNet.Authentication.Cookies.xproj", "{FC152CC4-054B-457E-8D91-389C5DE3C561}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Authentication.Cookies", "src\Microsoft.AspNetCore.Authentication.Cookies\Microsoft.AspNetCore.Authentication.Cookies.xproj", "{FC152CC4-054B-457E-8D91-389C5DE3C561}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Authentication", "src\Microsoft.AspNet.Authentication\Microsoft.AspNet.Authentication.xproj", "{2286250A-52C8-4126-9F93-B1E45F0AD078}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Authentication", "src\Microsoft.AspNetCore.Authentication\Microsoft.AspNetCore.Authentication.xproj", "{2286250A-52C8-4126-9F93-B1E45F0AD078}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Authentication.Facebook", "src\Microsoft.AspNet.Authentication.Facebook\Microsoft.AspNet.Authentication.Facebook.xproj", "{EEAAEE68-607B-4E33-AF3E-45C66B4DBA5A}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Authentication.Facebook", "src\Microsoft.AspNetCore.Authentication.Facebook\Microsoft.AspNetCore.Authentication.Facebook.xproj", "{EEAAEE68-607B-4E33-AF3E-45C66B4DBA5A}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Authentication.Google", "src\Microsoft.AspNet.Authentication.Google\Microsoft.AspNet.Authentication.Google.xproj", "{76579C39-B829-490D-B8BE-1BD35FE8412E}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Authentication.Google", "src\Microsoft.AspNetCore.Authentication.Google\Microsoft.AspNetCore.Authentication.Google.xproj", "{76579C39-B829-490D-B8BE-1BD35FE8412E}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Authentication.OpenIdConnect", "src\Microsoft.AspNet.Authentication.OpenIdConnect\Microsoft.AspNet.Authentication.OpenIdConnect.xproj", "{35115D55-B69E-46D4-BB33-C9E9E6EC5E7A}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Authentication.OpenIdConnect", "src\Microsoft.AspNetCore.Authentication.OpenIdConnect\Microsoft.AspNetCore.Authentication.OpenIdConnect.xproj", "{35115D55-B69E-46D4-BB33-C9E9E6EC5E7A}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Authentication.MicrosoftAccount", "src\Microsoft.AspNet.Authentication.MicrosoftAccount\Microsoft.AspNet.Authentication.MicrosoftAccount.xproj", "{ACB45E19-F520-4D0C-8916-B0CEB9C017FE}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Authentication.MicrosoftAccount", "src\Microsoft.AspNetCore.Authentication.MicrosoftAccount\Microsoft.AspNetCore.Authentication.MicrosoftAccount.xproj", "{ACB45E19-F520-4D0C-8916-B0CEB9C017FE}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Authentication.Twitter", "src\Microsoft.AspNet.Authentication.Twitter\Microsoft.AspNet.Authentication.Twitter.xproj", "{0330FFF6-B4B5-42DD-8C99-26A789569000}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Authentication.Twitter", "src\Microsoft.AspNetCore.Authentication.Twitter\Microsoft.AspNetCore.Authentication.Twitter.xproj", "{0330FFF6-B4B5-42DD-8C99-26A789569000}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Authentication.OAuth", "src\Microsoft.AspNet.Authentication.OAuth\Microsoft.AspNet.Authentication.OAuth.xproj", "{1657C79E-7755-4AEE-9D61-571295B69A30}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Authentication.OAuth", "src\Microsoft.AspNetCore.Authentication.OAuth\Microsoft.AspNetCore.Authentication.OAuth.xproj", "{1657C79E-7755-4AEE-9D61-571295B69A30}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Authentication.Test", "test\Microsoft.AspNet.Authentication.Test\Microsoft.AspNet.Authentication.Test.xproj", "{8DA26CD1-1302-4CFD-9270-9FA1B7C6138B}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Authentication.Test", "test\Microsoft.AspNetCore.Authentication.Test\Microsoft.AspNetCore.Authentication.Test.xproj", "{8DA26CD1-1302-4CFD-9270-9FA1B7C6138B}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Authorization.Test", "test\Microsoft.AspNet.Authorization.Test\Microsoft.AspNet.Authorization.Test.xproj", "{7AF5AD96-EB6E-4D0E-8ABE-C0B543C0F4C2}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Authorization.Test", "test\Microsoft.AspNetCore.Authorization.Test\Microsoft.AspNetCore.Authorization.Test.xproj", "{7AF5AD96-EB6E-4D0E-8ABE-C0B543C0F4C2}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Authorization", "src\Microsoft.AspNet.Authorization\Microsoft.AspNet.Authorization.xproj", "{6AB3E514-5894-4131-9399-DC7D5284ADDB}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Authorization", "src\Microsoft.AspNetCore.Authorization\Microsoft.AspNetCore.Authorization.xproj", "{6AB3E514-5894-4131-9399-DC7D5284ADDB}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.CookiePolicy", "src\Microsoft.AspNet.CookiePolicy\Microsoft.AspNet.CookiePolicy.xproj", "{86183DC3-02A8-4A68-8B60-71ECEC066E79}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.CookiePolicy", "src\Microsoft.AspNetCore.CookiePolicy\Microsoft.AspNetCore.CookiePolicy.xproj", "{86183DC3-02A8-4A68-8B60-71ECEC066E79}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.CookiePolicy.Test", "test\Microsoft.AspNet.CookiePolicy.Test\Microsoft.AspNet.CookiePolicy.Test.xproj", "{1790E052-646F-4529-B90E-6FEA95520D69}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.CookiePolicy.Test", "test\Microsoft.AspNetCore.CookiePolicy.Test\Microsoft.AspNetCore.CookiePolicy.Test.xproj", "{1790E052-646F-4529-B90E-6FEA95520D69}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Authentication.JwtBearer", "src\Microsoft.AspNet.Authentication.JwtBearer\Microsoft.AspNet.Authentication.JwtBearer.xproj", "{2755BFE5-7421-4A31-A644-F817DF5CAA98}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Authentication.JwtBearer", "src\Microsoft.AspNetCore.Authentication.JwtBearer\Microsoft.AspNetCore.Authentication.JwtBearer.xproj", "{2755BFE5-7421-4A31-A644-F817DF5CAA98}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "JwtBearerSample", "samples\JwtBearerSample\JwtBearerSample.xproj", "{D399B84F-591B-4E98-92BA-B0F63E7B6957}"
 EndProject

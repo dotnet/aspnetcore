@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNet.Authentication
+namespace Microsoft.AspNetCore.Authentication
 {
     public enum EventResultState
     {

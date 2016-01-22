@@ -3,7 +3,7 @@
 
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNet.Authentication.OAuth
+namespace Microsoft.AspNetCore.Authentication.OAuth
 {
     /// <summary>
     /// Specifies callback methods which the <see cref="OAuthMiddleware"/> invokes to enable developer control over the authentication process.

@@ -4,9 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNet.Authorization.Infrastructure;
+using Microsoft.AspNetCore.Authorization.Infrastructure;
 
-namespace Microsoft.AspNet.Authorization
+namespace Microsoft.AspNetCore.Authorization
 {
     public class AuthorizationPolicyBuilder
     {

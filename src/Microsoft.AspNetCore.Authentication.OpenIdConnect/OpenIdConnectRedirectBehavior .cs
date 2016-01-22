@@ -1,4 +1,4 @@
-﻿namespace Microsoft.AspNet.Authentication.OpenIdConnect
+namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
 {
     /// <summary>
     /// Lists the different authentication methods used to

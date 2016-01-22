@@ -3,11 +3,11 @@
 
 using System;
 using System.Linq;
-using Microsoft.AspNet.Authorization;
-using Microsoft.AspNet.Authorization.Infrastructure;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Xunit;
 
-namespace Microsoft.AspNet.Authroization.Test
+namespace Microsoft.AspNetCore.Authroization.Test
 {
     public class AuthorizationPolicyFacts
     {

@@ -10,7 +10,7 @@
     "keyFile": "../../tools/Key.snk"
   },
   "dependencies": {
-    "Microsoft.AspNet.Authentication.OAuth": "1.0.0-*"
+    "Microsoft.AspNetCore.Authentication.OAuth": "1.0.0-*"
   },
   "frameworks": {
     "net451": {},

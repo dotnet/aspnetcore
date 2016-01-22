@@ -4,14 +4,14 @@
 using System;
 using System.Net.Http;
 using System.Text.Encodings.Web;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Http;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
-namespace Microsoft.AspNet.Authentication.JwtBearer
+namespace Microsoft.AspNetCore.Authentication.JwtBearer
 {
     /// <summary>
     /// Bearer authentication middleware component which is added to an HTTP pipeline. This class is not

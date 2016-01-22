@@ -5,11 +5,11 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Security.Claims;
-using Microsoft.AspNet.Http.Authentication;
-using Microsoft.AspNet.Testing.xunit;
+using Microsoft.AspNetCore.Http.Authentication;
+using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
-namespace Microsoft.AspNet.Authentication
+namespace Microsoft.AspNetCore.Authentication
 {
     public class TicketSerializerTests
     {
