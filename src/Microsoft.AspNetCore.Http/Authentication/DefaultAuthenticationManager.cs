@@ -6,11 +6,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http.Features;
-using Microsoft.AspNet.Http.Features.Authentication;
-using Microsoft.AspNet.Http.Features.Authentication.Internal;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Http.Features.Authentication;
+using Microsoft.AspNetCore.Http.Features.Authentication.Internal;
 
-namespace Microsoft.AspNet.Http.Authentication.Internal
+namespace Microsoft.AspNetCore.Http.Authentication.Internal
 {
     public class DefaultAuthenticationManager : AuthenticationManager
     {

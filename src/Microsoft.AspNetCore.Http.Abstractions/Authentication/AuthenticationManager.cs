@@ -5,9 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http.Features.Authentication;
+using Microsoft.AspNetCore.Http.Features.Authentication;
 
-namespace Microsoft.AspNet.Http.Authentication
+namespace Microsoft.AspNetCore.Http.Authentication
 {
     public abstract class AuthenticationManager
     {

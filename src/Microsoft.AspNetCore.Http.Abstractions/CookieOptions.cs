@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNet.Http
+namespace Microsoft.AspNetCore.Http
 {
     /// <summary>
     /// Options used to create a new cookie.

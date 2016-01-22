@@ -1,11 +1,11 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using Microsoft.Extensions.Primitives;
 
 
-namespace Microsoft.AspNet.Http.Internal
+namespace Microsoft.AspNetCore.Http.Internal
 {
     internal struct HeaderSegment : IEquatable<HeaderSegment>
     {

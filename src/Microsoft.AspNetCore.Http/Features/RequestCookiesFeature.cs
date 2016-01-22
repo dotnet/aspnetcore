@@ -3,11 +3,11 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNet.Http.Internal;
+using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNet.Http.Features.Internal
+namespace Microsoft.AspNetCore.Http.Features.Internal
 {
     public class RequestCookiesFeature : IRequestCookiesFeature
     {

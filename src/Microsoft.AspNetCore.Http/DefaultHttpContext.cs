@@ -5,14 +5,14 @@ using System;
 using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading;
-using Microsoft.AspNet.Http.Authentication;
-using Microsoft.AspNet.Http.Authentication.Internal;
-using Microsoft.AspNet.Http.Features;
-using Microsoft.AspNet.Http.Features.Authentication;
-using Microsoft.AspNet.Http.Features.Authentication.Internal;
-using Microsoft.AspNet.Http.Features.Internal;
+using Microsoft.AspNetCore.Http.Authentication;
+using Microsoft.AspNetCore.Http.Authentication.Internal;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Http.Features.Authentication;
+using Microsoft.AspNetCore.Http.Features.Authentication.Internal;
+using Microsoft.AspNetCore.Http.Features.Internal;
 
-namespace Microsoft.AspNet.Http.Internal
+namespace Microsoft.AspNetCore.Http.Internal
 {
     public class DefaultHttpContext : HttpContext
     {

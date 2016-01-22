@@ -3,9 +3,9 @@
 
 using System;
 using System.Text.Encodings.Web;
-using Microsoft.AspNet.Http.Abstractions;
+using Microsoft.AspNetCore.Http.Abstractions;
 
-namespace Microsoft.AspNet.Http
+namespace Microsoft.AspNetCore.Http
 {
     /// <summary>
     /// Provides correct escaping for Path and PathBase values when needed to reconstruct a request or redirect URI string

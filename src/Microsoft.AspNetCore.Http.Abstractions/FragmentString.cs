@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNet.Http
+namespace Microsoft.AspNetCore.Http
 {
     /// <summary>
     /// Provides correct handling for FragmentString value when needed to generate a URI string

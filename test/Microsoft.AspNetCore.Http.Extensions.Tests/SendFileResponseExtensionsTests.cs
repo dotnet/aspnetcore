@@ -4,11 +4,11 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http.Features;
-using Microsoft.AspNet.Http.Internal;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Http.Internal;
 using Xunit;
 
-namespace Microsoft.AspNet.Http.Extensions.Tests
+namespace Microsoft.AspNetCore.Http.Extensions.Tests
 {
     public class SendFileResponseExtensionsTests
     {

@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "Microsoft.AspNet.Http.Features": "1.0.0-*",
+    "Microsoft.AspNetCore.Http.Features": "1.0.0-*",
     "xunit": "2.1.0"
   },
   "frameworks": {

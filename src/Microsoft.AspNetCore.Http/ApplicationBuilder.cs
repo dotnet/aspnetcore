@@ -5,11 +5,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Http.Features;
-using Microsoft.AspNet.Http.Internal;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Http.Internal;
 
-namespace Microsoft.AspNet.Builder.Internal
+namespace Microsoft.AspNetCore.Builder.Internal
 {
     public class ApplicationBuilder : IApplicationBuilder
     {

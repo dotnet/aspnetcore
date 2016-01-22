@@ -7,7 +7,7 @@ using System.Text;
 using System.Text.Encodings.Web;
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.AspNet.WebUtilities
+namespace Microsoft.AspNetCore.WebUtilities
 {
     public static class QueryHelpers
     {

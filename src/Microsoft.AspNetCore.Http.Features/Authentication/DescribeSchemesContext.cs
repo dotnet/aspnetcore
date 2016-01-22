@@ -3,7 +3,7 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.AspNet.Http.Features.Authentication
+namespace Microsoft.AspNetCore.Http.Features.Authentication
 {
     public class DescribeSchemesContext
     {

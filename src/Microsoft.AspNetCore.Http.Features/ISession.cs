@@ -4,7 +4,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNet.Http.Features
+namespace Microsoft.AspNetCore.Http.Features
 {
     public interface ISession
     {

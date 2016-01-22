@@ -9,7 +9,7 @@ using System.Runtime.Remoting;
 using System.Threading;
 #endif
 
-namespace Microsoft.AspNet.Http.Internal
+namespace Microsoft.AspNetCore.Http.Internal
 {
     public class HttpContextAccessor : IHttpContextAccessor
     {

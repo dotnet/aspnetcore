@@ -4,11 +4,11 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http.Features;
-using Microsoft.AspNet.Http.Features.Internal;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Http.Features.Internal;
 using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNet.Http.Internal
+namespace Microsoft.AspNetCore.Http.Internal
 {
     public class DefaultHttpResponse : HttpResponse
     {

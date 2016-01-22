@@ -3,10 +3,10 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNet.Http.Extensions;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNet.Http.Headers
+namespace Microsoft.AspNetCore.Http.Headers
 {
     public class ResponseHeaders
     {

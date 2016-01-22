@@ -6,7 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.AspNet.Http.Internal
+namespace Microsoft.AspNetCore.Http.Internal
 {
     /// <summary>
     /// Contains the parsed form values.
@@ -77,9 +77,9 @@ namespace Microsoft.AspNet.Http.Internal
         }
 
         /// <summary>
-        /// Gets the number of elements contained in the <see cref="T:Microsoft.AspNet.Http.Internal.HeaderDictionary" />;.
+        /// Gets the number of elements contained in the <see cref="T:Microsoft.AspNetCore.Http.Internal.HeaderDictionary" />;.
         /// </summary>
-        /// <returns>The number of elements contained in the <see cref="T:Microsoft.AspNet.Http.Internal.HeaderDictionary" />.</returns>
+        /// <returns>The number of elements contained in the <see cref="T:Microsoft.AspNetCore.Http.Internal.HeaderDictionary" />.</returns>
         public int Count
         {
             get
@@ -101,10 +101,10 @@ namespace Microsoft.AspNet.Http.Internal
         }
 
         /// <summary>
-        /// Determines whether the <see cref="T:Microsoft.AspNet.Http.Internal.HeaderDictionary" /> contains a specific key.
+        /// Determines whether the <see cref="T:Microsoft.AspNetCore.Http.Internal.HeaderDictionary" /> contains a specific key.
         /// </summary>
         /// <param name="key">The key.</param>
-        /// <returns>true if the <see cref="T:Microsoft.AspNet.Http.Internal.HeaderDictionary" /> contains a specific key; otherwise, false.</returns>
+        /// <returns>true if the <see cref="T:Microsoft.AspNetCore.Http.Internal.HeaderDictionary" /> contains a specific key; otherwise, false.</returns>
         public bool ContainsKey(string key)
         {
             if (Store == null)
@@ -119,7 +119,7 @@ namespace Microsoft.AspNet.Http.Internal
         /// </summary>
         /// <param name="key">The header name.</param>
         /// <param name="value">The value.</param>
-        /// <returns>true if the <see cref="T:Microsoft.AspNet.Http.Internal.HeaderDictionary" /> contains the key; otherwise, false.</returns>
+        /// <returns>true if the <see cref="T:Microsoft.AspNetCore.Http.Internal.HeaderDictionary" /> contains the key; otherwise, false.</returns>
         public bool TryGetValue(string key, out StringValues value)
         {
             if (Store == null)
@@ -131,9 +131,9 @@ namespace Microsoft.AspNet.Http.Internal
         }
 
         /// <summary>
-        /// Returns an struct enumerator that iterates through a collection without boxing and is also used via the <see cref="T:Microsoft.AspNet.Http.IFormCollection" /> interface.
+        /// Returns an struct enumerator that iterates through a collection without boxing and is also used via the <see cref="T:Microsoft.AspNetCore.Http.IFormCollection" /> interface.
         /// </summary>
-        /// <returns>An <see cref="T:Microsoft.AspNet.Http.StructEnumerator" /> object that can be used to iterate through the collection.</returns>
+        /// <returns>An <see cref="T:Microsoft.AspNetCore.Http.StructEnumerator" /> object that can be used to iterate through the collection.</returns>
         public Enumerator GetEnumerator()
         {
             if (Store == null || Store.Count == 0)

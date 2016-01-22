@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using Microsoft.AspNet.Http.Features;
+using Microsoft.AspNetCore.Http.Features;
 using Xunit;
 
-namespace Microsoft.AspNet.Owin
+namespace Microsoft.AspNetCore.Owin
 {
     public class OwinHttpEnvironmentTests
     {

@@ -4,7 +4,7 @@
 using System;
 using System.Diagnostics;
 
-namespace Microsoft.AspNet.WebUtilities
+namespace Microsoft.AspNetCore.WebUtilities
 {
     /// <summary>
     /// Contains utility APIs to assist with common encoding and decoding operations.

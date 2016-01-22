@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using Microsoft.Extensions.Primitives;
 using Xunit;
 
-namespace Microsoft.AspNet.Http.Internal
+namespace Microsoft.AspNetCore.Http.Internal
 {
     public class HeaderDictionaryTests
     {

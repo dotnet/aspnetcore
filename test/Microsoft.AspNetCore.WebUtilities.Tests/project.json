@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "Microsoft.AspNet.WebUtilities": "1.0.0-*",
+    "Microsoft.AspNetCore.WebUtilities": "1.0.0-*",
     "xunit": "2.1.0"
   },
   "compilationOptions": {

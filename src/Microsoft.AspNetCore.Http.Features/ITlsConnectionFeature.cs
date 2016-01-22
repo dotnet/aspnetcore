@@ -5,7 +5,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNet.Http.Features
+namespace Microsoft.AspNetCore.Http.Features
 {
     public interface ITlsConnectionFeature
     {

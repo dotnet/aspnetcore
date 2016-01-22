@@ -6,7 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNet.Http.Internal
+namespace Microsoft.AspNetCore.Http.Internal
 {
     public class RequestCookieCollection : IRequestCookieCollection
     {
@@ -135,7 +135,7 @@ namespace Microsoft.AspNet.Http.Internal
         /// <summary>
         /// Returns an struct enumerator that iterates through a collection without boxing.
         /// </summary>
-        /// <returns>An <see cref="T:Microsoft.AspNet.Http.Internal.RequestCookies.Enumerator" /> object that can be used to iterate through the collection.</returns>
+        /// <returns>An <see cref="T:Microsoft.AspNetCore.Http.Internal.RequestCookies.Enumerator" /> object that can be used to iterate through the collection.</returns>
         public Enumerator GetEnumerator()
         {
             if (Store == null || Store.Count == 0)

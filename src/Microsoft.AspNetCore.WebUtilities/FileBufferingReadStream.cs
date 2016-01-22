@@ -7,7 +7,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNet.WebUtilities
+namespace Microsoft.AspNetCore.WebUtilities
 {
     /// <summary>
     /// A Stream that wraps another stream and enables rewinding by buffering the content as it is read.

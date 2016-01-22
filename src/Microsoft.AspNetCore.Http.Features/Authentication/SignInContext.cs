@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Security.Claims;
 
-namespace Microsoft.AspNet.Http.Features.Authentication
+namespace Microsoft.AspNetCore.Http.Features.Authentication
 {
     public class SignInContext
     {

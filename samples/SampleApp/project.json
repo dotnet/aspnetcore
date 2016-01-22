@@ -1,8 +1,8 @@
-﻿{
+{
   "version": "1.0.0-*",
 
   "dependencies": {
-    "Microsoft.AspNet.Http": "1.0.0-*"
+    "Microsoft.AspNetCore.Http": "1.0.0-*"
   },
 
   "commands": {

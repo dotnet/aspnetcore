@@ -6,7 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.AspNet.Http.Internal
+namespace Microsoft.AspNetCore.Http.Internal
 {
     /// <summary>
     /// Represents a wrapper for RequestHeaders and ResponseHeaders.
@@ -98,9 +98,9 @@ namespace Microsoft.AspNet.Http.Internal
         }
 
         /// <summary>
-        /// Gets the number of elements contained in the <see cref="T:Microsoft.AspNet.Http.Internal.HeaderDictionary" />;.
+        /// Gets the number of elements contained in the <see cref="T:Microsoft.AspNetCore.Http.Internal.HeaderDictionary" />;.
         /// </summary>
-        /// <returns>The number of elements contained in the <see cref="T:Microsoft.AspNet.Http.Internal.HeaderDictionary" />.</returns>
+        /// <returns>The number of elements contained in the <see cref="T:Microsoft.AspNetCore.Http.Internal.HeaderDictionary" />.</returns>
         public int Count
         {
             get
@@ -110,9 +110,9 @@ namespace Microsoft.AspNet.Http.Internal
         }
 
         /// <summary>
-        /// Gets a value that indicates whether the <see cref="T:Microsoft.AspNet.Http.Internal.HeaderDictionary" /> is in read-only mode.
+        /// Gets a value that indicates whether the <see cref="T:Microsoft.AspNetCore.Http.Internal.HeaderDictionary" /> is in read-only mode.
         /// </summary>
-        /// <returns>true if the <see cref="T:Microsoft.AspNet.Http.Internal.HeaderDictionary" /> is in read-only mode; otherwise, false.</returns>
+        /// <returns>true if the <see cref="T:Microsoft.AspNetCore.Http.Internal.HeaderDictionary" /> is in read-only mode; otherwise, false.</returns>
         public bool IsReadOnly
         {
             get
@@ -207,10 +207,10 @@ namespace Microsoft.AspNet.Http.Internal
         }
 
         /// <summary>
-        /// Determines whether the <see cref="T:Microsoft.AspNet.Http.Internal.HeaderDictionary" /> contains a specific key.
+        /// Determines whether the <see cref="T:Microsoft.AspNetCore.Http.Internal.HeaderDictionary" /> contains a specific key.
         /// </summary>
         /// <param name="key">The key.</param>
-        /// <returns>true if the <see cref="T:Microsoft.AspNet.Http.Internal.HeaderDictionary" /> contains a specific key; otherwise, false.</returns>
+        /// <returns>true if the <see cref="T:Microsoft.AspNetCore.Http.Internal.HeaderDictionary" /> contains a specific key; otherwise, false.</returns>
         public bool ContainsKey(string key)
         {
             if (Store == null)
@@ -221,9 +221,9 @@ namespace Microsoft.AspNet.Http.Internal
         }
 
         /// <summary>
-        /// Copies the <see cref="T:Microsoft.AspNet.Http.Internal.HeaderDictionary" /> elements to a one-dimensional Array instance at the specified index.
+        /// Copies the <see cref="T:Microsoft.AspNetCore.Http.Internal.HeaderDictionary" /> elements to a one-dimensional Array instance at the specified index.
         /// </summary>
-        /// <param name="array">The one-dimensional Array that is the destination of the specified objects copied from the <see cref="T:Microsoft.AspNet.Http.Internal.HeaderDictionary" />.</param>
+        /// <param name="array">The one-dimensional Array that is the destination of the specified objects copied from the <see cref="T:Microsoft.AspNetCore.Http.Internal.HeaderDictionary" />.</param>
         /// <param name="arrayIndex">The zero-based index in <paramref name="array" /> at which copying begins.</param>
         public void CopyTo(KeyValuePair<string, StringValues>[] array, int arrayIndex)
         {
@@ -279,7 +279,7 @@ namespace Microsoft.AspNet.Http.Internal
         /// </summary>
         /// <param name="key">The header name.</param>
         /// <param name="value">The value.</param>
-        /// <returns>true if the <see cref="T:Microsoft.AspNet.Http.Internal.HeaderDictionary" /> contains the key; otherwise, false.</returns>
+        /// <returns>true if the <see cref="T:Microsoft.AspNetCore.Http.Internal.HeaderDictionary" /> contains the key; otherwise, false.</returns>
         public bool TryGetValue(string key, out StringValues value)
         {
             if (Store == null)

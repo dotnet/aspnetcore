@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNet.Http.Internal
+namespace Microsoft.AspNetCore.Http.Internal
 {
     /// <summary>
     /// A wrapper for the response Set-Cookie header

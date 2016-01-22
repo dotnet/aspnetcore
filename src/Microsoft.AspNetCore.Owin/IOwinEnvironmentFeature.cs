@@ -3,7 +3,7 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.AspNet.Owin
+namespace Microsoft.AspNetCore.Owin
 {
     public interface IOwinEnvironmentFeature
     {

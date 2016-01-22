@@ -1,11 +1,11 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Xunit;
 using Microsoft.Net.Http.Headers;
-using Microsoft.AspNet.Http.Internal;
+using Microsoft.AspNetCore.Http.Internal;
 
-namespace Microsoft.AspNet.Http.Tests
+namespace Microsoft.AspNetCore.Http.Tests
 {
     public class ResponseCookiesTest
     {

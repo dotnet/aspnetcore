@@ -6,11 +6,11 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http.Internal;
-using Microsoft.AspNet.WebUtilities;
+using Microsoft.AspNetCore.Http.Internal;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNet.Http.Features.Internal
+namespace Microsoft.AspNetCore.Http.Features.Internal
 {
     public class FormFeature : IFormFeature
     {

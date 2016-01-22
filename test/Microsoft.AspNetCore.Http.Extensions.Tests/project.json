@@ -1,7 +1,7 @@
 {
   "dependencies": {
-    "Microsoft.AspNet.Http": "1.0.0-*",
-    "Microsoft.AspNet.Http.Extensions": "1.0.0-*",
+    "Microsoft.AspNetCore.Http": "1.0.0-*",
+    "Microsoft.AspNetCore.Http.Extensions": "1.0.0-*",
     "Microsoft.Extensions.DependencyInjection": "1.0.0-*",
     "xunit": "2.1.0"
   },

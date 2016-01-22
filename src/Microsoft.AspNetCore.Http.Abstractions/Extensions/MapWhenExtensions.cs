@@ -2,11 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNet.Http;
-using Microsoft.AspNet.Builder.Extensions;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Builder.Extensions;
 
 
-namespace Microsoft.AspNet.Builder
+namespace Microsoft.AspNetCore.Builder
 {
     using Predicate = Func<HttpContext, bool>;
 

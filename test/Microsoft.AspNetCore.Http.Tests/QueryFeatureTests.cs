@@ -3,7 +3,7 @@
 
 using Xunit;
 
-namespace Microsoft.AspNet.Http.Features.Internal
+namespace Microsoft.AspNetCore.Http.Features.Internal
 {
     public class QueryFeatureTests
     {

@@ -1,10 +1,10 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNet.Http.Features.Internal;
+using Microsoft.AspNetCore.Http.Features.Internal;
 using Xunit;
 
-namespace Microsoft.AspNet.Http.Tests
+namespace Microsoft.AspNetCore.Http.Tests
 {
     public class HttpRequestIdentifierFeatureTests
     {

@@ -3,7 +3,7 @@
 
 using Xunit;
 
-namespace Microsoft.AspNet.Http.Features
+namespace Microsoft.AspNetCore.Http.Features
 {
     public class FeatureCollectionTests
     {

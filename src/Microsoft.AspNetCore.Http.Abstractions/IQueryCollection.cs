@@ -4,7 +4,7 @@
 using System.Collections.Generic;
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.AspNet.Http
+namespace Microsoft.AspNetCore.Http
 {
     /// <summary>
     ///     Represents the HttpRequest query string collection
@@ -12,32 +12,32 @@ namespace Microsoft.AspNet.Http
     public interface IQueryCollection : IEnumerable<KeyValuePair<string, StringValues>>
     {
         /// <summary>
-        ///     Gets the number of elements contained in the <see cref="T:Microsoft.AspNet.Http.IQueryCollection" />.
+        ///     Gets the number of elements contained in the <see cref="T:Microsoft.AspNetCore.Http.IQueryCollection" />.
         /// </summary>
         /// <returns>
-        ///     The number of elements contained in the <see cref="T:Microsoft.AspNet.Http.IQueryCollection" />.
+        ///     The number of elements contained in the <see cref="T:Microsoft.AspNetCore.Http.IQueryCollection" />.
         /// </returns>
         int Count { get; }
 
         /// <summary>
         ///     Gets an <see cref="T:System.Collections.Generic.ICollection`1" /> containing the keys of the 
-        ///     <see cref="T:Microsoft.AspNet.Http.IQueryCollection" />.
+        ///     <see cref="T:Microsoft.AspNetCore.Http.IQueryCollection" />.
         /// </summary>
         /// <returns>
         ///     An <see cref="T:System.Collections.Generic.ICollection`1" /> containing the keys of the object
-        ///     that implements <see cref="T:Microsoft.AspNet.Http.IQueryCollection" />.
+        ///     that implements <see cref="T:Microsoft.AspNetCore.Http.IQueryCollection" />.
         /// </returns>
         ICollection<string> Keys { get; }
 
         /// <summary>
-        ///     Determines whether the <see cref="T:Microsoft.AspNet.Http.IQueryCollection" /> contains an element
+        ///     Determines whether the <see cref="T:Microsoft.AspNetCore.Http.IQueryCollection" /> contains an element
         ///     with the specified key.
         /// </summary>
         /// <param name="key">
-        /// The key to locate in the <see cref="T:Microsoft.AspNet.Http.IQueryCollection" />.
+        /// The key to locate in the <see cref="T:Microsoft.AspNetCore.Http.IQueryCollection" />.
         /// </param>
         /// <returns>
-        ///     true if the <see cref="T:Microsoft.AspNet.Http.IQueryCollection" /> contains an element with
+        ///     true if the <see cref="T:Microsoft.AspNetCore.Http.IQueryCollection" /> contains an element with
         ///     the key; otherwise, false.
         /// </returns>
         /// <exception cref="T:System.ArgumentNullException">
@@ -58,7 +58,7 @@ namespace Microsoft.AspNet.Http
         ///     This parameter is passed uninitialized.
         /// </param>
         /// <returns>
-        ///    true if the object that implements <see cref="T:Microsoft.AspNet.Http.IQueryCollection" /> contains
+        ///    true if the object that implements <see cref="T:Microsoft.AspNetCore.Http.IQueryCollection" /> contains
         ///     an element with the specified key; otherwise, false.
         /// </returns>
         /// <exception cref="T:System.ArgumentNullException">
@@ -79,7 +79,7 @@ namespace Microsoft.AspNet.Http
         ///     key is null.
         /// </exception>
         /// <remarks>
-        ///     <see cref="T:Microsoft.AspNet.Http.IQueryCollection" /> has a different indexer contract than 
+        ///     <see cref="T:Microsoft.AspNetCore.Http.IQueryCollection" /> has a different indexer contract than 
         ///     <see cref="T:System.Collections.Generic.IDictionary`2" />, as it will return StringValues.Empty for missing entries
         ///     rather than throwing an Exception.
         /// </remarks>

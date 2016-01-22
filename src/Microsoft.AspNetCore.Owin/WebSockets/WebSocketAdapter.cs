@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNet.Owin
+namespace Microsoft.AspNetCore.Owin
 {
     using WebSocketCloseAsync =
         Func<int /* closeStatus */,

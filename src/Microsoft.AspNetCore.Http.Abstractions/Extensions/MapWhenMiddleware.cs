@@ -3,9 +3,9 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http;
+using Microsoft.AspNetCore.Http;
 
-namespace Microsoft.AspNet.Builder.Extensions
+namespace Microsoft.AspNetCore.Builder.Extensions
 {
     /// <summary>
     /// Respresents a middleware that runs a sub-request pipeline when a given predicate is matched.

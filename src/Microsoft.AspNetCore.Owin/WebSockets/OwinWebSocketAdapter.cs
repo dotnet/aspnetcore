@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Net.WebSockets;
 
-namespace Microsoft.AspNet.Owin
+namespace Microsoft.AspNetCore.Owin
 {
     // http://owin.org/extensions/owin-WebSocket-Extension-v0.4.0.htm
     using WebSocketCloseAsync =

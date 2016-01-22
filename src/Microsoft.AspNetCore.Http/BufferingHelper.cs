@@ -3,9 +3,9 @@
 
 using System;
 using System.IO;
-using Microsoft.AspNet.WebUtilities;
+using Microsoft.AspNetCore.WebUtilities;
 
-namespace Microsoft.AspNet.Http.Internal
+namespace Microsoft.AspNetCore.Http.Internal
 {
     public static class BufferingHelper
     {

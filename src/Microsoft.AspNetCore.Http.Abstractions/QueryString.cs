@@ -7,7 +7,7 @@ using System.Text;
 using System.Text.Encodings.Web;
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.AspNet.Http
+namespace Microsoft.AspNetCore.Http
 {
     /// <summary>
     /// Provides correct handling for QueryString value when needed to reconstruct a request or redirect URI string

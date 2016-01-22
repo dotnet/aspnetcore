@@ -4,11 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNet.Http.Internal;
+using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.Net.Http.Headers;
 using Xunit;
 
-namespace Microsoft.AspNet.Http.Headers
+namespace Microsoft.AspNetCore.Http.Headers
 {
     public class HeaderDictionaryTypeExtensionsTest
     {

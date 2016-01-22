@@ -5,9 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Net.WebSockets;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http.Features;
+using Microsoft.AspNetCore.Http.Features;
 
-namespace Microsoft.AspNet.Owin
+namespace Microsoft.AspNetCore.Owin
 {
     using AppFunc = Func<IDictionary<string, object>, Task>;
     using WebSocketAccept =

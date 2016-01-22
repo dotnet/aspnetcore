@@ -3,7 +3,7 @@
 
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNet.Http.Features.Authentication
+namespace Microsoft.AspNetCore.Http.Features.Authentication
 {
     public interface IAuthenticationHandler
     {

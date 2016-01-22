@@ -3,7 +3,7 @@
 
 using System.Security.Claims;
 
-namespace Microsoft.AspNet.Http.Features.Authentication
+namespace Microsoft.AspNetCore.Http.Features.Authentication
 {
     public interface IHttpAuthenticationFeature
     {

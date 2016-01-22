@@ -9,7 +9,7 @@ using System.Linq;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNet.Http.Internal
+namespace Microsoft.AspNetCore.Http.Internal
 {
     internal struct HeaderSegment : IEquatable<HeaderSegment>
     {

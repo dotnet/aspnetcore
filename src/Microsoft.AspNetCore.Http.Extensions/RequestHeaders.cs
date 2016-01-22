@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNet.Http.Headers
+namespace Microsoft.AspNetCore.Http.Headers
 {
     public class RequestHeaders
     {

@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 
-namespace Microsoft.AspNet.Http.Authentication
+namespace Microsoft.AspNetCore.Http.Authentication
 {
     /// <summary>
     /// Dictionary used to store state values about the authentication session.

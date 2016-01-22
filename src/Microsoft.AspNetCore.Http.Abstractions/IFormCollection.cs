@@ -4,7 +4,7 @@
 using System.Collections.Generic;
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.AspNet.Http
+namespace Microsoft.AspNetCore.Http
 {
     /// <summary>
     /// Represents the parsed form values sent with the HttpRequest.
@@ -12,32 +12,32 @@ namespace Microsoft.AspNet.Http
     public interface IFormCollection : IEnumerable<KeyValuePair<string, StringValues>>
     {
         /// <summary>
-        ///     Gets the number of elements contained in the <see cref="T:Microsoft.AspNet.Http.IFormCollection" />.
+        ///     Gets the number of elements contained in the <see cref="T:Microsoft.AspNetCore.Http.IFormCollection" />.
         /// </summary>
         /// <returns>
-        ///     The number of elements contained in the <see cref="T:Microsoft.AspNet.Http.IFormCollection" />.
+        ///     The number of elements contained in the <see cref="T:Microsoft.AspNetCore.Http.IFormCollection" />.
         /// </returns>
         int Count { get; }
         
         /// <summary>
         ///     Gets an <see cref="T:System.Collections.Generic.ICollection`1" /> containing the keys of the 
-        ///     <see cref="T:Microsoft.AspNet.Http.IFormCollection" />.
+        ///     <see cref="T:Microsoft.AspNetCore.Http.IFormCollection" />.
         /// </summary>
         /// <returns>
         ///     An <see cref="T:System.Collections.Generic.ICollection`1" /> containing the keys of the object
-        ///     that implements <see cref="T:Microsoft.AspNet.Http.IFormCollection" />.
+        ///     that implements <see cref="T:Microsoft.AspNetCore.Http.IFormCollection" />.
         /// </returns>
         ICollection<string> Keys { get; }
 
         /// <summary>
-        ///     Determines whether the <see cref="T:Microsoft.AspNet.Http.IFormCollection" /> contains an element
+        ///     Determines whether the <see cref="T:Microsoft.AspNetCore.Http.IFormCollection" /> contains an element
         ///     with the specified key.
         /// </summary>
         /// <param name="key">
-        /// The key to locate in the <see cref="T:Microsoft.AspNet.Http.IFormCollection" />.
+        /// The key to locate in the <see cref="T:Microsoft.AspNetCore.Http.IFormCollection" />.
         /// </param>
         /// <returns>
-        ///     true if the <see cref="T:Microsoft.AspNet.Http.IFormCollection" /> contains an element with
+        ///     true if the <see cref="T:Microsoft.AspNetCore.Http.IFormCollection" /> contains an element with
         ///     the key; otherwise, false.
         /// </returns>
         /// <exception cref="T:System.ArgumentNullException">
@@ -58,7 +58,7 @@ namespace Microsoft.AspNet.Http
         ///     This parameter is passed uninitialized.
         /// </param>
         /// <returns>
-        ///    true if the object that implements <see cref="T:Microsoft.AspNet.Http.IFormCollection" /> contains
+        ///    true if the object that implements <see cref="T:Microsoft.AspNetCore.Http.IFormCollection" /> contains
         ///     an element with the specified key; otherwise, false.
         /// </returns>
         /// <exception cref="T:System.ArgumentNullException">
@@ -79,7 +79,7 @@ namespace Microsoft.AspNet.Http
         ///     key is null.
         /// </exception>
         /// <remarks>
-        ///     <see cref="T:Microsoft.AspNet.Http.IFormCollection" /> has a different indexer contract than 
+        ///     <see cref="T:Microsoft.AspNetCore.Http.IFormCollection" /> has a different indexer contract than 
         ///     <see cref="T:System.Collections.Generic.IDictionary`2" />, as it will return StringValues.Empty for missing entries
         ///     rather than throwing an Exception.
         /// </remarks>

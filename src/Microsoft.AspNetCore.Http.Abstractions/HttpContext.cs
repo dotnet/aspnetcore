@@ -5,10 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading;
-using Microsoft.AspNet.Http.Authentication;
-using Microsoft.AspNet.Http.Features;
+using Microsoft.AspNetCore.Http.Authentication;
+using Microsoft.AspNetCore.Http.Features;
 
-namespace Microsoft.AspNet.Http
+namespace Microsoft.AspNetCore.Http
 {
     /// <summary>
     /// Encapsulates all HTTP-specific information about an individual HTTP request.

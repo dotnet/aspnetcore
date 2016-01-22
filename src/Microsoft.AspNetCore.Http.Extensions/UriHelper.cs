@@ -4,7 +4,7 @@
 using System;
 using System.Text;
 
-namespace Microsoft.AspNet.Http.Extensions
+namespace Microsoft.AspNetCore.Http.Extensions
 {
     /// <summary>
     /// A helper class for constructing encoded Uris for use in headers and other Uris.
