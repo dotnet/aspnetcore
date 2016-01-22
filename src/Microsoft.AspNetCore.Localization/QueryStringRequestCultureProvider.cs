@@ -3,10 +3,10 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Globalization;
 
-namespace Microsoft.AspNet.Localization
+namespace Microsoft.AspNetCore.Localization
 {
     /// <summary>
     /// Determines the culture information for a request via values in the query string.

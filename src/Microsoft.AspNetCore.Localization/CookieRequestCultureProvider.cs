@@ -5,10 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Globalization;
 
-namespace Microsoft.AspNet.Localization
+namespace Microsoft.AspNetCore.Localization
 {
     /// <summary>
     /// Determines the culture information for a request via the value of a cookie.

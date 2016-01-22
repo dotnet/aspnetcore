@@ -6,12 +6,12 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.Http;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Globalization;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNet.Localization
+namespace Microsoft.AspNetCore.Localization
 {
     /// <summary>
     /// Enables automatic setting of the culture for <see cref="Http.HttpRequest"/>s based on information

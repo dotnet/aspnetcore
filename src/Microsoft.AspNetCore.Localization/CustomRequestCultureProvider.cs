@@ -3,9 +3,9 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Http;
+using Microsoft.AspNetCore.Http;
 
-namespace Microsoft.AspNet.Localization
+namespace Microsoft.AspNetCore.Localization
 {
     /// <summary>
     /// Determines the culture information for a request via the configured delegate.

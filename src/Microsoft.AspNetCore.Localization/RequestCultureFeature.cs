@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNet.Localization
+namespace Microsoft.AspNetCore.Localization
 {
     /// <summary>
     /// Provides the current request's culture information.

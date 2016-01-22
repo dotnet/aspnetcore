@@ -6,7 +6,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{FB313677-BAB
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Localization", "src\Microsoft.Extensions.Localization\Microsoft.Extensions.Localization.xproj", "{29743CFF-120E-40EB-9B89-5818425946FA}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Localization", "src\Microsoft.AspNet.Localization\Microsoft.AspNet.Localization.xproj", "{23E3BC23-3464-4D9B-BF78-02CB2182BEF0}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Localization", "src\Microsoft.AspNetCore.Localization\Microsoft.AspNetCore.Localization.xproj", "{23E3BC23-3464-4D9B-BF78-02CB2182BEF0}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Localization.Abstractions", "src\Microsoft.Extensions.Localization.Abstractions\Microsoft.Extensions.Localization.Abstractions.xproj", "{A1FCF259-70F6-4605-AA2D-E4B356BE771A}"
 EndProject
@@ -25,11 +25,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{B723DB83-A
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Localization.Tests", "test\Microsoft.Extensions.Localization.Tests\Microsoft.Extensions.Localization.Tests.xproj", "{287AD58D-DF34-4F16-8616-FD78FA1CADF9}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Localization.Tests", "test\Microsoft.AspNet.Localization.Tests\Microsoft.AspNet.Localization.Tests.xproj", "{19A2A931-5C60-47A0-816A-0DC9C4CE5736}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Localization.Tests", "test\Microsoft.AspNetCore.Localization.Tests\Microsoft.AspNetCore.Localization.Tests.xproj", "{19A2A931-5C60-47A0-816A-0DC9C4CE5736}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "LocalizationWebsite", "test\LocalizationWebsite\LocalizationWebsite.xproj", "{EF6C7431-2FB8-4396-8947-F50F31689AF4}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNet.Localization.FunctionalTests", "test\Microsoft.AspNet.Localization.FunctionalTests\Microsoft.AspNet.Localization.FunctionalTests.xproj", "{B1B441BA-3AC8-49F8-850D-E5A178E77DE2}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Localization.FunctionalTests", "test\Microsoft.AspNetCore.Localization.FunctionalTests\Microsoft.AspNetCore.Localization.FunctionalTests.xproj", "{B1B441BA-3AC8-49F8-850D-E5A178E77DE2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

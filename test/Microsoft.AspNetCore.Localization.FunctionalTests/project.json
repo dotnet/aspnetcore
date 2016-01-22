@@ -6,7 +6,7 @@
     "test": "xunit.runner.aspnet"
   },
   "dependencies": {
-    "Microsoft.AspNet.Server.Testing": "1.0.0-*",
+    "Microsoft.AspNetCore.Server.Testing": "1.0.0-*",
     "Microsoft.Extensions.Logging.Console": "1.0.0-*",
     "xunit.runner.aspnet": "2.0.0-aspnet-*"
   },

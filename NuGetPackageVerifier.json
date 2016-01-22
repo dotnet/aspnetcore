@@ -9,7 +9,7 @@
             "StrictSemanticVersionValidationRule"
         ],
         "packages": {
-            "Microsoft.AspNet.Localization": { },
+            "Microsoft.AspNetCore.Localization": { },
             "Microsoft.Extensions.Globalization.CultureInfoCache": { },
             "Microsoft.Extensions.Localization": { },
             "Microsoft.Extensions.Localization.Abstractions": { }

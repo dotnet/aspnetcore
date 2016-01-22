@@ -4,7 +4,7 @@
 using System;
 using System.Globalization;
 
-namespace Microsoft.AspNet.Localization
+namespace Microsoft.AspNetCore.Localization
 {
     /// <summary>
     /// Details about the culture for an <see cref="Http.HttpRequest"/>.

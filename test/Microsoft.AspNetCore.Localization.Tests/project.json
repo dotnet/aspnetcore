@@ -1,10 +1,10 @@
-﻿{
+{
   "compilationOptions": {
     "warningsAsErrors": true
   },
   "dependencies": {
-    "Microsoft.AspNet.Localization": "1.0.0-*",
-    "Microsoft.AspNet.TestHost": "1.0.0-*",
+    "Microsoft.AspNetCore.Localization": "1.0.0-*",
+    "Microsoft.AspNetCore.TestHost": "1.0.0-*",
     "xunit": "2.1.0-*",
     "xunit.runner.aspnet": "2.0.0-aspnet-*"
   },

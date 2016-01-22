@@ -1,4 +1,4 @@
-﻿{
+{
   "version": "1.0.0-*",
 
   "compilationOptions": {
@@ -7,8 +7,8 @@
   },
 
   "dependencies": {
-    "Microsoft.AspNet.Localization": "1.0.0-*",
-    "Microsoft.AspNet.Server.Kestrel": "1.0.0-*",
+    "Microsoft.AspNetCore.Localization": "1.0.0-*",
+    "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*",
     "Microsoft.Extensions.Localization": "1.0.0-*",
     "Microsoft.Extensions.Logging.Console": "1.0.0-*"
   },
