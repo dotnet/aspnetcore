@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
                 throw new ArgumentNullException(nameof(context));
             }
 
-            var componentType = context.ViewComponentDescriptor.Type.GetTypeInfo();
+            var componentType = context.ViewComponentDescriptor.TypeInfo;
 
             if (componentType.IsValueType ||
                 componentType.IsInterface ||
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
 
             var viewComponent = _typeActivatorCache.CreateInstance<object>(
                 context.ViewContext.HttpContext.RequestServices,
-                context.ViewComponentDescriptor.Type);
+                context.ViewComponentDescriptor.TypeInfo.AsType());
 
             return viewComponent;
         }

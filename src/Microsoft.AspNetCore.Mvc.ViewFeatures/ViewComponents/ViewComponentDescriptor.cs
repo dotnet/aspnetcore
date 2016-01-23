@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
             {
                 if (_displayName == null)
                 {
-                    _displayName = Type?.FullName;
+                    _displayName = TypeInfo?.FullName;
                 }
 
                 return _displayName;
@@ -116,9 +116,9 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
         public string ShortName { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="System.Type"/>.
+        /// Gets or sets the <see cref="System.Reflection.TypeInfo"/>.
         /// </summary>
-        public Type Type { get; set; }
+        public TypeInfo TypeInfo { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="System.Reflection.MethodInfo"/> to invoke.

@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Mvc
             {
                 FullName = "Full.Name.Text",
                 ShortName = "Text",
-                Type = typeof(TextViewComponent),
+                TypeInfo = typeof(TextViewComponent).GetTypeInfo(),
                 MethodInfo = typeof(TextViewComponent).GetMethod(nameof(TextViewComponent.Invoke)),
             };
 
@@ -136,7 +136,7 @@ namespace Microsoft.AspNetCore.Mvc
             {
                 FullName = "Full.Name.Text",
                 ShortName = "Text",
-                Type = typeof(TextViewComponent),
+                TypeInfo = typeof(TextViewComponent).GetTypeInfo(),
                 MethodInfo = typeof(TextViewComponent).GetMethod(nameof(TextViewComponent.Invoke)),
             };
 
@@ -165,7 +165,7 @@ namespace Microsoft.AspNetCore.Mvc
             {
                 FullName = "Full.Name.Text",
                 ShortName = "Text",
-                Type = typeof(TextViewComponent),
+                TypeInfo = typeof(TextViewComponent).GetTypeInfo(),
                 MethodInfo = typeof(TextViewComponent).GetMethod(nameof(TextViewComponent.Invoke)),
             };
 
@@ -194,7 +194,7 @@ namespace Microsoft.AspNetCore.Mvc
             {
                 FullName = "Full.Name.AsyncText",
                 ShortName = "AsyncText",
-                Type = typeof(AsyncTextViewComponent),
+                TypeInfo = typeof(AsyncTextViewComponent).GetTypeInfo(),
                 MethodInfo = typeof(AsyncTextViewComponent).GetMethod(nameof(AsyncTextViewComponent.InvokeAsync)),
             };
 
@@ -223,7 +223,7 @@ namespace Microsoft.AspNetCore.Mvc
             {
                 FullName = "Full.Name.Text",
                 ShortName = "Text",
-                Type = typeof(TextViewComponent),
+                TypeInfo = typeof(TextViewComponent).GetTypeInfo(),
                 MethodInfo = typeof(TextViewComponent).GetMethod(nameof(TextViewComponent.Invoke)),
             };
 
@@ -262,7 +262,7 @@ namespace Microsoft.AspNetCore.Mvc
             {
                 FullName = "Full.Name.Text",
                 ShortName = "Text",
-                Type = typeof(TextViewComponent),
+                TypeInfo = typeof(TextViewComponent).GetTypeInfo(),
                 MethodInfo = typeof(TextViewComponent).GetMethod(nameof(TextViewComponent.Invoke)),
             };
 
@@ -291,7 +291,7 @@ namespace Microsoft.AspNetCore.Mvc
             {
                 FullName = "Full.Name.Text",
                 ShortName = "Text",
-                Type = typeof(TextViewComponent),
+                TypeInfo = typeof(TextViewComponent).GetTypeInfo(),
                 MethodInfo = typeof(TextViewComponent).GetMethod(nameof(TextViewComponent.Invoke)),
             };
 
@@ -320,7 +320,7 @@ namespace Microsoft.AspNetCore.Mvc
             {
                 FullName = "Full.Name.Text",
                 ShortName = "Text",
-                Type = typeof(TextViewComponent),
+                TypeInfo = typeof(TextViewComponent).GetTypeInfo(),
                 MethodInfo = typeof(TextViewComponent).GetMethod(nameof(TextViewComponent.Invoke)),
             };
 
@@ -349,7 +349,7 @@ namespace Microsoft.AspNetCore.Mvc
             {
                 FullName = "Full.Name.Text",
                 ShortName = "Text",
-                Type = typeof(TextViewComponent),
+                TypeInfo = typeof(TextViewComponent).GetTypeInfo(),
                 MethodInfo = typeof(TextViewComponent).GetMethod(nameof(TextViewComponent.Invoke))
             };
 
@@ -407,7 +407,7 @@ namespace Microsoft.AspNetCore.Mvc
             {
                 FullName = "Full.Name.Text",
                 ShortName = "Text",
-                Type = typeof(TextViewComponent),
+                TypeInfo = typeof(TextViewComponent).GetTypeInfo(),
                 MethodInfo = typeof(TextViewComponent).GetMethod(nameof(TextViewComponent.Invoke)),
             };
 
@@ -445,7 +445,7 @@ namespace Microsoft.AspNetCore.Mvc
             {
                 FullName = "Full.Name.Text",
                 ShortName = "Text",
-                Type = typeof(TextViewComponent),
+                TypeInfo = typeof(TextViewComponent).GetTypeInfo(),
                 MethodInfo = typeof(TextViewComponent).GetMethod(nameof(TextViewComponent.Invoke)),
             };
 
@@ -482,7 +482,7 @@ namespace Microsoft.AspNetCore.Mvc
             {
                 FullName = "Full.Name.Text",
                 ShortName = "Text",
-                Type = typeof(TextViewComponent),
+                TypeInfo = typeof(TextViewComponent).GetTypeInfo(),
                 MethodInfo = typeof(TextViewComponent).GetMethod(nameof(TextViewComponent.Invoke)),
             };
 

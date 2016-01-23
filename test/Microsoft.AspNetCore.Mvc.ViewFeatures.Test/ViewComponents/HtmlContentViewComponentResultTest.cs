@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -52,7 +53,7 @@ namespace Microsoft.AspNetCore.Mvc
 
             var viewComponentDescriptor = new ViewComponentDescriptor()
             {
-                Type = typeof(object),
+                TypeInfo = typeof(object).GetTypeInfo(),
             };
 
             var viewComponentContext = new ViewComponentContext(

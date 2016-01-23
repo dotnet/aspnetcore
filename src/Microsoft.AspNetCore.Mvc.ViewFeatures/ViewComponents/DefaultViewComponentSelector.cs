@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
                     foreach (var candidate in matches)
                     {
                         matchedTypes.Add(Resources.FormatViewComponent_AmbiguousTypeMatch_Item(
-                            candidate.Type.FullName,
+                            candidate.TypeInfo.FullName,
                             candidate.FullName));
                     }
 

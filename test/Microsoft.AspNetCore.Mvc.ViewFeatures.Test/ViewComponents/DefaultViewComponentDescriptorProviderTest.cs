@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
 
             // Assert
             var descriptor = Assert.Single(descriptors);
-            Assert.Same(typeof(ConventionsViewComponent), descriptor.Type);
+            Assert.Same(typeof(ConventionsViewComponent).GetTypeInfo(), descriptor.TypeInfo);
             Assert.Equal("Microsoft.AspNetCore.Mvc.ViewComponents.Conventions", descriptor.FullName);
             Assert.Equal("Conventions", descriptor.ShortName);
             Assert.Same(typeof(ConventionsViewComponent).GetMethod("Invoke"), descriptor.MethodInfo);
@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
 
             // Assert
             var descriptor = Assert.Single(descriptors);
-            Assert.Equal(typeof(AttributeViewComponent), descriptor.Type);
+            Assert.Equal(typeof(AttributeViewComponent).GetTypeInfo(), descriptor.TypeInfo);
             Assert.Equal("AttributesAreGreat", descriptor.FullName);
             Assert.Equal("AttributesAreGreat", descriptor.ShortName);
             Assert.Same(typeof(AttributeViewComponent).GetMethod("InvokeAsync"), descriptor.MethodInfo);

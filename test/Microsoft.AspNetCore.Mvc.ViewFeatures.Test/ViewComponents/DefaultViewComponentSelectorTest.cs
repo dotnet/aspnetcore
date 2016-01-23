@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
             var result = selector.SelectComponent("Suffix");
 
             // Assert
-            Assert.Same(typeof(ViewComponentContainer.SuffixViewComponent), result.Type);
+            Assert.Same(typeof(ViewComponentContainer.SuffixViewComponent).GetTypeInfo(), result.TypeInfo);
         }
 
         [Fact]
@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
             var result = selector.SelectComponent($"{Namespace}.Suffix");
 
             // Assert
-            Assert.Same(typeof(ViewComponentContainer.SuffixViewComponent), result.Type);
+            Assert.Same(typeof(ViewComponentContainer.SuffixViewComponent).GetTypeInfo(), result.TypeInfo);
         }
 
         [Fact]
@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
             var result = selector.SelectComponent("WithoutSuffix");
 
             // Assert
-            Assert.Same(typeof(ViewComponentContainer.WithoutSuffix), result.Type);
+            Assert.Same(typeof(ViewComponentContainer.WithoutSuffix).GetTypeInfo(), result.TypeInfo);
         }
 
         [Fact]
@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
             var result = selector.SelectComponent($"{Namespace}.WithoutSuffix");
 
             // Assert
-            Assert.Same(typeof(ViewComponentContainer.WithoutSuffix), result.Type);
+            Assert.Same(typeof(ViewComponentContainer.WithoutSuffix).GetTypeInfo(), result.TypeInfo);
         }
 
         [Fact]
@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
             var result = selector.SelectComponent("ByAttribute");
 
             // Assert
-            Assert.Same(typeof(ViewComponentContainer.ByAttribute), result.Type);
+            Assert.Same(typeof(ViewComponentContainer.ByAttribute).GetTypeInfo(), result.TypeInfo);
         }
 
         [Fact]
@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
             var result = selector.SelectComponent("ByNamingConvention");
 
             // Assert
-            Assert.Same(typeof(ViewComponentContainer.ByNamingConventionViewComponent), result.Type);
+            Assert.Same(typeof(ViewComponentContainer.ByNamingConventionViewComponent).GetTypeInfo(), result.TypeInfo);
         }
 
         [Fact]
@@ -122,7 +122,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
             var result = selector.SelectComponent("Namespace1.Ambiguous");
 
             // Assert
-            Assert.Same(typeof(ViewComponentContainer.Ambiguous1), result.Type);
+            Assert.Same(typeof(ViewComponentContainer.Ambiguous1).GetTypeInfo(), result.TypeInfo);
         }
 
         [Theory]
@@ -137,7 +137,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
             var result = selector.SelectComponent(name);
 
             // Assert
-            Assert.Same(typeof(ViewComponentContainer.FullNameInAttribute), result.Type);
+            Assert.Same(typeof(ViewComponentContainer.FullNameInAttribute).GetTypeInfo(), result.TypeInfo);
         }
 
         private IViewComponentSelector CreateSelector()

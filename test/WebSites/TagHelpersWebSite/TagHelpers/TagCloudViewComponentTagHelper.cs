@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -52,7 +53,7 @@ namespace MvcSample.Web.Components
 
             var viewComponentDescriptor = new ViewComponentDescriptor()
             {
-                Type = typeof(TagCloudViewComponentTagHelper),
+                TypeInfo = typeof(TagCloudViewComponentTagHelper).GetTypeInfo(),
                 ShortName = "TagCloudViewComponentTagHelper",
                 FullName = "TagCloudViewComponentTagHelper",
             };

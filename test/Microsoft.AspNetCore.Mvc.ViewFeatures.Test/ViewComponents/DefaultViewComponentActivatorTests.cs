@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Mvc.Internal;
@@ -47,7 +48,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
             // Arrange
             var actionDescriptor = new ViewComponentDescriptor
             {
-                Type = type
+                TypeInfo = type.GetTypeInfo()
             };
 
             var context = new ViewComponentContext
@@ -103,7 +104,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
             {
                 ViewComponentDescriptor = new ViewComponentDescriptor
                 {
-                    Type = componentType
+                    TypeInfo = componentType.GetTypeInfo()
                 },
                 ViewContext = new ViewContext
                 {
