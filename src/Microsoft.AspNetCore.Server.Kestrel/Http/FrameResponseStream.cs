@@ -138,13 +138,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 case FrameStreamState.Closed:
                     throw new ObjectDisposedException(nameof(FrameResponseStream));
                 case FrameStreamState.Aborted:
-                    if (cancellationToken.CanBeCanceled)
+                    if (cancellationToken.IsCancellationRequested)
                     {
                         // Aborted state only throws on write if cancellationToken requests it
-                        return TaskUtilities.GetCancelledTask(
-                            cancellationToken.IsCancellationRequested ? 
-                            cancellationToken : 
-                            new CancellationToken(true));
+                        return TaskUtilities.GetCancelledTask(cancellationToken);
                     }
                     break;
             }
