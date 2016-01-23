@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
                 "test",
                 sourceFileContent: string.Empty,
                 compiledContent: string.Empty,
-                messages: Enumerable.Empty<AspNet.Diagnostics.DiagnosticMessage>());
+                messages: Enumerable.Empty<AspNetCore.Diagnostics.DiagnosticMessage>());
             var failures = new[] { compilationFailure };
             var result = new CompilationResult(failures);
 

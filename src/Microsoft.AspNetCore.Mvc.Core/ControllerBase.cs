@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         /// <summary>
-        /// Gets the <see cref="AspNet.Routing.RouteData"/> for the executing action.
+        /// Gets the <see cref="AspNetCore.Routing.RouteData"/> for the executing action.
         /// </summary>
         public RouteData RouteData
         {

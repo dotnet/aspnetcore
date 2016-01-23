@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// Creates a new <see cref="ActionContext"/>.
         /// </summary>
         /// <param name="httpContext">The <see cref="Http.HttpContext"/> for the current request.</param>
-        /// <param name="routeData">The <see cref="AspNet.Routing.RouteData"/> for the current request.</param>
+        /// <param name="routeData">The <see cref="AspNetCore.Routing.RouteData"/> for the current request.</param>
         /// <param name="actionDescriptor">The <see cref="Abstractions.ActionDescriptor"/> for the selected action.</param>
         public ActionContext(
             HttpContext httpContext,
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// Creates a new <see cref="ActionContext"/>.
         /// </summary>
         /// <param name="httpContext">The <see cref="Http.HttpContext"/> for the current request.</param>
-        /// <param name="routeData">The <see cref="AspNet.Routing.RouteData"/> for the current request.</param>
+        /// <param name="routeData">The <see cref="AspNetCore.Routing.RouteData"/> for the current request.</param>
         /// <param name="actionDescriptor">The <see cref="Abstractions.ActionDescriptor"/> for the selected action.</param>
         /// <param name="modelState">The <see cref="ModelStateDictionary"/>.</param>
         public ActionContext(
@@ -126,7 +126,7 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         /// <summary>
-        /// Gets or sets the <see cref="AspNet.Routing.RouteData"/> for the current request.
+        /// Gets or sets the <see cref="AspNetCore.Routing.RouteData"/> for the current request.
         /// </summary>
         /// <remarks>
         /// The property setter is provided for unit test purposes only.

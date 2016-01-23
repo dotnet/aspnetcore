@@ -113,7 +113,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 .AddSingleton(myService)
                 .AddSingleton(helper)
                 .AddSingleton<HtmlEncoder>(htmlEncoder)
-                .AddSingleton<DiagnosticSource>(new DiagnosticListener("Microsoft.Aspnet.Mvc"))
+                .AddSingleton<DiagnosticSource>(new DiagnosticListener("Microsoft.AspNetCore.Mvc"))
                 .BuildServiceProvider();
             var httpContext = new DefaultHttpContext
             {
@@ -153,7 +153,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 .AddSingleton(myService)
                 .AddSingleton(helper)
                 .AddSingleton<HtmlEncoder>(htmlEncoder)
-                .AddSingleton<DiagnosticSource>(new DiagnosticListener("Microsoft.Aspnet.Mvc"))
+                .AddSingleton<DiagnosticSource>(new DiagnosticListener("Microsoft.AspNetCore.Mvc"))
                 .BuildServiceProvider();
             var httpContext = new DefaultHttpContext
             {

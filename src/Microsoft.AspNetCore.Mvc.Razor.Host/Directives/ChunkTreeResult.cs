@@ -7,14 +7,14 @@ using Microsoft.AspNetCore.Razor.Chunks;
 namespace Microsoft.AspNetCore.Mvc.Razor.Directives
 {
     /// <summary>
-    /// Contains <see cref="AspNet.Razor.Chunks.ChunkTree"/> information.
+    /// Contains <see cref="AspNetCore.Razor.Chunks.ChunkTree"/> information.
     /// </summary>
     public class ChunkTreeResult
     {
         /// <summary>
         /// Initializes a new instance of <see cref="ChunkTreeResult"/>.
         /// </summary>
-        /// <param name="chunkTree">The <see cref="AspNet.Razor.Chunks.ChunkTree"/> generated from the file at the
+        /// <param name="chunkTree">The <see cref="AspNetCore.Razor.Chunks.ChunkTree"/> generated from the file at the
         /// given <paramref name="filePath"/>.</param>
         /// <param name="filePath">The path to the file that generated the given <paramref name="chunkTree"/>.</param>
         public ChunkTreeResult(ChunkTree chunkTree, string filePath)
@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Directives
         }
 
         /// <summary>
-        /// The <see cref="AspNet.Razor.Chunks.ChunkTree"/> generated from the file at <see cref="FilePath"/>.
+        /// The <see cref="AspNetCore.Razor.Chunks.ChunkTree"/> generated from the file at <see cref="FilePath"/>.
         /// </summary>
         public ChunkTree ChunkTree { get; }
 

@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc.ApplicationModels;
 namespace Microsoft.Extensions.DependencyInjection
 {
     /// <summary>
-    /// Contains the extension methods for <see cref="AspNet.Mvc.MvcOptions.Conventions"/>.
+    /// Contains the extension methods for <see cref="AspNetCore.Mvc.MvcOptions.Conventions"/>.
     /// </summary>
     public static class ApplicationModelConventionExtensions
     {
@@ -16,7 +16,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Adds a <see cref="IControllerModelConvention"/> to all the controllers in the application.
         /// </summary>
         /// <param name="conventions">The list of <see cref="IApplicationModelConvention"/>
-        /// in <see cref="AspNet.Mvc.MvcOptions"/>.</param>
+        /// in <see cref="AspNetCore.Mvc.MvcOptions"/>.</param>
         /// <param name="controllerModelConvention">The <see cref="IControllerModelConvention"/> which needs to be
         /// added.</param>
         public static void Add(
@@ -40,7 +40,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Adds a <see cref="IActionModelConvention"/> to all the actions in the application.
         /// </summary>
         /// <param name="conventions">The list of <see cref="IApplicationModelConvention"/>
-        /// in <see cref="AspNet.Mvc.MvcOptions"/>.</param>
+        /// in <see cref="AspNetCore.Mvc.MvcOptions"/>.</param>
         /// <param name="actionModelConvention">The <see cref="IActionModelConvention"/> which needs to be
         /// added.</param>
         public static void Add(

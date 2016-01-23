@@ -4,15 +4,15 @@
 namespace Microsoft.AspNetCore.Mvc.TagHelpers.Internal
 {
     /// <summary>
-    /// A mapping of a <see cref="AspNet.Razor.TagHelpers.ITagHelper"/> mode to its required attributes.
+    /// A mapping of a <see cref="AspNetCore.Razor.TagHelpers.ITagHelper"/> mode to its required attributes.
     /// </summary>
-    /// <typeparam name="TMode">The type representing the <see cref="AspNet.Razor.TagHelpers.ITagHelper"/>'s mode.</typeparam>
+    /// <typeparam name="TMode">The type representing the <see cref="AspNetCore.Razor.TagHelpers.ITagHelper"/>'s mode.</typeparam>
     public class ModeAttributes<TMode>
     {
         /// <summary>
         /// Initializes a new instance of <see cref="ModeAttributes{TMode}"/>.
         /// </summary>
-        /// <param name="mode">The <see cref="AspNet.Razor.TagHelpers.ITagHelper"/>'s mode.</param>
+        /// <param name="mode">The <see cref="AspNetCore.Razor.TagHelpers.ITagHelper"/>'s mode.</param>
         /// <param name="attributes">The names of attributes required for this mode.</param>
         public ModeAttributes(TMode mode, string[] attributes)
         {
@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Internal
         }
 
         /// <summary>
-        /// Gets the <see cref="AspNet.Razor.TagHelpers.ITagHelper"/>'s mode.
+        /// Gets the <see cref="AspNetCore.Razor.TagHelpers.ITagHelper"/>'s mode.
         /// </summary>
         public TMode Mode { get; }
 

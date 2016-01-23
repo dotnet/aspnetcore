@@ -492,7 +492,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
             var cache = new CompilerCache(fileProvider);
             var diagnosticMessages = new[]
             {
-                new AspNet.Diagnostics.DiagnosticMessage("message", "message", ViewPath, 1, 1, 1, 1)
+                new AspNetCore.Diagnostics.DiagnosticMessage("message", "message", ViewPath, 1, 1, 1, 1)
             };
             var compilationResult = new CompilationResult(new[]
             {
