@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Authentication;
@@ -191,5 +192,11 @@ namespace Microsoft.AspNetCore.Builder
         /// This is disabled by default.
         /// </summary>
         public bool SkipUnrecognizedRequests { get; set; } = false;
+
+        /// <summary>
+        /// For testing purposes only.
+        /// </summary>
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public ISystemClock SystemClock { get; set; } = new SystemClock();
     }
 }

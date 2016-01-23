@@ -778,8 +778,15 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
 
             if (!string.IsNullOrEmpty(message.ExpiresIn))
             {
-                identity.AddClaim(new Claim(OpenIdConnectParameterNames.ExpiresIn, message.ExpiresIn,
-                                            ClaimValueTypes.String, issuer));
+                int value;
+                if (int.TryParse(message.ExpiresIn, NumberStyles.Integer, CultureInfo.InvariantCulture, out value))
+                {
+                    var expiresAt = Options.SystemClock.UtcNow + TimeSpan.FromSeconds(value);
+                    // https://www.w3.org/TR/xmlschema-2/#dateTime
+                    // https://msdn.microsoft.com/en-us/library/az4se3k1(v=vs.110).aspx
+                    identity.AddClaim(new Claim("expires_at", expiresAt.ToString("o", CultureInfo.InvariantCulture),
+                                                ClaimValueTypes.DateTime, issuer));
+                }
             }
         }
 

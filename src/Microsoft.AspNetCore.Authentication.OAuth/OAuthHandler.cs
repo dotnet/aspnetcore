@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Claims;
@@ -108,8 +109,15 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
 
                 if (!string.IsNullOrEmpty(tokens.ExpiresIn))
                 {
-                    identity.AddClaim(new Claim("expires_in", tokens.ExpiresIn,
-                                                ClaimValueTypes.String, Options.ClaimsIssuer));
+                    int value;
+                    if (int.TryParse(tokens.ExpiresIn, NumberStyles.Integer, CultureInfo.InvariantCulture, out value))
+                    {
+                        var expiresAt = Options.SystemClock.UtcNow + TimeSpan.FromSeconds(value);
+                        // https://www.w3.org/TR/xmlschema-2/#dateTime
+                        // https://msdn.microsoft.com/en-us/library/az4se3k1(v=vs.110).aspx
+                        identity.AddClaim(new Claim("expires_at", expiresAt.ToString("o", CultureInfo.InvariantCulture),
+                                                    ClaimValueTypes.DateTime, Options.ClaimsIssuer));
+                    }
                 }
             }
 
