@@ -468,12 +468,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
         private void WriteChunked(ArraySegment<byte> data)
         {
-            SocketOutput.Write(data, immediate: false, chunk: true);
+            SocketOutput.Write(data, immediate: true, chunk: true);
         }
 
         private Task WriteChunkedAsync(ArraySegment<byte> data, CancellationToken cancellationToken)
         {
-            return SocketOutput.WriteAsync(data, immediate: false, chunk: true, cancellationToken: cancellationToken);
+            return SocketOutput.WriteAsync(data, immediate: true, chunk: true, cancellationToken: cancellationToken);
         }
 
         private Task WriteChunkedResponseSuffix()
