@@ -53,8 +53,8 @@ else
     # Need to set this variable because by default the install script
     # requires sudo
     export DOTNET_INSTALL_DIR=~/.dotnet
-    export PATH=~/.dotnet/bin:$PATH
-    export DOTNET_HOME=DOTNET_INSTALL_DIR
+    export PATH=$DOTNET_INSTALL_DIR/bin:$PATH
+    export DOTNET_HOME=$DOTNET_INSTALL_DIR/share/dotnet/cli
     export KOREBUILD_FOLDER="$(dirname $thisDir)"
     chmod +x $thisDir/dotnet-install.sh
     $thisDir/dotnet-install.sh
