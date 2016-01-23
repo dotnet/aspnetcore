@@ -1118,27 +1118,22 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 connectionCloseWh.Wait();
 
                 response.Headers.Clear();
-                response.Headers["Content-Length"] = new[] { "5" };
 
                 try
                 {
                     // Ensure write is long enough to disable write-behind buffering
-                    for (int i = 0; i < 10; i++)
+                    for (int i = 0; i < 100; i++)
                     {
-                        await response.WriteAsync(largeString).ConfigureAwait(false);
+                        await response.WriteAsync(largeString, lifetime.RequestAborted).ConfigureAwait(false);
                     }
                 }
                 catch (Exception ex)
                 {
                     writeTcs.SetException(ex);
-
-                    // Give a chance for RequestAborted to trip before the app completes
-                    registrationWh.Wait(resetEventTimeout);
-
                     throw;
                 }
 
-                writeTcs.SetCanceled();
+                writeTcs.SetException(new Exception("This shouldn't be reached."));
             }, testContext))
             {
                 using (var connection = new TestConnection())

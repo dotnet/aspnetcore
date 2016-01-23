@@ -15,6 +15,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests.TestHelpers
         private Func<UvStreamHandle, int, Action<int>, int> _onWrite;
 
         unsafe public MockLibuv()
+            : base(onlyForTesting: true)
         {
             _uv_write = UvWrite;
 
@@ -66,6 +67,8 @@ namespace Microsoft.AspNetCore.Server.KestrelTests.TestHelpers
             _uv_close = (handle, callback) => callback(handle);
             _uv_loop_close = handle => 0;
             _uv_walk = (loop, callback, ignore) => 0;
+            _uv_err_name = errno => IntPtr.Zero;
+            _uv_strerror = errno => IntPtr.Zero;
         }
 
         public Func<UvStreamHandle, int, Action<int>, int> OnWrite

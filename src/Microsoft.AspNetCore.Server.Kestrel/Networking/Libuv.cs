@@ -98,6 +98,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Networking
             }
         }
 
+        // Second ctor that doesn't set any fields only to be used by MockLibuv
+        internal Libuv(bool onlyForTesting)
+        {
+        }
+
         public readonly bool IsWindows;
 
         public int Check(int statusCode)

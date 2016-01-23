@@ -235,9 +235,9 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
                 // Act 
                 var task1Success = socketOutput.WriteAsync(fullBuffer, cancellationToken: cts.Token);
-                // task1 should complete sucessfully as < _maxBytesPreCompleted
+                // task1 should complete successfully as < _maxBytesPreCompleted
 
-                // First task is completed and sucessful
+                // First task is completed and successful
                 Assert.True(task1Success.IsCompleted);
                 Assert.False(task1Success.IsCanceled);
                 Assert.False(task1Success.IsFaulted);
@@ -249,8 +249,8 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 var task2Throw = socketOutput.WriteAsync(fullBuffer, cancellationToken: cts.Token);
                 var task3Success = socketOutput.WriteAsync(fullBuffer, cancellationToken: default(CancellationToken));
 
-                // Give time for tasks to perculate
-                await Task.Delay(2000).ConfigureAwait(false);
+                // Give time for tasks to percolate
+                await Task.Delay(1000).ConfigureAwait(false);
 
                 // Second task is not completed
                 Assert.False(task2Throw.IsCompleted);
@@ -264,10 +264,10 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
                 cts.Cancel();
 
-                // Give time for tasks to perculate
-                await Task.Delay(2000).ConfigureAwait(false);
+                // Give time for tasks to percolate
+                await Task.Delay(1000).ConfigureAwait(false);
 
-                // Second task is now cancelled
+                // Second task is now canceled
                 Assert.True(task2Throw.IsCompleted);
                 Assert.True(task2Throw.IsCanceled);
                 Assert.False(task2Throw.IsFaulted);
@@ -277,7 +277,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 Assert.False(task3Success.IsCanceled);
                 Assert.False(task3Success.IsFaulted);
 
-                // Fourth task immediately cancels as the token is cancelled 
+                // Fourth task immediately cancels as the token is canceled 
                 var task4Throw = socketOutput.WriteAsync(fullBuffer, cancellationToken: cts.Token);
 
                 Assert.True(task4Throw.IsCompleted);
@@ -287,7 +287,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 Assert.Throws<TaskCanceledException>(() => task4Throw.GetAwaiter().GetResult());
 
                 var task5Success = socketOutput.WriteAsync(fullBuffer, cancellationToken: default(CancellationToken));
-                // task5 should complete immedately
+                // task5 should complete immediately
                 
                 Assert.True(task5Success.IsCompleted);
                 Assert.False(task5Success.IsCanceled);
@@ -296,7 +296,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 cts = new CancellationTokenSource();
 
                 var task6Throw = socketOutput.WriteAsync(fullBuffer, cancellationToken: cts.Token);
-                // task6 should complete immedately but not cancel as its cancelation token isn't set
+                // task6 should complete immediately but not cancel as its cancellation token isn't set
 
                 Assert.True(task6Throw.IsCompleted);
                 Assert.False(task6Throw.IsCanceled);
@@ -305,6 +305,89 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 task6Throw.GetAwaiter().GetResult();
 
                 Assert.True(true);
+            }
+        }
+
+        [Fact]
+        public async Task FailedWriteCompletesOrCancelsAllPendingTasks()
+        {
+            // This should match _maxBytesPreCompleted in SocketOutput
+            var maxBytesPreCompleted = 65536;
+            var completeQueue = new Queue<Action<int>>();
+
+            // Arrange
+            var mockLibuv = new MockLibuv
+            {
+                OnWrite = (socket, buffers, triggerCompleted) =>
+                {
+                    completeQueue.Enqueue(triggerCompleted);
+                    return 0;
+                }
+            };
+
+            using (var kestrelEngine = new KestrelEngine(mockLibuv, new TestServiceContext()))
+            using (var memory = new MemoryPool2())
+            using (var abortedSource = new CancellationTokenSource())
+            {
+                kestrelEngine.Start(count: 1);
+
+                var kestrelThread = kestrelEngine.Threads[0];
+                var socket = new MockSocket(kestrelThread.Loop.ThreadId, new TestKestrelTrace());
+                var trace = new KestrelTrace(new TestKestrelTrace());
+                var ltp = new LoggingThreadPool(trace);
+
+                var mockConnection = new MockConnection(socket);
+                mockConnection.RequestAbortedSource = abortedSource;
+                ISocketOutput socketOutput = new SocketOutput(kestrelThread, socket, memory, mockConnection, 0, trace, ltp, new Queue<UvWriteReq>());
+
+                var bufferSize = maxBytesPreCompleted;
+
+                var data = new byte[bufferSize];
+                var fullBuffer = new ArraySegment<byte>(data, 0, bufferSize);
+
+                // Act 
+                var task1Success = socketOutput.WriteAsync(fullBuffer, cancellationToken: abortedSource.Token);
+                // task1 should complete successfully as < _maxBytesPreCompleted
+
+                // First task is completed and successful
+                Assert.True(task1Success.IsCompleted);
+                Assert.False(task1Success.IsCanceled);
+                Assert.False(task1Success.IsFaulted);
+
+                task1Success.GetAwaiter().GetResult();
+
+                // following tasks should wait.
+                var task2Success = socketOutput.WriteAsync(fullBuffer, cancellationToken: CancellationToken.None);
+                var task3Canceled = socketOutput.WriteAsync(fullBuffer, cancellationToken: abortedSource.Token);
+
+                // Give time for tasks to percolate
+                await Task.Delay(1000).ConfigureAwait(false);
+
+                // Second task is not completed
+                Assert.False(task2Success.IsCompleted);
+                Assert.False(task2Success.IsCanceled);
+                Assert.False(task2Success.IsFaulted);
+
+                // Third task is not completed 
+                Assert.False(task3Canceled.IsCompleted);
+                Assert.False(task3Canceled.IsCanceled);
+                Assert.False(task3Canceled.IsFaulted);
+
+                // Cause the first write to fail.
+                completeQueue.Dequeue()(-1);
+
+                // Give time for tasks to percolate
+                await Task.Delay(1000).ConfigureAwait(false);
+
+                // Second task is now completed
+                Assert.True(task2Success.IsCompleted);
+                Assert.False(task2Success.IsCanceled);
+                Assert.False(task2Success.IsFaulted);
+
+                // Third task is now canceled
+                Assert.True(task3Canceled.IsCompleted);
+                Assert.True(task3Canceled.IsCanceled);
+                Assert.False(task3Canceled.IsFaulted);
             }
         }
 

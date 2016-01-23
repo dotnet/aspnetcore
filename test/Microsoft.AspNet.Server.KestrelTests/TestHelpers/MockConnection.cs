@@ -1,3 +1,4 @@
+using System.Threading;
 using Microsoft.AspNet.Server.Kestrel.Http;
 using Microsoft.AspNet.Server.Kestrel.Networking;
 
@@ -13,6 +14,12 @@ namespace Microsoft.AspNet.Server.KestrelTests.TestHelpers
 
         public override void Abort()
         {
+            if (RequestAbortedSource != null)
+            {
+                RequestAbortedSource.Cancel();
+            }
         }
+
+        public CancellationTokenSource RequestAbortedSource { get; set; }
     }
 }
