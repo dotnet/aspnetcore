@@ -78,7 +78,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
         public Task WriteAsync(
             ArraySegment<byte> buffer,
-            bool immediate = true,
             bool chunk = false,
             bool socketShutdownSend = false,
             bool socketDisconnect = false,
@@ -130,13 +129,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                     _nextWriteContext.SocketDisconnect = true;
                 }
 
-                if (!immediate)
-                {
-                    // immediate==false calls always return complete tasks, because there is guaranteed
-                    // to be a subsequent immediate==true call which will go down one of the previous code-paths
-                    _numBytesPreCompleted += buffer.Count;
-                }
-                else if (_lastWriteError == null &&
+                if (_lastWriteError == null &&
                         _tasksPending.Count == 0 &&
                         _numBytesPreCompleted + buffer.Count <= _maxBytesPreCompleted)
                 {
@@ -155,7 +148,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                                           });
                 }
 
-                if (!_writePending && immediate)
+                if (!_writePending)
                 {
                     _writePending = true;
                     scheduleWrite = true;
@@ -177,13 +170,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             {
                 case ProduceEndType.SocketShutdownSend:
                     WriteAsync(default(ArraySegment<byte>),
-                        immediate: true,
                         socketShutdownSend: true,
                         socketDisconnect: false);
                     break;
                 case ProduceEndType.SocketDisconnect:
                     WriteAsync(default(ArraySegment<byte>),
-                        immediate: true,
                         socketShutdownSend: false,
                         socketDisconnect: true);
                     break;
@@ -391,14 +382,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             }
         }
 
-        void ISocketOutput.Write(ArraySegment<byte> buffer, bool immediate, bool chunk)
+        void ISocketOutput.Write(ArraySegment<byte> buffer, bool chunk)
         {
-            WriteAsync(buffer, immediate, chunk, isSync: true).GetAwaiter().GetResult();
+            WriteAsync(buffer, chunk, isSync: true).GetAwaiter().GetResult();
         }
 
-        Task ISocketOutput.WriteAsync(ArraySegment<byte> buffer, bool immediate, bool chunk, CancellationToken cancellationToken)
+        Task ISocketOutput.WriteAsync(ArraySegment<byte> buffer, bool chunk, CancellationToken cancellationToken)
         {
-            return WriteAsync(buffer, immediate, chunk);
+            return WriteAsync(buffer, chunk);
         }
 
         private static void BytesBetween(MemoryPoolIterator2 start, MemoryPoolIterator2 end, out int bytes, out int buffers)

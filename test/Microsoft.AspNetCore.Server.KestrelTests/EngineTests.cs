@@ -1112,7 +1112,6 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 connectionCloseWh.Wait();
 
                 response.Headers.Clear();
-                response.Headers["Content-Length"] = new[] { "5" };
 
                 try
                 {

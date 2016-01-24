@@ -393,13 +393,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         public void Flush()
         {
             ProduceStartAndFireOnStarting(immediate: false).GetAwaiter().GetResult();
-            SocketOutput.Write(_emptyData, immediate: true);
+            SocketOutput.Write(_emptyData);
         }
 
         public async Task FlushAsync(CancellationToken cancellationToken)
         {
             await ProduceStartAndFireOnStarting(immediate: false);
-            await SocketOutput.WriteAsync(_emptyData, immediate: true, cancellationToken: cancellationToken);
+            await SocketOutput.WriteAsync(_emptyData, cancellationToken: cancellationToken);
         }
 
         public void Write(ArraySegment<byte> data)
@@ -416,7 +416,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             }
             else
             {
-                SocketOutput.Write(data, immediate: true);
+                SocketOutput.Write(data);
             }
         }
 
@@ -437,7 +437,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             }
             else
             {
-                return SocketOutput.WriteAsync(data, immediate: true, cancellationToken: cancellationToken);
+                return SocketOutput.WriteAsync(data, cancellationToken: cancellationToken);
             }
         }
 
@@ -455,23 +455,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             }
             else
             {
-                await SocketOutput.WriteAsync(data, immediate: true, cancellationToken: cancellationToken);
+                await SocketOutput.WriteAsync(data, cancellationToken: cancellationToken);
             }
         }
 
         private void WriteChunked(ArraySegment<byte> data)
         {
-            SocketOutput.Write(data, immediate: false, chunk: true);
+            SocketOutput.Write(data, chunk: true);
         }
 
         private Task WriteChunkedAsync(ArraySegment<byte> data, CancellationToken cancellationToken)
         {
-            return SocketOutput.WriteAsync(data, immediate: false, chunk: true, cancellationToken: cancellationToken);
+            return SocketOutput.WriteAsync(data, chunk: true, cancellationToken: cancellationToken);
         }
 
         private Task WriteChunkedResponseSuffix()
         {
-            return SocketOutput.WriteAsync(_endChunkedResponseBytes, immediate: true);
+            return SocketOutput.WriteAsync(_endChunkedResponseBytes);
         }
 
         private static ArraySegment<byte> CreateAsciiByteArraySegment(string text)
@@ -493,13 +493,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             }
         }
 
-        public Task ProduceStartAndFireOnStarting(bool immediate = true)
+        public Task ProduceStartAndFireOnStarting(bool immediate)
         {
             if (_responseStarted) return TaskUtilities.CompletedTask;
 
             if (_onStarting != null)
             {
-                return FireOnStartingProduceStart(immediate: immediate);
+                return FireOnStartingProduceStart(immediate);
             }
 
             if (_applicationException != null)
@@ -604,8 +604,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             bool appCompleted,
             bool immediate)
         {
-            var begin = SocketOutput.ProducingStart();
-            var end = begin;
+            var end = SocketOutput.ProducingStart();
             if (_keepAlive)
             {
                 foreach (var connectionValue in _responseHeaders.HeaderConnection)
@@ -662,7 +661,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
             if (immediate)
             {
-                return SocketOutput.WriteAsync(default(ArraySegment<byte>), immediate: true);
+                // Force a call to uv_write
+                return SocketOutput.WriteAsync(default(ArraySegment<byte>));
             }
             else
             {
