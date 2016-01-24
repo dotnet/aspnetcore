@@ -11,30 +11,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.LibuvCopier
         {
             try
             {
-                var packagesFolder = Environment.GetEnvironmentVariable("DNX_PACKAGES");
-
-                if (string.IsNullOrEmpty(packagesFolder))
-                {
-                    var dnxFolder = Environment.GetEnvironmentVariable("DNX_HOME") ??
-                                    Environment.GetEnvironmentVariable("DNX_USER_HOME") ??
-                                    Environment.GetEnvironmentVariable("DNX_GLOBAL_HOME");
-
-                    var firstCandidate = dnxFolder?.Split(';')
-                                                  ?.Select(path => Environment.ExpandEnvironmentVariables(path))
-                                                  ?.Where(path => Directory.Exists(path))
-                                                  ?.FirstOrDefault();
-
-                    if (string.IsNullOrEmpty(firstCandidate))
-                    {
-                        dnxFolder = Path.Combine(GetHome(), ".dnx");
-                    }
-                    else
-                    {
-                        dnxFolder = firstCandidate;
-                    }
-
-                    packagesFolder = Path.Combine(dnxFolder, "packages");
-                }
+                var packagesFolder = Environment.GetEnvironmentVariable("DNX_PACKAGES") ??
+                                     Path.Combine(GetHome(), ".nuget", "packages");
 
                 packagesFolder = Environment.ExpandEnvironmentVariables(packagesFolder);
 
