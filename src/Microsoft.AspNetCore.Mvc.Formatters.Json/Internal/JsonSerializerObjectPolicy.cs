@@ -4,7 +4,7 @@
 using Microsoft.Extensions.ObjectPool;
 using Newtonsoft.Json;
 
-namespace Microsoft.AspNetCore.Mvc.Formatters.Internal
+namespace Microsoft.AspNetCore.Mvc.Formatters.Json.Internal
 {
     /// <summary>
     /// <see cref="IPooledObjectPolicy{T}"/> for <see cref="JsonSerializer"/>.

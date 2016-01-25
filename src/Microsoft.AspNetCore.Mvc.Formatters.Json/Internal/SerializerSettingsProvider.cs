@@ -3,7 +3,7 @@
 
 using Newtonsoft.Json;
 
-namespace Microsoft.AspNetCore.Mvc.Internal
+namespace Microsoft.AspNetCore.Mvc.Formatters.Json.Internal
 {
     /// <summary>
     /// Helper class which provides <see cref="JsonSerializerSettings"/>.

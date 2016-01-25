@@ -6,6 +6,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.ActionConstraints;
+using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Mvc.Formatters;
+using Microsoft.AspNetCore.Mvc.Formatters.Internal;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc.Internal
@@ -20,6 +25,38 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         private static readonly Action<ILogger, string[], Exception> _challengeResultExecuting;
 
         private static readonly Action<ILogger, string, Exception> _contentResultExecuting;
+
+        private static readonly Action<ILogger, string, string[], ModelValidationState, Exception> _actionMethodExecuting;
+        private static readonly Action<ILogger, string, string, Exception> _actionMethodExecuted;
+
+        private static readonly Action<ILogger, string, Exception> _ambiguousActions;
+        private static readonly Action<ILogger, string, string, IActionConstraint, Exception> _constraintMismatch;
+
+        private static readonly Action<ILogger, string, Exception> _fileResultExecuting;
+
+        private static readonly Action<ILogger, object, Exception> _authorizationFailure;
+        private static readonly Action<ILogger, object, Exception> _resourceFilterShortCircuit;
+        private static readonly Action<ILogger, object, Exception> _actionFilterShortCircuit;
+        private static readonly Action<ILogger, object, Exception> _exceptionFilterShortCircuit;
+
+        private static readonly Action<ILogger, string[], Exception> _resultExecuting;
+
+        private static readonly Action<ILogger, int, Exception> _httpStatusCodeResultExecuting;
+
+        private static readonly Action<ILogger, string, Exception> _localRedirectResultExecuting;
+
+        private static readonly Action<ILogger, string, Exception> _objectResultExecuting;
+        private static readonly Action<ILogger, string, Exception> _noFormatter;
+        private static readonly Action<ILogger, IOutputFormatter, string, Exception> _formatterSelected;
+        private static readonly Action<ILogger, string, Exception> _skippedContentNegotiation;
+        private static readonly Action<ILogger, string, Exception> _noAcceptForNegotiation;
+        private static readonly Action<ILogger, IEnumerable<MediaTypeSegmentWithQuality>, Exception> _noFormatterFromNegotiation;
+
+        private static readonly Action<ILogger, string, Exception> _redirectResultExecuting;
+
+        private static readonly Action<ILogger, string, Exception> _redirectToActionResultExecuting;
+
+        private static readonly Action<ILogger, string, string, Exception> _redirectToRouteResultExecuting;
 
         static MvcCoreLoggerExtensions()
         {
@@ -42,6 +79,111 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 LogLevel.Information,
                 1,
                 "Executing ContentResult with HTTP Response ContentType of {ContentType}");
+
+            _actionMethodExecuting = LoggerMessage.Define<string, string[], ModelValidationState>(
+                LogLevel.Information,
+                1,
+                "Executing action method {ActionName} with arguments ({Arguments}) - ModelState is {ValidationState}'");
+
+            _actionMethodExecuted = LoggerMessage.Define<string, string>(
+                LogLevel.Debug,
+                2,
+                "Executed action method {ActionName}, returned result {ActionResult}.'");
+
+            _ambiguousActions = LoggerMessage.Define<string>(
+                LogLevel.Error,
+                1,
+                "Request matched multiple actions resulting in ambiguity. Matching actions: {AmbiguousActions}");
+
+            _constraintMismatch = LoggerMessage.Define<string, string, IActionConstraint>(
+                LogLevel.Debug,
+                2,
+                "Action '{ActionName}' with id '{ActionId}' did not match the constraint '{ActionConstraint}'");
+
+            _fileResultExecuting = LoggerMessage.Define<string>(
+                LogLevel.Information,
+                1,
+                "Executing FileResult, sending file as {FileDownloadName}");
+
+            _authorizationFailure = LoggerMessage.Define<object>(
+                LogLevel.Warning,
+                1,
+                "Authorization failed for the request at filter '{AuthorizationFilter}'.");
+
+            _resourceFilterShortCircuit = LoggerMessage.Define<object>(
+                LogLevel.Debug,
+                2,
+                "Request was short circuited at resource filter '{ResourceFilter}'.");
+
+            _actionFilterShortCircuit = LoggerMessage.Define<object>(
+                LogLevel.Debug,
+                3,
+                "Request was short circuited at action filter '{ActionFilter}'.");
+
+            _exceptionFilterShortCircuit = LoggerMessage.Define<object>(
+                LogLevel.Debug,
+                4,
+                "Request was short circuited at exception filter '{ExceptionFilter}'.");
+
+            _resultExecuting = LoggerMessage.Define<string[]>(
+                LogLevel.Information,
+                eventId: 1,
+                formatString: $"Executing {nameof(ForbidResult)} with authentication schemes ({{Schemes}}).");
+
+            _httpStatusCodeResultExecuting = LoggerMessage.Define<int>(
+                LogLevel.Information,
+                1,
+                "Executing HttpStatusCodeResult, setting HTTP status code {StatusCode}");
+
+            _localRedirectResultExecuting = LoggerMessage.Define<string>(
+                LogLevel.Information,
+                1,
+                "Executing LocalRedirectResult, redirecting to {Destination}.");
+
+            _noFormatter = LoggerMessage.Define<string>(
+                LogLevel.Warning,
+                1,
+                "No output formatter was found for content type '{ContentType}' to write the response.");
+
+            _objectResultExecuting = LoggerMessage.Define<string>(
+                LogLevel.Information,
+                1,
+                "Executing ObjectResult, writing value {Value}.");
+
+            _formatterSelected = LoggerMessage.Define<IOutputFormatter, string>(
+                LogLevel.Debug,
+                2,
+                "Selected output formatter '{OutputFormatter}' and content type '{ContentType}' to write the response.");
+
+            _skippedContentNegotiation = LoggerMessage.Define<string>(
+                LogLevel.Debug,
+                3,
+                "Skipped content negotiation as content type '{ContentType}' is explicitly set for the response.");
+
+            _noAcceptForNegotiation = LoggerMessage.Define<string>(
+                LogLevel.Debug,
+                4,
+                "No information found on request to perform content negotiation.");
+
+            _noFormatterFromNegotiation = LoggerMessage.Define<IEnumerable<MediaTypeSegmentWithQuality>>(
+                LogLevel.Debug,
+                5,
+                "Could not find an output formatter based on content negotiation. Accepted types were ({AcceptTypes})");
+
+            _redirectResultExecuting = LoggerMessage.Define<string>(
+                LogLevel.Information,
+                1,
+                "Executing RedirectResult, redirecting to {Destination}.");
+
+            _redirectToActionResultExecuting = LoggerMessage.Define<string>(
+                LogLevel.Information,
+                1,
+                "Executing RedirectResult, redirecting to {Destination}.");
+
+            _redirectToRouteResultExecuting = LoggerMessage.Define<string, string>(
+                LogLevel.Information,
+                1,
+                "Executing RedirectToRouteResult, redirecting to {Destination} from route {RouteName}.");
         }
 
         public static IDisposable ActionScope(this ILogger logger, ActionDescriptor action)
@@ -79,6 +221,151 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         public static void ContentResultExecuting(this ILogger logger, string contentType)
         {
             _contentResultExecuting(logger, contentType, null);
+        }
+
+        public static void ActionMethodExecuting(this ILogger logger, ActionExecutingContext context, object[] arguments)
+        {
+            if (logger.IsEnabled(LogLevel.Information))
+            {
+                var actionName = context.ActionDescriptor.DisplayName;
+
+                string[] convertedArguments;
+                if (arguments == null)
+                {
+                    convertedArguments = null;
+                }
+                else
+                {
+                    convertedArguments = new string[arguments.Length];
+                    for (var i = 0; i < arguments.Length; i++)
+                    {
+                        convertedArguments[i] = Convert.ToString(arguments[i]);
+                    }
+                }
+
+                var validationState = context.ModelState.ValidationState;
+
+                _actionMethodExecuting(logger, actionName, convertedArguments, validationState, null);
+            }
+        }
+
+        public static void ActionMethodExecuted(this ILogger logger, ActionExecutingContext context, IActionResult result)
+        {
+            var actionName = context.ActionDescriptor.DisplayName;
+            _actionMethodExecuted(logger, actionName, Convert.ToString(result), null);
+        }
+
+        public static void AmbiguousActions(this ILogger logger, string actionNames)
+        {
+            _ambiguousActions(logger, actionNames, null);
+        }
+
+        public static void ConstraintMismatch(
+            this ILogger logger,
+            string actionName,
+            string actionId,
+            IActionConstraint actionConstraint)
+        {
+            _constraintMismatch(logger, actionName, actionId, actionConstraint, null);
+        }
+
+        public static void FileResultExecuting(this ILogger logger, string fileDownloadName)
+        {
+            _fileResultExecuting(logger, fileDownloadName, null);
+        }
+
+        public static void AuthorizationFailure(
+            this ILogger logger,
+            IFilterMetadata filter)
+        {
+            _authorizationFailure(logger, filter, null);
+        }
+
+        public static void ResourceFilterShortCircuited(
+            this ILogger logger,
+            IFilterMetadata filter)
+        {
+            _resourceFilterShortCircuit(logger, filter, null);
+        }
+
+        public static void ExceptionFilterShortCircuited(
+            this ILogger logger,
+            IFilterMetadata filter)
+        {
+            _exceptionFilterShortCircuit(logger, filter, null);
+        }
+
+        public static void ActionFilterShortCircuited(
+            this ILogger logger,
+            IFilterMetadata filter)
+        {
+            _actionFilterShortCircuit(logger, filter, null);
+        }
+
+        public static void ForbidResultExecuting(this ILogger logger, IList<string> authenticationSchemes)
+        {
+            _resultExecuting(logger, authenticationSchemes.ToArray(), null);
+        }
+
+        public static void HttpStatusCodeResultExecuting(this ILogger logger, int statusCode)
+        {
+            _httpStatusCodeResultExecuting(logger, statusCode, null);
+        }
+
+        public static void LocalRedirectResultExecuting(this ILogger logger, string destination)
+        {
+            _localRedirectResultExecuting(logger, destination, null);
+        }
+
+        public static void ObjectResultExecuting(this ILogger logger, object value)
+        {
+            _objectResultExecuting(logger, Convert.ToString(value), null);
+        }
+
+        public static void NoFormatter(
+            this ILogger logger,
+            OutputFormatterWriteContext formatterContext)
+        {
+            _noFormatter(logger, Convert.ToString(formatterContext.ContentType), null);
+        }
+
+        public static void FormatterSelected(
+            this ILogger logger,
+            IOutputFormatter outputFormatter,
+            OutputFormatterWriteContext context)
+        {
+            var contentType = Convert.ToString(context.ContentType);
+            _formatterSelected(logger, outputFormatter, contentType, null);
+        }
+
+        public static void SkippedContentNegotiation(this ILogger logger, string contentType)
+        {
+            _skippedContentNegotiation(logger, contentType, null);
+        }
+
+        public static void NoAcceptForNegotiation(this ILogger logger)
+        {
+            _noAcceptForNegotiation(logger, null, null);
+        }
+
+        public static void NoFormatterFromNegotiation(this ILogger logger, IList<MediaTypeSegmentWithQuality> acceptTypes)
+        {
+            _noFormatterFromNegotiation(logger, acceptTypes, null);
+        }
+
+        public static void RedirectResultExecuting(this ILogger logger, string destination)
+        {
+            _redirectResultExecuting(logger, destination, null);
+        }
+
+        public static void RedirectToActionResultExecuting(this ILogger logger, string destination)
+        {
+            _redirectToActionResultExecuting(logger, destination, null);
+        }
+
+        public static void RedirectToRouteResultExecuting(this ILogger logger, string destination, string routeName)
+        {
+            _redirectToRouteResultExecuting(logger, destination, routeName, null);
         }
 
         private class ActionLogScope : ILogValues

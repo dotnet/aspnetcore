@@ -3,7 +3,7 @@
 
 using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNetCore.Mvc.Internal
+namespace Microsoft.AspNetCore.Mvc.Formatters.Json.Internal
 {
     internal class MediaTypeHeaderValues
     {
