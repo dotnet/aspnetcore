@@ -486,7 +486,7 @@ namespace Microsoft.AspNetCore.Authentication.Tests.OpenIdConnect
                 {
                     if (SetCookie != null && SetCookie.Count > 0)
                     {
-                        var authCookie = SetCookie.SingleOrDefault(c => c.Contains(".AspNet.Cookie="));
+                        var authCookie = SetCookie.SingleOrDefault(c => c.Contains(".AspNetCore.Cookie="));
                         if (authCookie != null)
                         {
                             return authCookie.Substring(0, authCookie.IndexOf(';'));

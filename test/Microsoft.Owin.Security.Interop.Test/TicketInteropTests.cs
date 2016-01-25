@@ -58,14 +58,14 @@ namespace Microsoft.Owin.Security.Interop.Test
 
             var expires = DateTime.Today;
             var issued = new DateTime(1979, 11, 11);
-            var properties = new AspNet.Http.Authentication.AuthenticationProperties();
+            var properties = new AspNetCore.Http.Authentication.AuthenticationProperties();
             properties.IsPersistent = true;
             properties.RedirectUri = "/redirect";
             properties.Items["key"] = "value";
             properties.ExpiresUtc = expires;
             properties.IssuedUtc = issued;
 
-            var newTicket = new AspNet.Authentication.AuthenticationTicket(user, properties, "scheme");
+            var newTicket = new AspNetCore.Authentication.AuthenticationTicket(user, properties, "scheme");
             var newSerializer = new TicketSerializer();
 
             var bytes = newSerializer.Serialize(newTicket);

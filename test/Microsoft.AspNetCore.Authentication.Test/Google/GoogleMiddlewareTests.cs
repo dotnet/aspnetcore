@@ -111,7 +111,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
                 ClientSecret = "Test Secret"
             });
             var transaction = await server.SendAsync("https://example.com/challenge");
-            Assert.Contains(".AspNet.Correlation.Google=", transaction.SetCookie.Single());
+            Assert.Contains(".AspNetCore.Correlation.Google=", transaction.SetCookie.Single());
         }
 
         [Fact]
@@ -124,7 +124,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
                 AutomaticChallenge = true
             });
             var transaction = await server.SendAsync("https://example.com/401");
-            Assert.Contains(".AspNet.Correlation.Google=", transaction.SetCookie.Single());
+            Assert.Contains(".AspNetCore.Correlation.Google=", transaction.SetCookie.Single());
         }
 
         [Fact]
@@ -335,7 +335,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
                 }
             });
             var properties = new AuthenticationProperties();
-            var correlationKey = ".AspNet.Correlation.Google";
+            var correlationKey = ".AspNetCore.Correlation.Google";
             var correlationValue = "TestCorrelationId";
             properties.Items.Add(correlationKey, correlationValue);
             properties.RedirectUri = "/me";
@@ -347,7 +347,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
             Assert.Equal("/me", transaction.Response.Headers.GetValues("Location").First());
             Assert.Equal(2, transaction.SetCookie.Count);
             Assert.Contains(correlationKey, transaction.SetCookie[0]);
-            Assert.Contains(".AspNet." + TestExtensions.CookieAuthenticationScheme, transaction.SetCookie[1]);
+            Assert.Contains(".AspNetCore." + TestExtensions.CookieAuthenticationScheme, transaction.SetCookie[1]);
 
             var authCookie = transaction.AuthenticationCookieValue;
             transaction = await server.SendAsync("https://example.com/me", authCookie);
@@ -394,7 +394,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
                 } : new OAuthEvents()
             });
             var properties = new AuthenticationProperties();
-            var correlationKey = ".AspNet.Correlation.Google";
+            var correlationKey = ".AspNetCore.Correlation.Google";
             var correlationValue = "TestCorrelationId";
             properties.Items.Add(correlationKey, correlationValue);
             properties.RedirectUri = "/me";
@@ -446,7 +446,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
                 } : new OAuthEvents()
             });
             var properties = new AuthenticationProperties();
-            var correlationKey = ".AspNet.Correlation.Google";
+            var correlationKey = ".AspNetCore.Correlation.Google";
             var correlationValue = "TestCorrelationId";
             properties.Items.Add(correlationKey, correlationValue);
             properties.RedirectUri = "/me";
@@ -528,7 +528,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
                 }
             });
             var properties = new AuthenticationProperties();
-            var correlationKey = ".AspNet.Correlation.Google";
+            var correlationKey = ".AspNetCore.Correlation.Google";
             var correlationValue = "TestCorrelationId";
             properties.Items.Add(correlationKey, correlationValue);
             properties.RedirectUri = "/me";
@@ -540,7 +540,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
             Assert.Equal("/me", transaction.Response.Headers.GetValues("Location").First());
             Assert.Equal(2, transaction.SetCookie.Count);
             Assert.Contains(correlationKey, transaction.SetCookie[0]);
-            Assert.Contains(".AspNet." + TestExtensions.CookieAuthenticationScheme, transaction.SetCookie[1]);
+            Assert.Contains(".AspNetCore." + TestExtensions.CookieAuthenticationScheme, transaction.SetCookie[1]);
 
             var authCookie = transaction.AuthenticationCookieValue;
             transaction = await server.SendAsync("https://example.com/me", authCookie);
@@ -607,7 +607,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
                 }
             });
             var properties = new AuthenticationProperties();
-            var correlationKey = ".AspNet.Correlation.Google";
+            var correlationKey = ".AspNetCore.Correlation.Google";
             var correlationValue = "TestCorrelationId";
             properties.Items.Add(correlationKey, correlationValue);
             var state = stateFormat.Protect(properties);
@@ -618,7 +618,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
             Assert.Equal("/", transaction.Response.Headers.GetValues("Location").First());
             Assert.Equal(2, transaction.SetCookie.Count);
             Assert.Contains(correlationKey, transaction.SetCookie[0]);
-            Assert.Contains(".AspNet." + TestExtensions.CookieAuthenticationScheme, transaction.SetCookie[1]);
+            Assert.Contains(".AspNetCore." + TestExtensions.CookieAuthenticationScheme, transaction.SetCookie[1]);
         }
 
         [Fact]
@@ -690,7 +690,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
             });
 
             var properties = new AuthenticationProperties();
-            var correlationKey = ".AspNet.Correlation.Google";
+            var correlationKey = ".AspNetCore.Correlation.Google";
             var correlationValue = "TestCorrelationId";
             properties.Items.Add(correlationKey, correlationValue);
             properties.RedirectUri = "/foo";

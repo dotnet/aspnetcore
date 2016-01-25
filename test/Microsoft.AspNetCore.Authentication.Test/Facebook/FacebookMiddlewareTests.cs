@@ -212,7 +212,7 @@ namespace Microsoft.AspNetCore.Authentication.Facebook
                 }, handler: null);
 
             var properties = new AuthenticationProperties();
-            var correlationKey = ".AspNet.Correlation.Facebook";
+            var correlationKey = ".AspNetCore.Correlation.Facebook";
             var correlationValue = "TestCorrelationId";
             properties.Items.Add(correlationKey, correlationValue);
             properties.RedirectUri = "/me";

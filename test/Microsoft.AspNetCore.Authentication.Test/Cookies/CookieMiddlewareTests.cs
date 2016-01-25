@@ -438,7 +438,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             var transaction1 = await SendAsync(server, "http://example.com/testpath");
 
             var transaction2 = await SendAsync(server, "http://example.com/me/Cookies", transaction1.CookieNameValue);
-            Assert.Contains(".AspNet.Cookies=; expires=", transaction2.SetCookie);
+            Assert.Contains(".AspNetCore.Cookies=; expires=", transaction2.SetCookie);
             Assert.Null(FindClaimValue(transaction2, ClaimTypes.Name));
         }
 
@@ -913,7 +913,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             var transaction = await server.SendAsync("http://example.com");
 
             Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
-            Assert.True(transaction.SetCookie[0].StartsWith(".AspNet.Cookies="));
+            Assert.True(transaction.SetCookie[0].StartsWith(".AspNetCore.Cookies="));
         }
 
         [Fact]
@@ -979,7 +979,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
 
             var transaction = await server.SendAsync("http://example.com/notlogout?ReturnUrl=%2Fpage");
             Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
-            Assert.Contains(".AspNet.Cookies=; expires=", transaction.SetCookie[0]);
+            Assert.Contains(".AspNetCore.Cookies=; expires=", transaction.SetCookie[0]);
         }
 
         [Fact]
@@ -1000,7 +1000,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             var transaction = await server.SendAsync("http://example.com/logout?ReturnUrl=%2Fpage");
 
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
-            Assert.Contains(".AspNet.Cookies=; expires=", transaction.SetCookie[0]);
+            Assert.Contains(".AspNetCore.Cookies=; expires=", transaction.SetCookie[0]);
 
             var location = transaction.Response.Headers.Location;
             Assert.Equal("/page", location.OriginalString);

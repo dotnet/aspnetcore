@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Authentication
             {
                 if (SetCookie != null && SetCookie.Count > 0)
                 {
-                    var authCookie = SetCookie.SingleOrDefault(c => c.Contains(".AspNet." + TestExtensions.CookieAuthenticationScheme + "="));
+                    var authCookie = SetCookie.SingleOrDefault(c => c.Contains(".AspNetCore." + TestExtensions.CookieAuthenticationScheme + "="));
                     if (authCookie != null)
                     {
                         return authCookie.Substring(0, authCookie.IndexOf(';'));

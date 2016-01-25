@@ -152,7 +152,7 @@ namespace Microsoft.AspNetCore.Authentication.Tests.MicrosoftAccount
                     }
                 });
             var properties = new AuthenticationProperties();
-            var correlationKey = ".AspNet.Correlation.Microsoft";
+            var correlationKey = ".AspNetCore.Correlation.Microsoft";
             var correlationValue = "TestCorrelationId";
             properties.Items.Add(correlationKey, correlationValue);
             properties.RedirectUri = "/me";
@@ -164,7 +164,7 @@ namespace Microsoft.AspNetCore.Authentication.Tests.MicrosoftAccount
             Assert.Equal("/me", transaction.Response.Headers.GetValues("Location").First());
             Assert.Equal(2, transaction.SetCookie.Count);
             Assert.Contains(correlationKey, transaction.SetCookie[0]);
-            Assert.Contains(".AspNet." + TestExtensions.CookieAuthenticationScheme, transaction.SetCookie[1]);
+            Assert.Contains(".AspNetCore." + TestExtensions.CookieAuthenticationScheme, transaction.SetCookie[1]);
 
             var authCookie = transaction.AuthenticationCookieValue;
             transaction = await server.SendAsync("https://example.com/me", authCookie);

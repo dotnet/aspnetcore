@@ -24,7 +24,7 @@ namespace Microsoft.Owin.Security.Interop
     public class CookiesInteropTests
     {
         [Fact]
-        public async Task AspNet5WithInteropCookieContainsIdentity()
+        public async Task AspNetCoreWithInteropCookieContainsIdentity()
         {
             var identity = new ClaimsIdentity("Cookies");
             identity.AddClaim(new Claim(ClaimTypes.Name, "Alice"));
@@ -40,7 +40,9 @@ namespace Microsoft.Owin.Security.Interop
 
                 app.UseCookieAuthentication(new Cookies.CookieAuthenticationOptions
                 {
-                    TicketDataFormat = new AspNetTicketDataFormat(new DataProtectorShim(dataProtector))
+                    TicketDataFormat = new AspNetTicketDataFormat(new DataProtectorShim(dataProtector)),
+                    CookieName = AspNetCore.Authentication.Cookies.CookieAuthenticationDefaults.CookiePrefix
+                        + AspNetCore.Authentication.Cookies.CookieAuthenticationDefaults.AuthenticationScheme,
                 });
 
                 app.Run(context =>
@@ -55,7 +57,7 @@ namespace Microsoft.Owin.Security.Interop
             var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
-                    app.UseCookieAuthentication(new AspNet.Builder.CookieAuthenticationOptions
+                    app.UseCookieAuthentication(new AspNetCore.Builder.CookieAuthenticationOptions
                     {
                         DataProtectionProvider = dataProtection
                     });
@@ -66,7 +68,7 @@ namespace Microsoft.Owin.Security.Interop
                     });
                 })
                 .ConfigureServices(services => services.AddAuthentication());
-            var newServer = new AspNet.TestHost.TestServer(builder);
+            var newServer = new AspNetCore.TestHost.TestServer(builder);
 
             var request = new HttpRequestMessage(HttpMethod.Get, "http://example.com/login");
             request.Headers.Add("Cookie", transaction.SetCookie.Split(new[] { ';' }, 2).First());
@@ -91,14 +93,14 @@ namespace Microsoft.Owin.Security.Interop
             var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
-                    app.UseCookieAuthentication(new AspNet.Builder.CookieAuthenticationOptions
+                    app.UseCookieAuthentication(new AspNetCore.Builder.CookieAuthenticationOptions
                     {
                         DataProtectionProvider = dataProtection
                     });
                     app.Run(context => context.Authentication.SignInAsync("Cookies", user));
                 })
                 .ConfigureServices(services => services.AddAuthentication());
-            var newServer = new AspNet.TestHost.TestServer(builder);
+            var newServer = new AspNetCore.TestHost.TestServer(builder);
 
             var cookie = await SendAndGetCookie(newServer, "http://example.com/login");
 
@@ -108,7 +110,9 @@ namespace Microsoft.Owin.Security.Interop
 
                 app.UseCookieAuthentication(new Owin.Security.Cookies.CookieAuthenticationOptions
                 {
-                    TicketDataFormat = new AspNetTicketDataFormat(new DataProtectorShim(dataProtector))
+                    TicketDataFormat = new AspNetTicketDataFormat(new DataProtectorShim(dataProtector)),
+                    CookieName = AspNetCore.Authentication.Cookies.CookieAuthenticationDefaults.CookiePrefix
+                        + AspNetCore.Authentication.Cookies.CookieAuthenticationDefaults.AuthenticationScheme,
                 });
 
                 app.Run(async context =>
@@ -123,7 +127,7 @@ namespace Microsoft.Owin.Security.Interop
             Assert.Equal("Alice", FindClaimValue(transaction2, ClaimTypes.Name));
         }
 
-        private static async Task<string> SendAndGetCookie(AspNet.TestHost.TestServer server, string uri)
+        private static async Task<string> SendAndGetCookie(AspNetCore.TestHost.TestServer server, string uri)
         {
             var request = new HttpRequestMessage(HttpMethod.Get, uri);
             var response = await server.CreateClient().SendAsync(request);
