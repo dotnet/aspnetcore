@@ -16,7 +16,10 @@ namespace Microsoft.AspNetCore.Mvc
         /// Invokes a view component with the specified <paramref name="name"/>.
         /// </summary>
         /// <param name="name">The name of the view component.</param>
-        /// <param name="arguments">Arguments to be passed to the invoked view component method.</param>
+        /// <param name="arguments">
+        /// An <see cref="object"/> containing arguments to be passed to the invoked view component method.
+        /// Alternatively, an <see cref="IDictionary{string, object}"/> instance containing the invocation arguments.
+        /// </param>
         /// <returns>A <see cref="Task"/> that on completion returns the rendered <see cref="IHtmlContent" />.
         /// </returns>
         Task<IHtmlContent> InvokeAsync(string name, object arguments);
@@ -25,7 +28,10 @@ namespace Microsoft.AspNetCore.Mvc
         /// Invokes a view component of type <paramref name="componentType" />.
         /// </summary>
         /// <param name="componentType">The view component <see cref="Type"/>.</param>
-        /// <param name="arguments">Arguments to be passed to the invoked view component method.</param>
+        /// <param name="arguments">
+        /// An <see cref="object"/> containing arguments to be passed to the invoked view component method.
+        /// Alternatively, an <see cref="IDictionary{string, object}"/> instance containing the invocation arguments.
+        /// </param>
         /// <returns>A <see cref="Task"/> that on completion returns the rendered <see cref="IHtmlContent" />.
         /// </returns>
         Task<IHtmlContent> InvokeAsync(Type componentType, object arguments);
