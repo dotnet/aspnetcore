@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.CommandLineUtils;
 
 namespace Microsoft.AspNetCore.Tools.PublishIIS
@@ -33,13 +32,7 @@ namespace Microsoft.AspNetCore.Tools.PublishIIS
                     return 2;
                 }
 
-                Reporter.Output.WriteLine($"Configuring project published to '{publishFolder}' for use with IIS");
-
-                var exitCode = new PublishIISCommand(publishFolder, projectPath.Value, webRootOption.Value()).Run();
-
-                Reporter.Output.WriteLine("Configuring project completed succesfully");
-
-                return exitCode;
+               return new PublishIISCommand(publishFolder, projectPath.Value, webRootOption.Value()).Run();
             });
 
             try
@@ -48,8 +41,11 @@ namespace Microsoft.AspNetCore.Tools.PublishIIS
             }
             catch (Exception e)
             {
-                Reporter.Error.WriteLine(e.Message.Red());
-                Reporter.Verbose.WriteLine(e.ToString().Yellow());
+#if DEBUG
+                Console.Error.WriteLine(e);
+#else
+                Console.Error.WriteLine(e.Message);
+#endif
             }
 
             return 1;
