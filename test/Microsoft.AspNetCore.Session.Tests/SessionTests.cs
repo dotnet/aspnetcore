@@ -460,33 +460,6 @@ namespace Microsoft.AspNetCore.Session
         }
 
         [Fact]
-        public async Task SessionMiddleware_DoesNotStart_IfUnderlyingStoreIsUnavailable()
-        {
-            // Arrange, Act & Assert
-            var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
-            {
-                var builder = new WebHostBuilder()
-                    .Configure(app =>
-                    {
-                        app.UseSession();
-                    })
-                    .ConfigureServices(services =>
-                    {
-                        services.AddSingleton<IDistributedCache, TestDistributedCache>();
-                        services.AddSession();
-                    });
-
-                using (var server = new TestServer(builder))
-                {
-                    var client = server.CreateClient();
-                    await client.GetAsync(string.Empty);
-                }
-            });
-
-            Assert.Equal("Error connecting database.", exception.Message);
-        }
-
-        [Fact]
         public async Task SessionKeys_AreCaseSensitive()
         {
             var builder = new WebHostBuilder()
@@ -533,16 +506,6 @@ namespace Microsoft.AspNetCore.Session
 
         private class TestDistributedCache : IDistributedCache
         {
-            public void Connect()
-            {
-                throw new InvalidOperationException("Error connecting database.");
-            }
-
-            public Task ConnectAsync()
-            {
-                throw new InvalidOperationException("Error connecting database.");
-            }
-
             public byte[] Get(string key)
             {
                 throw new NotImplementedException();

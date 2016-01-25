@@ -37,11 +37,6 @@ namespace Microsoft.AspNetCore.Session
             }
         }
 
-        public void Connect()
-        {
-            _cache.Connect();
-        }
-
         public ISession Create(string sessionId, TimeSpan idleTimeout, Func<bool> tryEstablishSession, bool isNewSessionKey)
         {
             if (string.IsNullOrEmpty(sessionId))

@@ -62,7 +62,6 @@ namespace Microsoft.AspNetCore.Session
             _logger = loggerFactory.CreateLogger<SessionMiddleware>();
             _options = options.Value;
             _sessionStore = sessionStore;
-            _sessionStore.Connect();
         }
 
         /// <summary>

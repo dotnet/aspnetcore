@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Session
     public interface ISessionStore
     {
         bool IsAvailable { get; }
-        void Connect();
+
         ISession Create(string sessionId, TimeSpan idleTimeout, Func<bool> tryEstablishSession, bool isNewSessionKey);
     }
 }
