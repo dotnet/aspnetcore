@@ -15,12 +15,12 @@ using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.ViewFeatures
+namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 {
-    public class ViewResultExecutorTest
+    public class PartialViewResultExecutorTest
     {
         [Fact]
-        public void FindView_UsesViewEngine_FromViewResult()
+        public void FindView_UsesViewEngine_FromPartialViewResult()
         {
             // Arrange
             var context = GetActionContext();
@@ -29,15 +29,15 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             var viewName = "my-view";
             var viewEngine = new Mock<ICompositeViewEngine>(MockBehavior.Strict);
             viewEngine
-                .Setup(e => e.GetView(/*executingFilePath*/ null, viewName, /*isMainPage*/ true))
+                .Setup(e => e.GetView(/*executingFilePath*/ null, viewName, /*isMainPage*/ false))
                 .Returns(ViewEngineResult.NotFound(viewName, Enumerable.Empty<string>()))
                 .Verifiable();
             viewEngine
-                .Setup(e => e.FindView(context, viewName, /*isMainPage*/ true))
+                .Setup(e => e.FindView(context, viewName, /*isMainPage*/ false))
                 .Returns(ViewEngineResult.Found(viewName, Mock.Of<IView>()))
                 .Verifiable();
 
-            var viewResult = new ViewResult
+            var viewResult = new PartialViewResult
             {
                 ViewEngine = viewEngine.Object,
                 ViewName = viewName,
@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             var viewName = "some-view-name";
             context.ActionDescriptor.Name = viewName;
 
-            var viewResult = new ViewResult
+            var viewResult = new PartialViewResult
             {
                 ViewData = new ViewDataDictionary(new EmptyModelMetadataProvider()),
                 TempData = Mock.Of<ITempDataDictionary>(),
@@ -87,13 +87,14 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             var viewName = "myview";
             var viewEngine = new Mock<IViewEngine>(MockBehavior.Strict);
             viewEngine
-                .Setup(e => e.GetView(/*executingFilePath*/ null, "myview", /*isMainPage*/ true))
-                .Returns(ViewEngineResult.NotFound("myview", expectedLocations));
+                .Setup(e => e.GetView(/*executingFilePath*/ null, "myview", /*isMainPage*/ false))
+                .Returns(ViewEngineResult.NotFound("myview", expectedLocations))
+                .Verifiable();
             viewEngine
-                .Setup(e => e.FindView(context, "myview", /*isMainPage*/ true))
+                .Setup(e => e.FindView(context, "myview", /*isMainPage*/ false))
                 .Returns(ViewEngineResult.NotFound("myview", Enumerable.Empty<string>()));
 
-            var viewResult = new ViewResult
+            var viewResult = new PartialViewResult
             {
                 ViewName = viewName,
                 ViewEngine = viewEngine.Object,
@@ -121,13 +122,14 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             var viewName = "myview";
             var viewEngine = new Mock<IViewEngine>(MockBehavior.Strict);
             viewEngine
-                .Setup(e => e.GetView(/*executingFilePath*/ null, "myview", /*isMainPage*/ true))
-                .Returns(ViewEngineResult.NotFound("myview", Enumerable.Empty<string>()));
+                .Setup(e => e.GetView(/*executingFilePath*/ null, "myview", /*isMainPage*/ false))
+                .Returns(ViewEngineResult.NotFound("myview", Enumerable.Empty<string>()))
+                .Verifiable();
             viewEngine
-                .Setup(e => e.FindView(context, "myview", /*isMainPage*/ true))
+                .Setup(e => e.FindView(context, "myview", /*isMainPage*/ false))
                 .Returns(ViewEngineResult.NotFound("myview", expectedLocations));
 
-            var viewResult = new ViewResult
+            var viewResult = new PartialViewResult
             {
                 ViewName = viewName,
                 ViewEngine = viewEngine.Object,
@@ -155,13 +157,14 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             var viewName = "myview";
             var viewEngine = new Mock<IViewEngine>(MockBehavior.Strict);
             viewEngine
-                .Setup(e => e.GetView(/*executingFilePath*/ null, "myview", /*isMainPage*/ true))
-                .Returns(ViewEngineResult.NotFound("myview", new[] { "location1", "location2" }));
+                .Setup(e => e.GetView(/*executingFilePath*/ null, "myview", /*isMainPage*/ false))
+                .Returns(ViewEngineResult.NotFound("myview", new[] { "location1", "location2" }))
+                .Verifiable();
             viewEngine
-                .Setup(e => e.FindView(context, "myview", /*isMainPage*/ true))
+                .Setup(e => e.FindView(context, "myview", /*isMainPage*/ false))
                 .Returns(ViewEngineResult.NotFound("myview", new[] { "location3", "location4" }));
 
-            var viewResult = new ViewResult
+            var viewResult = new PartialViewResult
             {
                 ViewName = viewName,
                 ViewEngine = viewEngine.Object,
@@ -190,7 +193,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             var executor = GetViewExecutor(diagnosticSource);
 
             var viewName = "myview";
-            var viewResult = new ViewResult
+            var viewResult = new PartialViewResult
             {
                 ViewName = viewName,
                 ViewData = new ViewDataDictionary(new EmptyModelMetadataProvider()),
@@ -207,7 +210,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             Assert.NotNull(listener.ViewFound.ActionContext);
             Assert.NotNull(listener.ViewFound.Result);
             Assert.NotNull(listener.ViewFound.View);
-            Assert.True(listener.ViewFound.IsMainPage);
+            Assert.False(listener.ViewFound.IsMainPage);
             Assert.Equal("myview", listener.ViewFound.ViewName);
         }
 
@@ -225,13 +228,14 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             var viewName = "myview";
             var viewEngine = new Mock<IViewEngine>(MockBehavior.Strict);
             viewEngine
-                .Setup(e => e.GetView(/*executingFilePath*/ null, "myview", /*isMainPage*/ true))
-                .Returns(ViewEngineResult.NotFound("myview", Enumerable.Empty<string>()));
+                .Setup(e => e.GetView(/*executingFilePath*/ null, "myview", /*isMainPage*/ false))
+                .Returns(ViewEngineResult.NotFound("myview", Enumerable.Empty<string>()))
+                .Verifiable();
             viewEngine
-                .Setup(e => e.FindView(context, "myview", /*isMainPage*/ true))
+                .Setup(e => e.FindView(context, "myview", /*isMainPage*/ false))
                 .Returns(ViewEngineResult.NotFound("myview", new string[] { "location/myview" }));
 
-            var viewResult = new ViewResult
+            var viewResult = new PartialViewResult
             {
                 ViewName = viewName,
                 ViewEngine = viewEngine.Object,
@@ -253,7 +257,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         }
 
         [Fact]
-        public async Task ExecuteAsync_UsesContentType_FromViewResult()
+        public async Task ExecuteAsync_UsesContentType_FromPartialViewResult()
         {
             // Arrange
             var context = GetActionContext();
@@ -261,7 +265,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
             var contentType = "application/x-my-content-type";
 
-            var viewResult = new ViewResult
+            var viewResult = new PartialViewResult
             {
                 ViewName = "my-view",
                 ContentType = contentType,
@@ -274,10 +278,15 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
             // Assert
             Assert.Equal("application/x-my-content-type", context.HttpContext.Response.ContentType);
+
+            // Check if the original instance provided by the user has not changed.
+            // Since we do not have access to the new instance created within the view executor,
+            // check if at least the content is the same.
+            Assert.Null(MediaType.GetEncoding(contentType));
         }
 
         [Fact]
-        public async Task ExecuteAsync_UsesStatusCode_FromViewResult()
+        public async Task ExecuteAsync_UsesStatusCode_FromPartialViewResult()
         {
             // Arrange
             var context = GetActionContext();
@@ -285,7 +294,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
             var contentType = MediaTypeHeaderValue.Parse("application/x-my-content-type");
 
-            var viewResult = new ViewResult
+            var viewResult = new PartialViewResult
             {
                 ViewName = "my-view",
                 StatusCode = 404,
@@ -305,7 +314,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             return new ActionContext(new DefaultHttpContext(), new RouteData(), new ActionDescriptor());
         }
 
-        private ViewResultExecutor GetViewExecutor(DiagnosticListener diagnosticSource = null)
+        private PartialViewResultExecutor GetViewExecutor(DiagnosticSource diagnosticSource = null)
         {
             if (diagnosticSource == null)
             {
@@ -314,18 +323,18 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
             var viewEngine = new Mock<IViewEngine>(MockBehavior.Strict);
             viewEngine
-                .Setup(e => e.GetView(/*executingFilePath*/ null, It.IsAny<string>(), /*isMainPage*/ true))
+                .Setup(e => e.GetView(/*executingFilePath*/ null, It.IsAny<string>(), /*isMainPage*/ false))
                 .Returns<string, string, bool>(
-                    (path, name, partial) => ViewEngineResult.NotFound(name, Enumerable.Empty<string>()));
+                    (executing, name, isMainPage) => ViewEngineResult.NotFound(name, Enumerable.Empty<string>()));
             viewEngine
-                .Setup(e => e.FindView(It.IsAny<ActionContext>(), It.IsAny<string>(), /*isMainPage*/ true))
+                .Setup(e => e.FindView(It.IsAny<ActionContext>(), It.IsAny<string>(), /*isMainPage*/ false))
                 .Returns<ActionContext, string, bool>(
-                    (context, name, partial) => ViewEngineResult.Found(name, Mock.Of<IView>()));
+                    (context, name, isMainPage) => ViewEngineResult.Found(name, Mock.Of<IView>()));
 
             var options = new TestOptionsManager<MvcViewOptions>();
             options.Value.ViewEngines.Add(viewEngine.Object);
 
-            var viewExecutor = new ViewResultExecutor(
+            var viewExecutor = new PartialViewResultExecutor(
                 options,
                 new TestHttpResponseStreamWriterFactory(),
                 new CompositeViewEngine(options),

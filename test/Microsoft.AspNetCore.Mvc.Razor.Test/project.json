@@ -7,7 +7,7 @@
     "../Microsoft.AspNetCore.Mvc.Razor.Host.Test/TestFileProvider.cs",
     "../Microsoft.AspNetCore.Mvc.Razor.Host.Test/TestFileInfo.cs",
     "../Microsoft.AspNetCore.Mvc.Razor.Host.Test/TestFileTrigger.cs",
-    "../Microsoft.AspNetCore.Mvc.ViewFeatures.Test/TestViewBufferScope.cs"
+    "../Microsoft.AspNetCore.Mvc.ViewFeatures.Test/Internal/TestViewBufferScope.cs"
   ],
   "dependencies": {
     "Microsoft.AspNetCore.Http": "1.0.0-*",

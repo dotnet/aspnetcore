@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNetCore.Mvc.ViewFeatures
+namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 {
     /// <summary>
     /// Finds and executes an <see cref="IView"/> for a <see cref="ViewResult"/>.

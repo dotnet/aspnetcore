@@ -15,7 +15,7 @@ using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.ViewFeatures
+namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 {
     public class DefaultDisplayTemplatesTest
     {

@@ -5,7 +5,7 @@ using System;
 using System.Buffers;
 using System.Collections.Generic;
 
-namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Buffer
+namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 {
     /// <summary>
     /// A <see cref="IViewBufferScope"/> that uses pooled memory.
