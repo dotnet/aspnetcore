@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.Extensions.Localization;
 
@@ -11,21 +11,24 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
 {
     public class MinLengthAttributeAdapter : AttributeAdapterBase<MinLengthAttribute>
     {
+        private readonly string _min;
+
         public MinLengthAttributeAdapter(MinLengthAttribute attribute, IStringLocalizer stringLocalizer)
             : base(attribute, stringLocalizer)
         {
+            _min = Attribute.Length.ToString(CultureInfo.InvariantCulture);
         }
 
-        public override IEnumerable<ModelClientValidationRule> GetClientValidationRules(
-            ClientModelValidationContext context)
+        public override void AddValidation(ClientModelValidationContext context)
         {
             if (context == null)
             {
                 throw new ArgumentNullException(nameof(context));
             }
 
-            var message = GetErrorMessage(context);
-            return new[] { new ModelClientValidationMinLengthRule(message, Attribute.Length) };
+            MergeAttribute(context.Attributes, "data-val", "true");
+            MergeAttribute(context.Attributes, "data-val-minlength", GetErrorMessage(context));
+            MergeAttribute(context.Attributes, "data-val-minlength-min", _min);
         }
 
         /// <inheritdoc />

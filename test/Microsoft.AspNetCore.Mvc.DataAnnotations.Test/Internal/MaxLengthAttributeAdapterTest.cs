@@ -4,6 +4,7 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Localization;
 using Moq;
@@ -15,7 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
     {
         [Fact]
         [ReplaceCulture]
-        public void ClientRulesWithMaxLengthAttribute_Localize()
+        public void MaxLengthAttribute_AddValidation_Localize()
         {
             // Arrange
             var provider = TestModelMetadataProvider.CreateDefaultProvider();
@@ -34,22 +35,22 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             var adapter = new MaxLengthAttributeAdapter(attribute, stringLocalizer: stringLocalizer.Object);
 
             var actionContext = new ActionContext();
-            var context = new ClientModelValidationContext(actionContext, metadata, provider);
+            var context = new ClientModelValidationContext(actionContext, metadata, provider, new AttributeDictionary());
 
             // Act
-            var rules = adapter.GetClientValidationRules(context);
+            adapter.AddValidation(context);
 
             // Assert
-            var rule = Assert.Single(rules);
-            Assert.Equal("maxlength", rule.ValidationType);
-            Assert.Equal(1, rule.ValidationParameters.Count);
-            Assert.Equal(10, rule.ValidationParameters["max"]);
-            Assert.Equal(attribute.FormatErrorMessage("Length"), rule.ErrorMessage);
+            Assert.Collection(
+                context.Attributes,
+                kvp => { Assert.Equal("data-val", kvp.Key); Assert.Equal("true", kvp.Value); },
+                kvp => { Assert.Equal("data-val-maxlength", kvp.Key); Assert.Equal(expectedMessage, kvp.Value); },
+                kvp => { Assert.Equal("data-val-maxlength-max", kvp.Key); Assert.Equal("10", kvp.Value); });
         }
 
         [Fact]
         [ReplaceCulture]
-        public void ClientRulesWithMaxLengthAttribute()
+        public void MaxLengthAttribute_AddValidation()
         {
             // Arrange
             var provider = TestModelMetadataProvider.CreateDefaultProvider();
@@ -58,23 +59,25 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             var attribute = new MaxLengthAttribute(10);
             var adapter = new MaxLengthAttributeAdapter(attribute, stringLocalizer: null);
 
+            var expectedMessage = attribute.FormatErrorMessage("Length");
+
             var actionContext = new ActionContext();
-            var context = new ClientModelValidationContext(actionContext, metadata, provider);
+            var context = new ClientModelValidationContext(actionContext, metadata, provider, new AttributeDictionary());
 
             // Act
-            var rules = adapter.GetClientValidationRules(context);
+            adapter.AddValidation(context);
 
             // Assert
-            var rule = Assert.Single(rules);
-            Assert.Equal("maxlength", rule.ValidationType);
-            Assert.Equal(1, rule.ValidationParameters.Count);
-            Assert.Equal(10, rule.ValidationParameters["max"]);
-            Assert.Equal(attribute.FormatErrorMessage("Length"), rule.ErrorMessage);
+            Assert.Collection(
+                context.Attributes,
+                kvp => { Assert.Equal("data-val", kvp.Key); Assert.Equal("true", kvp.Value); },
+                kvp => { Assert.Equal("data-val-maxlength", kvp.Key); Assert.Equal(expectedMessage, kvp.Value); },
+                kvp => { Assert.Equal("data-val-maxlength-max", kvp.Key); Assert.Equal("10", kvp.Value); });
         }
 
         [Fact]
         [ReplaceCulture]
-        public void ClientRulesWithMaxLengthAttributeAndCustomMessage()
+        public void MaxLengthAttribute_AddValidation_CustomMessage()
         {
             // Arrange
             var propertyName = "Length";
@@ -82,26 +85,28 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             var provider = TestModelMetadataProvider.CreateDefaultProvider();
             var metadata = provider.GetMetadataForProperty(typeof(string), propertyName);
 
+            var expectedMessage = "Length must be at most 5";
+
             var attribute = new MaxLengthAttribute(5) { ErrorMessage = message };
             var adapter = new MaxLengthAttributeAdapter(attribute, stringLocalizer: null);
 
             var actionContext = new ActionContext();
-            var context = new ClientModelValidationContext(actionContext, metadata, provider);
+            var context = new ClientModelValidationContext(actionContext, metadata, provider, new AttributeDictionary());
 
             // Act
-            var rules = adapter.GetClientValidationRules(context);
+            adapter.AddValidation(context);
 
             // Assert
-            var rule = Assert.Single(rules);
-            Assert.Equal("maxlength", rule.ValidationType);
-            Assert.Equal(1, rule.ValidationParameters.Count);
-            Assert.Equal(5, rule.ValidationParameters["max"]);
-            Assert.Equal("Length must be at most 5", rule.ErrorMessage);
+            Assert.Collection(
+                context.Attributes,
+                kvp => { Assert.Equal("data-val", kvp.Key); Assert.Equal("true", kvp.Value); },
+                kvp => { Assert.Equal("data-val-maxlength", kvp.Key); Assert.Equal(expectedMessage, kvp.Value); },
+                kvp => { Assert.Equal("data-val-maxlength-max", kvp.Key); Assert.Equal("5", kvp.Value); });
         }
 
         [Fact]
         [ReplaceCulture]
-        public void ClientRulesWithMaxLengthAttribute_StringLocalizer_ReturnsLocalizedErrorString()
+        public void MaxLengthAttribute_AddValidation_StringLocalizer_ReturnsLocalizedErrorString()
         {
             // Arrange
             var provider = TestModelMetadataProvider.CreateDefaultProvider();
@@ -114,20 +119,53 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             var stringLocalizer = new Mock<IStringLocalizer>();
             stringLocalizer.Setup(s => s[errorKey, metadata.GetDisplayName(), attribute.Length]).Returns(localizedString);
 
+            var expectedMessage = "Longueur est invalide";
+
             var adapter = new MaxLengthAttributeAdapter(attribute, stringLocalizer.Object);
 
             var actionContext = new ActionContext();
-            var context = new ClientModelValidationContext(actionContext, metadata, provider);
+            var context = new ClientModelValidationContext(actionContext, metadata, provider, new AttributeDictionary());
 
             // Act
-            var rules = adapter.GetClientValidationRules(context);
+            adapter.AddValidation(context);
 
             // Assert
-            var rule = Assert.Single(rules);
-            Assert.Equal("maxlength", rule.ValidationType);
-            Assert.Equal(1, rule.ValidationParameters.Count);
-            Assert.Equal(10, rule.ValidationParameters["max"]);
-            Assert.Equal("Longueur est invalide", rule.ErrorMessage);
+            Assert.Collection(
+                context.Attributes,
+                kvp => { Assert.Equal("data-val", kvp.Key); Assert.Equal("true", kvp.Value); },
+                kvp => { Assert.Equal("data-val-maxlength", kvp.Key); Assert.Equal(expectedMessage, kvp.Value); },
+                kvp => { Assert.Equal("data-val-maxlength-max", kvp.Key); Assert.Equal("10", kvp.Value); });
+        }
+
+        [Fact]
+        [ReplaceCulture]
+        public void AddValidation_DoesNotTrounceExistingAttributes()
+        {
+            // Arrange
+            var provider = TestModelMetadataProvider.CreateDefaultProvider();
+            var metadata = provider.GetMetadataForProperty(typeof(string), "Length");
+
+            var attribute = new MaxLengthAttribute(10);
+            var adapter = new MaxLengthAttributeAdapter(attribute, stringLocalizer: null);
+
+            var expectedMessage = attribute.FormatErrorMessage("Length");
+
+            var actionContext = new ActionContext();
+            var context = new ClientModelValidationContext(actionContext, metadata, provider, new AttributeDictionary());
+
+            context.Attributes.Add("data-val", "original");
+            context.Attributes.Add("data-val-maxlength", "original");
+            context.Attributes.Add("data-val-maxlength-max", "original");
+
+            // Act
+            adapter.AddValidation(context);
+
+            // Assert
+            Assert.Collection(
+                context.Attributes,
+                kvp => { Assert.Equal("data-val", kvp.Key); Assert.Equal("original", kvp.Value); },
+                kvp => { Assert.Equal("data-val-maxlength", kvp.Key); Assert.Equal("original", kvp.Value); },
+                kvp => { Assert.Equal("data-val-maxlength-max", kvp.Key); Assert.Equal("original", kvp.Value); });
         }
     }
 }

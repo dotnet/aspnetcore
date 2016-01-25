@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.Extensions.Localization;
@@ -16,16 +15,15 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
         {
         }
 
-        public override IEnumerable<ModelClientValidationRule> GetClientValidationRules(
-           ClientModelValidationContext context)
+        public override void AddValidation(ClientModelValidationContext context)
         {
             if (context == null)
             {
                 throw new ArgumentNullException(nameof(context));
             }
 
-            var errorMessage = GetErrorMessage(context);
-            return new[] { new ModelClientValidationRequiredRule(errorMessage) };
+            MergeAttribute(context.Attributes, "data-val", "true");
+            MergeAttribute(context.Attributes, "data-val-required", GetErrorMessage(context));
         }
 
         /// <inheritdoc />

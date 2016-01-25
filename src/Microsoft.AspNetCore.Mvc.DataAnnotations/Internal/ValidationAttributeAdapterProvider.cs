@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             }
             else if (type == typeof(CreditCardAttribute))
             {
-                adapter = new DataTypeAttributeAdapter((DataTypeAttribute)attribute, "creditcard", stringLocalizer);
+                adapter = new DataTypeAttributeAdapter((DataTypeAttribute)attribute, "data-val-creditcard", stringLocalizer);
             }
             else if (type == typeof(StringLengthAttribute))
             {
@@ -63,15 +63,15 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             }
             else if (type == typeof(EmailAddressAttribute))
             {
-                adapter = new DataTypeAttributeAdapter((DataTypeAttribute)attribute, "email", stringLocalizer);
+                adapter = new DataTypeAttributeAdapter((DataTypeAttribute)attribute, "data-val-email", stringLocalizer);
             }
             else if (type == typeof(PhoneAttribute))
             {
-                adapter = new DataTypeAttributeAdapter((DataTypeAttribute)attribute, "phone", stringLocalizer);
+                adapter = new DataTypeAttributeAdapter((DataTypeAttribute)attribute, "data-val-phone", stringLocalizer);
             }
             else if (type == typeof(UrlAttribute))
             {
-                adapter = new DataTypeAttributeAdapter((DataTypeAttribute)attribute, "url", stringLocalizer);
+                adapter = new DataTypeAttributeAdapter((DataTypeAttribute)attribute, "data-val-url", stringLocalizer);
             }
             else
             {

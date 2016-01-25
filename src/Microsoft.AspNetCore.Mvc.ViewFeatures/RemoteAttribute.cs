@@ -232,26 +232,37 @@ namespace Microsoft.AspNetCore.Mvc
             return true;
         }
 
-        /// <inheritdoc />
-        /// <exception cref="InvalidOperationException">
-        /// Thrown if unable to generate a target URL for a validation request.
-        /// </exception>
-        public virtual IEnumerable<ModelClientValidationRule> GetClientValidationRules(
-            ClientModelValidationContext context)
+        public virtual void AddValidation(ClientModelValidationContext context)
         {
             if (context == null)
             {
                 throw new ArgumentNullException(nameof(context));
             }
 
-            var metadata = context.ModelMetadata;
-            var rule = new ModelClientValidationRemoteRule(
-                FormatErrorMessage(metadata.GetDisplayName()),
-                GetUrl(context),
-                HttpMethod,
-                FormatAdditionalFieldsForClientValidation(metadata.PropertyName));
+            MergeAttribute(context.Attributes, "data-val", "true");
 
-            return new[] { rule };
+            var errorMessage = FormatErrorMessage(context.ModelMetadata.GetDisplayName());
+            MergeAttribute(context.Attributes, "data-val-remote", errorMessage);
+            MergeAttribute(context.Attributes, "data-val-remote-url", GetUrl(context));
+
+            if (!string.IsNullOrEmpty(HttpMethod))
+            {
+                MergeAttribute(context.Attributes, "data-val-remote-type", HttpMethod);
+            }
+
+            var additionalFields = FormatAdditionalFieldsForClientValidation(context.ModelMetadata.PropertyName);
+            MergeAttribute(context.Attributes, "data-val-remote-additionalfields", additionalFields);
+        }
+
+        private static bool MergeAttribute(IDictionary<string, string> attributes, string key, string value)
+        {
+            if (attributes.ContainsKey(key))
+            {
+                return false;
+            }
+
+            attributes.Add(key, value);
+            return true;
         }
 
         private static IEnumerable<string> SplitAndTrimPropertyNames(string original)

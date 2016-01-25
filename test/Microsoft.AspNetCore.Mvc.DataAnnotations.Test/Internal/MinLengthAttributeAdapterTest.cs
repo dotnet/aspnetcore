@@ -4,6 +4,7 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Localization;
 using Moq;
@@ -15,7 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
     {
         [Fact]
         [ReplaceCulture]
-        public void ClientRulesWithMinLengthAttribute_Localize()
+        public void MinLengthAttribute_AddValidation_Localize()
         {
             // Arrange
             var provider = TestModelMetadataProvider.CreateDefaultProvider();
@@ -34,22 +35,22 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             var adapter = new MinLengthAttributeAdapter(attribute, stringLocalizer: stringLocalizer.Object);
 
             var actionContext = new ActionContext();
-            var context = new ClientModelValidationContext(actionContext, metadata, provider);
+            var context = new ClientModelValidationContext(actionContext, metadata, provider, new AttributeDictionary());
 
             // Act
-            var rules = adapter.GetClientValidationRules(context);
+            adapter.AddValidation(context);
 
             // Assert
-            var rule = Assert.Single(rules);
-            Assert.Equal("minlength", rule.ValidationType);
-            Assert.Equal(1, rule.ValidationParameters.Count);
-            Assert.Equal(6, rule.ValidationParameters["min"]);
-            Assert.Equal(attribute.FormatErrorMessage("Length"), rule.ErrorMessage);
+            Assert.Collection(
+                context.Attributes,
+                kvp => { Assert.Equal("data-val", kvp.Key); Assert.Equal("true", kvp.Value); },
+                kvp => { Assert.Equal("data-val-minlength", kvp.Key); Assert.Equal(expectedMessage, kvp.Value); },
+                kvp => { Assert.Equal("data-val-minlength-min", kvp.Key); Assert.Equal("6", kvp.Value); });
         }
 
         [Fact]
         [ReplaceCulture]
-        public void ClientRulesWithMinLengthAttribute()
+        public void MinLengthAttribute_AddValidation_Attribute()
         {
             // Arrange
             var provider = TestModelMetadataProvider.CreateDefaultProvider();
@@ -58,45 +59,78 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             var attribute = new MinLengthAttribute(6);
             var adapter = new MinLengthAttributeAdapter(attribute, stringLocalizer: null);
 
+            var expectedMessage = attribute.FormatErrorMessage("Length");
+
             var actionContext = new ActionContext();
-            var context = new ClientModelValidationContext(actionContext, metadata, provider);
+            var context = new ClientModelValidationContext(actionContext, metadata, provider, new AttributeDictionary());
 
             // Act
-            var rules = adapter.GetClientValidationRules(context);
+            adapter.AddValidation(context);
 
             // Assert
-            var rule = Assert.Single(rules);
-            Assert.Equal("minlength", rule.ValidationType);
-            Assert.Equal(1, rule.ValidationParameters.Count);
-            Assert.Equal(6, rule.ValidationParameters["min"]);
-            Assert.Equal(attribute.FormatErrorMessage("Length"), rule.ErrorMessage);
+            Assert.Collection(
+                context.Attributes,
+                kvp => { Assert.Equal("data-val", kvp.Key); Assert.Equal("true", kvp.Value); },
+                kvp => { Assert.Equal("data-val-minlength", kvp.Key); Assert.Equal(expectedMessage, kvp.Value); },
+                kvp => { Assert.Equal("data-val-minlength-min", kvp.Key); Assert.Equal("6", kvp.Value); });
         }
 
         [Fact]
         [ReplaceCulture]
-        public void ClientRulesWithMinLengthAttributeAndCustomMessage()
+        public void MinLengthAttribute_AddValidation_AttributeAndCustomMessage()
         {
             // Arrange
             var propertyName = "Length";
-            var message = "Array must have at least {1} items.";
             var provider = TestModelMetadataProvider.CreateDefaultProvider();
             var metadata = provider.GetMetadataForProperty(typeof(string), propertyName);
 
-            var attribute = new MinLengthAttribute(2) { ErrorMessage = message };
+            var attribute = new MinLengthAttribute(2) { ErrorMessage = "Array must have at least {1} items." };
+            var adapter = new MinLengthAttributeAdapter(attribute, stringLocalizer: null);
+
+            var expectedMessage = "Array must have at least 2 items.";
+
+            var actionContext = new ActionContext();
+            var context = new ClientModelValidationContext(actionContext, metadata, provider, new AttributeDictionary());
+
+            // Act
+            adapter.AddValidation(context);
+
+            // Assert
+            Assert.Collection(
+                context.Attributes,
+                kvp => { Assert.Equal("data-val", kvp.Key); Assert.Equal("true", kvp.Value); },
+                kvp => { Assert.Equal("data-val-minlength", kvp.Key); Assert.Equal(expectedMessage, kvp.Value); },
+                kvp => { Assert.Equal("data-val-minlength-min", kvp.Key); Assert.Equal("2", kvp.Value); });
+        }
+
+        [Fact]
+        [ReplaceCulture]
+        public void AddValidation_DoesNotTrounceExistingAttributes()
+        {
+            // Arrange
+            var propertyName = "Length";
+            var provider = TestModelMetadataProvider.CreateDefaultProvider();
+            var metadata = provider.GetMetadataForProperty(typeof(string), propertyName);
+
+            var attribute = new MinLengthAttribute(2) { ErrorMessage = "Array must have at least {1} items." };
             var adapter = new MinLengthAttributeAdapter(attribute, stringLocalizer: null);
 
             var actionContext = new ActionContext();
-            var context = new ClientModelValidationContext(actionContext, metadata, provider);
+            var context = new ClientModelValidationContext(actionContext, metadata, provider, new AttributeDictionary());
+
+            context.Attributes.Add("data-val", "original");
+            context.Attributes.Add("data-val-minlength", "original");
+            context.Attributes.Add("data-val-minlength-min", "original");
 
             // Act
-            var rules = adapter.GetClientValidationRules(context);
+            adapter.AddValidation(context);
 
             // Assert
-            var rule = Assert.Single(rules);
-            Assert.Equal("minlength", rule.ValidationType);
-            Assert.Equal(1, rule.ValidationParameters.Count);
-            Assert.Equal(2, rule.ValidationParameters["min"]);
-            Assert.Equal("Array must have at least 2 items.", rule.ErrorMessage);
+            Assert.Collection(
+                context.Attributes,
+                kvp => { Assert.Equal("data-val", kvp.Key); Assert.Equal("original", kvp.Value); },
+                kvp => { Assert.Equal("data-val-minlength", kvp.Key); Assert.Equal("original", kvp.Value); },
+                kvp => { Assert.Equal("data-val-minlength-min", kvp.Key); Assert.Equal("original", kvp.Value); });
         }
     }
 }

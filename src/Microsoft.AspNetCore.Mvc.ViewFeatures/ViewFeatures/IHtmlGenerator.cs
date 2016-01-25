@@ -365,15 +365,6 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             string headerTag,
             object htmlAttributes);
 
-        /// <remarks>
-        /// Not used directly in <see cref="HtmlHelper"/>. Exposed publicly for use in other <see cref="IHtmlHelper"/>
-        /// implementations.
-        /// </remarks>
-        IEnumerable<ModelClientValidationRule> GetClientValidationRules(
-            ViewContext viewContext,
-            ModelExplorer modelExplorer,
-            string expression);
-
         /// <summary>
         /// Gets the collection of current values for the given <paramref name="expression"/>.
         /// </summary>

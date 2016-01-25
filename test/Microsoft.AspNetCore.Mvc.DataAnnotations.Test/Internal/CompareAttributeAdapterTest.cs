@@ -4,6 +4,7 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Localization;
@@ -25,19 +26,30 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             var attribute = new CompareAttribute("OtherProperty");
             var adapter = new CompareAttributeAdapter(attribute, stringLocalizer: null);
 
+            // Mono issue - https://github.com/aspnet/External/issues/19
+            var expectedMessage = PlatformNormalizer.NormalizeContent(
+                    "'MyPropertyDisplayName' and 'OtherPropertyDisplayName' do not match.");
+
             var actionContext = new ActionContext();
-            var context = new ClientModelValidationContext(actionContext, metadata, metadataProvider);
+            var context = new ClientModelValidationContext(
+                actionContext,
+                metadata,
+                metadataProvider,
+                new AttributeDictionary());
 
             // Act
-            var rules = adapter.GetClientValidationRules(context);
+            adapter.AddValidation(context);
 
             // Assert
-            var rule = Assert.Single(rules);
-            // Mono issue - https://github.com/aspnet/External/issues/19
-            Assert.Equal(
-                PlatformNormalizer.NormalizeContent(
-                    "'MyPropertyDisplayName' and 'OtherPropertyDisplayName' do not match."),
-                rule.ErrorMessage);
+            Assert.Collection(
+                context.Attributes,
+                kvp => { Assert.Equal("data-val", kvp.Key); Assert.Equal("true", kvp.Value); },
+                kvp => { Assert.Equal("data-val-equalto", kvp.Key); Assert.Equal(expectedMessage, kvp.Value); },
+                kvp =>
+                {
+                    Assert.Equal("data-val-equalto-other", kvp.Key);
+                    Assert.Equal(kvp.Value, "*.OtherProperty");
+                });
         }
 
         [Fact]
@@ -62,15 +74,25 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             var adapter = new CompareAttributeAdapter(attribute, stringLocalizer: stringLocalizer.Object);
 
             var actionContext = new ActionContext();
-            var context = new ClientModelValidationContext(actionContext, metadata, metadataProvider);
+            var context = new ClientModelValidationContext(
+                actionContext,
+                metadata,
+                metadataProvider,
+                new AttributeDictionary());
 
             // Act
-            var rules = adapter.GetClientValidationRules(context);
+            adapter.AddValidation(context);
 
             // Assert
-            var rule = Assert.Single(rules);
-            // Mono issue - https://github.com/aspnet/External/issues/19
-            Assert.Equal(expectedMessage, rule.ErrorMessage);
+            Assert.Collection(
+                context.Attributes,
+                kvp => { Assert.Equal("data-val", kvp.Key); Assert.Equal("true", kvp.Value); },
+                kvp => { Assert.Equal("data-val-equalto", kvp.Key); Assert.Equal(expectedMessage, kvp.Value); },
+                kvp =>
+                {
+                    Assert.Equal("data-val-equalto-other", kvp.Key);
+                    Assert.Equal(kvp.Value, "*.OtherProperty");
+                });
         }
 
         [Fact]
@@ -84,18 +106,29 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             var attribute = new CompareAttribute("OtherProperty");
             var adapter = new CompareAttributeAdapter(attribute, stringLocalizer: null);
 
+            // Mono issue - https://github.com/aspnet/External/issues/19
+            var expectedMessage = PlatformNormalizer.NormalizeContent("'MyProperty' and 'OtherProperty' do not match.");
+
             var actionContext = new ActionContext();
-            var context = new ClientModelValidationContext(actionContext, metadata, metadataProvider);
+            var context = new ClientModelValidationContext(
+                actionContext,
+                metadata,
+                metadataProvider,
+                new AttributeDictionary());
 
             // Act
-            var rules = adapter.GetClientValidationRules(context);
+            adapter.AddValidation(context);
 
             // Assert
-            var rule = Assert.Single(rules);
-            // Mono issue - https://github.com/aspnet/External/issues/19
-            Assert.Equal(
-                PlatformNormalizer.NormalizeContent("'MyProperty' and 'OtherProperty' do not match."),
-                rule.ErrorMessage);
+            Assert.Collection(
+                context.Attributes,
+                kvp => { Assert.Equal("data-val", kvp.Key); Assert.Equal("true", kvp.Value); },
+                kvp => { Assert.Equal("data-val-equalto", kvp.Key); Assert.Equal(expectedMessage, kvp.Value); },
+                kvp =>
+                {
+                    Assert.Equal("data-val-equalto-other", kvp.Key);
+                    Assert.Equal(kvp.Value, "*.OtherProperty");
+                });
         }
 
         [Fact]
@@ -111,15 +144,28 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             };
             var adapter = new CompareAttributeAdapter(attribute, stringLocalizer: null);
 
+            var expectedMessage = "Hello 'MyProperty', goodbye 'OtherProperty'.";
+
             var actionContext = new ActionContext();
-            var context = new ClientModelValidationContext(actionContext, metadata, metadataProvider);
+            var context = new ClientModelValidationContext(
+                actionContext,
+                metadata,
+                metadataProvider,
+                new AttributeDictionary());
 
             // Act
-            var rules = adapter.GetClientValidationRules(context);
+            adapter.AddValidation(context);
 
             // Assert
-            var rule = Assert.Single(rules);
-            Assert.Equal("Hello 'MyProperty', goodbye 'OtherProperty'.", rule.ErrorMessage);
+            Assert.Collection(
+                context.Attributes,
+                kvp => { Assert.Equal("data-val", kvp.Key); Assert.Equal("true", kvp.Value); },
+                kvp => { Assert.Equal("data-val-equalto", kvp.Key); Assert.Equal(expectedMessage, kvp.Value); },
+                kvp =>
+                {
+                    Assert.Equal("data-val-equalto-other", kvp.Key);
+                    Assert.Equal(kvp.Value, "*.OtherProperty");
+                });
         }
 
         [ConditionalFact]
@@ -138,15 +184,61 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             };
             var adapter = new CompareAttributeAdapter(attribute, stringLocalizer: null);
 
+            var expectedMessage = "Comparing MyProperty to OtherProperty.";
+
             var actionContext = new ActionContext();
-            var context = new ClientModelValidationContext(actionContext, metadata, metadataProvider);
+            var context = new ClientModelValidationContext(
+                actionContext,
+                metadata,
+                metadataProvider,
+                new AttributeDictionary());
 
             // Act
-            var rules = adapter.GetClientValidationRules(context);
+            adapter.AddValidation(context);
 
             // Assert
-            var rule = Assert.Single(rules);
-            Assert.Equal("Comparing MyProperty to OtherProperty.", rule.ErrorMessage);
+            Assert.Collection(
+                context.Attributes,
+                kvp => { Assert.Equal("data-val", kvp.Key); Assert.Equal("true", kvp.Value); },
+                kvp => { Assert.Equal("data-val-equalto", kvp.Key); Assert.Equal(expectedMessage, kvp.Value); },
+                kvp =>
+                {
+                    Assert.Equal("data-val-equalto-other", kvp.Key);
+                    Assert.Equal(kvp.Value, "*.OtherProperty");
+                });
+        }
+
+        [Fact]
+        [ReplaceCulture]
+        public void AddValidation_DoesNotTrounceExistingAttributes()
+        {
+            // Arrange
+            var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            var metadata = metadataProvider.GetMetadataForProperty(typeof(PropertyNameModel), "MyProperty");
+
+            var attribute = new CompareAttribute("OtherProperty");
+            var adapter = new CompareAttributeAdapter(attribute, stringLocalizer: null);
+
+            var actionContext = new ActionContext();
+            var context = new ClientModelValidationContext(
+                actionContext,
+                metadata,
+                metadataProvider,
+                new AttributeDictionary());
+
+            context.Attributes.Add("data-val", "original");
+            context.Attributes.Add("data-val-equalto", "original");
+            context.Attributes.Add("data-val-equalto-other", "original");
+
+            // Act
+            adapter.AddValidation(context);
+
+            // Assert
+            Assert.Collection(
+                context.Attributes,
+                kvp => { Assert.Equal("data-val", kvp.Key); Assert.Equal("original", kvp.Value); },
+                kvp => { Assert.Equal("data-val-equalto", kvp.Key); Assert.Equal("original", kvp.Value); },
+                kvp => { Assert.Equal("data-val-equalto-other", kvp.Key); Assert.Equal("original", kvp.Value); });
         }
 
         private class PropertyDisplayNameModel

@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.Extensions.Localization;
 
@@ -11,26 +11,34 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
 {
     public class RangeAttributeAdapter : AttributeAdapterBase<RangeAttribute>
     {
+        private readonly string _max;
+        private readonly string _min;
+
         public RangeAttributeAdapter(RangeAttribute attribute, IStringLocalizer stringLocalizer)
             : base(attribute, stringLocalizer)
         {
+            // This will trigger the conversion of Attribute.Minimum and Attribute.Maximum.
+            // This is needed, because the attribute is stateful and will convert from a string like
+            // "100m" to the decimal value 100.
+            //
+            // Validate a randomly selected number.
+            attribute.IsValid(3); 
+
+            _max = Convert.ToString(Attribute.Maximum, CultureInfo.InvariantCulture);
+            _min = Convert.ToString(Attribute.Minimum, CultureInfo.InvariantCulture);
         }
 
-        public override IEnumerable<ModelClientValidationRule> GetClientValidationRules(
-            ClientModelValidationContext context)
+        public override void AddValidation(ClientModelValidationContext context)
         {
             if (context == null)
             {
                 throw new ArgumentNullException(nameof(context));
             }
 
-            // TODO: Only calling this so Minimum and Maximum convert. Caused by a bug in CoreFx.
-            Attribute.IsValid(null);
-
-            var errorMessage = GetErrorMessage(context);
-
-
-            return new[] { new ModelClientValidationRangeRule(errorMessage, Attribute.Minimum, Attribute.Maximum) };
+            MergeAttribute(context.Attributes, "data-val", "true");
+            MergeAttribute(context.Attributes, "data-val-range", GetErrorMessage(context));
+            MergeAttribute(context.Attributes, "data-val-range-max", _max);
+            MergeAttribute(context.Attributes, "data-val-range-min", _min);
         }
 
         /// <inheritdoc />

@@ -64,10 +64,10 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             get
             {
                 return new TheoryData<ValidationAttribute, string> {
-                    { new UrlAttribute(), "url" },
-                    { new CreditCardAttribute(), "creditcard" },
-                    { new EmailAddressAttribute(), "email" },
-                    { new PhoneAttribute(), "phone" }
+                    { new UrlAttribute(), "data-val-url" },
+                    { new CreditCardAttribute(), "data-val-creditcard" },
+                    { new EmailAddressAttribute(), "data-val-email" },
+                    { new PhoneAttribute(), "data-val-phone" }
                 };
             }
         }

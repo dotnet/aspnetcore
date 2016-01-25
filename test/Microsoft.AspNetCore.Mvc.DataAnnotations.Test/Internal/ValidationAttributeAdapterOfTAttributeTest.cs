@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
                 : base(attribute, stringLocalizer)
             { }
 
-            public override IEnumerable<ModelClientValidationRule> GetClientValidationRules(ClientModelValidationContext context)
+            public override void AddValidation(ClientModelValidationContext context)
             {
                 throw new NotImplementedException();
             }

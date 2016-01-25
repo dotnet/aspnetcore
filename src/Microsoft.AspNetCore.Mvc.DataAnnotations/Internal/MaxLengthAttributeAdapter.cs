@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.Extensions.Localization;
 
@@ -11,21 +11,24 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
 {
     public class MaxLengthAttributeAdapter : AttributeAdapterBase<MaxLengthAttribute>
     {
+        private readonly string _max;
+
         public MaxLengthAttributeAdapter(MaxLengthAttribute attribute, IStringLocalizer stringLocalizer)
             : base(attribute, stringLocalizer)
         {
+            _max = Attribute.Length.ToString(CultureInfo.InvariantCulture);
         }
 
-        public override IEnumerable<ModelClientValidationRule> GetClientValidationRules(
-            ClientModelValidationContext context)
+        public override void AddValidation(ClientModelValidationContext context)
         {
             if (context == null)
             {
                 throw new ArgumentNullException(nameof(context));
             }
 
-            var message = GetErrorMessage(context);
-            return new[] { new ModelClientValidationMaxLengthRule(message, Attribute.Length) };
+            MergeAttribute(context.Attributes, "data-val", "true");
+            MergeAttribute(context.Attributes, "data-val-maxlength", GetErrorMessage(context));
+            MergeAttribute(context.Attributes, "data-val-maxlength-max", _max);
         }
 
         /// <inheritdoc />

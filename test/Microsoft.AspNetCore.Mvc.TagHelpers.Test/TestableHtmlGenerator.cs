@@ -95,12 +95,13 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             return tagBuilder;
         }
 
-        protected override IDictionary<string, object> GetValidationAttributes(
+        protected override void AddValidationAttributes(
             ViewContext viewContext,
+            TagBuilder tagBuilder,
             ModelExplorer modelExplorer,
-            string name)
+            string expression)
         {
-            return ValidationAttributes;
+            tagBuilder.MergeAttributes(ValidationAttributes);
         }
 
         private static IOptions<MvcViewOptions> GetOptions()

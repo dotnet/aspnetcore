@@ -245,9 +245,8 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
 
         private class CustomValidationAttribute : Attribute, IClientModelValidator
         {
-            public IEnumerable<ModelClientValidationRule> GetClientValidationRules(ClientModelValidationContext context)
+            public void AddValidation(ClientModelValidationContext context)
             {
-                return Enumerable.Empty<ModelClientValidationRule>();
             }
         }
 

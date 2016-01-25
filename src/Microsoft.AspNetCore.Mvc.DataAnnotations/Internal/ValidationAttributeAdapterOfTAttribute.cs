@@ -32,14 +32,30 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
         /// <summary>
         /// Gets the <typeparamref name="TAttribute"/> instance.
         /// </summary>
-        public TAttribute Attribute
-        {
-            get;
-        }
+        public TAttribute Attribute { get; }
 
         /// <inheritdoc />
-        public abstract IEnumerable<ModelClientValidationRule> GetClientValidationRules(
-            ClientModelValidationContext context);
+        public abstract void AddValidation(ClientModelValidationContext context);
+
+        /// <summary>
+        /// Adds the given <paramref name="key"/> and <paramref name="value"/> into
+        /// <paramref name="attributes"/> if <paramref name="attributes"/> does not contain a value for
+        /// <paramref name="key"/>.
+        /// </summary>
+        /// <param name="attributes">The HTML attributes dictionary.</param>
+        /// <param name="key">The attribute key.</param>
+        /// <param name="value">The attribute value.</param>
+        /// <returns><c>true</c> if an attribute was added, otherwise <c>false</c>.</returns>
+        protected static bool MergeAttribute(IDictionary<string, string> attributes, string key, string value)
+        {
+            if (attributes.ContainsKey(key))
+            {
+                return false;
+            }
+
+            attributes.Add(key, value);
+            return true;
+        }
 
         /// <summary>
         /// Gets the error message formatted using the <see cref="Attribute"/>.

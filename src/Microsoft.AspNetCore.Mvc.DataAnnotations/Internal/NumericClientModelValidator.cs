@@ -15,14 +15,26 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
     public class NumericClientModelValidator : IClientModelValidator
     {
         /// <inheritdoc />
-        public IEnumerable<ModelClientValidationRule> GetClientValidationRules(ClientModelValidationContext context)
+        public void AddValidation(ClientModelValidationContext context)
         {
             if (context == null)
             {
                 throw new ArgumentNullException(nameof(context));
             }
 
-            return new[] { new ModelClientValidationNumericRule(GetErrorMessage(context.ModelMetadata)) };
+            MergeAttribute(context.Attributes, "data-val", "true");
+            MergeAttribute(context.Attributes, "data-val-number", GetErrorMessage(context.ModelMetadata));
+        }
+
+        private static bool MergeAttribute(IDictionary<string, string> attributes, string key, string value)
+        {
+            if (attributes.ContainsKey(key))
+            {
+                return false;
+            }
+
+            attributes.Add(key, value);
+            return true;
         }
 
         private string GetErrorMessage(ModelMetadata modelMetadata)

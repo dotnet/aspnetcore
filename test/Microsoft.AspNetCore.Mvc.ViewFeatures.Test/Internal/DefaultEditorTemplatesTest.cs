@@ -1085,13 +1085,6 @@ Environment.NewLine;
                 throw new NotImplementedException();
             }
 
-            public IEnumerable<ModelClientValidationRule> GetClientValidationRules(
-                ModelExplorer modelExplorer,
-                string name)
-            {
-                return Enumerable.Empty<ModelClientValidationRule>();
-            }
-
             public IEnumerable<SelectListItem> GetEnumSelectList<TEnum>() where TEnum : struct
             {
                 throw new NotImplementedException();

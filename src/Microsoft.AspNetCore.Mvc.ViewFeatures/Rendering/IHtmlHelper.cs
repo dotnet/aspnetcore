@@ -7,7 +7,6 @@ using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 
 namespace Microsoft.AspNetCore.Mvc.Rendering
@@ -374,20 +373,6 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// </param>
         /// <returns>A <see cref="string"/> containing the element Id.</returns>
         string GenerateIdFromName(string fullName);
-
-        /// <summary>
-        /// Returns information about about client validation rules for the specified <paramref name="metadata"/> or
-        /// <paramref name="expression"/>. Intended for use in <see cref="IHtmlHelper"/> extension methods.
-        /// </summary>
-        /// <param name="metadata">Metadata about the <see cref="object"/> of interest.</param>
-        /// <param name="expression">
-        /// Expression name, relative to the current model. Used to determine <see cref="ModelMetadata"/> when
-        /// <paramref name="metadata"/> is <c>null</c>; ignored otherwise.
-        /// </param>
-        /// <returns>An <see cref="IEnumerable{ModelClientValidationRule}"/> containing the relevant rules.</returns>
-        IEnumerable<ModelClientValidationRule> GetClientValidationRules(
-            ModelExplorer modelExplorer,
-            string expression);
 
         /// <summary>
         /// Returns a select list for the given <typeparamref name="TEnum"/>.

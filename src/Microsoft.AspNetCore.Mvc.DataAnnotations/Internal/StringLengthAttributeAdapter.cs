@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.Extensions.Localization;
 
@@ -11,24 +11,36 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
 {
     public class StringLengthAttributeAdapter : AttributeAdapterBase<StringLengthAttribute>
     {
+        private readonly string _max;
+        private readonly string _min;
+
         public StringLengthAttributeAdapter(StringLengthAttribute attribute, IStringLocalizer stringLocalizer)
             : base(attribute, stringLocalizer)
         {
+            _max = Attribute.MaximumLength.ToString(CultureInfo.InvariantCulture);
+            _min = Attribute.MinimumLength.ToString(CultureInfo.InvariantCulture);
         }
 
-        public override IEnumerable<ModelClientValidationRule> GetClientValidationRules(
-            ClientModelValidationContext context)
+        /// <inheritdoc />
+        public override void AddValidation(ClientModelValidationContext context)
         {
             if (context == null)
             {
                 throw new ArgumentNullException(nameof(context));
             }
 
-            var errorMessage = GetErrorMessage(context);
-            var rule = new ModelClientValidationStringLengthRule(errorMessage,
-                                                                 Attribute.MinimumLength,
-                                                                 Attribute.MaximumLength);
-            return new[] { rule };
+            MergeAttribute(context.Attributes, "data-val", "true");
+            MergeAttribute(context.Attributes, "data-val-length", GetErrorMessage(context));
+
+            if (Attribute.MaximumLength != int.MaxValue)
+            {
+                MergeAttribute(context.Attributes, "data-val-length-max", _max);
+            }
+
+            if (Attribute.MinimumLength != 0)
+            {
+                MergeAttribute(context.Attributes, "data-val-length-min", _min);
+            }
         }
 
         /// <inheritdoc />

@@ -1212,14 +1212,6 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             return resolvedValue;
         }
 
-        /// <inheritdoc />
-        public IEnumerable<ModelClientValidationRule> GetClientValidationRules(
-            ModelExplorer modelExplorer,
-            string expression)
-        {
-            return _htmlGenerator.GetClientValidationRules(ViewContext, modelExplorer, expression);
-        }
-
         /// <summary>
         /// Returns a select list for the given <paramref name="metadata"/>.
         /// </summary>

@@ -672,7 +672,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
 
         private class TestValidationAttribute : ValidationAttribute, IClientModelValidator
         {
-            public IEnumerable<ModelClientValidationRule> GetClientValidationRules(ClientModelValidationContext context)
+            public void AddValidation(ClientModelValidationContext context)
             {
                 throw new NotImplementedException();
             }

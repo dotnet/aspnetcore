@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -13,26 +12,24 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
 {
     public class CompareAttributeAdapter : AttributeAdapterBase<CompareAttribute>
     {
+        private readonly string _otherProperty;
+
         public CompareAttributeAdapter(CompareAttribute attribute, IStringLocalizer stringLocalizer)
             : base(new CompareAttributeWrapper(attribute), stringLocalizer)
         {
-            if (attribute == null)
-            {
-                throw new ArgumentNullException(nameof(attribute));
-            }
+            _otherProperty = "*." + attribute.OtherProperty;
         }
 
-        public override IEnumerable<ModelClientValidationRule> GetClientValidationRules(
-            ClientModelValidationContext context)
+        public override void AddValidation(ClientModelValidationContext context)
         {
             if (context == null)
             {
                 throw new ArgumentNullException(nameof(context));
             }
 
-            var errorMessage = GetErrorMessage(context);
-            var clientRule = new ModelClientValidationEqualToRule(errorMessage, "*." + Attribute.OtherProperty);
-            return new[] { clientRule };
+            MergeAttribute(context.Attributes, "data-val", "true");
+            MergeAttribute(context.Attributes, "data-val-equalto", GetErrorMessage(context));
+            MergeAttribute(context.Attributes, "data-val-equalto-other", _otherProperty);
         }
 
         /// <inheritdoc />
