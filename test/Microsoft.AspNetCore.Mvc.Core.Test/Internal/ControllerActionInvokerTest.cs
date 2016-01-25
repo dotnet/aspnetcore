@@ -2114,7 +2114,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 new IInputFormatter[0],
                 new ControllerArgumentBinder(
                     metadataProvider,
-                    new DefaultObjectValidator(metadataProvider)),
+                    new DefaultObjectValidator(metadataProvider, new ValidatorCache())),
                 new IModelBinder[] { binder.Object },
                 new IModelValidatorProvider[0],
                 new IValueProviderFactory[0],

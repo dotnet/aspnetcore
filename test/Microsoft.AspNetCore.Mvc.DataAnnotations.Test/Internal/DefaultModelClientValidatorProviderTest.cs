@@ -22,16 +22,16 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             var validatorProvider = TestModelValidatorProvider.CreateDefaultProvider();
 
             var metadata = metadataProvider.GetMetadataForType(typeof(ValidatableObject));
-            var context = new ModelValidatorProviderContext(metadata);
+            var context = new ModelValidatorProviderContext(metadata, GetValidatorItems(metadata));
 
             // Act
             validatorProvider.GetValidators(context);
 
             // Assert
-            var validators = context.Validators;
+            var validatorItems = context.Results;
 
-            var validator = Assert.Single(validators);
-            Assert.IsType<ValidatableObjectAdapter>(validator);
+            var validatorItem = Assert.Single(validatorItems);
+            Assert.IsType<ValidatableObjectAdapter>(validatorItem.Validator);
         }
 
         [Fact]
@@ -42,16 +42,16 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             var validatorProvider = TestModelValidatorProvider.CreateDefaultProvider();
 
             var metadata = metadataProvider.GetMetadataForType(typeof(ModelValidatorAttributeOnClass));
-            var context = new ModelValidatorProviderContext(metadata);
+            var context = new ModelValidatorProviderContext(metadata, GetValidatorItems(metadata));
 
             // Act
             validatorProvider.GetValidators(context);
 
             // Assert
-            var validators = context.Validators;
+            var validatorItems = context.Results;
 
-            var validator = Assert.Single(validators);
-            var customModelValidator = Assert.IsType<CustomModelValidatorAttribute>(validator);
+            var validatorItem = Assert.Single(validatorItems);
+            var customModelValidator = Assert.IsType<CustomModelValidatorAttribute>(validatorItem.Validator);
             Assert.Equal("Class", customModelValidator.Tag);
         }
 
@@ -65,16 +65,16 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             var metadata = metadataProvider.GetMetadataForProperty(
                 typeof(ModelValidatorAttributeOnProperty),
                 nameof(ModelValidatorAttributeOnProperty.Property));
-            var context = new ModelValidatorProviderContext(metadata);
+            var context = new ModelValidatorProviderContext(metadata, GetValidatorItems(metadata));
 
             // Act
             validatorProvider.GetValidators(context);
 
             // Assert
-            var validators = context.Validators;
+            var validatorItems = context.Results;
 
-            var validator = Assert.IsType<CustomModelValidatorAttribute>(Assert.Single(validators));
-            Assert.Equal("Property", validator.Tag);
+            var validatorItem = Assert.IsType<CustomModelValidatorAttribute>(Assert.Single(validatorItems).Validator);
+            Assert.Equal("Property", validatorItem.Tag);
         }
 
         [Fact]
@@ -87,17 +87,17 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             var metadata = metadataProvider.GetMetadataForProperty(
                 typeof(ModelValidatorAttributeOnPropertyAndClass),
                 nameof(ModelValidatorAttributeOnPropertyAndClass.Property));
-            var context = new ModelValidatorProviderContext(metadata);
+            var context = new ModelValidatorProviderContext(metadata, GetValidatorItems(metadata));
 
             // Act
             validatorProvider.GetValidators(context);
 
             // Assert
-            var validators = context.Validators;
+            var validatorItems = context.Results;
 
-            Assert.Equal(2, validators.Count);
-            Assert.Single(validators, v => Assert.IsType<CustomModelValidatorAttribute>(v).Tag == "Class");
-            Assert.Single(validators, v => Assert.IsType<CustomModelValidatorAttribute>(v).Tag == "Property");
+            Assert.Equal(2, validatorItems.Count);
+            Assert.Single(validatorItems, v => Assert.IsType<CustomModelValidatorAttribute>(v.Validator).Tag == "Class");
+            Assert.Single(validatorItems, v => Assert.IsType<CustomModelValidatorAttribute>(v.Validator).Tag == "Property");
         }
 
         // RangeAttribute is an example of a ValidationAttribute with it's own adapter type.
@@ -189,6 +189,17 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             Assert.Equal(2, validators.Count);
             Assert.Single(validators, v => v is RegularExpressionAttributeAdapter);
             Assert.Single(validators, v => v is StringLengthAttributeAdapter);
+        }
+
+        private IList<ValidatorItem> GetValidatorItems(ModelMetadata metadata)
+        {
+            var items = new List<ValidatorItem>(metadata.ValidatorMetadata.Count);
+            for (var i = 0; i < metadata.ValidatorMetadata.Count; i++)
+            {
+                items.Add(new ValidatorItem(metadata.ValidatorMetadata[i]));
+            }
+
+            return items;
         }
 
         private class ValidatableObject : IValidatableObject

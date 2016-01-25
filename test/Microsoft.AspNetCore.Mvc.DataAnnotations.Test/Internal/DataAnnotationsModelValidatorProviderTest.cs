@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -25,14 +26,14 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             var mockValidatable = Mock.Of<IValidatableObject>();
             var metadata = _metadataProvider.GetMetadataForType(mockValidatable.GetType());
 
-            var providerContext = new ModelValidatorProviderContext(metadata);
+            var providerContext = new ModelValidatorProviderContext(metadata, GetValidatorItems(metadata));
 
             // Act
             provider.GetValidators(providerContext);
 
             // Assert
-            var validator = Assert.Single(providerContext.Validators);
-            Assert.IsType<ValidatableObjectAdapter>(validator);
+            var validatorItem = Assert.Single(providerContext.Results);
+            Assert.IsType<ValidatableObjectAdapter>(validatorItem.Validator);
         }
 
         [Fact]
@@ -46,15 +47,15 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
                 typeof(ClassWithProperty),
                 "PropertyWithMultipleValidationAttributes");
 
-            var providerContext = new ModelValidatorProviderContext(metadata);
+            var providerContext = new ModelValidatorProviderContext(metadata, GetValidatorItems(metadata));
 
             // Act
             provider.GetValidators(providerContext);
 
             // Assert
-            Assert.Equal(4, providerContext.Validators.Count);
-            Assert.IsAssignableFrom<RequiredAttribute>(((DataAnnotationsModelValidator)providerContext.Validators[0]).Attribute);
-            Assert.IsAssignableFrom<RequiredAttribute>(((DataAnnotationsModelValidator)providerContext.Validators[1]).Attribute);
+            Assert.Equal(4, providerContext.Results.Count);
+            Assert.IsAssignableFrom<RequiredAttribute>(((DataAnnotationsModelValidator)providerContext.Results[0].Validator).Attribute);
+            Assert.IsAssignableFrom<RequiredAttribute>(((DataAnnotationsModelValidator)providerContext.Results[1].Validator).Attribute);
         }
 
         [Fact]
@@ -67,14 +68,14 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
                 stringLocalizerFactory: null);
             var metadata = _metadataProvider.GetMetadataForType(typeof(DummyClassWithDummyValidationAttribute));
 
-            var providerContext = new ModelValidatorProviderContext(metadata);
+            var providerContext = new ModelValidatorProviderContext(metadata, GetValidatorItems(metadata));
 
             // Act
             provider.GetValidators(providerContext);
 
             // Assert
-            var validator = providerContext.Validators.Single();
-            Assert.IsType<DataAnnotationsModelValidator>(validator);
+            var validatorItem = providerContext.Results.Single();
+            Assert.IsType<DataAnnotationsModelValidator>(validatorItem.Validator);
         }
 
         private class DummyValidationAttribute : ValidationAttribute
@@ -99,13 +100,24 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             var mockValidatable = new Mock<IValidatableObject>();
             var metadata = _metadataProvider.GetMetadataForType(mockValidatable.Object.GetType());
 
-            var providerContext = new ModelValidatorProviderContext(metadata);
+            var providerContext = new ModelValidatorProviderContext(metadata, GetValidatorItems(metadata));
 
             // Act
             provider.GetValidators(providerContext);
 
             // Assert
-            Assert.Single(providerContext.Validators);
+            Assert.Single(providerContext.Results);
+        }
+
+        private IList<ValidatorItem> GetValidatorItems(ModelMetadata metadata)
+        {
+            var items = new List<ValidatorItem>(metadata.ValidatorMetadata.Count);
+            for (var i = 0; i < metadata.ValidatorMetadata.Count; i++)
+            {
+                items.Add(new ValidatorItem(metadata.ValidatorMetadata[i]));
+            }
+
+            return items;
         }
 
         private class ObservableModel

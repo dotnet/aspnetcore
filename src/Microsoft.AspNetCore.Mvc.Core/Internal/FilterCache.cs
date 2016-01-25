@@ -151,12 +151,13 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             else
             {
                 var filters = new IFilterMetadata[count];
-                for (int i = 0, j = 0; i < items.Count; i++)
+                var filterIndex = 0;
+                for (int i = 0; i < items.Count; i++)
                 {
                     var filter = items[i].Filter;
                     if (filter != null)
                     {
-                        filters[j++] = filter;
+                        filters[filterIndex++] = filter;
                     }
                 }
 

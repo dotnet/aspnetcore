@@ -13,20 +13,28 @@ namespace Microsoft.AspNetCore.Mvc.Internal
     public class DefaultObjectValidator : IObjectModelValidator
     {
         private readonly IModelMetadataProvider _modelMetadataProvider;
+        private readonly ValidatorCache _validatorCache;
 
         /// <summary>
         /// Initializes a new instance of <see cref="DefaultObjectValidator"/>.
         /// </summary>
         /// <param name="modelMetadataProvider">The <see cref="IModelMetadataProvider"/>.</param>
         public DefaultObjectValidator(
-            IModelMetadataProvider modelMetadataProvider)
+            IModelMetadataProvider modelMetadataProvider,
+            ValidatorCache validatorCache)
         {
             if (modelMetadataProvider == null)
             {
                 throw new ArgumentNullException(nameof(modelMetadataProvider));
             }
 
+            if (validatorCache == null)
+            {
+                throw new ArgumentNullException(nameof(validatorCache));
+            }
+
             _modelMetadataProvider = modelMetadataProvider;
+            _validatorCache = validatorCache;
         }
 
         /// <inheritdoc />
@@ -50,6 +58,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var visitor = new ValidationVisitor(
                 actionContext,
                 validatorProvider,
+                _validatorCache,
                 _modelMetadataProvider,
                 validationState);
 

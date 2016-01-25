@@ -13,8 +13,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
         /// </summary>
         /// <param name="context">The <see cref="ModelValidatorProviderContext"/>.</param>
         /// <remarks>
-        /// Implementations should add <see cref="IModelValidator"/> instances to
-        /// <see cref="ModelValidatorProviderContext.Validators"/>.
+        /// Implementations should add the <see cref="IModelValidator"/> instances to the appropriate
+        /// <see cref="ValidatorItem"/> instance which should be added to
+        /// <see cref="ModelValidatorProviderContext.Results"/>.
         /// </remarks>
         void GetValidators(ModelValidatorProviderContext context);
     }

@@ -16,6 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
     {
         private readonly IModelValidatorProvider _validatorProvider;
         private readonly IModelMetadataProvider _metadataProvider;
+        private readonly ValidatorCache _validatorCache;
         private readonly ActionContext _actionContext;
         private readonly ModelStateDictionary _modelState;
         private readonly ValidationStateDictionary _validationState;
@@ -24,7 +25,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
         private string _key;
         private object _model;
         private ModelMetadata _metadata;
-        private ModelValidatorProviderContext _context;
         private IValidationStrategy _strategy;
 
         private HashSet<object> _currentPath;
@@ -38,6 +38,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
         public ValidationVisitor(
             ActionContext actionContext,
             IModelValidatorProvider validatorProvider,
+            ValidatorCache validatorCache,
             IModelMetadataProvider metadataProvider,
             ValidationStateDictionary validationState)
         {
@@ -51,8 +52,15 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
                 throw new ArgumentNullException(nameof(validatorProvider));
             }
 
+            if (validatorCache == null)
+            {
+                throw new ArgumentNullException(nameof(validatorCache));
+            }
+
             _actionContext = actionContext;
             _validatorProvider = validatorProvider;
+            _validatorCache = validatorCache;
+
             _metadataProvider = metadataProvider;
             _validationState = validationState;
 
@@ -91,7 +99,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
             var state = _modelState.GetValidationState(_key);
             if (state == ModelValidationState.Unvalidated)
             {
-                var validators = GetValidators();
+                var validators = _validatorCache.GetValidators(_metadata, _validatorProvider);
 
                 var count = validators.Count;
                 if (count > 0)
@@ -259,25 +267,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
             }
 
             return isValid;
-        }
-
-        private IList<IModelValidator> GetValidators()
-        {
-            if (_context == null)
-            {
-                _context = new ModelValidatorProviderContext(_metadata);
-            }
-            else
-            {
-                // Reusing the context so we don't allocate a new context and list
-                // for every property that gets validated.
-                _context.ModelMetadata = _metadata;
-                _context.Validators.Clear();
-            }
-
-            _validatorProvider.GetValidators(_context);
-
-            return _context.Validators;
         }
 
         private void SuppressValidation(string key)

@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 GetCompositeBinder(binders),
                 valueProvider,
                 new List<IInputFormatter>(),
-                new DefaultObjectValidator(modelMetadataProvider),
+                new DefaultObjectValidator(modelMetadataProvider, new ValidatorCache()),
                 validator);
 
             // Assert
@@ -142,7 +142,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 GetCompositeBinder(binders),
                 valueProvider,
                 new List<IInputFormatter>(),
-                new DefaultObjectValidator(metadataProvider),
+                new DefaultObjectValidator(metadataProvider, new ValidatorCache()),
                 validator);
 
             // Assert
@@ -229,7 +229,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 GetCompositeBinder(binders),
                 valueProvider,
                 new List<IInputFormatter>(),
-                new DefaultObjectValidator(metadataProvider),
+                new DefaultObjectValidator(metadataProvider, new ValidatorCache()),
                 validator,
                 includePredicate);
 
@@ -314,7 +314,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 GetCompositeBinder(binders),
                 valueProvider,
                 new List<IInputFormatter>(),
-                new DefaultObjectValidator(metadataProvider),
+                new DefaultObjectValidator(metadataProvider, new ValidatorCache()),
                 validator,
                 m => m.IncludedProperty,
                 m => m.MyProperty);
@@ -367,7 +367,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 GetCompositeBinder(binders),
                 valueProvider,
                 new List<IInputFormatter>(),
-                new DefaultObjectValidator(metadataProvider),
+                new DefaultObjectValidator(metadataProvider, new ValidatorCache()),
                 validator);
 
             // Assert
@@ -579,7 +579,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 GetCompositeBinder(binders),
                 valueProvider,
                 new List<IInputFormatter>(),
-                new DefaultObjectValidator(metadataProvider),
+                new DefaultObjectValidator(metadataProvider, new ValidatorCache()),
                 validator,
                 includePredicate);
 
@@ -655,7 +655,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 GetCompositeBinder(binders),
                 valueProvider,
                 new List<IInputFormatter>(),
-                new DefaultObjectValidator(metadataProvider),
+                new DefaultObjectValidator(metadataProvider, new ValidatorCache()),
                 validator);
 
             // Assert
@@ -687,7 +687,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                     GetCompositeBinder(binder.Object),
                     Mock.Of<IValueProvider>(),
                     new List<IInputFormatter>(),
-                    new DefaultObjectValidator(metadataProvider),
+                    new DefaultObjectValidator(metadataProvider, new ValidatorCache()),
                     Mock.Of<IModelValidatorProvider>(),
                     includePredicate));
 

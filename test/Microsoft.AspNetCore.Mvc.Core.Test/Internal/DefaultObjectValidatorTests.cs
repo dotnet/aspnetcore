@@ -1010,13 +1010,13 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             }
 
             var provider = TestModelMetadataProvider.CreateDefaultProvider(excludeFilters.ToArray());
-            return new DefaultObjectValidator(provider);
+            return new DefaultObjectValidator(provider, new ValidatorCache());
         }
 
         private static DefaultObjectValidator CreateValidator(params IMetadataDetailsProvider[] providers)
         {
             var provider = TestModelMetadataProvider.CreateDefaultProvider(providers);
-            return new DefaultObjectValidator(provider);
+            return new DefaultObjectValidator(provider, new ValidatorCache());
         }
 
         private static void AssertKeysEqual(ModelStateDictionary modelState, params string[] keys)

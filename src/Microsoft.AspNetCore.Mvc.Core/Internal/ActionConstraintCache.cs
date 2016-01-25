@@ -153,12 +153,13 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             }
             
             var actionConstraints = new IActionConstraint[count];
-            for (int i = 0, j = 0; i < items.Count; i++)
+            var actionConstraintIndex = 0;
+            for (int i = 0; i < items.Count; i++)
             {
                 var actionConstraint = items[i].Constraint;
                 if (actionConstraint != null)
                 {
-                    actionConstraints[j++] = actionConstraint;
+                    actionConstraints[actionConstraintIndex++] = actionConstraint;
                 }
             }
 

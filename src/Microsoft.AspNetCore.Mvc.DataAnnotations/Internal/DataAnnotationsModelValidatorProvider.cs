@@ -59,9 +59,15 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
                     _stringLocalizerFactory);
             }
 
-            for (var i = 0; i < context.ValidatorMetadata.Count; i++)
+            for (var i = 0; i < context.Results.Count; i++)
             {
-                var attribute = context.ValidatorMetadata[i] as ValidationAttribute;
+                var validatorItem = context.Results[i];
+                if (validatorItem.Validator != null)
+                {
+                    continue;
+                }
+
+                var attribute = validatorItem.ValidatorMetadata as ValidationAttribute;
                 if (attribute == null)
                 {
                     continue;
@@ -72,22 +78,25 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
                     attribute,
                     stringLocalizer);
 
+                validatorItem.Validator = validator;
+                validatorItem.IsReusable = true;
                 // Inserts validators based on whether or not they are 'required'. We want to run
                 // 'required' validators first so that we get the best possible error message.
                 if (attribute is RequiredAttribute)
                 {
-                    context.Validators.Insert(0, validator);
-                }
-                else
-                {
-                    context.Validators.Add(validator);
+                    context.Results.Remove(validatorItem);
+                    context.Results.Insert(0, validatorItem);
                 }
             }
 
             // Produce a validator if the type supports IValidatableObject
             if (typeof(IValidatableObject).IsAssignableFrom(context.ModelMetadata.ModelType))
             {
-                context.Validators.Add(new ValidatableObjectAdapter());
+                context.Results.Add(new ValidatorItem
+                {
+                    Validator = new ValidatableObjectAdapter(),
+                    IsReusable = true
+                });
             }
         }
     }

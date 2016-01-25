@@ -1542,14 +1542,15 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
                 new ModelValidationResult(string.Empty, "Out of range!")
             };
 
-            var validator1 = new Mock<IModelValidator>();
-
-            validator1.Setup(v => v.Validate(It.IsAny<ModelValidationContext>()))
-               .Returns(validationResult);
+            var validator = new Mock<IModelValidator>();
+            validator.Setup(v => v.Validate(It.IsAny<ModelValidationContext>()))
+                .Returns(validationResult);
+            var validator1 = new ValidatorItem(validator.Object);
+            validator1.Validator = validator.Object;
 
             var provider = new Mock<IModelValidatorProvider>();
             provider.Setup(v => v.GetValidators(It.IsAny<ModelValidatorProviderContext>()))
-                .Callback<ModelValidatorProviderContext>(c => c.Validators.Add(validator1.Object));
+                .Callback<ModelValidatorProviderContext>(c => c.Results.Add(validator1));
 
             var binder = new Mock<IModelBinder>();
             var controller = GetController(binder.Object, valueProvider: null);
@@ -1578,14 +1579,15 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
                 new ModelValidationResult(string.Empty, "Out of range!")
             };
 
-            var validator1 = new Mock<IModelValidator>();
-
-            validator1.Setup(v => v.Validate(It.IsAny<ModelValidationContext>()))
-               .Returns(validationResult);
+            var validator = new Mock<IModelValidator>();
+            validator.Setup(v => v.Validate(It.IsAny<ModelValidationContext>()))
+                .Returns(validationResult);
+            var validator1 = new ValidatorItem(validator.Object);
+            validator1.Validator = validator.Object;
 
             var provider = new Mock<IModelValidatorProvider>();
             provider.Setup(v => v.GetValidators(It.IsAny<ModelValidatorProviderContext>()))
-                .Callback<ModelValidatorProviderContext>(c => c.Validators.Add(validator1.Object));
+                .Callback<ModelValidatorProviderContext>(c => c.Results.Add(validator1));
 
             var binder = new Mock<IModelBinder>();
             var controller = GetController(binder.Object, valueProvider: null);
@@ -1643,7 +1645,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             {
                 ControllerContext = controllerContext,
                 MetadataProvider = metadataProvider,
-                ObjectValidator = new DefaultObjectValidator(metadataProvider),
+                ObjectValidator = new DefaultObjectValidator(metadataProvider, new ValidatorCache()),
             };
 
             return controller;

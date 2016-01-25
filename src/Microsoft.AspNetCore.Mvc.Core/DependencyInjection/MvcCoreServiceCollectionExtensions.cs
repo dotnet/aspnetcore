@@ -143,6 +143,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 return new DefaultCompositeMetadataDetailsProvider(options.ModelMetadataDetailsProviders);
             }));
             services.TryAddSingleton<IObjectModelValidator, DefaultObjectValidator>();
+            services.TryAddSingleton<ValidatorCache>();
 
             //
             // Random Infrastructure

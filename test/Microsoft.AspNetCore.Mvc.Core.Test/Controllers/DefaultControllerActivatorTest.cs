@@ -164,7 +164,7 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
             services.Setup(s => s.GetService(typeof(IModelMetadataProvider)))
                 .Returns(metadataProvider);
             services.Setup(s => s.GetService(typeof(IObjectModelValidator)))
-                .Returns(new DefaultObjectValidator(metadataProvider));
+                .Returns(new DefaultObjectValidator(metadataProvider, new ValidatorCache()));
             return services.Object;
         }
 

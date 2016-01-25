@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 
         public static IObjectModelValidator GetObjectValidator(IModelMetadataProvider metadataProvider)
         {
-            return new DefaultObjectValidator(metadataProvider);
+            return new DefaultObjectValidator(metadataProvider, new ValidatorCache());
         }
 
         private static HttpContext GetHttpContext(
