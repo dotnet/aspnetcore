@@ -1,7 +1,7 @@
 <h2>Album <small>Details</small></h2>
 <hr />
 
-<form class="form-horizontal" role="form" *ng-if="albumData">
+<form class="form-horizontal" role="form" *ngIf="albumData">
     <div class="form-group">
         <label class="col-md-2 control-label">Artist</label>
         <div class="col-md-10">
@@ -40,9 +40,9 @@
     </div>
     <div class="form-group">
         <div class="col-md-offset-2 col-md-10">
-            <a class="btn btn-primary" [router-link]="['/Admin/AlbumEdit', { albumId: albumData.AlbumId }]">Edit</a>
+            <a class="btn btn-primary" [routerLink]="['/Admin/AlbumEdit', { albumId: albumData.AlbumId }]">Edit</a>
             <button type="button" class="btn btn-danger" (click)="deleteprompt.show(albumData)">Delete</button>
-            <a class="btn btn-default" [router-link]="['/Admin/Albums']">Back to List</a>
+            <a class="btn btn-default" [routerLink]="['/Admin/Albums']">Back to List</a>
         </div>
     </div>
 </form>

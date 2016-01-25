@@ -1,7 +1,7 @@
 <h3>Albums</h3>
 
 <ul class="list-unstyled">
-    <li *ng-for="#album of albums" class="col-lg-2 col-md-2 col-sm-2 col-xs-4 container">
+    <li *ngFor="#album of albums" class="col-lg-2 col-md-2 col-sm-2 col-xs-4 container">
         <album-tile [albumData]="album"></album-tile>
     </li>
 </ul>

@@ -1,18 +1,18 @@
 <h2>Album <small>Edit</small></h2>
 <hr />
 
-<form class="form-horizontal" [ng-form-model]="form" (ng-submit)="onSubmitModelBased()">
+<form class="form-horizontal" [ngFormModel]="form" (ng-submit)="onSubmitModelBased()">
     <form-field label="Artist" [validate]="form.controls.ArtistId">
         <select class="form-control" ng-control="ArtistId">
             <option value="0">-- choose Artist --</option>
-            <option *ng-for="#artist of artists" [value]="artist.ArtistId">{{ artist.Name }}</option>
+            <option *ngFor="#artist of artists" [value]="artist.ArtistId">{{ artist.Name }}</option>
         </select>
     </form-field>
     
     <form-field label="Genre" [validate]="form.controls.GenreId">
         <select class="form-control" ng-control="GenreId">
             <option value="0">-- choose Genre --</option>
-            <option *ng-for="#genre of genres" [value]="genre.GenreId">{{ genre.Name }}</option>
+            <option *ngFor="#genre of genres" [value]="genre.GenreId">{{ genre.Name }}</option>
         </select>
     </form-field>
     
@@ -36,11 +36,11 @@
     </form-field>
 
     <form-field>
-        <div *ng-if="changesSaved" class="alert alert-success"><b>Done!</b> Your changes were saved.</div>
-        <div *ng-for="#errorMessage of formErrors" class="alert alert-danger">{{ errorMessage }}</div>
+        <div *ngIf="changesSaved" class="alert alert-success"><b>Done!</b> Your changes were saved.</div>
+        <div *ngFor="#errorMessage of formErrors" class="alert alert-danger">{{ errorMessage }}</div>
         <button type="submit" class="btn btn-primary">Submit</button>
         <button type="button" class="btn btn-danger" (click)="deleteprompt.show(originalAlbum)">Delete</button>
-        <a class="btn btn-default" [router-link]="['/Admin/Albums']">Back to List</a>
+        <a class="btn btn-default" [routerLink]="['/Admin/Albums']">Back to List</a>
     </form-field>
 </form>
 

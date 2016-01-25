@@ -1,4 +1,4 @@
-import { ControlGroup } from 'angular2/angular2';
+import { ControlGroup } from 'angular2/common';
 import { Response } from 'angular2/http';
 
 export class Validation {

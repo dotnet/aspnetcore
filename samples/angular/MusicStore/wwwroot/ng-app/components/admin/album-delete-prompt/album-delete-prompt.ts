@@ -1,4 +1,5 @@
-import * as ng from 'angular2/angular2';
+import * as ng from 'angular2/core';
+import { NgIf } from 'angular2/common';
 import * as models from '../../../models/models';
 
 @ng.Component({
@@ -6,7 +7,7 @@ import * as models from '../../../models/models';
 })
 @ng.View({
   templateUrl: './ng-app/components/admin/album-delete-prompt/album-delete-prompt.html',
-  directives: [ng.NgIf]
+  directives: [NgIf]
 })
 export class AlbumDeletePrompt {
     private modalElement: any;

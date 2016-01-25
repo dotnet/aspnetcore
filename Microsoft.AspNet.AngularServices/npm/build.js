@@ -13,7 +13,7 @@ builder.config({
     },
     meta: {
         'angular2/*': { build: false },
-        '@reactivex/*': { build: false }
+        'rxjs/*': { build: false }
     }
 });
 

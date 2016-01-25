@@ -1,10 +1,10 @@
-import * as ng from 'angular2/angular2';
+import * as ng from 'angular2/core';
 import * as router from 'angular2/router';
 import * as models from '../../../models/models';
 
 @ng.Component({
   selector: 'album-tile',
-  properties: ['albumData: albumdata']
+  properties: ['albumData']
 })
 @ng.View({
   templateUrl: './ng-app/components/public/album-tile/album-tile.html',

@@ -1,5 +1,6 @@
-import * as ng from 'angular2/angular2';
+import * as ng from 'angular2/core';
 import { Http } from 'angular2/http';
+import { NgFor } from 'angular2/common';
 import { AlbumTile } from '../album-tile/album-tile';
 import * as models from '../../../models/models';
  
@@ -8,7 +9,7 @@ import * as models from '../../../models/models';
 })
 @ng.View({
   templateUrl: './ng-app/components/public/home/home.html',
-  directives: [ng.NgFor, AlbumTile]
+  directives: [NgFor, AlbumTile]
 })
 export class Home {
     public mostPopular: models.Album[];

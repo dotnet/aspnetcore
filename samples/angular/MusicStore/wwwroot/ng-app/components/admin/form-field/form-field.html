@@ -2,8 +2,8 @@
     <label class="col-md-2 control-label">{{ label }}</label>
     <div class="col-md-5">
         <ng-content></ng-content>
-        <div class="alert alert-danger" role="alert" *ng-if="errorMessages.length">
-            <p *ng-for="#message of errorMessages">{{ message }}</p>
+        <div class="alert alert-danger" role="alert" *ngIf="errorMessages.length">
+            <p *ngFor="#message of errorMessages">{{ message }}</p>
         </div>
     </div>
 </div>

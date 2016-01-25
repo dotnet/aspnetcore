@@ -13,15 +13,15 @@
         </tr>
     </thead>
     <tbody>
-        <tr *ng-for="#row of rows">
+        <tr *ngFor="#row of rows">
             <td>{{ row.Genre.Name }}</td>
             <td>{{ row.Artist.Name }}</td>
             <td>{{ row.Title }}</td>
             <td>{{ row.Price | currency:'USD':true }}</td>
             <td>
                 <div class="btn-group btn-group-xs">
-                    <a class="btn btn-default" [router-link]="['/Admin/AlbumDetails', { albumId: row.AlbumId }]">Details</a>
-                    <a class="btn btn-default" [router-link]="['/Admin/AlbumEdit', { albumId: row.AlbumId }]">Edit</a>
+                    <a class="btn btn-default" [routerLink]="['/Admin/AlbumDetails', { albumId: row.AlbumId }]">Details</a>
+                    <a class="btn btn-default" [routerLink]="['/Admin/AlbumEdit', { albumId: row.AlbumId }]">Edit</a>
                     <a class="btn btn-default" (click)="deleteprompt.show(row)">Delete</a>
                 </div>
             </td>
@@ -32,8 +32,8 @@
 <div class="btn-group">
     <button class="btn btn-default" [disabled]="!canGoBack" (click)="goToPage(1)">First</button>
     <button class="btn btn-default" [disabled]="!canGoBack" (click)="goToPage(pageIndex - 1)">Previous</button>
-    <button class="btn" *ng-for="#page of pageLinks" 
-                        [ng-class]="{ 'btn-info': page.isCurrent, 'btn-default': !page.isCurrent }"
+    <button class="btn" *ngFor="#page of pageLinks" 
+                        [ngClass]="{ 'btn-info': page.isCurrent, 'btn-default': !page.isCurrent }"
                         (click)="goToPage(page.index)">
         {{ page.text }}
     </button>

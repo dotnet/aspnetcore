@@ -1,5 +1,6 @@
-import * as ng from 'angular2/angular2';
+import * as ng from 'angular2/core';
 import * as router from 'angular2/router';
+import { NgIf, NgFor } from 'angular2/common';
 import { Http } from 'angular2/http';
 import * as models from '../../../models/models';
 
@@ -8,7 +9,7 @@ import * as models from '../../../models/models';
 })
 @ng.View({
   templateUrl: './ng-app/components/public/genres-list/genres-list.html',
-  directives: [router.ROUTER_DIRECTIVES, ng.NgIf, ng.NgFor]
+  directives: [router.ROUTER_DIRECTIVES, NgIf, NgFor]
 })
 export class GenresList {
     public genres: models.Genre[];

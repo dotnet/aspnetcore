@@ -1,6 +1,7 @@
-import * as ng from 'angular2/angular2';
+import * as ng from 'angular2/core';
 import * as router from 'angular2/router';
 import { Http, HTTP_BINDINGS } from 'angular2/http';
+import { NgFor } from 'angular2/common';
 import { Home } from '../public/home/home';
 import { AlbumDetails } from '../public/album-details/album-details';
 import { GenreContents } from '../public/genre-contents/genre-contents';
@@ -12,16 +13,16 @@ import * as models from '../../models/models';
     selector: 'app'
 })
 @router.RouteConfig([
-    { path: '/', component: Home, as: 'Home' },
-    { path: '/album/:albumId', component: AlbumDetails, as: 'Album' },
-    { path: '/genre/:genreId', component: GenreContents, as: 'Genre' },
-    { path: '/genres', component: GenresList, as: 'GenresList' },
-    { path: '/admin/...', component: AdminHome, as: 'Admin' }
+    { path: '/', component: Home, name: 'Home' },
+    { path: '/album/:albumId', component: AlbumDetails, name: 'Album' },
+    { path: '/genre/:genreId', component: GenreContents, name: 'Genre' },
+    { path: '/genres', component: GenresList, name: 'GenresList' },
+    { path: '/admin/...', component: AdminHome, name: 'Admin' }
 ])
 @ng.View({
     templateUrl: './ng-app/components/app/app.html',
     styleUrls: ['./ng-app/components/app/app.css'],
-    directives: [router.ROUTER_DIRECTIVES, ng.NgFor]
+    directives: [router.ROUTER_DIRECTIVES, NgFor]
 })
 export class App {
     public genres: models.Genre[];

@@ -17,16 +17,17 @@ var config = {
     lib: [
         require.resolve('bootstrap/dist/css/bootstrap.css'),
         path.dirname(require.resolve('bootstrap/dist/fonts/glyphicons-halflings-regular.woff')) + '/**',
+        require.resolve('angular2/bundles/angular2-polyfills.js'),
         require.resolve('traceur/bin/traceur-runtime.js'),
         require.resolve('es6-module-loader/dist/es6-module-loader-sans-promises.js'),
-        require.resolve('reflect-metadata/Reflect.js'),
         require.resolve('systemjs/dist/system.src.js'),
         require.resolve('angular2/bundles/angular2.dev.js'),
         require.resolve('angular2/bundles/router.dev.js'),
         require.resolve('angular2/bundles/http.dev.js'),
         require.resolve('angular2-aspnet/bundles/angular2-aspnet.js'),
         require.resolve('jquery/dist/jquery.js'),
-        require.resolve('bootstrap/dist/js/bootstrap.js')
+        require.resolve('bootstrap/dist/js/bootstrap.js'),
+        require.resolve('rxjs/bundles/Rx.js')
     ]
 };
 

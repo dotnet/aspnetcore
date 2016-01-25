@@ -1,4 +1,5 @@
-import * as ng from 'angular2/angular2';
+import * as ng from 'angular2/core';
+import { NgIf, NgFor, AbstractControl } from 'angular2/common';
 
 @ng.Component({
   selector: 'form-field',
@@ -6,10 +7,10 @@ import * as ng from 'angular2/angular2';
 })
 @ng.View({
   templateUrl: './ng-app/components/admin/form-field/form-field.html',
-  directives: [ng.NgIf, ng.NgFor]
+  directives: [NgIf, NgFor]
 })
 export class FormField {
-    private validate: ng.AbstractControl;
+    private validate: AbstractControl;
 
     public get errorMessages() {
         var errors = (this.validate && this.validate.dirty && this.validate.errors) || {};

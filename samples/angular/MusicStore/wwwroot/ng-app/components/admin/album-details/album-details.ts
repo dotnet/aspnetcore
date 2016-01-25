@@ -1,7 +1,8 @@
-import * as ng from 'angular2/angular2';
+import * as ng from 'angular2/core';
 import * as router from 'angular2/router';
 import * as models from '../../../models/models';
 import { Http, HTTP_BINDINGS } from 'angular2/http';
+import { NgIf } from 'angular2/common';
 import { AlbumDeletePrompt } from '../album-delete-prompt/album-delete-prompt';
 
 @ng.Component({
@@ -9,7 +10,7 @@ import { AlbumDeletePrompt } from '../album-delete-prompt/album-delete-prompt';
 })
 @ng.View({
   templateUrl: './ng-app/components/admin/album-details/album-details.html',
-  directives: [router.ROUTER_DIRECTIVES, ng.NgIf, AlbumDeletePrompt]
+  directives: [router.ROUTER_DIRECTIVES, NgIf, AlbumDeletePrompt]
 })
 export class AlbumDetails {
     public albumData: models.Album;

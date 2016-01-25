@@ -4,7 +4,7 @@
 </div>
 
 <ul class="row list-unstyled" id="album-list">
-    <li *ng-for="#album of mostPopular" class="col-lg-2 col-md-2 col-sm-2 col-xs-4 container">
+    <li *ngFor="#album of mostPopular" class="col-lg-2 col-md-2 col-sm-2 col-xs-4 container">
         <album-tile [albumData]="album"></album-tile>
     </li>
 </ul>

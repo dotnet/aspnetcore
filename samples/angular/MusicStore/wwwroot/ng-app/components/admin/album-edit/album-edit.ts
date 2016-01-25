@@ -1,4 +1,5 @@
-import * as ng from 'angular2/angular2';
+import * as ng from 'angular2/core';
+import { Control, ControlGroup, FormBuilder, Validators, NgIf, NgFor, FORM_DIRECTIVES } from 'angular2/common';
 import * as router from 'angular2/router';
 import * as models from '../../../models/models';
 import { Http, HTTP_BINDINGS, Headers, Response } from 'angular2/http';
@@ -11,10 +12,10 @@ import * as AspNet from 'angular2-aspnet';
 })
 @ng.View({
     templateUrl: './ng-app/components/admin/album-edit/album-edit.html',
-    directives: [router.ROUTER_DIRECTIVES, ng.NgIf, ng.NgFor, AlbumDeletePrompt, FormField, ng.FORM_DIRECTIVES]
+    directives: [router.ROUTER_DIRECTIVES, NgIf, NgFor, AlbumDeletePrompt, FormField, FORM_DIRECTIVES]
 })
 export class AlbumEdit {
-    public form: ng.ControlGroup;
+    public form: ControlGroup;
     public artists: models.Artist[];
     public genres: models.Genre[];
     public originalAlbum: models.Album;
@@ -22,18 +23,18 @@ export class AlbumEdit {
 
     private _http: Http;
 
-    constructor(fb: ng.FormBuilder, http: Http, routeParam: router.RouteParams) {
+    constructor(fb: FormBuilder, http: Http, routeParam: router.RouteParams) {
         this._http = http;
 
         var albumId = parseInt(routeParam.params['albumId']);
         http.get('/api/albums/' + albumId).subscribe(result => {
             var json = result.json();
             this.originalAlbum = json;
-            (<ng.Control>this.form.controls['Title']).updateValue(json.Title);
-            (<ng.Control>this.form.controls['Price']).updateValue(json.Price);
-            (<ng.Control>this.form.controls['ArtistId']).updateValue(json.ArtistId);
-            (<ng.Control>this.form.controls['GenreId']).updateValue(json.GenreId);
-            (<ng.Control>this.form.controls['AlbumArtUrl']).updateValue(json.AlbumArtUrl);
+            (<Control>this.form.controls['Title']).updateValue(json.Title);
+            (<Control>this.form.controls['Price']).updateValue(json.Price);
+            (<Control>this.form.controls['ArtistId']).updateValue(json.ArtistId);
+            (<Control>this.form.controls['GenreId']).updateValue(json.GenreId);
+            (<Control>this.form.controls['AlbumArtUrl']).updateValue(json.AlbumArtUrl);
         });
 
         http.get('/api/artists/lookup').subscribe(result => {
@@ -46,15 +47,15 @@ export class AlbumEdit {
 
         this.form = fb.group(<any>{
             AlbumId: fb.control(albumId),
-            ArtistId: fb.control(0, ng.Validators.required),
-            GenreId: fb.control(0, ng.Validators.required),
-            Title: fb.control('', ng.Validators.required),
-            Price: fb.control('', ng.Validators.compose([ng.Validators.required, AlbumEdit._validatePrice])),
-            AlbumArtUrl: fb.control('', ng.Validators.required)
+            ArtistId: fb.control(0, Validators.required),
+            GenreId: fb.control(0, Validators.required),
+            Title: fb.control('', Validators.required),
+            Price: fb.control('', Validators.compose([Validators.required, AlbumEdit._validatePrice])),
+            AlbumArtUrl: fb.control('', Validators.required)
         });
         
-        this.form.valueChanges.observer({  
-            next: _ => { this.changesSaved = false; }
+        this.form.valueChanges.subscribe(() => {
+            this.changesSaved = false;
         });
     }
 
@@ -78,7 +79,7 @@ export class AlbumEdit {
         }
     }
 
-    private static _validatePrice(control: ng.Control): { [key: string]: boolean } {
+    private static _validatePrice(control: Control): { [key: string]: boolean } {
         return /^\d+\.\d+$/.test(control.value) ? null : { Price: true };
     }
     

@@ -1,5 +1,5 @@
 import { provide, Injectable, Provider } from 'angular2/core';
-import { Connection, ConnectionBackend, Http, XHRBackend, RequestOptions, Request, RequestMethods, Response, ResponseOptions, ReadyStates } from 'angular2/http';
+import { Connection, ConnectionBackend, Http, XHRBackend, RequestOptions, Request, RequestMethod, Response, ResponseOptions, ReadyState } from 'angular2/http';
 
 @Injectable()
 export class CachePrimedConnectionBackend extends ConnectionBackend {
@@ -12,7 +12,7 @@ export class CachePrimedConnectionBackend extends ConnectionBackend {
     
     public createConnection(request: Request): Connection {
         let cacheKey = request.url;
-        if (request.method === RequestMethods.Get && this._preCachedResponses.hasOwnProperty(cacheKey)) {
+        if (request.method === RequestMethod.Get && this._preCachedResponses.hasOwnProperty(cacheKey)) {
             return new CacheHitConnection(request, this._preCachedResponses[cacheKey], this._baseResponseOptions);
         } else {
             return this._underlyingBackend.createConnection(request);
@@ -21,21 +21,17 @@ export class CachePrimedConnectionBackend extends ConnectionBackend {
 }
 
 class CacheHitConnection implements Connection {
-    readyState: ReadyStates;
+    readyState: ReadyState;
     request: Request;
     response: any;
 
     constructor (req: Request, cachedResponse: PreCachedResponse, baseResponseOptions: ResponseOptions) {
         this.request = req;
-        this.readyState = ReadyStates.Done;
+        this.readyState = ReadyState.Done;
         
         // Workaround for difficulty consuming CommonJS default exports in TypeScript. Note that it has to be a dynamic
         // 'require', and not an 'import' statement, because the module isn't available on the server.
-        // All this badness goes away with the next update of Angular 2, as it exposes Observable directly from angular2/core.
-        // --
-        // The current version of Angular exposes the following SystemJS module directly (it is *not* coming from the
-        // @reactivex/rxjs NPM package - it's coming from angular2).
-        let obsCtor: any = require('@reactivex/rxjs/dist/cjs/Observable');
+        let obsCtor: any = require('rxjs/Observable').Observable;
         this.response = new obsCtor(responseObserver => {
             let response = new Response(new ResponseOptions({ body: cachedResponse.body, status: cachedResponse.statusCode }));
             responseObserver.next(response);

@@ -1,6 +1,7 @@
 var path = require('path');
-var ngUniversal = require('angular2-universal-patched');
-var ng = require('angular2/angular2');
+var ngUniversal = require('angular2-universal-preview');
+var ngUniversalRender = require('angular2-universal-preview/dist/server/src/render');
+var ngCore = require('angular2/core');
 var ngRouter = require('angular2/router');
 
 function getExportOrThrow(moduleInstance, moduleFilename, exportName) {
@@ -36,11 +37,12 @@ module.exports = {
             var serverBindings = [
                 ngRouter.ROUTER_BINDINGS,
                 ngUniversal.HTTP_PROVIDERS,
-                ng.provide(ngUniversal.BASE_URL, { useValue: options.requestUrl }),
+                ngCore.provide(ngUniversal.BASE_URL, { useValue: options.requestUrl }),
+                ngCore.provide(ngRouter.APP_BASE_HREF, { useValue: '/' }),
                 ngUniversal.SERVER_LOCATION_PROVIDERS
             ];
 
-            return ngUniversal.renderToString(component, serverBindings).then(
+            return ngUniversalRender.renderToString(component, serverBindings).then(
                 function(successValue) { callback(null, successValue); },
                 function(errorValue) { callback(errorValue); }
             );

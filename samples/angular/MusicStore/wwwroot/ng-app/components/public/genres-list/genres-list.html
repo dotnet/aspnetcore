@@ -1,12 +1,12 @@
 <h3>Browse Genres</h3>
 
-<p *ng-if="genres">
+<p *ngIf="genres">
     Select from {{ genres.length }} genres:
 </p>
 
 <ul class="list-group">
-    <li *ng-for="#genre of genres" class="list-group-item">
-        <a title="{{genre.Description}}" [router-link]="['/Genre', { genreId: genre.GenreId }]">
+    <li *ngFor="#genre of genres" class="list-group-item">
+        <a title="{{genre.Description}}" [routerLink]="['/Genre', { genreId: genre.GenreId }]">
             {{ genre.Name }}
         </a>
     </li>
