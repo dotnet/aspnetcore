@@ -12,7 +12,7 @@ using Microsoft.Extensions.CompilationAbstractions;
 using Microsoft.Extensions.PlatformAbstractions;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
+namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 {
     public class ExpressionRewriterTest
     {

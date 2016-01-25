@@ -5,6 +5,7 @@ using System.IO;
 using System.Text;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
+using Microsoft.AspNetCore.Mvc.Razor.Internal;
 using Microsoft.AspNetCore.Razor.CodeGenerators;
 using Microsoft.Extensions.Logging;
 

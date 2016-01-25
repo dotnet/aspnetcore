@@ -17,7 +17,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.Razor
+namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 {
     public class DefaultTagHelperActivatorTest
     {

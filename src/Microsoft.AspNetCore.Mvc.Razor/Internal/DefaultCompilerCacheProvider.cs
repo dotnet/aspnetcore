@@ -3,7 +3,7 @@
 
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
+namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 {
     /// <summary>
     /// Default implementation for <see cref="ICompilerCacheProvider"/>.

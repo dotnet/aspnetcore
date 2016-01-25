@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.Internal;
 
-namespace Microsoft.AspNetCore.Mvc.Razor
+namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 {
     /// <summary>
     /// Key for entries in <see cref="RazorViewEngine.ViewLookupCache"/>.

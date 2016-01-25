@@ -6,10 +6,11 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
+namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 {
     public class CompilerCacheTest
     {

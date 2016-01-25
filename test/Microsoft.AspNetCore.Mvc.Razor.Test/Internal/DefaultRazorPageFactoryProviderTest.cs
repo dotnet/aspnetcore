@@ -8,7 +8,7 @@ using Microsoft.Extensions.Primitives;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.Razor.Test
+namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 {
     public class DefaultRazorPageFactoryProviderTest
     {

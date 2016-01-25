@@ -3,8 +3,9 @@
 
 using System;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
+using Microsoft.AspNetCore.Mvc.Razor.Internal;
 
-namespace Microsoft.AspNetCore.Mvc.Razor
+namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 {
     /// <summary>
     /// Represents a <see cref="IRazorPageFactoryProvider"/> that creates <see cref="RazorPage"/> instances

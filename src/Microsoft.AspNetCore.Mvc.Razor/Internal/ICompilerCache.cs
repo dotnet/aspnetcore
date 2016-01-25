@@ -2,8 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 
-namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
+namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 {
     /// <summary>
     /// Caches the result of runtime compilation of Razor files for the duration of the app lifetime.

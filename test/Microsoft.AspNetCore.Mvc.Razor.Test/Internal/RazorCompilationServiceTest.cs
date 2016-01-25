@@ -3,6 +3,7 @@
 
 using System.IO;
 using System.Linq;
+using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 using Microsoft.AspNetCore.Razor;
 using Microsoft.AspNetCore.Razor.Chunks;
 using Microsoft.AspNetCore.Razor.CodeGenerators;
@@ -14,7 +15,7 @@ using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
+namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 {
     public class RazorCompilationServiceTest
     {

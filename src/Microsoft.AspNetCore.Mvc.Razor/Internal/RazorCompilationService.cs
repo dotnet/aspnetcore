@@ -7,13 +7,14 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 using Microsoft.AspNetCore.Mvc.Razor.Internal;
 using Microsoft.AspNetCore.Razor;
 using Microsoft.AspNetCore.Razor.CodeGenerators;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
+namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 {
     /// <summary>
     /// Default implementation of <see cref="IRazorCompilationService"/>.

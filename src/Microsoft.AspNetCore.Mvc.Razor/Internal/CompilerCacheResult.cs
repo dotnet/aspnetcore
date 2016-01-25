@@ -3,9 +3,10 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
+namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 {
     /// <summary>
     /// Result of <see cref="ICompilerCache"/>.

@@ -14,7 +14,7 @@ using System.Runtime.Loader;
 #endif
 using System.Runtime.Versioning;
 using Microsoft.AspNetCore.Diagnostics;
-using Microsoft.AspNetCore.Mvc.Razor.Internal;
+using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Emit;
@@ -24,7 +24,7 @@ using Microsoft.Extensions.PlatformAbstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
+namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 {
     /// <summary>
     /// A type that uses Roslyn to compile C# content.

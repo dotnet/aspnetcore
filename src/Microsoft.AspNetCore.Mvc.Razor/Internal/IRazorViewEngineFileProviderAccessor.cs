@@ -3,7 +3,7 @@
 
 using Microsoft.Extensions.FileProviders;
 
-namespace Microsoft.AspNetCore.Mvc.Razor
+namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 {
     /// <summary>
     /// Accessor to the <see cref="IFileProvider"/> used by <see cref="RazorViewEngine"/>.

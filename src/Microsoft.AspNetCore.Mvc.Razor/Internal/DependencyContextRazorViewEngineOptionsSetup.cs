@@ -8,7 +8,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.DependencyModel;
 
-namespace Microsoft.AspNetCore.Mvc
+namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 {
     /// <summary>
     /// Sets up compilation and parse option default options for <see cref="RazorViewEngineOptions"/> using <see cref="DependencyContext"/>

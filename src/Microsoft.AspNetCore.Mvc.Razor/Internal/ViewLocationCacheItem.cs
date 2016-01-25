@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Mvc.Razor
+namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 {
     /// <summary>
     /// An item in <see cref="ViewLocationCacheResult"/>.

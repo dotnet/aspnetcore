@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
 
-namespace Microsoft.AspNetCore.Mvc.Razor
+namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 {
     /// <inheritdoc />
     public class DefaultTagHelperActivator : ITagHelperActivator

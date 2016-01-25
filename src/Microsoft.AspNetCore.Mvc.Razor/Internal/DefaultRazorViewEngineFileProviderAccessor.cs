@@ -4,7 +4,7 @@
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNetCore.Mvc.Razor
+namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 {
     /// <summary>
     /// Default implementation of <see cref="IRazorViewEngineFileProviderAccessor"/>.
