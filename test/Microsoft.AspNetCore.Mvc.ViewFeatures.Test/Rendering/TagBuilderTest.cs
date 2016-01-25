@@ -92,6 +92,15 @@ namespace Microsoft.AspNetCore.Mvc.Core.Rendering
         }
 
         [Theory]
+        [InlineData(null, "")]
+        [InlineData("", "")]
+        [InlineData("a", "a")]
+        [InlineData("0", "z")]
+        [InlineData("-", "z")]
+        [InlineData(",", "z")]
+        [InlineData("00Hello,World", "z0Hello-World")]
+        [InlineData(",,Hello,,World,,", "z-Hello--World--")]
+        [InlineData("-_:Hello-_:Hello-_:", "z_:Hello-_:Hello-_:")]
         [InlineData("HelloWorld", "HelloWorld")]
         [InlineData("�HelloWorld", "zHelloWorld")]
         [InlineData("Hello�World", "Hello-World")]
