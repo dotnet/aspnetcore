@@ -155,7 +155,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 var halfWriteBehindBuffer = new ArraySegment<byte>(data, 0, bufferSize);
 
                 // Act 
-                var writeTask1 = socketOutput.WriteAsync(halfWriteBehindBuffer);
+                var writeTask1 = socketOutput.WriteAsync(halfWriteBehindBuffer, CancellationToken.None);
                 // Assert
                 // The first write should pre-complete since it is <= _maxBytesPreCompleted.
                 Assert.Equal(TaskStatus.RanToCompletion, writeTask1.Status);
@@ -168,7 +168,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 socketOutput.ProducingComplete(iter);
 
                 // Act
-                var writeTask2 = socketOutput.WriteAsync(halfWriteBehindBuffer);
+                var writeTask2 = socketOutput.WriteAsync(halfWriteBehindBuffer, CancellationToken.None);
                 // Assert 
                 // Too many bytes are already pre-completed for the fourth write to pre-complete.
                 Assert.True(writeRequestedWh.Wait(1000));
