@@ -1,6 +1,6 @@
 {
   "name": "angular2-aspnet",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Helpers for Angular 2 apps built on ASP.NET",
   "main": "./dist/Exports",
   "scripts": {
