@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Test
             writer.Write(2.718m);
 
             // Assert
-            Assert.Null(buffer.Pages);
+            Assert.Empty(buffer.Pages);
             foreach (var item in expected)
             {
                 unbufferedWriter.Verify(v => v.Write(item), Times.Once());
