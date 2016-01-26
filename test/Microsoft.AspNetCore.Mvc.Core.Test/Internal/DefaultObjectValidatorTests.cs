@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit;
@@ -435,7 +436,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             Assert.Equal("Error3", error.ErrorMessage);
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public void Validate_ComplexType_IValidatableObject_CanUseRequestServices()
         {
             // Arrange

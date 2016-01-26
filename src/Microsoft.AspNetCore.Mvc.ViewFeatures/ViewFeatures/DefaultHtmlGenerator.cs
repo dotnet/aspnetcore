@@ -11,6 +11,7 @@ using System.Reflection;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Html;
+using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -35,6 +36,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         private readonly IModelMetadataProvider _metadataProvider;
         private readonly IUrlHelperFactory _urlHelperFactory;
         private readonly HtmlEncoder _htmlEncoder;
+        private readonly ClientValidatorCache _clientValidatorCache;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DefaultHtmlGenerator"/> class.
@@ -50,7 +52,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             IOptions<MvcViewOptions> optionsAccessor,
             IModelMetadataProvider metadataProvider,
             IUrlHelperFactory urlHelperFactory,
-            HtmlEncoder htmlEncoder)
+            HtmlEncoder htmlEncoder,
+            ClientValidatorCache clientValidatorCache)
         {
             if (antiforgery == null)
             {
@@ -77,12 +80,18 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 throw new ArgumentNullException(nameof(htmlEncoder));
             }
 
+            if (clientValidatorCache == null)
+            {
+                throw new ArgumentNullException(nameof(clientValidatorCache));
+            }
+
             _antiforgery = antiforgery;
             var clientValidatorProviders = optionsAccessor.Value.ClientModelValidatorProviders;
             _clientModelValidatorProvider = new CompositeClientModelValidatorProvider(clientValidatorProviders);
             _metadataProvider = metadataProvider;
             _urlHelperFactory = urlHelperFactory;
             _htmlEncoder = htmlEncoder;
+            _clientValidatorCache = clientValidatorCache;
 
             // Underscores are fine characters in id's.
             IdAttributeDotReplacement = optionsAccessor.Value.HtmlHelperOptions.IdAttributeDotReplacement;
@@ -1300,10 +1309,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 ExpressionMetadataProvider.FromStringExpression(expression, viewContext.ViewData, _metadataProvider);
 
 
-            var validatorProviderContext = new ClientValidatorProviderContext(modelExplorer.Metadata);
-            _clientModelValidatorProvider.GetValidators(validatorProviderContext);
-
-            var validators = validatorProviderContext.Validators;
+            var validators = _clientValidatorCache.GetValidators(modelExplorer.Metadata, _clientModelValidatorProvider);
             if (validators.Count > 0)
             {
                 var validationContext = new ClientModelValidationContext(

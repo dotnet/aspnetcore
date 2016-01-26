@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.DataAnnotations.Internal;
+using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
@@ -249,7 +250,8 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
                     optionsAccessor.Object,
                     provider,
                     urlHelperFactory.Object,
-                    new HtmlTestEncoder());
+                    new HtmlTestEncoder(),
+                    new ClientValidatorCache());
             }
 
             // TemplateRenderer will Contextualize this transient service.

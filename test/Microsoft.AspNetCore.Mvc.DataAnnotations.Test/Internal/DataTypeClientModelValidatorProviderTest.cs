@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Xunit;
@@ -25,14 +27,38 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             var provider = new NumericClientModelValidatorProvider();
             var metadata = _metadataProvider.GetMetadataForType(modelType);
 
-            var providerContext = new ClientValidatorProviderContext(metadata);
+            var providerContext = new ClientValidatorProviderContext(metadata, GetValidatorItems(metadata));
 
             // Act
             provider.GetValidators(providerContext);
 
             // Assert
-            var validator = Assert.Single(providerContext.Validators);
-            Assert.IsType<NumericClientModelValidator>(validator);
+            var validatorItem = Assert.Single(providerContext.Results);
+            Assert.IsType<NumericClientModelValidator>(validatorItem.Validator);
+        }
+
+        [Fact]
+        public void GetValidators_DoesNotAddDuplicateValidators()
+        {
+            // Arrange
+            var provider = new NumericClientModelValidatorProvider();
+            var metadata = _metadataProvider.GetMetadataForType(typeof(float));
+            var items = GetValidatorItems(metadata);
+            var expectedValidatorItem = new ClientValidatorItem
+            {
+                Validator = new NumericClientModelValidator(),
+                IsReusable = true
+            };
+            items.Add(expectedValidatorItem);
+
+            var providerContext = new ClientValidatorProviderContext(metadata, items);
+
+            // Act
+            provider.GetValidators(providerContext);
+
+            // Assert
+            var validatorItem = Assert.Single(providerContext.Results);
+            Assert.Same(expectedValidatorItem.Validator, validatorItem.Validator);
         }
 
         [Theory]
@@ -49,13 +75,18 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             var provider = new NumericClientModelValidatorProvider();
             var metadata = _metadataProvider.GetMetadataForType(modelType);
 
-            var providerContext = new ClientValidatorProviderContext(metadata);
+            var providerContext = new ClientValidatorProviderContext(metadata, GetValidatorItems(metadata));
 
             // Act
             provider.GetValidators(providerContext);
 
             // Assert
-            Assert.Empty(providerContext.Validators);
+            Assert.Empty(providerContext.Results);
+        }
+
+        private IList<ClientValidatorItem> GetValidatorItems(ModelMetadata metadata)
+        {
+            return metadata.ValidatorMetadata.Select(v => new ClientValidatorItem(v)).ToList();
         }
     }
 }

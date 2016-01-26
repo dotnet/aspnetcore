@@ -66,21 +66,40 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
 
             var hasRequiredAttribute = false;
 
-            foreach (var attribute in context.ValidatorMetadata.OfType<ValidationAttribute>())
+            for (var i = 0; i < context.Results.Count; i++)
             {
+                var validatorItem = context.Results[i];
+                if (validatorItem.Validator != null)
+                {
+                    // Check if a required attribute is already cached.
+                    hasRequiredAttribute |= validatorItem.Validator is RequiredAttributeAdapter;
+                    continue;
+                }
+
+                var attribute = validatorItem.ValidatorMetadata as ValidationAttribute;
+                if (attribute == null)
+                {
+                    continue;
+                }
+
                 hasRequiredAttribute |= attribute is RequiredAttribute;
 
                 var adapter = _validationAttributeAdapterProvider.GetAttributeAdapter(attribute, stringLocalizer);
                 if (adapter != null)
                 {
-                    context.Validators.Add(adapter);
+                    validatorItem.Validator = adapter;
+                    validatorItem.IsReusable = true;
                 }
             }
 
             if (!hasRequiredAttribute && context.ModelMetadata.IsRequired)
             {
                 // Add a default '[Required]' validator for generating HTML if necessary.
-                context.Validators.Add(new RequiredAttributeAdapter(new RequiredAttribute(), stringLocalizer));
+                context.Results.Add(new ClientValidatorItem
+                {
+                    Validator = new RequiredAttributeAdapter(new RequiredAttribute(), stringLocalizer),
+                    IsReusable = true
+                });
             }
         }
     }

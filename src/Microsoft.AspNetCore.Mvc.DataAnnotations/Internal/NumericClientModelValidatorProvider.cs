@@ -27,7 +27,21 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
                 typeToValidate == typeof(double) ||
                 typeToValidate == typeof(decimal))
             {
-                context.Validators.Add(new NumericClientModelValidator());
+                for (var i = 0; i < context.Results.Count; i++)
+                {
+                    var validator = context.Results[i].Validator;
+                    if (validator != null && validator is NumericClientModelValidator)
+                    {
+                        // A validator is already present. No need to add one.
+                        return;
+                    }
+                }
+
+                context.Results.Add(new ClientValidatorItem
+                {
+                    Validator = new NumericClientModelValidator(),
+                    IsReusable = true
+                });
             }
         }
     }

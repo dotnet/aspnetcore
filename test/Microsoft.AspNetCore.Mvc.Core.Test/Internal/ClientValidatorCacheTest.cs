@@ -10,16 +10,16 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Internal
 {
-    public class ValidatorCacheTest
+    public class ClientValidatorCacheTest
     {
         [ConditionalFact]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public void GetValidators_CachesAllValidators()
         {
             // Arrange
-            var cache = new ValidatorCache();
+            var cache = new ClientValidatorCache();
             var metadata = new TestModelMetadataProvider().GetMetadataForProperty(typeof(TypeWithProperty), "Property1");
-            var validatorProvider = TestModelValidatorProvider.CreateDefaultProvider();
+            var validatorProvider = TestClientModelValidatorProvider.CreateDefaultProvider();
 
             // Act - 1
             var validators1 = cache.GetValidators(metadata, validatorProvider);
@@ -27,8 +27,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             // Assert - 1
             Assert.Collection(
                 validators1,
-                v => Assert.Same(metadata.ValidatorMetadata[0], Assert.IsType<DataAnnotationsModelValidator>(v).Attribute), // Copied by provider
-                v => Assert.Same(metadata.ValidatorMetadata[1], Assert.IsType<DataAnnotationsModelValidator>(v).Attribute)); // Copied by provider
+                v => Assert.Same(metadata.ValidatorMetadata[0], Assert.IsType<RequiredAttributeAdapter>(v).Attribute), // Copied by provider
+                v => Assert.Same(metadata.ValidatorMetadata[1], Assert.IsType<StringLengthAttributeAdapter>(v).Attribute)); // Copied by provider
 
             // Act - 2
             var validators2 = cache.GetValidators(metadata, validatorProvider);
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         public void GetValidators_DoesNotCacheValidatorsWithIsReusableFalse()
         {
             // Arrange
-            var cache = new ValidatorCache();
+            var cache = new ClientValidatorCache();
             var metadata = new TestModelMetadataProvider().GetMetadataForProperty(typeof(TypeWithProperty), "Property1");
             var validatorProvider = new ProviderWithNonReusableValidators();
 
@@ -57,8 +57,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             // Assert - 1
             Assert.Collection(
                 validators1,
-                v => Assert.Same(metadata.ValidatorMetadata[0], Assert.IsType<DataAnnotationsModelValidator>(v).Attribute), // Copied by provider
-                v => Assert.Same(metadata.ValidatorMetadata[1], Assert.IsType<DataAnnotationsModelValidator>(v).Attribute)); // Copied by provider
+                v => Assert.Same(metadata.ValidatorMetadata[0], Assert.IsType<RequiredAttributeAdapter>(v).Attribute), // Copied by provider
+                v => Assert.Same(metadata.ValidatorMetadata[1], Assert.IsType<StringLengthAttributeAdapter>(v).Attribute)); // Copied by provider
 
             // Act - 2
             var validators2 = cache.GetValidators(metadata, validatorProvider);
@@ -79,9 +79,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             public string Property1 { get; set; }
         }
 
-        private class ProviderWithNonReusableValidators : IModelValidatorProvider
+        private class ProviderWithNonReusableValidators : IClientModelValidatorProvider
         {
-            public void GetValidators(ModelValidatorProviderContext context)
+            public void GetValidators(ClientValidatorProviderContext context)
             {
                 for (var i = 0; i < context.Results.Count; i++)
                 {
@@ -97,12 +97,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                         continue;
                     }
 
-                    var validator = new DataAnnotationsModelValidator(
-                        new ValidationAttributeAdapterProvider(),
-                        attribute,
-                        stringLocalizer: null);
+                    var validationAdapterProvider = new ValidationAttributeAdapterProvider();
 
-                    validatorItem.Validator = validator;
+                    validatorItem.Validator = validationAdapterProvider.GetAttributeAdapter(attribute, stringLocalizer: null);
 
                     if (attribute is RequiredAttribute)
                     {

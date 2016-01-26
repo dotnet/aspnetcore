@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.Routing;
@@ -48,7 +49,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                   options,
                   metadataProvider,
                   CreateUrlHelperFactory(urlHelper),
-                  new HtmlTestEncoder())
+                  new HtmlTestEncoder(),
+                  new ClientValidatorCache())
         {
             _validationAttributes = validationAttributes;
         }

@@ -144,6 +144,7 @@ namespace Microsoft.Extensions.DependencyInjection
             }));
             services.TryAddSingleton<IObjectModelValidator, DefaultObjectValidator>();
             services.TryAddSingleton<ValidatorCache>();
+            services.TryAddSingleton<ClientValidatorCache>();
 
             //
             // Random Infrastructure

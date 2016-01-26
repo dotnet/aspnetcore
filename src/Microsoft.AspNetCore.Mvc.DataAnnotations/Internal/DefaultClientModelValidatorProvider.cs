@@ -24,12 +24,20 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             }
 
             // Perf: Avoid allocations
-            for (var i = 0; i < context.ValidatorMetadata.Count; i++)
+            for (var i = 0; i < context.Results.Count; i++)
             {
-                var validator = context.ValidatorMetadata[i] as IClientModelValidator;
+                var validatorItem = context.Results[i];
+                // Don't overwrite anything that was done by a previous provider.
+                if (validatorItem.Validator != null)
+                {
+                    continue;
+                }
+
+                var validator = validatorItem.ValidatorMetadata as IClientModelValidator;
                 if (validator != null)
                 {
-                    context.Validators.Add(validator);
+                    validatorItem.Validator = validator;
+                    validatorItem.IsReusable = true;
                 }
             }
         }

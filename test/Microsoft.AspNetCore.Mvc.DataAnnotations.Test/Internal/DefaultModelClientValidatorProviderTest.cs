@@ -111,17 +111,17 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             var metadata = metadataProvider.GetMetadataForProperty(
                 typeof(RangeAttributeOnProperty),
                 nameof(RangeAttributeOnProperty.Property));
-            var context = new ClientValidatorProviderContext(metadata);
+            var context = new ClientValidatorProviderContext(metadata, GetClientValidatorItems(metadata));
 
             // Act
             validatorProvider.GetValidators(context);
 
             // Assert
-            var validators = context.Validators;
+            var validatorItems = context.Results;
 
-            Assert.Equal(2, validators.Count);
-            Assert.Single(validators, v => v is RangeAttributeAdapter);
-            Assert.Single(validators, v => v is RequiredAttributeAdapter);
+            Assert.Equal(2, validatorItems.Count);
+            Assert.Single(validatorItems, v => v.Validator is RangeAttributeAdapter);
+            Assert.Single(validatorItems, v => v.Validator is RequiredAttributeAdapter);
         }
 
         [Fact]
@@ -134,15 +134,15 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             var metadata = metadataProvider.GetMetadataForProperty(
                 typeof(CustomValidationAttributeOnProperty),
                 nameof(CustomValidationAttributeOnProperty.Property));
-            var context = new ClientValidatorProviderContext(metadata);
+            var context = new ClientValidatorProviderContext(metadata, GetClientValidatorItems(metadata));
 
             // Act
             validatorProvider.GetValidators(context);
 
             // Assert
-            var validators = context.Validators;
+            var validatorItems = context.Results;
 
-             Assert.IsType<CustomValidationAttribute>(Assert.Single(validators));
+             Assert.IsType<CustomValidationAttribute>(Assert.Single(validatorItems).Validator);
         }
 
         [Fact]
@@ -155,17 +155,17 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             var metadata = metadataProvider.GetMetadataForProperty(
                 typeof(ProductViewModel),
                 nameof(ProductViewModel.Id));
-            var context = new ClientValidatorProviderContext(metadata);
+            var context = new ClientValidatorProviderContext(metadata, GetClientValidatorItems(metadata));
 
             // Act
             validatorProvider.GetValidators(context);
 
             // Assert
-            var validators = context.Validators;
+            var validatorItems = context.Results;
 
-            Assert.Equal(2, validators.Count);
-            Assert.Single(validators, v => v is RangeAttributeAdapter);
-            Assert.Single(validators, v => v is RequiredAttributeAdapter);
+            Assert.Equal(2, validatorItems.Count);
+            Assert.Single(validatorItems, v => v.Validator is RangeAttributeAdapter);
+            Assert.Single(validatorItems, v => v.Validator is RequiredAttributeAdapter);
         }
 
         [Fact]
@@ -178,28 +178,27 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             var metadata = metadataProvider.GetMetadataForProperty(
                 typeof(ProductViewModel),
                 nameof(ProductViewModel.Name));
-            var context = new ClientValidatorProviderContext(metadata);
+            var context = new ClientValidatorProviderContext(metadata, GetClientValidatorItems(metadata));
 
             // Act
             validatorProvider.GetValidators(context);
 
             // Assert
-            var validators = context.Validators;
+            var validatorItems = context.Results;
 
-            Assert.Equal(2, validators.Count);
-            Assert.Single(validators, v => v is RegularExpressionAttributeAdapter);
-            Assert.Single(validators, v => v is StringLengthAttributeAdapter);
+            Assert.Equal(2, validatorItems.Count);
+            Assert.Single(validatorItems, v => v.Validator is RegularExpressionAttributeAdapter);
+            Assert.Single(validatorItems, v => v.Validator is StringLengthAttributeAdapter);
+        }
+
+        private IList<ClientValidatorItem> GetClientValidatorItems(ModelMetadata metadata)
+        {
+            return metadata.ValidatorMetadata.Select(v => new ClientValidatorItem(v)).ToList();
         }
 
         private IList<ValidatorItem> GetValidatorItems(ModelMetadata metadata)
         {
-            var items = new List<ValidatorItem>(metadata.ValidatorMetadata.Count);
-            for (var i = 0; i < metadata.ValidatorMetadata.Count; i++)
-            {
-                items.Add(new ValidatorItem(metadata.ValidatorMetadata[i]));
-            }
-
-            return items;
+            return metadata.ValidatorMetadata.Select(v => new ValidatorItem(v)).ToList();
         }
 
         private class ValidatableObject : IValidatableObject
