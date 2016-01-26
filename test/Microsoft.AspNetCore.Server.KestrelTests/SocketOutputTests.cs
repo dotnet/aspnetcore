@@ -121,11 +121,12 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         }
         
         [Fact]
-        public void WritesDontCompleteImmediatelyWhenTooManyBytesIncludingNonImmediateAreAlreadyPreCompleted()
+        public async Task WritesDontCompleteImmediatelyWhenTooManyBytesIncludingNonImmediateAreAlreadyPreCompleted()
         {
             // This should match _maxBytesPreCompleted in SocketOutput
             var maxBytesPreCompleted = 65536;
             var completeQueue = new Queue<Action<int>>();
+            var writeRequestedWh = new ManualResetEventSlim();
 
             // Arrange
             var mockLibuv = new MockLibuv
@@ -133,6 +134,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 OnWrite = (socket, buffers, triggerCompleted) =>
                 {
                     completeQueue.Enqueue(triggerCompleted);
+                    writeRequestedWh.Set();
                     return 0;
                 }
             };
@@ -148,53 +150,39 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 var ltp = new LoggingThreadPool(trace);
                 var socketOutput = new SocketOutput(kestrelThread, socket, memory, null, 0, trace, ltp, new Queue<UvWriteReq>());
 
-                var bufferSize = maxBytesPreCompleted;
-
+                var bufferSize = maxBytesPreCompleted / 2;
                 var data = new byte[bufferSize];
-                var fullBuffer = new ArraySegment<byte>(data, 0, bufferSize);
-                var halfBuffer = new ArraySegment<byte>(data, 0, bufferSize / 2);
-
-                var completedWh = new ManualResetEventSlim();
-                Action<Task> onCompleted = (Task t) =>
-                {
-                    Assert.Null(t.Exception);
-                    completedWh.Set();
-                };
+                var halfWriteBehindBuffer = new ArraySegment<byte>(data, 0, bufferSize);
 
                 // Act 
-                socketOutput.WriteAsync(halfBuffer, default(CancellationToken), false).ContinueWith(onCompleted);
+                var writeTask1 = socketOutput.WriteAsync(halfWriteBehindBuffer);
                 // Assert
-                // The first write should pre-complete since it is not immediate.
-                Assert.True(completedWh.Wait(1000));
-                // Arrange
-                completedWh.Reset();
-                // Act 
-                socketOutput.WriteAsync(halfBuffer, default(CancellationToken)).ContinueWith(onCompleted);
-                // Assert
-                // The second write should pre-complete since it is <= _maxBytesPreCompleted.
-                Assert.True(completedWh.Wait(1000));
-                // Arrange
-                completedWh.Reset();
-                // Act 
-                socketOutput.WriteAsync(halfBuffer, default(CancellationToken), false).ContinueWith(onCompleted);
-                // Assert
-                // The third write should pre-complete since it is not immediate, even though too many.
-                Assert.True(completedWh.Wait(1000));
-                // Arrange
-                completedWh.Reset();
+                // The first write should pre-complete since it is <= _maxBytesPreCompleted.
+                Assert.Equal(TaskStatus.RanToCompletion, writeTask1.Status);
+                Assert.True(writeRequestedWh.Wait(1000));
+                writeRequestedWh.Reset();
+
+                // Add more bytes to the write-behind buffer to prevent the next write from
+                var iter = socketOutput.ProducingStart();
+                iter.CopyFrom(halfWriteBehindBuffer);
+                socketOutput.ProducingComplete(iter);
+
                 // Act
-                socketOutput.WriteAsync(halfBuffer, default(CancellationToken)).ContinueWith(onCompleted);
+                var writeTask2 = socketOutput.WriteAsync(halfWriteBehindBuffer);
                 // Assert 
                 // Too many bytes are already pre-completed for the fourth write to pre-complete.
-                Assert.False(completedWh.Wait(1000));
+                Assert.True(writeRequestedWh.Wait(1000));
+                Assert.False(writeTask2.IsCompleted);
+
+                // 2 calls have been made to uv_write
+                Assert.Equal(2, completeQueue.Count);
+
                 // Act
-                while (completeQueue.Count > 0)
-                {
-                    completeQueue.Dequeue()(0);
-                }
+                completeQueue.Dequeue()(0);
+
                 // Assert
                 // Finishing the first write should allow the second write to pre-complete.
-                Assert.True(completedWh.Wait(1000));
+                Assert.True(writeTask2.Wait(1000));
             }
         }
 

@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Filter
             _memory = memory;
         }
 
-        public void Write(ArraySegment<byte> buffer, bool immediate, bool chunk)
+        public void Write(ArraySegment<byte> buffer, bool chunk)
         {
             lock (_writeLock)
             {
@@ -47,10 +47,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Filter
             }
         }
 
-        public Task WriteAsync(ArraySegment<byte> buffer, bool immediate, bool chunk, CancellationToken cancellationToken)
+        public Task WriteAsync(ArraySegment<byte> buffer, bool chunk, CancellationToken cancellationToken)
         {
             // TODO: Use _outputStream.WriteAsync
-            Write(buffer, immediate, chunk);
+            Write(buffer, chunk);
             return TaskUtilities.CompletedTask;
         }
 

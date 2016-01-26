@@ -3,6 +3,7 @@
 
 using System;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
@@ -161,6 +162,50 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                     await connection.ReceiveEnd(
                         "HTTP/1.1 200 OK",
                         "Transfer-Encoding: chunked",
+                        "",
+                        "");
+                }
+            }
+        }
+
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Test hangs after execution on Mono.")]
+        public async Task WritesAreFlushedPriorToResponseCompletion()
+        {
+            var flushWh = new ManualResetEventSlim();
+
+            using (var server = new TestServer(async httpContext =>
+            {
+                var response = httpContext.Response;
+                response.Headers.Clear();
+                await response.Body.WriteAsync(Encoding.ASCII.GetBytes("Hello "), 0, 6);
+
+                // Don't complete response until client has received the first chunk.
+                flushWh.Wait();
+
+                await response.Body.WriteAsync(Encoding.ASCII.GetBytes("World!"), 0, 6);
+            }))
+            {
+                using (var connection = new TestConnection())
+                {
+                    await connection.SendEnd(
+                        "GET / HTTP/1.1",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        "Transfer-Encoding: chunked",
+                        "",
+                        "6",
+                        "Hello ",
+                        "");
+
+                    flushWh.Set();
+
+                    await connection.ReceiveEnd(
+                        "6",
+                        "World!",
+                        "0",
                         "",
                         "");
                 }
