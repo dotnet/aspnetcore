@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Mvc.Cors.Internal
         }
 
         /// <inheritdoc />
-        public Task OnAuthorizationAsync(AuthorizationContext context)
+        public Task OnAuthorizationAsync(AuthorizationFilterContext context)
         {
             if (context == null)
             {

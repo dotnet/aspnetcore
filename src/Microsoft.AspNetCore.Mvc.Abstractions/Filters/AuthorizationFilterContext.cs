@@ -6,9 +6,9 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Mvc.Filters
 {
-    public class AuthorizationContext : FilterContext
+    public class AuthorizationFilterContext : FilterContext
     {
-        public AuthorizationContext(
+        public AuthorizationFilterContext(
             ActionContext actionContext,
             IList<IFilterMetadata> filters)
             : base(actionContext, filters)

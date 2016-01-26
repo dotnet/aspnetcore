@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             _logger = loggerFactory.CreateLogger<ValidateAntiforgeryTokenAuthorizationFilter>();
         }
 
-        public async Task OnAuthorizationAsync(AuthorizationContext context)
+        public async Task OnAuthorizationAsync(AuthorizationFilterContext context)
         {
             if (context == null)
             {
@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             }
         }
 
-        protected virtual bool ShouldValidate(AuthorizationContext context)
+        protected virtual bool ShouldValidate(AuthorizationFilterContext context)
         {
             if (context == null)
             {

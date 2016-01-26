@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         private IFilterMetadata[] _filters;
         private FilterCursor _cursor;
 
-        private AuthorizationContext _authorizationContext;
+        private AuthorizationFilterContext _authorizationContext;
 
         private ResourceExecutingContext _resourceExecutingContext;
         private ResourceExecutedContext _resourceExecutedContext;
@@ -186,7 +186,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         {
             _cursor.Reset();
 
-            _authorizationContext = new AuthorizationContext(Context, _filters);
+            _authorizationContext = new AuthorizationFilterContext(Context, _filters);
             return InvokeAuthorizationFilterAsync();
         }
 

@@ -274,7 +274,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             Assert.NotNull(authorizationContext.Result);
         }
 
-        private Filters.AuthorizationContext GetAuthorizationContext(
+        private Filters.AuthorizationFilterContext GetAuthorizationContext(
             Action<ServiceCollection> registerServices,
             bool anonymous = false)
         {
@@ -325,13 +325,13 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             auth.Setup(c => c.AuthenticateAsync("Basic")).ReturnsAsync(basicPrincipal);
             auth.Setup(c => c.AuthenticateAsync("Fails")).ReturnsAsync(null);
 
-            // AuthorizationContext
+            // AuthorizationFilterContext
             var actionContext = new ActionContext(
                 httpContext: httpContext.Object,
                 routeData: new RouteData(),
                 actionDescriptor: new ActionDescriptor());
 
-            var authorizationContext = new Filters.AuthorizationContext(
+            var authorizationContext = new Filters.AuthorizationFilterContext(
                 actionContext,
                 Enumerable.Empty<IFilterMetadata>().ToList()
             );

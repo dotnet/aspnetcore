@@ -1191,7 +1191,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
         private class UnsupportedFiltersController : IExceptionFilter, IAuthorizationFilter, IAsyncResourceFilter
         {
-            public void OnAuthorization(AuthorizationContext context)
+            public void OnAuthorization(AuthorizationFilterContext context)
             {
                 throw new NotImplementedException();
             }

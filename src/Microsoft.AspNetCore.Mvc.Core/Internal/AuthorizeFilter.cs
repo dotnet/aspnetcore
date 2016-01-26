@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         public AuthorizationPolicy Policy { get; private set; }
 
         /// <inheritdoc />
-        public virtual async Task OnAuthorizationAsync(Filters.AuthorizationContext context)
+        public virtual async Task OnAuthorizationAsync(Filters.AuthorizationFilterContext context)
         {
             if (context == null)
             {

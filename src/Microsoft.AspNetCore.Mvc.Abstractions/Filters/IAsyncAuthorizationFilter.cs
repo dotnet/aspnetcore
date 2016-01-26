@@ -7,6 +7,6 @@ namespace Microsoft.AspNetCore.Mvc.Filters
 {
     public interface IAsyncAuthorizationFilter : IFilterMetadata
     {
-        Task OnAuthorizationAsync(AuthorizationContext context);
+        Task OnAuthorizationAsync(AuthorizationFilterContext context);
     }
 }

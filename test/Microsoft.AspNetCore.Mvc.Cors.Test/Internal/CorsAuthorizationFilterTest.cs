@@ -127,7 +127,7 @@ namespace Microsoft.AspNetCore.Mvc.Cors.Internal
             };
         }
 
-        private AuthorizationContext GetAuthorizationContext(
+        private AuthorizationFilterContext GetAuthorizationContext(
             FilterDescriptor[] filterDescriptors,
             RequestHeaders headers = null,
             bool isPreflight = false)
@@ -150,13 +150,13 @@ namespace Microsoft.AspNetCore.Mvc.Cors.Internal
             var method = isPreflight ? CorsConstants.PreflightHttpMethod : "GET";
             httpContext.Request.Method = method;
 
-            // AuthorizationContext
+            // AuthorizationFilterContext
             var actionContext = new ActionContext(
                 httpContext: httpContext,
                 routeData: new RouteData(),
                 actionDescriptor: new ActionDescriptor() { FilterDescriptors = filterDescriptors });
 
-            var authorizationContext = new AuthorizationContext(
+            var authorizationContext = new AuthorizationFilterContext(
                 actionContext,
                 filterDescriptors.Select(filter => filter.Filter).ToList()
             );

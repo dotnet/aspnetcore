@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
         public static void BeforeOnAuthorizationAsync(
             this DiagnosticSource diagnosticSource,
-            AuthorizationContext authorizationContext,
+            AuthorizationFilterContext authorizationContext,
             IAsyncAuthorizationFilter filter)
         {
             if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeOnAuthorization"))
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
         public static void AfterOnAuthorizationAsync(
             this DiagnosticSource diagnosticSource,
-            AuthorizationContext authorizationContext,
+            AuthorizationFilterContext authorizationContext,
             IAsyncAuthorizationFilter filter)
         {
             if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.AfterOnAuthorization"))
@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
         public static void BeforeOnAuthorization(
             this DiagnosticSource diagnosticSource,
-            AuthorizationContext authorizationContext,
+            AuthorizationFilterContext authorizationContext,
             IAuthorizationFilter filter)
         {
             if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.BeforeOnAuthorization"))
@@ -96,7 +96,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
         public static void AfterOnAuthorization(
             this DiagnosticSource diagnosticSource,
-            AuthorizationContext authorizationContext,
+            AuthorizationFilterContext authorizationContext,
             IAuthorizationFilter filter)
         {
             if (diagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.AfterOnAuthorization"))

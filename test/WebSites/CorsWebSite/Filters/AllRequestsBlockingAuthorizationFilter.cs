@@ -10,7 +10,7 @@ namespace CorsWebSite
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
     public class AllRequestsBlockingAuthorizationFilter : Attribute, IAuthorizationFilter
     {
-        public void OnAuthorization(AuthorizationContext context)
+        public void OnAuthorization(AuthorizationFilterContext context)
         {
             context.Result = new ContentResult()
             {

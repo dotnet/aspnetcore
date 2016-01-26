@@ -8,7 +8,7 @@ namespace FiltersWebSite
 {
     public class ThrowingAuthorizationFilter : AuthorizationFilterAttribute
     {
-        public override void OnAuthorization(AuthorizationContext context)
+        public override void OnAuthorization(AuthorizationFilterContext context)
         {
             throw new InvalidProgramException("Authorization Filter Threw");
         }

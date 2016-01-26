@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Mvc
     {
         public int Order { get; set; }
 
-        public virtual void OnAuthorization(AuthorizationContext filterContext)
+        public virtual void OnAuthorization(AuthorizationFilterContext filterContext)
         {
             if (filterContext == null)
             {
@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Mvc
             }
         }
 
-        protected virtual void HandleNonHttpsRequest(AuthorizationContext filterContext)
+        protected virtual void HandleNonHttpsRequest(AuthorizationFilterContext filterContext)
         {
             // only redirect for GET requests, otherwise the browser might not propagate the verb and request
             // body correctly.

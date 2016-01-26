@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
     {
         public int Order { get; set; }
 
-        public virtual Task OnAuthorizationAsync(AuthorizationContext context)
+        public virtual Task OnAuthorizationAsync(AuthorizationFilterContext context)
         {
             if (context == null)
             {
@@ -26,11 +26,11 @@ namespace Microsoft.AspNetCore.Mvc.Filters
             return TaskCache.CompletedTask;
         }
 
-        public virtual void OnAuthorization(AuthorizationContext context)
+        public virtual void OnAuthorization(AuthorizationFilterContext context)
         {
         }
 
-        protected virtual bool HasAllowAnonymous(AuthorizationContext context)
+        protected virtual bool HasAllowAnonymous(AuthorizationFilterContext context)
         {
             if (context == null)
             {
@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
             return context.Filters.Any(item => item is IAllowAnonymousFilter);
         }
 
-        protected virtual void Fail(AuthorizationContext context)
+        protected virtual void Fail(AuthorizationFilterContext context)
         {
             if (context == null)
             {

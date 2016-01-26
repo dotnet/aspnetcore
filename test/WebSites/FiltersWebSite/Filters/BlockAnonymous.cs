@@ -7,7 +7,7 @@ namespace FiltersWebSite
 {
     public class BlockAnonymous : AuthorizationFilterAttribute
     {
-        public override void OnAuthorization(AuthorizationContext context)
+        public override void OnAuthorization(AuthorizationFilterContext context)
         {
             if (!HasAllowAnonymous(context))
             {

@@ -8,7 +8,7 @@ namespace FiltersWebSite
 {
     public class ControllerAuthorizationFilter : AuthorizeUserAttribute
     {
-        public override void OnAuthorization(AuthorizationContext context)
+        public override void OnAuthorization(AuthorizationFilterContext context)
         {
             context.HttpContext.Response.Headers.Append("filters", "On Controller Authorization Filter - OnAuthorization");
         }

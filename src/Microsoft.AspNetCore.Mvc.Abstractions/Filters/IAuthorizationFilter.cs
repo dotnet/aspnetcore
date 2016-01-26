@@ -5,6 +5,6 @@ namespace Microsoft.AspNetCore.Mvc.Filters
 {
     public interface IAuthorizationFilter : IFilterMetadata
     {
-        void OnAuthorization(AuthorizationContext context);
+        void OnAuthorization(AuthorizationFilterContext context);
     }
 }

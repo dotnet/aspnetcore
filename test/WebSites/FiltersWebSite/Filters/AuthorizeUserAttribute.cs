@@ -9,7 +9,7 @@ namespace FiltersWebSite
 {
     public class AuthorizeUserAttribute : AuthorizationFilterAttribute
     {
-        public override void OnAuthorization(AuthorizationContext context)
+        public override void OnAuthorization(AuthorizationFilterContext context)
         {
             if (context.ActionDescriptor.DisplayName == "FiltersWebSite.ProductsController.GetPrice")
             {

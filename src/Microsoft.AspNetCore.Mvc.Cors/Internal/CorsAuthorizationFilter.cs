@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Mvc.Cors.Internal
 
 
         /// <inheritdoc />
-        public async Task OnAuthorizationAsync(Filters.AuthorizationContext context)
+        public async Task OnAuthorizationAsync(Filters.AuthorizationFilterContext context)
         {
             if (context == null)
             {

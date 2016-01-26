@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
         {
         }
 
-        protected override bool ShouldValidate(AuthorizationContext context)
+        protected override bool ShouldValidate(AuthorizationFilterContext context)
         {
             if (context == null)
             {

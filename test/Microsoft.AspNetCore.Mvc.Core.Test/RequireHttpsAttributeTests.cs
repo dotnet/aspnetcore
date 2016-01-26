@@ -149,16 +149,16 @@ namespace Microsoft.AspNetCore.Mvc
 
         private class CustomRequireHttpsAttribute : RequireHttpsAttribute
         {
-            protected override void HandleNonHttpsRequest(AuthorizationContext filterContext)
+            protected override void HandleNonHttpsRequest(AuthorizationFilterContext filterContext)
             {
                 filterContext.Result = new HttpStatusCodeResult(StatusCodes.Status404NotFound);
             }
         }
 
-        private static AuthorizationContext CreateAuthorizationContext(HttpContext ctx)
+        private static AuthorizationFilterContext CreateAuthorizationContext(HttpContext ctx)
         {
             var actionContext = new ActionContext(ctx, new RouteData(), new ActionDescriptor());
-            return new AuthorizationContext(actionContext, new IFilterMetadata[0]);
+            return new AuthorizationFilterContext(actionContext, new IFilterMetadata[0]);
         }
     }
 }

@@ -254,7 +254,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         {
             // Arrange
             var filter = new Mock<IAuthorizationFilter>(MockBehavior.Strict);
-            filter.Setup(f => f.OnAuthorization(It.IsAny<AuthorizationContext>())).Verifiable();
+            filter.Setup(f => f.OnAuthorization(It.IsAny<AuthorizationFilterContext>())).Verifiable();
 
             var invoker = CreateInvoker(filter.Object);
 
@@ -262,7 +262,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             await invoker.InvokeAsync();
 
             // Assert
-            filter.Verify(f => f.OnAuthorization(It.IsAny<AuthorizationContext>()), Times.Once());
+            filter.Verify(f => f.OnAuthorization(It.IsAny<AuthorizationFilterContext>()), Times.Once());
         }
 
         [Fact]
@@ -271,8 +271,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             // Arrange
             var filter = new Mock<IAsyncAuthorizationFilter>(MockBehavior.Strict);
             filter
-                .Setup(f => f.OnAuthorizationAsync(It.IsAny<AuthorizationContext>()))
-                .Returns<AuthorizationContext>(context => Task.FromResult(true))
+                .Setup(f => f.OnAuthorizationAsync(It.IsAny<AuthorizationFilterContext>()))
+                .Returns<AuthorizationFilterContext>(context => Task.FromResult(true))
                 .Verifiable();
 
             var invoker = CreateInvoker(filter.Object);
@@ -282,7 +282,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             // Assert
             filter.Verify(
-                f => f.OnAuthorizationAsync(It.IsAny<AuthorizationContext>()),
+                f => f.OnAuthorizationAsync(It.IsAny<AuthorizationFilterContext>()),
                 Times.Once());
         }
 
@@ -294,8 +294,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             var filter1 = new Mock<IAuthorizationFilter>(MockBehavior.Strict);
             filter1
-                .Setup(f => f.OnAuthorization(It.IsAny<AuthorizationContext>()))
-                .Callback<AuthorizationContext>(c => c.Result = challenge)
+                .Setup(f => f.OnAuthorization(It.IsAny<AuthorizationFilterContext>()))
+                .Callback<AuthorizationFilterContext>(c => c.Result = challenge)
                 .Verifiable();
 
             var filter2 = new Mock<IAuthorizationFilter>(MockBehavior.Strict);
@@ -306,7 +306,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             await invoker.InvokeAsync();
 
             // Assert
-            filter1.Verify(f => f.OnAuthorization(It.IsAny<AuthorizationContext>()), Times.Once());
+            filter1.Verify(f => f.OnAuthorization(It.IsAny<AuthorizationFilterContext>()), Times.Once());
             Assert.False(invoker.ControllerFactory.CreateCalled);
         }
 
@@ -318,8 +318,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             var filter1 = new Mock<IAsyncAuthorizationFilter>(MockBehavior.Strict);
             filter1
-                .Setup(f => f.OnAuthorizationAsync(It.IsAny<AuthorizationContext>()))
-                .Returns<AuthorizationContext>((context) =>
+                .Setup(f => f.OnAuthorizationAsync(It.IsAny<AuthorizationFilterContext>()))
+                .Returns<AuthorizationFilterContext>((context) =>
                 {
                     context.Result = challenge;
                     return Task.FromResult(true);
@@ -335,7 +335,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             // Assert
             filter1.Verify(
-                f => f.OnAuthorizationAsync(It.IsAny<AuthorizationContext>()),
+                f => f.OnAuthorizationAsync(It.IsAny<AuthorizationFilterContext>()),
                 Times.Once());
 
             Assert.False(invoker.ControllerFactory.CreateCalled);
@@ -359,8 +359,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             var authorizationFilter1 = new Mock<IAuthorizationFilter>(MockBehavior.Strict);
             authorizationFilter1
-                .Setup(f => f.OnAuthorization(It.IsAny<AuthorizationContext>()))
-                .Callback<AuthorizationContext>(c => { throw expected; })
+                .Setup(f => f.OnAuthorization(It.IsAny<AuthorizationFilterContext>()))
+                .Callback<AuthorizationFilterContext>(c => { throw expected; })
                 .Verifiable();
 
             // None of these filters should run
@@ -385,7 +385,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             // Assert
             Assert.Same(expected, thrown);
             exceptionFilter.Verify(f => f.OnException(It.IsAny<ExceptionContext>()), Times.Never());
-            authorizationFilter1.Verify(f => f.OnAuthorization(It.IsAny<AuthorizationContext>()), Times.Once());
+            authorizationFilter1.Verify(f => f.OnAuthorization(It.IsAny<AuthorizationFilterContext>()), Times.Once());
         }
 
         [Fact]
@@ -400,8 +400,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             var authorizationFilter = new Mock<IAuthorizationFilter>(MockBehavior.Strict);
             authorizationFilter
-                .Setup(f => f.OnAuthorization(It.IsAny<AuthorizationContext>()))
-                .Callback<AuthorizationContext>(c => c.Result = challenge.Object)
+                .Setup(f => f.OnAuthorization(It.IsAny<AuthorizationFilterContext>()))
+                .Callback<AuthorizationFilterContext>(c => c.Result = challenge.Object)
                 .Verifiable();
 
             var resultFilter = new Mock<IResultFilter>(MockBehavior.Strict);
@@ -412,7 +412,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             await invoker.InvokeAsync();
 
             // Assert
-            authorizationFilter.Verify(f => f.OnAuthorization(It.IsAny<AuthorizationContext>()), Times.Once());
+            authorizationFilter.Verify(f => f.OnAuthorization(It.IsAny<AuthorizationFilterContext>()), Times.Once());
             challenge.Verify(c => c.ExecuteResultAsync(It.IsAny<ActionContext>()), Times.Once());
         }
 
@@ -1848,8 +1848,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             var authorizationFilter = new Mock<IAuthorizationFilter>(MockBehavior.Strict);
             authorizationFilter
-                .Setup(f => f.OnAuthorization(It.IsAny<AuthorizationContext>()))
-                .Callback<AuthorizationContext>((c) =>
+                .Setup(f => f.OnAuthorization(It.IsAny<AuthorizationFilterContext>()))
+                .Callback<AuthorizationFilterContext>((c) =>
                 {
                     c.Result = _result;
                 });
@@ -2283,7 +2283,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 _expectedMaxAllowedErrors = maxAllowedErrors;
             }
 
-            public void OnAuthorization(AuthorizationContext context)
+            public void OnAuthorization(AuthorizationFilterContext context)
             {
                 Assert.NotNull(context.ModelState.MaxAllowedErrors);
                 Assert.Equal(_expectedMaxAllowedErrors, context.ModelState.MaxAllowedErrors);
