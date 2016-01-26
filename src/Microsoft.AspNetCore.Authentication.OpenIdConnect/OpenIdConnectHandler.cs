@@ -511,7 +511,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
 
             // no need to validate signature when token is received using "code flow" as per spec [http://openid.net/specs/openid-connect-core-1_0.html#IDTokenValidation].
             var validationParameters = Options.TokenValidationParameters.Clone();
-            validationParameters.ValidateSignature = false;
+            validationParameters.RequireSignedTokens = false;
 
             ticket = ValidateToken(tokenEndpointResponse.IdToken, message, properties, validationParameters, out jwt);
 
