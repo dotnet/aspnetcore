@@ -1,34 +1,34 @@
 <h2>Album <small>Edit</small></h2>
 <hr />
 
-<form class="form-horizontal" [ngFormModel]="form" (ng-submit)="onSubmitModelBased()">
+<form class="form-horizontal" [ngFormModel]="form" (ngSubmit)="onSubmitModelBased()">
     <form-field label="Artist" [validate]="form.controls.ArtistId">
-        <select class="form-control" ng-control="ArtistId">
+        <select class="form-control" ngControl="ArtistId">
             <option value="0">-- choose Artist --</option>
             <option *ngFor="#artist of artists" [value]="artist.ArtistId">{{ artist.Name }}</option>
         </select>
     </form-field>
     
     <form-field label="Genre" [validate]="form.controls.GenreId">
-        <select class="form-control" ng-control="GenreId">
+        <select class="form-control" ngControl="GenreId">
             <option value="0">-- choose Genre --</option>
             <option *ngFor="#genre of genres" [value]="genre.GenreId">{{ genre.Name }}</option>
         </select>
     </form-field>
     
     <form-field label="Title" [validate]="form.controls.Title">
-        <input class="form-control" type="text" ng-control="Title">
+        <input class="form-control" type="text" ngControl="Title">
     </form-field>
     
     <form-field label="Price" [validate]="form.controls.Price">
         <div class="input-group">
             <span class="input-group-addon">$</span>
-            <input class="form-control" type="text" ng-control="Price">
+            <input class="form-control" type="text" ngControl="Price">
         </div>
     </form-field>
 
     <form-field label="Album Art URL" [validate]="form.controls.AlbumArtUrl">
-        <input class="form-control" ng-control="AlbumArtUrl">
+        <input class="form-control" ngControl="AlbumArtUrl">
     </form-field>
     
     <form-field label="Album Art">

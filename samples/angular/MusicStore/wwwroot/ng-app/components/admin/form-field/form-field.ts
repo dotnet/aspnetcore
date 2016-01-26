@@ -10,11 +10,12 @@ import { NgIf, NgFor, AbstractControl } from 'angular2/common';
   directives: [NgIf, NgFor]
 })
 export class FormField {
+    public errorMessages: string[] = [];
     private validate: AbstractControl;
-
-    public get errorMessages() {
+    
+    private ngDoCheck() {
         var errors = (this.validate && this.validate.dirty && this.validate.errors) || {};
-        return Object.keys(errors).map(key => {
+        this.errorMessages = Object.keys(errors).map(key => {
             return 'Error: ' + key;
         });
     }

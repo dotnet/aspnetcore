@@ -10,17 +10,15 @@ import * as models from '../../../models/models';
   directives: [NgIf]
 })
 export class AlbumDeletePrompt {
-    private modalElement: any;
     public album: models.Album;
     
-    constructor(@ng.Inject(ng.ElementRef) elementRef: ng.ElementRef) {
-        if (typeof window !== 'undefined') {
-            this.modalElement = (<any>window).jQuery(".modal", elementRef.nativeElement);
-        }
+    constructor(@ng.Inject(ng.ElementRef) private _elementRef: ng.ElementRef) {
     }
     
     public show(album: models.Album) {
         this.album = album;
-        this.modalElement.modal();
+        
+        // Consider rewriting this using Angular 2's "Renderer" API so as to avoid direct DOM access
+        (<any>window).jQuery(".modal", this._elementRef.nativeElement).modal();
     }
 }

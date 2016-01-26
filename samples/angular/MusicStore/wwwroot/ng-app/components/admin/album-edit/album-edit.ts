@@ -1,4 +1,5 @@
 import * as ng from 'angular2/core';
+import { Observable } from 'rxjs';
 import { Control, ControlGroup, FormBuilder, Validators, NgIf, NgFor, FORM_DIRECTIVES } from 'angular2/common';
 import * as router from 'angular2/router';
 import * as models from '../../../models/models';
@@ -20,6 +21,7 @@ export class AlbumEdit {
     public genres: models.Genre[];
     public originalAlbum: models.Album;
     public changesSaved: boolean;
+    public formErrors: string[] = [];
 
     private _http: Http;
 
@@ -69,12 +71,10 @@ export class AlbumEdit {
             var controls = this.form.controls;
             var albumId = this.originalAlbum.AlbumId;
             
-            this._putJson(`/api/albums/${ albumId }/update`, this.form.value).subscribe(response => {
-                if (response.status === 200) {
-                    this.changesSaved = true;
-                } else {
-                    AspNet.Validation.showValidationErrors(response, this.form);
-                }
+            this._putJson(`/api/albums/${ albumId }/update`, this.form.value).subscribe(successResponse => {
+                this.changesSaved = true;
+            }, errorResponse => {
+                AspNet.Validation.showValidationErrors(errorResponse, this.form);
             });
         }
     }
@@ -84,18 +84,13 @@ export class AlbumEdit {
     }
     
     // Need feedback on whether this really is the easiest way to PUT some JSON
-    private _putJson(url: string, body: any): Subscribable<Response> {
+    private _putJson(url: string, body: any): Observable<Response> {
         return this._http.put(url, JSON.stringify(body), {
             headers: new Headers({ 'Content-Type': 'application/json' })
         });
     }
-    
-    public get formErrors(): string[] {
-        return this.form.dirty ? Object.keys(this.form.errors || {}) : [];
-    }
-}
 
-// TODO: Figure out what type declaration is provided by Angular/RxJs and use that instead
-interface Subscribable<T> {
-    subscribe(callback: (response: Response) => void): void;
+    private ngDoCheck() {
+        this.formErrors = this.form.dirty ? Object.keys(this.form.errors || {}) : [];
+    }
 }
