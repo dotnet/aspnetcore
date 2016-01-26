@@ -71,6 +71,7 @@ namespace Microsoft.AspNetCore.Authentication.Facebook
             {
                 throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Exception_OptionMustBeProvided, nameof(Options.AppId)));
             }
+
             if (string.IsNullOrEmpty(Options.AppSecret))
             {
                 throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Exception_OptionMustBeProvided, nameof(Options.AppSecret)));

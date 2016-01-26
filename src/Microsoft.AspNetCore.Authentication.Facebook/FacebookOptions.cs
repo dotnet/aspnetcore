@@ -24,7 +24,10 @@ namespace Microsoft.AspNetCore.Builder
             AuthorizationEndpoint = FacebookDefaults.AuthorizationEndpoint;
             TokenEndpoint = FacebookDefaults.TokenEndpoint;
             UserInformationEndpoint = FacebookDefaults.UserInformationEndpoint;
-            Fields = new List<string>();
+            Scope.Add("public_profile");
+            Scope.Add("email");
+            Fields.Add("name");
+            Fields.Add("email");
         }
 
         // Facebook uses a non-standard term for this field.
@@ -57,6 +60,6 @@ namespace Microsoft.AspNetCore.Builder
         /// The list of fields to retrieve from the UserInformationEndpoint.
         /// https://developers.facebook.com/docs/graph-api/reference/user
         /// </summary>
-        public IList<string> Fields { get; }
+        public ICollection<string> Fields { get; } = new HashSet<string>();
     }
 }
