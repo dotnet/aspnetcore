@@ -259,6 +259,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public abstract int Order { get; }
 
         /// <summary>
+        /// Gets the text to display as a placeholder value for an editor.
+        /// </summary>
+        public abstract string Placeholder { get; }
+
+        /// <summary>
         /// Gets the text to display when the model is <c>null</c>.
         /// </summary>
         public abstract string NullDisplayText { get; }

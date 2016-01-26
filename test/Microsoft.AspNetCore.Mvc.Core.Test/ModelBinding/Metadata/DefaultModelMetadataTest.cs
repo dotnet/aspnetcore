@@ -62,6 +62,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             Assert.Null(metadata.NullDisplayText);
             Assert.Null(metadata.TemplateHint);
             Assert.Null(metadata.SimpleDisplayProperty);
+            Assert.Null(metadata.Placeholder);
 
             Assert.Equal(10000, ModelMetadata.DefaultOrder);
             Assert.Equal(ModelMetadata.DefaultOrder, metadata.Order);

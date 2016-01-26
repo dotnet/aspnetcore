@@ -195,6 +195,9 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
                         new DisplayAttribute { Name = "value" }, metadata => metadata.DisplayName
                     },
                     {
+                        new DisplayAttribute { Prompt = "value" }, metadata => metadata.Placeholder
+                    },
+                    {
                         new DisplayFormatAttribute { DataFormatString = "value" },
                         metadata => metadata.DisplayFormatString
                     },
@@ -420,6 +423,22 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
 
             // Assert
             Assert.Equal("description", result);
+        }
+
+        [Fact]
+        public void DisplayAttribute_PromptAsPlaceholder()
+        {
+            // Arrange
+            var display = new DisplayAttribute() { Prompt = "prompt" };
+            var provider = CreateProvider(new[] { display });
+
+            var metadata = provider.GetMetadataForType(typeof(string));
+
+            // Act
+            var result = metadata.Placeholder;
+
+            // Assert
+            Assert.Equal("prompt", result);
         }
 
         [Fact]

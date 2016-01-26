@@ -84,6 +84,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             if (displayAttribute != null)
             {
                 displayMetadata.Description = () => displayAttribute.GetDescription();
+                displayMetadata.Placeholder = () => displayAttribute.GetPrompt();
             }
 
             // DisplayFormatString

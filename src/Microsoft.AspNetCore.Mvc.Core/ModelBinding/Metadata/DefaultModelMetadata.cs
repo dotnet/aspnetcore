@@ -433,6 +433,20 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         }
 
         /// <inheritdoc />
+        public override string Placeholder
+        {
+            get
+            {
+                if (DisplayMetadata.Placeholder == null)
+                {
+                    return null;
+                }
+
+                return DisplayMetadata.Placeholder();
+            }
+        }
+
+        /// <inheritdoc />
         public override ModelPropertyCollection Properties
         {
             get

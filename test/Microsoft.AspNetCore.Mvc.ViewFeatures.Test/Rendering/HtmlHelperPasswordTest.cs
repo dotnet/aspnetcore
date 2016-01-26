@@ -399,6 +399,21 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
                 HtmlContentUtilities.HtmlContentToString(passwordResult));
         }
 
+        [Fact]
+        public void PasswordFor_GeneratesPlaceholderAttribute_WhenDisplayAttributePromptIsSet()
+        {
+            // Arrange
+            var expected = @"<input id=""HtmlEncode[[Property7]]"" name=""HtmlEncode[[Property7]]"" placeholder=""HtmlEncode[[placeholder]]"" type=""HtmlEncode[[password]]"" />";
+            var model = new PasswordModel();
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(model);
+
+            // Act
+            var result = helper.PasswordFor(m => m.Property7, htmlAttributes: null);
+
+            // Assert
+            Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(result));
+        }
+
         private static ViewDataDictionary<PasswordModel> GetViewDataWithNullModelAndNonEmptyViewData()
         {
             return new ViewDataDictionary<PasswordModel>(new EmptyModelMetadataProvider())
@@ -443,6 +458,9 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
             public Dictionary<string, string> Property3 { get; } = new Dictionary<string, string>();
 
             public NestedClass Property4 { get; } = new NestedClass();
+
+            [Display(Prompt = "placeholder")]
+            public string Property7 { get; set; }
         }
 
         public class NestedClass

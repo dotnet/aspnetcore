@@ -520,6 +520,14 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 }
             }
 
+            public override string Placeholder
+            {
+                get
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
             public override ModelPropertyCollection Properties
             {
                 get

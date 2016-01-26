@@ -26,6 +26,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
                     { new DisplayAttribute() { Description = "d" }, d => d.Description(), "d" },
                     { new DisplayAttribute() { Name = "DN" }, d => d.DisplayName(), "DN" },
                     { new DisplayAttribute() { Order = 3 }, d => d.Order, 3 },
+                    { new DisplayAttribute() { Prompt = "Enter Value" }, d => d.Placeholder(), "Enter Value" },
 
                     { new DisplayColumnAttribute("Property"), d => d.SimpleDisplayProperty, "Property" },
 

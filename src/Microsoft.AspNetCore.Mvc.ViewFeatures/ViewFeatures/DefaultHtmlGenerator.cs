@@ -26,6 +26,10 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         private static readonly MethodInfo ConvertEnumFromStringMethod =
             typeof(DefaultHtmlGenerator).GetTypeInfo().GetDeclaredMethod(nameof(ConvertEnumFromString));
 
+        // See: (http://www.w3.org/TR/html5/forms.html#the-input-element)
+        private static readonly string[] _placeholderInputTypes =
+            new[] { "text", "search", "url", "tel", "email", "password", "number" };
+
         private readonly IAntiforgery _antiforgery;
         private readonly IClientModelValidatorProvider _clientModelValidatorProvider;
         private readonly IModelMetadataProvider _metadataProvider;
@@ -1134,11 +1138,23 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                     nameof(expression));
             }
 
+            var inputTypeString = GetInputTypeString(inputType);
             var tagBuilder = new TagBuilder("input");
             tagBuilder.TagRenderMode = TagRenderMode.SelfClosing;
             tagBuilder.MergeAttributes(htmlAttributes);
-            tagBuilder.MergeAttribute("type", GetInputTypeString(inputType));
+            tagBuilder.MergeAttribute("type", inputTypeString);
             tagBuilder.MergeAttribute("name", fullName, replaceExisting: true);
+
+            var suppliedTypeString = tagBuilder.Attributes["type"];
+            if (_placeholderInputTypes.Contains(suppliedTypeString))
+            {
+                modelExplorer = modelExplorer ?? ExpressionMetadataProvider.FromStringExpression(expression, viewContext.ViewData, _metadataProvider);
+                var placeholder = modelExplorer.Metadata.Placeholder;
+                if (!string.IsNullOrEmpty(placeholder))
+                {
+                    tagBuilder.MergeAttribute("placeholder", placeholder);
+                }
+            }
 
             var valueParameter = FormatValue(value, format);
             var usedModelState = false;

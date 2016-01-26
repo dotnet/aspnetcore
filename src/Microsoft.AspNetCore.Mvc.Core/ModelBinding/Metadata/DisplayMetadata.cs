@@ -116,6 +116,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         public int Order { get; set; } = 10000;
 
         /// <summary>
+        /// Gets or sets a delegate which is used to get a value for the
+        /// model's placeholder text. See <see cref="ModelMetadata.Placeholder"/>.
+        /// </summary>
+        public Func<string> Placeholder { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether or not to include in the model value in display.
         /// See <see cref="ModelMetadata.ShowForDisplay"/>
         /// </summary>
