@@ -23,7 +23,7 @@ var __modelHelper = default(DateTime);
             #pragma warning restore 219
         }
         #line hidden
-        private global::Microsoft.AspNetCore.Mvc.Razor.InputTestTagHelper __Microsoft_AspNet_Mvc_Razor_InputTestTagHelper = null;
+        private global::Microsoft.AspNetCore.Mvc.Razor.InputTestTagHelper __Microsoft_AspNetCore_Mvc_Razor_InputTestTagHelper = null;
         #line hidden
         public ASPV_testfiles_input_modelexpressiontaghelper_cshtml()
         {
@@ -43,15 +43,15 @@ var __modelHelper = default(DateTime);
         #pragma warning disable 1998
         public override async Task ExecuteAsync()
         {
-            __Microsoft_AspNet_Mvc_Razor_InputTestTagHelper = CreateTagHelper<global::Microsoft.AspNetCore.Mvc.Razor.InputTestTagHelper>();
+            __Microsoft_AspNetCore_Mvc_Razor_InputTestTagHelper = CreateTagHelper<global::Microsoft.AspNetCore.Mvc.Razor.InputTestTagHelper>();
 #line 5 "testfiles/input/modelexpressiontaghelper.cshtml"
-__Microsoft_AspNet_Mvc_Razor_InputTestTagHelper.For = CreateModelExpression(__model => __model.Now);
+__Microsoft_AspNetCore_Mvc_Razor_InputTestTagHelper.For = CreateModelExpression(__model => __model.Now);
 
 #line default
 #line hidden
-            __Microsoft_AspNet_Mvc_Razor_InputTestTagHelper = CreateTagHelper<global::Microsoft.AspNetCore.Mvc.Razor.InputTestTagHelper>();
+            __Microsoft_AspNetCore_Mvc_Razor_InputTestTagHelper = CreateTagHelper<global::Microsoft.AspNetCore.Mvc.Razor.InputTestTagHelper>();
 #line 6 "testfiles/input/modelexpressiontaghelper.cshtml"
-__Microsoft_AspNet_Mvc_Razor_InputTestTagHelper.For = CreateModelExpression(__model => Model);
+__Microsoft_AspNetCore_Mvc_Razor_InputTestTagHelper.For = CreateModelExpression(__model => Model);
 
 #line default
 #line hidden
