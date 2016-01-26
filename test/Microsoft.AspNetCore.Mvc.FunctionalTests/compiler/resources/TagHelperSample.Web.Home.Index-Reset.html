@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link href="/css/sub/blank.css" rel="stylesheet" data-test="value" />
+    <link href="site.min.css" rel="stylesheet" data-test="value" />
+<meta name="x-stylesheet-fallback-test" content="" class="fallback-test" /><script>!function(a,b,c){var d,e=document,f=e.getElementsByTagName("SCRIPT"),g=f[f.length-1].previousElementSibling,h=e.defaultView&&e.defaultView.getComputedStyle?e.defaultView.getComputedStyle(g):g.currentStyle;if(h&&h[a]!==b)for(d=0;d<c.length;d++)e.write('<link rel="stylesheet" href="'+c[d]+'"/>')}("visibility","hidden",["\/site.css"]);</script>
+    
+</head>
+<body>
+    
+
+
+<script src="/originalXX.js">
+    // 1. By removing the src attribute, the script below will execute and prevent fallback from running
+    // 2. Alternatively fix the type in the value of the src attribute
+    function foo() {
+        return 1;
+    }
+
+    function bar() {
+        document.write("<p>foo is from page</p>");
+    }
+</script>
+<script>(window.foo||document.write("<script src=\"\/fallback.js\"><\/script>"));</script>
+
+<script>bar();</script>
+
+<h2>Index</h2>
+<p>
+    <a href="/Home/Create">Create New</a>
+</p>
+
+</body>
+</html>
