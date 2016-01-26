@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.Versioning;
 using Microsoft.AspNetCore.Builder;
@@ -28,7 +27,7 @@ namespace Microsoft.AspNetCore.Hosting
         private readonly IHostingEnvironment _hostingEnvironment;
         private readonly ILoggerFactory _loggerFactory;
 
-        private IConfiguration _config;
+        private IConfiguration _config = new ConfigurationBuilder().AddInMemoryCollection().Build();
         private WebHostOptions _options;
 
         private Action<IServiceCollection> _configureServices;
@@ -40,24 +39,10 @@ namespace Microsoft.AspNetCore.Hosting
         // Only one of these should be set
         private IServerFactory _serverFactory;
 
-        private IDictionary<string, string> _settings = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-
         public WebHostBuilder()
         {
             _hostingEnvironment = new HostingEnvironment();
             _loggerFactory = new LoggerFactory();
-        }
-
-        /// <summary>
-        /// Gets the raw settings to be used by the web host. Values specified here will override 
-        /// the configuration set by <see cref="UseConfiguration(IConfiguration)"/>.
-        /// </summary>
-        public IDictionary<string, string> Settings
-        {
-            get
-            {
-                return _settings;
-            }
         }
 
         /// <summary>
@@ -68,20 +53,18 @@ namespace Microsoft.AspNetCore.Hosting
         /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
         public IWebHostBuilder UseSetting(string key, string value)
         {
-            _settings[key] = value;
+            _config[key] = value;
             return this;
         }
 
         /// <summary>
-        /// Specify the <see cref="IConfiguration"/> to be used by the web host. If no configuration is
-        /// provided to the builder, the default configuration will be used. 
+        /// Get the setting value from the configuration.
         /// </summary>
-        /// <param name="configuration">The <see cref="IConfiguration"/> to be used.</param>
-        /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
-        public IWebHostBuilder UseConfiguration(IConfiguration configuration)
+        /// <param name="key">The key of the setting to look up.</param>
+        /// <returns>The value the setting currently contains.</returns>
+        public string GetSetting(string key)
         {
-            _config = configuration;
-            return this;
+            return _config[key];
         }
 
         /// <summary>
@@ -187,15 +170,6 @@ namespace Microsoft.AspNetCore.Hosting
 
         private IServiceCollection BuildHostingServices()
         {
-            // Apply the configuration settings
-            var configuration = _config ?? WebHostConfiguration.GetDefault();
-
-            var mergedConfiguration = new ConfigurationBuilder()
-                                .Add(new IncludedConfigurationProvider(configuration))
-                                .AddInMemoryCollection(_settings)
-                                .Build();
-
-            _config = mergedConfiguration;
             _options = new WebHostOptions(_config);
 
             var services = new ServiceCollection();

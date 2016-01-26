@@ -2,10 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting.Server;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Hosting
@@ -19,20 +17,6 @@ namespace Microsoft.AspNetCore.Hosting
         /// Builds an <see cref="IWebHost"/> which hosts a web application.
         /// </summary>
         IWebHost Build();
-        
-        /// <summary>
-        /// Gets the raw settings to be used by the web host. Values specified here will override 
-        /// the configuration set by <see cref="UseConfiguration(IConfiguration)"/>.
-        /// </summary>
-        IDictionary<string, string> Settings { get; }
-
-        /// <summary>
-        /// Specify the <see cref="IConfiguration"/> to be used by the web host. If no configuration is
-        /// provided to the builder, the default configuration will be used. 
-        /// </summary>
-        /// <param name="configuration">The <see cref="IConfiguration"/> to be used.</param>
-        /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
-        IWebHostBuilder UseConfiguration(IConfiguration configuration);
 
         /// <summary>
         /// Specify the <see cref="IServerFactory"/> to be used by the web host.
@@ -63,11 +47,18 @@ namespace Microsoft.AspNetCore.Hosting
         IWebHostBuilder Configure(Action<IApplicationBuilder> configureApplication);
 
         /// <summary>
-        /// Add or replace a setting in <see cref="Settings"/>.
+        /// Add or replace a setting in the configuration.
         /// </summary>
         /// <param name="key">The key of the setting to add or replace.</param>
         /// <param name="value">The value of the setting to add or replace.</param>
         /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
         IWebHostBuilder UseSetting(string key, string value);
+
+        /// <summary>
+        /// Get the setting value from the configuration.
+        /// </summary>
+        /// <param name="key">The key of the setting to look up.</param>
+        /// <returns>The value the setting currently contains.</returns>
+        string GetSetting(string key);
     }
 }

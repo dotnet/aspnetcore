@@ -124,9 +124,10 @@ namespace Microsoft.AspNetCore.Hosting
         }
 
         [Fact]
-        public void CaptureStartupErrorsByDefault()
+        public void DefaultConfigurationCapturesStartupErrors()
         {
             var hostBuilder = new WebHostBuilder()
+                .UseDefaultConfiguration()
                 .UseServer(new TestServer())
                 .UseStartup<StartupBoom>();
 
@@ -144,6 +145,98 @@ namespace Microsoft.AspNetCore.Hosting
 
             var exception = Assert.Throws<InvalidOperationException>(() => hostBuilder.Build());
             Assert.Equal("A public method named 'ConfigureProduction' or 'Configure' could not be found in the 'Microsoft.AspNetCore.Hosting.Fakes.StartupBoom' type.", exception.Message);
+        }
+
+        [Fact]
+        public void CodeBasedSettingsCodeBasedOverride()
+        {
+            var hostBuilder = new WebHostBuilder()
+                .UseSetting(WebHostDefaults.ServerKey, "ServerA")
+                .UseSetting(WebHostDefaults.ServerKey, "ServerB")
+                .UseServer(new TestServer())
+                .UseStartup<StartupNoServices>();
+            
+            var host = (WebHost)hostBuilder.Build();
+
+            Assert.Equal("ServerB", host.ServerFactoryLocation);
+        }
+
+        [Fact]
+        public void CodeBasedSettingsConfigBasedOverride()
+        {
+            var settings = new Dictionary<string, string>
+            {
+                { WebHostDefaults.ServerKey, "ServerB" }
+            };
+
+            var config = new ConfigurationBuilder()
+                .AddInMemoryCollection(settings)
+                .Build();
+
+            var hostBuilder = new WebHostBuilder()
+                .UseSetting(WebHostDefaults.ServerKey, "ServerA")
+                .UseConfiguration(config)
+                .UseServer(new TestServer())
+                .UseStartup<StartupNoServices>();
+
+            var host = (WebHost)hostBuilder.Build();
+
+            Assert.Equal("ServerB", host.ServerFactoryLocation);
+        }
+
+        [Fact]
+        public void ConfigBasedSettingsCodeBasedOverride()
+        {
+            var settings = new Dictionary<string, string>
+            {
+                { WebHostDefaults.ServerKey, "ServerA" }
+            };
+
+            var config = new ConfigurationBuilder()
+                .AddInMemoryCollection(settings)
+                .Build();
+
+            var hostBuilder = new WebHostBuilder()
+                .UseConfiguration(config)
+                .UseSetting(WebHostDefaults.ServerKey, "ServerB")
+                .UseServer(new TestServer())
+                .UseStartup<StartupNoServices>();
+
+            var host = (WebHost)hostBuilder.Build();
+
+            Assert.Equal("ServerB", host.ServerFactoryLocation);
+        }
+
+        [Fact]
+        public void ConfigBasedSettingsConfigBasedOverride()
+        {
+            var settings = new Dictionary<string, string>
+            {
+                { WebHostDefaults.ServerKey, "ServerA" }
+            };
+
+            var config = new ConfigurationBuilder()
+                .AddInMemoryCollection(settings)
+                .Build();
+
+            var overrideSettings = new Dictionary<string, string>
+            {
+                { WebHostDefaults.ServerKey, "ServerB" }
+            };
+
+            var overrideConfig = new ConfigurationBuilder()
+                .AddInMemoryCollection(overrideSettings)
+                .Build();
+
+            var hostBuilder = new WebHostBuilder()
+                .UseConfiguration(config)
+                .UseConfiguration(overrideConfig)
+                .UseServer(new TestServer())
+                .UseStartup<StartupNoServices>();
+
+            var host = (WebHost)hostBuilder.Build();
+
+            Assert.Equal("ServerB", host.ServerFactoryLocation);
         }
 
         [Fact]

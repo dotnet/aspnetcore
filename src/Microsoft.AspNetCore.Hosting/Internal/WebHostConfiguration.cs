@@ -4,7 +4,7 @@
 using System.Collections.Generic;
 using Microsoft.Extensions.Configuration;
 
-namespace Microsoft.AspNetCore.Hosting
+namespace Microsoft.AspNetCore.Hosting.Internal
 {
     public class WebHostConfiguration
     {

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNetCore.Hosting.Internal;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.Extensions.Configuration;
 
@@ -19,6 +20,16 @@ namespace Microsoft.AspNetCore.Hosting
         public static IWebHostBuilder UseDefaultConfiguration(this IWebHostBuilder builder, string[] args)
         {
             return builder.UseConfiguration(WebHostConfiguration.GetDefault(args));
+        }
+
+        public static IWebHostBuilder UseConfiguration(this IWebHostBuilder builder, IConfiguration configuration)
+        {
+            foreach (var setting in configuration.GetFlattenedSettings())
+            {
+                builder.UseSetting(setting.Key, setting.Value);
+            }
+
+            return builder;
         }
 
         public static IWebHostBuilder UseCaptureStartupErrors(this IWebHostBuilder hostBuilder, bool captureStartupError)
