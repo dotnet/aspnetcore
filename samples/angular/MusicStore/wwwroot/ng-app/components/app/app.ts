@@ -1,7 +1,6 @@
 import * as ng from 'angular2/core';
 import * as router from 'angular2/router';
 import { Http, HTTP_BINDINGS } from 'angular2/http';
-import { NgFor } from 'angular2/common';
 import { Home } from '../public/home/home';
 import { AlbumDetails } from '../public/album-details/album-details';
 import { GenreContents } from '../public/genre-contents/genre-contents';
@@ -22,7 +21,7 @@ import * as models from '../../models/models';
 @ng.View({
     templateUrl: './ng-app/components/app/app.html',
     styleUrls: ['./ng-app/components/app/app.css'],
-    directives: [router.ROUTER_DIRECTIVES, NgFor]
+    directives: [router.ROUTER_DIRECTIVES]
 })
 export class App {
     public genres: models.Genre[];

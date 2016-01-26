@@ -1,6 +1,5 @@
 import * as ng from 'angular2/core';
 import * as router from 'angular2/router';
-import { NgFor } from 'angular2/common';
 import { Http } from 'angular2/http';
 import * as models from '../../../models/models';
 import { AlbumTile } from '../album-tile/album-tile';
@@ -10,7 +9,7 @@ import { AlbumTile } from '../album-tile/album-tile';
 })
 @ng.View({
   templateUrl: './ng-app/components/public/genre-contents/genre-contents.html',
-  directives: [NgFor, AlbumTile]
+  directives: [AlbumTile]
 })
 export class GenreContents {
     public albums: models.Album[];

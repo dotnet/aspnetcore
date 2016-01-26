@@ -1,6 +1,6 @@
 import * as ng from 'angular2/core';
 import { Observable } from 'rxjs';
-import { Control, ControlGroup, FormBuilder, Validators, NgIf, NgFor, FORM_DIRECTIVES } from 'angular2/common';
+import { Control, ControlGroup, FormBuilder, Validators, FORM_DIRECTIVES } from 'angular2/common';
 import * as router from 'angular2/router';
 import * as models from '../../../models/models';
 import { Http, HTTP_BINDINGS, Headers, Response } from 'angular2/http';
@@ -13,7 +13,7 @@ import * as AspNet from 'angular2-aspnet';
 })
 @ng.View({
     templateUrl: './ng-app/components/admin/album-edit/album-edit.html',
-    directives: [router.ROUTER_DIRECTIVES, NgIf, NgFor, AlbumDeletePrompt, FormField, FORM_DIRECTIVES]
+    directives: [router.ROUTER_DIRECTIVES, AlbumDeletePrompt, FormField, FORM_DIRECTIVES]
 })
 export class AlbumEdit {
     public form: ControlGroup;

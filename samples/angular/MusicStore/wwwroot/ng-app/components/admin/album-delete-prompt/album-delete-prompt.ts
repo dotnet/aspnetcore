@@ -1,13 +1,11 @@
 import * as ng from 'angular2/core';
-import { NgIf } from 'angular2/common';
 import * as models from '../../../models/models';
 
 @ng.Component({
   selector: 'album-delete-prompt'
 })
 @ng.View({
-  templateUrl: './ng-app/components/admin/album-delete-prompt/album-delete-prompt.html',
-  directives: [NgIf]
+  templateUrl: './ng-app/components/admin/album-delete-prompt/album-delete-prompt.html'
 })
 export class AlbumDeletePrompt {
     public album: models.Album;
