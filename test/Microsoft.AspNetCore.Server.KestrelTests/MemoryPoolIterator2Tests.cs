@@ -21,13 +21,19 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         }
 
         [Fact]
-        public void FindFirstByte()
+        public void FindFirstEqualByte()
         {
-            var bytes = new byte[] {
-                0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-                0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff };
+            var bytes = Enumerable.Repeat<byte>(0xff, Vector<byte>.Count).ToArray();
             for (int i = 0; i < Vector<byte>.Count; i++)
             {
+                Vector<byte> vector = new Vector<byte>(bytes);
+                Assert.Equal(i, MemoryPoolIterator2.FindFirstEqualByte(ref vector));
+                bytes[i] = 0;
+            }
+
+            for (int i = 0; i < Vector<byte>.Count; i++)
+            {
+                bytes[i] = 1;
                 Vector<byte> vector = new Vector<byte>(bytes);
                 Assert.Equal(i, MemoryPoolIterator2.FindFirstEqualByte(ref vector));
                 bytes[i] = 0;
@@ -35,13 +41,19 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         }
 
         [Fact]
-        public void _FindFirstByte()
+        public void FindFirstEqualByteSlow()
         {
-            var bytes = new byte[] {
-                0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-                0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff };
+            var bytes = Enumerable.Repeat<byte>(0xff, Vector<byte>.Count).ToArray();
             for (int i = 0; i < Vector<byte>.Count; i++)
             {
+                Vector<byte> vector = new Vector<byte>(bytes);
+                Assert.Equal(i, MemoryPoolIterator2.FindFirstEqualByteSlow(ref vector));
+                bytes[i] = 0;
+            }
+
+            for (int i = 0; i < Vector<byte>.Count; i++)
+            {
+                bytes[i] = 1;
                 Vector<byte> vector = new Vector<byte>(bytes);
                 Assert.Equal(i, MemoryPoolIterator2.FindFirstEqualByteSlow(ref vector));
                 bytes[i] = 0;
