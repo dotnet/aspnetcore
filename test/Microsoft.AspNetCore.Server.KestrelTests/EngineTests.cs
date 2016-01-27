@@ -209,16 +209,16 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
                 using (var connection = new TestConnection())
                 {
-                    var requestData = 
+                    var requestData =
                         Enumerable.Repeat("GET / HTTP/1.1\r\n", loopCount)
                             .Concat(new[] { "GET / HTTP/1.1\r\nConnection: close\r\n\r\nGoodbye" });
 
-                    var responseData = 
+                    var responseData =
                         Enumerable.Repeat("HTTP/1.1 200 OK\r\nContent-Length: 0\r\n", loopCount)
                             .Concat(new[] { "HTTP/1.1 200 OK\r\nConnection: close\r\n\r\nGoodbye" });
 
                     await connection.SendEnd(requestData.ToArray());
-                    
+
                     await connection.ReceiveEnd(responseData.ToArray());
                 }
 
@@ -475,7 +475,6 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             {
                 var socket = new Socket(SocketType.Stream, ProtocolType.Tcp);
                 socket.Connect(IPAddress.Loopback, 54321);
-                await Task.Delay(200);
                 socket.Dispose();
 
                 await Task.Delay(200);
@@ -1096,9 +1095,8 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Test hangs after execution on Mono.")]
         public async Task FailedWritesResultInAbortedRequest(ServiceContext testContext)
         {
-            const int resetEventTimeout = 2000;
             // This should match _maxBytesPreCompleted in SocketOutput
-            const int maxBytesPreCompleted = 65536;
+            var maxBytesPreCompleted = 65536;
             // Ensure string is long enough to disable write-behind buffering
             var largeString = new string('a', maxBytesPreCompleted + 1);
 
@@ -1122,9 +1120,9 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 try
                 {
                     // Ensure write is long enough to disable write-behind buffering
-                    for (int i = 0; i < 100; i++)
+                    for (int i = 0; i < 10; i++)
                     {
-                        await response.WriteAsync(largeString, lifetime.RequestAborted).ConfigureAwait(false);
+                        await response.WriteAsync(largeString, lifetime.RequestAborted);
                     }
                 }
                 catch (Exception ex)
@@ -1142,7 +1140,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "POST / HTTP/1.1",
                         "Content-Length: 5",
                         "",
-                        "Hello").ConfigureAwait(false);
+                        "Hello");
                     // Don't wait to receive the response. Just close the socket.
                 }
 
@@ -1151,7 +1149,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 // Write failed
                 await Assert.ThrowsAsync<TaskCanceledException>(async () => await writeTcs.Task);
                 // RequestAborted tripped
-                Assert.True(registrationWh.Wait(resetEventTimeout));
+                Assert.True(registrationWh.Wait(1000));
             }
         }
 

@@ -49,7 +49,8 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 var ch = text[index];
                 await writer.WriteAsync(ch);
                 await writer.FlushAsync();
-                await Task.Delay(TimeSpan.FromMilliseconds(5));
+                // Re-add delay to help find socket input consumption bugs more consistently
+                //await Task.Delay(TimeSpan.FromMilliseconds(5));
             }
             writer.Flush();
             _stream.Flush();

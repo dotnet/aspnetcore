@@ -474,7 +474,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
         void ISocketOutput.Write(ArraySegment<byte> buffer, bool chunk)
         {
-            WriteAsync(buffer, CancellationToken.None, chunk, isSync: true).GetAwaiter().GetResult();
+            WriteAsync(buffer, default(CancellationToken), chunk, isSync: true).GetAwaiter().GetResult();
         }
 
         Task ISocketOutput.WriteAsync(ArraySegment<byte> buffer, bool chunk, CancellationToken cancellationToken)

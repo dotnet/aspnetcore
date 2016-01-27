@@ -312,7 +312,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 }
             }
 
-            await FlushAsync(CancellationToken.None);
+            await FlushAsync(default(CancellationToken));
 
             return DuplexStream;
         }

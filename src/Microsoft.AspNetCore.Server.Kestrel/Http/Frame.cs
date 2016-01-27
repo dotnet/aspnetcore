@@ -262,7 +262,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                     Task.Factory.StartNew(
                         (o) => ((Frame)o).RequestProcessingAsync(),
                         this,
-                        CancellationToken.None,
+                        default(CancellationToken),
                         TaskCreationOptions.DenyChildAttach,
                         TaskScheduler.Default);
             }

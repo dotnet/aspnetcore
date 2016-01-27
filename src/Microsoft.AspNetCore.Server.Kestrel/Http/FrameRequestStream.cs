@@ -59,9 +59,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 #if NET451
         public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
         {
-            ValidateState(CancellationToken.None);
+            ValidateState(default(CancellationToken));
 
-            var task = ReadAsync(buffer, offset, count, CancellationToken.None, state);
+            var task = ReadAsync(buffer, offset, count, default(CancellationToken), state);
             if (callback != null)
             {
                 task.ContinueWith(t => callback.Invoke(t));

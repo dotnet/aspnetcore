@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
         public override void Flush()
         {
-            ValidateState(CancellationToken.None);
+            ValidateState(default(CancellationToken));
 
             _context.FrameControl.Flush();
         }
@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
         public override void Write(byte[] buffer, int offset, int count)
         {
-            ValidateState(CancellationToken.None);
+            ValidateState(default(CancellationToken));
 
             _context.FrameControl.Write(new ArraySegment<byte>(buffer, offset, count));
         }
