@@ -7,21 +7,20 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Authorization
 {
     public class DefaultAuthorizationService : IAuthorizationService
     {
+        private readonly IAuthorizationPolicyProvider _policyProvider;
         private readonly IList<IAuthorizationHandler> _handlers;
-        private readonly AuthorizationOptions _options;
         private readonly ILogger _logger;
 
-        public DefaultAuthorizationService(IOptions<AuthorizationOptions> options, IEnumerable<IAuthorizationHandler> handlers, ILogger<DefaultAuthorizationService> logger)
+        public DefaultAuthorizationService(IAuthorizationPolicyProvider policyProvider, IEnumerable<IAuthorizationHandler> handlers, ILogger<DefaultAuthorizationService> logger)
         {
-            if (options == null)
+            if (policyProvider == null)
             {
-                throw new ArgumentNullException(nameof(options));
+                throw new ArgumentNullException(nameof(policyProvider));
             }
             if (handlers == null)
             {
@@ -33,7 +32,7 @@ namespace Microsoft.AspNetCore.Authorization
             }
 
             _handlers = handlers.ToArray();
-            _options = options.Value;
+            _policyProvider = policyProvider;
             _logger = logger;
         }
 
@@ -62,19 +61,19 @@ namespace Microsoft.AspNetCore.Authorization
             }
         }
 
-        public Task<bool> AuthorizeAsync(ClaimsPrincipal user, object resource, string policyName)
+        public async Task<bool> AuthorizeAsync(ClaimsPrincipal user, object resource, string policyName)
         {
             if (policyName == null)
             {
                 throw new ArgumentNullException(nameof(policyName));
             }
 
-            var policy = _options.GetPolicy(policyName);
+            var policy = await _policyProvider.GetPolicyAsync(policyName);
             if (policy == null)
             {
                 throw new InvalidOperationException($"No policy found: {policyName}.");
             }
-            return this.AuthorizeAsync(user, resource, policy);
+            return await this.AuthorizeAsync(user, resource, policy);
         }
     }
 }

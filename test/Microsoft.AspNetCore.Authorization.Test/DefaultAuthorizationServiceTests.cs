@@ -922,5 +922,64 @@ namespace Microsoft.AspNetCore.Authorization.Test
             // Assert
             Assert.True(allowed);
         }
+
+        public class StaticPolicyProvider : IAuthorizationPolicyProvider
+        {
+            public Task<AuthorizationPolicy> GetPolicyAsync(string policyName)
+            {
+                return Task.FromResult(new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build());
+            }
+        }
+
+        [Fact]
+        public async Task CanReplaceDefaultPolicyProvider()
+        {
+            var authorizationService = BuildAuthorizationService(services =>
+            {
+                // This will ignore the policy options
+                services.AddSingleton<IAuthorizationPolicyProvider, StaticPolicyProvider>();
+                services.AddAuthorization(options =>
+                {
+                    options.AddPolicy("Basic", policy => policy.RequireAssertion(context => true));
+                });
+            });
+            var user = new ClaimsPrincipal();
+
+            // Act
+            var allowed = await authorizationService.AuthorizeAsync(user, "Basic");
+
+            // Assert
+            Assert.False(allowed);
+        }
+
+        public class DynamicPolicyProvider : IAuthorizationPolicyProvider
+        {
+            public Task<AuthorizationPolicy> GetPolicyAsync(string policyName)
+            {
+                return Task.FromResult(new AuthorizationPolicyBuilder().RequireClaim(policyName).Build());
+            }
+        }
+
+        [Fact]
+        public async Task CanUseDynamicPolicyProvider()
+        {
+            var authorizationService = BuildAuthorizationService(services =>
+            {
+                // This will ignore the policy options
+                services.AddSingleton<IAuthorizationPolicyProvider, DynamicPolicyProvider>();
+                services.AddAuthorization(options => { });
+            });
+            var id = new ClaimsIdentity();
+            id.AddClaim(new Claim("1", "1"));
+            id.AddClaim(new Claim("2", "2"));
+            var user = new ClaimsPrincipal(id);
+
+            // Act
+            // Assert
+            Assert.False(await authorizationService.AuthorizeAsync(user, "0"));
+            Assert.True(await authorizationService.AuthorizeAsync(user, "1"));
+            Assert.True(await authorizationService.AuthorizeAsync(user, "2"));
+            Assert.False(await authorizationService.AuthorizeAsync(user, "3"));
+        }
     }
 }
