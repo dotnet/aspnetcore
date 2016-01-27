@@ -48,10 +48,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Filter
         {
             if (copyAsyncTask.IsFaulted)
             {
+                SocketInput.AbortAwaiting();
                 _log.LogError(0, copyAsyncTask.Exception, "FilteredStreamAdapter.CopyToAsync");
             }
             else if (copyAsyncTask.IsCanceled)
             {
+                SocketInput.AbortAwaiting();
                 _log.LogError("FilteredStreamAdapter.CopyToAsync canceled.");
             }
 

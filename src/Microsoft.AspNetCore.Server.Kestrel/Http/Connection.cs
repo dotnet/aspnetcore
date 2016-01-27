@@ -123,6 +123,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             }
         }
 
+        public void OnSocketClosed()
+        {
+            _rawSocketInput.Dispose();
+
+            // If a connection filter was applied there will be two SocketInputs.
+            // If a connection filter failed, SocketInput will be null.
+            if (SocketInput != null && SocketInput != _rawSocketInput)
+            {
+                SocketInput.Dispose();
+            }
+        }
+
         private void ApplyConnectionFilter()
         {
             if (_filterContext.Connection != _libuvStream)

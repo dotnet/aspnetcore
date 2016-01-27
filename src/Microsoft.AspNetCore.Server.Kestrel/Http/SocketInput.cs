@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Http
 {
-    public class SocketInput : ICriticalNotifyCompletion
+    public class SocketInput : ICriticalNotifyCompletion, IDisposable
     {
         private static readonly Action _awaitableIsCompleted = () => { };
         private static readonly Action _awaitableIsNotCompleted = () => { };
@@ -245,6 +245,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 }
                 throw new IOException(error.Message, error);
             }
+        }
+
+        public void Dispose()
+        {
+            AbortAwaiting();
+
+            // Return all blocks
+            var block = _head;
+            while (block != null)
+            {
+                var returnBlock = block;
+                block = block.Next;
+
+                returnBlock.Pool.Return(returnBlock);
+            }
+
+            _head = null;
+            _tail = null;
         }
     }
 }

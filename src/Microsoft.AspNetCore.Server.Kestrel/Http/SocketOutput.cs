@@ -614,17 +614,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             {
                 if (SocketDisconnect == false || Self._socket.IsClosed)
                 {
-                    CompleteOnUvThread();
+                    CompleteWithContextLock();
                     return;
                 }
 
                 Self._socket.Dispose();
+                Self._connection.OnSocketClosed();
                 Self.ReturnAllBlocks();
                 Self._log.ConnectionStop(Self._connectionId);
-                CompleteOnUvThread();
+                CompleteWithContextLock();
             }
 
-            public void CompleteOnUvThread()
+            public void CompleteWithContextLock()
             {
                 if (Monitor.TryEnter(Self._contextLock))
                 {
