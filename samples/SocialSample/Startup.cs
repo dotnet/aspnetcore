@@ -133,18 +133,18 @@ namespace CookieSample
             The MicrosoftAccount service has restrictions that prevent the use of http://localhost:54540/ for test applications.
             As such, here is how to change this sample to uses http://mssecsample.localhost.this:54540/ instead.
 
-            Edit the Project.json file and replace http://localhost:54540/ with http://mssecsample.localhost.this:54540/.
+            Edit the hosting.json file and add "server.urls": "http://mssecsample.localhost.this:54540/".
 
             From an admin command console first enter:
              notepad C:\Windows\System32\drivers\etc\hosts
             and add this to the file, save, and exit (and reboot?):
              127.0.0.1 MsSecSample.localhost.this
 
-            Then you can choose to run the app as admin (see below) or add the following ACL as admin:
+            [WebListener] Then you can choose to run the app as admin (see below) or add the following ACL as admin:
              netsh http add urlacl url=http://mssecsample.localhost.this:54540/ user=[domain\user]
 
             The sample app can then be run via:
-             dnx . web
+             dnx web
             */
             app.UseOAuthAuthentication(new OAuthOptions
             {

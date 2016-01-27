@@ -67,16 +67,6 @@ namespace Microsoft.AspNetCore.Authentication.Google
             {
                 throw new ArgumentNullException(nameof(options));
             }
-
-            if (Options.Scope.Count == 0)
-            {
-                // Google OAuth 2.0 asks for non-empty scope. If user didn't set it, set default scope to 
-                // "openid profile email" to get basic user information.
-                // TODO: Should we just add these by default when we create the Options?
-                Options.Scope.Add("openid");
-                Options.Scope.Add("profile");
-                Options.Scope.Add("email");
-            }
         }
 
         /// <summary>

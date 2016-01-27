@@ -65,13 +65,6 @@ namespace Microsoft.AspNetCore.Authentication.MicrosoftAccount
             {
                 throw new ArgumentNullException(nameof(options));
             }
-
-            if (Options.Scope.Count == 0)
-            {
-                // LiveID requires a scope string, so if the user didn't set one we go for the least possible.
-                // TODO: Should we just add these by default when we create the Options?
-                Options.Scope.Add("wl.basic");
-            }
         }
 
         /// <summary>

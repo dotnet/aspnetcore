@@ -22,6 +22,9 @@ namespace Microsoft.AspNetCore.Builder
             AuthorizationEndpoint = GoogleDefaults.AuthorizationEndpoint;
             TokenEndpoint = GoogleDefaults.TokenEndpoint;
             UserInformationEndpoint = GoogleDefaults.UserInformationEndpoint;
+            Scope.Add("openid");
+            Scope.Add("profile");
+            Scope.Add("email");
         }
 
         /// <summary>

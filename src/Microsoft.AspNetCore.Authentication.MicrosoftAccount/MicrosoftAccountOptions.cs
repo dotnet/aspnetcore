@@ -22,6 +22,7 @@ namespace Microsoft.AspNetCore.Builder
             AuthorizationEndpoint = MicrosoftAccountDefaults.AuthorizationEndpoint;
             TokenEndpoint = MicrosoftAccountDefaults.TokenEndpoint;
             UserInformationEndpoint = MicrosoftAccountDefaults.UserInformationEndpoint;
+            Scope.Add("wl.basic");
         }
     }
 }
