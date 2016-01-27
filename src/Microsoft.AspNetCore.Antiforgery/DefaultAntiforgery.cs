@@ -3,6 +3,8 @@
 
 using System;
 using System.Diagnostics;
+using System.IO;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
@@ -44,18 +46,7 @@ namespace Microsoft.AspNetCore.Antiforgery
             CheckSSLConfig(context);
 
             var tokenSet = GetAndStoreTokens(context);
-
-            // Though RequestToken normally contains only US-ASCII letters, numbers, '-', and '_', must assume the
-            // IAntiforgeryTokenSerializer implementation has been overridden. Similarly, users may choose a
-            // FormFieldName containing almost any character.
-            var content = new HtmlContentBuilder()
-                .AppendHtml("<input name=\"")
-                .Append(_options.FormFieldName)
-                .AppendHtml("\" type=\"hidden\" value=\"")
-                .Append(tokenSet.RequestToken)
-                .AppendHtml("\" />");
-
-            return content;
+            return new InputContent(_options.FormFieldName, tokenSet.RequestToken);
         }
 
         /// <inheritdoc />
@@ -252,6 +243,43 @@ namespace Microsoft.AspNetCore.Antiforgery
             public AntiforgeryToken CookieToken { get; set; }
 
             public bool IsNewCookieToken { get; set; }
+        }
+
+        private class InputContent : IHtmlContent
+        {
+            private readonly string _fieldName;
+            private readonly string _requestToken;
+
+            public InputContent(string fieldName, string requestToken)
+            {
+                _fieldName = fieldName;
+                _requestToken = requestToken;
+            }
+
+            // Though _requestToken normally contains only US-ASCII letters, numbers, '-', and '_', must assume the
+            // IAntiforgeryTokenSerializer implementation has been overridden. Similarly, users may choose a
+            // _fieldName containing almost any character.
+            public void WriteTo(TextWriter writer, HtmlEncoder encoder)
+            {
+                var builder = writer as IHtmlContentBuilder;
+                if (builder != null)
+                {
+                    // If possible, defer encoding until we're writing to the response.
+                    // But there's little reason to keep this IHtmlContent instance around.
+                    builder
+                        .AppendHtml("<input name=\"")
+                        .Append(_fieldName)
+                        .AppendHtml("\" type=\"hidden\" value=\"")
+                        .Append(_requestToken)
+                        .AppendHtml("\" />");
+                }
+
+                writer.Write("<input name=\"");
+                encoder.Encode(writer, _fieldName);
+                writer.Write("\" type=\"hidden\" value=\"");
+                encoder.Encode(writer, _requestToken);
+                writer.Write("\" />");
+            }
         }
     }
 }
