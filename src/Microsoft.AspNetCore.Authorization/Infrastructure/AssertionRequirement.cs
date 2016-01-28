@@ -2,17 +2,28 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Authorization.Infrastructure
 {
-    public class AssertionRequirement : AuthorizationHandler<AssertionRequirement>, IAuthorizationRequirement
+    public class AssertionRequirement : IAuthorizationHandler, IAuthorizationRequirement
     {
         /// <summary>
         /// Function that is called to handle this requirement
         /// </summary>
-        public Func<AuthorizationContext, bool> Handler { get; }
+        public Func<AuthorizationContext, Task<bool>> Handler { get; }
 
         public AssertionRequirement(Func<AuthorizationContext, bool> assert)
+        {
+            if (assert == null)
+            {
+                throw new ArgumentNullException(nameof(assert));
+            }
+
+            Handler = context => Task.FromResult(assert(context));
+        }
+
+        public AssertionRequirement(Func<AuthorizationContext, Task<bool>> assert)
         {
             if (assert == null)
             {
@@ -22,11 +33,11 @@ namespace Microsoft.AspNetCore.Authorization.Infrastructure
             Handler = assert;
         }
 
-        protected override void Handle(AuthorizationContext context, AssertionRequirement requirement)
+        public async Task HandleAsync(AuthorizationContext context)
         {
-            if (Handler(context))
+            if (await Handler(context))
             {
-                context.Succeed(requirement);
+                context.Succeed(this);
             }
         }
     }

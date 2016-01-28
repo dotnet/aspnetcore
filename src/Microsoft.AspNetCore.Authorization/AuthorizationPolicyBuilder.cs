@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization.Infrastructure;
 
 namespace Microsoft.AspNetCore.Authorization
@@ -129,6 +130,22 @@ namespace Microsoft.AspNetCore.Authorization
         /// <param name="assert">Function that must return true</param>
         /// <returns></returns>
         public AuthorizationPolicyBuilder RequireAssertion(Func<AuthorizationContext, bool> assert)
+        {
+            if (assert == null)
+            {
+                throw new ArgumentNullException(nameof(assert));
+            }
+
+            Requirements.Add(new AssertionRequirement(assert));
+            return this;
+        }
+
+        /// <summary>
+        /// Requires that this Function returns true
+        /// </summary>
+        /// <param name="assert">Function that must return true</param>
+        /// <returns></returns>
+        public AuthorizationPolicyBuilder RequireAssertion(Func<AuthorizationContext, Task<bool>> assert)
         {
             if (assert == null)
             {

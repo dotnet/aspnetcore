@@ -923,6 +923,25 @@ namespace Microsoft.AspNetCore.Authorization.Test
             Assert.True(allowed);
         }
 
+        [Fact]
+        public async Task CanAuthorizeWithAsyncAssertionRequirement()
+        {
+            var authorizationService = BuildAuthorizationService(services =>
+            {
+                services.AddAuthorization(options =>
+                {
+                    options.AddPolicy("Basic", policy => policy.RequireAssertion(context => Task.FromResult(true)));
+                });
+            });
+            var user = new ClaimsPrincipal();
+
+            // Act
+            var allowed = await authorizationService.AuthorizeAsync(user, "Basic");
+
+            // Assert
+            Assert.True(allowed);
+        }
+
         public class StaticPolicyProvider : IAuthorizationPolicyProvider
         {
             public Task<AuthorizationPolicy> GetPolicyAsync(string policyName)
