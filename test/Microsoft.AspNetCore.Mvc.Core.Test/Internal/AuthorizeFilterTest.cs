@@ -126,8 +126,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var authorizationContext = GetAuthorizationContext(services =>
             {
                 services.AddOptions();
-                services.AddTransient<IAuthorizationService, DefaultAuthorizationService>();
+                services.AddAuthorization();
+
+                services.Remove(services.Where(sd => sd.ServiceType == typeof(IAuthorizationHandler)).Single());
             });
+
             // Act
             await authorizeFilter.OnAuthorizationAsync(authorizationContext);
 
