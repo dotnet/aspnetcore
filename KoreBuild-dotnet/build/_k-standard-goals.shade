@@ -102,6 +102,18 @@ default NUGET_FEED = 'https://api.nuget.org/v3/index.json'
         File.Copy(nupkg, Path.Combine(BUILD_DIR, Path.GetFileName(nupkg)), true);
     }
   }
+  
+#build-test target='compile' if='Directory.Exists("test") && !BuildSrcOnly'
+  @{
+    var projectFiles = Files.Include("test/**/project.json").ToList();
+    projectFiles.ForEach(projectFile => DotnetBuild(projectFile, Configuration));
+  }
+
+#build-samples target='compile' if='Directory.Exists("samples") && !BuildSrcOnly'
+  @{
+    var projectFiles = Files.Include("samples/**/project.json").ToList();
+    projectFiles.ForEach(projectFile => DotnetBuild(projectFile, Configuration));
+  }
 
 #native-compile target='compile' if='!IsLinux && Directory.Exists(Path.Combine(BASE_DIR, "src"))'
   var programFilesX86 = '${Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86)}'
@@ -164,12 +176,6 @@ default NUGET_FEED = 'https://api.nuget.org/v3/index.json'
     projectFiles.ForEach(projectFile => XunitTest(projectFile, testParallel: false));
     //projectFiles.ForEach(projectFile => DotnetTest(projectFile, testParallel: false));
     projectFiles.ForEach(projectFile => DnxTest(projectFile, testParallel: false));
-  }
-
-#build-samples target='test' if='Directory.Exists("samples")'
-  @{
-    var projectFiles = Files.Include("samples/**/project.json").ToList();
-    projectFiles.ForEach(projectFile => DotnetBuild(projectFile, Configuration));
   }
 
 #make-roslyn-fast
@@ -274,6 +280,11 @@ functions @{
     bool ShouldVerifyNupkgs
     {
       get { return E("KOREBUILD_VERIFY_NUPKGS") == "1"; }
+    }
+    
+    bool BuildSrcOnly 
+    {
+      get { return E("KOREBUILD_BUILD_SRC_ONLY") == "1"; }
     }
 }
 
