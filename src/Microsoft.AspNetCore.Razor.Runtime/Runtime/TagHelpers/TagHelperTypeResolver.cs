@@ -83,9 +83,19 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
             return assembly.ExportedTypes.Select(type => type.GetTypeInfo());
         }
 
-        // Internal for testing.
-        internal virtual bool IsTagHelper(TypeInfo typeInfo)
+        /// <summary>
+        /// Indicates if a <see cref="TypeInfo"/> should be treated as a tag helper.
+        /// </summary>
+        /// <param name="typeInfo">The <see cref="TypeInfo"/> to inspect.</param>
+        /// <returns><c>true</c> if <paramref name="typeInfo"/> should be treated as a tag helper; 
+        /// <c>false</c> otherwise</returns>
+        protected virtual bool IsTagHelper(TypeInfo typeInfo)
         {
+            if (typeInfo == null)
+            {
+                throw new ArgumentNullException(nameof(typeInfo));
+            }
+
             return
                 !typeInfo.IsNested &&
                 typeInfo.IsPublic &&
