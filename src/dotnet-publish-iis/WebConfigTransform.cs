@@ -64,6 +64,25 @@ namespace Microsoft.AspNetCore.Tools.PublishIIS
             SetAttributeValueIfEmpty(httpPlatformElement, "stdoutLogEnabled", "false");
             SetAttributeValueIfEmpty(httpPlatformElement, "stdoutLogFile", logPath);
             SetAttributeValueIfEmpty(httpPlatformElement, "startupTimeLimit", "3600");
+
+            AddApplicationBase(httpPlatformElement);
+        }
+
+        private static void AddApplicationBase(XElement httpPlatformElement)
+        {
+            const string appBaseKeyName = "ASPNET_APPLICATIONBASE";
+
+            var envVariables = GetOrCreateChild(httpPlatformElement, "environmentVariables");
+            var appBaseElement = envVariables.Elements("environmentVariable").SingleOrDefault(e =>
+                string.Equals((string)e.Attribute("name"), appBaseKeyName, StringComparison.CurrentCultureIgnoreCase));
+
+            if (appBaseElement == null)
+            {
+                appBaseElement = new XElement("environmentVariable", new XAttribute("name", appBaseKeyName));
+                envVariables.AddFirst(appBaseElement);
+            }
+
+            appBaseElement.SetAttributeValue("value", ".");
         }
 
         private static XElement GetOrCreateChild(XElement parent, string childName)

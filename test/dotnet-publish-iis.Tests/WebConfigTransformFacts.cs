@@ -6,13 +6,17 @@ namespace Microsoft.AspNetCore.Tools.PublishIIS.Tests
 {
     public class WebConfigTransformFacts
     {
-        private  XDocument WebConfigTemplate => XDocument.Parse(
+        private XDocument WebConfigTemplate => XDocument.Parse(
 @"<configuration>
   <system.webServer>
     <handlers>
       <add name=""httpPlatformHandler"" path=""*"" verb=""*"" modules=""httpPlatformHandler"" resourceType=""Unspecified""/>
     </handlers>
-    <httpPlatform processPath=""..\test.exe"" stdoutLogEnabled=""false"" stdoutLogFile=""..\logs\stdout.log"" startupTimeLimit=""3600""/>
+    <httpPlatform processPath=""..\test.exe"" stdoutLogEnabled=""false"" stdoutLogFile=""..\logs\stdout.log"" startupTimeLimit=""3600"">
+      <environmentVariables>
+        <environmentVariable name=""ASPNET_APPLICATIONBASE"" value=""."" />
+      </environmentVariables>
+    </httpPlatform>
   </system.webServer>
 </configuration>");
 
@@ -31,14 +35,16 @@ namespace Microsoft.AspNetCore.Tools.PublishIIS.Tests
         }
 
         [Theory]
-        [InlineData(new object[] { new[] {"system.webServer"}})]
-        [InlineData(new object[] { new[] {"add"}})]
-        [InlineData(new object[] { new[] {"handlers"}})]
-        [InlineData(new object[] { new[] {"httpPlatform"}})]
-        [InlineData(new object[] { new[] {"handlers", "httpPlatform"}})]
+        [InlineData(new object[] { new[] { "system.webServer" } })]
+        [InlineData(new object[] { new[] { "add" } })]
+        [InlineData(new object[] { new[] { "handlers" } })]
+        [InlineData(new object[] { new[] { "httpPlatform" } })]
+        [InlineData(new object[] { new[] { "environmentVariables" } })]
+        [InlineData(new object[] { new[] { "environmentVariable" } })]
+        [InlineData(new object[] { new[] { "handlers", "httpPlatform", "environmentVariables" } })]
         public void WebConfigTransform_adds_missing_elements(string[] elementNames)
         {
-            var input = new XDocument(WebConfigTemplate);
+            var input = WebConfigTemplate;
             foreach (var elementName in elementNames)
             {
                 input.Descendants(elementName).Remove();
@@ -50,7 +56,7 @@ namespace Microsoft.AspNetCore.Tools.PublishIIS.Tests
 
         [Theory]
         [InlineData("add", "path", "test")]
-        [InlineData("add", "verb","test")]
+        [InlineData("add", "verb", "test")]
         [InlineData("add", "modules", "mods")]
         [InlineData("add", "resourceType", "Either")]
         [InlineData("httpPlatform", "stdoutLogEnabled", "true")]
@@ -59,7 +65,7 @@ namespace Microsoft.AspNetCore.Tools.PublishIIS.Tests
         [InlineData("httpPlatform", "stdoutLogFile", "logfile.log")]
         public void WebConfigTransform_wont_override_custom_values(string elementName, string attributeName, string attributeValue)
         {
-            var input = new XDocument(WebConfigTemplate);
+            var input = WebConfigTemplate;
             input.Descendants(elementName).Single().SetAttributeValue(attributeName, attributeValue);
 
             var output = WebConfigTransform.Transform(input, "test.exe", configureForAzure: false);
@@ -79,7 +85,7 @@ namespace Microsoft.AspNetCore.Tools.PublishIIS.Tests
         [Fact]
         public void WebConfigTransform_fixes_httpPlatformHandler_casing()
         {
-            var input = new XDocument(WebConfigTemplate);
+            var input = WebConfigTemplate;
             input.Descendants("add").Single().SetAttributeValue("name", "httpplatformhandler");
 
             Assert.True(XNode.DeepEquals(WebConfigTemplate,
@@ -89,22 +95,21 @@ namespace Microsoft.AspNetCore.Tools.PublishIIS.Tests
         [Fact]
         public void WebConfigTransform_does_not_remove_children_of_httpPlatform_element()
         {
-            var envVarsElement =
-                new XElement("environmentVariables",
-                    new XElement("environmentVariable", new XAttribute("name", "ENVVAR"), new XAttribute("value", "123")));
+            var envVarElement =
+                new XElement("environmentVariable", new XAttribute("name", "ENVVAR"), new XAttribute("value", "123"));
 
-            var input = new XDocument(WebConfigTemplate);
-            input.Descendants("httpPlatform").Single().Add(envVarsElement);
+            var input = WebConfigTemplate;
+            input.Descendants("environmentVariable").Single().Add(envVarElement);
 
-            Assert.True(XNode.DeepEquals(envVarsElement,
+            Assert.True(XNode.DeepEquals(envVarElement,
                 WebConfigTransform.Transform(input, "app.exe", configureForAzure: false)
-                    .Descendants("httpPlatform").Elements().Single()));
+                    .Descendants("environmentVariable").SingleOrDefault(e => (string)e.Attribute("name") == "ENVVAR")));
         }
 
         [Fact]
         public void WebConfigTransform_adds_stdoutLogEnabled_if_attribute_is_missing()
         {
-            var input = new XDocument(WebConfigTemplate);
+            var input = WebConfigTemplate;
             input.Descendants("httpPlatform").Attributes("stdoutLogEnabled").Remove();
 
             Assert.Equal(
@@ -119,7 +124,7 @@ namespace Microsoft.AspNetCore.Tools.PublishIIS.Tests
         [InlineData("true")]
         public void WebConfigTransform_adds_stdoutLogFile_if_attribute_is_missing(string stdoutLogFile)
         {
-            var input = new XDocument(WebConfigTemplate);
+            var input = WebConfigTemplate;
 
             var httpPlatformElement = input.Descendants("httpPlatform").Single();
             httpPlatformElement.Attribute("stdoutLogEnabled").Remove();
@@ -140,7 +145,7 @@ namespace Microsoft.AspNetCore.Tools.PublishIIS.Tests
         [InlineData("false")]
         public void WebConfigTransform_does_not_change_existing_stdoutLogEnabled(string stdoutLogEnabledValue)
         {
-            var input = new XDocument(WebConfigTemplate);
+            var input = WebConfigTemplate;
             var httpPlatformElement = input.Descendants("httpPlatform").Single();
 
             httpPlatformElement.SetAttributeValue("stdoutLogFile", "mylog.txt");
@@ -159,18 +164,31 @@ namespace Microsoft.AspNetCore.Tools.PublishIIS.Tests
         [Fact]
         public void WebConfigTransform_correctly_configures_for_Azure()
         {
-            var input = new XDocument(WebConfigTemplate);
+            var input = WebConfigTemplate;
             input.Descendants("httpPlatform").Attributes().Remove();
+
+            var httPlatformElement = WebConfigTransform.Transform(input, "test.exe", configureForAzure: true)
+                .Descendants("httpPlatform").Single();
+            httPlatformElement.Elements().Remove();
 
             Assert.True(XNode.DeepEquals(
                 XDocument.Parse(@"<httpPlatform processPath=""%home%\site\test.exe"" stdoutLogEnabled=""false""
                     stdoutLogFile=""\\?\%home%\LogFiles\stdout.log"" startupTimeLimit=""3600""/>").Root,
-                WebConfigTransform.Transform(input, "test.exe", configureForAzure: true).Descendants("httpPlatform").Single()));
+                httPlatformElement));
+        }
+
+        public void WebConfigTransform_overrites_value_for_ASPNET_APPLICATIONBASE()
+        {
+            var input = WebConfigTemplate;
+            input.Descendants("environmentVariable").Single().SetAttributeValue("value", "abc");
+
+            Assert.True(XNode.DeepEquals(WebConfigTemplate,
+                WebConfigTransform.Transform(input, "test.exe", configureForAzure: false)));
         }
 
         private bool VerifyMissingElementCreated(params string[] elementNames)
         {
-            var input = new XDocument(WebConfigTemplate);
+            var input = WebConfigTemplate;
             foreach (var elementName in elementNames)
             {
                 input.Descendants(elementName).Remove();

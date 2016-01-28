@@ -6,7 +6,7 @@
   },
 
   "dependencies": {
-    "System.Xml.XDocument": "4.0.11-*",
+    "NETStandard.Library": "1.0.0-*",
     "Microsoft.Extensions.CommandLineUtils": "1.0.0-*",
     "Microsoft.Extensions.Configuration.Json": "1.0.0-*",
     "Microsoft.DotNet.ProjectModel": "1.0.0-*"
@@ -14,7 +14,6 @@
 
   "frameworks": {
     "dnxcore50": {
-      "Microsoft.NETCore.Platforms": "1.0.0-*"
     }
   }
 }
