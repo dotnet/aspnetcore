@@ -26,8 +26,8 @@ Security issues and bugs should be reported privately, via email, to the Microso
 Our team members also monitor several other discussion forums:
 
 * [ASP.NET 5 forum](https://forums.asp.net/1255.aspx/1?ASP+NET+5)
-* [StackOverflow](https://stackoverflow.com/questions/tagged/asp.net-5) with the `asp.net-5` or `entity-framework-7` tag
-* [JabbR chat room](https://jabbr.net/#/rooms/aspnetvnext) for real-time discussions with the community and the people who work on the project
+* [StackOverflow](https://stackoverflow.com/questions/tagged/asp.net-core) with the `asp.net-core` or `entity-framework-core` tag
+* [JabbR chat room](https://jabbr.net/#/rooms/aspnetcore) for real-time discussions with the community and the people who work on the project
 
 
 ## Filing issues
