@@ -100,8 +100,12 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Equal("CompanyName cannot be null or empty.", modelStateErrors["CompanyName"]);
             Assert.Equal("The field Price must be between 20 and 100.", modelStateErrors["Price"]);
             // Mono issue - https://github.com/aspnet/External/issues/19
-            Assert.Equal(PlatformNormalizer.NormalizeContent("The Category field is required."), modelStateErrors["Category"]);
-            Assert.Equal(PlatformNormalizer.NormalizeContent("The Contact Us field is required."), modelStateErrors["Contact"]);
+            Assert.Equal(
+                PlatformNormalizer.NormalizeContent("The Category field is required."),
+                modelStateErrors["Category"]);
+            Assert.Equal(
+                PlatformNormalizer.NormalizeContent("The Contact Us field is required."),
+                modelStateErrors["Contact"]);
             Assert.Equal(
                 PlatformNormalizer.NormalizeContent("The Detail2 field is required."),
                 modelStateErrors["ProductDetails.Detail2"]);
@@ -264,7 +268,9 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelStateErrors = CreateValidationDictionary(modelState);
             Assert.Equal(2, modelStateErrors.Count);
             Assert.Equal("The field Price must be between 100 and 200.", modelStateErrors["Price"]);
-            Assert.Equal("The field Contact must be a string with a maximum length of 10.", modelStateErrors["Contact"]);
+            Assert.Equal(
+                "The field Contact must be a string with a maximum length of 10.",
+                modelStateErrors["Contact"]);
         }
 
         [Fact]
@@ -380,9 +386,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Null(modelBindingResult.Model);
 
             Assert.True(modelState.IsValid);
-            var entry = Assert.Single(modelState);
-            Assert.Empty(entry.Key);
-            Assert.Null(entry.Value.RawValue);
+            Assert.Empty(modelState);
         }
 
         private class Person4
@@ -486,12 +490,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Equal(0, boundPerson.Address.RequiredNumber);
 
             Assert.True(modelState.IsValid);
-            var entry = Assert.Single(modelState);
-            Assert.Equal("CustomParameter.Address", entry.Key);
-            Assert.NotNull(entry.Value);
-            Assert.Null(entry.Value.AttemptedValue);
-            Assert.Same(boundPerson.Address, entry.Value.RawValue);
-            Assert.Empty(entry.Value.Errors);
+            Assert.Empty(modelState);
         }
 
         [Fact]
@@ -527,16 +526,10 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Null(boundPerson.Address);
 
             Assert.False(modelState.IsValid);
-            Assert.Equal(2, modelState.Count);
+            Assert.Equal(1, modelState.Count);
             Assert.Equal(1, modelState.ErrorCount);
 
-            var state = modelState["CustomParameter.Address"];
-            Assert.NotNull(state);
-            Assert.Null(state.AttemptedValue);
-            Assert.Null(state.RawValue);
-            Assert.Empty(state.Errors);
-
-            state = modelState["CustomParameter.Address.Number"];
+            var state = modelState["CustomParameter.Address.Number"];
             Assert.NotNull(state);
             Assert.Null(state.AttemptedValue);
             Assert.Null(state.RawValue);
@@ -597,9 +590,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.NotNull(boundPerson);
 
             Assert.False(modelState.IsValid);
-            Assert.Equal(2, modelState.Keys.Count);
-            var address = Assert.Single(modelState, kvp => kvp.Key == "CustomParameter.Address").Value;
-            Assert.Equal(ModelValidationState.Unvalidated, address.ValidationState);
+            Assert.Equal(1, modelState.Keys.Count);
 
             var street = Assert.Single(modelState, kvp => kvp.Key == "CustomParameter.Address.Street").Value;
             Assert.Equal(ModelValidationState.Invalid, street.ValidationState);
@@ -655,8 +646,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.IsType<Person3>(modelBindingResult.Model);
 
             Assert.True(modelState.IsValid);
-            var entry = Assert.Single(modelState);
-            Assert.Equal("CustomParameter.Address", entry.Key);
+            Assert.Empty(modelState);
         }
 
         private Dictionary<string, string> CreateValidationDictionary(ModelStateDictionary modelState)

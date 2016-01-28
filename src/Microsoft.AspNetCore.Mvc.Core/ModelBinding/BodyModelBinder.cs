@@ -65,10 +65,18 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 throw new ArgumentNullException(nameof(bindingContext));
             }
 
-            // For compatibility with MVC 5.0 for top level object we want to consider an empty key instead of
-            // the parameter name/a custom name. In all other cases (like when binding body to a property) we
-            // consider the entire ModelName as a prefix.
-            var modelBindingKey = bindingContext.IsTopLevelObject ? string.Empty : bindingContext.ModelName;
+            // Special logic for body, treat the model name as string.Empty for the top level
+            // object, but allow an override via BinderModelName. The purpose of this is to try
+            // and be similar to the behavior for POCOs bound via traditional model binding.
+            string modelBindingKey;
+            if (bindingContext.IsTopLevelObject)
+            {
+                modelBindingKey = bindingContext.BinderModelName ?? string.Empty;
+            }
+            else
+            {
+                modelBindingKey = bindingContext.ModelName;
+            }
 
             var httpContext = bindingContext.OperationBindingContext.HttpContext;
 
@@ -101,9 +109,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 var previousCount = bindingContext.ModelState.ErrorCount;
                 var result = await formatter.ReadAsync(formatterContext);
                 var model = result.Model;
-
-                // Ensure a "modelBindingKey" entry exists whether or not formatting was successful.
-                bindingContext.ModelState.SetModelValue(modelBindingKey, rawValue: model, attemptedValue: null);
 
                 if (result.HasError)
                 {

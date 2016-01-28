@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             var entry = bindingContext.ValidationState[result.Model];
             Assert.True(entry.SuppressValidation);
-            Assert.Null(entry.Key);
+            Assert.Equal("file", entry.Key);
             Assert.Null(entry.Metadata);
         }
 
@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             var entry = bindingContext.ValidationState[result.Model];
             Assert.True(entry.SuppressValidation);
-            Assert.Null(entry.Key);
+            Assert.Equal("file", entry.Key);
             Assert.Null(entry.Metadata);
 
             var files = Assert.IsAssignableFrom<IList<IFormFile>>(result.Model);

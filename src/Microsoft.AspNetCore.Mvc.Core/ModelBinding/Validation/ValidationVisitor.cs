@@ -77,11 +77,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
         /// <returns><c>true</c> if the object is valid, otherwise <c>false</c>.</returns>
         public bool Validate(ModelMetadata metadata, string key, object model)
         {
-            if (model == null)
+            if (model == null && key != null)
             {
-                if (_modelState.GetValidationState(key) != ModelValidationState.Valid)
+                var entry = _modelState[key];
+                if (entry != null && entry.ValidationState != ModelValidationState.Valid)
                 {
-                    _modelState.MarkFieldValid(key);
+                    entry.ValidationState = ModelValidationState.Valid;
                 }
 
                 return true;
@@ -166,13 +167,14 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
                 SuppressValidation(key);
                 return false;
             }
-            else if ((entry != null && entry.SuppressValidation))
+            else if (entry != null && entry.SuppressValidation)
             {
-                SuppressValidation(key);
+                // Use the key on the entry, because we might not have entries in model state.
+                SuppressValidation(entry.Key);
                 return true;
             }
 
-            using (StateManager.Recurse(this, key, metadata, model, strategy))
+            using (StateManager.Recurse(this, key ?? string.Empty, metadata, model, strategy))
             {
                 if (_metadata.IsEnumerableType)
                 {
@@ -271,6 +273,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
 
         private void SuppressValidation(string key)
         {
+            if (key == null)
+            {
+                // If the key is null, that means that we shouldn't expect any entries in ModelState for
+                // this value, so there's nothing to do.
+                return;
+            }
+
             var entries = _modelState.FindKeysWithPrefix(key);
             foreach (var entry in entries)
             {

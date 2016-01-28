@@ -5,6 +5,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Internal;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
@@ -60,7 +61,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
                     },
                     ModelBinder = new CancellationTokenModelBinder(),
                     MetadataProvider = metadataProvider,
-                }
+                },
+                ValidationState = new ValidationStateDictionary(),
             };
 
             return bindingContext;

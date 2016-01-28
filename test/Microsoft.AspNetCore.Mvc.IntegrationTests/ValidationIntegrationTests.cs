@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
@@ -1141,7 +1142,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             // Act
             var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext);
 
-            Assert.Equal(4, modelState.Count);
+            Assert.Equal(3, modelState.Count);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
 
@@ -1159,14 +1160,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Equal("46", entry.AttemptedValue);
             Assert.Equal("46", entry.RawValue);
             Assert.Equal(ModelValidationState.Skipped, entry.ValidationState);
-
-            entry = Assert.Single(modelState, e => e.Key == "OfficeAddress").Value;
-            Assert.Null(entry.AttemptedValue);
-            var address = Assert.IsType<Address>(entry.RawValue);
-            Assert.Equal(47, address.Zip);
-
-            // Address itself is not excluded from validation.
-            Assert.Equal(ModelValidationState.Valid, entry.ValidationState);
         }
 
         [Fact]
@@ -1197,7 +1190,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 
             // We need to add another model state entry which should get marked as skipped so 
             // we can prove that the JObject was skipped.
-            modelState.SetModelValue("message", "Hello", "Hello");
+            modelState.SetModelValue("CustomParameter.message", "Hello", "Hello");
 
             // Act
             var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext);
@@ -1209,13 +1202,154 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Equal("Hello", message);
 
             Assert.True(modelState.IsValid);
+            Assert.Equal(1, modelState.Count);
+
+            var entry = Assert.Single(modelState, kvp => kvp.Key == "CustomParameter.message");
+            Assert.Equal(ModelValidationState.Skipped, entry.Value.ValidationState);
+        }
+
+        // Regression test for https://github.com/aspnet/Mvc/issues/3743
+        //
+        // A cancellation token that's bound with the empty prefix will end up suppressing
+        // the empty prefix. Since the empty prefix is a prefix of everything, this will 
+        // basically result in clearing out all model errors, which is BAD.
+        //
+        // The fix is to treat non-user-input as have a key of null, which means that the MSD
+        // isn't even examined when it comes to supressing validation.
+        [Fact]
+        public async Task CancellationToken_WithEmptyPrefix_DoesNotSuppressUnrelatedErrors()
+        {
+            // Arrange
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder(new TestMvcOptions().Value);
+            var parameter = new ParameterDescriptor
+            {
+                Name = "cancellationToken",
+                ParameterType = typeof(CancellationToken)
+            };
+
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext();
+
+            var httpContext = operationContext.HttpContext;
+            var modelState = operationContext.ActionContext.ModelState;
+
+            // We need to add another model state entry - we want this to be ignored.
+            modelState.SetModelValue("message", "Hello", "Hello");
+
+            // Act
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext);
+
+            // Assert
+            Assert.True(modelBindingResult.IsModelSet);
+            Assert.NotNull(modelBindingResult.Model);
+            Assert.IsType<CancellationToken>(modelBindingResult.Model);
+
+            Assert.False(modelState.IsValid);
+            Assert.Equal(1, modelState.Count);
+
+            var entry = Assert.Single(modelState, kvp => kvp.Key == "message");
+            Assert.Equal(ModelValidationState.Unvalidated, entry.Value.ValidationState);
+        }
+
+        // Similar to CancellationToken_WithEmptyPrefix_DoesNotSuppressUnrelatedErrors - binding the body
+        // with the empty prefix should not cause unrelated modelstate entries to get suppressed.
+        [Fact]
+        public async Task FromBody_WithEmptyPrefix_DoesNotSuppressUnrelatedErrors_Valid()
+        {
+            // Arrange
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder(new TestMvcOptions().Value);
+            var parameter = new ParameterDescriptor
+            {
+                Name = "Parameter1",
+                BindingInfo = new BindingInfo
+                {
+                    BindingSource = BindingSource.Body
+                },
+                ParameterType = typeof(Greeting)
+            };
+
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(
+                request =>
+                {
+                    request.Body = new MemoryStream(Encoding.UTF8.GetBytes("{ message: \"Hello\" }"));
+                    request.ContentType = "application/json";
+                });
+
+            var httpContext = operationContext.HttpContext;
+            var modelState = operationContext.ActionContext.ModelState;
+
+            // We need to add another model state entry which should not get changed.
+            modelState.SetModelValue("other.key", "1", "1");
+
+            // Act
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext);
+
+            // Assert
+            Assert.True(modelBindingResult.IsModelSet);
+            Assert.NotNull(modelBindingResult.Model);
+            var message = Assert.IsType<Greeting>(modelBindingResult.Model).Message;
+            Assert.Equal("Hello", message);
+
+            Assert.False(modelState.IsValid);
+            Assert.Equal(1, modelState.Count);
+
+            var entry = Assert.Single(modelState, kvp => kvp.Key == "other.key");
+            Assert.Equal(ModelValidationState.Unvalidated, entry.Value.ValidationState);
+        }
+
+        // Similar to CancellationToken_WithEmptyPrefix_DoesNotSuppressUnrelatedErrors - binding the body
+        // with the empty prefix should not cause unrelated modelstate entries to get suppressed.
+        [Fact]
+        public async Task FromBody_WithEmptyPrefix_DoesNotSuppressUnrelatedErrors_Invalid()
+        {
+            // Arrange
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder(new TestMvcOptions().Value);
+            var parameter = new ParameterDescriptor
+            {
+                Name = "Parameter1",
+                BindingInfo = new BindingInfo
+                {
+                    BindingSource = BindingSource.Body
+                },
+                ParameterType = typeof(Greeting)
+            };
+
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(
+                request =>
+                {
+                    // This string is too long and will have a validation error.
+                    request.Body = new MemoryStream(Encoding.UTF8.GetBytes("{ message: \"Hello There\" }"));
+                    request.ContentType = "application/json";
+                });
+
+            var httpContext = operationContext.HttpContext;
+            var modelState = operationContext.ActionContext.ModelState;
+
+            // We need to add another model state entry which should not get changed.
+            modelState.SetModelValue("other.key", "1", "1");
+
+            // Act
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext);
+
+            // Assert
+            Assert.True(modelBindingResult.IsModelSet);
+            Assert.NotNull(modelBindingResult.Model);
+            var message = Assert.IsType<Greeting>(modelBindingResult.Model).Message;
+            Assert.Equal("Hello There", message);
+
+            Assert.False(modelState.IsValid);
             Assert.Equal(2, modelState.Count);
 
-            var entry = Assert.Single(modelState, kvp => kvp.Key == string.Empty);
-            Assert.Equal(ModelValidationState.Valid, entry.Value.ValidationState);
+            var entry = Assert.Single(modelState, kvp => kvp.Key == "Message");
+            Assert.Equal(ModelValidationState.Invalid, entry.Value.ValidationState);
 
-            entry = Assert.Single(modelState, kvp => kvp.Key == "message");
-            Assert.Equal(ModelValidationState.Skipped, entry.Value.ValidationState);
+            entry = Assert.Single(modelState, kvp => kvp.Key == "other.key");
+            Assert.Equal(ModelValidationState.Unvalidated, entry.Value.ValidationState);
+        }
+
+        private class Greeting
+        {
+            [StringLength(5)]
+            public string Message { get; set; }
         }
 
         private static void AssertRequiredError(string key, ModelError error)

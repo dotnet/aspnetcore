@@ -3,6 +3,7 @@
 
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
@@ -16,7 +17,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         {
             if (bindingContext.ModelType == typeof(CancellationToken))
             {
-                var model = bindingContext.OperationBindingContext.HttpContext.RequestAborted;
+                // We need to force boxing now, so we can insert the same reference to the boxed CancellationToken
+                // in both the ValidationState and ModelBindingResult.
+                //
+                // DO NOT simplify this code by removing the cast.
+                var model = (object)bindingContext.OperationBindingContext.HttpContext.RequestAborted;
+                bindingContext.ValidationState.Add(model, new ValidationStateEntry() { SuppressValidation = true });
                 return ModelBindingResult.SuccessAsync(bindingContext.ModelName, model);
             }
 

@@ -43,15 +43,22 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
         private async Task<ModelBindingResult> BindModelCoreAsync(ModelBindingContext bindingContext)
         {
+            // If we're at the top level, then use the FieldName (paramter or property name).
+            // This handles the fact that there will be nothing in the ValueProviders for this parameter
+            // and so we'll do the right thing even though we 'fell-back' to the empty prefix.
+            var modelName = bindingContext.IsTopLevelObject
+                ? bindingContext.BinderModelName ?? bindingContext.FieldName
+                : bindingContext.ModelName;
+
             object value;
             if (bindingContext.ModelType == typeof(IFormFile))
             {
-                var postedFiles = await GetFormFilesAsync(bindingContext);
+                var postedFiles = await GetFormFilesAsync(modelName, bindingContext);
                 value = postedFiles.FirstOrDefault();
             }
             else if (typeof(IEnumerable<IFormFile>).IsAssignableFrom(bindingContext.ModelType))
             {
-                var postedFiles = await GetFormFilesAsync(bindingContext);
+                var postedFiles = await GetFormFilesAsync(modelName, bindingContext);
                 value = ModelBindingHelper.ConvertValuesToCollectionType(bindingContext.ModelType, postedFiles);
             }
             else
@@ -67,9 +74,14 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             }
             else
             {
-                bindingContext.ValidationState.Add(value, new ValidationStateEntry() { SuppressValidation = true });
+                bindingContext.ValidationState.Add(value, new ValidationStateEntry()
+                {
+                    Key = modelName,
+                    SuppressValidation = true
+                });
+
                 bindingContext.ModelState.SetModelValue(
-                    bindingContext.ModelName,
+                    modelName,
                     rawValue: null,
                     attemptedValue: null);
 
@@ -77,20 +89,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             }
         }
 
-        private async Task<List<IFormFile>> GetFormFilesAsync(ModelBindingContext bindingContext)
+        private async Task<List<IFormFile>> GetFormFilesAsync(string modelName, ModelBindingContext bindingContext)
         {
             var request = bindingContext.OperationBindingContext.HttpContext.Request;
             var postedFiles = new List<IFormFile>();
             if (request.HasFormContentType)
             {
                 var form = await request.ReadFormAsync();
-
-                // If we're at the top level, then use the FieldName (paramter or property name).
-                // This handles the fact that there will be nothing in the ValueProviders for this parameter
-                // and so we'll do the right thing even though we 'fell-back' to the empty prefix.
-                var modelName = bindingContext.IsTopLevelObject
-                    ? bindingContext.FieldName
-                    : bindingContext.ModelName;
 
                 foreach (var file in form.Files)
                 {

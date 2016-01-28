@@ -44,11 +44,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 
             // ModelState (not set unless inner binder sets it)
             Assert.True(modelState.IsValid);
-            var entry = modelState[string.Empty];
-            Assert.Null(entry.AttemptedValue);
-            Assert.Null(entry.RawValue);
-            Assert.Empty(entry.Errors);
-            Assert.Equal(ModelValidationState.Valid, entry.ValidationState);
+            Assert.Empty(modelState);
         }
 
         [Fact]

@@ -76,12 +76,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                             ValidationStateEntry entry;
                             if (!bindingContext.ValidationState.TryGetValue(result.Model, out entry))
                             {
-                                entry = new ValidationStateEntry();
+                                entry = new ValidationStateEntry()
+                                {
+                                    Key = result.Key,
+                                    Metadata = bindingContext.ModelMetadata,
+                                };
                                 bindingContext.ValidationState.Add(result.Model, entry);
                             }
-
-                            entry.Key = entry.Key ?? result.Key;
-                            entry.Metadata = entry.Metadata ?? bindingContext.ModelMetadata;
                         }
 
                         return result;

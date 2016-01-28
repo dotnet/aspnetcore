@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Mvc.Formatters;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit;
@@ -73,9 +72,37 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             Assert.False(binderResult.IsModelSet);
             Assert.Null(binderResult.Model);
 
-            // Key is empty because this was a top-level binding.
+            // Key is the empty string because this was a top-level binding.
             var entry = Assert.Single(bindingContext.ModelState);
             Assert.Equal(string.Empty, entry.Key);
+            Assert.Single(entry.Value.Errors);
+        }
+
+        [Fact]
+        public async Task BindModel_NoInputFormatterFound_SetsModelStateError_RespectsBinderModelName()
+        {
+            // Arrange
+            var provider = new TestModelMetadataProvider();
+            provider.ForType<Person>().BindingDetails(d => d.BindingSource = BindingSource.Body);
+
+            var bindingContext = GetBindingContext(typeof(Person), metadataProvider: provider);
+            bindingContext.BinderModelName = "custom";
+
+            var binder = bindingContext.OperationBindingContext.ModelBinder;
+
+            // Act
+            var binderResult = await binder.BindModelAsync(bindingContext);
+
+            // Assert
+
+            // Returns non-null because it understands the metadata type.
+            Assert.NotNull(binderResult);
+            Assert.False(binderResult.IsModelSet);
+            Assert.Null(binderResult.Model);
+
+            // Key is the bindermodelname because this was a top-level binding.
+            var entry = Assert.Single(bindingContext.ModelState);
+            Assert.Equal("custom", entry.Key);
             Assert.Single(entry.Value.Errors);
         }
 
@@ -165,7 +192,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             Assert.False(binderResult.IsModelSet);
             Assert.Null(binderResult.Model);
 
-            // Key is empty because this was a top-level binding.
+            // Key is the empty string because this was a top-level binding.
             var entry = Assert.Single(bindingContext.ModelState);
             Assert.Equal(string.Empty, entry.Key);
             var errorMessage = Assert.Single(entry.Value.Errors).Exception.Message;
@@ -200,7 +227,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             Assert.False(binderResult.IsModelSet);
             Assert.Null(binderResult.Model);
 
-            // Key is empty because this was a top-level binding.
+            // Key is the empty string because this was a top-level binding.
             var entry = Assert.Single(bindingContext.ModelState);
             Assert.Equal(string.Empty, entry.Key);
             var errorMessage = Assert.Single(entry.Value.Errors).Exception.Message;
@@ -267,6 +294,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             var bindingContext = new ModelBindingContext
             {
+                FieldName = "someField",
                 IsTopLevelObject = true,
                 ModelMetadata = metadataProvider.GetMetadataForType(modelType),
                 ModelName = "someName",
