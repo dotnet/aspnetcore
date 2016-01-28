@@ -5,21 +5,23 @@
   "dependencies": {
     "Microsoft.AspNetCore.JsonPatch": "1.0.0-*",
     "Microsoft.AspNetCore.Testing": "1.0.0-*",
-    "Newtonsoft.Json": "6.0.6",
-    "xunit.runner.aspnet": "2.0.0-aspnet-*"
+    "xunit": "2.1.0"
   },
   "commands": {
     "test": "xunit.runner.aspnet"
   },
+  "testRunner": "xunit",
   "frameworks": {
     "dnx451": {
       "dependencies": {
-        "Moq": "4.2.1312.1622"
+        "Moq": "4.2.1312.1622",
+        "xunit.runner.console": "2.1.0"
       }
     },
     "dnxcore50": {
       "dependencies": {
-        "moq.netcore": "4.4.0-beta8"
+        "moq.netcore": "4.4.0-beta8",
+        "xunit.runner.aspnet": "2.0.0-aspnet-*"
       }
     }
   }
