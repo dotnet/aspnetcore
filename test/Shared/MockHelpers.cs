@@ -37,9 +37,9 @@ namespace Microsoft.AspNetCore.Identity.Test
         {
             logStore = logStore ?? LogMessage;
             var logger = new Mock<ILogger<T>>();
-            logger.Setup(x => x.Log(It.IsAny<LogLevel>(), It.IsAny<int>(), It.IsAny<object>(),
+            logger.Setup(x => x.Log(It.IsAny<LogLevel>(), It.IsAny<EventId>(), It.IsAny<object>(),
                 It.IsAny<Exception>(), It.IsAny<Func<object, Exception, string>>()))
-                .Callback((LogLevel logLevel, int eventId, object state, Exception exception, Func<object, Exception, string> formatter) =>
+                .Callback((LogLevel logLevel, EventId eventId, object state, Exception exception, Func<object, Exception, string> formatter) =>
                 {
                     if (formatter == null)
                     {
