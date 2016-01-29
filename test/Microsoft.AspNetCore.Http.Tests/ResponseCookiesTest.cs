@@ -42,5 +42,20 @@ namespace Microsoft.AspNetCore.Http.Tests
             Assert.Contains("expires=Thu, 01 Jan 1970 00:00:00 GMT", cookieHeaderValues[0]);
         }
 
+        [Theory]
+        [InlineData("key", "value", "key=value")]
+        [InlineData("key,", "!value", "key%2C=%21value")]
+        [InlineData("ke#y,", "val^ue", "ke%23y%2C=val%5Eue")]
+        public void EscapesKeyValuesBeforeSettingCookie(string key, string value, string expected)
+        {
+            var headers = new HeaderDictionary();
+            var cookies = new ResponseCookies(headers);
+
+            cookies.Append(key, value);
+
+            var cookieHeaderValues = headers[HeaderNames.SetCookie];
+            Assert.Equal(1, cookieHeaderValues.Count);
+            Assert.StartsWith(expected, cookieHeaderValues[0]);
+        }
     }
 }

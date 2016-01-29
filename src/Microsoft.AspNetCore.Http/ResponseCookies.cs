@@ -38,8 +38,8 @@ namespace Microsoft.AspNetCore.Http.Internal
         public void Append(string key, string value)
         {
             var setCookieHeaderValue = new SetCookieHeaderValue(
-                    UrlEncoder.Default.Encode(key),
-                    UrlEncoder.Default.Encode(value))
+                    Uri.EscapeDataString(key),
+                    Uri.EscapeDataString(value))
             {
                 Path = "/"
             };
@@ -61,8 +61,8 @@ namespace Microsoft.AspNetCore.Http.Internal
             }
 
             var setCookieHeaderValue = new SetCookieHeaderValue(
-                    UrlEncoder.Default.Encode(key),
-                    UrlEncoder.Default.Encode(value))
+                    Uri.EscapeDataString(key),
+                    Uri.EscapeDataString(value))
             {
                 Domain = options.Domain,
                 Path = options.Path,
@@ -95,7 +95,7 @@ namespace Microsoft.AspNetCore.Http.Internal
                 throw new ArgumentNullException(nameof(options));
             }
             
-            var encodedKeyPlusEquals = UrlEncoder.Default.Encode(key) + "=";
+            var encodedKeyPlusEquals = Uri.EscapeDataString(key) + "=";
             bool domainHasValue = !string.IsNullOrEmpty(options.Domain);
             bool pathHasValue = !string.IsNullOrEmpty(options.Path);
 
