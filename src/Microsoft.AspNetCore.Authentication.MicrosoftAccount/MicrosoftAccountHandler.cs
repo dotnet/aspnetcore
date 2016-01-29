@@ -38,11 +38,25 @@ namespace Microsoft.AspNetCore.Authentication.MicrosoftAccount
                 identity.AddClaim(new Claim("urn:microsoftaccount:id", identifier, ClaimValueTypes.String, Options.ClaimsIssuer));
             }
 
-            var name = MicrosoftAccountHelper.GetName(payload);
+            var name = MicrosoftAccountHelper.GetDisplayName(payload);
             if (!string.IsNullOrEmpty(name))
             {
                 identity.AddClaim(new Claim(ClaimTypes.Name, name, ClaimValueTypes.String, Options.ClaimsIssuer));
                 identity.AddClaim(new Claim("urn:microsoftaccount:name", name, ClaimValueTypes.String, Options.ClaimsIssuer));
+            }
+
+            var givenName = MicrosoftAccountHelper.GetGivenName(payload);
+            if (!string.IsNullOrEmpty(givenName))
+            {
+                identity.AddClaim(new Claim(ClaimTypes.GivenName, givenName, ClaimValueTypes.String, Options.ClaimsIssuer));
+                identity.AddClaim(new Claim("urn:microsoftaccount:givenname", givenName, ClaimValueTypes.String, Options.ClaimsIssuer));
+            }
+
+            var surname = MicrosoftAccountHelper.GetSurname(payload);
+            if (!string.IsNullOrEmpty(surname))
+            {
+                identity.AddClaim(new Claim(ClaimTypes.Surname, surname, ClaimValueTypes.String, Options.ClaimsIssuer));
+                identity.AddClaim(new Claim("urn:microsoftaccount:surname", surname, ClaimValueTypes.String, Options.ClaimsIssuer));
             }
 
             var email = MicrosoftAccountHelper.GetEmail(payload);

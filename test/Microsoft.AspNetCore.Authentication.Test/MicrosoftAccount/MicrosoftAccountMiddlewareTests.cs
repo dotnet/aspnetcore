@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Authentication.Tests.MicrosoftAccount
             var transaction = await server.SendAsync("http://example.com/challenge");
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
             var location = transaction.Response.Headers.Location.AbsoluteUri;
-            Assert.Contains("https://login.live.com/oauth20_authorize.srf", location);
+            Assert.Contains("https://login.microsoftonline.com/common/oauth2/v2.0/authorize", location);
             Assert.Contains("response_type=code", location);
             Assert.Contains("client_id=", location);
             Assert.Contains("redirect_uri=", location);
@@ -113,7 +113,7 @@ namespace Microsoft.AspNetCore.Authentication.Tests.MicrosoftAccount
                     {
                         Sender = req =>
                         {
-                            if (req.RequestUri.AbsoluteUri == "https://login.live.com/oauth20_token.srf")
+                            if (req.RequestUri.AbsoluteUri == "https://login.microsoftonline.com/common/oauth2/v2.0/token")
                             {
                                 return ReturnJsonResponse(new
                                 {
@@ -123,18 +123,15 @@ namespace Microsoft.AspNetCore.Authentication.Tests.MicrosoftAccount
                                     refresh_token = "Test Refresh Token"
                                 });
                             }
-                            else if (req.RequestUri.GetComponents(UriComponents.SchemeAndServer | UriComponents.Path, UriFormat.UriEscaped) == "https://apis.live.net/v5.0/me")
+                            else if (req.RequestUri.GetComponents(UriComponents.SchemeAndServer | UriComponents.Path, UriFormat.UriEscaped) == "https://graph.microsoft.com/v1.0/me")
                             {
                                 return ReturnJsonResponse(new
                                 {
                                     id = "Test User ID",
-                                    name = "Test Name",
-                                    first_name = "Test Given Name",
-                                    last_name = "Test Family Name",
-                                    emails = new
-                                    {
-                                        preferred = "Test email"
-                                    }
+                                    displayName = "Test Name",
+                                    givenName = "Test Given Name",
+                                    surname = "Test Family Name",
+                                    mail =  "Test email"
                                 });
                             }
 

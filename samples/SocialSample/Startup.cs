@@ -1,8 +1,11 @@
 using System;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Reflection;
 using System.Security.Claims;
+using System.Security.Cryptography.X509Certificates;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
@@ -15,12 +18,15 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Authentication;
+using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.Server.Kestrel.Filter;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 
-namespace CookieSample
+namespace SocialSample
 {
     /* Note all servers must use the same address and port because these are pre-registered with the various providers. */
     public class Startup
@@ -45,6 +51,10 @@ namespace CookieSample
         {
             loggerfactory.AddConsole(LogLevel.Information);
 
+            //Configure SSL
+            var serverCertificate = LoadCertificate();
+            app.UseKestrelHttps(serverCertificate);
+
             // Simple error page to avoid a repo dependency.
             app.Use(async (context, next) =>
             {
@@ -61,6 +71,12 @@ namespace CookieSample
                     context.Response.StatusCode = 500;
                     await context.Response.WriteAsync(ex.ToString());
                 }
+            });
+
+            // Forward the scheme from IISPlatformHandler
+            app.UseForwardedHeaders(new ForwardedHeadersOptions()
+            {
+                ForwardedHeaders = ForwardedHeaders.XForwardedProto,
             });
 
             app.UseCookieAuthentication(new CookieAuthenticationOptions
@@ -105,7 +121,6 @@ namespace CookieSample
                 Events = new OAuthEvents()
                 {
                     OnRemoteFailure = ctx =>
-
                     {
                         ctx.Response.Redirect("/error?FailureMessage=" + UrlEncoder.Default.Encode(ctx.Failure.Message));
                         ctx.HandleResponse();
@@ -132,45 +147,34 @@ namespace CookieSample
                 }
             });
 
-            // You must first create an app with live.com and add it's ID and Secret to your config.json or user-secrets.
-            /* https://account.live.com/developers/applications
-            The MicrosoftAccount service has restrictions that prevent the use of http://localhost:54540/ for test applications.
-            As such, here is how to change this sample to uses http://mssecsample.localhost.this:54540/ instead.
-
-            Edit the hosting.json file and add "server.urls": "http://mssecsample.localhost.this:54540/".
-
-            From an admin command console first enter:
-             notepad C:\Windows\System32\drivers\etc\hosts
-            and add this to the file, save, and exit (and reboot?):
-             127.0.0.1 MsSecSample.localhost.this
-
-            [WebListener] Then you can choose to run the app as admin (see below) or add the following ACL as admin:
-             netsh http add urlacl url=http://mssecsample.localhost.this:54540/ user=[domain\user]
-
-            The sample app can then be run via:
-             dnx web
+            /* Azure AD app model v2 has restrictions that prevent the use of plain HTTP for redirect URLs.
+               Therefore, to authenticate through microsoft accounts, tryout the sample using the following URL:
+               https://localhost:54541/
             */
-            //app.UseOAuthAuthentication(new OAuthOptions
-            //{
-            //    AuthenticationScheme = "Microsoft-AccessToken",
-            //    DisplayName = "MicrosoftAccount-AccessToken - Requires project changes",
-            //    ClientId = Configuration["msa:clientid"],
-            //    ClientSecret = Configuration["msa:clientsecret"],
-            //    CallbackPath = new PathString("/signin-microsoft-token"),
-            //    AuthorizationEndpoint = MicrosoftAccountDefaults.AuthorizationEndpoint,
-            //    TokenEndpoint = MicrosoftAccountDefaults.TokenEndpoint,
-            //    Scope = { "wl.basic" },
-            //    SaveTokens = true
-            //});
+            // See config.json
+            // https://apps.dev.microsoft.com/
+            app.UseOAuthAuthentication(new OAuthOptions
+            {
+                AuthenticationScheme = "Microsoft-AccessToken",
+                DisplayName = "MicrosoftAccount-AccessToken",
+                ClientId = Configuration["msa:clientid"],
+                ClientSecret = Configuration["msa:clientsecret"],
+                CallbackPath = new PathString("/signin-microsoft-token"),
+                AuthorizationEndpoint = MicrosoftAccountDefaults.AuthorizationEndpoint,
+                TokenEndpoint = MicrosoftAccountDefaults.TokenEndpoint,
+                Scope = { "https://graph.microsoft.com/user.read" },
+                SaveTokens = true
+            });
 
-            ////// You must first create an app with live.com and add it's ID and Secret to your config.json or user-secrets.
-            //app.UseMicrosoftAccountAuthentication(new MicrosoftAccountOptions
-            //{
-            //    DisplayName = "MicrosoftAccount - Requires project changes",
-            //    ClientId = Configuration["msa:clientid"],
-            //    ClientSecret = Configuration["msa:clientsecret"],
-            //    Scope = { "wl.emails" }
-            //});
+            // See config.json
+            // https://azure.microsoft.com/en-us/documentation/articles/active-directory-v2-app-registration/
+            app.UseMicrosoftAccountAuthentication(new MicrosoftAccountOptions
+            {
+                DisplayName = "MicrosoftAccount",
+                ClientId = Configuration["msa:clientid"],
+                ClientSecret = Configuration["msa:clientsecret"],
+                SaveTokens = true
+            });
 
             // See config.json
             // https://github.com/settings/applications/
@@ -345,6 +349,24 @@ namespace CookieSample
                 .Build();
 
             host.Run();
+        }
+
+        private X509Certificate2 LoadCertificate()
+        {
+            var socialSampleAssembly = GetType().GetTypeInfo().Assembly;
+            var embeddedFileProvider = new EmbeddedFileProvider(socialSampleAssembly, "SocialSample");
+            var certificateFileInfo = embeddedFileProvider.GetFileInfo("compiler/resources/cert.pfx");
+            using (var certificateStream = certificateFileInfo.CreateReadStream())
+            {
+                byte[] certificatePayload;
+                using (var memoryStream = new MemoryStream())
+                {
+                    certificateStream.CopyTo(memoryStream);
+                    certificatePayload = memoryStream.ToArray();
+                }
+
+                return new X509Certificate2(certificatePayload, "testPassword");
+            }
         }
     }
 }

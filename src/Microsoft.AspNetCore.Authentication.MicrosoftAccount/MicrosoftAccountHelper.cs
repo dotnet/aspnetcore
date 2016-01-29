@@ -8,7 +8,8 @@ namespace Microsoft.AspNetCore.Authentication.MicrosoftAccount
 {
     /// <summary>
     /// Contains static methods that allow to extract user's information from a <see cref="JObject"/>
-    /// instance retrieved from Google after a successful authentication process.
+    /// instance retrieved from Microsoft after a successful authentication process.
+    /// http://graph.microsoft.io/en-us/docs/api-reference/v1.0/resources/user
     /// </summary>
     public static class MicrosoftAccountHelper
     {
@@ -28,40 +29,40 @@ namespace Microsoft.AspNetCore.Authentication.MicrosoftAccount
         /// <summary>
         /// Gets the user's name.
         /// </summary>
-        public static string GetName(JObject user)
+        public static string GetDisplayName(JObject user)
         {
             if (user == null)
             {
                 throw new ArgumentNullException(nameof(user));
             }
 
-            return user.Value<string>("name");
+            return user.Value<string>("displayName");
         }
 
         /// <summary>
-        /// Gets the user's first name.
+        /// Gets the user's given name.
         /// </summary>
-        public static string GetFirstName(JObject user)
+        public static string GetGivenName(JObject user)
         {
             if (user == null)
             {
                 throw new ArgumentNullException(nameof(user));
             }
 
-            return user.Value<string>("first_name");
+            return user.Value<string>("givenName");
         }
 
         /// <summary>
-        /// Gets the user's last name.
+        /// Gets the user's surname.
         /// </summary>
-        public static string GetLastName(JObject user)
+        public static string GetSurname(JObject user)
         {
             if (user == null)
             {
                 throw new ArgumentNullException(nameof(user));
             }
 
-            return user.Value<string>("last_name");
+            return user.Value<string>("surname");
         }
 
         /// <summary>
@@ -74,7 +75,7 @@ namespace Microsoft.AspNetCore.Authentication.MicrosoftAccount
                 throw new ArgumentNullException(nameof(user));
             }
 
-            return user.Value<JObject>("emails")?.Value<string>("preferred");
+            return user.Value<string>("mail") ?? user.Value<string>("userPrincipalName");
         }
     }
 }
