@@ -34,6 +34,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             messageProvider.AttemptedValueIsInvalidAccessor = Resources.FormatModelState_AttemptedValueIsInvalid;
             messageProvider.UnknownValueIsInvalidAccessor = Resources.FormatModelState_UnknownValueIsInvalid;
             messageProvider.ValueIsInvalidAccessor = Resources.FormatHtmlGeneration_ValueIsInvalid;
+            messageProvider.ValueMustBeANumberAccessor = Resources.FormatHtmlGeneration_ValueMustBeNumber;
 
             // Set up ModelBinding
             options.ModelBinders.Add(new BinderTypeBasedModelBinder());

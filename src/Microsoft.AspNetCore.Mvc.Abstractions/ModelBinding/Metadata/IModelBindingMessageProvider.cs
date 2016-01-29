@@ -51,5 +51,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         /// </summary>
         /// <value>Default <see cref="string"/> is "The value '{0}' is invalid.".</value>
         Func<string, string> ValueIsInvalidAccessor { get; }
+
+        /// <summary>
+        /// Error message HTML and tag helpers add for client-side validation of numeric formats. Visible in the
+        /// browser if the field for a <c>float</c> property (for example) does not have a correctly-formatted value.
+        /// </summary>
+        /// <value>Default <see cref="string"/> is "The field {0} must be a number.".</value>
+        Func<string, string> ValueMustBeANumberAccessor { get; }
     }
 }

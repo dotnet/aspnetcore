@@ -44,6 +44,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                     AttemptedValueIsInvalidAccessor = Resources.FormatModelState_AttemptedValueIsInvalid,
                     UnknownValueIsInvalidAccessor = Resources.FormatModelState_UnknownValueIsInvalid,
                     ValueIsInvalidAccessor = Resources.FormatHtmlGeneration_ValueIsInvalid,
+                    ValueMustBeANumberAccessor = Resources.FormatHtmlGeneration_ValueMustBeNumber,
                 };
             }
         }

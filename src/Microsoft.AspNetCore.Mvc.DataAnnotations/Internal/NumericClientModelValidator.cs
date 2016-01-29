@@ -44,7 +44,8 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
                 throw new ArgumentNullException(nameof(modelMetadata));
             }
 
-            return Resources.FormatNumericClientModelValidator_FieldMustBeNumber(modelMetadata.GetDisplayName());
+            return modelMetadata.ModelBindingMessageProvider.ValueMustBeANumberAccessor(
+                modelMetadata.GetDisplayName());
         }
     }
 }

@@ -58,6 +58,22 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
             return GetString("DisplayAttribute_Name");
         }
 
+        /// <summary>
+        /// Error about '{0}' from resources.
+        /// </summary>
+        internal static string RemoteAttribute_Error
+        {
+            get { return GetString("RemoteAttribute_Error"); }
+        }
+
+        /// <summary>
+        /// Error about '{0}' from resources.
+        /// </summary>
+        internal static string FormatRemoteAttribute_Error(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("RemoteAttribute_Error"), p0);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

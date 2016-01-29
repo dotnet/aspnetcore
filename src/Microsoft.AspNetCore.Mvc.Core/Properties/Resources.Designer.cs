@@ -1003,38 +1003,6 @@ namespace Microsoft.AspNetCore.Mvc.Core
         }
 
         /// <summary>
-        /// The stream must support reading.
-        /// </summary>
-        internal static string HttpRequestStreamReader_StreamNotReadable
-        {
-            get { return GetString("HttpRequestStreamReader_StreamNotReadable"); }
-        }
-
-        /// <summary>
-        /// The stream must support reading.
-        /// </summary>
-        internal static string FormatHttpRequestStreamReader_StreamNotReadable()
-        {
-            return GetString("HttpRequestStreamReader_StreamNotReadable");
-        }
-
-        /// <summary>
-        /// The stream must support writing.
-        /// </summary>
-        internal static string HttpResponseStreamWriter_StreamNotWritable
-        {
-            get { return GetString("HttpResponseStreamWriter_StreamNotWritable"); }
-        }
-
-        /// <summary>
-        /// The stream must support writing.
-        /// </summary>
-        internal static string FormatHttpResponseStreamWriter_StreamNotWritable()
-        {
-            return GetString("HttpResponseStreamWriter_StreamNotWritable");
-        }
-
-        /// <summary>
         /// The argument '{0}' is invalid. Empty or null formats are not supported.
         /// </summary>
         internal static string FormatFormatterMappings_GetMediaTypeMappingForFormat_InvalidFormat
@@ -1112,6 +1080,22 @@ namespace Microsoft.AspNetCore.Mvc.Core
         internal static string FormatHtmlGeneration_ValueIsInvalid(object p0)
         {
             return string.Format(CultureInfo.CurrentCulture, GetString("HtmlGeneration_ValueIsInvalid"), p0);
+        }
+
+        /// <summary>
+        /// The field {0} must be a number.
+        /// </summary>
+        internal static string HtmlGeneration_ValueMustBeNumber
+        {
+            get { return GetString("HtmlGeneration_ValueMustBeNumber"); }
+        }
+
+        /// <summary>
+        /// The field {0} must be a number.
+        /// </summary>
+        internal static string FormatHtmlGeneration_ValueMustBeNumber(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("HtmlGeneration_ValueMustBeNumber"), p0);
         }
 
         private static string GetString(string name, params string[] formatterNames)

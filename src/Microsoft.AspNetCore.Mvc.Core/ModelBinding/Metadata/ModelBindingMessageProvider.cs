@@ -16,6 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         private Func<string, string, string> _attemptedValueIsInvalidAccessor;
         private Func<string, string> _unknownValueIsInvalidAccessor;
         private Func<string, string> _valueIsInvalidAccessor;
+        private Func<string, string> _valueMustBeANumberAccessor;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ModelBindingMessageProvider"/> class.
@@ -42,6 +43,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             AttemptedValueIsInvalidAccessor = originalProvider.AttemptedValueIsInvalidAccessor;
             UnknownValueIsInvalidAccessor = originalProvider.UnknownValueIsInvalidAccessor;
             ValueIsInvalidAccessor = originalProvider.ValueIsInvalidAccessor;
+            ValueMustBeANumberAccessor = originalProvider.ValueMustBeANumberAccessor;
         }
 
         /// <inheritdoc/>
@@ -149,6 +151,24 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
                 }
 
                 _valueIsInvalidAccessor = value;
+            }
+        }
+
+        /// <inheritdoc/>
+        public Func<string, string> ValueMustBeANumberAccessor
+        {
+            get
+            {
+                return _valueMustBeANumberAccessor;
+            }
+            set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
+
+                _valueMustBeANumberAccessor = value;
             }
         }
     }

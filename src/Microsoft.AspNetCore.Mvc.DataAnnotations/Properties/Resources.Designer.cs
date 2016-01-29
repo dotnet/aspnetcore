@@ -43,22 +43,6 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
         }
 
         /// <summary>
-        /// The field {0} must be a number.
-        /// </summary>
-        internal static string NumericClientModelValidator_FieldMustBeNumber
-        {
-            get { return GetString("NumericClientModelValidator_FieldMustBeNumber"); }
-        }
-
-        /// <summary>
-        /// The field {0} must be a number.
-        /// </summary>
-        internal static string FormatNumericClientModelValidator_FieldMustBeNumber(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("NumericClientModelValidator_FieldMustBeNumber"), p0);
-        }
-
-        /// <summary>
         /// The '{0}' property of '{1}' must not be null.
         /// </summary>
         internal static string PropertyOfTypeCannotBeNull

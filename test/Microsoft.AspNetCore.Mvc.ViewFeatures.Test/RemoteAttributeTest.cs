@@ -6,18 +6,22 @@ using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.WebEncoders.Testing;
 using Moq;
 using Xunit;
+using Resources = Microsoft.AspNetCore.Mvc.ViewFeatures.Test.Resources;
 
 namespace Microsoft.AspNetCore.Mvc
 {
@@ -26,7 +30,7 @@ namespace Microsoft.AspNetCore.Mvc
         private static readonly IModelMetadataProvider _metadataProvider = new EmptyModelMetadataProvider();
         private static readonly ModelMetadata _metadata = _metadataProvider.GetMetadataForProperty(
             typeof(string),
-            "Length");
+            nameof(string.Length));
 
         public static TheoryData<string> SomeNames
         {
@@ -59,8 +63,8 @@ namespace Microsoft.AspNetCore.Mvc
         public void IsValidAlwaysReturnsTrue()
         {
             // Act & Assert
-            Assert.True(new RemoteAttribute("RouteName", "ParameterName").IsValid(null));
-            Assert.True(new RemoteAttribute("ActionName", "ControllerName", "ParameterName").IsValid(null));
+            Assert.True(new RemoteAttribute("RouteName", "ParameterName").IsValid(value: null));
+            Assert.True(new RemoteAttribute("ActionName", "ControllerName", "ParameterName").IsValid(value: null));
         }
 
         [Fact]
@@ -155,6 +159,70 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Null(attribute.RouteName);
         }
 
+        [Fact]
+        public void ErrorMessageProperties_HaveExpectedDefaultValues()
+        {
+            // Arrange & Act
+            var attribute = new RemoteAttribute("Action", "Controller");
+
+            // Assert
+            Assert.Null(attribute.ErrorMessage);
+            Assert.Null(attribute.ErrorMessageResourceName);
+            Assert.Null(attribute.ErrorMessageResourceType);
+        }
+
+        [Fact]
+        [ReplaceCulture]
+        public void FormatErrorMessage_ReturnsDefaultErrorMessage()
+        {
+            // Arrange
+            // See ViewFeatures.Resources.RemoteAttribute_RemoteValidationFailed.
+            var expected = "'Property1' is invalid.";
+            var attribute = new RemoteAttribute("Action", "Controller");
+
+            // Act
+            var message = attribute.FormatErrorMessage("Property1");
+
+            // Assert
+            Assert.Equal(expected, message);
+        }
+
+        [Fact]
+        public void FormatErrorMessage_UsesOverriddenErrorMessage()
+        {
+            // Arrange
+            var expected = "Error about 'Property1' from override.";
+            var attribute = new RemoteAttribute("Action", "Controller")
+            {
+                ErrorMessage = "Error about '{0}' from override.",
+            };
+
+            // Act
+            var message = attribute.FormatErrorMessage("Property1");
+
+            // Assert
+            Assert.Equal(expected, message);
+        }
+
+        [Fact]
+        [ReplaceCulture]
+        public void FormatErrorMessage_UsesErrorMessageFromResource()
+        {
+            // Arrange
+            var expected = "Error about 'Property1' from resources.";
+            var attribute = new RemoteAttribute("Action", "Controller")
+            {
+                ErrorMessageResourceName = nameof(Resources.RemoteAttribute_Error),
+                ErrorMessageResourceType = typeof(Resources),
+            };
+
+            // Act
+            var message = attribute.FormatErrorMessage("Property1");
+
+            // Assert
+            Assert.Equal(expected, message);
+        }
+
         [Theory]
         [MemberData(nameof(NullOrEmptyNames))]
         public void FormatAdditionalFieldsForClientValidation_WithInvalidPropertyName_Throws(string property)
@@ -197,6 +265,7 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         [Fact]
+        [ReplaceCulture]
         public void AddValidation_WithRoute_CallsUrlHelperWithExpectedValues()
         {
             // Arrange
@@ -222,6 +291,7 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         [Fact]
+        [ReplaceCulture]
         public void AddValidation_WithActionController_CallsUrlHelperWithExpectedValues()
         {
             // Arrange
@@ -248,6 +318,7 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         [Fact]
+        [ReplaceCulture]
         public void AddValidation_WithActionController_PropertiesSet_CallsUrlHelperWithExpectedValues()
         {
             // Arrange
@@ -283,6 +354,294 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         [Fact]
+        public void AddValidation_WithErrorMessage_SetsAttributesAsExpected()
+        {
+            // Arrange
+            var expected = "Error about 'Length' from override.";
+            var attribute = new RemoteAttribute("Action", "Controller")
+            {
+                HttpMethod = "POST",
+                ErrorMessage = "Error about '{0}' from override.",
+            };
+            var url = "/Controller/Action";
+            var context = GetValidationContext(url);
+
+            // Act
+            attribute.AddValidation(context);
+
+            // Assert
+            Assert.Collection(
+                context.Attributes,
+                kvp => { Assert.Equal("data-val", kvp.Key); Assert.Equal("true", kvp.Value); },
+                kvp =>
+                {
+                    Assert.Equal("data-val-remote", kvp.Key);
+                    Assert.Equal(expected, kvp.Value);
+                },
+                kvp =>
+                {
+                    Assert.Equal("data-val-remote-additionalfields", kvp.Key);
+                    Assert.Equal("*.Length", kvp.Value);
+                },
+                kvp => { Assert.Equal("data-val-remote-type", kvp.Key); Assert.Equal("POST", kvp.Value); },
+                kvp => { Assert.Equal("data-val-remote-url", kvp.Key); Assert.Equal(url, kvp.Value); });
+        }
+
+        [Fact]
+        public void AddValidation_WithErrorMessageAndLocalizerFactory_SetsAttributesAsExpected()
+        {
+            // Arrange
+            var expected = "Error about 'Length' from override.";
+            var attribute = new RemoteAttribute("Action", "Controller")
+            {
+                HttpMethod = "POST",
+                ErrorMessage = "Error about '{0}' from override.",
+            };
+            var url = "/Controller/Action";
+            var context = GetValidationContextWithLocalizerFactory(url);
+
+            // Act
+            attribute.AddValidation(context);
+
+            // Assert
+            Assert.Collection(
+                context.Attributes,
+                kvp => { Assert.Equal("data-val", kvp.Key); Assert.Equal("true", kvp.Value); },
+                kvp =>
+                {
+                    // IStringLocalizerFactory existence alone is insufficient to change error message.
+                    Assert.Equal("data-val-remote", kvp.Key);
+                    Assert.Equal(expected, kvp.Value);
+                },
+                kvp =>
+                {
+                    Assert.Equal("data-val-remote-additionalfields", kvp.Key);
+                    Assert.Equal("*.Length", kvp.Value);
+                },
+                kvp => { Assert.Equal("data-val-remote-type", kvp.Key); Assert.Equal("POST", kvp.Value); },
+                kvp => { Assert.Equal("data-val-remote-url", kvp.Key); Assert.Equal(url, kvp.Value); });
+        }
+
+        [Fact]
+        public void AddValidation_WithErrorMessageAndLocalizerProvider_SetsAttributesAsExpected()
+        {
+            // Arrange
+            var expected = "Error about 'Length' from override.";
+            var attribute = new RemoteAttribute("Action", "Controller")
+            {
+                HttpMethod = "POST",
+                ErrorMessage = "Error about '{0}' from override.",
+            };
+            var url = "/Controller/Action";
+            var context = GetValidationContext(url);
+
+            var options = context.ActionContext.HttpContext.RequestServices
+                .GetRequiredService<IOptions<MvcDataAnnotationsLocalizationOptions>>();
+            var localizer = new Mock<IStringLocalizer>(MockBehavior.Strict);
+            options.Value.DataAnnotationLocalizerProvider = (type, factory) => localizer.Object;
+
+            // Act
+            attribute.AddValidation(context);
+
+            // Assert
+            Assert.Collection(
+                context.Attributes,
+                kvp => { Assert.Equal("data-val", kvp.Key); Assert.Equal("true", kvp.Value); },
+                kvp =>
+                {
+                    // Non-null DataAnnotationLocalizerProvider alone is insufficient to change error message.
+                    Assert.Equal("data-val-remote", kvp.Key);
+                    Assert.Equal(expected, kvp.Value);
+                },
+                kvp =>
+                {
+                    Assert.Equal("data-val-remote-additionalfields", kvp.Key);
+                    Assert.Equal("*.Length", kvp.Value);
+                },
+                kvp => { Assert.Equal("data-val-remote-type", kvp.Key); Assert.Equal("POST", kvp.Value); },
+                kvp => { Assert.Equal("data-val-remote-url", kvp.Key); Assert.Equal(url, kvp.Value); });
+        }
+
+        [Fact]
+        public void AddValidation_WithErrorMessageLocalizerFactoryAndLocalizerProvider_SetsAttributesAsExpected()
+        {
+            // Arrange
+            var expected = "Error about 'Length' from localizer.";
+            var attribute = new RemoteAttribute("Action", "Controller")
+            {
+                HttpMethod = "POST",
+                ErrorMessage = "Error about '{0}' from override.",
+            };
+            var url = "/Controller/Action";
+            var context = GetValidationContextWithLocalizerFactory(url);
+
+            var localizedString = new LocalizedString("Fred", expected);
+            var localizer = new Mock<IStringLocalizer>(MockBehavior.Strict);
+            localizer
+                .Setup(l => l["Error about '{0}' from override.", "Length"])
+                .Returns(localizedString)
+                .Verifiable();
+            var options = context.ActionContext.HttpContext.RequestServices
+                .GetRequiredService<IOptions<MvcDataAnnotationsLocalizationOptions>>();
+            options.Value.DataAnnotationLocalizerProvider = (type, factory) => localizer.Object;
+
+            // Act
+            attribute.AddValidation(context);
+
+            // Assert
+            localizer.VerifyAll();
+
+            Assert.Collection(
+                context.Attributes,
+                kvp => { Assert.Equal("data-val", kvp.Key); Assert.Equal("true", kvp.Value); },
+                kvp =>
+                {
+                    Assert.Equal("data-val-remote", kvp.Key);
+                    Assert.Equal(expected, kvp.Value);
+                },
+                kvp =>
+                {
+                    Assert.Equal("data-val-remote-additionalfields", kvp.Key);
+                    Assert.Equal("*.Length", kvp.Value);
+                },
+                kvp => { Assert.Equal("data-val-remote-type", kvp.Key); Assert.Equal("POST", kvp.Value); },
+                kvp => { Assert.Equal("data-val-remote-url", kvp.Key); Assert.Equal(url, kvp.Value); });
+        }
+
+        [Fact]
+        [ReplaceCulture]
+        public void AddValidation_WithErrorResourcesLocalizerFactoryAndLocalizerProvider_SetsAttributesAsExpected()
+        {
+            // Arrange
+            var expected = "Error about 'Length' from resources.";
+            var attribute = new RemoteAttribute("Action", "Controller")
+            {
+                HttpMethod = "POST",
+                ErrorMessageResourceName = nameof(Resources.RemoteAttribute_Error),
+                ErrorMessageResourceType = typeof(Resources),
+            };
+            var url = "/Controller/Action";
+            var context = GetValidationContextWithLocalizerFactory(url);
+
+            var localizer = new Mock<IStringLocalizer>(MockBehavior.Strict);
+            var options = context.ActionContext.HttpContext.RequestServices
+                .GetRequiredService<IOptions<MvcDataAnnotationsLocalizationOptions>>();
+            options.Value.DataAnnotationLocalizerProvider = (type, factory) => localizer.Object;
+
+            // Act
+            attribute.AddValidation(context);
+
+            // Assert
+            Assert.Collection(
+                context.Attributes,
+                kvp => { Assert.Equal("data-val", kvp.Key); Assert.Equal("true", kvp.Value); },
+                kvp =>
+                {
+                    // Configuring the attribute using ErrorMessageResource* trumps available IStringLocalizer etc.
+                    Assert.Equal("data-val-remote", kvp.Key);
+                    Assert.Equal(expected, kvp.Value);
+                },
+                kvp =>
+                {
+                    Assert.Equal("data-val-remote-additionalfields", kvp.Key);
+                    Assert.Equal("*.Length", kvp.Value);
+                },
+                kvp => { Assert.Equal("data-val-remote-type", kvp.Key); Assert.Equal("POST", kvp.Value); },
+                kvp => { Assert.Equal("data-val-remote-url", kvp.Key); Assert.Equal(url, kvp.Value); });
+        }
+
+        [Fact]
+        public void AddValidation_WithErrorMessageAndDisplayName_SetsAttributesAsExpected()
+        {
+            // Arrange
+            var expected = "Error about 'Display Length' from override.";
+            var attribute = new RemoteAttribute("Action", "Controller")
+            {
+                HttpMethod = "POST",
+                ErrorMessage = "Error about '{0}' from override.",
+            };
+
+            var url = "/Controller/Action";
+            var metadataProvider = new TestModelMetadataProvider();
+            metadataProvider
+                .ForProperty(typeof(string), nameof(string.Length))
+                .DisplayDetails(d => d.DisplayName = () => "Display Length");
+            var context = GetValidationContext(url, metadataProvider);
+
+            // Act
+            attribute.AddValidation(context);
+
+            // Assert
+            Assert.Collection(
+                context.Attributes,
+                kvp => { Assert.Equal("data-val", kvp.Key); Assert.Equal("true", kvp.Value); },
+                kvp =>
+                {
+                    Assert.Equal("data-val-remote", kvp.Key);
+                    Assert.Equal(expected, kvp.Value);
+                },
+                kvp =>
+                {
+                    Assert.Equal("data-val-remote-additionalfields", kvp.Key);
+                    Assert.Equal("*.Length", kvp.Value);
+                },
+                kvp => { Assert.Equal("data-val-remote-type", kvp.Key); Assert.Equal("POST", kvp.Value); },
+                kvp => { Assert.Equal("data-val-remote-url", kvp.Key); Assert.Equal(url, kvp.Value); });
+        }
+
+        [Fact]
+        public void AddValidation_WithErrorMessageLocalizerFactoryLocalizerProviderAndDisplayName_SetsAttributesAsExpected()
+        {
+            // Arrange
+            var expected = "Error about 'Length' from localizer.";
+            var attribute = new RemoteAttribute("Action", "Controller")
+            {
+                HttpMethod = "POST",
+                ErrorMessage = "Error about '{0}' from override.",
+            };
+
+            var url = "/Controller/Action";
+            var metadataProvider = new TestModelMetadataProvider();
+            metadataProvider
+                .ForProperty(typeof(string), nameof(string.Length))
+                .DisplayDetails(d => d.DisplayName = () => "Display Length");
+            var context = GetValidationContextWithLocalizerFactory(url, metadataProvider);
+
+            var localizedString = new LocalizedString("Fred", expected);
+            var localizer = new Mock<IStringLocalizer>(MockBehavior.Strict);
+            localizer
+                .Setup(l => l["Error about '{0}' from override.", "Display Length"])
+                .Returns(localizedString)
+                .Verifiable();
+            var options = context.ActionContext.HttpContext.RequestServices
+                .GetRequiredService<IOptions<MvcDataAnnotationsLocalizationOptions>>();
+            options.Value.DataAnnotationLocalizerProvider = (type, factory) => localizer.Object;
+
+            // Act
+            attribute.AddValidation(context);
+
+            // Assert
+            localizer.VerifyAll();
+
+            Assert.Collection(
+                context.Attributes,
+                kvp => { Assert.Equal("data-val", kvp.Key); Assert.Equal("true", kvp.Value); },
+                kvp =>
+                {
+                    Assert.Equal("data-val-remote", kvp.Key);
+                    Assert.Equal(expected, kvp.Value);
+                },
+                kvp =>
+                {
+                    Assert.Equal("data-val-remote-additionalfields", kvp.Key);
+                    Assert.Equal("*.Length", kvp.Value);
+                },
+                kvp => { Assert.Equal("data-val-remote-type", kvp.Key); Assert.Equal("POST", kvp.Value); },
+                kvp => { Assert.Equal("data-val-remote-url", kvp.Key); Assert.Equal(url, kvp.Value); });
+        }
+
+        [Fact]
+        [ReplaceCulture]
         public void AddValidation_WithActionControllerArea_CallsUrlHelperWithExpectedValues()
         {
             // Arrange
@@ -319,6 +678,7 @@ namespace Microsoft.AspNetCore.Mvc
 
         // Root area is current in this case.
         [Fact]
+        [ReplaceCulture]
         public void AddValidation_WithActionController_FindsControllerInCurrentArea()
         {
             // Arrange
@@ -343,6 +703,7 @@ namespace Microsoft.AspNetCore.Mvc
 
         // Test area is current in this case.
         [Fact]
+        [ReplaceCulture]
         public void AddValidation_WithActionControllerInArea_FindsControllerInCurrentArea()
         {
             // Arrange
@@ -368,6 +729,7 @@ namespace Microsoft.AspNetCore.Mvc
         // Explicit reference to the (current) root area.
         [Theory]
         [MemberData(nameof(NullOrEmptyNames))]
+        [ReplaceCulture]
         public void AddValidation_WithActionControllerArea_FindsControllerInRootArea(string areaName)
         {
             // Arrange
@@ -393,6 +755,7 @@ namespace Microsoft.AspNetCore.Mvc
         // Test area is current in this case.
         [Theory]
         [MemberData(nameof(NullOrEmptyNames))]
+        [ReplaceCulture]
         public void AddValidation_WithActionControllerAreaInArea_FindsControllerInRootArea(string areaName)
         {
             // Arrange
@@ -417,6 +780,7 @@ namespace Microsoft.AspNetCore.Mvc
 
         // Root area is current in this case.
         [Fact]
+        [ReplaceCulture]
         public void AddValidation_WithActionControllerArea_FindsControllerInNamedArea()
         {
             // Arrange
@@ -441,6 +805,7 @@ namespace Microsoft.AspNetCore.Mvc
 
         // Explicit reference to the current (Test) area.
         [Fact]
+        [ReplaceCulture]
         public void AddValidation_WithActionControllerAreaInArea_FindsControllerInNamedArea()
         {
             // Arrange
@@ -465,6 +830,7 @@ namespace Microsoft.AspNetCore.Mvc
 
         // Test area is current in this case.
         [Fact]
+        [ReplaceCulture]
         public void AddValidation_WithActionControllerAreaInArea_FindsControllerInDifferentArea()
         {
             // Arrange
@@ -518,35 +884,59 @@ namespace Microsoft.AspNetCore.Mvc
                 kvp => { Assert.Equal("data-val-remote-url", kvp.Key); Assert.Equal("original", kvp.Value); });
         }
 
-        private static ClientModelValidationContext GetValidationContext(IUrlHelper urlHelper)
+        private static ClientModelValidationContext GetValidationContext(
+            string url,
+            IModelMetadataProvider metadataProvider = null)
         {
-            var factory = new Mock<IUrlHelperFactory>();
+            var urlHelper = new MockUrlHelper(url, routeName: null);
+            return GetValidationContext(urlHelper, localizerFactory: null, metadataProvider: metadataProvider);
+        }
+
+        private static ClientModelValidationContext GetValidationContextWithLocalizerFactory(
+            string url,
+            IModelMetadataProvider metadataProvider = null)
+        {
+            var urlHelper = new MockUrlHelper(url, routeName: null);
+            var localizerFactory = new Mock<IStringLocalizerFactory>(MockBehavior.Strict);
+            return GetValidationContext(urlHelper, localizerFactory.Object, metadataProvider);
+        }
+
+        private static ClientModelValidationContext GetValidationContext(
+            IUrlHelper urlHelper,
+            IStringLocalizerFactory localizerFactory = null,
+            IModelMetadataProvider metadataProvider = null)
+        {
+            var serviceCollection = GetServiceCollection(localizerFactory);
+            var factory = new Mock<IUrlHelperFactory>(MockBehavior.Strict);
+            serviceCollection.AddSingleton<IUrlHelperFactory>(factory.Object);
+
+            var serviceProvider = serviceCollection.BuildServiceProvider();
+            var actionContext = GetActionContext(serviceProvider, routeData: null);
+
             factory
-                .Setup(f => f.GetUrlHelper(It.IsAny<ActionContext>()))
+                .Setup(f => f.GetUrlHelper(actionContext))
                 .Returns(urlHelper);
 
-            var serviceCollection = GetServiceCollection();
-            serviceCollection.AddSingleton<IUrlHelperFactory>(factory.Object);
-            var serviceProvider = serviceCollection.BuildServiceProvider();
-
-            var actionContext = new ActionContext()
+            var metadata = _metadata;
+            if (metadataProvider == null)
             {
-                HttpContext = new DefaultHttpContext()
-                {
-                    RequestServices = serviceProvider,
-                },
-            };
+                metadataProvider = _metadataProvider;
+            }
+            else
+            {
+                metadata = metadataProvider.GetMetadataForProperty(typeof(string), nameof(string.Length));
+            }
 
             return new ClientModelValidationContext(
                 actionContext,
-                _metadata,
-                _metadataProvider,
+                metadata,
+                metadataProvider,
                 new AttributeDictionary());
         }
 
         private static ClientModelValidationContext GetValidationContextWithArea(string currentArea)
         {
-            var serviceCollection = GetServiceCollection();
+            var serviceCollection = GetServiceCollection(localizerFactory: null);
             var serviceProvider = serviceCollection.BuildServiceProvider();
             var routeCollection = GetRouteCollectionWithArea(serviceProvider);
             var routeData = new RouteData
@@ -566,24 +956,18 @@ namespace Microsoft.AspNetCore.Mvc
                 routeData.Values["area"] = currentArea;
             }
 
-            var context = GetActionContext(serviceProvider, routeData);
+            var actionContext = GetActionContext(serviceProvider, routeData);
 
-            var urlHelper = new UrlHelper(context);
-            var factory = new Mock<IUrlHelperFactory>();
+            var urlHelper = new UrlHelper(actionContext);
+            var factory = new Mock<IUrlHelperFactory>(MockBehavior.Strict);
             factory
-                .Setup(f => f.GetUrlHelper(It.IsAny<ActionContext>()))
+                .Setup(f => f.GetUrlHelper(actionContext))
                 .Returns(urlHelper);
 
+            // Make an IUrlHelperFactory available through the ActionContext.
             serviceCollection.AddSingleton<IUrlHelperFactory>(factory.Object);
             serviceProvider = serviceCollection.BuildServiceProvider();
-
-            var actionContext = new ActionContext()
-            {
-                HttpContext = new DefaultHttpContext()
-                {
-                    RequestServices = serviceProvider,
-                },
-            };
+            actionContext.HttpContext.RequestServices = serviceProvider;
 
             return new ClientModelValidationContext(
                  actionContext,
@@ -615,7 +999,7 @@ namespace Microsoft.AspNetCore.Mvc
 
         private static RouteBuilder GetRouteBuilder(IServiceProvider serviceProvider)
         {
-            var app = new Mock<IApplicationBuilder>();
+            var app = new Mock<IApplicationBuilder>(MockBehavior.Strict);
             app
                 .SetupGet(a => a.ApplicationServices)
                 .Returns(serviceProvider);
@@ -631,9 +1015,7 @@ namespace Microsoft.AspNetCore.Mvc
             return builder;
         }
 
-        private static ActionContext GetActionContext(
-            IServiceProvider serviceProvider,
-            RouteData routeData = null)
+        private static ActionContext GetActionContext(IServiceProvider serviceProvider, RouteData routeData)
         {
             // Set IServiceProvider properties because TemplateRoute gets services (e.g. an ILoggerFactory instance)
             // through the HttpContext.
@@ -653,23 +1035,22 @@ namespace Microsoft.AspNetCore.Mvc
             return new ActionContext(httpContext, routeData, new ActionDescriptor());
         }
 
-        private static ServiceCollection GetServiceCollection()
+        private static ServiceCollection GetServiceCollection(IStringLocalizerFactory localizerFactory)
         {
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddSingleton<ILoggerFactory>(new NullLoggerFactory());
             serviceCollection.AddSingleton<UrlEncoder>(new UrlTestEncoder());
 
-            var routeOptions = new RouteOptions();
-            var accessor = new Mock<IOptions<RouteOptions>>();
-            accessor
-                .SetupGet(options => options.Value)
-                .Returns(routeOptions);
-
-            serviceCollection.AddSingleton<IOptions<RouteOptions>>(accessor.Object);
+            serviceCollection.AddOptions();
             serviceCollection.AddRouting();
 
             serviceCollection.AddSingleton<IInlineConstraintResolver>(
-                new DefaultInlineConstraintResolver(accessor.Object));
+                provider => new DefaultInlineConstraintResolver(provider.GetRequiredService<IOptions<RouteOptions>>()));
+
+            if (localizerFactory != null)
+            {
+                serviceCollection.AddSingleton<IStringLocalizerFactory>(localizerFactory);
+            }
 
             return serviceCollection;
         }

@@ -754,6 +754,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                     (value, name) => "Unexpected InvalidValueWithKnownAttemptedValueAccessor use",
                 UnknownValueIsInvalidAccessor = name => $"Hmm, the supplied value is not valid for { name }.",
                 ValueIsInvalidAccessor = value => "Unexpected InvalidValueWithUnknownModelErrorAccessor use",
+                ValueMustBeANumberAccessor = name => "Unexpected ValueMustBeANumberAccessor use",
             };
             var bindingMetadataProvider = new DefaultBindingMetadataProvider(messageProvider);
             var compositeProvider = new DefaultCompositeMetadataDetailsProvider(new[] { bindingMetadataProvider });
@@ -805,6 +806,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                     (value, name) => $"Hmm, the value '{ value }' is not valid for { name }.",
                 UnknownValueIsInvalidAccessor = name => "Unexpected InvalidValueWithUnknownAttemptedValueAccessor use",
                 ValueIsInvalidAccessor = value => "Unexpected InvalidValueWithUnknownModelErrorAccessor use",
+                ValueMustBeANumberAccessor = name => "Unexpected ValueMustBeANumberAccessor use",
             };
             var bindingMetadataProvider = new DefaultBindingMetadataProvider(messageProvider);
             var compositeProvider = new DefaultCompositeMetadataDetailsProvider(new[] { bindingMetadataProvider });

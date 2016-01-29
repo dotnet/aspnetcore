@@ -1067,6 +1067,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
                         (value, name) => $"The value '{ value }' is not valid for { name }.",
                     UnknownValueIsInvalidAccessor = name => $"The supplied value is invalid for { name }.",
                     ValueIsInvalidAccessor = value => $"The value '{ value }' is invalid.",
+                    ValueMustBeANumberAccessor = name => $"The field { name } must be a number.",
                 };
             }
 

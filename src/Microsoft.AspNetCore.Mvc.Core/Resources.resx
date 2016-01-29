@@ -328,4 +328,7 @@
   <data name="HtmlGeneration_ValueIsInvalid" xml:space="preserve">
     <value>The value '{0}' is invalid.</value>
   </data>
+  <data name="HtmlGeneration_ValueMustBeNumber" xml:space="preserve">
+    <value>The field {0} must be a number.</value>
+  </data>
 </root>

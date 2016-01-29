@@ -6,12 +6,14 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Linq;
-using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Microsoft.AspNetCore.Mvc.Internal;
+using Microsoft.AspNetCore.Mvc.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc
 {
@@ -25,6 +27,8 @@ namespace Microsoft.AspNetCore.Mvc
     {
         private string _additionalFields = string.Empty;
         private string[] _additionalFieldsSplit = new string[0];
+        private bool _checkedForLocalizer;
+        private IStringLocalizer _stringLocalizer;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RemoteAttribute"/> class.
@@ -33,7 +37,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// Intended for subclasses that support URL generation with no route, action, or controller names.
         /// </remarks>
         protected RemoteAttribute()
-            : base(Resources.RemoteAttribute_RemoteValidationFailed)
+            : base(errorMessageAccessor: () => Resources.RemoteAttribute_RemoteValidationFailed)
         {
             RouteData = new RouteValueDictionary();
         }
@@ -241,8 +245,10 @@ namespace Microsoft.AspNetCore.Mvc
 
             MergeAttribute(context.Attributes, "data-val", "true");
 
-            var errorMessage = FormatErrorMessage(context.ModelMetadata.GetDisplayName());
+            CheckForLocalizer(context);
+            var errorMessage = GetErrorMessage(context.ModelMetadata.GetDisplayName());
             MergeAttribute(context.Attributes, "data-val-remote", errorMessage);
+
             MergeAttribute(context.Attributes, "data-val-remote-url", GetUrl(context));
 
             if (!string.IsNullOrEmpty(HttpMethod))
@@ -272,10 +278,45 @@ namespace Microsoft.AspNetCore.Mvc
                 return new string[0];
             }
 
-            var split = original.Split(',')
-                                .Select(piece => piece.Trim())
-                                .Where(trimmed => !string.IsNullOrEmpty(trimmed));
+            var split = original
+                .Split(',')
+                .Select(piece => piece.Trim())
+                .Where(trimmed => !string.IsNullOrEmpty(trimmed));
+
             return split;
+        }
+
+        private void CheckForLocalizer(ClientModelValidationContext context)
+        {
+            if (!_checkedForLocalizer)
+            {
+                _checkedForLocalizer = true;
+
+                var services = context.ActionContext.HttpContext.RequestServices;
+                var options = services.GetRequiredService<IOptions<MvcDataAnnotationsLocalizationOptions>>();
+                var factory = services.GetService<IStringLocalizerFactory>();
+
+                var provider = options.Value.DataAnnotationLocalizerProvider;
+                if (factory != null && provider != null)
+                {
+                    _stringLocalizer = provider(
+                        context.ModelMetadata.ContainerType ?? context.ModelMetadata.ModelType,
+                        factory);
+                }
+            }
+        }
+
+        private string GetErrorMessage(string displayName)
+        {
+            if (_stringLocalizer != null &&
+                !string.IsNullOrEmpty(ErrorMessage) &&
+                string.IsNullOrEmpty(ErrorMessageResourceName) &&
+                ErrorMessageResourceType == null)
+            {
+                return _stringLocalizer[ErrorMessage, displayName];
+            }
+
+            return FormatErrorMessage(displayName);
         }
     }
 }
