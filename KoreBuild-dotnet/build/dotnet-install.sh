@@ -251,6 +251,10 @@ do
             shift
             CHANNEL=$1
             ;;
+        -v|--version)
+            shift
+            VERSION=$1
+            ;;
         -d|--destination)
             shift
             DOTNET_INSTALL_DIR=$1
