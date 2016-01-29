@@ -31,8 +31,8 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
         /// <paramref name="attributes"/>.
         /// </summary>
         /// <param name="attributes">The collection to wrap.</param>
-        public ReadOnlyTagHelperAttributeList(IEnumerable<TagHelperAttribute> attributes)
-            : base(new List<TagHelperAttribute>(attributes))
+        public ReadOnlyTagHelperAttributeList(IList<TagHelperAttribute> attributes)
+            : base(attributes)
         {
         }
 

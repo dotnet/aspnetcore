@@ -14,12 +14,17 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
     /// </summary>
     public class TagHelperExecutionContext
     {
+        private readonly string _tagName;
+        private readonly string _uniqueId;
+        private readonly TagMode _tagMode;
         private readonly List<ITagHelper> _tagHelpers;
         private readonly Func<Task> _executeChildContentAsync;
         private readonly Action<HtmlEncoder> _startTagHelperWritingScope;
         private readonly Func<TagHelperContent> _endTagHelperWritingScope;
         private TagHelperContent _childContent;
         private Dictionary<HtmlEncoder, TagHelperContent> _perEncoderChildContent;
+        private TagHelperAttributeList _htmlAttributes;
+        private TagHelperAttributeList _allAttributes;
 
         /// <summary>
         /// Internal for testing purposes only.
@@ -93,18 +98,11 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
             _startTagHelperWritingScope = startTagHelperWritingScope;
             _endTagHelperWritingScope = endTagHelperWritingScope;
 
-            TagMode = tagMode;
-            HtmlAttributes = new TagHelperAttributeList();
-            AllAttributes = new TagHelperAttributeList();
-            TagName = tagName;
+            _tagMode = tagMode;
+            _tagName = tagName;
             Items = items;
-            UniqueId = uniqueId;
+            _uniqueId = uniqueId;
         }
-
-        /// <summary>
-        /// Gets the HTML syntax of the element in the Razor source.
-        /// </summary>
-        public TagMode TagMode { get; }
 
         /// <summary>
         /// Indicates if <see cref="GetChildContentAsync"/> has been called.
@@ -123,21 +121,6 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
         public IDictionary<object, object> Items { get; }
 
         /// <summary>
-        /// HTML attributes.
-        /// </summary>
-        public TagHelperAttributeList HtmlAttributes { get; }
-
-        /// <summary>
-        /// <see cref="ITagHelper"/> bound attributes and HTML attributes.
-        /// </summary>
-        public TagHelperAttributeList AllAttributes { get; }
-
-        /// <summary>
-        /// An identifier unique to the HTML element this context is for.
-        /// </summary>
-        public string UniqueId { get; }
-
-        /// <summary>
         /// <see cref="ITagHelper"/>s that should be run.
         /// </summary>
         public IList<ITagHelper> TagHelpers
@@ -149,14 +132,17 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
         }
 
         /// <summary>
-        /// The HTML tag name in the Razor source.
-        /// </summary>
-        public string TagName { get; }
-
-        /// <summary>
         /// The <see cref="ITagHelper"/>s' output.
         /// </summary>
         public TagHelperOutput Output { get; set; }
+
+        public TagHelperContext CreateTagHelperContext() =>
+            new TagHelperContext(_allAttributes, Items, _uniqueId);
+        public TagHelperOutput CreateTagHelperOutput() =>
+            new TagHelperOutput(_tagName, _htmlAttributes, GetChildContentAsync)
+            {
+                TagMode = _tagMode
+            };
 
         /// <summary>
         /// Tracks the given <paramref name="tagHelper"/>.
@@ -183,9 +169,12 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
                 throw new ArgumentNullException(nameof(name));
             }
 
+            EnsureHtmlAttributes();
+            EnsureAllAttributes();
+
             var attribute = new TagHelperAttribute(name);
-            HtmlAttributes.Add(attribute);
-            AllAttributes.Add(attribute);
+            _htmlAttributes.Add(attribute);
+            _allAttributes.Add(attribute);
         }
 
         /// <summary>
@@ -200,8 +189,12 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
                 throw new ArgumentNullException(nameof(name));
             }
 
-            HtmlAttributes.Add(name, value);
-            AllAttributes.Add(name, value);
+            EnsureHtmlAttributes();
+            EnsureAllAttributes();
+
+            var attribute = new TagHelperAttribute(name, value);
+            _htmlAttributes.Add(attribute);
+            _allAttributes.Add(attribute);
         }
 
         /// <summary>
@@ -216,24 +209,13 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
                 throw new ArgumentNullException(nameof(name));
             }
 
-            AllAttributes.Add(name, value);
+            EnsureAllAttributes();
+
+            _allAttributes.Add(name, value);
         }
 
-        /// <summary>
-        /// Executes children asynchronously with the given <paramref name="encoder"/> in scope and returns their
-        /// rendered content.
-        /// </summary>
-        /// <param name="useCachedResult">
-        /// If <c>true</c>, multiple calls with the same <see cref="HtmlEncoder"/> will not cause children to
-        /// re-execute; returns cached content.
-        /// </param>
-        /// <param name="encoder">
-        /// The <see cref="HtmlEncoder"/> to use when the page handles
-        /// non-<see cref="Microsoft.AspNetCore.Html.IHtmlContent"/> C# expressions. If <c>null</c>, executes children with
-        /// the page's current <see cref="HtmlEncoder"/>.
-        /// </param>
-        /// <returns>A <see cref="Task"/> that on completion returns the rendered child content.</returns>
-        public async Task<TagHelperContent> GetChildContentAsync(bool useCachedResult, HtmlEncoder encoder)
+        // Internal for testing.
+        internal async Task<TagHelperContent> GetChildContentAsync(bool useCachedResult, HtmlEncoder encoder)
         {
             // Get cached content for this encoder.
             TagHelperContent childContent;
@@ -271,6 +253,22 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
             }
 
             return new DefaultTagHelperContent().SetContent(childContent);
+        }
+
+        private void EnsureHtmlAttributes()
+        {
+            if (_htmlAttributes == null)
+            {
+                _htmlAttributes = new TagHelperAttributeList();
+            }
+        }
+
+        private void EnsureAllAttributes()
+        {
+            if (_allAttributes == null)
+            {
+                _allAttributes = new TagHelperAttributeList();
+            }
         }
     }
 }

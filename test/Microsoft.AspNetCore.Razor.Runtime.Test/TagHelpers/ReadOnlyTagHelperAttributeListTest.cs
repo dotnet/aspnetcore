@@ -730,7 +730,7 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
         private class TestableReadOnlyTagHelperAttributes : ReadOnlyTagHelperAttributeList
         {
             public TestableReadOnlyTagHelperAttributes(IEnumerable<TagHelperAttribute> attributes)
-                : base(attributes)
+                : base(new List<TagHelperAttribute>(attributes))
             {
             }
 

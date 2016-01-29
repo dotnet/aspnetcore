@@ -27,10 +27,7 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
                 throw new ArgumentNullException(nameof(executionContext));
             }
 
-            var tagHelperContext = new TagHelperContext(
-                executionContext.AllAttributes,
-                executionContext.Items,
-                executionContext.UniqueId);
+            var tagHelperContext = executionContext.CreateTagHelperContext();
 
             OrderTagHelpers(executionContext.TagHelpers);
 
@@ -39,13 +36,7 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
                 executionContext.TagHelpers[i].Init(tagHelperContext);
             }
 
-            var tagHelperOutput = new TagHelperOutput(
-                executionContext.TagName,
-                executionContext.HtmlAttributes,
-                executionContext.GetChildContentAsync)
-            {
-                TagMode = executionContext.TagMode,
-            };
+            var tagHelperOutput = executionContext.CreateTagHelperOutput();
 
             for (var i = 0; i < executionContext.TagHelpers.Count; i++)
             {

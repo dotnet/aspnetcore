@@ -18,13 +18,16 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
         [InlineData(TagMode.SelfClosing)]
         [InlineData(TagMode.StartTagAndEndTag)]
         [InlineData(TagMode.StartTagOnly)]
-        public void TagMode_ReturnsExpectedValue(TagMode tagMode)
+        public void ExecutionContext_CreateTagHelperOutput_ReturnsExpectedTagMode(TagMode tagMode)
         {
-            // Arrange & Act
+            // Arrange
             var executionContext = new TagHelperExecutionContext("p", tagMode);
 
+            // Act
+            var output = executionContext.CreateTagHelperOutput();
+
             // Assert
-            Assert.Equal(tagMode, executionContext.TagMode);
+            Assert.Equal(tagMode, output.TagMode);
         }
 
         [Fact]
@@ -270,51 +273,6 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
             Assert.NotSame(content1, content2);
         }
 
-        public static TheoryData<string, string> DictionaryCaseTestingData
-        {
-            get
-            {
-                return new TheoryData<string, string>
-                {
-                    { "class", "CLaSS" },
-                    { "Class", "class" },
-                    { "Class", "claSS" }
-                };
-            }
-        }
-
-        [Theory]
-        [MemberData(nameof(DictionaryCaseTestingData))]
-        public void HtmlAttributes_IgnoresCase(string originalName, string updatedName)
-        {
-            // Arrange
-            var executionContext = new TagHelperExecutionContext("p", TagMode.StartTagAndEndTag);
-            executionContext.HtmlAttributes.SetAttribute(originalName, "hello");
-
-            // Act
-            executionContext.HtmlAttributes.SetAttribute(updatedName, "something else");
-
-            // Assert
-            var attribute = Assert.Single(executionContext.HtmlAttributes);
-            Assert.Equal(new TagHelperAttribute(originalName, "something else"), attribute);
-        }
-
-        [Theory]
-        [MemberData(nameof(DictionaryCaseTestingData))]
-        public void AllAttributes_IgnoresCase(string originalName, string updatedName)
-        {
-            // Arrange
-            var executionContext = new TagHelperExecutionContext("p", tagMode: TagMode.StartTagAndEndTag);
-            executionContext.AllAttributes.SetAttribute(originalName, value: false);
-
-            // Act
-            executionContext.AllAttributes.SetAttribute(updatedName, true);
-
-            // Assert
-            var attribute = Assert.Single(executionContext.AllAttributes);
-            Assert.Equal(new TagHelperAttribute(originalName, true), attribute);
-        }
-
         [Fact]
         public void AddHtmlAttribute_MaintainsHtmlAttributes()
         {
@@ -329,11 +287,12 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
             // Act
             executionContext.AddHtmlAttribute("class", "btn");
             executionContext.AddHtmlAttribute("foo", "bar");
+            var output = executionContext.CreateTagHelperOutput();
 
             // Assert
             Assert.Equal(
                 expectedAttributes,
-                executionContext.HtmlAttributes,
+                output.Attributes,
                 CaseSensitiveTagHelperAttributeComparer.Default);
         }
 
@@ -351,11 +310,12 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
             // Act
             executionContext.AddMinimizedHtmlAttribute("checked");
             executionContext.AddMinimizedHtmlAttribute("visible");
+            var output = executionContext.CreateTagHelperOutput();
 
             // Assert
             Assert.Equal(
                 expectedAttributes,
-                executionContext.HtmlAttributes,
+                output.Attributes,
                 CaseSensitiveTagHelperAttributeComparer.Default);
         }
 
@@ -377,11 +337,12 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
             executionContext.AddHtmlAttribute("foo", "bar");
             executionContext.AddMinimizedHtmlAttribute("checked");
             executionContext.AddMinimizedHtmlAttribute("visible");
+            var output = executionContext.CreateTagHelperOutput();
 
             // Assert
             Assert.Equal(
                 expectedAttributes,
-                executionContext.HtmlAttributes,
+                output.Attributes,
                 CaseSensitiveTagHelperAttributeComparer.Default);
         }
 
@@ -401,11 +362,12 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
             executionContext.AddHtmlAttribute("class", "btn");
             executionContext.AddTagHelperAttribute("something", true);
             executionContext.AddHtmlAttribute("foo", "bar");
+            var context = executionContext.CreateTagHelperContext();
 
             // Assert
             Assert.Equal(
                 expectedAttributes,
-                executionContext.AllAttributes,
+                context.AllAttributes,
                 CaseSensitiveTagHelperAttributeComparer.Default);
         }
 

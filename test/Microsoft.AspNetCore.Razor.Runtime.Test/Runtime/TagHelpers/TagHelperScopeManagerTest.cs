@@ -125,16 +125,17 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
         }
 
         [Fact]
-        public void Begin_CreatesContextWithAppropriateTagName()
+        public void Begin_CreatesContexts_TagHelperOutput_WithAppropriateTagName()
         {
             // Arrange
             var scopeManager = new TagHelperScopeManager();
 
             // Act
             var executionContext = BeginDefaultScope(scopeManager, tagName: "p");
+            var output = executionContext.CreateTagHelperOutput();
 
             // Assert
-            Assert.Equal("p", executionContext.TagName);
+            Assert.Equal("p", output.TagName);
         }
 
         [Fact]
@@ -146,25 +147,27 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
             // Act
             var executionContext = BeginDefaultScope(scopeManager, tagName: "p");
             executionContext = BeginDefaultScope(scopeManager, tagName: "div");
+            var output = executionContext.CreateTagHelperOutput();
 
             // Assert
-            Assert.Equal("div", executionContext.TagName);
+            Assert.Equal("div", output.TagName);
         }
 
         [Theory]
         [InlineData(TagMode.SelfClosing)]
         [InlineData(TagMode.StartTagAndEndTag)]
         [InlineData(TagMode.StartTagOnly)]
-        public void Begin_SetsExecutionContextTagMode(TagMode tagMode)
+        public void Begin_SetsExecutionContexts_TagHelperOutputTagMode(TagMode tagMode)
         {
             // Arrange
             var scopeManager = new TagHelperScopeManager();
 
             // Act
             var executionContext = BeginDefaultScope(scopeManager, "p", tagMode);
+            var output = executionContext.CreateTagHelperOutput();
 
             // Assert
-            Assert.Equal(tagMode, executionContext.TagMode);
+            Assert.Equal(tagMode, output.TagMode);
         }
 
         [Fact]
@@ -177,9 +180,10 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
             var executionContext = BeginDefaultScope(scopeManager, tagName: "p");
             executionContext = BeginDefaultScope(scopeManager, tagName: "div");
             executionContext = scopeManager.End();
+            var output = executionContext.CreateTagHelperOutput();
 
             // Assert
-            Assert.Equal("p", executionContext.TagName);
+            Assert.Equal("p", output.TagName);
         }
 
         [Fact]

@@ -25,6 +25,20 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
         /// </summary>
         /// <param name="attributes">The collection to wrap.</param>
         public TagHelperAttributeList(IEnumerable<TagHelperAttribute> attributes)
+            : base (new List<TagHelperAttribute>(attributes))
+        {
+            if (attributes == null)
+            {
+                throw new ArgumentNullException(nameof(attributes));
+            }
+        }
+
+        /// <summary>
+        /// Instantiates a new instance of <see cref="TagHelperAttributeList"/> with the specified
+        /// <paramref name="attributes"/>.
+        /// </summary>
+        /// <param name="attributes">The collection to wrap.</param>
+        public TagHelperAttributeList(List<TagHelperAttribute> attributes)
             : base(attributes)
         {
             if (attributes == null)

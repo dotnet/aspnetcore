@@ -15,6 +15,7 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
     public class TagHelperOutput : IHtmlContent
     {
         private readonly Func<bool, HtmlEncoder, Task<TagHelperContent>> _getChildContentAsync;
+        private TagHelperAttributeList _attributes;
         private TagHelperContent _preElement;
         private TagHelperContent _preContent;
         private TagHelperContent _content;
@@ -26,7 +27,7 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
         internal TagHelperOutput(string tagName)
             : this(
                 tagName,
-                new TagHelperAttributeList(),
+                null,
                 (useCachedResult, encoder) => Task.FromResult<TagHelperContent>(new DefaultTagHelperContent()))
         {
         }
@@ -45,19 +46,14 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
             TagHelperAttributeList attributes,
             Func<bool, HtmlEncoder, Task<TagHelperContent>> getChildContentAsync)
         {
-            if (attributes == null)
-            {
-                throw new ArgumentNullException(nameof(attributes));
-            }
-
             if (getChildContentAsync == null)
             {
                 throw new ArgumentNullException(nameof(getChildContentAsync));
             }
 
             TagName = tagName;
-            Attributes = attributes;
             _getChildContentAsync = getChildContentAsync;
+            _attributes = attributes;
         }
 
         /// <summary>
@@ -187,7 +183,18 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
         /// a <c>Microsoft.AspNetCore.Mvc.Rendering.HtmlString</c> instance. MVC converts most other types to a
         /// <see cref="string"/>, then HTML encodes the result.
         /// </remarks>
-        public TagHelperAttributeList Attributes { get; }
+        public TagHelperAttributeList Attributes
+        {
+            get
+            {
+                if (_attributes == null)
+                {
+                    _attributes = new TagHelperAttributeList();
+                }
+
+                return _attributes;
+            }
+        }
 
         /// <summary>
         /// Changes <see cref="TagHelperOutput"/> to generate nothing.
@@ -287,9 +294,9 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
                 writer.Write(TagName);
 
                 // Perf: Avoid allocating enumerator
-                for (var i = 0; i < Attributes.Count; i++)
+                for (var i = 0; i < (_attributes?.Count ?? 0); i++)
                 {
-                    var attribute = Attributes[i];
+                    var attribute = _attributes[i];
                     writer.Write(" ");
                     writer.Write(attribute.Name);
 
