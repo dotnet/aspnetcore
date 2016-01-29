@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
     /// </summary>
     public class EnvironmentTagHelper : TagHelper
     {
-        private static readonly char NameSeparator = ',';
+        private static readonly char[] NameSeparator = new[] { ',' };
 
         /// <summary>
         /// Creates a new <see cref="EnvironmentTagHelper"/>.

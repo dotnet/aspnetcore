@@ -29,6 +29,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Internal
         private static readonly char[] ValidAttributeWhitespaceChars =
             new[] { '\t', '\n', '\u000C', '\r', ' ' };
         private static readonly PathComparer DefaultPathComparer = new PathComparer();
+        private static readonly char[] PatternSeparator = new[] { ',' };
+        private static readonly char[] PathSeparator = new[] { '/' };
         private readonly FileProviderGlobbingDirectory _baseGlobbingDirectory;
 
         /// <summary>
@@ -124,7 +126,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Internal
                 return files;
             }
 
-            var includeTokenizer = new StringTokenizer(include, ',');
+            var includeTokenizer = new StringTokenizer(include, PatternSeparator);
             var includeEnumerator = includeTokenizer.GetEnumerator();
             if (!includeEnumerator.MoveNext())
             {
@@ -144,7 +146,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Internal
 
             if (!string.IsNullOrWhiteSpace(exclude))
             {
-                var excludeTokenizer = new StringTokenizer(exclude, ',');
+                var excludeTokenizer = new StringTokenizer(exclude, PatternSeparator);
                 var trimmedExcludePatterns = new List<string>();
                 foreach (var excludePattern in excludeTokenizer)
                 {
@@ -234,8 +236,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Internal
                 var yNoExt = yExtIndex >= 0 ? y.Substring(0, yExtIndex) : y;
 
                 var result = 0;
-                var xEnumerator = new StringTokenizer(xNoExt, '/').GetEnumerator();
-                var yEnumerator = new StringTokenizer(yNoExt, '/').GetEnumerator();
+                var xEnumerator = new StringTokenizer(xNoExt, PathSeparator).GetEnumerator();
+                var yEnumerator = new StringTokenizer(yNoExt, PathSeparator).GetEnumerator();
                 StringSegment xSegment;
                 StringSegment ySegment;
                 while (TryGetNextSegment(ref xEnumerator, out xSegment))
