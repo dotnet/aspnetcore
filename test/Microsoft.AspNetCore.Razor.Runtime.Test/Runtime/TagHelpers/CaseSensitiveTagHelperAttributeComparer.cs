@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Razor.TagHelpers
 {
-    public class CaseSensitiveTagHelperAttributeComparer : IEqualityComparer<IReadOnlyTagHelperAttribute>
+    public class CaseSensitiveTagHelperAttributeComparer : IEqualityComparer<TagHelperAttribute>
     {
         public readonly static CaseSensitiveTagHelperAttributeComparer Default =
             new CaseSensitiveTagHelperAttributeComparer();
@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
         {
         }
 
-        public bool Equals(IReadOnlyTagHelperAttribute attributeX, IReadOnlyTagHelperAttribute attributeY)
+        public bool Equals(TagHelperAttribute attributeX, TagHelperAttribute attributeY)
         {
             if (attributeX == attributeY)
             {
@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
                 (attributeX.Minimized || Equals(attributeX.Value, attributeY.Value));
         }
 
-        public int GetHashCode(IReadOnlyTagHelperAttribute attribute)
+        public int GetHashCode(TagHelperAttribute attribute)
         {
             return attribute.GetHashCode();
         }

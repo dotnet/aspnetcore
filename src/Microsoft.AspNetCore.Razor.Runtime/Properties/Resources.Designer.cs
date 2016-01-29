@@ -363,38 +363,6 @@ namespace Microsoft.AspNetCore.Razor.Runtime
         }
 
         /// <summary>
-        /// Cannot add a '{0}' with a null '{1}'.
-        /// </summary>
-        internal static string TagHelperAttributeList_CannotAddWithNullName
-        {
-            get { return GetString("TagHelperAttributeList_CannotAddWithNullName"); }
-        }
-
-        /// <summary>
-        /// Cannot add a '{0}' with a null '{1}'.
-        /// </summary>
-        internal static string FormatTagHelperAttributeList_CannotAddWithNullName(object p0, object p1)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("TagHelperAttributeList_CannotAddWithNullName"), p0, p1);
-        }
-
-        /// <summary>
-        /// Cannot add a {0} with inconsistent names. The {1} property '{2}' must match the location '{3}'.
-        /// </summary>
-        internal static string TagHelperAttributeList_CannotAddAttribute
-        {
-            get { return GetString("TagHelperAttributeList_CannotAddAttribute"); }
-        }
-
-        /// <summary>
-        /// Cannot add a {0} with inconsistent names. The {1} property '{2}' must match the location '{3}'.
-        /// </summary>
-        internal static string FormatTagHelperAttributeList_CannotAddAttribute(object p0, object p1, object p2, object p3)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("TagHelperAttributeList_CannotAddAttribute"), p0, p1, p2, p3);
-        }
-
-        /// <summary>
         /// Invalid '{0}' tag name '{1}' for tag helper '{2}'. Tag helpers cannot restrict child elements that contain a '{3}' character.
         /// </summary>
         internal static string TagHelperDescriptorFactory_InvalidRestrictChildrenAttributeName

@@ -289,13 +289,13 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
         {
             // Arrange
             var executionContext = new TagHelperExecutionContext("p", TagMode.StartTagAndEndTag);
-            executionContext.HTMLAttributes[originalName] = "hello";
+            executionContext.HtmlAttributes.SetAttribute(originalName, "hello");
 
             // Act
-            executionContext.HTMLAttributes[updatedName] = "something else";
+            executionContext.HtmlAttributes.SetAttribute(updatedName, "something else");
 
             // Assert
-            var attribute = Assert.Single(executionContext.HTMLAttributes);
+            var attribute = Assert.Single(executionContext.HtmlAttributes);
             Assert.Equal(new TagHelperAttribute(originalName, "something else"), attribute);
         }
 
@@ -305,10 +305,10 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
         {
             // Arrange
             var executionContext = new TagHelperExecutionContext("p", tagMode: TagMode.StartTagAndEndTag);
-            executionContext.AllAttributes.Add(originalName, value: false);
+            executionContext.AllAttributes.SetAttribute(originalName, value: false);
 
             // Act
-            executionContext.AllAttributes[updatedName].Value = true;
+            executionContext.AllAttributes.SetAttribute(updatedName, true);
 
             // Assert
             var attribute = Assert.Single(executionContext.AllAttributes);
@@ -316,7 +316,7 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
         }
 
         [Fact]
-        public void AddHtmlAttribute_MaintainsHTMLAttributes()
+        public void AddHtmlAttribute_MaintainsHtmlAttributes()
         {
             // Arrange
             var executionContext = new TagHelperExecutionContext("p", TagMode.StartTagAndEndTag);
@@ -333,19 +333,19 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
             // Assert
             Assert.Equal(
                 expectedAttributes,
-                executionContext.HTMLAttributes,
+                executionContext.HtmlAttributes,
                 CaseSensitiveTagHelperAttributeComparer.Default);
         }
 
         [Fact]
-        public void AddMinimizedHtmlAttribute_MaintainsHTMLAttributes()
+        public void AddMinimizedHtmlAttribute_MaintainsHtmlAttributes()
         {
             // Arrange
             var executionContext = new TagHelperExecutionContext("input", tagMode: TagMode.StartTagOnly);
             var expectedAttributes = new TagHelperAttributeList
             {
-                ["checked"] = new TagHelperAttribute { Name = "checked", Minimized = true },
-                ["visible"] = new TagHelperAttribute { Name = "visible", Minimized = true }
+                new TagHelperAttribute("checked"),
+                new TagHelperAttribute("visible"),
             };
 
             // Act
@@ -355,12 +355,12 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
             // Assert
             Assert.Equal(
                 expectedAttributes,
-                executionContext.HTMLAttributes,
+                executionContext.HtmlAttributes,
                 CaseSensitiveTagHelperAttributeComparer.Default);
         }
 
         [Fact]
-        public void AddMinimizedHtmlAttribute_MaintainsHTMLAttributes_SomeMinimized()
+        public void AddMinimizedHtmlAttribute_MaintainsHtmlAttributes_SomeMinimized()
         {
             // Arrange
             var executionContext = new TagHelperExecutionContext("input", tagMode: TagMode.SelfClosing);
@@ -369,8 +369,8 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
                 { "class", "btn" },
                 { "foo", "bar" }
             };
-            expectedAttributes.Add(new TagHelperAttribute { Name = "checked", Minimized = true });
-            expectedAttributes.Add(new TagHelperAttribute { Name = "visible", Minimized = true });
+            expectedAttributes.Add(new TagHelperAttribute(name: "checked"));
+            expectedAttributes.Add(new TagHelperAttribute(name: "visible"));
 
             // Act
             executionContext.AddHtmlAttribute("class", "btn");
@@ -381,7 +381,7 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
             // Assert
             Assert.Equal(
                 expectedAttributes,
-                executionContext.HTMLAttributes,
+                executionContext.HtmlAttributes,
                 CaseSensitiveTagHelperAttributeComparer.Default);
         }
 

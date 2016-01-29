@@ -33,11 +33,7 @@
     "dnxcore50": {
       "imports": "portable-net451+win8",
       "dependencies": {
-        "xunit.runner.aspnet": "2.0.0-aspnet-*",
-        "Microsoft.Extensions.HashCodeCombiner.Sources": {
-          "type": "build",
-          "version": "1.0.0-*"
-        }
+        "xunit.runner.aspnet": "2.0.0-aspnet-*"
       }
     }
   }

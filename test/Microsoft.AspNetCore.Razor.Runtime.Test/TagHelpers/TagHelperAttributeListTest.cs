@@ -133,64 +133,49 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
             get
             {
                 var A = new TagHelperAttribute("AName", "AName Value");
-                var ASet = new TagHelperAttribute("aname", "AName Set Value");
+                var ASet1 = new TagHelperAttribute("AName", "AName Set Value");
+                var ASet2 = new TagHelperAttribute("AnAmE", "AName Set Value");
                 var A2 = new TagHelperAttribute("aname", "AName Second Value");
-                var A2Set = new TagHelperAttribute("aname", "AName Second Set Value");
                 var A3 = new TagHelperAttribute("AName", "AName Third Value");
                 var A3Set = new TagHelperAttribute("aname", "AName Third Set Value");
                 var B = new TagHelperAttribute("BName", "BName Value");
-                var BSet = new TagHelperAttribute("bname", "BName Set Value");
+                var BSet1 = new TagHelperAttribute("BName", "BName Set Value");
+                var BSet2 = new TagHelperAttribute("BnAmE", "BName Set Value");
                 var C = new TagHelperAttribute("CName", "CName Value");
-                var CSet = new TagHelperAttribute("cname", "CName Set Value");
+                var CSet1 = new TagHelperAttribute("CName", "CName Set Value");
+                var CSet2 = new TagHelperAttribute("cnamE", "CName Set Value");
                 var set = new TagHelperAttribute("Set", "Set Value");
 
                 return new TheoryData<
                     IEnumerable<TagHelperAttribute>, // initialAttributes
                     string, // keyToSet
-                    TagHelperAttribute, // setValue
+                    object, // setValue
                     IEnumerable<TagHelperAttribute>> // expectedAttributes
                 {
-                    { new[] { A }, "AName", ASet, new[] { ASet } },
-                    { new[] { A }, "AnAmE", ASet, new[] { ASet } },
-                    { new[] { A }, "AnAmE", "AV", new[] { new TagHelperAttribute("AnAmE", "AV") } },
-                    { new[] { A, B }, "AName", ASet, new[] { ASet, B } },
-                    { new[] { A, B }, "AnAmE", ASet, new[] { ASet, B } },
-                    { new[] { A, B }, "AnAmE", "AV", new[] { new TagHelperAttribute("AnAmE", "AV"), B } },
-                    { new[] { A, B }, "BName", BSet, new[] { A, BSet } },
-                    { new[] { A, B }, "BnAmE", BSet, new[] { A, BSet } },
-                    { new[] { A, B }, "BnAmE", "BV", new[] { A, new TagHelperAttribute("BnAmE", "BV") } },
-                    { new[] { A, B, C }, "BName", BSet, new[] { A, BSet, C } },
-                    { new[] { A, B, C }, "bname", BSet, new[] { A, BSet, C } },
-                    { new[] { A, B, C }, "bname", "BV", new[] { A, new TagHelperAttribute("bname", "BV"), C } },
-                    { new[] { A, B, C }, "CName", CSet, new[] { A, B, CSet } },
-                    { new[] { A, B, C }, "cnamE", CSet, new[] { A, B, CSet } },
-                    { new[] { A, B, C }, "cnamE", "CV", new[] { A, B, new TagHelperAttribute("cnamE", "CV") } },
-                    { Enumerable.Empty<TagHelperAttribute>(), "Set", set, new[] { set } },
-                    { new[] { B }, "Set", set, new[] { B, set } },
-                    { new[] { B }, "Set", "Set Value", new[] { B, set } },
-                    { new[] { A, B }, "Set", set, new[] { A, B, set } },
-                    { new[] { A, B }, "Set", "Set Value", new[] { A, B, set } },
+                    { new[] { A }, "AName", ASet1.Value, new[] { ASet1 } },
+                    { new[] { A }, "AnAmE", ASet2.Value, new[] { ASet2 } },
+                    { new[] { A, B }, "AName", ASet1.Value, new[] { ASet1, B } },
+                    { new[] { A, B }, "AnAmE", ASet2.Value, new[] { ASet2, B } },
+                    { new[] { A, B }, "BName", BSet1.Value, new[] { A, BSet1 } },
+                    { new[] { A, B }, "BnAmE", BSet2.Value, new[] { A, BSet2 } },
+                    { new[] { A, B, C }, "BName", BSet1.Value, new[] { A, BSet1, C } },
+                    { new[] { A, B, C }, "BnAmE", BSet2.Value, new[] { A, BSet2, C } },
+                    { new[] { A, B, C }, "CName", CSet1.Value, new[] { A, B, CSet1 } },
+                    { new[] { A, B, C }, "cnamE", CSet2.Value, new[] { A, B, CSet2 } },
+                    { Enumerable.Empty<TagHelperAttribute>(), "Set", set.Value, new[] { set } },
+                    { new[] { B }, "Set", set.Value, new[] { B, set } },
+                    { new[] { A, B }, "Set", set.Value, new[] { A, B, set } },
 
                     // Multiple elements same name
-                    { new[] { A, B, A2, C }, "AName", ASet, new[] { ASet, B, C } },
-                    { new[] { A, B, A2, C }, "aname", ASet, new[] { ASet, B, C } },
-                    { new[] { A, B, A2, C }, "aname", "av", new[] { new TagHelperAttribute("aname", "av"), B, C } },
-                    { new[] { B, A2, A }, "aname", A2Set, new[] { B, A2Set } },
-                    { new[] { B, A2, A }, "aname", "av", new[] { B, new TagHelperAttribute("aname", "av") } },
-                    { new[] { B, A2, A, C }, "AName", A2Set, new[] { B, A2Set, C } },
-                    { new[] { B, A2, A, C }, "AName", "av", new[] { B, new TagHelperAttribute("AName", "av"), C } },
-                    { new[] { A, A3 }, "AName", ASet, new[] { ASet } },
-                    { new[] { A, A3 }, "AName", "av", new[] { new TagHelperAttribute("AName", "av") } },
-                    { new[] { A3, A }, "aname", A3Set, new[] { A3Set } },
-                    { new[] { A3, A }, "aname", "av", new[] { new TagHelperAttribute("aname", "av") } },
-                    { new[] { A, A2, A3 }, "AName", ASet, new[] { ASet } },
-                    { new[] { A, A2, A3 }, "AName", "av", new[] { new TagHelperAttribute("AName", "av") } },
-                    { new[] { C, B, A3, A }, "AName", A3Set, new[] { C, B, A3Set } },
-                    { new[] { C, B, A3, A }, "AName", "av", new[] { C, B, new TagHelperAttribute("AName", "av") } },
-                    { new[] { A, A2, A3 }, "BNamE", BSet, new[] { A, A2, A3, BSet } },
-                    { new[] { A, A2, A3 }, "bname", "BName Set Value", new[] { A, A2, A3, BSet } },
-                    { new[] { A, A2, A3, B, C }, "Set", set, new[] { A, A2, A3, B, C, set } },
-                    { new[] { A, A2, A3, B, C }, "Set", "Set Value", new[] { A, A2, A3, B, C, set } },
+                    { new[] { A, B, A2, C }, "AName", ASet1.Value, new[] { ASet1, B, C } },
+                    { new[] { A, B, A2, C }, "AnAmE", ASet2.Value, new[] { ASet2, B, C } },
+                    { new[] { B, A2, A }, "AName", ASet1.Value, new[] { B, ASet1 } },
+                    { new[] { B, A2, A, C }, "AnAmE", ASet2.Value, new[] { B, ASet2, C } },
+                    { new[] { A, A3 }, "aname", A3Set.Value, new[] { A3Set } },
+                    { new[] { A3, A }, "aname", A3Set.Value, new[] { A3Set } },
+                    { new[] { A, A2, A3 }, "AName", ASet1.Value, new[] { ASet1 } },
+                    { new[] { A, A2, A3 }, "BName", BSet1.Value, new[] { A, A2, A3, BSet1 } },
+                    { new[] { A, A2, A3, B, C }, "Set", set.Value, new[] { A, A2, A3, B, C, set } },
                 };
             }
         }
@@ -200,14 +185,14 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
         public void StringIndexer_SetsAttributeAtExpectedLocation(
             IEnumerable<TagHelperAttribute> initialAttributes,
             string keyToSet,
-            TagHelperAttribute setValue,
+            object setValue,
             IEnumerable<TagHelperAttribute> expectedAttributes)
         {
             // Arrange
             var attributes = new TagHelperAttributeList(initialAttributes);
 
             // Act
-            attributes[keyToSet] = setValue;
+            attributes.SetAttribute(keyToSet, setValue);
 
             // Assert
             Assert.Equal(expectedAttributes, attributes, CaseSensitiveTagHelperAttributeComparer.Default);
@@ -229,42 +214,6 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
                 attributes[2] = new TagHelperAttribute("C", "CV");
             });
         }
-
-        public static TheoryData StringIndexerSetterThrowData
-        {
-            get
-            {
-                // attributes
-                return new TheoryData<TagHelperAttributeList>
-                {
-                    { new TagHelperAttributeList() },
-                    { new TagHelperAttributeList { { "something", "a value" } } },
-                    { new TagHelperAttributeList { { "somethingelse", "a value" } } },
-                    { new TagHelperAttributeList { { "SomethingElse", "a value" } } },
-                    { new TagHelperAttributeList { { "something", "a value" }, { "somethingelse", "a value" } } },
-                    { new TagHelperAttributeList { { "SomethingElse", "a value" }, { "somethingelse", "a value" } } }
-                };
-            }
-        }
-
-        [Theory]
-        [MemberData(nameof(StringIndexerSetterThrowData))]
-        public void StringIndexer_Setter_ThrowsIfUnmatchingKey(
-            TagHelperAttributeList attributes)
-        {
-            // Arrange
-            var expectedMessage = $"Cannot add a {nameof(TagHelperAttribute)} with inconsistent names. The " +
-                $"{nameof(TagHelperAttribute.Name)} property 'somethingelse' must match the location 'something'." +
-                $"{Environment.NewLine}Parameter name: name";
-
-            // Act & Assert
-            var exception = Assert.Throws<ArgumentException>("name", () =>
-            {
-                attributes["something"] = new TagHelperAttribute("somethingelse", "value");
-            });
-            Assert.Equal(expectedMessage, exception.Message);
-        }
-
 
         [Fact]
         public void ICollection_IsReadOnly_ReturnsFalse()
@@ -316,37 +265,6 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
             Assert.Equal(expectedAttributes, attributes, CaseSensitiveTagHelperAttributeComparer.Default);
         }
 
-        [Fact]
-        public void Add_ThrowsWhenNameAndValueAreNull()
-        {
-            // Arrange
-            var attributes = new TagHelperAttributeList();
-            var expectedMessage = $"Cannot add a '{typeof(TagHelperAttribute).FullName}' with a null " +
-                $"'{nameof(TagHelperAttribute.Name)}'.{Environment.NewLine}Parameter name: attribute";
-
-            // Act & Assert
-            var exception = Assert.Throws<ArgumentException>("attribute",
-                () => attributes.Add(new TagHelperAttribute()));
-            Assert.Equal(expectedMessage, exception.Message);
-        }
-
-        [Fact]
-        public void Add_ThrowsWhenNameIsNull()
-        {
-            // Arrange
-            var attributes = new TagHelperAttributeList();
-            var expectedMessage = $"Cannot add a '{typeof(TagHelperAttribute).FullName}' with a null " +
-                $"'{nameof(TagHelperAttribute.Name)}'.{Environment.NewLine}Parameter name: attribute";
-
-            // Act & Assert
-            var exception = Assert.Throws<ArgumentException>("attribute",
-                () => attributes.Add(new TagHelperAttribute
-                {
-                    Value = "Anything"
-                }));
-            Assert.Equal(expectedMessage, exception.Message);
-        }
-
         public static TheoryData InsertData
         {
             get
@@ -389,23 +307,6 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
 
             // Assert
             Assert.Equal(expectedAttributes, attributes, CaseSensitiveTagHelperAttributeComparer.Default);
-        }
-
-        [Fact]
-        public void Insert_ThrowsWhenNameIsNull()
-        {
-            // Arrange
-            var attributes = new TagHelperAttributeList();
-            var expectedMessage = $"Cannot add a '{typeof(TagHelperAttribute).FullName}' with a null " +
-                $"'{nameof(TagHelperAttribute.Name)}'.{Environment.NewLine}Parameter name: attribute";
-
-            // Act & Assert
-            var exception = Assert.Throws<ArgumentException>("attribute",
-                () => attributes.Insert(0, new TagHelperAttribute
-                {
-                    Value = "Anything"
-                }));
-            Assert.Equal(expectedMessage, exception.Message);
         }
 
         [Fact]
@@ -585,17 +486,17 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
                     { new[] { C, B, A3, A }, new TagHelperAttribute("AName", "av"), new[] { C, B, A }, true },
 
                     // Null expected lookups
-                    { Enumerable.Empty<TagHelperAttribute>(), "_0_", Enumerable.Empty<TagHelperAttribute>(), false },
-                    { new[] { A }, "_AName_", new[] { A }, false },
-                    { new[] { A }, "completely different", new[] { A }, false },
-                    { new[] { A, B }, "_AName_", new[] { A, B }, false },
-                    { new[] { A, B }, "completely different", new[] { A, B }, false },
-                    { new[] { A, B, C }, "_BName_", new[] { A, B, C }, false },
-                    { new[] { A, B, C }, "completely different", new[] { A, B, C }, false },
-                    { new[] { A, A2, B, C }, "_cnamE_", new[] { A, A2, B, C }, false },
-                    { new[] { A, A2, B, C }, "completely different", new[] { A, A2, B, C }, false },
-                    { new[] { A, A2, A3, B, C }, "_cnamE_", new[] { A, A2, A3, B, C }, false },
-                    { new[] { A, A2, A3, B, C }, "completely different", new[] { A, A2, A3, B, C }, false },
+                    { Enumerable.Empty<TagHelperAttribute>(), new TagHelperAttribute("DoesNotExist", "_0_"), Enumerable.Empty<TagHelperAttribute>(), false },
+                    { new[] { A }, new TagHelperAttribute("DoesNotExist", "_AName_"), new[] { A }, false },
+                    { new[] { A }, new TagHelperAttribute("DoesNotExist", "completely different"), new[] { A }, false },
+                    { new[] { A, B }, new TagHelperAttribute("DoesNotExist", "_AName_"), new[] { A, B }, false },
+                    { new[] { A, B }, new TagHelperAttribute("DoesNotExist", "completely different"), new[] { A, B }, false },
+                    { new[] { A, B, C }, new TagHelperAttribute("DoesNotExist", "_BName_"), new[] { A, B, C }, false },
+                    { new[] { A, B, C }, new TagHelperAttribute("DoesNotExist", "completely different"), new[] { A, B, C }, false },
+                    { new[] { A, A2, B, C }, new TagHelperAttribute("DoesNotExist", "_cnamE_"), new[] { A, A2, B, C }, false },
+                    { new[] { A, A2, B, C }, new TagHelperAttribute("DoesNotExist", "completely different"), new[] { A, A2, B, C }, false },
+                    { new[] { A, A2, A3, B, C }, new TagHelperAttribute("DoesNotExist", "_cnamE_"), new[] { A, A2, A3, B, C }, false },
+                    { new[] { A, A2, A3, B, C }, new TagHelperAttribute("DoesNotExist", "completely different"), new[] { A, A2, A3, B, C }, false },
                 };
             }
         }

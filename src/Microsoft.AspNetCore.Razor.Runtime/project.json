@@ -20,6 +20,10 @@
     "Microsoft.Extensions.CopyOnWriteDictionary.Sources": {
       "type": "build",
       "version": "1.0.0-*"
+    },
+    "Microsoft.Extensions.HashCodeCombiner.Sources": {
+      "type": "build",
+      "version": "1.0.0-*"
     }
   },
   "frameworks": {
@@ -28,12 +32,7 @@
         "System.Xml": "4.0.0.0",
         "System.Xml.Linq": "4.0.0.0"
       },
-      "dependencies": {
-        "Microsoft.Extensions.HashCodeCombiner.Sources": {
-          "type": "build",
-          "version": "1.0.0-*"
-        }
-      }
+      "dependencies": {}
     },
     "dotnet5.4": {
       "dependencies": {

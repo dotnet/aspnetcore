@@ -347,7 +347,7 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
                 (cachedResult, encoder) => Task.FromResult<TagHelperContent>(new DefaultTagHelperContent()));
 
             // Act
-            tagHelperOutput.Attributes[updateName] = "super button";
+            tagHelperOutput.Attributes.SetAttribute(updateName, "super button");
 
             // Assert
             var attribute = Assert.Single(tagHelperOutput.Attributes);
@@ -434,11 +434,7 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
                             tagName:     "p",
                             attributes:  new TagHelperAttributeList()
                             {
-                                ["test"] = new TagHelperAttribute
-                                {
-                                    Name = "test",
-                                    Minimized = true
-                                },
+                                new TagHelperAttribute("test"),
                             },
                             tagMode: TagMode.StartTagAndEndTag,
                             preElement:  null,
@@ -453,16 +449,8 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
                             tagName:     "p",
                             attributes:  new TagHelperAttributeList()
                             {
-                                ["test"] = new TagHelperAttribute
-                                {
-                                    Name = "test",
-                                    Minimized = true
-                                },
-                                ["test2"] = new TagHelperAttribute
-                                {
-                                    Name = "test2",
-                                    Minimized = true
-                                },
+                                new TagHelperAttribute("test"),
+                                new TagHelperAttribute("test2"),
                             },
                             tagMode: TagMode.StartTagAndEndTag,
                             preElement:  null,
@@ -477,12 +465,8 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
                             tagName:     "p",
                             attributes:  new TagHelperAttributeList()
                             {
-                                ["first"] = "unminimized",
-                                ["test"] = new TagHelperAttribute
-                                {
-                                    Name = "test",
-                                    Minimized = true
-                                },
+                                new TagHelperAttribute("first", "unminimized"),
+                                new TagHelperAttribute("test"),
                             },
                             tagMode: TagMode.StartTagAndEndTag,
                             preElement:  null,
@@ -497,12 +481,8 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
                             tagName:     "p",
                             attributes:  new TagHelperAttributeList()
                             {
-                                ["test"] = new TagHelperAttribute
-                                {
-                                    Name = "test",
-                                    Minimized = true
-                                },
-                                ["last"] = "unminimized",
+                                new TagHelperAttribute("test"),
+                                new TagHelperAttribute("last", "unminimized"),
                             },
                             tagMode: TagMode.StartTagAndEndTag,
                             preElement:  null,

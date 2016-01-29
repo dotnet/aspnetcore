@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
             _endTagHelperWritingScope = endTagHelperWritingScope;
 
             TagMode = tagMode;
-            HTMLAttributes = new TagHelperAttributeList();
+            HtmlAttributes = new TagHelperAttributeList();
             AllAttributes = new TagHelperAttributeList();
             TagName = tagName;
             Items = items;
@@ -125,7 +125,7 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
         /// <summary>
         /// HTML attributes.
         /// </summary>
-        public TagHelperAttributeList HTMLAttributes { get; }
+        public TagHelperAttributeList HtmlAttributes { get; }
 
         /// <summary>
         /// <see cref="ITagHelper"/> bound attributes and HTML attributes.
@@ -173,7 +173,7 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
         }
 
         /// <summary>
-        /// Tracks the minimized HTML attribute in <see cref="AllAttributes"/> and <see cref="HTMLAttributes"/>.
+        /// Tracks the minimized HTML attribute in <see cref="AllAttributes"/> and <see cref="HtmlAttributes"/>.
         /// </summary>
         /// <param name="name">The minimized HTML attribute name.</param>
         public void AddMinimizedHtmlAttribute(string name)
@@ -183,22 +183,13 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
                 throw new ArgumentNullException(nameof(name));
             }
 
-            HTMLAttributes.Add(
-                new TagHelperAttribute
-                {
-                    Name = name,
-                    Minimized = true
-                });
-            AllAttributes.Add(
-                new TagHelperAttribute
-                {
-                    Name = name,
-                    Minimized = true
-                });
+            var attribute = new TagHelperAttribute(name);
+            HtmlAttributes.Add(attribute);
+            AllAttributes.Add(attribute);
         }
 
         /// <summary>
-        /// Tracks the HTML attribute in <see cref="AllAttributes"/> and <see cref="HTMLAttributes"/>.
+        /// Tracks the HTML attribute in <see cref="AllAttributes"/> and <see cref="HtmlAttributes"/>.
         /// </summary>
         /// <param name="name">The HTML attribute name.</param>
         /// <param name="value">The HTML attribute value.</param>
@@ -209,7 +200,7 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
                 throw new ArgumentNullException(nameof(name));
             }
 
-            HTMLAttributes.Add(name, value);
+            HtmlAttributes.Add(name, value);
             AllAttributes.Add(name, value);
         }
 

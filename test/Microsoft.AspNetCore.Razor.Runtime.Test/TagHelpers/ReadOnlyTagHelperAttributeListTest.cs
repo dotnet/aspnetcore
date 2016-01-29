@@ -10,6 +10,50 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
 {
     public class ReadOnlyTagHelperAttributeListTest
     {
+        public static TheoryData IndexOfNameData
+        {
+            get
+            {
+                var first = new TagHelperAttribute("First", "First Value");
+                var second = new TagHelperAttribute("Second", "Second Value");
+                var third = new TagHelperAttribute("Third", "Third Value");
+
+                return new TheoryData<
+                    IEnumerable<TagHelperAttribute>, // initialAttributes
+                    string, // nameToLookup
+                    int> // expectedIndex
+                {
+                    { new[] { first }, first.Name, 0 },
+                    { new[] { first, second }, first.Name, 0 },
+                    { new[] { first, second }, second.Name.ToUpper(), 1 },
+                    { new[] { first, second, third}, second.Name, 1 },
+                    { new[] { first, second, third }, third.Name.ToLower(), 2 },
+                    { new[] { first, first, second, third}, first.Name, 0 },
+
+                    // Bad lookups
+                    { new[] { first, second, third}, "bad", -1 },
+                    { new[] { first, first, first}, first.Name + "bad", -1 },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(IndexOfNameData))]
+        public void IndexOfName_ReturnsExpectedValue(
+            IEnumerable<TagHelperAttribute> initialAttributes,
+            string nameToLookup,
+            int expectedIndex)
+        {
+            // Arrange
+            var attributes = new TagHelperAttributeList(initialAttributes);
+
+            // Act
+            var index = attributes.IndexOfName(nameToLookup);
+
+            // Assert
+            Assert.Equal(expectedIndex, index);
+        }
+
         public static TheoryData IntIndexerData
         {
             get
@@ -19,9 +63,9 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
                 var third = new TagHelperAttribute("Third", "Third Value");
 
                 return new TheoryData<
-                    IEnumerable<IReadOnlyTagHelperAttribute>, // initialAttributes
+                    IEnumerable<TagHelperAttribute>, // initialAttributes
                     int, // indexToLookup
-                    IReadOnlyTagHelperAttribute> // expectedAttribute
+                    TagHelperAttribute> // expectedAttribute
                 {
                     { new[] { first }, 0, first },
                     { new[] { first, second }, 0, first },
@@ -36,12 +80,12 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
         [Theory]
         [MemberData(nameof(IntIndexerData))]
         public void IntIndexer_ReturnsExpectedAttribute(
-            IEnumerable<IReadOnlyTagHelperAttribute> initialAttributes,
+            IEnumerable<TagHelperAttribute> initialAttributes,
             int indexToLookup,
-            IReadOnlyTagHelperAttribute expectedAttribute)
+            TagHelperAttribute expectedAttribute)
         {
             // Arrange
-            var attributes = new ReadOnlyTagHelperAttributeList<IReadOnlyTagHelperAttribute>(initialAttributes);
+            var attributes = new TagHelperAttributeList(initialAttributes);
 
             // Act
             var attribute = attributes[indexToLookup];
@@ -63,7 +107,7 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
         public void IntIndexer_ThrowsIfInvalidIndex(int index)
         {
             // Arrange
-            var attributes = new ReadOnlyTagHelperAttributeList<IReadOnlyTagHelperAttribute>(
+            var attributes = new TagHelperAttributeList(
                 new[]
                 {
                     new TagHelperAttribute("a", "av"),
@@ -85,9 +129,9 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
                 var C = new TagHelperAttribute("CName", "CName Value");
 
                 return new TheoryData<
-                    IEnumerable<IReadOnlyTagHelperAttribute>, // initialAttributes
+                    IEnumerable<TagHelperAttribute>, // initialAttributes
                     string, // nameToLookup
-                    IReadOnlyTagHelperAttribute> // expectedAttribute
+                    TagHelperAttribute> // expectedAttribute
                 {
                     { new[] { A }, "AName", A },
                     { new[] { A }, "AnAmE", A },
@@ -128,12 +172,12 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
         [Theory]
         [MemberData(nameof(StringIndexerData))]
         public void StringIndexer_ReturnsExpectedAttribute(
-            IEnumerable<IReadOnlyTagHelperAttribute> initialAttributes,
+            IEnumerable<TagHelperAttribute> initialAttributes,
             string nameToLookup,
-            IReadOnlyTagHelperAttribute expectedAttribute)
+            TagHelperAttribute expectedAttribute)
         {
             // Arrange
-            var attributes = new ReadOnlyTagHelperAttributeList<IReadOnlyTagHelperAttribute>(initialAttributes);
+            var attributes = new TagHelperAttributeList(initialAttributes);
 
             // Act
             var attribute = attributes[nameToLookup];
@@ -146,12 +190,12 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
         public void Count_ReturnsNumberOfAttributes()
         {
             // Arrange
-            var attributes = new ReadOnlyTagHelperAttributeList<IReadOnlyTagHelperAttribute>(
+            var attributes = new TagHelperAttributeList(
                 new[]
                 {
-                    new TagHelperAttribute(),
-                    new TagHelperAttribute(),
-                    new TagHelperAttribute()
+                    new TagHelperAttribute("A"),
+                    new TagHelperAttribute("B"),
+                    new TagHelperAttribute("C")
                 });
 
             // Act
@@ -172,8 +216,8 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
                 var C = new TagHelperAttribute("CName", "CName Value");
 
                 return new TheoryData<
-                    IEnumerable<IReadOnlyTagHelperAttribute>, // initialAttributes
-                    IReadOnlyTagHelperAttribute, // attributeToLookup
+                    IEnumerable<TagHelperAttribute>, // initialAttributes
+                    TagHelperAttribute, // attributeToLookup
                     bool> // expected
                 {
                     { new[] { A }, A, true },
@@ -255,12 +299,12 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
         [Theory]
         [MemberData(nameof(ContainsData))]
         public void Contains_ReturnsExpectedResult(
-            IEnumerable<IReadOnlyTagHelperAttribute> initialAttributes,
-            IReadOnlyTagHelperAttribute attributeToLookup,
+            IEnumerable<TagHelperAttribute> initialAttributes,
+            TagHelperAttribute attributeToLookup,
             bool expected)
         {
             // Arrange
-            var attributes = new ReadOnlyTagHelperAttributeList<IReadOnlyTagHelperAttribute>(initialAttributes);
+            var attributes = new TagHelperAttributeList(initialAttributes);
 
             // Act
             var contains = attributes.Contains(attributeToLookup);
@@ -280,7 +324,7 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
                 var C = new TagHelperAttribute("CName", "CName Value");
 
                 return new TheoryData<
-                    IEnumerable<IReadOnlyTagHelperAttribute>, // initialAttributes
+                    IEnumerable<TagHelperAttribute>, // initialAttributes
                     string, // nameToLookup
                     bool> // expected
                 {
@@ -331,12 +375,12 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
         [Theory]
         [MemberData(nameof(ContainsNameData))]
         public void ContainsName_ReturnsExpectedResult(
-            IEnumerable<IReadOnlyTagHelperAttribute> initialAttributes,
+            IEnumerable<TagHelperAttribute> initialAttributes,
             string nameToLookup,
             bool expected)
         {
             // Arrange
-            var attributes = new ReadOnlyTagHelperAttributeList<IReadOnlyTagHelperAttribute>(initialAttributes);
+            var attributes = new TagHelperAttributeList(initialAttributes);
 
             // Act
             var contains = attributes.ContainsName(nameToLookup);
@@ -356,8 +400,8 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
                 var C = new TagHelperAttribute("CName", "CName Value");
 
                 return new TheoryData<
-                    IEnumerable<IReadOnlyTagHelperAttribute>, // initialAttributes
-                    IReadOnlyTagHelperAttribute, // attributeToLookup
+                    IEnumerable<TagHelperAttribute>, // initialAttributes
+                    TagHelperAttribute, // attributeToLookup
                     int> // expected
                 {
                     { new[] { A }, A, 0 },
@@ -439,12 +483,12 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
         [Theory]
         [MemberData(nameof(IndexOfData))]
         public void IndexOf_ReturnsExpectedResult(
-            IEnumerable<IReadOnlyTagHelperAttribute> initialAttributes,
-            IReadOnlyTagHelperAttribute attributeToLookup,
+            IEnumerable<TagHelperAttribute> initialAttributes,
+            TagHelperAttribute attributeToLookup,
             int expected)
         {
             // Arrange
-            var attributes = new ReadOnlyTagHelperAttributeList<IReadOnlyTagHelperAttribute>(initialAttributes);
+            var attributes = new TagHelperAttributeList(initialAttributes);
 
             // Act
             var index = attributes.IndexOf(attributeToLookup);
@@ -464,9 +508,9 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
                 var C = new TagHelperAttribute("CName", "CName Value");
 
                 return new TheoryData<
-                    IEnumerable<IReadOnlyTagHelperAttribute>, // initialAttributes
+                    IEnumerable<TagHelperAttribute>, // initialAttributes
                     string, // nameToLookup
-                    IReadOnlyTagHelperAttribute, // expectedAttribute
+                    TagHelperAttribute, // expectedAttribute
                     bool> // expectedResult
                 {
                     { new[] { A }, "AName", A, true },
@@ -508,14 +552,14 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
         [Theory]
         [MemberData(nameof(TryGetAttributeData))]
         public void TryGetAttribute_ReturnsExpectedValueAndAttribute(
-            IEnumerable<IReadOnlyTagHelperAttribute> initialAttributes,
+            IEnumerable<TagHelperAttribute> initialAttributes,
             string nameToLookup,
-            IReadOnlyTagHelperAttribute expectedAttribute,
+            TagHelperAttribute expectedAttribute,
             bool expectedResult)
         {
             // Arrange
-            var attributes = new ReadOnlyTagHelperAttributeList<IReadOnlyTagHelperAttribute>(initialAttributes);
-            IReadOnlyTagHelperAttribute attribute;
+            var attributes = new TagHelperAttributeList(initialAttributes);
+            TagHelperAttribute attribute;
 
             // Act
             var result = attributes.TryGetAttribute(nameToLookup, out attribute);
@@ -536,9 +580,9 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
                 var C = new TagHelperAttribute("CName", "CName Value");
 
                 return new TheoryData<
-                    IEnumerable<IReadOnlyTagHelperAttribute>, // initialAttributes
+                    IEnumerable<TagHelperAttribute>, // initialAttributes
                     string, // nameToLookup
-                    IEnumerable<IReadOnlyTagHelperAttribute>, // expectedAttributes
+                    IEnumerable<TagHelperAttribute>, // expectedAttributes
                     bool> // expectedResult
                 {
                     { new[] { A }, "AName", new[] { A }, true },
@@ -563,16 +607,16 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
                     { new[] { C, B, A3, A }, "AName", new[] { A3, A }, true },
 
                     // Null expected lookups
-                    { new[] { A }, "_AName_", Enumerable.Empty<IReadOnlyTagHelperAttribute>(), false },
-                    { new[] { A }, "completely different", Enumerable.Empty<IReadOnlyTagHelperAttribute>(), false },
-                    { new[] { A, B }, "_AName_", Enumerable.Empty<IReadOnlyTagHelperAttribute>(), false },
-                    { new[] { A, B }, "completely different", Enumerable.Empty<IReadOnlyTagHelperAttribute>(), false },
-                    { new[] { A, B, C }, "_BName_", Enumerable.Empty<IReadOnlyTagHelperAttribute>(), false },
-                    { new[] { A, B, C }, "way different", Enumerable.Empty<IReadOnlyTagHelperAttribute>(), false },
-                    { new[] { A, A2, B, C }, "_cnamE_", Enumerable.Empty<IReadOnlyTagHelperAttribute>(), false },
-                    { new[] { A, A2, B, C }, "way different", Enumerable.Empty<IReadOnlyTagHelperAttribute>(), false },
-                    { new[] { A, A2, A3, B, C }, "_cnamE_", Enumerable.Empty<IReadOnlyTagHelperAttribute>(), false },
-                    { new[] { A, A2, A3, B, C }, "different", Enumerable.Empty<IReadOnlyTagHelperAttribute>(), false },
+                    { new[] { A }, "_AName_", Enumerable.Empty<TagHelperAttribute>(), false },
+                    { new[] { A }, "completely different", Enumerable.Empty<TagHelperAttribute>(), false },
+                    { new[] { A, B }, "_AName_", Enumerable.Empty<TagHelperAttribute>(), false },
+                    { new[] { A, B }, "completely different", Enumerable.Empty<TagHelperAttribute>(), false },
+                    { new[] { A, B, C }, "_BName_", Enumerable.Empty<TagHelperAttribute>(), false },
+                    { new[] { A, B, C }, "way different", Enumerable.Empty<TagHelperAttribute>(), false },
+                    { new[] { A, A2, B, C }, "_cnamE_", Enumerable.Empty<TagHelperAttribute>(), false },
+                    { new[] { A, A2, B, C }, "way different", Enumerable.Empty<TagHelperAttribute>(), false },
+                    { new[] { A, A2, A3, B, C }, "_cnamE_", Enumerable.Empty<TagHelperAttribute>(), false },
+                    { new[] { A, A2, A3, B, C }, "different", Enumerable.Empty<TagHelperAttribute>(), false },
                 };
             }
         }
@@ -580,14 +624,14 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
         [Theory]
         [MemberData(nameof(TryGetAttributesData))]
         public void TryGetAttributes_ReturnsExpectedValueAndAttribute(
-            IEnumerable<IReadOnlyTagHelperAttribute> initialAttributes,
+            IEnumerable<TagHelperAttribute> initialAttributes,
             string nameToLookup,
-            IEnumerable<IReadOnlyTagHelperAttribute> expectedAttributes,
+            IEnumerable<TagHelperAttribute> expectedAttributes,
             bool expectedResult)
         {
             // Arrange
-            var attributes = new ReadOnlyTagHelperAttributeList<IReadOnlyTagHelperAttribute>(initialAttributes);
-            IReadOnlyList<IReadOnlyTagHelperAttribute> resolvedAttributes;
+            var attributes = new TagHelperAttributeList(initialAttributes);
+            IReadOnlyList<TagHelperAttribute> resolvedAttributes;
 
             // Act
             var result = attributes.TryGetAttributes(nameToLookup, out resolvedAttributes);
@@ -632,7 +676,7 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
         public void ModifyingUnderlyingAttributes_AffectsExposedAttributes()
         {
             // Arrange
-            var attributes = new TestableReadOnlyTagHelperAttributes(Enumerable.Empty<IReadOnlyTagHelperAttribute>());
+            var attributes = new TestableReadOnlyTagHelperAttributes(Enumerable.Empty<TagHelperAttribute>());
             var expectedAttributes = new[]
             {
                 new TagHelperAttribute("A", "AV"),
@@ -650,12 +694,12 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
         [Theory]
         [MemberData(nameof(IntIndexerData))]
         public void ModifyingUnderlyingAttributes_IntIndexer_ReturnsExpectedResult(
-            IEnumerable<IReadOnlyTagHelperAttribute> initialAttributes,
+            IEnumerable<TagHelperAttribute> initialAttributes,
             int indexToLookup,
-            IReadOnlyTagHelperAttribute expectedAttribute)
+            TagHelperAttribute expectedAttribute)
         {
             // Arrange
-            var attributes = new TestableReadOnlyTagHelperAttributes(Enumerable.Empty<IReadOnlyTagHelperAttribute>());
+            var attributes = new TestableReadOnlyTagHelperAttributes(Enumerable.Empty<TagHelperAttribute>());
             attributes.PublicAttributes.AddRange(initialAttributes);
 
             // Act
@@ -668,12 +712,12 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
         [Theory]
         [MemberData(nameof(StringIndexerData))]
         public void ModifyingUnderlyingAttributes_StringIndexer_ReturnsExpectedResult(
-            IEnumerable<IReadOnlyTagHelperAttribute> initialAttributes,
+            IEnumerable<TagHelperAttribute> initialAttributes,
             string nameToLookup,
-            IReadOnlyTagHelperAttribute expectedAttribute)
+            TagHelperAttribute expectedAttribute)
         {
             // Arrange
-            var attributes = new TestableReadOnlyTagHelperAttributes(Enumerable.Empty<IReadOnlyTagHelperAttribute>());
+            var attributes = new TestableReadOnlyTagHelperAttributes(Enumerable.Empty<TagHelperAttribute>());
             attributes.PublicAttributes.AddRange(initialAttributes);
 
             // Act
@@ -683,18 +727,18 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
             Assert.Equal(expectedAttribute, attribute, CaseSensitiveTagHelperAttributeComparer.Default);
         }
 
-        private class TestableReadOnlyTagHelperAttributes : ReadOnlyTagHelperAttributeList<IReadOnlyTagHelperAttribute>
+        private class TestableReadOnlyTagHelperAttributes : ReadOnlyTagHelperAttributeList
         {
-            public TestableReadOnlyTagHelperAttributes(IEnumerable<IReadOnlyTagHelperAttribute> attributes)
+            public TestableReadOnlyTagHelperAttributes(IEnumerable<TagHelperAttribute> attributes)
                 : base(attributes)
             {
             }
 
-            public List<IReadOnlyTagHelperAttribute> PublicAttributes
+            public List<TagHelperAttribute> PublicAttributes
             {
                 get
                 {
-                    return Attributes;
+                    return (List<TagHelperAttribute>)Items;
                 }
             }
         }

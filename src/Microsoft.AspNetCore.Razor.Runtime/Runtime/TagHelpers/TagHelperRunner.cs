@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
 
             var tagHelperOutput = new TagHelperOutput(
                 executionContext.TagName,
-                executionContext.HTMLAttributes,
+                executionContext.HtmlAttributes,
                 executionContext.GetChildContentAsync)
             {
                 TagMode = executionContext.TagMode,

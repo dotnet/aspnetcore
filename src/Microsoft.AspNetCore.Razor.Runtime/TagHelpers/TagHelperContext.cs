@@ -11,8 +11,8 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
     /// </summary>
     public class TagHelperContext
     {
-        private ReadOnlyTagHelperAttributeList<IReadOnlyTagHelperAttribute> _allAttributes;
-        private IEnumerable<IReadOnlyTagHelperAttribute> _allAttributesData;
+        private ReadOnlyTagHelperAttributeList _allAttributes;
+        private IEnumerable<TagHelperAttribute> _allAttributesData;
 
         /// <summary>
         /// Instantiates a new <see cref="TagHelperContext"/>.
@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
         /// <param name="uniqueId">The unique identifier for the source element this <see cref="TagHelperContext" />
         /// applies to.</param>
         public TagHelperContext(
-            IEnumerable<IReadOnlyTagHelperAttribute> allAttributes,
+            IEnumerable<TagHelperAttribute> allAttributes,
             IDictionary<object, object> items,
             string uniqueId)
         {
@@ -49,13 +49,13 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
         /// <summary>
         /// Every attribute associated with the current HTML element.
         /// </summary>
-        public ReadOnlyTagHelperAttributeList<IReadOnlyTagHelperAttribute> AllAttributes
+        public ReadOnlyTagHelperAttributeList AllAttributes
         {
             get
             {
                 if (_allAttributes == null)
                 {
-                    _allAttributes = new ReadOnlyTagHelperAttributeList<IReadOnlyTagHelperAttribute>(_allAttributesData);
+                    _allAttributes = new TagHelperAttributeList(_allAttributesData);
                 }
 
                 return _allAttributes;

@@ -244,7 +244,7 @@ namespace Microsoft.AspNetCore.Razor.CodeGenerators
             var renderedBoundAttributeNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
             // Go through the HTML attributes in source order, assigning to properties or indexers or adding to
-            // TagHelperExecutionContext.HTMLAttributes' as we go.
+            // TagHelperExecutionContext.HtmlAttributes' as we go.
             foreach (var attribute in chunkAttributes)
             {
                 var attributeName = attribute.Key;

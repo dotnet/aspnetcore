@@ -3,9 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Razor.Runtime.TagHelpers;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.TagHelpers
@@ -23,7 +20,7 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
 
             // Act
             var context = new TagHelperContext(
-                allAttributes: Enumerable.Empty<IReadOnlyTagHelperAttribute>(),
+                allAttributes: new TagHelperAttributeList(),
                 items: expectedItems,
                 uniqueId: string.Empty);
 

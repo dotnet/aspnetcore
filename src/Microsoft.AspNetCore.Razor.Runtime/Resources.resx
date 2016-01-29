@@ -183,12 +183,6 @@
   <data name="TagHelperDescriptorFactory_InvalidAttributePrefixNotNull" xml:space="preserve">
     <value>Invalid tag helper bound property '{0}.{1}'. '{2}.{3}' must be null unless property type implements '{4}'.</value>
   </data>
-  <data name="TagHelperAttributeList_CannotAddWithNullName" xml:space="preserve">
-    <value>Cannot add a '{0}' with a null '{1}'.</value>
-  </data>
-  <data name="TagHelperAttributeList_CannotAddAttribute" xml:space="preserve">
-    <value>Cannot add a {0} with inconsistent names. The {1} property '{2}' must match the location '{3}'.</value>
-  </data>
   <data name="TagHelperDescriptorFactory_InvalidRestrictChildrenAttributeName" xml:space="preserve">
     <value>Invalid '{0}' tag name '{1}' for tag helper '{2}'. Tag helpers cannot restrict child elements that contain a '{3}' character.</value>
   </data>

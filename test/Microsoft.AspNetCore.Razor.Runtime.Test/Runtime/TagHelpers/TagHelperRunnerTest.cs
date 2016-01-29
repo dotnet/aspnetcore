@@ -216,10 +216,10 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
 
                 output.TagName = "foo";
 
-                TagHelperAttribute classAttribute;
-                if (output.Attributes.TryGetAttribute("class", out classAttribute))
+                var classIndex = output.Attributes.IndexOfName("class");
+                if (classIndex != -1)
                 {
-                    classAttribute.Value = "somethingelse";
+                    output.Attributes[classIndex] = new TagHelperAttribute("class", "somethingelse");
                 }
 
                 output.Attributes.Add("hello", "world");
