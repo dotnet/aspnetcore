@@ -1,0 +1,35 @@
+﻿{
+  "commands": {
+    "test": "xunit.runner.aspnet"
+  },
+  "dependencies": {
+    "DatabaseErrorPageSample": "1.0.0",
+    "DeveloperExceptionPageSample": "1.0.0",
+    "ElmPageSample": "1.0.0",
+    "ExceptionHandlerSample": "1.0.0",
+    "Microsoft.AspNetCore.IISPlatformHandler": "1.0.0-*",
+    "Microsoft.AspNetCore.Mvc.Core": "1.0.0-*",
+    "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*",
+    "Microsoft.AspNetCore.TestHost": "1.0.0-*",
+    "Microsoft.AspNetCore.Testing": "1.0.0-*",
+    "MiddlewareAnalysisSample": "1.0.0",
+    "RuntimeInfoPageSample": "1.0.0",
+    "StatusCodePagesSample": "1.0.0",
+    "WelcomePageSample": "1.0.0",
+    "xunit.runner.aspnet": "2.0.0-aspnet-*"
+  },
+  "exclude": [
+    "wwwroot",
+    "node_modules",
+    "bower_components"
+  ],
+  "frameworks": {
+    "dnx451": { },
+    "dnxcore50": { }
+  },
+  "publishExclude": [
+    "**.user",
+    "**.vspscc"
+  ],
+  "version": "1.0.0-*"
+}
