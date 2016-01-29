@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq.Expressions;
@@ -137,49 +138,47 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             // We want to make the new span
             var originalSpan = node.GetLocation().GetMappedLineSpan();
 
-            // Start by collecting all the trivia 'inside' the expression - we need to tack that on the end, but
-            // if it ends with a newline, don't include that.
-            var innerTrivia = SyntaxFactory.TriviaList(node.DescendantTrivia(descendIntoChildren: n => true));
-            if (innerTrivia.Count > 0 && innerTrivia[innerTrivia.Count - 1].IsKind(SyntaxKind.EndOfLineTrivia))
+            var charactersToExclude = memberAccess.Identifier.Text.Length;
+            var triviaList = new SyntaxTriviaList();
+
+            // Go through each token and
+            // 1. Append leading trivia
+            // 2. Append the same number of whitespace as the length of the token text
+            // 3. Append trailing trivia
+            foreach (var token in node.DescendantTokens())
             {
-                innerTrivia = innerTrivia.RemoveAt(innerTrivia.Count - 1);
+                if (token.HasLeadingTrivia)
+                {
+                    triviaList = triviaList.AddRange(token.LeadingTrivia);
+                }
+
+                // Need to exclude the length of the member name from the padding.
+                var padding = token.Text.Length;
+                if (padding > charactersToExclude)
+                {
+                    padding -= charactersToExclude;
+                    charactersToExclude = 0;
+                }
+                else
+                {
+                    charactersToExclude -= padding;
+                    padding = 0;
+                }
+
+                if (padding > 0)
+                {
+                    triviaList = triviaList.Add(SyntaxFactory.Whitespace(new string(' ', padding)));
+                }
+
+                if (token.HasTrailingTrivia)
+                {
+                    triviaList = triviaList.AddRange(token.TrailingTrivia);
+                }
             }
 
-            memberAccess = memberAccess.WithTrailingTrivia(innerTrivia);
-
-            // If everything is all on one line, then make sure the spans are the same, to compensate
-            // for the expression potentially being longer than the variable name.
-            var lineSpan = originalSpan.EndLinePosition.Line - originalSpan.StartLinePosition.Line;
-            if (lineSpan == 0)
-            {
-                var padding = node.Span.Length - memberAccess.FullSpan.Length;
-                var trailingTrivia =
-                    SyntaxFactory.TriviaList(memberAccess.GetTrailingTrivia())
-                    .Add(SyntaxFactory.Whitespace(new string(' ', padding)))
-                    .AddRange(node.GetTrailingTrivia());
-
-                return
-                    memberAccess
-                    .WithLeadingTrivia(node.GetLeadingTrivia())
-                    .WithTrailingTrivia(trailingTrivia);
-            }
-            else
-            {
-                // If everything isn't on the same line, we need to pad out the last line.
-                var padding =
-                    originalSpan.EndLinePosition.Character -
-                    originalSpan.StartLinePosition.Character;
-
-                var trailingTrivia =
-                    SyntaxFactory.TriviaList(memberAccess.GetTrailingTrivia())
-                    .Add(SyntaxFactory.Whitespace(new string(' ', padding)))
-                    .AddRange(node.GetTrailingTrivia());
-
-                return
-                    memberAccess
-                    .WithLeadingTrivia(node.GetLeadingTrivia())
-                    .WithTrailingTrivia(trailingTrivia);
-            }
+            return memberAccess
+                .WithLeadingTrivia(node.GetLeadingTrivia())
+                .WithTrailingTrivia(triviaList);
         }
 
         private static bool IsValidForHoisting(ParameterSyntax parameter, CSharpSyntaxNode node)

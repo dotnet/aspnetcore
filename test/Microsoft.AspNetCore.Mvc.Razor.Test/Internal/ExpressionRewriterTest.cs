@@ -476,6 +476,51 @@ public class Person
             Assert.Equal(originalSpan, arguments.GetLocation().GetMappedLineSpan());
         }
 
+        [Fact]
+        public void ExpressionRewriter_CanRewriteExpression_BadlyIndentedFormatting()
+        {
+            // Arrange
+            var source = @"
+using System;
+using System.Linq.Expressions;
+public class Program
+{
+    public static void CalledWithExpression(Expression<Func<Person, int>> expression)
+    {
+    }
+
+    public static void Main(string[] args)
+    {
+        CalledWithExpression(x =>
+                    x.Name.
+          Length);
+    }
+}
+
+public class Person
+{
+    public string Name { get; set; }
+}
+";
+
+            var tree = CSharpSyntaxTree.ParseText(source);
+
+            var originalArguments = FindArguments(tree.GetRoot());
+            var originalSpan = originalArguments.GetLocation().GetMappedLineSpan();
+
+            var compilation = Compile(tree);
+            var semanticModel = compilation.GetSemanticModel(tree, ignoreAccessibility: true);
+
+            var rewriter = new ExpressionRewriter(semanticModel);
+
+            // Act
+            var result = rewriter.Visit(tree.GetRoot());
+
+            // Assert
+            var arguments = FindArguments(result);
+            Assert.Equal(originalSpan, arguments.GetLocation().GetMappedLineSpan());
+        }
+
         public ArgumentListSyntax FindArguments(SyntaxNode node)
         {
             return node
