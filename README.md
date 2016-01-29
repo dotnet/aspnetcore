@@ -105,6 +105,10 @@ These are some of the most common repos:
 
 A description of all the repos is [here](https://github.com/aspnet/Home/wiki/Repo-List).
 
+## NuGet feeds and branches
+
+See the [NuGet feeds](https://github.com/aspnet/Home/wiki/NuGet-feeds) wiki page.
+
 # Feedback
 
 Check out the [contributing](CONTRIBUTING.md) page to see the best places to log issues and start discussions.
