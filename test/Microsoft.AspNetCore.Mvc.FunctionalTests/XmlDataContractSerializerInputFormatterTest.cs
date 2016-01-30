@@ -35,7 +35,8 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public HttpClient Client { get; }
 
         [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "aspnet/External#18, DCS issue on Mono")]
+        // Mono issue - https://github.com/aspnet/External/issues/18
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task ThrowsOnInvalidInput_AndAddsToModelState()
         {
             // Arrange
@@ -56,7 +57,8 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "aspnet/External#18, DCS issue on Mono")]
+        // Mono issue - https://github.com/aspnet/External/issues/18
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task RequiredDataIsProvided_AndModelIsBound_NoValidationErrors()
         {
             // Arrange
@@ -85,7 +87,8 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
         // Verifies that the model state has errors related to body model validation.
         [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mon, SkipReason = "aspnet/External#18, DCS issue on Mono"o)]
+        // Mono issue - https://github.com/aspnet/External/issues/18
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task DataMissingForRefereneceTypeProperties_AndModelIsBound_AndHasMixedValidationErrors()
         {
             // Arrange

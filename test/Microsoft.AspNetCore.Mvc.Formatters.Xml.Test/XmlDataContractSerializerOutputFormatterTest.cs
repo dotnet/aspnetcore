@@ -94,7 +94,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
         }
 
         [ConditionalTheory]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "aspnet/External#18, DCS issue on Mono")]
+        // Mono issue - https://github.com/aspnet/External/issues/18
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         [MemberData(nameof(BasicTypeValues))]
         public async Task WriteAsync_CanWriteBasicTypes(object input, string expectedOutput)
         {
@@ -114,7 +115,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
         }
 
         [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "aspnet/External#18, DCS issue on Mono")]
+        // Mono issue - https://github.com/aspnet/External/issues/18
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public void XmlDataContractSerializer_CachesSerializerForType()
         {
             // Arrange
@@ -133,7 +135,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
         }
 
         [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "aspnet/External#18, DCS issue on Mono")]
+        // Mono issue - https://github.com/aspnet/External/issues/18
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public void DefaultConstructor_ExpectedWriterSettings_Created()
         {
             // Arrange and Act
@@ -148,7 +151,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
         }
 
         [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "aspnet/External#18, DCS issue on Mono")]
+        // Mono issue - https://github.com/aspnet/External/issues/18
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task SuppliedWriterSettings_TakeAffect()
         {
             // Arrange
@@ -175,7 +179,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
         }
 
         [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "aspnet/External#18, DCS issue on Mono")]
+        // Mono issue - https://github.com/aspnet/External/issues/18
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task WriteAsync_WritesSimpleTypes()
         {
             // Arrange
@@ -199,7 +204,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
         }
 
         [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "aspnet/External#18, DCS issue on Mono")]
+        // Mono issue - https://github.com/aspnet/External/issues/18
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task WriteAsync_WritesComplexTypes()
         {
             // Arrange
@@ -233,7 +239,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
         }
 
         [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "aspnet/External#18, DCS issue on Mono")]
+        // Mono issue - https://github.com/aspnet/External/issues/18
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task WriteAsync_WritesOnModifiedWriterSettings()
         {
             // Arrange
@@ -263,7 +270,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
         }
 
         [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "aspnet/External#18, DCS issue on Mono")]
+        // Mono issue - https://github.com/aspnet/External/issues/18
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task WriteAsync_WritesUTF16Output()
         {
             // Arrange
@@ -292,7 +300,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
         }
 
         [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "aspnet/External#18, DCS issue on Mono")]
+        // Mono issue - https://github.com/aspnet/External/issues/18
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task WriteAsync_WritesIndentedOutput()
         {
             // Arrange
@@ -317,7 +326,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
         }
 
         [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "aspnet/External#18, DCS issue on Mono")]
+        // Mono issue - https://github.com/aspnet/External/issues/18
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task WriteAsync_VerifyBodyIsNotClosedAfterOutputIsWritten()
         {
             // Arrange
@@ -334,7 +344,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
         }
 
         [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "aspnet/External#18, DCS issue on Mono")]
+        // Mono issue - https://github.com/aspnet/External/issues/18
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task WriteAsync_DoesntFlushOutputStream()
         {
             // Arrange
@@ -364,7 +375,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
         }
 
         [ConditionalTheory]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "aspnet/External#18, DCS issue on Mono")]
+        // Mono issue - https://github.com/aspnet/External/issues/18
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         [MemberData(nameof(TypesForCanWriteResult))]
         public void CanWriteResult_ReturnsExpectedOutput(object input, Type declaredType, bool expectedOutput)
         {
@@ -391,7 +403,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
         }
 
         [ConditionalTheory]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "aspnet/External#18, DCS issue on Mono")]
+        // Mono issue - https://github.com/aspnet/External/issues/18
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         [MemberData(nameof(TypesForGetSupportedContentTypes))]
         public void GetSupportedContentTypes_ReturnsSupportedTypes(Type type, object expectedOutput)
         {
@@ -415,10 +428,11 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
         }
 
 #if !DNXCORE50
-        [ConditionalFact]
         // DataContractSerializer in CoreCLR does not throw if the declared type is different from the type being
-        // serialized. Is this the same issue as aspnet/External#18???
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "aspnet/External#18, DCS issue on Mono")]
+        // serialized.
+        [ConditionalFact]
+        // Mono issue - https://github.com/aspnet/External/issues/18
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task WriteAsync_ThrowsWhenNotConfiguredWithKnownTypes()
         {
             // Arrange
@@ -453,7 +467,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
 #endif
 
         [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "aspnet/External#18, DCS issue on Mono")]
+        // Mono issue - https://github.com/aspnet/External/issues/18
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task WriteAsync_ThrowsWhenNotConfiguredWithPreserveReferences()
         {
             // Arrange
@@ -470,7 +485,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
         }
 
         [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "aspnet/External#18, DCS issue on Mono")]
+        // Mono issue - https://github.com/aspnet/External/issues/18
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task WriteAsync_WritesWhenConfiguredWithRootName()
         {
             // Arrange
@@ -512,7 +528,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
         }
 
         [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "aspnet/External#18, DCS issue on Mono")]
+        // Mono issue - https://github.com/aspnet/External/issues/18
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task WriteAsync_WritesWhenConfiguredWithKnownTypes()
         {
             // Arrange
@@ -557,7 +574,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
         }
 
         [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "aspnet/External#18, DCS issue on Mono")]
+        // Mono issue - https://github.com/aspnet/External/issues/18
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task WriteAsync_WritesWhenConfiguredWithPreserveReferences()
         {
             // Arrange
