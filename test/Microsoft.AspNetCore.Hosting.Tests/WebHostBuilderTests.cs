@@ -155,7 +155,7 @@ namespace Microsoft.AspNetCore.Hosting
                 .UseSetting(WebHostDefaults.ServerKey, "ServerB")
                 .UseServer(new TestServer())
                 .UseStartup<StartupNoServices>();
-            
+
             var host = (WebHost)hostBuilder.Build();
 
             Assert.Equal("ServerB", host.ServerFactoryLocation);
@@ -302,6 +302,19 @@ namespace Microsoft.AspNetCore.Hosting
                 .Build();
 
             Assert.Equal("/foo/bar", host.Services.GetService<IApplicationEnvironment>().ApplicationBasePath);
+        }
+
+        [Fact]
+        public void RelativeApplicationBaseAreResolved()
+        {
+            var builder = new ConfigurationBuilder();
+            var host = new WebHostBuilder()
+                .UseApplicationBasePath("bar")
+                .UseServer(new TestServer())
+                .UseStartup("Microsoft.AspNetCore.Hosting.Tests")
+                .Build();
+
+            Assert.Equal(Path.GetFullPath("bar"), host.Services.GetService<IApplicationEnvironment>().ApplicationBasePath);
         }
 
         private IWebHostBuilder CreateWebHostBuilder()

@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Runtime.Versioning;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting.Builder;
@@ -84,7 +85,7 @@ namespace Microsoft.AspNetCore.Hosting
         }
 
         /// <summary>
-        /// Specify the startup type to be used by the web host. 
+        /// Specify the startup type to be used by the web host.
         /// </summary>
         /// <param name="startupType">The <see cref="Type"/> to be used.</param>
         /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
@@ -111,7 +112,7 @@ namespace Microsoft.AspNetCore.Hosting
         }
 
         /// <summary>
-        /// Specify the startup method to be used to configure the web application. 
+        /// Specify the startup method to be used to configure the web application.
         /// </summary>
         /// <param name="configureApplication">The delegate that configures the <see cref="IApplicationBuilder"/>.</param>
         /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
@@ -224,7 +225,7 @@ namespace Microsoft.AspNetCore.Hosting
         {
             public WrappedApplicationEnvironment(string applicationBasePath, IApplicationEnvironment env)
             {
-                ApplicationBasePath = applicationBasePath;
+                ApplicationBasePath = ResolvePath(applicationBasePath);
                 ApplicationName = env.ApplicationName;
                 ApplicationVersion = env.ApplicationVersion;
                 RuntimeFramework = env.RuntimeFramework;
@@ -237,6 +238,23 @@ namespace Microsoft.AspNetCore.Hosting
             public string ApplicationVersion { get; }
 
             public FrameworkName RuntimeFramework { get; }
+        }
+
+        private static string ResolvePath(string applicationBasePath)
+        {
+            if (Path.IsPathRooted(applicationBasePath))
+            {
+                return applicationBasePath;
+            }
+
+            var basePath =
+#if NET451
+                (string)AppDomain.CurrentDomain.GetData("APP_CONTEXT_BASE_DIRECTORY") ??
+                AppDomain.CurrentDomain.BaseDirectory;
+#else
+                AppContext.BaseDirectory;
+#endif
+            return Path.Combine(Path.GetFullPath(basePath), applicationBasePath);
         }
     }
 }
