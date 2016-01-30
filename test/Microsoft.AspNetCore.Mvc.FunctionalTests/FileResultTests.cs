@@ -4,6 +4,7 @@
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
@@ -17,7 +18,9 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
         public HttpClient Client { get; }
 
-        [Fact]
+        [ConditionalFact]
+        // https://github.com/aspnet/Mvc/issues/2727
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task FileFromDisk_CanBeEnabled_WithMiddleware()
         {
             // Arrange & Act
@@ -34,7 +37,9 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal("This is a sample text file", body);
         }
 
-        [Fact]
+        [ConditionalFact]
+        // https://github.com/aspnet/Mvc/issues/2727
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task FileFromDisk_ReturnsFileWithFileName()
         {
             // Arrange & Act
