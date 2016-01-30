@@ -348,7 +348,8 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
             // Assert
             Assert.Equal(
                 "<div class=\"HtmlEncode[[validation-summary-errors]]\" data-valmsg-summary=\"HtmlEncode[[true]]\">" +
-                "<ul><li>HtmlEncode[[Error for Property1]]</li>\r\n</ul></div>",
+                "<ul><li>HtmlEncode[[Error for Property1]]</li>" + Environment.NewLine +
+                "</ul></div>",
                 HtmlContentUtilities.HtmlContentToString(validationSummaryResult));
         }
 
@@ -364,7 +365,9 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
 
             // Assert
             Assert.Equal(
-                "<div class=\"HtmlEncode[[validation-summary-errors]]\"><ul><li style=\"display:none\"></li>\r\n</ul></div>",
+                "<div class=\"HtmlEncode[[validation-summary-errors]]\"><ul><li style=\"display:none\"></li>" +
+                Environment.NewLine +
+                "</ul></div>",
                 HtmlContentUtilities.HtmlContentToString(validationSummaryResult));
         }
 
@@ -381,7 +384,9 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
             // Assert
             Assert.Equal(
                 "<div class=\"HtmlEncode[[validation-summary-errors]]\" data-valmsg-summary=\"HtmlEncode[[true]]\">" +
-                "<span>HtmlEncode[[Custom Message]]</span>\r\n<ul><li>HtmlEncode[[Error for Property1]]</li>\r\n</ul></div>",
+                "<span>HtmlEncode[[Custom Message]]</span>" + Environment.NewLine +
+                "<ul><li>HtmlEncode[[Error for Property1]]</li>" + Environment.NewLine +
+                "</ul></div>",
                 HtmlContentUtilities.HtmlContentToString(validationSummaryResult));
         }
 
@@ -398,7 +403,9 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
             // Assert
             Assert.Equal(
                 "<div class=\"HtmlEncode[[validation-summary-errors]]\" data-valmsg-summary=\"HtmlEncode[[true]]\">" +
-                "<div>HtmlEncode[[Custom Message]]</div>\r\n<ul><li>HtmlEncode[[Error for Property1]]</li>\r\n</ul></div>",
+                "<div>HtmlEncode[[Custom Message]]</div>" + Environment.NewLine +
+                "<ul><li>HtmlEncode[[Error for Property1]]</li>" + Environment.NewLine +
+                "</ul></div>",
                 HtmlContentUtilities.HtmlContentToString(validationSummaryResult));
         }
 
@@ -414,7 +421,10 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
 
             // Assert
             Assert.Equal(
-                "<div class=\"HtmlEncode[[validation-summary-errors]]\"><span>HtmlEncode[[Custom Message]]</span>\r\n<ul><li style=\"display:none\"></li>\r\n</ul></div>",
+                "<div class=\"HtmlEncode[[validation-summary-errors]]\"><span>HtmlEncode[[Custom Message]]</span>" +
+                Environment.NewLine +
+                "<ul><li style=\"display:none\"></li>" + Environment.NewLine +
+                "</ul></div>",
                 HtmlContentUtilities.HtmlContentToString(validationSummaryResult));
         }
 
@@ -431,7 +441,9 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
             // Assert
             Assert.Equal(
                 "<div attr=\"HtmlEncode[[value]]\" class=\"HtmlEncode[[validation-summary-errors]]\" data-valmsg-summary=\"HtmlEncode[[true]]\">" +
-                "<span>HtmlEncode[[Custom Message]]</span>\r\n<ul><li>HtmlEncode[[Error for Property1]]</li>\r\n</ul></div>",
+                "<span>HtmlEncode[[Custom Message]]</span>" + Environment.NewLine +
+                "<ul><li>HtmlEncode[[Error for Property1]]</li>" + Environment.NewLine +
+                "</ul></div>",
                 HtmlContentUtilities.HtmlContentToString(validationSummaryResult));
         }
 
@@ -448,7 +460,9 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
             // Assert
             Assert.Equal(
                 "<div attr=\"HtmlEncode[[value]]\" class=\"HtmlEncode[[validation-summary-errors]]\" data-valmsg-summary=\"HtmlEncode[[true]]\">" +
-                "<div>HtmlEncode[[Custom Message]]</div>\r\n<ul><li>HtmlEncode[[Error for Property1]]</li>\r\n</ul></div>",
+                "<div>HtmlEncode[[Custom Message]]</div>" + Environment.NewLine +
+                "<ul><li>HtmlEncode[[Error for Property1]]</li>" + Environment.NewLine +
+                "</ul></div>",
                 HtmlContentUtilities.HtmlContentToString(validationSummaryResult));
         }
 
@@ -464,7 +478,10 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
 
             // Assert
             Assert.Equal(
-                "<div class=\"HtmlEncode[[validation-summary-errors]]\"><div>HtmlEncode[[Custom Message]]</div>\r\n<ul><li style=\"display:none\"></li>\r\n</ul></div>",
+                "<div class=\"HtmlEncode[[validation-summary-errors]]\"><div>HtmlEncode[[Custom Message]]</div>" +
+                Environment.NewLine +
+                "<ul><li style=\"display:none\"></li>" + Environment.NewLine +
+                "</ul></div>",
                 HtmlContentUtilities.HtmlContentToString(validationSummaryResult));
         }
 
@@ -480,8 +497,10 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
 
             // Assert
             Assert.Equal(
-                "<div attr=\"HtmlEncode[[value]]\" class=\"HtmlEncode[[validation-summary-errors]]\"><span>HtmlEncode[[Custom Message]]</span>\r\n" +
-                "<ul><li style=\"display:none\"></li>\r\n</ul></div>",
+                "<div attr=\"HtmlEncode[[value]]\" class=\"HtmlEncode[[validation-summary-errors]]\"><span>HtmlEncode[[Custom Message]]</span>" +
+                Environment.NewLine +
+                "<ul><li style=\"display:none\"></li>" + Environment.NewLine +
+                "</ul></div>",
                 HtmlContentUtilities.HtmlContentToString(validationSummaryResult));
         }
 
