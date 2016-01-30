@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Formatters.Xml;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
@@ -61,8 +62,11 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             XmlAssert.Equal(expectedXml, responseData);
         }
 
-        [Theory]
-        [MemberData(nameof(AcceptHeadersData))]
+        [ConditionalTheory]
+        // Mono.Xml2.XmlTextReader.ReadText is unable to read the XML. Is this the same bug as aspnet/External#18???
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "aspnet/External#18, DCS issue on Mono")]
+        [InlineData("application/xml-xmlser")]
+        [InlineData("application/xml-dcs")]
         public async Task PostedSerializableError_IsBound(string acceptHeader)
         {
             // Arrange
@@ -83,8 +87,11 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             XmlAssert.Equal(expectedXml, responseData);
         }
 
-        [Theory]
-        [MemberData(nameof(AcceptHeadersData))]
+        [ConditionalTheory]
+        // Mono.Xml2.XmlTextReader.ReadText is unable to read the XML. Is this the same bug as aspnet/External#18???
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "aspnet/External#18, DCS issue on Mono")]
+        [InlineData("application/xml-xmlser")]
+        [InlineData("application/xml-dcs")]
         public async Task IsReturnedInExpectedFormat(string acceptHeader)
         {
             // Arrange
