@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
         private class ProviderWithNonReusableValidators : IModelValidatorProvider
         {
-            public void GetValidators(ModelValidatorProviderContext context)
+            public void CreateValidators(ModelValidatorProviderContext context)
             {
                 for (var i = 0; i < context.Results.Count; i++)
                 {

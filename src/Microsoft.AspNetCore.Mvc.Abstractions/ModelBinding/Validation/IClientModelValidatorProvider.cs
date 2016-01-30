@@ -9,10 +9,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
     public interface IClientModelValidatorProvider
     {
         /// <summary>
-        /// Gets set of <see cref="IClientModelValidator"/>s by updating
+        /// Creates set of <see cref="IClientModelValidator"/>s by updating
         /// <see cref="ClientValidatorItem.Validator"/> in <see cref="ClientValidatorProviderContext.Results"/>.
         /// </summary>
         /// <param name="context">The <see cref="ClientModelValidationContext"/> associated with this call.</param>
-        void GetValidators(ClientValidatorProviderContext context);
+        void CreateValidators(ClientValidatorProviderContext context);
     }
 }

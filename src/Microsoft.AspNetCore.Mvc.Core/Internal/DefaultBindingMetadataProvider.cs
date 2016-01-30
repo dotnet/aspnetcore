@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         /// <inheritdoc />
-        public void GetBindingMetadata(BindingMetadataProviderContext context)
+        public void CreateBindingMetadata(BindingMetadataProviderContext context)
         {
             if (context == null)
             {

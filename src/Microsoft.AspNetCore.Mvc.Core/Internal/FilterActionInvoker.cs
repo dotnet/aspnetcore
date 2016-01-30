@@ -364,17 +364,14 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     Context.ValidatorProviders = _resourceExecutingContext.ValidatorProviders;
 
                     var valueProviders = new List<IValueProvider>();
+                    var factoryContext = new ValueProviderFactoryContext(Context);
 
                     for (var i = 0; i < _resourceExecutingContext.ValueProviderFactories.Count; i++)
                     {
                         var factory = _resourceExecutingContext.ValueProviderFactories[i];
-                        var valueProvider = await factory.GetValueProviderAsync(Context);
-                        if (valueProvider != null)
-                        {
-                            valueProviders.Add(valueProvider);
-                        }
+                        await factory.CreateValueProviderAsync(factoryContext);
                     }
-                    Context.ValueProviders = valueProviders;
+                    Context.ValueProviders = factoryContext.ValueProviders;
 
                     // >> ExceptionFilters >> Model Binding >> ActionFilters >> Action
                     await InvokeAllExceptionFiltersAsync();

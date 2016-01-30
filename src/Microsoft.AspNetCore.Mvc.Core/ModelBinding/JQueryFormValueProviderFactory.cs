@@ -19,28 +19,32 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
     public class JQueryFormValueProviderFactory : IValueProviderFactory
     {
         /// <inheritdoc />
-        public Task<IValueProvider> GetValueProviderAsync(ActionContext context)
+        public Task CreateValueProviderAsync(ValueProviderFactoryContext context)
         {
             if (context == null)
             {
                 throw new ArgumentNullException(nameof(context));
             }
-
-            var request = context.HttpContext.Request;
+            
+            var request = context.ActionContext.HttpContext.Request;
             if (request.HasFormContentType)
             {
-                return CreateValueProviderAsync(request);
+                // Allocating a Task only when the body is form data.
+                return AddValueProviderAsync(context);
             }
 
-            return TaskCache<IValueProvider>.DefaultCompletedTask;
+            return TaskCache.CompletedTask;
         }
 
-        private static async Task<IValueProvider> CreateValueProviderAsync(HttpRequest request)
+        private static async Task AddValueProviderAsync(ValueProviderFactoryContext context)
         {
-            return new JQueryFormValueProvider(
+            var request = context.ActionContext.HttpContext.Request;
+            var valueProvider = new JQueryFormValueProvider(
                 BindingSource.Form,
                 await GetValueCollectionAsync(request),
                 CultureInfo.CurrentCulture);
+
+            context.ValueProviders.Add(valueProvider);
         }
 
         private static async Task<IDictionary<string, StringValues>> GetValueCollectionAsync(HttpRequest request)

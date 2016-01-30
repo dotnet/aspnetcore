@@ -12,6 +12,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         /// Gets the values for properties of <see cref="ValidationMetadata"/>. 
         /// </summary>
         /// <param name="context">The <see cref="ValidationMetadataProviderContext"/>.</param>
-        void GetValidationMetadata(ValidationMetadataProviderContext context);
+        void CreateValidationMetadata(ValidationMetadataProviderContext context);
     }
 }

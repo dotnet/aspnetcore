@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
     public class DefaultModelMetadataBindingDetailsProviderTest
     {
         [Fact]
-        public void GetBindingDetails_FindsBinderTypeProvider()
+        public void CreateBindingDetails_FindsBinderTypeProvider()
         {
             // Arrange
             var attributes = new object[]
@@ -27,14 +27,14 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var provider = new DefaultBindingMetadataProvider(CreateMessageProvider());
 
             // Act
-            provider.GetBindingMetadata(context);
+            provider.CreateBindingMetadata(context);
 
             // Assert
             Assert.Equal(typeof(HeaderModelBinder), context.BindingMetadata.BinderType);
         }
 
         [Fact]
-        public void GetBindingDetails_FindsBinderTypeProvider_IfNullFallsBack()
+        public void CreateBindingDetails_FindsBinderTypeProvider_IfNullFallsBack()
         {
             // Arrange
             var attributes = new object[]
@@ -51,14 +51,14 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var provider = new DefaultBindingMetadataProvider(CreateMessageProvider());
 
             // Act
-            provider.GetBindingMetadata(context);
+            provider.CreateBindingMetadata(context);
 
             // Assert
             Assert.Equal(typeof(HeaderModelBinder), context.BindingMetadata.BinderType);
         }
 
         [Fact]
-        public void GetBindingDetails_FindsModelName()
+        public void CreateBindingDetails_FindsModelName()
         {
             // Arrange
             var attributes = new object[]
@@ -74,14 +74,14 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var provider = new DefaultBindingMetadataProvider(CreateMessageProvider());
 
             // Act
-            provider.GetBindingMetadata(context);
+            provider.CreateBindingMetadata(context);
 
             // Assert
             Assert.Equal("Product", context.BindingMetadata.BinderModelName);
         }
 
         [Fact]
-        public void GetBindingDetails_FindsModelName_IfNullFallsBack()
+        public void CreateBindingDetails_FindsModelName_IfNullFallsBack()
         {
             // Arrange
             var attributes = new object[]
@@ -98,14 +98,14 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var provider = new DefaultBindingMetadataProvider(CreateMessageProvider());
 
             // Act
-            provider.GetBindingMetadata(context);
+            provider.CreateBindingMetadata(context);
 
             // Assert
             Assert.Equal("Product", context.BindingMetadata.BinderModelName);
         }
 
         [Fact]
-        public void GetBindingDetails_FindsBindingSource()
+        public void CreateBindingDetails_FindsBindingSource()
         {
             // Arrange
             var attributes = new object[]
@@ -121,14 +121,14 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var provider = new DefaultBindingMetadataProvider(CreateMessageProvider());
 
             // Act
-            provider.GetBindingMetadata(context);
+            provider.CreateBindingMetadata(context);
 
             // Assert
             Assert.Equal(BindingSource.Body, context.BindingMetadata.BindingSource);
         }
 
         [Fact]
-        public void GetBindingDetails_FindsBindingSource_IfNullFallsBack()
+        public void CreateBindingDetails_FindsBindingSource_IfNullFallsBack()
         {
             // Arrange
             var attributes = new object[]
@@ -145,14 +145,14 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var provider = new DefaultBindingMetadataProvider(CreateMessageProvider());
 
             // Act
-            provider.GetBindingMetadata(context);
+            provider.CreateBindingMetadata(context);
 
             // Assert
             Assert.Equal(BindingSource.Body, context.BindingMetadata.BindingSource);
         }
 
         [Fact]
-        public void GetBindingDetails_FindsBindingBehaviorNever_OnProperty()
+        public void CreateBindingDetails_FindsBindingBehaviorNever_OnProperty()
         {
             // Arrange
             var propertyAttributes = new object[]
@@ -167,7 +167,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var provider = new DefaultBindingMetadataProvider(CreateMessageProvider());
 
             // Act
-            provider.GetBindingMetadata(context);
+            provider.CreateBindingMetadata(context);
 
             // Assert
             Assert.False(context.BindingMetadata.IsBindingAllowed);
@@ -175,7 +175,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [Fact]
-        public void GetBindingDetails_FindsBindNever_OnProperty()
+        public void CreateBindingDetails_FindsBindNever_OnProperty()
         {
             // Arrange
             var propertyAttributes = new object[]
@@ -190,7 +190,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var provider = new DefaultBindingMetadataProvider(CreateMessageProvider());
 
             // Act
-            provider.GetBindingMetadata(context);
+            provider.CreateBindingMetadata(context);
 
             // Assert
             Assert.False(context.BindingMetadata.IsBindingAllowed);
@@ -198,7 +198,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [Fact]
-        public void GetBindingDetails_FindsBindingBehaviorOptional_OnProperty()
+        public void CreateBindingDetails_FindsBindingBehaviorOptional_OnProperty()
         {
             // Arrange
             var propertyAttributes = new object[]
@@ -213,7 +213,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var provider = new DefaultBindingMetadataProvider(CreateMessageProvider());
 
             // Act
-            provider.GetBindingMetadata(context);
+            provider.CreateBindingMetadata(context);
 
             // Assert
             Assert.True(context.BindingMetadata.IsBindingAllowed);
@@ -221,7 +221,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [Fact]
-        public void GetBindingDetails_FindsBindingBehaviorRequired_OnProperty()
+        public void CreateBindingDetails_FindsBindingBehaviorRequired_OnProperty()
         {
             // Arrange
             var propertyAttributes = new object[]
@@ -236,7 +236,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var provider = new DefaultBindingMetadataProvider(CreateMessageProvider());
 
             // Act
-            provider.GetBindingMetadata(context);
+            provider.CreateBindingMetadata(context);
 
             // Assert
             Assert.True(context.BindingMetadata.IsBindingAllowed);
@@ -244,7 +244,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [Fact]
-        public void GetBindingDetails_FindsBindRequired_OnProperty()
+        public void CreateBindingDetails_FindsBindRequired_OnProperty()
         {
             // Arrange
             var propertyAttributes = new object[]
@@ -259,7 +259,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var provider = new DefaultBindingMetadataProvider(CreateMessageProvider());
 
             // Act
-            provider.GetBindingMetadata(context);
+            provider.CreateBindingMetadata(context);
 
             // Assert
             Assert.True(context.BindingMetadata.IsBindingAllowed);
@@ -269,7 +269,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         // These attributes have conflicting behavior - the 'required' behavior should be used because
         // of ordering.
         [Fact]
-        public void GetBindingDetails_UsesFirstAttribute()
+        public void CreateBindingDetails_UsesFirstAttribute()
         {
             // Arrange
             var propertyAttributes = new object[]
@@ -285,7 +285,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var provider = new DefaultBindingMetadataProvider(CreateMessageProvider());
 
             // Act
-            provider.GetBindingMetadata(context);
+            provider.CreateBindingMetadata(context);
 
             // Assert
             Assert.True(context.BindingMetadata.IsBindingAllowed);
@@ -293,7 +293,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [Fact]
-        public void GetBindingDetails_FindsBindRequired_OnContainerClass()
+        public void CreateBindingDetails_FindsBindRequired_OnContainerClass()
         {
             // Arrange
             var context = new BindingMetadataProviderContext(
@@ -303,7 +303,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var provider = new DefaultBindingMetadataProvider(CreateMessageProvider());
 
             // Act
-            provider.GetBindingMetadata(context);
+            provider.CreateBindingMetadata(context);
 
             // Assert
             Assert.True(context.BindingMetadata.IsBindingAllowed);
@@ -311,7 +311,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [Fact]
-        public void GetBindingDetails_FindsBindNever_OnContainerClass()
+        public void CreateBindingDetails_FindsBindNever_OnContainerClass()
         {
             // Arrange
             var context = new BindingMetadataProviderContext(
@@ -321,7 +321,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var provider = new DefaultBindingMetadataProvider(CreateMessageProvider());
 
             // Act
-            provider.GetBindingMetadata(context);
+            provider.CreateBindingMetadata(context);
 
             // Assert
             Assert.False(context.BindingMetadata.IsBindingAllowed);
@@ -329,7 +329,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [Fact]
-        public void GetBindingDetails_FindsBindNever_OnBaseClass()
+        public void CreateBindingDetails_FindsBindNever_OnBaseClass()
         {
             // Arrange
             var context = new BindingMetadataProviderContext(
@@ -339,7 +339,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var provider = new DefaultBindingMetadataProvider(CreateMessageProvider());
 
             // Act
-            provider.GetBindingMetadata(context);
+            provider.CreateBindingMetadata(context);
 
             // Assert
             Assert.False(context.BindingMetadata.IsBindingAllowed);
@@ -347,7 +347,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [Fact]
-        public void GetBindingDetails_OverrideBehaviorOnClass_OverrideWithOptional()
+        public void CreateBindingDetails_OverrideBehaviorOnClass_OverrideWithOptional()
         {
             // Arrange
             var propertyAttributes = new object[]
@@ -362,7 +362,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var provider = new DefaultBindingMetadataProvider(CreateMessageProvider());
 
             // Act
-            provider.GetBindingMetadata(context);
+            provider.CreateBindingMetadata(context);
 
             // Assert
             Assert.True(context.BindingMetadata.IsBindingAllowed);
@@ -370,7 +370,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [Fact]
-        public void GetBindingDetails_OverrideBehaviorOnClass_OverrideWithRequired()
+        public void CreateBindingDetails_OverrideBehaviorOnClass_OverrideWithRequired()
         {
             // Arrange
             var propertyAttributes = new object[]
@@ -385,7 +385,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var provider = new DefaultBindingMetadataProvider(CreateMessageProvider());
 
             // Act
-            provider.GetBindingMetadata(context);
+            provider.CreateBindingMetadata(context);
 
             // Assert
             Assert.True(context.BindingMetadata.IsBindingAllowed);
@@ -393,7 +393,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [Fact]
-        public void GetBindingDetails_OverrideInheritedBehaviorOnClass_OverrideWithRequired()
+        public void CreateBindingDetails_OverrideInheritedBehaviorOnClass_OverrideWithRequired()
         {
             // Arrange
             var propertyAttributes = new object[]
@@ -408,7 +408,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var provider = new DefaultBindingMetadataProvider(CreateMessageProvider());
 
             // Act
-            provider.GetBindingMetadata(context);
+            provider.CreateBindingMetadata(context);
 
             // Assert
             Assert.True(context.BindingMetadata.IsBindingAllowed);
@@ -416,7 +416,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [Fact]
-        public void GetBindingDetails_OverrideBehaviorOnClass_OverrideWithNever()
+        public void CreateBindingDetails_OverrideBehaviorOnClass_OverrideWithNever()
         {
             // Arrange
             var propertyAttributes = new object[]
@@ -431,7 +431,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var provider = new DefaultBindingMetadataProvider(CreateMessageProvider());
 
             // Act
-            provider.GetBindingMetadata(context);
+            provider.CreateBindingMetadata(context);
 
             // Assert
             Assert.False(context.BindingMetadata.IsBindingAllowed);
@@ -440,7 +440,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
         // This overrides an inherited class-level attribute with a different class-level attribute.
         [Fact]
-        public void GetBindingDetails_OverrideBehaviorOnBaseClass_OverrideWithRequired_OnClass()
+        public void CreateBindingDetails_OverrideBehaviorOnBaseClass_OverrideWithRequired_OnClass()
         {
             // Arrange
             var context = new BindingMetadataProviderContext(
@@ -450,7 +450,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var provider = new DefaultBindingMetadataProvider(CreateMessageProvider());
 
             // Act
-            provider.GetBindingMetadata(context);
+            provider.CreateBindingMetadata(context);
 
             // Assert
             Assert.True(context.BindingMetadata.IsBindingAllowed);
@@ -460,7 +460,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        public void GetBindingDetails_BindingBehaviorLeftAlone_ForTypeMetadata(bool initialValue)
+        public void CreateBindingDetails_BindingBehaviorLeftAlone_ForTypeMetadata(bool initialValue)
         {
             // Arrange
             var attributes = new object[]
@@ -479,7 +479,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var provider = new DefaultBindingMetadataProvider(CreateMessageProvider());
 
             // Act
-            provider.GetBindingMetadata(context);
+            provider.CreateBindingMetadata(context);
 
             // Assert
             Assert.Equal(initialValue, context.BindingMetadata.IsBindingAllowed);
@@ -491,7 +491,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        public void GetBindingDetails_BindingBehaviorLeftAlone_ForAttributeOnPropertyType(bool initialValue)
+        public void CreateBindingDetails_BindingBehaviorLeftAlone_ForAttributeOnPropertyType(bool initialValue)
         {
             // Arrange
             var typeAttributes = new object[]
@@ -510,7 +510,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var provider = new DefaultBindingMetadataProvider(CreateMessageProvider());
 
             // Act
-            provider.GetBindingMetadata(context);
+            provider.CreateBindingMetadata(context);
 
             // Assert
             Assert.Equal(initialValue, context.BindingMetadata.IsBindingAllowed);

@@ -3,6 +3,7 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
@@ -12,16 +13,20 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
     public class RouteValueProviderFactory : IValueProviderFactory
     {
         /// <inheritdoc />
-        public Task<IValueProvider> GetValueProviderAsync(ActionContext context)
+        public Task CreateValueProviderAsync(ValueProviderFactoryContext context)
         {
             if (context == null)
             {
                 throw new ArgumentNullException(nameof(context));
             }
 
-            return Task.FromResult<IValueProvider>(new RouteValueProvider(
+            var valueProvider = new RouteValueProvider(
                 BindingSource.Path,
-                context.RouteData.Values));
+                context.ActionContext.RouteData.Values);
+
+            context.ValueProviders.Add(valueProvider);
+
+            return TaskCache.CompletedTask;
         }
     }
 }

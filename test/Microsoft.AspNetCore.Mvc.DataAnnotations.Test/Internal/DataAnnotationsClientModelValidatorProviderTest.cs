@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
         private readonly IModelMetadataProvider _metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
 
         [Fact]
-        public void GetValidators_AddsRequiredAttribute_ForIsRequiredTrue()
+        public void CreateValidators_AddsRequiredAttribute_ForIsRequiredTrue()
         {
             // Arrange
             var provider = new DataAnnotationsClientModelValidatorProvider(
@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             var providerContext = new ClientValidatorProviderContext(metadata, GetValidatorItems(metadata));
 
             // Act
-            provider.GetValidators(providerContext);
+            provider.CreateValidators(providerContext);
 
             // Assert
             var validatorItem = Assert.Single(providerContext.Results);
@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
         }
 
         [Fact]
-        public void GetValidators_DoesNotAddDuplicateRequiredAttribute_ForIsRequiredTrue()
+        public void CreateValidators_DoesNotAddDuplicateRequiredAttribute_ForIsRequiredTrue()
         {
             // Arrange
             var provider = new DataAnnotationsClientModelValidatorProvider(
@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             var providerContext = new ClientValidatorProviderContext(metadata, items);
 
             // Act
-            provider.GetValidators(providerContext);
+            provider.CreateValidators(providerContext);
 
             // Assert
             var validatorItem = Assert.Single(providerContext.Results);
@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
         }
 
         [Fact]
-        public void GetValidators_DoesNotAddRequiredAttribute_ForIsRequiredFalse()
+        public void CreateValidators_DoesNotAddRequiredAttribute_ForIsRequiredFalse()
         {
             // Arrange
             var provider = new DataAnnotationsClientModelValidatorProvider(
@@ -84,14 +84,14 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             var providerContext = new ClientValidatorProviderContext(metadata, GetValidatorItems(metadata));
 
             // Act
-            provider.GetValidators(providerContext);
+            provider.CreateValidators(providerContext);
 
             // Assert
             Assert.Empty(providerContext.Results);
         }
 
         [Fact]
-        public void GetValidators_DoesNotAddExtraRequiredAttribute_IfAttributeIsSpecifiedExplicitly()
+        public void CreateValidators_DoesNotAddExtraRequiredAttribute_IfAttributeIsSpecifiedExplicitly()
         {
             // Arrange
             var provider = new DataAnnotationsClientModelValidatorProvider(
@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             var providerContext = new ClientValidatorProviderContext(metadata, GetValidatorItems(metadata));
 
             // Act
-            provider.GetValidators(providerContext);
+            provider.CreateValidators(providerContext);
 
             // Assert
             var validatorItem = Assert.Single(providerContext.Results);
@@ -127,7 +127,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             var providerContext = new ClientValidatorProviderContext(metadata, GetValidatorItems(metadata));
 
             // Act
-            provider.GetValidators(providerContext);
+            provider.CreateValidators(providerContext);
 
             // Assert
             var validatorItem = Assert.Single(providerContext.Results);

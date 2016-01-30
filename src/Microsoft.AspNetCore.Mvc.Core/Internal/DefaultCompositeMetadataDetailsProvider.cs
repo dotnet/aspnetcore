@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         /// <inheritdoc />
-        public virtual void GetBindingMetadata(BindingMetadataProviderContext context)
+        public virtual void CreateBindingMetadata(BindingMetadataProviderContext context)
         {
             if (context == null)
             {
@@ -34,12 +34,12 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             foreach (var provider in _providers.OfType<IBindingMetadataProvider>())
             {
-                provider.GetBindingMetadata(context);
+                provider.CreateBindingMetadata(context);
             }
         }
 
         /// <inheritdoc />
-        public virtual void GetDisplayMetadata(DisplayMetadataProviderContext context)
+        public virtual void CreateDisplayMetadata(DisplayMetadataProviderContext context)
         {
             if (context == null)
             {
@@ -48,12 +48,12 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             foreach (var provider in _providers.OfType<IDisplayMetadataProvider>())
             {
-                provider.GetDisplayMetadata(context);
+                provider.CreateDisplayMetadata(context);
             }
         }
 
         /// <inheritdoc />
-        public virtual void GetValidationMetadata(ValidationMetadataProviderContext context)
+        public virtual void CreateValidationMetadata(ValidationMetadataProviderContext context)
         {
             if (context == null)
             {
@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             foreach (var provider in _providers.OfType<IValidationMetadataProvider>())
             {
-                provider.GetValidationMetadata(context);
+                provider.CreateValidationMetadata(context);
             }
         }
     }

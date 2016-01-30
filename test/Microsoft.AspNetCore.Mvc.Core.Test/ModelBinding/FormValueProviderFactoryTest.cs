@@ -23,10 +23,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
             var factory = new FormValueProviderFactory();
 
             // Act
-            var result = await factory.GetValueProviderAsync(context);
+            await factory.CreateValueProviderAsync(context);
 
             // Assert
-            Assert.Null(result);
+            Assert.Empty(context.ValueProviders);
         }
 
         [Theory]
@@ -41,14 +41,14 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
             var factory = new FormValueProviderFactory();
 
             // Act
-            var result = await factory.GetValueProviderAsync(context);
+            await factory.CreateValueProviderAsync(context);
 
             // Assert
-            var valueProvider = Assert.IsType<FormValueProvider>(result);
+            var valueProvider = Assert.IsType<FormValueProvider>(Assert.Single(context.ValueProviders));
             Assert.Equal(CultureInfo.CurrentCulture, valueProvider.Culture);
         }
 
-        private static ActionContext CreateContext(string contentType)
+        private static ValueProviderFactoryContext CreateContext(string contentType)
         {
             var context = new DefaultHttpContext();
             context.Request.ContentType = contentType;
@@ -58,7 +58,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
                 context.Request.Form = new FormCollection(new Dictionary<string, StringValues>());
             }
 
-            return new ActionContext(context, new RouteData(), new ActionDescriptor());
+            var actionContext = new ActionContext(context, new RouteData(), new ActionDescriptor());
+
+            return new ValueProviderFactoryContext(actionContext);
         }
     }
 }

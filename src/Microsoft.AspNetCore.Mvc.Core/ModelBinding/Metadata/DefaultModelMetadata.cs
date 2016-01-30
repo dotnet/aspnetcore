@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
                 if (_details.BindingMetadata == null)
                 {
                     var context = new BindingMetadataProviderContext(Identity, _details.ModelAttributes);
-                    _detailsProvider.GetBindingMetadata(context);
+                    _detailsProvider.CreateBindingMetadata(context);
                     _details.BindingMetadata = context.BindingMetadata;
                 }
 
@@ -103,7 +103,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
                 if (_details.DisplayMetadata == null)
                 {
                     var context = new DisplayMetadataProviderContext(Identity, _details.ModelAttributes);
-                    _detailsProvider.GetDisplayMetadata(context);
+                    _detailsProvider.CreateDisplayMetadata(context);
                     _details.DisplayMetadata = context.DisplayMetadata;
                 }
 
@@ -124,7 +124,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
                 if (_details.ValidationMetadata == null)
                 {
                     var context = new ValidationMetadataProviderContext(Identity, _details.ModelAttributes);
-                    _detailsProvider.GetValidationMetadata(context);
+                    _detailsProvider.CreateValidationMetadata(context);
                     _details.ValidationMetadata = context.ValidationMetadata;
                 }
 

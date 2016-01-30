@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
     public class DefaultModelClientValidatorProviderTest
     {
         [Fact]
-        public void GetValidators_ForIValidatableObject()
+        public void CreateValidators_ForIValidatableObject()
         {
             // Arrange
             var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             var context = new ModelValidatorProviderContext(metadata, GetValidatorItems(metadata));
 
             // Act
-            validatorProvider.GetValidators(context);
+            validatorProvider.CreateValidators(context);
 
             // Assert
             var validatorItems = context.Results;
@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
         }
 
         [Fact]
-        public void GetValidators_ClientModelValidatorAttributeOnClass()
+        public void CreateValidators_ClientModelValidatorAttributeOnClass()
         {
             // Arrange
             var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             var context = new ModelValidatorProviderContext(metadata, GetValidatorItems(metadata));
 
             // Act
-            validatorProvider.GetValidators(context);
+            validatorProvider.CreateValidators(context);
 
             // Assert
             var validatorItems = context.Results;
@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
         }
 
         [Fact]
-        public void GetValidators_ClientModelValidatorAttributeOnProperty()
+        public void CreateValidators_ClientModelValidatorAttributeOnProperty()
         {
             // Arrange
             var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             var context = new ModelValidatorProviderContext(metadata, GetValidatorItems(metadata));
 
             // Act
-            validatorProvider.GetValidators(context);
+            validatorProvider.CreateValidators(context);
 
             // Assert
             var validatorItems = context.Results;
@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
         }
 
         [Fact]
-        public void GetValidators_ClientModelValidatorAttributeOnPropertyAndClass()
+        public void CreateValidators_ClientModelValidatorAttributeOnPropertyAndClass()
         {
             // Arrange
             var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             var context = new ModelValidatorProviderContext(metadata, GetValidatorItems(metadata));
 
             // Act
-            validatorProvider.GetValidators(context);
+            validatorProvider.CreateValidators(context);
 
             // Assert
             var validatorItems = context.Results;
@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
 
         // RangeAttribute is an example of a ValidationAttribute with it's own adapter type.
         [Fact]
-        public void GetValidators_ClientValidatorAttribute_SpecificAdapter()
+        public void CreateValidators_ClientValidatorAttribute_SpecificAdapter()
         {
             // Arrange
             var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             var context = new ClientValidatorProviderContext(metadata, GetClientValidatorItems(metadata));
 
             // Act
-            validatorProvider.GetValidators(context);
+            validatorProvider.CreateValidators(context);
 
             // Assert
             var validatorItems = context.Results;
@@ -125,7 +125,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
         }
 
         [Fact]
-        public void GetValidators_ClientValidatorAttribute_DefaultAdapter()
+        public void CreateValidators_ClientValidatorAttribute_DefaultAdapter()
         {
             // Arrange
             var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
@@ -137,7 +137,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             var context = new ClientValidatorProviderContext(metadata, GetClientValidatorItems(metadata));
 
             // Act
-            validatorProvider.GetValidators(context);
+            validatorProvider.CreateValidators(context);
 
             // Assert
             var validatorItems = context.Results;
@@ -146,7 +146,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
         }
 
         [Fact]
-        public void GetValidators_FromModelMetadataType_SingleValidator()
+        public void CreateValidators_FromModelMetadataType_SingleValidator()
         {
             // Arrange
             var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
@@ -158,7 +158,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             var context = new ClientValidatorProviderContext(metadata, GetClientValidatorItems(metadata));
 
             // Act
-            validatorProvider.GetValidators(context);
+            validatorProvider.CreateValidators(context);
 
             // Assert
             var validatorItems = context.Results;
@@ -169,7 +169,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
         }
 
         [Fact]
-        public void GetValidators_FromModelMetadataType_MergedValidators()
+        public void CreateValidators_FromModelMetadataType_MergedValidators()
         {
             // Arrange
             var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
@@ -181,7 +181,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             var context = new ClientValidatorProviderContext(metadata, GetClientValidatorItems(metadata));
 
             // Act
-            validatorProvider.GetValidators(context);
+            validatorProvider.CreateValidators(context);
 
             // Assert
             var validatorItems = context.Results;

@@ -33,12 +33,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
         public IList<IModelValidatorProvider> ValidatorProviders { get; }
 
         /// <inheritdoc />
-        public void GetValidators(ModelValidatorProviderContext context)
+        public void CreateValidators(ModelValidatorProviderContext context)
         {
             // Perf: Avoid allocations
             for (var i = 0; i < ValidatorProviders.Count; i++)
             {
-                ValidatorProviders[i].GetValidators(context);
+                ValidatorProviders[i].CreateValidators(context);
             }
         }
     }

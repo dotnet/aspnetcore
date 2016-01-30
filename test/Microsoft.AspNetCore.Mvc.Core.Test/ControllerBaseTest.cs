@@ -1509,7 +1509,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             validator1.Validator = validator.Object;
 
             var provider = new Mock<IModelValidatorProvider>();
-            provider.Setup(v => v.GetValidators(It.IsAny<ModelValidatorProviderContext>()))
+            provider.Setup(v => v.CreateValidators(It.IsAny<ModelValidatorProviderContext>()))
                 .Callback<ModelValidatorProviderContext>(c => c.Results.Add(validator1));
 
             var binder = new StubModelBinder();
@@ -1546,7 +1546,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             validator1.Validator = validator.Object;
 
             var provider = new Mock<IModelValidatorProvider>();
-            provider.Setup(v => v.GetValidators(It.IsAny<ModelValidatorProviderContext>()))
+            provider.Setup(v => v.CreateValidators(It.IsAny<ModelValidatorProviderContext>()))
                 .Callback<ModelValidatorProviderContext>(c => c.Results.Add(validator1));
 
             var binder = new StubModelBinder();

@@ -24,13 +24,14 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
             context.SetupGet(c => c.Items).Returns(new Dictionary<object, object>());
             context.SetupGet(c => c.Request).Returns(request.Object);
             var actionContext = new ActionContext(context.Object, new RouteData(), new ActionDescriptor());
+            var factoryContext = new ValueProviderFactoryContext(actionContext);
             var factory = new QueryStringValueProviderFactory();
 
             // Act
-            var result = await factory.GetValueProviderAsync(actionContext);
+            await factory.CreateValueProviderAsync(factoryContext);
 
             // Assert
-            var valueProvider = Assert.IsType<QueryStringValueProvider>(result);
+            var valueProvider = Assert.IsType<QueryStringValueProvider>(Assert.Single(factoryContext.ValueProviders));
             Assert.Equal(CultureInfo.InvariantCulture, valueProvider.Culture);
         }
     }

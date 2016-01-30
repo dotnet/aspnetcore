@@ -9,9 +9,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
     public interface IBindingMetadataProvider : IMetadataDetailsProvider
     {
         /// <summary>
-        /// Gets the values for properties of <see cref="DisplayMetadata"/>. 
+        /// Sets the values for properties of <see cref="BindingMetadataProviderContext.BindingMetadata"/>. 
         /// </summary>
         /// <param name="context">The <see cref="BindingMetadataProviderContext"/>.</param>
-        void GetBindingMetadata(BindingMetadataProviderContext context);
+        void CreateBindingMetadata(BindingMetadataProviderContext context);
     }
 }

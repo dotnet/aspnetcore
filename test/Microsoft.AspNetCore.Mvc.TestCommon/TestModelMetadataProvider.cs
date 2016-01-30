@@ -127,7 +127,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         {
             public List<MetadataBuilder> Builders { get; } = new List<MetadataBuilder>();
 
-            public void GetBindingMetadata(BindingMetadataProviderContext context)
+            public void CreateBindingMetadata(BindingMetadataProviderContext context)
             {
                 foreach (var builder in Builders)
                 {
@@ -135,7 +135,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 }
             }
 
-            public void GetDisplayMetadata(DisplayMetadataProviderContext context)
+            public void CreateDisplayMetadata(DisplayMetadataProviderContext context)
             {
                 foreach (var builder in Builders)
                 {
@@ -143,7 +143,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 }
             }
 
-            public void GetValidationMetadata(ValidationMetadataProviderContext context)
+            public void CreateValidationMetadata(ValidationMetadataProviderContext context)
             {
                 foreach (var builder in Builders)
                 {

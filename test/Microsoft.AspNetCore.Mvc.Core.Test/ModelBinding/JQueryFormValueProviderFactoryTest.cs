@@ -47,10 +47,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
             var factory = new JQueryFormValueProviderFactory();
 
             // Act
-            var result = await factory.GetValueProviderAsync(context);
+            await factory.CreateValueProviderAsync(context);
 
             // Assert
-            Assert.Null(result);
+            Assert.Empty(context.ValueProviders);
         }
 
         [Theory]
@@ -58,17 +58,17 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
         [InlineData("application/x-www-form-urlencoded;charset=utf-8")]
         [InlineData("multipart/form-data; boundary=----WebKitFormBoundarymx2fSWqWSd0OxQqq")]
         [InlineData("multipart/form-data; boundary=----WebKitFormBoundarymx2fSWqWSd0OxQqq; charset=utf-8")]
-        public async Task GetValueProviderAsync_ReturnsValueProvider_WithCurrentCulture(string contentType)
+        public async Task CreateValueProviderAsync_ReturnsValueProvider_WithCurrentCulture(string contentType)
         {
             // Arrange
             var context = CreateContext(contentType, formValues: null);
             var factory = new JQueryFormValueProviderFactory();
 
             // Act
-            var result = await factory.GetValueProviderAsync(context);
+            await factory.CreateValueProviderAsync(context);
 
             // Assert
-            var valueProvider = Assert.IsType<JQueryFormValueProvider>(result);
+            var valueProvider = Assert.IsType<JQueryFormValueProvider>(Assert.Single(context.ValueProviders));
             Assert.Equal(CultureInfo.CurrentCulture, valueProvider.Culture);
         }
 
@@ -109,14 +109,15 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
             var factory = new JQueryFormValueProviderFactory();
 
             // Act
-            var valueProvider = await factory.GetValueProviderAsync(context);
-            var result = valueProvider.GetValue(key);
+            await factory.CreateValueProviderAsync(context);
 
             // Assert
+            var valueProvider = Assert.Single(context.ValueProviders);
+            var result = valueProvider.GetValue(key);
             Assert.Equal("found", (string)result);
         }
 
-        private static ActionContext CreateContext(string contentType, Dictionary<string, StringValues> formValues)
+        private static ValueProviderFactoryContext CreateContext(string contentType, Dictionary<string, StringValues> formValues)
         {
             var context = new DefaultHttpContext();
             context.Request.ContentType = contentType;
@@ -126,7 +127,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
                 context.Request.Form = new FormCollection(formValues ?? new Dictionary<string, StringValues>());
             }
 
-            return new ActionContext(context, new RouteData(), new ActionDescriptor());
+            var actionContext = new ActionContext(context, new RouteData(), new ActionDescriptor());
+
+            return new ValueProviderFactoryContext(actionContext);
         }
     }
 }

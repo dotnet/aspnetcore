@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         {
             private readonly ModelBindingMessageProvider _messageProvider = CreateMessageProvider();
 
-            public void GetBindingMetadata(BindingMetadataProviderContext context)
+            public void CreateBindingMetadata(BindingMetadataProviderContext context)
             {
                 if (context == null)
                 {

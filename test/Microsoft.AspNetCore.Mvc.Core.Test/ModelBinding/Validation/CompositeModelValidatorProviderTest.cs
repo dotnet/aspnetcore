@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
             var validator3 = new ValidatorItem(validatorMetadata);
 
             var provider1 = new Mock<IModelValidatorProvider>();
-            provider1.Setup(p => p.GetValidators(It.IsAny<ModelValidatorProviderContext>()))
+            provider1.Setup(p => p.CreateValidators(It.IsAny<ModelValidatorProviderContext>()))
                      .Callback<ModelValidatorProviderContext>(c =>
                      {
                          c.Results.Add(validator1);
@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
                      });
 
             var provider2 = new Mock<IModelValidatorProvider>();
-            provider2.Setup(p => p.GetValidators(It.IsAny<ModelValidatorProviderContext>()))
+            provider2.Setup(p => p.CreateValidators(It.IsAny<ModelValidatorProviderContext>()))
                      .Callback<ModelValidatorProviderContext>(c =>
                      {
                          c.Results.Add(validator3);
@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
 
             // Act
             var validatorProviderContext = new ModelValidatorProviderContext(modelMetadata, new List<ValidatorItem>());
-            compositeModelValidator.GetValidators(validatorProviderContext);
+            compositeModelValidator.CreateValidators(validatorProviderContext);
 
             // Assert
             Assert.Equal(

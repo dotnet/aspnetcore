@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
     public class DataMemberRequiredBindingMetadataProvider : IBindingMetadataProvider
     {
         /// <inheritdoc />
-        public void GetBindingMetadata(BindingMetadataProviderContext context)
+        public void CreateBindingMetadata(BindingMetadataProviderContext context)
         {
             if (context == null)
             {

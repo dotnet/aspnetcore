@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             var context = new ValidationMetadataProviderContext(key, new ModelAttributes(attributes, new object[0]));
 
             // Act
-            provider.GetValidationMetadata(context);
+            provider.CreateValidationMetadata(context);
 
             // Assert
             var validatorMetadata = Assert.Single(context.ValidationMetadata.ValidatorMetadata);
@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             var context = new ValidationMetadataProviderContext(key, new ModelAttributes(attributes, new object[0]));
 
             // Act
-            provider.GetValidationMetadata(context);
+            provider.CreateValidationMetadata(context);
 
             // Assert
             var validatorMetadata = Assert.Single(context.ValidationMetadata.ValidatorMetadata);
@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             context.ValidationMetadata.ValidatorMetadata.Add(attribute);
 
             // Act
-            provider.GetValidationMetadata(context);
+            provider.CreateValidationMetadata(context);
 
             // Assert
             var validatorMetadata = Assert.Single(context.ValidationMetadata.ValidatorMetadata);

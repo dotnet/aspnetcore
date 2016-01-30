@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
         public string FullTypeName { get; }
 
         /// <inheritdoc />
-        public void GetValidationMetadata(ValidationMetadataProviderContext context)
+        public void CreateValidationMetadata(ValidationMetadataProviderContext context)
         {
             if (context == null)
             {

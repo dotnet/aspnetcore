@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
     public class DefaultModelValidatorProvider : IModelValidatorProvider
     {
         /// <inheritdoc />
-        public void GetValidators(ModelValidatorProviderContext context)
+        public void CreateValidators(ModelValidatorProviderContext context)
         {
             //Perf: Avoid allocations here
             for (var i = 0; i < context.Results.Count; i++)

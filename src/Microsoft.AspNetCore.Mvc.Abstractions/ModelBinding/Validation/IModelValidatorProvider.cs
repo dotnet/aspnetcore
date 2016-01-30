@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
     public interface IModelValidatorProvider
     {
         /// <summary>
-        /// Gets the validators for <see cref="ModelValidatorProviderContext.ModelMetadata"/>.
+        /// Creates the validators for <see cref="ModelValidatorProviderContext.ModelMetadata"/>.
         /// </summary>
         /// <param name="context">The <see cref="ModelValidatorProviderContext"/>.</param>
         /// <remarks>
@@ -17,6 +17,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
         /// <see cref="ValidatorItem"/> instance which should be added to
         /// <see cref="ModelValidatorProviderContext.Results"/>.
         /// </remarks>
-        void GetValidators(ModelValidatorProviderContext context);
+        void CreateValidators(ModelValidatorProviderContext context);
     }
 }

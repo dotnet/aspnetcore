@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
     public class DefaultValidationMetadataProvider : IValidationMetadataProvider
     {
         /// <inheritdoc />
-        public void GetValidationMetadata(ValidationMetadataProviderContext context)
+        public void CreateValidationMetadata(ValidationMetadataProviderContext context)
         {
             if (context == null)
             {

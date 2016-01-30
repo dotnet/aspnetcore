@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
         }
 
         /// <inheritdoc />
-        public void GetValidators(ClientValidatorProviderContext context)
+        public void CreateValidators(ClientValidatorProviderContext context)
         {
             if (context == null)
             {

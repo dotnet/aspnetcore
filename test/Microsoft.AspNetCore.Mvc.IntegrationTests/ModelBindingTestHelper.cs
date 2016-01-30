@@ -93,14 +93,10 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 
         private static ControllerContext GetControllerContext(MvcOptions options, ActionContext context)
         {
-            var valueProviders = new List<IValueProvider>();
+            var valueProviderFactoryContext = new ValueProviderFactoryContext(context);
             foreach (var factory in options.ValueProviderFactories)
             {
-                var valueProvider = factory.GetValueProviderAsync(context).Result;
-                if (valueProvider != null)
-                {
-                    valueProviders.Add(valueProvider);
-                }
+                factory.CreateValueProviderAsync(valueProviderFactoryContext).GetAwaiter().GetResult();
             }
 
             return new ControllerContext(context)
@@ -108,7 +104,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 InputFormatters = options.InputFormatters,
                 ValidatorProviders = options.ModelValidatorProviders,
                 ModelBinders = options.ModelBinders,
-                ValueProviders = valueProviders
+                ValueProviders = valueProviderFactoryContext.ValueProviders
             };
         }
     }

@@ -4,6 +4,7 @@
 using System;
 using System.Globalization;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
@@ -14,17 +15,21 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
     public class QueryStringValueProviderFactory : IValueProviderFactory
     {
         /// <inheritdoc />
-        public Task<IValueProvider> GetValueProviderAsync(ActionContext context)
+        public Task CreateValueProviderAsync(ValueProviderFactoryContext context)
         {
             if (context == null)
             {
                 throw new ArgumentNullException(nameof(context));
             }
 
-            return Task.FromResult<IValueProvider>(new QueryStringValueProvider(
+            var valueProvider = new QueryStringValueProvider(
                 BindingSource.Query,
-                context.HttpContext.Request.Query,
-                CultureInfo.InvariantCulture));
+                context.ActionContext.HttpContext.Request.Query,
+                CultureInfo.InvariantCulture);
+
+            context.ValueProviders.Add(valueProvider);
+
+            return TaskCache.CompletedTask;
         }
     }
 }

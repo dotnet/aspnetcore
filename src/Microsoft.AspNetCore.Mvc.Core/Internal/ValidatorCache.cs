@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         private void ExecuteProvider(IModelValidatorProvider validatorProvider, ModelMetadata metadata, List<ValidatorItem> items)
         {
             var context = new ModelValidatorProviderContext(metadata, items);
-            validatorProvider.GetValidators(context);
+            validatorProvider.CreateValidators(context);
         }
 
         private IReadOnlyList<IModelValidator> ExtractValidators(List<ValidatorItem> items)

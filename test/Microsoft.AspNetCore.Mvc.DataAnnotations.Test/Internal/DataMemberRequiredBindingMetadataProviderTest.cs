@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             var context = new BindingMetadataProviderContext(key, new ModelAttributes(attributes, new object[0]));
 
             // Act
-            provider.GetBindingMetadata(context);
+            provider.CreateBindingMetadata(context);
 
             // Assert
             Assert.True(context.BindingMetadata.IsBindingRequired);
@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             context.BindingMetadata.IsBindingRequired = initialValue;
 
             // Act
-            provider.GetBindingMetadata(context);
+            provider.CreateBindingMetadata(context);
 
             // Assert
             Assert.Equal(initialValue, context.BindingMetadata.IsBindingRequired);
@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             context.BindingMetadata.IsBindingRequired = initialValue;
 
             // Act
-            provider.GetBindingMetadata(context);
+            provider.CreateBindingMetadata(context);
 
             // Assert
             Assert.Equal(initialValue, context.BindingMetadata.IsBindingRequired);
@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             context.BindingMetadata.IsBindingRequired = initialValue;
 
             // Act
-            provider.GetBindingMetadata(context);
+            provider.CreateBindingMetadata(context);
 
             // Assert
             Assert.Equal(initialValue, context.BindingMetadata.IsBindingRequired);
@@ -132,7 +132,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             context.BindingMetadata.IsBindingRequired = initialValue;
 
             // Act
-            provider.GetBindingMetadata(context);
+            provider.CreateBindingMetadata(context);
 
             // Assert
             Assert.Equal(initialValue, context.BindingMetadata.IsBindingRequired);

@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             _stringLocalizerFactory = stringLocalizerFactory;
         }
 
-        public void GetValidators(ModelValidatorProviderContext context)
+        public void CreateValidators(ModelValidatorProviderContext context)
         {
             IStringLocalizer stringLocalizer = null;
             if (_stringLocalizerFactory != null && _options.Value.DataAnnotationLocalizerProvider != null)

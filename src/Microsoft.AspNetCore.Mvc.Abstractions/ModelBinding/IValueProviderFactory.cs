@@ -11,12 +11,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
     public interface IValueProviderFactory
     {
         /// <summary>
-        /// Gets a <see cref="IValueProvider"/> with values from the current request.
+        /// Creates a <see cref="IValueProvider"/> with values from the current request
+        /// and adds it to <see cref="ValueProviderFactoryContext.ValueProviders"/> list.
         /// </summary>
-        /// <param name="context">The <see cref="ActionContext"/>.</param>
-        /// <returns>
-        /// A <see cref="Task"/> that when completed will yield a <see cref="IValueProvider"/> instance or <c>null</c>.
-        /// </returns>
-        Task<IValueProvider> GetValueProviderAsync(ActionContext context);
+        /// <param name="context">The <see cref="ValueProviderFactoryContext"/>.</param>
+        /// <returns>A <see cref="Task"/> that when completed will add an <see cref="IValueProvider"/> instance
+        /// to <see cref="ValueProviderFactoryContext.ValueProviders"/> list if applicable.</returns>
+        Task CreateValueProviderAsync(ValueProviderFactoryContext context);
     }
 }
