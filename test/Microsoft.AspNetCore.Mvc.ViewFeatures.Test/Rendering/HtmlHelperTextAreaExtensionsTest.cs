@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.TestCommon;
@@ -28,7 +29,8 @@ namespace Microsoft.AspNetCore.Mvc.Core
 
             // Assert
             Assert.Equal(
-                "<textarea id=\"HtmlEncode[[Property1]]\" name=\"HtmlEncode[[Property1]]\">\r\nHtmlEncode[[propValue]]</textarea>",
+                "<textarea id=\"HtmlEncode[[Property1]]\" name=\"HtmlEncode[[Property1]]\">" + Environment.NewLine +
+                "HtmlEncode[[propValue]]</textarea>",
                 HtmlContentUtilities.HtmlContentToString(textAreaResult));
         }
 
@@ -46,7 +48,8 @@ namespace Microsoft.AspNetCore.Mvc.Core
 
             // Assert
             Assert.Equal(
-                "<textarea id=\"HtmlEncode[[Property1]]\" name=\"HtmlEncode[[Property1]]\">\r\nHtmlEncode[[propValue]]</textarea>",
+                "<textarea id=\"HtmlEncode[[Property1]]\" name=\"HtmlEncode[[Property1]]\">" + Environment.NewLine +
+                "HtmlEncode[[propValue]]</textarea>",
                 HtmlContentUtilities.HtmlContentToString(textAreaForResult));
         }
 
@@ -64,7 +67,8 @@ namespace Microsoft.AspNetCore.Mvc.Core
 
             // Assert
             Assert.Equal(
-                "<textarea id=\"HtmlEncode[[Property1]]\" name=\"HtmlEncode[[Property1]]\">\r\nHtmlEncode[[myvalue]]</textarea>",
+                "<textarea id=\"HtmlEncode[[Property1]]\" name=\"HtmlEncode[[Property1]]\">" + Environment.NewLine +
+                "HtmlEncode[[myvalue]]</textarea>",
                 HtmlContentUtilities.HtmlContentToString(textAreaResult));
         }
 
@@ -82,7 +86,9 @@ namespace Microsoft.AspNetCore.Mvc.Core
 
             // Assert
             Assert.Equal(
-                "<textarea attr=\"HtmlEncode[[value]]\" id=\"HtmlEncode[[Property1]]\" name=\"HtmlEncode[[Property1]]\">\r\nHtmlEncode[[propValue]]</textarea>",
+                "<textarea attr=\"HtmlEncode[[value]]\" id=\"HtmlEncode[[Property1]]\" name=\"HtmlEncode[[Property1]]\">" +
+                Environment.NewLine +
+                "HtmlEncode[[propValue]]</textarea>",
                 HtmlContentUtilities.HtmlContentToString(textAreaResult));
         }
 
@@ -100,7 +106,9 @@ namespace Microsoft.AspNetCore.Mvc.Core
 
             // Assert
             Assert.Equal(
-                "<textarea attr=\"HtmlEncode[[value]]\" id=\"HtmlEncode[[Property1]]\" name=\"HtmlEncode[[Property1]]\">\r\nHtmlEncode[[propValue]]</textarea>",
+                "<textarea attr=\"HtmlEncode[[value]]\" id=\"HtmlEncode[[Property1]]\" name=\"HtmlEncode[[Property1]]\">" +
+                Environment.NewLine +
+                "HtmlEncode[[propValue]]</textarea>",
                 HtmlContentUtilities.HtmlContentToString(textAreaForResult));
         }
 
@@ -115,7 +123,9 @@ namespace Microsoft.AspNetCore.Mvc.Core
 
             // Assert
             Assert.Equal(
-                "<textarea attr=\"HtmlEncode[[value]]\" columns=\"HtmlEncode[[2]]\" id=\"HtmlEncode[[Property1]]\" name=\"HtmlEncode[[Property1]]\" rows=\"HtmlEncode[[1]]\">\r\nHtmlEncode[[myvalue]]</textarea>",
+                "<textarea attr=\"HtmlEncode[[value]]\" columns=\"HtmlEncode[[2]]\" id=\"HtmlEncode[[Property1]]\" " +
+                "name=\"HtmlEncode[[Property1]]\" rows=\"HtmlEncode[[1]]\">" + Environment.NewLine +
+                "HtmlEncode[[myvalue]]</textarea>",
                 HtmlContentUtilities.HtmlContentToString(textAreaResult));
         }
 
@@ -130,7 +140,9 @@ namespace Microsoft.AspNetCore.Mvc.Core
 
             // Assert
             Assert.Equal(
-                "<textarea attr=\"HtmlEncode[[value]]\" columns=\"HtmlEncode[[2]]\" id=\"HtmlEncode[[Property1]]\" name=\"HtmlEncode[[Property1]]\" rows=\"HtmlEncode[[1]]\">\r\n</textarea>",
+                "<textarea attr=\"HtmlEncode[[value]]\" columns=\"HtmlEncode[[2]]\" id=\"HtmlEncode[[Property1]]\" " +
+                "name=\"HtmlEncode[[Property1]]\" rows=\"HtmlEncode[[1]]\">" + Environment.NewLine +
+                "</textarea>",
                 HtmlContentUtilities.HtmlContentToString(textAreaForResult));
         }
 
