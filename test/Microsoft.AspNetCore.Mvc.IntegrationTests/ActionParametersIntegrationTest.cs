@@ -8,9 +8,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-#if !DNXCORE50
-using Microsoft.AspNetCore.Testing.xunit;
-#endif
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.IntegrationTests
@@ -32,12 +29,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             public List<Address> Address { get; }
         }
 
-#if DNXCORE50
         [Fact]
-#else
-        [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "aspnet/External#50")]
-#endif
         public async Task ActionParameter_NonSettableCollectionModel_EmptyPrefix_GetsBound()
         {
             // Arrange
@@ -84,12 +76,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             public CustomReadOnlyCollection<Address> Address { get; set; }
         }
 
-#if DNXCORE50
         [Fact]
-#else
-        [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "aspnet/External#50")]
-#endif
         public async Task ActionParameter_ReadOnlyCollectionModel_EmptyPrefix_DoesNotGetBound()
         {
             // Arrange
@@ -136,12 +123,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             public Address[] Address { get; set; }
         }
 
-#if DNXCORE50
         [Fact]
-#else
-        [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "aspnet/External#50")]
-#endif
         public async Task ActionParameter_SettableArrayModel_EmptyPrefix_GetsBound()
         {
             // Arrange
@@ -188,12 +170,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             public Address[] Address { get; } = new Address[] { };
         }
 
-#if DNXCORE50
         [Fact]
-#else
-        [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "aspnet/External#50")]
-#endif
         public async Task ActionParameter_NonSettableArrayModel_EmptyPrefix_DoesNotGetBound()
         {
             // Arrange
@@ -229,12 +206,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Empty(modelState.Keys);
         }
 
-#if DNXCORE50
         [Fact]
-#else
-        [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "aspnet/External#50")]
-#endif
         public async Task ActionParameter_NonSettableCollectionModel_WithPrefix_GetsBound()
         {
             // Arrange
@@ -279,12 +251,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Equal(ModelValidationState.Valid, modelState[key].ValidationState);
         }
 
-#if DNXCORE50
         [Fact]
-#else
-        [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "aspnet/External#50")]
-#endif
         public async Task ActionParameter_ReadOnlyCollectionModel_WithPrefix_DoesNotGetBound()
         {
             // Arrange
@@ -330,12 +297,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Equal("SomeStreet", state.RawValue);
         }
 
-#if DNXCORE50
         [Fact]
-#else
-        [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "aspnet/External#50")]
-#endif
         public async Task ActionParameter_SettableArrayModel_WithPrefix_GetsBound()
         {
             // Arrange
@@ -380,12 +342,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Equal(ModelValidationState.Valid, modelState[key].ValidationState);
         }
 
-#if DNXCORE50
         [Fact]
-#else
-        [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "aspnet/External#50")]
-#endif
         public async Task ActionParameter_NonSettableArrayModel_WithPrefix_DoesNotGetBound()
         {
             // Arrange

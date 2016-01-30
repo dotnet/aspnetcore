@@ -9,7 +9,6 @@ using System.Net.Http.Headers;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
@@ -64,14 +63,9 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                     { "OrderUsingHtmlHelpers", "/HtmlGeneration_Order/Submit" },
                     // Testing InputTagHelpers invoked in the partial views
                     { "ProductList", "/HtmlGeneration_Product" },
-                };
-
-                // One path hits aspnet/External#50 with Mono on Mac.
-                if (!TestPlatformHelper.IsMac || !TestPlatformHelper.IsMono)
-                {
                     // Testing the ScriptTagHelper
-                    data.Add("Script", null);
-                }
+                    { "Script", null },
+                };
 
                 return data;
             }

@@ -9,7 +9,6 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Reflection;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
@@ -23,8 +22,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
         public HttpClient Client { get; }
 
-        [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [Fact]
         public async Task HomeController_Index_ReturnsExpectedContent()
         {
             // Arrange
@@ -61,7 +59,10 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 #if GENERATE_BASELINES
             ResourceFile.UpdateFile(resourceAssembly, outputFile, expectedContent, responseContent);
 #else
-            Assert.Equal(expectedContent, responseContent, ignoreLineEndingDifferences: true);
+            Assert.Equal(
+                PlatformNormalizer.NormalizeContent(expectedContent),
+                responseContent,
+                ignoreLineEndingDifferences: true);
 #endif
         }
 
