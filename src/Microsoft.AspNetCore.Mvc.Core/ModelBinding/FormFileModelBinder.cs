@@ -102,19 +102,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
                 foreach (var file in form.Files)
                 {
-                    ContentDispositionHeaderValue parsedContentDisposition;
-                    ContentDispositionHeaderValue.TryParse(file.ContentDisposition, out parsedContentDisposition);
-
                     // If there is an <input type="file" ... /> in the form and is left blank.
-                    if (parsedContentDisposition == null ||
-                        (file.Length == 0 &&
-                         string.IsNullOrEmpty(HeaderUtilities.RemoveQuotes(parsedContentDisposition.FileName))))
+                    if (file.Length == 0 && string.IsNullOrEmpty(file.FileName))
                     {
                         continue;
                     }
 
-                    var fileName = HeaderUtilities.RemoveQuotes(parsedContentDisposition.Name);
-                    if (fileName.Equals(modelName, StringComparison.OrdinalIgnoreCase))
+                    if (file.Name.Equals(modelName, StringComparison.OrdinalIgnoreCase))
                     {
                         postedFiles.Add(file);
                     }

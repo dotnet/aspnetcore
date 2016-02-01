@@ -67,26 +67,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         }
 
         [Fact]
-        public async Task FormFileModelBinder_FilesWithQuotedContentDisposition_BindSuccessful()
-        {
-            // Arrange
-            var formFiles = new FormFileCollection();
-            formFiles.Add(GetMockFormFileWithQuotedContentDisposition("file", "file1.txt"));
-            formFiles.Add(GetMockFormFileWithQuotedContentDisposition("file", "file2.txt"));
-            var httpContext = GetMockHttpContext(GetMockFormCollection(formFiles));
-            var bindingContext = GetBindingContext(typeof(IEnumerable<IFormFile>), httpContext);
-            var binder = new FormFileModelBinder();
-
-            // Act
-            var result = await binder.BindModelResultAsync(bindingContext);
-
-            // Assert
-            Assert.NotEqual(default(ModelBindingResult), result);
-            var files = Assert.IsAssignableFrom<IList<IFormFile>>(result.Model);
-            Assert.Equal(2, files.Count);
-        }
-
-        [Fact]
         public async Task FormFileModelBinder_ExpectSingleFile_BindFirstFile()
         {
             // Arrange
@@ -103,8 +83,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             // Assert
             Assert.NotEqual(default(ModelBindingResult), result);
             var file = Assert.IsAssignableFrom<IFormFile>(result.Model);
-            Assert.Equal("form-data; name=file; filename=file1.txt",
-                         file.ContentDisposition);
+            Assert.Equal("file1.txt", file.FileName);
         }
 
         [Fact]
@@ -167,10 +146,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             Assert.NotEqual(default(ModelBindingResult), result);
             Assert.True(result.IsModelSet);
             var file = Assert.IsAssignableFrom<IFormFile>(result.Model);
-            
-            ContentDispositionHeaderValue contentDisposition;
-            ContentDispositionHeaderValue.TryParse(file.ContentDisposition, out contentDisposition);
-            Assert.Equal(expected, contentDisposition.Name);
+
+            Assert.Equal(expected, file.Name);
         }
 
         [Fact]
@@ -251,16 +228,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         private static IFormFile GetMockFormFile(string modelName, string filename)
         {
             var formFile = new Mock<IFormFile>();
-            formFile.Setup(f => f.ContentDisposition)
-                .Returns(string.Format("form-data; name={0}; filename={1}", modelName, filename));
-            return formFile.Object;
-        }
+            formFile.Setup(f => f.Name).Returns(modelName);
+            formFile.Setup(f => f.FileName).Returns(filename);
 
-        private static IFormFile GetMockFormFileWithQuotedContentDisposition(string modelName, string filename)
-        {
-            var formFile = new Mock<IFormFile>();
-            formFile.Setup(f => f.ContentDisposition)
-                .Returns(string.Format("form-data; name=\"{0}\"; filename=\"{1}\"", modelName, filename));
             return formFile.Object;
         }
     }
