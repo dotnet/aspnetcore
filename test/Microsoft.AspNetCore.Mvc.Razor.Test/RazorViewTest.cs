@@ -684,7 +684,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             // Act and Assert
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => view.RenderAsync(viewContext));
             Assert.Equal("The following sections have been defined but have not been rendered by the page "
-                + $"at '{LayoutPath}': 'head, foot'.", ex.Message);
+                + $"at '{LayoutPath}': 'head, foot'. To ignore an unrendered section call IgnoreSection(\"sectionName\").",
+                ex.Message);
         }
 
         [Fact]
@@ -879,7 +880,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             // Act and Assert
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => view.RenderAsync(viewContext));
             Assert.Equal("The following sections have been defined but have not been rendered by the page at "
-                + "'/Shared/Layout1.cshtml': 'foo'.", ex.Message);
+                + "'/Shared/Layout1.cshtml': 'foo'. To ignore an unrendered section call IgnoreSection(\"sectionName\").",
+                ex.Message);
         }
 
         [Fact]
@@ -946,7 +948,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             // Act and Assert
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => view.RenderAsync(viewContext));
             Assert.Equal("The following sections have been defined but have not been rendered by the page at " +
-                "'/Shared/Layout1.cshtml': 'foo'.", ex.Message);
+                "'/Shared/Layout1.cshtml': 'foo'. To ignore an unrendered section call IgnoreSection(\"sectionName\").",
+                ex.Message);
         }
 
         [Fact]
@@ -978,7 +981,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
 
             // Act and Assert
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => view.RenderAsync(viewContext));
-            Assert.Equal($"RenderBody has not been called for the page at '{LayoutPath}'.", ex.Message);
+            Assert.Equal($"RenderBody has not been called for the page at '{LayoutPath}'. To ignore call IgnoreBody().",
+                ex.Message);
         }
 
         [Fact]

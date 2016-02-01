@@ -219,7 +219,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         }
 
         /// <summary>
-        /// {0} has not been called for the page at '{1}'.
+        /// {0} has not been called for the page at '{1}'. To ignore call {2}().
         /// </summary>
         internal static string RenderBodyNotCalled
         {
@@ -227,11 +227,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         }
 
         /// <summary>
-        /// {0} has not been called for the page at '{1}'.
+        /// {0} has not been called for the page at '{1}'. To ignore call {2}().
         /// </summary>
-        internal static string FormatRenderBodyNotCalled(object p0, object p1)
+        internal static string FormatRenderBodyNotCalled(object p0, object p1, object p2)
         {
-            return string.Format(CultureInfo.CurrentCulture, GetString("RenderBodyNotCalled"), p0, p1);
+            return string.Format(CultureInfo.CurrentCulture, GetString("RenderBodyNotCalled"), p0, p1, p2);
         }
 
         /// <summary>
@@ -283,7 +283,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         }
 
         /// <summary>
-        /// The following sections have been defined but have not been rendered by the page at '{0}': '{1}'.
+        /// The following sections have been defined but have not been rendered by the page at '{0}': '{1}'. To ignore an unrendered section call {2}("sectionName").
         /// </summary>
         internal static string SectionsNotRendered
         {
@@ -291,11 +291,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         }
 
         /// <summary>
-        /// The following sections have been defined but have not been rendered by the page at '{0}': '{1}'.
+        /// The following sections have been defined but have not been rendered by the page at '{0}': '{1}'. To ignore an unrendered section call {2}("sectionName").
         /// </summary>
-        internal static string FormatSectionsNotRendered(object p0, object p1)
+        internal static string FormatSectionsNotRendered(object p0, object p1, object p2)
         {
-            return string.Format(CultureInfo.CurrentCulture, GetString("SectionsNotRendered"), p0, p1);
+            return string.Format(CultureInfo.CurrentCulture, GetString("SectionsNotRendered"), p0, p1, p2);
         }
 
         /// <summary>

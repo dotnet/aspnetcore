@@ -303,6 +303,29 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         }
 
         [Fact]
+        public async Task IgnoreSection_ThrowsIfSectionIsNotFound()
+        {
+            // Arrange
+            var context = CreateViewContext(viewPath: "/Views/TestPath/Test.cshtml");
+            context.ExecutingFilePath = "/Views/Shared/_Layout.cshtml";
+            var page = CreatePage(v =>
+            {
+                v.Path = "/Views/TestPath/Test.cshtml";
+                v.IgnoreSection("bar");
+            }, context);
+            page.PreviousSectionWriters = new Dictionary<string, RenderAsyncDelegate>
+            {
+                { "baz", _nullRenderAsyncDelegate }
+            };
+
+            // Act & Assert
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => page.ExecuteAsync());
+            var message = $"The layout page '/Views/Shared/_Layout.cshtml' cannot find the section 'bar'" +
+                " in the content page '/Views/TestPath/Test.cshtml'.";
+            Assert.Equal(message, ex.Message);
+        }
+
+        [Fact]
         public void IsSectionDefined_ThrowsIfPreviousSectionWritersIsNotRegistered()
         {
             // Arrange
@@ -471,7 +494,24 @@ namespace Microsoft.AspNetCore.Mvc.Razor
 
             // Act & Assert
             var ex = Assert.Throws<InvalidOperationException>(() => page.EnsureRenderedBodyOrSections());
-            Assert.Equal($"RenderBody has not been called for the page at '{path}'.", ex.Message);
+            Assert.Equal($"RenderBody has not been called for the page at '{path}'. To ignore call IgnoreBody().", ex.Message);
+        }
+
+        [Fact]
+        public async Task EnsureRenderedBodyOrSections_SucceedsIfRenderBodyIsNotCalledFromPage_AndNoSectionsAreDefined_AndBodyIgnored()
+        {
+            // Arrange
+            var path = "page-path";
+            var page = CreatePage(v =>
+            {
+            });
+            page.Path = path;
+            page.BodyContent = new HtmlString("some content");
+            page.IgnoreBody();
+
+            // Act & Assert (does not throw)
+            await page.ExecuteAsync();
+            page.EnsureRenderedBodyOrSections();
         }
 
         [Fact]
@@ -495,8 +535,55 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             var ex = Assert.Throws<InvalidOperationException>(() => page.EnsureRenderedBodyOrSections());
             Assert.Equal(
                 "The following sections have been defined but have not been rendered by the page at " +
-                $"'{path}': '{sectionName}'.",
+                $"'{path}': '{sectionName}'. To ignore an unrendered section call IgnoreSection(\"sectionName\").",
                 ex.Message);
+        }
+
+        [Fact]
+        public async Task EnsureRenderedBodyOrSections_SucceedsIfDefinedSectionsAreNotRendered_AndIgnored()
+        {
+            // Arrange
+            var path = "page-path";
+            var sectionName = "sectionA";
+            var page = CreatePage(v =>
+            {
+            });
+            page.Path = path;
+            page.BodyContent = new HtmlString("some content");
+            page.PreviousSectionWriters = new Dictionary<string, RenderAsyncDelegate>
+            {
+                { sectionName, _nullRenderAsyncDelegate }
+            };
+            page.IgnoreSection(sectionName);
+
+            // Act & Assert (does not throw)
+            await page.ExecuteAsync();
+            page.EnsureRenderedBodyOrSections();
+        }
+
+        [Fact]
+        public async Task ExecuteAsync_RendersSectionsThatAreNotIgnored()
+        {
+            // Arrange
+            var path = "page-path";
+            var page = CreatePage(async p =>
+            {
+                p.IgnoreSection("ignored");
+                p.Write(await p.RenderSectionAsync("not-ignored-section"));
+            });
+            page.Path = path;
+            page.BodyContent = new HtmlString("some content");
+            page.PreviousSectionWriters = new Dictionary<string, RenderAsyncDelegate>
+            {
+                { "ignored", _nullRenderAsyncDelegate },
+                { "not-ignored-section", writer => writer.WriteAsync("not-ignored-section-content") }
+            };
+
+            // Act
+            await page.ExecuteAsync();
+
+            // Assert
+            Assert.Equal("not-ignored-section-content", page.RenderedContent);
         }
 
         [Fact]

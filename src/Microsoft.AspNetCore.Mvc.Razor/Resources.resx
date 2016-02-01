@@ -157,7 +157,7 @@
     <value>{0} invocation in '{1}' is invalid. {0} can only be called from a layout page.</value>
   </data>
   <data name="RenderBodyNotCalled" xml:space="preserve">
-    <value>{0} has not been called for the page at '{1}'.</value>
+    <value>{0} has not been called for the page at '{1}'. To ignore call {2}().</value>
   </data>
   <data name="SectionAlreadyDefined" xml:space="preserve">
     <value>Section '{0}' is already defined.</value>
@@ -169,7 +169,7 @@
     <value>The layout page '{0}' cannot find the section '{1}' in the content page '{2}'.</value>
   </data>
   <data name="SectionsNotRendered" xml:space="preserve">
-    <value>The following sections have been defined but have not been rendered by the page at '{0}': '{1}'.</value>
+    <value>The following sections have been defined but have not been rendered by the page at '{0}': '{1}'. To ignore an unrendered section call {2}("sectionName").</value>
   </data>
   <data name="ViewCannotBeActivated" xml:space="preserve">
     <value>View of type '{0}' cannot be activated by '{1}'.</value>
