@@ -443,7 +443,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             // null  or false. Consequently defer the prefix generation until we encounter the attribute value.
             if (attributeValuesCount != 1)
             {
-               WritePositionTaggedLiteral(writer, prefix, prefixOffset);
+                WritePositionTaggedLiteral(writer, prefix, prefixOffset);
             }
         }
 
@@ -800,7 +800,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             else if (required)
             {
                 // If the section is not found, and it is not optional, throw an error.
-                throw new InvalidOperationException(Resources.FormatSectionNotDefined(sectionName, Path));
+                var message = Resources.FormatSectionNotDefined(
+                    ViewContext.ExecutingFilePath,
+                    sectionName,
+                    ViewContext.View.Path);
+                throw new InvalidOperationException(message);
             }
             else
             {

@@ -166,7 +166,7 @@
     <value>{0} invocation in '{1}' is invalid. The section '{2}' has already been rendered.</value>
   </data>
   <data name="SectionNotDefined" xml:space="preserve">
-    <value>Section '{0}' is not defined in path '{1}'.</value>
+    <value>The layout page '{0}' cannot find the section '{1}' in the content page '{2}'.</value>
   </data>
   <data name="SectionsNotRendered" xml:space="preserve">
     <value>The following sections have been defined but have not been rendered by the page at '{0}': '{1}'.</value>

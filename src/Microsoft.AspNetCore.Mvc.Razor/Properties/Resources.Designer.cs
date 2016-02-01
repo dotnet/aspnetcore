@@ -267,7 +267,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         }
 
         /// <summary>
-        /// Section '{0}' is not defined in path '{1}'.
+        /// The layout page '{0}' cannot find the section '{1}' in the content page '{2}'.
         /// </summary>
         internal static string SectionNotDefined
         {
@@ -275,11 +275,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         }
 
         /// <summary>
-        /// Section '{0}' is not defined in path '{1}'.
+        /// The layout page '{0}' cannot find the section '{1}' in the content page '{2}'.
         /// </summary>
-        internal static string FormatSectionNotDefined(object p0, object p1)
+        internal static string FormatSectionNotDefined(object p0, object p1, object p2)
         {
-            return string.Format(CultureInfo.CurrentCulture, GetString("SectionNotDefined"), p0, p1);
+            return string.Format(CultureInfo.CurrentCulture, GetString("SectionNotDefined"), p0, p1, p2);
         }
 
         /// <summary>

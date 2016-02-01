@@ -284,11 +284,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         public async Task RenderSection_ThrowsIfRequiredSectionIsNotFound()
         {
             // Arrange
+            var context = CreateViewContext(viewPath: "/Views/TestPath/Test.cshtml");
+            context.ExecutingFilePath = "/Views/Shared/_Layout.cshtml";
             var page = CreatePage(v =>
             {
-                v.Path = "/Views/TestPath/Test.cshtml";
                 v.RenderSection("bar");
-            });
+            }, context: context);
             page.PreviousSectionWriters = new Dictionary<string, RenderAsyncDelegate>
             {
                 { "baz", _nullRenderAsyncDelegate }
@@ -296,7 +297,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor
 
             // Act & Assert
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => page.ExecuteAsync());
-            Assert.Equal("Section 'bar' is not defined in path '/Views/TestPath/Test.cshtml'.", ex.Message);
+            var message = $"The layout page '/Views/Shared/_Layout.cshtml' cannot find the section 'bar'" +
+                " in the content page '/Views/TestPath/Test.cshtml'.";
+            Assert.Equal(message, ex.Message);
         }
 
         [Fact]
@@ -1188,7 +1191,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             return view.Object;
         }
 
-        private static ViewContext CreateViewContext(TextWriter writer = null)
+        private static ViewContext CreateViewContext(TextWriter writer = null, string viewPath = null)
         {
             writer = writer ?? new StringWriter();
             var httpContext = new DefaultHttpContext();
@@ -1200,9 +1203,14 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 httpContext,
                 new RouteData(),
                 new ActionDescriptor());
+            var viewMock = new Mock<IView>();
+            if (!string.IsNullOrEmpty(viewPath))
+            {
+                viewMock.Setup(v => v.Path).Returns(viewPath);
+            }
             return new ViewContext(
                 actionContext,
-                Mock.Of<IView>(),
+                viewMock.Object,
                 new ViewDataDictionary(new EmptyModelMetadataProvider()),
                 Mock.Of<ITempDataDictionary>(),
                 writer,

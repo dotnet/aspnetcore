@@ -4,6 +4,7 @@
 using System.Net.Http;
 using System.Threading.Tasks;
 using Xunit;
+using System.Net;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
@@ -92,6 +93,22 @@ Non Shared Partial
 
             // Assert
             Assert.Equal(expected, body.Trim(), ignoreLineEndingDifferences: true);
+        }
+
+        [Fact]
+        public async Task PartialLayout_ThrowsIfRequiredSectionMissing()
+        {
+            // Arrange
+            var path = "http://localhost/PartialViewEngine/ViewPartialMissingSection";
+
+            // Act
+            var content = await (await Client.GetAsync(path)).Content.ReadAsStringAsync();
+
+            // Assert
+            Assert.Contains(
+                "The layout page '/Views/Shared/_PartialLayout.cshtml' cannot find the section " +
+                    "'section' in the content page '/Views/PartialViewEngine/PartialMissingSection.cshtml'.",
+                WebUtility.HtmlDecode(content));
         }
     }
 }

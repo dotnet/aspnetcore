@@ -42,5 +42,10 @@ namespace RazorWebSite.Controllers
             };
             return PartialView(model);
         }
+
+        public IActionResult ViewPartialMissingSection()
+        {
+            return View();
+        }
     }
 }
