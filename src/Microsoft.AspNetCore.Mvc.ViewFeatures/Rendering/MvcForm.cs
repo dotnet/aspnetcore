@@ -4,6 +4,7 @@
 using System;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Html;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Mvc.Rendering
@@ -56,7 +57,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         {
             RenderEndOfFormContent();
             _viewContext.Writer.Write("</form>");
-            _viewContext.FormContext = null;
+            _viewContext.FormContext = new FormContext();
         }
 
         private void RenderEndOfFormContent()

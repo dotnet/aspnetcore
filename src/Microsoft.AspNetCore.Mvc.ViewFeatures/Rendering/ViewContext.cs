@@ -15,9 +15,6 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
     /// </summary>
     public class ViewContext : ActionContext
     {
-        // We need a default FormContext if the user uses HTML <form> instead of an MvcForm
-        private readonly FormContext _defaultFormContext = new FormContext();
-
         private FormContext _formContext;
         private DynamicViewData _viewBag;
 
@@ -84,7 +81,8 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
             TempData = tempData;
             Writer = writer;
 
-            _formContext = _defaultFormContext;
+            FormContext = new FormContext();
+            
             ClientValidationEnabled = htmlHelperOptions.ClientValidationEnabled;
             Html5DateRenderingMode = htmlHelperOptions.Html5DateRenderingMode;
             ValidationSummaryMessageElement = htmlHelperOptions.ValidationSummaryMessageElement;
@@ -125,7 +123,8 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
                 throw new ArgumentNullException(nameof(writer));
             }
 
-            _formContext = viewContext.FormContext;
+            FormContext = viewContext.FormContext;
+
             ClientValidationEnabled = viewContext.ClientValidationEnabled;
             Html5DateRenderingMode = viewContext.Html5DateRenderingMode;
             ValidationSummaryMessageElement = viewContext.ValidationSummaryMessageElement;
@@ -144,14 +143,16 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// </summary>
         public virtual FormContext FormContext
         {
-            get
-            {
-                return _formContext;
-            }
+            get { return _formContext; }
+
             set
             {
-                // Never return a null form context, this is important for validation purposes.
-                _formContext = value ?? _defaultFormContext;
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
+
+                _formContext = value;
             }
         }
 

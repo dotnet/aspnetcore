@@ -9,8 +9,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 {
     public class FormContext
     {
-        private readonly Dictionary<string, bool> _renderedFields =
-            new Dictionary<string, bool>(StringComparer.Ordinal);
+        private Dictionary<string, bool> _renderedFields;
         private Dictionary<string, object> _formData;
         private IList<IHtmlContent> _endOfFormContent;
 
@@ -52,6 +51,19 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
         public bool CanRenderAtEndOfForm { get; set; }
 
+        private Dictionary<string, bool> RenderedFields
+        {
+            get
+            {
+                if (_renderedFields == null)
+                {
+                    _renderedFields = new Dictionary<string, bool>(StringComparer.Ordinal);
+                }
+
+                return _renderedFields;
+            }
+        }
+
         public bool RenderedField(string fieldName)
         {
             if (fieldName == null)
@@ -60,7 +72,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             }
 
             bool result;
-            _renderedFields.TryGetValue(fieldName, out result);
+            RenderedFields.TryGetValue(fieldName, out result);
 
             return result;
         }
@@ -72,7 +84,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 throw new ArgumentNullException(nameof(fieldName));
             }
 
-            _renderedFields[fieldName] = value;
+            RenderedFields[fieldName] = value;
         }
     }
 }

@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             }
 
             // Reset the FormContext
-            ViewContext.FormContext = null;
+            ViewContext.FormContext = new FormContext();
         }
     }
 }

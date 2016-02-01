@@ -801,8 +801,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 throw new ArgumentNullException(nameof(viewContext));
             }
 
-            var formContext = viewContext.ClientValidationEnabled ? viewContext.FormContext : null;
-            if (viewContext.ViewData.ModelState.IsValid && (formContext == null || excludePropertyErrors))
+            if (viewContext.ViewData.ModelState.IsValid && (!viewContext.ClientValidationEnabled || excludePropertyErrors))
             {
                 // No client side validation/updates
                 return null;
@@ -869,7 +868,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             tagBuilder.InnerHtml.AppendHtml(wrappedMessage);
             tagBuilder.InnerHtml.AppendHtml(htmlSummary);
 
-            if (formContext != null && !excludePropertyErrors)
+            if (viewContext.ClientValidationEnabled && !excludePropertyErrors)
             {
                 // Inform the client where to replace the list of property errors after validation.
                 tagBuilder.MergeAttribute("data-valmsg-summary", "true");
