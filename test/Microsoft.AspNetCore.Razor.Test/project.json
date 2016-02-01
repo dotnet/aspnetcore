@@ -9,7 +9,8 @@
     },
     "Microsoft.AspNetCore.Testing": "1.0.0-*",
     "Newtonsoft.Json": "7.0.1",
-    "xunit": "2.1.0"
+    "xunit": "2.1.0",
+    "Microsoft.NETCore.Platforms": "1.0.1-*"
   },
   "testRunner": "xunit",
   "commands": {
@@ -27,6 +28,7 @@
       }
     },
     "dnxcore50": {
+      "imports": "portable-net45+win8",
       "dependencies": {
         "moq.netcore": "4.4.0-beta8",
         "xunit.runner.aspnet": "2.0.0-aspnet-*"
