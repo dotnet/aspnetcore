@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             {
                 throw new ArgumentNullException(nameof(context));
             }
-            
+
             var request = context.HttpContext.Request;
             if (request.HasFormContentType)
             {
@@ -47,10 +47,15 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         {
             var formCollection = await request.ReadFormAsync();
 
-            var dictionary = new Dictionary<string, StringValues>(StringComparer.OrdinalIgnoreCase);
+            var builder = new StringBuilder();
+            var dictionary = new Dictionary<string, StringValues>(
+                formCollection.Count,
+                StringComparer.OrdinalIgnoreCase);
             foreach (var entry in formCollection)
             {
-                var key = NormalizeJQueryToMvc(entry.Key);
+                var key = NormalizeJQueryToMvc(builder, entry.Key);
+                builder.Clear();
+
                 dictionary[key] = entry.Value;
             }
 
@@ -63,7 +68,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         // [] --> ""
         // x[12] --> x[12]
         // x[field]  --> x.field, where field is not a number
-        private static string NormalizeJQueryToMvc(string key)
+        private static string NormalizeJQueryToMvc(StringBuilder builder, string key)
         {
             if (string.IsNullOrEmpty(key))
             {
@@ -79,7 +84,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 return key;
             }
 
-            var builder = new StringBuilder();
             var position = 0;
             while (position < key.Length)
             {
