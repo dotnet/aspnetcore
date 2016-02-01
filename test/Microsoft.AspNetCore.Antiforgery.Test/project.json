@@ -8,6 +8,7 @@
     "Microsoft.AspNetCore.Http": "1.0.0-*",
     "Microsoft.Extensions.DependencyInjection": "1.0.0-*",
     "Microsoft.Extensions.WebEncoders": "1.0.0-*",
+    "Microsoft.NETCore.Platforms": "1.0.1-*",
     "xunit": "2.1.0-*"
   },
   "testRunner": "xunit",
@@ -28,7 +29,8 @@
       "dependencies": {
         "moq.netcore": "4.4.0-beta8",
         "xunit.runner.aspnet": "2.0.0-aspnet-*"
-      }
+      },
+      "imports": "portable-net451+win8"
     }
   }
 }
