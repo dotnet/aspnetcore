@@ -28,7 +28,8 @@
         "moq.netcore": "4.4.0-beta8",
         "System.Xml.ReaderWriter": "4.0.10-*",
         "xunit.runner.aspnet": "2.0.0-aspnet-*"
-      }
+      },
+      "imports": "portable-net451+win8"
     }
   },
   "testRunner": "xunit",

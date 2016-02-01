@@ -11,7 +11,8 @@
   },
   "dependencies": {
     "Microsoft.AspNetCore.Identity": "1.0.0-*",
-    "Microsoft.EntityFrameworkCore.Relational": "1.0.0-*"
+    "Microsoft.EntityFrameworkCore.Relational": "1.0.0-*",
+    "Microsoft.NETCore.Platforms": "1.0.1-*"
   },
   "frameworks": {
     "net451": {
@@ -23,7 +24,8 @@
     "dotnet5.4": {
       "dependencies": {
         "System.ComponentModel.TypeConverter": "4.0.1-*"
-      }
+      },
+      "imports": "portable-net451+win8"
     }
   }
 }
