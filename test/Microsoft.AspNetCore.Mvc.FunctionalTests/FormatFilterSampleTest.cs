@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -10,6 +11,10 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
     public class FormatFilterSampleTest : IClassFixture<MvcTestFixture<FormatFilterSample.Web.Startup>>
     {
+        // Typical accept header sent by Chrome browser
+        private const string ChromeAcceptHeader = "text/html,application/xhtml+xml," +
+                "application/xml;q=0.9,image/webp,*/*;q=0.8";
+
         public FormatFilterSampleTest(MvcTestFixture<FormatFilterSample.Web.Startup> fixture)
         {
             Client = fixture.Client;
@@ -42,8 +47,12 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         [Fact]
         public async Task FormatFilter_ExtensionInRequest_Optional()
         {
-            // Arrange & Act
-            var response = await Client.GetAsync("http://localhost/FormatFilter/GetProduct.json");
+            // Arrange
+            var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/FormatFilter/GetProduct.json");
+            request.Headers.Add("Accept", ChromeAcceptHeader);
+
+            // Act
+            var response = await Client.SendAsync(request);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -53,8 +62,12 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         [Fact]
         public async Task FormatFilter_ExtensionInRequest_Custom()
         {
-            // Arrange & Act
-            var response = await Client.GetAsync("http://localhost/FormatFilter/GetProduct/5.custom");
+            // Arrange
+            var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/FormatFilter/GetProduct/5.custom");
+            request.Headers.Add("Accept", ChromeAcceptHeader);
+
+            // Act
+            var response = await Client.SendAsync(request);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -75,8 +88,12 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         [Fact]
         public async Task FormatFilter_ExtensionInRequest_NonExistant()
         {
-            // Arrange & Act
-            var response = await Client.GetAsync("http://localhost/FormatFilter/GetProduct/5.xml");
+            // Arrange
+            var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/FormatFilter/GetProduct/5.xml");
+            request.Headers.Add("Accept", ChromeAcceptHeader);
+
+            // Act
+            var response = await Client.SendAsync(request);
 
             // Assert
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
