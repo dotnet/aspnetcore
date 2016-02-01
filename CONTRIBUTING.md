@@ -11,11 +11,13 @@ Please start a discussion on the [Home repo issue tracker](https://github.com/as
 For non-security related bugs please log a new issue in the appropriate GitHub repo. Here are some of the most common repos:
 
 * [DependencyInjection](https://github.com/aspnet/DependencyInjection)
+* [Docs](https://github.com/aspnet/Docs)
 * [EntityFramework](https://github.com/aspnet/EntityFramework)
 * [Identity](https://github.com/aspnet/Identity)
-* [DNX](https://github.com/aspnet/dnx)
 * [MVC](https://github.com/aspnet/Mvc)
-* [SignalR-Server](https://github.com/aspnet/SignalR-Server)
+* [Razor](https://github.com/aspnet/Razor)
+* [Templates](https://github.com/aspnet/Templates)
+* [Tooling](https://github.com/aspnet/Tooling)
 
 Or browse the full list of repos in the [aspnet](https://github.com/aspnet/) organization.
 
@@ -25,9 +27,9 @@ Security issues and bugs should be reported privately, via email, to the Microso
 ## Other discussions
 Our team members also monitor several other discussion forums:
 
-* [ASP.NET 5 forum](https://forums.asp.net/1255.aspx/1?ASP+NET+5)
-* [StackOverflow](https://stackoverflow.com/questions/tagged/asp.net-5) with the `asp.net-5` or `entity-framework-7` tag
-* [JabbR chat room](https://jabbr.net/#/rooms/aspnetvnext) for real-time discussions with the community and the people who work on the project
+* [ASP.NET Core forum](https://forums.asp.net/1255.aspx/1?ASP+NET+5)
+* [StackOverflow](https://stackoverflow.com/) with the [`asp.net-core`](https://stackoverflow.com/questions/tagged/asp.net-core), [`asp.net-core-mvc`](https://stackoverflow.com/questions/tagged/asp.net-core-mvc), or [`entity-framework-core`](https://stackoverflow.com/questions/tagged/entity-framework-core) tags.
+* [JabbR chat room](https://jabbr.net/#/rooms/AspNetCore) for real-time discussions with the community and the people who work on the project
 
 
 ## Filing issues
