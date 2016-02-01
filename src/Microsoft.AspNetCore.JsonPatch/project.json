@@ -9,7 +9,8 @@
     "url": "git://github.com/aspnet/mvc"
   },
   "dependencies": {
-    "Newtonsoft.Json": "8.0.2"
+    "Newtonsoft.Json": "8.0.2",
+    "Microsoft.NETCore.Platforms": "1.0.1-*"
   },
   "frameworks": {
     "net451": {},
@@ -21,10 +22,12 @@
         "System.Globalization": "4.0.11-*",
         "System.Reflection.Extensions": "4.0.1-*",
         "System.Resources.ResourceManager": "4.0.1-*",
+        "System.Runtime": "4.0.21-*",
         "System.Runtime.Extensions": "4.1.0-*",
         "System.Runtime.Serialization.Primitives": "4.1.0-*",
         "System.Text.Encoding.Extensions": "4.0.11-*"
-      }
+      },
+      "imports": "portable-net451+win8"
     }
   }
 }
