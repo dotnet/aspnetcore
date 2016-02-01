@@ -3,14 +3,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
-using Microsoft.AspNetCore.Mvc.Core;
-using Microsoft.Extensions.Primitives;
-using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Mvc.Formatters
 {
@@ -20,32 +15,23 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
     public abstract class InputFormatter : IInputFormatter, IApiRequestFormatMetadataProvider
     {
         /// <summary>
-        /// Returns UTF8 Encoding without BOM and throws on invalid bytes.
-        /// </summary>
-        protected static readonly Encoding UTF8EncodingWithoutBOM
-            = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
-
-        /// <summary>
-        /// Returns UTF16 Encoding which uses littleEndian byte order with BOM and throws on invalid bytes.
-        /// </summary>
-        protected static readonly Encoding UTF16EncodingLittleEndian
-            = new UnicodeEncoding(bigEndian: false, byteOrderMark: true, throwOnInvalidBytes: true);
-
-        /// <summary>
-        /// Gets the mutable collection of character encodings supported by
-        /// this <see cref="InputFormatter"/>. The encodings are
-        /// used when reading the data.
-        /// </summary>
-        public IList<Encoding> SupportedEncodings { get; } = new List<Encoding>();
-
-        /// <summary>
         /// Gets the mutable collection of media type elements supported by
         /// this <see cref="InputFormatter"/>.
         /// </summary>
         public MediaTypeCollection SupportedMediaTypes { get; } = new MediaTypeCollection();
 
-        protected object GetDefaultValueForType(Type modelType)
+        /// <summary>
+        /// Gets the default value for a given type. Used to return a default value when the body contains no content.
+        /// </summary>
+        /// <param name="modelType">The type of the value.</param>
+        /// <returns>The default value for the <paramref name="modelType"/> type.</returns>
+        protected virtual object GetDefaultValueForType(Type modelType)
         {
+            if (modelType == null)
+            {
+                throw new ArgumentNullException(nameof(modelType));
+            }
+
             if (modelType.GetTypeInfo().IsValueType)
             {
                 return Activator.CreateInstance(modelType);
@@ -101,6 +87,11 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         /// <inheritdoc />
         public virtual Task<InputFormatterResult> ReadAsync(InputFormatterContext context)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             var request = context.HttpContext.Request;
             if (request.ContentLength == 0)
             {
@@ -116,50 +107,6 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         /// <param name="context">The <see cref="InputFormatterContext"/>.</param>
         /// <returns>A <see cref="Task"/> that on completion deserializes the request body.</returns>
         public abstract Task<InputFormatterResult> ReadRequestBodyAsync(InputFormatterContext context);
-
-        /// <summary>
-        /// Returns an <see cref="Encoding"/> based on <paramref name="context"/>'s
-        /// character set.
-        /// </summary>
-        /// <param name="context">The <see cref="InputFormatterContext"/>.</param>
-        /// <returns>
-        /// An <see cref="Encoding"/> based on <paramref name="context"/>'s
-        /// character set. <c>null</c> if no supported encoding was found.
-        /// </returns>
-        protected Encoding SelectCharacterEncoding(InputFormatterContext context)
-        {
-            var request = context.HttpContext.Request;
-
-            if (request.ContentType != null)
-            {
-                var encoding = MediaType.GetEncoding(request.ContentType);
-                if (encoding != null)
-                {
-                    foreach (var supportedEncoding in SupportedEncodings)
-                    {
-                        if (string.Equals(
-                            encoding.WebName,
-                            supportedEncoding.WebName,
-                            StringComparison.OrdinalIgnoreCase))
-                        {
-                            return supportedEncoding;
-                        }
-                    }
-                }
-            }
-
-            if (SupportedEncodings.Count > 0)
-            {
-                return SupportedEncodings[0];
-            }
-
-            // No supported encoding was found so there is no way for us to start reading.
-            context.ModelState.TryAddModelError(
-                context.ModelName,
-                Resources.FormatInputFormatterNoEncoding(GetType().FullName));
-
-            return null;
-        }
 
         /// <inheritdoc />
         public IReadOnlyList<string> GetSupportedContentTypes(string contentType, Type objectType)

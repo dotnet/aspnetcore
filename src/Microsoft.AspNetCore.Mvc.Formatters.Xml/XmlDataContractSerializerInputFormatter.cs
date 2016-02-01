@@ -12,7 +12,6 @@ using System.Xml;
 using Microsoft.AspNetCore.Mvc.Formatters.Xml;
 using Microsoft.AspNetCore.Mvc.Formatters.Xml.Internal;
 using Microsoft.AspNetCore.Mvc.Internal;
-using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Mvc.Formatters
 {
@@ -20,7 +19,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
     /// This class handles deserialization of input XML data
     /// to strongly-typed objects using <see cref="DataContractSerializer"/>.
     /// </summary>
-    public class XmlDataContractSerializerInputFormatter : InputFormatter
+    public class XmlDataContractSerializerInputFormatter : TextInputFormatter
     {
         private DataContractSerializerSettings _serializerSettings;
         private ConcurrentDictionary<Type, object> _serializerCache = new ConcurrentDictionary<Type, object>();
@@ -86,16 +85,20 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         }
 
         /// <inheritdoc />
-        public override Task<InputFormatterResult> ReadRequestBodyAsync(InputFormatterContext context)
+        public override Task<InputFormatterResult> ReadRequestBodyAsync(InputFormatterContext context, Encoding encoding)
         {
-            var effectiveEncoding = SelectCharacterEncoding(context);
-            if (effectiveEncoding == null)
+            if (context == null)
             {
-                return InputFormatterResult.FailureAsync();
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (encoding == null)
+            {
+                throw new ArgumentNullException(nameof(encoding));
             }
 
             var request = context.HttpContext.Request;
-            using (var xmlReader = CreateXmlReader(new NonDisposableStream(request.Body), effectiveEncoding))
+            using (var xmlReader = CreateXmlReader(new NonDisposableStream(request.Body), encoding))
             {
                 var type = GetSerializableType(context.ModelType);
                 var serializer = GetCachedSerializer(type);
@@ -197,6 +200,11 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         /// <returns>The <see cref="DataContractSerializer"/> instance.</returns>
         protected virtual DataContractSerializer GetCachedSerializer(Type type)
         {
+            if (type == null)
+            {
+                throw new ArgumentNullException(nameof(type));
+            }
+
             object serializer;
             if (!_serializerCache.TryGetValue(type, out serializer))
             {

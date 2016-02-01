@@ -10,7 +10,7 @@ using Microsoft.Net.Http.Headers;
 
 namespace FormatterWebSite
 {
-    public class StringInputFormatter : InputFormatter
+    public class StringInputFormatter : TextInputFormatter
     {
         public StringInputFormatter()
         {
@@ -20,14 +20,8 @@ namespace FormatterWebSite
             SupportedEncodings.Add(Encoding.Unicode);
         }
 
-        public override Task<InputFormatterResult> ReadRequestBodyAsync(InputFormatterContext context)
+        public override Task<InputFormatterResult> ReadRequestBodyAsync(InputFormatterContext context, Encoding effectiveEncoding)
         {
-            var effectiveEncoding = SelectCharacterEncoding(context);
-            if (effectiveEncoding == null)
-            {
-                return InputFormatterResult.FailureAsync();
-            }
-
             var request = context.HttpContext.Request;
             using (var reader = new StreamReader(request.Body, effectiveEncoding))
             {

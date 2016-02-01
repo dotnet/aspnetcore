@@ -312,7 +312,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             public string Name { get; set; }
         }
 
-        private class XyzFormatter : InputFormatter
+        private class XyzFormatter : TextInputFormatter
         {
             public XyzFormatter()
             {
@@ -325,7 +325,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 return true;
             }
 
-            public override Task<InputFormatterResult> ReadRequestBodyAsync(InputFormatterContext context)
+            public override Task<InputFormatterResult> ReadRequestBodyAsync(
+                InputFormatterContext context,
+                Encoding effectiveEncoding)
             {
                 throw new InvalidOperationException("Your input is bad!");
             }

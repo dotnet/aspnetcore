@@ -3,6 +3,7 @@
 
 using System;
 using System.Buffers;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Formatters.Json.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -13,9 +14,9 @@ using Newtonsoft.Json;
 namespace Microsoft.AspNetCore.Mvc.Formatters
 {
     /// <summary>
-    /// An <see cref="InputFormatter"/> for JSON content.
+    /// An <see cref="TextInputFormatter"/> for JSON content.
     /// </summary>
-    public class JsonInputFormatter : InputFormatter
+    public class JsonInputFormatter : TextInputFormatter
     {
         private readonly IArrayPool<char> _charPool;
         private readonly ILogger _logger;
@@ -116,22 +117,22 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         }
 
         /// <inheritdoc />
-        public override Task<InputFormatterResult> ReadRequestBodyAsync(InputFormatterContext context)
+        public override Task<InputFormatterResult> ReadRequestBodyAsync(
+            InputFormatterContext context,
+            Encoding encoding)
         {
             if (context == null)
             {
                 throw new ArgumentNullException(nameof(context));
             }
 
-            // Get the character encoding for the content.
-            var effectiveEncoding = SelectCharacterEncoding(context);
-            if (effectiveEncoding == null)
+            if (encoding == null)
             {
-                return InputFormatterResult.FailureAsync();
+                throw new ArgumentNullException(nameof(encoding));
             }
 
             var request = context.HttpContext.Request;
-            using (var streamReader = context.ReaderFactory(request.Body, effectiveEncoding))
+            using (var streamReader = context.ReaderFactory(request.Body, encoding))
             {
                 using (var jsonReader = new JsonTextReader(streamReader))
                 {

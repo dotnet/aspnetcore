@@ -4,6 +4,7 @@
 using System;
 using System.Buffers;
 using System.Reflection;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc.Formatters.Json.Internal;
@@ -38,14 +39,21 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         }
 
         /// <inheritdoc />
-        public async override Task<InputFormatterResult> ReadRequestBodyAsync(InputFormatterContext context)
+        public async override Task<InputFormatterResult> ReadRequestBodyAsync(
+            InputFormatterContext context,
+            Encoding encoding)
         {
             if (context == null)
             {
                 throw new ArgumentNullException(nameof(context));
             }
 
-            var result = await base.ReadRequestBodyAsync(context);
+            if (encoding == null)
+            {
+                throw new ArgumentNullException(nameof(encoding));
+            }
+
+            var result = await base.ReadRequestBodyAsync(context, encoding);
             if (!result.HasError)
             {
                 var jsonPatchDocument = (IJsonPatchDocument)result.Model;
@@ -61,6 +69,11 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         /// <inheritdoc />
         public override bool CanRead(InputFormatterContext context)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             var modelTypeInfo = context.ModelType.GetTypeInfo();
             if (!typeof(IJsonPatchDocument).GetTypeInfo().IsAssignableFrom(modelTypeInfo) ||
                 !modelTypeInfo.IsGenericType)

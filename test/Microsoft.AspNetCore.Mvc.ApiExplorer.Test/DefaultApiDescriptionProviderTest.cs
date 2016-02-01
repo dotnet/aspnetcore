@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
@@ -1455,11 +1456,13 @@ namespace Microsoft.AspNetCore.Mvc.Description
             public int Id { get; set; }
         }
 
-        private class MockInputFormatter : InputFormatter
+        private class MockInputFormatter : TextInputFormatter
         {
             public List<Type> SupportedTypes { get; } = new List<Type>();
 
-            public override Task<InputFormatterResult> ReadRequestBodyAsync(InputFormatterContext context)
+            public override Task<InputFormatterResult> ReadRequestBodyAsync(
+                InputFormatterContext context,
+                Encoding effectiveEncoding)
             {
                 throw new NotImplementedException();
             }
