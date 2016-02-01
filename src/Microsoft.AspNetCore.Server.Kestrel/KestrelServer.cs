@@ -56,6 +56,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                 var information = (KestrelServerInformation)Features.Get<IKestrelServerInformation>();
                 var dateHeaderValueManager = new DateHeaderValueManager();
                 var trace = new KestrelTrace(_logger);
+                var componentFactory = new HttpComponentFactory();
                 var engine = new KestrelEngine(new ServiceContext
                 {
                     FrameFactory = (context, remoteEP, localEP, prepareRequest) => 
@@ -68,7 +69,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                     DateHeaderValueManager = dateHeaderValueManager,
                     ConnectionFilter = information.ConnectionFilter,
                     NoDelay = information.NoDelay,
-                    ReuseStreams = information.ReuseStreams
+                    ReuseStreams = information.ReuseStreams,
+                    HttpComponentFactory = componentFactory
                 });
 
                 _disposables.Push(engine);

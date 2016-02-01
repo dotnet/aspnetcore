@@ -18,6 +18,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             Log = new TestKestrelTrace();
             ThreadPool = new LoggingThreadPool(Log);
             DateHeaderValueManager = new TestDateHeaderValueManager();
+            HttpComponentFactory = new HttpComponentFactory();
         }
 
         public RequestDelegate App

@@ -366,7 +366,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             return MaybeUnknown?.Remove(key) ?? false;
         }}
         protected override void ClearFast()
-        {{
+        {{{(loop.ClassName != "FrameRequestHeaders" ? "" : Each(loop.Headers, header => $@"
+            if ({header.TestBit()}) _{header.Identifier} = default(StringValues);"))}
+
             _bits = 0;
             MaybeUnknown?.Clear();
         }}

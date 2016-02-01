@@ -27,6 +27,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel
             ConnectionFilter = context.ConnectionFilter;
             NoDelay = context.NoDelay;
             ReuseStreams = context.ReuseStreams;
+            HttpComponentFactory = context.HttpComponentFactory;
         }
 
         public IApplicationLifetime AppLifetime { get; set; }
@@ -44,5 +45,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel
         public bool NoDelay { get; set; }
 
         public bool ReuseStreams { get; set; }
+
+        internal IHttpComponentFactory HttpComponentFactory { get; set; }
     }
 }

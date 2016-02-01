@@ -11,12 +11,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 {
     class FrameResponseStream : Stream
     {
-        private readonly FrameContext _context;
+        private FrameContext _context;
         private FrameStreamState _state;
 
-        public FrameResponseStream(FrameContext context)
+        public FrameResponseStream()
         {
-            _context = context;
             _state = FrameStreamState.Closed;
         }
 
@@ -123,6 +122,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             {
                 _state = FrameStreamState.Aborted;
             }
+        }
+
+        public void Initialize(FrameContext context)
+        {
+            _context = context;
+        }
+
+        public void Uninitialize()
+        {
+            _context = null;
+            _state = FrameStreamState.Closed;
         }
 
         private Task ValidateState(CancellationToken cancellationToken)

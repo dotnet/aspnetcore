@@ -52,7 +52,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         await SocketInput;
                     }
 
-                    while (!_requestProcessingStopping && !TakeMessageHeaders(SocketInput, _requestHeaders))
+                    InitializeHeaders();
+
+                    while (!_requestProcessingStopping && !TakeMessageHeaders(SocketInput, FrameRequestHeaders))
                     {
                         if (SocketInput.RemoteIntakeFin)
                         {
@@ -63,20 +65,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
                     if (!_requestProcessingStopping)
                     {
-                        var messageBody = MessageBody.For(HttpVersion, _requestHeaders, this);
+                        var messageBody = MessageBody.For(HttpVersion, FrameRequestHeaders, this);
                         _keepAlive = messageBody.RequestKeepAlive;
 
-                        // _duplexStream may be null if flag switched while running
-                        if (!ReuseStreams || _duplexStream == null)
-                        {
-                            _requestBody = new FrameRequestStream();
-                            _responseBody = new FrameResponseStream(this);
-                            _duplexStream = new FrameDuplexStream(_requestBody, _responseBody);
-                        }
-
-                        RequestBody = _requestBody.StartAcceptingReads(messageBody);
-                        ResponseBody = _responseBody.StartAcceptingWrites();
-                        DuplexStream = _duplexStream;
+                        InitializeStreams(messageBody);
 
                         _abortedCts = null;
                         _manuallySetRequestAbortToken = null;
@@ -101,8 +93,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                                 await FireOnStarting();
                             }
 
-                            _requestBody.PauseAcceptingReads();
-                            _responseBody.PauseAcceptingWrites();
+                            PauseStreams();
 
                             if (_onCompleted != null)
                             {
@@ -114,23 +105,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             // If _requestAbort is set, the connection has already been closed.
                             if (Volatile.Read(ref _requestAborted) == 0)
                             {
-                                _responseBody.ResumeAcceptingWrites();
+                                ResumeStreams();
+
                                 await ProduceEnd();
 
                                 if (_keepAlive)
                                 {
-                                    _requestBody.ResumeAcceptingReads();
                                     // Finish reading the request body in case the app did not.
                                     await messageBody.Consume();
                                 }
                             }
 
-                            _requestBody.StopAcceptingReads();
-                            _responseBody.StopAcceptingWrites();
+                            StopStreams();
                         }
 
                         if (!_keepAlive)
                         {
+                            ResetComponents(poolingPermitted: true);
                             return;
                         }
                     }
@@ -144,6 +135,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             }
             finally
             {
+                // Error occurred, do not return components to pool
+                ResetComponents(poolingPermitted: false);
                 try
                 {
                     _abortedCts = null;
