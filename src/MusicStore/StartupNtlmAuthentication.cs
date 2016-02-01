@@ -1,7 +1,7 @@
 using System;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -56,6 +56,11 @@ namespace MusicStore
                     .AddSqlServer()
                     .AddDbContext<MusicStoreContext>(options =>
                             options.UseSqlServer(Configuration["Data:DefaultConnection:ConnectionString"]));
+
+            // Add Identity services to the services container
+            services.AddIdentity<ApplicationUser, IdentityRole>()
+                    .AddEntityFrameworkStores<MusicStoreContext>()
+                    .AddDefaultTokenProviders();
 
             services.AddCors(options =>
             {
