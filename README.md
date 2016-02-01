@@ -97,13 +97,13 @@ The schedule and milestone themes for ASP.NET Core.
 These are some of the most common repos:
 
 * [DependencyInjection](https://github.com/aspnet/DependencyInjection) - basic dependency injection infrastructure and default implementation
+* [Docs](https://github.com/aspnet/Docs) - documentation sources for https://docs.asp.net/en/latest/
 * [EntityFramework](https://github.com/aspnet/EntityFramework) - data access technology
 * [Identity](https://github.com/aspnet/Identity) - users and membership system
-* [DNX](https://github.com/aspnet/DNX) - core runtime, project system, loader
 * [MVC](https://github.com/aspnet/Mvc) - MVC framework for web apps and services
-* [SignalR-Server](https://github.com/aspnet/SignalR-Server) - real-time
-
-A description of all the repos is [here](https://github.com/aspnet/Home/wiki/Repo-List).
+* [Razor](https://github.com/aspnet/Razor) - template language and syntax for CSHTML files
+* [Templates](https://github.com/aspnet/Templates) - project templates for Visual Studio
+* [Tooling](https://github.com/aspnet/Tooling) - Visual Studio tooling, editors, and dialogs
 
 ## NuGet feeds and branches
 
