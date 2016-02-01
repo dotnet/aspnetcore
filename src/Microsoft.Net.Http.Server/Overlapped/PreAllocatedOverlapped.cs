@@ -6,7 +6,6 @@ namespace System.Threading
     {
         internal readonly ThreadPoolBoundHandleOverlapped _overlapped;
         private DeferredDisposableLifetime<PreAllocatedOverlapped> _lifetime;
-        [CLSCompliant(false)]
         public PreAllocatedOverlapped(IOCompletionCallback callback, object state, object pinData)
         {
             if (callback == null)

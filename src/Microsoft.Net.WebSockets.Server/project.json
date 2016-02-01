@@ -6,6 +6,7 @@
   },
   "compilationOptions": {
     "allowUnsafe": true,
+    "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk"
   },
   "frameworks": {

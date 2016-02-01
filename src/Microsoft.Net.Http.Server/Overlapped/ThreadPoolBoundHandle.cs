@@ -46,7 +46,7 @@ namespace System.Threading
             }
             return new ThreadPoolBoundHandle(handle);
         }
-        [CLSCompliant(false)]
+
         public unsafe NativeOverlapped* AllocateNativeOverlapped(IOCompletionCallback callback, object state, object pinData)
         {
             if (callback == null)
@@ -59,7 +59,7 @@ namespace System.Threading
                 _boundHandle = this
             }._nativeOverlapped;
         }
-        [CLSCompliant(false)]
+
         public unsafe NativeOverlapped* AllocateNativeOverlapped(PreAllocatedOverlapped preAllocated)
         {
             if (preAllocated == null)
@@ -86,7 +86,7 @@ namespace System.Threading
             }
             return nativeOverlapped;
         }
-        [CLSCompliant(false)]
+
         public unsafe void FreeNativeOverlapped(NativeOverlapped* overlapped)
         {
             if (overlapped == null)
@@ -105,7 +105,7 @@ namespace System.Threading
             }
             Overlapped.Free(overlapped);
         }
-        [CLSCompliant(false)]
+
         public unsafe static object GetNativeOverlappedState(NativeOverlapped* overlapped)
         {
             if (overlapped == null)

@@ -45,8 +45,8 @@ namespace TestClient
             }
 
             // RunWebSocketClient().Wait();
-            Console.WriteLine("Done");
-            Console.ReadKey();
+            // Console.WriteLine("Done");
+            // Console.ReadKey();
         }
 
         public static async Task RunWebSocketClient()

@@ -66,7 +66,7 @@ namespace Microsoft.Net.WebSockets
         private readonly ArraySegment<byte> _PropertyBuffer;
         private readonly int _SendBufferSize;
         private volatile int _PayloadOffset;
-        private volatile WebSocketReceiveResult _BufferedPayloadReceiveResult;
+        private WebSocketReceiveResult _BufferedPayloadReceiveResult;
         private long _PinnedSendBufferStartAddress;
         private long _PinnedSendBufferEndAddress;
         private ArraySegment<byte> _PinnedSendBuffer;
