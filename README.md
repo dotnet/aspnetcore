@@ -1,8 +1,8 @@
-# Getting Started with ASP.NET 5 and DNX
+# Getting Started with ASP.NET Core
 
 [![Join the chat at https://gitter.im/aspnet/Home](https://badges.gitter.im/aspnet/Home.svg)](https://gitter.im/aspnet/Home?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-This guide is designed to get you started building applications with the latest development versions ASP.NET 5 and DNX. This means nightly builds and potentially broken or unstable packages.
+This guide is designed to get you started building applications with the latest development versions ASP.NET Core. This means nightly builds and potentially broken or unstable packages.
 
 If you want a more stable, released, experience then you should go to https://www.asp.net/vnext.
 
@@ -42,11 +42,11 @@ where dnvm
 
 ## OS X
 
-See the instructions on the ASP.NET 5 Documentation site: [Installing ASP.NET 5 on Mac OS X](https://docs.asp.net/en/latest/getting-started/installing-on-mac.html)
+See the instructions on the ASP.NET Core Documentation site: [Installing ASP.NET Core on Mac OS X](https://docs.asp.net/en/latest/getting-started/installing-on-mac.html)
 
 ## Linux
 
-See the instructions on the ASP.NET 5 Documentation site: [Installing ASP.NET 5 on Linux](https://docs.asp.net/en/latest/getting-started/installing-on-linux.html)
+See the instructions on the ASP.NET Core Documentation site: [Installing ASP.NET Core on Linux](https://docs.asp.net/en/latest/getting-started/installing-on-linux.html)
 
 # Running an application
 
@@ -64,7 +64,7 @@ You should also be able to run `dnx` and see the help text of the `dnx` command.
 
 ## Running the samples
 
-1. Clone the ASP.NET 5 Home repository: https://github.com/aspnet/home
+1. Clone the ASP.NET Core Home repository: https://github.com/aspnet/home
 2. Change directory to the folder of the sample you want to run
 3. Run ```dnu restore``` to restore the packages required by that sample.
 4. You should see a bunch of output as all the dependencies of the app are downloaded from MyGet.
@@ -87,10 +87,10 @@ We have some useful documentation on the wiki of this Repo. This wiki is a centr
 If you see errors, or want some extra content, then feel free to create an issue or send a pull request (see feedback section below).
 
 ## [ASP.NET/vNext](https://www.asp.net/vnext)
-The vNext page on the ASP.NET site has links to some TechEd videos and articles with some good information about vNext.
+The vNext page on the ASP.NET site has links to some TechEd videos and articles with some good information about ASP.NET Core (formerly known as ASP.NET 5).
 
 ## [Roadmap] (https://github.com/aspnet/Home/wiki/Roadmap)
-The schedule and milestone themes for ASP.NET 5. 
+The schedule and milestone themes for ASP.NET Core.
 
 ## Repos and Projects
 
