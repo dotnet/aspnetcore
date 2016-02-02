@@ -12,6 +12,7 @@
   "dependencies": {
     "Microsoft.AspNetCore.Http.Abstractions": "1.0.0-*",
     "Microsoft.Net.Http.Headers": "1.0.0-*",
+    "Microsoft.NETCore.Platforms": "1.0.1-*",
     "System.Buffers": "4.0.0-*"
   },
   "frameworks": {
@@ -19,7 +20,8 @@
     "dotnet5.4": {
       "dependencies": {
         "System.IO.FileSystem": "4.0.1-*"
-      }
+      },
+      "imports": "portable-net451+win8"
     }
   }
 }

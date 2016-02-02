@@ -21,7 +21,8 @@
     "dnxcore50": { 
       "dependencies": {
         "xunit.runner.aspnet": "2.0.0-aspnet-*"
-      }
+      },
+      "imports": "portable-net451+win8"
     }
   },
   "testRunner": "xunit",

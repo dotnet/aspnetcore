@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "Microsoft.Extensions.Primitives": "1.0.0-*",
+    "Microsoft.NETCore.Platforms": "1.0.1-*",
     "System.Buffers": "4.0.0-*",
     "System.Text.Encodings.Web": "4.0.0-*"
   },
@@ -25,7 +26,8 @@
         "System.Collections": "4.0.11-*",
         "System.IO": "4.1.0-*",
         "System.IO.FileSystem": "4.0.1-*"
-      }
+      },
+      "imports": "portable-net451+win8"
     }
   }
 }

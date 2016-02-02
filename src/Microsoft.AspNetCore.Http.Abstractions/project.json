@@ -15,6 +15,7 @@
       "type": "build",
       "version": "1.0.0-*"
     },
+    "Microsoft.NETCore.Platforms": "1.0.1-*",
     "System.Text.Encodings.Web": "4.0.0-*"
   },
   "frameworks": {
@@ -33,7 +34,8 @@
         "System.Reflection.TypeExtensions": "4.1.0-*",
         "System.Runtime.InteropServices": "4.0.21-*",
         "System.Security.Cryptography.X509Certificates": "4.0.0-*"
-      }
+      },
+      "imports": "portable-net451+win8"
     }
   }
 }
