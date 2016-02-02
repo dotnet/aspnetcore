@@ -10,7 +10,8 @@
     "keyFile": "../../tools/Key.snk"
   },
   "dependencies": {
-    "System.Text.Encodings.Web": "4.0.0-*"
+    "System.Text.Encodings.Web": "4.0.0-*",
+    "Microsoft.NETCore.Platforms": "1.0.1-*"
   },
   "frameworks": {
     "net451": {
@@ -23,7 +24,8 @@
       "dependencies": {
         "System.Collections": "4.0.11-*",
         "System.Resources.ResourceManager": "4.0.1-*"
-      }
+      },
+      "imports": "portable-net451+win8"
     }
   }
 }

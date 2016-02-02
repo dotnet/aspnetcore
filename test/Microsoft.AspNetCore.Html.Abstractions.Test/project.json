@@ -23,7 +23,8 @@
       "dependencies": {
         "System.Runtime": "4.0.21-*",
         "xunit.runner.aspnet": "2.0.0-aspnet-*"
-      }
+      },
+      "imports": "portable-net451+win8"
     }
   }
 }
