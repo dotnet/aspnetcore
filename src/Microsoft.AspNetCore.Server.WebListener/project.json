@@ -16,7 +16,8 @@
     "dotnet5.4": {
       "dependencies": {
         "System.Security.Claims": "4.0.1-*"
-      }
+      },
+      "imports": "portable-net451+win8"
     }
   }
 }
