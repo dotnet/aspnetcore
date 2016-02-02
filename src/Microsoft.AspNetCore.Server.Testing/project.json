@@ -12,7 +12,8 @@
   "dependencies": {
     "Microsoft.AspNetCore.Testing": "1.0.0-*",
     "Microsoft.Extensions.Logging.Abstractions": "1.0.0-*",
-    "Microsoft.Extensions.PlatformAbstractions": "1.0.0-*"
+    "Microsoft.Extensions.PlatformAbstractions": "1.0.0-*",
+    "Microsoft.NETCore.Platforms": "1.0.1-*"
   },
   "frameworks": {
     "dnx451": {
@@ -34,7 +35,8 @@
         "System.Text.RegularExpressions": "4.0.11-*",
         "System.Threading": "4.0.11-*",
         "System.Threading.Thread": "4.0.0-*"
-      }
+      },
+      "imports": "portable-net45+win8"
     }
   }
 }

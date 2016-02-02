@@ -40,7 +40,8 @@
         "System.Console": "4.0.0-*",
         "System.Diagnostics.StackTrace": "4.0.1-*",
         "System.Reflection.Extensions": "4.0.1-*"
-      }
+      },
+      "imports": "portable-net45+win8"
     }
   }
 }
