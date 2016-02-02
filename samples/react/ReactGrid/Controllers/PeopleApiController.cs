@@ -7,7 +7,7 @@ namespace ReactExample.Controllers
     public class PeopleApiController : Controller
     {
         [HttpPut("api/people/{personId:int}")]
-        public async Task<ActionResult> UpdatePerson([FromBody] PersonDto person)
+        public ActionResult UpdatePerson([FromBody] PersonDto person)
         {
             if (!ModelState.IsValid) {
                 return HttpBadRequest(ModelState);

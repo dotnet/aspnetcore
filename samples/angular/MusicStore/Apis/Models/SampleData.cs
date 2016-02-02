@@ -22,33 +22,7 @@ namespace MusicStore.Models
                 if (await db.Database.EnsureCreatedAsync())
                 {
                     await InsertTestData(serviceProvider);
-                    await CreateAdminUser(serviceProvider);
                 }
-            }
-        }
-
-        private static async Task CreateAdminUser(IServiceProvider serviceProvider)
-        {
-            return;
-            
-            var settings = serviceProvider.GetService<IOptions<SiteSettings>>().Value;
-            const string adminRole = "Administrator";
-
-            var userManager = serviceProvider.GetService<UserManager<ApplicationUser>>();
-            var roleManager = serviceProvider.GetService<RoleManager<IdentityRole>>();
-
-            if (!await roleManager.RoleExistsAsync(adminRole))
-            {
-                await roleManager.CreateAsync(new IdentityRole(adminRole));
-            }
-
-            var user = await userManager.FindByNameAsync(settings.DefaultAdminUsername);
-            if (user == null)
-            {
-                user = new ApplicationUser { UserName = settings.DefaultAdminUsername };
-                await userManager.CreateAsync(user, settings.DefaultAdminPassword);
-                await userManager.AddToRoleAsync(user, adminRole);
-                await userManager.AddClaimAsync(user, new Claim("app-ManageStore", "Allowed"));
             }
         }
 

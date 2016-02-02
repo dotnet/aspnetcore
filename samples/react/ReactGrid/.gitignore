@@ -3,3 +3,4 @@ project.lock.json
 /wwwroot/bundle.*
 /wwwroot/*.svg
 /wwwroot/*.css
+/Properties/launchSettings.json

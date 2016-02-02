@@ -1,6 +1,9 @@
 {
   "version": "1.0.0-alpha7",
   "description": "Helpers for building React applications on ASP.NET 5.",
+  "compilationOptions": {
+    "keyFile": "../../tools/Key.snk"
+  },
   "authors": [ "Microsoft" ],
   "repository": {
     "type": "git",
