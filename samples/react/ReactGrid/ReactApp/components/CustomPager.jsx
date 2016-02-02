@@ -1,4 +1,4 @@
-import React from 'react';
+import * as React from 'react';
 import { Link } from 'react-router';
 
 export class CustomPager extends React.Component {
@@ -7,8 +7,8 @@ export class CustomPager extends React.Component {
     }
     
     render() {
-        var previous = "";
-        var next = "";
+        var previous = null;
+        var next = null;
 
         if(this.props.currentPage > 0){
             previous = <div className="btn btn-default"><Link className="previous" to={'/' + (this.props.currentPage)}><i className="glyphicon glyphicon-arrow-left"></i>{this.props.previousText}</Link></div>;
@@ -20,12 +20,12 @@ export class CustomPager extends React.Component {
 
         var options = [];
 
-      var startIndex = Math.max(this.props.currentPage - 5, 0);
-      var endIndex = Math.min(startIndex + 11, this.props.maxPage);
+        var startIndex = Math.max(this.props.currentPage - 5, 0);
+        var endIndex = Math.min(startIndex + 11, this.props.maxPage);
 
-      if (this.props.maxPage >= 11 && (endIndex - startIndex) <= 10) {
-        startIndex = endIndex - 11;
-      }
+        if (this.props.maxPage >= 11 && (endIndex - startIndex) <= 10) {
+            startIndex = endIndex - 11;
+        }
 
         for(var i = startIndex; i < endIndex ; i++){
             var selected = this.props.currentPage == i ? "btn-default" : "";

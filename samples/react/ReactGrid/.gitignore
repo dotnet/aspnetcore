@@ -1,6 +1,4 @@
 /node_modules/
 project.lock.json
-/wwwroot/bundle.*
-/wwwroot/*.svg
-/wwwroot/*.css
+/wwwroot/dist/
 /Properties/launchSettings.json

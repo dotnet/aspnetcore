@@ -2,7 +2,7 @@
   "name": "ReactExample",
   "version": "0.0.0",
   "dependencies": {
-    "babel-core": "^6.4.0",
+    "babel-core": "^6.4.5",
     "bootstrap": "^3.3.5",
     "formsy-react": "^0.17.0",
     "formsy-react-components": "^0.6.3",
