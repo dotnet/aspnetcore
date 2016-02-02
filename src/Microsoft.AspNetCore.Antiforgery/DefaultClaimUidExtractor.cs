@@ -3,10 +3,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Security.Claims;
-using System.Security.Cryptography;
+using Microsoft.Extensions.ObjectPool;
 
 namespace Microsoft.AspNetCore.Antiforgery
 {
@@ -15,6 +14,13 @@ namespace Microsoft.AspNetCore.Antiforgery
     /// </summary>
     public class DefaultClaimUidExtractor : IClaimUidExtractor
     {
+        private readonly ObjectPool<AntiforgerySerializationContext> _pool;
+
+        public DefaultClaimUidExtractor(ObjectPool<AntiforgerySerializationContext> pool)
+        {
+            _pool = pool;
+        }
+
         /// <inheritdoc />
         public string ExtractClaimUid(ClaimsIdentity claimsIdentity)
         {
@@ -25,16 +31,15 @@ namespace Microsoft.AspNetCore.Antiforgery
             }
 
             var uniqueIdentifierParameters = GetUniqueIdentifierParameters(claimsIdentity);
-            var claimUidBytes = ComputeSHA256(uniqueIdentifierParameters);
+            var claimUidBytes = ComputeSha256(uniqueIdentifierParameters);
             return Convert.ToBase64String(claimUidBytes);
         }
 
         // Internal for testing
         internal static IEnumerable<string> GetUniqueIdentifierParameters(ClaimsIdentity claimsIdentity)
         {
-            var nameIdentifierClaim = claimsIdentity.FindFirst(claim =>
-                                                            String.Equals(ClaimTypes.NameIdentifier,
-                                                                        claim.Type, StringComparison.Ordinal));
+            var nameIdentifierClaim = claimsIdentity.FindFirst(
+                claim => string.Equals(ClaimTypes.NameIdentifier, claim.Type, StringComparison.Ordinal));
             if (nameIdentifierClaim != null && !string.IsNullOrEmpty(nameIdentifierClaim.Value))
             {
                 return new string[]
@@ -47,7 +52,8 @@ namespace Microsoft.AspNetCore.Antiforgery
             // We do not understand this ClaimsIdentity, fallback on serializing the entire claims Identity.
             var claims = claimsIdentity.Claims.ToList();
             claims.Sort((a, b) => string.Compare(a.Type, b.Type, StringComparison.Ordinal));
-            var identifierParameters = new List<string>();
+
+            var identifierParameters = new List<string>(claims.Count * 2);
             foreach (var claim in claims)
             {
                 identifierParameters.Add(claim.Type);
@@ -57,25 +63,29 @@ namespace Microsoft.AspNetCore.Antiforgery
             return identifierParameters;
         }
 
-        private static byte[] ComputeSHA256(IEnumerable<string> parameters)
+        private byte[] ComputeSha256(IEnumerable<string> parameters)
         {
-            using (var stream = new MemoryStream())
+            var serializationContext = _pool.Get();
+
+            try
             {
-                using (var writer = new BinaryWriter(stream))
+                var writer = serializationContext.Writer;
+                foreach (string parameter in parameters)
                 {
-                    foreach (string parameter in parameters)
-                    {
-                        writer.Write(parameter); // also writes the length as a prefix; unambiguous
-                    }
-
-                    writer.Flush();
-
-                    using (var sha256 = SHA256.Create())
-                    {
-                        var bytes = sha256.ComputeHash(stream.ToArray(), 0, checked((int)stream.Length));
-                        return bytes;
-                    }
+                    writer.Write(parameter); // also writes the length as a prefix; unambiguous
                 }
+
+                writer.Flush();
+
+                var sha256 = serializationContext.Sha256;
+                var stream = serializationContext.Stream;
+                var bytes = sha256.ComputeHash(stream.ToArray(), 0, checked((int)stream.Length));
+
+                return bytes;
+            }
+            finally
+            {
+                _pool.Return(serializationContext);
             }
         }
     }

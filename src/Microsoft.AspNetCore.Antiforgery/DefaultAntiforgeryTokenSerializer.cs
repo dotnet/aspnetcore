@@ -5,48 +5,64 @@ using System;
 using System.IO;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.ObjectPool;
 
 namespace Microsoft.AspNetCore.Antiforgery
 {
     public class DefaultAntiforgeryTokenSerializer : IAntiforgeryTokenSerializer
     {
         private static readonly string Purpose = "Microsoft.AspNetCore.Antiforgery.AntiforgeryToken.v1";
-
-        private readonly IDataProtector _cryptoSystem;
         private const byte TokenVersion = 0x01;
 
-        public DefaultAntiforgeryTokenSerializer(IDataProtectionProvider provider)
+        private readonly IDataProtector _cryptoSystem;
+        private readonly ObjectPool<AntiforgerySerializationContext> _pool;
+
+        public DefaultAntiforgeryTokenSerializer(
+            IDataProtectionProvider provider,
+            ObjectPool<AntiforgerySerializationContext> pool)
         {
             if (provider == null)
             {
                 throw new ArgumentNullException(nameof(provider));
             }
 
+            if (pool == null)
+            {
+                throw new ArgumentNullException(nameof(pool));
+            }
+
             _cryptoSystem = provider.CreateProtector(Purpose);
+            _pool = pool;
         }
 
         public AntiforgeryToken Deserialize(string serializedToken)
         {
+            var serializationContext = _pool.Get();
+
             Exception innerException = null;
             try
             {
                 var tokenBytes = WebEncoders.Base64UrlDecode(serializedToken);
-                using (var stream = new MemoryStream(_cryptoSystem.Unprotect(tokenBytes)))
+                var unprotectedBytes = _cryptoSystem.Unprotect(tokenBytes);
+                var stream = serializationContext.Stream;
+                stream.Write(unprotectedBytes, 0, unprotectedBytes.Length);
+                stream.Position = 0L;
+
+                var reader = serializationContext.Reader;
+                var token = Deserialize(reader);
+                if (token != null)
                 {
-                    using (var reader = new BinaryReader(stream))
-                    {
-                        var token = DeserializeImpl(reader);
-                        if (token != null)
-                        {
-                            return token;
-                        }
-                    }
+                    return token;
                 }
             }
             catch (Exception ex)
             {
                 // swallow all exceptions - homogenize error if something went wrong
                 innerException = ex;
+            }
+            finally
+            {
+                _pool.Return(serializationContext);
             }
 
             // if we reached this point, something went wrong deserializing
@@ -65,7 +81,7 @@ namespace Microsoft.AspNetCore.Antiforgery
          *   |    `- Username: UTF-8 string with 7-bit integer length prefix
          *   `- AdditionalData: UTF-8 string with 7-bit integer length prefix
          */
-        private static AntiforgeryToken DeserializeImpl(BinaryReader reader)
+        private static AntiforgeryToken Deserialize(BinaryReader reader)
         {
             // we can only consume tokens of the same serialized version that we generate
             var embeddedVersion = reader.ReadByte();
@@ -113,33 +129,38 @@ namespace Microsoft.AspNetCore.Antiforgery
                 throw new ArgumentNullException(nameof(token));
             }
 
-            using (var stream = new MemoryStream())
+            var serializationContext = _pool.Get();
+
+            try
             {
-                using (var writer = new BinaryWriter(stream))
+                var writer = serializationContext.Writer;
+                writer.Write(TokenVersion);
+                writer.Write(token.SecurityToken.GetData());
+                writer.Write(token.IsCookieToken);
+
+                if (!token.IsCookieToken)
                 {
-                    writer.Write(TokenVersion);
-                    writer.Write(token.SecurityToken.GetData());
-                    writer.Write(token.IsCookieToken);
-
-                    if (!token.IsCookieToken)
+                    if (token.ClaimUid != null)
                     {
-                        if (token.ClaimUid != null)
-                        {
-                            writer.Write(true /* isClaimsBased */);
-                            writer.Write(token.ClaimUid.GetData());
-                        }
-                        else
-                        {
-                            writer.Write(false /* isClaimsBased */);
-                            writer.Write(token.Username);
-                        }
-
-                        writer.Write(token.AdditionalData);
+                        writer.Write(true /* isClaimsBased */);
+                        writer.Write(token.ClaimUid.GetData());
+                    }
+                    else
+                    {
+                        writer.Write(false /* isClaimsBased */);
+                        writer.Write(token.Username);
                     }
 
-                    writer.Flush();
-                    return WebEncoders.Base64UrlEncode(_cryptoSystem.Protect(stream.ToArray()));
+                    writer.Write(token.AdditionalData);
                 }
+
+                writer.Flush();
+                var stream = serializationContext.Stream;
+                return WebEncoders.Base64UrlEncode(_cryptoSystem.Protect(stream.ToArray()));
+            }
+            finally
+            {
+                _pool.Return(serializationContext);
             }
         }
     }

@@ -4,10 +4,12 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Antiforgery.Internal;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Primitives;
 using Moq;
 using Xunit;
@@ -16,6 +18,8 @@ namespace Microsoft.AspNetCore.Antiforgery
 {
     public class DefaultAntiforgeryTokenStoreTest
     {
+        private static readonly ObjectPool<AntiforgerySerializationContext> _pool =
+            new DefaultObjectPoolProvider().Create(new AntiforgerySerializationContextPooledObjectPolicy());
         private readonly string _cookieName = "cookie-name";
 
         [Fact]
@@ -182,7 +186,7 @@ namespace Microsoft.AspNetCore.Antiforgery
             var exception = await Assert.ThrowsAsync<AntiforgeryValidationException>(
                 async () => await tokenStore.GetRequestTokensAsync(httpContext));
 
-            // Assert         
+            // Assert
             Assert.Equal("The required antiforgery cookie \"cookie-name\" is not present.", exception.Message);
         }
 
@@ -209,13 +213,13 @@ namespace Microsoft.AspNetCore.Antiforgery
 
             var tokenStore = new DefaultAntiforgeryTokenStore(
                 optionsAccessor: new TestOptionsManager(options),
-                tokenSerializer: new DefaultAntiforgeryTokenSerializer(new EphemeralDataProtectionProvider()));
+                tokenSerializer: new DefaultAntiforgeryTokenSerializer(new EphemeralDataProtectionProvider(), _pool));
 
             // Act
             var exception = await Assert.ThrowsAsync<AntiforgeryValidationException>(
                 async () => await tokenStore.GetRequestTokensAsync(httpContext));
 
-            // Assert         
+            // Assert
             Assert.Equal("The required antiforgery form field \"form-field-name\" is not present.", exception.Message);
         }
 
@@ -244,7 +248,7 @@ namespace Microsoft.AspNetCore.Antiforgery
 
             var tokenStore = new DefaultAntiforgeryTokenStore(
                 optionsAccessor: new TestOptionsManager(options),
-                tokenSerializer: new DefaultAntiforgeryTokenSerializer(new EphemeralDataProtectionProvider()));
+                tokenSerializer: new DefaultAntiforgeryTokenSerializer(new EphemeralDataProtectionProvider(), _pool));
 
             // Act
             var tokens = await tokenStore.GetRequestTokensAsync(httpContext);
@@ -279,7 +283,7 @@ namespace Microsoft.AspNetCore.Antiforgery
 
             var tokenStore = new DefaultAntiforgeryTokenStore(
                 optionsAccessor: new TestOptionsManager(options),
-                tokenSerializer: new DefaultAntiforgeryTokenSerializer(new EphemeralDataProtectionProvider()));
+                tokenSerializer: new DefaultAntiforgeryTokenSerializer(new EphemeralDataProtectionProvider(), _pool));
 
             // Act
             var tokens = await tokenStore.GetRequestTokensAsync(httpContext);
@@ -312,7 +316,7 @@ namespace Microsoft.AspNetCore.Antiforgery
 
             var tokenStore = new DefaultAntiforgeryTokenStore(
                 optionsAccessor: new TestOptionsManager(options),
-                tokenSerializer: new DefaultAntiforgeryTokenSerializer(new EphemeralDataProtectionProvider()));
+                tokenSerializer: new DefaultAntiforgeryTokenSerializer(new EphemeralDataProtectionProvider(), _pool));
 
             // Act
             var exception = await Assert.ThrowsAsync<AntiforgeryValidationException>(
@@ -349,7 +353,7 @@ namespace Microsoft.AspNetCore.Antiforgery
             var exception = await Assert.ThrowsAsync<AntiforgeryValidationException>(
                 async () => await tokenStore.GetRequestTokensAsync(httpContext));
 
-            // Assert         
+            // Assert
             Assert.Equal(
                 "The required antiforgery request token was not provided in either form field \"form-field-name\" " +
                 "or header value \"header-name\".",
