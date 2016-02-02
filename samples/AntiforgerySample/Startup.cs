@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
@@ -18,8 +17,6 @@ namespace AntiforgerySample
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddRouting();
-            
             // Angular's default header name for sending the XSRF token.
             services.AddAntiforgery(options => options.HeaderName = "X-XSRF-TOKEN");
 
@@ -45,30 +42,28 @@ namespace AntiforgerySample
             app.UseDefaultFiles();
             app.UseStaticFiles();
 
-            var routes = new RouteBuilder(app);
-
-            routes.MapGet("api/items", (HttpContext context) =>
+            app.Map("/api/items", a => a.Run(async context =>
             {
-                var items = repository.GetItems();
-                return context.Response.WriteAsync(JsonConvert.SerializeObject(items));
-            });
-
-            routes.MapPost("api/items", async (HttpContext context) =>
-            {
-                // This will throw if the token is invalid.
-                await antiforgery.ValidateRequestAsync(context);
-
-                var serializer = new JsonSerializer();
-                using (var reader = new JsonTextReader(new StreamReader(context.Request.Body)))
+                if (string.Equals("GET", context.Request.Method, StringComparison.OrdinalIgnoreCase))
                 {
-                    var item = serializer.Deserialize<TodoItem>(reader);
-                    repository.Add(item);
+                    var items = repository.GetItems();
+                    await context.Response.WriteAsync(JsonConvert.SerializeObject(items));
                 }
+                else if (string.Equals("POST", context.Request.Method, StringComparison.OrdinalIgnoreCase))
+                {
+                    // This will throw if the token is invalid.
+                    await antiforgery.ValidateRequestAsync(context);
 
-                context.Response.StatusCode = 204;
-            });
+                    var serializer = new JsonSerializer();
+                    using (var reader = new JsonTextReader(new StreamReader(context.Request.Body)))
+                    {
+                        var item = serializer.Deserialize<TodoItem>(reader);
+                        repository.Add(item);
+                    }
 
-            app.UseRouter(routes.Build());
+                    context.Response.StatusCode = 204;
+                }
+            }));
         }
 
         public static void Main(string[] args)
