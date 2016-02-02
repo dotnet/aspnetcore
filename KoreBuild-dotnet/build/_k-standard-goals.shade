@@ -181,6 +181,28 @@ default NUGET_FEED = 'https://api.nuget.org/v3/index.json'
 #make-roslyn-fast
   ngen-roslyn
 
+#resx
+   @{
+     var cultures = CultureInfo.GetCultures(CultureTypes.NeutralCultures | CultureTypes.InstalledWin32Cultures | CultureTypes.SpecificCultures);
+     foreach (var file in Directory.EnumerateFiles(BASE_DIR, "*.resx", SearchOption.AllDirectories))
+     {
+        var splitFileName = Path.GetFileNameWithoutExtension(file).Split(new string[] { "." }, StringSplitOptions.None);
+
+        if (splitFileName.Length > 1)
+        {
+            var localeString = splitFileName.Last();
+            if (!cultures.Any(c => localeString.Equals(c.Name)))
+            {
+                UpdateResx(file);
+            }
+        }
+        else
+        {
+            UpdateResx(file);
+        }
+     }
+   }
+
 #--quiet
   @{
     AddToE("KOREBUILD_BOWER_INSTALL_OPTIONS", "--quiet");
@@ -330,10 +352,11 @@ macro name="DotnetTest" projectFile='string' testParallel='bool'
 macro name="XunitTest" projectFile='string' testParallel='bool'
     xunit-test
     
-    
 macro name='Dnx' command='string' dnxDir='string' dnvmUse='string'
     dnx
     
 macro name="DnxTest" projectFile='string' testParallel='bool'
     dnx-test
-   
+
+macro name="UpdateResx" resxFile='string'
+    k-generate-resx
