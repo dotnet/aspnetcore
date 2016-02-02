@@ -143,6 +143,9 @@
     <value>The antiforgery system has the configuration value {0}.{1} = {2}, but the current request is not an SSL request.</value>
     <comment>0 = nameof(AntiforgeryOptions), 1 = nameof(RequireSsl), 2 = bool.TrueString</comment>
   </data>
+  <data name="Antiforgery_CookieToken_IsInvalid" xml:space="preserve">
+    <value>The antiforgery cookie token is invalid.</value>
+  </data>
   <data name="Antiforgery_CookieToken_MustBeProvided" xml:space="preserve">
     <value>The required antiforgery cookie "{0}" is not present.</value>
   </data>

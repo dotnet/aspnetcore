@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics;
 using System.Security.Claims;
 using System.Security.Principal;
 using Microsoft.AspNetCore.Http;
@@ -22,6 +21,7 @@ namespace Microsoft.AspNetCore.Antiforgery
             _additionalDataProvider = additionalDataProvider;
         }
 
+        /// <inheritdoc />
         public AntiforgeryToken GenerateCookieToken()
         {
             return new AntiforgeryToken()
@@ -31,6 +31,7 @@ namespace Microsoft.AspNetCore.Antiforgery
             };
         }
 
+        /// <inheritdoc />
         public AntiforgeryToken GenerateRequestToken(
             HttpContext httpContext,
             AntiforgeryToken cookieToken)
@@ -40,7 +41,17 @@ namespace Microsoft.AspNetCore.Antiforgery
                 throw new ArgumentNullException(nameof(httpContext));
             }
 
-            Debug.Assert(IsCookieTokenValid(cookieToken));
+            if (cookieToken == null)
+            {
+                throw new ArgumentNullException(nameof(cookieToken));
+            }
+
+            if (!IsCookieTokenValid(cookieToken))
+            {
+                throw new ArgumentException(
+                    Resources.Antiforgery_CookieToken_IsInvalid,
+                    nameof(cookieToken));
+            }
 
             var requestToken = new AntiforgeryToken()
             {
@@ -87,15 +98,18 @@ namespace Microsoft.AspNetCore.Antiforgery
             return requestToken;
         }
 
+        /// <inheritdoc />
         public bool IsCookieTokenValid(AntiforgeryToken cookieToken)
         {
-            return (cookieToken != null && cookieToken.IsCookieToken);
+            return cookieToken != null && cookieToken.IsCookieToken;
         }
 
-        public void ValidateTokens(
+        /// <inheritdoc />
+        public bool TryValidateTokenSet(
             HttpContext httpContext,
             AntiforgeryToken cookieToken,
-            AntiforgeryToken requestToken)
+            AntiforgeryToken requestToken,
+            out string message)
         {
             if (httpContext == null)
             {
@@ -119,13 +133,15 @@ namespace Microsoft.AspNetCore.Antiforgery
             // Do the tokens have the correct format?
             if (!cookieToken.IsCookieToken || requestToken.IsCookieToken)
             {
-                throw new AntiforgeryValidationException(Resources.AntiforgeryToken_TokensSwapped);
+                message = Resources.AntiforgeryToken_TokensSwapped;
+                return false;
             }
 
             // Are the security tokens embedded in each incoming token identical?
             if (!object.Equals(cookieToken.SecurityToken, requestToken.SecurityToken))
             {
-                throw new AntiforgeryValidationException(Resources.AntiforgeryToken_SecurityTokenMismatch);
+                message = Resources.AntiforgeryToken_SecurityTokenMismatch;
+                return false;
             }
 
             // Is the incoming token meant for the current user?
@@ -153,21 +169,26 @@ namespace Microsoft.AspNetCore.Antiforgery
 
             if (!comparer.Equals(requestToken.Username, currentUsername))
             {
-                throw new AntiforgeryValidationException(
-                    Resources.FormatAntiforgeryToken_UsernameMismatch(requestToken.Username, currentUsername));
+                message = Resources.FormatAntiforgeryToken_UsernameMismatch(requestToken.Username, currentUsername);
+                return false;
             }
 
             if (!object.Equals(requestToken.ClaimUid, currentClaimUid))
             {
-                throw new AntiforgeryValidationException(Resources.AntiforgeryToken_ClaimUidMismatch);
+                message = Resources.AntiforgeryToken_ClaimUidMismatch;
+                return false;
             }
 
             // Is the AdditionalData valid?
             if (_additionalDataProvider != null &&
                 !_additionalDataProvider.ValidateAdditionalData(httpContext, requestToken.AdditionalData))
             {
-                throw new AntiforgeryValidationException(Resources.AntiforgeryToken_AdditionalDataCheckFailed);
+                message = Resources.AntiforgeryToken_AdditionalDataCheckFailed;
+                return false;
             }
+
+            message = null;
+            return true;
         }
 
         private static BinaryBlob GetClaimUidBlob(string base64ClaimUid)

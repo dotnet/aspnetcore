@@ -6,6 +6,7 @@
   "dependencies": {
     "Microsoft.AspNetCore.Antiforgery": "1.0.0-*",
     "Microsoft.AspNetCore.Http": "1.0.0-*",
+    "Microsoft.AspNetCore.Testing": "1.0.0-*",
     "Microsoft.Extensions.DependencyInjection": "1.0.0-*",
     "Microsoft.Extensions.WebEncoders": "1.0.0-*",
     "Microsoft.NETCore.Platforms": "1.0.1-*",

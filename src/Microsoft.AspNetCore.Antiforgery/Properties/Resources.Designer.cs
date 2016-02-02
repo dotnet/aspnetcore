@@ -141,6 +141,14 @@ namespace Microsoft.AspNetCore.Antiforgery
         /// <summary>
         /// The required antiforgery cookie "{0}" is not present.
         /// </summary>
+        internal static string Antiforgery_CookieToken_IsInvalid
+        {
+            get { return GetString("Antiforgery_CookieToken_IsInvalid"); }
+        }
+
+        /// <summary>
+        /// The required antiforgery cookie "{0}" is not present.
+        /// </summary>
         internal static string Antiforgery_CookieToken_MustBeProvided
         {
             get { return GetString("Antiforgery_CookieToken_MustBeProvided"); }

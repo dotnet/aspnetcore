@@ -10,23 +10,41 @@ namespace Microsoft.AspNetCore.Antiforgery
     /// </summary>
     public interface IAntiforgeryTokenGenerator
     {
-        // Generates a new random cookie token.
+        /// <summary>
+        /// Generates a new random cookie token.
+        /// </summary>
+        /// <returns>An <see cref="AntiforgeryToken"/>.</returns>
         AntiforgeryToken GenerateCookieToken();
 
-        // Given a cookie token, generates a corresponding request token.
-        // The incoming cookie token must be valid.
-        AntiforgeryToken GenerateRequestToken(
-            HttpContext httpContext,
-            AntiforgeryToken cookieToken);
+        /// <summary>
+        /// Generates a request token corresponding to <paramref name="cookieToken"/>.
+        /// </summary>
+        /// <param name="httpContext">The <see cref="HttpContext"/> associated with the current request.</param>
+        /// <param name="cookieToken">A valid cookie token.</param>
+        /// <returns>An <see cref="AntiforgeryToken"/>.</returns>
+        AntiforgeryToken GenerateRequestToken(HttpContext httpContext, AntiforgeryToken cookieToken);
 
-        // Determines whether an existing cookie token is valid (well-formed).
-        // If it is not, the caller must call GenerateCookieToken() before calling GenerateFormToken().
+        /// <summary>
+        /// Attempts to validate a cookie token.
+        /// </summary>
+        /// <param name="cookieToken">A valid cookie token.</param>
+        /// <returns><c>true</c> if the cookie token is valid, otherwise <c>false</c>.</returns>
         bool IsCookieTokenValid(AntiforgeryToken cookieToken);
 
-        // Validates a (cookie, request) token pair.
-        void ValidateTokens(
+        /// <summary>
+        /// Attempts to validate a cookie and request token set for the given <paramref name="httpContext"/>.
+        /// </summary>
+        /// <param name="httpContext">The <see cref="HttpContext"/> associated with the current request.</param>
+        /// <param name="cookieToken">A cookie token.</param>
+        /// <param name="requestToken">A request token.</param>
+        /// <param name="message">
+        /// Will be set to the validation message if the tokens are invalid, otherwise <c>null</c>.
+        /// </param>
+        /// <returns><c>true</c> if the tokens are valid, otherwise <c>false</c>.</returns>
+        bool TryValidateTokenSet(
             HttpContext httpContext,
             AntiforgeryToken cookieToken,
-            AntiforgeryToken requestToken);
+            AntiforgeryToken requestToken,
+            out string message);
     }
 }

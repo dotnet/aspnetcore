@@ -5,6 +5,7 @@ using System;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.Http.Internal;
+using Microsoft.AspNetCore.Testing;
 using Moq;
 using Xunit;
 
@@ -28,7 +29,27 @@ namespace Microsoft.AspNetCore.Antiforgery
         }
 
         [Fact]
-        public void GenerateFormToken_AnonymousUser()
+        public void GenerateRequestToken_InvalidCookieToken()
+        {
+            // Arrange
+            var cookieToken = new AntiforgeryToken() { IsCookieToken = false };
+            var httpContext = new DefaultHttpContext();
+            httpContext.User = new ClaimsPrincipal(new ClaimsIdentity());
+            Assert.False(httpContext.User.Identity.IsAuthenticated);
+
+            var tokenProvider = new DefaultAntiforgeryTokenGenerator(
+                claimUidExtractor: null,
+                additionalDataProvider: null);
+
+            // Act & Assert
+            ExceptionAssert.ThrowsArgument(
+                () => tokenProvider.GenerateRequestToken(httpContext, cookieToken),
+                "cookieToken",
+                "The antiforgery cookie token is invalid.");
+        }
+
+        [Fact]
+        public void GenerateRequestToken_AnonymousUser()
         {
             // Arrange
             var cookieToken = new AntiforgeryToken() { IsCookieToken = true };
@@ -53,7 +74,7 @@ namespace Microsoft.AspNetCore.Antiforgery
         }
 
         [Fact]
-        public void GenerateFormToken_AuthenticatedWithoutUsernameAndNoAdditionalData_NoAdditionalData()
+        public void GenerateRequestToken_AuthenticatedWithoutUsernameAndNoAdditionalData_NoAdditionalData()
         {
             // Arrange
             var cookieToken = new AntiforgeryToken()
@@ -87,7 +108,7 @@ namespace Microsoft.AspNetCore.Antiforgery
         }
 
         [Fact]
-        public void GenerateFormToken_AuthenticatedWithoutUsername_WithAdditionalData()
+        public void GenerateRequestToken_AuthenticatedWithoutUsername_WithAdditionalData()
         {
             // Arrange
             var cookieToken = new AntiforgeryToken() { IsCookieToken = true };
@@ -118,7 +139,7 @@ namespace Microsoft.AspNetCore.Antiforgery
         }
 
         [Fact]
-        public void GenerateFormToken_ClaimsBasedIdentity()
+        public void GenerateRequestToken_ClaimsBasedIdentity()
         {
             // Arrange
             var cookieToken = new AntiforgeryToken() { IsCookieToken = true };
@@ -156,7 +177,7 @@ namespace Microsoft.AspNetCore.Antiforgery
         }
 
         [Fact]
-        public void GenerateFormToken_RegularUserWithUsername()
+        public void GenerateRequestToken_RegularUserWithUsername()
         {
             // Arrange
             var cookieToken = new AntiforgeryToken() { IsCookieToken = true };
@@ -202,10 +223,10 @@ namespace Microsoft.AspNetCore.Antiforgery
                 additionalDataProvider: null);
 
             // Act
-            bool retVal = tokenProvider.IsCookieTokenValid(cookieToken);
+            var isValid = tokenProvider.IsCookieTokenValid(cookieToken);
 
             // Assert
-            Assert.False(retVal);
+            Assert.False(isValid);
         }
 
         [Fact]
@@ -246,87 +267,12 @@ namespace Microsoft.AspNetCore.Antiforgery
 
 
         [Fact]
-        public void ValidateTokens_CookieTokenMissing()
+        public void TryValidateTokenSet_CookieTokenMissing()
         {
             // Arrange
             var httpContext = new DefaultHttpContext();
             httpContext.User = new ClaimsPrincipal(new ClaimsIdentity());
 
-            var fieldtoken = new AntiforgeryToken() { IsCookieToken = false };
-
-            var tokenProvider = new DefaultAntiforgeryTokenGenerator(
-                claimUidExtractor: null,
-                additionalDataProvider: null);
-
-            // Act & assert
-            var ex = Assert.Throws<ArgumentNullException>(
-                () => tokenProvider.ValidateTokens(httpContext, null, fieldtoken));
-
-            var trimmed = ex.Message.Substring(0, ex.Message.IndexOf(Environment.NewLine));
-            Assert.Equal(@"The required antiforgery cookie token must be provided.", trimmed);
-        }
-
-        [Fact]
-        public void ValidateTokens_FieldTokenMissing()
-        {
-            // Arrange
-            var httpContext = new DefaultHttpContext();
-            httpContext.User = new ClaimsPrincipal(new ClaimsIdentity());
-
-            var cookieToken = new AntiforgeryToken() { IsCookieToken = true };
-
-            var tokenProvider = new DefaultAntiforgeryTokenGenerator(
-                claimUidExtractor: null,
-                additionalDataProvider: null);
-
-            // Act & assert
-            var ex = Assert.Throws<ArgumentNullException>(
-                () => tokenProvider.ValidateTokens(httpContext, cookieToken, null));
-
-            var trimmed = ex.Message.Substring(0, ex.Message.IndexOf(Environment.NewLine));
-            Assert.Equal("The required antiforgery request token must be provided.", trimmed);
-        }
-
-        [Fact]
-        public void ValidateTokens_FieldAndCookieTokensSwapped()
-        {
-            // Arrange
-            var httpContext = new DefaultHttpContext();
-            httpContext.User = new ClaimsPrincipal(new ClaimsIdentity());
-
-            var cookieToken = new AntiforgeryToken() { IsCookieToken = true };
-            var fieldtoken = new AntiforgeryToken() { IsCookieToken = false };
-
-            var tokenProvider = new DefaultAntiforgeryTokenGenerator(
-                claimUidExtractor: null,
-                additionalDataProvider: null);
-
-            // Act & assert
-            var ex1 =
-                Assert.Throws<AntiforgeryValidationException>(
-                    () => tokenProvider.ValidateTokens(httpContext, fieldtoken, fieldtoken));
-            Assert.Equal(
-                "Validation of the provided antiforgery token failed. " +
-                @"The cookie token and the request token were swapped.",
-                ex1.Message);
-
-            var ex2 =
-                Assert.Throws<AntiforgeryValidationException>(
-                    () => tokenProvider.ValidateTokens(httpContext, cookieToken, cookieToken));
-            Assert.Equal(
-                "Validation of the provided antiforgery token failed. " +
-                @"The cookie token and the request token were swapped.",
-                ex2.Message);
-        }
-
-        [Fact]
-        public void ValidateTokens_FieldAndCookieTokensHaveDifferentSecurityKeys()
-        {
-            // Arrange
-            var httpContext = new DefaultHttpContext();
-            httpContext.User = new ClaimsPrincipal(new ClaimsIdentity());
-
-            var cookieToken = new AntiforgeryToken() { IsCookieToken = true };
             var fieldtoken = new AntiforgeryToken() { IsCookieToken = false };
 
             var tokenProvider = new DefaultAntiforgeryTokenGenerator(
@@ -334,18 +280,121 @@ namespace Microsoft.AspNetCore.Antiforgery
                 additionalDataProvider: null);
 
             // Act & Assert
-            var exception = Assert.Throws<AntiforgeryValidationException>(
-                    () => tokenProvider.ValidateTokens(httpContext, cookieToken, fieldtoken));
-            Assert.Equal(
-                @"The antiforgery cookie token and request token do not match.",
-                exception.Message);
+            string message;
+            var ex = Assert.Throws<ArgumentNullException>(
+                () => tokenProvider.TryValidateTokenSet(httpContext, null, fieldtoken, out message));
+
+            var trimmed = ex.Message.Substring(0, ex.Message.IndexOf(Environment.NewLine));
+            Assert.Equal(@"The required antiforgery cookie token must be provided.", trimmed);
+        }
+
+        [Fact]
+        public void TryValidateTokenSet_FieldTokenMissing()
+        {
+            // Arrange
+            var httpContext = new DefaultHttpContext();
+            httpContext.User = new ClaimsPrincipal(new ClaimsIdentity());
+
+            var cookieToken = new AntiforgeryToken() { IsCookieToken = true };
+
+            var tokenProvider = new DefaultAntiforgeryTokenGenerator(
+                claimUidExtractor: null,
+                additionalDataProvider: null);
+
+
+            // Act & Assert
+            string message;
+            var ex = Assert.Throws<ArgumentNullException>(
+                () => tokenProvider.TryValidateTokenSet(httpContext, cookieToken, null, out message));
+
+            var trimmed = ex.Message.Substring(0, ex.Message.IndexOf(Environment.NewLine));
+            Assert.Equal("The required antiforgery request token must be provided.", trimmed);
+        }
+
+        [Fact]
+        public void TryValidateTokenSet_FieldAndCookieTokensSwapped_FieldTokenDuplicated()
+        {
+            // Arrange
+            var httpContext = new DefaultHttpContext();
+            httpContext.User = new ClaimsPrincipal(new ClaimsIdentity());
+
+            var cookieToken = new AntiforgeryToken() { IsCookieToken = true };
+            var fieldtoken = new AntiforgeryToken() { IsCookieToken = false };
+
+            var tokenProvider = new DefaultAntiforgeryTokenGenerator(
+                claimUidExtractor: null,
+                additionalDataProvider: null);
+
+            string expectedMessage = 
+                "Validation of the provided antiforgery token failed. " +
+                "The cookie token and the request token were swapped.";
+
+            // Act
+            string message;
+            var result = tokenProvider.TryValidateTokenSet(httpContext, fieldtoken, fieldtoken, out message);
+
+            // Assert
+            Assert.False(result);
+            Assert.Equal(expectedMessage, message);
+        }
+
+        [Fact]
+        public void TryValidateTokenSet_FieldAndCookieTokensSwapped_CookieDuplicated()
+        {
+            // Arrange
+            var httpContext = new DefaultHttpContext();
+            httpContext.User = new ClaimsPrincipal(new ClaimsIdentity());
+
+            var cookieToken = new AntiforgeryToken() { IsCookieToken = true };
+            var fieldtoken = new AntiforgeryToken() { IsCookieToken = false };
+
+            var tokenProvider = new DefaultAntiforgeryTokenGenerator(
+                claimUidExtractor: null,
+                additionalDataProvider: null);
+
+            string expectedMessage =
+                "Validation of the provided antiforgery token failed. " +
+                "The cookie token and the request token were swapped.";
+
+            // Act
+            string message;
+            var result = tokenProvider.TryValidateTokenSet(httpContext, cookieToken, cookieToken, out message);
+
+            // Assert
+            Assert.False(result);
+            Assert.Equal(expectedMessage, message);
+        }
+
+        [Fact]
+        public void TryValidateTokenSet_FieldAndCookieTokensHaveDifferentSecurityKeys()
+        {
+            // Arrange
+            var httpContext = new DefaultHttpContext();
+            httpContext.User = new ClaimsPrincipal(new ClaimsIdentity());
+
+            var cookieToken = new AntiforgeryToken() { IsCookieToken = true };
+            var fieldtoken = new AntiforgeryToken() { IsCookieToken = false };
+
+            var tokenProvider = new DefaultAntiforgeryTokenGenerator(
+                claimUidExtractor: null,
+                additionalDataProvider: null);
+
+            string expectedMessage = "The antiforgery cookie token and request token do not match.";
+
+            // Act
+            string message;
+            var result = tokenProvider.TryValidateTokenSet(httpContext, cookieToken, fieldtoken, out message);
+
+            // Assert
+            Assert.False(result);
+            Assert.Equal(expectedMessage, message);
         }
 
         [Theory]
         [InlineData("the-user", "the-other-user")]
         [InlineData("http://example.com/uri-casing", "http://example.com/URI-casing")]
         [InlineData("https://example.com/secure-uri-casing", "https://example.com/secure-URI-casing")]
-        public void ValidateTokens_UsernameMismatch(string identityUsername, string embeddedUsername)
+        public void TryValidateTokenSet_UsernameMismatch(string identityUsername, string embeddedUsername)
         {
             // Arrange
             var httpContext = new DefaultHttpContext();
@@ -368,17 +417,21 @@ namespace Microsoft.AspNetCore.Antiforgery
                 claimUidExtractor: mockClaimUidExtractor.Object,
                 additionalDataProvider: null);
 
-            // Act & Assert
-            var exception = Assert.Throws<AntiforgeryValidationException>(
-                    () => tokenProvider.ValidateTokens(httpContext, cookieToken, fieldtoken));
-            Assert.Equal(
-                @"The provided antiforgery token was meant for user """ + embeddedUsername +
-                @""", but the current user is """ + identityUsername + @""".",
-                exception.Message);
+            string expectedMessage =
+                $"The provided antiforgery token was meant for user \"{embeddedUsername}\", " +
+                $"but the current user is \"{identityUsername}\".";
+
+            // Act
+            string message;
+            var result = tokenProvider.TryValidateTokenSet(httpContext, cookieToken, fieldtoken, out message);
+
+            // Assert
+            Assert.False(result);
+            Assert.Equal(expectedMessage, message);
         }
 
         [Fact]
-        public void ValidateTokens_ClaimUidMismatch()
+        public void TryValidateTokenSet_ClaimUidMismatch()
         {
             // Arrange
             var httpContext = new DefaultHttpContext();
@@ -402,16 +455,21 @@ namespace Microsoft.AspNetCore.Antiforgery
                 claimUidExtractor: mockClaimUidExtractor.Object,
                 additionalDataProvider: null);
 
-            // Act & assert
-            var exception = Assert.Throws<AntiforgeryValidationException>(
-                    () => tokenProvider.ValidateTokens(httpContext, cookieToken, fieldtoken));
-            Assert.Equal(
-                @"The provided antiforgery token was meant for a different claims-based user than the current user.",
-                exception.Message);
+            string expectedMessage =
+                "The provided antiforgery token was meant for a different " +
+                "claims-based user than the current user.";
+
+            // Act
+            string message;
+            var result = tokenProvider.TryValidateTokenSet(httpContext, cookieToken, fieldtoken, out message);
+
+            // Assert
+            Assert.False(result);
+            Assert.Equal(expectedMessage, message);
         }
 
         [Fact]
-        public void ValidateTokens_AdditionalDataRejected()
+        public void TryValidateTokenSet_AdditionalDataRejected()
         {
             // Arrange
             var httpContext = new DefaultHttpContext();
@@ -428,21 +486,27 @@ namespace Microsoft.AspNetCore.Antiforgery
             };
 
             var mockAdditionalDataProvider = new Mock<IAntiforgeryAdditionalDataProvider>();
-            mockAdditionalDataProvider.Setup(o => o.ValidateAdditionalData(httpContext, "some-additional-data"))
-                                      .Returns(false);
+            mockAdditionalDataProvider
+                .Setup(o => o.ValidateAdditionalData(httpContext, "some-additional-data"))
+                .Returns(false);
 
             var tokenProvider = new DefaultAntiforgeryTokenGenerator(
                 claimUidExtractor: null,
                 additionalDataProvider: mockAdditionalDataProvider.Object);
 
-            // Act & assert
-            var exception = Assert.Throws<AntiforgeryValidationException>(
-                    () => tokenProvider.ValidateTokens(httpContext, cookieToken, fieldtoken));
-            Assert.Equal(@"The provided antiforgery token failed a custom data check.", exception.Message);
+            string expectedMessage = "The provided antiforgery token failed a custom data check.";
+
+            // Act
+            string message;
+            var result = tokenProvider.TryValidateTokenSet(httpContext, cookieToken, fieldtoken, out message);
+
+            // Assert
+            Assert.False(result);
+            Assert.Equal(expectedMessage, message);
         }
 
         [Fact]
-        public void ValidateTokens_Success_AnonymousUser()
+        public void TryValidateTokenSet_Success_AnonymousUser()
         {
             // Arrange
             var httpContext = new DefaultHttpContext();
@@ -467,14 +531,16 @@ namespace Microsoft.AspNetCore.Antiforgery
                 additionalDataProvider: mockAdditionalDataProvider.Object);
 
             // Act
-            tokenProvider.ValidateTokens(httpContext, cookieToken, fieldtoken);
+            string message;
+            var result = tokenProvider.TryValidateTokenSet(httpContext, cookieToken, fieldtoken, out message);
 
             // Assert
-            // Nothing to assert - if we got this far, success!
+            Assert.True(result);
+            Assert.Null(message);
         }
 
         [Fact]
-        public void ValidateTokens_Success_AuthenticatedUserWithUsername()
+        public void TryValidateTokenSet_Success_AuthenticatedUserWithUsername()
         {
             // Arrange
             var httpContext = new DefaultHttpContext();
@@ -499,14 +565,16 @@ namespace Microsoft.AspNetCore.Antiforgery
                 additionalDataProvider: mockAdditionalDataProvider.Object);
 
             // Act
-            tokenProvider.ValidateTokens(httpContext, cookieToken, fieldtoken);
+            string message;
+            var result = tokenProvider.TryValidateTokenSet(httpContext, cookieToken, fieldtoken, out message);
 
             // Assert
-            // Nothing to assert - if we got this far, success!
+            Assert.True(result);
+            Assert.Null(message);
         }
 
         [Fact]
-        public void ValidateTokens_Success_ClaimsBasedUser()
+        public void TryValidateTokenSet_Success_ClaimsBasedUser()
         {
             // Arrange
             var httpContext = new DefaultHttpContext();
@@ -530,10 +598,12 @@ namespace Microsoft.AspNetCore.Antiforgery
                 additionalDataProvider: null);
 
             // Act
-            tokenProvider.ValidateTokens(httpContext, cookieToken, fieldtoken);
+            string message;
+            var result = tokenProvider.TryValidateTokenSet(httpContext, cookieToken, fieldtoken, out message);
 
             // Assert
-            // Nothing to assert - if we got this far, success!
+            Assert.True(result);
+            Assert.Null(message);
         }
 
         private static ClaimsIdentity GetAuthenticatedIdentity(string identityUsername)

@@ -36,75 +36,100 @@ namespace Microsoft.AspNetCore.Antiforgery
         }
 
         /// <inheritdoc />
-        public IHtmlContent GetHtml(HttpContext context)
+        public IHtmlContent GetHtml(HttpContext httpContext)
         {
-            if (context == null)
+            if (httpContext == null)
             {
-                throw new ArgumentNullException(nameof(context));
+                throw new ArgumentNullException(nameof(httpContext));
             }
 
-            CheckSSLConfig(context);
+            CheckSSLConfig(httpContext);
 
-            var tokenSet = GetAndStoreTokens(context);
+            var tokenSet = GetAndStoreTokens(httpContext);
             return new InputContent(_options.FormFieldName, tokenSet.RequestToken);
         }
 
         /// <inheritdoc />
-        public AntiforgeryTokenSet GetAndStoreTokens(HttpContext context)
+        public AntiforgeryTokenSet GetAndStoreTokens(HttpContext httpContext)
         {
-            if (context == null)
+            if (httpContext == null)
             {
-                throw new ArgumentNullException(nameof(context));
+                throw new ArgumentNullException(nameof(httpContext));
             }
 
-            CheckSSLConfig(context);
+            CheckSSLConfig(httpContext);
 
-            var tokenSet = GetTokensInternal(context);
+            var tokenSet = GetTokensInternal(httpContext);
             if (tokenSet.IsNewCookieToken)
             {
-                SaveCookieTokenAndHeader(context, tokenSet.CookieToken);
+                SaveCookieTokenAndHeader(httpContext, tokenSet.CookieToken);
             }
 
             return Serialize(tokenSet);
         }
 
         /// <inheritdoc />
-        public AntiforgeryTokenSet GetTokens(HttpContext context)
+        public AntiforgeryTokenSet GetTokens(HttpContext httpContext)
         {
-            if (context == null)
+            if (httpContext == null)
             {
-                throw new ArgumentNullException(nameof(context));
+                throw new ArgumentNullException(nameof(httpContext));
             }
 
-            CheckSSLConfig(context);
+            CheckSSLConfig(httpContext);
 
-            var tokenSet = GetTokensInternal(context);
+            var tokenSet = GetTokensInternal(httpContext);
             return Serialize(tokenSet);
         }
 
         /// <inheritdoc />
-        public async Task ValidateRequestAsync(HttpContext context)
+        public async Task<bool> IsRequestValidAsync(HttpContext httpContext)
         {
-            if (context == null)
+            if (httpContext == null)
             {
-                throw new ArgumentNullException(nameof(context));
+                throw new ArgumentNullException(nameof(httpContext));
             }
 
-            CheckSSLConfig(context);
+            CheckSSLConfig(httpContext);
 
-            var tokens = await _tokenStore.GetRequestTokensAsync(context);
-            ValidateTokens(context, tokens);
+            var tokens = await _tokenStore.GetRequestTokensAsync(httpContext);
+
+            // Extract cookie & request tokens
+            var deserializedCookieToken = _tokenSerializer.Deserialize(tokens.CookieToken);
+            var deserializedRequestToken = _tokenSerializer.Deserialize(tokens.RequestToken);
+
+            // Validate
+            string message;
+            return _tokenGenerator.TryValidateTokenSet(
+                httpContext,
+                deserializedCookieToken,
+                deserializedRequestToken,
+                out message);
         }
 
         /// <inheritdoc />
-        public void ValidateTokens(HttpContext context, AntiforgeryTokenSet antiforgeryTokenSet)
+        public async Task ValidateRequestAsync(HttpContext httpContext)
         {
-            if (context == null)
+            if (httpContext == null)
             {
-                throw new ArgumentNullException(nameof(context));
+                throw new ArgumentNullException(nameof(httpContext));
             }
 
-            CheckSSLConfig(context);
+            CheckSSLConfig(httpContext);
+
+            var tokens = await _tokenStore.GetRequestTokensAsync(httpContext);
+            ValidateTokens(httpContext, tokens);
+        }
+
+        /// <inheritdoc />
+        public void ValidateTokens(HttpContext httpContext, AntiforgeryTokenSet antiforgeryTokenSet)
+        {
+            if (httpContext == null)
+            {
+                throw new ArgumentNullException(nameof(httpContext));
+            }
+
+            CheckSSLConfig(httpContext);
 
             if (string.IsNullOrEmpty(antiforgeryTokenSet.CookieToken))
             {
@@ -125,25 +150,30 @@ namespace Microsoft.AspNetCore.Antiforgery
             var deserializedRequestToken = _tokenSerializer.Deserialize(antiforgeryTokenSet.RequestToken);
 
             // Validate
-            _tokenGenerator.ValidateTokens(
-                context,
+            string message;
+            if (!_tokenGenerator.TryValidateTokenSet(
+                httpContext,
                 deserializedCookieToken,
-                deserializedRequestToken);
+                deserializedRequestToken,
+                out message))
+            {
+                throw new AntiforgeryValidationException(message);
+            }
         }
 
         /// <inheritdoc />
-        public void SetCookieTokenAndHeader(HttpContext context)
+        public void SetCookieTokenAndHeader(HttpContext httpContext)
         {
-            if (context == null)
+            if (httpContext == null)
             {
-                throw new ArgumentNullException(nameof(context));
+                throw new ArgumentNullException(nameof(httpContext));
             }
 
-            CheckSSLConfig(context);
+            CheckSSLConfig(httpContext);
 
-            var cookieToken = GetCookieTokenDoesNotThrow(context);
+            var cookieToken = GetCookieTokenDoesNotThrow(httpContext);
             cookieToken = ValidateAndGenerateNewCookieToken(cookieToken);
-            SaveCookieTokenAndHeader(context, cookieToken);
+            SaveCookieTokenAndHeader(httpContext, cookieToken);
         }
 
         // This method returns null if oldCookieToken is valid.
@@ -208,16 +238,16 @@ namespace Microsoft.AspNetCore.Antiforgery
             }
         }
 
-        private AntiforgeryTokenSetInternal GetTokensInternal(HttpContext context)
+        private AntiforgeryTokenSetInternal GetTokensInternal(HttpContext httpContext)
         {
-            var cookieToken = GetCookieTokenDoesNotThrow(context);
+            var cookieToken = GetCookieTokenDoesNotThrow(httpContext);
             var newCookieToken = ValidateAndGenerateNewCookieToken(cookieToken);
             if (newCookieToken != null)
             {
                 cookieToken = newCookieToken;
             }
             var requestToken = _tokenGenerator.GenerateRequestToken(
-                context,
+                httpContext,
                 cookieToken);
 
             return new AntiforgeryTokenSetInternal()
