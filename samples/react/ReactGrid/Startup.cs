@@ -1,5 +1,6 @@
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting;
+using Microsoft.AspNet.SpaServices;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -51,6 +52,11 @@ namespace ReactExample
                 // send the request to the following path or controller action.
                 app.UseExceptionHandler("/Home/Error");
             }
+            
+            app.UseWebpackDevMiddleware(new WebpackDevMiddlewareOptions {
+                HotModuleReplacement = true,
+                ReactHotModuleReplacement = true
+            });
 
             // Add static files to the request pipeline.
             app.UseStaticFiles();
