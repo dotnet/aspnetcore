@@ -13,7 +13,6 @@
   "dependencies": {
     "Microsoft.Extensions.DependencyInjection.Abstractions": "1.0.0-*",
     "Microsoft.Extensions.Options": "1.0.0-*",
-    "Microsoft.NETCore.Platforms": "1.0.1-*",
     "System.Text.Encodings.Web": "4.0.0-*"
   },
   "frameworks": {
@@ -23,8 +22,6 @@
         "System.Runtime": ""
       }
     },
-    "dotnet5.4": {
-      "imports": "portable-net451+win8"
-    }
+    "dotnet5.4": {}
   }
 }
