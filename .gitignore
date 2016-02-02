@@ -8,6 +8,8 @@ packages/
 artifacts/
 PublishProfiles/
 .vs/
+.build/
+.testPublish/
 bower_components/
 node_modules/
 **/wwwroot/lib/
