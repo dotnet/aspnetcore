@@ -53,10 +53,14 @@ namespace ReactExample
                 app.UseExceptionHandler("/Home/Error");
             }
             
-            app.UseWebpackDevMiddleware(new WebpackDevMiddlewareOptions {
-                HotModuleReplacement = true,
-                ReactHotModuleReplacement = true
-            });
+            // In dev mode, the JS/TS/etc is compiled and served dynamically and supports hot replacement.
+            // In production, we assume you've used webpack to emit the prebuilt content to disk.
+            if (env.IsDevelopment()) {
+                app.UseWebpackDevMiddleware(new WebpackDevMiddlewareOptions {
+                    HotModuleReplacement = true,
+                    ReactHotModuleReplacement = true
+                });
+            }
 
             // Add static files to the request pipeline.
             app.UseStaticFiles();
