@@ -8,11 +8,12 @@
       "TestDocument.txt"
   ],
   "dependencies": {
-      "Microsoft.AspNetCore.StaticFiles": "1.0.0-*",
-      "Microsoft.AspNetCore.TestHost": "1.0.0-*",
-      "Microsoft.AspNetCore.Testing": "1.0.0-*",
-      "Microsoft.Extensions.Logging.Testing": "1.0.0-*",
-      "xunit": "2.1.0"
+    "Microsoft.AspNetCore.StaticFiles": "1.0.0-*",
+    "Microsoft.AspNetCore.TestHost": "1.0.0-*",
+    "Microsoft.AspNetCore.Testing": "1.0.0-*",
+    "Microsoft.Extensions.Logging.Testing": "1.0.0-*",
+    "Microsoft.NETCore.Platforms": "1.0.1-*",
+    "xunit": "2.1.0"
   },
   "frameworks": {
     "dnx451": {
@@ -27,7 +28,8 @@
     "dnxcore50": { 
       "dependencies": {
         "xunit.runner.aspnet": "2.0.0-aspnet-*"
-      }
+      },
+      "imports": "portable-net451+win8"
     }
   },
   "testRunner": "xunit",
