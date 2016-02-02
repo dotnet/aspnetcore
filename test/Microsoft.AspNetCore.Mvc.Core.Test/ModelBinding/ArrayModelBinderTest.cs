@@ -4,7 +4,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Internal;
-using Moq;
+using Microsoft.AspNetCore.Mvc.Internal;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
@@ -25,10 +25,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
             var binder = new ArrayModelBinder<int>();
 
             // Act
-            var result = await binder.BindModelAsync(bindingContext);
+            var result = await binder.BindModelResultAsync(bindingContext);
 
             // Assert
-            Assert.NotEqual(ModelBindingResult.NoResult, result);
+            Assert.NotEqual(default(ModelBindingResult), result);
 
             var array = Assert.IsType<int[]>(result.Model);
             Assert.Equal(new[] { 42, 84 }, array);
@@ -53,10 +53,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
             context.ValueProvider = new TestValueProvider(new Dictionary<string, object>());
 
             // Act
-            var result = await binder.BindModelAsync(context);
+            var result = await binder.BindModelResultAsync(context);
 
             // Assert
-            Assert.NotEqual(ModelBindingResult.NoResult, result);
+            Assert.NotEqual(default(ModelBindingResult), result);
 
             Assert.Empty(Assert.IsType<string[]>(result.Model));
             Assert.Equal("modelName", result.Key);
@@ -82,10 +82,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
             context.ValueProvider = new TestValueProvider(new Dictionary<string, object>());
 
             // Act
-            var result = await binder.BindModelAsync(context);
+            var result = await binder.BindModelResultAsync(context);
 
             // Assert
-            Assert.Equal(ModelBindingResult.NoResult, result);
+            Assert.Equal(default(ModelBindingResult), result);
         }
 
         public static TheoryData<int[]> ArrayModelData
@@ -117,10 +117,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
             var binder = new ArrayModelBinder<int>();
 
             // Act
-            var result = await binder.BindModelAsync(bindingContext);
+            var result = await binder.BindModelResultAsync(bindingContext);
 
             // Assert
-            Assert.Equal(ModelBindingResult.NoResult, result);
+            Assert.Equal(default(ModelBindingResult), result);
         }
 
         // Here "fails silently" means the call does not update the array but also does not throw or set an error.
@@ -142,10 +142,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
             var binder = new ArrayModelBinder<int>();
 
             // Act
-            var result = await binder.BindModelAsync(bindingContext);
+            var result = await binder.BindModelResultAsync(bindingContext);
 
             // Assert
-            Assert.NotEqual(ModelBindingResult.NoResult, result);
+            Assert.NotEqual(default(ModelBindingResult), result);
             Assert.True(result.IsModelSet);
             Assert.Same(model, result.Model);
 
@@ -159,23 +159,19 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
 
         private static IModelBinder CreateIntBinder()
         {
-            var mockIntBinder = new Mock<IModelBinder>();
-            mockIntBinder
-                .Setup(o => o.BindModelAsync(It.IsAny<ModelBindingContext>()))
-                .Returns((ModelBindingContext mbc) =>
+            return new StubModelBinder(mbc =>
+            {
+                var value = mbc.ValueProvider.GetValue(mbc.ModelName);
+                if (value != ValueProviderResult.None)
                 {
-                    var value = mbc.ValueProvider.GetValue(mbc.ModelName);
-                    if (value != ValueProviderResult.None)
-                    {
-                        var model = value.ConvertTo(mbc.ModelType);
-                        return ModelBindingResult.SuccessAsync(mbc.ModelName, model);
-                    }
-                    return ModelBindingResult.NoResultAsync;
-                });
-            return mockIntBinder.Object;
+                    var model = value.ConvertTo(mbc.ModelType);
+                    return ModelBindingResult.Success(mbc.ModelName, model);
+                }
+                return null;
+            });
         }
 
-        private static ModelBindingContext GetBindingContext(
+        private static DefaultModelBindingContext GetBindingContext(
             IValueProvider valueProvider,
             bool isReadOnly = false)
         {
@@ -187,7 +183,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
             var modelMetadata = metadataProvider.GetMetadataForProperty(
                 typeof(ModelWithIntArrayProperty),
                 nameof(ModelWithIntArrayProperty.ArrayProperty));
-            var bindingContext = new ModelBindingContext
+            var bindingContext = new DefaultModelBindingContext
             {
                 ModelMetadata = modelMetadata,
                 ModelName = "someName",
@@ -202,9 +198,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
             return bindingContext;
         }
 
-        private static ModelBindingContext CreateContext()
+        private static DefaultModelBindingContext CreateContext()
         {
-            var modelBindingContext = new ModelBindingContext()
+            var modelBindingContext = new DefaultModelBindingContext()
             {
                 OperationBindingContext = new OperationBindingContext()
                 {

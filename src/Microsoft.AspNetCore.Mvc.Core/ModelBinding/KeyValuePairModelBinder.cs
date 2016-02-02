@@ -1,15 +1,22 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
     public sealed class KeyValuePairModelBinder<TKey, TValue> : IModelBinder
     {
-        public async Task<ModelBindingResult> BindModelAsync(ModelBindingContext bindingContext)
+        public async Task BindModelAsync(ModelBindingContext bindingContext)
         {
+            if (bindingContext == null)
+            {
+                throw new ArgumentNullException(nameof(bindingContext));
+            }
+
             ModelBindingHelper.ValidateBindingContext(bindingContext,
                                                       typeof(KeyValuePair<TKey, TValue>),
                                                       allowNullModel: true);
@@ -23,9 +30,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                     ModelBindingHelper.CastOrDefault<TKey>(keyResult.Model),
                     ModelBindingHelper.CastOrDefault<TValue>(valueResult.Model));
 
-                return ModelBindingResult.Success(bindingContext.ModelName, model);
+                bindingContext.Result = ModelBindingResult.Success(bindingContext.ModelName, model);
+                return;
             }
-            else if (!keyResult.IsModelSet && valueResult.IsModelSet)
+
+            if (!keyResult.IsModelSet && valueResult.IsModelSet)
             {
                 bindingContext.ModelState.TryAddModelError(
                     keyResult.Key,
@@ -33,9 +42,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
                 // Were able to get some data for this model.
                 // Always tell the model binding system to skip other model binders.
-                return ModelBindingResult.Failed(bindingContext.ModelName);
+                bindingContext.Result = ModelBindingResult.Failed(bindingContext.ModelName);
+                return;
             }
-            else if (keyResult.IsModelSet && !valueResult.IsModelSet)
+
+            if (keyResult.IsModelSet && !valueResult.IsModelSet)
             {
                 bindingContext.ModelState.TryAddModelError(
                     valueResult.Key,
@@ -43,46 +54,46 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
                 // Were able to get some data for this model.
                 // Always tell the model binding system to skip other model binders.
-                return ModelBindingResult.Failed(bindingContext.ModelName);
+                bindingContext.Result = ModelBindingResult.Failed(bindingContext.ModelName);
+                return;
             }
-            else
-            {
-                // If we failed to find data for a top-level model, then generate a
-                // default 'empty' model and return it.
-                if (bindingContext.IsTopLevelObject)
-                {
-                    var model = new KeyValuePair<TKey, TValue>();
-                    return ModelBindingResult.Success(bindingContext.ModelName, model);
-                }
 
-                return ModelBindingResult.NoResult;
+            // If we failed to find data for a top-level model, then generate a
+            // default 'empty' model and return it.
+            if (bindingContext.IsTopLevelObject)
+            {
+                var model = new KeyValuePair<TKey, TValue>();
+                bindingContext.Result = ModelBindingResult.Success(bindingContext.ModelName, model);
             }
         }
 
         internal async Task<ModelBindingResult> TryBindStrongModel<TModel>(
-            ModelBindingContext parentBindingContext,
+            ModelBindingContext bindingContext,
             string propertyName)
         {
             var propertyModelMetadata =
-                parentBindingContext.OperationBindingContext.MetadataProvider.GetMetadataForType(typeof(TModel));
+                bindingContext.OperationBindingContext.MetadataProvider.GetMetadataForType(typeof(TModel));
             var propertyModelName =
-                ModelNames.CreatePropertyModelName(parentBindingContext.ModelName, propertyName);
-            var propertyBindingContext = ModelBindingContext.CreateChildBindingContext(
-                parentBindingContext,
-                propertyModelMetadata,
-                propertyName,
-                propertyModelName,
-                model: null);
+                ModelNames.CreatePropertyModelName(bindingContext.ModelName, propertyName);
 
-            var result = await propertyBindingContext.OperationBindingContext.ModelBinder.BindModelAsync(
-                propertyBindingContext);
-            if (result.IsModelSet)
+            using (bindingContext.EnterNestedScope(
+                modelMetadata: propertyModelMetadata,
+                fieldName: propertyName,
+                modelName: propertyModelName,
+                model: null))
             {
-                return result;
-            }
-            else
-            {
-                return ModelBindingResult.Failed(propertyModelName);
+
+                await bindingContext.OperationBindingContext.ModelBinder.BindModelAsync(
+                    bindingContext);
+                var result = bindingContext.Result;
+                if (result != null && result.Value.IsModelSet)
+                {
+                    return result.Value;
+                }
+                else
+                {
+                    return ModelBindingResult.Failed(propertyModelName);
+                }
             }
         }
     }

@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Mvc.DataAnnotations.Internal;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Test;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.Mvc.TestCommon;
 using Microsoft.AspNetCore.Routing;
@@ -1096,29 +1097,25 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             // Arrange
             var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
             var valueProvider = Mock.Of<IValueProvider>();
-            var binder = new Mock<IModelBinder>();
-            binder.Setup(b => b.BindModelAsync(It.IsAny<ModelBindingContext>()))
-                  .Callback((ModelBindingContext context) =>
-                  {
-                      Assert.Empty(context.ModelName);
-                      Assert.Same(valueProvider, Assert.IsType<CompositeValueProvider>(context.ValueProvider)[0]);
+            var binder = new StubModelBinder(context =>
+            {
+                Assert.Empty(context.ModelName);
+                Assert.Same(valueProvider, Assert.IsType<CompositeValueProvider>(context.ValueProvider)[0]);
 
-                      // Include and exclude should be null, resulting in property
-                      // being included.
-                      Assert.True(context.PropertyFilter(context, "Property1"));
-                      Assert.True(context.PropertyFilter(context, "Property2"));
-                  })
-                  .Returns(ModelBindingResult.NoResultAsync)
-                  .Verifiable();
+                // Include and exclude should be null, resulting in property
+                // being included.
+                Assert.True(context.PropertyFilter(context, "Property1"));
+                Assert.True(context.PropertyFilter(context, "Property2"));
+            });
 
-            var controller = GetController(binder.Object, valueProvider);
+            var controller = GetController(binder, valueProvider);
             var model = new MyModel();
 
             // Act
             var result = await controller.TryUpdateModelAsync(model);
 
             // Assert
-            binder.Verify();
+            Assert.NotEqual(0, binder.BindModelCount);
         }
 
         [Fact]
@@ -1129,28 +1126,24 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
 
             var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
             var valueProvider = Mock.Of<IValueProvider>();
-            var binder = new Mock<IModelBinder>();
-            binder.Setup(b => b.BindModelAsync(It.IsAny<ModelBindingContext>()))
-                  .Callback((ModelBindingContext context) =>
-                  {
-                      Assert.Same(valueProvider, Assert.IsType<CompositeValueProvider>(context.ValueProvider)[0]);
+            var binder = new StubModelBinder(context =>
+            {
+                Assert.Same(valueProvider, Assert.IsType<CompositeValueProvider>(context.ValueProvider)[0]);
 
-                      // Include and exclude should be null, resulting in property
-                      // being included.
-                      Assert.True(context.PropertyFilter(context, "Property1"));
-                      Assert.True(context.PropertyFilter(context, "Property2"));
-                  })
-                  .Returns(ModelBindingResult.NoResultAsync)
-                  .Verifiable();
+                // Include and exclude should be null, resulting in property
+                // being included.
+                Assert.True(context.PropertyFilter(context, "Property1"));
+                Assert.True(context.PropertyFilter(context, "Property2"));
+            });
 
-            var controller = GetController(binder.Object, valueProvider);
+            var controller = GetController(binder, valueProvider);
             var model = new MyModel();
 
             // Act
             var result = await controller.TryUpdateModelAsync(model, modelName);
 
             // Assert
-            binder.Verify();
+            Assert.NotEqual(0, binder.BindModelCount);
         }
 
         [Fact]
@@ -1160,9 +1153,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             var modelName = "mymodel";
 
             var valueProvider = Mock.Of<IValueProvider>();
-            var binder = new Mock<IModelBinder>();
-            binder.Setup(b => b.BindModelAsync(It.IsAny<ModelBindingContext>()))
-                  .Callback((ModelBindingContext context) =>
+            var binder = new StubModelBinder(context =>
                   {
                       Assert.Same(valueProvider, context.ValueProvider);
 
@@ -1170,18 +1161,16 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
                       // being included.
                       Assert.True(context.PropertyFilter(context, "Property1"));
                       Assert.True(context.PropertyFilter(context, "Property2"));
-                  })
-                  .Returns(ModelBindingResult.NoResultAsync)
-                  .Verifiable();
+                  });
 
-            var controller = GetController(binder.Object, valueProvider: null);
+            var controller = GetController(binder, valueProvider: null);
             var model = new MyModel();
 
             // Act
             var result = await controller.TryUpdateModelAsync(model, modelName, valueProvider);
 
             // Assert
-            binder.Verify();
+            Assert.NotEqual(0, binder.BindModelCount);
         }
 
         [Fact]
@@ -1194,30 +1183,26 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
                 string.Equals(propertyName, "include1", StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(propertyName, "include2", StringComparison.OrdinalIgnoreCase);
 
-            var binder = new Mock<IModelBinder>();
             var valueProvider = Mock.Of<IValueProvider>();
-            binder.Setup(b => b.BindModelAsync(It.IsAny<ModelBindingContext>()))
-                  .Callback((ModelBindingContext context) =>
-                  {
-                      Assert.Same(valueProvider, Assert.IsType<CompositeValueProvider>(context.ValueProvider)[0]);
+            var binder = new StubModelBinder(context =>
+            {
+                Assert.Same(valueProvider, Assert.IsType<CompositeValueProvider>(context.ValueProvider)[0]);
 
-                      Assert.True(context.PropertyFilter(context, "include1"));
-                      Assert.True(context.PropertyFilter(context, "include2"));
+                Assert.True(context.PropertyFilter(context, "include1"));
+                Assert.True(context.PropertyFilter(context, "include2"));
 
-                      Assert.False(context.PropertyFilter(context, "exclude1"));
-                      Assert.False(context.PropertyFilter(context, "exclude2"));
-                  })
-                  .Returns(ModelBindingResult.NoResultAsync)
-                  .Verifiable();
+                Assert.False(context.PropertyFilter(context, "exclude1"));
+                Assert.False(context.PropertyFilter(context, "exclude2"));
+            });
 
-            var controller = GetController(binder.Object, valueProvider);
+            var controller = GetController(binder, valueProvider);
             var model = new MyModel();
 
             // Act
             await controller.TryUpdateModelAsync(model, modelName, includePredicate);
 
             // Assert
-            binder.Verify();
+            Assert.NotEqual(0, binder.BindModelCount);
         }
 
         [Fact]
@@ -1230,23 +1215,18 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
                (context, propertyName) => string.Equals(propertyName, "include1", StringComparison.OrdinalIgnoreCase) ||
                                           string.Equals(propertyName, "include2", StringComparison.OrdinalIgnoreCase);
 
-            var binder = new Mock<IModelBinder>();
             var valueProvider = Mock.Of<IValueProvider>();
-            binder.Setup(b => b.BindModelAsync(It.IsAny<ModelBindingContext>()))
-                  .Callback((ModelBindingContext context) =>
-                  {
-                      Assert.Same(valueProvider, context.ValueProvider);
+            var binder = new StubModelBinder(context =>
+            {
+                Assert.Same(valueProvider, context.ValueProvider);
 
-                      Assert.True(context.PropertyFilter(context, "include1"));
-                      Assert.True(context.PropertyFilter(context, "include2"));
+                Assert.True(context.PropertyFilter(context, "include1"));
+                Assert.True(context.PropertyFilter(context, "include2"));
 
-                      Assert.False(context.PropertyFilter(context, "exclude1"));
-                      Assert.False(context.PropertyFilter(context, "exclude2"));
-                  })
-                  .Returns(ModelBindingResult.NoResultAsync)
-                  .Verifiable();
-
-            var controller = GetController(binder.Object, valueProvider: null);
+                Assert.False(context.PropertyFilter(context, "exclude1"));
+                Assert.False(context.PropertyFilter(context, "exclude2"));
+            });
+            var controller = GetController(binder, valueProvider: null);
 
             var model = new MyModel();
 
@@ -1254,7 +1234,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             await controller.TryUpdateModelAsync(model, modelName, valueProvider, includePredicate);
 
             // Assert
-            binder.Verify();
+            Assert.NotEqual(0, binder.BindModelCount);
         }
 
         [Theory]
@@ -1268,32 +1248,28 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
                 .Setup(v => v.ContainsPrefix(prefix))
                 .Returns(true);
 
-            var binder = new Mock<IModelBinder>();
-            binder.Setup(b => b.BindModelAsync(It.IsAny<ModelBindingContext>()))
-                  .Callback((ModelBindingContext context) =>
-                  {
-                      Assert.Same(
+            var binder = new StubModelBinder(context =>
+            {
+                Assert.Same(
                           valueProvider.Object,
                           Assert.IsType<CompositeValueProvider>(context.ValueProvider)[0]);
 
-                      Assert.True(context.PropertyFilter(context, "Property1"));
-                      Assert.True(context.PropertyFilter(context, "Property2"));
+                Assert.True(context.PropertyFilter(context, "Property1"));
+                Assert.True(context.PropertyFilter(context, "Property2"));
 
-                      Assert.False(context.PropertyFilter(context, "exclude1"));
-                      Assert.False(context.PropertyFilter(context, "exclude2"));
-                  })
-                  .Returns(ModelBindingResult.NoResultAsync)
-                  .Verifiable();
+                Assert.False(context.PropertyFilter(context, "exclude1"));
+                Assert.False(context.PropertyFilter(context, "exclude2"));
+            });
 
 
-            var controller = GetController(binder.Object, valueProvider.Object);
+            var controller = GetController(binder, valueProvider.Object);
             var model = new MyModel();
 
             // Act
             await controller.TryUpdateModelAsync(model, prefix, m => m.Property1, m => m.Property2);
 
             // Assert
-            binder.Verify();
+            Assert.NotEqual(0, binder.BindModelCount);
         }
 
         [Theory]
@@ -1308,29 +1284,25 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
                 .Setup(v => v.ContainsPrefix(prefix))
                 .Returns(true);
 
-            var binder = new Mock<IModelBinder>();
-            binder.Setup(b => b.BindModelAsync(It.IsAny<ModelBindingContext>()))
-                  .Callback((ModelBindingContext context) =>
-                  {
-                      Assert.Same(valueProvider.Object, context.ValueProvider);
+            var binder = new StubModelBinder(context =>
+            {
+                Assert.Same(valueProvider.Object, context.ValueProvider);
 
-                      Assert.True(context.PropertyFilter(context, "Property1"));
-                      Assert.True(context.PropertyFilter(context, "Property2"));
+                Assert.True(context.PropertyFilter(context, "Property1"));
+                Assert.True(context.PropertyFilter(context, "Property2"));
 
-                      Assert.False(context.PropertyFilter(context, "exclude1"));
-                      Assert.False(context.PropertyFilter(context, "exclude2"));
-                  })
-                  .Returns(ModelBindingResult.NoResultAsync)
-                  .Verifiable();
+                Assert.False(context.PropertyFilter(context, "exclude1"));
+                Assert.False(context.PropertyFilter(context, "exclude2"));
+            });
 
-            var controller = GetController(binder.Object, valueProvider: null);
+            var controller = GetController(binder, valueProvider: null);
             var model = new MyModel();
 
             // Act
             await controller.TryUpdateModelAsync(model, prefix, valueProvider.Object, m => m.Property1, m => m.Property2);
 
             // Assert
-            binder.Verify();
+            Assert.NotEqual(0, binder.BindModelCount);
         }
 
         [Fact]
@@ -1345,22 +1317,18 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
 
             var valueProvider = Mock.Of<IValueProvider>();
 
-            var binder = new Mock<IModelBinder>();
-            binder.Setup(b => b.BindModelAsync(It.IsAny<ModelBindingContext>()))
-                  .Callback((ModelBindingContext context) =>
-                  {
-                      Assert.Same(valueProvider, context.ValueProvider);
+            var binder = new StubModelBinder(context =>
+            {
+                Assert.Same(valueProvider, context.ValueProvider);
 
-                      Assert.True(context.PropertyFilter(context, "include1"));
-                      Assert.True(context.PropertyFilter(context, "include2"));
+                Assert.True(context.PropertyFilter(context, "include1"));
+                Assert.True(context.PropertyFilter(context, "include2"));
 
-                      Assert.False(context.PropertyFilter(context, "exclude1"));
-                      Assert.False(context.PropertyFilter(context, "exclude2"));
-                  })
-                  .Returns(ModelBindingResult.NoResultAsync)
-                  .Verifiable();
+                Assert.False(context.PropertyFilter(context, "exclude1"));
+                Assert.False(context.PropertyFilter(context, "exclude2"));
+            });
 
-            var controller = GetController(binder.Object, valueProvider: null);
+            var controller = GetController(binder, valueProvider: null);
 
             var model = new MyModel();
 
@@ -1368,7 +1336,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             await controller.TryUpdateModelAsync(model, model.GetType(), modelName, valueProvider, includePredicate);
 
             // Assert
-            binder.Verify();
+            Assert.NotEqual(0, binder.BindModelCount);
         }
 
         [Fact]
@@ -1379,28 +1347,24 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
 
             var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
             var valueProvider = Mock.Of<IValueProvider>();
-            var binder = new Mock<IModelBinder>();
-            binder.Setup(b => b.BindModelAsync(It.IsAny<ModelBindingContext>()))
-                  .Callback((ModelBindingContext context) =>
-                  {
-                      Assert.Same(valueProvider, Assert.IsType<CompositeValueProvider>(context.ValueProvider)[0]);
+            var binder = new StubModelBinder(context =>
+            {
+                Assert.Same(valueProvider, Assert.IsType<CompositeValueProvider>(context.ValueProvider)[0]);
 
-                      // Include and exclude should be null, resulting in property
-                      // being included.
-                      Assert.True(context.PropertyFilter(context, "Property1"));
-                      Assert.True(context.PropertyFilter(context, "Property2"));
-                  })
-                  .Returns(ModelBindingResult.NoResultAsync)
-                  .Verifiable();
+                // Include and exclude should be null, resulting in property
+                // being included.
+                Assert.True(context.PropertyFilter(context, "Property1"));
+                Assert.True(context.PropertyFilter(context, "Property2"));
+            });
 
-            var controller = GetController(binder.Object, valueProvider);
+            var controller = GetController(binder, valueProvider);
             var model = new MyModel();
 
             // Act
             var result = await controller.TryUpdateModelAsync(model, model.GetType(), modelName);
 
             // Assert
-            binder.Verify();
+            Assert.NotEqual(0, binder.BindModelCount);
         }
 
         [Fact]
@@ -1411,28 +1375,24 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
 
             var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
             var valueProvider = Mock.Of<IValueProvider>();
-            var binder = new Mock<IModelBinder>();
-            binder.Setup(b => b.BindModelAsync(It.IsAny<ModelBindingContext>()))
-                  .Callback((ModelBindingContext context) =>
-                  {
-                      Assert.Same(valueProvider, Assert.IsType<CompositeValueProvider>(context.ValueProvider)[0]);
+            var binder = new StubModelBinder(context =>
+            {
+                Assert.Same(valueProvider, Assert.IsType<CompositeValueProvider>(context.ValueProvider)[0]);
 
-                      // Include and exclude should be null, resulting in property
-                      // being included.
-                      Assert.True(context.PropertyFilter(context, "Property1"));
-                      Assert.True(context.PropertyFilter(context, "Property2"));
-                  })
-                  .Returns(ModelBindingResult.NoResultAsync)
-                  .Verifiable();
+                // Include and exclude should be null, resulting in property
+                // being included.
+                Assert.True(context.PropertyFilter(context, "Property1"));
+                Assert.True(context.PropertyFilter(context, "Property2"));
+            });
 
-            var controller = GetController(binder.Object, valueProvider);
+            var controller = GetController(binder, valueProvider);
             MyModel model = new MyDerivedModel();
 
             // Act
             var result = await controller.TryUpdateModelAsync(model, model.GetType(), modelName);
 
             // Assert
-            binder.Verify();
+            Assert.NotEqual(0, binder.BindModelCount);
         }
 
         [Fact]
@@ -1515,8 +1475,8 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
         public void TryValidateModelWithValidModel_ReturnsTrue()
         {
             // Arrange
-            var binder = new Mock<IModelBinder>();
-            var controller = GetController(binder.Object, valueProvider: null);
+            var binder = new StubModelBinder();
+            var controller = GetController(binder, valueProvider: null);
             controller.ControllerContext.ValidatorProviders = new List<IModelValidatorProvider>()
             {
                 Mock.Of<IModelValidatorProvider>(),
@@ -1552,8 +1512,8 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             provider.Setup(v => v.GetValidators(It.IsAny<ModelValidatorProviderContext>()))
                 .Callback<ModelValidatorProviderContext>(c => c.Results.Add(validator1));
 
-            var binder = new Mock<IModelBinder>();
-            var controller = GetController(binder.Object, valueProvider: null);
+            var binder = new StubModelBinder();
+            var controller = GetController(binder, valueProvider: null);
             controller.ControllerContext.ValidatorProviders = new List<IModelValidatorProvider>()
             {
                 provider.Object,
@@ -1589,8 +1549,8 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             provider.Setup(v => v.GetValidators(It.IsAny<ModelValidatorProviderContext>()))
                 .Callback<ModelValidatorProviderContext>(c => c.Results.Add(validator1));
 
-            var binder = new Mock<IModelBinder>();
-            var controller = GetController(binder.Object, valueProvider: null);
+            var binder = new StubModelBinder();
+            var controller = GetController(binder, valueProvider: null);
             controller.ControllerContext.ValidatorProviders = new List<IModelValidatorProvider>()
             {
                 provider.Object,

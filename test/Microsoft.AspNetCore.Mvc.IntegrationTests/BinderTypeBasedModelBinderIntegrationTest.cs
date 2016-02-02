@@ -1,9 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Globalization;
+using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Testing;
 using Xunit;
@@ -34,7 +36,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelState = operationContext.ActionContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext) ?? default(ModelBindingResult);
 
             // Assert
 
@@ -71,7 +73,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext);
 
             // Assert
-            Assert.Equal(ModelBindingResult.NoResult, modelBindingResult);
+            Assert.Equal(null, modelBindingResult);
 
             // ModelState (not set unless inner binder sets it)
             Assert.True(modelState.IsValid);
@@ -108,7 +110,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             // Assert
 
             // ModelBindingResult
-            Assert.Equal(ModelBindingResult.NoResult, modelBindingResult);
+            Assert.Equal(null, modelBindingResult);
 
             // ModelState
             Assert.True(modelState.IsValid);
@@ -144,7 +146,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             // Assert
 
             // ModelBindingResult
-            Assert.Equal(ModelBindingResult.NoResult, modelBindingResult);
+            Assert.Equal(null, modelBindingResult);
 
             // ModelState
             Assert.True(modelState.IsValid);
@@ -174,7 +176,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelState = operationContext.ActionContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext) ?? default(ModelBindingResult);
 
             // Assert
 
@@ -217,7 +219,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelState = operationContext.ActionContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext) ?? default(ModelBindingResult);
 
             // Assert
 
@@ -258,7 +260,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelState = operationContext.ActionContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext) ?? default(ModelBindingResult);
 
             // Assert
 
@@ -280,11 +282,17 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 
         private class AddressModelBinder : IModelBinder
         {
-            public Task<ModelBindingResult> BindModelAsync(ModelBindingContext bindingContext)
+            public Task BindModelAsync(ModelBindingContext bindingContext)
             {
+                if (bindingContext == null)
+                {
+                    throw new ArgumentNullException(nameof(bindingContext));
+                }
+                Debug.Assert(bindingContext.Result == null);
+
                 if (bindingContext.ModelType != typeof(Address))
                 {
-                    return null;
+                    return TaskCache.CompletedTask;
                 }
 
                 var address = new Address() { Street = "SomeStreet" };
@@ -294,45 +302,73 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                     new string[] { address.Street },
                     address.Street);
 
-                return ModelBindingResult.SuccessAsync(bindingContext.ModelName, address);
+                bindingContext.Result = ModelBindingResult.Success(bindingContext.ModelName, address);
+                return TaskCache.CompletedTask;
             }
         }
 
         private class SuccessModelBinder : IModelBinder
         {
-            public Task<ModelBindingResult> BindModelAsync(ModelBindingContext bindingContext)
+            public Task BindModelAsync(ModelBindingContext bindingContext)
             {
+                if (bindingContext == null)
+                {
+                    throw new ArgumentNullException(nameof(bindingContext));
+                }
+                Debug.Assert(bindingContext.Result == null);
+
                 var model = "Success";
                 bindingContext.ModelState.SetModelValue(
                     bindingContext.ModelName,
                     new string[] { model },
                     model);
 
-                return ModelBindingResult.SuccessAsync(bindingContext.ModelName, model);
+                bindingContext.Result =ModelBindingResult.Success(bindingContext.ModelName, model);
+                return TaskCache.CompletedTask;
             }
         }
 
         private class NullModelBinder : IModelBinder
         {
-            public Task<ModelBindingResult> BindModelAsync(ModelBindingContext bindingContext)
+            public Task BindModelAsync(ModelBindingContext bindingContext)
             {
-                return ModelBindingResult.SuccessAsync(bindingContext.ModelName, model: null);
+                if (bindingContext == null)
+                {
+                    throw new ArgumentNullException(nameof(bindingContext));
+                }
+                Debug.Assert(bindingContext.Result == null);
+
+                bindingContext.Result =  ModelBindingResult.Success(bindingContext.ModelName, model: null);
+                return TaskCache.CompletedTask;
             }
         }
 
         private class NullModelNotSetModelBinder : IModelBinder
         {
-            public Task<ModelBindingResult> BindModelAsync(ModelBindingContext bindingContext)
+            public Task BindModelAsync(ModelBindingContext bindingContext)
             {
-                return ModelBindingResult.FailedAsync(bindingContext.ModelName);
+                if (bindingContext == null)
+                {
+                    throw new ArgumentNullException(nameof(bindingContext));
+                }
+                Debug.Assert(bindingContext.Result == null);
+
+                bindingContext.Result = ModelBindingResult.Failed(bindingContext.ModelName);
+                return TaskCache.CompletedTask;
             }
         }
 
         private class NullResultModelBinder : IModelBinder
         {
-            public Task<ModelBindingResult> BindModelAsync(ModelBindingContext bindingContext)
+            public Task BindModelAsync(ModelBindingContext bindingContext)
             {
-                return ModelBindingResult.NoResultAsync;
+                if (bindingContext == null)
+                {
+                    throw new ArgumentNullException(nameof(bindingContext));
+                }
+                Debug.Assert(bindingContext.Result == null);
+
+                return TaskCache.CompletedTask;
             }
         }
     }

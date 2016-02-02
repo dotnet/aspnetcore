@@ -5,6 +5,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Core;
+using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
@@ -21,23 +22,28 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         private readonly ConcurrentDictionary<Type, ObjectFactory> _typeActivatorCache =
                new ConcurrentDictionary<Type, ObjectFactory>();
 
-        public Task<ModelBindingResult> BindModelAsync(ModelBindingContext bindingContext)
+        public Task BindModelAsync(ModelBindingContext bindingContext)
         {
+            if (bindingContext == null)
+            {
+                throw new ArgumentNullException(nameof(bindingContext));
+            }
+
             // This method is optimized to use cached tasks when possible and avoid allocating
             // using Task.FromResult. If you need to make changes of this nature, profile
             // allocations afterwards and look for Task<ModelBindingResult>.
 
             if (bindingContext.BinderType == null)
             {
-                // Return NoResult so that we are able to continue with the default set of model binders,
+                // Return null so that we are able to continue with the default set of model binders,
                 // if there is no specific model binder provided.
-                return ModelBindingResult.NoResultAsync;
+                return TaskCache.CompletedTask;
             }
 
             return BindModelCoreAsync(bindingContext);
         }
 
-        private async Task<ModelBindingResult> BindModelCoreAsync(ModelBindingContext bindingContext)
+        private async Task BindModelCoreAsync(ModelBindingContext bindingContext)
         {
             var requestServices = bindingContext.OperationBindingContext.HttpContext.RequestServices;
             var createFactory = _typeActivatorCache.GetOrAdd(bindingContext.BinderType, _createFactory);
@@ -52,15 +58,14 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                         typeof(IModelBinder).FullName));
             }
 
-            var result = await modelBinder.BindModelAsync(bindingContext);
-
-            var modelBindingResult = result != ModelBindingResult.NoResult ?
-                result :
-                ModelBindingResult.Failed(bindingContext.ModelName);
+            await modelBinder.BindModelAsync(bindingContext);
 
             // A model binder was specified by metadata and this binder handles all such cases.
             // Always tell the model binding system to skip other model binders i.e. return non-null.
-            return modelBindingResult;
+            if (bindingContext.Result == null)
+            {
+                bindingContext.Result = ModelBindingResult.Failed(bindingContext.ModelName);
+            }
         }
     }
 }

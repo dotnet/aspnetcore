@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
             var binder = new ByteArrayModelBinder();
 
             // Act
-            var binderResult = await binder.BindModelAsync(bindingContext);
+            var binderResult = await binder.BindModelResultAsync(bindingContext);
 
             // Assert
             Assert.NotNull(binderResult);
@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
             var binder = new ByteArrayModelBinder();
 
             // Act
-            var binderResult = await binder.BindModelAsync(bindingContext);
+            var binderResult = await binder.BindModelResultAsync(bindingContext);
 
             // Assert
             Assert.NotNull(binderResult);
@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
             var binder = new ByteArrayModelBinder();
 
             // Act
-            var binderResult = await binder.BindModelAsync(bindingContext);
+            var binderResult = await binder.BindModelResultAsync(bindingContext);
 
             // Assert
             Assert.NotNull(binderResult);
@@ -95,7 +95,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
             var binder = new ByteArrayModelBinder();
 
             // Act
-            var binderResult = await binder.BindModelAsync(bindingContext);
+            var binderResult = await binder.BindModelResultAsync(bindingContext);
 
             // Assert
             Assert.NotNull(binderResult);
@@ -114,16 +114,16 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
             var binder = new ByteArrayModelBinder();
 
             // Act
-            var binderResult = await binder.BindModelAsync(bindingContext);
+            var binderResult = await binder.BindModelResultAsync(bindingContext);
 
             // Assert
-            Assert.Equal(ModelBindingResult.NoResult, binderResult);
+            Assert.Equal(default(ModelBindingResult), binderResult);
         }
 
-        private static ModelBindingContext GetBindingContext(IValueProvider valueProvider, Type modelType)
+        private static DefaultModelBindingContext GetBindingContext(IValueProvider valueProvider, Type modelType)
         {
             var metadataProvider = new EmptyModelMetadataProvider();
-            var bindingContext = new ModelBindingContext
+            var bindingContext = new DefaultModelBindingContext
             {
                 ModelMetadata = metadataProvider.GetMetadataForType(modelType),
                 ModelName = "foo",

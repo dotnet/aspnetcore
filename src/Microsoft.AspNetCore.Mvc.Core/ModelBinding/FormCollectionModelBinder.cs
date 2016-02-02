@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.Extensions.Primitives;
 
@@ -18,7 +19,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
     public class FormCollectionModelBinder : IModelBinder
     {
         /// <inheritdoc />
-        public Task<ModelBindingResult> BindModelAsync(ModelBindingContext bindingContext)
+        public Task BindModelAsync(ModelBindingContext bindingContext)
         {
             if (bindingContext == null)
             {
@@ -31,13 +32,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             if (bindingContext.ModelType != typeof(IFormCollection))
             {
-                return ModelBindingResult.NoResultAsync;
+                return TaskCache.CompletedTask;
             }
 
             return BindModelCoreAsync(bindingContext);
         }
 
-        private async Task<ModelBindingResult> BindModelCoreAsync(ModelBindingContext bindingContext)
+        private async Task BindModelCoreAsync(ModelBindingContext bindingContext)
         {
             object model;
             var request = bindingContext.OperationBindingContext.HttpContext.Request;
@@ -52,7 +53,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             }
 
             bindingContext.ValidationState.Add(model, new ValidationStateEntry() { SuppressValidation = true });
-            return ModelBindingResult.Success(bindingContext.ModelName, model);
+            bindingContext.Result = ModelBindingResult.Success(bindingContext.ModelName, model);
         }
 
         private class EmptyFormCollection : IFormCollection

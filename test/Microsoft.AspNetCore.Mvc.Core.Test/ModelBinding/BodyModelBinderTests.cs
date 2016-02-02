@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var binder = new BodyModelBinder(new TestHttpRequestStreamReaderFactory());
 
             // Act
-            var binderResult = await binder.BindModelAsync(bindingContext);
+            var binderResult = await binder.BindModelResultAsync(bindingContext);
 
             // Assert
             mockInputFormatter.Verify(v => v.CanRead(It.IsAny<InputFormatterContext>()), Times.Once);
@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var binder = bindingContext.OperationBindingContext.ModelBinder;
 
             // Act
-            var binderResult = await binder.BindModelAsync(bindingContext);
+            var binderResult = await binder.BindModelResultAsync(bindingContext);
 
             // Assert
 
@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var binder = bindingContext.OperationBindingContext.ModelBinder;
 
             // Act
-            var binderResult = await binder.BindModelAsync(bindingContext);
+            var binderResult = await binder.BindModelResultAsync(bindingContext);
 
             // Assert
 
@@ -118,7 +118,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var binder = bindingContext.OperationBindingContext.ModelBinder;
 
             // Act
-            var binderResult = await binder.BindModelAsync(bindingContext);
+            var binderResult = await binder.BindModelResultAsync(bindingContext);
 
             // Assert
             Assert.NotNull(binderResult);
@@ -138,10 +138,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var binder = bindingContext.OperationBindingContext.ModelBinder;
 
             // Act
-            var binderResult = await binder.BindModelAsync(bindingContext);
+            var binderResult = await binder.BindModelResultAsync(bindingContext);
 
             // Assert
-            Assert.Equal(ModelBindingResult.NoResult, binderResult);
+            Assert.Equal(default(ModelBindingResult), binderResult);
         }
 
         [Fact]
@@ -157,10 +157,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var binder = bindingContext.OperationBindingContext.ModelBinder;
 
             // Act
-            var binderResult = await binder.BindModelAsync(bindingContext);
+            var binderResult = await binder.BindModelResultAsync(bindingContext);
 
             // Assert
-            Assert.Equal(ModelBindingResult.NoResult, binderResult);
+            Assert.Equal(default(ModelBindingResult), binderResult);
         }
 
         [Fact]
@@ -183,7 +183,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var binder = bindingContext.OperationBindingContext.ModelBinder;
 
             // Act
-            var binderResult = await binder.BindModelAsync(bindingContext);
+            var binderResult = await binder.BindModelResultAsync(bindingContext);
 
             // Assert
 
@@ -218,7 +218,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var binder = bindingContext.OperationBindingContext.ModelBinder;
 
             // Act
-            var binderResult = await binder.BindModelAsync(bindingContext);
+            var binderResult = await binder.BindModelResultAsync(bindingContext);
 
             // Assert
 
@@ -253,14 +253,14 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var binder = bindingContext.OperationBindingContext.ModelBinder;
 
             // Act
-            var binderResult = await binder.BindModelAsync(bindingContext);
+            var binderResult = await binder.BindModelResultAsync(bindingContext);
 
             // Assert
             Assert.True(binderResult.IsModelSet);
             Assert.Same(canReadFormatter1, binderResult.Model);
         }
 
-        private static ModelBindingContext GetBindingContext(
+        private static DefaultModelBindingContext GetBindingContext(
             Type modelType,
             IEnumerable<IInputFormatter> inputFormatters = null,
             HttpContext httpContext = null,
@@ -292,7 +292,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 MetadataProvider = metadataProvider,
             };
 
-            var bindingContext = new ModelBindingContext
+            var bindingContext = new DefaultModelBindingContext
             {
                 FieldName = "someField",
                 IsTopLevelObject = true,

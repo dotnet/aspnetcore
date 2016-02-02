@@ -9,6 +9,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Internal;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Test;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.Testing;
 using Moq;
@@ -33,7 +34,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var metadataProvider = new TestModelMetadataProvider();
             var bindingContext = new MutableObjectBinderContext
             {
-                ModelBindingContext = new ModelBindingContext
+                ModelBindingContext = new DefaultModelBindingContext
                 {
                     IsTopLevelObject = isTopLevelObject,
 
@@ -70,7 +71,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 .First(metadata => metadata.PropertyName == nameof(Document.SubDocument));
             var bindingContext = new MutableObjectBinderContext
             {
-                ModelBindingContext = new ModelBindingContext
+                ModelBindingContext = new DefaultModelBindingContext
                 {
                     ModelMetadata = modelMetadata,
                     OperationBindingContext = new OperationBindingContext
@@ -97,7 +98,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         {
             var bindingContext = new MutableObjectBinderContext
             {
-                ModelBindingContext = new ModelBindingContext
+                ModelBindingContext = new DefaultModelBindingContext
                 {
                     // Here the metadata represents a top level object.
                     IsTopLevelObject = true,
@@ -130,7 +131,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             var bindingContext = new MutableObjectBinderContext
             {
-                ModelBindingContext = new ModelBindingContext
+                ModelBindingContext = new DefaultModelBindingContext
                 {
                     ModelMetadata = GetMetadataForType(typeof(BinderMetadataPocoType)),
                     ValueProvider = mockValueProvider.Object,
@@ -174,7 +175,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var modelMetadata = typeMetadata.Properties[nameof(SimpleContainer.Simple)];
             var bindingContext = new MutableObjectBinderContext
             {
-                ModelBindingContext = new ModelBindingContext
+                ModelBindingContext = new DefaultModelBindingContext
                 {
                     ModelMetadata = modelMetadata,
                     ModelName = "SimpleContainer.Simple",
@@ -206,7 +207,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             // Arrange
             var bindingContext = new MutableObjectBinderContext
             {
-                ModelBindingContext = new ModelBindingContext
+                ModelBindingContext = new DefaultModelBindingContext
                 {
                     IsTopLevelObject = false,
 
@@ -231,7 +232,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             // Arrange
             var bindingContext = new MutableObjectBinderContext
             {
-                ModelBindingContext = new ModelBindingContext
+                ModelBindingContext = new DefaultModelBindingContext
                 {
                     IsTopLevelObject = true,
                     ModelMetadata = GetMetadataForType(typeof(PersonWithNoProperties))
@@ -266,7 +267,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             var bindingContext = new MutableObjectBinderContext
             {
-                ModelBindingContext = new ModelBindingContext
+                ModelBindingContext = new DefaultModelBindingContext
                 {
                     ModelMetadata = GetMetadataForType(modelType),
                     ValueProvider = mockValueProvider.Object,
@@ -325,7 +326,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var modelMetadata = GetMetadataForType(modelType);
             var bindingContext = new MutableObjectBinderContext
             {
-                ModelBindingContext = new ModelBindingContext
+                ModelBindingContext = new DefaultModelBindingContext
                 {
                     ModelMetadata = modelMetadata,
                     ValueProvider = mockValueProvider.Object,
@@ -374,7 +375,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             var bindingContext = new MutableObjectBinderContext
             {
-                ModelBindingContext = new ModelBindingContext
+                ModelBindingContext = new DefaultModelBindingContext
                 {
                     ModelMetadata = GetMetadataForType(modelType),
                     ValueProvider = mockValueProvider.Object,
@@ -411,19 +412,16 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 .Returns(true);
 
             // Mock binder fails to bind all properties.
-            var mockBinder = new Mock<IModelBinder>();
-            mockBinder
-                .Setup(o => o.BindModelAsync(It.IsAny<ModelBindingContext>()))
-                .Returns(ModelBindingResult.NoResultAsync);
+            var mockBinder = new StubModelBinder();
 
-            var bindingContext = new ModelBindingContext
+            var bindingContext = new DefaultModelBindingContext
             {
                 ModelMetadata = GetMetadataForType(typeof(Person)),
                 ModelName = "someName",
                 ValueProvider = mockValueProvider.Object,
                 OperationBindingContext = new OperationBindingContext
                 {
-                    ModelBinder = mockBinder.Object,
+                    ModelBinder = mockBinder,
                     MetadataProvider = TestModelMetadataProvider.CreateDefaultProvider(),
                     ValidatorProvider = Mock.Of<IModelValidatorProvider>()
                 },
@@ -442,7 +440,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 .Returns(new ModelMetadata[0]);
 
             // Act
-            var retValue = await testableBinder.Object.BindModelAsync(bindingContext);
+            var retValue = await testableBinder.Object.BindModelResultAsync(bindingContext);
 
             // Assert
             Assert.NotNull(retValue);
@@ -462,12 +460,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 .Returns(false);
 
             // Mock binder fails to bind all properties.
-            var mockBinder = new Mock<IModelBinder>();
-            mockBinder
-                .Setup(o => o.BindModelAsync(It.IsAny<ModelBindingContext>()))
-                .Returns(ModelBindingResult.NoResultAsync);
+            var mockBinder = new StubModelBinder();
 
-            var bindingContext = new ModelBindingContext
+            var bindingContext = new DefaultModelBindingContext
             {
                 IsTopLevelObject = true,
                 ModelMetadata = GetMetadataForType(typeof(Person)),
@@ -475,7 +470,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 ValueProvider = mockValueProvider.Object,
                 OperationBindingContext = new OperationBindingContext
                 {
-                    ModelBinder = mockBinder.Object,
+                    ModelBinder = mockBinder,
                     MetadataProvider = TestModelMetadataProvider.CreateDefaultProvider(),
                     ValidatorProvider = Mock.Of<IModelValidatorProvider>()
                 },
@@ -495,7 +490,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 .Returns(new ModelMetadata[0]);
 
             // Act
-            var retValue = await testableBinder.Object.BindModelAsync(bindingContext);
+            var retValue = await testableBinder.Object.BindModelResultAsync(bindingContext);
 
             // Assert
             Assert.NotNull(retValue);
@@ -548,7 +543,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public void CreateModel_InstantiatesInstanceOfMetadataType()
         {
             // Arrange
-            var bindingContext = new ModelBindingContext
+            var bindingContext = new DefaultModelBindingContext
             {
                 ModelMetadata = GetMetadataForType(typeof(Person))
             };
@@ -566,7 +561,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public void GetModel_ModelIsNotNull_DoesNothing()
         {
             // Arrange
-            var bindingContext = new ModelBindingContext
+            var bindingContext = new DefaultModelBindingContext
             {
                 Model = new Person(),
                 ModelMetadata = GetMetadataForType(typeof(Person))
@@ -588,7 +583,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public void GetModel_ModelIsNull_CallsCreateModel()
         {
             // Arrange
-            var bindingContext = new ModelBindingContext
+            var bindingContext = new DefaultModelBindingContext
             {
                 ModelMetadata = GetMetadataForType(typeof(Person))
             };
@@ -614,7 +609,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         {
             // Arrange
             var expectedPropertyNames = new[] { "FirstName", "LastName" };
-            var bindingContext = new ModelBindingContext
+            var bindingContext = new DefaultModelBindingContext
             {
                 ModelMetadata = GetMetadataForType(typeof(PersonWithBindExclusion)),
                 OperationBindingContext = new OperationBindingContext
@@ -650,7 +645,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 nameof(Person.PropertyWithInitializedValue),
                 nameof(Person.PropertyWithInitializedValueAndDefault),
             };
-            var bindingContext = new ModelBindingContext
+            var bindingContext = new DefaultModelBindingContext
             {
                 ModelMetadata = GetMetadataForType(typeof(Person)),
                 OperationBindingContext = new OperationBindingContext
@@ -675,7 +670,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         {
             // Arrange
             var expectedPropertyNames = new[] { "IncludedByDefault1", "IncludedByDefault2" };
-            var bindingContext = new ModelBindingContext
+            var bindingContext = new DefaultModelBindingContext
             {
                 ModelMetadata = GetMetadataForType(typeof(TypeWithExcludedPropertiesUsingBindAttribute)),
                 OperationBindingContext = new OperationBindingContext
@@ -707,7 +702,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         {
             // Arrange
             var expectedPropertyNames = new[] { "IncludedExplicitly1", "IncludedExplicitly2" };
-            var bindingContext = new ModelBindingContext
+            var bindingContext = new DefaultModelBindingContext
             {
                 ModelMetadata = GetMetadataForType(typeof(TypeWithIncludedPropertiesUsingBindAttribute)),
                 OperationBindingContext = new OperationBindingContext
@@ -731,7 +726,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public void GetRequiredPropertiesCollection_MixedAttributes()
         {
             // Arrange
-            var bindingContext = new ModelBindingContext
+            var bindingContext = new DefaultModelBindingContext
             {
                 ModelMetadata = GetMetadataForType(typeof(ModelWithMixedBindingBehaviors)),
                 OperationBindingContext = new OperationBindingContext
@@ -752,7 +747,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public void GetPropertyValidationInfo_WithIndexerProperties_Succeeds()
         {
             // Arrange
-            var bindingContext = new ModelBindingContext
+            var bindingContext = new DefaultModelBindingContext
             {
                 ModelMetadata = GetMetadataForType(typeof(PersonCollection)),
                 OperationBindingContext = new OperationBindingContext
@@ -781,7 +776,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             };
 
             var containerMetadata = GetMetadataForType(model.GetType());
-            var bindingContext = new ModelBindingContext
+            var bindingContext = new DefaultModelBindingContext
             {
                 Model = model,
                 ModelMetadata = containerMetadata,
@@ -831,7 +826,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             };
 
             var containerMetadata = GetMetadataForType(model.GetType());
-            var bindingContext = new ModelBindingContext
+            var bindingContext = new DefaultModelBindingContext
             {
                 Model = model,
                 ModelMetadata = containerMetadata,
@@ -881,7 +876,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             };
 
             var containerMetadata = GetMetadataForType(model.GetType());
-            var bindingContext = new ModelBindingContext()
+            var bindingContext = new DefaultModelBindingContext()
             {
                 Model = model,
                 ModelMetadata = containerMetadata,
@@ -1566,9 +1561,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                          bindingContext.ModelState["foo.NameNoAttribute"].Errors[0].Exception.Message);
         }
 
-        private static ModelBindingContext CreateContext(ModelMetadata metadata, object model)
+        private static DefaultModelBindingContext CreateContext(ModelMetadata metadata, object model)
         {
-            return new ModelBindingContext
+            return new DefaultModelBindingContext
             {
                 Model = model,
                 ModelMetadata = metadata,

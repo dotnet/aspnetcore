@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Mvc.DataAnnotations.Internal;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Test;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.Routing;
 using Moq;
@@ -22,13 +23,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
     public class ModelBindingHelperTest
     {
-        public static TheoryData<ModelBindingResult> UnsuccessfulModelBindingData
+        public static TheoryData<ModelBindingResult?> UnsuccessfulModelBindingData
         {
             get
             {
-                return new TheoryData<ModelBindingResult>
+                return new TheoryData<ModelBindingResult?>
                 {
-                    ModelBindingResult.NoResult,
+                    null,
                     ModelBindingResult.Failed("someKey"),
                 };
             }
@@ -36,14 +37,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
         [Theory]
         [MemberData(nameof(UnsuccessfulModelBindingData))]
-        public async Task TryUpdateModel_ReturnsFalse_IfBinderIsUnsuccessful(ModelBindingResult binderResult)
+        public async Task TryUpdateModel_ReturnsFalse_IfBinderIsUnsuccessful(ModelBindingResult? binderResult)
         {
             // Arrange
             var metadataProvider = new EmptyModelMetadataProvider();
-            var binder = new Mock<IModelBinder>();
-            binder
-                .Setup(b => b.BindModelAsync(It.IsAny<ModelBindingContext>()))
-                .Returns(Task.FromResult<ModelBindingResult>(binderResult));
+            var binder = new StubModelBinder(binderResult);
             var model = new MyModel();
 
             // Act
@@ -52,7 +50,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 string.Empty,
                 new ActionContext() { HttpContext = new DefaultHttpContext() },
                 metadataProvider,
-                GetCompositeBinder(binder.Object),
+                GetCompositeBinder(binder),
                 Mock.Of<IValueProvider>(),
                 new List<IInputFormatter>(),
                 new Mock<IObjectModelValidator>(MockBehavior.Strict).Object,
@@ -153,14 +151,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         [Theory]
         [MemberData(nameof(UnsuccessfulModelBindingData))]
         public async Task TryUpdateModel_UsingIncludePredicateOverload_ReturnsFalse_IfBinderIsUnsuccessful(
-            ModelBindingResult binderResult)
+            ModelBindingResult? binderResult)
         {
             // Arrange
             var metadataProvider = new EmptyModelMetadataProvider();
-            var binder = new Mock<IModelBinder>();
-            binder
-                .Setup(b => b.BindModelAsync(It.IsAny<ModelBindingContext>()))
-                .Returns(Task.FromResult<ModelBindingResult>(binderResult));
+            var binder = new StubModelBinder(binderResult);
             var model = new MyModel();
             Func<ModelBindingContext, string, bool> includePredicate = (context, propertyName) => true;
 
@@ -170,7 +165,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 string.Empty,
                 new ActionContext() { HttpContext = new DefaultHttpContext() },
                 metadataProvider,
-                GetCompositeBinder(binder.Object),
+                GetCompositeBinder(binder),
                 Mock.Of<IValueProvider>(),
                 new List<IInputFormatter>(),
                 new Mock<IObjectModelValidator>(MockBehavior.Strict).Object,
@@ -243,14 +238,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         [Theory]
         [MemberData(nameof(UnsuccessfulModelBindingData))]
         public async Task TryUpdateModel_UsingIncludeExpressionOverload_ReturnsFalse_IfBinderIsUnsuccessful(
-            ModelBindingResult binderResult)
+            ModelBindingResult? binderResult)
         {
             // Arrange
             var metadataProvider = new EmptyModelMetadataProvider();
-            var binder = new Mock<IModelBinder>();
-            binder
-                .Setup(b => b.BindModelAsync(It.IsAny<ModelBindingContext>()))
-                .Returns(Task.FromResult<ModelBindingResult>(binderResult));
+            var binder = new StubModelBinder(binderResult);
             var model = new MyModel();
 
             // Act
@@ -259,7 +251,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 string.Empty,
                 new ActionContext() { HttpContext = new DefaultHttpContext() },
                 metadataProvider,
-                GetCompositeBinder(binder.Object),
+                GetCompositeBinder(binder),
                 Mock.Of<IValueProvider>(),
                 new List<IInputFormatter>(),
                 new Mock<IObjectModelValidator>(MockBehavior.Strict).Object,
@@ -500,14 +492,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         [Theory]
         [MemberData(nameof(UnsuccessfulModelBindingData))]
         public async Task TryUpdateModelNonGeneric_PredicateOverload_ReturnsFalse_IfBinderIsUnsuccessful(
-            ModelBindingResult binderResult)
+            ModelBindingResult? binderResult)
         {
             // Arrange
             var metadataProvider = new EmptyModelMetadataProvider();
-            var binder = new Mock<IModelBinder>();
-            binder
-                .Setup(b => b.BindModelAsync(It.IsAny<ModelBindingContext>()))
-                .Returns(Task.FromResult<ModelBindingResult>(binderResult));
+            var binder = new StubModelBinder(binderResult);
             var model = new MyModel();
             Func<ModelBindingContext, string, bool> includePredicate = (context, propertyName) => true;
 
@@ -518,7 +507,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 prefix: "",
                 actionContext: new ActionContext() { HttpContext = new DefaultHttpContext() },
                 metadataProvider: metadataProvider,
-                modelBinder: GetCompositeBinder(binder.Object),
+                modelBinder: GetCompositeBinder(binder),
                 valueProvider: Mock.Of<IValueProvider>(),
                 inputFormatters: new List<IInputFormatter>(),
                 objectModelValidator: new Mock<IObjectModelValidator>(MockBehavior.Strict).Object,
@@ -593,14 +582,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         [Theory]
         [MemberData(nameof(UnsuccessfulModelBindingData))]
         public async Task TryUpdateModelNonGeneric_ModelTypeOverload_ReturnsFalse_IfBinderIsUnsuccessful(
-            ModelBindingResult binderResult)
+            ModelBindingResult? binderResult)
         {
             // Arrange
             var metadataProvider = new EmptyModelMetadataProvider();
-            var binder = new Mock<IModelBinder>();
-            binder
-                .Setup(b => b.BindModelAsync(It.IsAny<ModelBindingContext>()))
-                .Returns(Task.FromResult<ModelBindingResult>(binderResult));
+            var binder = new StubModelBinder(binderResult);
+
             var model = new MyModel();
 
             // Act
@@ -669,9 +656,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             // Arrange
             var metadataProvider = new EmptyModelMetadataProvider();
 
-            var binder = new Mock<IModelBinder>();
-            binder.Setup(b => b.BindModelAsync(It.IsAny<ModelBindingContext>()))
-                  .Returns(ModelBindingResult.NoResultAsync);
+            var binder = new StubModelBinder();
             var model = new MyModel();
             Func<ModelBindingContext, string, bool> includePredicate =
                (context, propertyName) => true;

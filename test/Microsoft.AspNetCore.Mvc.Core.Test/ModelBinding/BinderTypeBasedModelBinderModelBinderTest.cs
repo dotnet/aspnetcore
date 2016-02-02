@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
     public class BinderTypeBasedModelBinderModelBinderTest
     {
         [Fact]
-        public async Task BindModel_ReturnsNoResult_IfNoBinderTypeIsSet()
+        public async Task BindModel_ReturnsNothing_IfNoBinderTypeIsSet()
         {
             // Arrange
             var bindingContext = GetBindingContext(typeof(Person));
@@ -22,10 +22,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
             var binder = new BinderTypeBasedModelBinder();
 
             // Act
-            var binderResult = await binder.BindModelAsync(bindingContext);
+            var binderResult = await binder.BindModelResultAsync(bindingContext);
 
             // Assert
-            Assert.Equal(ModelBindingResult.NoResult, binderResult);
+            Assert.Equal(default(ModelBindingResult), binderResult);
         }
 
         [Fact]
@@ -37,10 +37,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
             var binder = new BinderTypeBasedModelBinder();
 
             // Act
-            var binderResult = await binder.BindModelAsync(bindingContext);
+            var binderResult = await binder.BindModelResultAsync(bindingContext);
 
             // Assert
-            Assert.NotEqual(ModelBindingResult.NoResult, binderResult);
+            Assert.NotEqual(default(ModelBindingResult), binderResult);
             Assert.False(binderResult.IsModelSet);
         }
 
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
             var binder = new BinderTypeBasedModelBinder();
 
             // Act
-            var binderResult = await binder.BindModelAsync(bindingContext);
+            var binderResult = await binder.BindModelResultAsync(bindingContext);
 
             // Assert
             var p = (Person)binderResult.Model;
@@ -80,13 +80,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
 
             // Act
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(
-                () => binder.BindModelAsync(bindingContext));
+                () => binder.BindModelResultAsync(bindingContext));
 
             // Assert
             Assert.Equal(expected, ex.Message);
         }
 
-        private static ModelBindingContext GetBindingContext(Type modelType, Type binderType = null)
+        private static DefaultModelBindingContext GetBindingContext(Type modelType, Type binderType = null)
         {
             var metadataProvider = new TestModelMetadataProvider();
             metadataProvider.ForType(modelType).BindingDetails(bd => bd.BinderType = binderType);
@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
                 ValidatorProvider = Mock.Of<IModelValidatorProvider>(),
             };
 
-            var bindingContext = new ModelBindingContext
+            var bindingContext = new DefaultModelBindingContext
             {
                 ModelMetadata = metadataProvider.GetMetadataForType(modelType),
                 ModelName = "someName",
@@ -123,9 +123,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
 
         private class NullModelBinder : IModelBinder
         {
-            public Task<ModelBindingResult> BindModelAsync(ModelBindingContext bindingContext)
+            public Task BindModelAsync(ModelBindingContext bindingContext)
             {
-                return ModelBindingResult.NoResultAsync;
+                return Task.FromResult(0);
             }
         }
 
@@ -138,9 +138,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
                 _model = new Person();
             }
 
-            public Task<ModelBindingResult> BindModelAsync(ModelBindingContext bindingContext)
+            public Task BindModelAsync(ModelBindingContext bindingContext)
             {
-                return ModelBindingResult.SuccessAsync(bindingContext.ModelName, _model);
+                bindingContext.Result = ModelBindingResult.Success(bindingContext.ModelName, _model);
+                return Task.FromResult(0);
             }
         }
     }

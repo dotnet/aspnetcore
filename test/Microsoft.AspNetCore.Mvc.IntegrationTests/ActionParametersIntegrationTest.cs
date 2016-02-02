@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var model = new Person3();
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext) ?? default(ModelBindingResult);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelState = operationContext.ActionContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext) ?? default(ModelBindingResult);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -142,7 +142,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelState = operationContext.ActionContext.ModelState;
             var model = new Person4();
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext) ?? default(ModelBindingResult);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -188,7 +188,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 
             var modelState = operationContext.ActionContext.ModelState;
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext) ?? default(ModelBindingResult);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -229,7 +229,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelState = operationContext.ActionContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext) ?? default(ModelBindingResult);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -273,7 +273,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelState = operationContext.ActionContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext) ?? default(ModelBindingResult);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -320,7 +320,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelState = operationContext.ActionContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext) ?? default(ModelBindingResult);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);
@@ -365,7 +365,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelState = operationContext.ActionContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext) ?? default(ModelBindingResult);
 
             // Assert
             Assert.True(modelBindingResult.IsModelSet);

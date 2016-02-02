@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             var type = typeof(User);
 
             var provider = CreateProvider();
-            var context = new ModelBindingContext();
+            var context = new DefaultModelBindingContext();
 
             var expected = new[] { "IsAdmin", "UserName" };
 

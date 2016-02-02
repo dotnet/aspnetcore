@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             // Arrange
             var bind = new BindAttribute(new string[] { "UserName", "FirstName", "LastName, MiddleName,  ,foo,bar " });
 
-            var context = new ModelBindingContext();
+            var context = new DefaultModelBindingContext();
 
             // Act
             var predicate = bind.PropertyFilter;
@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             // Arrange
             var bind = new BindAttribute(typeof(TestProvider));
 
-            var context = new ModelBindingContext();
+            var context = new DefaultModelBindingContext();
             context.OperationBindingContext = new OperationBindingContext()
             {
                 ActionContext = new ActionContext()
@@ -97,7 +97,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             // Arrange
             var bind = new BindAttribute(typeof(TestProvider));
 
-            var context = new ModelBindingContext();
+            var context = new DefaultModelBindingContext();
             context.OperationBindingContext = new OperationBindingContext()
             {
                 ActionContext = new ActionContext()

@@ -8,14 +8,20 @@ using System.Diagnostics;
 using System.Reflection;
 #endif
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
     public class GenericModelBinder : IModelBinder
     {
-        public Task<ModelBindingResult> BindModelAsync(ModelBindingContext bindingContext)
+        public Task BindModelAsync(ModelBindingContext bindingContext)
         {
+            if (bindingContext == null)
+            {
+                throw new ArgumentNullException(nameof(bindingContext));
+            }
+
             // This method is optimized to use cached tasks when possible and avoid allocating
             // using Task.FromResult. If you need to make changes of this nature, profile
             // allocations afterwards and look for Task<ModelBindingResult>.
@@ -23,7 +29,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var binderType = ResolveBinderType(bindingContext);
             if (binderType == null)
             {
-                return ModelBindingResult.NoResultAsync;
+                return TaskCache.CompletedTask;
             }
 
             var binder = (IModelBinder)Activator.CreateInstance(binderType);
@@ -34,24 +40,22 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 !collectionBinder.CanCreateInstance(bindingContext.ModelType))
             {
                 // Able to resolve a binder type but need a new model instance and that binder cannot create it.
-                return ModelBindingResult.NoResultAsync;
+                return TaskCache.CompletedTask;
             }
 
             return BindModelCoreAsync(bindingContext, binder);
         }
 
-        private async Task<ModelBindingResult> BindModelCoreAsync(ModelBindingContext bindingContext, IModelBinder binder)
+        private async Task BindModelCoreAsync(ModelBindingContext bindingContext, IModelBinder binder)
         {
             Debug.Assert(binder != null);
 
-            var result = await binder.BindModelAsync(bindingContext);
-            var modelBindingResult = result != ModelBindingResult.NoResult ?
-                result :
-                ModelBindingResult.Failed(bindingContext.ModelName);
-
-            // Were able to resolve a binder type.
-            // Always tell the model binding system to skip other model binders.
-            return modelBindingResult;
+            await binder.BindModelAsync(bindingContext);
+            if (bindingContext.Result == null)
+            {
+                // Always tell the model binding system to skip other model binders.
+                bindingContext.Result = ModelBindingResult.Failed(bindingContext.ModelName);
+            }
         }
 
         private static Type ResolveBinderType(ModelBindingContext context)

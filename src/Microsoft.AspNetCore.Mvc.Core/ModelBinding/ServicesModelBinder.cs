@@ -1,7 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -14,8 +17,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
     public class ServicesModelBinder : IModelBinder
     {
         /// <inheritdoc />
-        public Task<ModelBindingResult> BindModelAsync(ModelBindingContext bindingContext)
+        public Task BindModelAsync(ModelBindingContext bindingContext)
         {
+            if (bindingContext == null)
+            {
+                throw new ArgumentNullException(nameof(bindingContext));
+            }
+
             // This method is optimized to use cached tasks when possible and avoid allocating
             // using Task.FromResult. If you need to make changes of this nature, profile
             // allocations afterwards and look for Task<ModelBindingResult>.
@@ -26,7 +34,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             {
                 // Services are opt-in. This model either didn't specify [FromService] or specified something
                 // incompatible so let other binders run.
-                return ModelBindingResult.NoResultAsync;
+                return TaskCache.CompletedTask;
             }
 
             var requestServices = bindingContext.OperationBindingContext.HttpContext.RequestServices;
@@ -34,7 +42,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             bindingContext.ValidationState.Add(model, new ValidationStateEntry() { SuppressValidation = true });
 
-            return ModelBindingResult.SuccessAsync(bindingContext.ModelName, model);
+            bindingContext.Result = ModelBindingResult.Success(bindingContext.ModelName, model);
+            return TaskCache.CompletedTask;
         }
     }
 }

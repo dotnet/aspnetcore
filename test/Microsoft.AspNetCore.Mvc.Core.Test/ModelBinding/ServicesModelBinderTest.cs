@@ -22,10 +22,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var modelBindingContext = GetBindingContext(type);
 
             // Act
-            var result = await binder.BindModelAsync(modelBindingContext);
+            var result = await binder.BindModelResultAsync(modelBindingContext);
 
             // Assert
-            Assert.NotEqual(ModelBindingResult.NoResult, result);
+            Assert.NotEqual(default(ModelBindingResult), result);
             Assert.True(result.IsModelSet);
             Assert.NotNull(result.Model);
             Assert.Equal("modelName", result.Key);
@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         }
 
         [Fact]
-        public async Task ServiceModelBinder_ReturnsNoResult_ForNullBindingSource()
+        public async Task ServiceModelBinder_ReturnsNothing_ForNullBindingSource()
         {
             // Arrange
             var type = typeof(IService);
@@ -47,14 +47,14 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             modelBindingContext.BindingSource = null;
 
             // Act
-            var result = await binder.BindModelAsync(modelBindingContext);
+            var result = await binder.BindModelResultAsync(modelBindingContext);
 
             // Assert
-            Assert.Equal(ModelBindingResult.NoResult, result);
+            Assert.Equal(default(ModelBindingResult), result);
         }
 
         [Fact]
-        public async Task ServiceModelBinder_ReturnsNoResult_ForNonServiceBindingSource()
+        public async Task ServiceModelBinder_ReturnsNothing_ForNonServiceBindingSource()
         {
             // Arrange
             var type = typeof(IService);
@@ -64,13 +64,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             modelBindingContext.BindingSource = BindingSource.Body;
 
             // Act
-            var result = await binder.BindModelAsync(modelBindingContext);
+            var result = await binder.BindModelResultAsync(modelBindingContext);
 
             // Assert
-            Assert.Equal(ModelBindingResult.NoResult, result);
+            Assert.Equal(default(ModelBindingResult), result);
         }
 
-        private static ModelBindingContext GetBindingContext(Type modelType)
+        private static DefaultModelBindingContext GetBindingContext(Type modelType)
         {
             var metadataProvider = new TestModelMetadataProvider();
             metadataProvider.ForType(modelType).BindingDetails(d => d.BindingSource = BindingSource.Services);
@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var services = new ServiceCollection();
             services.AddSingleton<IService>(new Service());
 
-            var bindingContext = new ModelBindingContext
+            var bindingContext = new DefaultModelBindingContext
             {
                 ModelMetadata = modelMetadata,
                 ModelName = "modelName",

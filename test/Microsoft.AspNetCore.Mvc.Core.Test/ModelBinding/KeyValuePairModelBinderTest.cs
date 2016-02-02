@@ -26,10 +26,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
             var binder = new KeyValuePairModelBinder<int, string>();
 
             // Act
-            var result = await binder.BindModelAsync(bindingContext);
+            var result = await binder.BindModelResultAsync(bindingContext);
 
             // Assert
-            Assert.NotEqual(ModelBindingResult.NoResult, result);
+            Assert.NotEqual(default(ModelBindingResult), result);
             Assert.Null(result.Model);
             Assert.False(bindingContext.ModelState.IsValid);
             Assert.Equal("someName", bindingContext.ModelName);
@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
             var binder = new KeyValuePairModelBinder<int, string>();
 
             // Act
-            var result = await binder.BindModelAsync(bindingContext);
+            var result = await binder.BindModelResultAsync(bindingContext);
 
             // Assert
             Assert.Null(result.Model);
@@ -68,18 +68,16 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
 
             // Create int binder to create the value but not the key.
             var bindingContext = GetBindingContext(valueProvider);
-            var mockBinder = new Mock<IModelBinder>();
-            mockBinder.Setup(o => o.BindModelAsync(It.IsAny<ModelBindingContext>()))
-                      .Returns(ModelBindingResult.NoResultAsync);
+            var mockBinder = new StubModelBinder();
 
-            bindingContext.OperationBindingContext.ModelBinder = mockBinder.Object;
+            bindingContext.OperationBindingContext.ModelBinder = mockBinder;
             var binder = new KeyValuePairModelBinder<int, string>();
 
             // Act
-            var result = await binder.BindModelAsync(bindingContext);
+            var result = await binder.BindModelResultAsync(bindingContext);
 
             // Assert
-            Assert.Equal(ModelBindingResult.NoResult, result);
+            Assert.Equal(default(ModelBindingResult), result);
             Assert.True(bindingContext.ModelState.IsValid);
             Assert.Equal(0, bindingContext.ModelState.ErrorCount);
         }
@@ -95,10 +93,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
             var binder = new KeyValuePairModelBinder<int, string>();
 
             // Act
-            var result = await binder.BindModelAsync(bindingContext);
+            var result = await binder.BindModelResultAsync(bindingContext);
 
             // Assert
-            Assert.NotEqual(ModelBindingResult.NoResult, result);
+            Assert.NotEqual(default(ModelBindingResult), result);
             Assert.Equal(new KeyValuePair<int, string>(42, "some-value"), result.Model);
         }
 
@@ -111,7 +109,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
             bool isSuccess)
         {
             // Arrange
-            ModelBindingResult innerResult;
+            ModelBindingResult? innerResult;
             if (isSuccess)
             {
                 innerResult = ModelBindingResult.Success("somename.key", model);
@@ -121,23 +119,19 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
                 innerResult = ModelBindingResult.Failed("somename.key");
             }
 
-            var innerBinder = new Mock<IModelBinder>();
-            innerBinder
-                .Setup(o => o.BindModelAsync(It.IsAny<ModelBindingContext>()))
-                .Returns((ModelBindingContext context) =>
-                {
-                    Assert.Equal("someName.key", context.ModelName);
-                    return Task.FromResult(innerResult);
-                });
-            var bindingContext = GetBindingContext(new SimpleValueProvider(), innerBinder.Object);
+            var innerBinder = new StubModelBinder(context =>
+            {
+                Assert.Equal("someName.key", context.ModelName);
+                return innerResult;
+            });
+            var bindingContext = GetBindingContext(new SimpleValueProvider(), innerBinder);
 
             var binder = new KeyValuePairModelBinder<int, string>();
 
             // Act
             var result = await binder.TryBindStrongModel<int>(bindingContext, "key");
-
             // Assert
-            Assert.Equal(innerResult, result);
+            Assert.Equal(innerResult.Value, result);
             Assert.Empty(bindingContext.ModelState);
         }
 
@@ -159,10 +153,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
             context.ValueProvider = new TestValueProvider(new Dictionary<string, object>());
 
             // Act
-            var result = await binder.BindModelAsync(context);
+            var result = await binder.BindModelResultAsync(context);
 
             // Assert
-            Assert.NotEqual(ModelBindingResult.NoResult, result);
+            Assert.NotEqual(default(ModelBindingResult), result);
 
             var model = Assert.IsType<KeyValuePair<string, string>>(result.Model);
             Assert.Equal(default(KeyValuePair<string, string>), model);
@@ -189,15 +183,15 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
             context.ValueProvider = new TestValueProvider(new Dictionary<string, object>());
 
             // Act
-            var result = await binder.BindModelAsync(context);
+            var result = await binder.BindModelResultAsync(context);
 
             // Assert
-            Assert.Equal(ModelBindingResult.NoResult, result);
+            Assert.Equal(default(ModelBindingResult), result);
         }
 
-        private static ModelBindingContext CreateContext()
+        private static DefaultModelBindingContext CreateContext()
         {
-            var modelBindingContext = new ModelBindingContext()
+            var modelBindingContext = new DefaultModelBindingContext()
             {
                 OperationBindingContext = new OperationBindingContext()
                 {
@@ -214,13 +208,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
             return modelBindingContext;
         }
 
-        private static ModelBindingContext GetBindingContext(
+        private static DefaultModelBindingContext GetBindingContext(
             IValueProvider valueProvider,
             IModelBinder innerBinder = null,
             Type keyValuePairType = null)
         {
             var metataProvider = new EmptyModelMetadataProvider();
-            var bindingContext = new ModelBindingContext
+            var bindingContext = new DefaultModelBindingContext
             {
                 ModelMetadata = metataProvider.GetMetadataForType(
                     keyValuePairType ?? typeof(KeyValuePair<int, string>)),
@@ -242,36 +236,29 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
 
         private static IModelBinder CreateIntBinder()
         {
-            var mockIntBinder = new Mock<IModelBinder>();
-            mockIntBinder
-                .Setup(o => o.BindModelAsync(It.IsAny<ModelBindingContext>()))
-                .Returns((ModelBindingContext mbc) =>
+            var mockIntBinder = new StubModelBinder(mbc =>
+            {
+                if (mbc.ModelType == typeof(int))
                 {
-                    if (mbc.ModelType == typeof(int))
-                    {
-                        var model = 42;
-                        return ModelBindingResult.SuccessAsync(mbc.ModelName, model);
-                    }
-                    return ModelBindingResult.NoResultAsync;
-                });
-            return mockIntBinder.Object;
+                    var model = 42;
+                    return ModelBindingResult.Success(mbc.ModelName, model);
+                }
+                return null;
+            });
+            return mockIntBinder;
         }
 
         private static IModelBinder CreateStringBinder()
         {
-            var mockStringBinder = new Mock<IModelBinder>();
-            mockStringBinder
-                .Setup(o => o.BindModelAsync(It.IsAny<ModelBindingContext>()))
-                .Returns((ModelBindingContext mbc) =>
+            return new StubModelBinder(mbc =>
+            {
+                if (mbc.ModelType == typeof(string))
                 {
-                    if (mbc.ModelType == typeof(string))
-                    {
-                        var model = "some-value";
-                        return ModelBindingResult.SuccessAsync(mbc.ModelName, model);
-                    }
-                    return ModelBindingResult.NoResultAsync;
-                });
-            return mockStringBinder.Object;
+                    var model = "some-value";
+                    return ModelBindingResult.Success(mbc.ModelName, model);
+                }
+                return null;
+            });
         }
 
         private class ModelWithKeyValuePairProperty

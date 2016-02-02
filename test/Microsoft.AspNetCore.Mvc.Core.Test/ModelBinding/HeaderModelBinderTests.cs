@@ -24,10 +24,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
             var modelBindingContext = GetBindingContext(type);
 
             // Act
-            var result = await binder.BindModelAsync(modelBindingContext);
+            var result = await binder.BindModelResultAsync(modelBindingContext);
 
             // Assert
-            Assert.NotEqual(ModelBindingResult.NoResult, result);
+            Assert.NotEqual(default(ModelBindingResult), result);
         }
 
         [Fact]
@@ -44,10 +44,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
             modelBindingContext.OperationBindingContext.HttpContext.Request.Headers.Add(header, new[] { headerValue });
 
             // Act
-            var result = await binder.BindModelAsync(modelBindingContext);
+            var result = await binder.BindModelResultAsync(modelBindingContext);
 
             // Assert
-            Assert.NotEqual(ModelBindingResult.NoResult, result);
+            Assert.NotEqual(default(ModelBindingResult), result);
             Assert.Equal(headerValue.Split(','), result.Model);
         }
 
@@ -65,15 +65,15 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
             modelBindingContext.OperationBindingContext.HttpContext.Request.Headers.Add(header, new[] { headerValue });
 
             // Act
-            var result = await binder.BindModelAsync(modelBindingContext);
+            var result = await binder.BindModelResultAsync(modelBindingContext);
 
             // Assert
-            Assert.NotEqual(ModelBindingResult.NoResult, result);
+            Assert.NotEqual(default(ModelBindingResult), result);
             Assert.Equal(headerValue, result.Model);
         }
 
         [Fact]
-        public async Task HeaderBinder_ReturnsNoResult_ForNullBindingSource()
+        public async Task HeaderBinder_ReturnsNothing_ForNullBindingSource()
         {
             // Arrange
             var type = typeof(string);
@@ -88,14 +88,14 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
             modelBindingContext.OperationBindingContext.HttpContext.Request.Headers.Add(header, new[] { headerValue });
 
             // Act
-            var result = await binder.BindModelAsync(modelBindingContext);
+            var result = await binder.BindModelResultAsync(modelBindingContext);
 
             // Assert
-            Assert.Equal(ModelBindingResult.NoResult, result);
+            Assert.Equal(default(ModelBindingResult), result);
         }
 
         [Fact]
-        public async Task HeaderBinder_ReturnsNoResult_ForNonHeaderBindingSource()
+        public async Task HeaderBinder_ReturnsNothing_ForNonHeaderBindingSource()
         {
             // Arrange
             var type = typeof(string);
@@ -110,18 +110,18 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
             modelBindingContext.OperationBindingContext.HttpContext.Request.Headers.Add(header, new[] { headerValue });
 
             // Act
-            var result = await binder.BindModelAsync(modelBindingContext);
+            var result = await binder.BindModelResultAsync(modelBindingContext);
 
             // Assert
-            Assert.Equal(ModelBindingResult.NoResult, result);
+            Assert.Equal(default(ModelBindingResult), result);
         }
 
-        private static ModelBindingContext GetBindingContext(Type modelType)
+        private static DefaultModelBindingContext GetBindingContext(Type modelType)
         {
             var metadataProvider = new TestModelMetadataProvider();
             metadataProvider.ForType(modelType).BindingDetails(d => d.BindingSource = BindingSource.Header);
             var modelMetadata = metadataProvider.GetMetadataForType(modelType);
-            var bindingContext = new ModelBindingContext
+            var bindingContext = new DefaultModelBindingContext
             {
                 ModelMetadata = modelMetadata,
                 ModelName = "modelName",

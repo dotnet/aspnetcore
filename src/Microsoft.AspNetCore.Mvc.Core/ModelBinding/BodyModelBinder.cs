@@ -33,8 +33,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         }
 
         /// <inheritdoc />
-        public Task<ModelBindingResult> BindModelAsync(ModelBindingContext bindingContext)
+        public Task BindModelAsync(ModelBindingContext bindingContext)
         {
+            if (bindingContext == null)
+            {
+                throw new ArgumentNullException(nameof(bindingContext));
+            }
+
             // This method is optimized to use cached tasks when possible and avoid allocating
             // using Task.FromResult. If you need to make changes of this nature, profile
             // allocations afterwards and look for Task<ModelBindingResult>.
@@ -45,7 +50,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             {
                 // Formatters are opt-in. This model either didn't specify [FromBody] or specified something
                 // incompatible so let other binders run.
-                return ModelBindingResult.NoResultAsync;
+                return TaskCache.CompletedTask;
             }
 
             return BindModelCoreAsync(bindingContext);
@@ -58,7 +63,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <returns>
         /// A <see cref="Task{ModelBindingResult}"/> which when completed returns a <see cref="ModelBindingResult"/>.
         /// </returns>
-        private async Task<ModelBindingResult> BindModelCoreAsync(ModelBindingContext bindingContext)
+        private async Task BindModelCoreAsync(ModelBindingContext bindingContext)
         {
             if (bindingContext == null)
             {
@@ -101,7 +106,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 // This model binder is the only handler for the Body binding source and it cannot run twice. Always
                 // tell the model binding system to skip other model binders and never to fall back i.e. indicate a
                 // fatal error.
-                return ModelBindingResult.Failed(modelBindingKey);
+                bindingContext.Result = ModelBindingResult.Failed(modelBindingKey);
+                return;
             }
 
             try
@@ -114,10 +120,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 {
                     // Formatter encountered an error. Do not use the model it returned. As above, tell the model
                     // binding system to skip other model binders and never to fall back.
-                    return ModelBindingResult.Failed(modelBindingKey);
+                    bindingContext.Result = ModelBindingResult.Failed(modelBindingKey);
+                    return;
                 }
 
-                return ModelBindingResult.Success(modelBindingKey, model);
+                bindingContext.Result = ModelBindingResult.Success(modelBindingKey, model);
+                return;
             }
             catch (Exception ex)
             {
@@ -126,7 +134,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 // This model binder is the only handler for the Body binding source and it cannot run twice. Always
                 // tell the model binding system to skip other model binders and never to fall back i.e. indicate a
                 // fatal error.
-                return ModelBindingResult.Failed(modelBindingKey);
+                bindingContext.Result = ModelBindingResult.Failed(modelBindingKey);
+                return;
             }
         }
     }

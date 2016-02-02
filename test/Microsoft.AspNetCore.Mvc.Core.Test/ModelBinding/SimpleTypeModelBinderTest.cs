@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
         [InlineData(typeof(object))]
         [InlineData(typeof(Calendar))]
         [InlineData(typeof(TestClass))]
-        public async Task BindModel_ReturnsNoResult_IfTypeCannotBeConverted(Type destinationType)
+        public async Task BindModel_ReturnsNothing_IfTypeCannotBeConverted(Type destinationType)
         {
             // Arrange
             var bindingContext = GetBindingContext(destinationType);
@@ -27,10 +27,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
             var binder = new SimpleTypeModelBinder();
 
             // Act
-            var result = await binder.BindModelAsync(bindingContext);
+            var result = await binder.BindModelResultAsync(bindingContext);
 
             // Assert
-            Assert.Equal(ModelBindingResult.NoResult, result);
+            Assert.Equal(default(ModelBindingResult), result);
         }
 
         public static TheoryData<Type> ConvertableTypeData
@@ -72,10 +72,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
             var binder = new SimpleTypeModelBinder();
 
             // Act
-            var result = await binder.BindModelAsync(bindingContext);
+            var result = await binder.BindModelResultAsync(bindingContext);
 
             // Assert
-            Assert.NotEqual(ModelBindingResult.NoResult, result);
+            Assert.NotEqual(default(ModelBindingResult), result);
             Assert.False(result.IsModelSet);
         }
 
@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
             var binder = new SimpleTypeModelBinder();
 
             // Act
-            var result = await binder.BindModelAsync(bindingContext);
+            var result = await binder.BindModelResultAsync(bindingContext);
 
             // Assert
             Assert.False(result.IsModelSet);
@@ -123,10 +123,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
             var binder = new SimpleTypeModelBinder();
 
             // Act
-            var result = await binder.BindModelAsync(bindingContext);
+            var result = await binder.BindModelResultAsync(bindingContext);
 
             // Assert
-            Assert.NotEqual(ModelBindingResult.NoResult, result);
+            Assert.NotEqual(default(ModelBindingResult), result);
             Assert.Null(result.Model);
             Assert.False(bindingContext.ModelState.IsValid);
             var error = Assert.Single(bindingContext.ModelState["theModelName"].Errors);
@@ -141,10 +141,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
             var binder = new SimpleTypeModelBinder();
 
             // Act
-            var result = await binder.BindModelAsync(bindingContext);
+            var result = await binder.BindModelResultAsync(bindingContext);
 
             // Assert
-            Assert.Equal(ModelBindingResult.NoResult, result);
+            Assert.Equal(default(ModelBindingResult), result);
             Assert.Empty(bindingContext.ModelState);
         }
 
@@ -161,7 +161,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
             var binder = new SimpleTypeModelBinder();
 
             // Act
-            var result = await binder.BindModelAsync(bindingContext);
+            var result = await binder.BindModelResultAsync(bindingContext);
 
             // Assert
             Assert.Null(result.Model);
@@ -181,7 +181,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
             var binder = new SimpleTypeModelBinder();
 
             // Act
-            var result = await binder.BindModelAsync(bindingContext);
+            var result = await binder.BindModelResultAsync(bindingContext);
 
             // Assert
             Assert.True(result.IsModelSet);
@@ -207,7 +207,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
             var binder = new SimpleTypeModelBinder();
 
             // Act
-            var result = await binder.BindModelAsync(bindingContext);
+            var result = await binder.BindModelResultAsync(bindingContext);
 
             // Assert
             Assert.True(result.IsModelSet);
@@ -215,9 +215,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
             Assert.Equal((FlagsEnum)expected, boundModel);
         }
 
-        private static ModelBindingContext GetBindingContext(Type modelType)
+        private static DefaultModelBindingContext GetBindingContext(Type modelType)
         {
-            return new ModelBindingContext
+            return new DefaultModelBindingContext
             {
                 ModelMetadata = new EmptyModelMetadataProvider().GetMetadataForType(modelType),
                 ModelName = "theModelName",

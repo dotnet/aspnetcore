@@ -30,10 +30,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var binder = new FormCollectionModelBinder();
 
             // Act
-            var result = await binder.BindModelAsync(bindingContext);
+            var result = await binder.BindModelResultAsync(bindingContext);
 
             // Assert
-            Assert.NotEqual(ModelBindingResult.NoResult, result);
+            Assert.NotEqual(default(ModelBindingResult), result);
             Assert.True(result.IsModelSet);
 
             var entry = bindingContext.ValidationState[result.Model];
@@ -61,10 +61,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var binder = new FormCollectionModelBinder();
 
             // Act
-            var result = await binder.BindModelAsync(bindingContext);
+            var result = await binder.BindModelResultAsync(bindingContext);
 
             // Assert
-            Assert.Equal(ModelBindingResult.NoResult, result);
+            Assert.Equal(default(ModelBindingResult), result);
         }
 
         // We only support IFormCollection here. Using the concrete type won't work.
@@ -82,10 +82,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var binder = new FormCollectionModelBinder();
 
             // Act
-            var result = await binder.BindModelAsync(bindingContext);
+            var result = await binder.BindModelResultAsync(bindingContext);
 
             // Assert
-            Assert.Equal(ModelBindingResult.NoResult, result);
+            Assert.Equal(default(ModelBindingResult), result);
         }
 
         [Fact]
@@ -97,10 +97,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var binder = new FormCollectionModelBinder();
 
             // Act
-            var result = await binder.BindModelAsync(bindingContext);
+            var result = await binder.BindModelResultAsync(bindingContext);
 
             // Assert
-            Assert.NotEqual(ModelBindingResult.NoResult, result);
+            Assert.NotEqual(default(ModelBindingResult), result);
             var form = Assert.IsAssignableFrom<IFormCollection>(result.Model);
             Assert.Empty(form);
         }
@@ -114,10 +114,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             return httpContext.Object;
         }
 
-        private static ModelBindingContext GetBindingContext(Type modelType, HttpContext httpContext)
+        private static DefaultModelBindingContext GetBindingContext(Type modelType, HttpContext httpContext)
         {
             var metadataProvider = new EmptyModelMetadataProvider();
-            var bindingContext = new ModelBindingContext
+            var bindingContext = new DefaultModelBindingContext
             {
                 ModelMetadata = metadataProvider.GetMetadataForType(modelType),
                 ModelName = "file",

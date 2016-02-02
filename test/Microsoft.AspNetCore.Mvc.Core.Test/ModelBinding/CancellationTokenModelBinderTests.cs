@@ -20,10 +20,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
             var binder = new CancellationTokenModelBinder();
 
             // Act
-            var result = await binder.BindModelAsync(bindingContext);
+            var result = await binder.BindModelResultAsync(bindingContext);
 
             // Assert
-            Assert.NotEqual(ModelBindingResult.NoResult, result);
+            Assert.NotEqual(default(ModelBindingResult), result);
             Assert.True(result.IsModelSet);
             Assert.Equal(bindingContext.OperationBindingContext.HttpContext.RequestAborted, result.Model);
         }
@@ -39,16 +39,16 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
             var binder = new CancellationTokenModelBinder();
 
             // Act
-            var result = await binder.BindModelAsync(bindingContext);
+            var result = await binder.BindModelResultAsync(bindingContext);
 
             // Assert
-            Assert.Equal(ModelBindingResult.NoResult, result);
+            Assert.Equal(default(ModelBindingResult), result);
         }
 
-        private static ModelBindingContext GetBindingContext(Type modelType)
+        private static DefaultModelBindingContext GetBindingContext(Type modelType)
         {
             var metadataProvider = new EmptyModelMetadataProvider();
-            ModelBindingContext bindingContext = new ModelBindingContext
+            DefaultModelBindingContext bindingContext = new DefaultModelBindingContext
             {
                 ModelMetadata = metadataProvider.GetMetadataForType(modelType),
                 ModelName = "someName",

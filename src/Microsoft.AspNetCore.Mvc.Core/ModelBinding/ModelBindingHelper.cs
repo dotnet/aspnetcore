@@ -528,7 +528,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 ValueProvider = valueProvider,
             };
 
-            var modelBindingContext = ModelBindingContext.CreateBindingContext(
+            var modelBindingContext = DefaultModelBindingContext.CreateBindingContext(
                 operationBindingContext,
                 modelMetadata,
                 bindingInfo: null,
@@ -536,15 +536,16 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             modelBindingContext.Model = model;
             modelBindingContext.PropertyFilter = predicate;
 
-            var modelBindingResult = await modelBinder.BindModelAsync(modelBindingContext);
-            if (modelBindingResult.IsModelSet)
+            await modelBinder.BindModelAsync(modelBindingContext);
+            var modelBindingResult = modelBindingContext.Result;
+            if (modelBindingResult != null && modelBindingResult.Value.IsModelSet)
             {
                 objectModelValidator.Validate(
                     operationBindingContext.ActionContext,
                     operationBindingContext.ValidatorProvider,
                     modelBindingContext.ValidationState,
-                    modelBindingResult.Key,
-                    modelBindingResult.Model);
+                    modelBindingResult.Value.Key,
+                    modelBindingResult.Value.Model);
 
                 return modelState.IsValid;
             }

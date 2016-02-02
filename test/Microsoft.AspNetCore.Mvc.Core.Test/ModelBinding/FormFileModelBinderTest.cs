@@ -27,10 +27,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var binder = new FormFileModelBinder();
 
             // Act
-            var result = await binder.BindModelAsync(bindingContext);
+            var result = await binder.BindModelResultAsync(bindingContext);
 
             // Assert
-            Assert.NotEqual(ModelBindingResult.NoResult, result);
+            Assert.NotEqual(default(ModelBindingResult), result);
             Assert.True(result.IsModelSet);
 
             var entry = bindingContext.ValidationState[result.Model];
@@ -51,10 +51,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var binder = new FormFileModelBinder();
 
             // Act
-            var result = await binder.BindModelAsync(bindingContext);
+            var result = await binder.BindModelResultAsync(bindingContext);
 
             // Assert
-            Assert.NotEqual(ModelBindingResult.NoResult, result);
+            Assert.NotEqual(default(ModelBindingResult), result);
             Assert.True(result.IsModelSet);
 
             var entry = bindingContext.ValidationState[result.Model];
@@ -78,10 +78,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var binder = new FormFileModelBinder();
 
             // Act
-            var result = await binder.BindModelAsync(bindingContext);
+            var result = await binder.BindModelResultAsync(bindingContext);
 
             // Assert
-            Assert.NotEqual(ModelBindingResult.NoResult, result);
+            Assert.NotEqual(default(ModelBindingResult), result);
             var files = Assert.IsAssignableFrom<IList<IFormFile>>(result.Model);
             Assert.Equal(2, files.Count);
         }
@@ -98,17 +98,17 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var binder = new FormFileModelBinder();
 
             // Act
-            var result = await binder.BindModelAsync(bindingContext);
+            var result = await binder.BindModelResultAsync(bindingContext);
 
             // Assert
-            Assert.NotEqual(ModelBindingResult.NoResult, result);
+            Assert.NotEqual(default(ModelBindingResult), result);
             var file = Assert.IsAssignableFrom<IFormFile>(result.Model);
             Assert.Equal("form-data; name=file; filename=file1.txt",
                          file.ContentDisposition);
         }
 
         [Fact]
-        public async Task FormFileModelBinder_ReturnsNoResult_WhenNoFilePosted()
+        public async Task FormFileModelBinder_ReturnsNothing_WhenNoFilePosted()
         {
             // Arrange
             var formFiles = new FormFileCollection();
@@ -117,15 +117,15 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var binder = new FormFileModelBinder();
 
             // Act
-            var result = await binder.BindModelAsync(bindingContext);
+            var result = await binder.BindModelResultAsync(bindingContext);
 
             // Assert
-            Assert.NotEqual(ModelBindingResult.NoResult, result);
+            Assert.NotEqual(default(ModelBindingResult), result);
             Assert.Null(result.Model);
         }
 
         [Fact]
-        public async Task FormFileModelBinder_ReturnsNoResult_WhenNamesDontMatch()
+        public async Task FormFileModelBinder_ReturnsNothing_WhenNamesDontMatch()
         {
             // Arrange
             var formFiles = new FormFileCollection();
@@ -135,10 +135,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var binder = new FormFileModelBinder();
 
             // Act
-            var result = await binder.BindModelAsync(bindingContext);
+            var result = await binder.BindModelResultAsync(bindingContext);
 
             // Assert
-            Assert.NotEqual(ModelBindingResult.NoResult, result);
+            Assert.NotEqual(default(ModelBindingResult), result);
             Assert.Null(result.Model);
         }
 
@@ -161,10 +161,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var binder = new FormFileModelBinder();
 
             // Act
-            var result = await binder.BindModelAsync(bindingContext);
+            var result = await binder.BindModelResultAsync(bindingContext);
 
             // Assert
-            Assert.NotEqual(ModelBindingResult.NoResult, result);
+            Assert.NotEqual(default(ModelBindingResult), result);
             Assert.True(result.IsModelSet);
             var file = Assert.IsAssignableFrom<IFormFile>(result.Model);
             
@@ -174,7 +174,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         }
 
         [Fact]
-        public async Task FormFileModelBinder_ReturnsNoResult_WithEmptyContentDisposition()
+        public async Task FormFileModelBinder_ReturnsNothing_WithEmptyContentDisposition()
         {
             // Arrange
             var formFiles = new FormFileCollection();
@@ -184,15 +184,15 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var binder = new FormFileModelBinder();
 
             // Act
-            var result = await binder.BindModelAsync(bindingContext);
+            var result = await binder.BindModelResultAsync(bindingContext);
 
             // Assert
-            Assert.NotEqual(ModelBindingResult.NoResult, result);
+            Assert.NotEqual(default(ModelBindingResult), result);
             Assert.Null(result.Model);
         }
 
         [Fact]
-        public async Task FormFileModelBinder_ReturnsNoResult_WithNoFileNameAndZeroLength()
+        public async Task FormFileModelBinder_ReturnsNothing_WithNoFileNameAndZeroLength()
         {
             // Arrange
             var formFiles = new FormFileCollection();
@@ -202,17 +202,17 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var binder = new FormFileModelBinder();
 
             // Act
-            var result = await binder.BindModelAsync(bindingContext);
+            var result = await binder.BindModelResultAsync(bindingContext);
 
             // Assert
-            Assert.NotEqual(ModelBindingResult.NoResult, result);
+            Assert.NotEqual(default(ModelBindingResult), result);
             Assert.Null(result.Model);
         }
 
-        private static ModelBindingContext GetBindingContext(Type modelType, HttpContext httpContext)
+        private static DefaultModelBindingContext GetBindingContext(Type modelType, HttpContext httpContext)
         {
             var metadataProvider = new EmptyModelMetadataProvider();
-            var bindingContext = new ModelBindingContext
+            var bindingContext = new DefaultModelBindingContext
             {
                 ModelMetadata = metadataProvider.GetMetadataForType(modelType),
                 ModelName = "file",

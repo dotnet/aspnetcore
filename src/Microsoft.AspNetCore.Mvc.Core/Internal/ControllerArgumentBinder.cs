@@ -97,7 +97,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             return actionArguments;
         }
 
-        public async Task<ModelBindingResult> BindModelAsync(
+        public async Task<ModelBindingResult?> BindModelAsync(
             ParameterDescriptor parameter,
             OperationBindingContext operationContext)
         {
@@ -112,21 +112,22 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             }
 
             var metadata = _modelMetadataProvider.GetMetadataForType(parameter.ParameterType);
-            var modelBindingContext = ModelBindingContext.CreateBindingContext(
+            var modelBindingContext = DefaultModelBindingContext.CreateBindingContext(
                 operationContext,
                 metadata,
                 parameter.BindingInfo,
                 parameter.Name);
 
-            var modelBindingResult = await operationContext.ModelBinder.BindModelAsync(modelBindingContext);
-            if (modelBindingResult.IsModelSet)
+            await operationContext.ModelBinder.BindModelAsync(modelBindingContext);
+            var modelBindingResult = modelBindingContext.Result;
+            if (modelBindingResult != null && modelBindingResult.Value.IsModelSet)
             {
                 _validator.Validate(
                     operationContext.ActionContext,
                     operationContext.ValidatorProvider,
                     modelBindingContext.ValidationState,
-                    modelBindingResult.Key,
-                    modelBindingResult.Model);
+                    modelBindingResult.Value.Key,
+                    modelBindingResult.Value.Model);
             }
 
             return modelBindingResult;
@@ -225,9 +226,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             {
                 var parameter = parameterMetadata[i];
                 var modelBindingResult = await BindModelAsync(parameter, operationContext);
-                if (modelBindingResult.IsModelSet)
+                if (modelBindingResult != null && modelBindingResult.Value.IsModelSet)
                 {
-                    arguments[parameter.Name] = modelBindingResult.Model;
+                    arguments[parameter.Name] = modelBindingResult.Value.Model;
                 }
             }
 

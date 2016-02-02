@@ -22,10 +22,12 @@ namespace Microsoft.AspNetCore.Mvc.WebApiCompatShim
             var expectedModel = bindingContext.OperationBindingContext.HttpContext.GetHttpRequestMessage();
 
             // Act
-            var result = await binder.BindModelAsync(bindingContext);
+            await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.NotEqual(ModelBindingResult.NoResult, result);
+            Assert.True(bindingContext.Result.HasValue);
+
+            var result = bindingContext.Result.Value;
             Assert.True(result.IsModelSet);
             Assert.Same(expectedModel, result.Model);
 
@@ -46,16 +48,16 @@ namespace Microsoft.AspNetCore.Mvc.WebApiCompatShim
             var bindingContext = GetBindingContext(type);
 
             // Act
-            var result = await binder.BindModelAsync(bindingContext);
+            await binder.BindModelAsync(bindingContext);
 
             // Assert
-            Assert.Equal(ModelBindingResult.NoResult, result);
+            Assert.False(bindingContext.Result.HasValue);
         }
 
-        private static ModelBindingContext GetBindingContext(Type modelType)
+        private static DefaultModelBindingContext GetBindingContext(Type modelType)
         {
             var metadataProvider = new EmptyModelMetadataProvider();
-            ModelBindingContext bindingContext = new ModelBindingContext
+            DefaultModelBindingContext bindingContext = new DefaultModelBindingContext
             {
                 ModelMetadata = metadataProvider.GetMetadataForType(modelType),
                 ModelName = "someName",

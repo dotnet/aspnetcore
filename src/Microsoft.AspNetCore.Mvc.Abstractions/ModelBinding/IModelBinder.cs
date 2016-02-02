@@ -24,9 +24,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// with <see cref="ModelBindingResult.Success"/>. If model binding failed, the
         /// <see cref="ModelBindingResult"/> should be a value created with <see cref="ModelBindingResult.Failed"/>.
         /// If there was no data, or this model binder cannot handle the operation, the
-        /// <see cref="ModelBindingResult"/> should be <see cref="ModelBindingResult.NoResult"/>.
+        /// <see cref="ModelBindingContext.Result"/> should be null.
         /// </para>
         /// </returns>
-        Task<ModelBindingResult> BindModelAsync(ModelBindingContext bindingContext);
+        Task BindModelAsync(ModelBindingContext bindingContext);
     }
 }

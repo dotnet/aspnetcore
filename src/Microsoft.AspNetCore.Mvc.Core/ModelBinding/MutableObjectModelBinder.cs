@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
@@ -18,7 +19,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             typeof(MutableObjectModelBinder).GetTypeInfo().GetDeclaredMethod(nameof(CallPropertyAddRange));
 
         /// <inheritdoc />
-        public Task<ModelBindingResult> BindModelAsync(ModelBindingContext bindingContext)
+        public Task BindModelAsync(ModelBindingContext bindingContext)
         {
             if (bindingContext == null)
             {
@@ -28,7 +29,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             ModelBindingHelper.ValidateBindingContext(bindingContext);
             if (!CanBindType(bindingContext.ModelMetadata))
             {
-                return ModelBindingResult.NoResultAsync;
+                return TaskCache.CompletedTask;
             }
 
             var mutableObjectBinderContext = new MutableObjectBinderContext()
@@ -39,13 +40,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             if (!(CanCreateModel(mutableObjectBinderContext)))
             {
-                return ModelBindingResult.NoResultAsync;
+                return TaskCache.CompletedTask;
             }
 
             return BindModelCoreAsync(bindingContext, mutableObjectBinderContext);
         }
 
-        private async Task<ModelBindingResult> BindModelCoreAsync(
+        private async Task BindModelCoreAsync(
             ModelBindingContext bindingContext,
             MutableObjectBinderContext mutableObjectBinderContext)
         {
@@ -58,7 +59,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             bindingContext.Model = model;
             ProcessResults(bindingContext, results);
 
-            return ModelBindingResult.Success(bindingContext.ModelName, model);
+            bindingContext.Result = ModelBindingResult.Success(bindingContext.ModelName, model);
         }
 
         /// <summary>
@@ -170,17 +171,17 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                         context.ModelBindingContext.ModelName,
                         fieldName);
 
-                    var propertyModelBindingContext = ModelBindingContext.CreateChildBindingContext(
-                        context.ModelBindingContext,
-                        propertyMetadata,
+                    using (context.ModelBindingContext.EnterNestedScope(
+                        modelMetadata: propertyMetadata,
                         fieldName: fieldName,
                         modelName: modelName,
-                        model: null);
-
-                    // If any property can return a true value.
-                    if (CanBindValue(propertyModelBindingContext))
+                        model: null))
                     {
-                        return true;
+                        // If any property can return a true value.
+                        if (CanBindValue(context.ModelBindingContext))
+                        {
+                            return true;
+                        }
                     }
                 }
             }
@@ -298,21 +299,22 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 var fieldName = propertyMetadata.BinderModelName ?? propertyMetadata.PropertyName;
                 var modelName = ModelNames.CreatePropertyModelName(bindingContext.ModelName, fieldName);
 
-                var propertyContext = ModelBindingContext.CreateChildBindingContext(
-                    bindingContext,
-                    propertyMetadata,
+                using (bindingContext.EnterNestedScope(
+                    modelMetadata: propertyMetadata,
                     fieldName: fieldName,
                     modelName: modelName,
-                    model: model);
-
-                var result = await bindingContext.OperationBindingContext.ModelBinder.BindModelAsync(propertyContext);
-                if (result == ModelBindingResult.NoResult)
+                    model: model))
                 {
-                    // Could not bind. Let ProcessResult() know explicitly.
-                    result = ModelBindingResult.Failed(propertyContext.ModelName);
-                }
+                    await bindingContext.OperationBindingContext.ModelBinder.BindModelAsync(bindingContext);
+                    var result = bindingContext.Result;
+                    if (result == null)
+                    {
+                        // Could not bind. Let ProcessResult() know explicitly.
+                        result = ModelBindingResult.Failed(bindingContext.ModelName);
+                    }
 
-                results[propertyMetadata] = result;
+                    results[propertyMetadata] = result.Value;
+                }
             }
 
             return results;
@@ -444,7 +446,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             // exceptions as necessary.
             foreach (var entry in results)
             {
-                if (entry.Value != ModelBindingResult.NoResult)
+                if (entry.Value != null)
                 {
                     var result = entry.Value;
                     var propertyMetadata = entry.Key;

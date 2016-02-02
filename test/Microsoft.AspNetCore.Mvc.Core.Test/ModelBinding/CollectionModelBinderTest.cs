@@ -83,10 +83,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var binder = new CollectionModelBinder<int>();
 
             // Act
-            var result = await binder.BindModelAsync(bindingContext);
+            var result = await binder.BindModelResultAsync(bindingContext);
 
             // Assert
-            Assert.NotEqual(ModelBindingResult.NoResult, result);
+            Assert.NotEqual(default(ModelBindingResult), result);
             Assert.True(result.IsModelSet);
 
             var list = Assert.IsAssignableFrom<IList<int>>(result.Model);
@@ -115,10 +115,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var binder = new CollectionModelBinder<int>();
 
             // Act
-            var result = await binder.BindModelAsync(bindingContext);
+            var result = await binder.BindModelResultAsync(bindingContext);
 
             // Assert
-            Assert.NotEqual(ModelBindingResult.NoResult, result);
+            Assert.NotEqual(default(ModelBindingResult), result);
             Assert.True(result.IsModelSet);
 
             Assert.Same(list, result.Model);
@@ -142,10 +142,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var binder = new CollectionModelBinder<int>();
 
             // Act
-            var result = await binder.BindModelAsync(bindingContext);
+            var result = await binder.BindModelResultAsync(bindingContext);
 
             // Assert
-            Assert.NotEqual(ModelBindingResult.NoResult, result);
+            Assert.NotEqual(default(ModelBindingResult), result);
             Assert.True(result.IsModelSet);
 
             var list = Assert.IsAssignableFrom<IList<int>>(result.Model);
@@ -169,10 +169,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var binder = new CollectionModelBinder<int>();
 
             // Act
-            var result = await binder.BindModelAsync(bindingContext);
+            var result = await binder.BindModelResultAsync(bindingContext);
 
             // Assert
-            Assert.NotEqual(ModelBindingResult.NoResult, result);
+            Assert.NotEqual(default(ModelBindingResult), result);
             Assert.True(result.IsModelSet);
 
             Assert.Same(list, result.Model);
@@ -192,10 +192,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var modelState = bindingContext.ModelState;
 
             // Act
-            var result = await binder.BindModelAsync(bindingContext);
+            var result = await binder.BindModelResultAsync(bindingContext);
 
             // Assert
-            Assert.NotEqual(ModelBindingResult.NoResult, result);
+            Assert.NotEqual(default(ModelBindingResult), result);
             Assert.True(result.IsModelSet);
             Assert.NotNull(result.Model);
 
@@ -236,10 +236,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             context.ValueProvider = new TestValueProvider(new Dictionary<string, object>());
 
             // Act
-            var result = await binder.BindModelAsync(context);
+            var result = await binder.BindModelResultAsync(context);
 
             // Assert
-            Assert.NotEqual(ModelBindingResult.NoResult, result);
+            Assert.NotEqual(default(ModelBindingResult), result);
 
             Assert.Empty(Assert.IsType<List<string>>(result.Model));
             Assert.Equal("modelName", result.Key);
@@ -269,10 +269,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             context.ValueProvider = new TestValueProvider(new Dictionary<string, object>());
 
             // Act
-            var result = await binder.BindModelAsync(context);
+            var result = await binder.BindModelResultAsync(context);
 
             // Assert
-            Assert.NotEqual(ModelBindingResult.NoResult, result);
+            Assert.NotEqual(default(ModelBindingResult), result);
 
             Assert.Same(list, result.Model);
             Assert.Empty(list);
@@ -299,10 +299,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             context.ValueProvider = new TestValueProvider(new Dictionary<string, object>());
 
             // Act
-            var result = await binder.BindModelAsync(context);
+            var result = await binder.BindModelResultAsync(context);
 
             // Assert
-            Assert.Equal(ModelBindingResult.NoResult, result);
+            Assert.Equal(default(ModelBindingResult), result);
         }
 
         // Model type -> can create instance.
@@ -345,13 +345,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var culture = new CultureInfo("fr-FR");
             var bindingContext = GetModelBindingContext(new SimpleValueProvider());
 
-            Mock.Get(bindingContext.OperationBindingContext.ModelBinder)
-                .Setup(o => o.BindModelAsync(It.IsAny<ModelBindingContext>()))
-                .Returns((ModelBindingContext mbc) =>
-                {
-                    Assert.Equal("someName", mbc.ModelName);
-                    return ModelBindingResult.SuccessAsync(mbc.ModelName, 42);
-                });
+            bindingContext.OperationBindingContext.ModelBinder = new StubModelBinder(mbc =>
+            {
+                Assert.Equal("someName", mbc.ModelName);
+                mbc.Result = ModelBindingResult.Success(mbc.ModelName, 42);
+            });
+
             var modelBinder = new CollectionModelBinder<int>();
 
             // Act
@@ -363,14 +362,14 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             Assert.Equal(new[] { 42 }, boundCollection.Model.ToArray());
         }
 
-        private static ModelBindingContext GetModelBindingContext(
+        private static DefaultModelBindingContext GetModelBindingContext(
             IValueProvider valueProvider,
             bool isReadOnly = false)
         {
             var metadataProvider = new TestModelMetadataProvider();
             metadataProvider.ForType<IList<int>>().BindingDetails(bd => bd.IsReadOnly = isReadOnly);
 
-            var bindingContext = new ModelBindingContext
+            var bindingContext = new DefaultModelBindingContext
             {
                 ModelMetadata = metadataProvider.GetMetadataForType(typeof(IList<int>)),
                 ModelName = "someName",
@@ -390,33 +389,29 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
         private static IModelBinder CreateIntBinder()
         {
-            Mock<IModelBinder> mockIntBinder = new Mock<IModelBinder>();
-            mockIntBinder
-                .Setup(o => o.BindModelAsync(It.IsAny<ModelBindingContext>()))
-                .Returns((ModelBindingContext mbc) =>
+            return new StubModelBinder(mbc =>
+            {
+                var value = mbc.ValueProvider.GetValue(mbc.ModelName);
+                if (value == ValueProviderResult.None)
                 {
-                    var value = mbc.ValueProvider.GetValue(mbc.ModelName);
-                    if (value == ValueProviderResult.None)
-                    {
-                        return ModelBindingResult.NoResultAsync;
-                    }
+                    return null;
+                }
 
-                    var model = value.ConvertTo(mbc.ModelType);
-                    if (model == null)
-                    {
-                        return ModelBindingResult.FailedAsync(mbc.ModelName);
-                    }
-                    else
-                    {
-                        return ModelBindingResult.SuccessAsync(mbc.ModelName, model);
-                    }
-                });
-            return mockIntBinder.Object;
+                var model = value.ConvertTo(mbc.ModelType);
+                if (model == null)
+                {
+                    return ModelBindingResult.Failed(mbc.ModelName);
+                }
+                else
+                {
+                    return ModelBindingResult.Success(mbc.ModelName, model);
+                }
+            });
         }
 
-        private static ModelBindingContext CreateContext()
+        private static DefaultModelBindingContext CreateContext()
         {
-            var modelBindingContext = new ModelBindingContext()
+            var modelBindingContext = new DefaultModelBindingContext()
             {
                 OperationBindingContext = new OperationBindingContext()
                 {

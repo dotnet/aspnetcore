@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
@@ -16,7 +17,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
     public class ArrayModelBinder<TElement> : CollectionModelBinder<TElement>
     {
         /// <inheritdoc />
-        public override Task<ModelBindingResult> BindModelAsync(ModelBindingContext bindingContext)
+        public override Task BindModelAsync(ModelBindingContext bindingContext)
         {
             if (bindingContext == null)
             {
@@ -25,7 +26,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             if (bindingContext.ModelMetadata.IsReadOnly)
             {
-                return ModelBindingResult.NoResultAsync;
+                return TaskCache.CompletedTask;
             }
 
             return base.BindModelAsync(bindingContext);

@@ -2,16 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Linq;
-using Microsoft.AspNetCore.Mvc.Internal;
-#if DOTNET5_4
-using System.Reflection;
-#endif
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
 {

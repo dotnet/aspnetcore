@@ -10,6 +10,7 @@ using System.Reflection;
 #endif
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.Net.Http.Headers;
 
@@ -21,7 +22,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
     public class FormFileModelBinder : IModelBinder
     {
         /// <inheritdoc />
-        public Task<ModelBindingResult> BindModelAsync(ModelBindingContext bindingContext)
+        public Task BindModelAsync(ModelBindingContext bindingContext)
         {
             if (bindingContext == null)
             {
@@ -35,13 +36,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             if (bindingContext.ModelType != typeof(IFormFile) &&
                 !typeof(IEnumerable<IFormFile>).IsAssignableFrom(bindingContext.ModelType))
             {
-                return ModelBindingResult.NoResultAsync;
+                return TaskCache.CompletedTask;
             }
 
             return BindModelCoreAsync(bindingContext);
         }
 
-        private async Task<ModelBindingResult> BindModelCoreAsync(ModelBindingContext bindingContext)
+        private async Task BindModelCoreAsync(ModelBindingContext bindingContext)
         {
             // If we're at the top level, then use the FieldName (paramter or property name).
             // This handles the fact that there will be nothing in the ValueProviders for this parameter
@@ -65,12 +66,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             {
                 // This binder does not support the requested type.
                 Debug.Fail("We shouldn't be called without a matching type.");
-                return ModelBindingResult.NoResult;
+                return;
             }
 
             if (value == null)
             {
-                return ModelBindingResult.Failed(bindingContext.ModelName);
+                bindingContext.Result = ModelBindingResult.Failed(bindingContext.ModelName);
+                return;
             }
             else
             {
@@ -85,7 +87,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                     rawValue: null,
                     attemptedValue: null);
 
-                return ModelBindingResult.Success(bindingContext.ModelName, value);
+                bindingContext.Result = ModelBindingResult.Success(bindingContext.ModelName, value);
+                return;
             }
         }
 

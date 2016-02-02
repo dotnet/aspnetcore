@@ -22,26 +22,28 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
     public class DictionaryModelBinder<TKey, TValue> : CollectionModelBinder<KeyValuePair<TKey, TValue>>
     {
         /// <inheritdoc />
-        public override async Task<ModelBindingResult> BindModelAsync(ModelBindingContext bindingContext)
+        public override async Task BindModelAsync(ModelBindingContext bindingContext)
         {
             if (bindingContext == null)
             {
                 throw new ArgumentNullException(nameof(bindingContext));
             }
 
-            var result = await base.BindModelAsync(bindingContext);
-            if (!result.IsModelSet)
+            await base.BindModelAsync(bindingContext);
+            if (bindingContext.Result == null || !bindingContext.Result.Value.IsModelSet)
             {
                 // No match for the prefix at all.
-                return result;
+                return;
             }
+
+            var result = bindingContext.Result.Value;
 
             Debug.Assert(result.Model != null);
             var model = (IDictionary<TKey, TValue>)result.Model;
             if (model.Count != 0)
             {
                 // ICollection<KeyValuePair<TKey, TValue>> approach was successful.
-                return result;
+                return;
             }
 
             var enumerableValueProvider = bindingContext.ValueProvider as IEnumerableValueProvider;
@@ -49,7 +51,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             {
                 // No IEnumerableValueProvider available for the fallback approach. For example the user may have
                 // replaced the ValueProvider with something other than a CompositeValueProvider.
-                return result;
+                return;
             }
 
             // Attempt to bind dictionary from a set of prefix[key]=value entries. Get the short and long keys first.
@@ -57,18 +59,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             if (!keys.Any())
             {
                 // No entries with the expected keys.
-                return result;
+                return;
             }
 
             // Update the existing successful but empty ModelBindingResult.
             var metadataProvider = bindingContext.OperationBindingContext.MetadataProvider;
             var valueMetadata = metadataProvider.GetMetadataForType(typeof(TValue));
-            var valueBindingContext = ModelBindingContext.CreateChildBindingContext(
-                bindingContext,
-                valueMetadata,
-                fieldName: bindingContext.FieldName,
-                modelName: bindingContext.ModelName,
-                model: null);
 
             var modelBinder = bindingContext.OperationBindingContext.ModelBinder;
 
@@ -79,21 +75,26 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 // that culture when rendering a form.
                 var convertedKey = ModelBindingHelper.ConvertTo<TKey>(kvp.Key, culture: null);
 
-                valueBindingContext.ModelName = kvp.Value;
+                using (bindingContext.EnterNestedScope(
+                    modelMetadata: valueMetadata,
+                    fieldName: bindingContext.FieldName,
+                    modelName: kvp.Value,
+                    model: null))
+                {
+                    await modelBinder.BindModelAsync(bindingContext);
 
-                var valueResult = await modelBinder.BindModelAsync(valueBindingContext);
+                    var valueResult = bindingContext.Result;
 
-                // Always add an entry to the dictionary but validate only if binding was successful.
-                model[convertedKey] = ModelBindingHelper.CastOrDefault<TValue>(valueResult.Model);
-                keyMappings.Add(kvp.Key, convertedKey);
+                    // Always add an entry to the dictionary but validate only if binding was successful.
+                    model[convertedKey] = ModelBindingHelper.CastOrDefault<TValue>(valueResult.Value.Model);
+                    keyMappings.Add(kvp.Key, convertedKey);
+                }
             }
 
             bindingContext.ValidationState.Add(model, new ValidationStateEntry()
             {
                 Strategy = new ShortFormDictionaryValidationStrategy<TKey, TValue>(keyMappings, valueMetadata),
             });
-
-            return result;
         }
 
         /// <inheritdoc />

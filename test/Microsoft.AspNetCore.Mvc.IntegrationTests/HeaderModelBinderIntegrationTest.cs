@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelState = operationContext.ActionContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext) ?? default(ModelBindingResult);
 
             // Assert
 
@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelState = operationContext.ActionContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext) ?? default(ModelBindingResult);
 
             // Assert
 
@@ -131,7 +131,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelState = operationContext.ActionContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext) ?? default(ModelBindingResult);
 
             // Assert
 
@@ -193,7 +193,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelState = operationContext.ActionContext.ModelState;
 
             // Act
-            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext);
+            var modelBindingResult = await argumentBinder.BindModelAsync(parameter, operationContext) ?? default(ModelBindingResult);
 
             // Assert
 
