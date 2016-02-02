@@ -10,8 +10,7 @@
     "keyFile": "../../tools/Key.snk"
   },
   "dependencies": {
-    "Microsoft.Extensions.Primitives": "1.0.0-*",
-    "Microsoft.NETCore.Platforms": "1.0.1-*"
+    "Microsoft.Extensions.Primitives": "1.0.0-*"
   },
   "frameworks": {
     "net451": {},
@@ -25,8 +24,7 @@
         "System.Security.Claims": "4.0.1-*",
         "System.Security.Cryptography.X509Certificates": "4.0.0-*",
         "System.Security.Principal": "4.0.1-*"
-      },
-      "imports": "portable-net451+win8"
+      }
     }
   }
 }

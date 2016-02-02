@@ -10,13 +10,10 @@
     "keyFile": "../../tools/Key.snk"
   },
   "dependencies": {
-    "Microsoft.AspNetCore.Http": "1.0.0-*",
-    "Microsoft.NETCore.Platforms": "1.0.1-*"
+    "Microsoft.AspNetCore.Http": "1.0.0-*"
   },
   "frameworks": {
     "net451": {},
-    "dotnet5.4": {
-      "imports": "portable-net451+win8"
-    }
+    "dotnet5.4": {}
   }
 }
