@@ -22,35 +22,27 @@ namespace LocalizationSample
 
         public void Configure(IApplicationBuilder app, IStringLocalizer<Startup> SR)
         {
+            var supportedCultures = new List<CultureInfo>
+            {
+                new CultureInfo("en-US"),
+                new CultureInfo("en-AU"),
+                new CultureInfo("en-GB"),
+                new CultureInfo("es-ES"),
+                new CultureInfo("ja-JP"),
+                new CultureInfo("fr-FR"),
+                new CultureInfo("zh"),
+                new CultureInfo("zh-CN")
+            };
+#if !DNXCORE50
+            supportedCultures.Add(new CultureInfo("zh-CHT"));
+#endif
             app.UseRequestLocalization(new RequestLocalizationOptions
             {
                 DefaultRequestCulture = new RequestCulture("en-US"),
 
                 // Set options here to change middleware behavior
-                SupportedCultures = new List<CultureInfo>
-                {
-                    new CultureInfo("en-US"),
-                    new CultureInfo("en-AU"),
-                    new CultureInfo("en-GB"),
-                    new CultureInfo("es-ES"),
-                    new CultureInfo("ja-JP"),
-                    new CultureInfo("fr-FR"),
-                    new CultureInfo("zh"),
-                    new CultureInfo("zh-CN"),
-                    new CultureInfo("zh-CHT")
-                },
-                SupportedUICultures = new List<CultureInfo>
-                {
-                    new CultureInfo("en-US"),
-                    new CultureInfo("en-AU"),
-                    new CultureInfo("en-GB"),
-                    new CultureInfo("es-ES"),
-                    new CultureInfo("ja-JP"),
-                    new CultureInfo("fr-FR"),
-                    new CultureInfo("zh"),
-                    new CultureInfo("zh-CN"),
-                    new CultureInfo("zh-CHT")
-                }
+                SupportedCultures = supportedCultures,
+                SupportedUICultures = supportedCultures
 
                 // Optionally create an app-specific provider with just a delegate, e.g. look up user preference from DB.
                 // Inserting it as position 0 ensures it has priority over any of the default providers.
