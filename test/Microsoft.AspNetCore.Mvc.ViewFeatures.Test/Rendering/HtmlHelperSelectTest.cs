@@ -1570,8 +1570,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
                       metadataProvider,
                       new TestViewBufferScope(),
                       new Mock<HtmlEncoder>(MockBehavior.Strict).Object,
-                      new Mock<UrlEncoder>(MockBehavior.Strict).Object,
-                      new Mock<JavaScriptEncoder>(MockBehavior.Strict).Object)
+                      new Mock<UrlEncoder>(MockBehavior.Strict).Object)
             {
             }
 

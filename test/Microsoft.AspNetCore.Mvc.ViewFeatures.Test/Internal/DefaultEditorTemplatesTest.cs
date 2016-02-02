@@ -12,11 +12,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.TestCommon;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
-using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
 using Microsoft.AspNetCore.Testing;
 using Moq;
 using Xunit;
@@ -967,11 +965,6 @@ Environment.NewLine;
             public UrlEncoder UrlEncoder
             {
                 get { return _innerHelper.UrlEncoder; }
-            }
-
-            public JavaScriptEncoder JavaScriptEncoder
-            {
-                get { return _innerHelper.JavaScriptEncoder; }
             }
 
             public void Contextualize(ViewContext viewContext)

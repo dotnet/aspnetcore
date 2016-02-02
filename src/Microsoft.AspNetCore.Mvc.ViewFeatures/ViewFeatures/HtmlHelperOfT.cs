@@ -24,16 +24,14 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             IModelMetadataProvider metadataProvider,
             IViewBufferScope bufferScope,
             HtmlEncoder htmlEncoder,
-            UrlEncoder urlEncoder,
-            JavaScriptEncoder javaScriptEncoder)
+            UrlEncoder urlEncoder)
             : base(
                 htmlGenerator,
                 viewEngine,
                 metadataProvider,
                 bufferScope,
                 htmlEncoder,
-                urlEncoder,
-                javaScriptEncoder)
+                urlEncoder)
         {
         }
 

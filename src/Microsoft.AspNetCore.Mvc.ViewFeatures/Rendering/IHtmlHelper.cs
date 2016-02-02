@@ -59,11 +59,6 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         UrlEncoder UrlEncoder { get; }
 
         /// <summary>
-        /// Gets the <see cref="JavaScriptEncoder"/> to be used for encoding JavaScript.
-        /// </summary>
-        JavaScriptEncoder JavaScriptEncoder { get; }
-
-        /// <summary>
         /// Returns an anchor (&lt;a&gt;) element that contains a URL path to the specified action.
         /// </summary>
         /// <param name="linkText">The inner text of the anchor element. Must not be <c>null</c>.</param>

@@ -10,7 +10,6 @@ using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
@@ -46,8 +45,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             IModelMetadataProvider metadataProvider,
             IViewBufferScope bufferScope,
             HtmlEncoder htmlEncoder,
-            UrlEncoder urlEncoder,
-            JavaScriptEncoder javaScriptEncoder)
+            UrlEncoder urlEncoder)
         {
             if (htmlGenerator == null)
             {
@@ -79,18 +77,12 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 throw new ArgumentNullException(nameof(urlEncoder));
             }
 
-            if (javaScriptEncoder == null)
-            {
-                throw new ArgumentNullException(nameof(javaScriptEncoder));
-            }
-
             _viewEngine = viewEngine;
             _htmlGenerator = htmlGenerator;
             _htmlEncoder = htmlEncoder;
             _bufferScope = bufferScope;
             MetadataProvider = metadataProvider;
             UrlEncoder = urlEncoder;
-            JavaScriptEncoder = javaScriptEncoder;
         }
 
         /// <inheritdoc />
@@ -162,9 +154,6 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
         /// <inheritdoc />
         public UrlEncoder UrlEncoder { get; }
-
-        /// <inheritdoc />
-        public JavaScriptEncoder JavaScriptEncoder { get; }
 
         /// <inheritdoc />
         public IModelMetadataProvider MetadataProvider { get; }

@@ -261,8 +261,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
                 provider,
                 new TestViewBufferScope(),
                 new HtmlTestEncoder(),
-                UrlEncoder.Default,
-                JavaScriptEncoder.Default);
+                UrlEncoder.Default);
 
             if (innerHelperWrapper != null)
             {
@@ -285,8 +284,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
                 provider,
                 new TestViewBufferScope(),
                 new HtmlTestEncoder(),
-                UrlEncoder.Default,
-                JavaScriptEncoder.Default);
+                UrlEncoder.Default);
 
             var viewContext = new ViewContext(
                 actionContext,
