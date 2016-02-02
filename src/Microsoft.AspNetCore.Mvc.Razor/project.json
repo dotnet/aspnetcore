@@ -26,7 +26,8 @@
       "type": "build"
     },
     "Microsoft.Dnx.Compilation.CSharp.Common": "1.0.0-*",
-    "Microsoft.Dnx.Compilation.CSharp.Abstractions": "1.0.0-*"
+    "Microsoft.Dnx.Compilation.CSharp.Abstractions": "1.0.0-*",
+    "Microsoft.NETCore.Platforms": "1.0.1-*"
   },
   "frameworks": {
     "net451": {

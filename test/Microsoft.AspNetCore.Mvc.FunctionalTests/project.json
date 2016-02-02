@@ -38,6 +38,7 @@
     "Microsoft.AspNetCore.WebUtilities": "1.0.0-*",
     "Microsoft.Extensions.Configuration.Json": "1.0.0-*",
     "Microsoft.Extensions.Logging.Testing": "1.0.0-*",
+    "Microsoft.NETCore.Platforms": "1.0.1-*",
     "MvcSandbox": "1.0.0",
     "MvcSubAreaSample.Web": "1.0.0",
     "RazorPageExecutionInstrumentationWebSite": "1.0.0",

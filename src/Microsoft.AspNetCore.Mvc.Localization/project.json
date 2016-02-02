@@ -13,7 +13,8 @@
     "Microsoft.Extensions.PropertyHelper.Sources": {
       "version": "1.0.0-*",
       "type": "build"
-    }
+    },
+    "Microsoft.NETCore.Platforms": "1.0.1-*"
   },
   "frameworks": {
     "net451": {},

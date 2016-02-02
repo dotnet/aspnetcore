@@ -6,6 +6,7 @@
     "Microsoft.AspNetCore.Mvc": "1.0.0-*",
     "Microsoft.AspNetCore.Mvc.Formatters.Xml": "1.0.0-*",
     "Microsoft.Extensions.DependencyInjection": "1.0.0-*",
+    "Microsoft.NETCore.Platforms": "1.0.1-*",
     "xunit.runner.aspnet": "2.0.0-aspnet-*"
   },
   "commands": {
