@@ -105,7 +105,11 @@ default NUGET_FEED = 'https://api.nuget.org/v3/index.json'
   
 #build-test target='compile' if='Directory.Exists("test") && !BuildSrcOnly'
   @{
-    var projectFiles = Files.Include("test/**/project.json").ToList();
+    var projectFiles = Files.Include("test/**/project.json")
+      // weird bug in double-star globbing can include any file ending in project.json as well
+      .Where(f => Path.GetFileName(f).Equals("project.json", StringComparison.OrdinalIgnoreCase))
+      .ToList();
+
     projectFiles.ForEach(projectFile => DotnetBuild(projectFile, Configuration));
   }
 
