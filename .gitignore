@@ -25,3 +25,5 @@ nuget.exe
 *.ipch
 *.sln.ide
 project.lock.json
+.testPublish/
+.build/

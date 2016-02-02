@@ -1,0 +1,26 @@
+{
+  "version": "1.0.0-*",
+  "compilationOptions": {
+    "warningsAsErrors": true,
+    "keyFile": "../../tools/Key.snk"
+  },
+  "dependencies": {
+    "Microsoft.DotNet.ProjectModel": "1.0.0-*",
+    "Microsoft.Extensions.FileProviders.Abstractions": "1.0.0-*",
+    "Microsoft.Extensions.FileProviders.Physical": "1.0.0-*",
+    "Microsoft.Extensions.PlatformAbstractions": "1.0.0-*",
+    "Microsoft.Extensions.CompilationAbstractions": "1.0.0-*",
+    "Microsoft.Extensions.JsonParser.Sources": {
+      "type": "build",
+      "version": "1.0.0-*"
+    },
+    "Microsoft.Extensions.Logging.Abstractions": "1.0.0-*",
+    "Microsoft.Extensions.FileSystemGlobbing": "1.0.0-*",
+    "Microsoft.NETCore.Platforms": "1.0.1-*"
+  },
+  "frameworks": {
+    "dnxcore50": {
+      "imports": "portable-net451+win8"
+    }
+  }
+}
