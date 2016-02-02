@@ -11,8 +11,7 @@
   },
   "dependencies": {
     "Microsoft.AspNetCore.Identity": "1.0.0-*",
-    "Microsoft.EntityFrameworkCore.Relational": "1.0.0-*",
-    "Microsoft.NETCore.Platforms": "1.0.1-*"
+    "Microsoft.EntityFrameworkCore.Relational": "1.0.0-*"
   },
   "frameworks": {
     "net451": {

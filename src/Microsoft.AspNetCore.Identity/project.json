@@ -12,8 +12,7 @@
   "dependencies": {
     "Microsoft.AspNetCore.Authentication.Cookies": "1.0.0-*",
     "Microsoft.AspNetCore.Cryptography.KeyDerivation": "1.0.0-*",
-    "Microsoft.AspNetCore.Hosting.Abstractions": "1.0.0-*",
-    "Microsoft.NETCore.Platforms": "1.0.1-*"
+    "Microsoft.AspNetCore.Hosting.Abstractions": "1.0.0-*"
   },
   "frameworks": {
     "net451": {},
