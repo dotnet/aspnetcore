@@ -1,4 +1,0 @@
-{
-  "server": "Microsoft.AspNetCore.Server.Kestrel",
-  "server.urls": "http://localhost:5001/base"
-}
