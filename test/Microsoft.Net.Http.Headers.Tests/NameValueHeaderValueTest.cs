@@ -365,6 +365,39 @@ namespace Microsoft.Net.Http.Headers
         }
 
         [Fact]
+        public void ParseStrictList_SetOfValidValueStrings_ParsedCorrectly()
+        {
+            var inputs = new[]
+            {
+                "",
+                "name=value1",
+                "",
+                " name = value2 ",
+                "\r\n name =value3\r\n ",
+                "name=\"value 4\"",
+                "name=\"value会5\"",
+                "name=value6,name=value7",
+                "name=\"value 8\", name= \"value 9\"",
+            };
+            var results = NameValueHeaderValue.ParseStrictList(inputs);
+
+            var expectedResults = new[]
+            {
+                new NameValueHeaderValue("name", "value1"),
+                new NameValueHeaderValue("name", "value2"),
+                new NameValueHeaderValue("name", "value3"),
+                new NameValueHeaderValue("name", "\"value 4\""),
+                new NameValueHeaderValue("name", "\"value会5\""),
+                new NameValueHeaderValue("name", "value6"),
+                new NameValueHeaderValue("name", "value7"),
+                new NameValueHeaderValue("name", "\"value 8\""),
+                new NameValueHeaderValue("name", "\"value 9\""),
+            }.ToList();
+
+            Assert.Equal(expectedResults, results);
+        }
+
+        [Fact]
         public void TryParseList_SetOfValidValueStrings_ParsedCorrectly()
         {
             var inputs = new[]
@@ -399,7 +432,41 @@ namespace Microsoft.Net.Http.Headers
         }
 
         [Fact]
-        public void ParseList_WithSomeInvlaidValues_Throws()
+        public void TryParseStrictList_SetOfValidValueStrings_ParsedCorrectly()
+        {
+            var inputs = new[]
+            {
+                "",
+                "name=value1",
+                "",
+                " name = value2 ",
+                "\r\n name =value3\r\n ",
+                "name=\"value 4\"",
+                "name=\"value会5\"",
+                "name=value6,name=value7",
+                "name=\"value 8\", name= \"value 9\"",
+            };
+            IList<NameValueHeaderValue> results;
+            Assert.True(NameValueHeaderValue.TryParseStrictList(inputs, out results));
+
+            var expectedResults = new[]
+            {
+                new NameValueHeaderValue("name", "value1"),
+                new NameValueHeaderValue("name", "value2"),
+                new NameValueHeaderValue("name", "value3"),
+                new NameValueHeaderValue("name", "\"value 4\""),
+                new NameValueHeaderValue("name", "\"value会5\""),
+                new NameValueHeaderValue("name", "value6"),
+                new NameValueHeaderValue("name", "value7"),
+                new NameValueHeaderValue("name", "\"value 8\""),
+                new NameValueHeaderValue("name", "\"value 9\""),
+            }.ToList();
+
+            Assert.Equal(expectedResults, results);
+        }
+
+        [Fact]
+        public void ParseList_WithSomeInvlaidValues_ExcludesInvalidValues()
         {
             var inputs = new[]
             {
@@ -413,11 +480,47 @@ namespace Microsoft.Net.Http.Headers
                 "name8=value8,name9=value9",
                 "name10=\"value 10\", name11= \"value 11\"",
             };
-            Assert.Throws<FormatException>(() => NameValueHeaderValue.ParseList(inputs));
+            var results = NameValueHeaderValue.ParseList(inputs);
+
+            var expectedResults = new[]
+            {
+                new NameValueHeaderValue("name1", "value1"),
+                new NameValueHeaderValue("name2"),
+                new NameValueHeaderValue("name3", "3"),
+                new NameValueHeaderValue("a"),
+                new NameValueHeaderValue("name4", "value4"),
+                new NameValueHeaderValue("b"),
+                new NameValueHeaderValue("6"),
+                new NameValueHeaderValue("name7", "\"value会7\""),
+                new NameValueHeaderValue("name8", "value8"),
+                new NameValueHeaderValue("name9", "value9"),
+                new NameValueHeaderValue("name10", "\"value 10\""),
+                new NameValueHeaderValue("name11", "\"value 11\""),
+            }.ToList();
+
+            Assert.Equal(expectedResults, results);
         }
 
         [Fact]
-        public void TryParseList_WithSomeInvlaidValues_ReturnsFalse()
+        public void ParseStrictList_WithSomeInvlaidValues_Throws()
+        {
+            var inputs = new[]
+            {
+                "",
+                "name1=value1",
+                "name2",
+                " name3 = 3, value a",
+                "name4 =value4, name5 = value5 b",
+                "name6=\"value 6",
+                "name7=\"value会7\"",
+                "name8=value8,name9=value9",
+                "name10=\"value 10\", name11= \"value 11\"",
+            };
+            Assert.Throws<FormatException>(() => NameValueHeaderValue.ParseStrictList(inputs));
+        }
+
+        [Fact]
+        public void TryParseList_WithSomeInvlaidValues_ExcludesInvalidValues()
         {
             var inputs = new[]
             {
@@ -432,7 +535,44 @@ namespace Microsoft.Net.Http.Headers
                 "name10=\"value 10\", name11= \"value 11\"",
             };
             IList<NameValueHeaderValue> results;
-            Assert.False(NameValueHeaderValue.TryParseList(inputs, out results));
+            Assert.True(NameValueHeaderValue.TryParseList(inputs, out results));
+
+            var expectedResults = new[]
+            {
+                new NameValueHeaderValue("name1", "value1"),
+                new NameValueHeaderValue("name2"),
+                new NameValueHeaderValue("name3", "3"),
+                new NameValueHeaderValue("a"),
+                new NameValueHeaderValue("name4", "value4"),
+                new NameValueHeaderValue("b"),
+                new NameValueHeaderValue("6"),
+                new NameValueHeaderValue("name7", "\"value会7\""),
+                new NameValueHeaderValue("name8", "value8"),
+                new NameValueHeaderValue("name9", "value9"),
+                new NameValueHeaderValue("name10", "\"value 10\""),
+                new NameValueHeaderValue("name11", "\"value 11\""),
+            }.ToList();
+
+            Assert.Equal(expectedResults, results);
+        }
+
+        [Fact]
+        public void TryParseStrictList_WithSomeInvlaidValues_ReturnsFalse()
+        {
+            var inputs = new[]
+            {
+                "",
+                "name1=value1",
+                "name2",
+                " name3 = 3, value a",
+                "name4 =value4, name5 = value5 b",
+                "name6=\"value 6",
+                "name7=\"value会7\"",
+                "name8=value8,name9=value9",
+                "name10=\"value 10\", name11= \"value 11\"",
+            };
+            IList<NameValueHeaderValue> results;
+            Assert.False(NameValueHeaderValue.TryParseStrictList(inputs, out results));
         }
 
         #region Helper methods

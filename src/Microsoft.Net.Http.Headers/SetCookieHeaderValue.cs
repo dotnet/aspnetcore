@@ -156,9 +156,19 @@ namespace Microsoft.Net.Http.Headers
             return MultipleValueParser.ParseValues(inputs);
         }
 
+        public static IList<SetCookieHeaderValue> ParseStrictList(IList<string> inputs)
+        {
+            return MultipleValueParser.ParseStrictValues(inputs);
+        }
+
         public static bool TryParseList(IList<string> inputs, out IList<SetCookieHeaderValue> parsedValues)
         {
             return MultipleValueParser.TryParseValues(inputs, out parsedValues);
+        }
+
+        public static bool TryParseStrictList(IList<string> inputs, out IList<SetCookieHeaderValue> parsedValues)
+        {
+            return MultipleValueParser.TryParseStrictValues(inputs, out parsedValues);
         }
 
         // name=value; expires=Sun, 06 Nov 1994 08:49:37 GMT; max-age=86400; domain=domain1; path=path1; secure; httponly
@@ -195,12 +205,9 @@ namespace Microsoft.Net.Http.Headers
                 return 0;
             }
 
-            string value;
             // value or "quoted value"
-            itemLength = CookieHeaderValue.GetCookieValueLength(input, offset, out value);
             // The value may be empty
-            result._value = input.Substring(offset, itemLength);
-            offset += itemLength;
+            result._value = CookieHeaderValue.GetCookieValue(input, ref offset);
 
             // *(';' SP cookie-av)
             while (offset < input.Length)

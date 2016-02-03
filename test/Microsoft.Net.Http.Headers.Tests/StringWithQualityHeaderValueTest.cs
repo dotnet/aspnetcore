@@ -234,6 +234,43 @@ namespace Microsoft.Net.Http.Headers
         }
 
         [Fact]
+        public void ParseStrictList_SetOfValidValueStrings_ParsedCorrectly()
+        {
+            var inputs = new[]
+            {
+                "",
+                "text1",
+                "text2,",
+                "textA,textB",
+                "text3;q=0.5",
+                "text4;q=0.5,",
+                " text5 ; q = 0.50 ",
+                "\r\n text6 ; q = 0.05 ",
+                "text7,text8;q=0.5",
+                " text9 , text10 ; q = 0.5 ",
+            };
+            IList<StringWithQualityHeaderValue> results = StringWithQualityHeaderValue.ParseStrictList(inputs);
+
+            var expectedResults = new[]
+            {
+                new StringWithQualityHeaderValue("text1"),
+                new StringWithQualityHeaderValue("text2"),
+                new StringWithQualityHeaderValue("textA"),
+                new StringWithQualityHeaderValue("textB"),
+                new StringWithQualityHeaderValue("text3", 0.5),
+                new StringWithQualityHeaderValue("text4", 0.5),
+                new StringWithQualityHeaderValue("text5", 0.5),
+                new StringWithQualityHeaderValue("text6", 0.05),
+                new StringWithQualityHeaderValue("text7"),
+                new StringWithQualityHeaderValue("text8", 0.5),
+                new StringWithQualityHeaderValue("text9"),
+                new StringWithQualityHeaderValue("text10", 0.5),
+            }.ToList();
+
+            Assert.Equal(expectedResults, results);
+        }
+
+        [Fact]
         public void TryParseList_SetOfValidValueStrings_ParsedCorrectly()
         {
             var inputs = new[]
@@ -272,7 +309,45 @@ namespace Microsoft.Net.Http.Headers
         }
 
         [Fact]
-        public void ParseList_WithSomeInvlaidValues_Throws()
+        public void TryParseStrictList_SetOfValidValueStrings_ParsedCorrectly()
+        {
+            var inputs = new[]
+            {
+                "",
+                "text1",
+                "text2,",
+                "textA,textB",
+                "text3;q=0.5",
+                "text4;q=0.5,",
+                " text5 ; q = 0.50 ",
+                "\r\n text6 ; q = 0.05 ",
+                "text7,text8;q=0.5",
+                " text9 , text10 ; q = 0.5 ",
+            };
+            IList<StringWithQualityHeaderValue> results;
+            Assert.True(StringWithQualityHeaderValue.TryParseStrictList(inputs, out results));
+
+            var expectedResults = new[]
+            {
+                new StringWithQualityHeaderValue("text1"),
+                new StringWithQualityHeaderValue("text2"),
+                new StringWithQualityHeaderValue("textA"),
+                new StringWithQualityHeaderValue("textB"),
+                new StringWithQualityHeaderValue("text3", 0.5),
+                new StringWithQualityHeaderValue("text4", 0.5),
+                new StringWithQualityHeaderValue("text5", 0.5),
+                new StringWithQualityHeaderValue("text6", 0.05),
+                new StringWithQualityHeaderValue("text7"),
+                new StringWithQualityHeaderValue("text8", 0.5),
+                new StringWithQualityHeaderValue("text9"),
+                new StringWithQualityHeaderValue("text10", 0.5),
+            }.ToList();
+
+            Assert.Equal(expectedResults, results);
+        }
+
+        [Fact]
+        public void ParseList_WithSomeInvlaidValues_IgnoresInvalidValues()
         {
             var inputs = new[]
             {
@@ -288,11 +363,49 @@ namespace Microsoft.Net.Http.Headers
                 "text7,text8;q=0.5",
                 " text9 , text10 ; q = 0.5 ",
             };
-            Assert.Throws<FormatException>(() => StringWithQualityHeaderValue.ParseList(inputs));
+            var results = StringWithQualityHeaderValue.ParseList(inputs);
+
+            var expectedResults = new[]
+            {
+                new StringWithQualityHeaderValue("text1"),
+                new StringWithQualityHeaderValue("1"),
+                new StringWithQualityHeaderValue("text2"),
+                new StringWithQualityHeaderValue("text3", 0.5),
+                new StringWithQualityHeaderValue("text4", 0.5),
+                new StringWithQualityHeaderValue("stuff"),
+                new StringWithQualityHeaderValue("text5", 0.5),
+                new StringWithQualityHeaderValue("text6", 0.05),
+                new StringWithQualityHeaderValue("text7"),
+                new StringWithQualityHeaderValue("text8", 0.5),
+                new StringWithQualityHeaderValue("text9"),
+                new StringWithQualityHeaderValue("text10", 0.5),
+            }.ToList();
+
+            Assert.Equal(expectedResults, results);
         }
 
         [Fact]
-        public void TryParseList_WithSomeInvlaidValues_ReturnsFalse()
+        public void ParseStrictList_WithSomeInvlaidValues_Throws()
+        {
+            var inputs = new[]
+            {
+                "",
+                "text1",
+                "text 1",
+                "text2",
+                "\"text 2\",",
+                "text3;q=0.5",
+                "text4;q=0.5, extra stuff",
+                " text5 ; q = 0.50 ",
+                "\r\n text6 ; q = 0.05 ",
+                "text7,text8;q=0.5",
+                " text9 , text10 ; q = 0.5 ",
+            };
+            Assert.Throws<FormatException>(() => StringWithQualityHeaderValue.ParseStrictList(inputs));
+        }
+
+        [Fact]
+        public void TryParseList_WithSomeInvlaidValues_IgnoresInvalidValues()
         {
             var inputs = new[]
             {
@@ -309,7 +422,46 @@ namespace Microsoft.Net.Http.Headers
                 " text9 , text10 ; q = 0.5 ",
             };
             IList<StringWithQualityHeaderValue> results;
-            Assert.False(StringWithQualityHeaderValue.TryParseList(inputs, out results));
+            Assert.True(StringWithQualityHeaderValue.TryParseList(inputs, out results));
+
+            var expectedResults = new[]
+            {
+                new StringWithQualityHeaderValue("text1"),
+                new StringWithQualityHeaderValue("1"),
+                new StringWithQualityHeaderValue("text2"),
+                new StringWithQualityHeaderValue("text3", 0.5),
+                new StringWithQualityHeaderValue("text4", 0.5),
+                new StringWithQualityHeaderValue("stuff"),
+                new StringWithQualityHeaderValue("text5", 0.5),
+                new StringWithQualityHeaderValue("text6", 0.05),
+                new StringWithQualityHeaderValue("text7"),
+                new StringWithQualityHeaderValue("text8", 0.5),
+                new StringWithQualityHeaderValue("text9"),
+                new StringWithQualityHeaderValue("text10", 0.5),
+            }.ToList();
+
+            Assert.Equal(expectedResults, results);
+        }
+
+        [Fact]
+        public void TryParseStrictList_WithSomeInvlaidValues_ReturnsFalse()
+        {
+            var inputs = new[]
+            {
+                "",
+                "text1",
+                "text 1",
+                "text2",
+                "\"text 2\",",
+                "text3;q=0.5",
+                "text4;q=0.5, extra stuff",
+                " text5 ; q = 0.50 ",
+                "\r\n text6 ; q = 0.05 ",
+                "text7,text8;q=0.5",
+                " text9 , text10 ; q = 0.5 ",
+            };
+            IList<StringWithQualityHeaderValue> results;
+            Assert.False(StringWithQualityHeaderValue.TryParseStrictList(inputs, out results));
         }
 
         #region Helper methods

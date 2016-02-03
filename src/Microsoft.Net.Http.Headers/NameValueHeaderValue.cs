@@ -158,9 +158,19 @@ namespace Microsoft.Net.Http.Headers
             return MultipleValueParser.ParseValues(input);
         }
 
+        public static IList<NameValueHeaderValue> ParseStrictList(IList<string> input)
+        {
+            return MultipleValueParser.ParseStrictValues(input);
+        }
+
         public static bool TryParseList(IList<string> input, out IList<NameValueHeaderValue> parsedValues)
         {
             return MultipleValueParser.TryParseValues(input, out parsedValues);
+        }
+
+        public static bool TryParseStrictList(IList<string> input, out IList<NameValueHeaderValue> parsedValues)
+        {
+            return MultipleValueParser.TryParseStrictValues(input, out parsedValues);
         }
 
         public override string ToString()

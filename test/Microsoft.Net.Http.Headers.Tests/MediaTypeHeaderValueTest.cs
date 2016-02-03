@@ -498,6 +498,24 @@ namespace Microsoft.Net.Http.Headers
         }
 
         [Fact]
+        public void ParseStrictList_SetOfValidValueStrings_ReturnsValues()
+        {
+            var inputs = new[] { "text/html,application/xhtml+xml,", "application/xml;q=0.9,image/webp,*/*;q=0.8" };
+            var results = MediaTypeHeaderValue.ParseStrictList(inputs);
+
+            var expectedResults = new[]
+            {
+                new MediaTypeHeaderValue("text/html"),
+                new MediaTypeHeaderValue("application/xhtml+xml"),
+                new MediaTypeHeaderValue("application/xml", 0.9),
+                new MediaTypeHeaderValue("image/webp"),
+                new MediaTypeHeaderValue("*/*", 0.8),
+            }.ToList();
+
+            Assert.Equal(expectedResults, results);
+        }
+
+        [Fact]
         public void TryParseList_SetOfValidValueStrings_ReturnsTrue()
         {
             var inputs = new[] { "text/html,application/xhtml+xml,", "application/xml;q=0.9,image/webp,*/*;q=0.8" };
@@ -517,18 +535,60 @@ namespace Microsoft.Net.Http.Headers
         }
 
         [Fact]
-        public void ParseList_WithSomeInvlaidValues_Throws()
+        public void TryParseStrictList_SetOfValidValueStrings_ReturnsTrue()
+        {
+            var inputs = new[] { "text/html,application/xhtml+xml,", "application/xml;q=0.9,image/webp,*/*;q=0.8" };
+            IList<MediaTypeHeaderValue> results;
+            Assert.True(MediaTypeHeaderValue.TryParseStrictList(inputs, out results));
+
+            var expectedResults = new[]
+            {
+                new MediaTypeHeaderValue("text/html"),
+                new MediaTypeHeaderValue("application/xhtml+xml"),
+                new MediaTypeHeaderValue("application/xml", 0.9),
+                new MediaTypeHeaderValue("image/webp"),
+                new MediaTypeHeaderValue("*/*", 0.8),
+            }.ToList();
+
+            Assert.Equal(expectedResults, results);
+        }
+
+        [Fact]
+        public void ParseList_WithSomeInvlaidValues_IgnoresInvalidValues()
         {
             var inputs = new[]
             {
                 "text/html,application/xhtml+xml, ignore-this, ignore/this",
                 "application/xml;q=0.9,image/webp,*/*;q=0.8"
             };
-            Assert.Throws<FormatException>(() => MediaTypeHeaderValue.ParseList(inputs));
+            var results = MediaTypeHeaderValue.ParseList(inputs);
+
+            var expectedResults = new[]
+            {
+                new MediaTypeHeaderValue("text/html"),
+                new MediaTypeHeaderValue("application/xhtml+xml"),
+                new MediaTypeHeaderValue("ignore/this"),
+                new MediaTypeHeaderValue("application/xml", 0.9),
+                new MediaTypeHeaderValue("image/webp"),
+                new MediaTypeHeaderValue("*/*", 0.8),
+            }.ToList();
+
+            Assert.Equal(expectedResults, results);
         }
 
         [Fact]
-        public void TryParseList_WithSomeInvlaidValues_ReturnsFalse()
+        public void ParseStrictList_WithSomeInvlaidValues_Throws()
+        {
+            var inputs = new[]
+            {
+                "text/html,application/xhtml+xml, ignore-this, ignore/this",
+                "application/xml;q=0.9,image/webp,*/*;q=0.8"
+            };
+            Assert.Throws<FormatException>(() => MediaTypeHeaderValue.ParseStrictList(inputs));
+        }
+
+        [Fact]
+        public void TryParseList_WithSomeInvlaidValues_IgnoresInvalidValues()
         {
             var inputs = new[]
             {
@@ -537,7 +597,32 @@ namespace Microsoft.Net.Http.Headers
                 "application/xml;q=0 4"
             };
             IList<MediaTypeHeaderValue> results;
-            Assert.False(MediaTypeHeaderValue.TryParseList(inputs, out results));
+            Assert.True(MediaTypeHeaderValue.TryParseList(inputs, out results));
+
+            var expectedResults = new[]
+            {
+                new MediaTypeHeaderValue("text/html"),
+                new MediaTypeHeaderValue("application/xhtml+xml"),
+                new MediaTypeHeaderValue("ignore/this"),
+                new MediaTypeHeaderValue("application/xml", 0.9),
+                new MediaTypeHeaderValue("image/webp"),
+                new MediaTypeHeaderValue("*/*", 0.8),
+            }.ToList();
+
+            Assert.Equal(expectedResults, results);
+        }
+
+        [Fact]
+        public void TryParseStrictList_WithSomeInvlaidValues_ReturnsFalse()
+        {
+            var inputs = new[]
+            {
+                "text/html,application/xhtml+xml, ignore-this, ignore/this",
+                "application/xml;q=0.9,image/webp,*/*;q=0.8",
+                "application/xml;q=0 4"
+            };
+            IList<MediaTypeHeaderValue> results;
+            Assert.False(MediaTypeHeaderValue.TryParseStrictList(inputs, out results));
         }
 
         [Theory]

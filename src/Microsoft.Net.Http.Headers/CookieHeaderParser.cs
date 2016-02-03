@@ -7,11 +7,6 @@ namespace Microsoft.Net.Http.Headers
 {
     internal class CookieHeaderParser : HttpHeaderParser<CookieHeaderValue>
     {
-        // The Cache-Control header is special: It is a header supporting a list of values, but we represent the list
-        // as _one_ instance of CacheControlHeaderValue. I.e we set 'SupportsMultipleValues' to 'true' since it is
-        // OK to have multiple Cache-Control headers in a request/response message. However, after parsing all
-        // Cache-Control headers, only one instance of CacheControlHeaderValue is created (if all headers contain valid
-        // values, otherwise we may have multiple strings containing the invalid values).
         internal CookieHeaderParser(bool supportsMultipleValues)
             : base(supportsMultipleValues)
         {
@@ -49,14 +44,11 @@ namespace Microsoft.Net.Http.Headers
             }
 
             CookieHeaderValue result = null;
-            int length = CookieHeaderValue.GetCookieLength(value, current, out result);
-
-            if (length == 0)
+            if (!CookieHeaderValue.TryGetCookieLength(value, ref current, out result))
             {
                 return false;
             }
 
-            current = current + length;
             current = GetNextNonEmptyOrWhitespaceIndex(value, current, SupportsMultipleValues, out separatorFound);
 
             // If we support multiple values and we've not reached the end of the string, then we must have a separator.
@@ -91,6 +83,7 @@ namespace Microsoft.Net.Http.Headers
 
             if (skipEmptyValues)
             {
+                // Most headers only split on ',', but cookies primarily split on ';'
                 while ((current < input.Length) && ((input[current] == ',') || (input[current] == ';')))
                 {
                     current++; // skip delimiter.

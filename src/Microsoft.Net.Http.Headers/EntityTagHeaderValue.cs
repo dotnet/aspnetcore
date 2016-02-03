@@ -129,9 +129,19 @@ namespace Microsoft.Net.Http.Headers
             return MultipleValueParser.ParseValues(inputs);
         }
 
+        public static IList<EntityTagHeaderValue> ParseStrictList(IList<string> inputs)
+        {
+            return MultipleValueParser.ParseStrictValues(inputs);
+        }
+
         public static bool TryParseList(IList<string> inputs, out IList<EntityTagHeaderValue> parsedValues)
         {
             return MultipleValueParser.TryParseValues(inputs, out parsedValues);
+        }
+
+        public static bool TryParseStrictList(IList<string> inputs, out IList<EntityTagHeaderValue> parsedValues)
+        {
+            return MultipleValueParser.TryParseStrictValues(inputs, out parsedValues);
         }
 
         internal static int GetEntityTagLength(string input, int startIndex, out EntityTagHeaderValue parsedValue)

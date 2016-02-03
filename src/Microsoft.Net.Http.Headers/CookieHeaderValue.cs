@@ -107,22 +107,31 @@ namespace Microsoft.Net.Http.Headers
             return MultipleValueParser.ParseValues(inputs);
         }
 
+        public static IList<CookieHeaderValue> ParseStrictList(IList<string> inputs)
+        {
+            return MultipleValueParser.ParseStrictValues(inputs);
+        }
+
         public static bool TryParseList(IList<string> inputs, out IList<CookieHeaderValue> parsedValues)
         {
             return MultipleValueParser.TryParseValues(inputs, out parsedValues);
         }
 
-        // name=value; name="value"
-        internal static int GetCookieLength(string input, int startIndex, out CookieHeaderValue parsedValue)
+        public static bool TryParseStrictList(IList<string> inputs, out IList<CookieHeaderValue> parsedValues)
         {
-            Contract.Requires(startIndex >= 0);
-            var offset = startIndex;
+            return MultipleValueParser.TryParseStrictValues(inputs, out parsedValues);
+        }
+
+        // name=value; name="value"
+        internal static bool TryGetCookieLength(string input, ref int offset, out CookieHeaderValue parsedValue)
+        {
+            Contract.Requires(offset >= 0);
 
             parsedValue = null;
 
             if (string.IsNullOrEmpty(input) || (offset >= input.Length))
             {
-                return 0;
+                return false;
             }
 
             var result = new CookieHeaderValue();
@@ -135,7 +144,7 @@ namespace Microsoft.Net.Http.Headers
             var itemLength = HttpRuleParser.GetTokenLength(input, offset);
             if (itemLength == 0)
             {
-                return 0;
+                return false;
             }
             result._name = input.Substring(offset, itemLength);
             offset += itemLength;
@@ -143,36 +152,33 @@ namespace Microsoft.Net.Http.Headers
             // = (no spaces)
             if (!ReadEqualsSign(input, ref offset))
             {
-                return 0;
+                return false;
             }
 
-            string value;
             // value or "quoted value"
-            itemLength = GetCookieValueLength(input, offset, out value);
             // The value may be empty
-            result._value = input.Substring(offset, itemLength);
-            offset += itemLength;
+            result._value = GetCookieValue(input, ref offset);
 
             parsedValue = result;
-            return offset - startIndex;
+            return true;
         }
 
         // cookie-value      = *cookie-octet / ( DQUOTE* cookie-octet DQUOTE )
         // cookie-octet      = %x21 / %x23-2B / %x2D-3A / %x3C-5B / %x5D-7E
         //                     ; US-ASCII characters excluding CTLs, whitespace DQUOTE, comma, semicolon, and backslash
-        internal static int GetCookieValueLength(string input, int startIndex, out string value)
+        internal static string GetCookieValue(string input, ref int offset)
         {
             Contract.Requires(input != null);
-            Contract.Requires(startIndex >= 0);
-            Contract.Ensures((Contract.Result<int>() >= 0) && (Contract.Result<int>() <= (input.Length - startIndex)));
+            Contract.Requires(offset >= 0);
+            Contract.Ensures((Contract.Result<int>() >= 0) && (Contract.Result<int>() <= (input.Length - offset)));
 
-            value = null;
-            if (startIndex >= input.Length)
+            var startIndex = offset;
+
+            if (offset >= input.Length)
             {
-                return 0;
+                return string.Empty;
             }
             var inQuotes = false;
-            var offset = startIndex;
 
             if (input[offset] == '"')
             {
@@ -195,19 +201,19 @@ namespace Microsoft.Net.Http.Headers
             {
                 if (offset == input.Length || input[offset] != '"')
                 {
-                    return 0; // Missing final quote
+                    // Missing final quote
+                    return string.Empty;
                 }
                 offset++;
             }
 
             int length = offset - startIndex;
-            if (length == 0)
+            if (offset > startIndex)
             {
-                return 0;
+                return input.Substring(startIndex, length);
             }
 
-            value = input.Substring(startIndex, length);
-            return length;
+            return string.Empty;
         }
 
         private static bool ReadEqualsSign(string input, ref int offset)
@@ -252,8 +258,9 @@ namespace Microsoft.Net.Http.Headers
                 throw new ArgumentNullException(nameof(value));
             }
 
-            string temp;
-            if (GetCookieValueLength(value, 0, out temp) != value.Length)
+            var offset = 0;
+            var result = GetCookieValue(value, ref offset);
+            if (result.Length != value.Length)
             {
                 throw new ArgumentException("Invalid cookie value: " + value, parameterName);
             }

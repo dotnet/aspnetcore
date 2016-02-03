@@ -119,9 +119,19 @@ namespace Microsoft.Net.Http.Headers
             return MultipleValueParser.ParseValues(input);
         }
 
+        public static IList<StringWithQualityHeaderValue> ParseStrictList(IList<string> input)
+        {
+            return MultipleValueParser.ParseStrictValues(input);
+        }
+
         public static bool TryParseList(IList<string> input, out IList<StringWithQualityHeaderValue> parsedValues)
         {
             return MultipleValueParser.TryParseValues(input, out parsedValues);
+        }
+
+        public static bool TryParseStrictList(IList<string> input, out IList<StringWithQualityHeaderValue> parsedValues)
+        {
+            return MultipleValueParser.TryParseStrictValues(input, out parsedValues);
         }
 
         private static int GetStringWithQualityLength(string input, int startIndex, out StringWithQualityHeaderValue parsedValue)

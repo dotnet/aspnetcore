@@ -39,13 +39,23 @@ namespace Microsoft.Net.Http.Headers
             T result;
             if (!TryParseValue(value, ref index, out result))
             {
-                throw new FormatException(string.Format(CultureInfo.InvariantCulture, "Invalid value '{0}'.",
-                    value?.Substring(index) ?? "<null>"));
+                throw new FormatException(string.Format(CultureInfo.InvariantCulture,
+                    "The header contains invalid values at index {0}: '{1}'", index, value ?? "<null>"));
             }
             return result;
         }
 
         public virtual bool TryParseValues(IList<string> values, out IList<T> parsedValues)
+        {
+            return TryParseValues(values, strict: false, parsedValues: out parsedValues);
+        }
+
+        public virtual bool TryParseStrictValues(IList<string> values, out IList<T> parsedValues)
+        {
+            return TryParseValues(values, strict: true, parsedValues: out parsedValues);
+        }
+
+        protected virtual bool TryParseValues(IList<string> values, bool strict, out IList<T> parsedValues)
         {
             Contract.Assert(_supportsMultipleValues);
             // If a parser returns an empty list, it means there was no value, but that's valid (e.g. "Accept: "). The caller
@@ -71,9 +81,14 @@ namespace Microsoft.Net.Http.Headers
                             results.Add(output);
                         }
                     }
-                    else
+                    else if (strict)
                     {
                         return false;
+                    }
+                    else
+                    {
+                        // Skip the invalid values and keep trying.
+                        index++;
                     }
                 }
             }
@@ -85,7 +100,17 @@ namespace Microsoft.Net.Http.Headers
             return false;
         }
 
-        public IList<T> ParseValues(IList<string> values)
+        public virtual IList<T> ParseValues(IList<string> values)
+        {
+            return ParseValues(values, strict: false);
+        }
+
+        public virtual IList<T> ParseStrictValues(IList<string> values)
+        {
+            return ParseValues(values, strict: true);
+        }
+
+        protected virtual IList<T> ParseValues(IList<string> values, bool strict)
         {
             Contract.Assert(_supportsMultipleValues);
             // If a parser returns an empty list, it means there was no value, but that's valid (e.g. "Accept: "). The caller
@@ -110,10 +135,15 @@ namespace Microsoft.Net.Http.Headers
                             parsedValues.Add(output);
                         }
                     }
+                    else if (strict)
+                    {
+                        throw new FormatException(string.Format(CultureInfo.InvariantCulture,
+                            "The header contains invalid values at index {0}: '{1}'", index, value));
+                    }
                     else
                     {
-                        throw new FormatException(string.Format(CultureInfo.InvariantCulture, "Invalid values '{0}'.",
-                            value.Substring(index)));
+                        // Skip the invalid values and keep trying.
+                        index++;
                     }
                 }
             }
