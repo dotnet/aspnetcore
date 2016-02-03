@@ -26,7 +26,8 @@
     "dotnet5.4": {
       "dependencies": {
         "System.Threading": "4.0.11-*"
-      }
+      },
+      "imports": "portable-net451+win8"
     }
   }
 }

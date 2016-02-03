@@ -6,6 +6,7 @@
     "Microsoft.EntityFrameworkCore.InMemory": "1.0.0-*",
     "Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore": "1.0.0-*",
     "Microsoft.AspNetCore.Testing": "1.0.0-*",
+    "Microsoft.NETCore.Platforms": "1.0.1-*",
     "xunit": "2.1.0"
   },
   "compile": [
@@ -31,7 +32,8 @@
       "dependencies": {
         "moq.netcore": "4.4.0-beta8",
         "xunit.runner.aspnet": "2.0.0-aspnet-*"
-      }
+      },
+      "imports": "portable-net451+win8"
     }
   }
 }

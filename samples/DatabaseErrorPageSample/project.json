@@ -4,7 +4,8 @@
     "Microsoft.AspNetCore.IISPlatformHandler": "1.0.0-*",
     "Microsoft.EntityFrameworkCore.SqlServer": "1.0.0-*",
     "Microsoft.EntityFrameworkCore.Commands": "1.0.0-*",
-    "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*"
+    "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*",
+    "Microsoft.NETCore.Platforms": "1.0.1-*"
   },
   "compilationOptions": {
     "emitEntryPoint": true
@@ -14,6 +15,8 @@
   },
   "frameworks": {
     "dnx451": {},
-    "dnxcore50": {}
+    "dnxcore50": {
+      "imports": "portable-net451+win8"
+    }
   }
 }

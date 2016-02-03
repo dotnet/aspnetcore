@@ -10,6 +10,7 @@
     "Microsoft.Extensions.DependencyInjection": "1.0.0-*",
     "Microsoft.Extensions.DiagnosticAdapter": "1.0.0-*",
     "Microsoft.Extensions.FileProviders.Embedded": "1.0.0-*",
+    "Microsoft.NETCore.Platforms": "1.0.1-*",
     "xunit": "2.1.0"
   },
   "frameworks": {
@@ -27,7 +28,8 @@
       "dependencies": {
         "moq.netcore": "4.4.0-beta8",
         "xunit.runner.aspnet": "2.0.0-aspnet-*"
-      }
+      },
+      "imports": "portable-net451+win8"
     }
   },
   "testRunner": "xunit",

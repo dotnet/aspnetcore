@@ -10,7 +10,8 @@
     "url": "git://github.com/aspnet/diagnostics"
   },
   "dependencies": {
-    "Microsoft.AspNetCore.Razor": "1.0.0-*"
+    "Microsoft.AspNetCore.Razor": "1.0.0-*",
+    "Microsoft.NETCore.Platforms": "1.0.1-*"
   },
   "frameworks": {
     "dnx451": {},
