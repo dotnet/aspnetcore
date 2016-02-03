@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNetCore.Antiforgery
+namespace Microsoft.AspNetCore.Antiforgery.Internal
 {
     /// <summary>
     /// Provides access to the antiforgery system, which provides protection against

@@ -4,7 +4,7 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 
-namespace Microsoft.AspNetCore.Antiforgery
+namespace Microsoft.AspNetCore.Antiforgery.Internal
 {
     // Provides an abstraction around how tokens are persisted and retrieved for a request
     public interface IAntiforgeryTokenStore

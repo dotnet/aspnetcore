@@ -4,13 +4,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNetCore.Antiforgery.Internal;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.ObjectPool;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Antiforgery
+namespace Microsoft.AspNetCore.Antiforgery.Internal
 {
     public class DefaultAntiforgeryTokenSerializerTest
     {

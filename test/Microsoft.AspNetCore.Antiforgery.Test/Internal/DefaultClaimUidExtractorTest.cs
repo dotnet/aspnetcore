@@ -4,12 +4,11 @@
 using System;
 using System.Linq;
 using System.Security.Claims;
-using Microsoft.AspNetCore.Antiforgery.Internal;
 using Microsoft.Extensions.ObjectPool;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Antiforgery
+namespace Microsoft.AspNetCore.Antiforgery.Internal
 {
     public class DefaultClaimUidExtractorTest
     {

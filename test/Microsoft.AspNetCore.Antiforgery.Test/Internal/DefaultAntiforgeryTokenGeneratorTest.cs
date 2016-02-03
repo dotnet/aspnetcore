@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Testing;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Antiforgery
+namespace Microsoft.AspNetCore.Antiforgery.Internal
 {
     public class DefaultAntiforgeryTokenGeneratorProviderTest
     {
@@ -190,7 +190,7 @@ namespace Microsoft.AspNetCore.Antiforgery
                         .Returns("my-username");
 
             httpContext.User = new ClaimsPrincipal(mockIdentity.Object);
-            
+
             var claimUidExtractor = new Mock<IClaimUidExtractor>().Object;
 
             var tokenProvider = new DefaultAntiforgeryTokenGenerator(
@@ -325,7 +325,7 @@ namespace Microsoft.AspNetCore.Antiforgery
                 claimUidExtractor: null,
                 additionalDataProvider: null);
 
-            string expectedMessage = 
+            string expectedMessage =
                 "Validation of the provided antiforgery token failed. " +
                 "The cookie token and the request token were swapped.";
 

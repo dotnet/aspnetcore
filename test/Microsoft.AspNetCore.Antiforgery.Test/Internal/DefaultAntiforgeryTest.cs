@@ -13,7 +13,7 @@ using Microsoft.Extensions.WebEncoders.Testing;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Antiforgery
+namespace Microsoft.AspNetCore.Antiforgery.Internal
 {
     public class DefaultAntiforgeryTest
     {
@@ -186,7 +186,7 @@ namespace Microsoft.AspNetCore.Antiforgery
             var antiforgery = GetAntiforgery(context);
             var encoder = new HtmlTestEncoder();
 
-            // Setup so that the null cookie token returned is treated as invalid.		
+            // Setup so that the null cookie token returned is treated as invalid.
             context.TokenGenerator
                 .Setup(o => o.IsCookieTokenValid(null))
                 .Returns(false);
@@ -226,7 +226,7 @@ namespace Microsoft.AspNetCore.Antiforgery
                 .Setup(o => o.GetCookieToken(context.HttpContext))
                 .Throws(new Exception("should be swallowed"));
 
-            // Setup so that the null cookie token returned is treated as invalid.		
+            // Setup so that the null cookie token returned is treated as invalid.
             context.TokenGenerator
                 .Setup(o => o.IsCookieTokenValid(null))
                 .Returns(false);

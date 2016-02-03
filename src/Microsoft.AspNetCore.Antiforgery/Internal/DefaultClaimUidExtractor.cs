@@ -7,7 +7,7 @@ using System.Linq;
 using System.Security.Claims;
 using Microsoft.Extensions.ObjectPool;
 
-namespace Microsoft.AspNetCore.Antiforgery
+namespace Microsoft.AspNetCore.Antiforgery.Internal
 {
     /// <summary>
     /// Default implementation of <see cref="IClaimUidExtractor"/>.

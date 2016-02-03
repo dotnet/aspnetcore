@@ -3,7 +3,7 @@
 
 using Microsoft.AspNetCore.Http;
 
-namespace Microsoft.AspNetCore.Antiforgery
+namespace Microsoft.AspNetCore.Antiforgery.Internal
 {
     /// <summary>
     /// A default <see cref="IAntiforgeryAdditionalDataProvider"/> implementation.
