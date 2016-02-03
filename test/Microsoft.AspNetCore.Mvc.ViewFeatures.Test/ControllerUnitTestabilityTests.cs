@@ -560,7 +560,7 @@ namespace Microsoft.AspNetCore.Mvc
             var controller = new TestabilityController();
 
             // Act
-            var result = controller.ViewComponent("TagCloud", arguments: null);
+            var result = controller.ViewComponent("TagCloud");
 
             // Assert
             Assert.NotNull(result);
@@ -575,7 +575,7 @@ namespace Microsoft.AspNetCore.Mvc
             var controller = new TestabilityController();
 
             // Act
-            var result = controller.ViewComponent(typeof(TagCloudViewComponent), arguments: null);
+            var result = controller.ViewComponent(typeof(TagCloudViewComponent));
 
             // Assert
             Assert.NotNull(result);

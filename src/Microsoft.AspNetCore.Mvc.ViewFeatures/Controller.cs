@@ -216,10 +216,36 @@ namespace Microsoft.AspNetCore.Mvc
         /// The view component name. Can be a view component
         /// <see cref="ViewComponents.ViewComponentDescriptor.ShortName"/> or
         /// <see cref="ViewComponents.ViewComponentDescriptor.FullName"/>.</param>
+        /// <returns>The created <see cref="ViewComponentResult"/> object for the response.</returns>
+        [NonAction]
+        public virtual ViewComponentResult ViewComponent(string componentName)
+        {
+            return ViewComponent(componentName, arguments: null);
+        }
+
+        /// <summary>
+        /// Creates a <see cref="ViewComponentResult"/> by specifying the <see cref="Type"/> of a view component to
+        /// render.
+        /// </summary>
+        /// <param name="componentType">The view component <see cref="Type"/>.</param>
+        /// <returns>The created <see cref="ViewComponentResult"/> object for the response.</returns>
+        [NonAction]
+        public virtual ViewComponentResult ViewComponent(Type componentType)
+        {
+            return ViewComponent(componentType, arguments: null);
+        }
+
+        /// <summary>
+        /// Creates a <see cref="ViewComponentResult"/> by specifying the name of a view component to render.
+        /// </summary>
+        /// <param name="componentName">
+        /// The view component name. Can be a view component
+        /// <see cref="ViewComponents.ViewComponentDescriptor.ShortName"/> or
+        /// <see cref="ViewComponents.ViewComponentDescriptor.FullName"/>.</param>
         /// <param name="arguments">
-        /// An anonymous <see cref="object"/> containing arguments to be passed to the invoked view component method.
-        /// Alternatively, an <see cref="System.Collections.Generic.IDictionary{string, object}"/> instance containing
-        /// the invocation arguments.
+        /// An <see cref="object"/> with properties representing arguments to be passed to the invoked view component
+        /// method. Alternatively, an <see cref="System.Collections.Generic.IDictionary{string, object}"/> instance
+        /// containing the invocation arguments.
         /// </param>
         /// <returns>The created <see cref="ViewComponentResult"/> object for the response.</returns>
         [NonAction]
@@ -240,9 +266,9 @@ namespace Microsoft.AspNetCore.Mvc
         /// </summary>
         /// <param name="componentType">The view component <see cref="Type"/>.</param>
         /// <param name="arguments">
-        /// An anonymous <see cref="object"/> containing arguments to be passed to the invoked view component method.
-        /// Alternatively, an <see cref="System.Collections.Generic.IDictionary{string, object}"/> instance containing
-        /// the invocation arguments.
+        /// An <see cref="object"/> with properties representing arguments to be passed to the invoked view component
+        /// method. Alternatively, an <see cref="System.Collections.Generic.IDictionary{string, object}"/> instance
+        /// containing the invocation arguments.
         /// </param>
         /// <returns>The created <see cref="ViewComponentResult"/> object for the response.</returns>
         [NonAction]
