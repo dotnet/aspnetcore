@@ -3,14 +3,15 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Internal;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Builder
+namespace Microsoft.AspNetCore.Routing
 {
     // These are really more like integration tests. They verify that these extensions
     // add routes that behave as advertised.
