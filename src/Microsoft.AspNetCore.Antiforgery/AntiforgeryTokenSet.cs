@@ -15,11 +15,22 @@ namespace Microsoft.AspNetCore.Antiforgery
         /// </summary>
         /// <param name="requestToken">The token that is supplied in the request.</param>
         /// <param name="cookieToken">The token that is supplied in the request cookie.</param>
-        public AntiforgeryTokenSet(string requestToken, string cookieToken)
+        /// <param name="formFieldName">The name of the form field used for the request token.</param>
+        /// <param name="headerName">The name of the header used for the request token.</param>
+        public AntiforgeryTokenSet(
+            string requestToken,
+            string cookieToken,
+            string formFieldName,
+            string headerName)
         {
             if (string.IsNullOrEmpty(requestToken))
             {
                 throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(requestToken));
+            }
+
+            if (formFieldName == null)
+            {
+                throw new ArgumentNullException(nameof(formFieldName));
             }
 
             RequestToken = requestToken;
@@ -27,16 +38,29 @@ namespace Microsoft.AspNetCore.Antiforgery
             // Cookie Token is allowed to be null in the case when the old cookie is valid
             // and there is no new cookieToken generated.
             CookieToken = cookieToken;
+
+            FormFieldName = formFieldName;
+            HeaderName = headerName;
         }
 
         /// <summary>
-        /// The token that is supplied in the request.
+        /// Gets the request token.
         /// </summary>
-        public string RequestToken { get; private set; }
+        public string RequestToken { get; }
 
-        /// The cookie token is allowed to be null.
-        /// This would be the case when the old cookie token is still valid.
-        /// In such cases a call to GetTokens would return a token set with null cookie token.
-        public string CookieToken { get; private set; }
+        /// <summary>
+        /// Gets the name of the form field used for the request token.
+        /// </summary>
+        public string FormFieldName { get; }
+
+        /// <summary>
+        /// Gets the name of the header used for the request token.
+        /// </summary>
+        public string HeaderName { get; }
+
+        /// <summary>
+        /// Gets the cookie token.
+        /// </summary>
+        public string CookieToken { get; }
     }
 }

@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.Antiforgery
                 }
             }
 
-            return new AntiforgeryTokenSet(requestToken, requestCookie);
+            return new AntiforgeryTokenSet(requestToken, requestCookie, _options.FormFieldName, _options.HeaderName);
         }
 
         public void SaveCookieToken(HttpContext httpContext, AntiforgeryToken token)

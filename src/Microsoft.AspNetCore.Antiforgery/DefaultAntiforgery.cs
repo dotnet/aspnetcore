@@ -263,7 +263,9 @@ namespace Microsoft.AspNetCore.Antiforgery
         {
             return new AntiforgeryTokenSet(
                 tokenSet.RequestToken != null ? _tokenSerializer.Serialize(tokenSet.RequestToken) : null,
-                tokenSet.CookieToken != null ? _tokenSerializer.Serialize(tokenSet.CookieToken) : null);
+                tokenSet.CookieToken != null ? _tokenSerializer.Serialize(tokenSet.CookieToken) : null,
+                _options.FormFieldName,
+                _options.HeaderName);
         }
 
         private class AntiforgeryTokenSetInternal
