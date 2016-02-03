@@ -1,7 +1,8 @@
 {
   "dependencies": {
     "xunit": "2.1.0",
-    "dotnet-publish-iis" : ""
+    "dotnet-publish-iis" : "",
+    "Microsoft.NETCore.Platforms": "1.0.1-*"
   },
 
   "frameworks": {
