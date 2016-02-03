@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Identity
     public interface IUserTwoFactorStore<TUser> : IUserStore<TUser> where TUser : class
     {
         /// <summary>
-        /// Sets a flag indicating whether the specified <paramref name="user "/>has two factor authentication enabled or not,
+        /// Sets a flag indicating whether the specified <paramref name="user"/> has two factor authentication enabled or not,
         /// as an asynchronous operation.
         /// </summary>
         /// <param name="user">The user whose two factor authentication enabled status should be set.</param>
@@ -23,14 +23,14 @@ namespace Microsoft.AspNetCore.Identity
         Task SetTwoFactorEnabledAsync(TUser user, bool enabled, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Returns a flag indicating whether the specified <paramref name="user "/>has two factor authentication enabled or not,
+        /// Returns a flag indicating whether the specified <paramref name="user"/> has two factor authentication enabled or not,
         /// as an asynchronous operation.
         /// </summary>
         /// <param name="user">The user whose two factor authentication enabled status should be set.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
         /// <returns>
         /// The <see cref="Task"/> that represents the asynchronous operation, containing a flag indicating whether the specified 
-        /// <paramref name="user "/>has two factor authentication enabled or not.
+        /// <paramref name="user"/> has two factor authentication enabled or not.
         /// </returns>
         Task<bool> GetTwoFactorEnabledAsync(TUser user, CancellationToken cancellationToken);
     }
