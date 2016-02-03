@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
@@ -126,7 +127,11 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             {
                 if (_cachedToString == null)
                 {
-                    _cachedToString = $"RequestId:{_httpContext.TraceIdentifier} RequestPath:{_httpContext.Request.Path}";
+                    _cachedToString = string.Format(
+                        CultureInfo.InvariantCulture,
+                        "RequestId:{0} RequestPath:{1}",
+                        _httpContext.TraceIdentifier,
+                        _httpContext.Request.Path);
                 }
 
                 return _cachedToString;
@@ -201,7 +206,18 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             {
                 if (_cachedToString == null)
                 {
-                    _cachedToString = $"Request starting {_request.Protocol} {_request.Method} {_request.Scheme}://{_request.Host}{_request.PathBase}{_request.Path}{_request.QueryString} {_request.ContentType} {_request.ContentLength}";
+                    _cachedToString = string.Format(
+                        CultureInfo.InvariantCulture,
+                        "Request starting {0} {1} {2}://{3}{4}{5}{6} {7} {8}",
+                        _request.Protocol,
+                        _request.Method,
+                        _request.Scheme,
+                        _request.Host,
+                        _request.PathBase,
+                        _request.Path,
+                        _request.QueryString,
+                        _request.ContentType,
+                        _request.ContentLength);
                 }
 
                 return _cachedToString;
@@ -227,7 +243,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
 
             private readonly HttpContext _httpContext;
             private readonly TimeSpan _elapsed;
-            
+
             private string _cachedToString;
 
             public int Count
@@ -266,7 +282,12 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             {
                 if (_cachedToString == null)
                 {
-                    _cachedToString = $"Request finished in {_elapsed.TotalMilliseconds}ms {_httpContext.Response.StatusCode} {_httpContext.Response.ContentType}";
+                    _cachedToString = string.Format(
+                        CultureInfo.InvariantCulture,
+                        "Request finished in {0}ms {1} {2}",
+                        _elapsed.TotalMilliseconds,
+                        _httpContext.Response.StatusCode,
+                        _httpContext.Response.ContentType);
                 }
 
                 return _cachedToString;
