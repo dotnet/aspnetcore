@@ -96,13 +96,13 @@ default NUGET_FEED = 'https://api.nuget.org/v3/index.json'
   @{
     var projectFiles = Files.Include("src/**/project.json").ToList();
     projectFiles.ForEach(projectFile => DotnetPack(projectFile, BUILD_DIR, Configuration));
-    
+
     foreach (var nupkg in Files.Include(Path.Combine(BUILD_DIR, "*/*.nupkg")))
     {
         File.Copy(nupkg, Path.Combine(BUILD_DIR, Path.GetFileName(nupkg)), true);
     }
   }
-  
+
 #build-test target='compile' if='Directory.Exists("test") && !BuildSrcOnly'
   @{
     var projectFiles = Files.Include("test/**/project.json")
@@ -178,7 +178,7 @@ default NUGET_FEED = 'https://api.nuget.org/v3/index.json'
   @{
     var projectFiles = Files.Include("test/**/project.json").Exclude("**/bin/*/app/project.json").ToList();
     projectFiles.ForEach(projectFile => XunitTest(projectFile, testParallel: false));
-    //projectFiles.ForEach(projectFile => DotnetTest(projectFile, testParallel: false));
+    projectFiles.ForEach(projectFile => DotnetTest(projectFile, testParallel: false));
     projectFiles.ForEach(projectFile => DnxTest(projectFile, testParallel: false));
   }
 
@@ -213,7 +213,7 @@ default NUGET_FEED = 'https://api.nuget.org/v3/index.json'
     AddToE("KOREBUILD_NPM_INSTALL_OPTIONS", "--quiet");
     Quiet = true;
   }
-  
+
 #--parallel
    @{
      Log.Warn("The --parallel flag is no longer supported. It will be ignored.");
@@ -307,8 +307,8 @@ functions @{
     {
       get { return E("KOREBUILD_VERIFY_NUPKGS") == "1"; }
     }
-    
-    bool BuildSrcOnly 
+
+    bool BuildSrcOnly
     {
       get { return E("KOREBUILD_BUILD_SRC_ONLY") == "1"; }
     }
@@ -322,7 +322,7 @@ macro name='Exec' program='string' commandline='string' workingdir='string'
 
 macro name='ExecClr' program='string' commandline='string'
     exec-clr
-    
+
 macro name='ExecClr' program='string' commandline='string' workingdir='string'
     exec-clr
 
@@ -339,7 +339,7 @@ macro name='Dotnet' command='string'
     dotnet
 
 macro name='Dotnet' command='string' dotnetDir='string'
-    dotnet    
+    dotnet
 
 macro name="DotnetBuild" projectFile='string' configuration='string'
     dotnet-build
@@ -347,7 +347,7 @@ macro name="DotnetBuild" projectFile='string' configuration='string'
 macro name="DotnetPack" projectFile='string' dotnetPackOutputDir='string' configuration='string'
     dotnet-pack
 
-macro name="DotnetPublish" projectFile='string' outputFolder='string' framework='string' 
+macro name="DotnetPublish" projectFile='string' outputFolder='string' framework='string'
     dotnet-publish
 
 macro name="DotnetTest" projectFile='string' testParallel='bool'
@@ -355,10 +355,10 @@ macro name="DotnetTest" projectFile='string' testParallel='bool'
 
 macro name="XunitTest" projectFile='string' testParallel='bool'
     xunit-test
-    
+
 macro name='Dnx' command='string' dnxDir='string' dnvmUse='string'
     dnx
-    
+
 macro name="DnxTest" projectFile='string' testParallel='bool'
     dnx-test
 
