@@ -25,17 +25,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
         public void GetCookieToken_CookieDoesNotExist_ReturnsNull()
         {
             // Arrange
-            var requestCookies = new Mock<IRequestCookieCollection>();
-            requestCookies
-                .Setup(o => o[It.IsAny<string>()])
-                .Returns(string.Empty);
-            var mockHttpContext = new Mock<HttpContext>();
-            mockHttpContext
-                .Setup(o => o.Request.Cookies)
-                .Returns(requestCookies.Object);
-            var contextAccessor = new DefaultAntiforgeryContextAccessor();
-            mockHttpContext.SetupGet(o => o.RequestServices)
-                           .Returns(GetServiceProvider(contextAccessor));
+            var httpContext = GetHttpContext(new RequestCookieCollection());
             var options = new AntiforgeryOptions()
             {
                 CookieName = _cookieName
@@ -46,7 +36,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
                 tokenSerializer: Mock.Of<IAntiforgeryTokenSerializer>());
 
             // Act
-            var token = tokenStore.GetCookieToken(mockHttpContext.Object);
+            var token = tokenStore.GetCookieToken(httpContext);
 
             // Assert
             Assert.Null(token);
@@ -56,22 +46,14 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
         public void GetCookieToken_CookieIsMissingInRequest_LooksUpCookieInAntiforgeryContext()
         {
             // Arrange
-            var requestCookies = new Mock<IRequestCookieCollection>();
-            requestCookies
-                .Setup(o => o[It.IsAny<string>()])
-                .Returns(string.Empty);
-            var mockHttpContext = new Mock<HttpContext>();
-            mockHttpContext
-                .Setup(o => o.Request.Cookies)
-                .Returns(requestCookies.Object);
             var contextAccessor = new DefaultAntiforgeryContextAccessor();
-            mockHttpContext.SetupGet(o => o.RequestServices)
-                           .Returns(GetServiceProvider(contextAccessor));
+            var httpContext = GetHttpContext(_cookieName, string.Empty, contextAccessor);
 
             // add a cookie explicitly.
             var cookie = new AntiforgeryToken();
             contextAccessor.Value = new AntiforgeryContext() { CookieToken = cookie };
-            var options = new AntiforgeryOptions()
+
+            var options = new AntiforgeryOptions
             {
                 CookieName = _cookieName
             };
@@ -81,7 +63,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
                 tokenSerializer: Mock.Of<IAntiforgeryTokenSerializer>());
 
             // Act
-            var token = tokenStore.GetCookieToken(mockHttpContext.Object);
+            var token = tokenStore.GetCookieToken(httpContext);
 
             // Assert
             Assert.Equal(cookie, token);
@@ -91,8 +73,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
         public void GetCookieToken_CookieIsEmpty_ReturnsNull()
         {
             // Arrange
-            var mockHttpContext = GetMockHttpContext(_cookieName, string.Empty);
-
+            var httpContext = GetHttpContext(_cookieName, string.Empty);
             var options = new AntiforgeryOptions()
             {
                 CookieName = _cookieName
@@ -103,7 +84,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
                 tokenSerializer: Mock.Of<IAntiforgeryTokenSerializer>());
 
             // Act
-            var token = tokenStore.GetCookieToken(mockHttpContext);
+            var token = tokenStore.GetCookieToken(httpContext);
 
             // Assert
             Assert.Null(token);
@@ -113,7 +94,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
         public void GetCookieToken_CookieIsInvalid_PropagatesException()
         {
             // Arrange
-            var mockHttpContext = GetMockHttpContext(_cookieName, "invalid-value");
+            var httpContext = GetHttpContext(_cookieName, "invalid-value");
 
             var expectedException = new AntiforgeryValidationException("some exception");
             var mockSerializer = new Mock<IAntiforgeryTokenSerializer>();
@@ -131,7 +112,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
                 tokenSerializer: mockSerializer.Object);
 
             // Act & assert
-            var ex = Assert.Throws<AntiforgeryValidationException>(() => tokenStore.GetCookieToken(mockHttpContext));
+            var ex = Assert.Throws<AntiforgeryValidationException>(() => tokenStore.GetCookieToken(httpContext));
             Assert.Same(expectedException, ex);
         }
 
@@ -140,7 +121,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
         {
             // Arrange
             var expectedToken = new AntiforgeryToken();
-            var mockHttpContext = GetMockHttpContext(_cookieName, "valid-value");
+            var httpContext = GetHttpContext(_cookieName, "valid-value");
 
             var mockSerializer = new Mock<IAntiforgeryTokenSerializer>();
             mockSerializer
@@ -157,19 +138,18 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
                 tokenSerializer: mockSerializer.Object);
 
             // Act
-            AntiforgeryToken retVal = tokenStore.GetCookieToken(mockHttpContext);
+            var token = tokenStore.GetCookieToken(httpContext);
 
             // Assert
-            Assert.Same(expectedToken, retVal);
+            Assert.Same(expectedToken, token);
         }
 
         [Fact]
         public async Task GetRequestTokens_CookieIsEmpty_Throws()
         {
             // Arrange
-            var httpContext = new DefaultHttpContext();
-            httpContext.Request.Form = new FormCollection(new Dictionary<string, StringValues>());
-            httpContext.Request.Cookies = new RequestCookieCollection(new Dictionary<string, string>());
+            var httpContext = GetHttpContext(new RequestCookieCollection());
+            httpContext.Request.Form = FormCollection.Empty;
 
             var options = new AntiforgeryOptions()
             {
@@ -193,15 +173,11 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
         public async Task GetRequestTokens_NonFormContentType_HeaderDisabled_Throws()
         {
             // Arrange
-            var httpContext = new DefaultHttpContext();
+            var httpContext = GetHttpContext("cookie-name", "cookie-value");
             httpContext.Request.ContentType = "application/json";
 
             // Will not be accessed
             httpContext.Request.Form = null;
-            httpContext.Request.Cookies = new RequestCookieCollection(new Dictionary<string, string>()
-            {
-                { "cookie-name", "cookie-value" },
-            });
 
             var options = new AntiforgeryOptions()
             {
@@ -226,16 +202,9 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
         public async Task GetRequestTokens_FormContentType_FallbackHeaderToken()
         {
             // Arrange
-            var httpContext = new DefaultHttpContext();
-            httpContext.Request.ContentType = "application/json";
-
-            // Will not be accessed
+            var httpContext = GetHttpContext("cookie-name", "cookie-value");
             httpContext.Request.ContentType = "application/x-www-form-urlencoded";
-            httpContext.Request.Form = new FormCollection(new Dictionary<string, StringValues>());
-            httpContext.Request.Cookies = new RequestCookieCollection(new Dictionary<string, string>()
-            {
-                { "cookie-name", "cookie-value" },
-            });
+            httpContext.Request.Form = FormCollection.Empty;
             httpContext.Request.Headers.Add("header-name", "header-value");
 
             var options = new AntiforgeryOptions()
@@ -261,17 +230,12 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
         public async Task GetRequestTokens_NonFormContentType_UsesHeaderToken()
         {
             // Arrange
-            var httpContext = new DefaultHttpContext();
+            var httpContext = GetHttpContext("cookie-name", "cookie-value");
             httpContext.Request.ContentType = "application/json";
+            httpContext.Request.Headers.Add("header-name", "header-value");
 
             // Will not be accessed
             httpContext.Request.Form = null;
-            httpContext.Request.Cookies = new RequestCookieCollection(new Dictionary<string, string>()
-            {
-                { "cookie-name", "cookie-value" },
-            });
-
-            httpContext.Request.Headers.Add("header-name", "header-value");
 
             var options = new AntiforgeryOptions()
             {
@@ -296,15 +260,11 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
         public async Task GetRequestTokens_NonFormContentType_UsesHeaderToken_ThrowsOnMissingValue()
         {
             // Arrange
-            var httpContext = new DefaultHttpContext();
+            var httpContext = GetHttpContext("cookie-name", "cookie-value");
             httpContext.Request.ContentType = "application/json";
 
             // Will not be accessed
             httpContext.Request.Form = null;
-            httpContext.Request.Cookies = new RequestCookieCollection(new Dictionary<string, string>()
-            {
-                { "cookie-name", "cookie-value" },
-            });
 
             var options = new AntiforgeryOptions()
             {
@@ -329,13 +289,9 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
         public async Task GetRequestTokens_BothFieldsEmpty_Throws()
         {
             // Arrange
-            var httpContext = new DefaultHttpContext();
+            var httpContext = GetHttpContext("cookie-name", "cookie-value");
             httpContext.Request.ContentType = "application/x-www-form-urlencoded";
-            httpContext.Request.Form = new FormCollection(new Dictionary<string, StringValues>());
-            httpContext.Request.Cookies = new RequestCookieCollection(new Dictionary<string, string>()
-            {
-                { "cookie-name", "cookie-value" },
-            });
+            httpContext.Request.Form = FormCollection.Empty;
 
             var options = new AntiforgeryOptions()
             {
@@ -363,15 +319,11 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
         public async Task GetFormToken_FormFieldIsValid_ReturnsToken()
         {
             // Arrange
-            var httpContext = new DefaultHttpContext();
+            var httpContext = GetHttpContext("cookie-name", "cookie-value");
             httpContext.Request.ContentType = "application/x-www-form-urlencoded";
-            httpContext.Request.Form = new FormCollection(new Dictionary<string, StringValues>()
+            httpContext.Request.Form = new FormCollection(new Dictionary<string, StringValues>
             {
                 { "form-field-name", "form-value" },
-            });
-            httpContext.Request.Cookies = new RequestCookieCollection(new Dictionary<string, string>()
-            {
-                { "cookie-name", "cookie-value" },
             });
             httpContext.Request.Headers.Add("header-name", "header-value"); // form value has priority.
 
@@ -401,22 +353,23 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
         {
             // Arrange
             var token = new AntiforgeryToken();
-            var mockCookies = new Mock<IResponseCookies>();
-
             bool defaultCookieSecureValue = expectedCookieSecureFlag ?? false; // pulled from config; set by ctor
             var cookies = new MockResponseCookieCollection();
 
-            cookies.Count = 0;
             var mockHttpContext = new Mock<HttpContext>();
-            mockHttpContext.Setup(o => o.Response.Cookies)
-                           .Returns(cookies);
+            mockHttpContext
+                .Setup(o => o.Response.Cookies)
+                .Returns(cookies);
+
             var contextAccessor = new DefaultAntiforgeryContextAccessor();
-            mockHttpContext.SetupGet(o => o.RequestServices)
-                           .Returns(GetServiceProvider(contextAccessor));
+            mockHttpContext
+                .SetupGet(o => o.RequestServices)
+                .Returns(GetServiceProvider(contextAccessor));
 
             var mockSerializer = new Mock<IAntiforgeryTokenSerializer>();
-            mockSerializer.Setup(o => o.Serialize(token))
-                          .Returns("serialized-value");
+            mockSerializer
+                .Setup(o => o.Serialize(token))
+                .Returns("serialized-value");
 
             var options = new AntiforgeryOptions()
             {
@@ -441,22 +394,30 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             Assert.Equal(defaultCookieSecureValue, cookies.Options.Secure);
         }
 
-        private HttpContext GetMockHttpContext(string cookieName, string cookieValue)
+        private HttpContext GetHttpContext(
+            string cookieName,
+            string cookieValue,
+            IAntiforgeryContextAccessor contextAccessor = null)
         {
-            var requestCookies = new MockCookieCollection(new Dictionary<string, string>() { { cookieName, cookieValue } });
+            var cookies = new RequestCookieCollection(new Dictionary<string, string>
+            {
+                { cookieName, cookieValue },
+            });
 
-            var request = new Mock<HttpRequest>();
-            request.Setup(o => o.Cookies)
-                   .Returns(requestCookies);
-            var mockHttpContext = new Mock<HttpContext>();
-            mockHttpContext.Setup(o => o.Request)
-                           .Returns(request.Object);
+            return GetHttpContext(cookies, contextAccessor);
+        }
 
-            var contextAccessor = new DefaultAntiforgeryContextAccessor();
-            mockHttpContext.SetupGet(o => o.RequestServices)
-                           .Returns(GetServiceProvider(contextAccessor));
+        private HttpContext GetHttpContext(
+            IRequestCookieCollection cookies,
+            IAntiforgeryContextAccessor contextAccessor = null)
+        {
+            var httpContext = new DefaultHttpContext();
+            httpContext.Request.Cookies = cookies;
 
-            return mockHttpContext.Object;
+            contextAccessor = contextAccessor ?? new DefaultAntiforgeryContextAccessor();
+            httpContext.RequestServices = GetServiceProvider(contextAccessor);
+
+            return httpContext;
         }
 
         private static IServiceProvider GetServiceProvider(IAntiforgeryContextAccessor contextAccessor)
@@ -492,66 +453,6 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             }
 
             public void Delete(string key)
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        private class MockCookieCollection : IRequestCookieCollection
-        {
-            private Dictionary<string, string> _dictionary;
-
-            public int Count
-            {
-                get
-                {
-                    return _dictionary.Count;
-                }
-            }
-
-            public ICollection<string> Keys
-            {
-                get
-                {
-                    return _dictionary.Keys;
-                }
-            }
-
-            public MockCookieCollection(Dictionary<string, string> dictionary)
-            {
-                _dictionary = dictionary;
-            }
-
-            public static MockCookieCollection GetDummyInstance(string key, string value)
-            {
-                return new MockCookieCollection(new Dictionary<string, string>() { { key, value } });
-            }
-
-            public bool ContainsKey(string key)
-            {
-                return _dictionary.ContainsKey(key);
-            }
-
-            public string this[string key]
-            {
-                get
-                {
-                    string value;
-                    return _dictionary.TryGetValue(key, out value) ? value : null;
-                }
-            }
-
-            public bool TryGetValue(string key, out string value)
-            {
-                return _dictionary.TryGetValue(key, out value);
-            }
-
-            public IEnumerator<KeyValuePair<string, string>> GetEnumerator()
-            {
-                throw new NotImplementedException();
-            }
-
-            System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
             {
                 throw new NotImplementedException();
             }
