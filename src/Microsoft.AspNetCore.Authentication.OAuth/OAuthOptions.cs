@@ -56,9 +56,9 @@ namespace Microsoft.AspNetCore.Builder
         }
 
         /// <summary>
-        /// A list of permissions to request.
+        /// Gets the list of permissions to request.
         /// </summary>
-        public IList<string> Scope { get; } = new List<string>();
+        public ICollection<string> Scope { get; } = new HashSet<string>();
 
         /// <summary>
         /// Gets or sets the type used to secure data handled by the middleware.

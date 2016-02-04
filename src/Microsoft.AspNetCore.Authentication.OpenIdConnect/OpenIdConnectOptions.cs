@@ -53,6 +53,8 @@ namespace Microsoft.AspNetCore.Builder
             DisplayName = OpenIdConnectDefaults.Caption;
             CallbackPath = new PathString("/signin-oidc");
             Events = new OpenIdConnectEvents();
+            Scope.Add("openid");
+            Scope.Add("profile");
         }
 
         /// <summary>
@@ -155,7 +157,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <summary>
         /// Gets the list of permissions to request.
         /// </summary>
-        public IList<string> Scope { get; } = new List<string> { "openid", "profile" };
+        public ICollection<string> Scope { get; } = new HashSet<string>();
 
         /// <summary>
         /// Gets or sets the type used to secure data handled by the middleware.
