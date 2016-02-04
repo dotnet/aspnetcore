@@ -41,19 +41,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 return _sortedValues.Length > 0; // only match empty string when we have some value
             }
 
-            var prefixComparer = new PrefixComparer(prefix);
-            var containsPrefix = Array.BinarySearch(_sortedValues, prefix, prefixComparer) > -1;
-            if (!containsPrefix)
-            {
-                // If there's something in the search boundary that starts with the same name
-                // as the collection prefix that we're trying to find, the binary search would actually fail.
-                // For example, let's say we have foo.a, foo.bE and foo.b[0]. Calling Array.BinarySearch
-                // will fail to find foo.b because it will land on foo.bE, then look at foo.a and finally
-                // failing to find the prefix which is actually present in the container (foo.b[0]).
-                // Here we're doing another pass looking specifically for collection prefix.
-                containsPrefix = Array.BinarySearch(_sortedValues, prefix + "[", prefixComparer) > -1;
-            }
-            return containsPrefix;
+            return BinarySearch(prefix) > -1;
         }
 
         // Given "foo.bar", "foo.hello", "something.other", foo[abc].baz and asking for prefix "foo" will return:
@@ -259,25 +247,63 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             }
         }
 
-        private sealed class PrefixComparer : IComparer<string>
+        private int BinarySearch(string prefix)
         {
-            private readonly string _prefix;
+            var start = 0;
+            var end = _sortedValues.Length - 1;
 
-            public PrefixComparer(string prefix)
+            while (start <= end)
             {
-                _prefix = prefix;
-            }
-
-            public int Compare(string x, string y)
-            {
-                var testString = object.ReferenceEquals(x, _prefix) ? y : x;
-                if (IsPrefixMatch(_prefix, testString))
+                var pivot = start + ((end - start) / 2);
+                var candidate = _sortedValues[pivot];
+                var compare = string.Compare(
+                    prefix,
+                    0,
+                    candidate,
+                    0,
+                    prefix.Length,
+                    StringComparison.OrdinalIgnoreCase);
+                if (compare == 0)
                 {
-                    return 0;
+                    Debug.Assert(candidate.StartsWith(prefix, StringComparison.OrdinalIgnoreCase));
+
+                    // Ok, so now we have a candiate that starts with the prefix. If the candidate is longer than
+                    // the prefix, we need to look at the next character and see if it's a delimiter.
+                    if (candidate.Length == prefix.Length)
+                    {
+                        // Exact match
+                        return pivot;
+                    }
+
+                    var c = candidate[prefix.Length];
+                    if (c == '.' || c == '[')
+                    {
+                        // Match, followed by delimiter
+                        return pivot;
+                    }
+
+                    // Ok, so the candidate has some extra text. We need to keep searching, but we know
+                    // the candidate string is considered "greater" than the prefix, so treat it as-if
+                    // the comparer returned a negative number.
+                    //
+                    // Ex:
+                    //  prefix: product
+                    //  candidate: productId
+                    //
+                    compare = -1;
                 }
 
-                return StringComparer.OrdinalIgnoreCase.Compare(x, y);
+                if (compare > 0)
+                {
+                    start = pivot + 1;
+                }
+                else
+                {
+                    end = pivot - 1;
+                }
             }
+
+            return ~start;
         }
     }
 }
