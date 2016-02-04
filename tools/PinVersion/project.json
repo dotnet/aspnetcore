@@ -1,7 +1,7 @@
 ﻿{
     "version": "1.0.0-*",
     "dependencies": {
-        "Newtonsoft.Json": "6.0.8",
+        "Newtonsoft.Json": "8.0.2",
         "NuGet.Core": "2.8.6"
     },
 
