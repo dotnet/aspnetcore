@@ -65,18 +65,13 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
                 throw new ArgumentNullException(nameof(httpContext));
             }
 
-            var requestCookie = httpContext.Request.Cookies[_options.CookieName];
-            if (string.IsNullOrEmpty(requestCookie))
-            {
-                throw new AntiforgeryValidationException(
-                    Resources.FormatAntiforgery_CookieToken_MustBeProvided(_options.CookieName));
-            }
+            var cookieToken = httpContext.Request.Cookies[_options.CookieName];
 
             StringValues requestToken;
             if (httpContext.Request.HasFormContentType)
             {
                 // Check the content-type before accessing the form collection to make sure
-                // we throw gracefully.
+                // we report errors gracefully.
                 var form = await httpContext.Request.ReadFormAsync();
                 requestToken = form[_options.FormFieldName];
             }
@@ -87,28 +82,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
                 requestToken = httpContext.Request.Headers[_options.HeaderName];
             }
 
-            if (requestToken.Count == 0)
-            {
-                if (_options.HeaderName == null)
-                {
-                    var message = Resources.FormatAntiforgery_FormToken_MustBeProvided(_options.FormFieldName);
-                    throw new AntiforgeryValidationException(message);
-                }
-                else if (!httpContext.Request.HasFormContentType)
-                {
-                    var message = Resources.FormatAntiforgery_HeaderToken_MustBeProvided(_options.HeaderName);
-                    throw new AntiforgeryValidationException(message);
-                }
-                else
-                {
-                    var message = Resources.FormatAntiforgery_RequestToken_MustBeProvided(
-                        _options.FormFieldName,
-                        _options.HeaderName);
-                    throw new AntiforgeryValidationException(message);
-                }
-            }
-
-            return new AntiforgeryTokenSet(requestToken, requestCookie, _options.FormFieldName, _options.HeaderName);
+            return new AntiforgeryTokenSet(requestToken, cookieToken, _options.FormFieldName, _options.HeaderName);
         }
 
         public void SaveCookieToken(HttpContext httpContext, AntiforgeryToken token)

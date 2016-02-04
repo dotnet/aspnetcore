@@ -145,7 +145,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
         }
 
         [Fact]
-        public async Task GetRequestTokens_CookieIsEmpty_Throws()
+        public async Task GetRequestTokens_CookieIsEmpty_ReturnsNullTokens()
         {
             // Arrange
             var httpContext = GetHttpContext(new RequestCookieCollection());
@@ -162,15 +162,15 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
                 tokenSerializer: Mock.Of<IAntiforgeryTokenSerializer>());
 
             // Act
-            var exception = await Assert.ThrowsAsync<AntiforgeryValidationException>(
-                async () => await tokenStore.GetRequestTokensAsync(httpContext));
+            var tokenSet = await tokenStore.GetRequestTokensAsync(httpContext);
 
             // Assert
-            Assert.Equal("The required antiforgery cookie \"cookie-name\" is not present.", exception.Message);
+            Assert.Null(tokenSet.CookieToken);
+            Assert.Null(tokenSet.RequestToken);
         }
 
         [Fact]
-        public async Task GetRequestTokens_NonFormContentType_HeaderDisabled_Throws()
+        public async Task GetRequestTokens_NonFormContentType_HeaderDisabled_ReturnsNullToken()
         {
             // Arrange
             var httpContext = GetHttpContext("cookie-name", "cookie-value");
@@ -191,11 +191,11 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
                 tokenSerializer: new DefaultAntiforgeryTokenSerializer(new EphemeralDataProtectionProvider(), _pool));
 
             // Act
-            var exception = await Assert.ThrowsAsync<AntiforgeryValidationException>(
-                async () => await tokenStore.GetRequestTokensAsync(httpContext));
+            var tokenSet = await tokenStore.GetRequestTokensAsync(httpContext);
 
             // Assert
-            Assert.Equal("The required antiforgery form field \"form-field-name\" is not present.", exception.Message);
+            Assert.Equal("cookie-value", tokenSet.CookieToken);
+            Assert.Null(tokenSet.RequestToken);
         }
 
         [Fact]
@@ -257,7 +257,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
         }
 
         [Fact]
-        public async Task GetRequestTokens_NonFormContentType_UsesHeaderToken_ThrowsOnMissingValue()
+        public async Task GetRequestTokens_NonFormContentType_NoHeaderToken_ReturnsNullToken()
         {
             // Arrange
             var httpContext = GetHttpContext("cookie-name", "cookie-value");
@@ -278,15 +278,15 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
                 tokenSerializer: new DefaultAntiforgeryTokenSerializer(new EphemeralDataProtectionProvider(), _pool));
 
             // Act
-            var exception = await Assert.ThrowsAsync<AntiforgeryValidationException>(
-                async () => await tokenStore.GetRequestTokensAsync(httpContext));
+            var tokenSet = await tokenStore.GetRequestTokensAsync(httpContext);
 
             // Assert
-            Assert.Equal("The required antiforgery header value \"header-name\" is not present.", exception.Message);
+            Assert.Equal("cookie-value", tokenSet.CookieToken);
+            Assert.Null(tokenSet.RequestToken);
         }
 
         [Fact]
-        public async Task GetRequestTokens_BothFieldsEmpty_Throws()
+        public async Task GetRequestTokens_BothFieldsEmpty_ReturnsNullTokens()
         {
             // Arrange
             var httpContext = GetHttpContext("cookie-name", "cookie-value");
@@ -305,14 +305,11 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
                 tokenSerializer: Mock.Of<IAntiforgeryTokenSerializer>());
 
             // Act
-            var exception = await Assert.ThrowsAsync<AntiforgeryValidationException>(
-                async () => await tokenStore.GetRequestTokensAsync(httpContext));
+            var tokenSet = await tokenStore.GetRequestTokensAsync(httpContext);
 
             // Assert
-            Assert.Equal(
-                "The required antiforgery request token was not provided in either form field \"form-field-name\" " +
-                "or header value \"header-name\".",
-                exception.Message);
+            Assert.Equal("cookie-value", tokenSet.CookieToken);
+            Assert.Null(tokenSet.RequestToken);
         }
 
         [Fact]

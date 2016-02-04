@@ -591,6 +591,109 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             context.TokenGenerator.Verify();
         }
 
+        [Fact]
+        public async Task ValidateRequestAsync_NoCookieToken_Throws()
+        {
+            // Arrange
+            var context = CreateMockContext(new AntiforgeryOptions()
+            {
+                CookieName = "cookie-name",
+                FormFieldName = "form-field-name",
+                HeaderName = null,
+            });
+
+            var tokenSet = new AntiforgeryTokenSet(null, null, "form-field-name", null);
+            context.TokenStore
+                .Setup(s => s.GetRequestTokensAsync(context.HttpContext))
+                .Returns(Task.FromResult(tokenSet));
+
+            var antiforgery = GetAntiforgery(context);
+
+            // Act & Assert
+            var exception = await Assert.ThrowsAsync<AntiforgeryValidationException>(
+                () => antiforgery.ValidateRequestAsync(context.HttpContext));
+            Assert.Equal("The required antiforgery cookie \"cookie-name\" is not present.", exception.Message);
+        }
+
+        [Fact]
+        public async Task ValidateRequestAsync_NonFormRequest_HeaderDisabled_Throws()
+        {
+            // Arrange
+            var context = CreateMockContext(new AntiforgeryOptions()
+            {
+                CookieName = "cookie-name",
+                FormFieldName = "form-field-name",
+                HeaderName = null,
+            });
+
+            var tokenSet = new AntiforgeryTokenSet(null, "cookie-token", "form-field-name", null);
+            context.TokenStore
+                .Setup(s => s.GetRequestTokensAsync(context.HttpContext))
+                .Returns(Task.FromResult(tokenSet));
+
+            var antiforgery = GetAntiforgery(context);
+
+            // Act & Assert
+            var exception = await Assert.ThrowsAsync<AntiforgeryValidationException>(
+                () => antiforgery.ValidateRequestAsync(context.HttpContext));
+            Assert.Equal("The required antiforgery form field \"form-field-name\" is not present.", exception.Message);
+        }
+
+        [Fact]
+        public async Task ValidateRequestAsync_NonFormRequest_NoHeaderValue_Throws()
+        {
+            // Arrange
+            var context = CreateMockContext(new AntiforgeryOptions()
+            {
+                CookieName = "cookie-name",
+                FormFieldName = "form-field-name",
+                HeaderName = "header-name",
+            });
+
+            context.HttpContext.Request.ContentType = "application/json";
+
+            var tokenSet = new AntiforgeryTokenSet(null, "cookie-token", "form-field-name", "header-name");
+            context.TokenStore
+                .Setup(s => s.GetRequestTokensAsync(context.HttpContext))
+                .Returns(Task.FromResult(tokenSet));
+
+            var antiforgery = GetAntiforgery(context);
+
+            // Act & Assert
+            var exception = await Assert.ThrowsAsync<AntiforgeryValidationException>(
+                () => antiforgery.ValidateRequestAsync(context.HttpContext));
+            Assert.Equal("The required antiforgery header value \"header-name\" is not present.", exception.Message);
+        }
+
+        [Fact]
+        public async Task ValidateRequestAsync_FormRequest_NoRequestTokenValue_Throws()
+        {
+            // Arrange
+            var context = CreateMockContext(new AntiforgeryOptions()
+            {
+                CookieName = "cookie-name",
+                FormFieldName = "form-field-name",
+                HeaderName = "header-name",
+            });
+
+            context.HttpContext.Request.ContentType = "application/x-www-form-urlencoded";
+
+            var tokenSet = new AntiforgeryTokenSet(null, "cookie-token", "form-field-name", "header-name");
+            context.TokenStore
+                .Setup(s => s.GetRequestTokensAsync(context.HttpContext))
+                .Returns(Task.FromResult(tokenSet));
+
+            var antiforgery = GetAntiforgery(context);
+
+            // Act & Assert
+            var exception = await Assert.ThrowsAsync<AntiforgeryValidationException>(
+                () => antiforgery.ValidateRequestAsync(context.HttpContext));
+            Assert.Equal(
+                "The required antiforgery request token was not provided in either form field \"form-field-name\" " +
+                "or header value \"header-name\".",
+                exception.Message);
+        }
+
         [Theory]
         [InlineData(false, "SAMEORIGIN")]
         [InlineData(true, null)]

@@ -23,22 +23,13 @@ namespace Microsoft.AspNetCore.Antiforgery
             string formFieldName,
             string headerName)
         {
-            if (string.IsNullOrEmpty(requestToken))
-            {
-                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(requestToken));
-            }
-
             if (formFieldName == null)
             {
                 throw new ArgumentNullException(nameof(formFieldName));
             }
 
             RequestToken = requestToken;
-
-            // Cookie Token is allowed to be null in the case when the old cookie is valid
-            // and there is no new cookieToken generated.
             CookieToken = cookieToken;
-
             FormFieldName = formFieldName;
             HeaderName = headerName;
         }
