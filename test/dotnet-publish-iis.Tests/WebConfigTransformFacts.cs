@@ -177,6 +177,7 @@ namespace Microsoft.AspNetCore.Tools.PublishIIS.Tests
                 httPlatformElement));
         }
 
+        [Fact]
         public void WebConfigTransform_overrites_value_for_ASPNET_APPLICATIONBASE()
         {
             var input = WebConfigTemplate;
