@@ -12,17 +12,17 @@ namespace Microsoft.AspNetCore.Identity.InMemory.Test
     {
         protected override object CreateTestContext()
         {
-            return null;
+            return new InMemoryStore<TestUser, TestRole>();
         }
 
         protected override void AddUserStore(IServiceCollection services, object context = null)
         {
-            services.AddSingleton<IUserStore<TestUser>, InMemoryUserStore<TestUser>>();
+            services.AddSingleton<IUserStore<TestUser>>((InMemoryStore<TestUser, TestRole>)context);
         }
 
         protected override void AddRoleStore(IServiceCollection services, object context = null)
         {
-            services.AddSingleton<IRoleStore<TestRole>, InMemoryRoleStore<TestRole>>();
+            services.AddSingleton<IRoleStore<TestRole>>((InMemoryStore<TestUser, TestRole>)context);
         }
 
         protected override void SetUserPasswordHash(TestUser user, string hashedPassword)

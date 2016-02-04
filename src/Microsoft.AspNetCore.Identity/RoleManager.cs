@@ -4,11 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
@@ -17,7 +15,7 @@ namespace Microsoft.AspNetCore.Identity
     /// <summary>
     /// Provides the APIs for managing roles in a persistence store.
     /// </summary>
-    /// <typeparam name="TUser">The type encapsulating a role.</typeparam>
+    /// <typeparam name="TRole">The type encapsulating a role.</typeparam>
     public class RoleManager<TRole> : IDisposable where TRole : class
     {
         private bool _disposed;

@@ -1467,6 +1467,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             {
                 return;
             }
+
             var context = CreateTestContext();
             var userManager = CreateManager(context);
             var roleManager = CreateRoleManager(context);

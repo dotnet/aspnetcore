@@ -37,8 +37,8 @@ namespace Microsoft.AspNetCore.Identity.InMemory.Test
             services.AddLogging();
             services.AddSingleton(contextAccessor.Object);
             services.AddIdentity<TestUser, TestRole>();
-            services.AddSingleton<IUserStore<TestUser>, InMemoryUserStore<TestUser>>();
-            services.AddSingleton<IRoleStore<TestRole>, InMemoryRoleStore<TestRole>>();
+            services.AddSingleton<IUserStore<TestUser>, InMemoryStore<TestUser, TestRole>>();
+            services.AddSingleton<IRoleStore<TestRole>, InMemoryStore<TestUser, TestRole>>();
             
             var app = new ApplicationBuilder(services.BuildServiceProvider());
             app.UseCookieAuthentication();

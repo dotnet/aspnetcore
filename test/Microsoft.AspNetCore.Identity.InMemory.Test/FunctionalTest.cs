@@ -257,8 +257,8 @@ namespace Microsoft.AspNetCore.Identity.InMemory
                 .ConfigureServices(services =>
                 {
                     services.AddIdentity<TestUser, TestRole>();
-                    services.AddSingleton<IUserStore<TestUser>, InMemoryUserStore<TestUser>>();
-                    services.AddSingleton<IRoleStore<TestRole>, InMemoryRoleStore<TestRole>>();
+                    services.AddSingleton<IUserStore<TestUser>, InMemoryStore<TestUser, TestRole>>();
+                    services.AddSingleton<IRoleStore<TestRole>, InMemoryStore<TestUser, TestRole>>();
                     if (configureServices != null)
                     {
                         configureServices(services);

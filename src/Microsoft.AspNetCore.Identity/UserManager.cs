@@ -434,9 +434,9 @@ namespace Microsoft.AspNetCore.Identity
         }
 
         /// <summary>
-        /// Finds and returns a user, if any, who has the specified normalized user name.
+        /// Finds and returns a user, if any, who has the specified user name.
         /// </summary>
-        /// <param name="normalizedUserName">The normalized user name to search for.</param>
+        /// <param name="userName">The user name to search for.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
         /// <returns>
         /// The <see cref="Task"/> that represents the asynchronous operation, containing the user matching the specified <paramref name="userID"/> if it exists.
@@ -1038,7 +1038,7 @@ namespace Microsoft.AspNetCore.Identity
         /// <summary>
         /// Gets a list of <see cref="Claim"/>s to be belonging to the specified <paramref name="user"/> as an asynchronous operation.
         /// </summary>
-        /// <param name="user">The role whose claims to retrieve.</param>
+        /// <param name="user">The user whose claims to retrieve.</param>
         /// <returns>
         /// A <see cref="Task{TResult}"/> that represents the result of the asynchronous query, a list of <see cref="Claim"/>s.
         /// </returns>
@@ -1071,11 +1071,12 @@ namespace Microsoft.AspNetCore.Identity
                 throw new ArgumentNullException("user");
             }
 
-            if (await userRoleStore.IsInRoleAsync(user, role, CancellationToken))
+            var normalizedRole = NormalizeKey(role);
+            if (await userRoleStore.IsInRoleAsync(user, normalizedRole, CancellationToken))
             {
                 return await UserAlreadyInRoleError(user, role);
             }
-            await userRoleStore.AddToRoleAsync(user, role, CancellationToken);
+            await userRoleStore.AddToRoleAsync(user, normalizedRole, CancellationToken);
             return await UpdateUserAsync(user);
         }
 
@@ -1103,11 +1104,12 @@ namespace Microsoft.AspNetCore.Identity
 
             foreach (var role in roles.Distinct())
             {
-                if (await userRoleStore.IsInRoleAsync(user, role, CancellationToken))
+                var normalizedRole = NormalizeKey(role);
+                if (await userRoleStore.IsInRoleAsync(user, normalizedRole, CancellationToken))
                 {
                     return await UserAlreadyInRoleError(user, role);
                 }
-                await userRoleStore.AddToRoleAsync(user, role, CancellationToken);
+                await userRoleStore.AddToRoleAsync(user, normalizedRole, CancellationToken);
             }
             return await UpdateUserAsync(user);
         }
@@ -1130,11 +1132,12 @@ namespace Microsoft.AspNetCore.Identity
                 throw new ArgumentNullException("user");
             }
 
-            if (!await userRoleStore.IsInRoleAsync(user, role, CancellationToken))
+            var normalizedRole = NormalizeKey(role);
+            if (!await userRoleStore.IsInRoleAsync(user, normalizedRole, CancellationToken))
             {
                 return await UserNotInRoleError(user, role);
             }
-            await userRoleStore.RemoveFromRoleAsync(user, role, CancellationToken);
+            await userRoleStore.RemoveFromRoleAsync(user, normalizedRole, CancellationToken);
             return await UpdateUserAsync(user);
         }
 
@@ -1174,11 +1177,12 @@ namespace Microsoft.AspNetCore.Identity
 
             foreach (var role in roles)
             {
-                if (!await userRoleStore.IsInRoleAsync(user, role, CancellationToken))
+                var normalizedRole = NormalizeKey(role);
+                if (!await userRoleStore.IsInRoleAsync(user, normalizedRole, CancellationToken))
                 {
                     return await UserNotInRoleError(user, role);
                 }
-                await userRoleStore.RemoveFromRoleAsync(user, role, CancellationToken);
+                await userRoleStore.RemoveFromRoleAsync(user, normalizedRole, CancellationToken);
             }
             return await UpdateUserAsync(user);
         }
@@ -1216,7 +1220,7 @@ namespace Microsoft.AspNetCore.Identity
             {
                 throw new ArgumentNullException("user");
             }
-            return await userRoleStore.IsInRoleAsync(user, role, CancellationToken);
+            return await userRoleStore.IsInRoleAsync(user, NormalizeKey(role), CancellationToken);
         }
 
         /// <summary>
@@ -1950,7 +1954,7 @@ namespace Microsoft.AspNetCore.Identity
                 throw new ArgumentNullException("role");
             }
 
-            return store.GetUsersInRoleAsync(roleName, CancellationToken);
+            return store.GetUsersInRoleAsync(NormalizeKey(roleName), CancellationToken);
         }
 
         /// <summary>
