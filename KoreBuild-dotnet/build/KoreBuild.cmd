@@ -9,6 +9,9 @@ IF "%NUGET_PATH%"=="" (
 	ECHO Error: NUGET_PATH is not set.
 	EXIT /B 1
 )
+IF "%KOREBUILD_DOTNET_CHANNEL%"=="" (
+    SET KOREBUILD_DOTNET_CHANNEL=beta
+)
 
 IF NOT EXIST Sake  (
     "%NUGET_PATH%" install Sake -ExcludeVersion -Source https://api.nuget.org/v3/index.json -o %~dp0
@@ -30,7 +33,7 @@ IF "%KOREBUILD_SKIP_RUNTIME_INSTALL%"=="1" (
 SET DOTNET_LOCAL_INSTALL_FOLDER=%LOCALAPPDATA%\Microsoft\dotnet\cli
 SET DOTNET_LOCAL_INSTALL_FOLDER_BIN=%DOTNET_LOCAL_INSTALL_FOLDER%\bin
 
-CALL %~dp0dotnet-install.cmd
+CALL %~dp0dotnet-install.cmd -Channel %KOREBUILD_DOTNET_CHANNEL%
 
 ECHO Adding %DOTNET_LOCAL_INSTALL_FOLDER_BIN% to PATH
 SET PATH=%DOTNET_LOCAL_INSTALL_FOLDER_BIN%;%PATH%

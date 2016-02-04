@@ -3,36 +3,19 @@
 # Licensed under the MIT license. See LICENSE file in the project root for full license information.
 #
 
-param (
-    [string] $InstallDir = $null,
-    [string] $TargetPlatform = "x64",
-    [string] $Version = "Latest"
-)
+param([string]$Channel="dev")
+
 
 $ErrorActionPreference="Stop"
 $ProgressPreference="SilentlyContinue"
 
 $Feed="https://dotnetcli.blob.core.windows.net/dotnet"
-$Channel="dev"
-$fileVersion = $Version
-if ($fileVersion -eq "Latest") {
-    $fileVersion = "latest"
-}
-
-$DotNetFileName="dotnet-win-${TargetPlatform}.$fileVersion.zip"
-$DotNetUrl="$Feed/$Channel/Binaries/$Version"
-
-
-Write-Host $DotNetFileName
+$DotNetFileName="dotnet-win-x64.latest.zip"
+$DotNetUrl="$Feed/$Channel/Binaries/Latest"
 
 function say($str)
 {
     Write-Host "dotnet_install: $str"
-}
-
-
-if (!$InstallDir) {
-    $InstallDir = "$env:LocalAppData\Microsoft\dotnet"
 }
 
 $InstallDir = $env:DOTNET_INSTALL_DIR
@@ -44,36 +27,28 @@ say "Preparing to install .NET Tools to $InstallDir"
 
 # Check if we need to bother
 $LocalFile = "$InstallDir\cli\.version"
-if ((Test-Path $LocalFile))
+if (Test-Path $LocalFile)
 {
     $LocalData = @(cat $LocalFile)
     $LocalHash = $LocalData[0].Trim()
     $LocalVersion = $LocalData[1].Trim()
     if ($LocalVersion -and $LocalHash)
     {
-        if ($Version -eq "Latest")
-        {
-            $RemoteResponse = Invoke-WebRequest -UseBasicParsing "$Feed/$Channel/dnvm/latest.win.version"
-            $RemoteData = @([Text.Encoding]::UTF8.GetString($RemoteResponse.Content).Split([char[]]@(), [StringSplitOptions]::RemoveEmptyEntries));
-            $RemoteHash = $RemoteData[0].Trim()
-            $RemoteVersion = $RemoteData[1].Trim()
+        $RemoteResponse = Invoke-WebRequest -UseBasicParsing "$Feed/$Channel/dnvm/latest.win.version"
+        $RemoteData = @([Text.Encoding]::UTF8.GetString($RemoteResponse.Content).Split([char[]]@(), [StringSplitOptions]::RemoveEmptyEntries));
+        $RemoteHash = $RemoteData[0].Trim()
+        $RemoteVersion = $RemoteData[1].Trim()
 
-            if (!$RemoteVersion -or !$RemoteHash) {
-                throw "Invalid response from feed"
-            }
-
-            say "Latest version: $RemoteVersion"
-            say "Local Version: $LocalVersion"
-
-            if($LocalHash -eq $RemoteHash)
-            {
-                say "You already have the latest version"
-                exit 0
-            }
+        if (!$RemoteVersion -or !$RemoteHash) {
+            throw "Invalid response from feed"
         }
-        elseif ($LocalVersion -eq $Version)
+
+        say "Latest version: $RemoteVersion"
+        say "Local Version: $LocalVersion"
+
+        if($LocalHash -eq $RemoteHash)
         {
-            say "You already have the local version"
+            say "You already have the latest version"
             exit 0
         }
     }

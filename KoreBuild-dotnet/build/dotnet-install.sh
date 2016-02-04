@@ -54,13 +54,6 @@ exec "$MY_TARGET" "$@"
 EOF
 )
 
-#set default prefix (PREFIX is a fairly standard env-var, but we also want to allow the use the specific "DOTNET_INSTALL_DIR" one)
-if [ ! -z "$DOTNET_INSTALL_DIR" ]; then
-    PREFIX=$DOTNET_INSTALL_DIR
-elif [ -z "$PREFIX" ]; then
-    PREFIX=/usr/local
-fi
-
 #setup some colors to use. These need to work in fairly limited shells, like the Ubuntu Docker container where there are only 8 colors.
 #See if stdout is a terminal
 if [ -t 1 ]; then
@@ -156,7 +149,7 @@ install_dotnet()
         return 1
     fi
 
-    say "Preparing to install .NET Tools to $PREFIX"
+    say "Preparing to install .NET Tools from '$CHANNEL' channel to '$PREFIX'"
 
     if [ -e "$PREFIX/share/dotnet/cli/dotnet" ] && [ ! -w "$PREFIX/share/dotnet/cli/dotnet" ]; then
         say_err "dotnet cli is already installed and not writeable. Use 'curl -sSL <url> | sudo sh' to force install."
@@ -171,13 +164,13 @@ install_dotnet()
     fi
     local os=$(current_os)
     local installLocation="$PREFIX/share/dotnet"
-    local dotnet_url="https://dotnetcli.blob.core.windows.net/dotnet/dev/Binaries/Latest"
+    local dotnet_url="https://dotnetcli.blob.core.windows.net/dotnet/$CHANNEL/Binaries/Latest"
     local dotnet_filename="dotnet-$os-x64.latest.tar.gz"
 
     if [ "$RELINK" = "0" ]; then
         if [ "$FORCE" = "0" ]; then
             # Check if we need to bother
-            local remoteData="$(curl -s https://dotnetcli.blob.core.windows.net/dotnet/dev/dnvm/latest.$os.version)"
+            local remoteData="$(curl -s https://dotnetcli.blob.core.windows.net/dotnet/$CHANNEL/dnvm/latest.$os.version)"
             [ $? != 0 ] && say_err "Unable to determine latest version." && return 1
 
             local remoteVersion=$(IFS="\n" && echo $remoteData | tail -n 1)
@@ -241,27 +234,59 @@ FORCE=0
 RELINK=0
 while [ $# -ne 0 ]
 do
-    if [ $1 = "-f" ] || [ $1 = "--force" ]; then
-        FORCE=1
-    elif [ $1 = "-r" ] || [ $1 = "--relink" ]; then
-        RELINK=1
-    elif [ $1 = "-?" ] || [ $1 = "-h" ] || [ $1 = "--help" ]; then
-        echo ".NET Tools Installer"
-        echo ""
-        echo "Usage:"
-        echo "  $0 [-f]"
-        echo "  $0 -r"
-        echo "  $0 -h"
-        echo ""
-        echo "Options:"
-        echo "  -f      Force reinstallation even if you have the most recent version installed"
-        echo "  -r      Don't re-download, just recreate the links in $PREFIX/bin"
-        echo "  -h      Show this help message"
-        echo ""
-        echo "The PREFIX environment variable can be used to affect the root installation directory"
-        exit 0
-    fi
+    name=$1
+    case $name in
+        -f|--force)
+            FORCE=1
+            ;;
+        -r|--relink)
+            RELINK=1
+            ;;
+        -c|--channel)
+            shift
+            CHANNEL=$1
+            ;;
+        -d|--destination)
+            shift
+            DOTNET_INSTALL_DIR=$1
+            ;;
+        -?|-h|--help)
+            echo ".NET Tools Installer"
+            echo ""
+            echo "Usage:"
+            echo "  $0 [-f|--force] [-r|--relink] [-c|--channel <CHANNEL>] [-d|--destination <DESTINATION>]"
+            echo "  $0 -h|-?|--help"
+            echo ""
+            echo "Options:"
+            echo "  -f,--force                  Force reinstallation even if you have the most recent version installed"
+            echo "  -r,--relink                 Don't re-download, just recreate the links in $PREFIX/bin"
+            echo "  -c,--channel <CHANNEL>      Download from the CHANNEL specified (default: dev)"
+            echo "  -d,--destination <PATH>     Install under the specified root (see Install Location below)"
+            echo "  -?,-h,--help                Show this help message"
+            echo ""
+            echo "Install Location:"
+            echo "  By default, this script installs the .NET Tools to /usr/local. However, if the PREFIX environment variable"
+            echo "  is specified, that will be used as the installation root. If the DOTNET_INSTALL_DIR environment variable"
+            echo "  is specified, it will be used as the installation root (overriding PREFIX). Finally, if the '--destination'"
+            echo "  option is specified, it will override all environment variables and be used as the installation location"
+            echo ""
+            echo "  After installation, the .NET Tools will be installed to the 'share/dotnet/cli' subdirectory of the "
+            echo "  installation location (i.e. /usr/local/share/dotnet/cli). Binaries will be symlinked to the 'bin'"
+            echo "  subdirectory of the installation location (i.e. /usr/local/bin/dotnet)"
+            exit 0
+            ;;
+    esac
+
     shift
 done
+
+#set default prefix (PREFIX is a fairly standard env-var, but we also want to allow the use the specific "DOTNET_INSTALL_DIR" one)
+if [ ! -z "$DOTNET_INSTALL_DIR" ]; then
+    PREFIX=$DOTNET_INSTALL_DIR
+elif [ -z "$PREFIX" ]; then
+    PREFIX=/usr/local
+fi
+
+[ -z "$CHANNEL" ] && CHANNEL="dev"
 
 install_dotnet
