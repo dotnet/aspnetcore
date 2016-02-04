@@ -11,7 +11,6 @@
   },
   "dependencies": {
     "Microsoft.AspNetCore.DataProtection": "1.0.0-*",
-    "Microsoft.AspNetCore.Html.Abstractions": "1.0.0-*",
     "Microsoft.AspNetCore.Http.Abstractions": "1.0.0-*",
     "Microsoft.AspNetCore.WebUtilities": "1.0.0-*",
     "Microsoft.Extensions.ObjectPool": "1.0.0-*"

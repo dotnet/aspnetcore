@@ -2,14 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.WebEncoders.Testing;
 using Moq;
 using Xunit;
 
@@ -82,26 +80,6 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
         }
 
         [Fact]
-        public void ChecksSSL_GetHtml_Throws()
-        {
-            // Arrange
-            var httpContext = new DefaultHttpContext();
-            var options = new AntiforgeryOptions()
-            {
-                RequireSsl = true
-            };
-
-            var antiforgery = GetAntiforgery(options);
-
-            // Act & Assert
-            var exception = Assert.Throws<InvalidOperationException>(() => antiforgery.GetHtml(httpContext));
-            Assert.Equal(
-                 @"The antiforgery system has the configuration value AntiforgeryOptions.RequireSsl = true, " +
-                 "but the current request is not an SSL request.",
-                 exception.Message);
-        }
-
-        [Fact]
         public void ChecksSSL_GetAndStoreTokens_Throws()
         {
             // Arrange
@@ -162,136 +140,6 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
                  @"The antiforgery system has the configuration value AntiforgeryOptions.RequireSsl = true, " +
                  "but the current request is not an SSL request.",
                  exception.Message);
-        }
-
-        [Fact]
-        public void GetHtml_ExistingInvalidCookieToken_GeneratesANewCookieAndAnAntiforgeryToken()
-        {
-            // Arrange
-            var options = new AntiforgeryOptions()
-            {
-                FormFieldName = "form-field-name"
-            };
-
-            // Make sure the existing cookie is invalid.
-            var context = CreateMockContext(options, isOldCookieValid: false);
-            var antiforgery = GetAntiforgery(context);
-            var encoder = new HtmlTestEncoder();
-
-            // Setup so that the null cookie token returned is treated as invalid.
-            context.TokenGenerator
-                .Setup(o => o.IsCookieTokenValid(null))
-                .Returns(false);
-
-            // Act
-            var inputElement = antiforgery.GetHtml(context.HttpContext);
-
-            // Assert
-            using (var writer = new StringWriter())
-            {
-                inputElement.WriteTo(writer, encoder);
-
-                Assert.Equal(
-                    @"<input name=""HtmlEncode[[form-field-name]]"" type=""hidden"" " +
-                    @"value=""HtmlEncode[[serialized-form-token]]"" />",
-                    writer.ToString());
-            }
-
-            context.TokenStore.Verify();
-        }
-
-        [Fact]
-        public void GetHtml_ExistingInvalidCookieToken_SwallowsExceptions()
-        {
-            // Arrange
-            var options = new AntiforgeryOptions()
-            {
-                FormFieldName = "form-field-name"
-            };
-
-            // Make sure the existing cookie is invalid.
-            var context = CreateMockContext(options, isOldCookieValid: false);
-            var antiforgery = GetAntiforgery(context);
-
-            // This will cause the cookieToken to be null.
-            context.TokenStore
-                .Setup(o => o.GetCookieToken(context.HttpContext))
-                .Throws(new Exception("should be swallowed"));
-
-            // Setup so that the null cookie token returned is treated as invalid.
-            context.TokenGenerator
-                .Setup(o => o.IsCookieTokenValid(null))
-                .Returns(false);
-
-            var encoder = new HtmlTestEncoder();
-
-            // Act
-            var inputElement = antiforgery.GetHtml(context.HttpContext);
-
-            // Assert
-            using (var writer = new StringWriter())
-            {
-                inputElement.WriteTo(writer, encoder);
-
-                Assert.Equal(
-                    @"<input name=""HtmlEncode[[form-field-name]]"" type=""hidden"" " +
-                    @"value=""HtmlEncode[[serialized-form-token]]"" />",
-                    writer.ToString());
-            }
-
-            context.TokenStore.Verify();
-        }
-
-        [Fact]
-        public void GetHtml_ExistingValidCookieToken_GeneratesAnAntiforgeryToken()
-        {
-            // Arrange
-            var options = new AntiforgeryOptions()
-            {
-                FormFieldName = "form-field-name"
-            };
-
-            // Make sure the existing cookie is valid and use the same cookie for the mock Token Provider.
-            var context = CreateMockContext(options, useOldCookie: true, isOldCookieValid: true);
-            var antiforgery = GetAntiforgery(context);
-            var encoder = new HtmlTestEncoder();
-
-            // Act
-            var inputElement = antiforgery.GetHtml(context.HttpContext);
-
-            // Assert
-            using (var writer = new StringWriter())
-            {
-                inputElement.WriteTo(writer, encoder);
-
-                Assert.Equal(
-                    @"<input name=""HtmlEncode[[form-field-name]]"" type=""hidden"" " +
-                    @"value=""HtmlEncode[[serialized-form-token]]"" />",
-                    writer.ToString());
-            }
-        }
-
-        [Theory]
-        [InlineData(false, "SAMEORIGIN")]
-        [InlineData(true, null)]
-        public void GetHtml_AddsXFrameOptionsHeader(bool suppressXFrameOptions, string expectedHeaderValue)
-        {
-            // Arrange
-            var options = new AntiforgeryOptions()
-            {
-                SuppressXFrameOptionsHeader = suppressXFrameOptions
-            };
-
-            // Generate a new cookie.
-            var context = CreateMockContext(options, useOldCookie: false, isOldCookieValid: false);
-            var antiforgery = GetAntiforgery(context);
-
-            // Act
-            antiforgery.GetHtml(context.HttpContext);
-
-            // Assert
-            string xFrameOptions = context.HttpContext.Response.Headers["X-Frame-Options"];
-            Assert.Equal(expectedHeaderValue, xFrameOptions);
         }
 
         [Fact]

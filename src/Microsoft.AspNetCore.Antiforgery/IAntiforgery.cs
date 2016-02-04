@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Antiforgery
@@ -13,20 +12,6 @@ namespace Microsoft.AspNetCore.Antiforgery
     /// </summary>
     public interface IAntiforgery
     {
-        /// <summary>
-        /// Generates an &lt;input type="hidden"&gt; element for an antiforgery token.
-        /// </summary>
-        /// <param name="httpContext">The <see cref="HttpContext"/> associated with the current request.</param>
-        /// <returns>
-        /// A <see cref="IHtmlContent"/> containing an &lt;input type="hidden"&gt; element. This element should be put
-        /// inside a &lt;form&gt;.
-        /// </returns>
-        /// <remarks>
-        /// This method has a side effect:
-        /// A response cookie is set if there is no valid cookie associated with the request.
-        /// </remarks>
-        IHtmlContent GetHtml(HttpContext httpContext);
-
         /// <summary>
         /// Generates an <see cref="AntiforgeryTokenSet"/> for this request and stores the cookie token
         /// in the response.
