@@ -4,21 +4,77 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Metadata;
 
 namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
 {
     /// <summary>
     /// Base class for the Entity Framework database context used for identity.
     /// </summary>
-    public class IdentityDbContext : IdentityDbContext<IdentityUser, IdentityRole, string> { }
+    public class IdentityDbContext : IdentityDbContext<IdentityUser, IdentityRole, string>
+    {
+        /// <summary>
+        /// Initializes a new instance of <see cref="IdentityDbContext"/>.
+        /// </summary>
+        /// <param name="options">The options to be used by a <see cref="DbContext"/>.</param>
+        public IdentityDbContext(DbContextOptions options) : base(options)
+        { }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="IdentityDbContext" /> class using an <see cref="IServiceProvider" />.
+        /// </summary>
+        /// <param name="serviceProvider"> The service provider to be used.</param>
+        public IdentityDbContext(IServiceProvider serviceProvider) : base(serviceProvider)
+        { }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="IdentityDbContext" /> class using an <see cref="IServiceProvider" />.
+        /// </summary>
+        /// <param name="options">The options to be used by a <see cref="DbContext"/>.</param>
+        /// <param name="serviceProvider"> The service provider to be used.</param>
+        public IdentityDbContext(IServiceProvider serviceProvider, DbContextOptions options) : base(serviceProvider, options)
+        { }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="IdentityDbContext" /> class.
+        /// </summary>
+        public IdentityDbContext()
+        { }
+    }
 
     /// <summary>
     /// Base class for the Entity Framework database context used for identity.
     /// </summary>
     /// <typeparam name="TUser">The type of the user objects.</typeparam>
     public class IdentityDbContext<TUser> : IdentityDbContext<TUser, IdentityRole, string> where TUser : IdentityUser
-    { }
+    {
+        /// <summary>
+        /// Initializes a new instance of <see cref="IdentityDbContext"/>.
+        /// </summary>
+        /// <param name="options">The options to be used by a <see cref="DbContext"/>.</param>
+        public IdentityDbContext(DbContextOptions options) : base(options)
+        { }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="IdentityDbContext" /> class using an <see cref="IServiceProvider" />.
+        /// </summary>
+        /// <param name="serviceProvider"> The service provider to be used.</param>
+        public IdentityDbContext(IServiceProvider serviceProvider) : base(serviceProvider)
+        { }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="IdentityDbContext" /> class using an <see cref="IServiceProvider" />.
+        /// </summary>
+        /// <param name="options">The options to be used by a <see cref="DbContext"/>.</param>
+        /// <param name="serviceProvider"> The service provider to be used.</param>
+        public IdentityDbContext(IServiceProvider serviceProvider, DbContextOptions options) : base(serviceProvider, options)
+        { }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="IdentityDbContext" /> class.
+        /// </summary>
+        public IdentityDbContext()
+        { }
+    }
 
     /// <summary>
     /// Base class for the Entity Framework database context used for identity.
@@ -36,18 +92,14 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
         /// </summary>
         /// <param name="options">The options to be used by a <see cref="DbContext"/>.</param>
         public IdentityDbContext(DbContextOptions options) : base(options)
-        {
-
-        }
+        { }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="IdentityDbContext" /> class using an <see cref="IServiceProvider" />.
         /// </summary>
         /// <param name="serviceProvider"> The service provider to be used.</param>
         public IdentityDbContext(IServiceProvider serviceProvider) : base(serviceProvider)
-        {
-
-        }
+        { }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="IdentityDbContext" /> class using an <see cref="IServiceProvider" />.
@@ -55,17 +107,13 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
         /// <param name="options">The options to be used by a <see cref="DbContext"/>.</param>
         /// <param name="serviceProvider"> The service provider to be used.</param>
         public IdentityDbContext(IServiceProvider serviceProvider, DbContextOptions options) : base(serviceProvider, options)
-        {
-
-        }
+        { }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="IdentityDbContext" /> class.
         /// </summary>
-        protected IdentityDbContext()
-        {
-
-        }
+        public IdentityDbContext()
+        { }
 
         /// <summary>
         /// Gets or sets the <see cref="DbSet{TEntity}"/> of Users.
