@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             var outputFormatterContext = GetOutputFormatterContext(person, typeof(User));
 
             // Act
-            await jsonFormatter.WriteResponseBodyAsync(outputFormatterContext);
+            await jsonFormatter.WriteResponseBodyAsync(outputFormatterContext, Encoding.UTF8);
 
             // Assert
             var body = outputFormatterContext.HttpContext.Response.Body;
@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
             // This will create a serializer - which gets cached.
             var outputFormatterContext1 = GetOutputFormatterContext(person, typeof(User));
-            await jsonFormatter.WriteResponseBodyAsync(outputFormatterContext1);
+            await jsonFormatter.WriteResponseBodyAsync(outputFormatterContext1, Encoding.UTF8);
 
             // These changes should have no effect.
             jsonFormatter.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             var outputFormatterContext2 = GetOutputFormatterContext(person, typeof(User));
 
             // Act
-            await jsonFormatter.WriteResponseBodyAsync(outputFormatterContext2);
+            await jsonFormatter.WriteResponseBodyAsync(outputFormatterContext2, Encoding.UTF8);
 
             // Assert
             var body = outputFormatterContext2.HttpContext.Response.Body;
@@ -128,7 +128,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
             // This will create a serializer - which gets cached.
             var outputFormatterContext1 = GetOutputFormatterContext(person, typeof(User));
-            await jsonFormatter.WriteResponseBodyAsync(outputFormatterContext1);
+            await jsonFormatter.WriteResponseBodyAsync(outputFormatterContext1, Encoding.UTF8);
 
             // This results in a new serializer being created.
             jsonFormatter.SerializerSettings = new JsonSerializerSettings()
@@ -140,7 +140,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             var outputFormatterContext2 = GetOutputFormatterContext(person, typeof(User));
 
             // Act
-            await jsonFormatter.WriteResponseBodyAsync(outputFormatterContext2);
+            await jsonFormatter.WriteResponseBodyAsync(outputFormatterContext2, Encoding.UTF8);
 
             // Assert
             var body = outputFormatterContext2.HttpContext.Response.Body;
@@ -173,7 +173,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             var outputFormatterContext = GetOutputFormatterContext(person, typeof(User));
 
             // Act
-            await jsonFormatter.WriteResponseBodyAsync(outputFormatterContext);
+            await jsonFormatter.WriteResponseBodyAsync(outputFormatterContext, Encoding.UTF8);
 
             // Assert
             var body = outputFormatterContext.HttpContext.Response.Body;
@@ -200,7 +200,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 memStream);
 
             // Act
-            await formatter.WriteResponseBodyAsync(outputFormatterContext);
+            await formatter.WriteResponseBodyAsync(outputFormatterContext, Encoding.UTF8);
 
             // Assert
             memStream.Position = 0;
@@ -267,7 +267,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             };
 
             // Act
-            await formatter.WriteResponseBodyAsync(outputFormatterContext);
+            await formatter.WriteResponseBodyAsync(outputFormatterContext, Encoding.GetEncoding(encodingAsString));
 
             // Assert
             var actualData = body.ToArray();

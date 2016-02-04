@@ -3,13 +3,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
-using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.Extensions.Primitives;
-using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Mvc.Formatters
 {
@@ -18,51 +14,19 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
     /// </summary>
     public abstract class OutputFormatter : IOutputFormatter, IApiResponseFormatMetadataProvider
     {
-        private IDictionary<string, string> _outputMediaTypeCache;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="OutputFormatter"/> class.
         /// </summary>
         protected OutputFormatter()
         {
-            SupportedEncodings = new List<Encoding>();
             SupportedMediaTypes = new MediaTypeCollection();
         }
-
-        /// <summary>
-        /// Gets the mutable collection of character encodings supported by
-        /// this <see cref="OutputFormatter"/>. The encodings are
-        /// used when writing the data.
-        /// </summary>
-        public IList<Encoding> SupportedEncodings { get; }
 
         /// <summary>
         /// Gets the mutable collection of media type elements supported by
         /// this <see cref="OutputFormatter"/>.
         /// </summary>
         public MediaTypeCollection SupportedMediaTypes { get; }
-
-        private IDictionary<string, string> OutputMediaTypeCache
-        {
-            get
-            {
-                if (_outputMediaTypeCache == null)
-                {
-                    var cache = new Dictionary<string, string>();
-                    foreach (var mediaType in SupportedMediaTypes)
-                    {
-                        cache.Add(mediaType, MediaType.ReplaceEncoding(mediaType, Encoding.UTF8));
-                    }
-
-                    // Safe race condition, worst case scenario we initialize the field multiple times with dictionaries containing
-                    // the same values.
-                    _outputMediaTypeCache = cache;
-                }
-
-                return _outputMediaTypeCache;
-            }
-        }
-
 
         /// <summary>
         /// Returns a value indicating whether or not the given type can be written by this serializer.
@@ -115,49 +79,6 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             }
         }
 
-        /// <summary>
-        /// Determines the best <see cref="Encoding"/> amongst the supported encodings
-        /// for reading or writing an HTTP entity body based on the provided <paramref name="contentTypeHeader"/>.
-        /// </summary>
-        /// <param name="context">The formatter context associated with the call.
-        /// </param>
-        /// <returns>The <see cref="Encoding"/> to use when reading the request or writing the response.</returns>
-        public virtual Encoding SelectCharacterEncoding(OutputFormatterWriteContext context)
-        {
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            var request = context.HttpContext.Request;
-            var encoding = MatchAcceptCharacterEncoding(request.GetTypedHeaders().AcceptCharset);
-            if (encoding != null)
-            {
-                return encoding;
-            }
-
-            if (context.ContentType.HasValue)
-            {
-                var parsedContentType = new MediaType(context.ContentType);
-                var contentTypeCharset = parsedContentType.Charset;
-                if (contentTypeCharset.HasValue)
-                {
-                    for (var i = 0; i < SupportedEncodings.Count; i++)
-                    {
-                        var supportedEncoding = SupportedEncodings[i];
-                        if (contentTypeCharset.Equals(supportedEncoding.WebName, StringComparison.OrdinalIgnoreCase))
-                        {
-                            // This is supported.
-                            return SupportedEncodings[i];
-                        }
-                    }
-                }
-            }
-
-            // A formatter for a non-text media-type won't have any supported encodings.
-            return SupportedEncodings.Count > 0 ? SupportedEncodings[0] : null;
-        }
-
         /// <inheritdoc />
         public virtual bool CanWriteResult(OutputFormatterCanWriteContext context)
         {
@@ -206,45 +127,12 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         }
 
         /// <inheritdoc />
-        public Task WriteAsync(OutputFormatterWriteContext context)
+        public virtual Task WriteAsync(OutputFormatterWriteContext context)
         {
             if (context == null)
             {
                 throw new ArgumentNullException(nameof(context));
             }
-
-            var selectedMediaType = context.ContentType;
-            if (!selectedMediaType.HasValue)
-            {
-                // If content type is not set then set it based on supported media types.
-                if (SupportedEncodings.Count > 0)
-                {
-                    selectedMediaType = new StringSegment(SupportedMediaTypes[0]);
-                }
-                else
-                {
-                    throw new InvalidOperationException(Resources.FormatOutputFormatterNoMediaType(GetType().FullName));
-                }
-            }
-
-            // Note: Text-based media types will use an encoding/charset - binary formats just ignore it. We want to
-            // make this class work with media types that use encodings, and those that don't.
-            //
-            // The default implementation of SelectCharacterEncoding will read from the list of SupportedEncodings
-            // and will always choose a default encoding if any are supported. So, the only cases where the
-            // selectedEncoding can be null are:
-            //
-            // 1). No supported encodings - we assume this is a non-text format
-            // 2). Custom implementation of SelectCharacterEncoding - trust the user and give them what they want.
-            var selectedEncoding = SelectCharacterEncoding(context);
-            if (selectedEncoding != null)
-            {
-                // Override the content type value even if one already existed.
-                var mediaTypeWithCharset = GetMediaTypeWithCharset(selectedMediaType.Value, selectedEncoding);
-                selectedMediaType = new StringSegment(mediaTypeWithCharset);
-            }
-
-            context.ContentType = selectedMediaType;
 
             WriteResponseHeaders(context);
             return WriteResponseBodyAsync(context);
@@ -271,100 +159,5 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         /// <param name="context">The formatter context associated with the call.</param>
         /// <returns>A task which can write the response body.</returns>
         public abstract Task WriteResponseBodyAsync(OutputFormatterWriteContext context);
-
-        private string GetMediaTypeWithCharset(string mediaType, Encoding encoding)
-        {
-            if (string.Equals(encoding.WebName, Encoding.UTF8.WebName, StringComparison.OrdinalIgnoreCase) &&
-                OutputMediaTypeCache.ContainsKey(mediaType))
-                {
-                    return OutputMediaTypeCache[mediaType];
-                }
-
-            return MediaType.ReplaceEncoding(mediaType, encoding);
-        }
-
-        private Encoding MatchAcceptCharacterEncoding(IList<StringWithQualityHeaderValue> acceptCharsetHeaders)
-        {
-            if (acceptCharsetHeaders != null && acceptCharsetHeaders.Count > 0)
-            {
-                var acceptValues = Sort(acceptCharsetHeaders);
-                for (var i = 0; i < acceptValues.Count; i++)
-                {
-                    var charset = acceptValues[i].Value;
-                    if (!string.IsNullOrEmpty(charset))
-                    {
-                        for (var j = 0; j < SupportedEncodings.Count; j++)
-                        {
-                            var encoding = SupportedEncodings[j];
-                            if (charset.Equals(encoding.WebName, StringComparison.OrdinalIgnoreCase) ||
-                                charset.Equals("*", StringComparison.Ordinal))
-                            {
-                                return encoding;
-                            }
-                        }
-                    }
-                }
-            }
-
-            return null;
-        }
-
-        // There's no allocation-free way to sort an IList and we may have to filter anyway,
-        // so we're going to have to live with the copy + insertion sort.
-        private IList<StringWithQualityHeaderValue> Sort(IList<StringWithQualityHeaderValue> values)
-        {
-            var sortNeeded = false;
-            var count = 0;
-
-            for (var i = 0; i < values.Count; i++)
-            {
-                var value = values[i];
-                if (value.Quality == HeaderQuality.NoMatch)
-                {
-                    // Exclude this one
-                }
-                else if (value.Quality != null)
-                {
-                    count++;
-                    sortNeeded = true;
-                }
-                else
-                {
-                    count++;
-                }
-            }
-
-            if (!sortNeeded)
-            {
-                return values;
-            }
-
-            var sorted = new List<StringWithQualityHeaderValue>();
-            for (var i = 0; i < values.Count; i++)
-            {
-                var value = values[i];
-                if (value.Quality == HeaderQuality.NoMatch)
-                {
-                    // Exclude this one
-                }
-                else
-                {
-                    // Doing an insertion sort.
-                    var position = sorted.BinarySearch(value, StringWithQualityHeaderValueComparer.QualityComparer);
-                    if (position >= 0)
-                    {
-                        sorted.Insert(position + 1, value);
-                    }
-                    else
-                    {
-                        sorted.Insert(~position, value);
-                    }
-                }
-            }
-
-            // We want a descending sort, but BinarySearch does ascending
-            sorted.Reverse();
-            return sorted;
-        }
     }
 }

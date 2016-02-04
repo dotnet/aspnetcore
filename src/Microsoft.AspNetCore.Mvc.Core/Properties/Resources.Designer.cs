@@ -1114,6 +1114,38 @@ namespace Microsoft.AspNetCore.Mvc.Core
             return string.Format(CultureInfo.CurrentCulture, GetString("TextInputFormatter_SupportedEncodingsMustNotBeEmpty"), p0);
         }
 
+        /// <summary>
+        /// The list of '{0}' must not be empty. Add at least one supported encoding.
+        /// </summary>
+        internal static string TextOutputFormatter_SupportedEncodingsMustNotBeEmpty
+        {
+            get { return GetString("TextOutputFormatter_SupportedEncodingsMustNotBeEmpty"); }
+        }
+
+        /// <summary>
+        /// The list of '{0}' must not be empty. Add at least one supported encoding.
+        /// </summary>
+        internal static string FormatTextOutputFormatter_SupportedEncodingsMustNotBeEmpty(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("TextOutputFormatter_SupportedEncodingsMustNotBeEmpty"), p0);
+        }
+
+        /// <summary>
+        /// '{0}' is not supported by '{1}'. Use '{2}' instead.
+        /// </summary>
+        internal static string TextOutpurFormatter_WriteResponseBodyAsynNotSupported
+        {
+            get { return GetString("TextOutpurFormatter_WriteResponseBodyAsynNotSupported"); }
+        }
+
+        /// <summary>
+        /// '{0}' is not supported by '{1}'. Use '{2}' instead.
+        /// </summary>
+        internal static string FormatTextOutpurFormatter_WriteResponseBodyAsynNotSupported(object p0, object p1, object p2)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("TextOutpurFormatter_WriteResponseBodyAsynNotSupported"), p0, p1, p2);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

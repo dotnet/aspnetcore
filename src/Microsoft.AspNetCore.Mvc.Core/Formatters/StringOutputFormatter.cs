@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
     /// <summary>
     /// Always writes a string value to the response, regardless of requested content type.
     /// </summary>
-    public class StringOutputFormatter : OutputFormatter
+    public class StringOutputFormatter : TextOutputFormatter
     {
         public StringOutputFormatter()
         {
@@ -46,11 +46,16 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             return false;
         }
 
-        public override Task WriteResponseBodyAsync(OutputFormatterWriteContext context)
+        public override Task WriteResponseBodyAsync(OutputFormatterWriteContext context, Encoding encoding)
         {
             if (context == null)
             {
                 throw new ArgumentNullException(nameof(context));
+            }
+
+            if (encoding == null)
+            {
+                throw new ArgumentNullException(nameof(encoding));
             }
 
             var valueAsString = (string)context.Object;
@@ -60,7 +65,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             }
 
             var response = context.HttpContext.Response;
-            return response.WriteAsync(valueAsString, MediaType.GetEncoding(response.ContentType) ?? Encoding.UTF8);
+            return response.WriteAsync(valueAsString, encoding);
         }
     }
 }

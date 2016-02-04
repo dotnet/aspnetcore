@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -28,17 +29,17 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             Assert.IsType(typeof(AnotherTestOutputFormatter), formatter);
         }
 
-        private class TestOutputFormatter : OutputFormatter
+        private class TestOutputFormatter : TextOutputFormatter
         {
-            public override Task WriteResponseBodyAsync(OutputFormatterWriteContext context)
+            public override Task WriteResponseBodyAsync(OutputFormatterWriteContext context, Encoding selectedEncoding)
             {
                 throw new NotImplementedException();
             }
         }
 
-        private class AnotherTestOutputFormatter : OutputFormatter
+        private class AnotherTestOutputFormatter : TextOutputFormatter
         {
-            public override Task WriteResponseBodyAsync(OutputFormatterWriteContext context)
+            public override Task WriteResponseBodyAsync(OutputFormatterWriteContext context, Encoding selectedEncoding)
             {
                 throw new NotImplementedException();
             }

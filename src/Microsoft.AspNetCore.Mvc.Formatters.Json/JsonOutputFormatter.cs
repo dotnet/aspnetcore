@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
     /// <summary>
     /// An output formatter that specializes in writing JSON content.
     /// </summary>
-    public class JsonOutputFormatter : OutputFormatter
+    public class JsonOutputFormatter : TextOutputFormatter
     {
         private readonly IArrayPool<char> _charPool;
 
@@ -83,6 +83,12 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             }
         }
 
+        /// <summary>
+        /// Writes the given <paramref name="value"/> as JSON using the given
+        /// <paramref name="writer"/>.
+        /// </summary>
+        /// <param name="writer">The <see cref="TextWriter"/> used to write the <paramref name="value"/></param>
+        /// <param name="value">The value to write as JSON.</param>
         public void WriteObject(TextWriter writer, object value)
         {
             if (writer == null)
@@ -132,16 +138,20 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             return _serializer;
         }
 
-        public override async Task WriteResponseBodyAsync(OutputFormatterWriteContext context)
+        /// <inheritdoc />
+        public override async Task WriteResponseBodyAsync(OutputFormatterWriteContext context, Encoding selectedEncoding)
         {
             if (context == null)
             {
                 throw new ArgumentNullException(nameof(context));
             }
 
-            var response = context.HttpContext.Response;
-            var selectedEncoding = MediaType.GetEncoding(context.ContentType) ?? Encoding.UTF8;
+            if (selectedEncoding == null)
+            {
+                throw new ArgumentNullException(nameof(selectedEncoding));
+            }
 
+            var response = context.HttpContext.Response;
             using (var writer = context.WriterFactory(response.Body, selectedEncoding))
             {
                 WriteObject(writer, context.Object);

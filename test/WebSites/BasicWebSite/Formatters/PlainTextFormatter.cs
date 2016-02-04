@@ -9,7 +9,7 @@ using Microsoft.Net.Http.Headers;
 
 namespace BasicWebSite.Formatters
 {
-    public class PlainTextFormatter : OutputFormatter
+    public class PlainTextFormatter : TextOutputFormatter
     {
         public PlainTextFormatter()
         {
@@ -31,7 +31,7 @@ namespace BasicWebSite.Formatters
             return false;
         }
 
-        public override async Task WriteResponseBodyAsync(OutputFormatterWriteContext context)
+        public override async Task WriteResponseBodyAsync(OutputFormatterWriteContext context, Encoding selectedEncoding)
         {
             var response = context.HttpContext.Response;
             response.ContentType = "text/plain;charset=utf-8";

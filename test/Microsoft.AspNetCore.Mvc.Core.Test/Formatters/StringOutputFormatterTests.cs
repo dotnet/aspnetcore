@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             Encoding encoding = Encoding.UTF8;
             var memoryStream = new MemoryStream();
             var response = new Mock<HttpResponse>();
-            response.SetupProperty<long?>(o => o.ContentLength);
+            response.SetupProperty(o => o.ContentLength);
             response.SetupGet(r => r.Body).Returns(memoryStream);
             var httpContext = new Mock<HttpContext>();
             httpContext.Setup(o => o.Response).Returns(response.Object);
@@ -117,7 +117,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 @object: null);
 
             // Act
-            await formatter.WriteResponseBodyAsync(context);
+            await formatter.WriteResponseBodyAsync(context, encoding);
 
             // Assert
             Assert.Equal(0, memoryStream.Length);

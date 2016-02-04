@@ -11,8 +11,6 @@ using System.Threading.Tasks;
 using System.Xml;
 using Microsoft.AspNetCore.Mvc.Formatters.Xml;
 using Microsoft.AspNetCore.Mvc.Formatters.Xml.Internal;
-using Microsoft.AspNetCore.Mvc.Internal;
-using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Mvc.Formatters
 {
@@ -20,7 +18,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
     /// This class handles serialization of objects
     /// to XML using <see cref="DataContractSerializer"/>
     /// </summary>
-    public class XmlDataContractSerializerOutputFormatter : OutputFormatter
+    public class XmlDataContractSerializerOutputFormatter : TextOutputFormatter
     {
         private DataContractSerializerSettings _serializerSettings;
         private ConcurrentDictionary<Type, object> _serializerCache = new ConcurrentDictionary<Type, object>();
@@ -180,15 +178,20 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         }
 
         /// <inheritdoc />
-        public override async Task WriteResponseBodyAsync(OutputFormatterWriteContext context)
+        public override async Task WriteResponseBodyAsync(OutputFormatterWriteContext context, Encoding selectedEncoding)
         {
             if (context == null)
             {
                 throw new ArgumentNullException(nameof(context));
             }
 
+            if (selectedEncoding == null)
+            {
+                throw new ArgumentNullException(nameof(selectedEncoding));
+            }
+
             var writerSettings = WriterSettings.Clone();
-            writerSettings.Encoding = MediaType.GetEncoding(context.ContentType) ?? Encoding.UTF8;
+            writerSettings.Encoding = selectedEncoding;
 
             // Wrap the object only if there is a wrapping type.
             var value = context.Object;

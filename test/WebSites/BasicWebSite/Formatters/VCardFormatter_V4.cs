@@ -16,7 +16,7 @@ namespace BasicWebSite.Formatters
     /// Provides contact information of a person through VCard format.
     /// In version 4.0 of VCard format, Gender is a supported property.
     /// </summary>
-    public class VCardFormatter_V4 : OutputFormatter
+    public class VCardFormatter_V4 : TextOutputFormatter
     {
         public VCardFormatter_V4()
         {
@@ -29,7 +29,7 @@ namespace BasicWebSite.Formatters
             return typeof(Contact).GetTypeInfo().IsAssignableFrom(type.GetTypeInfo());
         }
 
-        public override async Task WriteResponseBodyAsync(OutputFormatterWriteContext context)
+        public override async Task WriteResponseBodyAsync(OutputFormatterWriteContext context, Encoding selectedEncoding)
         {
             var contact = (Contact)context.Object;
 
@@ -40,8 +40,6 @@ namespace BasicWebSite.Formatters
             builder.AppendFormat("GENDER:{0}", (contact.Gender == GenderType.Male) ? "M" : "F");
             builder.AppendLine();
             builder.AppendLine("END:VCARD");
-
-            var selectedEncoding = new MediaType(context.ContentType).Encoding ?? Encoding.UTF8;
 
             await context.HttpContext.Response.WriteAsync(
                 builder.ToString(),

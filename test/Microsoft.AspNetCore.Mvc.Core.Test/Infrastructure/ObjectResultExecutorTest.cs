@@ -520,7 +520,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             }
         }
 
-        private class TestJsonOutputFormatter : OutputFormatter
+        private class TestJsonOutputFormatter : TextOutputFormatter
         {
             public TestJsonOutputFormatter()
             {
@@ -530,13 +530,13 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 SupportedEncodings.Add(Encoding.UTF8);
             }
 
-            public override Task WriteResponseBodyAsync(OutputFormatterWriteContext context)
+            public override Task WriteResponseBodyAsync(OutputFormatterWriteContext context, Encoding selectedEncoding)
             {
                 return Task.FromResult(0);
             }
         }
 
-        private class TestXmlOutputFormatter : OutputFormatter
+        private class TestXmlOutputFormatter : TextOutputFormatter
         {
             public TestXmlOutputFormatter()
             {
@@ -546,13 +546,13 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 SupportedEncodings.Add(Encoding.UTF8);
             }
 
-            public override Task WriteResponseBodyAsync(OutputFormatterWriteContext context)
+            public override Task WriteResponseBodyAsync(OutputFormatterWriteContext context, Encoding selectedEncoding)
             {
                 return Task.FromResult(0);
             }
         }
 
-        private class TestStringOutputFormatter : OutputFormatter
+        private class TestStringOutputFormatter : TextOutputFormatter
         {
             public TestStringOutputFormatter()
             {
@@ -561,7 +561,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 SupportedEncodings.Add(Encoding.UTF8);
             }
 
-            public override Task WriteResponseBodyAsync(OutputFormatterWriteContext context)
+            public override Task WriteResponseBodyAsync(OutputFormatterWriteContext context, Encoding selectedEncoding)
             {
                 return Task.FromResult(0);
             }
