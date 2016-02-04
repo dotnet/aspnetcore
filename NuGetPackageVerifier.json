@@ -10,7 +10,6 @@
         ],
         "packages": {
             "Microsoft.AspNetCore.Routing.Abstractions": { },
-            "Microsoft.AspNetCore.Routing.Extensions": { },
             "Microsoft.AspNetCore.Routing": { }
         }
     },
