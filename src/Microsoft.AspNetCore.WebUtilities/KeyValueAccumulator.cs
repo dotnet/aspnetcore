@@ -9,24 +9,55 @@ namespace Microsoft.AspNetCore.WebUtilities
 {
     public struct KeyValueAccumulator
     {
-        private Dictionary<string, List<string>> _accumulator;
+        private Dictionary<string, StringValues> _accumulator;
+        private Dictionary<string, List<string>> _expandingAccumulator;
 
         public void Append(string key, string value)
         {
             if (_accumulator == null)
             {
-                _accumulator = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
+                _accumulator = new Dictionary<string, StringValues>(StringComparer.OrdinalIgnoreCase);
             }
-            List<string> values;
+
+            StringValues values;
             if (_accumulator.TryGetValue(key, out values))
             {
-                values.Add(value);
+                if (values.Count == 0)
+                {
+                    // Marker entry for this key to indicate entry already in expanding list dictionary
+                    _expandingAccumulator[key].Add(value);
+                }
+                else if (values.Count == 1)
+                {
+                    // Second value for this key
+                    _accumulator[key] = new string[] { values[0], value };
+                }
+                else
+                {
+                    // Third value for this key
+                    // Add zero count entry and move to data to expanding list dictionary
+                    _accumulator[key] = default(StringValues);
+
+                    if (_expandingAccumulator == null)
+                    {
+                        _expandingAccumulator = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
+                    }
+
+                    // Already 3 entries so use starting allocated as 8; then use List's expansion mechanism for more
+                    var list = new List<string>(8);
+                    var array = values.ToArray();
+
+                    list.Add(array[0]);
+                    list.Add(array[1]);
+                    list.Add(value);
+
+                    _expandingAccumulator[key] = list;
+                }
             }
             else
             {
-                values = new List<string>(1);
-                values.Add(value);
-                _accumulator[key] = values;
+                // First value for this key
+                _accumulator[key] = new StringValues(value);
             }
         }
 
@@ -34,19 +65,16 @@ namespace Microsoft.AspNetCore.WebUtilities
 
         public Dictionary<string, StringValues> GetResults()
         {
-            if (_accumulator == null)
+            if (_expandingAccumulator != null)
             {
-                return new Dictionary<string, StringValues>(StringComparer.OrdinalIgnoreCase);
+                // Coalesce count 3+ multi-value entries into _accumulator dictionary
+                foreach (var entry in _expandingAccumulator)
+                {
+                    _accumulator[entry.Key] = new StringValues(entry.Value.ToArray());
+                }
             }
 
-            var results = new Dictionary<string, StringValues>(_accumulator.Count, StringComparer.OrdinalIgnoreCase);
-
-            foreach (var kv in _accumulator)
-            {
-                results.Add(kv.Key, kv.Value.Count == 1 ? new StringValues(kv.Value[0]) : new StringValues(kv.Value.ToArray()));
-            }
-
-            return results;
+            return _accumulator ?? new Dictionary<string, StringValues>(0, StringComparer.OrdinalIgnoreCase);
         }
     }
 }
