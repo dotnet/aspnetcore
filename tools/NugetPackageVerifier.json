@@ -180,7 +180,6 @@
             "Microsoft.AspNetCore.Razor.Runtime.Precompilation": { },
             "Microsoft.AspNetCore.Routing": { },
             "Microsoft.AspNetCore.Routing.Abstractions": { },
-            "Microsoft.AspNetCore.Routing.Extensions": { },
             "Microsoft.AspNetCore.Server.Kestrel": {
                 "SIGN_AUTHENTICODE": {
                     "runtimes\\win7-arm\\native\\libuv.dll": "We don't sign 3rd party DLLs",
