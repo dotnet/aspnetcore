@@ -308,16 +308,16 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         {
             Logger.LogTrace(10, "Entering: {0}." + nameof(HandleRemoteAuthenticateAsync), GetType());
 
-            OpenIdConnectMessage message = null;
+            OpenIdConnectMessage authorizationResponse = null;
 
             if (string.Equals(Request.Method, "GET", StringComparison.OrdinalIgnoreCase))
             {
-                message = new OpenIdConnectMessage(Request.Query.Select(pair => new KeyValuePair<string, string[]>(pair.Key, pair.Value)));
+                authorizationResponse = new OpenIdConnectMessage(Request.Query.Select(pair => new KeyValuePair<string, string[]>(pair.Key, pair.Value)));
 
                 // response_mode=query (explicit or not) and a response_type containing id_token
                 // or token are not considered as a safe combination and MUST be rejected.
                 // See http://openid.net/specs/oauth-v2-multiple-response-types-1_0.html#Security
-                if (!string.IsNullOrEmpty(message.IdToken) || !string.IsNullOrEmpty(message.AccessToken))
+                if (!string.IsNullOrEmpty(authorizationResponse.IdToken) || !string.IsNullOrEmpty(authorizationResponse.AccessToken))
                 {
                     if (Options.SkipUnrecognizedRequests)
                     {
@@ -336,10 +336,10 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
               && Request.Body.CanRead)
             {
                 var form = await Request.ReadFormAsync();
-                message = new OpenIdConnectMessage(form.Select(pair => new KeyValuePair<string, string[]>(pair.Key, pair.Value)));
+                authorizationResponse = new OpenIdConnectMessage(form.Select(pair => new KeyValuePair<string, string[]>(pair.Key, pair.Value)));
             }
 
-            if (message == null)
+            if (authorizationResponse == null)
             {
                 if (Options.SkipUnrecognizedRequests)
                 {
@@ -349,54 +349,52 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                 return AuthenticateResult.Fail("No message.");
             }
 
+            AuthenticateResult result;
+
             try
             {
-                var messageReceivedContext = await RunMessageReceivedEventAsync(message);
-                if (messageReceivedContext.HandledResponse)
+                var messageReceivedContext = await RunMessageReceivedEventAsync(authorizationResponse);
+                if (CheckEventResult(messageReceivedContext, out result))
                 {
-                    return AuthenticateResult.Success(messageReceivedContext.Ticket);
+                    return result;
                 }
-                else if (messageReceivedContext.Skipped)
-                {
-                    return AuthenticateResult.Skip();
-                }
-                message = messageReceivedContext.ProtocolMessage;
+                authorizationResponse = messageReceivedContext.ProtocolMessage;
 
                 // Fail if state is missing, it's required for the correlation id.
-                if (string.IsNullOrEmpty(message.State))
+                if (string.IsNullOrEmpty(authorizationResponse.State))
                 {
                     // This wasn't a valid OIDC message, it may not have been intended for us.
+                    Logger.LogDebug(11, "message.State is null or empty.");
                     if (Options.SkipUnrecognizedRequests)
                     {
                         return AuthenticateResult.Skip();
                     }
-                    Logger.LogDebug(11, "message.State is null or empty.");
                     return AuthenticateResult.Fail(Resources.MessageStateIsNullOrEmpty);
                 }
 
                 // if state exists and we failed to 'unprotect' this is not a message we should process.
-                var properties = Options.StateDataFormat.Unprotect(Uri.UnescapeDataString(message.State));
+                var properties = Options.StateDataFormat.Unprotect(Uri.UnescapeDataString(authorizationResponse.State));
                 if (properties == null)
                 {
+                    Logger.LogDebug(12, "Unable to read the message.State.");
                     if (Options.SkipUnrecognizedRequests)
                     {
                         // Not for us?
                         return AuthenticateResult.Skip();
                     }
-                    Logger.LogError(12, "Unable to read the message.State.");
                     return AuthenticateResult.Fail(Resources.MessageStateIsInvalid);
                 }
 
                 // if any of the error fields are set, throw error null
-                if (!string.IsNullOrEmpty(message.Error))
+                if (!string.IsNullOrEmpty(authorizationResponse.Error))
                 {
-                    Logger.LogError(13, "Message contains error: '{0}', error_description: '{1}', error_uri: '{2}'.", message.Error, message.ErrorDescription ?? "ErrorDecription null", message.ErrorUri ?? "ErrorUri null");
-                    return AuthenticateResult.Fail(new OpenIdConnectProtocolException(string.Format(CultureInfo.InvariantCulture, Resources.MessageContainsError, message.Error, message.ErrorDescription ?? "ErrorDecription null", message.ErrorUri ?? "ErrorUri null")));
+                    Logger.LogError(13, "Message contains error: '{0}', error_description: '{1}', error_uri: '{2}'.", authorizationResponse.Error, authorizationResponse.ErrorDescription ?? "ErrorDecription null", authorizationResponse.ErrorUri ?? "ErrorUri null");
+                    return AuthenticateResult.Fail(new OpenIdConnectProtocolException(string.Format(CultureInfo.InvariantCulture, Resources.MessageContainsError, authorizationResponse.Error, authorizationResponse.ErrorDescription ?? "ErrorDecription null", authorizationResponse.ErrorUri ?? "ErrorUri null")));
                 }
 
                 string userstate = null;
                 properties.Items.TryGetValue(OpenIdConnectDefaults.UserstatePropertiesKey, out userstate);
-                message.State = userstate;
+                authorizationResponse.State = userstate;
 
                 if (!ValidateCorrelationId(properties))
                 {
@@ -409,38 +407,113 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                     _configuration = await Options.ConfigurationManager.GetConfigurationAsync(Context.RequestAborted);
                 }
 
-                Logger.LogTrace(15, "Authorization response received.");
-                var authorizationResponseReceivedContext = new AuthorizationResponseReceivedContext(Context, Options, properties)
+                var authorizationResponseReceivedContext = await RunAuthorizationResponseReceivedEventAsync(authorizationResponse, properties);
+                if (CheckEventResult(authorizationResponseReceivedContext, out result))
                 {
-                    ProtocolMessage = message
-                };
-                await Options.Events.AuthorizationResponseReceived(authorizationResponseReceivedContext);
-                if (authorizationResponseReceivedContext.HandledResponse)
-                {
-                    Logger.LogDebug(16, "AuthorizationResponseReceived.HandledResponse");
-                    return AuthenticateResult.Success(authorizationResponseReceivedContext.Ticket);
+                    return result;
                 }
-                else if (authorizationResponseReceivedContext.Skipped)
-                {
-                    Logger.LogDebug(17, "AuthorizationResponseReceived.Skipped");
-                    return AuthenticateResult.Skip();
-                }
-                message = authorizationResponseReceivedContext.ProtocolMessage;
+                authorizationResponse = authorizationResponseReceivedContext.ProtocolMessage;
                 properties = authorizationResponseReceivedContext.Properties;
 
-                if (string.IsNullOrEmpty(message.IdToken) && !string.IsNullOrEmpty(message.Code))
+                PopulateSessionProperties(authorizationResponse, properties);
+
+                AuthenticationTicket ticket = null;
+                JwtSecurityToken jwt = null;
+                string nonce = null;
+                var validationParameters = Options.TokenValidationParameters.Clone();
+
+                // Hybrid or Implicit flow
+                if (!string.IsNullOrEmpty(authorizationResponse.IdToken))
                 {
-                    return await HandleCodeOnlyFlow(message, properties);
+                    Logger.LogDebug(23, "'id_token' received.");
+                    ticket = ValidateToken(authorizationResponse.IdToken, properties, validationParameters, out jwt);
+
+                    nonce = jwt?.Payload.Nonce;
+                    if (!string.IsNullOrEmpty(nonce))
+                    {
+                        nonce = ReadNonceCookie(nonce);
+                    }
                 }
-                else if (!string.IsNullOrEmpty(message.IdToken))
+
+                Options.ProtocolValidator.ValidateAuthenticationResponse(new OpenIdConnectProtocolValidationContext()
                 {
-                    return await HandleIdTokenFlows(message, properties);
-                }
-                else
+                    ClientId = Options.ClientId,
+                    ProtocolMessage = authorizationResponse,
+                    ValidatedIdToken = jwt,
+                    Nonce = nonce
+                });
+
+                // TODO: AuthorizationResponseValidated event?
+
+                OpenIdConnectMessage tokenEndpointResponse = null;
+
+                // Authorization Code or Hybrid flow
+                if (!string.IsNullOrEmpty(authorizationResponse.Code))
                 {
-                    Logger.LogTrace(18, "Cannot process the message. Both id_token and code are missing.");
-                    return AuthenticateResult.Fail(Resources.IdTokenCodeMissing);
+                    // TODO: Does this event provide any value over AuthorizationResponseReceived or AuthorizationResponseValidated?
+                    var authorizationCodeReceivedContext = await RunAuthorizationCodeReceivedEventAsync(authorizationResponse, properties, ticket, jwt);
+                    if (CheckEventResult(authorizationCodeReceivedContext, out result))
+                    {
+                        return result;
+                    }
+                    authorizationResponse = authorizationCodeReceivedContext.ProtocolMessage;
+                    var code = authorizationCodeReceivedContext.Code;
+
+                    tokenEndpointResponse = await RedeemAuthorizationCodeAsync(code, authorizationCodeReceivedContext.RedirectUri);
+
+                    var authorizationCodeRedeemedContext = await RunTokenResponseReceivedEventAsync(authorizationResponse, tokenEndpointResponse, properties);
+                    if (CheckEventResult(authorizationCodeRedeemedContext, out result))
+                    {
+                        return result;
+                    }
+                    authorizationResponse = authorizationCodeRedeemedContext.ProtocolMessage;
+                    tokenEndpointResponse = authorizationCodeRedeemedContext.TokenEndpointResponse;
+
+                    // We only have to process the IdToken if we didn't already get one in the AuthorizationResponse
+                    if (ticket == null)
+                    {
+                        // no need to validate signature when token is received using "code flow" as per spec
+                        // [http://openid.net/specs/openid-connect-core-1_0.html#IDTokenValidation].
+                        validationParameters.RequireSignedTokens = false;
+
+                        ticket = ValidateToken(tokenEndpointResponse.IdToken, properties, validationParameters, out jwt);
+
+                        nonce = jwt?.Payload.Nonce;
+                        if (!string.IsNullOrEmpty(nonce))
+                        {
+                            nonce = ReadNonceCookie(nonce);
+                        }
+                    }
+
+                    Options.ProtocolValidator.ValidateTokenResponse(new OpenIdConnectProtocolValidationContext()
+                    {
+                        ClientId = Options.ClientId,
+                        ProtocolMessage = tokenEndpointResponse,
+                        ValidatedIdToken = jwt,
+                        Nonce = nonce
+                    });
                 }
+
+                var authenticationValidatedContext = await RunAuthenticationValidatedEventAsync(authorizationResponse, ticket, properties, tokenEndpointResponse);
+                if (CheckEventResult(authenticationValidatedContext, out result))
+                {
+                    return result;
+                }
+                authorizationResponse = authenticationValidatedContext.ProtocolMessage;
+                tokenEndpointResponse = authenticationValidatedContext.TokenEndpointResponse;
+                ticket = authenticationValidatedContext.Ticket;
+
+                if (Options.SaveTokensAsClaims)
+                {
+                    SaveTokens(ticket.Principal, tokenEndpointResponse ?? authorizationResponse, jwt.Issuer);
+                }
+
+                if (Options.GetClaimsFromUserInfoEndpoint)
+                {
+                    return await GetUserInformationAsync(tokenEndpointResponse ?? authorizationResponse, jwt, ticket);
+                }
+
+                return AuthenticateResult.Success(ticket);
             }
             catch (Exception exception)
             {
@@ -456,179 +529,43 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                     }
                 }
 
-                var authenticationFailedContext = await RunAuthenticationFailedEventAsync(message, exception);
-                if (authenticationFailedContext.HandledResponse)
+                var authenticationFailedContext = await RunAuthenticationFailedEventAsync(authorizationResponse, exception);
+                if (CheckEventResult(authenticationFailedContext, out result))
                 {
-                    return AuthenticateResult.Success(authenticationFailedContext.Ticket);
-                }
-                else if (authenticationFailedContext.Skipped)
-                {
-                    return AuthenticateResult.Skip();
+                    return result;
                 }
 
-                throw;
+                return AuthenticateResult.Fail(exception);
             }
         }
 
-        // Authorization Code Flow
-        private async Task<AuthenticateResult> HandleCodeOnlyFlow(OpenIdConnectMessage message, AuthenticationProperties properties)
+        private bool CheckEventResult(BaseControlContext context, out AuthenticateResult result)
         {
-            AuthenticationTicket ticket = null;
-            JwtSecurityToken jwt = null;
-
-            Options.ProtocolValidator.ValidateAuthenticationResponse(new OpenIdConnectProtocolValidationContext()
+            if (context.HandledResponse)
             {
-                ClientId = Options.ClientId,
-                ProtocolMessage = message,
-            });
-
-            var authorizationCodeReceivedContext = await RunAuthorizationCodeReceivedEventAsync(message, properties, ticket, jwt);
-            if (authorizationCodeReceivedContext.HandledResponse)
-            {
-                return AuthenticateResult.Success(authorizationCodeReceivedContext.Ticket);
+                result = AuthenticateResult.Success(context.Ticket);
+                return true;
             }
-            else if (authorizationCodeReceivedContext.Skipped)
+            else if (context.Skipped)
             {
-                return AuthenticateResult.Skip();
+                result = AuthenticateResult.Skip();
+                return true;
             }
-            message = authorizationCodeReceivedContext.ProtocolMessage;
-            var code = authorizationCodeReceivedContext.Code;
-
-            // Redeeming authorization code for tokens
-            Logger.LogTrace(21, "Id Token is null. Redeeming code '{0}' for tokens.", code);
-
-            var tokenEndpointResponse = await RedeemAuthorizationCodeAsync(code, authorizationCodeReceivedContext.RedirectUri);
-
-            var authorizationCodeRedeemedContext = await RunTokenResponseReceivedEventAsync(message, tokenEndpointResponse, properties);
-            if (authorizationCodeRedeemedContext.HandledResponse)
-            {
-                return AuthenticateResult.Success(authorizationCodeRedeemedContext.Ticket);
-            }
-            else if (authorizationCodeRedeemedContext.Skipped)
-            {
-                return AuthenticateResult.Skip();
-            }
-
-            message = authorizationCodeRedeemedContext.ProtocolMessage;
-            tokenEndpointResponse = authorizationCodeRedeemedContext.TokenEndpointResponse;
-
-            // no need to validate signature when token is received using "code flow" as per spec [http://openid.net/specs/openid-connect-core-1_0.html#IDTokenValidation].
-            var validationParameters = Options.TokenValidationParameters.Clone();
-            validationParameters.RequireSignedTokens = false;
-
-            ticket = ValidateToken(tokenEndpointResponse.IdToken, message, properties, validationParameters, out jwt);
-
-            var nonce = jwt?.Payload.Nonce;
-            if (!string.IsNullOrEmpty(nonce))
-            {
-                nonce = ReadNonceCookie(nonce);
-            }
-
-            Options.ProtocolValidator.ValidateTokenResponse(new OpenIdConnectProtocolValidationContext()
-            {
-                ClientId = Options.ClientId,
-                ProtocolMessage = tokenEndpointResponse,
-                ValidatedIdToken = jwt,
-                Nonce = nonce
-            });
-
-            var authenticationValidatedContext = await RunAuthenticationValidatedEventAsync(message, ticket, properties, tokenEndpointResponse);
-            if (authenticationValidatedContext.HandledResponse)
-            {
-                return AuthenticateResult.Success(authenticationValidatedContext.Ticket);
-            }
-            else if (authenticationValidatedContext.Skipped)
-            {
-                return AuthenticateResult.Skip();
-            }
-            ticket = authenticationValidatedContext.Ticket;
-
-            if (Options.SaveTokensAsClaims)
-            {
-                // Persist the tokens extracted from the token response.
-                SaveTokens(ticket.Principal, tokenEndpointResponse, jwt.Issuer, saveRefreshToken: true);
-            }
-
-            if (Options.GetClaimsFromUserInfoEndpoint)
-            {
-                Logger.LogTrace(22, "Sending request to user info endpoint for retrieving claims.");
-                ticket = await GetUserInformationAsync(tokenEndpointResponse, jwt, ticket);
-            }
-
-            return AuthenticateResult.Success(ticket);
+            result = null;
+            return false;
         }
 
-        // Implicit Flow or Hybrid Flow
-        private async Task<AuthenticateResult> HandleIdTokenFlows(OpenIdConnectMessage message, AuthenticationProperties properties)
+        private void PopulateSessionProperties(OpenIdConnectMessage message, AuthenticationProperties properties)
         {
-            Logger.LogTrace(23, "'id_token' received: '{0}'", message.IdToken);
-
-            JwtSecurityToken jwt = null;
-            var validationParameters = Options.TokenValidationParameters.Clone();
-            var ticket = ValidateToken(message.IdToken, message, properties, validationParameters, out jwt);
-
-            var nonce = jwt?.Payload.Nonce;
-            if (!string.IsNullOrEmpty(nonce))
+            if (!string.IsNullOrEmpty(message.SessionState))
             {
-                nonce = ReadNonceCookie(nonce);
+                properties.Items[OpenIdConnectSessionProperties.SessionState] = message.SessionState;
             }
 
-            Options.ProtocolValidator.ValidateAuthenticationResponse(new OpenIdConnectProtocolValidationContext()
+            if (!string.IsNullOrEmpty(_configuration.CheckSessionIframe))
             {
-                ClientId = Options.ClientId,
-                ProtocolMessage = message,
-                ValidatedIdToken = jwt,
-                Nonce = nonce
-            });
-
-            var authenticationValidatedContext = await RunAuthenticationValidatedEventAsync(message, ticket, properties, tokenEndpointResponse: null);
-            if (authenticationValidatedContext.HandledResponse)
-            {
-                return AuthenticateResult.Success(authenticationValidatedContext.Ticket);
+                properties.Items[OpenIdConnectSessionProperties.CheckSessionIFrame] = _configuration.CheckSessionIframe;
             }
-            else if (authenticationValidatedContext.Skipped)
-            {
-                return AuthenticateResult.Skip();
-            }
-            message = authenticationValidatedContext.ProtocolMessage;
-            ticket = authenticationValidatedContext.Ticket;
-
-            // Hybrid Flow
-            if (message.Code != null)
-            {
-                var authorizationCodeReceivedContext = await RunAuthorizationCodeReceivedEventAsync(message, properties, ticket, jwt);
-                if (authorizationCodeReceivedContext.HandledResponse)
-                {
-                    return AuthenticateResult.Success(authorizationCodeReceivedContext.Ticket);
-                }
-                else if (authorizationCodeReceivedContext.Skipped)
-                {
-                    return AuthenticateResult.Skip();
-                }
-                message = authorizationCodeReceivedContext.ProtocolMessage;
-                ticket = authorizationCodeReceivedContext.Ticket;
-
-                if (Options.SaveTokensAsClaims)
-                {
-                    // TODO: call SaveTokens with the token response and set
-                    // saveRefreshToken to true when the hybrid flow is fully implemented.
-                    SaveTokens(ticket.Principal, message, jwt.Issuer, saveRefreshToken: false);
-                }
-            }
-            // Implicit Flow
-            else
-            {
-                if (Options.SaveTokensAsClaims)
-                {
-                    // Note: don't save the refresh token when it is extracted from the authorization
-                    // response, since it's not a valid parameter when using the implicit flow.
-                    // See http://openid.net/specs/openid-connect-core-1_0.html#Authentication
-                    // and https://tools.ietf.org/html/rfc6749#section-4.2.2.
-                    SaveTokens(ticket.Principal, message, jwt.Issuer, saveRefreshToken: false);
-                }
-            }
-
-            return AuthenticateResult.Success(ticket);
         }
 
         /// <summary>
@@ -639,6 +576,8 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         /// <returns>OpenIdConnect message that has tokens inside it.</returns>
         protected virtual async Task<OpenIdConnectMessage> RedeemAuthorizationCodeAsync(string authorizationCode, string redirectUri)
         {
+            Logger.LogDebug(21, "Redeeming code for tokens.");
+
             var openIdMessage = new OpenIdConnectMessage()
             {
                 ClientId = Options.ClientId,
@@ -647,6 +586,8 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                 GrantType = "authorization_code",
                 RedirectUri = redirectUri
             };
+
+            // TODO: Event that lets you customize the message. E.g. use certificates, specify resources.
 
             var requestMessage = new HttpRequestMessage(HttpMethod.Post, _configuration.TokenEndpoint);
             requestMessage.Content = new FormUrlEncodedContent(openIdMessage.Parameters);
@@ -663,21 +604,28 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         /// <param name="message">message that is being processed</param>
         /// <param name="ticket">authentication ticket with claims principal and identities</param>
         /// <returns>Authentication ticket with identity with additional claims, if any.</returns>
-        protected virtual async Task<AuthenticationTicket> GetUserInformationAsync(OpenIdConnectMessage message, JwtSecurityToken jwt, AuthenticationTicket ticket)
+        protected virtual async Task<AuthenticateResult> GetUserInformationAsync(OpenIdConnectMessage message, JwtSecurityToken jwt, AuthenticationTicket ticket)
         {
             var userInfoEndpoint = _configuration?.UserInfoEndpoint;
 
             if (string.IsNullOrEmpty(userInfoEndpoint))
             {
-                Logger.LogWarning(24, nameof(_configuration.UserInfoEndpoint) + " is not set. Request to retrieve claims cannot be completed.");
-                return ticket;
+                Logger.LogDebug(24, $"{nameof(_configuration.UserInfoEndpoint)} is not set. Claims cannot be retrieved.");
+                return AuthenticateResult.Success(ticket);
             }
+            if (string.IsNullOrEmpty(message.AccessToken))
+            {
+                Logger.LogDebug(47, "The access_token is not available. Claims cannot be retrieved.");
+                return AuthenticateResult.Success(ticket);
+            }
+            Logger.LogTrace(22, "Retrieving claims from the user info endpoint.");
 
             var requestMessage = new HttpRequestMessage(HttpMethod.Get, userInfoEndpoint);
             requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", message.AccessToken);
             var responseMessage = await Backchannel.SendAsync(requestMessage);
             responseMessage.EnsureSuccessStatusCode();
             var userInfoResponse = await responseMessage.Content.ReadAsStringAsync();
+
             JObject user;
             var contentType = responseMessage.Content.Headers.ContentType;
             if (contentType.MediaType.Equals("application/json", StringComparison.OrdinalIgnoreCase))
@@ -691,17 +639,14 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
             }
             else
             {
-                throw new NotSupportedException("Unknown response type: " + contentType.MediaType);
+                return AuthenticateResult.Fail("Unknown response type: " + contentType.MediaType);
             }
 
             var userInformationReceivedContext = await RunUserInformationReceivedEventAsync(ticket, message, user);
-            if (userInformationReceivedContext.HandledResponse)
+            AuthenticateResult result;
+            if (CheckEventResult(userInformationReceivedContext, out result))
             {
-                return userInformationReceivedContext.Ticket;
-            }
-            else if (userInformationReceivedContext.Skipped)
-            {
-                return ticket;
+                return result;
             }
             ticket = userInformationReceivedContext.Ticket;
             user = userInformationReceivedContext.User;
@@ -742,7 +687,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                 identity.AddClaim(new Claim(pair.Key, claimValue, ClaimValueTypes.String, jwt.Issuer));
             }
 
-            return ticket;
+            return AuthenticateResult.Success(ticket);
         }
 
         /// <summary>
@@ -750,8 +695,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         /// </summary>
         /// <param name="principal">The principal in which tokens are saved.</param>
         /// <param name="message">The OpenID Connect response.</param>
-        /// <param name="saveRefreshToken">A <see cref="bool"/> indicating whether the refresh token should be stored.</param>
-        private void SaveTokens(ClaimsPrincipal principal, OpenIdConnectMessage message, string issuer, bool saveRefreshToken)
+        private void SaveTokens(ClaimsPrincipal principal, OpenIdConnectMessage message, string issuer)
         {
             var identity = (ClaimsIdentity)principal.Identity;
 
@@ -767,7 +711,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                                             ClaimValueTypes.String, issuer));
             }
 
-            if (saveRefreshToken && !string.IsNullOrEmpty(message.RefreshToken))
+            if (!string.IsNullOrEmpty(message.RefreshToken))
             {
                 identity.AddClaim(new Claim(OpenIdConnectParameterNames.RefreshToken, message.RefreshToken,
                                             ClaimValueTypes.String, issuer));
@@ -911,6 +855,25 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
             return messageReceivedContext;
         }
 
+        private async Task<AuthorizationResponseReceivedContext> RunAuthorizationResponseReceivedEventAsync(OpenIdConnectMessage message, AuthenticationProperties properties)
+        {
+            Logger.LogTrace(15, "Authorization response received.");
+            var authorizationResponseReceivedContext = new AuthorizationResponseReceivedContext(Context, Options, properties)
+            {
+                ProtocolMessage = message
+            };
+            await Options.Events.AuthorizationResponseReceived(authorizationResponseReceivedContext);
+            if (authorizationResponseReceivedContext.HandledResponse)
+            {
+                Logger.LogDebug(16, "AuthorizationResponseReceived.HandledResponse");
+            }
+            else if (authorizationResponseReceivedContext.Skipped)
+            {
+                Logger.LogDebug(17, "AuthorizationResponseReceived.Skipped");
+            }
+            return authorizationResponseReceivedContext;
+        }
+
         private async Task<AuthorizationCodeReceivedContext> RunAuthorizationCodeReceivedEventAsync(OpenIdConnectMessage message, AuthenticationProperties properties, AuthenticationTicket ticket, JwtSecurityToken jwt)
         {
             var redirectUri = properties.Items[OpenIdConnectDefaults.RedirectUriForCodePropertiesKey];
@@ -960,13 +923,13 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
             return tokenResponseReceivedContext;
         }
 
-        private async Task<AuthenticationValidatedContext> RunAuthenticationValidatedEventAsync(OpenIdConnectMessage message, AuthenticationTicket ticket, AuthenticationProperties properties, OpenIdConnectMessage tokenEndpointResponse)
+        private async Task<AuthenticationValidatedContext> RunAuthenticationValidatedEventAsync(OpenIdConnectMessage message, AuthenticationTicket ticket, AuthenticationProperties properties, OpenIdConnectMessage tokenResponse)
         {
             var authenticationValidatedContext = new AuthenticationValidatedContext(Context, Options, properties)
             {
                 Ticket = ticket,
                 ProtocolMessage = message,
-                TokenEndpointResponse = tokenEndpointResponse,
+                TokenEndpointResponse = tokenResponse,
             };
 
             await Options.Events.AuthenticationValidated(authenticationValidatedContext);
@@ -1027,10 +990,13 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
             return authenticationFailedContext;
         }
 
-        private AuthenticationTicket ValidateToken(string idToken, OpenIdConnectMessage message, AuthenticationProperties properties, TokenValidationParameters validationParameters, out JwtSecurityToken jwt)
+        private AuthenticationTicket ValidateToken(string idToken, AuthenticationProperties properties, TokenValidationParameters validationParameters, out JwtSecurityToken jwt)
         {
-            AuthenticationTicket ticket = null;
-            jwt = null;
+            if (!Options.SecurityTokenValidator.CanReadToken(idToken))
+            {
+                Logger.LogError(48, "Unable to read the 'id_token', no suitable ISecurityTokenValidator was found for: '{0}'.", idToken);
+                throw new SecurityTokenException(string.Format(CultureInfo.InvariantCulture, Resources.UnableToValidateToken, idToken));
+            }
 
             if (_configuration != null)
             {
@@ -1047,16 +1013,12 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
             }
 
             SecurityToken validatedToken = null;
-            ClaimsPrincipal principal = null;
-            if (Options.SecurityTokenValidator.CanReadToken(idToken))
+            var principal = Options.SecurityTokenValidator.ValidateToken(idToken, validationParameters, out validatedToken);
+            jwt = validatedToken as JwtSecurityToken;
+            if (jwt == null)
             {
-                principal = Options.SecurityTokenValidator.ValidateToken(idToken, validationParameters, out validatedToken);
-                jwt = validatedToken as JwtSecurityToken;
-                if (jwt == null)
-                {
-                    Logger.LogError(45, "The Validated Security Token must be of type JwtSecurityToken, but instead its type is: '{0}'", validatedToken?.GetType());
-                    throw new SecurityTokenException(string.Format(CultureInfo.InvariantCulture, Resources.ValidatedSecurityTokenNotJwt, validatedToken?.GetType()));
-                }
+                Logger.LogError(45, "The Validated Security Token must be of type JwtSecurityToken, but instead its type is: '{0}'", validatedToken?.GetType());
+                throw new SecurityTokenException(string.Format(CultureInfo.InvariantCulture, Resources.ValidatedSecurityTokenNotJwt, validatedToken?.GetType()));
             }
 
             if (validatedToken == null)
@@ -1065,16 +1027,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                 throw new SecurityTokenException(string.Format(CultureInfo.InvariantCulture, Resources.UnableToValidateToken, idToken));
             }
 
-            ticket = new AuthenticationTicket(principal, properties, Options.AuthenticationScheme);
-            if (!string.IsNullOrEmpty(message.SessionState))
-            {
-                ticket.Properties.Items[OpenIdConnectSessionProperties.SessionState] = message.SessionState;
-            }
-
-            if (_configuration != null && !string.IsNullOrEmpty(_configuration.CheckSessionIframe))
-            {
-                ticket.Properties.Items[OpenIdConnectSessionProperties.CheckSessionIFrame] = _configuration.CheckSessionIframe;
-            }
+            var ticket = new AuthenticationTicket(principal, properties, Options.AuthenticationScheme);
 
             if (Options.UseTokenLifetime)
             {
