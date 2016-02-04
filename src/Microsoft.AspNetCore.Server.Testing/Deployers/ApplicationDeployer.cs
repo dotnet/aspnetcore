@@ -17,95 +17,48 @@ namespace Microsoft.AspNetCore.Server.Testing
     /// </summary>
     public abstract class ApplicationDeployer : IApplicationDeployer
     {
+        public static readonly string DotnetCommandName = "dotnet";
+
+        // This is the argument that separates the dotnet arguments for the args being passed to the
+        // app being run when running dotnet run
+        public static readonly string DotnetArgumentSeparator = "--";
+
         private readonly Stopwatch _stopwatch = new Stopwatch();
 
         public ApplicationDeployer(DeploymentParameters deploymentParameters, ILogger logger)
         {
             DeploymentParameters = deploymentParameters;
             Logger = logger;
-            DnuCommandName = TestPlatformHelper.IsWindows ? "dnu.cmd" : "dnu";
-            DnxCommandName = TestPlatformHelper.IsWindows ? "dnx.exe" : "dnx";
         }
 
         protected DeploymentParameters DeploymentParameters { get; }
 
         protected ILogger Logger { get; }
 
-        protected string DnuCommandName { get; }
-
-        protected string DnxCommandName { get; }
-
-        protected string TargetRuntimeName { get; private set; }
-
-        protected string TargetRuntimeBinPath { get; private set; }
-
-        protected string ToolingRuntimeBinPath { get; private set; }
+        protected string TargetFrameworkName { get; private set; }
 
         public abstract DeploymentResult Deploy();
 
         protected void PickRuntime()
         {
-            var currentRuntimeBinPath = PlatformServices.Default.Runtime.RuntimePath;
-            Logger.LogInformation($"Current runtime path is : {currentRuntimeBinPath}");
+            TargetFrameworkName = DeploymentParameters.RuntimeFlavor == RuntimeFlavor.Clr ? "dnx451" : "dnxcore50";
 
-            var currentRuntimeFullName = new DirectoryInfo(currentRuntimeBinPath).Parent.Name;
-            var currentRuntimeVersionParts = currentRuntimeFullName.Split(new char[] { '.' }, 2);
-            if (currentRuntimeVersionParts.Length < 2)
-            {
-                throw new ArgumentNullException($"The current runtime bin path points to a runtime name doesn't indicate a version: {currentRuntimeBinPath}.");
-            }
-            var currentRuntimeVersion = currentRuntimeVersionParts[1];
-
-            var runtimeHome = new DirectoryInfo(currentRuntimeBinPath).Parent.Parent.FullName;
-            Logger.LogInformation($"Runtime home folder: {runtimeHome}");
-
-            if (DeploymentParameters.RuntimeFlavor == RuntimeFlavor.Mono)
-            {
-                // TODO: review on mono
-                TargetRuntimeName = $"dnx-mono.{currentRuntimeVersion}";
-                TargetRuntimeBinPath = Path.Combine(runtimeHome, TargetRuntimeName, "bin");
-                ToolingRuntimeBinPath = TargetRuntimeBinPath;
-            }
-            else
-            {
-                var flavor = DeploymentParameters.RuntimeFlavor == RuntimeFlavor.CoreClr ? "coreclr" : "clr";
-                var architecture = DeploymentParameters.RuntimeArchitecture == RuntimeArchitecture.x86 ? "x86" : "x64";
-
-                // tooling runtime will stick to coreclr so as to prevent long path issue during publishing
-                ToolingRuntimeBinPath = Path.Combine(runtimeHome, $"dnx-coreclr-{GetOSPrefix()}-{architecture}.{currentRuntimeVersion}", "bin");
-
-                TargetRuntimeName = $"dnx-{flavor}-{GetOSPrefix()}-{architecture}.{currentRuntimeVersion}";
-                TargetRuntimeBinPath = Path.Combine(runtimeHome, TargetRuntimeName, "bin");
-            }
-
-            if (!Directory.Exists(ToolingRuntimeBinPath) || !Directory.Exists(TargetRuntimeBinPath))
-            {
-                throw new Exception($"Requested runtime '{ToolingRuntimeBinPath}' or '{TargetRuntimeBinPath}; does not exist. Please make sure it is installed before running test.");
-            }
-
-            Logger.LogInformation($"Pick target runtime {TargetRuntimeBinPath}");
-            Logger.LogInformation($"Pick tooling runtime {ToolingRuntimeBinPath}");
-
-            // Work around win7 search path issues.
-            var newPath = TargetRuntimeBinPath + Path.PathSeparator + Environment.GetEnvironmentVariable("PATH");
-            DeploymentParameters.EnvironmentVariables.Add(new KeyValuePair<string, string>("PATH", newPath));
+            Logger.LogInformation($"Pick target framework {TargetFrameworkName}");
         }
 
-        protected void DnuPublish(string publishRoot = null)
+        protected void DotnetPublish(string publishRoot = null)
         {
             DeploymentParameters.PublishedApplicationRootPath = publishRoot ?? Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
 
-            var noSource = DeploymentParameters.PublishWithNoSource ? "--no-source" : string.Empty;
-            var command = DeploymentParameters.Command ?? "web";
-            var parameters = $"publish {DeploymentParameters.ApplicationPath} -o {DeploymentParameters.PublishedApplicationRootPath}"
-                + $" --runtime {TargetRuntimeName} {noSource} --iis-command {command}";
+            var parameters = $"publish {DeploymentParameters.ApplicationPath}"
+                + $" -o {DeploymentParameters.PublishedApplicationRootPath}"
+                + $" --framework {TargetFrameworkName}";
 
-            var dnuPath = Path.Combine(ToolingRuntimeBinPath, DnuCommandName);
-            Logger.LogInformation($"Executing command {dnuPath} {parameters}");
+            Logger.LogInformation($"Executing command {DotnetCommandName} {parameters}");
 
             var startInfo = new ProcessStartInfo
             {
-                FileName = dnuPath,
+                FileName = DotnetCommandName,
                 Arguments = parameters,
                 UseShellExecute = false,
                 CreateNoWindow = true,
@@ -130,9 +83,9 @@ namespace Microsoft.AspNetCore.Server.Testing
                 (DeploymentParameters.ServerType == ServerType.IISExpress ||
                  DeploymentParameters.ServerType == ServerType.IIS) ?
                 Path.Combine(DeploymentParameters.PublishedApplicationRootPath, "wwwroot") :
-                Path.Combine(DeploymentParameters.PublishedApplicationRootPath, "approot", "src", new DirectoryInfo(DeploymentParameters.ApplicationPath).Name);
+                DeploymentParameters.ApplicationPath;
 
-            Logger.LogInformation($"dnu publish finished with exit code : {hostProcess.ExitCode}");
+            Logger.LogInformation($"{DotnetCommandName} publish finished with exit code : {hostProcess.ExitCode}");
         }
 
         protected void CleanPublishedOutput()
@@ -180,14 +133,6 @@ namespace Microsoft.AspNetCore.Server.Testing
 #endif
 
             SetEnvironmentVariable(environment, "ASPNET_ENV", DeploymentParameters.EnvironmentName);
-
-            // Work around for https://github.com/aspnet/dnx/issues/1515
-            if (DeploymentParameters.PublishWithNoSource)
-            {
-                SetEnvironmentVariable(environment, "DNX_PACKAGES", null);
-            }
-
-            SetEnvironmentVariable(environment, "DNX_DEFAULT_LIB", null);
 
             foreach (var environmentVariable in DeploymentParameters.EnvironmentVariables)
             {

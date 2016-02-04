@@ -35,10 +35,14 @@ namespace Microsoft.AspNetCore.Server.Testing
                 throw new DirectoryNotFoundException(string.Format("Application path {0} does not exist.", applicationPath));
             }
 
+            if (runtimeArchitecture == RuntimeArchitecture.x86)
+            {
+                throw new NotSupportedException("32 bit compilation is not yet supported. Don't remove the tests, just disable them for now.");
+            }
+
             ApplicationPath = applicationPath;
             ServerType = serverType;
             RuntimeFlavor = runtimeFlavor;
-            RuntimeArchitecture = runtimeArchitecture;
             EnvironmentVariables.Add(new KeyValuePair<string, string>("ASPNET_DETAILEDERRORS", "true"));
         }
 
@@ -46,7 +50,7 @@ namespace Microsoft.AspNetCore.Server.Testing
 
         public RuntimeFlavor RuntimeFlavor { get; }
 
-        public RuntimeArchitecture RuntimeArchitecture { get; }
+        public RuntimeArchitecture RuntimeArchitecture { get; } = RuntimeArchitecture.x64;
 
         /// <summary>
         /// Suggested base url for the deployed application. The final deployed url could be
@@ -73,11 +77,6 @@ namespace Microsoft.AspNetCore.Server.Testing
         public string PublishedApplicationRootPath { get; set; }
 
         /// <summary>
-        /// Passes the --no-source option when publishing.
-        /// </summary>
-        public bool PublishWithNoSource { get; set; }
-
-        /// <summary>
         /// Environment variables to be set before starting the host.
         /// Not applicable for IIS Scenarios.
         /// </summary>
@@ -88,19 +87,15 @@ namespace Microsoft.AspNetCore.Server.Testing
         /// </summary>
         public Action<DeploymentParameters> UserAdditionalCleanup { get; set; }
 
-        // Which command in the test project to run.
-        public string Command { get; set; }
-
         public override string ToString()
         {
             return string.Format(
-                    "[Variation] :: ServerType={0}, Runtime={1}, Arch={2}, BaseUrlHint={3}, Publish={4}, NoSource={5}",
+                    "[Variation] :: ServerType={0}, Runtime={1}, Arch={2}, BaseUrlHint={3}, Publish={4}",
                     ServerType, 
                     RuntimeFlavor, 
                     RuntimeArchitecture, 
                     ApplicationBaseUriHint,
-                    PublishApplicationBeforeDeployment, 
-                    PublishWithNoSource);
+                    PublishApplicationBeforeDeployment);
         }
     }
 }

@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Server.Testing
 
             if (DeploymentParameters.PublishApplicationBeforeDeployment)
             {
-                DnuPublish();
+                DotnetPublish();
             }
 
             var uri = TestUriHelper.BuildTestUri(DeploymentParameters.ApplicationBaseUriHint);
@@ -49,23 +49,27 @@ namespace Microsoft.AspNetCore.Server.Testing
 
         private CancellationToken StartSelfHost(Uri uri)
         {
-            var commandName = DeploymentParameters.Command;
-            if (string.IsNullOrEmpty(commandName))
+            string executableName;
+            string executableArgs = string.Empty;
+            if (DeploymentParameters.PublishApplicationBeforeDeployment)
             {
-                commandName = "run";
+                executableName = Path.Combine(DeploymentParameters.PublishedApplicationRootPath, new DirectoryInfo(DeploymentParameters.ApplicationPath).Name + ".exe");
+            }
+            else
+            {
+                executableName = DotnetCommandName;
+                executableArgs = $"run -p \"{DeploymentParameters.ApplicationPath}\" {DotnetArgumentSeparator}";
             }
 
-            var dnxPath = Path.Combine(TargetRuntimeBinPath, DnxCommandName);
-            var dnxArgs = $"-p \"{DeploymentParameters.ApplicationPath}\" {commandName} " +
-                          $"--server.urls {uri} " +
-                          $"--server {(DeploymentParameters.ServerType == ServerType.WebListener ? "Microsoft.AspNetCore.Server.WebListener" : "Microsoft.AspNetCore.Server.Kestrel")}";
+            executableArgs += $" --server.urls {uri} "
+            + $" --server {(DeploymentParameters.ServerType == ServerType.WebListener ? "Microsoft.AspNetCore.Server.WebListener" : "Microsoft.AspNetCore.Server.Kestrel")}";
 
-            Logger.LogInformation($"Executing {dnxPath} {dnxArgs}");
+            Logger.LogInformation($"Executing {DotnetCommandName} {executableArgs}");
 
             var startInfo = new ProcessStartInfo
             {
-                FileName = dnxPath,
-                Arguments = dnxArgs,
+                FileName = executableName,
+                Arguments = executableArgs,
                 UseShellExecute = false,
                 CreateNoWindow = true,
                 RedirectStandardError = true,

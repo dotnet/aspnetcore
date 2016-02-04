@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Server.Testing
             DeploymentParameters.PublishApplicationBeforeDeployment = true;
             if (DeploymentParameters.PublishApplicationBeforeDeployment)
             {
-                DnuPublish();
+                DotnetPublish();
             }
 
             var uri = TestUriHelper.BuildTestUri(DeploymentParameters.ApplicationBaseUriHint);

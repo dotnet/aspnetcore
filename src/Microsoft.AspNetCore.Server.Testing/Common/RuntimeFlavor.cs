@@ -6,7 +6,6 @@ namespace Microsoft.AspNetCore.Server.Testing
     public enum RuntimeFlavor
     {
         Clr,
-        CoreClr,
-        Mono
+        CoreClr
     }
 }
