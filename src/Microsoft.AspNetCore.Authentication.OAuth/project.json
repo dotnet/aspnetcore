@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "Microsoft.AspNetCore.Authentication": "1.0.0-*",
-    "Newtonsoft.Json": "6.0.6"
+    "Newtonsoft.Json": "8.0.2"
   },
   "frameworks": {
     "net451": {
