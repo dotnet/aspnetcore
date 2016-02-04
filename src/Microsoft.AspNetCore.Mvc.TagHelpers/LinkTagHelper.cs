@@ -245,9 +245,6 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 return;
             }
 
-            // NOTE: Values in TagHelperOutput.Attributes may already be HTML-encoded.
-            var attributes = new TagHelperAttributeList(output.Attributes);
-
             if (AppendVersion == true)
             {
                 EnsureFileVersionProvider();
@@ -264,7 +261,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var builder = new DefaultTagHelperContent();
             if (mode == Mode.GlobbedHref || mode == Mode.Fallback && !string.IsNullOrEmpty(HrefInclude))
             {
-                BuildGlobbedLinkTags(attributes, builder);
+                BuildGlobbedLinkTags(output.Attributes, builder);
                 if (string.IsNullOrEmpty(Href))
                 {
                     // Only HrefInclude is specified. Don't render the original tag.
@@ -306,8 +303,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     continue;
                 }
 
-                attributes.SetAttribute(HrefAttributeName, url);
-                BuildLinkTag(attributes, builder);
+                BuildLinkTag(url, attributes, builder);
             }
         }
 
@@ -402,36 +398,54 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             }
         }
 
-        private void BuildLinkTag(TagHelperAttributeList attributes, TagHelperContent builder)
+        private void BuildLinkTag(string href, TagHelperAttributeList attributes, TagHelperContent builder)
         {
             builder.AppendHtml("<link ");
+
+            var addHref = true;
 
             // Perf: Avoid allocating enumerator
             for (var i = 0; i < attributes.Count; i++)
             {
                 var attribute = attributes[i];
-                var attributeValue = attribute.Value;
-                if (AppendVersion == true &&
-                    string.Equals(attribute.Name, HrefAttributeName, StringComparison.OrdinalIgnoreCase))
-                {
-                    // "href" values come from bound attributes and globbing. So anything but a non-null string is
-                    // unexpected but could happen if another helper targeting the same element does something odd.
-                    // Pass through existing value in that case.
-                    var attributeStringValue = attributeValue as string;
-                    if (attributeStringValue != null)
-                    {
-                        attributeValue = _fileVersionProvider.AddFileVersionToPath(attributeStringValue);
-                    }
-                }
 
-                builder
-                    .AppendHtml(attribute.Name)
-                    .AppendHtml("=\"")
-                    .Append(HtmlEncoder, attributeValue)
-                    .AppendHtml("\" ");
+                if (string.Equals(attribute.Name, HrefAttributeName, StringComparison.OrdinalIgnoreCase))
+                {
+                    addHref = false;
+
+                    AppendVersionedHref(attribute.Name, href, builder);
+                }
+                else
+                {
+                    AppendAttribute(attribute.Name, attribute.Value, builder);
+                }
+            }
+
+            if (addHref)
+            {
+                AppendVersionedHref(HrefAttributeName, href, builder);
             }
 
             builder.AppendHtml("/>");
+        }
+
+        private void AppendVersionedHref(string hrefName, string hrefValue, TagHelperContent builder)
+        {
+            if (AppendVersion == true)
+            {
+                hrefValue = _fileVersionProvider.AddFileVersionToPath(hrefValue);
+            }
+
+            AppendAttribute(hrefName, hrefValue, builder);
+        }
+
+        private void AppendAttribute(string key, object value, TagHelperContent builder)
+        {
+            builder
+                .AppendHtml(key)
+                .AppendHtml("=\"")
+                .Append(HtmlEncoder, value)
+                .AppendHtml("\" ");
         }
 
         private enum Mode

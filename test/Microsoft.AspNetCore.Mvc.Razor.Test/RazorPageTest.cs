@@ -978,13 +978,15 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             page.EndAddHtmlAttributeValues(executionContext);
 
             // Assert
-            var htmlAttribute = Assert.Single(executionContext.HtmlAttributes);
+            var output = executionContext.CreateTagHelperOutput();
+            var htmlAttribute = Assert.Single(output.Attributes);
             Assert.Equal("someattr", htmlAttribute.Name, StringComparer.Ordinal);
             var htmlContent = Assert.IsAssignableFrom<IHtmlContent>(htmlAttribute.Value);
             Assert.Equal(expectedValue, HtmlContentUtilities.HtmlContentToString(htmlContent), StringComparer.Ordinal);
             Assert.False(htmlAttribute.Minimized);
 
-            var allAttribute = Assert.Single(executionContext.AllAttributes);
+            var context = executionContext.CreateTagHelperContext();
+            var allAttribute = Assert.Single(context.AllAttributes);
             Assert.Equal("someattr", allAttribute.Name, StringComparer.Ordinal);
             htmlContent = Assert.IsAssignableFrom<IHtmlContent>(allAttribute.Value);
             Assert.Equal(expectedValue, HtmlContentUtilities.HtmlContentToString(htmlContent), StringComparer.Ordinal);
@@ -1016,8 +1018,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             page.EndAddHtmlAttributeValues(executionContext);
 
             // Assert
-            Assert.Empty(executionContext.HtmlAttributes);
-            var attribute = Assert.Single(executionContext.AllAttributes);
+            var output = executionContext.CreateTagHelperOutput();
+            Assert.Empty(output.Attributes);
+            var context = executionContext.CreateTagHelperContext();
+            var attribute = Assert.Single(context.AllAttributes);
             Assert.Equal("someattr", attribute.Name, StringComparer.Ordinal);
             Assert.Equal(expectedValue, (string)attribute.Value, StringComparer.Ordinal);
             Assert.False(attribute.Minimized);
@@ -1044,11 +1048,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             page.EndAddHtmlAttributeValues(executionContext);
 
             // Assert
-            var htmlAttribute = Assert.Single(executionContext.HtmlAttributes);
+            var output = executionContext.CreateTagHelperOutput();
+            var htmlAttribute = Assert.Single(output.Attributes);
             Assert.Equal("someattr", htmlAttribute.Name, StringComparer.Ordinal);
             Assert.Equal("someattr", (string)htmlAttribute.Value, StringComparer.Ordinal);
             Assert.False(htmlAttribute.Minimized);
-            var allAttribute = Assert.Single(executionContext.AllAttributes);
+            var context = executionContext.CreateTagHelperContext();
+            var allAttribute = Assert.Single(context.AllAttributes);
             Assert.Equal("someattr", allAttribute.Name, StringComparer.Ordinal);
             Assert.Equal("someattr", (string)allAttribute.Value, StringComparer.Ordinal);
             Assert.False(allAttribute.Minimized);

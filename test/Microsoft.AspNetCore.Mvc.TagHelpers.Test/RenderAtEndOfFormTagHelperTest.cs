@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 });
 
             var tagHelperContext = new TagHelperContext(
-                Enumerable.Empty<TagHelperAttribute>(),
+                new TagHelperAttributeList(),
                 new Dictionary<object, object>(),
                 "someId");
 

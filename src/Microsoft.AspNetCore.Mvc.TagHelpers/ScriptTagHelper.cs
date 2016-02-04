@@ -208,9 +208,6 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 return;
             }
 
-            // NOTE: Values in TagHelperOutput.Attributes may already be HTML-encoded.
-            var attributes = new TagHelperAttributeList(output.Attributes);
-
             if (AppendVersion == true)
             {
                 EnsureFileVersionProvider();
@@ -228,7 +225,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
             if (mode == Mode.GlobbedSrc || mode == Mode.Fallback && !string.IsNullOrEmpty(SrcInclude))
             {
-                BuildGlobbedScriptTags(attributes, builder);
+                BuildGlobbedScriptTags(output.Attributes, builder);
                 if (string.IsNullOrEmpty(Src))
                 {
                     // Only SrcInclude is specified. Don't render the original tag.
@@ -245,7 +242,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     FallbackSrc = resolvedUrl;
                 }
 
-                BuildFallbackBlock(attributes, builder);
+                BuildFallbackBlock(output.Attributes, builder);
             }
 
             output.PostElement.SetContent(builder);
@@ -270,8 +267,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     continue;
                 }
 
-                attributes.SetAttribute(SrcAttributeName, url);
-                BuildScriptTag(attributes, builder);
+                BuildScriptTag(url, attributes, builder);
             }
         }
 
@@ -288,19 +284,14 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                        .AppendHtml(FallbackTestExpression)
                        .AppendHtml("||document.write(\"");
 
-                // May have no "src" attribute in the dictionary e.g. if Src and SrcInclude were not bound.
-                if (!attributes.ContainsName(SrcAttributeName))
-                {
-                    // Need this entry to place each fallback source.
-                    attributes.Add(new TagHelperAttribute(SrcAttributeName, value: null));
-                }
-
                 foreach (var src in fallbackSrcs)
                 {
                     // Fallback "src" values come from bound attributes and globbing. Must always be non-null.
                     Debug.Assert(src != null);
 
                     builder.AppendHtml("<script");
+
+                    var addSrc = true;
 
                     // Perf: Avoid allocating enumerator
                     for (var i = 0; i < attributes.Count; i++)
@@ -316,18 +307,14 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                         }
                         else
                         {
-                            // Ignore attribute.Value; use src instead.
-                            var attributeValue = src;
-                            if (AppendVersion == true)
-                            {
-                                attributeValue = _fileVersionProvider.AddFileVersionToPath(attributeValue);
-                            }
-
-                            // attribute.Key ("src") does not need to be JavaScript-encoded.
-                            var encodedValue = JavaScriptEncoder.Encode(attributeValue);
-
-                            AppendAttribute(builder, attribute.Name, encodedValue, escapeQuotes: true);
+                            addSrc = false;
+                            AppendEncodedVersionedSrc(attribute.Name, src, builder, generateForDocumentWrite: true);
                         }
+                    }
+
+                    if (addSrc)
+                    {
+                        AppendEncodedVersionedSrc(SrcAttributeName, src, builder, generateForDocumentWrite: true);
                     }
 
                     builder.AppendHtml("><\\/script>");
@@ -335,6 +322,25 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
                 builder.AppendHtml("\"));</script>");
             }
+        }
+
+        private void AppendEncodedVersionedSrc(
+            string srcName,
+            string srcValue,
+            TagHelperContent builder,
+            bool generateForDocumentWrite)
+        {
+            if (AppendVersion == true)
+            {
+                srcValue = _fileVersionProvider.AddFileVersionToPath(srcValue);
+            }
+
+            if (generateForDocumentWrite)
+            {
+                srcValue = JavaScriptEncoder.Encode(srcValue);
+            }
+
+            AppendAttribute(builder, srcName, srcValue, escapeQuotes: generateForDocumentWrite);
         }
 
         private void EnsureGlobbingUrlBuilder()
@@ -360,30 +366,32 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         }
 
         private void BuildScriptTag(
+            string src,
             TagHelperAttributeList attributes,
             TagHelperContent builder)
         {
             builder.AppendHtml("<script");
 
+            var addSrc = true;
+
             // Perf: Avoid allocating enumerator
             for (var i = 0; i < attributes.Count; i++)
             {
                 var attribute = attributes[i];
-                var attributeValue = attribute.Value;
-                if (AppendVersion == true &&
-                    string.Equals(attribute.Name, SrcAttributeName, StringComparison.OrdinalIgnoreCase))
+                if (!attribute.Name.Equals(SrcAttributeName, StringComparison.OrdinalIgnoreCase))
                 {
-                    // "src" values come from bound attributes and globbing. So anything but a non-null string is
-                    // unexpected but could happen if another helper targeting the same element does something odd.
-                    // Pass through existing value in that case.
-                    var attributeStringValue = attributeValue as string;
-                    if (attributeStringValue != null)
-                    {
-                        attributeValue = _fileVersionProvider.AddFileVersionToPath(attributeStringValue);
-                    }
+                    AppendAttribute(builder, attribute.Name, attribute.Value, escapeQuotes: false);
                 }
+                else
+                {
+                    addSrc = false;
+                    AppendEncodedVersionedSrc(attribute.Name, src, builder, generateForDocumentWrite: false);
+                }
+            }
 
-                AppendAttribute(builder, attribute.Name, attributeValue, escapeQuotes: false);
+            if (addSrc)
+            {
+                AppendEncodedVersionedSrc(SrcAttributeName, src, builder, generateForDocumentWrite: false);
             }
 
             builder.AppendHtml("></script>");
