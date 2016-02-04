@@ -2,18 +2,17 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using Microsoft.AspNetCore.Mvc.DataAnnotations.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
-using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Internal
 {
     public class ValidatorCacheTest
     {
-        [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [Fact]
         public void GetValidators_CachesAllValidators()
         {
             // Arrange
@@ -25,10 +24,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var validators1 = cache.GetValidators(metadata, validatorProvider);
 
             // Assert - 1
-            Assert.Collection(
-                validators1,
-                v => Assert.Same(metadata.ValidatorMetadata[0], Assert.IsType<DataAnnotationsModelValidator>(v).Attribute), // Copied by provider
-                v => Assert.Same(metadata.ValidatorMetadata[1], Assert.IsType<DataAnnotationsModelValidator>(v).Attribute)); // Copied by provider
+            var attribute1 = Assert.IsType<DataAnnotationsModelValidator>(validators1[0]).Attribute;
+            var attribute2 = Assert.IsType<DataAnnotationsModelValidator>(validators1[1]).Attribute;
+            Assert.Contains(attribute1, metadata.ValidatorMetadata); // Copied by provider
+            Assert.Contains(attribute2, metadata.ValidatorMetadata); // Copied by provider
 
             // Act - 2
             var validators2 = cache.GetValidators(metadata, validatorProvider);
@@ -36,14 +35,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             // Assert - 2
             Assert.Same(validators1, validators2);
 
-            Assert.Collection(
-                validators2,
-                v => Assert.Same(validators1[0], v), // Cached
-                v => Assert.Same(validators1[1], v)); // Cached
+            Assert.Contains(validators1[0], validators2); // Cached
+            Assert.Contains(validators1[1], validators2); // Cached
         }
 
-        [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [Fact]
         public void GetValidators_DoesNotCacheValidatorsWithIsReusableFalse()
         {
             // Arrange
@@ -55,10 +51,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var validators1 = cache.GetValidators(metadata, validatorProvider);
 
             // Assert - 1
-            Assert.Collection(
-                validators1,
-                v => Assert.Same(metadata.ValidatorMetadata[0], Assert.IsType<DataAnnotationsModelValidator>(v).Attribute), // Copied by provider
-                v => Assert.Same(metadata.ValidatorMetadata[1], Assert.IsType<DataAnnotationsModelValidator>(v).Attribute)); // Copied by provider
+            var validator1 = Assert.IsType<DataAnnotationsModelValidator>(validators1[0]);
+            var validator2 = Assert.IsType<DataAnnotationsModelValidator>(validators1[1]);
+            Assert.Contains(validator1.Attribute, metadata.ValidatorMetadata); // Copied by provider
+            Assert.Contains(validator2.Attribute, metadata.ValidatorMetadata); // Copied by provider
 
             // Act - 2
             var validators2 = cache.GetValidators(metadata, validatorProvider);
@@ -66,10 +62,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             // Assert - 2
             Assert.NotSame(validators1, validators2);
 
-            Assert.Collection(
-                validators2,
-                v => Assert.Same(validators1[0], v), // Cached
-                v => Assert.NotSame(validators1[1], v)); // Not cached
+            var requiredValidator = Assert.Single(validators2.Where(v => (v as DataAnnotationsModelValidator).Attribute is RequiredAttribute));
+            Assert.Contains(requiredValidator, validators1); // cached
+            var stringLengthValidator = Assert.Single(validators2.Where(v => (v as DataAnnotationsModelValidator).Attribute is StringLengthAttribute));
+            Assert.DoesNotContain(stringLengthValidator, validators1); // not cached
         }
 
         private class TypeWithProperty
