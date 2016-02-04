@@ -87,8 +87,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 "<input name=\"HtmlEncode[[IsACar]]\" type=\"HtmlEncode[[hidden]]\" value=\"HtmlEncode[[false]]\" />";
 
             var context = new TagHelperContext(
-                allAttributes: new ReadOnlyTagHelperAttributeList<IReadOnlyTagHelperAttribute>(
-                    Enumerable.Empty<IReadOnlyTagHelperAttribute>()),
+                allAttributes: new TagHelperAttributeList(
+                    Enumerable.Empty<TagHelperAttribute>()),
                 items: new Dictionary<object, object>(),
                 uniqueId: "test");
             var output = new TagHelperOutput(
@@ -193,8 +193,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var expectedTagName = "not-input";
 
             var context = new TagHelperContext(
-                allAttributes: new ReadOnlyTagHelperAttributeList<IReadOnlyTagHelperAttribute>(
-                    Enumerable.Empty<IReadOnlyTagHelperAttribute>()),
+                allAttributes: new TagHelperAttributeList(
+                    Enumerable.Empty<TagHelperAttribute>()),
                 items: new Dictionary<object, object>(),
                 uniqueId: "test");
             var originalAttributes = new TagHelperAttributeList
@@ -257,8 +257,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var expectedPostContent = "original post-content";
 
             var context = new TagHelperContext(
-                allAttributes: new ReadOnlyTagHelperAttributeList<IReadOnlyTagHelperAttribute>(
-                    Enumerable.Empty<IReadOnlyTagHelperAttribute>()),
+                allAttributes: new TagHelperAttributeList(
+                    Enumerable.Empty<TagHelperAttribute>()),
                 items: new Dictionary<object, object>(),
                 uniqueId: "test");
             var originalAttributes = new TagHelperAttributeList
@@ -343,7 +343,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             };
             if (!string.IsNullOrEmpty(inputTypeName))
             {
-                contextAttributes["type"] = inputTypeName;  // Support restoration of type attribute, if any.
+                contextAttributes.SetAttribute("type", inputTypeName);  // Support restoration of type attribute, if any.
             }
 
             var expectedAttributes = new TagHelperAttributeList
@@ -444,7 +444,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             };
             if (!string.IsNullOrEmpty(inputTypeName))
             {
-                contextAttributes["type"] = inputTypeName;  // Support restoration of type attribute, if any.
+                contextAttributes.SetAttribute("type", inputTypeName);  // Support restoration of type attribute, if any.
             }
 
             var expectedAttributes = new TagHelperAttributeList
@@ -541,7 +541,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             };
             if (!string.IsNullOrEmpty(inputTypeName))
             {
-                contextAttributes["type"] = inputTypeName;  // Support restoration of type attribute, if any.
+                contextAttributes.SetAttribute("type", inputTypeName);  // Support restoration of type attribute, if any.
             }
 
             var expectedAttributes = new TagHelperAttributeList
@@ -651,7 +651,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             };
             if (!string.IsNullOrEmpty(inputTypeName))
             {
-                contextAttributes["type"] = inputTypeName;  // Support restoration of type attribute, if any.
+                contextAttributes.SetAttribute("type", inputTypeName);  // Support restoration of type attribute, if any.
             }
 
             var expectedAttributes = new TagHelperAttributeList
@@ -784,8 +784,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var expectedTagName = "not-input";
 
             var context = new TagHelperContext(
-                allAttributes: new ReadOnlyTagHelperAttributeList<IReadOnlyTagHelperAttribute>(
-                    Enumerable.Empty<IReadOnlyTagHelperAttribute>()),
+                allAttributes: new TagHelperAttributeList(
+                    Enumerable.Empty<TagHelperAttribute>()),
                 items: new Dictionary<object, object>(),
                 uniqueId: "test");
 
@@ -868,8 +868,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var expectedTagName = "not-input";
 
             var context = new TagHelperContext(
-                allAttributes: new ReadOnlyTagHelperAttributeList<IReadOnlyTagHelperAttribute>(
-                    Enumerable.Empty<IReadOnlyTagHelperAttribute>()),
+                allAttributes: new TagHelperAttributeList(
+                    Enumerable.Empty<TagHelperAttribute>()),
                 items: new Dictionary<object, object>(),
                 uniqueId: "test");
 

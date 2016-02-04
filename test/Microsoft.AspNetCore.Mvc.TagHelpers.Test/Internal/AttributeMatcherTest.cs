@@ -24,8 +24,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Internal
             };
             var attributes = new TagHelperAttributeList
             {
-                ["first-attr"] = "value",
-                ["not-in-any-mode"] = "value"
+                new TagHelperAttribute("first-attr", "value"),
+                new TagHelperAttribute("not-in-any-mode", "value")
             };
             var context = MakeTagHelperContext(attributes);
 
@@ -49,9 +49,9 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Internal
             };
             var attributes = new TagHelperAttributeList
             {
-                ["first-attr"] = "value",
-                ["second-attr"] = "value",
-                ["not-in-any-mode"] = "value"
+                new TagHelperAttribute("first-attr", "value"),
+                new TagHelperAttribute("second-attr", "value"),
+                new TagHelperAttribute("not-in-any-mode", "value")
             };
             var context = MakeTagHelperContext(attributes);
 
@@ -77,10 +77,10 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Internal
             };
             var attributes = new TagHelperAttributeList
             {
-                ["first-attr"] = "value",
-                ["second-attr"] = "value",
-                ["third-attr"] = "value",
-                ["not-in-any-mode"] = "value"
+                new TagHelperAttribute("first-attr", "value"),
+                new TagHelperAttribute("second-attr", "value"),
+                new TagHelperAttribute("third-attr", "value"),
+                new TagHelperAttribute("not-in-any-mode", "value")
             };
             var context = MakeTagHelperContext(attributes);
 

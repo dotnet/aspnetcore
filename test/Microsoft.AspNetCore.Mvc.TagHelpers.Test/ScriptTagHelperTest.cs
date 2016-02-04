@@ -102,10 +102,10 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 outputAttributes.Concat(
                     new TagHelperAttributeList
                     {
-                        ["data-extra"] = "something",
-                        ["src"] = "/blank.js",
-                        ["asp-fallback-src"] = "http://www.example.com/blank.js",
-                        ["asp-fallback-test"] = "isavailable()",
+                        new TagHelperAttribute("data-extra", "something"),
+                        new TagHelperAttribute("src", "/blank.js"),
+                        new TagHelperAttribute("asp-fallback-src", "http://www.example.com/blank.js"),
+                        new TagHelperAttribute("asp-fallback-test", "isavailable()"),
                     }));
             var tagHelperContext = MakeTagHelperContext(allAttributes);
             var viewContext = MakeViewContext();
@@ -149,8 +149,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     {
                         new TagHelperAttributeList
                         {
-                            ["asp-fallback-src"] = "test.js",
-                            ["asp-fallback-test"] = "isavailable()"
+                            new TagHelperAttribute("asp-fallback-src", "test.js"),
+                            new TagHelperAttribute("asp-fallback-test", "isavailable()")
                         },
                         tagHelper =>
                         {
@@ -161,8 +161,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     {
                         new TagHelperAttributeList
                         {
-                            ["asp-fallback-src-include"] = "*.js",
-                            ["asp-fallback-test"] = "isavailable()"
+                            new TagHelperAttribute("asp-fallback-src-include", "*.js"),
+                            new TagHelperAttribute("asp-fallback-test", "isavailable()")
                         },
                         tagHelper =>
                         {
@@ -173,9 +173,9 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     {
                         new TagHelperAttributeList
                         {
-                            ["asp-fallback-src"] = "test.js",
-                            ["asp-fallback-src-include"] = "*.js",
-                            ["asp-fallback-test"] = "isavailable()"
+                            new TagHelperAttribute("asp-fallback-src", "test.js"),
+                            new TagHelperAttribute("asp-fallback-src-include", "*.js"),
+                            new TagHelperAttribute("asp-fallback-test", "isavailable()")
                         },
                         tagHelper =>
                         {
@@ -187,9 +187,9 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     {
                         new TagHelperAttributeList
                         {
-                            ["asp-fallback-src-include"] = "*.js",
-                            ["asp-fallback-src-exclude"] = "*.min.js",
-                            ["asp-fallback-test"] = "isavailable()"
+                            new TagHelperAttribute("asp-fallback-src-include", "*.js"),
+                            new TagHelperAttribute("asp-fallback-src-exclude", "*.min.js"),
+                            new TagHelperAttribute("asp-fallback-test", "isavailable()")
                         },
                         tagHelper =>
                         {
@@ -202,9 +202,9 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     {
                         new TagHelperAttributeList
                         {
-                            ["asp-fallback-src"] = "test.js",
-                            ["asp-fallback-test"] = "isavailable()",
-                            ["asp-append-version"] = "true"
+                            new TagHelperAttribute("asp-fallback-src", "test.js"),
+                            new TagHelperAttribute("asp-fallback-test", "isavailable()"),
+                            new TagHelperAttribute("asp-append-version", "true")
                         },
                         tagHelper =>
                         {
@@ -216,9 +216,9 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     {
                         new TagHelperAttributeList
                         {
-                            ["asp-fallback-src-include"] = "*.js",
-                            ["asp-fallback-test"] = "isavailable()",
-                            ["asp-append-version"] = "true"
+                            new TagHelperAttribute("asp-fallback-src-include", "*.js"),
+                            new TagHelperAttribute("asp-fallback-test", "isavailable()"),
+                            new TagHelperAttribute("asp-append-version", "true")
                         },
                         tagHelper =>
                         {
@@ -230,10 +230,10 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     {
                         new TagHelperAttributeList
                         {
-                            ["asp-fallback-src"] = "test.js",
-                            ["asp-fallback-src-include"] = "*.js",
-                            ["asp-fallback-test"] = "isavailable()",
-                            ["asp-append-version"] = "true"
+                            new TagHelperAttribute("asp-fallback-src", "test.js"),
+                            new TagHelperAttribute("asp-fallback-src-include", "*.js"),
+                            new TagHelperAttribute("asp-fallback-test", "isavailable()"),
+                            new TagHelperAttribute("asp-append-version", "true")
                         },
                         tagHelper =>
                         {
@@ -246,10 +246,10 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     {
                         new TagHelperAttributeList
                         {
-                            ["asp-fallback-src-include"] = "*.js",
-                            ["asp-fallback-src-exclude"] = "*.min.js",
-                            ["asp-fallback-test"] = "isavailable()",
-                            ["asp-append-version"] = "true"
+                            new TagHelperAttribute("asp-fallback-src-include", "*.js"),
+                            new TagHelperAttribute("asp-fallback-src-exclude", "*.min.js"),
+                            new TagHelperAttribute("asp-fallback-test", "isavailable()"),
+                            new TagHelperAttribute("asp-append-version", "true")
                         },
                         tagHelper =>
                         {
@@ -311,7 +311,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     {
                         new TagHelperAttributeList
                         {
-                            ["asp-src-include"] = "*.js"
+                            new TagHelperAttribute("asp-src-include", "*.js")
                         },
                         tagHelper =>
                         {
@@ -321,8 +321,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     {
                         new TagHelperAttributeList
                         {
-                            ["asp-src-include"] = "*.js",
-                            ["asp-src-exclude"] = "*.min.js"
+                            new TagHelperAttribute("asp-src-include", "*.js"),
+                            new TagHelperAttribute("asp-src-exclude", "*.min.js")
                         },
                         tagHelper =>
                         {
@@ -333,8 +333,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     {
                         new TagHelperAttributeList
                         {
-                            ["asp-src-include"] = "*.js",
-                            ["asp-append-version"] = "true"
+                            new TagHelperAttribute("asp-src-include", "*.js"),
+                            new TagHelperAttribute("asp-append-version", "true")
                         },
                         tagHelper =>
                         {
@@ -345,9 +345,9 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     {
                         new TagHelperAttributeList
                         {
-                            ["asp-src-include"] = "*.js",
-                            ["asp-src-exclude"] = "*.min.js",
-                            ["asp-append-version"] = "true"
+                            new TagHelperAttribute("asp-src-include", "*.js"),
+                            new TagHelperAttribute("asp-src-exclude", "*.min.js"),
+                            new TagHelperAttribute("asp-append-version", "true")
                         },
                         tagHelper =>
                         {
@@ -408,8 +408,9 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     {
                         new TagHelperAttributeList
                         {
-                            // This is commented out on purpose: ["asp-src-include"] = "*.js",
-                            ["asp-src-exclude"] = "*.min.js"
+                            // This is commented out on purpose: new TagHelperAttribute("asp-src-include", "*.js"),
+                            // Note asp-src-include attribute isn't included.
+                            new TagHelperAttribute("asp-src-exclude", "*.min.js")
                         },
                         tagHelper =>
                         {
@@ -420,8 +421,9 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     {
                         new TagHelperAttributeList
                         {
-                            // This is commented out on purpose: ["asp-fallback-src"] = "test.js",
-                            ["asp-fallback-test"] = "isavailable()",
+                            // This is commented out on purpose: new TagHelperAttribute("asp-fallback-src", "test.js"),
+                            // Note asp-src-include attribute isn't included.
+                            new TagHelperAttribute("asp-fallback-test", "isavailable()"),
                         },
                         tagHelper =>
                         {
@@ -432,8 +434,9 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     {
                         new TagHelperAttributeList
                         {
-                            ["asp-fallback-src"] = "test.js",
-                            // This is commented out on purpose: ["asp-fallback-test"] = "isavailable()"
+                            new TagHelperAttribute("asp-fallback-src", "test.js"),
+                            // This is commented out on purpose: new TagHelperAttribute("asp-fallback-test", "isavailable()")
+                            // Note asp-src-include attribute isn't included.
                         },
                         tagHelper =>
                         {
@@ -444,9 +447,10 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     {
                         new TagHelperAttributeList
                         {
-                            // This is commented out on purpose: ["asp-fallback-src-include"] = "test.js",
-                            ["asp-fallback-src-exclude"] = "**/*.min.js",
-                            ["asp-fallback-test"] = "isavailable()",
+                            // This is commented out on purpose: new TagHelperAttribute("asp-fallback-src-include", "test.js"),
+                            // Note asp-src-include attribute isn't included.
+                            new TagHelperAttribute("asp-fallback-src-exclude", "**/*.min.js"),
+                            new TagHelperAttribute("asp-fallback-test", "isavailable()"),
                         },
                         tagHelper =>
                         {
@@ -528,11 +532,11 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var tagHelperContext = MakeTagHelperContext(
                 attributes: new TagHelperAttributeList
                 {
-                    ["data-extra"] = "something",
-                    ["src"] = "/blank.js",
-                    ["data-more"] = "else",
-                    ["asp-fallback-src"] = "http://www.example.com/blank.js",
-                    ["asp-fallback-test"] = "isavailable()",
+                    new TagHelperAttribute("data-extra", "something"),
+                    new TagHelperAttribute("src", "/blank.js"),
+                    new TagHelperAttribute("data-more", "else"),
+                    new TagHelperAttribute("asp-fallback-src", "http://www.example.com/blank.js"),
+                    new TagHelperAttribute("asp-fallback-test", "isavailable()"),
                 });
 
             var viewContext = MakeViewContext();
@@ -540,8 +544,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var output = MakeTagHelperOutput("src",
                 attributes: new TagHelperAttributeList
                 {
-                    ["data-extra"] = "something",
-                    ["data-more"] = "else",
+                    new TagHelperAttribute("data-extra", "something"),
+                    new TagHelperAttribute("data-more", "else"),
                 });
 
             var hostingEnvironment = MakeHostingEnvironment();
@@ -575,8 +579,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var context = MakeTagHelperContext(
                 attributes: new TagHelperAttributeList
                 {
-                    ["src"] = "/js/site.js",
-                    ["asp-src-include"] = "**/*.js"
+                    new TagHelperAttribute("src", "/js/site.js"),
+                    new TagHelperAttribute("asp-src-include", "**/*.js")
                 });
             var output = MakeTagHelperOutput("script", attributes: new TagHelperAttributeList());
             var hostingEnvironment = MakeHostingEnvironment();
@@ -617,8 +621,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var context = MakeTagHelperContext(
                 attributes: new TagHelperAttributeList
                 {
-                    ["src"] = "/js/site.js",
-                    ["asp-src-include"] = "**/*.js"
+                    new TagHelperAttribute("src", "/js/site.js"),
+                    new TagHelperAttribute("asp-src-include", "**/*.js")
                 });
             var output = MakeTagHelperOutput("script", attributes: new TagHelperAttributeList());
             var hostingEnvironment = MakeHostingEnvironment();
@@ -659,8 +663,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var context = MakeTagHelperContext(
                 attributes: new TagHelperAttributeList
                 {
-                    ["src"] = "/js/site.js",
-                    ["asp-append-version"] = "true"
+                    new TagHelperAttribute("src", "/js/site.js"),
+                    new TagHelperAttribute("asp-append-version", "true")
                 });
             var output = MakeTagHelperOutput("script", attributes: new TagHelperAttributeList());
 
@@ -694,8 +698,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var context = MakeTagHelperContext(
                 attributes: new TagHelperAttributeList
                 {
-                    ["src"] = "/bar/js/site.js",
-                    ["asp-append-version"] = "true"
+                    new TagHelperAttribute("src", "/bar/js/site.js"),
+                    new TagHelperAttribute("asp-append-version", "true")
                 });
             var output = MakeTagHelperOutput("script", attributes: new TagHelperAttributeList());
             var hostingEnvironment = MakeHostingEnvironment();
@@ -728,10 +732,10 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var context = MakeTagHelperContext(
                 attributes: new TagHelperAttributeList
                 {
-                    ["src"] = "/js/site.js",
-                    ["asp-fallback-src-include"] = "fallback.js",
-                    ["asp-fallback-test"] = "isavailable()",
-                    ["asp-append-version"] = "true"
+                    new TagHelperAttribute("src", "/js/site.js"),
+                    new TagHelperAttribute("asp-fallback-src-include", "fallback.js"),
+                    new TagHelperAttribute("asp-fallback-test", "isavailable()"),
+                    new TagHelperAttribute("asp-append-version", "true")
                 });
             var output = MakeTagHelperOutput("script", attributes: new TagHelperAttributeList());
             var hostingEnvironment = MakeHostingEnvironment();
@@ -769,9 +773,9 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var context = MakeTagHelperContext(
                 attributes: new TagHelperAttributeList
                 {
-                    ["src"] = "/js/site.js",
-                    ["asp-src-include"] = "*.js",
-                    ["asp-append-version"] = "true"
+                    new TagHelperAttribute("src", "/js/site.js"),
+                    new TagHelperAttribute("asp-src-include", "*.js"),
+                    new TagHelperAttribute("asp-append-version", "true")
                 });
             var output = MakeTagHelperOutput("script", attributes: new TagHelperAttributeList());
             var hostingEnvironment = MakeHostingEnvironment();

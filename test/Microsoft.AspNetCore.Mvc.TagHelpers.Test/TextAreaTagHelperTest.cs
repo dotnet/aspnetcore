@@ -124,8 +124,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             };
 
             var tagHelperContext = new TagHelperContext(
-                allAttributes: new ReadOnlyTagHelperAttributeList<IReadOnlyTagHelperAttribute>(
-                    Enumerable.Empty<IReadOnlyTagHelperAttribute>()),
+                allAttributes: new TagHelperAttributeList(
+                    Enumerable.Empty<TagHelperAttribute>()),
                 items: new Dictionary<object, object>(),
                 uniqueId: "test");
             var htmlAttributes = new TagHelperAttributeList

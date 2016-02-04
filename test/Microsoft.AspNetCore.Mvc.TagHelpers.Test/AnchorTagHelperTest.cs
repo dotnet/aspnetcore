@@ -92,8 +92,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         {
             // Arrange
             var context = new TagHelperContext(
-                allAttributes: new ReadOnlyTagHelperAttributeList<IReadOnlyTagHelperAttribute>(
-                    Enumerable.Empty<IReadOnlyTagHelperAttribute>()),
+                allAttributes: new TagHelperAttributeList(
+                    Enumerable.Empty<TagHelperAttribute>()),
                 items: new Dictionary<object, object>(),
                 uniqueId: "test");
             var output = new TagHelperOutput(
@@ -141,8 +141,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         {
             // Arrange
             var context = new TagHelperContext(
-                allAttributes: new ReadOnlyTagHelperAttributeList<IReadOnlyTagHelperAttribute>(
-                    Enumerable.Empty<IReadOnlyTagHelperAttribute>()),
+                allAttributes: new TagHelperAttributeList(
+                    Enumerable.Empty<TagHelperAttribute>()),
                 items: new Dictionary<object, object>(),
                 uniqueId: "test");
             var output = new TagHelperOutput(
@@ -225,8 +225,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                                        "'asp-fragment' attribute.";
 
             var context = new TagHelperContext(
-                allAttributes: new ReadOnlyTagHelperAttributeList<IReadOnlyTagHelperAttribute>(
-                    Enumerable.Empty<IReadOnlyTagHelperAttribute>()),
+                allAttributes: new TagHelperAttributeList(
+                    Enumerable.Empty<TagHelperAttribute>()),
                 items: new Dictionary<object, object>(),
                 uniqueId: "test");
 
@@ -260,8 +260,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 "'asp-route' must not have an 'asp-action' or 'asp-controller' attribute.";
 
             var context = new TagHelperContext(
-                allAttributes: new ReadOnlyTagHelperAttributeList<IReadOnlyTagHelperAttribute>(
-                    Enumerable.Empty<IReadOnlyTagHelperAttribute>()),
+                allAttributes: new TagHelperAttributeList(
+                    Enumerable.Empty<TagHelperAttribute>()),
                 items: new Dictionary<object, object>(),
                 uniqueId: "test");
 

@@ -39,8 +39,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var expectedPreContent = "original pre-content";
             var expectedContent = "original content";
             var tagHelperContext = new TagHelperContext(
-                allAttributes: new ReadOnlyTagHelperAttributeList<IReadOnlyTagHelperAttribute>(
-                    Enumerable.Empty<IReadOnlyTagHelperAttribute>()),
+                allAttributes: new TagHelperAttributeList(
+                    Enumerable.Empty<TagHelperAttribute>()),
                 items: new Dictionary<object, object>(),
                 uniqueId: "test");
             var output = new TagHelperOutput(
@@ -120,8 +120,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             validationSummaryTagHelper.ViewContext = expectedViewContext;
 
             var context = new TagHelperContext(
-                allAttributes: new ReadOnlyTagHelperAttributeList<IReadOnlyTagHelperAttribute>(
-                    Enumerable.Empty<IReadOnlyTagHelperAttribute>()),
+                allAttributes: new TagHelperAttributeList(
+                    Enumerable.Empty<TagHelperAttribute>()),
                 items: new Dictionary<object, object>(),
                 uniqueId: "test");
 
@@ -176,8 +176,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             validationSummaryTagHelper.ViewContext = viewContext;
 
             var context = new TagHelperContext(
-                allAttributes: new ReadOnlyTagHelperAttributeList<IReadOnlyTagHelperAttribute>(
-                    Enumerable.Empty<IReadOnlyTagHelperAttribute>()),
+                allAttributes: new TagHelperAttributeList(
+                    Enumerable.Empty<TagHelperAttribute>()),
                 items: new Dictionary<object, object>(),
                 uniqueId: "test");
 
@@ -225,8 +225,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             validationSummaryTagHelper.ViewContext = viewContext;
 
             var context = new TagHelperContext(
-                allAttributes: new ReadOnlyTagHelperAttributeList<IReadOnlyTagHelperAttribute>(
-                    Enumerable.Empty<IReadOnlyTagHelperAttribute>()),
+                allAttributes: new TagHelperAttributeList(
+                    Enumerable.Empty<TagHelperAttribute>()),
                 items: new Dictionary<object, object>(),
                 uniqueId: "test");
 
@@ -281,8 +281,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             validationSummaryTagHelper.ViewContext = viewContext;
 
             var context = new TagHelperContext(
-                allAttributes: new ReadOnlyTagHelperAttributeList<IReadOnlyTagHelperAttribute>(
-                    Enumerable.Empty<IReadOnlyTagHelperAttribute>()),
+                allAttributes: new TagHelperAttributeList(
+                    Enumerable.Empty<TagHelperAttribute>()),
                 items: new Dictionary<object, object>(),
                 uniqueId: "test");
 

@@ -53,7 +53,7 @@ namespace TagHelpersWebSite.TagHelpers
                     style += ";";
                 }
 
-                output.Attributes["style"] = style + prettyStyle;
+                output.Attributes.SetAttribute("style", style + prettyStyle);
             }
         }
     }

@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 // not function properly.
                 Src = output.Attributes[SrcAttributeName].Value as string;
 
-                output.Attributes[SrcAttributeName] = _fileVersionProvider.AddFileVersionToPath(Src);
+                output.Attributes.SetAttribute(SrcAttributeName, _fileVersionProvider.AddFileVersionToPath(Src));
             }
         }
 

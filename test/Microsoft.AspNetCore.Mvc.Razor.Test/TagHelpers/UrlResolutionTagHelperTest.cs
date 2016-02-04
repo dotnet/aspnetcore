@@ -59,8 +59,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.TagHelpers
             var tagHelper = new UrlResolutionTagHelper(urlHelperFactory.Object, new HtmlTestEncoder());
 
             var context = new TagHelperContext(
-                allAttributes: new ReadOnlyTagHelperAttributeList<IReadOnlyTagHelperAttribute>(
-                    Enumerable.Empty<IReadOnlyTagHelperAttribute>()),
+                allAttributes: new TagHelperAttributeList(
+                    Enumerable.Empty<TagHelperAttribute>()),
                 items: new Dictionary<object, object>(),
                 uniqueId: "test");
 
@@ -115,8 +115,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.TagHelpers
             var tagHelper = new UrlResolutionTagHelper(urlHelperFactory.Object, new HtmlTestEncoder());
 
             var context = new TagHelperContext(
-                allAttributes: new ReadOnlyTagHelperAttributeList<IReadOnlyTagHelperAttribute>(
-                    Enumerable.Empty<IReadOnlyTagHelperAttribute>()),
+                allAttributes: new TagHelperAttributeList(
+                    Enumerable.Empty<TagHelperAttribute>()),
                 items: new Dictionary<object, object>(),
                 uniqueId: "test");
 
@@ -170,8 +170,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.TagHelpers
             var tagHelper = new UrlResolutionTagHelper(urlHelperFactory.Object, new HtmlTestEncoder());
 
             var context = new TagHelperContext(
-                allAttributes: new ReadOnlyTagHelperAttributeList<IReadOnlyTagHelperAttribute>(
-                    Enumerable.Empty<IReadOnlyTagHelperAttribute>()),
+                allAttributes: new TagHelperAttributeList(
+                    Enumerable.Empty<TagHelperAttribute>()),
                 items: new Dictionary<object, object>(),
                 uniqueId: "test");
 
@@ -225,8 +225,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.TagHelpers
             var tagHelper = new UrlResolutionTagHelper(urlHelperFactory.Object, new HtmlTestEncoder());
 
             var context = new TagHelperContext(
-                allAttributes: new ReadOnlyTagHelperAttributeList<IReadOnlyTagHelperAttribute>(
-                    Enumerable.Empty<IReadOnlyTagHelperAttribute>()),
+                allAttributes: new TagHelperAttributeList(
+                    Enumerable.Empty<TagHelperAttribute>()),
                 items: new Dictionary<object, object>(),
                 uniqueId: "test");
 
@@ -255,8 +255,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.TagHelpers
             var tagHelper = new UrlResolutionTagHelper(urlHelperFactory: null, htmlEncoder: null);
 
             var context = new TagHelperContext(
-                allAttributes: new ReadOnlyTagHelperAttributeList<IReadOnlyTagHelperAttribute>(
-                    Enumerable.Empty<IReadOnlyTagHelperAttribute>()),
+                allAttributes: new TagHelperAttributeList(
+                    Enumerable.Empty<TagHelperAttribute>()),
                 items: new Dictionary<object, object>(),
                 uniqueId: "test");
 
@@ -300,8 +300,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.TagHelpers
             var tagHelper = new UrlResolutionTagHelper(urlHelperFactory.Object, new HtmlTestEncoder());
 
             var context = new TagHelperContext(
-                allAttributes: new ReadOnlyTagHelperAttributeList<IReadOnlyTagHelperAttribute>(
-                    Enumerable.Empty<IReadOnlyTagHelperAttribute>()),
+                allAttributes: new TagHelperAttributeList(
+                    Enumerable.Empty<TagHelperAttribute>()),
                 items: new Dictionary<object, object>(),
                 uniqueId: "test");
 

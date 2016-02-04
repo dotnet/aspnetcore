@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Internal
             // Perf: Avoid allocating enumerator
             for (var i = 0; i < requiredAttributes.Length; i++)
             {
-                IReadOnlyTagHelperAttribute attribute;
+                TagHelperAttribute attribute;
                 if (!context.AllAttributes.TryGetAttribute(requiredAttributes[i], out attribute))
                 {
                     // Missing attribute.

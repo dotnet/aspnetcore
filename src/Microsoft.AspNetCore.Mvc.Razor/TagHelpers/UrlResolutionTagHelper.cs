@@ -157,51 +157,52 @@ namespace Microsoft.AspNetCore.Mvc.Razor.TagHelpers
                 throw new ArgumentNullException(nameof(output));
             }
 
-            IReadOnlyList<TagHelperAttribute> attributes;
-            if (output.Attributes.TryGetAttributes(attributeName, out attributes))
+            for (var i = 0; i < output.Attributes.Count; i++)
             {
-                for (var i = 0; i < attributes.Count; i++)
+                var attribute = output.Attributes[i];
+                if (!string.Equals(attribute.Name, attributeName, StringComparison.OrdinalIgnoreCase))
                 {
-                    var attribute = attributes[i];
-                    var stringValue = attribute.Value as string;
-                    if (stringValue != null)
+                    continue;
+                }
+
+                var stringValue = attribute.Value as string;
+                if (stringValue != null)
+                {
+                    string resolvedUrl;
+                    if (TryResolveUrl(stringValue, resolvedUrl: out resolvedUrl))
                     {
-                        string resolvedUrl;
+                        output.Attributes[i] = new TagHelperAttribute(attribute.Name, resolvedUrl);
+                    }
+                }
+                else
+                {
+                    var htmlContent = attribute.Value as IHtmlContent;
+                    if (htmlContent != null)
+                    {
+                        var htmlString = htmlContent as HtmlEncodedString;
+                        if (htmlString != null)
+                        {
+                            // No need for a StringWriter in this case.
+                            stringValue = htmlString.ToString();
+                        }
+                        else
+                        {
+                            using (var writer = new StringWriter())
+                            {
+                                htmlContent.WriteTo(writer, HtmlEncoder);
+                                stringValue = writer.ToString();
+                            }
+                        }
+
+                        IHtmlContent resolvedUrl;
                         if (TryResolveUrl(stringValue, resolvedUrl: out resolvedUrl))
                         {
-                            attribute.Value = resolvedUrl;
+                            output.Attributes[i] = new TagHelperAttribute(attribute.Name, resolvedUrl);
                         }
-                    }
-                    else
-                    {
-                        var htmlContent = attribute.Value as IHtmlContent;
-                        if (htmlContent != null)
+                        else if (htmlString == null)
                         {
-                            var htmlString = htmlContent as HtmlEncodedString;
-                            if (htmlString != null)
-                            {
-                                // No need for a StringWriter in this case.
-                                stringValue = htmlString.ToString();
-                            }
-                            else
-                            {
-                                using (var writer = new StringWriter())
-                                {
-                                    htmlContent.WriteTo(writer, HtmlEncoder);
-                                    stringValue = writer.ToString();
-                                }
-                            }
-
-                            IHtmlContent resolvedUrl;
-                            if (TryResolveUrl(stringValue, resolvedUrl: out resolvedUrl))
-                            {
-                                attribute.Value = resolvedUrl;
-                            }
-                            else if (htmlString == null)
-                            {
-                                // Not a ~/ URL. Just avoid re-encoding the attribute value later.
-                                attribute.Value = new HtmlString(stringValue);
-                            }
+                            // Not a ~/ URL. Just avoid re-encoding the attribute value later.
+                            output.Attributes[i] = new TagHelperAttribute(attribute.Name, new HtmlString(stringValue));
                         }
                     }
                 }

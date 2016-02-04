@@ -40,7 +40,7 @@ namespace TagHelpersWebSite.TagHelpers
                 output.Attributes.Clear();
 
                 var urlHelper = UrlHelperFactory.GetUrlHelper(ViewContext);
-                output.Attributes["href"] = urlHelper.Action(Action, Controller, methodParameters);
+                output.Attributes.SetAttribute("href", urlHelper.Action(Action, Controller, methodParameters));
 
                 output.PreContent.SetContent("My ");
             }

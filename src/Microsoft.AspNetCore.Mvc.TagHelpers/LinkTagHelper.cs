@@ -254,7 +254,10 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
                 if (Href != null)
                 {
-                    output.Attributes[HrefAttributeName].Value = _fileVersionProvider.AddFileVersionToPath(Href);
+                    var index = output.Attributes.IndexOfName(HrefAttributeName);
+                    output.Attributes[index] = new TagHelperAttribute(
+                        HrefAttributeName,
+                        _fileVersionProvider.AddFileVersionToPath(Href));
                 }
             }
 
@@ -303,7 +306,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     continue;
                 }
 
-                attributes[HrefAttributeName] = url;
+                attributes.SetAttribute(HrefAttributeName, url);
                 BuildLinkTag(attributes, builder);
             }
         }

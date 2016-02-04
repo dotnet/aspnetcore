@@ -960,7 +960,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             Assert.Equal(expectedBuilderAttribute.Value, attribute.Value);
         }
 
-        private class CaseSensitiveTagHelperAttributeComparer : IEqualityComparer<IReadOnlyTagHelperAttribute>
+        private class CaseSensitiveTagHelperAttributeComparer : IEqualityComparer<TagHelperAttribute>
         {
             public readonly static CaseSensitiveTagHelperAttributeComparer Default =
                 new CaseSensitiveTagHelperAttributeComparer();
@@ -969,7 +969,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             {
             }
 
-            public bool Equals(IReadOnlyTagHelperAttribute attributeX, IReadOnlyTagHelperAttribute attributeY)
+            public bool Equals(TagHelperAttribute attributeX, TagHelperAttribute attributeY)
             {
                 if (attributeX == attributeY)
                 {
@@ -983,7 +983,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     (attributeX.Minimized || Equals(attributeX.Value, attributeY.Value));
             }
 
-            public int GetHashCode(IReadOnlyTagHelperAttribute attribute)
+            public int GetHashCode(TagHelperAttribute attribute)
             {
                 return attribute.GetHashCode();
             }

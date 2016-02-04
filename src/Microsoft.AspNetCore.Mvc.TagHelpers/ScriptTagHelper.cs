@@ -217,7 +217,10 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
                 if (Src != null)
                 {
-                    output.Attributes[SrcAttributeName].Value = _fileVersionProvider.AddFileVersionToPath(Src);
+                    var index = output.Attributes.IndexOfName(SrcAttributeName);
+                    output.Attributes[index] = new TagHelperAttribute(
+                        SrcAttributeName,
+                        _fileVersionProvider.AddFileVersionToPath(Src));
                 }
             }
 
@@ -267,7 +270,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     continue;
                 }
 
-                attributes[SrcAttributeName] = url;
+                attributes.SetAttribute(SrcAttributeName, url);
                 BuildScriptTag(attributes, builder);
             }
         }

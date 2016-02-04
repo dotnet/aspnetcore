@@ -183,7 +183,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             // inputType may be more specific than default the generator chooses below.
             if (!output.Attributes.ContainsName("type"))
             {
-                output.Attributes["type"] = inputType;
+                output.Attributes.SetAttribute("type", inputType);
             }
 
             TagBuilder tagBuilder;

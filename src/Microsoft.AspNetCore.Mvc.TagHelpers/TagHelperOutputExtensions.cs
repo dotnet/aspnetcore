@@ -116,7 +116,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
                     if (tagHelperOutput.Attributes.TryGetAttribute("class", out classAttribute))
                     {
-                        tagHelperOutput.Attributes["class"] = classAttribute.Value + " " + attribute.Value;
+                        tagHelperOutput.Attributes.SetAttribute("class", classAttribute.Value + " " + attribute.Value);
                     }
                     else
                     {
@@ -158,12 +158,10 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             TagHelperContext context)
         {
             var existingAttribute = context.AllAttributes[allAttributeIndex];
-            var copiedAttribute = new TagHelperAttribute
-            {
-                Name = existingAttribute.Name,
-                Value = existingAttribute.Value,
-                Minimized = existingAttribute.Minimized
-            };
+            var copiedAttribute = new TagHelperAttribute(
+                existingAttribute.Name,
+                existingAttribute.Value,
+                existingAttribute.Minimized);
 
             // Move backwards through context.AllAttributes from the provided index until we find a familiar attribute
             // in tagHelperOutput where we can insert the copied value after the familiar one.

@@ -200,10 +200,10 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     {
                         new TagHelperAttributeList
                         {
-                            ["asp-fallback-href"] = "test.css",
-                            ["asp-fallback-test-class"] = "hidden",
-                            ["asp-fallback-test-property"] = "visibility",
-                            ["asp-fallback-test-value"] = "hidden"
+                            new TagHelperAttribute("asp-fallback-href", "test.css"),
+                            new TagHelperAttribute("asp-fallback-test-class", "hidden"),
+                            new TagHelperAttribute("asp-fallback-test-property", "visibility"),
+                            new TagHelperAttribute("asp-fallback-test-value", "hidden")
                         },
                         tagHelper =>
                         {
@@ -216,10 +216,10 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     {
                         new TagHelperAttributeList
                         {
-                            ["asp-fallback-href-include"] = "*.css",
-                            ["asp-fallback-test-class"] = "hidden",
-                            ["asp-fallback-test-property"] = "visibility",
-                            ["asp-fallback-test-value"] = "hidden"
+                            new TagHelperAttribute("asp-fallback-href-include", "*.css"),
+                            new TagHelperAttribute("asp-fallback-test-class", "hidden"),
+                            new TagHelperAttribute("asp-fallback-test-property", "visibility"),
+                            new TagHelperAttribute("asp-fallback-test-value", "hidden")
                         },
                         tagHelper =>
                         {
@@ -233,11 +233,11 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     {
                         new TagHelperAttributeList
                         {
-                            ["asp-fallback-href"] = "test.css",
-                            ["asp-fallback-test-class"] = "hidden",
-                            ["asp-fallback-test-property"] = "visibility",
-                            ["asp-fallback-test-value"] = "hidden",
-                            ["asp-append-version"] = "true"
+                            new TagHelperAttribute("asp-fallback-href", "test.css"),
+                            new TagHelperAttribute("asp-fallback-test-class", "hidden"),
+                            new TagHelperAttribute("asp-fallback-test-property", "visibility"),
+                            new TagHelperAttribute("asp-fallback-test-value", "hidden"),
+                            new TagHelperAttribute("asp-append-version", "true")
                         },
                         tagHelper =>
                         {
@@ -251,11 +251,11 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     {
                         new TagHelperAttributeList
                         {
-                            ["asp-fallback-href-include"] = "*.css",
-                            ["asp-fallback-test-class"] = "hidden",
-                            ["asp-fallback-test-property"] = "visibility",
-                            ["asp-fallback-test-value"] = "hidden",
-                            ["asp-append-version"] = "true"
+                            new TagHelperAttribute("asp-fallback-href-include", "*.css"),
+                            new TagHelperAttribute("asp-fallback-test-class", "hidden"),
+                            new TagHelperAttribute("asp-fallback-test-property", "visibility"),
+                            new TagHelperAttribute("asp-fallback-test-value", "hidden"),
+                            new TagHelperAttribute("asp-append-version", "true")
                         },
                         tagHelper =>
                         {
@@ -318,7 +318,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     {
                         new TagHelperAttributeList
                         {
-                            ["asp-href-include"] = "*.css"
+                            new TagHelperAttribute("asp-href-include", "*.css")
                         },
                         tagHelper =>
                         {
@@ -328,8 +328,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     {
                         new TagHelperAttributeList
                         {
-                            ["asp-href-include"] = "*.css",
-                            ["asp-href-exclude"] = "*.min.css"
+                            new TagHelperAttribute("asp-href-include", "*.css"),
+                            new TagHelperAttribute("asp-href-exclude", "*.min.css")
                         },
                         tagHelper =>
                         {
@@ -340,8 +340,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     {
                         new TagHelperAttributeList
                         {
-                            ["asp-href-include"] = "*.css",
-                            ["asp-append-version"] = "true"
+                            new TagHelperAttribute("asp-href-include", "*.css"),
+                            new TagHelperAttribute("asp-append-version", "true")
                         },
                         tagHelper =>
                         {
@@ -352,9 +352,9 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     {
                         new TagHelperAttributeList
                         {
-                            ["asp-href-include"] = "*.css",
-                            ["asp-href-exclude"] = "*.min.css",
-                            ["asp-append-version"] = "true"
+                            new TagHelperAttribute("asp-href-include", "*.css"),
+                            new TagHelperAttribute("asp-href-exclude", "*.min.css"),
+                            new TagHelperAttribute("asp-append-version", "true")
                         },
                         tagHelper =>
                         {
@@ -463,8 +463,9 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     {
                         new TagHelperAttributeList
                         {
-                            // This is commented out on purpose: ["asp-href-include"] = "*.css",
-                            ["asp-href-exclude"] = "*.min.css"
+                            // This is commented out on purpose: new TagHelperAttribute("asp-href-include", "*.css"),
+                            // Note asp-href-include attribute isn't included.
+                            new TagHelperAttribute("asp-href-exclude", "*.min.css")
                         },
                         tagHelper =>
                         {
@@ -475,10 +476,11 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     {
                         new TagHelperAttributeList
                         {
-                            // This is commented out on purpose: ["asp-fallback-href"] = "test.css",
-                            ["asp-fallback-test-class"] = "hidden",
-                            ["asp-fallback-test-property"] = "visibility",
-                            ["asp-fallback-test-value"] = "hidden"
+                            // This is commented out on purpose: new TagHelperAttribute("asp-fallback-href", "test.css"),
+                            // Note asp-href-include attribute isn't included.
+                            new TagHelperAttribute("asp-fallback-test-class", "hidden"),
+                            new TagHelperAttribute("asp-fallback-test-property", "visibility"),
+                            new TagHelperAttribute("asp-fallback-test-value", "hidden")
                         },
                         tagHelper =>
                         {
@@ -491,10 +493,11 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     {
                         new TagHelperAttributeList
                         {
-                            ["asp-fallback-href"] = "test.css",
-                            ["asp-fallback-test-class"] = "hidden",
-                            // This is commented out on purpose: ["asp-fallback-test-property"] = "visibility",
-                            ["asp-fallback-test-value"] = "hidden"
+                            new TagHelperAttribute("asp-fallback-href", "test.css"),
+                            new TagHelperAttribute("asp-fallback-test-class", "hidden"),
+                            // This is commented out on purpose: new TagHelperAttribute("asp-fallback-test-property", "visibility"),
+                            // Note asp-href-include attribute isn't included.
+                            new TagHelperAttribute("asp-fallback-test-value", "hidden")
                         },
                         tagHelper =>
                         {
@@ -507,11 +510,11 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     {
                         new TagHelperAttributeList
                         {
-                            // This is commented out on purpose: ["asp-fallback-href-include"] = "test.css",
-                            ["asp-fallback-href-exclude"] = "**/*.min.css",
-                            ["asp-fallback-test-class"] = "hidden",
-                            ["asp-fallback-test-property"] = "visibility",
-                            ["asp-fallback-test-value"] = "hidden"
+                            // This is commented out on purpose: new TagHelperAttribute("asp-fallback-href-include", "test.css"),
+                            new TagHelperAttribute("asp-fallback-href-exclude", "**/*.min.css"),
+                            new TagHelperAttribute("asp-fallback-test-class", "hidden"),
+                            new TagHelperAttribute("asp-fallback-test-property", "visibility"),
+                            new TagHelperAttribute("asp-fallback-test-value", "hidden")
                         },
                         tagHelper =>
                         {
@@ -641,13 +644,13 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var context = MakeTagHelperContext(
                 attributes: new TagHelperAttributeList
                 {
-                    ["rel"] = "stylesheet",
-                    ["href"] = "/css/site.css",
-                    ["asp-href-include"] = "**/*.css"
+                    new TagHelperAttribute("rel", "stylesheet"),
+                    new TagHelperAttribute("href", "/css/site.css"),
+                    new TagHelperAttribute("asp-href-include", "**/*.css")
                 });
             var output = MakeTagHelperOutput("link", attributes: new TagHelperAttributeList
             {
-                ["rel"] = "stylesheet",
+                new TagHelperAttribute("rel", "stylesheet"),
             });
             var hostingEnvironment = MakeHostingEnvironment();
             var viewContext = MakeViewContext();

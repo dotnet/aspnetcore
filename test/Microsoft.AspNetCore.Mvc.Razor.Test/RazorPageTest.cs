@@ -978,7 +978,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             page.EndAddHtmlAttributeValues(executionContext);
 
             // Assert
-            var htmlAttribute = Assert.Single(executionContext.HTMLAttributes);
+            var htmlAttribute = Assert.Single(executionContext.HtmlAttributes);
             Assert.Equal("someattr", htmlAttribute.Name, StringComparer.Ordinal);
             var htmlContent = Assert.IsAssignableFrom<IHtmlContent>(htmlAttribute.Value);
             Assert.Equal(expectedValue, HtmlContentUtilities.HtmlContentToString(htmlContent), StringComparer.Ordinal);
@@ -1016,7 +1016,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             page.EndAddHtmlAttributeValues(executionContext);
 
             // Assert
-            Assert.Empty(executionContext.HTMLAttributes);
+            Assert.Empty(executionContext.HtmlAttributes);
             var attribute = Assert.Single(executionContext.AllAttributes);
             Assert.Equal("someattr", attribute.Name, StringComparer.Ordinal);
             Assert.Equal(expectedValue, (string)attribute.Value, StringComparer.Ordinal);
@@ -1044,7 +1044,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             page.EndAddHtmlAttributeValues(executionContext);
 
             // Assert
-            var htmlAttribute = Assert.Single(executionContext.HTMLAttributes);
+            var htmlAttribute = Assert.Single(executionContext.HtmlAttributes);
             Assert.Equal("someattr", htmlAttribute.Name, StringComparer.Ordinal);
             Assert.Equal("someattr", (string)htmlAttribute.Value, StringComparer.Ordinal);
             Assert.False(htmlAttribute.Minimized);

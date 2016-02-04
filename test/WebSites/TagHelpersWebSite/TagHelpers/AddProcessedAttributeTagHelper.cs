@@ -10,7 +10,7 @@ namespace TagHelpersWebSite.TagHelpers
     {
         public override void Process(TagHelperContext context, TagHelperOutput output)
         {
-            output.Attributes.Add(new TagHelperAttribute { Name = "processed", Minimized = true });
+            output.Attributes.Add(new TagHelperAttribute("processed"));
         }
     }
 }
