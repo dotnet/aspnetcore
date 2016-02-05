@@ -71,7 +71,15 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             // PropertyBindingPredicateProvider
             var predicateProviders = context.Attributes.OfType<IPropertyBindingPredicateProvider>().ToArray();
-            if (predicateProviders.Length > 0)
+            if (predicateProviders.Length == 0)
+            {
+                context.BindingMetadata.PropertyBindingPredicateProvider = null;
+            }
+            else if (predicateProviders.Length == 1)
+            {
+                context.BindingMetadata.PropertyBindingPredicateProvider = predicateProviders[0];
+            }
+            else
             {
                 context.BindingMetadata.PropertyBindingPredicateProvider = new CompositePredicateProvider(
                     predicateProviders);

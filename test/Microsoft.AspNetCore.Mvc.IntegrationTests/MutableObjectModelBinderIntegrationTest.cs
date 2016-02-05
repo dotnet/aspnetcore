@@ -1400,7 +1400,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             // Arrange
             var metadataProvider = new TestModelMetadataProvider();
             metadataProvider
-                .ForType(typeof(Order10))
+                .ForProperty(typeof(Order10), nameof(Order10.Customer))
                 .BindingDetails((Action<ModelBinding.Metadata.BindingMetadata>)(binding =>
                 {
                     // A real details provider could customize message based on BindingMetadataProviderContext.
