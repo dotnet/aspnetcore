@@ -94,6 +94,20 @@ default NUGET_FEED = 'https://api.nuget.org/v3/index.json'
 
 #build-compile target='compile' if='Directory.Exists("src")'
   @{
+    //temporary delete cross-gen files
+    var installDir = Environment.GetEnvironmentVariable("DOTNET_INSTALL_DIR");
+    if (string.IsNullOrEmpty(installDir))
+    {
+        installDir = Path.Combine(Environment.GetEnvironmentVariable("LocalAppData"), "Microsoft", "dotnet", "cli");
+    }
+
+    var files = Directory.GetFiles(installDir, "*.ni.*", SearchOption.AllDirectories);
+    foreach (var file in files.Where(f => !f.Contains("mscorlib")))
+    {
+        Console.WriteLine("Deleting {0}", file);
+        File.Delete(file);
+    }
+      
     var projectFiles = Files.Include("src/**/project.json").ToList();
     projectFiles.ForEach(projectFile => DotnetPack(projectFile, BUILD_DIR, Configuration));
 
