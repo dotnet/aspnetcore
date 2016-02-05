@@ -26,3 +26,5 @@ nuget.exe
 *.ipch
 project.lock.json
 /.vs/
+.testPublish/
+.build/

@@ -23,7 +23,7 @@ namespace ServerComparison.FunctionalTests
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [InlineData(ServerType.IISExpress, RuntimeFlavor.Clr, RuntimeArchitecture.x64, "http://localhost:5072/")]
-        [InlineData(ServerType.WebListener, RuntimeFlavor.Clr, RuntimeArchitecture.x86, "http://localhost:5073/")]
+        [InlineData(ServerType.WebListener, RuntimeFlavor.Clr, RuntimeArchitecture.x64, "http://localhost:5073/")]
         public Task ResponseFormats_Windows_ContentLength(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
         {
             return ResponseFormats(serverType, runtimeFlavor, architecture, applicationBaseUrl, CheckContentLengthAsync);
@@ -40,7 +40,7 @@ namespace ServerComparison.FunctionalTests
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         // [InlineData(ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x86, "http://localhost:5075/")] // https://github.com/aspnet/IISIntegration/issues/7
-        [InlineData(ServerType.WebListener, RuntimeFlavor.Clr, RuntimeArchitecture.x86, "http://localhost:5076/")]
+        [InlineData(ServerType.WebListener, RuntimeFlavor.Clr, RuntimeArchitecture.x64, "http://localhost:5076/")]
         public Task ResponseFormats_Windows_ConnectionClose(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
         {
             return ResponseFormats(serverType, runtimeFlavor, architecture, applicationBaseUrl, CheckConnectionCloseAsync);
@@ -53,15 +53,15 @@ namespace ServerComparison.FunctionalTests
             return ResponseFormats(serverType, runtimeFlavor, architecture, applicationBaseUrl, CheckConnectionCloseAsync);
         }
 
-        [ConditionalTheory]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
-        // [InlineData(ServerType.IISExpress, RuntimeFlavor.Clr, RuntimeArchitecture.x64, "http://localhost:5078/")] // https://github.com/aspnet/IISIntegration/issues/7
-        [InlineData(ServerType.WebListener, RuntimeFlavor.Clr, RuntimeArchitecture.x86, "http://localhost:5079/")]
-        public Task ResponseFormats_Windows_Chunked(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
-        {
-            return ResponseFormats(serverType, runtimeFlavor, architecture, applicationBaseUrl, CheckChunkedAsync);
-        }
+        // [ConditionalTheory]
+        // [OSSkipCondition(OperatingSystems.Linux)]
+        // [OSSkipCondition(OperatingSystems.MacOSX)]
+        // // [InlineData(ServerType.IISExpress, RuntimeFlavor.Clr, RuntimeArchitecture.x64, "http://localhost:5078/")] // https://github.com/aspnet/IISIntegration/issues/7
+        // [InlineData(ServerType.WebListener, RuntimeFlavor.Clr, RuntimeArchitecture.x86, "http://localhost:5079/")]
+        // public Task ResponseFormats_Windows_Chunked(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
+        // {
+        //     return ResponseFormats(serverType, runtimeFlavor, architecture, applicationBaseUrl, CheckChunkedAsync);
+        // }
 
         [Theory]
         [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, "http://localhost:5080/")]
@@ -74,7 +74,7 @@ namespace ServerComparison.FunctionalTests
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         // [InlineData(ServerType.IISExpress, RuntimeFlavor.Clr, RuntimeArchitecture.x64, "http://localhost:5081/")] // https://github.com/aspnet/IISIntegration/issues/7
-        [InlineData(ServerType.WebListener, RuntimeFlavor.Clr, RuntimeArchitecture.x86, "http://localhost:5082/")]
+        [InlineData(ServerType.WebListener, RuntimeFlavor.Clr, RuntimeArchitecture.x64, "http://localhost:5082/")]
         public Task ResponseFormats_Windows_ManuallyChunk(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
         {
             return ResponseFormats(serverType, runtimeFlavor, architecture, applicationBaseUrl, CheckManuallyChunkedAsync);
@@ -91,7 +91,7 @@ namespace ServerComparison.FunctionalTests
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         // [InlineData(ServerType.IISExpress, RuntimeFlavor.Clr, RuntimeArchitecture.x64, "http://localhost:5084/")] // https://github.com/aspnet/IISIntegration/issues/7
-        [InlineData(ServerType.WebListener, RuntimeFlavor.Clr, RuntimeArchitecture.x86, "http://localhost:5085/")]
+        [InlineData(ServerType.WebListener, RuntimeFlavor.Clr, RuntimeArchitecture.x64, "http://localhost:5085/")]
         public Task ResponseFormats_Windows_ManuallyChunkAndClose(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
         {
             return ResponseFormats(serverType, runtimeFlavor, architecture, applicationBaseUrl, CheckManuallyChunkedAndCloseAsync);
@@ -116,7 +116,6 @@ namespace ServerComparison.FunctionalTests
                 {
                     ApplicationBaseUriHint = applicationBaseUrl,
                     EnvironmentName = "Responses",
-                    Command = "web",
                     ApplicationHostConfigTemplateContent = (serverType == ServerType.IISExpress) ? File.ReadAllText("Http.config") : null,
                     SiteName = "HttpTestSite", // This is configured in the Http.config
                 };

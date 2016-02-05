@@ -7,28 +7,20 @@
     "Microsoft.AspNetCore.WebUtilities": "1.0.0-*",
     "Microsoft.Extensions.Configuration.Json": "1.0.0-*",
     "Microsoft.Extensions.Logging.Console": "1.0.0-*",
+    "Microsoft.NETCore.Platforms": "1.0.1-*",
     "Microsoft.Net.Http.Headers": "1.0.0-*"
-  },
-  "commands": {
-    "web": "ServerComparison.TestSites"
   },
   "compilationOptions": {
     "emitEntryPoint": true
   },
-  "frameworks": {
-    "dnx451": {},
-    "dnxcore50": {}
-  },
-  "publishExclude": [
-    "node_modules",
-    "bower_components",
-    "**.xproj",
-    "**.user",
-    "**.vspscc"
+  "content": [
+    "wwwroot/**/*",
+    "hosting.json"
   ],
-  "exclude": [
-    "wwwroot",
-    "node_modules",
-    "bower_components"
-  ]
+  "frameworks": {
+    "dnx451": { },
+    "dnxcore50": {
+      "imports": "portable-net451+win8"
+     }
+  }
 }
