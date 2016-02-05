@@ -8,6 +8,6 @@ namespace Microsoft.AspNetCore.Http.Features
 {
     public interface IHttpSendFileFeature
     {
-        Task SendFileAsync(string path, long offset, long? length, CancellationToken cancellation);
+        Task SendFileAsync(string path, long offset, long? count, CancellationToken cancellation);
     }
 }

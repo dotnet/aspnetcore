@@ -15,9 +15,9 @@ namespace Microsoft.AspNetCore.Http.Extensions
     {
         private const int DefaultBufferSize = 4096;
 
-        public static async Task CopyToAsync(Stream source, Stream destination, long? length, CancellationToken cancel)
+        public static async Task CopyToAsync(Stream source, Stream destination, long? count, CancellationToken cancel)
         {
-            long? bytesRemaining = length;
+            long? bytesRemaining = count;
 
             var buffer = ArrayPool<byte>.Shared.Rent(DefaultBufferSize);
             try
@@ -42,22 +42,22 @@ namespace Microsoft.AspNetCore.Http.Extensions
                     {
                         readLength = (int)Math.Min(bytesRemaining.Value, (long)readLength);
                     }
-                    int count = await source.ReadAsync(buffer, 0, readLength, cancel);
+                    int read = await source.ReadAsync(buffer, 0, readLength, cancel);
 
                     if (bytesRemaining.HasValue)
                     {
-                        bytesRemaining -= count;
+                        bytesRemaining -= read;
                     }
 
                     // End of the source stream.
-                    if (count == 0)
+                    if (read == 0)
                     {
                         return;
                     }
 
                     cancel.ThrowIfCancellationRequested();
 
-                    await destination.WriteAsync(buffer, 0, count, cancel);
+                    await destination.WriteAsync(buffer, 0, read, cancel);
                 }
             }
             finally

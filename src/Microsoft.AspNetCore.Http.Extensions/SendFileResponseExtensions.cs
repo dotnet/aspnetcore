@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Extensions.FileProviders;
 
 namespace Microsoft.AspNetCore.Http
 {
@@ -19,9 +20,69 @@ namespace Microsoft.AspNetCore.Http
         /// Sends the given file using the SendFile extension.
         /// </summary>
         /// <param name="response"></param>
+        /// <param name="file">The file.</param>
+        public static Task SendFileAsync(this HttpResponse response, IFileInfo file,
+            CancellationToken cancellationToken = default(CancellationToken))
+        {
+            if (response == null)
+            {
+                throw new ArgumentNullException(nameof(response));
+            }
+            if (file == null)
+            {
+                throw new ArgumentNullException(nameof(file));
+            }
+
+            return response.SendFileAsync(file, 0, null, cancellationToken);
+        }
+
+        /// <summary>
+        /// Sends the given file using the SendFile extension.
+        /// </summary>
+        /// <param name="response"></param>
+        /// <param name="file">The file.</param>
+        /// <param name="offset">The offset in the file.</param>
+        /// <param name="count">The number of bytes to send, or null to send the remainder of the file.</param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public static async Task SendFileAsync(this HttpResponse response, IFileInfo file, long offset, long? count,
+            CancellationToken cancellationToken = default(CancellationToken))
+        {
+            if (response == null)
+            {
+                throw new ArgumentNullException(nameof(response));
+            }
+            if (file == null)
+            {
+                throw new ArgumentNullException(nameof(file));
+            }
+            CheckRange(offset, count, file.Length);
+
+            if (string.IsNullOrEmpty(file.PhysicalPath))
+            {
+                using (var fileContent = file.CreateReadStream())
+                {
+                    if (offset > 0)
+                    {
+                        fileContent.Seek(offset, SeekOrigin.Begin);
+                    }
+                    await StreamCopyOperation.CopyToAsync(fileContent, response.Body, count, cancellationToken);
+                }
+            }
+            else
+            {
+                await response.SendFileAsync(file.PhysicalPath, offset, count, cancellationToken);
+            }
+        }
+
+        /// <summary>
+        /// Sends the given file using the SendFile extension.
+        /// </summary>
+        /// <param name="response"></param>
         /// <param name="fileName">The full path to the file.</param>
         /// <returns></returns>
-        public static Task SendFileAsync(this HttpResponse response, string fileName)
+        public static Task SendFileAsync(this HttpResponse response, string fileName,
+            CancellationToken cancellationToken = default(CancellationToken))
         {
             if (response == null)
             {
@@ -33,7 +94,7 @@ namespace Microsoft.AspNetCore.Http
                 throw new ArgumentNullException(nameof(fileName));
             }
 
-            return response.SendFileAsync(fileName, 0, null, CancellationToken.None);
+            return response.SendFileAsync(fileName, 0, null, cancellationToken);
         }
 
         /// <summary>
@@ -42,10 +103,11 @@ namespace Microsoft.AspNetCore.Http
         /// <param name="response"></param>
         /// <param name="fileName">The full path to the file.</param>
         /// <param name="offset">The offset in the file.</param>
-        /// <param name="count">The number of types to send, or null to send the remainder of the file.</param>
+        /// <param name="count">The number of bytes to send, or null to send the remainder of the file.</param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public static Task SendFileAsync(this HttpResponse response, string fileName, long offset, long? count, CancellationToken cancellationToken)
+        public static Task SendFileAsync(this HttpResponse response, string fileName, long offset, long? count,
+            CancellationToken cancellationToken = default(CancellationToken))
         {
             if (response == null)
             {
@@ -67,21 +129,13 @@ namespace Microsoft.AspNetCore.Http
         }
 
         // Not safe for overlapped writes.
-        private static async Task SendFileAsync(Stream outputStream, string fileName, long offset, long? length, CancellationToken cancel)
+        private static async Task SendFileAsync(Stream outputStream, string fileName, long offset, long? count,
+            CancellationToken cancel = default(CancellationToken))
         {
             cancel.ThrowIfCancellationRequested();
 
             var fileInfo = new FileInfo(fileName);
-            if (offset < 0 || offset > fileInfo.Length)
-            {
-                throw new ArgumentOutOfRangeException(nameof(offset), offset, string.Empty);
-            }
-
-            if (length.HasValue &&
-                (length.Value < 0 || length.Value > fileInfo.Length - offset))
-            {
-                throw new ArgumentOutOfRangeException(nameof(length), length, string.Empty);
-            }
+            CheckRange(offset, count, fileInfo.Length);
 
             int bufferSize = 1024 * 16;
 
@@ -96,8 +150,20 @@ namespace Microsoft.AspNetCore.Http
             using (fileStream)
             {
                 fileStream.Seek(offset, SeekOrigin.Begin);
+                await StreamCopyOperation.CopyToAsync(fileStream, outputStream, count, cancel);
+            }
+        }
 
-                await StreamCopyOperation.CopyToAsync(fileStream, outputStream, length, cancel);
+        private static void CheckRange(long offset, long? count, long fileLength)
+        {
+            if (offset < 0 || offset > fileLength)
+            {
+                throw new ArgumentOutOfRangeException(nameof(offset), offset, string.Empty);
+            }
+            if (count.HasValue &&
+                (count.Value < 0 || count.Value > fileLength - offset))
+            {
+                throw new ArgumentOutOfRangeException(nameof(count), count, string.Empty);
             }
         }
     }
