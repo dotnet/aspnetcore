@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace MvcSample.Web.Models
+namespace HelloMvc
 {
     public class User
     {
