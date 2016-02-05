@@ -51,8 +51,6 @@ namespace Microsoft.AspNetCore.IISPlatformHandler.FunctionalTests
                 var deploymentParameters = new DeploymentParameters(Helpers.GetTestSitesPath(), serverType, runtimeFlavor, architecture)
                 {
                     ApplicationBaseUriHint = applicationBaseUrl,
-                    Command = delegateServer == ServerType.WebListener ? "weblistener" : "web",
-                    PublishWithNoSource = true, // Always publish with no source, otherwise it can't build and sign IISPlatformHandler
                     EnvironmentName = "HelloWorld", // Will pick the Start class named 'StartupHelloWorld',
                     ApplicationHostConfigTemplateContent = (serverType == ServerType.IISExpress) ? File.ReadAllText("Http.config") : null,
                     SiteName = "HttpTestSite", // This is configured in the Http.config
