@@ -356,6 +356,80 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             Assert.Equal(savedValue, items.Select(item => item.Value));
         }
 
+        [Fact]
+        public async Task ProcessAsync_WithItems_AndNoModelExpression_GeneratesExpectedOutput()
+        {
+            // Arrange
+            var originalAttributes = new TagHelperAttributeList
+            {
+                { "class", "form-control" },
+            };
+            var originalPostContent = "original content";
+
+            var expectedAttributes = new TagHelperAttributeList(originalAttributes);
+            var selectItems = new SelectList(Enumerable.Range(0, 5));
+            var expectedOptions = "<option>HtmlEncode[[0]]</option>" + Environment.NewLine
+                + "<option>HtmlEncode[[1]]</option>" + Environment.NewLine
+                + "<option>HtmlEncode[[2]]</option>" + Environment.NewLine
+                + "<option>HtmlEncode[[3]]</option>" + Environment.NewLine
+                + "<option>HtmlEncode[[4]]</option>" + Environment.NewLine;
+
+            var expectedPreContent = "original pre-content";
+            var expectedContent = "original content";
+            var expectedPostContent = originalPostContent + expectedOptions;
+            var expectedTagName = "select";
+
+            var tagHelperContext = new TagHelperContext(
+                allAttributes: new TagHelperAttributeList(
+                    Enumerable.Empty<TagHelperAttribute>()),
+                items: new Dictionary<object, object>(),
+                uniqueId: "test");
+            var output = new TagHelperOutput(
+                expectedTagName,
+                originalAttributes,
+                getChildContentAsync: (useCachedResult, encoder) =>
+                {
+                    var tagHelperContent = new DefaultTagHelperContent();
+                    tagHelperContent.AppendHtml("Something");
+                    return Task.FromResult<TagHelperContent>(tagHelperContent);
+                })
+            {
+                TagMode = TagMode.SelfClosing,
+            };
+            output.PreContent.AppendHtml(expectedPreContent);
+            output.Content.AppendHtml(expectedContent);
+            output.PostContent.AppendHtml(originalPostContent);
+
+            var metadataProvider = new TestModelMetadataProvider();
+            var htmlGenerator = new TestableHtmlGenerator(metadataProvider);
+            var viewContext = TestableHtmlGenerator.GetViewContext(
+                model: null,
+                htmlGenerator: htmlGenerator,
+                metadataProvider: metadataProvider);
+
+            var tagHelper = new SelectTagHelper(htmlGenerator)
+            {
+                Items = selectItems,
+                ViewContext = viewContext,
+            };
+
+            // Act
+            tagHelper.Init(tagHelperContext);
+            await tagHelper.ProcessAsync(tagHelperContext, output);
+
+            // Assert
+            Assert.Equal(TagMode.SelfClosing, output.TagMode);
+            Assert.Equal(expectedAttributes, output.Attributes);
+            Assert.Equal(expectedPreContent, output.PreContent.GetContent());
+            Assert.Equal(expectedContent, output.Content.GetContent());
+            Assert.Equal(expectedPostContent, HtmlContentUtilities.HtmlContentToString(output.PostContent));
+            Assert.Equal(expectedTagName, output.TagName);
+
+            var kvp = Assert.Single(tagHelperContext.Items);
+            Assert.Equal(typeof(SelectTagHelper), kvp.Key);
+            Assert.Null(kvp.Value);
+        }
+
         [Theory]
         [MemberData(nameof(GeneratesExpectedDataSet))]
         public async Task ProcessAsyncInTemplate_WithItems_GeneratesExpectedOutput_DoesNotChangeSelectList(

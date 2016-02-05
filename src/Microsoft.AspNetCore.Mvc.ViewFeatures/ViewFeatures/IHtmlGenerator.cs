@@ -307,6 +307,19 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             bool allowMultiple,
             object htmlAttributes);
 
+        /// <summary>
+        /// Generates &lt;optgroup&gt; and &lt;option&gt; elements.
+        /// </summary>
+        /// <param name="optionLabel">Optional text for a default empty &lt;option&gt; element.</param>
+        /// <param name="selectList">
+        /// A collection of <see cref="SelectListItem"/> objects used to generate &lt;optgroup&gt; and &lt;option&gt;
+        /// elements.
+        /// </param>
+        /// <returns>
+        /// An <see cref="IHtmlContent"/> instance for &lt;optgroup&gt; and &lt;option&gt; elements.
+        /// </returns>
+        IHtmlContent GenerateGroupsAndOptions(string optionLabel, IEnumerable<SelectListItem> selectList);
+
         TagBuilder GenerateTextArea(
             ViewContext viewContext,
             ModelExplorer modelExplorer,

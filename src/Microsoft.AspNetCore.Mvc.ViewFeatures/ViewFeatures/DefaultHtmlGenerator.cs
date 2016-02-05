@@ -1457,7 +1457,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             return newSelectList;
         }
 
-        private IHtmlContent GenerateGroupsAndOptions(string optionLabel, IEnumerable<SelectListItem> selectList)
+        /// <inheritdoc />
+        public IHtmlContent GenerateGroupsAndOptions(string optionLabel, IEnumerable<SelectListItem> selectList)
         {
             var listItemBuilder = new HtmlContentBuilder();
 

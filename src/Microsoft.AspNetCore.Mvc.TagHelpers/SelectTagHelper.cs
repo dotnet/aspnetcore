@@ -15,9 +15,11 @@ using Microsoft.AspNetCore.Razor.TagHelpers;
 namespace Microsoft.AspNetCore.Mvc.TagHelpers
 {
     /// <summary>
-    /// <see cref="ITagHelper"/> implementation targeting &lt;select&gt; elements with an <c>asp-for</c> attribute.
+    /// <see cref="ITagHelper"/> implementation targeting &lt;select&gt; elements with <c>asp-for</c> and/or
+    /// <c>asp-items</c> attribute(s).
     /// </summary>
     [HtmlTargetElement("select", Attributes = ForAttributeName)]
+    [HtmlTargetElement("select", Attributes = ItemsAttributeName)]
     public class SelectTagHelper : TagHelper
     {
         private const string ForAttributeName = "asp-for";
@@ -70,6 +72,13 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 throw new ArgumentNullException(nameof(context));
             }
 
+            if (For == null)
+            {
+                // Informs contained elements that they're running within a targeted <select/> element.
+                context.Items[typeof(SelectTagHelper)] = null;
+                return;
+            }
+
             // Note null or empty For.Name is allowed because TemplateInfo.HtmlFieldPrefix may be sufficient.
             // IHtmlGenerator will enforce name requirements.
             if (For.Metadata == null)
@@ -101,9 +110,6 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
         /// <inheritdoc />
         /// <remarks>Does nothing if <see cref="For"/> is <c>null</c>.</remarks>
-        /// <exception cref="InvalidOperationException">
-        /// Thrown if <see cref="Items"/> is non-<c>null</c> but <see cref="For"/> is <c>null</c>.
-        /// </exception>
         public override void Process(TagHelperContext context, TagHelperOutput output)
         {
             if (context == null)
@@ -118,6 +124,13 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
             // Ensure GenerateSelect() _never_ looks anything up in ViewData.
             var items = Items ?? Enumerable.Empty<SelectListItem>();
+
+            if (For == null)
+            {
+                var options = Generator.GenerateGroupsAndOptions(optionLabel: null, selectList: items);
+                output.PostContent.AppendHtml(options);
+                return;
+            }
 
             var tagBuilder = Generator.GenerateSelect(
                 ViewContext,
