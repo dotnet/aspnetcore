@@ -55,15 +55,6 @@ namespace Microsoft.AspNetCore.Antiforgery
         Task ValidateRequestAsync(HttpContext httpContext);
 
         /// <summary>
-        /// Validates an <see cref="AntiforgeryTokenSet"/> for the current request.
-        /// </summary>
-        /// <param name="httpContext">The <see cref="HttpContext"/> associated with the current request.</param>
-        /// <param name="antiforgeryTokenSet">
-        /// The <see cref="AntiforgeryTokenSet"/> (cookie and request token) for this request.
-        /// </param>
-        void ValidateTokens(HttpContext httpContext, AntiforgeryTokenSet antiforgeryTokenSet);
-
-        /// <summary>
         /// Generates and stores an antiforgery cookie token if one is not available or not valid.
         /// </summary>
         /// <param name="httpContext">The <see cref="HttpContext"/> associated with the current request.</param>

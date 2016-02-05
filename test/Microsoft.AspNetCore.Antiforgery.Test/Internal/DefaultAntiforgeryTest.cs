@@ -6,7 +6,6 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Internal;
-using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
@@ -51,28 +50,6 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             // Act & Assert
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(
                 () => antiforgery.IsRequestValidAsync(httpContext));
-            Assert.Equal(
-                @"The antiforgery system has the configuration value AntiforgeryOptions.RequireSsl = true, " +
-                "but the current request is not an SSL request.",
-                exception.Message);
-        }
-
-        [Fact]
-        public void ChecksSSL_ValidateTokens_Throws()
-        {
-            // Arrange
-            var httpContext = new DefaultHttpContext();
-            var options = new AntiforgeryOptions()
-            {
-                RequireSsl = true
-            };
-
-            var antiforgery = GetAntiforgery(options);
-            var tokenSet = new AntiforgeryTokenSet("hello", "world", "form", "header");
-
-            // Act & Assert
-            var exception = Assert.Throws<InvalidOperationException>(
-                () => antiforgery.ValidateTokens(httpContext, tokenSet));
             Assert.Equal(
                 @"The antiforgery system has the configuration value AntiforgeryOptions.RequireSsl = true, " +
                 "but the current request is not an SSL request.",
@@ -248,95 +225,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
         }
 
         [Fact]
-        public void ValidateTokens_InvalidTokens_Throws()
-        {
-            // Arrange
-            var context = CreateMockContext(new AntiforgeryOptions());
-
-            context.TokenSerializer
-                .Setup(o => o.Deserialize("cookie-token"))
-                .Returns(context.TestTokenSet.OldCookieToken);
-            context.TokenSerializer
-                .Setup(o => o.Deserialize("form-token"))
-                .Returns(context.TestTokenSet.RequestToken);
-
-            var message = "my-message";
-            context.TokenGenerator
-                .Setup(o => o.TryValidateTokenSet(
-                    context.HttpContext,
-                    context.TestTokenSet.OldCookieToken,
-                    context.TestTokenSet.RequestToken,
-                    out message))
-                .Returns(false)
-                .Verifiable();
-
-            var antiforgery = new DefaultAntiforgery(
-                new TestOptionsManager(),
-                context.TokenGenerator.Object,
-                context.TokenSerializer.Object,
-                tokenStore: null);
-
-            var tokenSet = new AntiforgeryTokenSet("form-token", "cookie-token", "form", "header");
-
-            // Act & Assert
-            var exception = Assert.Throws<AntiforgeryValidationException>(
-                    () => antiforgery.ValidateTokens(
-                        context.HttpContext,
-                        tokenSet));
-            Assert.Equal("my-message", exception.Message);
-            context.TokenGenerator.Verify();
-        }
-
-        [Fact]
-        public void ValidateTokens_FromValidStrings_TokensValidatedSuccessfully()
-        {
-            // Arrange
-            var context = CreateMockContext(new AntiforgeryOptions());
-            context.TokenSerializer
-                .Setup(o => o.Deserialize("cookie-token"))
-                .Returns(context.TestTokenSet.OldCookieToken);
-            context.TokenSerializer
-                .Setup(o => o.Deserialize("form-token"))
-                .Returns(context.TestTokenSet.RequestToken);
-
-            string message;
-            context.TokenGenerator
-                .Setup(o => o.TryValidateTokenSet(
-                    context.HttpContext,
-                    context.TestTokenSet.OldCookieToken,
-                    context.TestTokenSet.RequestToken,
-                    out message))
-                .Returns(true)
-                .Verifiable();
-            context.TokenStore = null;
-            var antiforgery = GetAntiforgery(context);
-
-            var tokenSet = new AntiforgeryTokenSet("form-token", "cookie-token", "form", "header");
-
-            // Act
-            antiforgery.ValidateTokens(context.HttpContext, tokenSet);
-
-            // Assert
-            context.TokenGenerator.Verify();
-        }
-
-        [Fact]
-        public void ValidateTokens_MissingCookieInTokenSet_Throws()
-        {
-            // Arrange
-            var context = CreateMockContext(new AntiforgeryOptions());
-            var antiforgery = GetAntiforgery(context);
-            var tokenSet = new AntiforgeryTokenSet("form-token", null, "form", "header");
-
-            // Act
-            ExceptionAssert.ThrowsArgument(
-                () => antiforgery.ValidateTokens(context.HttpContext, tokenSet),
-                "antiforgeryTokenSet",
-                "The required antiforgery cookie token must be provided.");
-        }
-
-        [Fact]
-        public async Task IsRequestValueAsync_FromStore_Failure()
+        public async Task IsRequestValidAsync_FromStore_Failure()
         {
             // Arrange
             var context = CreateMockContext(new AntiforgeryOptions());
@@ -357,6 +246,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
 
             // Assert
             Assert.False(result);
+            context.TokenGenerator.Verify();
         }
 
         [Fact]
@@ -409,7 +299,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
 
             // Act & assert
             var exception = await Assert.ThrowsAsync<AntiforgeryValidationException>(
-                        async () => await antiforgery.ValidateRequestAsync(context.HttpContext));
+                () => antiforgery.ValidateRequestAsync(context.HttpContext));
             Assert.Equal("my-message", exception.Message);
             context.TokenGenerator.Verify();
         }
