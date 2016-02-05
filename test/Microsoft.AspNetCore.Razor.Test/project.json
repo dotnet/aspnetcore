@@ -8,7 +8,7 @@
       "type": "build"
     },
     "Microsoft.AspNetCore.Testing": "1.0.0-*",
-    "Newtonsoft.Json": "7.0.1",
+    "Newtonsoft.Json": "8.0.2",
     "xunit": "2.1.0",
     "Microsoft.NETCore.Platforms": "1.0.1-*"
   },
