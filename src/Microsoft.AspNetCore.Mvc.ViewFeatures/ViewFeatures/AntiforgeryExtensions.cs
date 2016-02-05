@@ -57,17 +57,12 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             // _fieldName containing almost any character.
             public void WriteTo(TextWriter writer, HtmlEncoder encoder)
             {
-                var builder = writer as IHtmlContentBuilder;
-                if (builder != null)
+                var htmlTextWriter = writer as HtmlTextWriter;
+                if (htmlTextWriter != null)
                 {
                     // If possible, defer encoding until we're writing to the response.
-                    // But there's little reason to keep this IHtmlContent instance around.
-                    builder
-                        .AppendHtml("<input name=\"")
-                        .Append(_fieldName)
-                        .AppendHtml("\" type=\"hidden\" value=\"")
-                        .Append(_requestToken)
-                        .AppendHtml("\" />");
+                    htmlTextWriter.Write(this);
+                    return;
                 }
 
                 writer.Write("<input name=\"");
