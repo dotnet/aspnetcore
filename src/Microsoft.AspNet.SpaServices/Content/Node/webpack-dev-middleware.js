@@ -20,8 +20,7 @@ module.exports = {
             if (enableHotModuleReplacement) {
                 webpackConfig.entry.main.unshift('webpack-hot-middleware/client');
                 webpackConfig.plugins.push(
-                    new webpack.HotModuleReplacementPlugin(),
-                    new webpack.NoErrorsPlugin()
+                    new webpack.HotModuleReplacementPlugin()
                 );
                 
                 if (enableReactHotModuleReplacement) {

@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Threading.Tasks;
 using Microsoft.AspNet.NodeServices;
 using Microsoft.AspNet.Proxy;
 using Microsoft.AspNet.SpaServices;
@@ -52,11 +53,15 @@ namespace Microsoft.AspNet.Builder
                     Port = devServerInfo.Port.ToString()
                 });
             });
+            
+            // While it would be nice to proxy the /__webpack_hmr requests too, these return an EventStream,
+            // and the Microsoft.Aspnet.Proxy code doesn't handle that entirely - it throws an exception after
+            // a while. So, just serve a 302 for those.
             appBuilder.Map(WebpackHotMiddlewareEndpoint, builder => {
-                builder.RunProxy(new ProxyOptions {
-                    Host = WebpackDevMiddlewareHostname,
-                    Port = devServerInfo.Port.ToString()
-                });                
+                builder.Use(next => async ctx => {
+                    ctx.Response.Redirect($"http://localhost:{ devServerInfo.Port.ToString() }{ WebpackHotMiddlewareEndpoint }");
+                    await Task.Yield();
+                });
             });
         }
         
