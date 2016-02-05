@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Antiforgery.Internal
@@ -19,17 +20,20 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
         private readonly IAntiforgeryTokenGenerator _tokenGenerator;
         private readonly IAntiforgeryTokenSerializer _tokenSerializer;
         private readonly IAntiforgeryTokenStore _tokenStore;
+        private readonly ILogger<DefaultAntiforgery> _logger;
 
         public DefaultAntiforgery(
             IOptions<AntiforgeryOptions> antiforgeryOptionsAccessor,
             IAntiforgeryTokenGenerator tokenGenerator,
             IAntiforgeryTokenSerializer tokenSerializer,
-            IAntiforgeryTokenStore tokenStore)
+            IAntiforgeryTokenStore tokenStore,
+            ILoggerFactory loggerFactory)
         {
             _options = antiforgeryOptionsAccessor.Value;
             _tokenGenerator = tokenGenerator;
             _tokenSerializer = tokenSerializer;
             _tokenStore = tokenStore;
+            _logger = loggerFactory.CreateLogger<DefaultAntiforgery>();
         }
 
         /// <inheritdoc />
@@ -46,6 +50,11 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             if (tokenSet.IsNewCookieToken)
             {
                 SaveCookieTokenAndHeader(httpContext, tokenSet.CookieToken);
+                _logger.NewCookieToken();
+            }
+            else
+            {
+                _logger.ReusedCookieToken();
             }
 
             return Serialize(tokenSet);
@@ -76,8 +85,14 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             CheckSSLConfig(httpContext);
 
             var tokens = await _tokenStore.GetRequestTokensAsync(httpContext);
-            if (tokens.CookieToken == null || tokens.RequestToken == null)
+            if (tokens.CookieToken == null)
             {
+                _logger.MissingCookieToken(_options.CookieName);
+                return false;
+            }
+            if (tokens.RequestToken == null)
+            {
+                _logger.MissingRequestToken(_options.FormFieldName, _options.HeaderName);
                 return false;
             }
 
@@ -87,11 +102,22 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
 
             // Validate
             string message;
-            return _tokenGenerator.TryValidateTokenSet(
+            var result = _tokenGenerator.TryValidateTokenSet(
                 httpContext,
                 deserializedCookieToken,
                 deserializedRequestToken,
                 out message);
+
+            if (result)
+            {
+                _logger.ValidatedAntiforgeryToken();
+            }
+            else
+            {
+                _logger.ValidationFailed(message);
+            }
+
+            return result;
         }
 
         /// <inheritdoc />
@@ -133,6 +159,8 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             }
 
             ValidateTokens(httpContext, tokens);
+
+            _logger.ValidatedAntiforgeryToken();
         }
 
         private void ValidateTokens(HttpContext httpContext, AntiforgeryTokenSet antiforgeryTokenSet)

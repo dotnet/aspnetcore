@@ -6,6 +6,9 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Internal;
+using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
@@ -18,13 +21,12 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
         public async Task ChecksSSL_ValidateRequestAsync_Throws()
         {
             // Arrange
-            var httpContext = new DefaultHttpContext();
+            var httpContext = GetHttpContext();
             var options = new AntiforgeryOptions()
             {
                 RequireSsl = true
             };
-
-            var antiforgery = GetAntiforgery(options);
+            var antiforgery = GetAntiforgery(httpContext, options);
 
             // Act & Assert
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(
@@ -39,13 +41,13 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
         public async Task ChecksSSL_IsRequestValidAsync_Throws()
         {
             // Arrange
-            var httpContext = new DefaultHttpContext();
+            var httpContext = GetHttpContext();
             var options = new AntiforgeryOptions()
             {
                 RequireSsl = true
             };
 
-            var antiforgery = GetAntiforgery(options);
+            var antiforgery = GetAntiforgery(httpContext, options);
 
             // Act & Assert
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(
@@ -60,13 +62,13 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
         public void ChecksSSL_GetAndStoreTokens_Throws()
         {
             // Arrange
-            var httpContext = new DefaultHttpContext();
+            var httpContext = GetHttpContext();
             var options = new AntiforgeryOptions()
             {
                 RequireSsl = true
             };
 
-            var antiforgery = GetAntiforgery(options);
+            var antiforgery = GetAntiforgery(httpContext, options);
 
             // Act & Assert
             var exception = Assert.Throws<InvalidOperationException>(
@@ -81,13 +83,13 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
         public void ChecksSSL_GetTokens_Throws()
         {
             // Arrange
-            var httpContext = new DefaultHttpContext();
+            var httpContext = GetHttpContext();
             var options = new AntiforgeryOptions()
             {
                 RequireSsl = true
             };
 
-            var antiforgery = GetAntiforgery(options);
+            var antiforgery = GetAntiforgery(httpContext, options);
 
             // Act & Assert
             var exception = Assert.Throws<InvalidOperationException>(
@@ -102,13 +104,13 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
         public void ChecksSSL_SetCookieTokenAndHeader_Throws()
         {
             // Arrange
-            var httpContext = new DefaultHttpContext();
+            var httpContext = GetHttpContext();
             var options = new AntiforgeryOptions()
             {
                 RequireSsl = true
             };
 
-            var antiforgery = GetAntiforgery(options);
+            var antiforgery = GetAntiforgery(httpContext, options);
 
             // Act & Assert
             var exception = Assert.Throws<InvalidOperationException>(
@@ -290,12 +292,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
                     out message))
                 .Returns(false)
                 .Verifiable();
-
-            var antiforgery = new DefaultAntiforgery(
-                new TestOptionsManager(),
-                context.TokenGenerator.Object,
-                context.TokenSerializer.Object,
-                context.TokenStore.Object);
+            var antiforgery = GetAntiforgery(context);
 
             // Act & assert
             var exception = await Assert.ThrowsAsync<AntiforgeryValidationException>(
@@ -458,6 +455,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
         }
 
         private DefaultAntiforgery GetAntiforgery(
+            HttpContext httpContext,
             AntiforgeryOptions options = null,
             IAntiforgeryTokenGenerator tokenGenerator = null,
             IAntiforgeryTokenSerializer tokenSerializer = null,
@@ -469,16 +467,29 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
                 optionsManager.Value = options;
             }
 
+            var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
             return new DefaultAntiforgery(
                 antiforgeryOptionsAccessor: optionsManager,
                 tokenGenerator: tokenGenerator,
                 tokenSerializer: tokenSerializer,
-                tokenStore: tokenStore);
+                tokenStore: tokenStore,
+                loggerFactory: loggerFactory);
+        }
+
+        private IServiceProvider GetServices()
+        {
+            var builder = new ServiceCollection();
+            builder.AddSingleton<ILoggerFactory>(new LoggerFactory());
+
+            return builder.BuildServiceProvider();
         }
 
         private HttpContext GetHttpContext()
         {
             var httpContext = new DefaultHttpContext();
+
+            httpContext.RequestServices = GetServices();
+
             httpContext.User = new ClaimsPrincipal(new ClaimsIdentity("some-auth"));
             return httpContext;
         }
@@ -486,6 +497,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
         private DefaultAntiforgery GetAntiforgery(AntiforgeryMockContext context)
         {
             return GetAntiforgery(
+                context.HttpContext,
                 context.Options,
                 context.TokenGenerator?.Object,
                 context.TokenSerializer?.Object,
