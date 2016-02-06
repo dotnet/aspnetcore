@@ -15,7 +15,6 @@
     "dnxcore50": {
       "dependencies": {
         "System.Net.Primitives": "4.0.11-*",
-        "System.Runtime": "4.0.21-*"
       }
     }
   },
