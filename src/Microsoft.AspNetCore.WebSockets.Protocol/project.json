@@ -17,7 +17,6 @@
         "System.IO": "4.1.0-*",
         "System.Linq": "4.0.1-*",
         "System.Net.WebSockets": "4.0.0-*",
-        "System.Runtime": "4.0.21-*",
         "System.Runtime.InteropServices": "4.0.21-*",
         "System.Runtime.Extensions": "4.1.0-*",
         "System.Security.Cryptography.Algorithms": "4.0.0-*",
