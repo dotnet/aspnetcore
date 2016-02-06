@@ -21,7 +21,6 @@
         "System.Globalization": "4.0.11-*",
         "System.Reflection.Extensions": "4.0.1-*",
         "System.Resources.ResourceManager": "4.0.1-*",
-        "System.Runtime": "4.0.21-*",
         "System.Runtime.Extensions": "4.1.0-*",
         "System.Runtime.Serialization.Primitives": "4.1.0-*",
         "System.Text.Encoding.Extensions": "4.0.11-*"
