@@ -8,23 +8,21 @@
     "xunit": "2.1.0"
   },
   "testRunner": "xunit",
-  "commands": {
-    "test": "xunit.runner.aspnet"
-  },
   "frameworks": {
+    "dnxcore50": {
+      "dependencies": {
+        "dotnet-test-xunit": "1.0.0-dev-*",
+        "Microsoft.NETCore.Platforms": "1.0.1-*"
+      },
+      "imports": "portable-net451+win8"
+    },
     "dnx451": {
       "frameworkAssemblies": {
-          "System.Threading.Tasks": ""
+        "System.Threading.Tasks": ""
       },
       "dependencies": {
         "xunit.runner.console": "2.1.0"
       }
-    },
-    "dnxcore50": { 
-      "dependencies": {
-        "xunit.runner.aspnet": "2.0.0-aspnet-*"
-      },
-      "imports": "portable-net451+win8"
     }
   }
 }
