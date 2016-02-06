@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         public abstract Task<InputFormatterResult> ReadRequestBodyAsync(InputFormatterContext context);
 
         /// <inheritdoc />
-        public IReadOnlyList<string> GetSupportedContentTypes(string contentType, Type objectType)
+        public virtual IReadOnlyList<string> GetSupportedContentTypes(string contentType, Type objectType)
         {
             if (!CanReadType(objectType))
             {
