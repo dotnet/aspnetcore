@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
+using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Mvc.Formatters
@@ -15,18 +16,10 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
     public abstract class OutputFormatter : IOutputFormatter, IApiResponseFormatMetadataProvider
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="OutputFormatter"/> class.
-        /// </summary>
-        protected OutputFormatter()
-        {
-            SupportedMediaTypes = new MediaTypeCollection();
-        }
-
-        /// <summary>
         /// Gets the mutable collection of media type elements supported by
         /// this <see cref="OutputFormatter"/>.
         /// </summary>
-        public MediaTypeCollection SupportedMediaTypes { get; }
+        public MediaTypeCollection SupportedMediaTypes { get; } = new MediaTypeCollection();
 
         /// <summary>
         /// Returns a value indicating whether or not the given type can be written by this serializer.
@@ -43,6 +36,15 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             string contentType,
             Type objectType)
         {
+            if (SupportedMediaTypes.Count == 0)
+            {
+                var message = Resources.FormatFormatter_NoMediaTypes(
+                    GetType().FullName,
+                    nameof(SupportedMediaTypes));
+
+                throw new InvalidOperationException(message);
+            }
+
             if (!CanWriteType(objectType))
             {
                 return null;
@@ -51,7 +53,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             if (contentType == null)
             {
                 // If contentType is null, then any type we support is valid.
-                return SupportedMediaTypes.Count > 0 ? SupportedMediaTypes : null;
+                return SupportedMediaTypes;
             }
             else
             {
@@ -87,6 +89,15 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 throw new ArgumentNullException(nameof(context));
             }
 
+            if (SupportedMediaTypes.Count == 0)
+            {
+                var message = Resources.FormatFormatter_NoMediaTypes(
+                    GetType().FullName,
+                    nameof(SupportedMediaTypes));
+
+                throw new InvalidOperationException(message);
+            }
+
             if (!CanWriteType(context.ObjectType))
             {
                 return false;
@@ -96,15 +107,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             {
                 // If the desired content type is set to null, then the current formatter can write anything
                 // it wants.
-                if (SupportedMediaTypes.Count > 0)
-                {
-                    context.ContentType = new StringSegment(SupportedMediaTypes[0]);
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
+                context.ContentType = new StringSegment(SupportedMediaTypes[0]);
+                return true;
             }
             else
             {

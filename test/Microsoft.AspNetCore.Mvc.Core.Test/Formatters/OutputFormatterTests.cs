@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -138,24 +139,6 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             Assert.Null(contentTypes);
         }
 
-        [Fact]
-        public void GetSupportedContentTypes_ReturnsAllContentTypes_ReturnsNullWithNoSupportedContentTypes()
-        {
-            // Arrange
-            var formatter = new TestOutputFormatter();
-
-            // Intentionally empty
-            formatter.SupportedMediaTypes.Clear();
-
-            // Act
-            var contentTypes = formatter.GetSupportedContentTypes(
-                contentType: null,
-                objectType: typeof(int));
-
-            // Assert
-            Assert.Null(contentTypes);
-        }
-
         private class TypeSpecificFormatter : OutputFormatter
         {
             public List<Type> SupportedTypes { get; } = new List<Type>();
@@ -169,6 +152,35 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             {
                 throw new NotImplementedException();
             }
+        }
+
+        [Fact]
+        public void CanWrite_ThrowsInvalidOperationException_IfMediaTypesListIsEmpty()
+        {
+            // Arrange
+            var formatter = new TestOutputFormatter();
+            formatter.SupportedMediaTypes.Clear();
+
+            var context = new OutputFormatterWriteContext(
+                new DefaultHttpContext(),
+                (s, e) => new StreamWriter(s, e),
+                typeof(object),
+                new object());
+
+            // Act & Assert
+            Assert.Throws<InvalidOperationException>(() => formatter.CanWriteResult(context));
+        }
+
+        [Fact]
+        public void GetSupportedContentTypes_ThrowsInvalidOperationException_IfMediaTypesListIsEmpty()
+        {
+            // Arrange
+            var formatter = new TestOutputFormatter();
+            formatter.SupportedMediaTypes.Clear();
+
+            // Act & Assert
+            Assert.Throws<InvalidOperationException>(
+                () => formatter.GetSupportedContentTypes("application/json", typeof(object)));
         }
 
         private class TestOutputFormatter : OutputFormatter

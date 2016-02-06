@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
+using Microsoft.AspNetCore.Mvc.Core;
 
 namespace Microsoft.AspNetCore.Mvc.Formatters
 {
@@ -43,6 +44,15 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         /// <inheritdoc />
         public virtual bool CanRead(InputFormatterContext context)
         {
+            if (SupportedMediaTypes.Count == 0)
+            {
+                var message = Resources.FormatFormatter_NoMediaTypes(
+                    GetType().FullName,
+                    nameof(SupportedMediaTypes));
+
+                throw new InvalidOperationException(message);
+            }
+
             if (!CanReadType(context.ModelType))
             {
                 return false;
@@ -111,6 +121,15 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         /// <inheritdoc />
         public virtual IReadOnlyList<string> GetSupportedContentTypes(string contentType, Type objectType)
         {
+            if (SupportedMediaTypes.Count == 0)
+            {
+                var message = Resources.FormatFormatter_NoMediaTypes(
+                    GetType().FullName,
+                    nameof(SupportedMediaTypes));
+
+                throw new InvalidOperationException(message);
+            }
+
             if (!CanReadType(objectType))
             {
                 return null;
@@ -119,7 +138,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             if (contentType == null)
             {
                 // If contentType is null, then any type we support is valid.
-                return SupportedMediaTypes.Count > 0 ? SupportedMediaTypes : null;
+                return SupportedMediaTypes;
             }
             else
             {

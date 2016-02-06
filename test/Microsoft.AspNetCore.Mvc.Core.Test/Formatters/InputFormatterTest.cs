@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Internal;
@@ -380,6 +381,41 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
             // Assert
             Assert.Collection(results, c => Assert.Equal("text/xml", c));
+        }
+
+        [Fact]
+        public void CanRead_ThrowsInvalidOperationException_IfMediaTypesListIsEmpty()
+        {
+            // Arrange
+            var formatter = new BadConfigurationFormatter();
+            var context = new InputFormatterContext(
+                new DefaultHttpContext(),
+                "",
+                new ModelStateDictionary(),
+                new EmptyModelMetadataProvider().GetMetadataForType(typeof(object)),
+                (s, e) => new StreamReader(s, e));
+
+            // Act & Assert
+            Assert.Throws<InvalidOperationException>(() => formatter.CanRead(context));
+        }
+
+        [Fact]
+        public void GetSupportedContentTypes_ThrowsInvalidOperationException_IfMediaTypesListIsEmpty()
+        {
+            // Arrange
+            var formatter = new BadConfigurationFormatter();
+
+            // Act & Assert
+            Assert.Throws<InvalidOperationException>(
+                () => formatter.GetSupportedContentTypes("application/json", typeof(object)));
+        }
+
+        private class BadConfigurationFormatter : InputFormatter
+        {
+            public override Task<InputFormatterResult> ReadRequestBodyAsync(InputFormatterContext context)
+            {
+                throw new NotImplementedException();
+            }
         }
 
         private class TestFormatter : InputFormatter

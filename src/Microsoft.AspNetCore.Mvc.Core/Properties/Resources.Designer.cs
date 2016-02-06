@@ -1146,6 +1146,22 @@ namespace Microsoft.AspNetCore.Mvc.Core
             return string.Format(CultureInfo.CurrentCulture, GetString("TextOutpurFormatter_WriteResponseBodyAsynNotSupported"), p0, p1, p2);
         }
 
+        /// <summary>
+        /// No media types found in '{0}.{1}'. Add at least one media type to the list of supported media types.
+        /// </summary>
+        internal static string Formatter_NoMediaTypes
+        {
+            get { return GetString("Formatter_NoMediaTypes"); }
+        }
+
+        /// <summary>
+        /// No media types found in '{0}.{1}'. Add at least one media type to the list of supported media types.
+        /// </summary>
+        internal static string FormatFormatter_NoMediaTypes(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("Formatter_NoMediaTypes"), p0, p1);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);
