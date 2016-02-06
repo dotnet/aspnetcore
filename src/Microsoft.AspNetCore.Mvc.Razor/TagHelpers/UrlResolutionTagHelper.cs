@@ -219,23 +219,18 @@ namespace Microsoft.AspNetCore.Mvc.Razor.TagHelpers
         protected bool TryResolveUrl(string url, out string resolvedUrl)
         {
             resolvedUrl = null;
-            if (url == null)
+            var start = FindRelativeStart(url);
+            if (start == -1)
             {
                 return false;
             }
 
-            var trimmedUrl = url.Trim(ValidAttributeWhitespaceChars);
+            var trimmedUrl = CreateTrimmedString(url, start);
 
-            // Before doing more work, ensure that the URL we're looking at is app-relative.
-            if (trimmedUrl.Length >= 2 && trimmedUrl[0] == '~' && trimmedUrl[1] == '/')
-            {
-                var urlHelper = UrlHelperFactory.GetUrlHelper(ViewContext);
-                resolvedUrl = urlHelper.Content(trimmedUrl);
+            var urlHelper = UrlHelperFactory.GetUrlHelper(ViewContext);
+            resolvedUrl = urlHelper.Content(trimmedUrl);
 
-                return true;
-            }
-
-            return false;
+            return true;
         }
 
         /// <summary>
@@ -250,41 +245,104 @@ namespace Microsoft.AspNetCore.Mvc.Razor.TagHelpers
         protected bool TryResolveUrl(string url, out IHtmlContent resolvedUrl)
         {
             resolvedUrl = null;
-            if (url == null)
+            var start = FindRelativeStart(url);
+            if (start == -1)
             {
                 return false;
             }
 
-            var trimmedUrl = url.Trim(ValidAttributeWhitespaceChars);
+            var trimmedUrl = CreateTrimmedString(url, start);
 
-            // Before doing more work, ensure that the URL we're looking at is app-relative.
-            if (trimmedUrl.Length >= 2 && trimmedUrl[0] == '~' && trimmedUrl[1] == '/')
+            var urlHelper = UrlHelperFactory.GetUrlHelper(ViewContext);
+            var appRelativeUrl = urlHelper.Content(trimmedUrl);
+            var postTildeSlashUrlValue = trimmedUrl.Substring(2);
+
+            if (!appRelativeUrl.EndsWith(postTildeSlashUrlValue, StringComparison.Ordinal))
             {
-                var urlHelper = UrlHelperFactory.GetUrlHelper(ViewContext);
-                var appRelativeUrl = urlHelper.Content(trimmedUrl);
-                var postTildeSlashUrlValue = trimmedUrl.Substring(2);
-
-                if (!appRelativeUrl.EndsWith(postTildeSlashUrlValue, StringComparison.Ordinal))
-                {
-                    throw new InvalidOperationException(
-                        Resources.FormatCouldNotResolveApplicationRelativeUrl_TagHelper(
-                            url,
-                            nameof(IUrlHelper),
-                            nameof(IUrlHelper.Content),
-                            "removeTagHelper",
-                            typeof(UrlResolutionTagHelper).FullName,
-                            typeof(UrlResolutionTagHelper).GetTypeInfo().Assembly.GetName().Name));
-                }
-
-                resolvedUrl = new EncodeFirstSegmentContent(
-                    appRelativeUrl,
-                    appRelativeUrl.Length - postTildeSlashUrlValue.Length,
-                    postTildeSlashUrlValue);
-
-                return true;
+                throw new InvalidOperationException(
+                    Resources.FormatCouldNotResolveApplicationRelativeUrl_TagHelper(
+                        url,
+                        nameof(IUrlHelper),
+                        nameof(IUrlHelper.Content),
+                        "removeTagHelper",
+                        typeof(UrlResolutionTagHelper).FullName,
+                        typeof(UrlResolutionTagHelper).GetTypeInfo().Assembly.GetName().Name));
             }
 
-            return false;
+            resolvedUrl = new EncodeFirstSegmentContent(
+                appRelativeUrl,
+                appRelativeUrl.Length - postTildeSlashUrlValue.Length,
+                postTildeSlashUrlValue);
+
+            return true;
+        }
+
+        private static int FindRelativeStart(string url)
+        {
+            if (url == null || url.Length < 2)
+            {
+                return -1;
+            }
+
+            var maxTestLength = url.Length - 2;
+
+            var start = 0;
+            for (; start < url.Length; start++)
+            {
+                if (start > maxTestLength)
+                {
+                    return -1;
+                }
+
+                if (!IsCharWhitespace(url[start]))
+                {
+                    break;
+                }
+            }
+
+            // Before doing more work, ensure that the URL we're looking at is app-relative.
+            if (url[start] != '~' || url[start + 1] != '/')
+            {
+                return -1;
+            }
+
+            return start;
+        }
+
+        private static string CreateTrimmedString(string input, int start)
+        {
+            var end = input.Length - 1;
+            for (; end >= start; end--)
+            {
+                if (!IsCharWhitespace(input[end]))
+                {
+                    break;
+                }
+            }
+
+            var len = end - start + 1;
+
+            // Substring returns same string if start == 0 && len == Length
+            return input.Substring(start, len);
+        }
+
+        private static bool IsCharWhitespace(char ch)
+        {
+            var i = 0;
+            for (; i < ValidAttributeWhitespaceChars.Length; i++)
+            {
+                if (ValidAttributeWhitespaceChars[i] == ch)
+                {
+                    break;
+                }
+            }
+
+            if (i == ValidAttributeWhitespaceChars.Length)
+            {
+                // the character is not white space
+                return false;
+            }
+            return true;
         }
 
         private class EncodeFirstSegmentContent : IHtmlContent
