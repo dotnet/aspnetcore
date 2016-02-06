@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.Http.Internal;
@@ -157,7 +158,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             var expectedClaimUid = new BinaryBlob(256, data);
 
             var mockClaimUidExtractor = new Mock<IClaimUidExtractor>();
-            mockClaimUidExtractor.Setup(o => o.ExtractClaimUid(identity))
+            mockClaimUidExtractor.Setup(o => o.ExtractClaimUid(It.Is<ClaimsPrincipal>(c => c.Identity == identity)))
                                  .Returns(base64ClaimUId);
 
             var tokenProvider = new DefaultAntiforgeryTokenGenerator(
@@ -410,7 +411,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             };
 
             var mockClaimUidExtractor = new Mock<IClaimUidExtractor>();
-            mockClaimUidExtractor.Setup(o => o.ExtractClaimUid(identity))
+            mockClaimUidExtractor.Setup(o => o.ExtractClaimUid(It.Is<ClaimsPrincipal>(c => c.Identity == identity)))
                                  .Returns((string)null);
 
             var tokenProvider = new DefaultAntiforgeryTokenGenerator(
@@ -448,7 +449,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
 
             var differentToken = new BinaryBlob(256);
             var mockClaimUidExtractor = new Mock<IClaimUidExtractor>();
-            mockClaimUidExtractor.Setup(o => o.ExtractClaimUid(identity))
+            mockClaimUidExtractor.Setup(o => o.ExtractClaimUid(It.Is<ClaimsPrincipal>(c => c.Identity == identity)))
                                  .Returns(Convert.ToBase64String(differentToken.GetData()));
 
             var tokenProvider = new DefaultAntiforgeryTokenGenerator(
@@ -590,7 +591,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             };
 
             var mockClaimUidExtractor = new Mock<IClaimUidExtractor>();
-            mockClaimUidExtractor.Setup(o => o.ExtractClaimUid(identity))
+            mockClaimUidExtractor.Setup(o => o.ExtractClaimUid(It.Is<ClaimsPrincipal>(c => c.Identity == identity)))
                                  .Returns(Convert.ToBase64String(fieldtoken.ClaimUid.GetData()));
 
             var tokenProvider = new DefaultAntiforgeryTokenGenerator(

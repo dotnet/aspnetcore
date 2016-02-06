@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Security.Claims;
 using System.Security.Principal;
 using Microsoft.AspNetCore.Http;
@@ -60,16 +61,17 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             };
 
             var isIdentityAuthenticated = false;
-            var identity = httpContext.User?.Identity as ClaimsIdentity;
 
             // populate Username and ClaimUid
-            if (identity != null && identity.IsAuthenticated)
+            var authenticatedIdentity = GetAuthenticatedIdentity(httpContext.User);
+            if (authenticatedIdentity != null)
             {
                 isIdentityAuthenticated = true;
-                requestToken.ClaimUid = GetClaimUidBlob(_claimUidExtractor.ExtractClaimUid(identity));
+                requestToken.ClaimUid = GetClaimUidBlob(_claimUidExtractor.ExtractClaimUid(httpContext.User));
+
                 if (requestToken.ClaimUid == null)
                 {
-                    requestToken.Username = identity.Name;
+                    requestToken.Username = authenticatedIdentity.Name;
                 }
             }
 
@@ -87,7 +89,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
                 // Application says user is authenticated, but we have no identifier for the user.
                 throw new InvalidOperationException(
                     Resources.FormatAntiforgeryTokenValidator_AuthenticatedUserWithoutUsername(
-                        identity.GetType(),
+                        authenticatedIdentity.GetType(),
                         nameof(IIdentity.IsAuthenticated),
                         "true",
                         nameof(IIdentity.Name),
@@ -148,13 +150,13 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             var currentUsername = string.Empty;
             BinaryBlob currentClaimUid = null;
 
-            var identity = httpContext.User?.Identity as ClaimsIdentity;
-            if (identity != null && identity.IsAuthenticated)
+            var authenticatedIdentity = GetAuthenticatedIdentity(httpContext.User);
+            if (authenticatedIdentity != null)
             {
-                currentClaimUid = GetClaimUidBlob(_claimUidExtractor.ExtractClaimUid(identity));
+                currentClaimUid = GetClaimUidBlob(_claimUidExtractor.ExtractClaimUid(httpContext.User));
                 if (currentClaimUid == null)
                 {
-                    currentUsername = identity.Name ?? string.Empty;
+                    currentUsername = authenticatedIdentity.Name ?? string.Empty;
                 }
             }
 
@@ -199,6 +201,38 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             }
 
             return new BinaryBlob(256, Convert.FromBase64String(base64ClaimUid));
+        }
+
+        private static ClaimsIdentity GetAuthenticatedIdentity(ClaimsPrincipal claimsPrincipal)
+        {
+            if (claimsPrincipal == null)
+            {
+                return null;
+            }
+
+            var identitiesList = claimsPrincipal.Identities as List<ClaimsIdentity>;
+            if (identitiesList != null)
+            {
+                for (var i = 0; i < identitiesList.Count; i++)
+                {
+                    if (identitiesList[i].IsAuthenticated)
+                    {
+                        return identitiesList[i];
+                    }
+                }
+            }
+            else
+            {
+                foreach (var identity in claimsPrincipal.Identities)
+                {
+                    if (identity.IsAuthenticated)
+                    {
+                        return identity;
+                    }
+                }
+            }
+
+            return null;
         }
     }
 }
