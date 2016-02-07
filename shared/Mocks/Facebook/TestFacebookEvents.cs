@@ -22,7 +22,6 @@ namespace MusicStore.Mocks.Facebook
                 Helpers.ThrowIfConditionFailed(() => FacebookHelper.GetId(context.User) == "Id", "");
                 Helpers.ThrowIfConditionFailed(() => FacebookHelper.GetLink(context.User) == "https://www.facebook.com/myLink", "");
                 Helpers.ThrowIfConditionFailed(() => FacebookHelper.GetName(context.User) == "AspnetvnextTest AspnetvnextTest", "");
-                Helpers.ThrowIfConditionFailed(() => FacebookHelper.GetUserName(context.User) == "AspnetvnextTest.AspnetvnextTest.7", "");
                 Helpers.ThrowIfConditionFailed(() => context.User.SelectToken("id").ToString() == FacebookHelper.GetId(context.User), "");
                 Helpers.ThrowIfConditionFailed(() => context.ExpiresIn.Value == TimeSpan.FromSeconds(100), "");
                 Helpers.ThrowIfConditionFailed(() => context.AccessToken == "ValidAccessToken", "");
@@ -55,5 +54,5 @@ namespace MusicStore.Mocks.Facebook
             return Task.FromResult(0);
         }
     }
-} 
+}
 #endif
