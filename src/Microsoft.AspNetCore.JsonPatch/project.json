@@ -16,7 +16,7 @@
     "dotnet5.4": {
       "dependencies": {
         "Microsoft.CSharp": "4.0.1-*",
-        "System.Collections.Concurrent": "4.0.11-*",
+        "System.Collections.Concurrent": "4.0.12-*",
         "System.ComponentModel.TypeConverter": "4.0.1-*",
         "System.Globalization": "4.0.11-*",
         "System.Reflection.Extensions": "4.0.1-*",
