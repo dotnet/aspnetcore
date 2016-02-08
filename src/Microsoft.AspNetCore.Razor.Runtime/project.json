@@ -38,7 +38,7 @@
       "dependencies": {
         "System.Reflection.Extensions": "4.0.1-*",
         "System.Reflection.TypeExtensions": "4.1.0-*",
-        "System.Text.RegularExpressions": "4.0.11-*"
+        "System.Text.RegularExpressions": "4.0.12-*"
       }
     }
   }
