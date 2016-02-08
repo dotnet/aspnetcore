@@ -290,11 +290,14 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             {
                 using (var connection = new TestConnection(server.Port))
                 {
-                    await connection.Send(
+                    await connection.SendEnd(
                         "POST / HTTP/1.0",
                         "Transfer-Encoding: chunked",
                         "",
-                        "5", "Hello", "6", " World", "0\r\n");
+                        "5", "Hello", 
+                        "6", " World",
+                        "0",
+                         "");
                     await connection.ReceiveEnd(
                         "HTTP/1.0 200 OK",
                         "",
@@ -406,7 +409,10 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "Transfer-Encoding: chunked",
                         "Connection: keep-alive",
                         "",
-                        "5", "Hello", "6", " World", "0",
+                        "5", "Hello", 
+                        "6", " World", 
+                        "0",
+                         "",
                         "POST / HTTP/1.0",
                         "",
                         "Goodbye");
@@ -969,7 +975,9 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "HelloPOST / HTTP/1.1",
                         "Transfer-Encoding: chunked",
                         "",
-                        "C", "HelloChunked", "0",
+                        "C", "HelloChunked", 
+                        "0",
+                        "",
                         "POST / HTTP/1.1",
                         "Content-Length: 7",
                         "",

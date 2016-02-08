@@ -222,75 +222,155 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             {
                 var input = _context.SocketInput;
 
-                while (_mode != Mode.Complete)
+                while (_mode != Mode.Trailer && _mode != Mode.Complete)
                 {
                     while (_mode == Mode.ChunkPrefix)
                     {
-                        var chunkSize = 0;
-                        if (!TakeChunkedLine(input, ref chunkSize))
-                        {
-                            await input;
-                        }
-                        else if (chunkSize == 0)
-                        {
-                            _mode = Mode.Complete;
-                        }
-                        else
-                        {
-                            _mode = Mode.ChunkData;
-                        }
-                        _inputLength = chunkSize;
+                        ReadChunkedPrefix(input);
+                        await input;
                     }
+
                     while (_mode == Mode.ChunkData)
                     {
-                        var limit = buffer.Array == null ? _inputLength : Math.Min(buffer.Count, _inputLength);
-                        if (limit != 0)
-                        {
-                            await input;
-                        }
-
-                        var begin = input.ConsumingStart();
-                        int actual;
-                        var end = begin.CopyTo(buffer.Array, buffer.Offset, limit, out actual);
-                        _inputLength -= actual;
-                        input.ConsumingComplete(end, end);
-
-                        if (_inputLength == 0)
-                        {
-                            _mode = Mode.ChunkSuffix;
-                        }
+                        int actual = ReadChunkedData(input, buffer.Array, buffer.Offset, buffer.Count);
                         if (actual != 0)
                         {
                             return actual;
                         }
+
+                        await input;
                     }
+
                     while (_mode == Mode.ChunkSuffix)
                     {
-                        var scan = input.ConsumingStart();
-                        var consumed = scan;
-                        var ch1 = scan.Take();
-                        var ch2 = scan.Take();
-                        if (ch1 == -1 || ch2 == -1)
-                        {
-                            input.ConsumingComplete(consumed, scan);
-                            await input;
-                        }
-                        else if (ch1 == '\r' && ch2 == '\n')
-                        {
-                            input.ConsumingComplete(scan, scan);
-                            _mode = Mode.ChunkPrefix;
-                        }
-                        else
-                        {
-                            throw new NotImplementedException("INVALID REQUEST FORMAT");
-                        }
+                        ReadChunkedSuffix(input);
+                        await input;
                     }
+                }
+
+                while (_mode == Mode.Trailer)
+                {
+                    ReadChunkedTrailer(input);
+                    await input;
                 }
 
                 return 0;
             }
 
-            private static bool TakeChunkedLine(SocketInput baton, ref int chunkSizeOut)
+            private void ReadChunkedPrefix(SocketInput input)
+            {
+                int chunkSize;
+                if (TakeChunkedLine(input, out chunkSize))
+                {
+                    if (chunkSize == 0)
+                    {
+                        _mode = Mode.Trailer;
+                    }
+                    else
+                    {
+                        _mode = Mode.ChunkData;
+                    }
+                    _inputLength = chunkSize;
+                }
+                else if (input.RemoteIntakeFin)
+                {
+                    ThrowChunkedRequestIncomplete();
+                }
+            }
+
+            private int ReadChunkedData(SocketInput input, byte[] buffer, int offset, int count)
+            {
+                var scan = input.ConsumingStart();
+                int actual;
+                try
+                {
+                    var limit = buffer == null ? _inputLength : Math.Min(count, _inputLength);
+                    scan = scan.CopyTo(buffer, offset, limit, out actual);
+                    _inputLength -= actual;
+                }
+                finally
+                {
+                    input.ConsumingComplete(scan, scan);
+                }
+
+                if (_inputLength == 0)
+                {
+                    _mode = Mode.ChunkSuffix;
+                }
+                else if (actual == 0 && input.RemoteIntakeFin)
+                {
+                    ThrowChunkedRequestIncomplete();
+                }
+
+                return actual;
+            }
+
+            private void ReadChunkedSuffix(SocketInput input)
+            {
+                var scan = input.ConsumingStart();
+                var consumed = scan;
+                try
+                {
+                    var ch1 = scan.Take();
+                    var ch2 = scan.Take();
+
+                    if (ch1 == '\r' && ch2 == '\n')
+                    {
+                        consumed = scan;
+                        _mode = Mode.ChunkPrefix;
+                    }
+                    else if (ch1 == -1 || ch2 == -1)
+                    {
+                        if (input.RemoteIntakeFin)
+                        {
+                            ThrowChunkedRequestIncomplete();
+                        }
+                    }
+                    else
+                    {
+                        ThrowInvalidFormat();
+                    }
+                }
+                finally
+                {
+                    input.ConsumingComplete(consumed, scan);
+                }
+            }
+
+            private void ReadChunkedTrailer(SocketInput input)
+            {
+                var scan = input.ConsumingStart();
+                var consumed = scan;
+                try
+                {
+                    var ch1 = scan.Take();
+                    var ch2 = scan.Take();
+
+                    if (ch1 == '\r' && ch2 == '\n')
+                    {
+                        consumed = scan;
+                        _mode = Mode.Complete;
+                    }
+                    else if (ch1 == -1 || ch2 == -1)
+                    {
+                        if (input.RemoteIntakeFin)
+                        {
+                            ThrowChunkedRequestIncomplete();
+                        }
+                    }
+                    else
+                    {
+                        // Post request headers
+                        ThrowTrailingHeadersNotSupported();
+                    }
+                }
+                finally
+                {
+                    input.ConsumingComplete(consumed, scan);
+                }
+            }
+
+            private static bool TakeChunkedLine(SocketInput baton, out int chunkSizeOut)
             {
                 var scan = baton.ConsumingStart();
                 var consumed = scan;
@@ -298,16 +378,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     var ch0 = scan.Take();
                     var chunkSize = 0;
-                    var mode = 0;
+                    var mode = Mode.ChunkPrefix;
                     while (ch0 != -1)
                     {
                         var ch1 = scan.Take();
                         if (ch1 == -1)
                         {
+                            chunkSizeOut = 0;
                             return false;
                         }
 
-                        if (mode == 0)
+                        if (mode == Mode.ChunkPrefix)
                         {
                             if (ch0 >= '0' && ch0 <= '9')
                             {
@@ -323,11 +404,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }
                             else
                             {
-                                throw new NotImplementedException("INVALID REQUEST FORMAT");
+                                ThrowInvalidFormat();
                             }
-                            mode = 1;
+                            mode = Mode.ChunkData;
                         }
-                        else if (mode == 1)
+                        else if (mode == Mode.ChunkData)
                         {
                             if (ch0 >= '0' && ch0 <= '9')
                             {
@@ -343,7 +424,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }
                             else if (ch0 == ';')
                             {
-                                mode = 2;
+                                mode = Mode.ChunkSuffix;
                             }
                             else if (ch0 == '\r' && ch1 == '\n')
                             {
@@ -353,10 +434,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             }
                             else
                             {
-                                throw new NotImplementedException("INVALID REQUEST FORMAT");
+                                ThrowInvalidFormat();
                             }
                         }
-                        else if (mode == 2)
+                        else if (mode == Mode.ChunkSuffix)
                         {
                             if (ch0 == '\r' && ch1 == '\n')
                             {
@@ -367,11 +448,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                             else
                             {
                                 // chunk-extensions not currently parsed
+                                ThrowChunkedExtensionsNotSupported();
                             }
                         }
 
                         ch0 = ch1;
                     }
+                    chunkSizeOut = 0;
                     return false;
                 }
                 finally
@@ -380,12 +463,33 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 }
             }
 
+            private static void ThrowInvalidFormat()
+            {
+                throw new InvalidOperationException("Bad Request");
+            }
+
+            private static void ThrowChunkedRequestIncomplete()
+            {
+                throw new InvalidOperationException("Chunked request incomplete");
+            }
+
+            private static void ThrowChunkedExtensionsNotSupported()
+            {
+                throw new NotImplementedException("Chunked-extensions not supported");
+            }
+
+            private static void ThrowTrailingHeadersNotSupported()
+            {
+                throw new NotImplementedException("Trailing headers not supported");
+            }
+
             private enum Mode
             {
                 ChunkPrefix,
                 ChunkData,
                 ChunkSuffix,
-                Complete,
+                Trailer,
+                Complete
             };
         }
     }
