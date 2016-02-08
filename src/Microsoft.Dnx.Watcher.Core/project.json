@@ -27,7 +27,7 @@
     "dnxcore50": {
       "dependencies": {
         "System.Diagnostics.Process": "4.1.0-*",
-        "System.Linq": "4.0.1-*",
+        "System.Linq": "4.0.2-*",
         "System.Threading.Thread": "4.0.0-*"
       }
     }
