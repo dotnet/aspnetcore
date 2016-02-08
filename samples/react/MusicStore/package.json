@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "bootstrap": "^3.3.6",
+    "domain-context": "^0.5.1",
     "isomorphic-fetch": "^2.2.1",
     "react": "^0.14.7",
     "react-bootstrap": "^0.28.2",

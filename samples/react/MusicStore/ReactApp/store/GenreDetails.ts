@@ -1,4 +1,4 @@
-import fetch from 'isomorphic-fetch';
+import { fetch } from '../tracked-fetch';
 import { typeName, isActionType, Action, Reducer } from '../TypedRedux';
 import { ActionCreator } from './';
 import { Album } from './FeaturedAlbums';

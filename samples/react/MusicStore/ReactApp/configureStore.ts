@@ -2,13 +2,14 @@ import { createStore, applyMiddleware, compose, combineReducers } from 'redux';
 import * as thunkModule from 'redux-thunk';
 import { syncHistory, routeReducer } from 'react-router-redux';
 import * as Store from './store';
+import { typedToPlain } from './TypedRedux';
 
 export default function configureStore(history: HistoryModule.History, initialState?: Store.ApplicationState) {
     // Build middleware
     const thunk = (thunkModule as any).default; // Workaround for TypeScript not importing thunk module as expected
     const reduxRouterMiddleware = syncHistory(history);
-    const middlewares = [thunk, reduxRouterMiddleware];
-    const devToolsExtension = (window as any).devToolsExtension; // If devTools is installed, connect to it
+    const middlewares = [thunk, reduxRouterMiddleware, typedToPlain];
+    const devToolsExtension = null;//(window as any).devToolsExtension; // If devTools is installed, connect to it
   
     const finalCreateStore = compose(
         applyMiddleware(...middlewares),

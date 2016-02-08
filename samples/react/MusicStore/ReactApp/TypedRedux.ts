@@ -20,6 +20,11 @@ export function isActionType<T extends Action>(action: Action, actionClass: Acti
     return action.type == actionClass.prototype.type;
 }
 
+// Middleware for transforming Typed Actions into plain actions
+export const typedToPlain = (store: any) => (next: any) => (action: any) => {
+    next(Object.assign({}, action));
+};
+
 export abstract class Action {
     type: string;
     constructor() {
