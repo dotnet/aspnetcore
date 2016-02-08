@@ -16,4 +16,7 @@
     "dnx451": { },
     "dnxcore50": { }
   },
+  "content": [
+    "wwwroot/**/*"
+  ]
 }

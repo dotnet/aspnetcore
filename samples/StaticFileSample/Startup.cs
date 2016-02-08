@@ -1,3 +1,4 @@
+using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,8 +13,10 @@ namespace StaticFilesSample
             services.AddDirectoryBrowser();
         }
 
-        public void Configure(IApplicationBuilder app, ILoggerFactory factory)
+        public void Configure(IApplicationBuilder app, ILoggerFactory factory, IHostingEnvironment host)
         {
+            Console.WriteLine("webroot: " + host.WebRootPath);
+
             // Displays all log levels
             factory.AddConsole(LogLevel.Debug);
 
