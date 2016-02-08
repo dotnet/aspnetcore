@@ -103,7 +103,7 @@ namespace Microsoft.AspNetCore.Mvc
                     await sendFile.SendFileAsync(
                         physicalPath,
                         offset: 0,
-                        length: null,
+                        count: null,
                         cancellation: default(CancellationToken));
                 }
                 else
