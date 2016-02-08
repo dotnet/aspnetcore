@@ -61,7 +61,9 @@ function render(requestUrl, callback) {
             }
         });
     }).catch(function(error) {
-        callback(error, null);
+        process.nextTick(() => { // Because otherwise you can't throw from inside a catch
+            callback(error, null);
+        });
     });
 }
 
