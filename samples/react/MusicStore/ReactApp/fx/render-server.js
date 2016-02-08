@@ -1,4 +1,3 @@
-var createMemoryHistory = require('history/lib/createMemoryHistory');
 var url = require('url');
 var babelCore = require('babel-core');
 var babelConfig = {
@@ -26,10 +25,9 @@ var domainTasks = require('./domain-tasks.js');
 var bootServer = require('../boot-server.jsx').default;
 
 function render(requestUrl, callback) {
-    var store;
     var params = {
         location: url.parse(requestUrl),
-        history: createMemoryHistory(requestUrl),
+        url: requestUrl,
         state: undefined
     };
     
@@ -44,22 +42,16 @@ function render(requestUrl, callback) {
                 } else {
                     // The initial 'loading' state HTML is irrelevant - we only want to capture the state
                     // so we can use it to perform a real render once all data is loaded
-                    store = result.store;
+                    params.state = result.state;
                     resolve();
                 }
             });
         }));
     }).then(function() {
         // By now, all the data should be loaded, so we can render for real based on the state now
-        params.state = store.getState();
-        bootServer(params, function(error, result) {
-            if (error) {
-                callback(error, null);
-            } else {
-                var html = result.html + `<script>window.__INITIAL_STATE = ${ JSON.stringify(store.getState()) }</script>`;
-                callback(null, html)
-            }
-        });
+        // TODO: Add an optimisation where, if domain-tasks had no outstanding tasks at the end of
+        // the previous render, we don't re-render (we can use the previous html and state).
+        bootServer(params, callback);
     }).catch(function(error) {
         process.nextTick(() => { // Because otherwise you can't throw from inside a catch
             callback(error, null);
