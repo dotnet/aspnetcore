@@ -6,10 +6,15 @@
     "Microsoft.NETCore.Platforms": "1.0.1-*"
   },
   "testRunner": "xunit",
-  "commands": {
-    "test": "xunit.runner.aspnet"
-  },
   "frameworks": {
+    "dnxcore50": {
+      "dependencies": {
+        "moq.netcore": "4.4.0-beta8",
+        "System.Net.Http": "4.0.1-*",
+        "dotnet-test-xunit": "1.0.0-dev-*"
+      },
+      "imports": "portable-net451+win8"
+    },
     "dnx451": {
       "dependencies": {
         "Moq": "4.2.1312.1622",
@@ -18,14 +23,6 @@
       "frameworkAssemblies": {
         "System.Net.Http": ""
       }
-    },
-    "dnxcore50": {
-      "dependencies": {
-        "moq.netcore": "4.4.0-beta8",
-        "System.Net.Http": "4.0.1-*",
-        "xunit.runner.aspnet": "2.0.0-aspnet-*"
-      },
-      "imports": "portable-net451+win8"
     }
   }
 }
