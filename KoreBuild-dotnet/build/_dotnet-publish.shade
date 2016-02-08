@@ -23,12 +23,17 @@ default configuration = 'Debug'
     var projectName=Path.GetFileName(projectFolder);
     var projectBin=Path.Combine(projectFolder, "bin", configuration);
     
-    var outputArg = string.IsNullOrEmpty(outputFolder)? "": "--output " + outputFolder;
-    var frameworkArg = string.IsNullOrEmpty(framework)? "": "--framework " + framework;
+    var outputArg = string.IsNullOrEmpty(outputFolder) ? "" : "--output " + outputFolder;
+    var frameworkArg = "";
+    if (!string.IsNullOrEmpty(framework))
+    {
+        frameworkArg = "--framework " + framework;
+        projectBin = Path.Combine(projectBin, framework);
+    }
 
     DeleteFolder(projectBin);
 
-    var dotnetArgs=string.Format("publish --configuration {0} {1} {2} {3}", configuration, frameworkArg, outputArg, projectFolder);
+    var dotnetArgs = string.Format("publish --configuration {0} {1} {2} {3}", configuration, frameworkArg, outputArg, projectFolder);
     Dotnet(dotnetArgs);
 }
    
