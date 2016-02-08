@@ -9,7 +9,12 @@ namespace HelloWorld
 {
     public class Program
     {
-        public static async Task Main(string[] args)
+        public static void Main(string[] args)
+        {
+            Run(args).Wait();
+        }
+        
+        public static async Task Run(string[] args)
         {
             using (WebListener listener = new WebListener())
             {

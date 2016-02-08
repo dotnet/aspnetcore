@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Features;
 using Microsoft.Extensions.Logging;
+using Microsoft.Net.Http.Server;
 
 namespace HotAddSample
 {
@@ -17,7 +18,7 @@ namespace HotAddSample
         {
             loggerfactory.AddConsole(LogLevel.Information);
 
-            var addresses = app.ServerFeatures.Get<IServerAddressesFeature>().Addresses;
+            var addresses = app.ServerFeatures.Get<WebListener>().UrlPrefixes;
             addresses.Add("http://localhost:12346/pathBase/");
 
             app.Use(async (context, next) =>
@@ -31,7 +32,7 @@ namespace HotAddSample
                     try
                     {
                         addresses.Add(toAdd);
-                        await context.Response.WriteAsync("Added: " + toAdd);
+                        await context.Response.WriteAsync("Added: <a href=\"" + toAdd + "\">" + toAdd + "</a>");
                     }
                     catch (Exception ex)
                     {
@@ -93,6 +94,7 @@ namespace HotAddSample
             var host = new WebHostBuilder()
                 .UseDefaultConfiguration(args)
                 .UseStartup<Startup>()
+                .UseServer("Microsoft.AspNetCore.Server.WebListener")
                 .Build();
 
             host.Run();

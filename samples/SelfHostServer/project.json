@@ -1,8 +1,7 @@
 {
   "dependencies": {
     "Microsoft.AspNetCore.Server.WebListener": "0.1.0-*",
-    "Microsoft.Extensions.Logging.Console": "1.0.0-*",
-    "Microsoft.NETCore.Platforms": "1.0.1-*"
+    "Microsoft.Extensions.Logging.Console": "1.0.0-*"
   },
   "compilationOptions": {
     "emitEntryPoint": true
@@ -11,8 +10,11 @@
     "web": "SelfHostServer"
   },
   "frameworks": {
-    "dnx451": {},
+    "net451": {},
     "netstandardapp1.5": {
+      "dependencies": {
+        "NETStandard.Library": "1.0.0-*"
+      },
       "imports": [
         "dnxcore50"
       ]

@@ -1,4 +1,0 @@
-{
-  "server": "Microsoft.AspNetCore.Server.WebListener",
-  "server.urls": "http://localhost:8080"
-}

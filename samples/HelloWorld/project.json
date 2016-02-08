@@ -1,21 +1,19 @@
 {
+  "compilationOptions": {
+    "emitEntryPoint": true
+  },
   "dependencies": {
     "Microsoft.Net.Http.Server": "0.1.0-*",
-    "Microsoft.Net.WebSockets.Server": "0.1.0-*",
-    "Microsoft.NETCore.Platforms": "1.0.1-*"
+    "Microsoft.Net.WebSockets.Server": "0.1.0-*"
   },
   "commands": {
     "sample": "HelloWorld"
   },
   "frameworks": {
-    "dnx451": {},
+    "net451": {},
     "netstandardapp1.5": {
       "dependencies": {
-        "System.Collections": "4.0.11-*",
-        "System.Console": "4.0.0-*",
-        "System.Globalization": "4.0.11-*",
-        "System.IO": "4.1.0-*",
-        "System.Threading.Tasks": "4.0.11-*"
+        "NETStandard.Library": "1.0.0-*"
       },
       "imports": [
         "dnxcore50"
