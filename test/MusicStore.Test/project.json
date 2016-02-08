@@ -14,9 +14,6 @@
   "frameworks": {
     "dnx451": { },
     "dnxcore50": {
-      "dependencies": {
-        "System.Runtime": "4.0.21-*"
-      },
       "imports": "portable-net451+win8"
     }
   }

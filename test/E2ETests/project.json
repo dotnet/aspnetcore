@@ -22,8 +22,7 @@
       "dependencies": {
         "System.Data.SqlClient": "4.0.0-*",
         "System.Net.Http": "4.0.1-*",
-        "System.Xml.XmlDocument": "4.0.0-*",
-        "System.Runtime": "4.0.21-*"
+        "System.Xml.XmlDocument": "4.0.0-*"
       }
     }
   }
