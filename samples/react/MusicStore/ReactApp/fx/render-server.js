@@ -1,30 +1,16 @@
+require('./require-ts-babel')(); // Enable loading TS/TSX/JSX/ES2015 modules
 var url = require('url');
-var babelCore = require('babel-core');
-var babelConfig = {
-    presets: ["es2015", "react"]
-};
+var domainTasks = require('./domain-tasks.ts');
 
-var origJsLoader = require.extensions['.js'];
-require.extensions['.js'] = loadViaBabel;
-require.extensions['.jsx'] = loadViaBabel;
-
-function loadViaBabel(module, filename) {
-    // Assume that all the app's own code is ES2015+ (optionally with JSX), but that none of the node_modules are.
-    // The distinction is important because ES2015+ forces strict mode, and it may break ES3/5 if you try to run it in strict
-    // mode when the developer didn't expect that (e.g., current versions of underscore.js can't be loaded in strict mode).
-    var useBabel = filename.indexOf('node_modules') < 0;
-    if (useBabel) {
-        var transformedFile = babelCore.transformFileSync(filename, babelConfig);
-        return module._compile(transformedFile.code, filename);
-    } else {
-        return origJsLoader.apply(this, arguments);
+function render(bootModulePath, requestUrl, callback) {
+    var bootFunc = require(bootModulePath);
+    if (typeof bootFunc !== 'function') {
+        bootFunc = bootFunc.default;
     }
-}
-
-var domainTasks = require('./domain-tasks.js');
-var bootServer = require('../boot-server.jsx').default;
-
-function render(requestUrl, callback) {
+    if (typeof bootFunc !== 'function') {
+        throw new Error('The module at ' + bootModulePath + ' must export a default function, otherwise we don\'t know how to invoke it.')   
+    }
+    
     var params = {
         location: url.parse(requestUrl),
         url: requestUrl,
@@ -36,7 +22,7 @@ function render(requestUrl, callback) {
         // Since route matching is asynchronous, add the rendering itself to the list of tasks we're awaiting
         domainTasks.addTask(new Promise(function (resolve, reject) {
             // Now actually perform the first render that will match a route and commence associated tasks
-            bootServer(params, function(error, result) {
+            bootFunc(params, function(error, result) {
                 if (error) {
                     reject(error);
                 } else {
@@ -51,7 +37,7 @@ function render(requestUrl, callback) {
         // By now, all the data should be loaded, so we can render for real based on the state now
         // TODO: Add an optimisation where, if domain-tasks had no outstanding tasks at the end of
         // the previous render, we don't re-render (we can use the previous html and state).
-        bootServer(params, callback);
+        bootFunc(params, callback);
     }).catch(function(error) {
         process.nextTick(() => { // Because otherwise you can't throw from inside a catch
             callback(error, null);
@@ -59,7 +45,7 @@ function render(requestUrl, callback) {
     });
 }
 
-render('/', (err, html) => {
+render('../boot-server.tsx', '/', (err, html) => {
     if (err) {
         throw err;
     }
