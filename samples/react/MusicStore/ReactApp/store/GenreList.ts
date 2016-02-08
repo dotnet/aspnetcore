@@ -1,5 +1,5 @@
-import { fetch } from '../tracked-fetch';
-import { typeName, isActionType, Action, Reducer } from '../TypedRedux';
+import { fetch } from '../fx/tracked-fetch';
+import { typeName, isActionType, Action, Reducer } from '../fx/TypedRedux';
 import { ActionCreator } from './';
 
 // -----------------

@@ -23,7 +23,7 @@ function loadViaBabel(module, filename) {
 }
 
 var domainTasks = require('./domain-tasks.js');
-var bootServer = require('./boot-server.jsx').default;
+var bootServer = require('../boot-server.jsx').default;
 
 function render(requestUrl, callback) {
     var store;

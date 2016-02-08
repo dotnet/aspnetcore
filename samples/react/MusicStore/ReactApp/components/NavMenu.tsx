@@ -2,7 +2,7 @@ import * as React from 'react';
 import { Navbar, Nav, NavItem, NavDropdown, MenuItem } from 'react-bootstrap';
 import { Link } from 'react-router';
 import { LinkContainer } from 'react-router-bootstrap';
-import { provide } from '../TypedRedux';
+import { provide } from '../fx/TypedRedux';
 import { ApplicationState }  from '../store';
 import * as GenreList from '../store/GenreList';
 

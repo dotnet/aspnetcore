@@ -2,7 +2,7 @@ import { createStore, applyMiddleware, compose, combineReducers } from 'redux';
 import * as thunkModule from 'redux-thunk';
 import { syncHistory, routeReducer } from 'react-router-redux';
 import * as Store from './store';
-import { typedToPlain } from './TypedRedux';
+import { typedToPlain } from './fx/TypedRedux';
 
 export default function configureStore(history: HistoryModule.History, initialState?: Store.ApplicationState) {
     // Build middleware
