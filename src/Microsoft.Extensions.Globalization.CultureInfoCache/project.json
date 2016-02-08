@@ -13,8 +13,8 @@
     "net451": {},
     "dotnet5.4": {
       "dependencies": {
-        "System.Collections.Concurrent": "4.0.11-*",
-        "System.Linq": "4.0.1-*"
+        "System.Collections.Concurrent": "4.0.12-*",
+        "System.Linq": "4.0.2-*"
       }
     }
   }
