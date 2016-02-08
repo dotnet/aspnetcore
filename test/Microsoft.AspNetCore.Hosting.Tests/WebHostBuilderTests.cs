@@ -314,7 +314,9 @@ namespace Microsoft.AspNetCore.Hosting
                 .UseStartup("Microsoft.AspNetCore.Hosting.Tests")
                 .Build();
 
-            Assert.Equal(Path.GetFullPath("bar"), host.Services.GetService<IApplicationEnvironment>().ApplicationBasePath);
+            var basePath = host.Services.GetRequiredService<IApplicationEnvironment>().ApplicationBasePath;
+            Assert.True(Path.IsPathRooted(basePath));
+            Assert.EndsWith(Path.DirectorySeparatorChar + "bar", basePath);
         }
 
         private IWebHostBuilder CreateWebHostBuilder()
