@@ -21,7 +21,7 @@
         "System.IO": "4.1.0-*",
         "System.IO.FileSystem": "4.0.1-*",
         "System.Net.Primitives": "4.0.11-*",
-        "System.Runtime.InteropServices": "4.0.21-*",
+        "System.Runtime.InteropServices": "4.1.0-*",
         "System.Security.Claims": "4.0.1-*",
         "System.Security.Cryptography.X509Certificates": "4.0.0-*",
         "System.Security.Principal.Windows": "4.0.0-*",
