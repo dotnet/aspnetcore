@@ -14,6 +14,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
     /// </summary>
     public class PrefixContainer
     {
+        private static readonly string[] EmptyArray = new string[0];
+        private static readonly char[] Delimiters = new char[] { '[', '.' };
+
         private readonly ICollection<string> _originalValues;
         private readonly string[] _sortedValues;
 
@@ -25,8 +28,17 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             }
 
             _originalValues = values;
-            _sortedValues = ToArrayWithoutNulls(_originalValues);
-            Array.Sort(_sortedValues, StringComparer.OrdinalIgnoreCase);
+
+            if (_originalValues.Count == 0)
+            {
+                _sortedValues = EmptyArray;
+            }
+            else
+            {
+                _sortedValues = new string[_originalValues.Count];
+                _originalValues.CopyTo(_sortedValues, 0);
+                Array.Sort(_sortedValues, StringComparer.OrdinalIgnoreCase);
+            }
         }
 
         public bool ContainsPrefix(string prefix)
@@ -39,6 +51,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             if (prefix.Length == 0)
             {
                 return _sortedValues.Length > 0; // only match empty string when we have some value
+            }
+
+            if (_sortedValues.Length == 0)
+            {
+                return false;
             }
 
             return BinarySearch(prefix) > -1;
@@ -80,7 +97,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         {
             string key;
             string fullName;
-            var delimiterPosition = IndexOfDelimiter(entry, 0);
+            var delimiterPosition = entry.IndexOfAny(Delimiters, 0);
 
             if (delimiterPosition == 0 && entry[0] == '[')
             {
@@ -118,7 +135,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             {
                 case '.':
                     // Handle an entry such as "prefix.key", "prefix.key.property" and "prefix.key[index]".
-                    var delimiterPosition = IndexOfDelimiter(entry, keyPosition);
+                    var delimiterPosition = entry.IndexOfAny(Delimiters, keyPosition);
                     if (delimiterPosition == -1)
                     {
                         // Neither '.' nor '[' found later in the name. Use rest of the string.
@@ -192,58 +209,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
                 default:
                     return false; // not known delimiter
-            }
-        }
-
-        private static int IndexOfDelimiter(string entry, int startIndex)
-        {
-            int delimiterPosition;
-            var bracketPosition = entry.IndexOf('[', startIndex);
-            var dotPosition = entry.IndexOf('.', startIndex);
-
-            if (dotPosition == -1)
-            {
-                delimiterPosition = bracketPosition;
-            }
-            else if (bracketPosition == -1)
-            {
-                delimiterPosition = dotPosition;
-            }
-            else
-            {
-                delimiterPosition = Math.Min(dotPosition, bracketPosition);
-            }
-
-            return delimiterPosition;
-        }
-
-        /// <summary>
-        /// Convert an ICollection to an array, removing null values. Fast path for case where
-        /// there are no null values.
-        /// </summary>
-        private static TElement[] ToArrayWithoutNulls<TElement>(ICollection<TElement> collection) where TElement : class
-        {
-            Debug.Assert(collection != null);
-
-            var result = new TElement[collection.Count];
-            var count = 0;
-            foreach (TElement value in collection)
-            {
-                if (value != null)
-                {
-                    result[count] = value;
-                    count++;
-                }
-            }
-            if (count == collection.Count)
-            {
-                return result;
-            }
-            else
-            {
-                var trimmedResult = new TElement[count];
-                Array.Copy(result, trimmedResult, count);
-                return trimmedResult;
             }
         }
 
