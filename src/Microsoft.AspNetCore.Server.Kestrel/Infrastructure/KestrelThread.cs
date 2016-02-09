@@ -24,9 +24,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel
         // otherwise it needs to wait till the next pass of the libuv loop
         private const int _maxLoops = 8;
 
-        private static readonly Action<object, object> _threadCallbackAdapter = (callback, state) => ((Action<KestrelThread>)callback).Invoke((KestrelThread)state);
-        private static readonly Action<object, object> _socketCallbackAdapter = (callback, state) => ((Action<SocketOutput>)callback).Invoke((SocketOutput)state);
-        private static readonly Action<object, object> _tcsCallbackAdapter = (callback, state) => ((Action<TaskCompletionSource<int>>)callback).Invoke((TaskCompletionSource<int>)state);
+        private static readonly Action<object, object> _postCallbackAdapter = (callback, state) => ((Action<object>)callback).Invoke(state);
         private static readonly Action<object, object> _postAsyncCallbackAdapter = (callback, state) => ((Action<object>)callback).Invoke(state);
 
         private readonly KestrelEngine _engine;
@@ -56,12 +54,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel
             _thread = new Thread(ThreadStart);
             _thread.Name = "KestrelThread - libuv";
             QueueCloseHandle = PostCloseHandle;
+            QueueCloseAsyncHandle = EnqueueCloseHandle;
         }
 
         public UvLoopHandle Loop { get { return _loop; } }
+
         public ExceptionDispatchInfo FatalError { get { return _closeError; } }
 
-        public Action<Action<IntPtr>, IntPtr> QueueCloseHandle { get; internal set; }
+        public Action<Action<IntPtr>, IntPtr> QueueCloseHandle { get; }
+
+        private Action<Action<IntPtr>, IntPtr> QueueCloseAsyncHandle { get; }
 
         public Task StartAsync()
         {
@@ -137,41 +139,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel
             _loop.Stop();
         }
 
+        public void Post(Action<object> callback, object state)
+        {
+            lock (_workSync)
+            {
+                _workAdding.Enqueue(new Work
+                {
+                    CallbackAdapter = _postCallbackAdapter,
+                    Callback = callback,
+                    State = state
+                });
+            }
+            _post.Send();
+        }
+
         private void Post(Action<KestrelThread> callback)
         {
-            lock (_workSync)
-            {
-                _workAdding.Enqueue(new Work { CallbackAdapter = _threadCallbackAdapter, Callback = callback, State = this });
-            }
-            _post.Send();
-        }
-
-        public void Post(Action<SocketOutput> callback, SocketOutput state)
-        {
-            lock (_workSync)
-            {
-                _workAdding.Enqueue(new Work
-                {
-                    CallbackAdapter = _socketCallbackAdapter,
-                    Callback = callback,
-                    State = state
-                });
-            }
-            _post.Send();
-        }
-
-        public void Post(Action<TaskCompletionSource<int>> callback, TaskCompletionSource<int> state)
-        {
-            lock (_workSync)
-            {
-                _workAdding.Enqueue(new Work
-                {
-                    CallbackAdapter = _tcsCallbackAdapter,
-                    Callback = callback,
-                    State = state
-                });
-            }
-            _post.Send();
+            Post(thread => callback((KestrelThread)thread), this);
         }
 
         public Task PostAsync(Action<object> callback, object state)
@@ -193,11 +177,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel
 
         private void PostCloseHandle(Action<IntPtr> callback, IntPtr handle)
         {
+            EnqueueCloseHandle(callback, handle);
+            _post.Send();
+        }
+
+        private void EnqueueCloseHandle(Action<IntPtr> callback, IntPtr handle)
+        {
             lock (_workSync)
             {
                 _closeHandleAdding.Enqueue(new CloseHandle { Callback = callback, Handle = handle });
             }
-            _post.Send();
         }
 
         private void ThreadStart(object parameter)
@@ -206,7 +195,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel
             try
             {
                 _loop.Init(_engine.Libuv);
-                _post.Init(_loop, OnPost);
+                _post.Init(_loop, OnPost, EnqueueCloseHandle);
                 tcs.SetResult(0);
             }
             catch (Exception ex)
@@ -229,18 +218,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                 // run the loop one more time to delete the open handles
                 _post.Reference();
                 _post.Dispose();
-
-                _engine.Libuv.walk(
-                    _loop,
-                    (ptr, arg) =>
-                    {
-                        var handle = UvMemory.FromIntPtr<UvHandle>(ptr);
-                        if (handle != _post)
-                        {
-                            handle.Dispose();
-                        }
-                    },
-                    IntPtr.Zero);
 
                 // Ensure the Dispose operations complete in the event loop.
                 var ran2 = _loop.Run();
@@ -307,6 +284,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel
 
             return wasWork;
         }
+
         private bool DoPostCloseHandle()
         {
             Queue<CloseHandle> queue;
@@ -333,7 +311,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                 }
             }
 
-            return wasWork; 
+            return wasWork;
         }
 
         private struct Work
@@ -343,6 +321,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel
             public object State;
             public TaskCompletionSource<object> Completion;
         }
+
         private struct CloseHandle
         {
             public Action<IntPtr> Callback;

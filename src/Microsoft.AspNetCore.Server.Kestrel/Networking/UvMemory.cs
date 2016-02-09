@@ -87,6 +87,5 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Networking
             GCHandle gcHandle = GCHandle.FromIntPtr(*(IntPtr*)handle);
             return (THandle)gcHandle.Target;
         }
-
     }
 }

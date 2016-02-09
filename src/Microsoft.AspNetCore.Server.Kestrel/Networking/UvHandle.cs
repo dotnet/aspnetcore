@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Threading;
 using Microsoft.AspNetCore.Server.Kestrel.Infrastructure;
 
@@ -43,6 +44,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Networking
                     // Ensure the closure doesn't reference "this".
                     var uv = _uv;
                     _queueCloseHandle(memory2 => uv.close(memory2, _destroyMemory), memory);
+                }
+                else
+                {
+                    Debug.Assert(false, "UvHandle not initialized with queueCloseHandle action");
+                    return false;
                 }
             }
             return true;

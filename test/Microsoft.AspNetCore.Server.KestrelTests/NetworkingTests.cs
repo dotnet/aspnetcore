@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             {
                 called = true;
                 trigger.Dispose();
-            });
+            }, (a, b) => { });
             trigger.Send();
             loop.Run();
             loop.Dispose();
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             var loop = new UvLoopHandle(_logger);
             loop.Init(_uv);
             var tcp = new UvTcpHandle(_logger);
-            tcp.Init(loop);
+            tcp.Init(loop, (a, b) => { });
             var address = ServerAddress.FromUrl("http://localhost:0/");
             tcp.Bind(address);
             tcp.Dispose();
@@ -75,14 +75,14 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             var loop = new UvLoopHandle(_logger);
             loop.Init(_uv);
             var tcp = new UvTcpHandle(_logger);
-            tcp.Init(loop);
+            tcp.Init(loop, (a, b) => { });
             var port = TestServer.GetNextPort();
             var address = ServerAddress.FromUrl($"http://localhost:{port}/");
             tcp.Bind(address);
             tcp.Listen(10, (stream, status, error, state) =>
             {
                 var tcp2 = new UvTcpHandle(_logger);
-                tcp2.Init(loop);
+                tcp2.Init(loop, (a, b) => { });
                 stream.Accept(tcp2);
                 tcp2.Dispose();
                 stream.Dispose();
@@ -117,15 +117,14 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             var loop = new UvLoopHandle(_logger);
             loop.Init(_uv);
             var tcp = new UvTcpHandle(_logger);
-            tcp.Init(loop);
+            tcp.Init(loop, (a, b) => { });
             var port = TestServer.GetNextPort();
             var address = ServerAddress.FromUrl($"http://localhost:{port}/");
             tcp.Bind(address);
             tcp.Listen(10, (_, status, error, state) =>
             {
-                Console.WriteLine("Connected");
                 var tcp2 = new UvTcpHandle(_logger);
-                tcp2.Init(loop);
+                tcp2.Init(loop, (a, b) => { });
                 tcp.Accept(tcp2);
                 var data = Marshal.AllocCoTaskMem(500);
                 tcp2.ReadStart(
@@ -140,7 +139,6 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                     null);
                 tcp.Dispose();
             }, null);
-            Console.WriteLine("Task.Run");
             var t = Task.Run(async () =>
             {
                 var socket = new Socket(
@@ -179,15 +177,14 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             var loop = new UvLoopHandle(_logger);
             loop.Init(_uv);
             var tcp = new UvTcpHandle(_logger);
-            tcp.Init(loop);
+            tcp.Init(loop, (a, b) => { });
             var port = TestServer.GetNextPort();
             var address = ServerAddress.FromUrl($"http://localhost:{port}/");
             tcp.Bind(address);
             tcp.Listen(10, (_, status, error, state) =>
             {
-                Console.WriteLine("Connected");
                 var tcp2 = new UvTcpHandle(_logger);
-                tcp2.Init(loop);
+                tcp2.Init(loop, (a, b) => { });
                 tcp.Accept(tcp2);
                 var data = Marshal.AllocCoTaskMem(500);
                 tcp2.ReadStart(
@@ -227,7 +224,6 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                     null);
                 tcp.Dispose();
             }, null);
-            Console.WriteLine("Task.Run");
             var t = Task.Run(async () =>
             {
                 var socket = new Socket(
@@ -268,9 +264,6 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 #else
                     var count = await socket.ReceiveAsync(new[] { buffer }, SocketFlags.None);
 #endif
-                    Console.WriteLine("count {0} {1}",
-                        count,
-                        System.Text.Encoding.ASCII.GetString(buffer.Array, 0, count));
                     if (count <= 0) break;
                 }
                 socket.Dispose();

@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Networking
 {
-    public class UvLoopHandle : UvHandle
+    public class UvLoopHandle : UvMemory
     {
         public UvLoopHandle(IKestrelTrace logger) : base(logger)
         {
@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Networking
 
         unsafe protected override bool ReleaseHandle()
         {
-            var memory = this.handle;
+            var memory = handle;
             if (memory != IntPtr.Zero)
             {
                 // loop_close clears the gcHandlePtr
@@ -46,6 +46,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Networking
 
                 DestroyMemory(memory, gcHandlePtr);
             }
+
             return true;
         }
     }

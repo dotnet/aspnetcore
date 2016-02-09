@@ -21,13 +21,14 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             _logger = engine.Log;
         }
 
+        [Fact]
         public void InitAndCloseServerPipe()
         {
             var loop = new UvLoopHandle(_logger);
             var pipe = new UvPipeHandle(_logger);
 
             loop.Init(_uv);
-            pipe.Init(loop, true);
+            pipe.Init(loop, (a, b) => { }, true);
             pipe.Bind(@"\\.\pipe\InitAndCloseServerPipe");
             pipe.Dispose();
 
@@ -38,18 +39,19 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
         }
 
+        [Fact(Skip = "Test needs to be fixed (UvException: Error -4082 EBUSY resource busy or locked from loop_close)")]
         public void ServerPipeListenForConnections()
         {
             var loop = new UvLoopHandle(_logger);
             var serverListenPipe = new UvPipeHandle(_logger);
 
             loop.Init(_uv);
-            serverListenPipe.Init(loop, false);
+            serverListenPipe.Init(loop, (a, b) => { }, false);
             serverListenPipe.Bind(@"\\.\pipe\ServerPipeListenForConnections");
             serverListenPipe.Listen(128, (_1, status, error, _2) =>
             {
                 var serverConnectionPipe = new UvPipeHandle(_logger);
-                serverConnectionPipe.Init(loop, true);
+                serverConnectionPipe.Init(loop, (a, b) => { }, true);
                 try
                 {
                     serverListenPipe.Accept(serverConnectionPipe);
@@ -92,7 +94,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 var connect = new UvConnectRequest(new KestrelTrace(new TestKestrelTrace()));
 
                 loop2.Init(_uv);
-                clientConnectionPipe.Init(loop2, true);
+                clientConnectionPipe.Init(loop2, (a, b) => { }, true);
                 connect.Init(loop2);
                 connect.Connect(clientConnectionPipe, @"\\.\pipe\ServerPipeListenForConnections", (_1, status, error, _2) =>
                 {
@@ -120,6 +122,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         }
 
 
+        [Fact(Skip = "Test needs to be fixed (UvException: Error -4088 EAGAIN resource temporarily unavailable from accept)")]
         public void ServerPipeDispatchConnections()
         {
             var pipeName = @"\\.\pipe\ServerPipeDispatchConnections" + Guid.NewGuid().ToString("n");
@@ -132,12 +135,12 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             var serverConnectionTcpDisposedEvent = new ManualResetEvent(false);
 
             var serverListenPipe = new UvPipeHandle(_logger);
-            serverListenPipe.Init(loop, false);
+            serverListenPipe.Init(loop, (a, b) => { }, false);
             serverListenPipe.Bind(pipeName);
             serverListenPipe.Listen(128, (_1, status, error, _2) =>
             {
                 serverConnectionPipe = new UvPipeHandle(_logger);
-                serverConnectionPipe.Init(loop, true);
+                serverConnectionPipe.Init(loop, (a, b) => { }, true);
                 try
                 {
                     serverListenPipe.Accept(serverConnectionPipe);
@@ -152,13 +155,13 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             }, null);
 
             var serverListenTcp = new UvTcpHandle(_logger);
-            serverListenTcp.Init(loop);
+            serverListenTcp.Init(loop, (a, b) => { });
             var address = ServerAddress.FromUrl("http://localhost:54321/");
             serverListenTcp.Bind(address);
             serverListenTcp.Listen(128, (_1, status, error, _2) =>
             {
                 var serverConnectionTcp = new UvTcpHandle(_logger);
-                serverConnectionTcp.Init(loop);
+                serverConnectionTcp.Init(loop, (a, b) => { });
                 serverListenTcp.Accept(serverConnectionTcp);
 
                 serverConnectionPipeAcceptedEvent.WaitOne();
@@ -188,7 +191,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 var connect = new UvConnectRequest(new KestrelTrace(new TestKestrelTrace()));
 
                 loop2.Init(_uv);
-                clientConnectionPipe.Init(loop2, true);
+                clientConnectionPipe.Init(loop2, (a, b) => { }, true);
                 connect.Init(loop2);
                 connect.Connect(clientConnectionPipe, pipeName, (_1, status, error, _2) =>
                 {
@@ -208,7 +211,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                                 return;
                             }
                             var clientConnectionTcp = new UvTcpHandle(_logger);
-                            clientConnectionTcp.Init(loop2);
+                            clientConnectionTcp.Init(loop2, (a, b) => { });
                             clientConnectionPipe.Accept(clientConnectionTcp);
                             var buf2 = loop2.Libuv.buf_init(Marshal.AllocHGlobal(64), 64);
                             clientConnectionTcp.ReadStart(

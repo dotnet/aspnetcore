@@ -14,16 +14,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Networking
         {
         }
 
-        public void Init(UvLoopHandle loop)
-        {
-            CreateMemory(
-                loop.Libuv,
-                loop.ThreadId,
-                loop.Libuv.handle_size(Libuv.HandleType.TCP));
-
-            _uv.tcp_init(loop, this);
-        }
-
         public void Init(UvLoopHandle loop, Action<Action<IntPtr>, IntPtr> queueCloseHandle)
         {
             CreateHandle(

@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         private void PostCallback()
         {
             ListenPipe = new UvPipeHandle(Log);
-            ListenPipe.Init(Thread.Loop, false);
+            ListenPipe.Init(Thread.Loop, Thread.QueueCloseHandle, false);
             ListenPipe.Bind(_pipeName);
             ListenPipe.Listen(Constants.ListenBacklog,
                 (pipe, status, error, state) => ((ListenerPrimary)state).OnListenPipe(pipe, status, error), this);
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             }
 
             var dispatchPipe = new UvPipeHandle(Log);
-            dispatchPipe.Init(Thread.Loop, true);
+            dispatchPipe.Init(Thread.Loop, Thread.QueueCloseHandle, true);
 
             try
             {

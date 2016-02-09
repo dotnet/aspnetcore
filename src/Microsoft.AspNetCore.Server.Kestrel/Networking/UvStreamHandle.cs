@@ -15,13 +15,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Networking
         private readonly static Libuv.uv_alloc_cb _uv_alloc_cb = (IntPtr handle, int suggested_size, out Libuv.uv_buf_t buf) => UvAllocCb(handle, suggested_size, out buf);
         private readonly static Libuv.uv_read_cb _uv_read_cb = (IntPtr handle, int status, ref Libuv.uv_buf_t buf) => UvReadCb(handle, status, ref buf);
 
-        public Action<UvStreamHandle, int, Exception, object> _listenCallback;
-        public object _listenState;
+        private Action<UvStreamHandle, int, Exception, object> _listenCallback;
+        private object _listenState;
         private GCHandle _listenVitality;
 
-        public Func<UvStreamHandle, int, object, Libuv.uv_buf_t> _allocCallback;
-        public Action<UvStreamHandle, int, object> _readCallback;
-        public object _readState;
+        private Func<UvStreamHandle, int, object, Libuv.uv_buf_t> _allocCallback;
+        private Action<UvStreamHandle, int, object> _readCallback;
+        private object _readState;
         private GCHandle _readVitality;
 
         protected UvStreamHandle(IKestrelTrace logger) : base(logger)

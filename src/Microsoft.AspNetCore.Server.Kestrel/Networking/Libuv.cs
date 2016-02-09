@@ -30,6 +30,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Networking
                 _uv_close = NativeDarwinMonoMethods.uv_close;
                 _uv_async_init = NativeDarwinMonoMethods.uv_async_init;
                 _uv_async_send = NativeDarwinMonoMethods.uv_async_send;
+                _uv_unsafe_async_send = NativeDarwinMonoMethods.uv_unsafe_async_send;
                 _uv_tcp_init = NativeDarwinMonoMethods.uv_tcp_init;
                 _uv_tcp_bind = NativeDarwinMonoMethods.uv_tcp_bind;
                 _uv_tcp_open = NativeDarwinMonoMethods.uv_tcp_open;
@@ -71,6 +72,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Networking
                 _uv_close = NativeMethods.uv_close;
                 _uv_async_init = NativeMethods.uv_async_init;
                 _uv_async_send = NativeMethods.uv_async_send;
+                _uv_unsafe_async_send = NativeMethods.uv_unsafe_async_send;
                 _uv_tcp_init = NativeMethods.uv_tcp_init;
                 _uv_tcp_bind = NativeMethods.uv_tcp_bind;
                 _uv_tcp_open = NativeMethods.uv_tcp_open;
@@ -205,6 +207,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Networking
         public void async_send(UvAsyncHandle handle)
         {
             Check(_uv_async_send(handle));
+        }
+
+        protected Func<IntPtr, int> _uv_unsafe_async_send;
+        public void unsafe_async_send(IntPtr handle)
+        {
+            Check(_uv_unsafe_async_send(handle));
         }
 
         protected Func<UvLoopHandle, UvTcpHandle, int> _uv_tcp_init;
@@ -510,6 +518,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Networking
             [DllImport("libuv", CallingConvention = CallingConvention.Cdecl)]
             public extern static int uv_async_send(UvAsyncHandle handle);
 
+            [DllImport("libuv", CallingConvention = CallingConvention.Cdecl, EntryPoint = "uv_async_send")]
+            public extern static int uv_unsafe_async_send(IntPtr handle);
+
             [DllImport("libuv", CallingConvention = CallingConvention.Cdecl)]
             public static extern int uv_tcp_init(UvLoopHandle loop, UvTcpHandle handle);
 
@@ -617,6 +628,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Networking
 
             [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
             public extern static int uv_async_send(UvAsyncHandle handle);
+
+            [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl, EntryPoint = "uv_async_send")]
+            public extern static int uv_unsafe_async_send(IntPtr handle);
 
             [DllImport("__Internal", CallingConvention = CallingConvention.Cdecl)]
             public static extern int uv_tcp_init(UvLoopHandle loop, UvTcpHandle handle);

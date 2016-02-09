@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             DispatchPipe = new UvPipeHandle(Log);
 
             var tcs = new TaskCompletionSource<int>(this);
-            Thread.Post(tcs2 => StartCallback(tcs2), tcs);
+            Thread.Post(state => StartCallback((TaskCompletionSource<int>)state), tcs);
             return tcs.Task;
         }
 
@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         {
             try
             {
-                DispatchPipe.Init(Thread.Loop, true);
+                DispatchPipe.Init(Thread.Loop, Thread.QueueCloseHandle, true);
                 var connect = new UvConnectRequest(Log);
                 connect.Init(Thread.Loop);
                 connect.Connect(

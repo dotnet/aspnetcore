@@ -13,24 +13,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Networking
         {
         }
 
-        public void Init(UvLoopHandle loop, bool ipc)
-        {
-            CreateMemory(
-                loop.Libuv,
-                loop.ThreadId, 
-                loop.Libuv.handle_size(Libuv.HandleType.NAMED_PIPE));
-
-            _uv.pipe_init(loop, this, ipc);
-        }
-
-        public void Init(UvLoopHandle loop, Action<Action<IntPtr>, IntPtr> queueCloseHandle)
+        public void Init(UvLoopHandle loop, Action<Action<IntPtr>, IntPtr> queueCloseHandle, bool ipc = false)
         {
             CreateHandle(
                 loop.Libuv, 
                 loop.ThreadId,
-                loop.Libuv.handle_size(Libuv.HandleType.TCP), queueCloseHandle);
+                loop.Libuv.handle_size(Libuv.HandleType.NAMED_PIPE), queueCloseHandle);
 
-            _uv.pipe_init(loop, this, false);
+            _uv.pipe_init(loop, this, ipc);
         }
 
         public void Bind(string name)
