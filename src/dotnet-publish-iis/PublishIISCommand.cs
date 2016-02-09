@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Xml;
 using System.Xml.Linq;
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ProjectModel;
 using Microsoft.Extensions.Configuration;
 
@@ -32,11 +33,17 @@ namespace Microsoft.AspNetCore.Tools.PublishIIS
             var webConfigPath = Path.Combine(_publishFolder, webRoot, "web.config");
             if (File.Exists(webConfigPath))
             {
+                Reporter.Output.WriteLine($"Updating web.config at '{webConfigPath}'");
+
                 try
                 {
                     webConfigXml = XDocument.Load(webConfigPath);
                 }
                 catch (XmlException) { }
+            }
+            else
+            {
+                Reporter.Output.WriteLine($"No web.config found. Creating '{webConfigPath}'");
             }
 
             var applicationName = Path.ChangeExtension(GetApplicationName(applicationBasePath), "exe");
