@@ -2,7 +2,6 @@ use import="Json"
 use import="Environment"
 
 default NO_PARALLEL_TEST_PROJECTS='${E("NO_PARALLEL_TEST_PROJECTS")}'
-default KOREBUILD_TEST_DNXCORE='${E("KOREBUILD_TEST_DNXCORE")}'
 default KOREBUILD_TEST_SKIPMONO='${E("KOREBUILD_TEST_SKIPMONO")}'
 
 @{/*
