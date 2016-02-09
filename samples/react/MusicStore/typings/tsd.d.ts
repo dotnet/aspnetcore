@@ -9,3 +9,4 @@
 /// <reference path="react-router-bootstrap/react-router-bootstrap.d.ts" />
 /// <reference path="react-router-redux/react-router-redux.d.ts" />
 /// <reference path="redux-thunk/redux-thunk.d.ts" />
+/// <reference path="whatwg-fetch/whatwg-fetch.d.ts" />

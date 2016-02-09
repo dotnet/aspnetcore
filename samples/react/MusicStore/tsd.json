@@ -37,6 +37,9 @@
     },
     "redux-thunk/redux-thunk.d.ts": {
       "commit": "e69fe60f2d6377ea4fae539493997b098f52cad1"
+    },
+    "whatwg-fetch/whatwg-fetch.d.ts": {
+      "commit": "f4b1797c1201b6c575668f5d7ea12d9b1ab21846"
     }
   }
 }
