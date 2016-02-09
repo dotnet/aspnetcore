@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 [ -z "$KOREBUILD_DOTNET_CHANNEL" ] && KOREBUILD_DOTNET_CHANNEL=beta
+[ -z "$KOREBUILD_DOTNET_VERSION" ] && KOREBUILD_DOTNET_VERSION=1.0.0.001248
 
 targets=""
 filename=$0
@@ -60,7 +61,7 @@ else
     export DOTNET_HOME=$DOTNET_INSTALL_DIR/share/dotnet/cli
     export KOREBUILD_FOLDER="$(dirname $thisDir)"
     chmod +x $thisDir/dotnet-install.sh
-    $thisDir/dotnet-install.sh --channel $KOREBUILD_DOTNET_CHANNEL
+    $thisDir/dotnet-install.sh --channel $KOREBUILD_DOTNET_CHANNEL --version $KOREBUILD_DOTNET_VERSION
     # ==== Temporary ====
     if ! type dnvm > /dev/null 2>&1; then
         source $thisDir/dnvm.sh

@@ -3,15 +3,21 @@
 # Licensed under the MIT license. See LICENSE file in the project root for full license information.
 #
 
-param([string]$Channel="dev")
-
+param(
+   [string]$Channel="dev",
+   [string]$version="Latest"
+)
 
 $ErrorActionPreference="Stop"
 $ProgressPreference="SilentlyContinue"
 
+$fileVersion = $Version
+if ($fileVersion -eq "Latest") {
+    $fileVersion = "latest"
+}
 $Feed="https://dotnetcli.blob.core.windows.net/dotnet"
-$DotNetFileName="dotnet-win-x64.latest.zip"
-$DotNetUrl="$Feed/$Channel/Binaries/Latest"
+$DotNetFileName="dotnet-win-x64.$fileVersion.zip"
+$DotNetUrl="$Feed/$Channel/Binaries/$Version"
 
 function say($str)
 {
@@ -34,21 +40,29 @@ if (Test-Path $LocalFile)
     $LocalVersion = $LocalData[1].Trim()
     if ($LocalVersion -and $LocalHash)
     {
-        $RemoteResponse = Invoke-WebRequest -UseBasicParsing "$Feed/$Channel/dnvm/latest.win.version"
-        $RemoteData = @([Text.Encoding]::UTF8.GetString($RemoteResponse.Content).Split([char[]]@(), [StringSplitOptions]::RemoveEmptyEntries));
-        $RemoteHash = $RemoteData[0].Trim()
-        $RemoteVersion = $RemoteData[1].Trim()
-
-        if (!$RemoteVersion -or !$RemoteHash) {
-            throw "Invalid response from feed"
-        }
-
-        say "Latest version: $RemoteVersion"
-        say "Local Version: $LocalVersion"
-
-        if($LocalHash -eq $RemoteHash)
+        if ($Version -eq "Latest")
         {
-            say "You already have the latest version"
+            $RemoteResponse = Invoke-WebRequest -UseBasicParsing "$Feed/$Channel/dnvm/latest.win.version"
+            $RemoteData = @([Text.Encoding]::UTF8.GetString($RemoteResponse.Content).Split([char[]]@(), [StringSplitOptions]::RemoveEmptyEntries));
+            $RemoteHash = $RemoteData[0].Trim()
+            $RemoteVersion = $RemoteData[1].Trim()
+
+            if (!$RemoteVersion -or !$RemoteHash) {
+                throw "Invalid response from feed"
+            }
+
+            say "Latest version: $RemoteVersion"
+            say "Local Version: $LocalVersion"
+
+            if($LocalHash -eq $RemoteHash)
+            {
+                say "You already have the latest version"
+                exit 0
+            }
+        }
+        elseif ($LocalVersion -eq $Version)
+        {
+            say "$Version is already installed."
             exit 0
         }
     }

@@ -1,5 +1,3 @@
-#!/usr/bin/env sh
-#
 # Copyright (c) .NET Foundation and contributors. All rights reserved.
 # Licensed under the MIT license. See LICENSE file in the project root for full license information.
 #
@@ -162,10 +160,17 @@ install_dotnet()
         say_err "Ending install due to missing pre-reqs"
         return 1;
     fi
+
+    if [ "$VERSION" == "Latest" ]; then
+      local fileVersion=latest
+    else
+      local fileVersion=$VERSION
+    fi
+
     local os=$(current_os)
     local installLocation="$PREFIX/share/dotnet"
-    local dotnet_url="https://dotnetcli.blob.core.windows.net/dotnet/$CHANNEL/Binaries/Latest"
-    local dotnet_filename="dotnet-$os-x64.latest.tar.gz"
+    local dotnet_url="https://dotnetcli.blob.core.windows.net/dotnet/$CHANNEL/Binaries/$VERSION"
+    local dotnet_filename="dotnet-$os-x64.$fileVersion.tar.gz"
 
     if [ "$RELINK" = "0" ]; then
         if [ "$FORCE" = "0" ]; then
@@ -288,5 +293,6 @@ elif [ -z "$PREFIX" ]; then
 fi
 
 [ -z "$CHANNEL" ] && CHANNEL="dev"
+[ -z "$VERSION" ] && VERSION="Latest"
 
 install_dotnet
