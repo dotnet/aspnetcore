@@ -103,9 +103,9 @@ namespace TestOutput
 
 ");
             Instrumentation.EndContext();
-            DefineSection("WriteLiteralsToInHere", async(__razor_template_writer) => {
+            DefineSection("WriteLiteralsToInHere", async(__razor_section_writer) => {
                 Instrumentation.BeginContext(2045, 2618, true);
-                WriteLiteralTo(__razor_template_writer, @"
+                WriteLiteralTo(__razor_section_writer, @"
     <p>This is line 1 nested</p>
     <p>This is line 2 nested</p>
     <p>This is line 3 nested</p>
@@ -136,7 +136,7 @@ namespace TestOutput
     <p>This is line 28 nested</p>
     <p>This is line 29 nested</p>
     <p>This is l");
-                WriteLiteralTo(__razor_template_writer, @"ine 30 nested</p>
+                WriteLiteralTo(__razor_section_writer, @"ine 30 nested</p>
     <p>This is line 31 nested</p>
     <p>This is line 32 nested</p>
     <p>This is line 33 nested</p>
@@ -166,7 +166,7 @@ namespace TestOutput
     <p>This is line 57 nested</p>
     <p>This is line 58 nested</p>
     <p>This is line 59 ne");
-                WriteLiteralTo(__razor_template_writer, @"sted</p>
+                WriteLiteralTo(__razor_section_writer, @"sted</p>
     <p>This is line 60 nested</p>
     <p>This is line 61 nested</p>
     <p>This is line 62 nested</p>
@@ -233,9 +233,9 @@ namespace TestOutput
 <p>This is line 43</p>hi!");
             WriteLiteral("\r\n");
             Instrumentation.EndContext();
-            DefineSection("WriteLiteralsToInHereAlso", async(__razor_template_writer) => {
+            DefineSection("WriteLiteralsToInHereAlso", async(__razor_section_writer) => {
                 Instrumentation.BeginContext(5728, 1023, true);
-                WriteLiteralTo(__razor_template_writer, @"
+                WriteLiteralTo(__razor_section_writer, @"
     <p>This is line 1 nested</p>
     <p>This is line 2 nested</p>
     <p>This is line 3 nested</p>

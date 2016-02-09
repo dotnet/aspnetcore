@@ -37,9 +37,9 @@ namespace TestOutput
             Instrumentation.BeginContext(69, 2, true);
             WriteLiteral("\r\n");
             Instrumentation.EndContext();
-            DefineSection("MySection", async(__razor_template_writer) => {
+            DefineSection("MySection", async(__razor_section_writer) => {
                 Instrumentation.BeginContext(91, 21, true);
-                WriteLiteralTo(__razor_template_writer, "\r\n    <div>\r\n        ");
+                WriteLiteralTo(__razor_section_writer, "\r\n    <div>\r\n        ");
                 Instrumentation.EndContext();
                 __tagHelperExecutionContext = __tagHelperScopeManager.Begin("mytaghelper", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "test", async() => {
                     Instrumentation.BeginContext(215, 52, true);
@@ -101,11 +101,11 @@ AddHtmlAttributeValue(" ", 199, DateTime.Now, 200, 14, false);
                     __tagHelperExecutionContext.Output.Content = await __tagHelperExecutionContext.Output.GetChildContentAsync();
                 }
                 Instrumentation.BeginContext(112, 245, false);
-                WriteTo(__razor_template_writer, __tagHelperExecutionContext.Output);
+                WriteTo(__razor_section_writer, __tagHelperExecutionContext.Output);
                 Instrumentation.EndContext();
                 __tagHelperExecutionContext = __tagHelperScopeManager.End();
                 Instrumentation.BeginContext(357, 14, true);
-                WriteLiteralTo(__razor_template_writer, "\r\n    </div>\r\n");
+                WriteLiteralTo(__razor_section_writer, "\r\n    </div>\r\n");
                 Instrumentation.EndContext();
             }
             );

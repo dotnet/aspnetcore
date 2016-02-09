@@ -15,6 +15,7 @@ namespace Microsoft.AspNetCore.Razor.CodeGenerators.Visitors
         private const string ItemParameterName = "item";
         private const string ValueWriterName = "__razor_attribute_value_writer";
         private const string TemplateWriterName = "__razor_template_writer";
+        private const string SectionWriterName = "__razor_section_writer";
         private const int MaxStringLiteralLength = 1024;
 
         private CSharpPaddingBuilder _paddingBuilder;
@@ -377,9 +378,9 @@ namespace Microsoft.AspNetCore.Razor.CodeGenerators.Visitors
                    .WriteParameterSeparator();
 
             var currentTargetWriterName = Context.TargetWriterName;
-            Context.TargetWriterName = TemplateWriterName;
+            Context.TargetWriterName = SectionWriterName;
 
-            using (Writer.BuildAsyncLambda(endLine: false, parameterNames: TemplateWriterName))
+            using (Writer.BuildAsyncLambda(endLine: false, parameterNames: SectionWriterName))
             {
                 Accept(chunk.Children);
             }

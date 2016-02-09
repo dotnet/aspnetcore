@@ -14,7 +14,7 @@ namespace TestOutput
         #pragma warning disable 1998
         public override async Task ExecuteAsync()
         {
-            DefineSection("Link", async(__razor_template_writer) => {
+            DefineSection("Link", async(__razor_section_writer) => {
             }
             );
             Instrumentation.BeginContext(13, 23, true);

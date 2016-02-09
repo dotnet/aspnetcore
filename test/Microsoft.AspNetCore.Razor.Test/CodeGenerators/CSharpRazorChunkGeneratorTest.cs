@@ -397,7 +397,7 @@ namespace Microsoft.AspNetCore.Razor.Test.Generator
                     documentAbsoluteIndex: 204,
                     documentLineIndex: 13,
                     documentCharacterOffsetIndex: 5,
-                    generatedAbsoluteIndex: 1197,
+                    generatedAbsoluteIndex: 1196,
                     generatedLineIndex: 60,
                     generatedCharacterOffsetIndex: 6,
                     contentLength: 3),
