@@ -1,0 +1,13 @@
+{
+  "name": "redux-typed",
+  "version": "1.0.0",
+  "description": "Helpers for building React+Redux apps with strong TypeScript type checking everywhere",
+  "main": "main.js",
+  "typings": "main.d.ts",
+  "scripts": {
+    "prepublish": "tsd update && tsc && echo 'Finished building NPM package \"redux-typed\"'",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Microsoft",
+  "license": "Apache-2.0"
+}
