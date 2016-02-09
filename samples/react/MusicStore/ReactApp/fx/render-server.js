@@ -1,7 +1,7 @@
 require('./require-ts-babel')(); // Enable loading TS/TSX/JSX/ES2015 modules
 var url = require('url');
-var domainTasks = require('domain-tasks');
-var baseUrl = require('domain-tasks/fetch').baseUrl;
+var domainTask = require('domain-task');
+var baseUrl = require('domain-task/fetch').baseUrl;
 
 function render(bootModulePath, absoluteRequestUrl, requestPathAndQuery, callback) {
     var bootFunc = require(bootModulePath);
@@ -19,11 +19,11 @@ function render(bootModulePath, absoluteRequestUrl, requestPathAndQuery, callbac
     };
     
     // Open a new domain that can track all the async tasks commenced during first render
-    domainTasks.run(function() {
+    domainTask.run(function() {
         baseUrl(absoluteRequestUrl);
 
         // Since route matching is asynchronous, add the rendering itself to the list of tasks we're awaiting
-        domainTasks.addTask(new Promise(function (resolve, reject) {
+        domainTask.addTask(new Promise(function (resolve, reject) {
             // Now actually perform the first render that will match a route and commence associated tasks
             bootFunc(params, function(error, result) {
                 if (error) {

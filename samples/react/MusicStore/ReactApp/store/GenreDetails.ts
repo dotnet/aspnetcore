@@ -1,4 +1,4 @@
-import { fetch } from 'domain-tasks/fetch';
+import { fetch } from 'domain-task/fetch';
 import { typeName, isActionType, Action, Reducer } from '../fx/TypedRedux';
 import { ActionCreator } from './';
 import { Album } from './FeaturedAlbums';
