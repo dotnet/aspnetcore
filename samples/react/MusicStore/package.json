@@ -32,6 +32,7 @@
     "react-router-bootstrap": "^0.20.1",
     "react-router-redux": "^2.1.0",
     "redux": "^3.2.1",
-    "redux-thunk": "^1.0.3"
+    "redux-thunk": "^1.0.3",
+    "redux-typed": "^1.0.0"
   }
 }

@@ -1,5 +1,5 @@
 import { fetch } from 'domain-task/fetch';
-import { typeName, isActionType, Action, Reducer } from '../fx/TypedRedux';
+import { typeName, isActionType, Action, Reducer } from 'redux-typed';
 import { ActionCreator } from './';
 
 // -----------------

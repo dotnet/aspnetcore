@@ -1,4 +1,4 @@
-import { ActionCreatorGeneric } from '../fx/TypedRedux';
+import { ActionCreatorGeneric } from 'redux-typed';
 import * as FeaturedAlbums from './FeaturedAlbums';
 import * as GenreList from './GenreList';
 import * as GenreDetails from './GenreDetails';

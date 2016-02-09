@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Link } from 'react-router';
-import { provide } from '../../fx/TypedRedux';
+import { provide } from 'redux-typed';
 import { ApplicationState }  from '../../store';
 import * as GenreDetailsStore from '../../store/GenreDetails';
 import { AlbumTile } from './AlbumTile';
