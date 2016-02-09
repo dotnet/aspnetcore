@@ -21,6 +21,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel
 
             Addresses = GetAddresses(configuration);
             ThreadCount = GetThreadCount(configuration);
+            ShutdownTimeout = GetShutdownTimeout(configuration);
             NoDelay = GetNoDelay(configuration);
             PoolingParameters = new KestrelServerPoolingParameters(configuration);
         }
@@ -28,6 +29,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel
         public ICollection<string> Addresses { get; }
 
         public int ThreadCount { get; set; }
+
+        public TimeSpan ShutdownTimeout { get; set; }
 
         public bool NoDelay { get; set; }
 
@@ -91,6 +94,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel
             }
 
             return ProcessorThreadCount;
+        }
+
+        private TimeSpan GetShutdownTimeout(IConfiguration configuration)
+        {
+            var shutdownTimeoutString = configuration["kestrel.shutdownTimout"];
+
+            float shutdownTimeout;
+            if (float.TryParse(shutdownTimeoutString, NumberStyles.Float, CultureInfo.InvariantCulture, out shutdownTimeout))
+            {
+                return TimeSpan.FromSeconds(shutdownTimeout);
+            }
+
+            return TimeSpan.FromSeconds(5);
         }
 
         private static bool GetNoDelay(IConfiguration configuration)

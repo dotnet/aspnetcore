@@ -39,8 +39,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
             await StartAsync(address, thread).ConfigureAwait(false);
 
-            await Thread.PostAsync(_this => _this.PostCallback(), 
-                                    this).ConfigureAwait(false);
+            await Thread.PostAsync(state => ((ListenerPrimary)state).PostCallback(),
+                                   this).ConfigureAwait(false);
         }
 
         private void PostCallback()
@@ -98,6 +98,27 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         ((UvStreamHandle)state).Dispose();
                     },
                     socket);
+            }
+        }
+
+        public override async Task DisposeAsync()
+        {
+            // Call base first so the ListenSocket gets closed and doesn't
+            // try to dispatch connections to closed pipes.
+            await base.DisposeAsync();
+
+            if (Thread.FatalError == null && ListenPipe != null)
+            {
+                await Thread.PostAsync(state =>
+                {
+                    var listener = (ListenerPrimary)state;
+                    listener.ListenPipe.Dispose();
+
+                    foreach (var dispatchPipe in listener._dispatchPipes)
+                    {
+                        dispatchPipe.Dispose();
+                    }
+                }, this);
             }
         }
     }

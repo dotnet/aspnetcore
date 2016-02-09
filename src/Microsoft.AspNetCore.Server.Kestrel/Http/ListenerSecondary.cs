@@ -5,7 +5,6 @@ using System;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Networking;
 using Microsoft.Extensions.Logging;
@@ -16,7 +15,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
     /// A secondary listener is delegated requests from a primary listener via a named pipe or 
     /// UNIX domain socket.
     /// </summary>
-    public abstract class ListenerSecondary : ListenerContext, IDisposable
+    public abstract class ListenerSecondary : ListenerContext, IAsyncDisposable
     {
         private string _pipeName;
         private IntPtr _ptr;
@@ -155,7 +154,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             }
         }
 
-        public void Dispose()
+        public async Task DisposeAsync()
         {
             // Ensure the event loop is still running.
             // If the event loop isn't running and we try to wait on this Post
@@ -163,16 +162,31 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             // the exception that stopped the event loop will never be surfaced.
             if (Thread.FatalError == null)
             {
-                Thread.Send(listener =>
+                await Thread.PostAsync(state =>
                 {
+                    var listener = (ListenerSecondary)state;
                     listener.DispatchPipe.Dispose();
                     listener.FreeBuffer();
+                }, this);
+
+                await ConnectionManager.CloseConnectionsAsync();
+
+                await Thread.PostAsync(state =>
+                {
+                    var listener = (ListenerSecondary)state;
+                    var writeReqPool = listener.WriteReqPool;
+                    while (writeReqPool.Count > 0)
+                    {
+                        writeReqPool.Dequeue().Dispose();
+                    }
                 }, this);
             }
             else
             {
                 FreeBuffer();
             }
+
+            Memory2.Dispose();
         }
     }
 }

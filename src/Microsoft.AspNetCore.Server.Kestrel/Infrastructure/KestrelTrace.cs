@@ -23,6 +23,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel
         private static readonly Action<ILogger, long, Exception> _connectionDisconnect;
         private static readonly Action<ILogger, long, Exception> _connectionError;
         private static readonly Action<ILogger, long, int, Exception> _connectionDisconnectedWrite;
+        private static readonly Action<ILogger, Exception> _notAllConnectionsClosedGracefully;
 
         protected readonly ILogger _logger;
 
@@ -37,12 +38,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel
             _connectionWriteFin = LoggerMessage.Define<long>(LogLevel.Debug, 7, @"Connection id ""{ConnectionId}"" sending FIN.");
             _connectionWroteFin = LoggerMessage.Define<long, int>(LogLevel.Debug, 8, @"Connection id ""{ConnectionId}"" sent FIN with status ""{Status}"".");
             _connectionKeepAlive = LoggerMessage.Define<long>(LogLevel.Debug, 9, @"Connection id ""{ConnectionId}"" completed keep alive response.");
-            _connectionDisconnect = LoggerMessage.Define<long>(LogLevel.Debug, 10, @"Connection id ""{ConnectionId}"" disconnected.");
+            _connectionDisconnect = LoggerMessage.Define<long>(LogLevel.Debug, 10, @"Connection id ""{ConnectionId}"" disconnecting.");
             // ConnectionWrite: Reserved: 11
             // ConnectionWriteCallback: Reserved: 12
             // ApplicationError: Reserved: 13 - LoggerMessage.Define overload not present 
             _connectionError = LoggerMessage.Define<long>(LogLevel.Information, 14, @"Connection id ""{ConnectionId}"" communication error");
             _connectionDisconnectedWrite = LoggerMessage.Define<long, int>(LogLevel.Debug, 15, @"Connection id ""{ConnectionId}"" write of ""{count}"" bytes to disconnected client.");
+            _notAllConnectionsClosedGracefully = LoggerMessage.Define(LogLevel.Debug, 16, "Some connections failed to close gracefully during server shutdown.");
         }
 
         public KestrelTrace(ILogger logger)
@@ -126,6 +128,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel
         public virtual void ConnectionDisconnectedWrite(long connectionId, int count, Exception ex)
         {
             _connectionDisconnectedWrite(_logger, connectionId, count, ex);
+        }
+
+        public virtual void NotAllConnectionsClosedGracefully()
+        {
+            _notAllConnectionsClosedGracefully(_logger, null);
         }
 
         public virtual void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)

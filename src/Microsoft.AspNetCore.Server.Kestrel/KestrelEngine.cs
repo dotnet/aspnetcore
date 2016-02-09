@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Http;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Networking;
 
@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel
 
         public IDisposable CreateServer(ServerAddress address)
         {
-            var listeners = new List<IDisposable>();
+            var listeners = new List<IAsyncDisposable>();
 
             var usingPipes = address.IsUnixPipe;
 
@@ -91,22 +91,32 @@ namespace Microsoft.AspNetCore.Server.Kestrel
 
                     first = false;
                 }
+
                 return new Disposable(() =>
                 {
-                    foreach (var listener in listeners)
-                    {
-                        listener.Dispose();
-                    }
+                    DisposeListeners(listeners);
                 });
             }
             catch
             {
-                foreach (var listener in listeners)
-                {
-                    listener.Dispose();
-                }
+                DisposeListeners(listeners);
 
                 throw;
+            }
+        }
+
+        private void DisposeListeners(List<IAsyncDisposable> listeners)
+        {
+            var disposeTasks = new List<Task>();
+
+            foreach (var listener in listeners)
+            {
+                 disposeTasks.Add(listener.DisposeAsync());
+            }
+
+            if (!Task.WhenAll(disposeTasks).Wait(ServerInformation.ShutdownTimeout))
+            {
+                Log.NotAllConnectionsClosedGracefully();
             }
         }
     }

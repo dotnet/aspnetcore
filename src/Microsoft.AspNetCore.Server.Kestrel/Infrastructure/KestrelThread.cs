@@ -27,8 +27,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel
         private static readonly Action<object, object> _threadCallbackAdapter = (callback, state) => ((Action<KestrelThread>)callback).Invoke((KestrelThread)state);
         private static readonly Action<object, object> _socketCallbackAdapter = (callback, state) => ((Action<SocketOutput>)callback).Invoke((SocketOutput)state);
         private static readonly Action<object, object> _tcsCallbackAdapter = (callback, state) => ((Action<TaskCompletionSource<int>>)callback).Invoke((TaskCompletionSource<int>)state);
-        private static readonly Action<object, object> _listenerPrimaryCallbackAdapter = (callback, state) => ((Action<ListenerPrimary>)callback).Invoke((ListenerPrimary)state);
-        private static readonly Action<object, object> _listenerSecondaryCallbackAdapter = (callback, state) => ((Action<ListenerSecondary>)callback).Invoke((ListenerSecondary)state);
+        private static readonly Action<object, object> _postAsyncCallbackAdapter = (callback, state) => ((Action<object>)callback).Invoke(state);
 
         private readonly KestrelEngine _engine;
         private readonly IApplicationLifetime _appLifetime;
@@ -78,23 +77,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                 return;
             }
 
-            var stepTimeout = (int)(timeout.TotalMilliseconds / 3); 
+            var stepTimeout = (int)(timeout.TotalMilliseconds / 2);
 
             Post(t => t.OnStop());
             if (!_thread.Join(stepTimeout))
             {
                 try
                 {
-                    Post(t => t.OnStopRude());
+                    Post(t => t.OnStopImmediate());
                     if (!_thread.Join(stepTimeout))
                     {
-                        Post(t => t.OnStopImmediate());
-                        if (!_thread.Join(stepTimeout))
-                        {
 #if NET451
-                            _thread.Abort();
+                        _thread.Abort();
 #endif
-                        }
                     }
                 }
                 catch (ObjectDisposedException)
@@ -118,11 +113,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel
 
         private void OnStop()
         {
-            _post.Unreference();
-        }
-
-        private void OnStopRude()
-        {
+            // If the listeners were all disposed gracefully there should be no handles
+            // left to dispose other than _post.
+            // We dispose everything here in the event they are not closed gracefully.
             _engine.Libuv.walk(
                 _loop,
                 (ptr, arg) =>
@@ -134,6 +127,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                     }
                 },
                 IntPtr.Zero);
+
+            _post.Unreference();
         }
 
         private void OnStopImmediate()
@@ -179,14 +174,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel
             _post.Send();
         }
 
-        public Task PostAsync(Action<ListenerPrimary> callback, ListenerPrimary state)
+        public Task PostAsync(Action<object> callback, object state)
         {
             var tcs = new TaskCompletionSource<object>();
             lock (_workSync)
             {
                 _workAdding.Enqueue(new Work
                 {
-                    CallbackAdapter = _listenerPrimaryCallbackAdapter,
+                    CallbackAdapter = _postAsyncCallbackAdapter,
                     Callback = callback,
                     State = state,
                     Completion = tcs
@@ -194,35 +189,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel
             }
             _post.Send();
             return tcs.Task;
-        }
-
-        public Task PostAsync(Action<ListenerSecondary> callback, ListenerSecondary state)
-        {
-            var tcs = new TaskCompletionSource<object>();
-            lock (_workSync)
-            {
-                _workAdding.Enqueue(new Work
-                {
-                    CallbackAdapter = _listenerSecondaryCallbackAdapter,
-                    Callback = callback,
-                    State = state,
-                    Completion = tcs
-                });
-            }
-            _post.Send();
-            return tcs.Task;
-        }
-
-        public void Send(Action<ListenerSecondary> callback, ListenerSecondary state)
-        {
-            if (_loop.ThreadId == Thread.CurrentThread.ManagedThreadId)
-            {
-                callback.Invoke(state);
-            }
-            else
-            {
-                PostAsync(callback, state).Wait();
-            }
         }
 
         private void PostCloseHandle(Action<IntPtr> callback, IntPtr handle)

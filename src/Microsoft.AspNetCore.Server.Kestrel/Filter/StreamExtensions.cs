@@ -9,15 +9,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Filter
 {
     public static class StreamExtensions
     {
-        public static async Task<MemoryPoolBlock2> CopyToAsync(this Stream source, Stream destination, MemoryPoolBlock2 block)
+        public static async Task CopyToAsync(this Stream source, Stream destination, MemoryPoolBlock2 block)
         {
             int bytesRead;
             while ((bytesRead = await source.ReadAsync(block.Array, block.Data.Offset, block.Data.Count)) != 0)
             {
                 await destination.WriteAsync(block.Array, block.Data.Offset, bytesRead);
             }
-
-            return block;
         }
     }
 }

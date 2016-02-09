@@ -20,7 +20,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         private const int _initialTaskQueues = 64;
         private const int _maxPooledWriteContexts = 32;
 
-        private static readonly WaitCallback _returnBlocks = (state) => ReturnBlocks((MemoryPoolBlock2)state);
         private static readonly Action<object> _connectionCancellation = (state) => ((SocketOutput)state).CancellationTriggered();
 
         private readonly KestrelThread _thread;
@@ -205,17 +204,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         {
             switch (endType)
             {
-                case ProduceEndType.SocketShutdownSend:
+                case ProduceEndType.SocketShutdown:
                     WriteAsync(default(ArraySegment<byte>),
                         default(CancellationToken),
                         socketShutdownSend: true,
-                        socketDisconnect: false);
+                        socketDisconnect: true,
+                        isSync: true);
                     break;
                 case ProduceEndType.SocketDisconnect:
                     WriteAsync(default(ArraySegment<byte>),
                         default(CancellationToken),
                         socketShutdownSend: false,
-                        socketDisconnect: true);
+                        socketDisconnect: true,
+                        isSync: true);
                     break;
             }
         }
@@ -256,6 +257,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         {
             MemoryPoolBlock2 blockToReturn = null;
 
+
             lock (_returnLock)
             {
                 Debug.Assert(!_lastStart.IsDefault);
@@ -277,7 +279,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
             if (blockToReturn != null)
             {
-                ThreadPool.QueueUserWorkItem(_returnBlocks, blockToReturn);
+                ReturnBlocks(blockToReturn);
             }
         }
 
@@ -593,6 +595,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                     return;
                 }
 
+                Self._log.ConnectionWriteFin(Self._connectionId);
+
                 var shutdownReq = new UvShutdownReq(Self._log);
                 shutdownReq.Init(Self._thread.Loop);
                 shutdownReq.Shutdown(Self._socket, (_shutdownReq, status, state) =>
@@ -618,9 +622,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                     return;
                 }
 
+                // Ensure all blocks are returned before calling OnSocketClosed
+                // to ensure the MemoryPool doesn't get disposed too soon.
+                Self.ReturnAllBlocks();
                 Self._socket.Dispose();
                 Self._connection.OnSocketClosed();
-                Self.ReturnAllBlocks();
                 Self._log.ConnectionStop(Self._connectionId);
                 CompleteWithContextLock();
             }

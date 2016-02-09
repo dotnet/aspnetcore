@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                 var trace = new KestrelTrace(_logger);
                 var engine = new KestrelEngine(new ServiceContext
                 {
-                    FrameFactory = (context, remoteEP, localEP, prepareRequest) => 
+                    FrameFactory = (context, remoteEP, localEP, prepareRequest) =>
                     {
                         return new Frame<TContext>(application, context, remoteEP, localEP, prepareRequest);
                     },

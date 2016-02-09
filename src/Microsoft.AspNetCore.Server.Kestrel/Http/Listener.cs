@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
     /// <summary>
     /// Base class for listeners in Kestrel. Listens for incoming connections
     /// </summary>
-    public abstract class Listener : ListenerContext, IDisposable
+    public abstract class Listener : ListenerContext, IAsyncDisposable
     {
         protected Listener(ServiceContext serviceContext) 
             : base(serviceContext)
@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             connection.Start();
         }
 
-        public void Dispose()
+        public virtual async Task DisposeAsync()
         {
             // Ensure the event loop is still running.
             // If the event loop isn't running and we try to wait on this Post
@@ -85,34 +85,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             // the exception that stopped the event loop will never be surfaced.
             if (Thread.FatalError == null && ListenSocket != null)
             {
-                var tcs = new TaskCompletionSource<int>(this);
-                Thread.Post(
-                    tcs2 =>
+                await Thread.PostAsync(state =>
+                {
+                    var listener = (Listener)state;
+                    listener.ListenSocket.Dispose();
+                }, this);
+
+                await ConnectionManager.CloseConnectionsAsync();
+
+                await Thread.PostAsync(state =>
+                {
+                    var listener = (Listener)state;
+                    var writeReqPool = listener.WriteReqPool;
+                    while (writeReqPool.Count > 0)
                     {
-                        try
-                        {
-                            var socket = (Listener)tcs2.Task.AsyncState;
-                            socket.ListenSocket.Dispose();
-
-                            var writeReqPool = socket.WriteReqPool;
-                            while (writeReqPool.Count > 0)
-                            {
-                                writeReqPool.Dequeue().Dispose();
-                            }
-
-                            tcs2.SetResult(0);
-                        }
-                        catch (Exception ex)
-                        {
-                            tcs2.SetException(ex);
-                        }
-                    },
-                    tcs);
-
-                // REVIEW: Should we add a timeout here to be safe?
-                tcs.Task.Wait();
+                        writeReqPool.Dequeue().Dispose();
+                    }
+                }, this);
             }
 
+            Memory2.Dispose();
             ListenSocket = null;
         }
     }

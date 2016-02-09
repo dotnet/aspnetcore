@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel;
 using Microsoft.AspNetCore.Server.Kestrel.Filter;
@@ -23,11 +24,13 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
             var configuration = new ConfigurationBuilder().Build();
             ServerInformation = new KestrelServerInformation(configuration);
+            ServerInformation.ShutdownTimeout = TimeSpan.FromSeconds(5);
+
             HttpComponentFactory = new HttpComponentFactory(ServerInformation);
         }
 
         public TestServiceContext(IConnectionFilter filter)
-            : base()
+            : this()
         {
             ServerInformation.ConnectionFilter = filter;
         }

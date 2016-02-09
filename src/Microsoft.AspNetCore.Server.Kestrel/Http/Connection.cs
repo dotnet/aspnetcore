@@ -4,6 +4,7 @@
 using System;
 using System.Net;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Filter;
 using Microsoft.AspNetCore.Server.Kestrel.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Networking;
@@ -31,6 +32,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
         private readonly object _stateLock = new object();
         private ConnectionState _connectionState;
+        private TaskCompletionSource<object> _socketClosedTcs;
+        private Task _readFilteredInputTask = TaskUtilities.CompletedTask;
 
         private IPEndPoint _remoteEndPoint;
         private IPEndPoint _localEndPoint;
@@ -44,6 +47,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
             _rawSocketInput = new SocketInput(Memory2, ThreadPool);
             _rawSocketOutput = new SocketOutput(Thread, _socket, Memory2, this, _connectionId, Log, ThreadPool, WriteReqPool);
+
+            ConnectionManager.AddConnection(_connectionId, this);
+        }
+
+        // Internal for testing
+        internal Connection()
+        {
         }
 
         public void Start()
@@ -63,11 +73,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             // Don't initialize _frame until SocketInput and SocketOutput are set to their final values.
             if (ServerInformation.ConnectionFilter == null)
             {
-                SocketInput = _rawSocketInput;
-                SocketOutput = _rawSocketOutput;
+                lock (_stateLock)
+                {
+                    if (_connectionState != ConnectionState.CreatingFrame)
+                    {
+                        throw new InvalidOperationException("Invalid connection state: " + _connectionState);
+                    }
 
-                _frame = CreateFrame();
-                _frame.Start();
+                    _connectionState = ConnectionState.Open;
+
+                    SocketInput = _rawSocketInput;
+                    SocketOutput = _rawSocketOutput;
+
+                    _frame = CreateFrame();
+                    _frame.Start();
+                }
             }
             else
             {
@@ -109,21 +129,51 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             }
         }
 
-        public virtual void Abort()
+        public Task StopAsync()
         {
-            if (_frame != null)
+            lock (_stateLock)
             {
-                // Frame.Abort calls user code while this method is always
-                // called from a libuv thread.
-                System.Threading.ThreadPool.QueueUserWorkItem(state =>
+                switch (_connectionState)
                 {
-                    var connection = (Connection)state;
-                    connection._frame.Abort();
-                }, this);
+                    case ConnectionState.SocketClosed:
+                        return _readFilteredInputTask;
+                    case ConnectionState.CreatingFrame:
+                        _connectionState = ConnectionState.ToDisconnect;
+                        break;
+                    case ConnectionState.Open:
+                        _frame.Stop();
+                        SocketInput.CompleteAwaiting();
+                        break;
+                }
+
+                _socketClosedTcs = new TaskCompletionSource<object>();
+                return Task.WhenAll(_socketClosedTcs.Task, _readFilteredInputTask);
             }
         }
 
-        public void OnSocketClosed()
+        public virtual void Abort()
+        {
+            lock (_stateLock)
+            {
+                if (_connectionState == ConnectionState.CreatingFrame)
+                {
+                    _connectionState = ConnectionState.ToDisconnect;
+                }
+                else
+                {
+                    // Frame.Abort calls user code while this method is always
+                    // called from a libuv thread.
+                    System.Threading.ThreadPool.QueueUserWorkItem(state =>
+                    {
+                        var connection = (Connection)state;
+                        connection._frame.Abort();
+                    }, this);
+                }
+            }
+        }
+
+        // Called on Libuv thread
+        public virtual void OnSocketClosed()
         {
             _rawSocketInput.Dispose();
 
@@ -133,25 +183,64 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             {
                 SocketInput.Dispose();
             }
+
+            lock (_stateLock)
+            {
+                _connectionState = ConnectionState.SocketClosed;
+
+                if (_socketClosedTcs != null)
+                {
+                    // This is always waited on synchronously, so it's safe to
+                    // call on the libuv thread. 
+                    _socketClosedTcs.TrySetResult(null);
+                }
+
+                if (_readFilteredInputTask.IsCompleted)
+                {
+                    ConnectionManager.ConnectionStopped(_connectionId);
+                }
+                else
+                {
+                    _readFilteredInputTask.ContinueWith((t, state) =>
+                    {
+                        var connection = (Connection)state;
+                        connection.ConnectionManager.ConnectionStopped(connection._connectionId);
+                    }, this);
+                }
+            }
         }
 
         private void ApplyConnectionFilter()
         {
-            if (_filterContext.Connection != _libuvStream)
+            lock (_stateLock)
             {
-                var filteredStreamAdapter = new FilteredStreamAdapter(_filterContext.Connection, Memory2, Log, ThreadPool);
+                if (_connectionState == ConnectionState.CreatingFrame)
+                {
+                    _connectionState = ConnectionState.Open;
 
-                SocketInput = filteredStreamAdapter.SocketInput;
-                SocketOutput = filteredStreamAdapter.SocketOutput;
-            }
-            else
-            {
-                SocketInput = _rawSocketInput;
-                SocketOutput = _rawSocketOutput;
-            }
+                    if (_filterContext.Connection != _libuvStream)
+                    {
+                        var filteredStreamAdapter = new FilteredStreamAdapter(_filterContext.Connection, Memory2, Log, ThreadPool);
 
-            _frame = CreateFrame();
-            _frame.Start();
+                        SocketInput = filteredStreamAdapter.SocketInput;
+                        SocketOutput = filteredStreamAdapter.SocketOutput;
+
+                        _readFilteredInputTask = filteredStreamAdapter.ReadInputAsync();
+                    }
+                    else
+                    {
+                        SocketInput = _rawSocketInput;
+                        SocketOutput = _rawSocketOutput;
+                    }
+
+                    _frame = CreateFrame();
+                    _frame.Start();
+                }
+                else
+                {
+                    ConnectionControl.End(ProduceEndType.SocketDisconnect);
+                }
+            }
         }
 
         private static Libuv.uv_buf_t AllocCallback(UvStreamHandle handle, int suggestedSize, object state)
@@ -227,16 +316,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             {
                 switch (endType)
                 {
-                    case ProduceEndType.SocketShutdownSend:
-                        if (_connectionState != ConnectionState.Open)
-                        {
-                            return;
-                        }
-                        _connectionState = ConnectionState.Shutdown;
-
-                        Log.ConnectionWriteFin(_connectionId);
-                        _rawSocketOutput.End(endType);
-                        break;
                     case ProduceEndType.ConnectionKeepAlive:
                         if (_connectionState != ConnectionState.Open)
                         {
@@ -245,12 +324,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
                         Log.ConnectionKeepAlive(_connectionId);
                         break;
+                    case ProduceEndType.SocketShutdown:
                     case ProduceEndType.SocketDisconnect:
-                        if (_connectionState == ConnectionState.Disconnected)
+                        if (_connectionState == ConnectionState.Disconnecting ||
+                            _connectionState == ConnectionState.SocketClosed)
                         {
                             return;
                         }
-                        _connectionState = ConnectionState.Disconnected;
+                        _connectionState = ConnectionState.Disconnecting;
 
                         Log.ConnectionDisconnect(_connectionId);
                         _rawSocketOutput.End(endType);
@@ -261,9 +342,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
         private enum ConnectionState
         {
+            CreatingFrame,
+            ToDisconnect,
             Open,
-            Shutdown,
-            Disconnected
+            Disconnecting,
+            SocketClosed
         }
     }
 }

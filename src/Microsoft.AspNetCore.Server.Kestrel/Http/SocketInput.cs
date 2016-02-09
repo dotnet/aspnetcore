@@ -183,6 +183,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             }
         }
 
+        public void CompleteAwaiting()
+        {
+            Complete();
+        }
+
         public void AbortAwaiting()
         {
             _awaitableError = new TaskCanceledException("The request was aborted");

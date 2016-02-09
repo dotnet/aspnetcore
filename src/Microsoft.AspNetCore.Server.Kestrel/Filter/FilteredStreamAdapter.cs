@@ -15,6 +15,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Filter
         private readonly Stream _filteredStream;
         private readonly Stream _socketInputStream;
         private readonly IKestrelTrace _log;
+        private readonly MemoryPool2 _memory;
+        private MemoryPoolBlock2 _block;
 
         public FilteredStreamAdapter(
             Stream filteredStream,
@@ -28,24 +30,27 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Filter
             _log = logger;
             _filteredStream = filteredStream;
             _socketInputStream = new SocketInputStream(SocketInput);
-
-            var block = memory.Lease();
-            // Use pooled block for copy
-            _filteredStream.CopyToAsync(_socketInputStream, block).ContinueWith((task, state) =>
-            {
-                var returnedBlock = task.Result;
-                returnedBlock.Pool.Return(returnedBlock);
-
-                ((FilteredStreamAdapter)state).OnStreamClose(task);
-            }, this);
+            _memory = memory;
         }
 
         public SocketInput SocketInput { get; private set; }
 
         public ISocketOutput SocketOutput { get; private set; }
 
+        public Task ReadInputAsync()
+        {
+            _block = _memory.Lease();
+            // Use pooled block for copy
+            return _filteredStream.CopyToAsync(_socketInputStream, _block).ContinueWith((task, state) =>
+            {
+                ((FilteredStreamAdapter)state).OnStreamClose(task);
+            }, this);
+        }
+
         private void OnStreamClose(Task copyAsyncTask)
         {
+            _memory.Return(_block);
+
             if (copyAsyncTask.IsFaulted)
             {
                 SocketInput.AbortAwaiting();

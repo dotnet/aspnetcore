@@ -145,20 +145,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                     // If _requestAborted is set, the connection has already been closed.
                     if (Volatile.Read(ref _requestAborted) == 0)
                     {
-                        try
-                        {
-                            // Inform client no more data will ever arrive
-                            ConnectionControl.End(ProduceEndType.SocketShutdownSend);
-
-                            // Wait for client to either disconnect or send unexpected data
-                            await SocketInput;
-                        }
-                        finally
-                        {
-                            // Ensure we *always* disconnect the socket.
-                            // Dispose socket
-                            ConnectionControl.End(ProduceEndType.SocketDisconnect);
-                        }
+                        ConnectionControl.End(ProduceEndType.SocketShutdown);
                     }
                 }
                 catch (Exception ex)
