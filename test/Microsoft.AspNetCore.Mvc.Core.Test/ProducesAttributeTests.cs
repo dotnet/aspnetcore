@@ -106,7 +106,8 @@ namespace Microsoft.AspNetCore.Mvc.Test
             // Assert
             var ex = Assert.Throws<FormatException>(
                        () => new ProducesAttribute(contentTypes[0], contentTypes.Skip(1).ToArray()));
-            Assert.Equal("Invalid value '" + (invalidContentType ?? "<null>") + "'.", ex.Message);
+            Assert.Equal("The header contains invalid values at index 0: '" + (invalidContentType ?? "<null>") + "'",
+                         ex.Message);
         }
 
         [Theory]

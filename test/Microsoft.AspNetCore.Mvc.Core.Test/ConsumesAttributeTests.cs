@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Mvc
         public void Constructor_ForInvalidContentType_Throws(string contentType)
         {
             // Arrange
-            var expectedMessage = string.Format("Invalid value '{0}'.", contentType);
+            var expectedMessage = string.Format("The header contains invalid values at index 0: '{0}'", contentType);
 
             // Act & Assert
             var exception = Assert.Throws<FormatException>(() => new ConsumesAttribute(contentType));
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Mvc
             // Assert
             var ex = Assert.Throws<FormatException>(
                        () => new ConsumesAttribute(contentTypes[0], contentTypes.Skip(1).ToArray()));
-            Assert.Equal("Invalid value '" + (invalidContentType ?? "<null>") + "'.",
+            Assert.Equal("The header contains invalid values at index 0: '" + (invalidContentType ?? "<null>") + "'",
                          ex.Message);
         }
 
