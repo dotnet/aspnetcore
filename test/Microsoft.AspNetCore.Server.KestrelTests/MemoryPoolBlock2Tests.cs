@@ -50,6 +50,8 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                     hit.Seek(ref vectorCh, ref vectorMaxValues, ref vectorMaxValues);
                     Assert.Equal(ch, iterator.GetLength(hit));
                 }
+
+                pool.Return(block);
             }
         }
 
@@ -109,6 +111,10 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                     hit.Seek(ref vectorMaxValues, ref vectorMaxValues, ref vectorCh);
                     Assert.Equal(ch, iterator.GetLength(hit));
                 }
+
+                pool.Return(block1);
+                pool.Return(block2);
+                pool.Return(block3);
             }
         }
 
@@ -192,6 +198,9 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 AssertIterator(iter300a2, block2, block2.End);
                 AssertIterator(iter300b2, block2, block2.End);
                 AssertIterator(iter300c2, block2, block2.End);
+
+                pool.Return(block1);
+                pool.Return(block2);
             }
         }
 
@@ -227,6 +236,9 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
                 endIterator.CopyTo(array, 0, 256, out actual);
                 Assert.Equal(0, actual);
+
+                pool.Return(block1);
+                pool.Return(block2);
             }
         }
 
@@ -260,6 +272,15 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 Assert.Equal(-1, start.Take());
                 Assert.Equal(start.Block, end.Block);
                 Assert.Equal(start.Index, end.Index);
+
+                var block = block1;
+                while (block != null)
+                {
+                    var returnBlock = block;
+                    block = block.Next;
+
+                    pool.Return(returnBlock);
+                }
             }
         }
 
@@ -284,6 +305,11 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 Assert.False(iterStart.IsEnd);
                 Assert.False(iterMid.IsEnd);
                 Assert.True(iterEnd.IsEnd);
+
+                pool.Return(block1);
+                pool.Return(block2);
+                pool.Return(block3);
+                pool.Return(block4);
             }
         }
 

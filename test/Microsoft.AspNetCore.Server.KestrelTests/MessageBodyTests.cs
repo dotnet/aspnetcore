@@ -17,66 +17,72 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         [Fact]
         public void Http10ConnectionClose()
         {
-            var input = new TestInput();
-            var body = MessageBody.For("HTTP/1.0", new FrameRequestHeaders(), input.FrameContext);
-            var stream = new FrameRequestStream().StartAcceptingReads(body);
+            using (var input = new TestInput())
+            {
+                var body = MessageBody.For("HTTP/1.0", new FrameRequestHeaders(), input.FrameContext);
+                var stream = new FrameRequestStream().StartAcceptingReads(body);
 
-            input.Add("Hello", true);
+                input.Add("Hello", true);
 
-            var buffer1 = new byte[1024];
-            var count1 = stream.Read(buffer1, 0, 1024);
-            AssertASCII("Hello", new ArraySegment<byte>(buffer1, 0, 5));
+                var buffer1 = new byte[1024];
+                var count1 = stream.Read(buffer1, 0, 1024);
+                AssertASCII("Hello", new ArraySegment<byte>(buffer1, 0, 5));
 
-            var buffer2 = new byte[1024];
-            var count2 = stream.Read(buffer2, 0, 1024);
-            Assert.Equal(0, count2);
+                var buffer2 = new byte[1024];
+                var count2 = stream.Read(buffer2, 0, 1024);
+                Assert.Equal(0, count2);
+            }
         }
 
         [Fact]
         public async Task Http10ConnectionCloseAsync()
         {
-            var input = new TestInput();
-            var body = MessageBody.For("HTTP/1.0", new FrameRequestHeaders(), input.FrameContext);
-            var stream = new FrameRequestStream().StartAcceptingReads(body);
+            using (var input = new TestInput())
+            {
+                var body = MessageBody.For("HTTP/1.0", new FrameRequestHeaders(), input.FrameContext);
+                var stream = new FrameRequestStream().StartAcceptingReads(body);
 
-            input.Add("Hello", true);
+                input.Add("Hello", true);
 
-            var buffer1 = new byte[1024];
-            var count1 = await stream.ReadAsync(buffer1, 0, 1024);
-            AssertASCII("Hello", new ArraySegment<byte>(buffer1, 0, 5));
+                var buffer1 = new byte[1024];
+                var count1 = await stream.ReadAsync(buffer1, 0, 1024);
+                AssertASCII("Hello", new ArraySegment<byte>(buffer1, 0, 5));
 
-            var buffer2 = new byte[1024];
-            var count2 = await stream.ReadAsync(buffer2, 0, 1024);
-            Assert.Equal(0, count2);
+                var buffer2 = new byte[1024];
+                var count2 = await stream.ReadAsync(buffer2, 0, 1024);
+                Assert.Equal(0, count2);
+            }
         }
 
         [Fact]
         public async Task CanHandleLargeBlocks()
         {
-            var input = new TestInput();
-            var body = MessageBody.For("HTTP/1.0", new FrameRequestHeaders(), input.FrameContext);
-            var stream = new FrameRequestStream().StartAcceptingReads(body);
+            using (var input = new TestInput())
+            {
+                var body = MessageBody.For("HTTP/1.0", new FrameRequestHeaders(), input.FrameContext);
+                var stream = new FrameRequestStream().StartAcceptingReads(body);
 
-            // Input needs to be greater than 4032 bytes to allocate a block not backed by a slab.
-            var largeInput = new string('a', 8192);
+                // Input needs to be greater than 4032 bytes to allocate a block not backed by a slab.
+                var largeInput = new string('a', 8192);
 
-            input.Add(largeInput, true);
-            // Add a smaller block to the end so that SocketInput attempts to return the large
-            // block to the memory pool.
-            input.Add("Hello", true);
+                input.Add(largeInput, true);
+                // Add a smaller block to the end so that SocketInput attempts to return the large
+                // block to the memory pool.
+                input.Add("Hello", true);
 
-            var readBuffer = new byte[8192];
+                var readBuffer = new byte[8192];
 
-            var count1 = await stream.ReadAsync(readBuffer, 0, 8192);
-            Assert.Equal(8192, count1);
-            AssertASCII(largeInput, new ArraySegment<byte>(readBuffer, 0, 8192));
+                var count1 = await stream.ReadAsync(readBuffer, 0, 8192);
+                Assert.Equal(8192, count1);
+                AssertASCII(largeInput, new ArraySegment<byte>(readBuffer, 0, 8192));
 
-            var count2 = await stream.ReadAsync(readBuffer, 0, 8192);
-            Assert.Equal(5, count2);
-            AssertASCII("Hello", new ArraySegment<byte>(readBuffer, 0, 5));
+                var count2 = await stream.ReadAsync(readBuffer, 0, 8192);
+                Assert.Equal(5, count2);
+                AssertASCII("Hello", new ArraySegment<byte>(readBuffer, 0, 5));
 
-            var count3 = await stream.ReadAsync(readBuffer, 0, 8192);
-            Assert.Equal(0, count3);
+                var count3 = await stream.ReadAsync(readBuffer, 0, 8192);
+                Assert.Equal(0, count3);
+            }
         }
 
         private void AssertASCII(string expected, ArraySegment<byte> actual)

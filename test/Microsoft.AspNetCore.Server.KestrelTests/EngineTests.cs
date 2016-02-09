@@ -113,7 +113,6 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             var address = ServerAddress.FromUrl($"http://localhost:{port}/");
             var started = engine.CreateServer(address);
 
-            Console.WriteLine("Started");
             var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             socket.Connect(new IPEndPoint(IPAddress.Loopback, port));
             socket.Send(Encoding.ASCII.GetBytes("POST / HTTP/1.0\r\n\r\nHello World"));
@@ -1058,7 +1057,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         throw;
                     }
 
-                    readTcs.SetCanceled();
+                    readTcs.SetException(new Exception("This shouldn't be reached."));
                 }
             }, testContext))
             {
@@ -1122,6 +1121,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                     for (int i = 0; i < 100; i++)
                     {
                         await response.WriteAsync(largeString, lifetime.RequestAborted);
+                        registrationWh.Wait(1000);
                     }
                 }
                 catch (Exception ex)

@@ -161,6 +161,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
                     }
                 }
 
+                foreach (var block in _blocks)
+                {
+                    GC.SuppressFinalize(block);
+                }
+
                 // N/A: free unmanaged resources (unmanaged objects) and override a finalizer below.
 
                 // N/A: set large fields to null.

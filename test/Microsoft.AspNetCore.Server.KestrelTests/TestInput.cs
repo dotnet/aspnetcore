@@ -10,19 +10,22 @@ using Microsoft.AspNetCore.Server.Kestrel.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.KestrelTests
 {
-    class TestInput : IConnectionControl, IFrameControl
+    class TestInput : IConnectionControl, IFrameControl, IDisposable
     {
+        private MemoryPool2 _memoryPool;
+
         public TestInput()
         {
             var trace = new KestrelTrace(new TestKestrelTrace());
             var ltp = new LoggingThreadPool(trace);
-            var memory2 = new MemoryPool2();
             FrameContext = new FrameContext
             {
-                SocketInput = new SocketInput(memory2, ltp),
                 ConnectionControl = this,
                 FrameControl = this
             };
+
+            _memoryPool = new MemoryPool2();
+            FrameContext.SocketInput = new SocketInput(_memoryPool, ltp);
         }
 
         public FrameContext FrameContext { get; set; }
@@ -80,6 +83,12 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
         Task IFrameControl.FlushAsync(CancellationToken cancellationToken)
         {
             return Task.FromResult(0);
+        }
+
+        public void Dispose()
+        {
+            FrameContext.SocketInput.Dispose();
+            _memoryPool.Dispose();
         }
     }
 }

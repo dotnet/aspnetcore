@@ -116,6 +116,8 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
             Assert.Equal(expectResult, found);
             Assert.Equal(expectIndex, begin.Index - block.Start);
+
+            _pool.Return(block);
         }
 
         [Fact]
@@ -174,6 +176,11 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
             // Can't put anything by the end
             Assert.False(head.Put(0xFF));
+
+            for (var i = 0; i < 4; ++i)
+            {
+                _pool.Return(blocks[i]);
+            }
         }
 
         [Fact]
@@ -193,6 +200,8 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             // Assert
             Assert.Equal(0x0102030405060708, result);
             Assert.Equal(originalIndex, scan.Index);
+
+            _pool.Return(block);
         }
 
         [Theory]
@@ -229,6 +238,9 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             // Assert
             Assert.Equal(0x0102030405060708, result);
             Assert.Equal(originalIndex, scan.Index);
+
+            _pool.Return(block);
+            _pool.Return(nextBlock);
         }
 
         [Theory]
@@ -268,6 +280,9 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             // Assert
             Assert.Equal(0x08, result);
             Assert.NotEqual(originalIndex, scan.Index);
+
+            _pool.Return(block);
+            _pool.Return(nextBlock);
         }
 
         [Theory]
@@ -304,6 +319,8 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             // Assert
             Assert.Equal(expectedResult, result);
             Assert.Equal(expectedKnownString, knownString);
+
+            _pool.Return(block);
         }
 
         [Theory]
@@ -329,6 +346,8 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
             // Assert
             Assert.Equal(expectedResult, result);
             Assert.Equal(expectedKnownString, knownString);
+
+            _pool.Return(block);
         }
     }
 }

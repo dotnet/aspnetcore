@@ -33,8 +33,8 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 }
             };
 
-            using (var kestrelEngine = new KestrelEngine(mockLibuv, new TestServiceContext()))
             using (var memory = new MemoryPool2())
+            using (var kestrelEngine = new KestrelEngine(mockLibuv, new TestServiceContext()))
             {
                 kestrelEngine.Start(count: 1);
 
@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 var socket = new MockSocket(kestrelThread.Loop.ThreadId, new TestKestrelTrace());
                 var trace = new KestrelTrace(new TestKestrelTrace());
                 var ltp = new LoggingThreadPool(trace);
-                var socketOutput = new SocketOutput(kestrelThread, socket, memory, null, 0, trace, ltp, new Queue<UvWriteReq>());
+                var socketOutput = new SocketOutput(kestrelThread, socket, memory, new MockConnection(), 0, trace, ltp, new Queue<UvWriteReq>());
 
                 // I doubt _maxBytesPreCompleted will ever be over a MB. If it is, we should change this test.
                 var bufferSize = 1048576;
@@ -60,6 +60,10 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
                 // Assert
                 Assert.True(completedWh.Wait(1000));
+
+                // Cleanup
+                var cleanupTask = socketOutput.WriteAsync(
+                    default(ArraySegment<byte>), default(CancellationToken), socketDisconnect: true);
             }
         }
 
@@ -80,8 +84,8 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 }
             };
 
-            using (var kestrelEngine = new KestrelEngine(mockLibuv, new TestServiceContext()))
             using (var memory = new MemoryPool2())
+            using (var kestrelEngine = new KestrelEngine(mockLibuv, new TestServiceContext()))
             {
                 kestrelEngine.Start(count: 1);
 
@@ -89,7 +93,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 var socket = new MockSocket(kestrelThread.Loop.ThreadId, new TestKestrelTrace());
                 var trace = new KestrelTrace(new TestKestrelTrace());
                 var ltp = new LoggingThreadPool(trace);
-                var socketOutput = new SocketOutput(kestrelThread, socket, memory, null, 0, trace, ltp, new Queue<UvWriteReq>());
+                var socketOutput = new SocketOutput(kestrelThread, socket, memory, new MockConnection(), 0, trace, ltp, new Queue<UvWriteReq>());
 
                 var bufferSize = maxBytesPreCompleted;
                 var buffer = new ArraySegment<byte>(new byte[bufferSize], 0, bufferSize);
@@ -117,6 +121,15 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 // Assert
                 // Finishing the first write should allow the second write to pre-complete.
                 Assert.True(completedWh.Wait(1000));
+
+                // Cleanup
+                var cleanupTask = socketOutput.WriteAsync(
+                    default(ArraySegment<byte>), default(CancellationToken), socketDisconnect: true);
+
+                foreach (var triggerCompleted in completeQueue)
+                {
+                    triggerCompleted(0);
+                }
             }
         }
 
@@ -139,8 +152,8 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 }
             };
 
-            using (var kestrelEngine = new KestrelEngine(mockLibuv, new TestServiceContext()))
             using (var memory = new MemoryPool2())
+            using (var kestrelEngine = new KestrelEngine(mockLibuv, new TestServiceContext()))
             {
                 kestrelEngine.Start(count: 1);
 
@@ -148,7 +161,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 var socket = new MockSocket(kestrelThread.Loop.ThreadId, new TestKestrelTrace());
                 var trace = new KestrelTrace(new TestKestrelTrace());
                 var ltp = new LoggingThreadPool(trace);
-                var socketOutput = new SocketOutput(kestrelThread, socket, memory, null, 0, trace, ltp, new Queue<UvWriteReq>());
+                var socketOutput = new SocketOutput(kestrelThread, socket, memory, new MockConnection(), 0, trace, ltp, new Queue<UvWriteReq>());
 
                 var bufferSize = maxBytesPreCompleted / 2;
                 var data = new byte[bufferSize];
@@ -183,6 +196,15 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 // Assert
                 // Finishing the first write should allow the second write to pre-complete.
                 Assert.True(writeTask2.Wait(1000));
+
+                // Cleanup
+                var cleanupTask = socketOutput.WriteAsync(
+                    default(ArraySegment<byte>), default(CancellationToken), socketDisconnect: true);
+
+                foreach (var triggerCompleted in completeQueue)
+                {
+                    triggerCompleted(0);
+                }
             }
         }
 
@@ -203,8 +225,8 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 }
             };
 
-            using (var kestrelEngine = new KestrelEngine(mockLibuv, new TestServiceContext()))
             using (var memory = new MemoryPool2())
+            using (var kestrelEngine = new KestrelEngine(mockLibuv, new TestServiceContext()))
             {
                 kestrelEngine.Start(count: 1);
 
@@ -212,74 +234,87 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 var socket = new MockSocket(kestrelThread.Loop.ThreadId, new TestKestrelTrace());
                 var trace = new KestrelTrace(new TestKestrelTrace());
                 var ltp = new LoggingThreadPool(trace);
-                ISocketOutput socketOutput = new SocketOutput(kestrelThread, socket, memory, new MockConnection(socket), 0, trace, ltp, new Queue<UvWriteReq>());
+                
+                using (var mockConnection = new MockConnection())
+                {
+                    ISocketOutput socketOutput = new SocketOutput(kestrelThread, socket, memory, mockConnection, 0, trace, ltp, new Queue<UvWriteReq>());
 
-                var bufferSize = maxBytesPreCompleted;
+                    var bufferSize = maxBytesPreCompleted;
 
-                var data = new byte[bufferSize];
-                var fullBuffer = new ArraySegment<byte>(data, 0, bufferSize);
+                    var data = new byte[bufferSize];
+                    var fullBuffer = new ArraySegment<byte>(data, 0, bufferSize);
 
-                var cts = new CancellationTokenSource();
+                    var cts = new CancellationTokenSource();
 
-                // Act 
-                var task1Success = socketOutput.WriteAsync(fullBuffer, cancellationToken: cts.Token);
-                // task1 should complete successfully as < _maxBytesPreCompleted
+                    // Act 
+                    var task1Success = socketOutput.WriteAsync(fullBuffer, cancellationToken: cts.Token);
+                    // task1 should complete successfully as < _maxBytesPreCompleted
 
-                // First task is completed and successful
-                Assert.True(task1Success.IsCompleted);
-                Assert.False(task1Success.IsCanceled);
-                Assert.False(task1Success.IsFaulted);
+                    // First task is completed and successful
+                    Assert.True(task1Success.IsCompleted);
+                    Assert.False(task1Success.IsCanceled);
+                    Assert.False(task1Success.IsFaulted);
 
-                // following tasks should wait.
-                var task2Throw = socketOutput.WriteAsync(fullBuffer, cancellationToken: cts.Token);
-                var task3Success = socketOutput.WriteAsync(fullBuffer, cancellationToken: default(CancellationToken));
+                    // following tasks should wait.
+                    var task2Throw = socketOutput.WriteAsync(fullBuffer, cancellationToken: cts.Token);
+                    var task3Success = socketOutput.WriteAsync(fullBuffer, cancellationToken: default(CancellationToken));
 
-                // Give time for tasks to percolate
-                await Task.Delay(1000);
+                    // Give time for tasks to percolate
+                    await Task.Delay(1000);
 
-                // Second task is not completed
-                Assert.False(task2Throw.IsCompleted);
-                Assert.False(task2Throw.IsCanceled);
-                Assert.False(task2Throw.IsFaulted);
+                    // Second task is not completed
+                    Assert.False(task2Throw.IsCompleted);
+                    Assert.False(task2Throw.IsCanceled);
+                    Assert.False(task2Throw.IsFaulted);
 
-                // Third task is not completed 
-                Assert.False(task3Success.IsCompleted);
-                Assert.False(task3Success.IsCanceled);
-                Assert.False(task3Success.IsFaulted);
+                    // Third task is not completed 
+                    Assert.False(task3Success.IsCompleted);
+                    Assert.False(task3Success.IsCanceled);
+                    Assert.False(task3Success.IsFaulted);
 
-                cts.Cancel();
+                    cts.Cancel();
 
-                // Second task is now canceled
-                await Assert.ThrowsAsync<TaskCanceledException>(() => task2Throw);
-                Assert.True(task2Throw.IsCanceled);
+                    // Second task is now canceled
+                    await Assert.ThrowsAsync<TaskCanceledException>(() => task2Throw);
+                    Assert.True(task2Throw.IsCanceled);
 
-                // Third task is now completed
-                await task3Success;
+                    // Third task is now completed
+                    await task3Success;
 
-                // Fourth task immediately cancels as the token is canceled 
-                var task4Throw = socketOutput.WriteAsync(fullBuffer, cancellationToken: cts.Token);
+                    // Fourth task immediately cancels as the token is canceled 
+                    var task4Throw = socketOutput.WriteAsync(fullBuffer, cancellationToken: cts.Token);
 
-                Assert.True(task4Throw.IsCompleted);
-                Assert.True(task4Throw.IsCanceled);
-                Assert.False(task4Throw.IsFaulted);
+                    Assert.True(task4Throw.IsCompleted);
+                    Assert.True(task4Throw.IsCanceled);
+                    Assert.False(task4Throw.IsFaulted);
 
-                var task5Success = socketOutput.WriteAsync(fullBuffer, cancellationToken: default(CancellationToken));
-                // task5 should complete immediately
+                    var task5Success = socketOutput.WriteAsync(fullBuffer, cancellationToken: default(CancellationToken));
+                    // task5 should complete immediately
 
-                Assert.True(task5Success.IsCompleted);
-                Assert.False(task5Success.IsCanceled);
-                Assert.False(task5Success.IsFaulted);
+                    Assert.True(task5Success.IsCompleted);
+                    Assert.False(task5Success.IsCanceled);
+                    Assert.False(task5Success.IsFaulted);
 
-                cts = new CancellationTokenSource();
+                    cts = new CancellationTokenSource();
 
-                var task6Success = socketOutput.WriteAsync(fullBuffer, cancellationToken: cts.Token);
-                // task6 should complete immediately but not cancel as its cancellation token isn't set
+                    var task6Success = socketOutput.WriteAsync(fullBuffer, cancellationToken: cts.Token);
+                    // task6 should complete immediately but not cancel as its cancellation token isn't set
 
-                Assert.True(task6Success.IsCompleted);
-                Assert.False(task6Success.IsCanceled);
-                Assert.False(task6Success.IsFaulted);
+                    Assert.True(task6Success.IsCompleted);
+                    Assert.False(task6Success.IsCanceled);
+                    Assert.False(task6Success.IsFaulted);
 
-                Assert.True(true);
+                    Assert.True(true);
+
+                    // Cleanup
+                    var cleanupTask = ((SocketOutput)socketOutput).WriteAsync(
+                        default(ArraySegment<byte>), default(CancellationToken), socketDisconnect: true);
+
+                    foreach (var triggerCompleted in completeQueue)
+                    {
+                        triggerCompleted(0);
+                    }
+                }
             }
         }
 
@@ -300,9 +335,8 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 }
             };
 
-            using (var kestrelEngine = new KestrelEngine(mockLibuv, new TestServiceContext()))
             using (var memory = new MemoryPool2())
-            using (var abortedSource = new CancellationTokenSource())
+            using (var kestrelEngine = new KestrelEngine(mockLibuv, new TestServiceContext()))
             {
                 kestrelEngine.Start(count: 1);
 
@@ -311,50 +345,61 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 var trace = new KestrelTrace(new TestKestrelTrace());
                 var ltp = new LoggingThreadPool(trace);
 
-                var mockConnection = new MockConnection(socket);
-                mockConnection.RequestAbortedSource = abortedSource;
-                ISocketOutput socketOutput = new SocketOutput(kestrelThread, socket, memory, mockConnection, 0, trace, ltp, new Queue<UvWriteReq>());
+                using (var mockConnection = new MockConnection())
+                {
+                    var abortedSource = mockConnection.RequestAbortedSource;
+                    ISocketOutput socketOutput = new SocketOutput(kestrelThread, socket, memory, mockConnection, 0, trace, ltp, new Queue<UvWriteReq>());
 
-                var bufferSize = maxBytesPreCompleted;
+                    var bufferSize = maxBytesPreCompleted;
 
-                var data = new byte[bufferSize];
-                var fullBuffer = new ArraySegment<byte>(data, 0, bufferSize);
+                    var data = new byte[bufferSize];
+                    var fullBuffer = new ArraySegment<byte>(data, 0, bufferSize);
 
-                // Act 
-                var task1Success = socketOutput.WriteAsync(fullBuffer, cancellationToken: abortedSource.Token);
-                // task1 should complete successfully as < _maxBytesPreCompleted
+                    // Act 
+                    var task1Success = socketOutput.WriteAsync(fullBuffer, cancellationToken: abortedSource.Token);
+                    // task1 should complete successfully as < _maxBytesPreCompleted
 
-                // First task is completed and successful
-                Assert.True(task1Success.IsCompleted);
-                Assert.False(task1Success.IsCanceled);
-                Assert.False(task1Success.IsFaulted);
+                    // First task is completed and successful
+                    Assert.True(task1Success.IsCompleted);
+                    Assert.False(task1Success.IsCanceled);
+                    Assert.False(task1Success.IsFaulted);
 
-                // following tasks should wait.
-                var task2Success = socketOutput.WriteAsync(fullBuffer, cancellationToken: default(CancellationToken));
-                var task3Canceled = socketOutput.WriteAsync(fullBuffer, cancellationToken: abortedSource.Token);
+                    // following tasks should wait.
+                    var task2Success = socketOutput.WriteAsync(fullBuffer, cancellationToken: default(CancellationToken));
+                    var task3Canceled = socketOutput.WriteAsync(fullBuffer, cancellationToken: abortedSource.Token);
 
-                // Give time for tasks to percolate
-                await Task.Delay(1000);
+                    // Give time for tasks to percolate
+                    await Task.Delay(1000);
 
-                // Second task is not completed
-                Assert.False(task2Success.IsCompleted);
-                Assert.False(task2Success.IsCanceled);
-                Assert.False(task2Success.IsFaulted);
+                    // Second task is not completed
+                    Assert.False(task2Success.IsCompleted);
+                    Assert.False(task2Success.IsCanceled);
+                    Assert.False(task2Success.IsFaulted);
 
-                // Third task is not completed 
-                Assert.False(task3Canceled.IsCompleted);
-                Assert.False(task3Canceled.IsCanceled);
-                Assert.False(task3Canceled.IsFaulted);
+                    // Third task is not completed 
+                    Assert.False(task3Canceled.IsCompleted);
+                    Assert.False(task3Canceled.IsCanceled);
+                    Assert.False(task3Canceled.IsFaulted);
 
-                // Cause the first write to fail.
-                completeQueue.Dequeue()(-1);
+                    // Cause the first write to fail.
+                    completeQueue.Dequeue()(-1);
 
-                // Second task is now completed
-                await task2Success;
+                    // Second task is now completed
+                    await task2Success;
 
-                // Third task is now canceled
-                await Assert.ThrowsAsync<TaskCanceledException>(() => task3Canceled);
-                Assert.True(task3Canceled.IsCanceled);
+                    // Third task is now canceled
+                    await Assert.ThrowsAsync<TaskCanceledException>(() => task3Canceled);
+                    Assert.True(task3Canceled.IsCanceled);
+
+                    // Cleanup
+                    var cleanupTask = ((SocketOutput)socketOutput).WriteAsync(
+                        default(ArraySegment<byte>), default(CancellationToken), socketDisconnect: true);
+
+                    foreach (var triggerCompleted in completeQueue)
+                    {
+                        triggerCompleted(0);
+                    }
+                }
             }
         }
 
@@ -378,8 +423,8 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 }
             };
 
-            using (var kestrelEngine = new KestrelEngine(mockLibuv, new TestServiceContext()))
             using (var memory = new MemoryPool2())
+            using (var kestrelEngine = new KestrelEngine(mockLibuv, new TestServiceContext()))
             {
                 kestrelEngine.Start(count: 1);
 
@@ -387,7 +432,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 var socket = new MockSocket(kestrelThread.Loop.ThreadId, new TestKestrelTrace());
                 var trace = new KestrelTrace(new TestKestrelTrace());
                 var ltp = new LoggingThreadPool(trace);
-                var socketOutput = new SocketOutput(kestrelThread, socket, memory, null, 0, trace, ltp, new Queue<UvWriteReq>());
+                var socketOutput = new SocketOutput(kestrelThread, socket, memory, new MockConnection(), 0, trace, ltp, new Queue<UvWriteReq>());
 
                 var bufferSize = maxBytesPreCompleted;
                 var buffer = new ArraySegment<byte>(new byte[bufferSize], 0, bufferSize);
@@ -435,6 +480,15 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 // Assert
                 // Finishing the first write should allow the second write to pre-complete.
                 Assert.True(completedWh2.Wait(1000));
+
+                // Cleanup
+                var cleanupTask = ((SocketOutput)socketOutput).WriteAsync(
+                    default(ArraySegment<byte>), default(CancellationToken), socketDisconnect: true);
+
+                foreach (var triggerCompleted in completeQueue)
+                {
+                    triggerCompleted(0);
+                }
             }
         }
 
@@ -455,8 +509,8 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 }
             };
 
-            using (var kestrelEngine = new KestrelEngine(mockLibuv, new TestServiceContext()))
             using (var memory = new MemoryPool2())
+            using (var kestrelEngine = new KestrelEngine(mockLibuv, new TestServiceContext()))
             {
                 kestrelEngine.Start(count: 1);
 
@@ -464,7 +518,7 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 var socket = new MockSocket(kestrelThread.Loop.ThreadId, new TestKestrelTrace());
                 var trace = new KestrelTrace(new TestKestrelTrace());
                 var ltp = new LoggingThreadPool(trace);
-                var socketOutput = new SocketOutput(kestrelThread, socket, memory, null, 0, trace, ltp, new Queue<UvWriteReq>());
+                var socketOutput = new SocketOutput(kestrelThread, socket, memory, new MockConnection(), 0, trace, ltp, new Queue<UvWriteReq>());
 
                 // block 1
                 var start = socketOutput.ProducingStart();
@@ -484,6 +538,10 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
                 Assert.True(nBufferWh.Wait(1000));
                 Assert.Equal(2, nBuffers);
+
+                // Cleanup
+                var cleanupTask = socketOutput.WriteAsync(
+                    default(ArraySegment<byte>), default(CancellationToken), socketDisconnect: true);
             }
         }
 

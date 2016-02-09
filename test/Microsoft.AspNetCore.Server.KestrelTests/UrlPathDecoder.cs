@@ -11,7 +11,6 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 {
     public class UrlPathDecoderTests
     {
-
         [Fact]
         public void Empty()
         {
