@@ -1,8 +1,9 @@
 require('./require-ts-babel')(); // Enable loading TS/TSX/JSX/ES2015 modules
 var url = require('url');
-var domainTasks = require('./domain-tasks.ts');
+var domainTasks = require('domain-tasks');
+var baseUrl = require('domain-tasks/fetch').baseUrl;
 
-function render(bootModulePath, requestUrl, callback) {
+function render(bootModulePath, absoluteRequestUrl, requestPathAndQuery, callback) {
     var bootFunc = require(bootModulePath);
     if (typeof bootFunc !== 'function') {
         bootFunc = bootFunc.default;
@@ -12,13 +13,15 @@ function render(bootModulePath, requestUrl, callback) {
     }
     
     var params = {
-        location: url.parse(requestUrl),
-        url: requestUrl,
+        location: url.parse(requestPathAndQuery),
+        url: requestPathAndQuery,
         state: undefined
     };
     
     // Open a new domain that can track all the async tasks commenced during first render
     domainTasks.run(function() {
+        baseUrl(absoluteRequestUrl);
+
         // Since route matching is asynchronous, add the rendering itself to the list of tasks we're awaiting
         domainTasks.addTask(new Promise(function (resolve, reject) {
             // Now actually perform the first render that will match a route and commence associated tasks
@@ -33,19 +36,16 @@ function render(bootModulePath, requestUrl, callback) {
                 }
             });
         }));
-    }).then(function() {
+    }, function(error) {
         // By now, all the data should be loaded, so we can render for real based on the state now
         // TODO: Add an optimisation where, if domain-tasks had no outstanding tasks at the end of
         // the previous render, we don't re-render (we can use the previous html and state).
+        if (error) { console.error(error); throw error; }
         bootFunc(params, callback);
-    }).catch(function(error) {
-        process.nextTick(() => { // Because otherwise you can't throw from inside a catch
-            callback(error, null);
-        });
     });
 }
 
-render('../boot-server.tsx', '/', (err, html) => {
+render('../boot-server.tsx', 'http://localhost:5000', '/', (err, html) => {
     if (err) {
         throw err;
     }

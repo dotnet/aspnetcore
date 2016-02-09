@@ -1,4 +1,4 @@
-import { fetch } from '../fx/tracked-fetch';
+import { fetch } from 'domain-tasks/fetch';
 import { typeName, isActionType, Action, Reducer } from '../fx/TypedRedux';
 import { ActionCreator } from './';
 import { Genre } from './GenreList';

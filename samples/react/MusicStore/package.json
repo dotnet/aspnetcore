@@ -21,6 +21,7 @@
   "dependencies": {
     "bootstrap": "^3.3.6",
     "domain-context": "^0.5.1",
+    "domain-tasks": "^1.0.0",
     "isomorphic-fetch": "^2.2.1",
     "ntypescript": "^1.201602072208.1",
     "react": "^0.14.7",
