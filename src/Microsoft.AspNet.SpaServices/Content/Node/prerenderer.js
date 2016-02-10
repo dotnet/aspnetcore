@@ -8,17 +8,26 @@
 // TODO: Consider some general method for checking if you have all the necessary NPM modules installed,
 // and if not, giving an error that tells you what command to execute to install the missing ones.
 var fs = require('fs');
-var ts = require('ntypescript');
+var ts = requireIfInstalled('ntypescript');
 var babelCore = require('babel-core');
 var resolveBabelRc = require('babel-loader/lib/resolve-rc'); // If this ever breaks, we can easily scan up the directory hierarchy ourselves 
 var origJsLoader = require.extensions['.js'];
 
 function resolveBabelOptions(relativeToFilename) {
     var babelRcText = resolveBabelRc(relativeToFilename);
-    return babelRcText ? JSON.parse(babelRcText) : {};
+    try {
+        return babelRcText ? JSON.parse(babelRcText) : {};
+    } catch (ex) {
+        ex.message = 'Error while parsing babelrc JSON: ' + ex.message;
+        throw ex;
+    }
 }
 
 function loadViaTypeScript(module, filename) {
+    if (!ts) {
+        throw new Error('Can\'t load .ts/.tsx files because the \'ntypescript\' package isn\'t installed.\nModule requested: ' + module);
+    }
+    
     // First perform a minimal transpilation from TS code to ES2015. This is very fast (doesn't involve type checking)
     // and is unlikely to need any special compiler options
     var src = fs.readFileSync(filename, 'utf8');
@@ -42,6 +51,19 @@ function loadViaBabel(module, filename) {
         return module._compile(transformedFile.code, filename);
     } else {
         return origJsLoader.apply(this, arguments);
+    }
+}
+
+function requireIfInstalled(packageName) {
+    return isPackageInstalled(packageName) ? require(packageName) : null;
+}
+
+function isPackageInstalled(packageName) {
+    try {
+        require.resolve(packageName);
+        return true;
+    } catch(e) {
+        return false;
     }
 }
 
