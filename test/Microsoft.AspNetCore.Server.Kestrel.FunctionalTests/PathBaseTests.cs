@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -17,7 +16,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 {
     public class PathBaseTests
     {
-        [ConditionalTheory]
+        [Theory]
         [InlineData("/base", "/base", "/base", "")]
         [InlineData("/base", "/base/", "/base", "/")]
         [InlineData("/base", "/base/something", "/base", "/something")]
@@ -25,13 +24,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [InlineData("/base/more", "/base/more", "/base/more", "")]
         [InlineData("/base/more", "/base/more/something", "/base/more", "/something")]
         [InlineData("/base/more", "/base/more/something/", "/base/more", "/something/")]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Test hangs after execution on Mono.")]
         public Task RequestPathBaseIsServerPathBase(string registerPathBase, string requestPath, string expectedPathBase, string expectedPath)
         {
             return TestPathBase(registerPathBase, requestPath, expectedPathBase, expectedPath);
         }
 
-        [ConditionalTheory]
+        [Theory]
         [InlineData("", "/", "", "/")]
         [InlineData("", "/something", "", "/something")]
         [InlineData("/", "/", "", "/")]
@@ -40,33 +38,29 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [InlineData("/base", "/baseandsomething", "", "/baseandsomething")]
         [InlineData("/base", "/ba", "", "/ba")]
         [InlineData("/base", "/ba/se", "", "/ba/se")]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Test hangs after execution on Mono.")]
         public Task DefaultPathBaseIsEmpty(string registerPathBase, string requestPath, string expectedPathBase, string expectedPath)
         {
             return TestPathBase(registerPathBase, requestPath, expectedPathBase, expectedPath);
         }
 
-        [ConditionalTheory]
+        [Theory]
         [InlineData("", "/", "", "/")]
         [InlineData("/", "/", "", "/")]
         [InlineData("/base", "/base/", "/base", "/")]
         [InlineData("/base/", "/base", "/base", "")]
         [InlineData("/base/", "/base/", "/base", "/")]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Test hangs after execution on Mono.")]
         public Task PathBaseNeverEndsWithSlash(string registerPathBase, string requestPath, string expectedPathBase, string expectedPath)
         {
             return TestPathBase(registerPathBase, requestPath, expectedPathBase, expectedPath);
         }
 
-        [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Test hangs after execution on Mono.")]
+        [Fact]
         public Task PathBaseAndPathPreserveRequestCasing()
         {
             return TestPathBase("/base", "/Base/Something", "/Base", "/Something");
         }
 
-        [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono, SkipReason = "Test hangs after execution on Mono.")]
+        [Fact]
         public Task PathBaseCanHaveUTF8Characters()
         {
             return TestPathBase("/b♫se", "/b♫se/something", "/b♫se", "/something");
