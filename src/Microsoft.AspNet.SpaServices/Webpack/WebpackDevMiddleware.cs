@@ -15,8 +15,6 @@ namespace Microsoft.AspNet.Builder
         const string WebpackDevMiddlewareHostname = "localhost";
         const string WebpackHotMiddlewareEndpoint = "/__webpack_hmr";
 
-        static INodeServices fallbackNodeServices; // Used only if no INodeServices was registered with DI
-
         public static void UseWebpackDevMiddleware(this IApplicationBuilder appBuilder, WebpackDevMiddlewareOptions options = null) {
             // Validate options
             if (options != null) {
@@ -24,17 +22,19 @@ namespace Microsoft.AspNet.Builder
                     throw new ArgumentException("To enable ReactHotModuleReplacement, you must also enable HotModuleReplacement.");
                 }
             }
-
-            // Get the NodeServices instance from DI
-            var nodeServices = (INodeServices)appBuilder.ApplicationServices.GetService(typeof (INodeServices)) ?? fallbackNodeServices;
             
-            // Consider removing the following. Having it means you can get away with not putting app.AddNodeServices()
-            // in your startup file, but then again it might be confusing that you don't need to.
+            // Unlike other consumers of NodeServices, WebpackDevMiddleware dosen't share Node instances, nor does it
+            // use your DI configuration. It's important for WebpackDevMiddleware to have its own private Node instance
+            // because it must *not* restart when files change (if it did, you'd lose all the benefits of Webpack
+            // middleware). And since this is a dev-time-only feature, it doesn't matter if the default transport isn't
+            // as fast as some theoretical future alternative.
             var appEnv = (IApplicationEnvironment)appBuilder.ApplicationServices.GetService(typeof(IApplicationEnvironment));
-            if (nodeServices == null) {
-                nodeServices = fallbackNodeServices = Configuration.CreateNodeServices(NodeHostingModel.Http, appEnv.ApplicationBasePath);
-            }
-            
+            var nodeServices = Configuration.CreateNodeServices(new NodeServicesOptions {
+                HostingModel = NodeHostingModel.Http,
+                ProjectPath = appEnv.ApplicationBasePath,
+                WatchFileExtensions = new string[] {} // Don't watch anything
+            });
+
             // Get a filename matching the middleware Node script
             var script = EmbeddedResourceReader.Read(typeof (WebpackDevMiddleware), "/Content/Node/webpack-dev-middleware.js");
             var nodeScript = new StringAsTempFile(script); // Will be cleaned up on process exit

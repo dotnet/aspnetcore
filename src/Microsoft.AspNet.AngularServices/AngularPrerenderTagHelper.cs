@@ -34,7 +34,10 @@ namespace Microsoft.AspNet.AngularServices
             // in your startup file, but then again it might be confusing that you don't need to.
             if (this.nodeServices == null) {
                 var appEnv = (IApplicationEnvironment)serviceProvider.GetService(typeof (IApplicationEnvironment));
-                this.nodeServices = fallbackNodeServices = Configuration.CreateNodeServices(NodeHostingModel.Http, appEnv.ApplicationBasePath);
+                this.nodeServices = fallbackNodeServices = Configuration.CreateNodeServices(new NodeServicesOptions {
+                    HostingModel = NodeHostingModel.Http,
+                    ProjectPath = appEnv.ApplicationBasePath
+                });
             }
         }
 

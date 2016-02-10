@@ -17,10 +17,18 @@ namespace Microsoft.AspNet.NodeServices {
         
         private int _portNumber;
 		
-		public HttpNodeInstance(string projectPath, int port = 0)
-            : base(EmbeddedResourceReader.Read(typeof(HttpNodeInstance), "/Content/Node/entrypoint-http.js"), projectPath, port.ToString())
+		public HttpNodeInstance(string projectPath, int port = 0, string[] watchFileExtensions = null)
+            : base(EmbeddedResourceReader.Read(typeof(HttpNodeInstance), "/Content/Node/entrypoint-http.js"), projectPath, MakeCommandLineOptions(port, watchFileExtensions))
         {
 		}
+        
+        private static string MakeCommandLineOptions(int port, string[] watchFileExtensions) {
+            var result = "--port " + port.ToString();
+            if (watchFileExtensions != null && watchFileExtensions.Length > 0) {
+                result += " --watch " + string.Join(",", watchFileExtensions);
+            } 
+            return result;
+        }
         
         public override async Task<T> Invoke<T>(NodeInvocationInfo invocationInfo) {
             await this.EnsureReady();

@@ -2,9 +2,12 @@
 // but simplifies things for the consumer of this module.
 var http = require('http');
 var path = require('path');
-var requestedPortOrZero = parseInt(process.argv[2]) || 0; // 0 means 'let the OS decide'
+var parsedArgs = parseArgs(process.argv);
+var requestedPortOrZero = parsedArgs.port || 0; // 0 means 'let the OS decide'
 
-autoQuitOnFileChange(process.cwd(), ['.js', '.jsx', '.ts', '.tsx', '.json', '.html']);
+if (parsedArgs.watch) {
+    autoQuitOnFileChange(process.cwd(), parsedArgs.watch.split(','));
+}
 
 var server = http.createServer(function(req, res) {
     readRequestBodyAsJson(req, function(bodyJson) {
@@ -74,4 +77,23 @@ function autoQuitOnFileChange(rootDir, extensions) {
             process.exit(0);
         }
     });
+}
+
+function parseArgs(args) {
+    // Very simplistic parsing which is sufficient for the cases needed. We don't want to bring in any external
+    // dependencies (such as an args-parsing library) to this file.
+    var result = {};
+    var currentKey = null;
+    args.forEach(function(arg) {
+        if (arg.indexOf('--') === 0) {
+            var argName = arg.substring(2);
+            result[argName] = undefined;
+            currentKey = argName;
+        } else if (currentKey) {
+            result[currentKey] = arg;
+            currentKey = null;
+        }
+    });
+
+    return result;
 }
