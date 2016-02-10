@@ -17,7 +17,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
             : base(serviceContext)
         {
             Memory2 = new MemoryPool2();
-            ConnectionManager = new ConnectionManager();
             WriteReqPool = new Queue<UvWriteReq>(SocketOutput.MaxPooledWriteReqs);
         }
 

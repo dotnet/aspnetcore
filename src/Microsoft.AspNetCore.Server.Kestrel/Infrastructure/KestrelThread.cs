@@ -7,7 +7,6 @@ using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Server.Kestrel.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Networking;
 using Microsoft.Extensions.Logging;
@@ -72,6 +71,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel
             return tcs.Task;
         }
 
+        // This must be called from the libuv event loop.
+        public void AllowStop()
+        {
+            _post.Unreference();
+        }
+
         public void Stop(TimeSpan timeout)
         {
             if (!_initCompleted)
@@ -79,19 +84,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                 return;
             }
 
-            var stepTimeout = (int)(timeout.TotalMilliseconds / 2);
-
-            Post(t => t.OnStop());
-            if (!_thread.Join(stepTimeout))
+            if (_thread.IsAlive)
             {
+                var stepTimeout = (int)(timeout.TotalMilliseconds / 2);
                 try
                 {
-                    Post(t => t.OnStopImmediate());
+                    Post(t => t.OnStopRude());
                     if (!_thread.Join(stepTimeout))
                     {
+                        Post(t => t.OnStopImmediate());
+                        if (!_thread.Join(stepTimeout))
+                        {
 #if NET451
-                        _thread.Abort();
+                            _thread.Abort();
 #endif
+                        }
                     }
                 }
                 catch (ObjectDisposedException)
@@ -113,23 +120,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel
             }
         }
 
-        private void OnStop()
+        private void OnStopRude()
         {
-            // If the listeners were all disposed gracefully there should be no handles
-            // left to dispose other than _post.
-            // We dispose everything here in the event they are not closed gracefully.
-            _engine.Libuv.walk(
-                _loop,
-                (ptr, arg) =>
+            Walk(ptr =>
+            {
+                var handle = UvMemory.FromIntPtr<UvHandle>(ptr);
+                if (handle != _post)
                 {
-                    var handle = UvMemory.FromIntPtr<UvHandle>(ptr);
-                    if (handle != _post)
-                    {
-                        handle.Dispose();
-                    }
-                },
-                IntPtr.Zero);
+                    handle.Dispose();
+                }
+            });
 
+            // uv_unref is idempotent so it's OK to call this here and in AllowStop.
             _post.Unreference();
         }
 
@@ -173,6 +175,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel
             }
             _post.Send();
             return tcs.Task;
+        }
+
+        public void Walk(Action<IntPtr> callback)
+        {
+            _engine.Libuv.walk(
+                _loop,
+                (ptr, arg) =>
+                {
+                    callback(ptr);
+                },
+                IntPtr.Zero);
         }
 
         private void PostCloseHandle(Action<IntPtr> callback, IntPtr handle)

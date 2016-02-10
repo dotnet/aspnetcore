@@ -138,7 +138,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
         /// <param name="block">The block to return. It must have been acquired by calling Lease on the same memory pool instance.</param>
         public void Return(MemoryPoolBlock2 block)
         {
-            Debug.Assert(block.Pool == this, "Returned block was leased from this pool");
+            Debug.Assert(block.Pool == this, "Returned block was not leased from this pool");
 
             if (block.Slab != null && block.Slab.IsActive)
             {

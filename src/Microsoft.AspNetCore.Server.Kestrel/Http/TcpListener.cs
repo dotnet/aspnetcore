@@ -44,7 +44,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 acceptSocket.NoDelay(ServerInformation.NoDelay);
                 listenSocket.Accept(acceptSocket);
                 DispatchConnection(acceptSocket);
-
             }
             catch (UvException ex)
             {

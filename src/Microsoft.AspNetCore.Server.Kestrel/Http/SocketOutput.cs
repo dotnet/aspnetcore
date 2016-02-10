@@ -20,6 +20,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         private const int _initialTaskQueues = 64;
         private const int _maxPooledWriteContexts = 32;
 
+        private static readonly WaitCallback _returnBlocks = (state) => ReturnBlocks((MemoryPoolBlock2)state);
         private static readonly Action<object> _connectionCancellation = (state) => ((SocketOutput)state).CancellationTriggered();
 
         private readonly KestrelThread _thread;
@@ -279,7 +280,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
             if (blockToReturn != null)
             {
-                ReturnBlocks(blockToReturn);
+                ThreadPool.QueueUserWorkItem(_returnBlocks, blockToReturn);
             }
         }
 

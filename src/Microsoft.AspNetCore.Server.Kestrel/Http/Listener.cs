@@ -13,6 +13,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
     /// </summary>
     public abstract class Listener : ListenerContext, IAsyncDisposable
     {
+        private bool _closed;
+
         protected Listener(ServiceContext serviceContext) 
             : base(serviceContext)
         {
@@ -26,6 +28,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         {
             ServerAddress = address;
             Thread = thread;
+            ConnectionManager = new ConnectionManager(thread);
 
             var tcs = new TaskCompletionSource<int>(this);
 
@@ -55,11 +58,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         protected static void ConnectionCallback(UvStreamHandle stream, int status, Exception error, object state)
         {
             var listener = (Listener) state;
+
             if (error != null)
             {
                 listener.Log.LogError(0, error, "Listener.ConnectionCallback");
             }
-            else
+            else if (!listener._closed)
             {
                 listener.OnConnection(stream, status);
             }
@@ -90,14 +94,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 {
                     var listener = (Listener)state;
                     listener.ListenSocket.Dispose();
+
+                    listener._closed = true;
+
+                    listener.ConnectionManager.WalkConnectionsAndClose();
                 }, this);
 
-                await ConnectionManager.CloseConnectionsAsync();
+                await ConnectionManager.WaitForConnectionCloseAsync();
 
                 await Thread.PostAsync(state =>
                 {
-                    var listener = (Listener)state;
-                    var writeReqPool = listener.WriteReqPool;
+                    var writeReqPool = ((Listener)state).WriteReqPool;
                     while (writeReqPool.Count > 0)
                     {
                         writeReqPool.Dequeue().Dispose();

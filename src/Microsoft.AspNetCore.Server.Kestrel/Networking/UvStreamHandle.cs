@@ -3,6 +3,7 @@
 
 using System;
 using System.Runtime.InteropServices;
+using Microsoft.AspNetCore.Server.Kestrel.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Infrastructure;
 using Microsoft.Extensions.Logging;
 
@@ -27,6 +28,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Networking
         protected UvStreamHandle(IKestrelTrace logger) : base(logger)
         {
         }
+
+        public Connection Connection { get; set; }
 
         protected override bool ReleaseHandle()
         {

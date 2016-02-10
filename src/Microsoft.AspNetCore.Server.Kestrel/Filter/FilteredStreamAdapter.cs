@@ -37,11 +37,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Filter
 
         public ISocketOutput SocketOutput { get; private set; }
 
-        public Task ReadInputAsync()
+        public void ReadInput()
         {
             _block = _memory.Lease();
             // Use pooled block for copy
-            return _filteredStream.CopyToAsync(_socketInputStream, _block).ContinueWith((task, state) =>
+            _filteredStream.CopyToAsync(_socketInputStream, _block).ContinueWith((task, state) =>
             {
                 ((FilteredStreamAdapter)state).OnStreamClose(task);
             }, this);

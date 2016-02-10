@@ -33,7 +33,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         private readonly object _stateLock = new object();
         private ConnectionState _connectionState;
         private TaskCompletionSource<object> _socketClosedTcs;
-        private Task _readFilteredInputTask = TaskUtilities.CompletedTask;
 
         private IPEndPoint _remoteEndPoint;
         private IPEndPoint _localEndPoint;
@@ -41,14 +40,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         public Connection(ListenerContext context, UvStreamHandle socket) : base(context)
         {
             _socket = socket;
+            socket.Connection = this;
             ConnectionControl = this;
 
             _connectionId = Interlocked.Increment(ref _lastConnectionId);
 
             _rawSocketInput = new SocketInput(Memory2, ThreadPool);
             _rawSocketOutput = new SocketOutput(Thread, _socket, Memory2, this, _connectionId, Log, ThreadPool, WriteReqPool);
-
-            ConnectionManager.AddConnection(_connectionId, this);
         }
 
         // Internal for testing
@@ -136,7 +134,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 switch (_connectionState)
                 {
                     case ConnectionState.SocketClosed:
-                        return _readFilteredInputTask;
+                        return TaskUtilities.CompletedTask;
                     case ConnectionState.CreatingFrame:
                         _connectionState = ConnectionState.ToDisconnect;
                         break;
@@ -147,7 +145,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 }
 
                 _socketClosedTcs = new TaskCompletionSource<object>();
-                return Task.WhenAll(_socketClosedTcs.Task, _readFilteredInputTask);
+                return _socketClosedTcs.Task;
             }
         }
 
@@ -194,19 +192,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                     // call on the libuv thread. 
                     _socketClosedTcs.TrySetResult(null);
                 }
-
-                if (_readFilteredInputTask.IsCompleted)
-                {
-                    ConnectionManager.ConnectionStopped(_connectionId);
-                }
-                else
-                {
-                    _readFilteredInputTask.ContinueWith((t, state) =>
-                    {
-                        var connection = (Connection)state;
-                        connection.ConnectionManager.ConnectionStopped(connection._connectionId);
-                    }, this);
-                }
             }
         }
 
@@ -225,7 +210,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                         SocketInput = filteredStreamAdapter.SocketInput;
                         SocketOutput = filteredStreamAdapter.SocketOutput;
 
-                        _readFilteredInputTask = filteredStreamAdapter.ReadInputAsync();
+                        filteredStreamAdapter.ReadInput();
                     }
                     else
                     {

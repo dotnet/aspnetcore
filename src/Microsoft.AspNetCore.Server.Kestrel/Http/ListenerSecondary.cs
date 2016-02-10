@@ -20,6 +20,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         private string _pipeName;
         private IntPtr _ptr;
         private Libuv.uv_buf_t _buf;
+        private bool _closed;
 
         protected ListenerSecondary(ServiceContext serviceContext) : base(serviceContext)
         {
@@ -38,6 +39,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
             ServerAddress = address;
             Thread = thread;
+            ConnectionManager = new ConnectionManager(thread);
 
             DispatchPipe = new UvPipeHandle(Log);
 
@@ -118,7 +120,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 return;
             }
 
-            if (DispatchPipe.PendingCount() == 0)
+            if (_closed || DispatchPipe.PendingCount() == 0)
             {
                 return;
             }
@@ -167,9 +169,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                     var listener = (ListenerSecondary)state;
                     listener.DispatchPipe.Dispose();
                     listener.FreeBuffer();
+
+                    listener._closed = true;
+
+                    listener.ConnectionManager.WalkConnectionsAndClose();
                 }, this);
 
-                await ConnectionManager.CloseConnectionsAsync();
+                await ConnectionManager.WaitForConnectionCloseAsync();
 
                 await Thread.PostAsync(state =>
                 {

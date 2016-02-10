@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Infrastructure
         ~MemoryPoolBlock2()
         {
             Debug.Assert(!_pinHandle.IsAllocated, "Ad-hoc memory block wasn't unpinned");
-            Debug.Assert(Slab == null, "Block being garbage collected instead of returned to pool");
+            Debug.Assert(Slab == null || !Slab.IsActive, "Block being garbage collected instead of returned to pool");
 
             if (_pinHandle.IsAllocated)
             {
