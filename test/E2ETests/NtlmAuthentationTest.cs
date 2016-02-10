@@ -20,7 +20,7 @@ namespace E2ETests
         public async Task NtlmAuthenticationTest(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, string applicationBaseUrl)
         {
             var logger = new LoggerFactory()
-                            .AddConsole(LogLevel.Warning)
+                            .AddConsole(LogLevel.Information)
                             .CreateLogger(string.Format("Ntlm:{0}:{1}:{2}", serverType, runtimeFlavor, architecture));
 
             using (logger.BeginScope("NtlmAuthenticationTest"))
@@ -30,6 +30,7 @@ namespace E2ETests
 
                 var deploymentParameters = new DeploymentParameters(Helpers.GetApplicationPath(), serverType, runtimeFlavor, architecture)
                 {
+                    PublishApplicationBeforeDeployment = true,
                     ApplicationBaseUriHint = applicationBaseUrl,
                     EnvironmentName = "NtlmAuthentication", //Will pick the Start class named 'StartupNtlmAuthentication'
                     ApplicationHostConfigTemplateContent = (serverType == ServerType.IISExpress) ? File.ReadAllText("NtlmAuthentation.config") : null,

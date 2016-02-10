@@ -38,7 +38,7 @@ namespace E2ETests
             Assert.Equal<string>("openid profile", queryItems["scope"]);
             Assert.Equal<string>("OpenIdConnect.AuthenticationProperties=ValidStateData", queryItems["state"]);
             Assert.NotNull(queryItems["nonce"]);
-            Assert.NotNull(_httpClientHandler.CookieContainer.GetCookies(new Uri(_deploymentResult.ApplicationBaseUri)).GetCookieWithName(".AspNet.OpenIdConnect.Nonce.protectedString"));
+            Assert.NotNull(_httpClientHandler.CookieContainer.GetCookies(new Uri(_deploymentResult.ApplicationBaseUri)).GetCookieWithName(".AspNetCore.OpenIdConnect.Nonce.protectedString"));
 
             // This is just enable the auto-redirect.
             _httpClientHandler = new HttpClientHandler() { AllowAutoRedirect = true };
@@ -73,8 +73,8 @@ namespace E2ETests
             Assert.Contains(string.Format("Hello {0}!", "User3@aspnettest.onmicrosoft.com"), responseContent, StringComparison.OrdinalIgnoreCase);
             Assert.Contains("Log off", responseContent, StringComparison.OrdinalIgnoreCase);
             //Verify cookie sent
-            Assert.NotNull(_httpClientHandler.CookieContainer.GetCookies(new Uri(_deploymentResult.ApplicationBaseUri)).GetCookieWithName(".AspNet.Microsoft.AspNetCore.Identity.Application"));
-            Assert.Null(_httpClientHandler.CookieContainer.GetCookies(new Uri(_deploymentResult.ApplicationBaseUri)).GetCookieWithName(".AspNet.Microsoft.AspNetCore.Identity.ExternalLogin"));
+            Assert.NotNull(_httpClientHandler.CookieContainer.GetCookies(new Uri(_deploymentResult.ApplicationBaseUri)).GetCookieWithName(".AspNetCore.Microsoft.AspNetCore.Identity.Application"));
+            Assert.Null(_httpClientHandler.CookieContainer.GetCookies(new Uri(_deploymentResult.ApplicationBaseUri)).GetCookieWithName(".AspNetCore.Microsoft.AspNetCore.Identity.ExternalLogin"));
             _logger.LogInformation("Successfully signed in with user '{email}'", "User3@aspnettest.onmicrosoft.com");
 
             _logger.LogInformation("Verifying if the middleware events were fired");
@@ -101,7 +101,7 @@ namespace E2ETests
             _httpClient = new HttpClient(handler) { BaseAddress = new Uri(_deploymentResult.ApplicationBaseUri) };
 
             response = await _httpClient.PostAsync("Account/LogOff", content);
-            Assert.Null(handler.CookieContainer.GetCookies(new Uri(_deploymentResult.ApplicationBaseUri)).GetCookieWithName(".AspNet.Microsoft.AspNetCore.Identity.Application"));
+            Assert.Null(handler.CookieContainer.GetCookies(new Uri(_deploymentResult.ApplicationBaseUri)).GetCookieWithName(".AspNetCore.Microsoft.AspNetCore.Identity.Application"));
             Assert.Equal<string>(
                 "https://login.windows.net/4afbc689-805b-48cf-a24c-d4aa3248a248/oauth2/logout",
                 response.Headers.Location.AbsoluteUri.Replace(response.Headers.Location.Query, string.Empty));

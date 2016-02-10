@@ -10,15 +10,20 @@
     "define": [
       "DEMO",
       "TESTING"
-    ]
+    ],
+    "preserveCompilationContext": true
   },
   "compile": [
     "../../shared/**/*.cs"
   ],
-  "publishExclude": "*.cmd",
+  "content": [
+    "Areas",
+    "Views",
+    "wwwroot",
+    "hosting.json",
+    "config.json"
+  ],
   "dependencies": {
-    "Microsoft.EntityFrameworkCore.InMemory": "1.0.0-*",
-    "Microsoft.EntityFrameworkCore.SqlServer": "1.0.0-*",
     "Microsoft.AspNetCore.Authentication.Cookies": "1.0.0-*",
     "Microsoft.AspNetCore.Authentication.Facebook": "1.0.0-*",
     "Microsoft.AspNetCore.Authentication.Google": "1.0.0-*",
@@ -35,6 +40,8 @@
     "Microsoft.AspNetCore.Session": "1.0.0-*",
     "Microsoft.AspNetCore.StaticFiles": "1.0.0-*",
     "Microsoft.AspNetCore.Tooling.Razor": "1.0.0-*",
+    "Microsoft.EntityFrameworkCore.InMemory": "1.0.0-*",
+    "Microsoft.EntityFrameworkCore.SqlServer": "1.0.0-*",
     "Microsoft.Extensions.CodeGenerators.Mvc": "1.0.0-*",
     "Microsoft.Extensions.Configuration.CommandLine": "1.0.0-*",
     "Microsoft.Extensions.Configuration.EnvironmentVariables": "1.0.0-*",
@@ -47,7 +54,9 @@
     "web": "MusicStore"
   },
   "frameworks": {
-    "dnx451": {},
-    "dnxcore50": {}
+    "dnx451": { },
+    "dnxcore50": {
+      "imports": "portable-net451+win8"
+    }
   }
 }
