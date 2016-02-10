@@ -284,30 +284,6 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
 
         [Theory]
         [MemberData(nameof(ConnectionFilterData))]
-        public async Task Http10TransferEncoding(ServiceContext testContext)
-        {
-            using (var server = new TestServer(App, testContext))
-            {
-                using (var connection = new TestConnection(server.Port))
-                {
-                    await connection.SendEnd(
-                        "POST / HTTP/1.0",
-                        "Transfer-Encoding: chunked",
-                        "",
-                        "5", "Hello", 
-                        "6", " World",
-                        "0",
-                         "");
-                    await connection.ReceiveEnd(
-                        "HTTP/1.0 200 OK",
-                        "",
-                        "Hello World");
-                }
-            }
-        }
-
-        [Theory]
-        [MemberData(nameof(ConnectionFilterData))]
         public async Task Http10KeepAlive(ServiceContext testContext)
         {
             using (var server = new TestServer(AppChunked, testContext))
@@ -379,41 +355,6 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                         "Connection: keep-alive",
                         "",
                         "Hello WorldPOST / HTTP/1.0",
-                        "",
-                        "Goodbye");
-                    await connection.Receive(
-                        "HTTP/1.0 200 OK",
-                        "Connection: keep-alive",
-                        "Content-Length: 11",
-                        "",
-                        "Hello World");
-                    await connection.ReceiveEnd(
-                        "HTTP/1.0 200 OK",
-                        "Content-Length: 7",
-                        "",
-                        "Goodbye");
-                }
-            }
-        }
-
-        [Theory]
-        [MemberData(nameof(ConnectionFilterData))]
-        public async Task Http10KeepAliveTransferEncoding(ServiceContext testContext)
-        {
-            using (var server = new TestServer(AppChunked, testContext))
-            {
-                using (var connection = new TestConnection(server.Port))
-                {
-                    await connection.SendEnd(
-                        "POST / HTTP/1.0",
-                        "Transfer-Encoding: chunked",
-                        "Connection: keep-alive",
-                        "",
-                        "5", "Hello", 
-                        "6", " World", 
-                        "0",
-                         "",
-                        "POST / HTTP/1.0",
                         "",
                         "Goodbye");
                     await connection.Receive(
@@ -946,54 +887,6 @@ namespace Microsoft.AspNetCore.Server.KestrelTests
                 Assert.Equal(2, testLogger.ApplicationErrorsLogged);
                 Assert.True(onCompletedCalled1);
                 Assert.True(onCompletedCalled2);
-            }
-        }
-
-        [Theory]
-        [MemberData(nameof(ConnectionFilterData))]
-        public async Task RequestBodyIsConsumedAutomaticallyIfAppDoesntConsumeItFully(ServiceContext testContext)
-        {
-            using (var server = new TestServer(async httpContext =>
-            {
-                var response = httpContext.Response;
-                var request = httpContext.Request;
-
-                Assert.Equal("POST", request.Method);
-
-                response.Headers.Clear();
-                response.Headers["Content-Length"] = new[] { "11" };
-
-                await response.Body.WriteAsync(Encoding.ASCII.GetBytes("Hello World"), 0, 11);
-            }, testContext))
-            {
-                using (var connection = new TestConnection(server.Port))
-                {
-                    await connection.SendEnd(
-                        "POST / HTTP/1.1",
-                        "Content-Length: 5",
-                        "",
-                        "HelloPOST / HTTP/1.1",
-                        "Transfer-Encoding: chunked",
-                        "",
-                        "C", "HelloChunked", 
-                        "0",
-                        "",
-                        "POST / HTTP/1.1",
-                        "Content-Length: 7",
-                        "",
-                        "Goodbye");
-                    await connection.ReceiveEnd(
-                        "HTTP/1.1 200 OK",
-                        "Content-Length: 11",
-                        "",
-                        "Hello WorldHTTP/1.1 200 OK",
-                        "Content-Length: 11",
-                        "",
-                        "Hello WorldHTTP/1.1 200 OK",
-                        "Content-Length: 11",
-                        "",
-                        "Hello World");
-                }
             }
         }
 
