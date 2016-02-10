@@ -1,11 +1,14 @@
 {
   "frameworks": {
-    "dnx451": { },
     "dnxcore50": {
       "dependencies": {
-        "System.Runtime": "4.0.21-*"
-      }
-    }
+        "System.Runtime": "4.0.21-*",
+        "dotnet-test-xunit": "1.0.0-dev-*",
+        "Microsoft.NETCore.Platforms": "1.0.1-*"
+      },
+      "imports": "portable-net451+win8"
+    },
+    "dnx451": {}
   },
   "shared": "**/*.cs"
 }

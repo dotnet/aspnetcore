@@ -7,25 +7,22 @@
     "xunit": "2.1.0"
   },
   "frameworks": {
+    "dnxcore50": {
+      "dependencies": {
+        "moq.netcore": "4.4.0-beta8",
+        "dotnet-test-xunit": "1.0.0-dev-*",
+        "System.Runtime": "4.0.21-*"
+      },
+      "imports": "portable-net451+win8"
+    },
     "dnx451": {
       "dependencies": {
         "Moq": "4.2.1312.1622",
         "xunit.runner.console": "2.1.0"
-      }
-    },
-    "dnxcore50": {
-      "dependencies": {
-        "moq.netcore": "4.4.0-beta8",
-        "xunit.runner.aspnet": "2.0.0-aspnet-*",
-        "System.Runtime": "4.0.21-*"
-      },
-      "imports": "portable-net451+win8"
+    }
     }
   },
   "testRunner": "xunit",
-  "commands": {
-    "test": "xunit.runner.aspnet"
-  },
   "compile": "../common/**/*.cs",
   "compilationOptions": {
     "warningsAsErrors": true,
