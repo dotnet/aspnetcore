@@ -681,54 +681,51 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 throw new ArgumentNullException(nameof(key));
             }
 
-            if (StringComparer.OrdinalIgnoreCase.Equals(key, prefix))
+            if (prefix.Length == 0)
             {
+                // Everything is prefixed by the empty string
                 return true;
             }
 
-            if (key.Length <= prefix.Length)
+            if (key.Length < prefix.Length)
             {
                 return false;
             }
 
+            var subKeyIndex = 0;
             if (!key.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
             {
-                if (key.StartsWith("[", StringComparison.OrdinalIgnoreCase))
+                if (key[0] == '[')
                 {
-                    var subKey = key.Substring(key.IndexOf('.') + 1);
+                    subKeyIndex = key.IndexOf('.') + 1;
 
-                    if (!subKey.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+                    if (string.Compare(key, subKeyIndex, prefix, 0, prefix.Length, StringComparison.OrdinalIgnoreCase) != 0)
                     {
                         return false;
                     }
-
-                    if (string.Equals(prefix, subKey, StringComparison.OrdinalIgnoreCase))
+                    else if (prefix.Length == (key.Length - subKeyIndex))
                     {
+                        // prefix == subKey
                         return true;
                     }
-
-                    key = subKey;
                 }
                 else
                 {
                     return false;
                 }
             }
-
-            // Everything is prefixed by the empty string
-            if (prefix.Length == 0)
+            else if (key.Length == prefix.Length)
             {
+                // key == prefix
                 return true;
             }
-            else
+
+            var charAfterPrefix = key[subKeyIndex + prefix.Length];
+            switch (charAfterPrefix)
             {
-                var charAfterPrefix = key[prefix.Length];
-                switch (charAfterPrefix)
-                {
-                    case '[':
-                    case '.':
-                        return true;
-                }
+                case '[':
+                case '.':
+                    return true;
             }
 
             return false;
