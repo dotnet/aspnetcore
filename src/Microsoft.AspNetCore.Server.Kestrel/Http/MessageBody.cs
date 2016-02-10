@@ -205,7 +205,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
         private class ForChunkedEncoding : MessageBody
         {
             private int _inputLength;
-
             private Mode _mode = Mode.ChunkPrefix;
 
             public ForChunkedEncoding(bool keepAlive, FrameContext context)
@@ -251,7 +250,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 while (_mode == Mode.Trailer)
                 {
                     ReadChunkedTrailer(input);
-                    await input;
+
+                    if (_mode != Mode.Complete && _mode != Mode.TrailerHeaders)
+                    {
+                        await input;
+                    }
+                }
+
+                if (_mode == Mode.TrailerHeaders)
+                {
+                    // Take trailer headers
+                    var frame = (Frame)_context;
+                    while (!Frame.TakeMessageHeaders(input, frame._requestHeaders))
+                    {
+                        if (input.RemoteIntakeFin)
+                        {
+                            ThrowChunkedRequestIncomplete();
+                        }
+
+                        await input;
+                    }
                 }
 
                 return 0;
@@ -270,6 +288,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                     {
                         _mode = Mode.ChunkData;
                     }
+
                     _inputLength = chunkSize;
                 }
                 else if (input.RemoteIntakeFin)
@@ -361,7 +380,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                     else
                     {
                         // Post request headers
-                        ThrowTrailingHeadersNotSupported();
+                        if (_context is Frame)
+                        {
+                            _mode = Mode.TrailerHeaders;
+                        }
+                        else
+                        {
+                            ThrowTrailingHeadersNotSupported();
+                        }
                     }
                 }
                 finally
@@ -489,6 +515,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
                 ChunkData,
                 ChunkSuffix,
                 Trailer,
+                TrailerHeaders,
                 Complete
             };
         }
