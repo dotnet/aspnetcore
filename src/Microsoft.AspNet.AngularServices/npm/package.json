@@ -14,7 +14,7 @@
   "typings": "dist/Exports",
   "author": "Microsoft",
   "license": "Apache-2.0",
-  "peerDependencies": {
+  "dependencies": {
     "angular2": "2.0.0-beta.1",
     "rxjs": "5.0.0-beta.0"
   },

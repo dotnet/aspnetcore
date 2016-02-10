@@ -3,7 +3,15 @@ using Microsoft.Extensions.PlatformAbstractions;
 
 namespace Microsoft.AspNet.NodeServices {
     public static class Configuration {
-        private static string[] defaultWatchFileExtensions = new[] { ".js", ".jsx", ".ts", ".tsx", ".json", ".html" };
+        private readonly static string[] defaultWatchFileExtensions = new[] { ".js", ".jsx", ".ts", ".tsx", ".json", ".html" };
+        private readonly static NodeServicesOptions defaultOptions = new NodeServicesOptions {
+            HostingModel = NodeHostingModel.Http,
+            WatchFileExtensions = defaultWatchFileExtensions
+        };
+        
+        public static void AddNodeServices(this IServiceCollection serviceCollection) {
+            AddNodeServices(serviceCollection, defaultOptions);
+        }
         
         public static void AddNodeServices(this IServiceCollection serviceCollection, NodeServicesOptions options) {
             serviceCollection.AddSingleton(typeof(INodeServices), (serviceProvider) => {

@@ -1,7 +1,6 @@
 import React from 'react';
 import { renderToString } from 'react-dom/server';
 import { match, RouterContext } from 'react-router';
-import createMemoryHistory from 'history/lib/createMemoryHistory';
 import { routes } from './components/ReactApp';
 React;
 
@@ -14,7 +13,6 @@ export default function renderApp (params) {
             }
 
             // Build an instance of the application
-            const history = createMemoryHistory(params.url);
             const app = <RouterContext {...renderProps} />;
 
             // Render it as an HTML string which can be injected into the response
