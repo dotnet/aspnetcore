@@ -1,7 +1,4 @@
-﻿{
-  "commands": {
-    "test": "xunit.runner.aspnet"
-  },
+{
   "dependencies": {
     "DatabaseErrorPageSample": "1.0.0",
     "DeveloperExceptionPageSample": "1.0.0",
@@ -25,10 +22,13 @@
     "bower_components"
   ],
   "frameworks": {
-    "dnx451": {},
     "dnxcore50": {
-      "imports": "portable-net451+win8"
-    }
+      "imports": "portable-net451+win8",
+      "dependencies": {
+        "dotnet-test-xunit": "1.0.0-dev-*"
+      }
+    },
+    "dnx451": {}
   },
   "publishExclude": [
     "**.user",
