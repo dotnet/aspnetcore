@@ -12,7 +12,8 @@
     "dnx451": {
       "frameworkAssemblies": {
         "System.Net.Http": "",
-        "System.Net.Http.WebRequest": ""
+        "System.Net.Http.WebRequest": "",
+        "System.Threading.Tasks": ""
       },
       "dependencies": {
         "xunit.runner.console": "2.1.0"
