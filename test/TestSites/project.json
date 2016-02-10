@@ -15,15 +15,16 @@
     "Microsoft.Extensions.Configuration.Json": "1.0.0-*",
     "Microsoft.Extensions.Logging.Console": "1.0.0-*",
     "Microsoft.NETCore.Platforms": "1.0.1-*",
-    "xunit":  "2.1.0"
+    "xunit": "2.1.0"
   },
   "frameworks": {
-    "dnx451": { },
     "dnxcore50": {
       "imports": "portable-net451+win8",
       "dependencies": {
-        "System.Net.Primitives": "4.0.11-*"
+        "System.Net.Primitives": "4.0.11-*",
+        "dotnet-test-xunit": "1.0.0-dev-*"
       }
-    }
+    },
+    "dnx451": {}
   }
 }

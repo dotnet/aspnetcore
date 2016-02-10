@@ -1,20 +1,15 @@
 {
   "dependencies": {
     "xunit": "2.1.0",
-    "dotnet-publish-iis" : "",
+    "dotnet-publish-iis": "",
     "Microsoft.NETCore.Platforms": "1.0.1-*"
   },
-
   "frameworks": {
     "dnxcore50": {
       "imports": "portable-net451+win8",
       "dependencies": {
-         "xunit.runner.aspnet": "2.0.0-aspnet-*"
+        "dotnet-test-xunit": "1.0.0-dev-*"
       }
     }
-  },
-
-  "commands": {
-    "test": "xunit.runner.aspnet"
   }
 }
