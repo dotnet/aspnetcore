@@ -513,10 +513,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             }
 
             var modelMetadata = metadataProvider.GetMetadataForType(modelType);
-
-            // Clear ModelStateDictionary entries for the model so that it will be re-validated.
             var modelState = actionContext.ModelState;
-            ClearValidationStateForModel(modelType, modelState, metadataProvider, prefix);
 
             var operationBindingContext = new OperationBindingContext
             {
@@ -659,27 +656,76 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 throw new ArgumentNullException(nameof(metadataProvider));
             }
 
-            // If modelkey is empty, we need to iterate through properties (obtained from ModelMetadata) and
-            // clear validation state for all entries in ModelStateDictionary that start with each property name.
-            // If modelkey is non-empty, clear validation state for all entries in ModelStateDictionary
-            // that start with modelKey
+            ClearValidationStateForModel(metadataProvider.GetMetadataForType(modelType), modelstate, modelKey);
+        }
+
+        /// <summary>
+        /// Clears <see cref="ModelStateDictionary"/> entries for <see cref="ModelMetadata"/>.
+        /// </summary>
+        /// <param name="modelMetadata">The <see cref="ModelMetadata"/>.</param>
+        /// <param name="modelKey">The entry to clear. </param>
+        /// <param name="modelMetadataProvider">The <see cref="IModelMetadataProvider"/>.</param>
+        public static void ClearValidationStateForModel(
+            ModelMetadata modelMetadata,
+            ModelStateDictionary modelstate,
+            string modelKey)
+        {
+            if (modelMetadata == null)
+            {
+                throw new ArgumentNullException(nameof(modelMetadata));
+            }
+
+            if (modelstate == null)
+            {
+                throw new ArgumentNullException(nameof(modelstate));
+            }
+
             if (string.IsNullOrEmpty(modelKey))
             {
-                var modelMetadata = metadataProvider.GetMetadataForType(modelType);
-                var elementMetadata = modelMetadata.ElementMetadata;
-                if (elementMetadata != null)
+                // If model key is empty, we have to do a best guess to try and clear the appropriate
+                // keys. Clearing the empty prefix would clear the state of ALL entries, which might wipe out
+                // data from other models.
+                if (modelMetadata.IsEnumerableType)
                 {
-                    modelMetadata = elementMetadata;
+                    // We expect that any key beginning with '[' is an index. We can't just infer the indexes
+                    // used, so we clear all keys that look like <empty prefix -> index>.
+                    //
+                    // In the unlikely case that multiple top-level collections where bound to the empty prefix,
+                    // you're just out of luck.
+                    foreach (var kvp in modelstate)
+                    {
+                        if (kvp.Key.Length > 0 && kvp.Key[0] == '[')
+                        {
+                            // Starts with an indexer
+                            kvp.Value.Errors.Clear();
+                            kvp.Value.ValidationState = ModelValidationState.Unvalidated;
+                        }
+                    }
                 }
-
-                foreach (var property in modelMetadata.Properties)
+                else if (modelMetadata.IsComplexType)
                 {
-                    var childKey = property.BinderModelName ?? property.PropertyName;
-                    modelstate.ClearValidationState(childKey);
+                    foreach (var property in modelMetadata.Properties)
+                    {
+                        modelstate.ClearValidationState(property.BinderModelName ?? property.PropertyName);
+                    }
+                }
+                else
+                {
+                    // Simple types bind to a single entry. So clear the entry with the empty-key, in the
+                    // unlikely event that it has errors.
+                    var entry = modelstate[string.Empty];
+                    if (entry != null)
+                    {
+                        entry.Errors.Clear();
+                        entry.ValidationState = ModelValidationState.Unvalidated;
+                    }
                 }
             }
             else
             {
+                // If model key is non-empty, we just want to clear all keys with that prefix. We expect
+                // model binding to have only used this key (and suffixes) for all entries related to
+                // this model.
                 modelstate.ClearValidationState(modelKey);
             }
         }

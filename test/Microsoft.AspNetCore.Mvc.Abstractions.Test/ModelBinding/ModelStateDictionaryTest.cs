@@ -245,8 +245,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         [Theory]
         [InlineData("foo")]
         [InlineData("foo.bar")]
-        [InlineData("[0].foo.bar")]
-        [InlineData("[0].foo.bar[0]")]
+        [InlineData("foo[bar]")]
         public void GetFieldValidationState_ReturnsInvalidIfKeyChildContainsErrors(string key)
         {
             // Arrange
@@ -263,8 +262,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         [Theory]
         [InlineData("foo")]
         [InlineData("foo.bar")]
-        [InlineData("[0].foo.bar")]
-        [InlineData("[0].foo.bar[0]")]
+        [InlineData("foo[bar]")]
         public void GetFieldValidationState_ReturnsValidIfModelStateDoesNotContainErrors(string key)
         {
             // Arrange
@@ -505,9 +503,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         }
 
         [Theory]
+        [InlineData("")]
         [InlineData("user")]
         [InlineData("user.Age")]
-        [InlineData("product")]
         public void GetFieldValidity_ReturnsInvalid_IfAllKeysAreValidatedAndAnyEntryIsInvalid(string key)
         {
             // Arrange
@@ -515,9 +513,26 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             dictionary["user.Address"] = new ModelStateEntry { ValidationState = ModelValidationState.Valid };
             dictionary["user.Name"] = new ModelStateEntry { ValidationState = ModelValidationState.Valid };
             dictionary.AddModelError("user.Age", "Age is not a valid int");
+
+            // Act
+            var validationState = dictionary.GetFieldValidationState(key);
+
+            // Assert
+            Assert.Equal(ModelValidationState.Invalid, validationState);
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData("[0]")]
+        [InlineData("[0].product")]
+        public void GetFieldValidity_ReturnsInvalid_IfAllKeysAreValidatedAndAnyEntryIsInvalid_Collection(string key)
+        {
+            // Arrange
+            var dictionary = new ModelStateDictionary();
+
             dictionary["[0].product.Name"] = new ModelStateEntry { ValidationState = ModelValidationState.Valid };
             dictionary["[0].product.Age[0]"] = new ModelStateEntry { ValidationState = ModelValidationState.Valid };
-            dictionary.AddModelError("[1].product.Name", "Name is invalid");
+            dictionary.AddModelError("[0].product.Name", "Name is invalid");
 
             // Act
             var validationState = dictionary.GetFieldValidationState(key);

@@ -683,49 +683,30 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             if (prefix.Length == 0)
             {
-                // Everything is prefixed by the empty string
+                // Everything is prefixed by the empty string.
                 return true;
             }
 
-            if (key.Length < prefix.Length)
+            if (prefix.Length > key.Length)
+            {
+                return false; // Not long enough.
+            }
+
+            if (!key.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
             {
                 return false;
             }
-
-            var subKeyIndex = 0;
-            if (!key.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+            
+            if (key.Length == prefix.Length)
             {
-                if (key[0] == '[')
-                {
-                    subKeyIndex = key.IndexOf('.') + 1;
-
-                    if (string.Compare(key, subKeyIndex, prefix, 0, prefix.Length, StringComparison.OrdinalIgnoreCase) != 0)
-                    {
-                        return false;
-                    }
-                    else if (prefix.Length == (key.Length - subKeyIndex))
-                    {
-                        // prefix == subKey
-                        return true;
-                    }
-                }
-                else
-                {
-                    return false;
-                }
-            }
-            else if (key.Length == prefix.Length)
-            {
-                // key == prefix
+                // Exact match
                 return true;
             }
 
-            var charAfterPrefix = key[subKeyIndex + prefix.Length];
-            switch (charAfterPrefix)
+            var charAfterPrefix = key[prefix.Length];
+            if (charAfterPrefix == '.' || charAfterPrefix == '[')
             {
-                case '[':
-                case '.':
-                    return true;
+                return true;
             }
 
             return false;

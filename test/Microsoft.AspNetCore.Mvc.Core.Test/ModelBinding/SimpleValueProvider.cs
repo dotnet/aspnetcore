@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using Microsoft.AspNetCore.Mvc.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
 {
@@ -27,7 +26,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
         {
             foreach (string key in Keys)
             {
-                if (PrefixContainer.IsPrefixMatch(prefix, key))
+                if (ModelStateDictionary.StartsWithPrefix(prefix, key))
                 {
                     return true;
                 }

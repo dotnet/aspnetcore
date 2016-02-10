@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
         public bool ContainsPrefix(string prefix)
         {
-            return PrefixContainer.IsPrefixMatch(prefix, Key);
+            return ModelStateDictionary.StartsWithPrefix(prefix, Key);
         }
 
         public ValueProviderResult GetValue(string key)

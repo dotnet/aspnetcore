@@ -1429,21 +1429,12 @@ namespace Microsoft.AspNetCore.Mvc
             {
                 throw new ArgumentNullException(nameof(model));
             }
-
-            var modelName = prefix ?? string.Empty;
-
-            // Clear ModelStateDictionary entries for the model so that it will be re-validated.
-            ModelBindingHelper.ClearValidationStateForModel(
-                model.GetType(),
-                ModelState,
-                MetadataProvider,
-                modelName);
-
+            
             ObjectValidator.Validate(
                 ControllerContext,
                 new CompositeModelValidatorProvider(ControllerContext.ValidatorProviders),
                 validationState: null,
-                prefix: prefix,
+                prefix: prefix ?? string.Empty,
                 model: model);
             return ModelState.IsValid;
         }
