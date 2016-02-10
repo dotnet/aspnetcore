@@ -637,7 +637,7 @@ namespace Microsoft.AspNetCore.Razor.Parser
             // No embedded transitions in C#, so ignore that param
             return allowTemplatesAndComments
                    && ((Language.IsTransition(CurrentSymbol)
-                        && NextIs(CSharpSymbolType.LessThan, CSharpSymbolType.Colon))
+                        && NextIs(CSharpSymbolType.LessThan, CSharpSymbolType.Colon, CSharpSymbolType.DoubleColon))
                        || Language.IsCommentStart(CurrentSymbol));
         }
 

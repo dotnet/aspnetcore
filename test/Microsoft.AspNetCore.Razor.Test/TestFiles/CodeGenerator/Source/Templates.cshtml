@@ -23,6 +23,19 @@
 )
 </p>
 
+<p>
+@Repeat(10,
+    @:: This is line#@item of markup<br />
+)
+</p>
+
+<p>
+@Repeat(10,
+    @::: This is line#@item of markup<br />
+)
+</p>
+
+
 <ul>
     @Repeat(10, @<li>
         Item #@item

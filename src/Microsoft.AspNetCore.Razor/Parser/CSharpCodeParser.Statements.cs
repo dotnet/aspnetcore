@@ -464,7 +464,10 @@ namespace Microsoft.AspNetCore.Razor.Parser
             var type = CurrentSymbol.Type;
             var loc = CurrentLocation;
 
-            var isSingleLineMarkup = type == CSharpSymbolType.Transition && NextIs(CSharpSymbolType.Colon);
+            // Both cases @: and @:: are triggered as markup, second colon in second case will be triggered as a plain text
+            var isSingleLineMarkup = type == CSharpSymbolType.Transition &&
+                (NextIs(CSharpSymbolType.Colon, CSharpSymbolType.DoubleColon));
+
             var isMarkup = isSingleLineMarkup ||
                 type == CSharpSymbolType.LessThan ||
                 (type == CSharpSymbolType.Transition && NextIs(CSharpSymbolType.LessThan));

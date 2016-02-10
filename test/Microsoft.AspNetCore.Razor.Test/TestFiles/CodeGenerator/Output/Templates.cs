@@ -1,4 +1,4 @@
-#pragma checksum "Templates.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "32d88538b3b0ca3648493b240101d304878756fe"
+#pragma checksum "Templates.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "ecd19ba0b3ae7ac597e19534c93fd2023208ae59"
 namespace TestOutput
 {
     using System;
@@ -125,38 +125,92 @@ WriteTo(__razor_template_writer, item);
 #line default
 #line hidden
             Instrumentation.EndContext();
-            Instrumentation.BeginContext(485, 20, true);
-            WriteLiteral("\r\n</p>\r\n\r\n<ul>\r\n    ");
+            Instrumentation.BeginContext(485, 15, true);
+            WriteLiteral("\r\n</p>\r\n\r\n<p>\r\n");
             Instrumentation.EndContext();
-            Instrumentation.BeginContext(506, 11, false);
+            Instrumentation.BeginContext(501, 16, false);
 #line 27 "Templates.cshtml"
-Write(Repeat(10, item => new Template(async(__razor_template_writer) => {
-    Instrumentation.BeginContext(518, 20, true);
-    WriteLiteralTo(__razor_template_writer, "<li>\r\n        Item #");
+Write(Repeat(10,
+    item => new Template(async(__razor_template_writer) => {
+    Instrumentation.BeginContext(519, 15, true);
+    WriteLiteralTo(__razor_template_writer, ": This is line#");
     Instrumentation.EndContext();
-    Instrumentation.BeginContext(539, 4, false);
+    Instrumentation.BeginContext(535, 4, false);
 #line 28 "Templates.cshtml"
 WriteTo(__razor_template_writer, item);
 
 #line default
 #line hidden
     Instrumentation.EndContext();
-    Instrumentation.BeginContext(543, 2, true);
+    Instrumentation.BeginContext(539, 18, true);
+    WriteLiteralTo(__razor_template_writer, " of markup<br />\r\n");
+    Instrumentation.EndContext();
+}
+)
+));
+
+#line default
+#line hidden
+            Instrumentation.EndContext();
+            Instrumentation.BeginContext(558, 15, true);
+            WriteLiteral("\r\n</p>\r\n\r\n<p>\r\n");
+            Instrumentation.EndContext();
+            Instrumentation.BeginContext(574, 16, false);
+#line 33 "Templates.cshtml"
+Write(Repeat(10,
+    item => new Template(async(__razor_template_writer) => {
+    Instrumentation.BeginContext(592, 16, true);
+    WriteLiteralTo(__razor_template_writer, ":: This is line#");
+    Instrumentation.EndContext();
+    Instrumentation.BeginContext(609, 4, false);
+#line 34 "Templates.cshtml"
+WriteTo(__razor_template_writer, item);
+
+#line default
+#line hidden
+    Instrumentation.EndContext();
+    Instrumentation.BeginContext(613, 18, true);
+    WriteLiteralTo(__razor_template_writer, " of markup<br />\r\n");
+    Instrumentation.EndContext();
+}
+)
+));
+
+#line default
+#line hidden
+            Instrumentation.EndContext();
+            Instrumentation.BeginContext(632, 22, true);
+            WriteLiteral("\r\n</p>\r\n\r\n\r\n<ul>\r\n    ");
+            Instrumentation.EndContext();
+            Instrumentation.BeginContext(655, 11, false);
+#line 40 "Templates.cshtml"
+Write(Repeat(10, item => new Template(async(__razor_template_writer) => {
+    Instrumentation.BeginContext(667, 20, true);
+    WriteLiteralTo(__razor_template_writer, "<li>\r\n        Item #");
+    Instrumentation.EndContext();
+    Instrumentation.BeginContext(688, 4, false);
+#line 41 "Templates.cshtml"
+WriteTo(__razor_template_writer, item);
+
+#line default
+#line hidden
+    Instrumentation.EndContext();
+    Instrumentation.BeginContext(692, 2, true);
     WriteLiteralTo(__razor_template_writer, "\r\n");
     Instrumentation.EndContext();
-#line 29 "Templates.cshtml"
+#line 42 "Templates.cshtml"
         
 
 #line default
 #line hidden
 
-#line 29 "Templates.cshtml"
+#line 42 "Templates.cshtml"
           var parent = item;
 
 #line default
 #line hidden
 
-    Instrumentation.BeginContext(576, 77, true);
+    Instrumentation.BeginContext(725, 77, true);
     WriteLiteralTo(__razor_template_writer, "        <ul>\r\n            <li>Child Items... ?</li>\r\n        </ul>\r\n    </li>");
     Instrumentation.EndContext();
 }
@@ -166,7 +220,7 @@ WriteTo(__razor_template_writer, item);
 #line default
 #line hidden
             Instrumentation.EndContext();
-            Instrumentation.BeginContext(715, 8, true);
+            Instrumentation.BeginContext(864, 8, true);
             WriteLiteral("\r\n</ul> ");
             Instrumentation.EndContext();
         }

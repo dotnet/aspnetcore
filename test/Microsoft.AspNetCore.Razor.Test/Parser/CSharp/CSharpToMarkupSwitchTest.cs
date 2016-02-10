@@ -553,6 +553,43 @@ namespace Microsoft.AspNetCore.Razor.Test.Parser.CSharp
         }
 
         [Fact]
+        public void ParseBlockParsesMarkupStatementOnSwitchCharacterFollowedByDoubleColon()
+        {
+            // Arrange
+            ParseBlockTest("if(foo) { @::Sometext" + Environment.NewLine
+                         + "}",
+                           new StatementBlock(
+                               Factory.Code("if(foo) {").AsStatement(),
+                               new MarkupBlock(
+                                   Factory.Markup(" "),
+                                   Factory.MarkupTransition(),
+                                   Factory.MetaMarkup(":", HtmlSymbolType.Colon),
+                                   Factory.Markup(":Sometext" + Environment.NewLine)
+                                    .With(new SingleLineMarkupEditHandler(CSharpLanguageCharacteristics.Instance.TokenizeString, AcceptedCharacters.None))
+                                   ),
+                               Factory.Code("}").AsStatement()));
+        }
+
+
+        [Fact]
+        public void ParseBlockParsesMarkupStatementOnSwitchCharacterFollowedByTripleColon()
+        {
+            // Arrange
+            ParseBlockTest("if(foo) { @:::Sometext" + Environment.NewLine
+                         + "}",
+                           new StatementBlock(
+                               Factory.Code("if(foo) {").AsStatement(),
+                               new MarkupBlock(
+                                   Factory.Markup(" "),
+                                   Factory.MarkupTransition(),
+                                   Factory.MetaMarkup(":", HtmlSymbolType.Colon),
+                                   Factory.Markup("::Sometext" + Environment.NewLine)
+                                    .With(new SingleLineMarkupEditHandler(CSharpLanguageCharacteristics.Instance.TokenizeString, AcceptedCharacters.None))
+                                   ),
+                               Factory.Code("}").AsStatement()));
+        }
+
+        [Fact]
         public void ParseBlockParsesMarkupStatementOnSwitchCharacterFollowedByColonInCodeBlock()
         {
             // Arrange
