@@ -11,20 +11,18 @@
     "xunit.runner.aspnet": "2.0.0-aspnet-*"
   },
   "frameworks": {
-    "dnx451": {
-      "dependencies": {
-        "Moq": "4.2.1312.1622"
-      }
-    },
     "dnxcore50": {
       "imports": "portable-net451+win8",
       "dependencies": {
         "moq.netcore": "4.4.0-beta8",
-        "System.Resources.Writer": "4.0.0-*"
+        "System.Resources.Writer": "4.0.0-*",
+        "dotnet-test-xunit": "1.0.0-dev-*"
+      }
+    },
+    "dnx451": {
+      "dependencies": {
+        "Moq": "4.2.1312.1622"
       }
     }
-  },
-  "commands": {
-    "test": "xunit.runner.aspnet"
   }
 }

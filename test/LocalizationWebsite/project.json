@@ -1,11 +1,9 @@
 {
   "version": "1.0.0-*",
-
   "compilationOptions": {
     "warningsAsErrors": true,
     "emitEntryPoint": true
   },
-
   "dependencies": {
     "Microsoft.AspNetCore.Localization": "1.0.0-*",
     "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-*",
@@ -13,15 +11,15 @@
     "Microsoft.Extensions.Logging.Console": "1.0.0-*",
     "Microsoft.NETCore.Platforms": "1.0.1-*"
   },
-
-  "commands": {
-    "web": "LocalizationWebsite"
-  },
   "frameworks": {
-    "dnx451": { },
-    "dnxcore50": { }
+    "dnxcore50": {
+      "dependencies": {
+        "dotnet-test-xunit": "1.0.0-dev-*"
+      },
+      "imports": "portable-net451+win8"
+    },
+    "dnx451": {}
   },
-
   "exclude": [
     "wwwroot",
     "node_modules",
