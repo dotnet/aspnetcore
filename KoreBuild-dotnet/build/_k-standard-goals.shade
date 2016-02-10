@@ -68,8 +68,8 @@ default NUGET_FEED = 'https://api.nuget.org/v3/index.json'
 -// Target order is important because clean-npm-modules may (re)create bin folder.
 #deep-clean .clean-npm-modules .clean-bin-folder description='Clean folders that may cause problems for `git clean`.'
 
-#repo-initialize target='initialize' if='!NoRestore'
-  dotnet-restore
+#repo-initialize target='initialize'
+  dotnet-restore if='!NoRestore'
 
 #target-dir-clean target='clean'
   @{
