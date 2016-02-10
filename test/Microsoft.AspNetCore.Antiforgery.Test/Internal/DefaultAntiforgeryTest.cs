@@ -6,7 +6,6 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Internal;
-using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -878,27 +877,22 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
                 loggerFactory: loggerFactory);
         }
 
-        private IServiceProvider GetServices()
+        private IServiceProvider GetServices(IAntiforgeryContextAccessor contextAccessor)
         {
             var builder = new ServiceCollection();
+            builder.AddSingleton<IAntiforgeryContextAccessor>(contextAccessor);
             builder.AddSingleton<ILoggerFactory>(new LoggerFactory());
 
             return builder.BuildServiceProvider();
         }
 
-        private HttpContext GetHttpContext(IAntiforgeryContextAccessor contextAccessor)
+        private HttpContext GetHttpContext(IAntiforgeryContextAccessor contextAccessor = null)
         {
             var httpContext = new DefaultHttpContext();
-
-            httpContext.RequestServices = GetServices();
+            contextAccessor = contextAccessor ?? new DefaultAntiforgeryContextAccessor();
+            httpContext.RequestServices = GetServices(contextAccessor);
 
             httpContext.User = new ClaimsPrincipal(new ClaimsIdentity("some-auth"));
-
-            contextAccessor = contextAccessor ?? new DefaultAntiforgeryContextAccessor();
-
-            var serviceCollection = new ServiceCollection();
-            serviceCollection.AddSingleton<IAntiforgeryContextAccessor>(contextAccessor);
-            httpContext.RequestServices = serviceCollection.BuildServiceProvider();
 
             return httpContext;
         }

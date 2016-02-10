@@ -50,19 +50,22 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             var antiforgeryContext = GetTokensInternal(httpContext);
             var tokenSet = Serialize(antiforgeryContext);
 
-            if (!antiforgeryContext.HaveStoredNewCookieToken && antiforgeryContext.NewCookieToken != null)
+            if (!antiforgeryContext.HaveStoredNewCookieToken)
             {
-                // Serialize handles the new cookie token string.
-                Debug.Assert(antiforgeryContext.NewCookieTokenString != null);
+                if (antiforgeryContext.NewCookieToken != null)
+                {
+                    // Serialize handles the new cookie token string.
+                    Debug.Assert(antiforgeryContext.NewCookieTokenString != null);
 
-                SaveCookieTokenAndHeader(httpContext, antiforgeryContext.NewCookieTokenString);
-                antiforgeryContext.HaveStoredNewCookieToken = true;
+                    SaveCookieTokenAndHeader(httpContext, antiforgeryContext.NewCookieTokenString);
+                    antiforgeryContext.HaveStoredNewCookieToken = true;
 
-                _logger.NewCookieToken();
-            }
-            else
-            {
-                _logger.ReusedCookieToken();
+                    _logger.NewCookieToken();
+                }
+                else
+                {
+                    _logger.ReusedCookieToken();
+                }
             }
 
             return tokenSet;
