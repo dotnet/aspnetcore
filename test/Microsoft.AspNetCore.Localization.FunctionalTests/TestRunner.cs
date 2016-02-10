@@ -35,7 +35,6 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
                 var deploymentParameters = new DeploymentParameters(_applicationPath, ServerType.Kestrel, runtimeFlavor, runtimeArchitecture)
                 {
                     ApplicationBaseUriHint = applicationBaseUrl,
-                    Command = "web",
                     EnvironmentName = environmentName
                 };
 

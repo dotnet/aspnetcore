@@ -21,8 +21,8 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
-        [InlineData(RuntimeFlavor.Clr, "http://localhost:5070/", RuntimeArchitecture.x86)]
-        [InlineData(RuntimeFlavor.CoreClr, "http://localhost:5071/", RuntimeArchitecture.x86)]
+        [InlineData(RuntimeFlavor.Clr, "http://localhost:5070/", RuntimeArchitecture.x64)]
+        [InlineData(RuntimeFlavor.CoreClr, "http://localhost:5071/", RuntimeArchitecture.x64)]
         public Task Localization_ResourcesInFolder_ReturnLocalizedValue_Windows(
             RuntimeFlavor runtimeFlavor,
             string applicationBaseUrl,
@@ -41,8 +41,8 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
-        [InlineData(RuntimeFlavor.Clr, "http://localhost:5070/", RuntimeArchitecture.x86)]
-        [InlineData(RuntimeFlavor.CoreClr, "http://localhost:5071/", RuntimeArchitecture.x86)]
+        [InlineData(RuntimeFlavor.Clr, "http://localhost:5070/", RuntimeArchitecture.x64)]
+        [InlineData(RuntimeFlavor.CoreClr, "http://localhost:5071/", RuntimeArchitecture.x64)]
         public Task Localization_ResourcesInFolder_ReturnLocalizedValue_WithCultureFallback_Windows(
             RuntimeFlavor runtimeFlavor,
             string applicationBaseUrl,
@@ -61,8 +61,8 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
-        [InlineData(RuntimeFlavor.Clr, "http://localhost:5070/", RuntimeArchitecture.x86)]
-        [InlineData(RuntimeFlavor.CoreClr, "http://localhost:5071/", RuntimeArchitecture.x86)]
+        [InlineData(RuntimeFlavor.Clr, "http://localhost:5070/", RuntimeArchitecture.x64)]
+        [InlineData(RuntimeFlavor.CoreClr, "http://localhost:5071/", RuntimeArchitecture.x64)]
         public Task Localization_ResourcesInFolder_ReturnNonLocalizedValue_CultureHierarchyTooDeep_Windows(
             RuntimeFlavor runtimeFlavor,
             string applicationBaseUrl,
@@ -81,12 +81,12 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
         [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Windows)]
         [FrameworkSkipCondition(RuntimeFrameworks.CoreCLR)]
-        public Task Localization_ResourcesInFolder_ReturnLocalizedValue_Mono()
+        public Task Localization_ResourcesInFolder_ReturnLocalizedValue_Clr()
         {
             var testRunner = new TestRunner(_applicationPath);
             return testRunner.RunTestAndVerifyResponse(
-                RuntimeFlavor.Mono,
-                RuntimeArchitecture.x86,
+                RuntimeFlavor.Clr,
+                RuntimeArchitecture.x64,
                 "http://localhost:5072",
                 "ResourcesInFolder",
                 "fr-FR",
@@ -96,12 +96,12 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
         [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Windows)]
         [FrameworkSkipCondition(RuntimeFrameworks.CoreCLR)]
-        public Task Localization_ResourcesInFolder_ReturnLocalizedValue_WithCultureFallback_Mono()
+        public Task Localization_ResourcesInFolder_ReturnLocalizedValue_WithCultureFallback_Clr()
         {
             var testRunner = new TestRunner(_applicationPath);
             return testRunner.RunTestAndVerifyResponse(
-                RuntimeFlavor.Mono,
-                RuntimeArchitecture.x86,
+                RuntimeFlavor.Clr,
+                RuntimeArchitecture.x64,
                 "http://localhost:5072",
                 "ResourcesInFolder",
                 "fr-FR-test",
@@ -141,8 +141,8 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
-        [InlineData(RuntimeFlavor.Clr, "http://localhost:5074/", RuntimeArchitecture.x86)]
-        [InlineData(RuntimeFlavor.CoreClr, "http://localhost:5075/", RuntimeArchitecture.x86)]
+        [InlineData(RuntimeFlavor.Clr, "http://localhost:5074/", RuntimeArchitecture.x64)]
+        [InlineData(RuntimeFlavor.CoreClr, "http://localhost:5075/", RuntimeArchitecture.x64)]
         public Task Localization_ResourcesAtRootFolder_ReturnLocalizedValue_Windows(
             RuntimeFlavor runtimeFlavor,
             string applicationBaseUrl,
@@ -161,12 +161,12 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
         [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Windows)]
         [FrameworkSkipCondition(RuntimeFrameworks.CoreCLR)]
-        public Task Localization_ResourcesAtRootFolder_ReturnLocalizedValue_Mono()
+        public Task Localization_ResourcesAtRootFolder_ReturnLocalizedValue_Clr()
         {
             var testRunner = new TestRunner(_applicationPath);
             return testRunner.RunTestAndVerifyResponse(
-                RuntimeFlavor.Mono,
-                RuntimeArchitecture.x86,
+                RuntimeFlavor.Clr,
+                RuntimeArchitecture.x64,
                 "http://localhost:5076",
                 "ResourcesAtRootFolder",
                 "fr-FR",

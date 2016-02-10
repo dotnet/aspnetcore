@@ -21,8 +21,8 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
-        [InlineData(RuntimeFlavor.Clr, "http://localhost:5080/", RuntimeArchitecture.x86)]
-        [InlineData(RuntimeFlavor.CoreClr, "http://localhost:5081/", RuntimeArchitecture.x86)]
+        [InlineData(RuntimeFlavor.Clr, "http://localhost:5080/", RuntimeArchitecture.x64)]
+        [InlineData(RuntimeFlavor.CoreClr, "http://localhost:5081/", RuntimeArchitecture.x64)]
         public Task RunSite_WindowsOnly(RuntimeFlavor runtimeFlavor, string applicationBaseUrl, RuntimeArchitecture runtimeArchitecture)
         {
             var testRunner = new TestRunner(_applicationPath);
@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
 
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Windows)]
-        [InlineData(RuntimeFlavor.Mono, "http://localhost:5080/", RuntimeArchitecture.x64)]
+        [InlineData(RuntimeFlavor.Clr, "http://localhost:5080/", RuntimeArchitecture.x64)]
         [InlineData(RuntimeFlavor.CoreClr, "http://localhost:5081/", RuntimeArchitecture.x64)]
         public Task RunSite_NonWindowsOnly(RuntimeFlavor runtimeFlavor, string applicationBaseUrl, RuntimeArchitecture runtimeArchitecture)
         {
