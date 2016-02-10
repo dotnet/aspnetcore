@@ -6,25 +6,22 @@
     "xunit.runner.aspnet": "2.0.0-aspnet-*"
   },
   "testRunner": "xunit",
-  "commands": {
-    "test": "xunit.runner.aspnet"
-  },
   "compilationOptions": {
     "allowUnsafe": true,
     "warningsAsErrors": true,
     "keyFile": "../../tools/Key.snk"
   },
   "frameworks": {
+    "dnxcore50": {
+      "dependencies": {
+        "dotnet-test-xunit": "1.0.0-dev-*"
+      },
+      "imports": "portable-net451+win8"
+    },
     "dnx451": {
       "dependencies": {
         "xunit.runner.console": "2.1.0"
       }
-    },
-    "dnxcore50": { 
-      "dependencies": {
-        "xunit.runner.aspnet": "2.0.0-aspnet-*"
-      },
-      "imports": "portable-net451+win8"
     }
   }
 }
