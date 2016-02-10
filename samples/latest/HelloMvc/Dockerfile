@@ -1,9 +1,10 @@
 FROM ubuntu:14.04
 
-#RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
-#RUN echo "deb http://download.mono-project.com/repo/debian wheezy main" | sudo tee /etc/apt/sources.list.d/mono-xamarin.list
+RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
+RUN echo "deb http://download.mono-project.com/repo/debian wheezy main" | sudo tee /etc/apt/sources.list.d/mono-xamarin.list
 
 #ENV DNX_USER_HOME /opt/dnx
+ENV DOTNET_INSTALL_DIR /opt/dotnet
 
 RUN apt-get -qq update
 RUN apt-get -qqy install \
@@ -13,7 +14,7 @@ RUN apt-get -qqy install \
 	libicu52 \
 	gettext
 
-RUN curl -sSL https://raw.githubusercontent.com/dotnet/cli/rel/1.0.0/scripts/obtain/install.sh | DOTNET_INSTALL_DIR=$HOME/.dotnet sh
+RUN curl -sSL https://raw.githubusercontent.com/dotnet/cli/rel/1.0.0/scripts/obtain/install.sh | sh
 
 #RUN curl -sSL https://raw.githubusercontent.com/aspnet/Home/dev/dnvminstall.sh | DNX_USER_HOME=$DNX_USER_HOME DNX_BRANCH=v$DNX_VERSION sh
 #RUN bash -c "source $DNX_USER_HOME/dnvm/dnvm.sh \
@@ -34,19 +35,12 @@ RUN LIBUV_VERSION=1.4.2 \
 	&& rm -rf /usr/local/src/libuv-$LIBUV_VERSION \
 	&& ldconfig
 
-RUN echo $HOME
-RUN echo $DOTNET_HOME
-RUN echo $PATH
-
-ENV DOTNET_HOME $HOME/.dotnet/share/dotnet/cli
-ENV PATH $HOME/.dotnet/bin:$PATH
+ENV DOTNET_HOME $DOTNET_INSTALLDIR/share/dotnet/cli
+ENV DOTNET_REFERENCE_ASSEMBLIES_PATH /usr/lib/mono/xbuild-frameworks
+ENV PATH $DOTNET_INSTALL_DIR/bin:$PATH
 #ENV PATH $PATH:$DNX_USER_HOME/runtimes/default/bin
 
 #ENV MONO_THREADS_PER_CPU 20
-
-RUN echo $HOME
-RUN echo $DOTNET_HOME
-RUN echo $PATH
 
 COPY . /app
 WORKDIR /app
