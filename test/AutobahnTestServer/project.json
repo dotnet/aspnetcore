@@ -9,8 +9,15 @@
     "emitEntryPoint": true
   },
   "frameworks": {
-    "dnx451": {},
-    "dnxcore50": {}
+    "dnxcore50": {
+      "dependencies": {
+        "dotnet-test-xunit": "1.0.0-dev-*"
+      },
+      "imports": "portable-net451+win8"
+    },
+    "dnx451": {}
   },
-  "content": [ "hosting.json" ]
+  "content": [
+    "hosting.json"
+  ]
 }
