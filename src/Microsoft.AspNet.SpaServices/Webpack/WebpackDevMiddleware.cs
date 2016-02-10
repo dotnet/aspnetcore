@@ -3,7 +3,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNet.NodeServices;
 using Microsoft.AspNet.Proxy;
-using Microsoft.AspNet.SpaServices;
+using Microsoft.AspNet.SpaServices.Webpack;
 using Microsoft.Extensions.PlatformAbstractions;
 using Newtonsoft.Json;
 

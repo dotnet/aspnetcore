@@ -1,4 +1,4 @@
-namespace Microsoft.AspNet.SpaServices {
+namespace Microsoft.AspNet.SpaServices.Webpack {
     public class WebpackDevMiddlewareOptions {
         public bool HotModuleReplacement { get; set; }
         public bool ReactHotModuleReplacement { get; set; }

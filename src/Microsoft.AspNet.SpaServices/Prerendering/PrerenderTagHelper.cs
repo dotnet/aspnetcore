@@ -1,19 +1,22 @@
 using System;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.Http.Extensions;
 using Microsoft.AspNet.NodeServices;
 using Microsoft.AspNet.Razor.TagHelpers;
 using Microsoft.Extensions.PlatformAbstractions;
+using Newtonsoft.Json;
 
-namespace Microsoft.AspNet.ReactServices
+namespace Microsoft.AspNet.SpaServices.Prerendering
 {
     [HtmlTargetElement(Attributes = PrerenderModuleAttributeName)]
-    public class ReactPrerenderTagHelper : TagHelper
+    public class PrerenderTagHelper : TagHelper
     {
         static INodeServices fallbackNodeServices; // Used only if no INodeServices was registered with DI
         
-        const string PrerenderModuleAttributeName = "asp-react-prerender-module";
-        const string PrerenderExportAttributeName = "asp-react-prerender-export";
+        const string PrerenderModuleAttributeName = "asp-prerender-module";
+        const string PrerenderExportAttributeName = "asp-prerender-export";
         
         [HtmlAttributeName(PrerenderModuleAttributeName)]
         public string ModuleName { get; set; }
@@ -24,7 +27,7 @@ namespace Microsoft.AspNet.ReactServices
         private IHttpContextAccessor contextAccessor;
         private INodeServices nodeServices;
 
-        public ReactPrerenderTagHelper(IServiceProvider serviceProvider, IHttpContextAccessor contextAccessor)
+        public PrerenderTagHelper(IServiceProvider serviceProvider, IHttpContextAccessor contextAccessor)
         {
             this.contextAccessor = contextAccessor;
             this.nodeServices = (INodeServices)serviceProvider.GetService(typeof (INodeServices)) ?? fallbackNodeServices;
@@ -40,12 +43,27 @@ namespace Microsoft.AspNet.ReactServices
         public override async Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
         {
             var request = this.contextAccessor.HttpContext.Request;
-            var result = await ReactRenderer.RenderToString(
+            var result = await Prerenderer.RenderToString(
                 nodeServices: this.nodeServices,
                 componentModuleName: this.ModuleName,
                 componentExportName: this.ExportName,
-                requestUrl: request.Path + request.QueryString.Value);
-            output.Content.SetHtmlContent(result);
+                requestAbsoluteUrl: UriHelper.GetEncodedUrl(this.contextAccessor.HttpContext.Request),
+                requestPathAndQuery: request.Path + request.QueryString.Value);
+            output.Content.SetHtmlContent(result.Html);
+            
+            // Also attach any specific globals to the 'window' object. This is useful for transferring
+            // general state between server and client.
+            if (result.Globals != null) {
+                var stringBuilder = new StringBuilder();
+                foreach (var property in result.Globals.Properties()) {
+                    stringBuilder.AppendFormat("window.{0} = {1};",
+                        property.Name,
+                        property.Value.ToString(Formatting.None));
+                }
+                if (stringBuilder.Length > 0) {
+                    output.PostElement.SetHtmlContent($"<script>{ stringBuilder.ToString() }</script>");
+                }
+            }
         }
     }
 }

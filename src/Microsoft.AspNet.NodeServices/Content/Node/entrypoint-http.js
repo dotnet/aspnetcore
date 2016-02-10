@@ -4,7 +4,7 @@ var http = require('http');
 var path = require('path');
 var requestedPortOrZero = parseInt(process.argv[2]) || 0; // 0 means 'let the OS decide'
 
-autoQuitOnFileChange(process.cwd(), ['.js', '.json', '.html']);
+autoQuitOnFileChange(process.cwd(), ['.js', '.jsx', '.ts', '.tsx', '.json', '.html']);
 
 var server = http.createServer(function(req, res) {
     readRequestBodyAsJson(req, function(bodyJson) {

@@ -8,8 +8,10 @@ import './styles/styles.css';
 import 'bootstrap/dist/css/bootstrap.css';
 import configureStore from './configureStore';
 import { routes } from './routes';
+import { ApplicationState }  from './store';
 
-const store = configureStore(browserHistory);
+const initialState = (window as any).initialReduxState as ApplicationState;
+const store = configureStore(browserHistory, initialState);
 
 ReactDOM.render(
     <Provider store={ store }>
