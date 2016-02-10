@@ -8,6 +8,7 @@
     "babel-preset-react": "^6.3.13",
     "css-loader": "^0.23.1",
     "express": "^4.13.4",
+    "extract-text-webpack-plugin": "^1.0.1",
     "file-loader": "^0.8.5",
     "react-transform-hmr": "^1.0.2",
     "style-loader": "^0.13.0",
