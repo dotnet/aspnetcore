@@ -204,16 +204,14 @@ namespace Microsoft.AspNetCore.Server.WebListener
             {
                 // Note: System.Net.Sockets does not RST the connection by default, it just FINs.
                 // Http.Sys's disconnect notice requires a RST.
-                using (Socket socket = await SendHungRequestAsync("GET", address))
+                using (var client = await SendHungRequestAsync("GET", address))
                 {
                     Assert.True(received.WaitOne(interval), "Receive Timeout");
 
                     // Force a RST
-                    socket.LingerState = new LingerOption(true, 0);
-                    socket.Dispose();
-
-                    aborted.Set();
+                    client.LingerState = new LingerOption(true, 0);
                 }
+                aborted.Set();
                 Assert.True(canceled.WaitOne(interval), "canceled");
             }
         }
@@ -240,10 +238,10 @@ namespace Microsoft.AspNetCore.Server.WebListener
                 return Task.FromResult(0);
             }))
             {
-                using (Socket socket = await SendHungRequestAsync("GET", address))
+                using (var client = await SendHungRequestAsync("GET", address))
                 {
                     Assert.True(received.WaitOne(interval), "Receive Timeout");
-                    Assert.Throws<SocketException>(() => socket.Receive(new byte[10]));
+                    Assert.Throws<IOException>(() => client.GetStream().Read(new byte[10], 0, 10));
                 }
             }
         }
@@ -287,7 +285,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
             }
         }
 
-        private async Task<Socket> SendHungRequestAsync(string method, string address)
+        private async Task<TcpClient> SendHungRequestAsync(string method, string address)
         {
             // Connect with a socket
             Uri uri = new Uri(address);
@@ -302,8 +300,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
                 byte[] requestBytes = BuildGetRequest(method, uri);
                 await stream.WriteAsync(requestBytes, 0, requestBytes.Length);
 
-                // Return the opaque network stream
-                return client.Client;
+                return client;
             }
             catch (Exception)
             {
