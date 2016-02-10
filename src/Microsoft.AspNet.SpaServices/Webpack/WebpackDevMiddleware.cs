@@ -65,9 +65,11 @@ namespace Microsoft.AspNet.Builder
             });
         }
         
+        #pragma warning disable CS0649
         class WebpackDevServerInfo {
             public int Port;
             public string PublicPath;
         }
+        #pragma warning restore CS0649
     }
 }
