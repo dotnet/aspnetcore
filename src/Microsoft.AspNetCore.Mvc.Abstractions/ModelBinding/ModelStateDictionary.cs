@@ -782,9 +782,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public struct PrefixEnumerator : IEnumerator<KeyValuePair<string, ModelStateEntry>>
         {
             private readonly ModelStateDictionary _dictionary;
-            private readonly string _prefix;
+            private string _prefix;
 
-            private bool _exactMatchUsed;
+            private ExactMatchState _exactMatch;
             private Dictionary<string, ModelStateEntry>.Enumerator _enumerator;
 
             public PrefixEnumerator(ModelStateDictionary dictionary, string prefix)
@@ -802,7 +802,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 _dictionary = dictionary;
                 _prefix = prefix;
 
-                _exactMatchUsed = false;
+                _exactMatch = ExactMatchState.NotChecked;
                 _enumerator = default(Dictionary<string, ModelStateEntry>.Enumerator);
                 Current = default(KeyValuePair<string, ModelStateEntry>);
             }
@@ -831,26 +831,51 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 // ModelStateDictionary has a behavior where the first 'match' returned from iterating
                 // prefixes is the exact match for the prefix (if present). Only after looking for an
                 // exact match do we fall back to iteration to find 'starts-with' matches.
-                if (!_exactMatchUsed)
+                if (_exactMatch == ExactMatchState.NotChecked)
                 {
-                    _exactMatchUsed = true;
                     _enumerator = _dictionary._innerDictionary.GetEnumerator();
 
                     ModelStateEntry entry;
                     if (_dictionary.TryGetValue(_prefix, out entry))
                     {
+                        // Mark exact match as found
+                        _exactMatch = ExactMatchState.Found;
                         Current = new KeyValuePair<string, ModelStateEntry>(_prefix, entry);
                         return true;
+                    }
+                    else
+                    {
+                        // Mark exact match tested for
+                        _exactMatch = ExactMatchState.NotFound;
                     }
                 }
 
                 while (_enumerator.MoveNext())
                 {
-                    if (string.Equals(_prefix, _enumerator.Current.Key, StringComparison.OrdinalIgnoreCase))
+                    var key = _enumerator.Current.Key;
+                    if (_exactMatch == ExactMatchState.NotFound)
                     {
-                        // Skip this one. We've already handle the 'exact match' case.
+                        if (StartsWithPrefix(_prefix, key))
+                        {
+                            Current = _enumerator.Current;
+                            return true;
+                        }
+                        continue;
                     }
-                    else if (StartsWithPrefix(_prefix, _enumerator.Current.Key))
+                    else if (_exactMatch == ExactMatchState.ReferenceSet && Object.ReferenceEquals(_prefix, key))
+                    {
+                        // Fast path skip this one. Is the exact string reference set below.
+                    }
+                    else if (_exactMatch == ExactMatchState.Found &&
+                        string.Equals(_prefix, key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        // Update _prefix to be this exact string reference to enable fast path
+                        _prefix = key;
+                        // Mark exact reference set
+                        _exactMatch = ExactMatchState.ReferenceSet;
+                        // Skip this one. We've already handled the 'exact match' case.
+                    }
+                    else if (StartsWithPrefix(_prefix, key))
                     {
                         Current = _enumerator.Current;
                         return true;
@@ -862,9 +887,17 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             public void Reset()
             {
-                _exactMatchUsed = false;
+                _exactMatch = ExactMatchState.NotChecked;
                 _enumerator = default(Dictionary<string, ModelStateEntry>.Enumerator);
                 Current = default(KeyValuePair<string, ModelStateEntry>);
+            }
+
+            private enum ExactMatchState
+            {
+                NotChecked,
+                NotFound,
+                Found,
+                ReferenceSet
             }
         }
     }
