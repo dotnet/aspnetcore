@@ -7,6 +7,7 @@ import { ActionCreator } from './';
 
 export interface FeaturedAlbumsState {
     albums: Album[];
+    isLoaded: boolean;
 }
 
 export interface Album {
@@ -37,11 +38,13 @@ class ReceiveFeaturedAlbums extends Action {
 
 export const actionCreators = {
     requestFeaturedAlbums: (): ActionCreator => (dispatch, getState) => {
-        fetch('/api/albums/mostPopular')
-            .then(results => results.json())
-            .then(albums => dispatch(new ReceiveFeaturedAlbums(albums)));
-        
-        return dispatch(new RequestFeaturedAlbums());        
+        if (!getState().featuredAlbums.isLoaded) {
+            fetch('/api/albums/mostPopular')
+                .then(results => results.json())
+                .then(albums => dispatch(new ReceiveFeaturedAlbums(albums)));
+            
+            return dispatch(new RequestFeaturedAlbums());
+        }
     }
 };
 
@@ -51,8 +54,8 @@ export const actionCreators = {
 
 export const reducer: Reducer<FeaturedAlbumsState> = (state, action) => {
     if (isActionType(action, ReceiveFeaturedAlbums)) {
-        return { albums: action.albums };
+        return { albums: action.albums, isLoaded: true };
     } else {
-        return state || { albums: [] };
+        return state || { albums: [], isLoaded: false };
     }
 };

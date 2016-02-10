@@ -6,18 +6,15 @@ import * as GenreList from '../../store/GenreList';
 
 class Genres extends React.Component<GenresProps, void> {
     componentWillMount() {
-        if (!this.props.genres.length) {
-            this.props.requestGenresList();
-        }
+        this.props.requestGenresList();
     }
 
     public render() {
-        let { genres } = this.props;
-        
+        const { genres } = this.props;
         return <div>
             <h3>Browse Genres</h3>
 
-            <p>Select from { genres.length || '...' } genres:</p>
+            <p>Select from { this.props.isLoaded ? genres.length : '...' } genres:</p>
 
             <ul className="list-group">
             {genres.map(genre =>

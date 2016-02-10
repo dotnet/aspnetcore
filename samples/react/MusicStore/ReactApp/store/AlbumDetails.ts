@@ -7,12 +7,12 @@ import { Genre } from './GenreList';
 // STATE - This defines the type of data maintained in the Redux store.
 
 export interface AlbumDetailsState {
-    isLoaded: boolean;
     album: AlbumDetails;
+    requestedAlbumId: number;
 }
 
 export interface AlbumDetails {
-    AlbumId: string;
+    AlbumId: number;
     Title: string;
     AlbumArtUrl: string;
     Genre: Genre;
@@ -49,23 +49,31 @@ class ReceiveAlbumDetails extends Action {
 
 export const actionCreators = {    
     requestAlbumDetails: (albumId: number): ActionCreator => (dispatch, getState) => {
-        fetch(`/api/albums/${ albumId }`)
-            .then(results => results.json())
-            .then(album => dispatch(new ReceiveAlbumDetails(album)));
-        
-        dispatch(new RequestAlbumDetails(albumId));
+        // Only load if it's not already loaded (or currently being loaded)
+        if (albumId !== getState().albumDetails.requestedAlbumId) {
+            fetch(`/api/albums/${ albumId }`)
+                .then(results => results.json())
+                .then(album => {
+                    // Only replace state if it's still the most recent request
+                    if (albumId === getState().albumDetails.requestedAlbumId) {
+                        dispatch(new ReceiveAlbumDetails(album));
+                    }
+                });
+            
+            dispatch(new RequestAlbumDetails(albumId));
+        }
     }
 };
 
 // ----------------
 // REDUCER - For a given state and action, returns the new state. To support time travel, this must not mutate the old state.
 // For unrecognized actions, must return the existing state (or default initial state if none was supplied).
-const unloadedState: AlbumDetailsState = { isLoaded: false, album: null };
+const unloadedState: AlbumDetailsState = { requestedAlbumId: null as number, album: null };
 export const reducer: Reducer<AlbumDetailsState> = (state, action) => {
     if (isActionType(action, RequestAlbumDetails)) {
-        return unloadedState;
+        return { requestedAlbumId: action.albumId, album: null };
     } else if (isActionType(action, ReceiveAlbumDetails)) {
-        return { isLoaded: true, album: action.album };
+        return { requestedAlbumId: action.album.AlbumId, album: action.album };
     } else {
         return state || unloadedState;
     }

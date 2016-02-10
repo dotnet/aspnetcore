@@ -5,22 +5,20 @@ import { ApplicationState }  from '../../store';
 import * as AlbumDetailsState from '../../store/AlbumDetails';
 
 interface RouteParams {
-    albumId: number;
+    albumId: string;
 }
 
 class AlbumDetails extends React.Component<AlbumDetailsProps, void> {
     componentWillMount() {
-        this.props.requestAlbumDetails(this.props.params.albumId);
+        this.props.requestAlbumDetails(parseInt(this.props.params.albumId));
     }
 
     componentWillReceiveProps(nextProps: AlbumDetailsProps) {
-        if (nextProps.params.albumId !== this.props.params.albumId) {
-            nextProps.requestAlbumDetails(nextProps.params.albumId);
-        }
+        this.props.requestAlbumDetails(parseInt(nextProps.params.albumId));
     }
 
     public render() {
-        if (this.props.isLoaded) {
+        if (this.props.album) {
             const albumData = this.props.album;
             return <div>
                 <h2>{ albumData.Title }</h2>

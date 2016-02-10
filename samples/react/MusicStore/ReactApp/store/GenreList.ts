@@ -7,6 +7,7 @@ import { ActionCreator } from './';
 
 export interface GenresListState {
     genres: Genre[];
+    isLoaded: boolean;
 }
 
 export interface Genre {
@@ -32,9 +33,11 @@ class ReceiveGenresList extends Action {
 
 export const actionCreators = {    
     requestGenresList: (): ActionCreator => (dispatch, getState) => {
-        fetch('/api/genres')
-            .then(results => results.json())
-            .then(genres => dispatch(new ReceiveGenresList(genres)));
+        if (!getState().genreList.isLoaded) {
+            fetch('/api/genres')
+                .then(results => results.json())
+                .then(genres => dispatch(new ReceiveGenresList(genres)));
+        }
     }
 };
 
@@ -44,8 +47,8 @@ export const actionCreators = {
 
 export const reducer: Reducer<GenresListState> = (state, action) => {
     if (isActionType(action, ReceiveGenresList)) {
-        return { genres: action.genres };
+        return { genres: action.genres, isLoaded: true };
     } else {
-        return state || { genres: [] };
+        return state || { genres: [], isLoaded: false };
     }
 };

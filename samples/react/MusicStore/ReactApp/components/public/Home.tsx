@@ -7,20 +7,17 @@ import { AlbumTile } from './AlbumTile';
 
 class Home extends React.Component<HomeProps, void> {
     componentWillMount() {
-        if (!this.props.albums.length) {
-            this.props.requestFeaturedAlbums();
-        }
+        this.props.requestFeaturedAlbums();
     }
 
     public render() {
-        let { albums } = this.props;
         return <div>
             <div className="jumbotron">
                 <h1>MVC Music Store</h1>
                 <img src="/Images/home-showcase.png" />
             </div>
             <ul className="row list-unstyled" id="album-list">
-                {albums.map(album =>
+                {this.props.albums.map(album =>
                     <AlbumTile key={ album.AlbumId } album={ album } />
                 )}
             </ul>

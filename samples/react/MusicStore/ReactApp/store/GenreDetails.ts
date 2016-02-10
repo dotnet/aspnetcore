@@ -7,8 +7,9 @@ import { Album } from './FeaturedAlbums';
 // STATE - This defines the type of data maintained in the Redux store.
 
 export interface GenreDetailsState {
-    isLoaded: boolean;
+    requestedGenreId: number;
     albums: Album[];
+    isLoaded: boolean;
 }
 
 // -----------------
@@ -25,7 +26,7 @@ class RequestGenreDetails extends Action {
 
 @typeName("RECEIVE_GENRE_DETAILS")
 class ReceiveGenreDetails extends Action {
-    constructor(public albums: Album[]) {
+    constructor(public genreId: number, public albums: Album[]) {
         super();
     }
 }
@@ -36,24 +37,31 @@ class ReceiveGenreDetails extends Action {
 
 export const actionCreators = {    
     requestGenreDetails: (genreId: number): ActionCreator => (dispatch, getState) => {
-        fetch(`/api/genres/${ genreId }/albums`)
-            .then(results => results.json())
-            .then(albums => dispatch(new ReceiveGenreDetails(albums)));
-        
-        dispatch(new RequestGenreDetails(genreId));
+        // Only load if it's not already loaded (or currently being loaded)
+        if (genreId !== getState().genreDetails.requestedGenreId) {
+            fetch(`/api/genres/${ genreId }/albums`)
+                .then(results => results.json())
+                .then(albums => {
+                    // Only replace state if it's still the most recent request
+                    if (genreId === getState().genreDetails.requestedGenreId) {
+                        dispatch(new ReceiveGenreDetails(genreId, albums)); 
+                    }
+                });
+            
+            dispatch(new RequestGenreDetails(genreId));
+        }
     }
 };
 
 // ----------------
 // REDUCER - For a given state and action, returns the new state. To support time travel, this must not mutate the old state.
 // For unrecognized actions, must return the existing state (or default initial state if none was supplied).
-const unloadedState: GenreDetailsState = { isLoaded: false, albums: [] };
 export const reducer: Reducer<GenreDetailsState> = (state, action) => {
     if (isActionType(action, RequestGenreDetails)) {
-        return unloadedState;
+        return { requestedGenreId: action.genreId, albums: [], isLoaded: false };
     } else if (isActionType(action, ReceiveGenreDetails)) {
-        return { isLoaded: true, albums: action.albums };
+        return { requestedGenreId: action.genreId, albums: action.albums, isLoaded: true };
     } else {
-        return state || unloadedState;
+        return state || { requestedGenreId: null as number, albums: [], isLoaded: false };
     }
 };

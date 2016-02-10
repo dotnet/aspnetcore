@@ -12,7 +12,7 @@ class NavMenu extends React.Component<NavMenuProps, void> {
     }
 
     public render() {
-        var genres = this.props.genres.slice(0, 5);
+        const genres = this.props.genres.slice(0, 5);
         return (
             <Navbar inverse fixedTop>
                 <Navbar.Header>

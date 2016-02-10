@@ -6,28 +6,25 @@ import * as GenreDetailsStore from '../../store/GenreDetails';
 import { AlbumTile } from './AlbumTile';
 
 interface RouteParams {
-    genreId: number
+    genreId: string
 }
 
 class GenreDetails extends React.Component<GenreDetailsProps, void> {
     componentWillMount() {
-        this.props.requestGenreDetails(this.props.params.genreId);
+        this.props.requestGenreDetails(parseInt(this.props.params.genreId));
     }
     
     componentWillReceiveProps(nextProps: GenreDetailsProps) {
-        if (nextProps.params.genreId !== this.props.params.genreId) {
-            nextProps.requestGenreDetails(nextProps.params.genreId);
-        }
+        this.props.requestGenreDetails(parseInt(nextProps.params.genreId));
     }
 
     public render() {
         if (this.props.isLoaded) {
-            let albums = this.props.albums;
             return <div>
                 <h3>Albums</h3>
 
                 <ul className="list-unstyled">
-                {albums.map(album =>
+                {this.props.albums.map(album =>
                     <AlbumTile key={ album.AlbumId } album={ album } />
                 )}
                 </ul>
