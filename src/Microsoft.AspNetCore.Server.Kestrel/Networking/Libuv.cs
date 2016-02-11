@@ -12,9 +12,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Networking
         {
             IsWindows = PlatformApis.IsWindows;
 
-            var isDarwinMono = PlatformApis.IsDarwin && PlatformApis.IsMono;
+            var isDnxDarwinMono =
+#if NET451
+                PlatformApis.IsDarwin && PlatformApis.IsMono && AppDomain.CurrentDomain.GetData("DNX_SERVICEPROVIDER") != null;
+#else
+                false;
+#endif
 
-            if (isDarwinMono)
+            if (isDnxDarwinMono)
             {
                 _uv_loop_init = NativeDarwinMonoMethods.uv_loop_init;
                 _uv_loop_close = NativeDarwinMonoMethods.uv_loop_close;
