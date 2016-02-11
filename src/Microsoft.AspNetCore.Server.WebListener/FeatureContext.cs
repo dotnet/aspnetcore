@@ -16,6 +16,7 @@
 // permissions and limitations under the License.
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Net.WebSockets;
@@ -65,6 +66,7 @@ namespace Microsoft.AspNetCore.Server.WebListener
         private IPAddress _localIpAddress;
         private int? _remotePort;
         private int? _localPort;
+        private string _connectionId;
         private string _requestId;
         private X509Certificate2 _clientCert;
         private ClaimsPrincipal _user;
@@ -268,6 +270,19 @@ namespace Microsoft.AspNetCore.Server.WebListener
                 return _remotePort.Value;
             }
             set { _remotePort = value; }
+        }
+
+        string IHttpConnectionFeature.ConnectionId
+        {
+            get
+            {
+                if (_connectionId == null)
+                {
+                    _connectionId = Request.ConnectionId.ToString(CultureInfo.InvariantCulture);
+                }
+                return _connectionId;
+            }
+            set { _connectionId = value; }
         }
 
         X509Certificate2 ITlsConnectionFeature.ClientCertificate

@@ -160,7 +160,7 @@ namespace Microsoft.Net.Http.Server
             }
         }
 
-        internal ulong ConnectionId
+        public ulong ConnectionId
         {
             get
             {
