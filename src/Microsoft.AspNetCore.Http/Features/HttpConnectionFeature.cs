@@ -11,6 +11,8 @@ namespace Microsoft.AspNetCore.Http.Features.Internal
         {
         }
 
+        public string ConnectionId { get; set; }
+
         public IPAddress LocalIpAddress { get; set; }
 
         public int LocalPort { get; set; }

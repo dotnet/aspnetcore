@@ -73,6 +73,7 @@ namespace Microsoft.AspNetCore.Owin
             public const string RemotePort = "server.RemotePort";
             public const string LocalIpAddress = "server.LocalIpAddress";
             public const string LocalPort = "server.LocalPort";
+            public const string ConnectionId = "server.ConnectionId";
             public const string TraceOutput = "host.TraceOutput";
             public const string Addresses = "host.Addresses";
             public const string AppName = "host.AppName";
