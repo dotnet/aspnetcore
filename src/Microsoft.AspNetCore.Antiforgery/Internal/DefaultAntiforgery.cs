@@ -59,7 +59,6 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
 
                     SaveCookieTokenAndHeader(httpContext, antiforgeryContext.NewCookieTokenString);
                     antiforgeryContext.HaveStoredNewCookieToken = true;
-
                     _logger.NewCookieToken();
                 }
                 else
@@ -233,6 +232,11 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
 
                 SaveCookieTokenAndHeader(httpContext, antiforgeryContext.NewCookieTokenString);
                 antiforgeryContext.HaveStoredNewCookieToken = true;
+                _logger.NewCookieToken();
+            }
+            else
+            {
+                _logger.ReusedCookieToken();
             }
         }
 
