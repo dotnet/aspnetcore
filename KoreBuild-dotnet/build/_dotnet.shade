@@ -16,6 +16,16 @@ dotnetDir=''
   {
       installDir = Path.Combine(Environment.GetEnvironmentVariable("LocalAppData"), "Microsoft", "dotnet", "cli");
   }
+
+  if (IsLinux)
+  {
+      var files = Directory.GetFiles(installDir, "*.ni.*", SearchOption.AllDirectories);
+      foreach (var file in files.Where(f => !f.Contains("mscorlib")))
+      {
+          Console.WriteLine("Deleting {0}", file);
+          File.Delete(file);
+      }
+  }
 }
 
 default currentDir = '${Directory.GetCurrentDirectory()}'
