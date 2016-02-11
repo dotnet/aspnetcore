@@ -3,6 +3,9 @@
     <head>
         <meta charset="utf-8" />
         <title>@ViewData["Title"]</title>
+        <environment names="Production">
+            <link rel="stylesheet" href="dist/my-styles.css" />
+        </environment>
     </head>
     <body>
         @RenderBody()

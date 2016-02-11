@@ -1,4 +1,18 @@
 {
   "name": "Webpack",
-  "version": "0.0.0"
+  "version": "0.0.0",
+  "devDependencies": {
+    "css-loader": "^0.23.1",
+    "express": "^4.13.4",
+    "extendify": "^1.0.0",
+    "extract-text-webpack-plugin": "^1.0.1",
+    "less": "^2.6.0",
+    "less-loader": "^2.2.2",
+    "style-loader": "^0.13.0",
+    "ts-loader": "^0.8.1",
+    "typescript": "^1.7.5",
+    "webpack": "^1.12.13",
+    "webpack-dev-middleware": "^1.5.1",
+    "webpack-hot-middleware": "^2.7.1"
+  }
 }
