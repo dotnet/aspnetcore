@@ -19,7 +19,12 @@ default pack_options=' ${E("KOREBUILD_DOTNET_PACK_OPTIONS")}'
 @{
     var projectFolder=Path.GetDirectoryName(projectFile);
     var projectName=Path.GetFileName(projectFolder);
-    var projectBin=Path.Combine(projectFolder, "bin", configuration);
+    var projectBin=Path.Combine(projectFolder, "bin");
+
+    if (IsLinux)
+    {
+        projectBin = Path.Combine(projectBin, configuration);
+    }
 
     DeleteFolder(projectBin);
 
