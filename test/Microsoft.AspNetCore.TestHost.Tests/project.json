@@ -12,6 +12,10 @@
   },
   "frameworks": {
     "dnx451": {
+      "frameworkAssemblies":
+      {
+        "System.Threading.Tasks": ""
+      },
       "dependencies": {
         "xunit.runner.console": "2.1.0"
       }
