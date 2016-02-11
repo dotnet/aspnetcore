@@ -19,7 +19,11 @@
       "dependencies": {
         "Moq": "4.2.1312.1622",
         "xunit.runner.console": "2.1.0"
-    }
+      },
+      "frameworkAssemblies": {
+        "System.Runtime": "",
+        "System.Threading.Tasks": ""
+      }
     }
   },
   "testRunner": "xunit",
