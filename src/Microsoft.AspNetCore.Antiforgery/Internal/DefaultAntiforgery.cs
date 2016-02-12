@@ -95,6 +95,16 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
 
             CheckSSLConfig(httpContext);
 
+            var method = httpContext.Request.Method;
+            if (string.Equals(method, "GET", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(method, "HEAD", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(method, "OPTIONS", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(method, "TRACE", StringComparison.OrdinalIgnoreCase))
+            {
+                // Validation not needed for these request types.
+                return true;
+            }
+
             var tokens = await _tokenStore.GetRequestTokensAsync(httpContext);
             if (tokens.CookieToken == null)
             {

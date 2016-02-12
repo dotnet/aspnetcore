@@ -36,12 +36,13 @@ namespace Microsoft.AspNetCore.Antiforgery
         AntiforgeryTokenSet GetTokens(HttpContext httpContext);
 
         /// <summary>
-        /// Asynchronously returns a value indicating whether the request contains a valid antiforgery token.
+        /// Asynchronously returns a value indicating whether the request passes antiforgery validation. If the
+        /// request uses a safe HTTP method (GET, HEAD, OPTIONS, TRACE), the antiforgery token is not validated.
         /// </summary>
         /// <param name="httpContext">The <see cref="HttpContext"/> associated with the current request.</param>
         /// <returns>
-        /// A <see cref="Task{bool}"/> that, when completed, returns <c>true</c> if the request contains a
-        /// valid antiforgery token, otherwise returns <c>false</c>.
+        /// A <see cref="Task{bool}"/> that, when completed, returns <c>true</c> if the is requst uses a safe HTTP
+        /// method or contains a value antiforgery token, otherwise returns <c>false</c>.
         /// </returns>
         Task<bool> IsRequestValidAsync(HttpContext httpContext);
 
