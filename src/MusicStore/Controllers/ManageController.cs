@@ -163,6 +163,8 @@ namespace MusicStore.Controllers
 
         //
         // GET: /Account/RemovePhoneNumber
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> RemovePhoneNumber()
         {
             var user = await GetCurrentUserAsync();
@@ -172,10 +174,10 @@ namespace MusicStore.Controllers
                 if (result.Succeeded)
                 {
                     await SignInManager.SignInAsync(user, isPersistent: false);
-                    return RedirectToAction("Index", new { Message = ManageMessageId.RemovePhoneSuccess });
+                    return RedirectToAction(nameof(Index), new { Message = ManageMessageId.RemovePhoneSuccess });
                 }
             }
-            return RedirectToAction("Index", new { Message = ManageMessageId.Error });
+            return RedirectToAction(nameof(Index), new { Message = ManageMessageId.Error });
         }
 
         //
