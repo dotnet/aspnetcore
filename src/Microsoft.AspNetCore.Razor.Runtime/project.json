@@ -4,7 +4,9 @@
   "compilationOptions": {
     "allowUnsafe": true,
     "keyFile": "../../tools/Key.snk",
-    "warningsAsErrors": true
+    "warningsAsErrors": true,
+    "nowarn": [ "CS1591" ],
+    "xmlDoc": true
   },
   "repository": {
     "type": "git",

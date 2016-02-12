@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
         /// </summary>
         /// <param name="context">Contains information associated with the current HTML tag.</param>
         /// <remarks>When more than one <see cref="ITagHelper"/> runs on the same element,
-        /// <see cref="TagHelperOutput.GetChildContentAsync"/> may be invoked prior to <see cref="ProcessAsync"/>.
+        /// <see cref="M:TagHelperOutput.GetChildContentAsync"/> may be invoked prior to <see cref="ProcessAsync"/>.
         /// </remarks>
         void Init(TagHelperContext context);
 

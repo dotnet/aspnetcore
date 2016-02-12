@@ -29,8 +29,7 @@ namespace Microsoft.AspNetCore.Razor.Parser.TagHelpers
 
         /// <summary>
         /// Instantiates a new instance of the <see cref="TagHelperBlockBuilder"/> class
-        /// with the provided <paramref name="tagName"/> and derives its <see cref="Attributes"/>
-        /// and <see cref="BlockBuilder.Type"/> from the <paramref name="startTag"/>.
+        /// with the provided values.
         /// </summary>
         /// <param name="tagName">An HTML tag name.</param>
         /// <param name="tagMode">HTML syntax of the element in the Razor source.</param>

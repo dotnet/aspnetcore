@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
         /// Gets the collection of items used to communicate with other <see cref="ITagHelper"/>s.
         /// </summary>
         /// <remarks>
-        /// This <see cref="IDictionary{object, object}"/> is copy-on-write in order to ensure items added to this
+        /// This <see cref="IDictionary{Object, Object}" /> is copy-on-write in order to ensure items added to this
         /// collection are visible only to other <see cref="ITagHelper"/>s targeting child elements.
         /// </remarks>
         public IDictionary<object, object> Items { get; }

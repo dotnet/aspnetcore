@@ -236,7 +236,8 @@ namespace Microsoft.AspNetCore.Razor
         /// <summary>
         /// Gets an instance of the code generator and is provided an opportunity to decorate or replace it
         /// </summary>
-        /// <param name="incomingBuilder">The code generator</param>
+        /// <param name="incomingBuilder">The <see cref="CodeGenerator"/>.</param>
+        /// <param name="context">The <see cref="CodeGeneratorContext"/>.</param>
         /// <returns>Either the same code generator, after modifications, or a different code generator.</returns>
         public virtual CodeGenerator DecorateCodeGenerator(
             CodeGenerator incomingBuilder,

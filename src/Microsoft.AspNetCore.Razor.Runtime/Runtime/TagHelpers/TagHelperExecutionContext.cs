@@ -159,7 +159,7 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
         }
 
         /// <summary>
-        /// Tracks the minimized HTML attribute in <see cref="AllAttributes"/> and <see cref="HtmlAttributes"/>.
+        /// Tracks the minimized HTML attribute.
         /// </summary>
         /// <param name="name">The minimized HTML attribute name.</param>
         public void AddMinimizedHtmlAttribute(string name)
@@ -178,7 +178,7 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
         }
 
         /// <summary>
-        /// Tracks the HTML attribute in <see cref="AllAttributes"/> and <see cref="HtmlAttributes"/>.
+        /// Tracks the HTML attribute.
         /// </summary>
         /// <param name="name">The HTML attribute name.</param>
         /// <param name="value">The HTML attribute value.</param>
@@ -198,7 +198,7 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
         }
 
         /// <summary>
-        /// Tracks the <see cref="ITagHelper"/> bound attribute in <see cref="AllAttributes"/>.
+        /// Tracks the <see cref="ITagHelper"/> bound attribute.
         /// </summary>
         /// <param name="name">The bound attribute name.</param>
         /// <param name="value">The attribute value.</param>

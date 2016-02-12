@@ -10,9 +10,6 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
     /// <summary>
     /// A read-only collection of <see cref="TagHelperAttribute"/>s.
     /// </summary>
-    /// <typeparam name="TagHelperAttribute">
-    /// The type of <see cref="TagHelperAttribute"/>s in the collection.
-    /// </typeparam>
     public abstract class ReadOnlyTagHelperAttributeList : ReadOnlyCollection<TagHelperAttribute>
     {
         private static readonly IReadOnlyList<TagHelperAttribute> EmptyList = new TagHelperAttribute[0];
