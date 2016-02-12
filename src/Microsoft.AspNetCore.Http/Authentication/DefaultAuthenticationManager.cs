@@ -14,22 +14,26 @@ namespace Microsoft.AspNetCore.Http.Authentication.Internal
 {
     public class DefaultAuthenticationManager : AuthenticationManager
     {
+        private HttpContext _context;
         private FeatureReferences<IHttpAuthenticationFeature> _features;
 
-        public DefaultAuthenticationManager(IFeatureCollection features)
+        public DefaultAuthenticationManager(HttpContext context)
         {
-            Initialize(features);
+            Initialize(context);
         }
 
-        public virtual void Initialize(IFeatureCollection features)
+        public virtual void Initialize(HttpContext context)
         {
-            _features = new FeatureReferences<IHttpAuthenticationFeature>(features);
+            _context = context;
+            _features = new FeatureReferences<IHttpAuthenticationFeature>(context.Features);
         }
 
         public virtual void Uninitialize()
         {
             _features = default(FeatureReferences<IHttpAuthenticationFeature>);
         }
+
+        public override HttpContext HttpContext => _context;
 
         private IHttpAuthenticationFeature HttpAuthenticationFeature =>
             _features.Fetch(ref _features.Cache, f => new HttpAuthenticationFeature());

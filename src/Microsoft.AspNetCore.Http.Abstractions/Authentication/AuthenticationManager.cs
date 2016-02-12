@@ -16,6 +16,8 @@ namespace Microsoft.AspNetCore.Http.Authentication
         /// </summary>
         public const string AutomaticScheme = "Automatic";
 
+        public abstract HttpContext HttpContext { get; }
+
         public abstract IEnumerable<AuthenticationDescription> GetAuthenticationSchemes();
 
         public abstract Task AuthenticateAsync(AuthenticateContext context);

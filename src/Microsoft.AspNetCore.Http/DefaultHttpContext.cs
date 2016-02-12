@@ -173,16 +173,16 @@ namespace Microsoft.AspNetCore.Http.Internal
         }
 
 
-        protected virtual HttpRequest InitializeHttpRequest() => new DefaultHttpRequest(this, Features);
+        protected virtual HttpRequest InitializeHttpRequest() => new DefaultHttpRequest(this);
         protected virtual void UninitializeHttpRequest(HttpRequest instance) { }
 
-        protected virtual HttpResponse InitializeHttpResponse() => new DefaultHttpResponse(this, Features);
+        protected virtual HttpResponse InitializeHttpResponse() => new DefaultHttpResponse(this);
         protected virtual void UninitializeHttpResponse(HttpResponse instance) { }
 
         protected virtual ConnectionInfo InitializeConnectionInfo() => new DefaultConnectionInfo(Features);
         protected virtual void UninitializeConnectionInfo(ConnectionInfo instance) { }
 
-        protected virtual AuthenticationManager InitializeAuthenticationManager() => new DefaultAuthenticationManager(Features);
+        protected virtual AuthenticationManager InitializeAuthenticationManager() => new DefaultAuthenticationManager(this);
         protected virtual void UninitializeAuthenticationManager(AuthenticationManager instance) { }
 
         protected virtual WebSocketManager InitializeWebSocketManager() => new DefaultWebSocketManager(Features);

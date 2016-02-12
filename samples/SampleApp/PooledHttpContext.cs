@@ -21,11 +21,11 @@ namespace SampleApp
         {
             if (_pooledHttpRequest != null)
             {
-                _pooledHttpRequest.Initialize(this, Features);
+                _pooledHttpRequest.Initialize(this);
                 return _pooledHttpRequest;
             }
 
-            return new DefaultHttpRequest(this, Features);
+            return new DefaultHttpRequest(this);
         }
 
         protected override void UninitializeHttpRequest(HttpRequest instance)
@@ -38,11 +38,11 @@ namespace SampleApp
         {
             if (_pooledHttpResponse != null)
             {
-                _pooledHttpResponse.Initialize(this, Features);
+                _pooledHttpResponse.Initialize(this);
                 return _pooledHttpResponse;
             }
 
-            return new DefaultHttpResponse(this, Features);
+            return new DefaultHttpResponse(this);
         }
 
         protected override void UninitializeHttpResponse(HttpResponse instance)
