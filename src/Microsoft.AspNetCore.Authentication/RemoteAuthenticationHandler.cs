@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Authentication
             if (authResult == null || !authResult.Succeeded)
             {
                 var errorContext = new FailureContext(Context, authResult?.Failure ?? new Exception("Invalid return state, unable to redirect."));
-                Logger.LogInformation("Error from RemoteAuthentication: " + errorContext.Failure.Message);
+                Logger.RemoteAuthenticationError(errorContext.Failure.Message);
                 await Options.Events.RemoteFailure(errorContext);
                 if (errorContext.HandledResponse)
                 {
@@ -66,12 +66,12 @@ namespace Microsoft.AspNetCore.Authentication
 
             if (context.HandledResponse)
             {
-                Logger.LogDebug("The SigningIn event returned Handled.");
+                Logger.SigninHandled();
                 return true;
             }
             else if (context.Skipped)
             {
-                Logger.LogDebug("The SigningIn event returned Skipped.");
+                Logger.SigninSkipped();
                 return false;
             }
 
@@ -144,7 +144,7 @@ namespace Microsoft.AspNetCore.Authentication
             string correlationId;
             if (!properties.Items.TryGetValue(CorrelationProperty, out correlationId))
             {
-                Logger.LogWarning(26, "{0} state property not found.", CorrelationPrefix);
+                Logger.CorrelationPropertyNotFound(CorrelationPrefix);
                 return false;
             }
 
@@ -155,7 +155,7 @@ namespace Microsoft.AspNetCore.Authentication
             var correlationCookie = Request.Cookies[cookieName];
             if (string.IsNullOrEmpty(correlationCookie))
             {
-                Logger.LogWarning(27, "'{0}' cookie not found.", cookieName);
+                Logger.CorrelationCookieNotFound(cookieName);
                 return false;
             }
 
@@ -168,7 +168,7 @@ namespace Microsoft.AspNetCore.Authentication
 
             if (!string.Equals(correlationCookie, CorrelationMarker, StringComparison.Ordinal))
             {
-                Logger.LogWarning(28, "The correlation cookie value '{0}' did not match the expected value '{1}'.", cookieName);
+                Logger.UnexpectedCorrelationCookieValue(cookieName, correlationCookie);
                 return false;
             }
 

@@ -155,7 +155,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
 
         private async Task<RequestToken> ObtainRequestTokenAsync(string consumerKey, string consumerSecret, string callBackUri, AuthenticationProperties properties)
         {
-            Logger.LogDebug("ObtainRequestToken");
+            Logger.ObtainRequestToken();
 
             var nonce = Guid.NewGuid().ToString("N");
 
@@ -216,7 +216,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
         {
             // https://dev.twitter.com/docs/api/1/post/oauth/access_token
 
-            Logger.LogDebug("ObtainAccessToken");
+            Logger.ObtainAccessToken();
 
             var nonce = Guid.NewGuid().ToString("N");
 

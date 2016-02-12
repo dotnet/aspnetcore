@@ -104,13 +104,13 @@ namespace Microsoft.AspNetCore.Authentication
                 var result = await HandleAuthenticateOnceAsync();
                 if (result.Failure != null)
                 {
-                    Logger.LogInformation(0, $"{Options.AuthenticationScheme} not authenticated: " + result.Failure.Message);
+                    Logger.AuthenticationSchemeNotAuthenticatedWithFailure(Options.AuthenticationScheme, result.Failure.Message);
                 }
                 var ticket = result?.Ticket;
                 if (ticket?.Principal != null)
                 {
                     Context.User = SecurityHelper.MergeUserPrincipal(Context.User, ticket.Principal);
-                    Logger.LogInformation(0, "HttpContext.User merged via AutomaticAuthentication from authenticationScheme: {scheme}.", Options.AuthenticationScheme);
+                    Logger.UserPrinicpalMerged(Options.AuthenticationScheme);
                 }
             }
         }
@@ -171,7 +171,7 @@ namespace Microsoft.AspNetCore.Authentication
 
         /// <summary>
         /// Called once by common code after initialization. If an authentication middleware responds directly to
-        /// specifically known paths it must override this virtual, compare the request path to it's known paths, 
+        /// specifically known paths it must override this virtual, compare the request path to it's known paths,
         /// provide any response information as appropriate, and true to stop further processing.
         /// </summary>
         /// <returns>Returning false will cause the common code to call the next middleware in line. Returning true will
@@ -203,7 +203,7 @@ namespace Microsoft.AspNetCore.Authentication
             var handled = false;
             if (ShouldHandleScheme(context.AuthenticationScheme, Options.AutomaticAuthenticate))
             {
-                // Calling Authenticate more than once should always return the original value. 
+                // Calling Authenticate more than once should always return the original value.
                 var result = await HandleAuthenticateOnceAsync();
 
                 if (result?.Failure != null)
@@ -216,13 +216,13 @@ namespace Microsoft.AspNetCore.Authentication
                     if (ticket?.Principal != null)
                     {
                         context.Authenticated(ticket.Principal, ticket.Properties.Items, Options.Description.Items);
-                        Logger.LogInformation(1, "AuthenticationScheme: {scheme} was successfully authenticated.", Options.AuthenticationScheme);
+                        Logger.AuthenticationSchemeAuthenticated(Options.AuthenticationScheme);
                         handled = true;
                     }
                     else
                     {
                         context.NotAuthenticated();
-                        Logger.LogDebug(2, "AuthenticationScheme: {scheme} was not authenticated.", Options.AuthenticationScheme);
+                        Logger.AuthenticationSchemeNotAuthenticated(Options.AuthenticationScheme);
                     }
                 }
             }
@@ -250,7 +250,7 @@ namespace Microsoft.AspNetCore.Authentication
             {
                 SignInAccepted = true;
                 await HandleSignInAsync(context);
-                Logger.LogInformation(3, "AuthenticationScheme: {scheme} signed in.", Options.AuthenticationScheme);
+                Logger.AuthenticationSchemeSignedIn(Options.AuthenticationScheme);
                 context.Accept();
             }
             else if (PriorHandler != null)
@@ -270,7 +270,7 @@ namespace Microsoft.AspNetCore.Authentication
             {
                 SignOutAccepted = true;
                 await HandleSignOutAsync(context);
-                Logger.LogInformation(4, "AuthenticationScheme: {scheme} signed out.", Options.AuthenticationScheme);
+                Logger.AuthenticationSchemeSignedOut(Options.AuthenticationScheme);
                 context.Accept();
             }
             else if (PriorHandler != null)
@@ -321,11 +321,11 @@ namespace Microsoft.AspNetCore.Authentication
                         goto case ChallengeBehavior.Unauthorized;
                     case ChallengeBehavior.Unauthorized:
                         handled = await HandleUnauthorizedAsync(context);
-                        Logger.LogInformation(5, "AuthenticationScheme: {scheme} was challenged.", Options.AuthenticationScheme);
+                        Logger.AuthenticationSchemeChallenged(Options.AuthenticationScheme);
                         break;
                     case ChallengeBehavior.Forbidden:
                         handled = await HandleForbiddenAsync(context);
-                        Logger.LogInformation(6, "AuthenticationScheme: {scheme} was forbidden.", Options.AuthenticationScheme);
+                        Logger.AuthenticationSchemeForbidden(Options.AuthenticationScheme);
                         break;
                 }
                 context.Accept();

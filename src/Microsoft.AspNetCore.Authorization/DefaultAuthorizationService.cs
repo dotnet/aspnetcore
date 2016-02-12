@@ -51,12 +51,12 @@ namespace Microsoft.AspNetCore.Authorization
 
             if (authContext.HasSucceeded)
             {
-                _logger.LogInformation(0, "Authorization was successful for user: {userName}.", user?.Identity?.Name);
+                _logger.UserAuthorizationSucceeded(user?.Identity?.Name);
                 return true;
             }
             else
             {
-                _logger.LogInformation(1, "Authorization failed for user: {userName}.", user?.Identity?.Name);
+                _logger.UserAuthorizationFailed(user?.Identity?.Name);
                 return false;
             }
         }
