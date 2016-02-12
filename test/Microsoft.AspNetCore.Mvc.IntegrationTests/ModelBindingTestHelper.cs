@@ -20,12 +20,15 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
     {
         public static OperationBindingContext GetOperationBindingContext(
             Action<HttpRequest> updateRequest = null,
-            Action<MvcOptions> updateOptions = null)
+            Action<MvcOptions> updateOptions = null,
+            ControllerActionDescriptor actionDescriptor = null)
         {
             var httpContext = GetHttpContext(updateRequest, updateOptions);
             var services = httpContext.RequestServices;
 
-            var actionContext = new ActionContext(httpContext, new RouteData(), new ControllerActionDescriptor());
+            actionDescriptor = actionDescriptor ?? new ControllerActionDescriptor();
+
+            var actionContext = new ActionContext(httpContext, new RouteData(), actionDescriptor);
             var controllerContext = GetControllerContext(
                 services.GetRequiredService<IOptions<MvcOptions>>().Value,
                 actionContext);

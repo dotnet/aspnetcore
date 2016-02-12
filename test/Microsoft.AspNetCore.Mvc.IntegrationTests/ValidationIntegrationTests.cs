@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.IO;
@@ -9,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Newtonsoft.Json.Linq;
@@ -18,6 +20,144 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 {
     public class ValidationIntegrationTests
     {
+        private class TransferInfo
+        {
+            [Range(25, 50)]
+            public int AccountId { get; set; }
+
+            public double Amount { get; set; }
+        }
+
+        private class TestController { }
+
+        public static TheoryData<List<ParameterDescriptor>> MultipleActionParametersAndValidationData
+        {
+            get
+            {
+                return new TheoryData<List<ParameterDescriptor>>
+                {
+                    // Irrespective of the order in which the parameters are defined on the action,
+                    // the validation on the TransferInfo's AccountId should occur.
+                    // Here 'accountId' parameter is bound by the prefix 'accountId' while the 'transferInfo'
+                    // property is bound using the empty prefix and the 'TransferInfo' property names.
+                    new List<ParameterDescriptor>()
+                    {
+                        new ParameterDescriptor()
+                        {
+                            Name = "accountId",
+                            ParameterType = typeof(int)
+                        },
+                        new ParameterDescriptor()
+                        {
+                            Name = "transferInfo",
+                            ParameterType = typeof(TransferInfo),
+                            BindingInfo = new BindingInfo()
+                            {
+                                BindingSource = BindingSource.Body
+                            }
+                        }
+                    },
+                    new List<ParameterDescriptor>()
+                    {
+                        new ParameterDescriptor()
+                        {
+                            Name = "transferInfo",
+                            ParameterType = typeof(TransferInfo),
+                            BindingInfo = new BindingInfo()
+                            {
+                                BindingSource = BindingSource.Body
+                            }
+                        },
+                        new ParameterDescriptor()
+                        {
+                            Name = "accountId",
+                            ParameterType = typeof(int)
+                        }
+                    }
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(MultipleActionParametersAndValidationData))]
+        public async Task ValidationIsTriggered_OnFromBodyModels(List<ParameterDescriptor> parameters)
+        {
+            // Arrange
+            var actionDescriptor = new ControllerActionDescriptor()
+            {
+                BoundProperties = new List<ParameterDescriptor>(),
+                Parameters = parameters
+            };
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(
+                request =>
+                {
+                    request.QueryString = new QueryString("?accountId=30");
+                    request.Body = new MemoryStream(Encoding.UTF8.GetBytes("{\"accountId\": 15,\"amount\": 250.0}"));
+                    request.ContentType = "application/json";
+                },
+                actionDescriptor: actionDescriptor);
+
+            var modelState = operationContext.ActionContext.ModelState;
+
+            // Act
+            var arguments = await argumentBinder.BindActionArgumentsAsync(
+                (ControllerContext)operationContext.ActionContext, new TestController());
+
+            // Assert
+            Assert.False(modelState.IsValid);
+
+            var entry = Assert.Single(
+                modelState,
+                e => string.Equals(e.Key, "AccountId", StringComparison.OrdinalIgnoreCase)).Value;
+            var error = Assert.Single(entry.Errors);
+            Assert.Equal("The field AccountId must be between 25 and 50.", error.ErrorMessage);
+        }
+
+        [Theory]
+        [MemberData(nameof(MultipleActionParametersAndValidationData))]
+        public async Task MultipleActionParameter_ValidModelState(List<ParameterDescriptor> parameters)
+        {
+            // Since validation attribute is only present on the FromBody model's property(TransferInfo's AccountId),
+            // validation should not trigger for the parameter which is bound from Uri.
+
+            // Arrange
+            var actionDescriptor = new ControllerActionDescriptor()
+            {
+                BoundProperties = new List<ParameterDescriptor>(),
+                Parameters = parameters
+            };
+            var argumentBinder = ModelBindingTestHelper.GetArgumentBinder();
+
+            var operationContext = ModelBindingTestHelper.GetOperationBindingContext(
+                request =>
+                {
+                    request.QueryString = new QueryString("?accountId=10");
+                    request.Body = new MemoryStream(Encoding.UTF8.GetBytes("{\"accountId\": 40,\"amount\": 250.0}"));
+                    request.ContentType = "application/json";
+                },
+                actionDescriptor: actionDescriptor);
+
+            var modelState = operationContext.ActionContext.ModelState;
+
+            // Act
+            var arguments = await argumentBinder.BindActionArgumentsAsync(
+                (ControllerContext)operationContext.ActionContext, new TestController());
+
+            // Assert
+            Assert.True(modelState.IsValid);
+            object value;
+            Assert.True(arguments.TryGetValue("accountId", out value));
+            var accountId = Assert.IsType<int>(value);
+            Assert.Equal(10, accountId);
+            Assert.True(arguments.TryGetValue("transferInfo", out value));
+            var transferInfo = Assert.IsType<TransferInfo>(value);
+            Assert.NotNull(transferInfo);
+            Assert.Equal(40, transferInfo.AccountId);
+            Assert.Equal(250.0, transferInfo.Amount);
+        }
+
         private class Order1
         {
             [Required]
@@ -1188,7 +1328,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var httpContext = operationContext.HttpContext;
             var modelState = operationContext.ActionContext.ModelState;
 
-            // We need to add another model state entry which should get marked as skipped so 
+            // We need to add another model state entry which should get marked as skipped so
             // we can prove that the JObject was skipped.
             modelState.SetModelValue("CustomParameter.message", "Hello", "Hello");
 
@@ -1211,7 +1351,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         // Regression test for https://github.com/aspnet/Mvc/issues/3743
         //
         // A cancellation token that's bound with the empty prefix will end up suppressing
-        // the empty prefix. Since the empty prefix is a prefix of everything, this will 
+        // the empty prefix. Since the empty prefix is a prefix of everything, this will
         // basically result in clearing out all model errors, which is BAD.
         //
         // The fix is to treat non-user-input as have a key of null, which means that the MSD
