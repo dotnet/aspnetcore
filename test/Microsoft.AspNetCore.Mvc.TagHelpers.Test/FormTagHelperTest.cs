@@ -284,6 +284,175 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         }
 
         [Fact]
+        public async Task ProcessAsync_AspAreaAddsAreaToRouteValues()
+        {
+            // Arrange
+            var viewContext = CreateViewContext();
+            var context = new TagHelperContext(
+                allAttributes: new TagHelperAttributeList(
+                    Enumerable.Empty<TagHelperAttribute>()),
+                items: new Dictionary<object, object>(),
+                uniqueId: "test");
+            var output = new TagHelperOutput(
+                "form",
+                attributes: new TagHelperAttributeList(),
+                getChildContentAsync: (useCachedResult, encoder) =>
+                {
+                    var tagHelperContent = new DefaultTagHelperContent();
+                    tagHelperContent.SetContent("Something");
+                    return Task.FromResult<TagHelperContent>(tagHelperContent);
+                });
+
+            var expectedRouteValues = new Dictionary<string, object> { { "area", "Admin" } };
+            var generator = new Mock<IHtmlGenerator>(MockBehavior.Strict);
+            generator
+                .Setup(mock => mock.GenerateForm(
+                    viewContext,
+                    "Index",
+                    "Home",
+                    expectedRouteValues,
+                    null,
+                    null))
+                .Returns(new TagBuilder("form"))
+                .Verifiable();
+            var formTagHelper = new FormTagHelper(generator.Object)
+            {
+                Action = "Index",
+                Antiforgery = false,
+                Controller = "Home",
+                Area = "Admin",
+                ViewContext = viewContext,
+            };
+
+            // Act
+            await formTagHelper.ProcessAsync(context, output);
+
+            // Assert
+            generator.Verify();
+
+            Assert.Equal("form", output.TagName);
+            Assert.Equal(TagMode.StartTagAndEndTag, output.TagMode);
+            Assert.Empty(output.Attributes);
+            Assert.Empty(output.PreElement.GetContent());
+            Assert.Empty(output.PreContent.GetContent());
+            Assert.True(output.Content.IsEmpty);
+            Assert.Empty(output.PostContent.GetContent());
+        }
+
+        [Fact]
+        public async Task ProcessAsync_EmptyStringOnAspAreaIsPassedThroughToRouteValues()
+        {
+            // Arrange
+            var viewContext = CreateViewContext();
+            var context = new TagHelperContext(
+                allAttributes: new TagHelperAttributeList(
+                    Enumerable.Empty<TagHelperAttribute>()),
+                items: new Dictionary<object, object>(),
+                uniqueId: "test");
+            var output = new TagHelperOutput(
+                "form",
+                attributes: new TagHelperAttributeList(),
+                getChildContentAsync: (useCachedResult, encoder) =>
+                {
+                    var tagHelperContent = new DefaultTagHelperContent();
+                    tagHelperContent.SetContent("Something");
+                    return Task.FromResult<TagHelperContent>(tagHelperContent);
+                });
+
+            var expectedRouteValues = new Dictionary<string, object> { { "area", string.Empty } };
+            var generator = new Mock<IHtmlGenerator>(MockBehavior.Strict);
+            generator
+                .Setup(mock => mock.GenerateForm(
+                    viewContext,
+                    "Index",
+                    "Home",
+                    expectedRouteValues,
+                    null,
+                    null))
+                .Returns(new TagBuilder("form"))
+                .Verifiable();
+            var formTagHelper = new FormTagHelper(generator.Object)
+            {
+                Action = "Index",
+                Antiforgery = false,
+                Controller = "Home",
+                Area = string.Empty,
+                ViewContext = viewContext,
+            };
+
+            // Act
+            await formTagHelper.ProcessAsync(context, output);
+
+            // Assert
+            generator.Verify();
+
+            Assert.Equal("form", output.TagName);
+            Assert.Equal(TagMode.StartTagAndEndTag, output.TagMode);
+            Assert.Empty(output.Attributes);
+            Assert.Empty(output.PreElement.GetContent());
+            Assert.Empty(output.PreContent.GetContent());
+            Assert.True(output.Content.IsEmpty);
+            Assert.Empty(output.PostContent.GetContent());
+        }
+
+        [Fact]
+        public async Task ProcessAsync_AspAreaOverridesAspRouteArea()
+        {
+            // Arrange
+            var viewContext = CreateViewContext();
+            var context = new TagHelperContext(
+                allAttributes: new TagHelperAttributeList(
+                    Enumerable.Empty<TagHelperAttribute>()),
+                items: new Dictionary<object, object>(),
+                uniqueId: "test");
+            var output = new TagHelperOutput(
+                "form",
+                attributes: new TagHelperAttributeList(),
+                getChildContentAsync: (useCachedResult, encoder) =>
+                {
+                    var tagHelperContent = new DefaultTagHelperContent();
+                    tagHelperContent.SetContent("Something");
+                    return Task.FromResult<TagHelperContent>(tagHelperContent);
+                });
+
+            var expectedRouteValues = new Dictionary<string, object> { { "area", "Admin" } };
+            var generator = new Mock<IHtmlGenerator>(MockBehavior.Strict);
+            generator
+                .Setup(mock => mock.GenerateForm(
+                    viewContext,
+                    "Index",
+                    "Home",
+                    expectedRouteValues,
+                    null,
+                    null))
+                .Returns(new TagBuilder("form"))
+                .Verifiable();
+            var formTagHelper = new FormTagHelper(generator.Object)
+            {
+                Action = "Index",
+                Antiforgery = false,
+                Controller = "Home",
+                Area = "Admin",
+                RouteValues = new Dictionary<string, string> { { "area", "Client" } },
+                ViewContext = viewContext,
+            };
+
+            // Act
+            await formTagHelper.ProcessAsync(context, output);
+
+            // Assert
+            generator.Verify();
+
+            Assert.Equal("form", output.TagName);
+            Assert.Equal(TagMode.StartTagAndEndTag, output.TagMode);
+            Assert.Empty(output.Attributes);
+            Assert.Empty(output.PreElement.GetContent());
+            Assert.Empty(output.PreContent.GetContent());
+            Assert.True(output.Content.IsEmpty);
+            Assert.Empty(output.PostContent.GetContent());
+        }
+
+        [Fact]
         public async Task ProcessAsync_CallsIntoGenerateRouteFormWithExpectedParameters()
         {
             // Arrange
@@ -415,7 +584,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
             var expectedErrorMessage = "Cannot override the 'action' attribute for <form>. A <form> with a specified " +
                                        "'action' must not have attributes starting with 'asp-route-' or an " +
-                                       "'asp-action' or 'asp-controller' or 'asp-route' attribute.";
+                                       "'asp-action' or 'asp-controller' or 'asp-area' or 'asp-route' attribute.";
 
             var context = new TagHelperContext(
                 allAttributes: new TagHelperAttributeList(

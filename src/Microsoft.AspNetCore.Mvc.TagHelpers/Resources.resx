@@ -121,10 +121,10 @@
     <value>Cannot determine an '{4}' attribute for {0}. An {0} with a specified '{1}' must not have an '{2}' or '{3}' attribute.</value>
   </data>
   <data name="AnchorTagHelper_CannotOverrideHref" xml:space="preserve">
-    <value>Cannot override the '{8}' attribute for {0}. An {0} with a specified '{8}' must not have attributes starting with '{7}' or an '{1}', '{2}', '{3}', '{4}', '{5}', or '{6}' attribute.</value>
+    <value>Cannot override the '{9}' attribute for {0}. An {0} with a specified '{9}' must not have attributes starting with '{8}' or an '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', or '{7}' attribute.</value>
   </data>
   <data name="FormTagHelper_CannotOverrideAction" xml:space="preserve">
-    <value>Cannot override the '{1}' attribute for {0}. A {0} with a specified '{1}' must not have attributes starting with '{5}' or an '{2}' or '{3}' or '{4}' attribute.</value>
+    <value>Cannot override the '{1}' attribute for {0}. A {0} with a specified '{1}' must not have attributes starting with '{6}' or an '{2}' or '{3}' or '{4}' or '{5}' attribute.</value>
   </data>
   <data name="InputTagHelper_InvalidExpressionResult" xml:space="preserve">
     <value>Unexpected '{1}' expression result type '{2}' for {0}. '{1}' must be of type '{3}' if '{4}' is '{5}'.</value>

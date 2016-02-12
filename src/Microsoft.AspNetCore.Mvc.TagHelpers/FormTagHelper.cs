@@ -15,6 +15,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
     /// </summary>
     [HtmlTargetElement("form", Attributes = ActionAttributeName)]
     [HtmlTargetElement("form", Attributes = AntiforgeryAttributeName)]
+    [HtmlTargetElement("form", Attributes = AreaAttributeName)]
     [HtmlTargetElement("form", Attributes = ControllerAttributeName)]
     [HtmlTargetElement("form", Attributes = RouteAttributeName)]
     [HtmlTargetElement("form", Attributes = RouteValuesDictionaryName)]
@@ -23,6 +24,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
     {
         private const string ActionAttributeName = "asp-action";
         private const string AntiforgeryAttributeName = "asp-antiforgery";
+        private const string AreaAttributeName = "asp-area";
         private const string ControllerAttributeName = "asp-controller";
         private const string RouteAttributeName = "asp-route";
         private const string RouteValuesDictionaryName = "asp-all-route-data";
@@ -65,6 +67,12 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         /// </summary>
         [HtmlAttributeName(ControllerAttributeName)]
         public string Controller { get; set; }
+
+        /// <summary>
+        /// The name of the area.
+        /// </summary>
+        [HtmlAttributeName(AreaAttributeName)]
+        public string Area { get; set; }
 
         /// <summary>
         /// Whether the antiforgery token should be generated.
@@ -141,7 +149,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             // If "action" is already set, it means the user is attempting to use a normal <form>.
             if (output.Attributes.ContainsName(HtmlActionAttributeName))
             {
-                if (Action != null || Controller != null || Route != null || RouteValues.Count != 0)
+                if (Action != null || Controller != null || Area != null || Route != null || RouteValues.Count != 0)
                 {
                     // User also specified bound attributes we cannot use.
                     throw new InvalidOperationException(
@@ -150,6 +158,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                             HtmlActionAttributeName,
                             ActionAttributeName,
                             ControllerAttributeName,
+                            AreaAttributeName,
                             RouteAttributeName,
                             RouteValuesPrefix));
                 }
@@ -169,6 +178,17 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     {
                         routeValues.Add(routeValue.Key, routeValue.Value);
                     }
+                }
+
+                if (Area != null)
+                {
+                    if (routeValues == null)
+                    {
+                        routeValues = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+                    }
+
+                    // Unconditionally replace any value from asp-route-area. 
+                    routeValues["area"] = Area;
                 }
 
                 TagBuilder tagBuilder;

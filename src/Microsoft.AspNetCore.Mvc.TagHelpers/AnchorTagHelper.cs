@@ -14,6 +14,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
     /// </summary>
     [HtmlTargetElement("a", Attributes = ActionAttributeName)]
     [HtmlTargetElement("a", Attributes = ControllerAttributeName)]
+    [HtmlTargetElement("a", Attributes = AreaAttributeName)]
     [HtmlTargetElement("a", Attributes = FragmentAttributeName)]
     [HtmlTargetElement("a", Attributes = HostAttributeName)]
     [HtmlTargetElement("a", Attributes = ProtocolAttributeName)]
@@ -24,6 +25,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
     {
         private const string ActionAttributeName = "asp-action";
         private const string ControllerAttributeName = "asp-controller";
+        private const string AreaAttributeName = "asp-area";
         private const string FragmentAttributeName = "asp-fragment";
         private const string HostAttributeName = "asp-host";
         private const string ProtocolAttributeName = "asp-protocol";
@@ -66,6 +68,13 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         /// <remarks>Must be <c>null</c> if <see cref="Route"/> is non-<c>null</c>.</remarks>
         [HtmlAttributeName(ControllerAttributeName)]
         public string Controller { get; set; }
+
+        /// <summary>
+        /// The name of the area.
+        /// </summary>
+        /// <remarks>Must be <c>null</c> if <see cref="Route"/> is non-<c>null</c>.</remarks>
+        [HtmlAttributeName(AreaAttributeName)]
+        public string Area { get; set; }
 
         /// <summary>
         /// The protocol for the URL, such as &quot;http&quot; or &quot;https&quot;.
@@ -147,6 +156,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             {
                 if (Action != null ||
                     Controller != null ||
+                    Area != null ||
                     Route != null ||
                     Protocol != null ||
                     Host != null ||
@@ -159,6 +169,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                             "<a>",
                             ActionAttributeName,
                             ControllerAttributeName,
+                            AreaAttributeName,
                             RouteAttributeName,
                             ProtocolAttributeName,
                             HostAttributeName,
@@ -178,6 +189,17 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     {
                         routeValues.Add(routeValue.Key, routeValue.Value);
                     }
+                }
+
+                if (Area != null)
+                {
+                    if (routeValues == null)
+                    {
+                        routeValues = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+                    }
+
+                    // Unconditionally replace any value from asp-route-area. 
+                    routeValues["area"] = Area;
                 }
 
                 TagBuilder tagBuilder;

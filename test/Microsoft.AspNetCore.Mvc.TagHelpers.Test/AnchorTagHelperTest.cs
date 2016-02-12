@@ -187,6 +187,178 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             Assert.True(output.Content.IsEmpty);
         }
 
+        [Fact]
+        public async Task ProcessAsync_AddsAreaToRouteValuesAndCallsIntoActionLinkWithExpectedParameters()
+        {
+            // Arrange
+            var context = new TagHelperContext(
+                allAttributes: new TagHelperAttributeList(
+                    Enumerable.Empty<TagHelperAttribute>()),
+                items: new Dictionary<object, object>(),
+                uniqueId: "test");
+            var output = new TagHelperOutput(
+                "a",
+                attributes: new TagHelperAttributeList(),
+                getChildContentAsync: (useCachedResult, encoder) =>
+                {
+                    var tagHelperContent = new DefaultTagHelperContent();
+                    tagHelperContent.SetContent("Something");
+                    return Task.FromResult<TagHelperContent>(tagHelperContent);
+                });
+            output.Content.SetContent(string.Empty);
+
+            var generator = new Mock<IHtmlGenerator>();
+            var expectedRouteValues = new Dictionary<string, object> { { "area", "Admin" } };
+
+            generator
+                .Setup(mock => mock.GenerateActionLink(
+                    It.IsAny<ViewContext>(),
+                    string.Empty,
+                    "Index",
+                    "Home",
+                    "http",
+                    "contoso.com",
+                    "hello=world",
+                    expectedRouteValues,
+                    null))
+                .Returns(new TagBuilder("a"))
+                .Verifiable();
+            var anchorTagHelper = new AnchorTagHelper(generator.Object)
+            {
+                Action = "Index",
+                Controller = "Home",
+                Area = "Admin",
+                Fragment = "hello=world",
+                Host = "contoso.com",
+                Protocol = "http",
+            };
+
+            // Act
+            await anchorTagHelper.ProcessAsync(context, output);
+
+            // Assert
+            generator.Verify();
+
+            Assert.Equal("a", output.TagName);
+            Assert.Empty(output.Attributes);
+            Assert.True(output.Content.IsEmpty);
+        }
+
+        [Fact]
+        public async Task ProcessAsync_AspAreaOverridesAspRouteArea()
+        {
+            // Arrange
+            var context = new TagHelperContext(
+                allAttributes: new TagHelperAttributeList(
+                    Enumerable.Empty<TagHelperAttribute>()),
+                items: new Dictionary<object, object>(),
+                uniqueId: "test");
+            var output = new TagHelperOutput(
+                "a",
+                attributes: new TagHelperAttributeList(),
+                getChildContentAsync: (useCachedResult, encoder) =>
+                {
+                    var tagHelperContent = new DefaultTagHelperContent();
+                    tagHelperContent.SetContent("Something");
+                    return Task.FromResult<TagHelperContent>(tagHelperContent);
+                });
+            output.Content.SetContent(string.Empty);
+
+            var generator = new Mock<IHtmlGenerator>();
+            var expectedRouteValues = new Dictionary<string, object> { { "area", "Admin" } };
+
+            generator
+                .Setup(mock => mock.GenerateActionLink(
+                    It.IsAny<ViewContext>(),
+                    string.Empty,
+                    "Index",
+                    "Home",
+                    "http",
+                    "contoso.com",
+                    "hello=world",
+                    expectedRouteValues,
+                    null))
+                .Returns(new TagBuilder("a"))
+                .Verifiable();
+            var anchorTagHelper = new AnchorTagHelper(generator.Object)
+            {
+                Action = "Index",
+                Controller = "Home",
+                Area = "Admin",
+                Fragment = "hello=world",
+                Host = "contoso.com",
+                Protocol = "http",
+                RouteValues = new Dictionary<string, string> { { "area", "Home" } }
+            };
+
+            // Act
+            await anchorTagHelper.ProcessAsync(context, output);
+
+            // Assert
+            generator.Verify();
+
+            Assert.Equal("a", output.TagName);
+            Assert.Empty(output.Attributes);
+            Assert.True(output.Content.IsEmpty);
+        }
+
+        [Fact]
+        public async Task ProcessAsync_EmptyStringOnAspAreaIsPassedThroughToRouteValues()
+        {
+            // Arrange
+            var context = new TagHelperContext(
+                allAttributes: new TagHelperAttributeList(
+                    Enumerable.Empty<TagHelperAttribute>()),
+                items: new Dictionary<object, object>(),
+                uniqueId: "test");
+            var output = new TagHelperOutput(
+                "a",
+                attributes: new TagHelperAttributeList(),
+                getChildContentAsync: (useCachedResult, encoder) =>
+                {
+                    var tagHelperContent = new DefaultTagHelperContent();
+                    tagHelperContent.SetContent("Something");
+                    return Task.FromResult<TagHelperContent>(tagHelperContent);
+                });
+            output.Content.SetContent(string.Empty);
+
+            var generator = new Mock<IHtmlGenerator>();
+            var expectedRouteValues = new Dictionary<string, object> { { "area", string.Empty } };
+
+            generator
+                .Setup(mock => mock.GenerateActionLink(
+                    It.IsAny<ViewContext>(),
+                    string.Empty,
+                    "Index",
+                    "Home",
+                    "http",
+                    "contoso.com",
+                    "hello=world",
+                    expectedRouteValues,
+                    null))
+                .Returns(new TagBuilder("a"))
+                .Verifiable();
+            var anchorTagHelper = new AnchorTagHelper(generator.Object)
+            {
+                Action = "Index",
+                Controller = "Home",
+                Area = string.Empty,
+                Fragment = "hello=world",
+                Host = "contoso.com",
+                Protocol = "http"
+            };
+
+            // Act
+            await anchorTagHelper.ProcessAsync(context, output);
+
+            // Assert
+            generator.Verify();
+
+            Assert.Equal("a", output.TagName);
+            Assert.Empty(output.Attributes);
+            Assert.True(output.Content.IsEmpty);
+        }
+
         [Theory]
         [InlineData("Action")]
         [InlineData("Controller")]
@@ -221,7 +393,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
             var expectedErrorMessage = "Cannot override the 'href' attribute for <a>. An <a> with a specified " +
                                        "'href' must not have attributes starting with 'asp-route-' or an " +
-                                       "'asp-action', 'asp-controller', 'asp-route', 'asp-protocol', 'asp-host', or " +
+                                       "'asp-action', 'asp-controller', 'asp-area', 'asp-route', 'asp-protocol', 'asp-host', or " +
                                        "'asp-fragment' attribute.";
 
             var context = new TagHelperContext(
