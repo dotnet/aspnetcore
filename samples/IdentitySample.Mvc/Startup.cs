@@ -48,7 +48,6 @@ namespace IdentitySample
                     options.UseSqlServer(Configuration["Data:DefaultConnection:ConnectionString"]));
 
             services.AddIdentity<ApplicationUser, IdentityRole>(options => {
-                options.Cookies.ApplicationCookieAuthenticationScheme = "ApplicationCookie";
                 options.Cookies.ApplicationCookie.AuthenticationScheme = "ApplicationCookie";
                 options.Cookies.ApplicationCookie.DataProtectionProvider = new DataProtectionProvider(new DirectoryInfo("C:\\Github\\Identity\\artifacts"));
                 options.Cookies.ApplicationCookie.CookieName = "Interop";

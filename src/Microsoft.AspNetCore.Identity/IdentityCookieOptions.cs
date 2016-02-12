@@ -13,12 +13,17 @@ namespace Microsoft.AspNetCore.Identity
     /// </summary>
     public class IdentityCookieOptions
     {
+        private static readonly string DefaultApplicationScheme = typeof(IdentityCookieOptions).Namespace + ".Application";
+        private static readonly string DefaultExternalScheme = typeof(IdentityCookieOptions).Namespace + ".External";
+        private static readonly string DefaultTwoFactorRememberMeScheme = typeof(IdentityCookieOptions).Namespace + ".TwoFactorRememberMe";
+        private static readonly string DefaultTwoFactorUserIdScheme = typeof(IdentityCookieOptions).Namespace + ".TwoFactorUserId";
+
         public IdentityCookieOptions()
         {
             // Configure all of the cookie middlewares
             ApplicationCookie = new CookieAuthenticationOptions
             {
-                AuthenticationScheme = ApplicationCookieAuthenticationScheme,
+                AuthenticationScheme = DefaultApplicationScheme,
                 AutomaticAuthenticate = true,
                 AutomaticChallenge = true,
                 LoginPath = new PathString("/Account/Login"),
@@ -30,21 +35,21 @@ namespace Microsoft.AspNetCore.Identity
 
             ExternalCookie = new CookieAuthenticationOptions
             {
-                AuthenticationScheme = ExternalCookieAuthenticationScheme,
-                CookieName = ExternalCookieAuthenticationScheme,
+                AuthenticationScheme = DefaultExternalScheme,
+                CookieName = DefaultExternalScheme,
                 ExpireTimeSpan = TimeSpan.FromMinutes(5)
             };
 
             TwoFactorRememberMeCookie = new CookieAuthenticationOptions
             {
-                AuthenticationScheme = TwoFactorRememberMeCookieAuthenticationScheme,
-                CookieName = TwoFactorRememberMeCookieAuthenticationScheme
+                AuthenticationScheme = DefaultTwoFactorRememberMeScheme,
+                CookieName = DefaultTwoFactorRememberMeScheme
             };
 
             TwoFactorUserIdCookie = new CookieAuthenticationOptions
             {
-                AuthenticationScheme = TwoFactorUserIdCookieAuthenticationScheme,
-                CookieName = TwoFactorUserIdCookieAuthenticationScheme,
+                AuthenticationScheme = DefaultTwoFactorUserIdScheme,
+                CookieName = DefaultTwoFactorUserIdScheme,
                 ExpireTimeSpan = TimeSpan.FromMinutes(5)
                 };
 
@@ -56,27 +61,27 @@ namespace Microsoft.AspNetCore.Identity
         public CookieAuthenticationOptions TwoFactorUserIdCookie { get; set; }
 
         /// <summary>
-        /// Gets or sets the scheme used to identify application authentication cookies.
+        /// Gets the scheme used to identify application authentication cookies.
         /// </summary>
         /// <value>The scheme used to identify application authentication cookies.</value>
-        public string ApplicationCookieAuthenticationScheme { get; set; } = typeof(IdentityCookieOptions).Namespace + ".Application";
+        public string ApplicationCookieAuthenticationScheme => ApplicationCookie?.AuthenticationScheme;
 
         /// <summary>
-        /// Gets or sets the scheme used to identify external authentication cookies.
+        /// Gets the scheme used to identify external authentication cookies.
         /// </summary>
         /// <value>The scheme used to identify external authentication cookies.</value>
-        public string ExternalCookieAuthenticationScheme { get; set; } = typeof(IdentityCookieOptions).Namespace + ".External";
+        public string ExternalCookieAuthenticationScheme => ExternalCookie?.AuthenticationScheme;
 
         /// <summary>
-        /// Gets or sets the scheme used to identify Two Factor authentication cookies for round tripping user identities.
+        /// Gets the scheme used to identify Two Factor authentication cookies for round tripping user identities.
         /// </summary>
         /// <value>The scheme used to identify user identity 2fa authentication cookies.</value>
-        public string TwoFactorUserIdCookieAuthenticationScheme { get; set; } = typeof(IdentityCookieOptions).Namespace + ".TwoFactorUserId";
+        public string TwoFactorUserIdCookieAuthenticationScheme => TwoFactorUserIdCookie?.AuthenticationScheme;
 
         /// <summary>
-        /// Gets or sets the scheme used to identify Two Factor authentication cookies for saving the Remember Me state.
+        /// Gets the scheme used to identify Two Factor authentication cookies for saving the Remember Me state.
         /// </summary>
         /// <value>The scheme used to identify remember me application authentication cookies.</value>        
-        public string TwoFactorRememberMeCookieAuthenticationScheme { get; set; } = typeof(IdentityCookieOptions).Namespace + ".TwoFactorRememberMe";
+        public string TwoFactorRememberMeCookieAuthenticationScheme => TwoFactorRememberMeCookie?.AuthenticationScheme;
     }
 }

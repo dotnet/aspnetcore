@@ -503,7 +503,7 @@ namespace Microsoft.AspNetCore.Identity.Test
         {
             // Setup
             var manager = MockHelpers.TestUserManager<TestUser>();
-            manager.Options.Cookies.ApplicationCookieAuthenticationScheme = authenticationScheme;
+            manager.Options.Cookies.ApplicationCookie.AuthenticationScheme = authenticationScheme;
             var context = new Mock<HttpContext>();
             var auth = new Mock<AuthenticationManager>();
             context.Setup(c => c.Authentication).Returns(auth.Object).Verifiable();
