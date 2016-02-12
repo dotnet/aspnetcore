@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0-alpha7-*",
+  "version": "1.0.0-*",
   "description": "Invoke Node.js modules at runtime in ASP.NET 5 applications.",
   "compilationOptions": {
     "keyFile": "../../tools/Key.snk"

@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0-alpha7-*",
+  "version": "1.0.0-*",
   "description": "Helpers for building Angular 2 applications on ASP.NET 5.",
   "compilationOptions": {
     "keyFile": "../../tools/Key.snk"
