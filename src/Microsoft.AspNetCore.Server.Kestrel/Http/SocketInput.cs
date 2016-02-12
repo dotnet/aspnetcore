@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Http
 
         private readonly MemoryPool2 _memory;
         private readonly IThreadPool _threadPool;
-        private readonly ManualResetEventSlim _manualResetEvent = new ManualResetEventSlim(false);
+        private readonly ManualResetEventSlim _manualResetEvent = new ManualResetEventSlim(false, 0);
 
         private Action _awaitableState;
         private Exception _awaitableError;
