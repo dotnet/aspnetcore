@@ -26,7 +26,14 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 throw new ArgumentNullException(nameof(types));
             }
 
-            var controllerTypeProvider = new StaticControllerTypeProvider();
+            StaticControllerTypeProvider controllerTypeProvider = null;
+
+            controllerTypeProvider = services
+                .Where(s => s.ServiceType == typeof(IControllerTypeProvider))
+                .Select(s => s.ImplementationInstance)
+                .OfType<StaticControllerTypeProvider>()
+                .FirstOrDefault()
+                ?? new StaticControllerTypeProvider();
 
             foreach (var type in types)
             {

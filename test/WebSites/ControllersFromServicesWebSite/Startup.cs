@@ -17,6 +17,7 @@ namespace ControllersFromServicesWebSite
         {
             services
                 .AddMvc()
+                .AddControllersAsServices(typeof(AnotherController))
                 .AddControllersAsServices(new[]
                 {
                     typeof(TimeScheduleController).GetTypeInfo().Assembly

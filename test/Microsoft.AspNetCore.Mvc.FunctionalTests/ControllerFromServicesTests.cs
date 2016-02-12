@@ -104,5 +104,18 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             // Assert
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
+
+        [Fact]
+        public async Task AddControllersAsServices_MultipleCalls_DoesNotReplacePreviousProvider()
+        {
+            // Arrange
+            var expected = "1";
+
+            // Act
+            var response = await Client.GetStringAsync("http://localhost/another/");
+
+            // Assert
+            Assert.Equal(expected, response);
+        }
     }
 }
